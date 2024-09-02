@@ -3,17 +3,17 @@
  *
  * @group unit/tracer/all
  */
-import { captureLambdaHandler } from '../../src/middleware/middy.js';
+import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
-import { Tracer } from './../../src/index.js';
 import type { Context, Handler } from 'aws-lambda';
 import {
   Segment,
-  setContextMissingStrategy,
   Subsegment,
+  setContextMissingStrategy,
 } from 'aws-xray-sdk-core';
-import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
-import context from '@aws-lambda-powertools/testing-utils/context';
+import { captureLambdaHandler } from '../../src/middleware/middy.js';
+import { Tracer } from './../../src/index.js';
 
 jest.spyOn(console, 'debug').mockImplementation(() => null);
 jest.spyOn(console, 'warn').mockImplementation(() => null);
@@ -105,7 +105,7 @@ describe('Middy middleware', () => {
 
       // Assess
       expect(putMetadataSpy).toHaveBeenCalledTimes(0);
-      delete process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE;
+      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = undefined;
     });
 
     test('when used while captureResponse set to false, it does not capture the response as metadata', async () => {
@@ -199,7 +199,7 @@ describe('Middy middleware', () => {
       expect(addErrorSpy).toHaveBeenCalledTimes(0);
       expect.assertions(5);
 
-      delete process.env.POWERTOOLS_TRACER_CAPTURE_ERROR;
+      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = undefined;
     });
 
     test('when used with standard config, it captures the exception correctly', async () => {
@@ -391,7 +391,7 @@ describe('Middy middleware', () => {
     expect(closeSpy).toHaveBeenCalledTimes(1);
     expect(logWarningSpy).toHaveBeenNthCalledWith(
       1,
-      `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+      'Failed to close or serialize segment %s. We are catching the error but data might be lost.',
       handlerSubsegment.name,
       new Error('dummy error')
     );

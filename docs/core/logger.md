@@ -111,7 +111,7 @@ This functionality will include the following keys in your structured logs:
 === "Middy Middleware"
 
     !!! tip "A note about Middy"
-        We guarantee support only for Middy.js `v4.x`, that you can install it by running `npm i @middy/core@~4`.
+        We guarantee support for both Middy.js `v4.x` & `v5.x` with the latter being available only if you are using ES modules.
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="2 14"
@@ -160,26 +160,48 @@ In each case, the printed log will look like this:
 
 ### Log incoming event
 
-When debugging in non-production environments, you can instruct Logger to log the incoming event with the middleware/decorator parameter `logEvent`.
+When debugging in non-production environments, you can log the incoming event using the `logEventIfEnabled()` method or by setting the `logEvent` option in the `injectLambdaContext()` Middy.js middleware or class method decorator.
 
 ???+ warning
 	This is disabled by default to prevent sensitive info being logged
 
-=== "Middy Middleware"
+=== "`logEventIfEnabled()`"
 
-    ```typescript hl_lines="15"
-    --8<-- "examples/snippets/logger/eventMiddy.ts"
+    ```typescript hl_lines="1 8"
+    --8<-- "examples/snippets/logger/logEventManual.ts"
     ```
+
+    1. You can control the event logging via the `POWERTOOLS_LOGGER_LOG_EVENT` environment variable.
+
+=== "Middy.js Middleware"
+
+    ```typescript hl_lines="10"
+    --8<-- "examples/snippets/logger/logEventMiddy.ts"
+    ```
+
+    1. The `logEvent` option takes precedence over the `POWERTOOLS_LOGGER_LOG_EVENT` environment variable.
 
 === "Decorator"
 
-    ```typescript hl_lines="8"
-    --8<-- "examples/snippets/logger/eventDecorator.ts"
+    ```typescript hl_lines="7"
+    --8<-- "examples/snippets/logger/logEventDecorator.ts"
     ```
 
-    1. Binding your handler method allows your handler to access `this` within the class methods.
+    1. The `logEvent` option takes precedence over the `POWERTOOLS_LOGGER_LOG_EVENT` environment variable.
 
-Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`true`/`false`) this feature.
+=== "payload.json"
+
+    ```json
+    --8<-- "examples/snippets/logger/samples/logEventInput.json"
+    ```
+
+=== "CloudWatch output"
+
+    ```json hl_lines="8 13-15"
+    --8<-- "examples/snippets/logger/samples/logEventOutput.json"
+    ```
+
+Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`true`/`false`) this feature. When using Middy.js middleware or class method decorator, the `logEvent` option will take precedence over the environment variable.
 
 ### Appending additional keys
 
@@ -454,6 +476,7 @@ We support the following log levels:
 
 | Level      | Numeric value |
 | ---------- | ------------- |
+| `TRACE`    | 6             |
 | `DEBUG`    | 8             |
 | `INFO`     | 12            |
 | `WARN`     | 16            |
@@ -518,6 +541,26 @@ We prioritise log level settings in this order:
 3. `POWERTOOLS_LOG_LEVEL` environment variable
 
 In the event you have set a log level in Powertools to a level that is lower than the ACL setting, we will output a warning log message informing you that your messages will be discarded by Lambda.
+
+### Setting timestamp to custom Timezone
+
+By default, Logger emits records with the default Lambda timestamp in **UTC**, i.e. `2016-06-20T12:08:10.000Z`
+
+If you prefer to log in a specific timezone, you can configure it by setting the `TZ` environment variable. You can do this either as an environment variable or directly within your Lambda function settings.
+
+[Click here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime){target="_blank"} for a comprehensive list of available Lambda environment variables.
+
+=== "customTimezone.ts"
+
+    ```typescript hl_lines="8"
+    --8<-- "examples/snippets/logger/customTimezone.ts"
+    ```
+
+=== "customTimezoneOutput.json"
+
+    ```json hl_lines="7 15"
+    --8<-- "examples/snippets/logger/customTimezoneOutput.json"
+    ```
 
 ### Using multiple Logger instances across your code
 
@@ -739,6 +782,26 @@ This is how the printed log would look:
 
 !!! tip "Custom Log formatter and Child loggers"
     It is not necessary to pass the `LogFormatter` each time a [child logger](#using-multiple-logger-instances-across-your-code) is created. The parent's LogFormatter will be inherited by the child logger.
+
+### Bring your own JSON serializer
+
+You can extend the default JSON serializer by passing a custom serializer function to the `Logger` constructor, using the `jsonReplacerFn` option. This is useful when you want to customize the serialization of specific values.
+
+=== "unserializableValues.ts"
+
+    ```typescript hl_lines="4-5 7"
+    --8<-- "examples/snippets/logger/unserializableValues.ts"
+    ```
+
+=== "unserializableValues.json"
+
+    ```json hl_lines="8"
+    --8<-- "examples/snippets/logger/unserializableValues.json"
+    ```
+
+By default, Logger uses `JSON.stringify()` to serialize log items and a [custom replacer function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter) to serialize common unserializable values such as `BigInt`, circular references, and `Error` objects.
+
+When you extend the default JSON serializer, we will call your custom serializer function before the default one. This allows you to customize the serialization while still benefiting from the default behavior.
 
 ## Testing your code
 

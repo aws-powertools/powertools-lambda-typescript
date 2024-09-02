@@ -3,7 +3,7 @@
  *
  * @group unit/parser/schema/
  */
-import { AlbSchema, AlbMultiValueHeadersSchema } from '../../../src/schemas/';
+import { AlbMultiValueHeadersSchema, AlbSchema } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 
 describe('ALB ', () => {

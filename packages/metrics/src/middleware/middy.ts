@@ -1,10 +1,10 @@
 import { METRICS_KEY } from '@aws-lambda-powertools/commons';
-import type { Metrics } from '../Metrics.js';
-import type { ExtraOptions } from '../types/Metrics.js';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons/types';
+import type { Metrics } from '../Metrics.js';
+import type { ExtraOptions } from '../types/Metrics.js';
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
@@ -38,7 +38,7 @@ const logMetrics = (
   target: Metrics | Metrics[],
   options: ExtraOptions = {}
 ): MiddlewareLikeObj => {
-  const metricsInstances = target instanceof Array ? target : [target];
+  const metricsInstances = Array.isArray(target) ? target : [target];
 
   /**
    * Set the cleanup function to be called in case other middlewares return early.
@@ -53,7 +53,7 @@ const logMetrics = (
   };
 
   const logMetricsBefore = async (request: MiddyLikeRequest): Promise<void> => {
-    metricsInstances.forEach((metrics: Metrics) => {
+    for (const metrics of metricsInstances) {
       metrics.setFunctionName(request.context.functionName);
       const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } =
         options;
@@ -66,15 +66,15 @@ const logMetrics = (
       if (captureColdStartMetric) {
         metrics.captureColdStartMetric();
       }
-    });
+    }
 
     setCleanupFunction(request);
   };
 
   const logMetricsAfterOrError = async (): Promise<void> => {
-    metricsInstances.forEach((metrics: Metrics) => {
+    for (const metrics of metricsInstances) {
       metrics.publishStoredMetrics();
-    });
+    }
   };
 
   return {

@@ -58,8 +58,8 @@ jobs:
             "eu-south-2",
             "eu-north-1",
             "sa-east-1",
-            "me-central-1",
             "me-south-1",
+            "me-central-1",
             "il-central-1",
           ]
     steps:
@@ -72,13 +72,13 @@ jobs:
           role-to-assume: ${{ secrets.target-account-role }}
           mask-aws-account-id: true
       - name: Setup Node.js
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: "20"
       - name: Setup dependencies
-        uses: ./.github/actions/cached-node-modules
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
       - name: Download artifact
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: ${{ inputs.artifact-name }}
       - name: Unzip artifact
@@ -93,7 +93,7 @@ jobs:
           cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt
       - name: Save Layer ARN artifact
         if: ${{ inputs.stage == 'PROD' }}
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
         with:
           name: cdk-layer-stack-${{ matrix.region }}
           path: ./cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.

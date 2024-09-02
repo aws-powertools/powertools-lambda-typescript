@@ -1,7 +1,7 @@
 import {
-  getFirstSubsegment,
   type AssertAnnotationParams,
   type ParsedDocument,
+  getFirstSubsegment,
 } from './tracesUtils.js';
 
 export const assertAnnotation = (params: AssertAnnotationParams): void => {
@@ -16,8 +16,8 @@ export const assertAnnotation = (params: AssertAnnotationParams): void => {
   if (!annotations) {
     fail('annotation is missing');
   }
-  expect(annotations['ColdStart']).toEqual(isColdStart);
-  expect(annotations['Service']).toEqual(expectedServiceName);
+  expect(annotations.ColdStart).toEqual(isColdStart);
+  expect(annotations.Service).toEqual(expectedServiceName);
   expect(annotations[expectedCustomAnnotationKey]).toEqual(
     expectedCustomAnnotationValue
   );

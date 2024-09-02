@@ -14,4 +14,27 @@ const LogJsonIndent = {
   COMPACT: 0,
 } as const;
 
-export { LogJsonIndent };
+const LogLevel = {
+  TRACE: 'TRACE',
+  DEBUG: 'DEBUG',
+  INFO: 'INFO',
+  WARN: 'WARN',
+  ERROR: 'ERROR',
+  SILENT: 'SILENT',
+  CRITICAL: 'CRITICAL',
+} as const;
+
+/**
+ * Numeric values for each log level.
+ */
+const LogLevelThreshold = {
+  TRACE: 6,
+  DEBUG: 8,
+  INFO: 12,
+  WARN: 16,
+  ERROR: 20,
+  CRITICAL: 24,
+  SILENT: 28,
+} as const;
+
+export { LogJsonIndent, LogLevel, LogLevelThreshold };

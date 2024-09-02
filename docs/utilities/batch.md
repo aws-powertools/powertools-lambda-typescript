@@ -261,7 +261,7 @@ All records in the batch will be passed to this handler for processing, even if 
 
 * **All records successfully processed**. We will return an empty list of item failures `{'batchItemFailures': []}`
 * **Partial success with some exceptions**. We will return a list of all item IDs/sequence numbers that failed processing
-* **All records failed to be processed**. We will raise `BatchProcessingError` exception with a list of all exceptions raised when processing
+* **All records failed to be processed**. We will throw a `FullBatchFailureError` error with a list of all the errors thrown while processing unless `throwOnFullBatchFailure` is disabled.
 
 The following sequence diagrams explain how each Batch processor behaves under different scenarios.
 
@@ -450,6 +450,18 @@ We can automatically inject the [Lambda context](https://docs.aws.amazon.com/lam
 --8<-- "examples/snippets/batch/accessLambdaContext.ts"
 ```
 
+### Working with full batch failures
+
+By default, the `BatchProcessor` will throw a `FullBatchFailureError` if all records in the batch fail to process, we do this to reflect the failure in your operational metrics.
+
+When working with functions that handle batches with a small number of records, or when you use errors as a flow control mechanism, this behavior might not be desirable as your function might generate an unnaturally high number of errors. When this happens, the [Lambda service will scale down the concurrency of your function](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-backoff-strategy){target="_blank"}, potentially impacting performance.
+
+For these scenarios, you can set the `throwOnFullBatchFailure` option to `false` when calling.
+
+```typescript hl_lines="17"
+--8<-- "examples/snippets/batch/noThrowOnFullBatchFailure.ts"
+```
+
 ### Extending BatchProcessor
 
 You might want to bring custom logic to the existing `BatchProcessor` to slightly override how we handle successes and failures.
@@ -498,7 +510,7 @@ classDiagram
 
 You can then use this class as a context manager, or pass it to `processPartialResponseSync` to process the records in your Lambda handler function.
 
-```typescript hl_lines="21 35 56 61 73 86" title="Creating a custom batch processor"
+```typescript hl_lines="21 35 55 60 72 85" title="Creating a custom batch processor"
 --8<-- "examples/snippets/batch/customPartialProcessor.ts"
 ```
 

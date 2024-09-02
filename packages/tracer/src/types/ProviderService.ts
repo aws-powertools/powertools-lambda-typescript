@@ -1,5 +1,5 @@
-import type { Namespace } from 'cls-hooked';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
+import type { Namespace } from 'cls-hooked';
 
 type ContextMissingStrategy =
   | 'LOG_ERROR'

@@ -1,6 +1,6 @@
 {
   "name": "layers",
-  "version": "2.3.0",
+  "version": "2.7.0",
   "bin": {
     "layer": "bin/layers.js"
   },
@@ -12,8 +12,8 @@
     "jest": "jest --detectOpenHandles",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --fix --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "test:unit": "jest --group=unit",
     "test:e2e": "jest --group=e2e",
     "createLayerFolder": "cdk synth --context BuildFromLocal=true"
@@ -36,8 +36,8 @@
     "source-map-support": "^0.5.21"
   },
   "dependencies": {
-    "aws-cdk": "^2.145.0",
-    "aws-cdk-lib": "^2.145.0",
+    "aws-cdk": "^2.153.0",
+    "aws-cdk-lib": "^2.153.0",
     "esbuild": "^0.23.0"
   }
 }

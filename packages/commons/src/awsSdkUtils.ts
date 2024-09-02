@@ -1,5 +1,5 @@
-import { PT_VERSION } from './version.js';
 import type { MiddlewareArgsLike, SdkClient } from './types/awsSdk.js';
+import { PT_VERSION } from './version.js';
 
 const EXEC_ENV = process.env.AWS_EXECUTION_ENV || 'NA';
 const middlewareOptions = {
@@ -96,7 +96,7 @@ const addUserAgentMiddleware = (client: unknown, feature: string): void => {
       );
     } else {
       throw new Error(
-        `The client provided does not match the expected interface`
+        'The client provided does not match the expected interface'
       );
     }
   } catch (error) {

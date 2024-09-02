@@ -1,7 +1,7 @@
-import { Metrics, MetricUnit } from '../../src/index.js';
-import type { MetricUnit as MetricUnitType } from '../../src/types/index.js';
-import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import type { Context } from 'aws-lambda';
+import { MetricUnit, Metrics } from '../../src/index.js';
+import type { MetricUnit as MetricUnitType } from '../../src/types/index.js';
 
 const namespace = process.env.EXPECTED_NAMESPACE ?? 'CdkExample';
 const serviceName =
@@ -32,10 +32,8 @@ class Lambda implements LambdaInterface {
     defaultDimensions: JSON.parse(defaultDimensions),
     throwOnEmptyMetrics: true,
   })
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public async handler(_event: unknown, _context: Context): Promise<void> {
-    metrics.addMetric(metricName, metricUnit, parseInt(metricValue));
+    metrics.addMetric(metricName, metricUnit, Number.parseInt(metricValue));
     metrics.addDimension(
       Object.entries(JSON.parse(extraDimension))[0][0],
       Object.entries(JSON.parse(extraDimension))[0][1] as string
@@ -54,7 +52,7 @@ class Lambda implements LambdaInterface {
     metricWithItsOwnDimensions.addMetric(
       singleMetricName,
       singleMetricUnit,
-      parseInt(singleMetricValue)
+      Number.parseInt(singleMetricValue)
     );
   }
 }

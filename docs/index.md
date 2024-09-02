@@ -69,7 +69,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 
     For the latter, make sure to replace `{region}` with your AWS region, e.g., `eu-west-1`.
 
-    __arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8__{: .copyMe}:clipboard:
+    __arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12__{: .copyMe}:clipboard:
 
     ???+ note "Code snippets for popular infrastructure as code frameworks"
 
@@ -89,7 +89,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
                 const powertoolsLayer = LayerVersion.fromLayerVersionArn(
                   this,
                   'PowertoolsLayer',
-                  `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8`
+                  `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12`
                 );
                 
                 new Function(this, 'Function', {
@@ -126,7 +126,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
               Type: AWS::Serverless::Function
                 Properties:
                   Layers:
-                    - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8
+                    - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12
             ```
 
             If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
@@ -155,7 +155,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
               hello:
                 handler: lambda_function.lambda_handler
                 layers:
-                  - arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8
+                  - arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12
             ```
 
             If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
@@ -190,7 +190,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
               role          = ...
               handler       = "index.handler"
               runtime 		= "nodejs20.x"
-              layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8"]
+              layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12"]
               source_code_hash = filebase64sha256("lambda_function_payload.zip")
             }
             ```
@@ -208,7 +208,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 
             const lambdaFunction = new aws.lambda.Function('function', {
                 layers: [
-                    pulumi.interpolate`arn:aws:lambda:${aws.getRegionOutput().name}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8`
+                    pulumi.interpolate`arn:aws:lambda:${aws.getRegionOutput().name}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12`
                 ],
                 code: new pulumi.asset.FileArchive('lambda_function_payload.zip'),
                 tracingConfig: {
@@ -232,7 +232,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
             ? Do you want to configure advanced settings? Yes
             ...
             ? Do you want to enable Lambda layers for this function? Yes
-            ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8
+            ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12
             ❯ amplify push -y
             
             # Updating an existing function and add the layer
@@ -242,7 +242,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
             - Name: <NAME-OF-FUNCTION>
             ? Which setting do you want to update? Lambda layers configuration
             ? Do you want to enable Lambda layers for this function? Yes
-            ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8
+            ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12
             ? Do you want to edit the local lambda function now? No
             ```
 
@@ -255,35 +255,35 @@ You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for
 ??? note "Click to expand and copy any regional Lambda Layer ARN"
     | Region           | Layer ARN                                                                                                     |
     | ---------------- | ------------------------------------------------------------------------------------------------------------- |
-    | `us-east-1`      | [arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
-    | `us-east-2`      | [arn:aws:lambda:us-east-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
-    | `us-west-1`      | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
-    | `us-west-2`      | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
-    | `ap-south-1`     | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
-    | `ap-south-2`     | [arn:aws:lambda:ap-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
-    | `ap-east-1`      | [arn:aws:lambda:ap-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
-    | `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard: |
-    | `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard: |
-    | `ap-northeast-3` | [arn:aws:lambda:ap-northeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard: |
-    | `ap-southeast-1` | [arn:aws:lambda:ap-southeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard: |
-    | `ap-southeast-2` | [arn:aws:lambda:ap-southeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard: |
-    | `ap-southeast-3` | [arn:aws:lambda:ap-southeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard: |
-    | `ap-southeast-4` | [arn:aws:lambda:ap-southeast-4:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard: |
-    | `eu-central-1`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:   |
-    | `eu-central-2`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:   |
-    | `eu-west-1`      | [arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
-    | `eu-west-2`      | [arn:aws:lambda:eu-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
-    | `eu-west-3`      | [arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
-    | `eu-north-1`     | [arn:aws:lambda:eu-north-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
-    | `eu-south-1`     | [arn:aws:lambda:eu-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
-    | `eu-south-2`     | [arn:aws:lambda:eu-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
-    | `ca-central-1`   | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:   |
-    | `ca-west-1`      | [arn:aws:lambda:ca-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
-    | `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:      |
-    | `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
-    | `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:     |
-    | `me-central-1`   | [arn:aws:lambda:me-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:   |
-    | `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8](#){: .copyMe}:clipboard:   |
+    | `us-east-1`      | [arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
+    | `us-east-2`      | [arn:aws:lambda:us-east-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
+    | `us-west-1`      | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
+    | `us-west-2`      | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
+    | `ap-south-1`     | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
+    | `ap-south-2`     | [arn:aws:lambda:ap-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
+    | `ap-east-1`      | [arn:aws:lambda:ap-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
+    | `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard: |
+    | `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard: |
+    | `ap-northeast-3` | [arn:aws:lambda:ap-northeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard: |
+    | `ap-southeast-1` | [arn:aws:lambda:ap-southeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard: |
+    | `ap-southeast-2` | [arn:aws:lambda:ap-southeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard: |
+    | `ap-southeast-3` | [arn:aws:lambda:ap-southeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard: |
+    | `ap-southeast-4` | [arn:aws:lambda:ap-southeast-4:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard: |
+    | `eu-central-1`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:   |
+    | `eu-central-2`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:   |
+    | `eu-west-1`      | [arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
+    | `eu-west-2`      | [arn:aws:lambda:eu-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
+    | `eu-west-3`      | [arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
+    | `eu-north-1`     | [arn:aws:lambda:eu-north-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
+    | `eu-south-1`     | [arn:aws:lambda:eu-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
+    | `eu-south-2`     | [arn:aws:lambda:eu-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
+    | `ca-central-1`   | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:   |
+    | `ca-west-1`      | [arn:aws:lambda:ca-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
+    | `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:      |
+    | `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
+    | `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
+    | `me-central-1`   | [arn:aws:lambda:me-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:     |
+    | `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12](#){: .copyMe}:clipboard:   |
 
 **Want to inspect the contents of the Layer?**
 
@@ -292,14 +292,14 @@ The pre-signed URL to download this Lambda Layer will be within `Location` key i
 Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the following command:
 
 ```bash title="AWS CLI command to download Lambda Layer content"
-aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:8 --region {aws::region}
+aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:12 --region {aws::region}
 ```
 
 ## Instrumentation
 
 Many of the utilities provided by Powertools for AWS Lambda (TypeScript) can be used with different programming paradigms:
 
-- **Middy** middleware. It is the best choice if your existing code base relies on the [Middy 4.x](https://middy.js.org/docs/) middleware engine. Powertools for AWS Lambda (TypeScript) offers compatible Middy middleware to make this integration seamless.
+- **Middy** middleware. It is the best choice if your existing code base relies on the [Middy.js](https://middy.js.org/docs/) middleware engine. Powertools for AWS Lambda (TypeScript) offers compatible Middy middleware to make this integration seamless.
 - **Method decorator**. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using [TypeScript Classes](https://www.typescriptlang.org/docs/handbook/classes.html). If you aren’t using Classes, this requires the most significant refactoring.
 - **Manually**. It provides the most granular control. It’s the most verbose approach, with the added benefit of no additional dependency and no refactoring to TypeScript Classes.
 
@@ -386,10 +386,22 @@ Knowing which companies are using this library is important to help prioritize t
 
 <div class="grid" style="text-align:center;" markdown>
 
-[**Hashnode**](https://hashnode.com/){target="_blank" rel="nofollow"}
+[**Alma Media**](https://www.almamedia.fi/en/){target="_blank" rel="nofollow"}
 { .card }
 
-[**Trek10)**](https://www.trek10.com/){target="_blank" rel="nofollow"}
+[**AppYourself**](https://appyourself.net){target="_blank" rel="nofollow"}
+{ .card }
+
+[**Bailey Nelson**](https://www.baileynelson.com.au){target="_blank" rel="nofollow"}
+{ .card }
+
+[**Banxware**](https://www.banxware.com){target="_blank" rel="nofollow"}
+{ .card }
+
+[**Caylent**](https://caylent.com/){target="_blank" rel="nofollow"}
+{ .card }
+
+[**Certible**](https://www.certible.com/){target="_blank" rel="nofollow"}
 { .card }
 
 [**Elva**](https://elva-group.com){target="_blank" rel="nofollow"}
@@ -398,7 +410,10 @@ Knowing which companies are using this library is important to help prioritize t
 [**globaldatanet**](https://globaldatanet.com/){target="_blank" rel="nofollow"}
 { .card }
 
-[**Bailey Nelson**](https://www.baileynelson.com.au){target="_blank" rel="nofollow"}
+[**Hashnode**](https://hashnode.com/){target="_blank" rel="nofollow"}
+{ .card }
+
+[**LocalStack**](https://localstack.cloud/){target="_blank" rel="nofollow"}
 { .card }
 
 [**Perfect Post**](https://www.perfectpost.fr){target="_blank" rel="nofollow"}
@@ -407,16 +422,13 @@ Knowing which companies are using this library is important to help prioritize t
 [**Sennder**](https://sennder.com/){target="_blank" rel="nofollow"}
 { .card }
 
-[**Certible**](https://www.certible.com/){target="_blank" rel="nofollow"}
-{ .card }
-
 [**tecRacer GmbH & Co. KG**](https://www.tecracer.com/){target="_blank" rel="nofollow"}
 { .card }
 
-[**AppYourself**](https://appyourself.net){target="_blank" rel="nofollow"}
+[**Trek10**](https://www.trek10.com/){target="_blank" rel="nofollow"}
 { .card }
 
-[**Alma Media**](https://www.almamedia.fi/en/){target="_blank" rel="nofollow}
+[**WeSchool**](https://www.weschool.com){target="_blank" rel="nofollow"}
 { .card }
 
 </div>

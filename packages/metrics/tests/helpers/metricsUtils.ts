@@ -1,16 +1,14 @@
-import promiseRetry from 'promise-retry';
-import { Metrics, MetricUnit } from '../../src/index.js';
-import { ExtraOptions } from '../../src/types/index.js';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import {
-  CloudWatchClient,
+  type CloudWatchClient,
+  type Dimension,
   ListMetricsCommand,
-} from '@aws-sdk/client-cloudwatch';
-import type {
-  Dimension,
-  ListMetricsCommandOutput,
+  type ListMetricsCommandOutput,
 } from '@aws-sdk/client-cloudwatch';
 import type { Context, Handler } from 'aws-lambda';
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import promiseRetry from 'promise-retry';
+import { MetricUnit, type Metrics } from '../../src/index.js';
+import type { ExtraOptions } from '../../src/types/index.js';
 
 const getMetrics = async (
   cloudWatchClient: CloudWatchClient,

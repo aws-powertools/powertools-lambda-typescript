@@ -1,20 +1,17 @@
-/**
- * Test processPartialResponse function
- *
- * @group unit/batch/function/processpartialresponse
- */
+import context from '@aws-lambda-powertools/testing-utils/context';
 import type {
   Context,
   DynamoDBStreamEvent,
   KinesisStreamEvent,
   SQSEvent,
 } from 'aws-lambda';
-import context from '@aws-lambda-powertools/testing-utils/context';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   BatchProcessorSync,
-  processPartialResponseSync,
   EventType,
+  FullBatchFailureError,
   UnexpectedBatchTypeError,
+  processPartialResponseSync,
 } from '../../src/index.js';
 import type {
   BatchProcessingOptions,
@@ -31,7 +28,6 @@ import {
   kinesisRecordHandler,
   sqsRecordHandler,
 } from '../helpers/handlers.js';
-import assert from 'node:assert';
 
 describe('Function: processPartialResponse()', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -40,8 +36,7 @@ describe('Function: processPartialResponse()', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -50,7 +45,7 @@ describe('Function: processPartialResponse()', () => {
   });
 
   describe('Process partial response function call tests', () => {
-    test('Process partial response function call with synchronous handler', () => {
+    it('Process partial response function call with synchronous handler', () => {
       // Prepare
       const records = [
         sqsRecordFactory('success'),
@@ -70,7 +65,7 @@ describe('Function: processPartialResponse()', () => {
       expect(ret).toStrictEqual({ batchItemFailures: [] });
     });
 
-    test('Process partial response function call with context provided', () => {
+    it('Process partial response function call with context provided', () => {
       // Prepare
       const records = [
         sqsRecordFactory('success'),
@@ -90,10 +85,63 @@ describe('Function: processPartialResponse()', () => {
       // Assess
       expect(ret).toStrictEqual({ batchItemFailures: [] });
     });
+
+    it('Process partial response function call with synchronous handler for full batch failure', () => {
+      // Prepare
+      const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
+      const batch = { Records: records };
+      const processor = new BatchProcessorSync(EventType.SQS);
+
+      // Act & Assess
+      expect(() =>
+        processPartialResponseSync(batch, sqsRecordHandler, processor)
+      ).toThrow(FullBatchFailureError);
+    });
+
+    it('Process partial response function call with synchronous handler for full batch failure when `throwOnFullBatchFailure` is `true`', () => {
+      // Prepare
+      const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
+      const batch = { Records: records };
+      const processor = new BatchProcessorSync(EventType.SQS);
+
+      // Act & Assess
+      expect(() =>
+        processPartialResponseSync(batch, sqsRecordHandler, processor, {
+          ...options,
+          throwOnFullBatchFailure: true,
+        })
+      ).toThrow(FullBatchFailureError);
+    });
+
+    it('Process partial response function call with synchronous handler for full batch failure when `throwOnFullBatchFailure` is `false`', () => {
+      // Prepare
+      const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
+      const batch = { Records: records };
+      const processor = new BatchProcessorSync(EventType.SQS);
+
+      // Act
+      const response = processPartialResponseSync(
+        batch,
+        sqsRecordHandler,
+        processor,
+        {
+          ...options,
+          throwOnFullBatchFailure: false,
+        }
+      );
+
+      // Assess
+      expect(response).toStrictEqual({
+        batchItemFailures: [
+          { itemIdentifier: records[0].messageId },
+          { itemIdentifier: records[1].messageId },
+        ],
+      });
+    });
   });
 
   describe('Process partial response function call through handler', () => {
-    test('Process partial response through handler with SQS event', () => {
+    it('Process partial response through handler with SQS event', () => {
       // Prepare
       const records = [
         sqsRecordFactory('success'),
@@ -116,7 +164,7 @@ describe('Function: processPartialResponse()', () => {
       expect(result).toStrictEqual({ batchItemFailures: [] });
     });
 
-    test('Process partial response through handler with Kinesis event', () => {
+    it('Process partial response through handler with Kinesis event', () => {
       // Prepare
       const records = [
         kinesisRecordFactory('success'),
@@ -143,7 +191,7 @@ describe('Function: processPartialResponse()', () => {
       expect(result).toStrictEqual({ batchItemFailures: [] });
     });
 
-    test('Process partial response through handler with DynamoDB event', () => {
+    it('Process partial response through handler with DynamoDB event', () => {
       // Prepare
       const records = [
         dynamodbRecordFactory('success'),
@@ -170,7 +218,7 @@ describe('Function: processPartialResponse()', () => {
       expect(result).toStrictEqual({ batchItemFailures: [] });
     });
 
-    test('Process partial response through handler for SQS records with incorrect event type', () => {
+    it('Process partial response through handler for SQS records with incorrect event type', () => {
       // Prepare
       const processor = new BatchProcessorSync(EventType.SQS);
 
@@ -186,8 +234,8 @@ describe('Function: processPartialResponse()', () => {
         handler({} as unknown as SQSEvent, context);
       } catch (error) {
         // Assess
-        assert(error instanceof UnexpectedBatchTypeError);
-        expect(error.message).toBe(
+        expect(error).toBeInstanceOf(UnexpectedBatchTypeError);
+        expect((error as Error).message).toBe(
           `Unexpected batch type. Possible values are: ${Object.keys(
             EventType
           ).join(', ')}`
@@ -195,7 +243,7 @@ describe('Function: processPartialResponse()', () => {
       }
     });
 
-    test('Process partial response through handler with context provided', () => {
+    it('Process partial response through handler with context provided', () => {
       // Prepare
       const records = [
         sqsRecordFactory('success'),
@@ -223,6 +271,71 @@ describe('Function: processPartialResponse()', () => {
 
       // Assess
       expect(result).toStrictEqual({ batchItemFailures: [] });
+    });
+
+    it('Process partial response through handler for full batch failure', () => {
+      // Prepare
+      const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
+      const processor = new BatchProcessorSync(EventType.SQS);
+      const event: SQSEvent = { Records: records };
+
+      const handler = (
+        event: SQSEvent,
+        _context: Context
+      ): PartialItemFailureResponse => {
+        return processPartialResponseSync(event, sqsRecordHandler, processor);
+      };
+
+      // Act & Assess
+      expect(() => handler(event, context)).toThrow(FullBatchFailureError);
+    });
+
+    it('Process partial response through handler for full batch failure when `throwOnFullBatchFailure` is `true`', () => {
+      // Prepare
+      const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
+      const processor = new BatchProcessorSync(EventType.SQS);
+      const event: SQSEvent = { Records: records };
+
+      const handler = (
+        event: SQSEvent,
+        _context: Context
+      ): PartialItemFailureResponse => {
+        return processPartialResponseSync(event, sqsRecordHandler, processor, {
+          ...options,
+          throwOnFullBatchFailure: true,
+        });
+      };
+
+      // Act & Assess
+      expect(() => handler(event, context)).toThrow(FullBatchFailureError);
+    });
+
+    it('Process partial response through handler for full batch failure when `throwOnFullBatchFailure` is `false`', () => {
+      // Prepare
+      const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
+      const processor = new BatchProcessorSync(EventType.SQS);
+      const event: SQSEvent = { Records: records };
+
+      const handler = (
+        event: SQSEvent,
+        _context: Context
+      ): PartialItemFailureResponse => {
+        return processPartialResponseSync(event, sqsRecordHandler, processor, {
+          ...options,
+          throwOnFullBatchFailure: false,
+        });
+      };
+
+      // Act
+      const response = handler(event, context);
+
+      // Assess
+      expect(response).toStrictEqual({
+        batchItemFailures: [
+          { itemIdentifier: records[0].messageId },
+          { itemIdentifier: records[1].messageId },
+        ],
+      });
     });
   });
 });

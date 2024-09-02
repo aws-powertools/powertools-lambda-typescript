@@ -5,10 +5,22 @@
  */
 
 import {
-  KinesisFirehoseSchema,
-  KinesisFirehoseSqsSchema,
+  KinesisDataStreamRecord,
   KinesisDataStreamSchema,
+  KinesisFirehoseRecordSchema,
+  KinesisFirehoseSchema,
+  KinesisFirehoseSqsRecordSchema,
+  KinesisFirehoseSqsSchema,
 } from '../../../src/schemas/';
+import type {
+  KinesisDataStreamEvent,
+  KinesisFireHoseEvent,
+  KinesisFireHoseSqsEvent,
+} from '../../../src/types';
+import type {
+  KinesisFirehoseRecord,
+  KinesisFirehoseSqsRecord,
+} from '../../../src/types/schema';
 import { TestEvents } from './utils.js';
 
 describe('Kinesis ', () => {
@@ -68,5 +80,34 @@ describe('Kinesis ', () => {
     kinesisFirehoseSQSEvent.records[0].data = 'not a valid json';
     const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
     expect(parsed.records[0].data).toEqual('not a valid json');
+  });
+  it('should parse a kinesis record from a kinesis event', () => {
+    const kinesisStreamEvent: KinesisDataStreamEvent =
+      TestEvents.kinesisStreamEvent as KinesisDataStreamEvent;
+    const parsedRecord = KinesisDataStreamRecord.parse(
+      kinesisStreamEvent.Records[0]
+    );
+
+    expect(parsedRecord.eventName).toEqual('aws:kinesis:record');
+  });
+
+  it('should parse a kinesis firehose record from a kinesis firehose event', () => {
+    const kinesisFirehoseEvent: KinesisFireHoseEvent =
+      TestEvents.kinesisFirehoseKinesisEvent as KinesisFireHoseEvent;
+    const parsedRecord: KinesisFirehoseRecord =
+      KinesisFirehoseRecordSchema.parse(kinesisFirehoseEvent.records[0]);
+
+    expect(parsedRecord.data).toEqual('Hello World');
+  });
+
+  it('should parse a sqs record from a kinesis firehose event', () => {
+    const kinesisFireHoseSqsEvent: KinesisFireHoseSqsEvent =
+      TestEvents.kinesisFirehoseSQSEvent as KinesisFireHoseSqsEvent;
+    const parsed: KinesisFirehoseSqsRecord =
+      KinesisFirehoseSqsRecordSchema.parse(kinesisFireHoseSqsEvent.records[0]);
+
+    expect(parsed.recordId).toEqual(
+      '49640912821178817833517986466168945147170627572855734274000000'
+    );
   });
 });

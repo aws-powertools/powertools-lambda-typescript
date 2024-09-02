@@ -5,10 +5,10 @@
  */
 
 import { generateMock } from '@anatine/zod-mock';
-import { KinesisStreamEvent } from 'aws-lambda';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import type { KinesisStreamEvent } from 'aws-lambda';
 import { KinesisEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
+import { TestEvents, TestSchema } from '../schema/utils.js';
 
 describe('KinesisEnvelope', () => {
   describe('parse', () => {

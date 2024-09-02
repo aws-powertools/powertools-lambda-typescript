@@ -3,16 +3,10 @@
  *
  * @group unit/metrics/class
  */
-import context from '@aws-lambda-powertools/testing-utils/context';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { MetricResolution, MetricUnit, Metrics } from '../../src/index.js';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context, Handler } from 'aws-lambda';
-import type {
-  Dimensions,
-  EmfOutput,
-  MetricsOptions,
-  ConfigServiceInterface,
-} from '../../src/types/index.js';
+import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import {
   COLD_START_METRIC,
   DEFAULT_NAMESPACE,
@@ -20,8 +14,14 @@ import {
   MAX_METRICS_SIZE,
   MAX_METRIC_VALUES_SIZE,
 } from '../../src/constants.js';
+import { MetricResolution, MetricUnit, Metrics } from '../../src/index.js';
+import type {
+  ConfigServiceInterface,
+  Dimensions,
+  EmfOutput,
+  MetricsOptions,
+} from '../../src/types/index.js';
 import { setupDecoratorLambdaHandler } from '../helpers/metricsUtils.js';
-import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
 jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
@@ -367,7 +367,9 @@ describe('Class: Metrics', () => {
           );
         }
       }).not.toThrowError();
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['defaultDimensions']).length).toBe(1);
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['dimensions']).length).toBe(
         MAX_DIMENSION_COUNT - 1
       );
@@ -401,7 +403,9 @@ describe('Class: Metrics', () => {
           );
         }
       }).not.toThrowError();
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['defaultDimensions']).length).toBe(3);
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['dimensions']).length).toBe(
         MAX_DIMENSION_COUNT - 3
       );
@@ -470,6 +474,7 @@ describe('Class: Metrics', () => {
       expect(() =>
         metrics.addDimensions(dimensionsToBeAdded)
       ).not.toThrowError();
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['dimensions']).length).toBe(
         MAX_DIMENSION_COUNT
       );
@@ -487,6 +492,7 @@ describe('Class: Metrics', () => {
 
       // Act & Assess
       metrics.addDimensions(dimensionsToBeAdded);
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['dimensions']).length).toBe(
         MAX_DIMENSION_COUNT
       );
@@ -692,6 +698,7 @@ describe('Class: Metrics', () => {
           metrics.addMetric(`${metricName}-${i}`, MetricUnit.Count, i);
         }
       }).not.toThrowError();
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['storedMetrics']).length).toEqual(
         MAX_METRICS_SIZE
       );
@@ -718,6 +725,7 @@ describe('Class: Metrics', () => {
     test('it should publish metrics when the array of values reaches the maximum size', () => {
       // Prepare
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       const consoleSpy = jest.spyOn(metrics['console'], 'log');
       const metricName = 'test-metric';
 
@@ -758,11 +766,13 @@ describe('Class: Metrics', () => {
           metrics.addMetric(`${metricName}-${i}`, MetricUnit.Count, i);
         }
       }).not.toThrowError();
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['storedMetrics']).length).toEqual(
         MAX_METRICS_SIZE - 1
       );
       metrics.addMetric('another-metric', MetricUnit.Count, MAX_METRICS_SIZE);
       expect(publishStoredMetricsSpy).toHaveBeenCalledTimes(0);
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['storedMetrics']).length).toEqual(
         MAX_METRICS_SIZE
       );
@@ -1262,6 +1272,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
       metrics.addMetric('test-metric', MetricUnit.Count, 10);
       const consoleLogSpy = jest
+        // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
         .spyOn(metrics['console'], 'log')
         .mockImplementation();
       const mockData: EmfOutput = {
@@ -1638,9 +1649,9 @@ describe('Class: Metrics', () => {
         3
       );
       expect(loggedData.service).toEqual(defaultServiceName);
-      Object.keys(additionalDimensions).forEach((key) => {
+      for (const key of Object.keys(additionalDimensions)) {
         expect(loggedData[key]).toEqual(additionalDimensions[key]);
-      });
+      }
       expect(loggedData).toEqual({
         _aws: {
           CloudWatchMetrics: [
@@ -2096,6 +2107,7 @@ describe('Class: Metrics', () => {
       expect(() =>
         metrics.setDefaultDimensions(defaultDimensions)
       ).not.toThrowError();
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['defaultDimensions']).length).toBe(
         MAX_DIMENSION_COUNT - 1
       );
@@ -2129,6 +2141,7 @@ describe('Class: Metrics', () => {
       expect(() =>
         metrics.setDefaultDimensions(defaultDimensions)
       ).not.toThrowError();
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['defaultDimensions']).length).toBe(
         MAX_DIMENSION_COUNT - 1
       );
@@ -2208,6 +2221,7 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act & Assess
+      // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(metrics['console']).toEqual(console);
     });
   });

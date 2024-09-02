@@ -33,7 +33,6 @@ interface DynamoDBPersistenceOptionsBase {
  * Interface for DynamoDBPersistenceOptions with clientConfig property.
  *
  * @interface
- * @extends DynamoDBPersistenceOptionsBase
  * @property {DynamoDBClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
  * @property {never} [awsSdkV3Client] - This property should never be passed.
  */
@@ -50,7 +49,6 @@ interface DynamoDBPersistenceOptionsWithClientConfig
  * Interface for DynamoDBPersistenceOptions with awsSdkV3Client property.
  *
  * @interface
- * @extends DynamoDBPersistenceOptionsBase
  * @property {DynamoDBClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during DynamoDB client instantiation
  * @property {never} [clientConfig] - This property should never be passed.
  */

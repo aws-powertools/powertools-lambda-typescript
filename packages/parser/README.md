@@ -1,12 +1,5 @@
 # Powertools for AWS Lambda (TypeScript) - Parser Utility <!-- omit in toc -->
 
-
-| ⚠️ **WARNING: Do not use this utility in production just yet!** ⚠️                                                                                                                                                                                                                                                                                                  |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| This AWS Lambda Powertools for TypeScript utility is currently released as beta developer preview and is intended strictly for feedback and testing purposes only.  <br/>This version is not stable, and significant breaking changes might incur before going [before the GA release](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/16). | _ |
-
-
-
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
 
 You can use the package in both TypeScript and JavaScript code bases.
@@ -14,18 +7,18 @@ You can use the package in both TypeScript and JavaScript code bases.
 - [Intro](#intro)
 - [Key features](#key-features)
 - [Usage](#usage)
-  - [Middleware](#middleware)
-  - [Decorator](#decorator)
-  - [Manual parsing](#manual-parsing)
-  - [Safe parsing](#safe-parsing)
-  - [Built-in schemas and envelopes](#built-in-schemas-and-envelopes)
+    - [Middleware](#middleware)
+    - [Decorator](#decorator)
+    - [Manual parsing](#manual-parsing)
+    - [Safe parsing](#safe-parsing)
+    - [Built-in schemas and envelopes](#built-in-schemas-and-envelopes)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)
 - [How to support Powertools for AWS Lambda (TypeScript)?](#how-to-support-powertools-for-aws-lambda-typescript)
-  - [Becoming a reference customer](#becoming-a-reference-customer)
-  - [Sharing your work](#sharing-your-work)
-  - [Using Lambda Layer](#using-lambda-layer)
+    - [Becoming a reference customer](#becoming-a-reference-customer)
+    - [Sharing your work](#sharing-your-work)
+    - [Using Lambda Layer](#using-lambda-layer)
 - [Credits](#credits)
 - [License](#license)
 
@@ -35,11 +28,11 @@ The parser utility provides data validation and parsing using [Zod](https://zod.
 
 ## Key features
 
-* Define data schema as Zod schema, then parse, validate and extract only what you want
-* Built-in envelopes to unwrap and validate popular AWS event sources payloads
-* Extend and customize envelopes to fit your needs
-* Safe parsing option to avoid throwing errors and custom error handling
-* Available for Middy.js middleware and TypeScript method decorators
+- Define data schema as Zod schema, then parse, validate and extract only what you want
+- Built-in envelopes to unwrap and validate popular AWS event sources payloads
+- Extend and customize envelopes to fit your needs
+- Safe parsing option to avoid throwing errors and custom error handling
+- Available for Middy.js middleware and TypeScript method decorators
 
 ## Usage
 
@@ -197,7 +190,6 @@ export const handler = async (
 
 When parsing data, you can use the `safeParse` method to avoid throwing errors and handle them manually:
 
-
 ```typescript
 import type { Context } from 'aws-lambda';
 import { parser } from '@aws-lambda-powertools/parser/middleware';
@@ -304,28 +296,32 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ## Connect
 
-* **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
-* **Email**: aws-lambda-powertools-feedback@amazon.com
+- **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+- **Email**: <aws-lambda-powertools-feedback@amazon.com>
 
 ## How to support Powertools for AWS Lambda (TypeScript)?
 
 ### Becoming a reference customer
 
-Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (TypeScript), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (TypeScript) (become a reference)](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E) issue.
+Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (TypeScript), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (TypeScript) (become a reference)](https://s12d.com/become-a-reference-ts) issue.
 
 The following companies, among others, use Powertools:
 
-* [Hashnode](https://hashnode.com/)
-* [Trek10](https://www.trek10.com/)
-* [Elva](https://elva-group.com)
-* [globaldatanet](https://globaldatanet.com/)
-* [Bailey Nelson](https://www.baileynelson.com.au)
-* [Perfect Post](https://www.perfectpost.fr)
-* [Sennder](https://sennder.com/)
-* [Certible](https://www.certible.com/)
-* [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
-* [AppYourself](https://appyourself.net)
-* [Alma Media](https://www.almamedia.fi)
+- [Alma Media](https://www.almamedia.fi)
+- [AppYourself](https://appyourself.net)
+- [Bailey Nelson](https://www.baileynelson.com.au)
+- [Banxware](https://www.banxware.com)
+- [Caylent](https://caylent.com/)
+- [Certible](https://www.certible.com/)
+- [Elva](https://elva-group.com)
+- [globaldatanet](https://globaldatanet.com/)
+- [Hashnode](https://hashnode.com/)
+- [LocalStack](https://localstack.cloud/)
+- [Perfect Post](https://www.perfectpost.fr)
+- [Sennder](https://sennder.com/)
+- [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
+- [Trek10](https://www.trek10.com/)
+- [WeSchool](https://www.weschool.com)
 
 ### Sharing your work
 

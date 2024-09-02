@@ -3,8 +3,6 @@ title: Idempotency
 description: Utility
 ---
 
-<!-- markdownlint-disable MD043 -->
-
 The idempotency utility provides a simple solution to convert your Lambda functions into idempotent operations which are safe to retry.
 
 ## Key features
@@ -189,7 +187,7 @@ The configuration options for the `@idempotent` decorator are the same as the on
 ### MakeHandlerIdempotent Middy middleware
 
 !!! tip "A note about Middy"
-    Currently we support Middy up to `v4.x` that you can install it by running `npm i @middy/core@~4`.
+    We guarantee support for both Middy.js `v4.x` & `v5.x` with the latter being available only if you are using ES modules.
     Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
 If you are using [Middy.js](https://middy.js.org){target="_blank"} as your middleware engine, you can use the `makeHandlerIdempotent` middleware to make your Lambda handler idempotent.
@@ -723,7 +721,7 @@ Below an example implementation of a custom persistence layer backed by a generi
 
 === "CustomPersistenceLayer"
 
-    ```typescript hl_lines="9 19 28 34 50 90"
+    ```typescript hl_lines="9 19 28 35 52 95"
     --8<-- "examples/snippets/idempotency/advancedBringYourOwnPersistenceLayer.ts"
     ```
 
@@ -743,6 +741,30 @@ Below an example implementation of a custom persistence layer backed by a generi
     Pay attention to the documentation for each - you may need to perform additional checks inside these methods to ensure the idempotency guarantees remain intact.
 
     For example, the `_putRecord()` method needs to throw an error if a non-expired record already exists in the data store with a matching key.
+
+## Testing your code
+
+The idempotency utility provides several routes to test your code.
+
+### Disabling the idempotency utility
+
+When testing your code, you may wish to disable the idempotency logic altogether and focus on testing your business logic. To do this, you can set the environment variable POWERTOOLS_IDEMPOTENCY_DISABLED with a truthy value.
+
+### Testing with local DynamoDB
+
+When testing your Lambda function locally, you can use a local DynamoDB instance to test the idempotency feature. You can use [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html) or [LocalStack](https://localstack.cloud/){target="_blank"}.
+
+=== "handler.test.ts"
+
+    ```typescript hl_lines="7-9"
+    --8<-- "examples/snippets/idempotency/workingWithLocalDynamoDB.test.ts"
+    ```
+
+=== "handler.ts"
+
+    ```typescript hl_lines="7-9"
+    --8<-- "examples/snippets/idempotency/workingWithLocalDynamoDB.ts"
+    ```
 
 ## Extra resources
 

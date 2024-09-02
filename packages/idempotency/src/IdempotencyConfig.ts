@@ -1,8 +1,8 @@
-import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
-import type { Context } from 'aws-lambda';
-import type { IdempotencyConfigOptions } from './types/IdempotencyOptions.js';
-import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
+import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
+import type { Context } from 'aws-lambda';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
+import type { IdempotencyConfigOptions } from './types/IdempotencyOptions.js';
 
 /**
  * Configuration for the idempotency feature.
@@ -52,9 +52,9 @@ class IdempotencyConfig {
    * @default false
    */
   public throwOnNoIdempotencyKey: boolean;
+
   /**
    * Use the local cache to store idempotency keys.
-   * @see {@link LRUCache}
    */
   public useLocalCache: boolean;
   readonly #envVarsService: EnvironmentVariablesService;

@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/testing-utils",
-  "version": "2.3.0",
+  "version": "2.7.0",
   "description": "A package containing utilities to test your serverless workloads",
   "author": {
     "name": "Amazon Web Services",
@@ -8,16 +8,15 @@
   },
   "private": true,
   "scripts": {
-    "test": "npm run test:unit",
-    "test:unit": "jest --group=unit --detectOpenHandles --verbose",
-    "jest": "jest --detectOpenHandles --verbose",
+    "test": "vitest --run",
+    "test:unit": "vitest --run",
     "test:e2e": "echo 'Not implemented'",
     "watch": "jest --watch",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "repository": {
@@ -92,9 +91,9 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
   "dependencies": {
     "@aws-cdk/cli-lib-alpha": "^2.121.1-alpha.0",
-    "@aws-sdk/client-lambda": "^3.606.0",
+    "@aws-sdk/client-lambda": "^3.636.0",
     "@smithy/util-utf8": "^3.0.0",
-    "aws-cdk-lib": "^2.145.0",
+    "aws-cdk-lib": "^2.153.0",
     "esbuild": "^0.23.0"
   }
 }

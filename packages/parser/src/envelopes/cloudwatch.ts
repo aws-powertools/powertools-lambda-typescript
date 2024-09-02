@@ -1,8 +1,8 @@
-import { z, type ZodSchema } from 'zod';
-import { Envelope } from './envelope.js';
+import type { ZodSchema, z } from 'zod';
+import { ParseError } from '../errors.js';
 import { CloudWatchLogsSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { ParseError } from '../errors.js';
+import { Envelope } from './envelope.js';
 
 /**
  * CloudWatch Envelope to extract a List of log records.
@@ -13,22 +13,16 @@ import { ParseError } from '../errors.js';
  *
  *  Note: The record will be parsed the same way so if model is str
  */
-export class CloudWatchEnvelope extends Envelope {
-  public static parse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): z.infer<T> {
+export const CloudWatchEnvelope = {
+  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = CloudWatchLogsSchema.parse(data);
 
     return parsedEnvelope.awslogs.data.logEvents.map((record) => {
-      return super.parse(record.message, schema);
+      return Envelope.parse(record.message, schema);
     });
-  }
+  },
 
-  public static safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult {
+  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
     const parsedEnvelope = CloudWatchLogsSchema.safeParse(data);
 
     if (!parsedEnvelope.success) {
@@ -43,7 +37,7 @@ export class CloudWatchEnvelope extends Envelope {
     const parsedLogEvents: z.infer<T>[] = [];
 
     for (const record of parsedEnvelope.data.awslogs.data.logEvents) {
-      const parsedMessage = super.safeParse(record.message, schema);
+      const parsedMessage = Envelope.safeParse(record.message, schema);
       if (!parsedMessage.success) {
         return {
           success: false,
@@ -52,14 +46,13 @@ export class CloudWatchEnvelope extends Envelope {
           }),
           originalEvent: data,
         };
-      } else {
-        parsedLogEvents.push(parsedMessage.data);
       }
+      parsedLogEvents.push(parsedMessage.data);
     }
 
     return {
       success: true,
       data: parsedLogEvents,
     };
-  }
-}
+  },
+};

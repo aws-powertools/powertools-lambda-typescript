@@ -1,30 +1,38 @@
-import { z } from 'zod';
-import {
-  AlbSchema,
-  AlbMultiValueHeadersSchema,
+import type { z } from 'zod';
+import type {
   APIGatewayProxyEventSchema,
   APIGatewayProxyEventV2Schema,
+  AlbMultiValueHeadersSchema,
+  AlbSchema,
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,
   CloudWatchLogsSchema,
   DynamoDBStreamSchema,
   EventBridgeSchema,
-  KafkaSelfManagedEventSchema,
   KafkaMskEventSchema,
+  KafkaRecordSchema,
+  KafkaSelfManagedEventSchema,
   KinesisDataStreamSchema,
+  KinesisFirehoseRecordSchema,
   KinesisFirehoseSchema,
+  KinesisFirehoseSqsRecordSchema,
   KinesisFirehoseSqsSchema,
   LambdaFunctionUrlSchema,
-  S3Schema,
   S3EventNotificationEventBridgeSchema,
+  S3ObjectLambdaEventSchema,
+  S3Schema,
   S3SqsEventNotificationSchema,
+  SesRecordSchema,
   SesSchema,
+  SnsNotificationSchema,
+  SnsRecordSchema,
   SnsSchema,
+  SnsSqsNotificationSchema,
+  SqsRecordSchema,
   SqsSchema,
   VpcLatticeSchema,
   VpcLatticeV2Schema,
-  S3ObjectLambdaEventSchema,
 } from '../schemas/index.js';
 
 type ALBEvent = z.infer<typeof AlbSchema>;
@@ -55,13 +63,19 @@ type EventBridgeEvent = z.infer<typeof EventBridgeSchema>;
 
 type KafkaSelfManagedEvent = z.infer<typeof KafkaSelfManagedEventSchema>;
 
+type KafkaRecord = z.infer<typeof KafkaRecordSchema>;
+
 type KafkaMskEvent = z.infer<typeof KafkaMskEventSchema>;
 
 type KinesisDataStreamEvent = z.infer<typeof KinesisDataStreamSchema>;
 
 type KinesisFireHoseEvent = z.infer<typeof KinesisFirehoseSchema>;
 
+type KinesisFirehoseRecord = z.infer<typeof KinesisFirehoseRecordSchema>;
+
 type KinesisFireHoseSqsEvent = z.infer<typeof KinesisFirehoseSqsSchema>;
+
+type KinesisFirehoseSqsRecord = z.infer<typeof KinesisFirehoseSqsRecordSchema>;
 
 type LambdaFunctionUrlEvent = z.infer<typeof LambdaFunctionUrlSchema>;
 
@@ -77,9 +91,19 @@ type S3ObjectLambdaEvent = z.infer<typeof S3ObjectLambdaEventSchema>;
 
 type SesEvent = z.infer<typeof SesSchema>;
 
+type SesRecord = z.infer<typeof SesRecordSchema>;
+
 type SnsEvent = z.infer<typeof SnsSchema>;
 
+type SnsSqsNotification = z.infer<typeof SnsSqsNotificationSchema>;
+
+type SnsNotification = z.infer<typeof SnsNotificationSchema>;
+
+type SnsRecord = z.infer<typeof SnsRecordSchema>;
+
 type SqsEvent = z.infer<typeof SqsSchema>;
+
+type SqsRecord = z.infer<typeof SqsRecordSchema>;
 
 type VpcLatticeEvent = z.infer<typeof VpcLatticeSchema>;
 
@@ -98,17 +122,25 @@ export type {
   EventBridgeEvent,
   KafkaSelfManagedEvent,
   KafkaMskEvent,
+  KafkaRecord,
   KinesisDataStreamEvent,
   KinesisFireHoseEvent,
+  KinesisFirehoseRecord,
   KinesisFireHoseSqsEvent,
+  KinesisFirehoseSqsRecord,
   LambdaFunctionUrlEvent,
   S3Event,
   S3EventNotificationEventBridge,
   S3SqsEventNotification,
   S3ObjectLambdaEvent,
   SesEvent,
+  SesRecord,
   SnsEvent,
+  SnsSqsNotification,
+  SnsNotification,
+  SnsRecord,
   SqsEvent,
+  SqsRecord,
   VpcLatticeEvent,
   VpcLatticeEventV2,
 };

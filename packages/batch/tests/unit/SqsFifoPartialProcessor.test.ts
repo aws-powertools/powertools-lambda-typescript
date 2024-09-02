@@ -1,13 +1,9 @@
-/**
- * Test SqsFifoBatchProcessor class
- *
- * @group unit/batch/class/sqsfifobatchprocessor
- */
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  SqsFifoPartialProcessor,
-  processPartialResponseSync,
-  SqsFifoShortCircuitError,
   SqsFifoMessageGroupShortCircuitError,
+  SqsFifoPartialProcessor,
+  SqsFifoShortCircuitError,
+  processPartialResponseSync,
 } from '../../src/index.js';
 import { sqsRecordFactory } from '../helpers/factories.js';
 import { sqsRecordHandler } from '../helpers/handlers.js';
@@ -16,8 +12,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -26,7 +21,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
   });
 
   describe('Synchronous SQS FIFO batch processing', () => {
-    test('SQS FIFO Batch processor with no failures', () => {
+    it('completes processing with no failures', async () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('success');
@@ -41,10 +36,10 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures']).toStrictEqual([]);
+      expect(result.batchItemFailures).toStrictEqual([]);
     });
 
-    test('SQS FIFO Batch processor with failures', () => {
+    it('completes processing with some failures', async () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success');
       const secondRecord = sqsRecordFactory('fail');
@@ -60,17 +55,17 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures'].length).toBe(2);
-      expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures.length).toBe(2);
+      expect(result.batchItemFailures[0].itemIdentifier).toBe(
         secondRecord.messageId
       );
-      expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[1].itemIdentifier).toBe(
         thirdRecord.messageId
       );
       expect(processor.errors[1]).toBeInstanceOf(SqsFifoShortCircuitError);
     });
 
-    test('When `skipGroupOnError` is true, SQS FIFO processor is set to continue processing even after first failure', () => {
+    it('continues processing and moves to the next group when `skipGroupOnError` is true', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('fail', '1');
       const secondRecord = sqsRecordFactory('success', '1');
@@ -99,17 +94,17 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures'].length).toBe(4);
-      expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures.length).toBe(4);
+      expect(result.batchItemFailures[0].itemIdentifier).toBe(
         firstRecord.messageId
       );
-      expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[1].itemIdentifier).toBe(
         secondRecord.messageId
       );
-      expect(result['batchItemFailures'][2]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[2].itemIdentifier).toBe(
         thirdRecord.messageId
       );
-      expect(result['batchItemFailures'][3]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[3].itemIdentifier).toBe(
         fourthRecord.messageId
       );
       expect(processor.errors.length).toBe(4);
@@ -121,101 +116,7 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
     });
 
-    test('When `skipGroupOnError` is true, SQS FIFO processor is set to continue processing even after encountering errors in specific MessageGroupID', () => {
-      // Prepare
-      const firstRecord = sqsRecordFactory('success', '1');
-      const secondRecord = sqsRecordFactory('success', '1');
-      const thirdRecord = sqsRecordFactory('fail', '2');
-      const fourthRecord = sqsRecordFactory('success', '2');
-      const fifthRecord = sqsRecordFactory('success', '3');
-      const event = {
-        Records: [
-          firstRecord,
-          secondRecord,
-          thirdRecord,
-          fourthRecord,
-          fifthRecord,
-        ],
-      };
-      const processor = new SqsFifoPartialProcessor();
-
-      // Act
-      const result = processPartialResponseSync(
-        event,
-        sqsRecordHandler,
-        processor,
-        {
-          skipGroupOnError: true,
-        }
-      );
-
-      // Assess
-      expect(result['batchItemFailures'].length).toBe(2);
-      expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
-        thirdRecord.messageId
-      );
-      expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
-        fourthRecord.messageId
-      );
-      expect(processor.errors.length).toBe(2);
-      expect(processor.errors[1]).toBeInstanceOf(
-        SqsFifoMessageGroupShortCircuitError
-      );
-    });
-
-    test('When `skipGroupOnError` is true, SQS FIFO Batch processor processes everything with no failures', () => {
-      // Prepare
-      const firstRecord = sqsRecordFactory('success', '1');
-      const secondRecord = sqsRecordFactory('success', '2');
-      const thirdRecord = sqsRecordFactory('success', '3');
-      const fourthRecord = sqsRecordFactory('success', '4');
-      const event = {
-        Records: [firstRecord, secondRecord, thirdRecord, fourthRecord],
-      };
-      const processor = new SqsFifoPartialProcessor();
-
-      // Act
-      const result = processPartialResponseSync(
-        event,
-        sqsRecordHandler,
-        processor,
-        {
-          skipGroupOnError: true,
-        }
-      );
-
-      // Assess
-      expect(result['batchItemFailures'].length).toBe(0);
-      expect(processor.errors.length).toBe(0);
-    });
-
-    test('When `skipGroupOnError` is false, SQS FIFO Batch processor processes everything with no failures', () => {
-      // Prepare
-      const firstRecord = sqsRecordFactory('success', '1');
-      const secondRecord = sqsRecordFactory('success', '2');
-      const thirdRecord = sqsRecordFactory('success', '3');
-      const fourthRecord = sqsRecordFactory('success', '4');
-      const event = {
-        Records: [firstRecord, secondRecord, thirdRecord, fourthRecord],
-      };
-      const processor = new SqsFifoPartialProcessor();
-
-      // Act
-      const result = processPartialResponseSync(
-        event,
-        sqsRecordHandler,
-        processor,
-        {
-          skipGroupOnError: false,
-        }
-      );
-
-      // Assess
-      expect(result['batchItemFailures'].length).toBe(0);
-      expect(processor.errors.length).toBe(0);
-    });
-
-    test('When `skipGroupOnError` is false, SQS FIFO Batch processor short circuits the process on first failure', () => {
+    it('short circuits on the first failure when `skipGroupOnError` is false', () => {
       // Prepare
       const firstRecord = sqsRecordFactory('success', '1');
       const secondRecord = sqsRecordFactory('fail', '2');
@@ -237,14 +138,14 @@ describe('Class: SqsFifoBatchProcessor', () => {
       );
 
       // Assess
-      expect(result['batchItemFailures'].length).toBe(3);
-      expect(result['batchItemFailures'][0]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures.length).toBe(3);
+      expect(result.batchItemFailures[0].itemIdentifier).toBe(
         secondRecord.messageId
       );
-      expect(result['batchItemFailures'][1]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[1].itemIdentifier).toBe(
         thirdRecord.messageId
       );
-      expect(result['batchItemFailures'][2]['itemIdentifier']).toBe(
+      expect(result.batchItemFailures[2].itemIdentifier).toBe(
         fourthRecord.messageId
       );
       expect(processor.errors.length).toBe(3);

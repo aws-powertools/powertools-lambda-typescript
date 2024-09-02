@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/jmespath",
-  "version": "2.3.0",
+  "version": "2.7.0",
   "description": "A type safe and modern jmespath module to parse and extract data from JSON documents using JMESPath",
   "author": {
     "name": "Amazon Web Services",
@@ -18,8 +18,8 @@
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript",
@@ -71,7 +71,7 @@
     "lib"
   ],
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.3.0"
+    "@aws-lambda-powertools/commons": "^2.7.0"
   },
   "repository": {
     "type": "git",

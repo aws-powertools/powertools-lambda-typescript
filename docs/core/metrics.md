@@ -199,7 +199,7 @@ You can add default dimensions to your metrics by passing them as parameters in 
 === "Middy middleware"
 
     !!! tip "A note about Middy"
-        Currently we support up to Middy `v4.x` that you can install it by running `npm i @middy/core@~4`.
+        We guarantee support for both Middy.js `v4.x` & `v5.x` with the latter being available only if you are using ES modules.
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="24-26"

@@ -1,18 +1,18 @@
+import { IdempotencyHandler } from '../../src/IdempotencyHandler.js';
+import { IdempotencyRecordStatus, MAX_RETRIES } from '../../src/constants.js';
+import {
+  IdempotencyAlreadyInProgressError,
+  IdempotencyConfig,
+  IdempotencyInconsistentStateError,
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyPersistenceLayerError,
+} from '../../src/index.js';
 /**
  * Test Idempotency Handler
  *
  * @group unit/idempotency/IdempotencyHandler
  */
 import { IdempotencyRecord } from '../../src/persistence/index.js';
-import { IdempotencyHandler } from '../../src/IdempotencyHandler.js';
-import {
-  IdempotencyConfig,
-  IdempotencyAlreadyInProgressError,
-  IdempotencyInconsistentStateError,
-  IdempotencyItemAlreadyExistsError,
-  IdempotencyPersistenceLayerError,
-} from '../../src/index.js';
-import { MAX_RETRIES, IdempotencyRecordStatus } from '../../src/constants.js';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 
 const mockFunctionToMakeIdempotent = jest.fn();
@@ -198,12 +198,11 @@ describe('Class IdempotencyHandler', () => {
         .mockRejectedValue(new Error('Some error'));
 
       // Act & Assess
-      await expect(idempotentHandler.getFunctionResult()).rejects.toThrow(
-        new IdempotencyPersistenceLayerError(
-          'Failed to delete record from idempotency store',
-          new Error('Some error')
-        )
-      );
+      await expect(idempotentHandler.getFunctionResult()).rejects.toThrow({
+        name: 'IdempotencyPersistenceLayerError',
+        message: 'Failed to delete record from idempotency store',
+        cause: new Error('Some error'),
+      });
       expect(mockDeleteInProgress).toHaveBeenCalledTimes(1);
     });
 

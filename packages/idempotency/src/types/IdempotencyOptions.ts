@@ -1,13 +1,13 @@
-import type { Context, Handler } from 'aws-lambda';
-import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
-import type { IdempotencyConfig } from '../IdempotencyConfig.js';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type { Context, Handler } from 'aws-lambda';
+import type { IdempotencyConfig } from '../IdempotencyConfig.js';
+import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
 
 /**
  * Configuration options for the idempotency utility.
  *
  * When making a function idempotent you should always set
- * a persistence store (i.e. {@link DynamoDBPersistenceLayer}).
+ * a persistence store (i.e. @see {@link persistence/DynamoDBPersistenceLayer.DynamoDBPersistenceLayer | DynamoDBPersistenceLayer}).
  *
  * Optionally, you can also pass a custom configuration object,
  * this allows you to customize the behavior of the idempotency utility.
@@ -23,7 +23,7 @@ type IdempotencyLambdaHandlerOptions = {
  *
  * It's left intentionally open to allow for any function to be wrapped.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: This is a generic type that is intentionally open
 type AnyFunction = (...args: Array<any>) => any;
 
 /**
@@ -99,7 +99,7 @@ type AnyFunction = (...args: Array<any>) => any;
  * the `eventKeyJmesPath` property to indicate the JMESPath expression to use to extract part of the payload.
  *
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: This is a generic type that is intentionally open
 type ItempotentFunctionOptions<T extends Array<any>> = T[1] extends Context
   ? IdempotencyLambdaHandlerOptions
   : IdempotencyLambdaHandlerOptions & {
@@ -110,8 +110,7 @@ type ItempotentFunctionOptions<T extends Array<any>> = T[1] extends Context
  * @internal
  * Options to configure the behavior of the idempotency logic.
  *
- * This is an internal type that is used by the Idempotency utility to
- * configure {@link IdempotencyHandler}.
+ * This is an internal type that is used for configuration.
  */
 type IdempotencyHandlerOptions = {
   /**

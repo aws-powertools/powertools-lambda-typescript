@@ -1,8 +1,9 @@
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
-import { ZodSchema, z } from 'zod';
+import type { ZodSchema } from 'zod';
 import { parse } from './parser.js';
-import type { ParserOptions, ParsedResult } from './types/index.js';
+import type { Envelope, ParserOptions } from './types/index.js';
+import type { ParserOutput } from './types/parser.js';
 
 /**
  * A decorator to parse your event.
@@ -67,24 +68,26 @@ import type { ParserOptions, ParsedResult } from './types/index.js';
  *
  * @param options Configure the parser with the `schema`, `envelope` and whether to `safeParse` or not
  */
-export const parser = <S extends ZodSchema>(
-  options: ParserOptions<S>
+export const parser = <
+  TSchema extends ZodSchema,
+  TEnvelope extends Envelope = undefined,
+  TSafeParse extends boolean = false,
+>(
+  options: ParserOptions<TSchema, TEnvelope, TSafeParse>
 ): HandlerMethodDecorator => {
   return (_target, _propertyKey, descriptor) => {
+    // biome-ignore lint/style/noNonNullAssertion: The descriptor.value is the method this decorator decorates, it cannot be undefined.
     const original = descriptor.value!;
 
     const { schema, envelope, safeParse } = options;
 
     descriptor.value = async function (
       this: Handler,
-      event: unknown,
+      event: ParserOutput<TSchema, TEnvelope, TSafeParse>,
       context: Context,
       callback
     ) {
-      const parsedEvent: ParsedResult<
-        typeof event,
-        z.infer<typeof schema>
-      > = parse(event, envelope, schema, safeParse);
+      const parsedEvent = parse(event, envelope, schema, safeParse);
 
       return original.call(this, parsedEvent, context, callback);
     };

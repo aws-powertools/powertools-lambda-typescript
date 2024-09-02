@@ -1,19 +1,19 @@
 import { randomInt } from 'node:crypto';
 import {
-  DynamoDBClient,
-  BatchWriteItemCommand,
-} from '@aws-sdk/client-dynamodb';
-import { marshall } from '@aws-sdk/util-dynamodb';
-import {
-  EventType,
   BasePartialBatchProcessor,
+  EventType,
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import type {
-  SuccessResponse,
-  FailureResponse,
   BaseRecord,
+  FailureResponse,
+  SuccessResponse,
 } from '@aws-lambda-powertools/batch/types';
+import {
+  BatchWriteItemCommand,
+  DynamoDBClient,
+} from '@aws-sdk/client-dynamodb';
+import { marshall } from '@aws-sdk/util-dynamodb';
 import type { SQSHandler } from 'aws-lambda';
 
 const tableName = process.env.TABLE_NAME || 'table-not-found';
@@ -33,8 +33,7 @@ class MyPartialProcessor extends BasePartialBatchProcessor {
    * Here we are writing all the processed messages to DynamoDB.
    */
   public clean(): void {
-    // We know that the client is defined because clean() is called after prepare()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // biome-ignore lint/style/noNonNullAssertion: We know that the client is defined because clean() is called after prepare()
     this.#client!.send(
       new BatchWriteItemCommand({
         RequestItems: {

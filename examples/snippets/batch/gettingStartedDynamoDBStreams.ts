@@ -10,7 +10,7 @@ const processor = new BatchProcessor(EventType.DynamoDBStreams); // (1)!
 const logger = new Logger();
 
 const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
-  if (record.dynamodb && record.dynamodb.NewImage) {
+  if (record.dynamodb?.NewImage) {
     logger.info('Processing record', { record: record.dynamodb.NewImage });
     const message = record.dynamodb.NewImage.Message.S;
     if (message) {

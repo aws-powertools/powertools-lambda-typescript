@@ -63,9 +63,8 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   /**
    * Clean up logic to be run after processing a batch
    *
-   * If the entire batch failed, and the utility is not configured otherwise,
-   * this method will throw a `FullBatchFailureError` with the list of errors
-   * that occurred during processing.
+   * If the entire batch failed this method will throw a {@link FullBatchFailureError | `FullBatchFailureError`} with the list of
+   * errors that occurred during processing, unless the `throwOnFullBatchFailure` option is set to `false`.
    *
    * Otherwise, it will build the partial failure response based on the event type.
    */
@@ -74,7 +73,10 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
       return;
     }
 
-    if (this.entireBatchFailed()) {
+    if (
+      this.options?.throwOnFullBatchFailure !== false &&
+      this.entireBatchFailed()
+    ) {
       throw new FullBatchFailureError(this.errors);
     }
 
@@ -145,7 +147,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * entire batch failed and this method will return `true`.
    */
   public entireBatchFailed(): boolean {
-    return this.errors.length == this.records.length;
+    return this.errors.length === this.records.length;
   }
 
   /**
@@ -165,7 +167,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * and this method will return `false`.
    */
   public hasMessagesToReport(): boolean {
-    return this.failureMessages.length != 0;
+    return this.failureMessages.length !== 0;
   }
 
   /**

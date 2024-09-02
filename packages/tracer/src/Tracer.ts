@@ -1,24 +1,24 @@
-import type { Handler } from 'aws-lambda';
 import { Utility } from '@aws-lambda-powertools/commons';
 import type {
   AsyncHandler,
-  SyncHandler,
   HandlerMethodDecorator,
+  SyncHandler,
 } from '@aws-lambda-powertools/commons/types';
-import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
-import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
-import type {
-  TracerInterface,
-  TracerOptions,
-  AnyClass,
-  MethodDecorator,
-  CaptureLambdaHandlerOptions,
-  CaptureMethodOptions,
-} from './types/Tracer.js';
-import { ProviderService } from './provider/ProviderService.js';
-import type { ProviderServiceInterface } from './types/ProviderService.js';
+import type { Handler } from 'aws-lambda';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 import xraySdk from 'aws-xray-sdk-core';
+import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
+import { ProviderService } from './provider/ProviderService.js';
+import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
+import type { ProviderServiceInterface } from './types/ProviderService.js';
+import type {
+  AnyClass,
+  CaptureLambdaHandlerOptions,
+  CaptureMethodOptions,
+  MethodDecorator,
+  TracerInterface,
+  TracerOptions,
+} from './types/Tracer.js';
 const { Subsegment: XraySubsegment } = xraySdk;
 
 /**
@@ -372,22 +372,14 @@ class Tracer extends Utility implements TracerInterface {
     options?: CaptureLambdaHandlerOptions
   ): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
-      /**
-       * The descriptor.value is the method this decorator decorates, it cannot be undefined.
-       */
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // biome-ignore lint/style/noNonNullAssertion: The descriptor.value is the method this decorator decorates, it cannot be undefined.
       const originalMethod = descriptor.value!;
-
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const tracerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
       descriptor.value = function (this: Handler, event, context, callback) {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const handlerRef: Handler = this;
-
         if (!tracerRef.isTracingEnabled()) {
-          return originalMethod.apply(handlerRef, [event, context, callback]);
+          return originalMethod.apply(this, [event, context, callback]);
         }
 
         return tracerRef.provider.captureAsyncFunc(
@@ -397,7 +389,7 @@ class Tracer extends Utility implements TracerInterface {
             tracerRef.addServiceNameAnnotation();
             let result: unknown;
             try {
-              result = await originalMethod.apply(handlerRef, [
+              result = await originalMethod.apply(this, [
                 event,
                 context,
                 callback,
@@ -413,7 +405,7 @@ class Tracer extends Utility implements TracerInterface {
                 subsegment?.close();
               } catch (error) {
                 console.warn(
-                  `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+                  'Failed to close or serialize segment %s. We are catching the error but data might be lost.',
                   subsegment?.name,
                   error
                 );
@@ -469,11 +461,9 @@ class Tracer extends Utility implements TracerInterface {
     options?: CaptureMethodOptions
   ): MethodDecorator<T> {
     return (_target, propertyKey, descriptor) => {
-      // The descriptor.value is the method this decorator decorates, it cannot be undefined.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // biome-ignore lint/style/noNonNullAssertion: The descriptor.value is the method this decorator decorates, it cannot be undefined.
       const originalMethod = descriptor.value!;
 
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const tracerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
@@ -490,7 +480,8 @@ class Tracer extends Utility implements TracerInterface {
         return tracerRef.provider.captureAsyncFunc(
           subsegmentName,
           async (subsegment) => {
-            let result;
+            // biome-ignore lint/suspicious/noExplicitAny: we don't know the type of the result because we're decorating arbitrary functions
+            let result: any;
             try {
               result = await originalMethod.apply(this, [...args]);
               if (options?.captureResponse ?? true) {
@@ -505,7 +496,7 @@ class Tracer extends Utility implements TracerInterface {
                 subsegment?.close();
               } catch (error) {
                 console.warn(
-                  `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+                  'Failed to close or serialize segment %s. We are catching the error but data might be lost.',
                   subsegment?.name,
                   error
                 );
@@ -702,7 +693,7 @@ class Tracer extends Utility implements TracerInterface {
   public setSegment(segment: Segment | Subsegment): void {
     if (!this.isTracingEnabled()) return;
 
-    return this.provider.setSegment(segment);
+    this.provider.setSegment(segment);
   }
 
   /**

@@ -109,6 +109,34 @@ You can extend every built-in schema to include your own schema, and yet have al
     --8<-- "examples/snippets/parser/examplePayload.json"
     ```
 
+If you want to extend a schema and transform a JSON stringified payload to an object, you can use helper function `JSONStringified`:
+
+=== "AlbSchema with JSONStringified"
+    ```typescript hl_lines="12"
+    --8<-- "examples/snippets/parser/extendAlbSchema.ts"
+    ```
+
+    1. Extend built-in `AlbSchema` using JSONStringified function to transform your payload
+
+=== "Alb exmaple payload"
+
+    ```json hl_lines="26"
+    --8<-- "examples/snippets/parser/exampleAlbPayload.json"
+    ```
+
+=== "SQS Schema with JSONStringified"
+    ```typescript hl_lines="23-25 30 34"
+    --8<-- "examples/snippets/parser/extendSqsSchema.ts"
+    ```
+
+    1. make sure to set your schema to the correct key in the JSON payload
+
+=== "SQS exmaple payload"
+
+    ```json hl_lines="6 28"
+    --8<-- "examples/snippets/parser/exampleSqsPayload.json"
+    ```
+
 ## Envelopes
 
 When trying to parse your payload you might encounter the following situations:
@@ -249,3 +277,51 @@ The package `@types/aws-lambda` is a popular project that contains type definiti
 Powertools parser utility also bring AWS Lambda event types based on the built-in schema definitions.
 
 We recommend to use the types provided by the parser utility. If you encounter any issues or have any feedback, please [submit an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose).
+
+## Testing your code
+
+When testing your handler with [**parser decorator**](#parse-events) you need to use double assetion to bypass TypeScript type checking in your tests.
+This is useful when you want to test the handler for invalid payloads or when you want to test the error handling.
+If you are you use middy middleware, you don't need to do this.
+
+=== "handlerDecorator.test.ts"
+
+    ```typescript hl_lines="26"
+    --8<-- "examples/snippets/parser/unitTestDecorator.ts"
+    ```
+    
+    1. Use double assertion `as unknown as X` to bypass TypeScript type checking in your tests
+
+=== "handlerDecorator.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/parser/handlerDecorator.ts"
+    ```
+
+=== "schema.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/parser/schema.ts"
+    ```
+
+This also works when using `safeParse` option.
+
+=== "handlerSafeParse.test.ts"
+
+    ```typescript hl_lines="21-29 35 45"
+    --8<-- "examples/snippets/parser/unitTestSafeParse.ts"
+    ```
+    
+    1. Use double assertion to pass expected types to the handler
+
+=== "handlerSafeParse.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/parser/handlerSafeParseDecorator.ts"
+    ```
+
+=== "schema.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/parser/schema.ts"
+    ```

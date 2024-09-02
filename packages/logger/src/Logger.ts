@@ -1,25 +1,26 @@
+import { Console } from 'node:console';
+import { randomInt } from 'node:crypto';
 import { Utility } from '@aws-lambda-powertools/commons';
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
-import { Console } from 'node:console';
-import { randomInt } from 'node:crypto';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import { LogJsonIndent } from './constants.js';
-import { LogItem } from './formatter/LogItem.js';
+import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type {
   Environment,
   LogAttributes,
+  LogFormatterInterface,
   LogLevel,
   LogLevelThresholds,
-  LogFormatterInterface,
 } from './types/Log.js';
 import type {
-  LogFunction,
   ConstructorOptions,
+  CustomJsonReplacerFn,
   InjectLambdaContextOptions,
+  LogFunction,
   LogItemExtraInput,
   LogItemMessage,
   LoggerInterface,
@@ -158,6 +159,7 @@ class Logger extends Utility implements LoggerInterface {
    * The levels are in ascending order from the most verbose to the least verbose (no logs).
    */
   private readonly logLevelThresholds: LogLevelThresholds = {
+    TRACE: 6,
     DEBUG: 8,
     INFO: 12,
     WARN: 16,
@@ -200,7 +202,11 @@ class Logger extends Utility implements LoggerInterface {
    *
    * We keep this value to be able to reset the log level to the initial value when the sample rate is refreshed.
    */
-  #initialLogLevel = 12;
+  #initialLogLevel = this.logLevelThresholds.INFO;
+  /**
+   * Replacer function used to serialize the log items.
+   */
+  #jsonReplacerFn?: CustomJsonReplacerFn;
 
   /**
    * Log level used by the current instance of Logger.
@@ -310,6 +316,7 @@ class Logger extends Utility implements LoggerInterface {
           environment: this.powertoolsLogData.environment,
           persistentLogAttributes: this.persistentLogAttributes,
           temporaryLogAttributes: this.temporaryLogAttributes,
+          jsonReplacerFn: this.#jsonReplacerFn,
         },
         options
       )
@@ -332,7 +339,7 @@ class Logger extends Utility implements LoggerInterface {
     input: LogItemMessage,
     ...extraInput: LogItemExtraInput
   ): void {
-    this.processLogItem(24, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.CRITICAL, input, extraInput);
   }
 
   /**
@@ -343,7 +350,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(8, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.DEBUG, input, extraInput);
   }
 
   /**
@@ -354,7 +361,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(20, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.ERROR, input, extraInput);
   }
 
   /**
@@ -398,7 +405,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(12, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.INFO, input, extraInput);
   }
 
   /**
@@ -437,13 +444,8 @@ class Logger extends Utility implements LoggerInterface {
     options?: InjectLambdaContextOptions
   ): HandlerMethodDecorator {
     return (_target, _propertyKey, descriptor) => {
-      /**
-       * The descriptor.value is the method this decorator decorates, it cannot be undefined.
-       */
-      /* eslint-disable  @typescript-eslint/no-non-null-assertion */
+      // biome-ignore lint/style/noNonNullAssertion: The descriptor.value is the method this decorator decorates, it cannot be undefined.
       const originalMethod = descriptor.value!;
-
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const loggerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
@@ -458,8 +460,6 @@ class Logger extends Utility implements LoggerInterface {
         let result: unknown;
         try {
           result = await originalMethod.apply(this, [event, context, callback]);
-        } catch (error) {
-          throw error;
         } finally {
           if (options?.clearState || options?.resetKeys) loggerRef.resetKeys();
         }
@@ -499,11 +499,24 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Logs a Lambda invocation event, if it *should*.
+   * Log the AWS Lambda event payload for the current invocation if the environment variable `POWERTOOLS_LOG_EVENT` is set to `true`.
    *
-   ** @param {unknown} event
-   * @param {boolean} [overwriteValue]
-   * @returns {void}
+   * @example
+   * ```ts
+   * process.env.POWERTOOLS_LOG_EVENT = 'true';
+   *
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   *
+   * const logger = new Logger();
+   *
+   * export const handler = async (event) => {
+   *   logger.logEventIfEnabled(event);
+   *   // ... your handler code
+   * }
+   * ```
+   *
+   * @param {unknown} event - The AWS Lambda event payload.
+   * @param {boolean} overwriteValue - Overwrite the environment variable value.
    */
   public logEventIfEnabled(event: unknown, overwriteValue?: boolean): void {
     if (!this.shouldLogEvent(overwriteValue)) return;
@@ -639,6 +652,17 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
+   * It prints a log item with level TRACE.
+   *
+   * @param {LogItemMessage} input
+   * @param {Error | LogAttributes | string} extraInput
+   * @returns {void}
+   */
+  public trace(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
+    this.processLogItem(this.logLevelThresholds.TRACE, input, extraInput);
+  }
+
+  /**
    * It prints a log item with level WARN.
    *
    * @param {LogItemMessage} input
@@ -646,7 +670,7 @@ class Logger extends Utility implements LoggerInterface {
    * @returns {void}
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(16, input, extraInput);
+    this.processLogItem(this.logLevelThresholds.WARN, input, extraInput);
   }
 
   /**
@@ -673,6 +697,44 @@ class Logger extends Utility implements LoggerInterface {
    */
   protected createLogger(options?: ConstructorOptions): Logger {
     return new Logger(options);
+  }
+
+  /**
+   * A custom JSON replacer function that is used to serialize the log items.
+   *
+   * By default, we already extend the default serialization behavior to handle `BigInt` and `Error` objects, as well as remove circular references.
+   * When a custom JSON replacer function is passed to the Logger constructor, it will be called **before** our custom rules for each key-value pair in the object being stringified.
+   *
+   * This allows you to customize the serialization while still benefiting from the default behavior.
+   *
+   * @see {@link ConstructorOptions.jsonReplacerFn}
+   *
+   * @param key - The key of the value being stringified.
+   * @param value - The value being stringified.
+   */
+  protected getJsonReplacer(): (key: string, value: unknown) => void {
+    const references = new WeakSet();
+
+    return (key, value) => {
+      let replacedValue = value;
+      if (this.#jsonReplacerFn)
+        replacedValue = this.#jsonReplacerFn?.(key, replacedValue);
+
+      if (replacedValue instanceof Error) {
+        replacedValue = this.getLogFormatter().formatError(replacedValue);
+      }
+      if (typeof replacedValue === 'bigint') {
+        return replacedValue.toString();
+      }
+      if (typeof replacedValue === 'object' && replacedValue !== null) {
+        if (references.has(replacedValue)) {
+          return;
+        }
+        references.add(replacedValue);
+      }
+
+      return replacedValue;
+    };
   }
 
   /**
@@ -814,10 +876,10 @@ class Logger extends Utility implements LoggerInterface {
    * @returns - The name of the log level
    */
   private getLogLevelNameFromNumber(logLevel: number): Uppercase<LogLevel> {
-    let found;
+    let found: Uppercase<LogLevel> | undefined;
     for (const [key, value] of Object.entries(this.logLevelThresholds)) {
       if (value === logLevel) {
-        found = key;
+        found = key as Uppercase<LogLevel>;
         break;
       }
     }
@@ -834,40 +896,6 @@ class Logger extends Utility implements LoggerInterface {
    */
   private getPowertoolsLogData(): PowertoolsLogData {
     return this.powertoolsLogData;
-  }
-
-  /**
-   * When the data added in the log item contains object references or BigInt values,
-   * `JSON.stringify()` can't handle them and instead throws errors:
-   * `TypeError: cyclic object value` or `TypeError: Do not know how to serialize a BigInt`.
-   * To mitigate these issues, this method will find and remove all cyclic references and convert BigInt values to strings.
-   *
-   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#exceptions
-   * @private
-   */
-  private getReplacer(): (
-    key: string,
-    value: LogAttributes | Error | bigint
-  ) => void {
-    const references = new WeakSet();
-
-    return (key, value) => {
-      let item = value;
-      if (item instanceof Error) {
-        item = this.getLogFormatter().formatError(item);
-      }
-      if (typeof item === 'bigint') {
-        return item.toString();
-      }
-      if (typeof item === 'object' && value !== null) {
-        if (references.has(item)) {
-          return;
-        }
-        references.add(item);
-      }
-
-      return item;
-    };
   }
 
   /**
@@ -911,7 +939,7 @@ class Logger extends Utility implements LoggerInterface {
     log.prepareForPrint();
 
     const consoleMethod =
-      logLevel === 24
+      logLevel === this.logLevelThresholds.CRITICAL
         ? 'error'
         : (this.getLogLevelNameFromNumber(logLevel).toLowerCase() as keyof Omit<
             LogFunction,
@@ -921,7 +949,7 @@ class Logger extends Utility implements LoggerInterface {
     this.console[consoleMethod](
       JSON.stringify(
         log.getAttributes(),
-        this.getReplacer(),
+        this.getJsonReplacer(),
         this.logIndentation
       )
     );
@@ -968,6 +996,13 @@ class Logger extends Utility implements LoggerInterface {
     } else {
       this.console = console;
     }
+
+    /**
+     * Patch `console.trace` to avoid printing a stack trace and aligning with AWS Lambda behavior - see #2902
+     */
+    this.console.trace = (message: string, ...optionalParams: unknown[]) => {
+      this.console.log(message, ...optionalParams);
+    };
   }
 
   /**
@@ -1048,7 +1083,12 @@ class Logger extends Utility implements LoggerInterface {
       if (this.isValidSampleRate(value)) {
         this.powertoolsLogData.sampleRateValue = value;
 
-        if (value && randomInt(0, 100) / 100 <= value) {
+        if (
+          this.logLevel > this.logLevelThresholds.DEBUG &&
+          value &&
+          randomInt(0, 100) / 100 <= value
+        ) {
+          // only change logLevel if higher than debug, i.e. don't change from e.g. tracing to debug
           this.setLogLevel('DEBUG');
           this.debug('Setting log level to DEBUG due to sampling rate');
         } else {
@@ -1127,6 +1167,7 @@ class Logger extends Utility implements LoggerInterface {
       persistentKeys,
       persistentLogAttributes, // deprecated in favor of persistentKeys
       environment,
+      jsonReplacerFn,
       logRecordOrder,
     } = options;
 
@@ -1152,6 +1193,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setLogFormatter(logFormatter, logRecordOrder);
     this.setConsole();
     this.setLogIndentation();
+    this.#jsonReplacerFn = jsonReplacerFn;
 
     return this;
   }

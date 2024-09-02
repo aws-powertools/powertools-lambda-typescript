@@ -1,28 +1,28 @@
-import type { Callback, Context, Handler } from 'aws-lambda';
 import { Console } from 'node:console';
 import { Utility } from '@aws-lambda-powertools/commons';
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type { Callback, Context, Handler } from 'aws-lambda';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import {
+  COLD_START_METRIC,
+  DEFAULT_NAMESPACE,
   MAX_DIMENSION_COUNT,
   MAX_METRICS_SIZE,
-  DEFAULT_NAMESPACE,
-  COLD_START_METRIC,
   MAX_METRIC_VALUES_SIZE,
-  MetricUnit as MetricUnits,
   MetricResolution as MetricResolutions,
+  MetricUnit as MetricUnits,
 } from './constants.js';
-import {
-  type MetricsOptions,
-  type Dimensions,
-  type EmfOutput,
-  type StoredMetrics,
-  type ExtraOptions,
-  type MetricDefinition,
-  type ConfigServiceInterface,
-  type MetricsInterface,
-  type MetricUnit,
-  type MetricResolution,
+import type {
+  ConfigServiceInterface,
+  Dimensions,
+  EmfOutput,
+  ExtraOptions,
+  MetricDefinition,
+  MetricResolution,
+  MetricUnit,
+  MetricsInterface,
+  MetricsOptions,
+  StoredMetrics,
 } from './types/index.js';
 
 /**
@@ -167,9 +167,9 @@ class Metrics extends Utility implements MetricsInterface {
    */
   public addDimensions(dimensions: { [key: string]: string }): void {
     const newDimensions = { ...this.dimensions };
-    Object.keys(dimensions).forEach((dimensionName) => {
+    for (const dimensionName of Object.keys(dimensions)) {
       newDimensions[dimensionName] = dimensions[dimensionName];
-    });
+    }
     if (Object.keys(newDimensions).length > MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `Unable to add ${
@@ -337,13 +337,8 @@ class Metrics extends Utility implements MetricsInterface {
     }
 
     return (_target, _propertyKey, descriptor) => {
-      /**
-       * The descriptor.value is the method this decorator decorates, it cannot be undefined.
-       */
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // biome-ignore lint/style/noNonNullAssertion: The descriptor.value is the method this decorator decorates, it cannot be undefined.
       const originalMethod = descriptor.value!;
-
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const metricsRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
@@ -359,8 +354,6 @@ class Metrics extends Utility implements MetricsInterface {
         let result: unknown;
         try {
           result = await originalMethod.apply(this, [event, context, callback]);
-        } catch (error) {
-          throw error;
         } finally {
           metricsRef.publishStoredMetrics();
         }
@@ -598,9 +591,8 @@ class Metrics extends Utility implements MetricsInterface {
       }
 
       return false;
-    } else {
-      return true;
     }
+    return true;
   }
 
   /**

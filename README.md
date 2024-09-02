@@ -59,17 +59,21 @@ Knowing which companies are using this library is important to help prioritize t
 
 The following companies, among others, use Powertools:
 
-- [Hashnode](https://hashnode.com/)
-- [Trek10](https://www.trek10.com/)
+- [Alma Media](https://www.almamedia.fi)
+- [AppYourself](https://appyourself.net)
+- [Bailey Nelson](https://www.baileynelson.com.au)
+- [Banxware](https://www.banxware.com)
+- [Caylent](https://caylent.com/)
+- [Certible](https://www.certible.com/)
 - [Elva](https://elva-group.com)
 - [globaldatanet](https://globaldatanet.com/)
-- [Bailey Nelson](https://www.baileynelson.com.au)
+- [Hashnode](https://hashnode.com/)
+- [LocalStack](https://localstack.cloud/)
 - [Perfect Post](https://www.perfectpost.fr)
 - [Sennder](https://sennder.com/)
-- [Certible](https://www.certible.com/)
 - [tecRacer GmbH & Co. KG](https://www.tecracer.com/)
-- [AppYourself](https://appyourself.net)
-- [Alma Media](https://www.almamedia.fi)
+- [Trek10](https://www.trek10.com/)
+- [WeSchool](https://www.weschool.com)
 
 ### Sharing your work
 

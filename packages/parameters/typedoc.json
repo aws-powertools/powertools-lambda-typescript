@@ -1,7 +1,5 @@
 {
-  "extends": [
-    "../../typedoc.base.json"
-  ],
+  "extends": ["../../typedoc.base.json"],
   "entryPoints": [
     "./src/appconfig/index.ts",
     "./src/types/AppConfigProvider.ts",
@@ -13,7 +11,7 @@
     "./src/types/SecretsProvider.ts",
     "./src/base/index.ts",
     "./src/errors.ts",
-    "./src/constants.ts",
+    "./src/constants.ts"
   ],
   "readme": "README.md"
 }

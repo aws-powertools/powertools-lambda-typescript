@@ -1,11 +1,11 @@
 import { TRACER_KEY } from '@aws-lambda-powertools/commons';
-import type { Tracer } from '../Tracer.js';
-import type { Segment, Subsegment } from 'aws-xray-sdk-core';
-import type { CaptureLambdaHandlerOptions } from '../types/Tracer.js';
 import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons/types';
+import type { Segment, Subsegment } from 'aws-xray-sdk-core';
+import type { Tracer } from '../Tracer.js';
+import type { CaptureLambdaHandlerOptions } from '../types/Tracer.js';
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
@@ -75,7 +75,7 @@ const captureLambdaHandler = (
       handlerSegment.close();
     } catch (error) {
       console.warn(
-        `Failed to close or serialize segment %s. We are catching the error but data might be lost.`,
+        'Failed to close or serialize segment %s. We are catching the error but data might be lost.',
         handlerSegment.name,
         error
       );

@@ -17,81 +17,79 @@ if (process.argv.length < 3) {
 }
 const basePath = resolve(process.argv[2]);
 const packageJsonPath = join(basePath, 'package.json');
-const alphaPackages = [];
-const betaPackages = ['@aws-lambda-powertools/parser'];
+const alphaPackages = [
+  '@aws-lambda-powertools/event-handler'
+];
+const betaPackages = [];
 
 (() => {
-  try {
-    // Read the original package.json file
-    const pkgJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-    // Extract the fields we want to keep
-    const {
-      name,
-      version: originalVersion,
-      description,
-      author,
-      license,
-      homepage,
-      repository,
-      bugs,
-      keywords,
-      dependencies,
-      peerDependencies,
-      peerDependenciesMeta,
-      exports,
-      typesVersions,
-      main,
-      types,
-      files,
-      private,
-      type,
-    } = pkgJson;
+  // Read the original package.json file
+  const pkgJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+  // Extract the fields we want to keep
+  const {
+    name,
+    version: originalVersion,
+    description,
+    author,
+    license,
+    homepage,
+    repository,
+    bugs,
+    keywords,
+    dependencies,
+    peerDependencies,
+    peerDependenciesMeta,
+    exports,
+    typesVersions,
+    main,
+    types,
+    files,
+    private: privateField,
+    type,
+  } = pkgJson;
 
-    let version = originalVersion;
-    // If the package is an alpha or beta package, update the version number to include a suffix
-    if (alphaPackages.includes(name)) {
-      version = `${version}-alpha`;
-    } else if (betaPackages.includes(name)) {
-      version = `${version}-beta`;
-    }
-
-    // Create a new package.json file with the updated version for the tarball
-    const newPkgJson = {
-      name,
-      version,
-      description,
-      author,
-      license,
-      homepage,
-      repository,
-      bugs,
-      keywords,
-      dependencies,
-      peerDependencies,
-      peerDependenciesMeta,
-      main,
-      types,
-      files,
-      type,
-    };
-
-    // Not all utilities have these fields, so only add them if they exist to avoid
-    // having empty or undefined fields in the package.json file.
-    if (exports) {
-      newPkgJson.exports = exports;
-    }
-    if (typesVersions) {
-      newPkgJson.typesVersions = typesVersions;
-    }
-    if (private) {
-      newPkgJson.private = private;
-    }
-
-    // Temporarily update the original package.json file.
-    // This version will be picked up during the `npm publish` step, so that
-    // the version number and metadata in the registry are correct and match the tarball.
-    writeFileSync('package.json', JSON.stringify(newPkgJson, null, 2));
-  } catch (err) {
-    throw err;
+  let version = originalVersion;
+  // If the package is an alpha or beta package, update the version number to include a suffix
+  if (alphaPackages.includes(name)) {
+    version = `${version}-alpha`;
+  } else if (betaPackages.includes(name)) {
+    version = `${version}-beta`;
   }
+
+  // Create a new package.json file with the updated version for the tarball
+  const newPkgJson = {
+    name,
+    version,
+    description,
+    author,
+    license,
+    homepage,
+    repository,
+    bugs,
+    keywords,
+    dependencies,
+    peerDependencies,
+    peerDependenciesMeta,
+    main,
+    types,
+    files,
+    type,
+  };
+
+  // Not all utilities have these fields, so only add them if they exist to avoid
+  // having empty or undefined fields in the package.json file.
+  if (exports) {
+    newPkgJson.exports = exports;
+  }
+  if (typesVersions) {
+    newPkgJson.typesVersions = typesVersions;
+  }
+  if (privateField) {
+    newPkgJson.private = privateField;
+  }
+
+  // Temporarily update the original package.json file.
+  // This version will be picked up during the `npm publish` step, so that
+  // the version number and metadata in the registry are correct and match the tarball.
+  writeFileSync('package.json', JSON.stringify(newPkgJson, null, 2));
 })();

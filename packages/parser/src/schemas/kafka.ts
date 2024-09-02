@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+/**
+ * Zod schema for a Kafka record from an Kafka event.
+ */
 const KafkaRecordSchema = z.object({
   topic: z.string(),
   partition: z.number(),

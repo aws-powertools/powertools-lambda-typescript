@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.6.0...v2.7.0) (2024-08-08)
+
+**Note:** Version bump only for package powertools-sample-app
+
+
+
+
+
+# [2.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.5.0...v2.6.0) (2024-07-25)
+
+**Note:** Version bump only for package powertools-sample-app
+
+
+
+
+
+# [2.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.4.0...v2.5.0) (2024-07-15)
+
+**Note:** Version bump only for package powertools-sample-app
+
+
+
+
+
+# [2.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.3.0...v2.4.0) (2024-07-10)
+
+**Note:** Version bump only for package powertools-sample-app
+
+
+
+
+
 # [2.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.2.0...v2.3.0) (2024-06-27)
 
 **Note:** Version bump only for package powertools-sample-app

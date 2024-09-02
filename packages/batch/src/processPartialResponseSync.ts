@@ -1,4 +1,4 @@
-import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
+import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import { UnexpectedBatchTypeError } from './errors.js';
 import type {
   BaseRecord,
@@ -65,6 +65,30 @@ import type {
  *   processPartialResponseSync(event, recordHandler, processor, {
  *     context,
  *     skipGroupOnError: true
+ *   });
+ * ```
+ *
+ * By default, if the entire batch fails, the function will throw an error.
+ * If you want to prevent this behavior, you can set the `throwOnFullBatchFailure` to `false`
+ *
+ * @example
+ * ```typescript
+ * import {
+ *   SqsFifoPartialProcessor,
+ *   processPartialResponseSync,
+ * } from '@aws-lambda-powertools/batch';
+ * import type { SQSRecord, SQSHandler } from 'aws-lambda';
+ *
+ * const processor = new SqsFifoPartialProcessor();
+ *
+ * const recordHandler = async (record: SQSRecord): Promise<void> => {
+ *   const payload = JSON.parse(record.body);
+ * };
+ *
+ * export const handler: SQSHandler = async (event, context) =>
+ *   processPartialResponseSync(event, recordHandler, processor, {
+ *     context,
+ *     throwOnFullBatchFailure: false
  *   });
  * ```
  *

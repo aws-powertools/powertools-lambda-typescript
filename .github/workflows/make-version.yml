@@ -23,12 +23,12 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0 # fetch all history, commits and tags, lerna scans it to the last tag and looks at commits, we need all of it to determine the next version
       - name: Setup NodeJS
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: "20"
           cache: "npm"
       - name: Setup dependencies
-        uses: ./.github/actions/cached-node-modules
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
       - name: Version
         id: bump-version
         run: npx lerna version --conventional-commits --no-git-tag-version --no-push --no-commit-hooks --yes

@@ -22,6 +22,7 @@ scopes:
   - commons
   - parser
   - jmespath
+  - event-handler
   - validation
   - batch
   - layers

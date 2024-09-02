@@ -6,9 +6,7 @@
   "account": "123456789012",
   "time": "2023-03-08T17:50:14Z",
   "region": "eu-west-1",
-  "resources": [
-    "arn:aws:s3:::example-bucket"
-  ],
+  "resources": ["arn:aws:s3:::example-bucket"],
   "detail": {
     "version": "0",
     "bucket": {

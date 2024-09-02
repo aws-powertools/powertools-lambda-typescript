@@ -3,14 +3,14 @@
  *
  * @group e2e/parameters/dynamodb/class
  */
+import { join } from 'node:path';
 import {
-  invokeFunctionOnce,
   TestInvocationLogs,
   TestStack,
+  invokeFunctionOnce,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
-import { join } from 'node:path';
 import { TestDynamodbTableWithItems } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -95,7 +95,7 @@ import {
  * Test 9
  * Get a cached parameter and force retrieval. This also uses the same custom SDK client that counts the number of calls to DynamoDB.
  */
-describe(`Parameters E2E tests, dynamoDB provider`, () => {
+describe('Parameters E2E tests, dynamoDB provider', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.6.0...v2.7.0) (2024-08-08)
+
+
+### Features
+
+* **parser:** add helper function to handle JSON stringified fields ([#2901](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2901)) ([806b884](https://github.com/aws-powertools/powertools-lambda-typescript/commit/806b884f51684fa4654d357fafdf8ebeda4de01b))
+
+
+
+
+
+# [2.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.5.0...v2.6.0) (2024-07-25)
+
+**Note:** Version bump only for package code-snippets
+
+
+
+
+
+# [2.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.4.0...v2.5.0) (2024-07-15)
+
+
+### Features
+
+* **logger:** custom function for unserializable values (JSON replacer)  ([#2739](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2739)) ([fbc8688](https://github.com/aws-powertools/powertools-lambda-typescript/commit/fbc86889f88203945a4201c6a6c403b3a257d54f))
+
+
+
+
+
+# [2.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.3.0...v2.4.0) (2024-07-10)
+
+
+### Features
+
+* **batch:** add option to not throw `FullBatchFailureError` when the entire batch fails ([#2711](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2711)) ([74198ef](https://github.com/aws-powertools/powertools-lambda-typescript/commit/74198ef1ec1d11267813d2f4b6dd5f4c5692f7d4))
+* **logger:** time zone aware timestamp in Logger ([#2710](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2710)) ([9fe4c75](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9fe4c754960a07aad008ff4ada63cf68aa9ba89a))
+
+
+
+
+
 # [2.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.2.0...v2.3.0) (2024-06-27)
 
 **Note:** Version bump only for package code-snippets

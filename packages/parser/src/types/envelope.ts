@@ -1,12 +1,13 @@
+import type { ZodSchema, z } from 'zod';
 import type {
   ApiGatewayEnvelope,
-  KinesisFirehoseEnvelope,
-  KinesisEnvelope,
-  KafkaEnvelope,
-  CloudWatchEnvelope,
-  EventBridgeEnvelope,
   ApiGatewayV2Envelope,
+  CloudWatchEnvelope,
   DynamoDBStreamEnvelope,
+  EventBridgeEnvelope,
+  KafkaEnvelope,
+  KinesisEnvelope,
+  KinesisFirehoseEnvelope,
   LambdaFunctionUrlEnvelope,
   SnsEnvelope,
   SnsSqsEnvelope,
@@ -15,7 +16,12 @@ import type {
   VpcLatticeV2Envelope,
 } from '../envelopes/index.js';
 
-export type Envelope =
+type DynamoDBStreamEnvelopeResponse<Schema extends ZodSchema> = {
+  NewImage: z.infer<Schema>;
+  OldImage: z.infer<Schema>;
+};
+
+type Envelope =
   | typeof ApiGatewayEnvelope
   | typeof ApiGatewayV2Envelope
   | typeof CloudWatchEnvelope
@@ -29,4 +35,23 @@ export type Envelope =
   | typeof SnsSqsEnvelope
   | typeof SqsEnvelope
   | typeof VpcLatticeEnvelope
-  | typeof VpcLatticeV2Envelope;
+  | typeof VpcLatticeV2Envelope
+  | undefined;
+
+/**
+ * Envelopes that return an array, needed to narrow down the return type of the parser
+ */
+type EnvelopeArrayReturnType =
+  | typeof CloudWatchEnvelope
+  | typeof DynamoDBStreamEnvelope
+  | typeof KafkaEnvelope
+  | typeof KinesisEnvelope
+  | typeof KinesisFirehoseEnvelope
+  | typeof SnsEnvelope
+  | typeof SqsEnvelope;
+
+export type {
+  Envelope,
+  DynamoDBStreamEnvelopeResponse,
+  EnvelopeArrayReturnType,
+};

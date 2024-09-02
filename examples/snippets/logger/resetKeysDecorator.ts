@@ -1,5 +1,5 @@
-import { Logger } from '@aws-lambda-powertools/logger';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import { Logger } from '@aws-lambda-powertools/logger';
 
 // Persistent attributes will be cached across invocations
 const logger = new Logger({

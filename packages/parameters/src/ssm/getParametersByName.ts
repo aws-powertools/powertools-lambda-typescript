@@ -1,9 +1,9 @@
 import { DEFAULT_PROVIDERS } from '../base/DefaultProviders.js';
-import { SSMProvider } from './SSMProvider.js';
 import type {
   SSMGetParametersByNameOptions,
   SSMGetParametersByNameOutput,
 } from '../types/SSMProvider.js';
+import { SSMProvider } from './SSMProvider.js';
 
 /**
  * ## Intro

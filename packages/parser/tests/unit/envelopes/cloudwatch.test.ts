@@ -4,15 +4,15 @@
  * @group unit/parser/envelopes
  */
 
-import { generateMock } from '@anatine/zod-mock';
 import { gzipSync } from 'node:zlib';
+import { generateMock } from '@anatine/zod-mock';
+import { ParseError } from '../../../src';
+import { CloudWatchEnvelope } from '../../../src/envelopes/index.js';
 import {
   CloudWatchLogEventSchema,
   CloudWatchLogsDecodeSchema,
 } from '../../../src/schemas/';
 import { TestSchema } from '../schema/utils.js';
-import { CloudWatchEnvelope } from '../../../src/envelopes/index.js';
-import { ParseError } from '../../../src';
 
 describe('CloudWatch', () => {
   describe('parse', () => {

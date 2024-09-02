@@ -1,4 +1,4 @@
-import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
+import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import { UnexpectedBatchTypeError } from './errors.js';
 import type {
   BaseRecord,
@@ -39,6 +39,31 @@ import type {
  * export const handler: KinesisStreamHandler = async (event, context) =>
  *   processPartialResponse(event, recordHandler, processor, {
  *     context,
+ *   });
+ * ```
+ *
+ * By default, if the entire batch fails, the function will throw an error.
+ * If you want to prevent this behavior, you can set the `throwOnFullBatchFailure` to `false`
+ *
+ * @example
+ * ```typescript
+ * import {
+ *   BatchProcessor,
+ *   EventType,
+ *   processPartialResponse,
+ * } from '@aws-lambda-powertools/batch';
+ * import type { KinesisStreamHandler, KinesisStreamRecord } from 'aws-lambda';
+ *
+ * const processor = new BatchProcessor(EventType.KinesisDataStreams);
+ *
+ * const recordHandler = async (record: KinesisStreamRecord): Promise<void> => {
+ *   const payload = JSON.parse(record.kinesis.data);
+ * };
+ *
+ * export const handler: KinesisStreamHandler = async (event, context) =>
+ *   processPartialResponse(event, recordHandler, processor, {
+ *     context,
+ *     throwOnFullBatchFailure: false
  *   });
  * ```
  *

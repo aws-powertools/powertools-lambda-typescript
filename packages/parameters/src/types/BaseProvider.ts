@@ -1,4 +1,4 @@
-import { Transform } from '../constants.js';
+import type { Transform } from '../constants.js';
 
 /**
  * Type for the transform option.
@@ -74,7 +74,7 @@ interface BaseProviderInterface {
   getMultiple(
     path: string,
     options?: GetMultipleOptionsInterface
-  ): Promise<unknown | void>;
+  ): Promise<unknown>;
   clearCache?(): void;
 }
 

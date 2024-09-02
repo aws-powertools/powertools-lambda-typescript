@@ -4,8 +4,8 @@ import type {
   SQSRecord,
 } from 'aws-lambda';
 import type {
-  PartialItemFailureResponse,
   EventSourceDataClassTypes,
+  PartialItemFailureResponse,
 } from './types.js';
 
 /**

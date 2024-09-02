@@ -1,23 +1,24 @@
-import type { Handler } from 'aws-lambda';
 import type {
   JSONValue,
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons/types';
+import { search } from '@aws-lambda-powertools/jmespath';
+import type { Handler } from 'aws-lambda';
+import type { IdempotencyConfig } from './IdempotencyConfig.js';
+import { IdempotencyRecordStatus, MAX_RETRIES } from './constants.js';
+import {
+  IdempotencyAlreadyInProgressError,
+  IdempotencyInconsistentStateError,
+  type IdempotencyItemAlreadyExistsError,
+  IdempotencyPersistenceLayerError,
+  IdempotencyUnknownError,
+} from './errors.js';
+import type { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
+import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 import type {
   AnyFunction,
   IdempotencyHandlerOptions,
 } from './types/IdempotencyOptions.js';
-import {
-  IdempotencyAlreadyInProgressError,
-  IdempotencyInconsistentStateError,
-  IdempotencyItemAlreadyExistsError,
-  IdempotencyPersistenceLayerError,
-} from './errors.js';
-import { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
-import { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
-import { IdempotencyConfig } from './IdempotencyConfig.js';
-import { MAX_RETRIES, IdempotencyRecordStatus } from './constants.js';
-import { search } from '@aws-lambda-powertools/jmespath';
 
 /**
  * @internal
@@ -98,9 +99,8 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       throw new IdempotencyInconsistentStateError(
         'Item has expired during processing and may not longer be valid.'
       );
-    } else if (
-      idempotencyRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS
-    ) {
+    }
+    if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS) {
       if (
         idempotencyRecord.inProgressExpiryTimestamp &&
         idempotencyRecord.inProgressExpiryTimestamp <
@@ -109,11 +109,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         throw new IdempotencyInconsistentStateError(
           'Item is in progress but the in progress expiry timestamp has expired.'
         );
-      } else {
-        throw new IdempotencyAlreadyInProgressError(
-          `There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`
-        );
       }
+      throw new IdempotencyAlreadyInProgressError(
+        `There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`
+      );
     }
 
     return idempotencyRecord.getResponse();
@@ -128,7 +127,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * @returns The result of the function execution
    */
   public async getFunctionResult(): Promise<ReturnType<Func>> {
-    let result;
+    let result: ReturnType<Func>;
     try {
       result = await this.#functionToMakeIdempotent.apply(
         this.#thisArg,
@@ -138,7 +137,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       await this.#deleteInProgressRecord();
       throw error;
     }
-    await this.#saveSuccessfullResult(result);
+    await this.#saveSuccessfulResult(result);
 
     return result;
   }
@@ -167,7 +166,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       );
     }
 
-    let e;
+    let e: Error | undefined;
     for (let retryNo = 0; retryNo <= MAX_RETRIES; retryNo++) {
       try {
         const { isIdempotent, result } =
@@ -176,8 +175,13 @@ export class IdempotencyHandler<Func extends AnyFunction> {
 
         return await this.getFunctionResult();
       } catch (error) {
+        if (!(error instanceof Error))
+          throw new IdempotencyUnknownError(
+            'An unknown error occurred while processing the request.',
+            { cause: error }
+          );
         if (
-          error instanceof IdempotencyInconsistentStateError &&
+          error.name === 'IdempotencyInconsistentStateError' &&
           retryNo < MAX_RETRIES
         ) {
           // Retry
@@ -204,7 +208,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * @param response The response returned by the handler.
    */
   public async handleMiddyAfter(response: unknown): Promise<void> {
-    await this.#saveSuccessfullResult(response as ReturnType<Func>);
+    await this.#saveSuccessfulResult(response as ReturnType<Func>);
   }
 
   /**
@@ -228,7 +232,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   public async handleMiddyBefore(
     request: MiddyLikeRequest,
     callback: (request: MiddyLikeRequest) => Promise<void>
-  ): Promise<ReturnType<Func> | void> {
+  ): Promise<ReturnType<Func> | undefined> {
     for (let retryNo = 0; retryNo <= MAX_RETRIES; retryNo++) {
       try {
         const { isIdempotent, result } =
@@ -241,7 +245,12 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         break;
       } catch (error) {
         if (
-          error instanceof IdempotencyInconsistentStateError &&
+          /**
+           * It's safe to cast the error here because this catch block is only
+           * reached when an error is thrown in code paths that we control,
+           * and we only throw instances of `Error`.
+           */
+          (error as Error).name === 'IdempotencyInconsistentStateError' &&
           retryNo < MAX_RETRIES
         ) {
           // Retry
@@ -298,9 +307,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       );
 
       return selection === undefined || selection === null;
-    } else {
-      return false;
     }
+
+    return false;
   }
 
   /**
@@ -313,10 +322,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       await this.#persistenceStore.deleteRecord(
         this.#functionPayloadToBeHashed
       );
-    } catch (e) {
+    } catch (error) {
       throw new IdempotencyPersistenceLayerError(
         'Failed to delete record from idempotency store',
-        e as Error
+        { cause: error }
       );
     }
   };
@@ -345,9 +354,15 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       );
 
       return returnValue;
-    } catch (e) {
-      if (e instanceof IdempotencyItemAlreadyExistsError) {
-        let idempotencyRecord = e.existingRecord;
+    } catch (error) {
+      if (!(error instanceof Error))
+        throw new IdempotencyUnknownError(
+          'An unknown error occurred while processing the request.',
+          { cause: error }
+        );
+      if (error.name === 'IdempotencyItemAlreadyExistsError') {
+        let idempotencyRecord = (error as IdempotencyItemAlreadyExistsError)
+          .existingRecord;
         if (idempotencyRecord !== undefined) {
           // If the error includes the existing record, we can use it to validate
           // the record being processed and cache it in memory.
@@ -371,12 +386,11 @@ export class IdempotencyHandler<Func extends AnyFunction> {
           );
 
         return returnValue;
-      } else {
-        throw new IdempotencyPersistenceLayerError(
-          'Failed to save in progress record to idempotency store',
-          e as Error
-        );
       }
+      throw new IdempotencyPersistenceLayerError(
+        'Failed to save in progress record to idempotency store',
+        { cause: error }
+      );
     }
   };
 
@@ -387,16 +401,16 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    *
    * @param result The result returned by the handler.
    */
-  #saveSuccessfullResult = async (result: ReturnType<Func>): Promise<void> => {
+  #saveSuccessfulResult = async (result: ReturnType<Func>): Promise<void> => {
     try {
       await this.#persistenceStore.saveSuccess(
         this.#functionPayloadToBeHashed,
         result
       );
-    } catch (e) {
+    } catch (error) {
       throw new IdempotencyPersistenceLayerError(
         'Failed to update success record to idempotency store',
-        e as Error
+        { cause: error }
       );
     }
   };

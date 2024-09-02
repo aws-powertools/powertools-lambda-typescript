@@ -1,9 +1,9 @@
-import type { Context } from 'aws-lambda';
-import { z } from 'zod';
+import { Logger } from '@aws-lambda-powertools/logger';
 import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
 import { EventBridgeSchema } from '@aws-lambda-powertools/parser/schemas';
 import type { EventBridgeEvent } from '@aws-lambda-powertools/parser/types';
-import { Logger } from '@aws-lambda-powertools/logger';
+import type { Context } from 'aws-lambda';
+import { z } from 'zod';
 
 const logger = new Logger();
 

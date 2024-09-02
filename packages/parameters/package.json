@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parameters",
-  "version": "2.3.0",
+  "version": "2.7.0",
   "description": "The parameters package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -20,8 +20,8 @@
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/parameters#readme",
@@ -154,17 +154,17 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-appconfigdata": "^3.606.0",
-    "@aws-sdk/client-dynamodb": "^3.606.0",
-    "@aws-sdk/client-secrets-manager": "^3.606.0",
-    "@aws-sdk/client-ssm": "^3.606.0",
-    "@aws-sdk/util-dynamodb": "^3.606.0",
+    "@aws-sdk/client-appconfigdata": "^3.635.0",
+    "@aws-sdk/client-dynamodb": "^3.635.0",
+    "@aws-sdk/client-secrets-manager": "^3.635.0",
+    "@aws-sdk/client-ssm": "^3.635.0",
+    "@aws-sdk/util-dynamodb": "^3.635.0",
     "@smithy/util-base64": "^3.0.0",
     "aws-sdk-client-mock": "^4.0.1",
     "aws-sdk-client-mock-jest": "^4.0.1"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.3.0"
+    "@aws-lambda-powertools/commons": "^2.7.0"
   },
   "peerDependencies": {
     "@aws-sdk/client-appconfigdata": ">=3.x",
@@ -172,7 +172,7 @@
     "@aws-sdk/client-secrets-manager": ">=3.x",
     "@aws-sdk/client-ssm": ">=3.x",
     "@aws-sdk/util-dynamodb": ">=3.x",
-    "@middy/core": ">=3.x"
+    "@middy/core": "4.x || 5.x"
   },
   "peerDependenciesMeta": {
     "@middy/core": {

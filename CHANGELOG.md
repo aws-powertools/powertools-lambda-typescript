@@ -3,6 +3,71 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.6.0...v2.7.0) (2024-08-08)
+
+
+### Bug Fixes
+
+* **logger:** invalid time zone environment variables leads to error ([#2865](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2865)) ([d55465f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d55465f937390f4511e837033db0dab582cf4e14))
+
+
+### Features
+
+* **metrics:** add unit None for CloudWatch EMF Metrics ([#2904](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2904)) ([fa27cba](https://github.com/aws-powertools/powertools-lambda-typescript/commit/fa27cba5ffdb9d123b25d206c189ad17eeb8b44b))
+* **parser:** add helper function to handle JSON stringified fields ([#2901](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2901)) ([806b884](https://github.com/aws-powertools/powertools-lambda-typescript/commit/806b884f51684fa4654d357fafdf8ebeda4de01b))
+
+
+
+
+
+# [2.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.5.0...v2.6.0) (2024-07-25)
+
+
+### Features
+
+* **logger:** introduce loglevel constant ([#2787](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2787)) ([e75f593](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e75f5933602342a45fbeaa7a459452387e43c492))
+* **parser:** allow parser set event type of handler with middy ([#2786](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2786)) ([9973f09](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9973f09da260305ce8fd18780a9a474f3404ca1a))
+
+
+
+
+
+# [2.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.4.0...v2.5.0) (2024-07-15)
+
+
+### Bug Fixes
+
+* **parser:** include error cause in ParseError ([#2774](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2774)) ([34d0b55](https://github.com/aws-powertools/powertools-lambda-typescript/commit/34d0b5500ca67a6df0703be66031d1aee61a09fa))
+
+
+### Features
+
+* **logger:** custom function for unserializable values (JSON replacer)  ([#2739](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2739)) ([fbc8688](https://github.com/aws-powertools/powertools-lambda-typescript/commit/fbc86889f88203945a4201c6a6c403b3a257d54f))
+
+
+
+
+
+# [2.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.3.0...v2.4.0) (2024-07-10)
+
+
+### Bug Fixes
+
+* **idempotency:** check error identity via names ([#2747](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2747)) ([55c3878](https://github.com/aws-powertools/powertools-lambda-typescript/commit/55c387816baee98829441526a0de001044d67344))
+
+
+### Features
+
+* **batch:** add option to not throw `FullBatchFailureError` when the entire batch fails ([#2711](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2711)) ([74198ef](https://github.com/aws-powertools/powertools-lambda-typescript/commit/74198ef1ec1d11267813d2f4b6dd5f4c5692f7d4))
+* **internal:** support Middy.js 5.x ([#2748](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2748)) ([1d7ad61](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1d7ad61a569a4b1421dbe1754b0179f676cfede7))
+* **layers:** deploy Lambda layers in `ap-south-2` and `me-central-1` ([#2675](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2675)) ([208c57a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/208c57a28eb7140bf4a2a93a4201a06fced049b9))
+* **logger:** time zone aware timestamp in Logger ([#2710](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2710)) ([9fe4c75](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9fe4c754960a07aad008ff4ada63cf68aa9ba89a))
+* **maintenance:** drop support for Node.js 16.x ([#2717](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2717)) ([e4eee73](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e4eee73770ffccead9212a566335ec256a31af7d))
+
+
+
+
+
 # [2.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.2.0...v2.3.0) (2024-06-27)
 
 

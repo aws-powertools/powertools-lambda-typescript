@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/commons",
-  "version": "2.3.0",
+  "version": "2.7.0",
   "description": "A shared utility package for Powertools for AWS Lambda (TypeScript) libraries",
   "author": {
     "name": "Amazon Web Services",
@@ -19,8 +19,8 @@
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",
-    "lint": "eslint --ext .ts,.js --no-error-on-unmatched-pattern .",
-    "lint-fix": "eslint --fix --ext .ts,.js --no-error-on-unmatched-pattern .",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/commons#readme",
@@ -45,6 +45,10 @@
       "import": "./lib/esm/fromBase64.js",
       "require": "./lib/cjs/fromBase64.js"
     },
+    "./utils/lru-cache": {
+      "import": "./lib/esm/LRUCache.js",
+      "require": "./lib/cjs/LRUCache.js"
+    },
     "./types": {
       "import": "./lib/esm/types/index.js",
       "require": "./lib/cjs/types/index.js"
@@ -59,6 +63,10 @@
       "utils/base64": [
         "lib/cjs/fromBase64.d.ts",
         "lib/esm/fromBase64.d.ts"
+      ],
+      "utils/lru-cache": [
+        "lib/cjs/LRUCache.d.ts",
+        "lib/esm/LRUCache.d.ts"
       ],
       "types": [
         "lib/cjs/types/index.d.ts",

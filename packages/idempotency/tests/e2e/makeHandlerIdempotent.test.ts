@@ -1,18 +1,18 @@
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 /**
  * Test makeHandlerIdempotent middleware
  *
  * @group e2e/idempotency/makeHandlerIdempotent
  */
 import {
-  invokeFunction,
   TestInvocationLogs,
   TestStack,
+  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { Duration } from 'aws-cdk-lib';
-import { createHash } from 'node:crypto';
-import { join } from 'node:path';
 import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -23,7 +23,7 @@ import {
 
 const ddb = new DynamoDBClient({});
 
-describe(`Idempotency E2E tests, middy middleware usage`, () => {
+describe('Idempotency E2E tests, middy middleware usage', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,

@@ -40,30 +40,18 @@ const S3EventRecordGlacierEventData = z.object({
   }),
 });
 
-const S3RecordSchema = z
-  .object({
-    eventVersion: z.string(),
-    eventSource: z.literal('aws:s3'),
-    awsRegion: z.string(),
-    eventTime: z.string().datetime(),
-    eventName: z.string(),
-    userIdentity: S3Identity,
-    requestParameters: S3RequestParameters,
-    responseElements: S3ResponseElements,
-    s3: S3Message,
-    glacierEventData: z.optional(S3EventRecordGlacierEventData),
-  })
-  .refine((value) => {
-    return (
-      (!value.eventName.includes('ObjectRemoved') &&
-        value.s3.object.size === undefined) ||
-        value.s3.object.eTag === undefined,
-      {
-        message:
-          'S3 event notification with ObjectRemoved event name must have size or eTag defined',
-      }
-    );
-  });
+const S3RecordSchema = z.object({
+  eventVersion: z.string(),
+  eventSource: z.literal('aws:s3'),
+  awsRegion: z.string(),
+  eventTime: z.string().datetime(),
+  eventName: z.string(),
+  userIdentity: S3Identity,
+  requestParameters: S3RequestParameters,
+  responseElements: S3ResponseElements,
+  s3: S3Message,
+  glacierEventData: z.optional(S3EventRecordGlacierEventData),
+});
 
 const S3EventNotificationEventBridgeDetailSchema = z.object({
   version: z.string(),

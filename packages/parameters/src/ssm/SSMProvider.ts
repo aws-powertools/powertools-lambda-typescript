@@ -837,12 +837,12 @@ class SSMProvider extends BaseProvider {
     options: SSMSetOptions
   ): Promise<number | undefined> {
     const sdkOptions: PutParameterCommandInput = {
-      Tier: options.tier || 'Standard',
-      Type: options.parameterType || 'String',
-      Overwrite: options.overwrite || false,
+      Tier: options.tier ?? 'Standard',
+      Type: options.parameterType ?? 'String',
+      Overwrite: options.overwrite ?? false,
       ...(options.kmsKeyId ? { KeyId: options.kmsKeyId } : {}),
       ...(options.description ? { Description: options.description } : {}),
-      ...(options?.sdkOptions || {}),
+      ...(options?.sdkOptions ?? {}),
       Name: name,
       Value: options.value,
     };

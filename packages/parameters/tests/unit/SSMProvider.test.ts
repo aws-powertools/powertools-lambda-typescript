@@ -1333,7 +1333,7 @@ describe('Class: SSMProvider', () => {
 
     test('returns undefined if version is undefined', async () => {
       const provider: SSMProvider = new SSMProvider();
-      const client = mockClient(SSMClient).on(PutParameterCommand).resolves({});
+      mockClient(SSMClient).on(PutParameterCommand).resolves({});
       const parameterName: string = '/my-parameter';
       const options: SSMSetOptions = { value: 'my-value' };
 
@@ -1365,7 +1365,7 @@ describe('Class: SSMProvider', () => {
 
     test('throws an error if setting a parameter fails', async () => {
       const provider: SSMProvider = new SSMProvider();
-      const client = mockClient(SSMClient)
+      mockClient(SSMClient)
         .on(PutParameterCommand)
         .rejects(new Error('Failed to set parameter'));
       const parameterName: string = '/my-parameter';

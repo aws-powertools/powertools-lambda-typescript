@@ -1083,7 +1083,6 @@ class Logger extends Utility implements LoggerInterface {
    * @private
    * @param {LogFormatterInterface} logFormatter - The log formatt er
    * @param {LogRecordOrder} logRecordOrder
-   * @returns {void}
    */
   private setLogFormatter(
     logFormatter?: LogFormatterInterface,

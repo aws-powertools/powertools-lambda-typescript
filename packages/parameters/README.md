@@ -5,7 +5,6 @@ Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serve
 You can use the package in both TypeScript and JavaScript code bases.
 
 - [Intro](#intro)
-- [Key features](#key-features)
 - [Usage](#usage)
     - [Fetching parameters from AWS SSM Parameter Store](#fetching-parameters-from-aws-ssm-parameter-store)
     - [Getting secrets from Amazon Secrets Manager](#getting-secrets-from-amazon-secrets-manager)
@@ -18,19 +17,17 @@ You can use the package in both TypeScript and JavaScript code bases.
     - [Becoming a reference customer](#becoming-a-reference-customer)
     - [Sharing your work](#sharing-your-work)
     - [Using Lambda Layer](#using-lambda-layer)
-- [Credits](#credits)
 - [License](#license)
 
 ## Intro
 
-The Parameters utility provides high-level functions to retrieve one or multiple parameter values from [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html), [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html), [AWS AppConfig](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html), [Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html), or your own parameter store.
+The Parameters utility provides high-level functions to retrieve one or multiple parameter values from
 
-## Key features
-
-- Retrieve one or multiple parameters from the underlying provider
-- Cache parameter values for a given amount of time (defaults to 5 seconds)
-- Transform parameter values from JSON or base64 encoded strings
-- Bring Your Own Parameter Store Provider
+- [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html)
+- [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html),
+- [AWS AppConfig](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html),
+- [Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html),
+- or your own parameter store.
 
 ## Usage
 
@@ -73,7 +70,7 @@ export const handler = async (): Promise<void> => {
 };
 ```
 
-To fetch disctinct parameters using their full name, you can use the `getParametersByName` function:
+To fetch distinct parameters using their full name, you can use the `getParametersByName` function:
 
 ```ts
 import { Transform } from '@aws-lambda-powertools/parameters';
@@ -204,7 +201,7 @@ If you are interested in contributing to this project, please refer to our [Cont
 
 ## Roadmap
 
-[The roadmap](https://docs.powertools.aws.dev/lambda/typescript/latest/roadmap/) of Powertools for AWS Lambda (TypeScript) is driven by customers’ demand.  
+The roadmap of Powertools for AWS Lambda (TypeScript) is driven by customers’ demand.  
 Help us prioritize upcoming functionalities or utilities by [upvoting existing RFCs and feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues), or [creating new ones](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose), in this GitHub repository.
 
 ## Connect
@@ -216,7 +213,10 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ### Becoming a reference customer
 
-Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (TypeScript), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (TypeScript) (become a reference)](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E) issue.
+Knowing which companies are using this library is important to help prioritize the project internally. If your company
+is using Powertools for AWS Lambda (TypeScript), you can request to have your name and logo added to the README file by
+raising a [Support Powertools for AWS Lambda (TypeScript) (become a reference)](https://s12d.com/become-reference-pt-ts)
+issue.
 
 The following companies, among others, use Powertools:
 
@@ -242,11 +242,7 @@ Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog po
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](#lambda-layers), you can add Powertools for AWS Lambda (TypeScript) as a dev dependency (or as part of your virtual env) to not impact the development process.
-
-## Credits
-
-Credits for the Powertools for AWS Lambda (TypeScript) idea go to [DAZN](https://github.com/getndazn) and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/).
+This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer), you can add Powertools as a dev dependency to not impact the development process.
 
 ## License
 

@@ -64,7 +64,7 @@ import type {
  *
  * ### Object oriented way with decorator
  *
- * If you are used to TypeScript Class usage to encapsulate your Lambda handler you can leverage the [@metrics.logMetrics()](./_aws_lambda_powertools_metrics.Metrics.html#logMetrics) decorator to automatically:
+ * If you are used to TypeScript Class usage to encapsulate your Lambda handler you can leverage the {@link Metrics.logMetrics} decorator to automatically:
  *   * capture a `ColdStart` metric
  *   * flush buffered metrics
  *   * throw on empty metrics
@@ -122,15 +122,60 @@ class Metrics extends Utility implements MetricsInterface {
    * @private
    */
   private console!: Console;
+  /**
+   * Custom configuration service for metrics
+   */
   private customConfigService?: ConfigServiceInterface;
+
+  /**
+   * Default dimensions to be added to all metrics
+   * @default {}
+   */
   private defaultDimensions: Dimensions = {};
+
+  /**
+   * Additional dimensions for the current metrics context
+   * @default {}
+   */
   private dimensions: Dimensions = {};
+
+  /**
+   * Service for accessing environment variables
+   */
   private envVarsService?: EnvironmentVariablesService;
+
+  /**
+   * Name of the Lambda function
+   */
   private functionName?: string;
+
+  /**
+   * Flag indicating if this is a single metric instance
+   * @default false
+   */
   private isSingleMetric = false;
+
+  /**
+   * Additional metadata to be included with metrics
+   * @default {}
+   */
   private metadata: Record<string, string> = {};
+
+  /**
+   * Namespace for the metrics
+   */
   private namespace?: string;
+
+  /**
+   * Flag to determine if an error should be thrown when no metrics are recorded
+   * @default false
+   */
   private shouldThrowOnEmptyMetrics = false;
+
+  /**
+   * Storage for metrics before they are published
+   * @default {}
+   */
   private storedMetrics: StoredMetrics = {};
 
   public constructor(options: MetricsOptions = {}) {
@@ -146,8 +191,8 @@ class Metrics extends Utility implements MetricsInterface {
    * A dimension is a key-value pair that is used to group metrics.
    *
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Dimension for more details.
-   * @param name
-   * @param value
+   * @param name The name of the dimension
+   * @param value The value of the dimension
    */
   public addDimension(name: string, value: string): void {
     if (MAX_DIMENSION_COUNT <= this.getCurrentDimensionsCount()) {
@@ -223,9 +268,9 @@ class Metrics extends Utility implements MetricsInterface {
    * metrics.addMetric('successfulBooking', MetricUnit.Count, 1, MetricResolution.High);
    * ```
    *
-   * @param name - The metric name
-   * @param unit - The metric unit
-   * @param value - The metric value
+   * @param name The metric name
+   * @param unit The metric unit
+   * @param value The metric value
    * @param resolution - The metric resolution
    */
   public addMetric(
@@ -324,7 +369,7 @@ class Metrics extends Utility implements MetricsInterface {
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    *
-   * @decorator Class
+   * @param options - The options to configure the logMetrics decorator
    */
   public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
     const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } =
@@ -470,7 +515,7 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Sets default dimensions that will be added to all metrics.
+   * Set default dimensions that will be added to all metrics.
    *
    * @param dimensions The default dimensions to be added to all metrics.
    */
@@ -551,25 +596,21 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Gets the custom config service if it exists.
-   *
-   * @returns the custom config service if it exists, undefined otherwise
+   * Get the custom config service if it exists.
    */
   private getCustomConfigService(): ConfigServiceInterface | undefined {
     return this.customConfigService;
   }
 
   /**
-   * Gets the environment variables service.
-   *
-   * @returns the environment variables service
+   * Get the environment variables service.
    */
   private getEnvVarsService(): EnvironmentVariablesService {
     return this.envVarsService as EnvironmentVariablesService;
   }
 
   /**
-   * Checks if a metric is new or not.
+   * Check if a metric is new or not.
    *
    * A metric is considered new if there is no metric with the same name already stored.
    *
@@ -579,7 +620,6 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param name The name of the metric
    * @param unit The unit of the metric
-   * @returns true if the metric is new, false if another metric with the same name already exists
    */
   private isNewMetric(name: string, unit: MetricUnit): boolean {
     if (this.storedMetrics[name]) {
@@ -596,7 +636,7 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * It initializes console property as an instance of the internal version of Console() class (PR #748)
+   * Initialize the console property as an instance of the internal version of Console() class (PR #748)
    * or as the global node console if the `POWERTOOLS_DEV' env variable is set and has truthy value.
    *
    * @private
@@ -614,7 +654,7 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Sets the custom config service to be used.
+   * Set the custom config service to be used.
    *
    * @param customConfigService The custom config service to be used
    */
@@ -627,14 +667,14 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Sets the environment variables service to be used.
+   * Set the environment variables service to be used.
    */
   private setEnvVarsService(): void {
     this.envVarsService = new EnvironmentVariablesService();
   }
 
   /**
-   * Sets the namespace to be used.
+   * Set the namespace to be used.
    *
    * @param namespace The namespace to be used
    */
@@ -645,12 +685,11 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Sets the options to be used by the Metrics instance.
+   * Set the options to be used by the Metrics instance.
    *
    * This method is used during the initialization of the Metrics instance.
    *
    * @param options The options to be used
-   * @returns the Metrics instance
    */
   private setOptions(options: MetricsOptions): Metrics {
     const {
@@ -673,7 +712,7 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Sets the service to be used.
+   * Set the service to be used.
    *
    * @param service The service to be used
    */
@@ -689,7 +728,7 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Stores a metric in the buffer.
+   * Store a metric in the buffer.
    *
    * If the buffer is full, or the metric reaches the maximum number of values,
    * the buffer is published to stdout.

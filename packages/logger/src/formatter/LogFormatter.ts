@@ -11,8 +11,6 @@ import type { LogItem } from './LogItem.js';
  * This class defines and implements common methods for the formatting of log attributes.
  *
  * @class
- * @abstract
- * @implements {LogFormatterInterface}
  */
 abstract class LogFormatter implements LogFormatterInterface {
   /**
@@ -28,9 +26,8 @@ abstract class LogFormatter implements LogFormatterInterface {
   /**
    * It formats key-value pairs of log attributes.
    *
-   * @param {UnformattedAttributes} attributes
-   * @param {LogAttributes} additionalLogAttributes
-   * @returns {LogItem}
+   * @param {UnformattedAttributes} attributes - unformatted attributes
+   * @param {LogAttributes} additionalLogAttributes - additional log attributes
    */
   public abstract formatAttributes(
     attributes: UnformattedAttributes,
@@ -38,10 +35,10 @@ abstract class LogFormatter implements LogFormatterInterface {
   ): LogItem;
 
   /**
-   * It formats a given Error parameter.
+   * Format a given Error parameter.
    *
-   * @param {Error} error
-   * @returns {LogAttributes}
+   * @param {Error} error - error to format
+   * @returns {LogAttributes} formatted error
    */
   public formatError(error: Error): LogAttributes {
     return {
@@ -57,12 +54,11 @@ abstract class LogFormatter implements LogFormatterInterface {
   }
 
   /**
-   * Formats a given date into an ISO 8601 string, considering the configured timezone.
+   * Format a given date into an ISO 8601 string, considering the configured timezone.
    * If `envVarsService` is set and the configured timezone differs from 'UTC',
    * the date is formatted to that timezone. Otherwise, it defaults to 'UTC'.
    *
-   * @param {Date} now
-   * @returns {string}
+   * @param {Date} now - The date to format
    */
   public formatTimestamp(now: Date): string {
     const defaultTimezone = 'UTC';
@@ -79,10 +75,9 @@ abstract class LogFormatter implements LogFormatterInterface {
   }
 
   /**
-   * It returns a string containing the location of an error, given a particular stack trace.
+   * Get a string containing the location of an error, given a particular stack trace.
    *
-   * @param stack
-   * @returns {string}
+   * @param {string} stack - stack trace
    */
   public getCodeLocation(stack?: string): string {
     if (!stack) {
@@ -104,10 +99,10 @@ abstract class LogFormatter implements LogFormatterInterface {
   }
 
   /**
-   * Generates a new Intl.DateTimeFormat object configured with the specified time zone
+   * Create a new Intl.DateTimeFormat object configured with the specified time zone
    * and formatting options. The time is displayed in 24-hour format (hour12: false).
    *
-   * @param {string} timeZone - the IANA time zone identifier (e.g., "Asia/Dhaka").
+   * @param {string} timeZone - IANA time zone identifier (e.g., "Asia/Dhaka").
    */
   #getDateFormatter = (timeZone: string): Intl.DateTimeFormat => {
     const twoDigitFormatOption = '2-digit';
@@ -128,10 +123,10 @@ abstract class LogFormatter implements LogFormatterInterface {
   };
 
   /**
-   * Generates an ISO 8601 timestamp string with the specified time zone and the local time zone offset.
+   * Generate an ISO 8601 timestamp string with the specified time zone and the local time zone offset.
    *
-   * @param {Date} date - the date to format
-   * @param {string} timeZone - the IANA time zone identifier (e.g., "Asia/Dhaka").
+   * @param {Date} date - date to format
+   * @param {string} timeZone - IANA time zone identifier (e.g., "Asia/Dhaka").
    */
   #generateISOTimestampWithOffset(date: Date, timeZone: string): string {
     const { year, month, day, hour, minute, second } = this.#getDateFormatter(

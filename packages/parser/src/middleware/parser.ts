@@ -8,7 +8,7 @@ import type { ParserOptions, ParserOutput } from '../types/parser.js';
 /**
  * A middiy middleware to parse your event.
  *
- * @exmaple
+ * @example
  * ```typescript
  * import { parser } from '@aws-lambda-powertools/parser/middleware';
  * import middy from '@middy/core';

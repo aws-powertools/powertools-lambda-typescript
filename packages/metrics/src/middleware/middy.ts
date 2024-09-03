@@ -32,7 +32,6 @@ import type { ExtraOptions } from '../types/Metrics.js';
  *
  * @param target - The Metrics instance to use for emitting metrics
  * @param options - (_optional_) Options for the middleware
- * @returns middleware - The middy middleware object
  */
 const logMetrics = (
   target: Metrics | Metrics[],

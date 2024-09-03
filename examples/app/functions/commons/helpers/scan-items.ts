@@ -6,7 +6,7 @@ import type { DebugLogger } from '#types';
 /**
  * Scan the DynamoDB table and return all items.
  *
- * @note this function is purposefully not paginated to keep the example simple
+ * this function is purposefully not paginated to keep the example simple
  *
  * @param logger A logger instance
  */

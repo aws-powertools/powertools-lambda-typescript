@@ -23,7 +23,7 @@ import type { TransformOptions } from '../types/BaseProvider.js';
  *
  * If the transformation fails, the function will return the value as-is unless `throwOnTransformError` is set to `true`.
  *
- * @note When using `auto` mode, the key must end with either `.json` or `.binary` to be transformed. Automatic transformation is supported only for
+ * When using `auto` mode, the key must end with either `.json` or `.binary` to be transformed. Automatic transformation is supported only for
  * `getMultiple` calls.
  *
  * @param {string | Uint8Array} value - Value to be transformed

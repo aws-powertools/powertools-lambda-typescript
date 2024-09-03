@@ -548,13 +548,13 @@ You can change the order of [standard Logger keys](#standard-structured-keys) or
 
 === "reorderLogKeys.ts"
 
-    ```typescript hl_lines="3"
+    ```typescript hl_lines="5 10"
     --8<-- "examples/snippets/logger/reorderLogKeys.ts"
     ```
 
 === "reorderLogKeysOutput.json"
 
-    ```json hl_lines="2 3"
+    ```json hl_lines="2-3"
     --8<-- "examples/snippets/logger/reorderLogKeysOutput.json"
     ```
 

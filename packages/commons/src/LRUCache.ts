@@ -46,8 +46,8 @@ class Item<K, V> {
  * which is licensed under the MIT license and [recommends users to copy the code into their
  * own projects](https://github.com/rsms/js-lru/tree/master#usage).
  *
- * @typeparam K - The type of the key
- * @typeparam V - The type of the value
+ * @typeParam K - The type of the key
+ * @typeParam V - The type of the value
  */
 class LRUCache<K, V> {
   private leastRecentlyUsed?: Item<K, V>;

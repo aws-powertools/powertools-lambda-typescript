@@ -18,8 +18,6 @@ import type {
  * The class comes with a few helper methods and hooks that can be used to prepare
  * the processor before processing records, clean up after processing records, and
  * handle records that succeed or fail processing.
- *
- * @abstract
  */
 abstract class BasePartialProcessor {
   /**
@@ -67,8 +65,6 @@ abstract class BasePartialProcessor {
    * This method should be called after processing a full batch to reset the processor.
    *
    * You can use this as a hook to run any cleanup logic after processing the records.
-   *
-   * @abstract
    */
   public abstract clean(): void;
 
@@ -98,8 +94,6 @@ abstract class BasePartialProcessor {
    * This method should be called before processing the records
    *
    * You can use this as a hook to run any setup logic before processing the records.
-   *
-   * @abstract
    */
   public abstract prepare(): void;
 
@@ -151,8 +145,6 @@ abstract class BasePartialProcessor {
    * This is to ensure that the processor keeps track of the results and the records
    * that succeeded and failed processing.
    *
-   * @abstract
-   *
    * @param record Record to be processed
    */
   public abstract processRecord(
@@ -170,8 +162,6 @@ abstract class BasePartialProcessor {
    *
    * This is to ensure that the processor keeps track of the results and the records
    * that succeeded and failed processing.
-   *
-   * @abstract
    *
    * @param record Record to be processed
    */

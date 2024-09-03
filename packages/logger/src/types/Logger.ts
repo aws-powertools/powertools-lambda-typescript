@@ -9,6 +9,16 @@ import type {
   LogLevel,
 } from './Log.js';
 
+/**
+ * The log function type.
+ *
+ * @type {Object} LogFunction
+ * @property {function} [critical] - The critical log function.
+ * @property {function} [debug] - The debug log function.
+ * @property {function} [error] - The error log function.
+ * @property {function} [info] - The info log function.
+ * @property {function} [warn] - The warn log function.
+ */
 type LogFunction = {
   [key in Exclude<Lowercase<LogLevel>, 'silent'>]: (
     input: LogItemMessage,
@@ -16,6 +26,13 @@ type LogFunction = {
   ) => void;
 };
 
+/**
+ * Options for the `injectLambdaContext` method.
+ *
+ * @type {Object} InjectLambdaContextOptions
+ * @property {boolean} [logEvent] - If `true`, the logger will log the event.
+ * @property {boolean} [resetKeys] - If `true`, the logger will reset the keys added via {@link `appendKeys()`}.
+ */
 type InjectLambdaContextOptions = {
   logEvent?: boolean;
   /**
@@ -23,7 +40,7 @@ type InjectLambdaContextOptions = {
    */
   clearState?: boolean;
   /**
-   * If `true`, the logger will reset the keys added via {@link `appendKeys()`}
+   * If `true`, the logger will reset the keys added via {@link index.Logger.appendKeys()}
    */
   resetKeys?: boolean;
 };
@@ -41,6 +58,17 @@ type InjectLambdaContextOptions = {
  */
 type CustomJsonReplacerFn = (key: string, value: unknown) => unknown;
 
+/**
+ * Base constructor options for the Logger class.
+ *
+ * @type {Object} BaseConstructorOptions
+ * @property {LogLevel} [logLevel] - The log level.
+ * @property {string} [serviceName] - The service name.
+ * @property {number} [sampleRateValue] - The sample rate value.
+ * @property {LogFormatterInterface} [logFormatter] - The custom log formatter.
+ * @property {ConfigServiceInterface} [customConfigService] - The custom config service.
+ * @property {Environment} [environment] - The environment.
+ */
 type BaseConstructorOptions = {
   logLevel?: LogLevel;
   serviceName?: string;
@@ -60,6 +88,12 @@ type BaseConstructorOptions = {
   logRecordOrder?: LogRecordOrder;
 };
 
+/**
+ * Options for the `persistentKeys` constructor option.
+ *
+ * @type {Object} PersistentKeysOption
+ * @property {LogAttributes} [persistentKeys] - Keys that will be added in all log items.
+ */
 type PersistentKeysOption = {
   /**
    * Keys that will be added in all log items.

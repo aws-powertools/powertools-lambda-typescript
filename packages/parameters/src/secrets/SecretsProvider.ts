@@ -141,7 +141,6 @@ import type {
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  *
  * @class
- * @implements {BaseProvider}
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
  */
 class SecretsProvider extends BaseProvider {

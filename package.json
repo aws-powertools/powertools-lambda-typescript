@@ -33,7 +33,7 @@
     "docs-generateApiDoc": "typedoc .",
     "docs-runLocalApiDoc": "npx live-server api",
     "postpublish": "git restore .",
-    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#**/*/CHANGELOG.md' '#examples/app/README.md' '#packages/commons/README.md' '#packages/jmespath/README.md' '#packages/logger/README.md' '#packages/metrics/README.md' '#packages/parameters/README.md' '#packages/parser/README.md' '#packages/tracer/README.md'"
+    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#**/*/CHANGELOG.md' '#examples/app/README.md'"
   },
   "repository": {
     "type": "git",
@@ -51,19 +51,19 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
-    "@types/aws-lambda": "^8.10.143",
+    "@types/aws-lambda": "^8.10.145",
     "@types/jest": "^29.5.12",
-    "@types/node": "^22.4.1",
+    "@types/node": "^22.5.2",
     "@vitest/coverage-v8": "^2.0.5",
-    "husky": "^9.0.11",
+    "husky": "^9.1.5",
     "jest": "^29.7.0",
     "jest-runner-groups": "^2.2.0",
     "lerna": "8.1.2",
-    "lint-staged": "^15.2.9",
+    "lint-staged": "^15.2.10",
     "markdownlint-cli2": "^0.13.0",
     "middy4": "npm:@middy/core@^4.7.0",
     "middy5": "npm:@middy/core@^5.4.3",
-    "ts-jest": "^29.2.4",
+    "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typedoc": "^0.26.6",
     "typedoc-plugin-missing-exports": "^3.0.0",

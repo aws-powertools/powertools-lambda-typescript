@@ -29,7 +29,7 @@ const decoder = new TextDecoder('utf-8');
  * console.log(result); // { foo: 'bar' }
  * ```
  *
- * When using the {@link extractDataFromEnvelope} function, the PowertoolsFunctions class is automatically used.
+ * When using the {@link envelopes.extractDataFromEnvelope} function, the PowertoolsFunctions class is automatically used.
  *
  */
 class PowertoolsFunctions extends Functions {

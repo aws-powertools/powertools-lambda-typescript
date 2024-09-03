@@ -542,6 +542,22 @@ We prioritise log level settings in this order:
 
 In the event you have set a log level in Powertools to a level that is lower than the ACL setting, we will output a warning log message informing you that your messages will be discarded by Lambda.
 
+### Reordering log keys position
+
+You can change the order of [standard Logger keys](#standard-structured-keys) or any keys that will be appended later at runtime via the `logRecordOrder` parameter.
+
+=== "reorderLogKeys.ts"
+
+    ```typescript hl_lines="3"
+    --8<-- "examples/snippets/logger/reorderLogKeys.ts"
+    ```
+
+=== "reorderLogKeysOutput.json"
+
+    ```json hl_lines="2 3"
+    --8<-- "examples/snippets/logger/reorderLogKeysOutput.json"
+    ```
+
 ### Setting timestamp to custom Timezone
 
 By default, Logger emits records with the default Lambda timestamp in **UTC**, i.e. `2016-06-20T12:08:10.000Z`

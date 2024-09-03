@@ -172,7 +172,7 @@ describe('Parameters E2E tests, SSM provider', () => {
         stringValue: paramCValue,
       },
       {
-        nameSuffix: 'set/b',
+        nameSuffix: 'set/c',
       }
     );
     parameterSetC.grantWrite(testFunction);

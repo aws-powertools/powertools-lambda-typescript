@@ -205,7 +205,7 @@ Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`tr
 
 ### Appending additional keys
 
-You can append additional keys using either machanism:
+You can append additional keys using either mechanism:
 
 * Add **extra keys** to a single log message by passing them to the log method directly
 * Append **temporary keys** to all future log messages via the `appendKeys()` method until `resetKeys()` is called

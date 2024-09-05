@@ -295,6 +295,7 @@ describe('Tracer E2E tests, all features with middy instantiation', () => {
         expect(subsegments.has('## index.handler')).toBe(false);
 
         if (shouldThrowAnError) {
+          console.log(JSON.stringify(lambdaFunctionSegment, null, 2));
           expect(lambdaFunctionSegment.error).toBe(true);
         }
       }

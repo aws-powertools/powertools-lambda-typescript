@@ -49,8 +49,7 @@ const getTraceIds = async (
     );
   }
 
-  const ids = [];
-
+  const ids: string[] = [];
   for (const summary of summaries) {
     if (summary.Id === undefined) {
       throw new Error(
@@ -83,10 +82,15 @@ const retriableGetTraceIds = (options: GetXRayTraceIdsOptions) =>
             endTime.getTime() / 1000
           )} --filter-expression 'resource.arn ENDSWITH ":function:${options.resourceName}"'`
         );
+
+        throw new Error(
+          `Failed to get trace IDs for ${options.resourceName} after ${retryOptions.retries} retries`,
+          { cause: error }
+        );
       }
       retry(error);
     }
-  });
+  }, retryOptions);
 
 /**
  * Parse and sort the trace segments by start time
@@ -168,13 +172,25 @@ const getTraceDetails = async (
  * @param options - The options to get trace details, including the trace IDs and expected segments count
  */
 const retriableGetTraceDetails = (options: GetXRayTraceDetailsOptions) =>
-  promiseRetry(async (retry) => {
+  promiseRetry(async (retry, attempt) => {
     try {
       return await getTraceDetails(options);
     } catch (error) {
+      if (attempt === retryOptions.retries) {
+        console.log(
+          `Manual query: aws xray get-trace-summaries --start-time ${
+            options.traceIds
+          }`
+        );
+
+        throw new Error(
+          `Failed to get trace details for ${options.traceIds} after ${retryOptions.retries} retries`,
+          { cause: error }
+        );
+      }
       retry(error);
     }
-  });
+  }, retryOptions);
 
 /**
  * Find the main function segment in the trace identified by the `## index.` suffix
@@ -292,7 +308,7 @@ const getTraces = async (
 
   const { resourceName } = options;
 
-  const mainSubsegments = [];
+  const mainSubsegments: EnrichedXRayTraceDocumentParsed[] = [];
   for (const trace of traces) {
     const mainSubsegment = findPowertoolsFunctionSegment(trace, resourceName);
     const enrichedMainSubsegment = {
@@ -319,7 +335,7 @@ const getTracesWithoutMainSubsegments = async (
 
   const { resourceName } = options;
 
-  const lambdaFunctionSegments = [];
+  const lambdaFunctionSegments: EnrichedXRayTraceDocumentParsed[] = [];
   for (const trace of traces) {
     const functionSegment = trace.Segments.find(
       (segment) => segment.Document.origin === 'AWS::Lambda::Function'

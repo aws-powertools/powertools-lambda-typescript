@@ -83,10 +83,15 @@ const retriableGetTraceIds = (options: GetXRayTraceIdsOptions) =>
             endTime.getTime() / 1000
           )} --filter-expression 'resource.arn ENDSWITH ":function:${options.resourceName}"'`
         );
+
+        throw new Error(
+          `Failed to get trace IDs after ${retryOptions.retries} retries`,
+          { cause: error }
+        );
       }
       retry(error);
     }
-  });
+  }, retryOptions);
 
 /**
  * Parse and sort the trace segments by start time
@@ -168,13 +173,25 @@ const getTraceDetails = async (
  * @param options - The options to get trace details, including the trace IDs and expected segments count
  */
 const retriableGetTraceDetails = (options: GetXRayTraceDetailsOptions) =>
-  promiseRetry(async (retry) => {
+  promiseRetry(async (retry, attempt) => {
     try {
       return await getTraceDetails(options);
     } catch (error) {
+      if (attempt === retryOptions.retries) {
+        console.log(
+          `Manual query: aws xray batch-get-traces --trace-ids ${
+            options.traceIds
+          }`
+        );
+
+        throw new Error(
+          `Failed to get trace details after ${retryOptions.retries} retries`,
+          { cause: error }
+        );
+      }
       retry(error);
     }
-  });
+  }, retryOptions);
 
 /**
  * Find the main function segment in the trace identified by the `## index.` suffix
@@ -305,45 +322,6 @@ const getTraces = async (
   return mainSubsegments;
 };
 
-/**
- * Get the X-Ray trace data for a given resource name without the main subsegments.
- *
- * This is useful when we are testing cases where Active Tracing is disabled and we don't have the main subsegments.
- *
- * @param options - The options to get the X-Ray trace data, including the start time, resource name, expected traces count, and expected segments count
- */
-const getTracesWithoutMainSubsegments = async (
-  options: GetXRayTraceIdsOptions & Omit<GetXRayTraceDetailsOptions, 'traceIds'>
-): Promise<EnrichedXRayTraceDocumentParsed[]> => {
-  const traces = await getXRayTraceData(options);
-
-  const { resourceName } = options;
-
-  const lambdaFunctionSegments = [];
-  for (const trace of traces) {
-    const functionSegment = trace.Segments.find(
-      (segment) => segment.Document.origin === 'AWS::Lambda::Function'
-    );
-
-    if (!functionSegment) {
-      throw new Error(
-        `AWS::Lambda::Function segment not found for ${resourceName}`
-      );
-    }
-
-    const lambdaFunctionSegment = functionSegment.Document;
-    const enrichedSubsegment = {
-      ...lambdaFunctionSegment,
-      subsegments: parseSubsegmentsByName(
-        lambdaFunctionSegment.subsegments ?? []
-      ),
-    };
-    lambdaFunctionSegments.push(enrichedSubsegment);
-  }
-
-  return lambdaFunctionSegments;
-};
-
 export {
   getTraceIds,
   retriableGetTraceIds,
@@ -352,5 +330,4 @@ export {
   findPowertoolsFunctionSegment,
   getTraces,
   parseSubsegmentsByName,
-  getTracesWithoutMainSubsegments,
 };

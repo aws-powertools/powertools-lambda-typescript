@@ -108,8 +108,13 @@ type XRayTraceDocumentParsed = {
     request_id: string;
   };
   http?: {
-    response: {
+    request: {
+      url: string;
+      method: string;
+    };
+    response?: {
       status: number;
+      content_length?: number;
     };
   };
   origin?: string;
@@ -142,6 +147,7 @@ type XRayTraceDocumentParsed = {
     message: string;
   };
   error?: boolean;
+  namespace?: string;
 };
 
 type XRaySegmentParsed = {

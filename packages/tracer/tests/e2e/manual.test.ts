@@ -1,40 +1,43 @@
 /**
- * Test tracer manual mode
+ * Test tracer when instrumenting the lambda function manually
  *
  * @group e2e/tracer/manual
  */
 import { join } from 'node:path';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
+import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { getTraces } from '@aws-lambda-powertools/testing-utils/utils/xray-traces';
+import type { EnrichedXRayTraceDocumentParsed } from 'packages/testing/lib/cjs/types.js';
 import { invokeAllTestCases } from '../helpers/invokeAllTests.js';
-import { TracerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
-  commonEnvironmentVars,
+  EXPECTED_ANNOTATION_KEY as expectedCustomAnnotationKey,
+  EXPECTED_ANNOTATION_VALUE as expectedCustomAnnotationValue,
+  EXPECTED_ERROR_MESSAGE as expectedCustomErrorMessage,
+  EXPECTED_METADATA_KEY as expectedCustomMetadataKey,
+  EXPECTED_METADATA_VALUE as expectedCustomMetadataValue,
+  EXPECTED_RESPONSE_VALUE as expectedCustomResponseValue,
 } from './constants.js';
 
-describe('Tracer E2E tests, all features with manual instantiation', () => {
+describe('Tracer E2E tests, manual instantiation', () => {
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'AllFeatures-Manual',
+      testName: 'Manual',
     },
   });
 
   // Location of the lambda function code
   const lambdaFunctionCodeFilePath = join(
     __dirname,
-    'allFeatures.manual.test.functionCode.ts'
+    'manual.test.functionCode.ts'
   );
   const startTime = new Date();
 
-  /**
-   * Table used by all functions to make an SDK call
-   */
   const testTable = new TestDynamodbTable(
     testStack,
     {},
@@ -43,33 +46,44 @@ describe('Tracer E2E tests, all features with manual instantiation', () => {
     }
   );
 
-  let fnNameAllFlagsEnabled: string;
-  const fnAllFlagsEnabled = new TracerTestNodejsFunction(
+  const fnManual = new TestNodejsFunction(
     testStack,
     {
       entry: lambdaFunctionCodeFilePath,
       environment: {
         TEST_TABLE_NAME: testTable.tableName,
+        POWERTOOLS_SERVICE_NAME: 'Manual',
       },
     },
     {
-      nameSuffix: 'AllFlagsManual',
+      nameSuffix: 'Manual',
     }
   );
-  testTable.grantWriteData(fnAllFlagsEnabled);
+  testTable.grantWriteData(fnManual);
 
   const invocationCount = 3;
+  let traceData: EnrichedXRayTraceDocumentParsed[] = [];
 
   beforeAll(async () => {
     // Deploy the stack
     await testStack.deploy();
 
     // Get the actual function names from the stack outputs
-    fnNameAllFlagsEnabled =
-      testStack.findAndGetStackOutputValue('AllFlagsManual');
+    const fnNameManual = testStack.findAndGetStackOutputValue('Manual');
 
     // Invoke all test cases
-    await invokeAllTestCases(fnNameAllFlagsEnabled, invocationCount);
+    await invokeAllTestCases(fnNameManual, invocationCount);
+    traceData = await getTraces({
+      startTime,
+      resourceName: fnNameManual,
+      expectedTracesCount: invocationCount,
+      /**
+       * The trace should have 2 segments:
+       * 1. Lambda Context (AWS::Lambda)
+       * 2. Lambda Function (AWS::Lambda::Function)
+       */
+      expectedSegmentsCount: 2,
+    });
   }, SETUP_TIMEOUT);
 
   afterAll(async () => {
@@ -79,62 +93,36 @@ describe('Tracer E2E tests, all features with manual instantiation', () => {
   }, TEARDOWN_TIMEOUT);
 
   it(
-    'should generate all custom traces with correct subsegments, annotations, and metadata',
+    'should generate all trace data correctly',
     async () => {
-      const {
-        EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
-        EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
-        EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
-        EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
-        EXPECTED_CUSTOM_METADATA_VALUE: expectedCustomMetadataValue,
-        EXPECTED_CUSTOM_RESPONSE_VALUE: expectedCustomResponseValue,
-      } = commonEnvironmentVars;
-      const serviceName = 'AllFlagsManual';
-
-      const mainSubsegments = await getTraces({
-        startTime,
-        resourceName: fnNameAllFlagsEnabled,
-        expectedTracesCount: invocationCount,
-        /**
-         * The trace should have 4 segments:
-         * 1. Lambda Context (AWS::Lambda)
-         * 2. Lambda Function (AWS::Lambda::Function)
-         * 4. DynamoDB (AWS::DynamoDB)
-         * 4. Remote call (docs.powertools.aws.dev)
-         */
-        expectedSegmentsCount: 4,
-      });
-
       // Assess
       for (let i = 0; i < invocationCount; i++) {
         const isColdStart = i === 0; // First invocation is a cold start
         const shouldThrowAnError = i === invocationCount - 1; // Last invocation should throw - we are testing error capture
-        const mainSubsegment = mainSubsegments[i];
+        const mainSubsegment = traceData[i];
         const { subsegments, annotations, metadata } = mainSubsegment;
 
         // Check the main segment name
         expect(mainSubsegment.name).toBe('## index.handler');
 
-        // Check the subsegments
-        expect(subsegments.size).toBe(2);
-        expect(subsegments.has('DynamoDB')).toBe(true);
-        expect(subsegments.has('docs.powertools.aws.dev')).toBe(true);
+        // Since CaptureHTTPsRequests is disabled, we should not have any subsegments
+        expect(subsegments.size).toBe(0);
 
-        // Check the annotations
+        // Check the annotations of the main segment
         if (!annotations) {
           throw new Error('No annotations found on the main segment');
         }
         expect(annotations.ColdStart).toEqual(isColdStart);
-        expect(annotations.Service).toEqual(serviceName);
+        expect(annotations.Service).toEqual('Manual');
         expect(annotations[expectedCustomAnnotationKey]).toEqual(
           expectedCustomAnnotationValue
         );
 
-        // Check the metadata
+        // Check the metadata of the main segment
         if (!metadata) {
           throw new Error('No metadata found on the main segment');
         }
-        expect(metadata[serviceName][expectedCustomMetadataKey]).toEqual(
+        expect(metadata.Manual?.[expectedCustomMetadataKey]).toEqual(
           expectedCustomMetadataValue
         );
 
@@ -147,7 +135,7 @@ describe('Tracer E2E tests, all features with manual instantiation', () => {
           );
           // Check the response in the metadata (only on invocations that DON'T throw)
         } else {
-          expect(metadata[serviceName]['index.handler response']).toEqual(
+          expect(metadata.Manual?.['index.handler response']).toEqual(
             expectedCustomResponseValue
           );
         }

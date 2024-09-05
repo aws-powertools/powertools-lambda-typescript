@@ -6,19 +6,9 @@
 import { join } from 'node:path';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
+import { getTraces } from '@aws-lambda-powertools/testing-utils/utils/xray-traces';
+import { invokeAllTestCases } from '../helpers/invokeAllTests.js';
 import { TracerTestNodejsFunction } from '../helpers/resources.js';
-import {
-  assertAnnotation,
-  assertErrorAndFault,
-} from '../helpers/traceAssertions.js';
-import {
-  type ParsedTrace,
-  getFirstSubsegment,
-  getInvocationSubsegment,
-  getTraces,
-  invokeAllTestCases,
-  splitSegmentsByName,
-} from '../helpers/tracesUtils.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
@@ -63,37 +53,23 @@ describe('Tracer E2E tests, all features with manual instantiation', () => {
       },
     },
     {
-      nameSuffix: 'AllFlagsOn',
+      nameSuffix: 'AllFlagsManual',
     }
   );
   testTable.grantWriteData(fnAllFlagsEnabled);
 
   const invocationCount = 3;
-  let sortedTraces: ParsedTrace[];
 
   beforeAll(async () => {
     // Deploy the stack
     await testStack.deploy();
 
     // Get the actual function names from the stack outputs
-    fnNameAllFlagsEnabled = testStack.findAndGetStackOutputValue('AllFlagsOn');
+    fnNameAllFlagsEnabled =
+      testStack.findAndGetStackOutputValue('AllFlagsManual');
 
     // Invoke all test cases
     await invokeAllTestCases(fnNameAllFlagsEnabled, invocationCount);
-
-    /**
-     * Expect the trace to have 4 segments:
-     * 1. Lambda Context (AWS::Lambda)
-     * 2. Lambda Function (AWS::Lambda::Function)
-     * 3. DynamoDB (AWS::DynamoDB)
-     * 4. Remote call (docs.powertools.aws.dev)
-     */
-    sortedTraces = await getTraces({
-      startTime,
-      resourceName: fnNameAllFlagsEnabled,
-      expectedTracesCount: invocationCount,
-      expectedSegmentsCount: 4,
-    });
   }, SETUP_TIMEOUT);
 
   afterAll(async () => {
@@ -103,82 +79,75 @@ describe('Tracer E2E tests, all features with manual instantiation', () => {
   }, TEARDOWN_TIMEOUT);
 
   it(
-    'should generate all custom traces',
-    async () => {
-      const { EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage } =
-        commonEnvironmentVars;
-
-      // Assess
-      for (let i = 0; i < invocationCount; i++) {
-        const trace = sortedTraces[i];
-        const invocationSubsegment = getInvocationSubsegment(trace);
-        /**
-         * Invocation subsegment should have a subsegment '## index.handler' (default behavior for Tracer)
-         * '## index.handler' subsegment should have 2 subsegments
-         * 1. DynamoDB (PutItem on the table)
-         * 2. docs.powertools.aws.dev (Remote call)
-         */
-        const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
-        expect(handlerSubsegment.name).toBe('## index.handler');
-        expect(handlerSubsegment?.subsegments).toHaveLength(2);
-
-        if (!handlerSubsegment.subsegments) {
-          fail('"## index.handler" subsegment should have subsegments');
-        }
-        const subsegments = splitSegmentsByName(handlerSubsegment.subsegments, [
-          'DynamoDB',
-          'docs.powertools.aws.dev',
-        ]);
-        expect(subsegments.get('DynamoDB')?.length).toBe(1);
-        expect(subsegments.get('docs.powertools.aws.dev')?.length).toBe(1);
-        expect(subsegments.get('other')?.length).toBe(0);
-
-        const shouldThrowAnError = i === invocationCount - 1;
-        if (shouldThrowAnError) {
-          assertErrorAndFault(invocationSubsegment, expectedCustomErrorMessage);
-        }
-      }
-    },
-    TEST_CASE_TIMEOUT
-  );
-
-  it(
-    'should have correct annotations and metadata',
+    'should generate all custom traces with correct subsegments, annotations, and metadata',
     async () => {
       const {
+        EXPECTED_CUSTOM_ERROR_MESSAGE: expectedCustomErrorMessage,
         EXPECTED_CUSTOM_ANNOTATION_KEY: expectedCustomAnnotationKey,
         EXPECTED_CUSTOM_ANNOTATION_VALUE: expectedCustomAnnotationValue,
         EXPECTED_CUSTOM_METADATA_KEY: expectedCustomMetadataKey,
         EXPECTED_CUSTOM_METADATA_VALUE: expectedCustomMetadataValue,
         EXPECTED_CUSTOM_RESPONSE_VALUE: expectedCustomResponseValue,
       } = commonEnvironmentVars;
+      const serviceName = 'AllFlagsManual';
 
+      const mainSubsegments = await getTraces({
+        startTime,
+        resourceName: fnNameAllFlagsEnabled,
+        expectedTracesCount: invocationCount,
+        /**
+         * The trace should have 4 segments:
+         * 1. Lambda Context (AWS::Lambda)
+         * 2. Lambda Function (AWS::Lambda::Function)
+         * 4. DynamoDB (AWS::DynamoDB)
+         * 4. Remote call (docs.powertools.aws.dev)
+         */
+        expectedSegmentsCount: 4,
+      });
+
+      // Assess
       for (let i = 0; i < invocationCount; i++) {
-        const trace = sortedTraces[i];
-        const invocationSubsegment = getInvocationSubsegment(trace);
-        const handlerSubsegment = getFirstSubsegment(invocationSubsegment);
-        const { annotations, metadata } = handlerSubsegment;
+        const isColdStart = i === 0; // First invocation is a cold start
+        const shouldThrowAnError = i === invocationCount - 1; // Last invocation should throw - we are testing error capture
+        const mainSubsegment = mainSubsegments[i];
+        const { subsegments, annotations, metadata } = mainSubsegment;
 
-        const isColdStart = i === 0;
-        assertAnnotation({
-          annotations,
-          isColdStart,
-          expectedServiceName: 'AllFlagsOn',
-          expectedCustomAnnotationKey,
-          expectedCustomAnnotationValue,
-        });
+        // Check the main segment name
+        expect(mainSubsegment.name).toBe('## index.handler');
 
-        if (!metadata) {
-          fail('metadata is missing');
+        // Check the subsegments
+        expect(subsegments.size).toBe(2);
+        expect(subsegments.has('DynamoDB')).toBe(true);
+        expect(subsegments.has('docs.powertools.aws.dev')).toBe(true);
+
+        // Check the annotations
+        if (!annotations) {
+          throw new Error('No annotations found on the main segment');
         }
-        expect(metadata.AllFlagsOn[expectedCustomMetadataKey]).toEqual(
+        expect(annotations.ColdStart).toEqual(isColdStart);
+        expect(annotations.Service).toEqual(serviceName);
+        expect(annotations[expectedCustomAnnotationKey]).toEqual(
+          expectedCustomAnnotationValue
+        );
+
+        // Check the metadata
+        if (!metadata) {
+          throw new Error('No metadata found on the main segment');
+        }
+        expect(metadata[serviceName][expectedCustomMetadataKey]).toEqual(
           expectedCustomMetadataValue
         );
 
-        const shouldThrowAnError = i === invocationCount - 1;
-        if (!shouldThrowAnError) {
-          // Assert that the metadata object contains the response
-          expect(metadata.AllFlagsOn['index.handler response']).toEqual(
+        // Check the error recording (only on invocations that should throw)
+        if (shouldThrowAnError) {
+          expect(mainSubsegment.fault).toBe(true);
+          expect(Object.hasOwn(mainSubsegment, 'cause')).toBe(true);
+          expect(mainSubsegment.cause?.exceptions[0].message).toBe(
+            expectedCustomErrorMessage
+          );
+          // Check the response in the metadata (only on invocations that DON'T throw)
+        } else {
+          expect(metadata[serviceName]['index.handler response']).toEqual(
             expectedCustomResponseValue
           );
         }

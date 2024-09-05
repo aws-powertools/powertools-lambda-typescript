@@ -3,24 +3,24 @@
  *
  * @group e2e/idempotency/decorator
  */
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
+import {
+  TestInvocationLogs,
+  TestStack,
+  invokeFunction,
+} from '@aws-lambda-powertools/testing-utils';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { Duration } from 'aws-cdk-lib';
+import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
+import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants.js';
-import { ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { createHash } from 'node:crypto';
-import {
-  invokeFunction,
-  TestInvocationLogs,
-  TestStack,
-} from '@aws-lambda-powertools/testing-utils';
-import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
-import { join } from 'node:path';
-import { Duration } from 'aws-cdk-lib';
-import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 
 const dynamoDBClient = new DynamoDBClient({});
 
@@ -289,9 +289,15 @@ describe('Idempotency e2e test decorator, default settings', () => {
       });
       expect(idempotencyRecord.Items?.[0].status).toEqual('COMPLETED');
 
-      // During the first invocation the handler should be called, so the logs should contain 1 log
-      expect(functionLogs[0]).toHaveLength(2);
-      expect(functionLogs[0][0]).toContain('Task timed out after');
+      try {
+        // During the first invocation the handler should be called, so the logs should contain 1 log
+        expect(functionLogs[0]).toHaveLength(2);
+        expect(functionLogs[0][0]).toContain('Task timed out after');
+      } catch {
+        // During the first invocation the function should timeout so the logs should not contain any log and the report log should contain a timeout message
+        expect(functionLogs[0]).toHaveLength(0);
+        expect(logs[0].getReportLog()).toMatch(/Status: timeout$/);
+      }
 
       expect(functionLogs[1]).toHaveLength(1);
       expect(TestInvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(

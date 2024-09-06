@@ -30,7 +30,7 @@
     "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@aws-sdk/client-dynamodb": "^3.637.0",
     "@aws-sdk/client-xray": "^3.637.0",
-    "aws-sdk": "^2.1688.0"
+    "aws-sdk": "^2.1690.0"
   },
   "peerDependencies": {
     "@middy/core": "4.x || 5.x"

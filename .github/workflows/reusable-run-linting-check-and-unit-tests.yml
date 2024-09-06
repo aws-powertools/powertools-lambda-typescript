@@ -106,6 +106,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
+    strategy:
+      matrix:
+        example: ["app"]
+      fail-fast: false
+    defaults:
+      run:
+        working-directory: examples/${{ matrix.example }}
     steps:
       - name: Checkout code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
@@ -116,12 +123,10 @@ jobs:
           cache: "npm"
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
-        with:
-          build: false
       - name: Run linting
-        run: npm run lint -w examples/app
+        run: npm run lint
       - name: Run tests
-        run: npm t -w examples/app
+        run: npm t
   check-layer-publisher:
     runs-on: ubuntu-latest
     env:

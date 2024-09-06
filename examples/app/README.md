@@ -2,7 +2,7 @@
 
 This is a deployable CDK app that deploys AWS Lambda functions as part of a CloudFormation stack. These Lambda functions use the utilities made available as part of Powertools for AWS Lambda (TypeScript) to demonstrate their usage.
 
-> **Note**
+> [!Warning]
 > You will need to have a valid AWS Account in order to deploy these resources. Many of the services in the example are covered [AWS Free Tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) but you may incur charges if you exceed the free tier limits.
 If you don't have an AWS Account follow [these instructions to create one](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/).
 

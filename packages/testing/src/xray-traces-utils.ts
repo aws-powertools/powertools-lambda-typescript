@@ -94,12 +94,55 @@ const retriableGetTraceIds = (options: GetXRayTraceIdsOptions) =>
   }, retryOptions);
 
 /**
+ * Find the main Powertools subsegment in the trace
+ *
+ * A main Powertools subsegment is identified by the `## index.` suffix. Depending on the
+ * runtime, it may also be identified by the `Invocation` name.
+ *
+ * @param trace - The trace to find the main Powertools subsegment
+ * @param functionName - The function name to find the main Powertools subsegment
+ */
+const findMainPowertoolsSubsegment = (
+  trace: XRayTraceDocumentParsed,
+  functionName: string
+) => {
+  const maybePowertoolsSubsegment = trace.subsegments?.find(
+    (subsegment) =>
+      subsegment.name.startsWith('## index.') ||
+      subsegment.name === 'Invocation'
+  );
+
+  if (!maybePowertoolsSubsegment) {
+    throw new Error(`Main subsegment not found for ${functionName} segment`);
+  }
+
+  if (maybePowertoolsSubsegment.name === 'Invocation') {
+    const powertoolsSubsegment = maybePowertoolsSubsegment.subsegments?.find(
+      (subsegment) => subsegment.name.startsWith('## index.')
+    );
+
+    if (!powertoolsSubsegment) {
+      throw new Error(`Main subsegment not found for ${functionName} segment`);
+    }
+
+    return powertoolsSubsegment;
+  }
+
+  return maybePowertoolsSubsegment;
+};
+
+/**
  * Parse and sort the trace segments by start time
  *
  * @param trace - The trace to parse and sort
  * @param expectedSegmentsCount - The expected segments count for the trace
+ * @param functionName - The function name to find the main Powertools subsegment
  */
-const parseAndSortTrace = (trace: Trace, expectedSegmentsCount: number) => {
+const parseAndSortTrace = (
+  trace: Trace,
+  expectedSegmentsCount: number,
+  functionName: string
+) => {
   const { Id: id, Segments: segments } = trace;
   if (segments === undefined || segments.length !== expectedSegmentsCount) {
     throw new Error(
@@ -116,9 +159,14 @@ const parseAndSortTrace = (trace: Trace, expectedSegmentsCount: number) => {
       );
     }
 
+    const parsedDocument = JSON.parse(Document) as XRayTraceDocumentParsed;
+    if (parsedDocument.origin === 'AWS::Lambda::Function') {
+      findMainPowertoolsSubsegment(parsedDocument, functionName);
+    }
+
     parsedSegments.push({
       Id,
-      Document: JSON.parse(Document) as XRayTraceDocumentParsed,
+      Document: parsedDocument,
     });
   }
 
@@ -141,15 +189,14 @@ const parseAndSortTrace = (trace: Trace, expectedSegmentsCount: number) => {
 const getTraceDetails = async (
   options: GetXRayTraceDetailsOptions
 ): Promise<XRayTraceParsed[]> => {
-  const { traceIds, expectedSegmentsCount } = options;
+  const { traceIds, expectedSegmentsCount, functionName } = options;
   const response = await xrayClient.send(
     new BatchGetTracesCommand({
       TraceIds: traceIds,
     })
   );
 
-  const traces = response.Traces;
-
+  const { Traces: traces } = response;
   if (traces === undefined || traces.length !== traceIds.length) {
     throw new Error(
       `Expected ${traceIds.length} traces, got ${traces ? traces.length : 0}`
@@ -158,7 +205,9 @@ const getTraceDetails = async (
 
   const parsedAndSortedTraces: XRayTraceParsed[] = [];
   for (const trace of traces) {
-    parsedAndSortedTraces.push(parseAndSortTrace(trace, expectedSegmentsCount));
+    parsedAndSortedTraces.push(
+      parseAndSortTrace(trace, expectedSegmentsCount, functionName)
+    );
   }
 
   return parsedAndSortedTraces.sort(
@@ -194,7 +243,7 @@ const retriableGetTraceDetails = (options: GetXRayTraceDetailsOptions) =>
   }, retryOptions);
 
 /**
- * Find the main function segment in the trace identified by the `## index.` suffix
+ * Find the main function segment within the `AWS::Lambda::Function` segment
  */
 const findPowertoolsFunctionSegment = (
   trace: XRayTraceParsed,
@@ -211,30 +260,7 @@ const findPowertoolsFunctionSegment = (
   }
 
   const document = functionSegment.Document;
-
-  const maybePowertoolsSubsegment = document.subsegments?.find(
-    (subsegment) =>
-      subsegment.name.startsWith('## index.') ||
-      subsegment.name === 'Invocation'
-  );
-
-  if (!maybePowertoolsSubsegment) {
-    throw new Error(`Main subsegment not found for ${functionName} segment`);
-  }
-
-  if (maybePowertoolsSubsegment.name === 'Invocation') {
-    const powertoolsSubsegment = maybePowertoolsSubsegment.subsegments?.find(
-      (subsegment) => subsegment.name.startsWith('## index.')
-    );
-
-    if (!powertoolsSubsegment) {
-      throw new Error(`Main subsegment not found for ${functionName} segment`);
-    }
-
-    return powertoolsSubsegment;
-  }
-
-  return maybePowertoolsSubsegment;
+  return findMainPowertoolsSubsegment(document, functionName);
 };
 
 /**
@@ -288,6 +314,7 @@ const getXRayTraceData = async (
   const traces = await retriableGetTraceDetails({
     traceIds,
     expectedSegmentsCount,
+    functionName: resourceName,
   });
 
   if (!traces) {
@@ -303,9 +330,15 @@ const getXRayTraceData = async (
  * @param options - The options to get the X-Ray trace data, including the start time, resource name, expected traces count, and expected segments count
  */
 const getTraces = async (
-  options: GetXRayTraceIdsOptions & Omit<GetXRayTraceDetailsOptions, 'traceIds'>
+  options: GetXRayTraceIdsOptions &
+    Omit<GetXRayTraceDetailsOptions, 'traceIds' | 'functionName'> & {
+      resourceName: string;
+    }
 ): Promise<EnrichedXRayTraceDocumentParsed[]> => {
-  const traces = await getXRayTraceData(options);
+  const traces = await getXRayTraceData({
+    ...options,
+    functionName: options.resourceName,
+  });
 
   const { resourceName } = options;
 

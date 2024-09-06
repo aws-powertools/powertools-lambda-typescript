@@ -169,6 +169,10 @@ type GetXRayTraceDetailsOptions = {
    * The expected number of segments in each trace
    */
   expectedSegmentsCount: number;
+  /**
+   * The name of the function that the trace is expected to be associated with
+   */
+  functionName: string;
 };
 
 /**

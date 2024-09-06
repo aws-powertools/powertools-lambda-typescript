@@ -1,3 +1,5 @@
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import {
@@ -20,6 +22,12 @@ import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import type { Construct } from 'constructs';
 import { FunctionWithLogGroup } from './function-with-logstream-construct.js';
+
+// Get the current file URL
+const __filename = fileURLToPath(import.meta.url);
+
+// Get the current directory
+const __dirname = dirname(__filename);
 
 export class PowertoolsExampleStack extends Stack {
   public constructor(scope: Construct, id: string, props?: StackProps) {
@@ -80,7 +88,7 @@ export class PowertoolsExampleStack extends Stack {
      * Because we are using ESM and tree shake, we create an optimized bundle.
      */
     const putItemFn = new FunctionWithLogGroup(this, 'put-item-fn', {
-      entry: './functions/put-item.ts',
+      entry: join(__dirname, '..', './functions/put-item.ts'),
       functionName: 'powertools-example-put-item',
       bundling: {
         minify: true,
@@ -124,7 +132,7 @@ export class PowertoolsExampleStack extends Stack {
      * in a centralized way across all your functions.
      */
     const getAllItemsFn = new FunctionWithLogGroup(this, 'get-all-items-fn', {
-      entry: './functions/get-all-items.ts',
+      entry: join(__dirname, '..', './functions/get-all-items.ts'),
       functionName: 'powertools-example-get-all-items',
       layers: [powertoolsLayer], // we use the powertools layer
       bundling: {
@@ -150,7 +158,7 @@ export class PowertoolsExampleStack extends Stack {
      * dependencies in it.
      */
     const getByIdFn = new FunctionWithLogGroup(this, 'get-by-id-fn', {
-      entry: './functions/get-by-id.ts',
+      entry: join(__dirname, '..', './functions/get-by-id.ts'),
       functionName: 'powertools-example-get-by-id',
       bundling: {
         minify: true,
@@ -172,7 +180,7 @@ export class PowertoolsExampleStack extends Stack {
       this,
       'process-items-stream-fn',
       {
-        entry: './functions/process-items-stream.ts',
+        entry: join(__dirname, '..', './functions/process-items-stream.ts'),
         functionName: 'powertools-example-process-items-stream',
         layers: [powertoolsLayer],
         bundling: {

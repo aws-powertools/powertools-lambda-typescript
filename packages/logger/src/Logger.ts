@@ -1078,10 +1078,10 @@ class Logger extends Utility implements LoggerInterface {
 
   /**
    * Set the log formatter instance, in charge of giving a custom format
-   * to the structured logs
+   * to the structured logs, and optionally the ordering for keys within logs.
    *
    * @private
-   * @param {LogFormatterInterface} logFormatter - The log formatt er
+   * @param {LogFormatterInterface} logFormatter - The log formatter
    * @param {LogRecordOrder} logRecordOrder - Optional list of keys to specify order in logs
    */
   private setLogFormatter(

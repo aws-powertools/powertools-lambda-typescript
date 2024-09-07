@@ -35,10 +35,17 @@ class PowertoolsLogFormatter extends LogFormatter {
       xray_trace_id: attributes.xRayTraceId,
     };
 
+    // If logRecordOrder is not set, return the log item with the attributes in the order they were added
+    if (this.logRecordOrder === undefined) {
+      return new LogItem({ attributes: baseAttributes }).addAttributes(
+        additionalLogAttributes
+      );
+    }
+
     const orderedAttributes = {} as PowertoolsLog;
 
     // If logRecordOrder is set, order the attributes in the log item
-    for (const key of this.logRecordOrder || []) {
+    for (const key of this.logRecordOrder) {
       if (key in baseAttributes && !(key in orderedAttributes)) {
         orderedAttributes[key] = baseAttributes[key];
       } else if (

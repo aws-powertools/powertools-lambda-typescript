@@ -237,6 +237,7 @@ describe('Formatters', () => {
     });
     const additionalLogAttributes: LogAttributes = {
       additional_key: 'additional_value',
+      another_key: 'another_value',
     };
 
     // Act
@@ -262,6 +263,7 @@ describe('Formatters', () => {
         sampling_rate: 0.25,
         service: 'hello-world',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        another_key: 'another_value',
       })
     );
   });

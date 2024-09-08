@@ -1,5 +1,9 @@
-import type { LogAttributes, PowertoolsLog } from '../types/Log.js';
-import type { UnformattedAttributes } from '../types/Logger.js';
+import type {
+  LogAttributes,
+  PowerToolsLogFormatterOptions,
+  PowertoolsLog,
+} from '../types/Log.js';
+import type { LogRecordOrder, UnformattedAttributes } from '../types/Logger.js';
 import { LogFormatter } from './LogFormatter.js';
 import { LogItem } from './LogItem.js';
 
@@ -11,6 +15,17 @@ import { LogItem } from './LogItem.js';
  * @extends {LogFormatter}
  */
 class PowertoolsLogFormatter extends LogFormatter {
+  /**
+   * An array of keys that defines the order of the log record.
+   */
+  #logRecordOrder?: LogRecordOrder;
+
+  public constructor(options?: PowerToolsLogFormatterOptions) {
+    super(options);
+
+    this.#logRecordOrder = options?.logRecordOrder;
+  }
+
   /**
    * It formats key-value pairs of log attributes.
    *
@@ -36,7 +51,7 @@ class PowertoolsLogFormatter extends LogFormatter {
     };
 
     // If logRecordOrder is not set, return the log item with the attributes in the order they were added
-    if (this.logRecordOrder === undefined) {
+    if (this.#logRecordOrder === undefined) {
       return new LogItem({ attributes: baseAttributes }).addAttributes(
         additionalLogAttributes
       );
@@ -45,7 +60,7 @@ class PowertoolsLogFormatter extends LogFormatter {
     const orderedAttributes = {} as PowertoolsLog;
 
     // If logRecordOrder is set, order the attributes in the log item
-    for (const key of this.logRecordOrder) {
+    for (const key of this.#logRecordOrder) {
       if (key in baseAttributes && !(key in orderedAttributes)) {
         orderedAttributes[key] = baseAttributes[key];
       } else if (

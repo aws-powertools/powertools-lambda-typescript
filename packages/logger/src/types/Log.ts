@@ -125,7 +125,19 @@ type LogFormatterOptions = {
    * If set, it gives the LogFormatter access to environment variables.
    */
   envVarsService?: EnvironmentVariablesService;
+};
 
+/**
+ * Options for the `PowertoolsLogFormatter`.
+ *
+ * @type {Object} PowertoolsLogFormatterOptions
+ * @extends {LogFormatterOptions}
+ * @property {LogRecordOrder} [logRecordOrder] - Optional list of keys to specify order in logs
+ */
+type PowerToolsLogFormatterOptions = LogFormatterOptions & {
+  /**
+   * An array of keys that defines the order of the log record.
+   */
   logRecordOrder?: LogRecordOrder;
 };
 
@@ -177,4 +189,5 @@ export type {
   LogItemInterface,
   LogFormatterOptions,
   LogFormatterInterface,
+  PowerToolsLogFormatterOptions,
 };

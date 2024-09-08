@@ -114,22 +114,17 @@ describe('Log levels', () => {
 
     // Assess
     expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(Object.keys(JSON.parse(logSpy.mock.calls[0][0]))).toEqual([
+    const expectedKeys = [
       'service',
       'timestamp',
       'level',
       'message',
       'sampling_rate',
       'xray_trace_id',
-    ]);
-    expect(Object.keys(JSON.parse(logSpy.mock.calls[1][0]))).toEqual([
-      'service',
-      'timestamp',
-      'level',
-      'message',
-      'sampling_rate',
-      'xray_trace_id',
-    ]);
+    ];
+    logSpy.mock.calls.forEach((call, index) => {
+      expect(Object.keys(JSON.parse(call[0]))).toEqual(expectedKeys);
+    });
   });
 
   it("doesn't use the global console object by default", () => {

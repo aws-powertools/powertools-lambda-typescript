@@ -46,6 +46,9 @@ class ErrorWithCauseString extends Error {
   }
 }
 
+/**
+ * Unformatted attributes for testing
+ */
 const unformattedAttributes: UnformattedAttributes = {
   sampleRateValue: 0.25,
   awsRegion: 'eu-west-1',
@@ -123,6 +126,7 @@ describe('Formatters', () => {
 
   afterAll(() => {
     jest.useRealTimers();
+    unformattedAttributes.timestamp = new Date();
   });
 
   // #region base log keys

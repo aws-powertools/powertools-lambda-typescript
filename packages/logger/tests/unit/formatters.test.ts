@@ -118,6 +118,7 @@ describe('Formatters', () => {
     const mockDate = new Date(1466424490000);
     jest.useFakeTimers().setSystemTime(mockDate);
     jest.resetAllMocks();
+    unformattedAttributes.timestamp = mockDate;
   });
 
   afterAll(() => {
@@ -186,7 +187,7 @@ describe('Formatters', () => {
       message: 'This is a WARN log',
       sampling_rate: 0.25,
       service: 'hello-world',
-      timestamp: unformattedAttributes.timestamp.toISOString(),
+      timestamp: '2016-06-20T12:08:10.000Z',
       xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
     });
   });
@@ -210,7 +211,7 @@ describe('Formatters', () => {
     expect(JSON.stringify(response)).toEqual(
       JSON.stringify({
         message: 'This is a WARN log',
-        timestamp: unformattedAttributes.timestamp.toISOString(),
+        timestamp: '2016-06-20T12:08:10.000Z',
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
         function_memory_size: '123',
@@ -253,7 +254,7 @@ describe('Formatters', () => {
       JSON.stringify({
         message: 'This is a WARN log',
         additional_key: 'additional_value',
-        timestamp: unformattedAttributes.timestamp.toISOString(),
+        timestamp: '2016-06-20T12:08:10.000Z',
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
         function_memory_size: '123',
@@ -297,7 +298,7 @@ describe('Formatters', () => {
       JSON.stringify({
         message: 'This is a WARN log',
         additional_key: 'additional_value',
-        timestamp: unformattedAttributes.timestamp.toISOString(),
+        timestamp: '2016-06-20T12:08:10.000Z',
         cold_start: true,
         function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
         function_memory_size: '123',
@@ -338,7 +339,7 @@ describe('Formatters', () => {
         message: 'This is a WARN log',
         sampling_rate: 0.25,
         service: 'hello-world',
-        timestamp: unformattedAttributes.timestamp.toISOString(),
+        timestamp: '2016-06-20T12:08:10.000Z',
         xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
         additional_key: 'additional_value',
       })

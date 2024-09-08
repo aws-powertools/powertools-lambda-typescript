@@ -546,6 +546,9 @@ In the event you have set a log level in Powertools to a level that is lower tha
 
 You can change the order of [standard Logger keys](#standard-structured-keys) or any keys that will be appended later at runtime via the `logRecordOrder` parameter.
 
+!!! note
+    This feature is available only in the default log formatter and not with custom log formatters.
+
 === "reorderLogKeys.ts"
 
     ```typescript hl_lines="5 10"

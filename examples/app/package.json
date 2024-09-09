@@ -13,7 +13,7 @@
     "test": "npm run test:unit",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
-    "test:unit": "export POWERTOOLS_DEV=true && jest --silent",
+    "test:unit": "export POWERTOOLS_DEV=true && vitest --run --silent",
     "test:e2e": "echo 'To be implemented ...'",
     "cdk": "cdk"
   },
@@ -29,16 +29,14 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",
-    "@types/jest": "^29.5.12",
     "@types/node": "22.5.2",
     "aws-cdk": "^2.155.0",
     "aws-cdk-lib": "^2.155.0",
     "constructs": "^10.3.0",
-    "jest": "^29.7.0",
     "source-map-support": "^0.5.21",
-    "ts-jest": "^29.2.5",
     "tsx": "^4.19.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
   },
   "dependencies": {
     "@aws-lambda-powertools/batch": "^2.7.0",
@@ -51,13 +49,9 @@
     "@aws-sdk/lib-dynamodb": "^3.637.0",
     "@middy/core": "^4.7.0",
     "@types/aws-lambda": "^8.10.145",
-    "@types/jest": "^29.5.12",
     "@types/node": "22.5.2",
     "constructs": "^10.3.0",
     "esbuild": "^0.23.1",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   }
 }

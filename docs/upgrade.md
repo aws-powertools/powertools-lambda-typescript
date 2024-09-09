@@ -7,7 +7,7 @@ description: Guide to update between major Powertools for AWS Lambda (TypeScript
 
 ## End of support v1
 
-!!! warning "On March 13th, 2024, Powertools for AWS Lambda (TypeScript) v1 entered maintenance mode, and will reach end-of-life on September 1st, 2024. If you are still using v1, we strongly recommend you to read our upgrade guide and update to the latest version."
+!!! warning "On March 13th, 2024, Powertools for AWS Lambda (TypeScript) v1 entered maintenance mode, and has reached End-of-Life on September 1st, 2024. If you are still using v1, we strongly recommend you to upgrade to the latest version."
 
 Given our commitment to all of our customers using Powertools for AWS Lambda (TypeScript), we will keep npm v1 releases and documentation 1.x versions to prevent any disruption.
 

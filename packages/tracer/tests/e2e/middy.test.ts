@@ -14,7 +14,6 @@ import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
   EXPECTED_ANNOTATION_KEY as expectedCustomAnnotationKey,
   EXPECTED_ANNOTATION_VALUE as expectedCustomAnnotationValue,
   EXPECTED_ERROR_MESSAGE as expectedCustomErrorMessage,

@@ -14,7 +14,6 @@ import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
   EXPECTED_ANNOTATION_KEY as expectedCustomAnnotationKey,
   EXPECTED_ANNOTATION_VALUE as expectedCustomAnnotationValue,
   EXPECTED_ERROR_MESSAGE as expectedCustomErrorMessage,
@@ -95,80 +94,72 @@ describe('Tracer E2E tests, decorator instrumentation', () => {
     }
   }, TEARDOWN_TIMEOUT);
 
-  it(
-    'should generate all trace data correctly',
-    async () => {
-      // Assess
-      const mainSubsegment = traceData[0];
-      const { subsegments, annotations, metadata } = mainSubsegment;
+  it('should generate all trace data correctly', async () => {
+    // Assess
+    const mainSubsegment = traceData[0];
+    const { subsegments, annotations, metadata } = mainSubsegment;
 
-      // Check the main segment name
-      expect(mainSubsegment.name).toBe('## index.handler');
+    // Check the main segment name
+    expect(mainSubsegment.name).toBe('## index.handler');
 
-      // Check the subsegments of the main segment
-      expect(subsegments.size).toBe(3);
+    // Check the subsegments of the main segment
+    expect(subsegments.size).toBe(3);
 
-      // Check remote call subsegment
-      expect(subsegments.has('docs.powertools.aws.dev')).toBe(true);
-      const httpSubsegment = subsegments.get('docs.powertools.aws.dev');
-      expect(httpSubsegment?.namespace).toBe('remote');
-      expect(httpSubsegment?.http?.request?.url).toEqual(
-        'https://docs.powertools.aws.dev/lambda/typescript/latest/'
-      );
-      expect(httpSubsegment?.http?.request?.method).toBe('GET');
-      expect(httpSubsegment?.http?.response?.status).toEqual(
-        expect.any(Number)
-      );
-      expect(httpSubsegment?.http?.response?.status).toEqual(
-        expect.any(Number)
-      );
+    // Check remote call subsegment
+    expect(subsegments.has('docs.powertools.aws.dev')).toBe(true);
+    const httpSubsegment = subsegments.get('docs.powertools.aws.dev');
+    expect(httpSubsegment?.namespace).toBe('remote');
+    expect(httpSubsegment?.http?.request?.url).toEqual(
+      'https://docs.powertools.aws.dev/lambda/typescript/latest/'
+    );
+    expect(httpSubsegment?.http?.request?.method).toBe('GET');
+    expect(httpSubsegment?.http?.response?.status).toEqual(expect.any(Number));
+    expect(httpSubsegment?.http?.response?.status).toEqual(expect.any(Number));
 
-      // Check the custom subsegment name & metadata
-      expect(subsegments.has(expectedCustomSubSegmentName)).toBe(true);
-      expect(
-        subsegments.get(expectedCustomSubSegmentName)?.metadata
-      ).toStrictEqual({
-        Decorator: {
-          'myMethod response': expectedCustomResponseValue,
-        },
-      });
+    // Check the custom subsegment name & metadata
+    expect(subsegments.has(expectedCustomSubSegmentName)).toBe(true);
+    expect(
+      subsegments.get(expectedCustomSubSegmentName)?.metadata
+    ).toStrictEqual({
+      Decorator: {
+        'myMethod response': expectedCustomResponseValue,
+      },
+    });
 
-      // Check the other custom subsegment and its subsegments
-      expect(subsegments.has('### methodNoResponse')).toBe(true);
-      expect(subsegments.get('### methodNoResponse')?.metadata).toBeUndefined();
-      expect(subsegments.get('### methodNoResponse')?.subsegments?.length).toBe(
-        1
-      );
-      expect(
-        subsegments.get('### methodNoResponse')?.subsegments?.[0]?.name ===
-          'DynamoDB'
-      ).toBe(true);
+    // Check the other custom subsegment and its subsegments
+    expect(subsegments.has('### methodNoResponse')).toBe(true);
+    expect(subsegments.get('### methodNoResponse')?.metadata).toBeUndefined();
+    expect(subsegments.get('### methodNoResponse')?.subsegments?.length).toBe(
+      1
+    );
+    expect(
+      subsegments.get('### methodNoResponse')?.subsegments?.[0]?.name ===
+        'DynamoDB'
+    ).toBe(true);
 
-      // Check the annotations of the main segment
-      if (!annotations) {
-        throw new Error('No annotations found on the main segment');
-      }
-      expect(annotations.ColdStart).toEqual(true);
-      expect(annotations.Service).toEqual('Decorator');
-      expect(annotations[expectedCustomAnnotationKey]).toEqual(
-        expectedCustomAnnotationValue
-      );
+    // Check the annotations of the main segment
+    if (!annotations) {
+      throw new Error('No annotations found on the main segment');
+    }
+    expect(annotations.ColdStart).toEqual(true);
+    expect(annotations.Service).toEqual('Decorator');
+    expect(annotations[expectedCustomAnnotationKey]).toEqual(
+      expectedCustomAnnotationValue
+    );
 
-      // Check the metadata of the main segment
-      if (!metadata) {
-        throw new Error('No metadata found on the main segment');
-      }
-      expect(metadata.Decorator[expectedCustomMetadataKey]).toEqual(
-        expectedCustomMetadataValue
-      );
+    // Check the metadata of the main segment
+    if (!metadata) {
+      throw new Error('No metadata found on the main segment');
+    }
+    expect(metadata.Decorator[expectedCustomMetadataKey]).toEqual(
+      expectedCustomMetadataValue
+    );
 
-      // Check the response is present in the metadata
-      expect(metadata.Decorator['index.handler response']).toEqual(
-        expectedCustomResponseValue
-      );
-    },
-    TEST_CASE_TIMEOUT
-  );
+    // Check the response is present in the metadata
+    expect(metadata.Decorator['index.handler response']).toEqual(
+      expectedCustomResponseValue
+    );
+  });
 
   it('should annotate the trace with error data correctly', () => {
     const mainSubsegment = traceData[1];

@@ -14,7 +14,6 @@ import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
   EXPECTED_ANNOTATION_KEY as expectedCustomAnnotationKey,
   EXPECTED_ANNOTATION_VALUE as expectedCustomAnnotationValue,
   EXPECTED_ERROR_MESSAGE as expectedCustomErrorMessage,
@@ -92,44 +91,40 @@ describe('Tracer E2E tests, manual instantiation', () => {
     }
   }, TEARDOWN_TIMEOUT);
 
-  it(
-    'should generate all trace data correctly',
-    async () => {
-      // Assess
-      const mainSubsegment = traceData[0];
-      const { subsegments, annotations, metadata } = mainSubsegment;
+  it('should generate all trace data correctly', async () => {
+    // Assess
+    const mainSubsegment = traceData[0];
+    const { subsegments, annotations, metadata } = mainSubsegment;
 
-      // Check the main segment name
-      expect(mainSubsegment.name).toBe('## index.handler');
+    // Check the main segment name
+    expect(mainSubsegment.name).toBe('## index.handler');
 
-      // Since CaptureHTTPsRequests is disabled, we should not have any subsegments
-      expect(subsegments.size).toBe(0);
+    // Since CaptureHTTPsRequests is disabled, we should not have any subsegments
+    expect(subsegments.size).toBe(0);
 
-      // Check the annotations of the main segment
-      if (!annotations) {
-        throw new Error('No annotations found on the main segment');
-      }
-      expect(annotations.ColdStart).toEqual(true);
-      expect(annotations.Service).toEqual('Manual');
-      expect(annotations[expectedCustomAnnotationKey]).toEqual(
-        expectedCustomAnnotationValue
-      );
+    // Check the annotations of the main segment
+    if (!annotations) {
+      throw new Error('No annotations found on the main segment');
+    }
+    expect(annotations.ColdStart).toEqual(true);
+    expect(annotations.Service).toEqual('Manual');
+    expect(annotations[expectedCustomAnnotationKey]).toEqual(
+      expectedCustomAnnotationValue
+    );
 
-      // Check the metadata of the main segment
-      if (!metadata) {
-        throw new Error('No metadata found on the main segment');
-      }
-      expect(metadata.Manual?.[expectedCustomMetadataKey]).toEqual(
-        expectedCustomMetadataValue
-      );
+    // Check the metadata of the main segment
+    if (!metadata) {
+      throw new Error('No metadata found on the main segment');
+    }
+    expect(metadata.Manual?.[expectedCustomMetadataKey]).toEqual(
+      expectedCustomMetadataValue
+    );
 
-      // Check the response is present in the metadata
-      expect(metadata.Manual?.['index.handler response']).toEqual(
-        expectedCustomResponseValue
-      );
-    },
-    TEST_CASE_TIMEOUT
-  );
+    // Check the response is present in the metadata
+    expect(metadata.Manual?.['index.handler response']).toEqual(
+      expectedCustomResponseValue
+    );
+  });
 
   it('should annotate the trace with error data correctly', () => {
     const mainSubsegment = traceData[1];

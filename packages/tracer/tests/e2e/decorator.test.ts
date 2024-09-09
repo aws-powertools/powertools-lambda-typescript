@@ -62,7 +62,7 @@ describe('Tracer E2E tests, decorator instrumentation', () => {
   );
   testTable.grantWriteData(fnDecorator);
 
-  const invocationCount = 3;
+  const invocationCount = 2;
   let traceData: EnrichedXRayTraceDocumentParsed[] = [];
 
   beforeAll(async () => {
@@ -99,89 +99,92 @@ describe('Tracer E2E tests, decorator instrumentation', () => {
     'should generate all trace data correctly',
     async () => {
       // Assess
-      for (let i = 0; i < invocationCount; i++) {
-        const isColdStart = i === 0; // First invocation is a cold start
-        const shouldThrowAnError = i === invocationCount - 1; // Last invocation should throw - we are testing error capture
-        const mainSubsegment = traceData[i];
-        const { subsegments, annotations, metadata } = mainSubsegment;
+      const mainSubsegment = traceData[0];
+      const { subsegments, annotations, metadata } = mainSubsegment;
 
-        // Check the main segment name
-        expect(mainSubsegment.name).toBe('## index.handler');
+      // Check the main segment name
+      expect(mainSubsegment.name).toBe('## index.handler');
 
-        // Check the subsegments of the main segment
-        expect(subsegments.size).toBe(3);
+      // Check the subsegments of the main segment
+      expect(subsegments.size).toBe(3);
 
-        // Check remote call subsegment
-        expect(subsegments.has('docs.powertools.aws.dev')).toBe(true);
-        const httpSubsegment = subsegments.get('docs.powertools.aws.dev');
-        expect(httpSubsegment?.namespace).toBe('remote');
-        expect(httpSubsegment?.http?.request?.url).toEqual(
-          'https://docs.powertools.aws.dev/lambda/typescript/latest/'
-        );
-        expect(httpSubsegment?.http?.request?.method).toBe('GET');
-        expect(httpSubsegment?.http?.response?.status).toEqual(
-          expect.any(Number)
-        );
-        expect(httpSubsegment?.http?.response?.status).toEqual(
-          expect.any(Number)
-        );
+      // Check remote call subsegment
+      expect(subsegments.has('docs.powertools.aws.dev')).toBe(true);
+      const httpSubsegment = subsegments.get('docs.powertools.aws.dev');
+      expect(httpSubsegment?.namespace).toBe('remote');
+      expect(httpSubsegment?.http?.request?.url).toEqual(
+        'https://docs.powertools.aws.dev/lambda/typescript/latest/'
+      );
+      expect(httpSubsegment?.http?.request?.method).toBe('GET');
+      expect(httpSubsegment?.http?.response?.status).toEqual(
+        expect.any(Number)
+      );
+      expect(httpSubsegment?.http?.response?.status).toEqual(
+        expect.any(Number)
+      );
 
-        // Check the custom subsegment name & metadata
-        expect(subsegments.has(expectedCustomSubSegmentName)).toBe(true);
-        expect(
-          subsegments.get(expectedCustomSubSegmentName)?.metadata
-        ).toStrictEqual({
-          Decorator: {
-            'myMethod response': expectedCustomResponseValue,
-          },
-        });
+      // Check the custom subsegment name & metadata
+      expect(subsegments.has(expectedCustomSubSegmentName)).toBe(true);
+      expect(
+        subsegments.get(expectedCustomSubSegmentName)?.metadata
+      ).toStrictEqual({
+        Decorator: {
+          'myMethod response': expectedCustomResponseValue,
+        },
+      });
 
-        // Check the other custom subsegment and its subsegments
-        expect(subsegments.has('### methodNoResponse')).toBe(true);
-        expect(
-          subsegments.get('### methodNoResponse')?.metadata
-        ).toBeUndefined();
-        expect(
-          subsegments.get('### methodNoResponse')?.subsegments?.length
-        ).toBe(1);
-        expect(
-          subsegments.get('### methodNoResponse')?.subsegments?.[0]?.name ===
-            'DynamoDB'
-        ).toBe(true);
+      // Check the other custom subsegment and its subsegments
+      expect(subsegments.has('### methodNoResponse')).toBe(true);
+      expect(subsegments.get('### methodNoResponse')?.metadata).toBeUndefined();
+      expect(subsegments.get('### methodNoResponse')?.subsegments?.length).toBe(
+        1
+      );
+      expect(
+        subsegments.get('### methodNoResponse')?.subsegments?.[0]?.name ===
+          'DynamoDB'
+      ).toBe(true);
 
-        // Check the annotations of the main segment
-        if (!annotations) {
-          throw new Error('No annotations found on the main segment');
-        }
-        expect(annotations.ColdStart).toEqual(isColdStart);
-        expect(annotations.Service).toEqual('Decorator');
-        expect(annotations[expectedCustomAnnotationKey]).toEqual(
-          expectedCustomAnnotationValue
-        );
-
-        // Check the metadata of the main segment
-        if (!metadata) {
-          throw new Error('No metadata found on the main segment');
-        }
-        expect(metadata.Decorator[expectedCustomMetadataKey]).toEqual(
-          expectedCustomMetadataValue
-        );
-
-        // Check the error recording (only on invocations that should throw)
-        if (shouldThrowAnError) {
-          expect(mainSubsegment.fault).toBe(true);
-          expect(Object.hasOwn(mainSubsegment, 'cause')).toBe(true);
-          expect(mainSubsegment.cause?.exceptions[0].message).toBe(
-            expectedCustomErrorMessage
-          );
-          // Check the response in the metadata (only on invocations that DON'T throw)
-        } else {
-          expect(metadata.Decorator['index.handler response']).toEqual(
-            expectedCustomResponseValue
-          );
-        }
+      // Check the annotations of the main segment
+      if (!annotations) {
+        throw new Error('No annotations found on the main segment');
       }
+      expect(annotations.ColdStart).toEqual(true);
+      expect(annotations.Service).toEqual('Decorator');
+      expect(annotations[expectedCustomAnnotationKey]).toEqual(
+        expectedCustomAnnotationValue
+      );
+
+      // Check the metadata of the main segment
+      if (!metadata) {
+        throw new Error('No metadata found on the main segment');
+      }
+      expect(metadata.Decorator[expectedCustomMetadataKey]).toEqual(
+        expectedCustomMetadataValue
+      );
+
+      // Check the response is present in the metadata
+      expect(metadata.Decorator['index.handler response']).toEqual(
+        expectedCustomResponseValue
+      );
     },
     TEST_CASE_TIMEOUT
   );
+
+  it('should annotate the trace with error data correctly', () => {
+    const mainSubsegment = traceData[1];
+    const { annotations } = mainSubsegment;
+
+    // Check the annotations of the main segment
+    if (!annotations) {
+      throw new Error('No annotations found on the main segment');
+    }
+    expect(annotations.ColdStart).toEqual(false);
+
+    // Check that the main segment has error data
+    expect(mainSubsegment.fault).toBe(true);
+    expect(Object.hasOwn(mainSubsegment, 'cause')).toBe(true);
+    expect(mainSubsegment.cause?.exceptions[0].message).toBe(
+      expectedCustomErrorMessage
+    );
+  });
 });

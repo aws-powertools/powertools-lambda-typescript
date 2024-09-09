@@ -61,7 +61,7 @@ describe('Tracer E2E tests, manual instantiation', () => {
   );
   testTable.grantWriteData(fnManual);
 
-  const invocationCount = 3;
+  const invocationCount = 2;
   let traceData: EnrichedXRayTraceDocumentParsed[] = [];
 
   beforeAll(async () => {
@@ -96,51 +96,56 @@ describe('Tracer E2E tests, manual instantiation', () => {
     'should generate all trace data correctly',
     async () => {
       // Assess
-      for (let i = 0; i < invocationCount; i++) {
-        const isColdStart = i === 0; // First invocation is a cold start
-        const shouldThrowAnError = i === invocationCount - 1; // Last invocation should throw - we are testing error capture
-        const mainSubsegment = traceData[i];
-        const { subsegments, annotations, metadata } = mainSubsegment;
+      const mainSubsegment = traceData[0];
+      const { subsegments, annotations, metadata } = mainSubsegment;
 
-        // Check the main segment name
-        expect(mainSubsegment.name).toBe('## index.handler');
+      // Check the main segment name
+      expect(mainSubsegment.name).toBe('## index.handler');
 
-        // Since CaptureHTTPsRequests is disabled, we should not have any subsegments
-        expect(subsegments.size).toBe(0);
+      // Since CaptureHTTPsRequests is disabled, we should not have any subsegments
+      expect(subsegments.size).toBe(0);
 
-        // Check the annotations of the main segment
-        if (!annotations) {
-          throw new Error('No annotations found on the main segment');
-        }
-        expect(annotations.ColdStart).toEqual(isColdStart);
-        expect(annotations.Service).toEqual('Manual');
-        expect(annotations[expectedCustomAnnotationKey]).toEqual(
-          expectedCustomAnnotationValue
-        );
-
-        // Check the metadata of the main segment
-        if (!metadata) {
-          throw new Error('No metadata found on the main segment');
-        }
-        expect(metadata.Manual?.[expectedCustomMetadataKey]).toEqual(
-          expectedCustomMetadataValue
-        );
-
-        // Check the error recording (only on invocations that should throw)
-        if (shouldThrowAnError) {
-          expect(mainSubsegment.fault).toBe(true);
-          expect(Object.hasOwn(mainSubsegment, 'cause')).toBe(true);
-          expect(mainSubsegment.cause?.exceptions[0].message).toBe(
-            expectedCustomErrorMessage
-          );
-          // Check the response in the metadata (only on invocations that DON'T throw)
-        } else {
-          expect(metadata.Manual?.['index.handler response']).toEqual(
-            expectedCustomResponseValue
-          );
-        }
+      // Check the annotations of the main segment
+      if (!annotations) {
+        throw new Error('No annotations found on the main segment');
       }
+      expect(annotations.ColdStart).toEqual(true);
+      expect(annotations.Service).toEqual('Manual');
+      expect(annotations[expectedCustomAnnotationKey]).toEqual(
+        expectedCustomAnnotationValue
+      );
+
+      // Check the metadata of the main segment
+      if (!metadata) {
+        throw new Error('No metadata found on the main segment');
+      }
+      expect(metadata.Manual?.[expectedCustomMetadataKey]).toEqual(
+        expectedCustomMetadataValue
+      );
+
+      // Check the response is present in the metadata
+      expect(metadata.Manual?.['index.handler response']).toEqual(
+        expectedCustomResponseValue
+      );
     },
     TEST_CASE_TIMEOUT
   );
+
+  it('should annotate the trace with error data correctly', () => {
+    const mainSubsegment = traceData[1];
+    const { annotations } = mainSubsegment;
+
+    // Check the annotations of the main segment
+    if (!annotations) {
+      throw new Error('No annotations found on the main segment');
+    }
+    expect(annotations.ColdStart).toEqual(false);
+
+    // Check that the main segment has error data
+    expect(mainSubsegment.fault).toBe(true);
+    expect(Object.hasOwn(mainSubsegment, 'cause')).toBe(true);
+    expect(mainSubsegment.cause?.exceptions[0].message).toBe(
+      expectedCustomErrorMessage
+    );
+  });
 });

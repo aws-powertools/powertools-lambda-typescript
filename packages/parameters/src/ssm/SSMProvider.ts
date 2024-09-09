@@ -12,12 +12,13 @@ import type {
   GetParametersCommandInput,
   GetParametersCommandOutput,
   PutParameterCommandInput,
+  PutParameterCommandOutput,
   SSMPaginationConfiguration,
 } from '@aws-sdk/client-ssm';
 import { BaseProvider } from '../base/BaseProvider.js';
 import { transformValue } from '../base/transformValue.js';
 import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
-import { GetParameterError } from '../errors.js';
+import { GetParameterError, SetParameterError } from '../errors.js';
 import type {
   SSMGetMultipleOptions,
   SSMGetMultipleOutput,
@@ -352,7 +353,7 @@ class SSMProvider extends BaseProvider {
    *
    * @param {string} name - The name of the parameter
    * @param {SSMSetOptions} options - Options to configure the parameter
-   * @returns {Promise<number | undefined>} The version of the parameter
+   * @returns {Promise<number>} The version of the parameter
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
    */
   public async set<
@@ -360,8 +361,26 @@ class SSMProvider extends BaseProvider {
   >(
     name: string,
     options: InferredFromOptionsType & SSMSetOptions
-  ): Promise<number | undefined> {
-    return this._set(name, options);
+  ): Promise<number> {
+    const sdkOptions: PutParameterCommandInput = {
+      Tier: options.tier ?? 'Standard',
+      Type: options.parameterType ?? 'String',
+      Overwrite: options.overwrite ?? false,
+      ...(options.kmsKeyId ? { KeyId: options.kmsKeyId } : {}),
+      ...(options.description ? { Description: options.description } : {}),
+      ...(options?.sdkOptions ?? {}),
+      Name: name,
+      Value: options.value,
+    };
+    let result: PutParameterCommandOutput;
+    try {
+      result = await this.client.send(new PutParameterCommand(sdkOptions));
+    } catch (error) {
+      throw new SetParameterError(`Unable to set parameter with name ${name}`);
+    }
+
+    // biome-ignore lint/style/noNonNullAssertion: The API for PutParameter states that there will always be a value returned when the request was successful.
+    return result.Version!;
   }
 
   /**
@@ -830,25 +849,6 @@ class SSMProvider extends BaseProvider {
     }
 
     return undefined;
-  }
-
-  protected async _set(
-    name: string,
-    options: SSMSetOptions
-  ): Promise<number | undefined> {
-    const sdkOptions: PutParameterCommandInput = {
-      Tier: options.tier ?? 'Standard',
-      Type: options.parameterType ?? 'String',
-      Overwrite: options.overwrite ?? false,
-      ...(options.kmsKeyId ? { KeyId: options.kmsKeyId } : {}),
-      ...(options.description ? { Description: options.description } : {}),
-      ...(options?.sdkOptions ?? {}),
-      Name: name,
-      Value: options.value,
-    };
-    const result = await this.client.send(new PutParameterCommand(sdkOptions));
-
-    return result.Version;
   }
 
   /**

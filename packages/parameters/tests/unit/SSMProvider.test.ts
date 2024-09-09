@@ -1313,7 +1313,7 @@ describe('Class: SSMProvider', () => {
     });
   });
 
-  describe('Method: _set', () => {
+  describe('Method: set', () => {
     test('sets a parameter successfully', async () => {
       const provider: SSMProvider = new SSMProvider();
       const client = mockClient(SSMClient)
@@ -1329,17 +1329,6 @@ describe('Class: SSMProvider', () => {
         Name: parameterName,
         Value: options.value,
       });
-    });
-
-    test('returns undefined if version is undefined', async () => {
-      const provider: SSMProvider = new SSMProvider();
-      mockClient(SSMClient).on(PutParameterCommand).resolves({});
-      const parameterName: string = '/my-parameter';
-      const options: SSMSetOptions = { value: 'my-value' };
-
-      const version = await provider.set(parameterName, options);
-
-      expect(version).toBeUndefined();
     });
 
     test('sets a parameter with sdk options successfully', async () => {
@@ -1372,7 +1361,7 @@ describe('Class: SSMProvider', () => {
       const options: SSMSetOptions = { value: 'my-value' };
 
       await expect(provider.set(parameterName, options)).rejects.toThrow(
-        'Failed to set parameter'
+        `Unable to set parameter with name ${parameterName}`
       );
     });
 

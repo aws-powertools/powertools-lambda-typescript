@@ -97,7 +97,7 @@ const setParameter = async <
 >(
   name: string,
   options: InferredFromOptionsType & SSMSetOptions
-): Promise<number | undefined> => {
+): Promise<number> => {
   if (!Object.hasOwn(DEFAULT_PROVIDERS, 'ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }

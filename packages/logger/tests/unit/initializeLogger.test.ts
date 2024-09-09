@@ -103,6 +103,30 @@ describe('Log levels', () => {
     );
   });
 
+  it('`logRecordOrder` should be passed down to child logger', () => {
+    // Prepare
+    const logger = new Logger({ logRecordOrder: ['service', 'timestamp'] });
+    const childLogger = logger.createChild({ serviceName: 'child-service' });
+
+    // Act
+    logger.info('Hello, world!');
+    childLogger.info('Hello, world from child!');
+
+    // Assess
+    expect(logSpy).toHaveBeenCalledTimes(2);
+    const expectedKeys = [
+      'service',
+      'timestamp',
+      'level',
+      'message',
+      'sampling_rate',
+      'xray_trace_id',
+    ];
+    logSpy.mock.calls.forEach((call, index) => {
+      expect(Object.keys(JSON.parse(call[0]))).toEqual(expectedKeys);
+    });
+  });
+
   it("doesn't use the global console object by default", () => {
     // Prepare
     process.env.POWERTOOLS_DEV = undefined;

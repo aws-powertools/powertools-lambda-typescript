@@ -1,7 +1,7 @@
 import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import type { LogLevel as LogLevelList } from '../constants.js';
 import type { LogItem } from '../formatter/LogItem.js';
-import type { UnformattedAttributes } from './Logger.js';
+import type { LogRecordOrder, UnformattedAttributes } from './Logger.js';
 
 type LogLevel =
   | (typeof LogLevelList)[keyof typeof LogLevelList]
@@ -128,6 +128,20 @@ type LogFormatterOptions = {
 };
 
 /**
+ * Options for the `PowertoolsLogFormatter`.
+ *
+ * @type {Object} PowertoolsLogFormatterOptions
+ * @extends {LogFormatterOptions}
+ * @property {LogRecordOrder} [logRecordOrder] - Optional list of keys to specify order in logs
+ */
+type PowerToolsLogFormatterOptions = LogFormatterOptions & {
+  /**
+   * An array of keys that defines the order of the log record.
+   */
+  logRecordOrder?: LogRecordOrder;
+};
+
+/**
  * @interface
  */
 interface LogFormatterInterface {
@@ -175,4 +189,5 @@ export type {
   LogItemInterface,
   LogFormatterOptions,
   LogFormatterInterface,
+  PowerToolsLogFormatterOptions,
 };

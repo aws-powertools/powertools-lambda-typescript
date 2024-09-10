@@ -110,7 +110,7 @@ describe('Tracer E2E tests, middy instrumentation', () => {
     const httpSubsegment = subsegments.get('docs.powertools.aws.dev');
     expect(httpSubsegment?.namespace).toBe('remote');
     expect(httpSubsegment?.http?.request?.url).toEqual(
-      'docs.powertools.aws.dev'
+      'https://docs.powertools.aws.dev/lambda/typescript/latest/'
     );
     expect(httpSubsegment?.http?.request?.method).toBe('GET');
     expect(httpSubsegment?.http?.response?.status).toEqual(expect.any(Number));

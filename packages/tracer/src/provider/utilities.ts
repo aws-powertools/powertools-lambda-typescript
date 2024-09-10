@@ -1,5 +1,6 @@
 import { URL } from 'node:url';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
+import type { DiagnosticsChannel } from 'undici-types';
 import type { HttpSubsegment } from '../types/ProviderService.js';
 
 const decoder = new TextDecoder();
@@ -52,12 +53,24 @@ const isHttpSubsegment = (
 };
 
 /**
- * Convert the origin url to a URL object when it is a string
+ * Convert the origin url to a URL object when it is a string and append the path if provided
  *
- * @param origin The origin url
+ * @param origin The request object containing the origin url and path
  */
-const getOriginURL = (origin: string | URL): URL => {
-  return origin instanceof URL ? origin : new URL(origin);
+const getRequestURL = (
+  request: DiagnosticsChannel.Request
+): URL | undefined => {
+  if (typeof request.origin === 'string') {
+    return new URL(`${request.origin}${request.path || ''}`);
+  }
+
+  if (request.origin instanceof URL) {
+    request.origin.pathname = request.path || '';
+
+    return request.origin;
+  }
+
+  return undefined;
 };
 
-export { findHeaderAndDecode, isHttpSubsegment, getOriginURL };
+export { findHeaderAndDecode, isHttpSubsegment, getRequestURL };

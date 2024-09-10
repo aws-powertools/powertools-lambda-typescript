@@ -2,7 +2,8 @@ import { channel } from 'node:diagnostics_channel';
 import type { URL } from 'node:url';
 
 type MockFetchOptions = {
-  origin: string | URL;
+  origin?: string | URL;
+  path?: string;
   method?: string;
   headers?: { [key: string]: string };
 } & (
@@ -25,6 +26,7 @@ type MockFetchOptions = {
  */
 const mockFetch = ({
   origin,
+  path,
   method,
   statusCode,
   headers,
@@ -37,6 +39,7 @@ const mockFetch = ({
   const request = {
     origin,
     method: method ?? 'GET',
+    path,
   };
 
   requestCreateChannel.publish({

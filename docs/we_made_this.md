@@ -47,7 +47,7 @@ Discover how easy it is to quickly “power-up” your Node.js Lambda functions 
 
 > **Author: [Eoin Shanaghy](https://twitter.com/eoins){target="_blank"} :material-twitter:**
 
-This post shows how to use AWS Lambda Powertools to quickly build Well-Architected serverless applications.
+This post shows how to use AWS Lambda Powertools to quickly build Well-Architected Serverless applications.
 
 * [https://fourtheorem.com/aws-lambda-powertools/](https://fourtheorem.com/aws-lambda-powertools/){target="_blank"}
 

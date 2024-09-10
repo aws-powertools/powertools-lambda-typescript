@@ -359,7 +359,7 @@ In v2, we have removed the `ContextExamples` from the `@aws-lambda-powertools/co
 
 ## Helper functions
 
-We removed the deprecated `createLogger` and `createTracer` heper functions.
+We removed the deprecated `createLogger` and `createTracer` helper functions.
 
 ```typescript
 import { createLogger } from '@aws-lambda-powertools/logger';

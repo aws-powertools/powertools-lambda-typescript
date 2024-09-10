@@ -60,7 +60,7 @@
     "jest-runner-groups": "^2.2.0",
     "lerna": "8.1.2",
     "lint-staged": "^15.2.10",
-    "markdownlint-cli2": "^0.13.0",
+    "markdownlint-cli2": "^0.14.0",
     "middy4": "npm:@middy/core@^4.7.0",
     "middy5": "npm:@middy/core@^5.4.3",
     "ts-jest": "^29.2.5",

@@ -23,10 +23,6 @@ const invokeAllTestCases = async (
       },
       {
         invocation: 2,
-        throw: false,
-      },
-      {
-        invocation: 3,
         throw: true, // only last invocation should throw
       },
     ],

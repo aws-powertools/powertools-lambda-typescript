@@ -118,7 +118,7 @@ If you want to extend a schema and transform a JSON stringified payload to an ob
 
     1. Extend built-in `AlbSchema` using JSONStringified function to transform your payload
 
-=== "Alb example payload"
+=== "ALB example payload"
 
     ```json hl_lines="26"
     --8<-- "examples/snippets/parser/exampleAlbPayload.json"

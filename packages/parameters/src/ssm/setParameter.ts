@@ -1,6 +1,6 @@
 import { DEFAULT_PROVIDERS } from '../base/DefaultProviders.js';
 import type { SSMSetOptions } from '../types/SSMProvider';
-import { SSMProvider } from './SSMProvider';
+import { SSMProvider } from './SSMProvider.js';
 
 /**
  * ## Intro

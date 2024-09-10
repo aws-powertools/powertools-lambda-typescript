@@ -1,5 +1,9 @@
-import type { LogAttributes, PowertoolsLog } from '../types/Log.js';
-import type { UnformattedAttributes } from '../types/Logger.js';
+import type {
+  LogAttributes,
+  PowerToolsLogFormatterOptions,
+  PowertoolsLog,
+} from '../types/Log.js';
+import type { LogRecordOrder, UnformattedAttributes } from '../types/Logger.js';
 import { LogFormatter } from './LogFormatter.js';
 import { LogItem } from './LogItem.js';
 
@@ -11,6 +15,17 @@ import { LogItem } from './LogItem.js';
  * @extends {LogFormatter}
  */
 class PowertoolsLogFormatter extends LogFormatter {
+  /**
+   * An array of keys that defines the order of the log record.
+   */
+  #logRecordOrder?: LogRecordOrder;
+
+  public constructor(options?: PowerToolsLogFormatterOptions) {
+    super(options);
+
+    this.#logRecordOrder = options?.logRecordOrder;
+  }
+
   /**
    * It formats key-value pairs of log attributes.
    *
@@ -34,8 +49,45 @@ class PowertoolsLogFormatter extends LogFormatter {
       timestamp: this.formatTimestamp(attributes.timestamp),
       xray_trace_id: attributes.xRayTraceId,
     };
-    const powertoolsLogItem = new LogItem({ attributes: baseAttributes });
-    powertoolsLogItem.addAttributes(additionalLogAttributes);
+
+    // If logRecordOrder is not set, return the log item with the attributes in the order they were added
+    if (this.#logRecordOrder === undefined) {
+      return new LogItem({ attributes: baseAttributes }).addAttributes(
+        additionalLogAttributes
+      );
+    }
+
+    const orderedAttributes = {} as PowertoolsLog;
+
+    // If logRecordOrder is set, order the attributes in the log item
+    for (const key of this.#logRecordOrder) {
+      if (key in baseAttributes && !(key in orderedAttributes)) {
+        orderedAttributes[key] = baseAttributes[key];
+      } else if (
+        key in additionalLogAttributes &&
+        !(key in orderedAttributes)
+      ) {
+        orderedAttributes[key] = additionalLogAttributes[key];
+      }
+    }
+
+    // Add remaining attributes from baseAttributes
+    for (const key in baseAttributes) {
+      if (!(key in orderedAttributes)) {
+        orderedAttributes[key] = baseAttributes[key];
+      }
+    }
+
+    // Add remaining attributes from additionalLogAttributes
+    for (const key in additionalLogAttributes) {
+      if (!(key in orderedAttributes)) {
+        orderedAttributes[key] = additionalLogAttributes[key];
+      }
+    }
+
+    const powertoolsLogItem = new LogItem({
+      attributes: orderedAttributes,
+    });
 
     return powertoolsLogItem;
   }

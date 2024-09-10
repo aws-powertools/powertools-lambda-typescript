@@ -23,6 +23,7 @@ import type {
   LogFunction,
   LogItemExtraInput,
   LogItemMessage,
+  LogRecordOrder,
   LoggerInterface,
   PowertoolsLogData,
 } from './types/Logger.js';
@@ -1077,15 +1078,22 @@ class Logger extends Utility implements LoggerInterface {
 
   /**
    * Set the log formatter instance, in charge of giving a custom format
-   * to the structured logs
+   * to the structured logs, and optionally the ordering for keys within logs.
    *
    * @private
-   * @param {LogFormatterInterface} logFormatter - The log formatt er
+   * @param {LogFormatterInterface} logFormatter - The log formatter
+   * @param {LogRecordOrder} logRecordOrder - Optional list of keys to specify order in logs
    */
-  private setLogFormatter(logFormatter?: LogFormatterInterface): void {
+  private setLogFormatter(
+    logFormatter?: LogFormatterInterface,
+    logRecordOrder?: LogRecordOrder
+  ): void {
     this.logFormatter =
       logFormatter ??
-      new PowertoolsLogFormatter({ envVarsService: this.getEnvVarsService() });
+      new PowertoolsLogFormatter({
+        envVarsService: this.getEnvVarsService(),
+        logRecordOrder,
+      });
   }
 
   /**
@@ -1119,6 +1127,7 @@ class Logger extends Utility implements LoggerInterface {
       persistentLogAttributes, // deprecated in favor of persistentKeys
       environment,
       jsonReplacerFn,
+      logRecordOrder,
     } = options;
 
     if (persistentLogAttributes && persistentKeys) {
@@ -1140,7 +1149,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setInitialSampleRate(sampleRateValue);
 
     // configurations that affect how logs are printed
-    this.setLogFormatter(logFormatter);
+    this.setLogFormatter(logFormatter, logRecordOrder);
     this.setConsole();
     this.setLogIndentation();
     this.#jsonReplacerFn = jsonReplacerFn;

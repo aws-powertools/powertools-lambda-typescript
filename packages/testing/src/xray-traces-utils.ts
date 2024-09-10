@@ -49,8 +49,7 @@ const getTraceIds = async (
     );
   }
 
-  const ids = [];
-
+  const ids: string[] = [];
   for (const summary of summaries) {
     if (summary.Id === undefined) {
       throw new Error(
@@ -342,7 +341,7 @@ const getTraces = async (
 
   const { resourceName } = options;
 
-  const mainSubsegments = [];
+  const mainSubsegments: EnrichedXRayTraceDocumentParsed[] = [];
   for (const trace of traces) {
     const mainSubsegment = findPowertoolsFunctionSegment(trace, resourceName);
     const enrichedMainSubsegment = {

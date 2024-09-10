@@ -6,7 +6,7 @@
 import { PutParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
 import { DEFAULT_PROVIDERS } from '../../src/base';
-import { setParameter } from '../../src/ssm';
+import { setParameter } from '../../src/ssm/index.js';
 import { SSMProvider } from '../../src/ssm/SSMProvider';
 import 'aws-sdk-client-mock-jest';
 import type { SSMSetOptions } from '../../src/types/SSMProvider';

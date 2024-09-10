@@ -396,7 +396,8 @@ describe('Class: ProviderService', () => {
       // Act
       provider.instrumentFetch();
       mockFetch({
-        origin: 'https://aws.amazon.com/blogs',
+        origin: 'https://aws.amazon.com',
+        path: '/blogs',
         headers: {
           'content-length': '100',
         },
@@ -407,7 +408,7 @@ describe('Class: ProviderService', () => {
       expect(segment.addNewSubsegment).toHaveBeenCalledWith('aws.amazon.com');
       expect((subsegment as HttpSubsegment).http).toEqual({
         request: {
-          url: 'aws.amazon.com',
+          url: 'https://aws.amazon.com/blogs',
           method: 'GET',
         },
         response: {
@@ -438,7 +439,8 @@ describe('Class: ProviderService', () => {
       // Act
       provider.instrumentFetch();
       mockFetch({
-        origin: new URL('https://aws.amazon.com/blogs'),
+        origin: new URL('https://aws.amazon.com'),
+        path: '/blogs',
         headers: {
           'content-type': 'application/json',
         },
@@ -447,7 +449,7 @@ describe('Class: ProviderService', () => {
       // Assess
       expect((subsegment as HttpSubsegment).http).toEqual({
         request: {
-          url: 'aws.amazon.com',
+          url: 'https://aws.amazon.com/blogs',
           method: 'GET',
         },
         response: {
@@ -567,6 +569,56 @@ describe('Class: ProviderService', () => {
       expect(subsegment.addFaultFlag).toHaveBeenCalledTimes(1);
       expect(subsegment.close).toHaveBeenCalledTimes(1);
       expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
+    });
+
+    it('skips the segment creation when the request has no origin', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      jest.spyOn(segment, 'addNewSubsegment');
+      jest.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      jest.spyOn(provider, 'setSegment');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({});
+
+      // Assess
+      expect(segment.addNewSubsegment).toHaveBeenCalledTimes(0);
+      expect(provider.setSegment).toHaveBeenCalledTimes(0);
+    });
+
+    it('does not add any path to the segment when the request has no path', async () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      jest
+        .spyOn(segment, 'addNewSubsegment')
+        .mockImplementationOnce(() => subsegment);
+      jest
+        .spyOn(provider, 'getSegment')
+        .mockImplementationOnce(() => segment)
+        .mockImplementationOnce(() => subsegment)
+        .mockImplementationOnce(() => subsegment);
+      jest.spyOn(subsegment, 'close');
+      jest.spyOn(provider, 'setSegment');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: new URL('https://aws.amazon.com'),
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          request: {
+            url: 'https://aws.amazon.com/',
+            method: 'GET',
+          },
+        })
+      );
     });
   });
 

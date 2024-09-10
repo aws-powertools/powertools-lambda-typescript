@@ -118,7 +118,7 @@ If you want to extend a schema and transform a JSON stringified payload to an ob
 
     1. Extend built-in `AlbSchema` using JSONStringified function to transform your payload
 
-=== "Alb exmaple payload"
+=== "ALB example payload"
 
     ```json hl_lines="26"
     --8<-- "examples/snippets/parser/exampleAlbPayload.json"
@@ -131,7 +131,7 @@ If you want to extend a schema and transform a JSON stringified payload to an ob
 
     1. make sure to set your schema to the correct key in the JSON payload
 
-=== "SQS exmaple payload"
+=== "SQS example payload"
 
     ```json hl_lines="6 28"
     --8<-- "examples/snippets/parser/exampleSqsPayload.json"
@@ -280,7 +280,7 @@ We recommend to use the types provided by the parser utility. If you encounter a
 
 ## Testing your code
 
-When testing your handler with [**parser decorator**](#parse-events) you need to use double assetion to bypass TypeScript type checking in your tests.
+When testing your handler with [**parser decorator**](#parse-events) you need to use double assertion to bypass TypeScript type checking in your tests.
 This is useful when you want to test the handler for invalid payloads or when you want to test the error handling.
 If you are you use middy middleware, you don't need to do this.
 

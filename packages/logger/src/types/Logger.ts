@@ -65,7 +65,6 @@ type CustomJsonReplacerFn = (key: string, value: unknown) => unknown;
  * @property {LogLevel} [logLevel] - The log level.
  * @property {string} [serviceName] - The service name.
  * @property {number} [sampleRateValue] - The sample rate value.
- * @property {LogFormatterInterface} [logFormatter] - The custom log formatter.
  * @property {ConfigServiceInterface} [customConfigService] - The custom config service.
  * @property {Environment} [environment] - The environment.
  */
@@ -73,7 +72,6 @@ type BaseConstructorOptions = {
   logLevel?: LogLevel;
   serviceName?: string;
   sampleRateValue?: number;
-  logFormatter?: LogFormatterInterface;
   customConfigService?: ConfigServiceInterface;
   environment?: Environment;
   /**
@@ -116,6 +114,40 @@ type DeprecatedOption = {
 };
 
 /**
+ * Options for the `logFormatter` constructor option.
+ *
+ * @type {Object} LogFormatterOption
+ * @property {LogFormatterInterface} [logFormatter] - The custom log formatter.
+ */
+type LogFormatterOption = {
+  /**
+   * The custom log formatter.
+   */
+  logFormatter?: LogFormatterInterface;
+  /**
+   * Optional list of keys to specify order in logs
+   */
+  logRecordOrder?: never;
+};
+
+/**
+ * Options for the `logRecordOrder` constructor option.
+ *
+ * @type {Object} LogRecordOrderOption
+ * @property {LogRecordOrder} [logRecordOrder] - The log record order.
+ */
+type LogRecordOrderOption = {
+  /**
+   * Optional list of keys to specify order in logs
+   */
+  logRecordOrder?: LogRecordOrder;
+  /**
+   * The custom log formatter.
+   */
+  logFormatter?: never;
+};
+
+/**
  * Options for the Logger class constructor.
  *
  * @type {Object} ConstructorOptions
@@ -126,9 +158,11 @@ type DeprecatedOption = {
  * @property {ConfigServiceInterface} [customConfigService] - The custom config service.
  * @property {Environment} [environment] - The environment.
  * @property {LogAttributes} [persistentKeys] - Keys that will be added in all log items.
+ * @property {LogRecordOrder} [logRecordOrder] - The log record order.
  */
 type ConstructorOptions = BaseConstructorOptions &
-  (PersistentKeysOption | DeprecatedOption);
+  (PersistentKeysOption | DeprecatedOption) &
+  (LogFormatterOption | LogRecordOrderOption);
 
 type LambdaFunctionContext = Pick<
   Context,
@@ -156,6 +190,8 @@ type UnformattedAttributes = PowertoolsLogData & {
   timestamp: Date;
   message: string;
 };
+
+type LogRecordOrder = Array<keyof UnformattedAttributes | keyof LogAttributes>;
 
 type LogItemMessage = string | LogAttributesWithMessage;
 type LogItemExtraInput = [Error | string] | LogAttributes[];
@@ -197,4 +233,5 @@ export type {
   ConstructorOptions,
   InjectLambdaContextOptions,
   CustomJsonReplacerFn,
+  LogRecordOrder,
 };

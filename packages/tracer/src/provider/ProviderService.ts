@@ -28,7 +28,7 @@ import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import type { DiagnosticsChannel } from 'undici-types';
 import {
   findHeaderAndDecode,
-  getOriginURL,
+  getRequestURL,
   isHttpSubsegment,
 } from './utilities.js';
 
@@ -107,16 +107,18 @@ class ProviderService implements ProviderServiceInterface {
       const { request } = message as DiagnosticsChannel.RequestCreateMessage;
 
       const parentSubsegment = this.getSegment();
-      if (parentSubsegment && request.origin) {
-        const origin = getOriginURL(request.origin);
+      const requestURL = getRequestURL(request);
+      if (parentSubsegment && requestURL) {
         const method = request.method;
 
-        const subsegment = parentSubsegment.addNewSubsegment(origin.hostname);
+        const subsegment = parentSubsegment.addNewSubsegment(
+          requestURL.hostname
+        );
         subsegment.addAttribute('namespace', 'remote');
 
         (subsegment as HttpSubsegment).http = {
           request: {
-            url: origin.hostname,
+            url: `${requestURL.protocol}//${requestURL.hostname}${requestURL.pathname}`,
             method,
           },
         };

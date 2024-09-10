@@ -87,6 +87,104 @@ interface TestStackProps {
   stack?: Stack;
 }
 
+// #region X-Ray Trace Utils
+
+type GetXRayTraceIdsOptions = {
+  startTime: Date;
+  resourceName: string;
+  expectedTracesCount: number;
+};
+
+type XRayTraceDocumentParsed = {
+  name: string;
+  id: string;
+  start_time: number;
+  end_time?: number;
+  // This flag may be set if the segment hasn't been fully processed
+  // The trace may have already appeared in the `getTraceSummaries` response
+  // but a segment may still be in_progress
+  in_progress?: boolean;
+  aws?: {
+    request_id: string;
+  };
+  http?: {
+    request: {
+      url: string;
+      method: string;
+    };
+    response?: {
+      status: number;
+      content_length?: number;
+    };
+  };
+  origin?: string;
+  resource_arn?: string;
+  trace_id?: string;
+  subsegments?: XRayTraceDocumentParsed[];
+  annotations?: {
+    [key: string]: string | boolean | number;
+  };
+  metadata?: {
+    [key: string]: {
+      [key: string]: unknown;
+    };
+  };
+  fault?: boolean;
+  cause?: {
+    working_directory: string;
+    exceptions: {
+      message: string;
+      type: string;
+      remote: boolean;
+      stack: {
+        path: string;
+        line: number;
+        label: string;
+      }[];
+    }[];
+  };
+  exception: {
+    message: string;
+  };
+  error?: boolean;
+  namespace?: string;
+};
+
+type XRaySegmentParsed = {
+  Id: string;
+  Document: XRayTraceDocumentParsed;
+};
+
+type XRayTraceParsed = {
+  Id: string;
+  Segments: XRaySegmentParsed[];
+};
+
+type GetXRayTraceDetailsOptions = {
+  /**
+   * The trace IDs to get details for
+   */
+  traceIds: string[];
+  /**
+   * The expected number of segments in each trace
+   */
+  expectedSegmentsCount: number;
+  /**
+   * The name of the function that the trace is expected to be associated with
+   */
+  functionName: string;
+};
+
+/**
+ * Enriched X-Ray trace document parsed with subsegments as a map
+ */
+type EnrichedXRayTraceDocumentParsed = Omit<
+  XRayTraceDocumentParsed,
+  'subsegments'
+> & {
+  subsegments: Map<string, XRayTraceDocumentParsed>;
+};
+
 export type {
   ExtraTestProps,
   TestDynamodbTableProps,
@@ -96,4 +194,10 @@ export type {
   FunctionLog,
   StackNameProps,
   TestStackProps,
+  GetXRayTraceIdsOptions,
+  GetXRayTraceDetailsOptions,
+  XRayTraceDocumentParsed,
+  XRaySegmentParsed,
+  XRayTraceParsed,
+  EnrichedXRayTraceDocumentParsed,
 };

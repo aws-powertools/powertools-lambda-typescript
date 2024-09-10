@@ -205,7 +205,7 @@ Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`tr
 
 ### Appending additional keys
 
-You can append additional keys using either machanism:
+You can append additional keys using either mechanism:
 
 * Add **extra keys** to a single log message by passing them to the log method directly
 * Append **temporary keys** to all future log messages via the `appendKeys()` method until `resetKeys()` is called
@@ -541,6 +541,25 @@ We prioritise log level settings in this order:
 3. `POWERTOOLS_LOG_LEVEL` environment variable
 
 In the event you have set a log level in Powertools to a level that is lower than the ACL setting, we will output a warning log message informing you that your messages will be discarded by Lambda.
+
+### Reordering log keys position
+
+You can change the order of [standard Logger keys](#standard-structured-keys) or any keys that will be appended later at runtime via the `logRecordOrder` parameter.
+
+!!! note
+    This feature is available only in the default log formatter and not with custom log formatters.
+
+=== "reorderLogKeys.ts"
+
+    ```typescript hl_lines="5 10"
+    --8<-- "examples/snippets/logger/reorderLogKeys.ts"
+    ```
+
+=== "reorderLogKeysOutput.json"
+
+    ```json hl_lines="2-3"
+    --8<-- "examples/snippets/logger/reorderLogKeysOutput.json"
+    ```
 
 ### Setting timestamp to custom Timezone
 

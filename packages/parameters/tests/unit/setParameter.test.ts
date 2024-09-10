@@ -5,11 +5,11 @@
  */
 import { PutParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
-import { DEFAULT_PROVIDERS } from '../../src/base';
+import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
 import { setParameter } from '../../src/ssm/index.js';
-import { SSMProvider } from '../../src/ssm/SSMProvider';
+import { SSMProvider } from '../../src/ssm/SSMProvider.js';
 import 'aws-sdk-client-mock-jest';
-import type { SSMSetOptions } from '../../src/types/SSMProvider';
+import type { SSMSetOptions } from '../../src/types/SSMProvider.js';
 
 describe('Function: setParameter', () => {
   const parameterName = '/my-parameter';

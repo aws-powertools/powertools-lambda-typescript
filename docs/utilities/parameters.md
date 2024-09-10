@@ -330,7 +330,7 @@ For example, if you have three parameters, _/param/a_, _/param/b_ and _/param/c_
 
 If you use `transform` with `getMultiple()`, you might want to retrieve and transform parameters encoded in different formats.
 
-You can do this with a single request by using `transform: 'auto'`. This will instruct any provider to to infer its type based on the suffix and transform it accordingly.
+You can do this with a single request by using `transform: 'auto'`. This will instruct any provider to infer its type based on the suffix and transform it accordingly.
 
 ???+ info
     `transform: 'auto'` feature is available across all providers, including the high level functions.

@@ -3,36 +3,21 @@ import type { SSMSetOptions } from '../types/SSMProvider.js';
 import { SSMProvider } from './SSMProvider.js';
 
 /**
- * ## Intro
- * The Parameters utility provides an SSMProvider that allows setting parameters in AWS Systems Manager.
+ * Set a parameter in AWS Systems Manager Parameter Store.
  *
- * ## Getting started
- *
- * This utility supports AWS SDK v3 for JavaScript only. This allows the utility to be modular, and you to install only
- * the SDK packages you need and keep your bundle size small.
- *
- * To use the provider, you must install the Parameters utility and the AWS SDK v3 for JavaScript for SSM:
- *
- * ```sh
- * npm install @aws-lambda-powertools/parameters @aws-sdk/client-ssm
- *```
- *
- * ## Basic Usage
+ * **Basic Usage**
  *
  * @example
  * ```typescript
  * import { setParameter } from '@aws-lambda-powertools/parameters/ssm';
  *
- * export const handler = async (): Promise<void> => {
- *  // Set a parameter
- *  const version = await setParameter('/my-parameter', { value: 'my-value' });
- *  console.log(Parameter version: ${version});
+ * export const handler = async () => {
+ *   // Set a parameter
+ *   const version = await setParameter('/my-parameter', { value: 'my-value' });
  * };
  * ```
  *
- * ## Advanced Usage
- *
- * ### Overwriting a parameter
+ * **Overwriting a parameter**
  *
  * By default, the provider will not overwrite a parameter if it already exists. You can force the provider to overwrite the parameter by using the `overwrite` option.
  *
@@ -71,11 +56,11 @@ import { SSMProvider } from './SSMProvider.js';
  *
  *  This object accepts the same options as the AWS SDK v3 for JavaScript `PutParameterCommandInput` interface.
  *
- *  ### Built-in provider class
+ *  **Built-in provider class**
  *
  *  For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link SSMProvider} class.
  *
- *  ### Options
+ *  **Options**
  *
  *   You can customize the storage of the value by passing options to the function:
  * * `value` - The value of the parameter, which is a mandatory option.

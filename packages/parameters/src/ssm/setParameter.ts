@@ -35,7 +35,7 @@ import { SSMProvider } from './SSMProvider.js';
  * };
  * ```
  *
- * ### Extra SDK options
+ * **Extra SDK options**
  *
  * When setting a parameter, you can pass extra options to the AWS SDK v3 for JavaScript client by using the sdkOptions parameter.
  *
@@ -52,17 +52,15 @@ import { SSMProvider } from './SSMProvider.js';
  *    },
  *  });
  * };
- *  ```
+ * ```
  *
- *  This object accepts the same options as the AWS SDK v3 for JavaScript `PutParameterCommandInput` interface.
+ * This object accepts the same options as the AWS SDK v3 for JavaScript `PutParameterCommandInput` interface.
  *
- *  **Built-in provider class**
+ * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link SSMProvider} utility.
  *
- *  For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link SSMProvider} class.
+ * **Options**
  *
- *  **Options**
- *
- *   You can customize the storage of the value by passing options to the function:
+ * You can customize the storage of the value by passing options to the function:
  * * `value` - The value of the parameter, which is a mandatory option.
  * * `overwrite` - Whether to overwrite the value if it already exists (default: `false`)
  * * `description` - The description of the parameter

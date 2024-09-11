@@ -2,6 +2,7 @@ import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import {
   GetParameterCommand,
   GetParametersCommand,
+  PutParameterCommand,
   SSMClient,
   paginateGetParametersByPath,
 } from '@aws-sdk/client-ssm';
@@ -10,12 +11,14 @@ import type {
   GetParametersByPathCommandInput,
   GetParametersCommandInput,
   GetParametersCommandOutput,
+  PutParameterCommandInput,
+  PutParameterCommandOutput,
   SSMPaginationConfiguration,
 } from '@aws-sdk/client-ssm';
 import { BaseProvider } from '../base/BaseProvider.js';
 import { transformValue } from '../base/transformValue.js';
 import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
-import { GetParameterError } from '../errors.js';
+import { GetParameterError, SetParameterError } from '../errors.js';
 import type {
   SSMGetMultipleOptions,
   SSMGetMultipleOutput,
@@ -26,6 +29,7 @@ import type {
   SSMGetParametersByNameOutput,
   SSMGetParametersByNameOutputInterface,
   SSMProviderOptions,
+  SSMSetOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
 } from '../types/SSMProvider.js';
 
@@ -320,6 +324,63 @@ class SSMProvider extends BaseProvider {
       | SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
       | undefined
     >;
+  }
+
+  /**
+   * Sets a parameter in AWS Systems Manager (SSM).
+   *
+   * @example
+   * ```typescript
+   * import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
+   *
+   * const parametersProvider = new SSMProvider();
+   *
+   * export const handler = async (): Promise<void> => {
+   *   // Set a parameter in SSM
+   *   const version = await parametersProvider.set('/my-parameter', { value: 'my-value' });
+   *   console.log(`Parameter version: ${version}`);
+   * };
+   * ```
+   *
+   * You can customize the storage of the value by passing options to the function:
+   * * `value` - The value of the parameter, which is a mandatory option.
+   * * `overwrite` - Whether to overwrite the value if it already exists (default: `false`)
+   * * `description` - The description of the parameter
+   * * `parameterType` - The type of the parameter, can be one of `String`, `StringList`, or `SecureString` (default: `String`)
+   * * `tier` - The parameter tier to use, can be one of `Standard`, `Advanced`, and `Intelligent-Tiering` (default: `Standard`)
+   * * `kmsKeyId` - The KMS key id to use to encrypt the parameter
+   * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
+   *
+   * @param {string} name - The name of the parameter
+   * @param {SSMSetOptions} options - Options to configure the parameter
+   * @returns {Promise<number>} The version of the parameter
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   */
+  public async set<
+    InferredFromOptionsType extends SSMSetOptions | undefined = SSMSetOptions,
+  >(
+    name: string,
+    options: InferredFromOptionsType & SSMSetOptions
+  ): Promise<number> {
+    const sdkOptions: PutParameterCommandInput = {
+      Tier: options.tier ?? 'Standard',
+      Type: options.parameterType ?? 'String',
+      Overwrite: options.overwrite ?? false,
+      ...(options.kmsKeyId ? { KeyId: options.kmsKeyId } : {}),
+      ...(options.description ? { Description: options.description } : {}),
+      ...(options?.sdkOptions ?? {}),
+      Name: name,
+      Value: options.value,
+    };
+    let result: PutParameterCommandOutput;
+    try {
+      result = await this.client.send(new PutParameterCommand(sdkOptions));
+    } catch (error) {
+      throw new SetParameterError(`Unable to set parameter with name ${name}`);
+    }
+
+    // biome-ignore lint/style/noNonNullAssertion: The API for PutParameter states that there will always be a value returned when the request was successful.
+    return result.Version!;
   }
 
   /**

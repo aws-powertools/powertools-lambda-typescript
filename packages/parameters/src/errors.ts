@@ -9,6 +9,16 @@ class GetParameterError extends Error {
 }
 
 /**
+ * Error thrown when a parameter cannot be set.
+ */
+class SetParameterError extends Error {
+  public constructor(message?: string) {
+    super(message);
+    this.name = 'SetParameterError';
+  }
+}
+
+/**
  * Error thrown when a transform fails.
  */
 class TransformParameterError extends Error {
@@ -19,4 +29,4 @@ class TransformParameterError extends Error {
   }
 }
 
-export { GetParameterError, TransformParameterError };
+export { GetParameterError, TransformParameterError, SetParameterError };

@@ -5,6 +5,7 @@ import type {
   SSMGetMultipleOptions,
   SSMGetOptions,
   SSMGetParametersByNameOptions,
+  SSMSetOptions,
 } from '../../src/types/SSMProvider.js';
 import { middleware } from '../helpers/sdkMiddlewareRequestCounter.js';
 import { TinyLogger } from '../helpers/tinyLogger.js';
@@ -22,6 +23,7 @@ const providerWithMiddleware = new SSMProvider({
 
 const paramA = process.env.PARAM_A ?? 'my-param';
 const paramB = process.env.PARAM_B ?? 'my-param';
+const paramC = process.env.PARAM_C ?? 'my-param';
 const paramEncryptedA = process.env.PARAM_ENCRYPTED_A ?? 'my-encrypted-param';
 const paramEncryptedB = process.env.PARAM_ENCRYPTED_B ?? 'my-encrypted-param';
 
@@ -100,6 +102,24 @@ const _call_get_parameters_by_name = async (
       test: testName,
       value: parameterValues,
     });
+  } catch (err) {
+    logger.log({
+      test: testName,
+      error: (err as Error).message,
+    });
+  }
+};
+
+const _call_set = async (
+  paramName: string,
+  testName: string,
+  options: SSMSetOptions,
+  provider?: SSMProvider
+): Promise<void> => {
+  try {
+    const currentProvider = resolveProvider(provider);
+
+    await currentProvider.set(paramName, options);
   } catch (err) {
     logger.log({
       test: testName,
@@ -197,4 +217,9 @@ export const handler = async (
       error: (err as Error).message,
     });
   }
+
+  // Test 10
+  // set and overwrite parameter
+  await _call_set(paramC, 'set', { value: 'overwritten', overwrite: true });
+  await _call_get(paramC, 'set');
 };

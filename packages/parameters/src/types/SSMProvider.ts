@@ -2,6 +2,7 @@ import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type {
   GetParameterCommandInput,
   GetParametersByPathCommandInput,
+  PutParameterCommandInput,
   SSMClient,
   SSMClientConfig,
 } from '@aws-sdk/client-ssm';
@@ -93,6 +94,44 @@ type SSMGetOptions =
   | SSMGetOptionsTransformBinary
   | SSMGetOptionsTransformNone
   | undefined;
+
+type ParameterType = 'String' | 'StringList' | 'SecureString';
+
+type ParameterTier = 'Standard' | 'Advanced' | 'Intelligent-Tiering';
+
+type SSMSetOptions = {
+  /**
+   * The parameter value
+   */
+  value: string;
+  /**
+   * If the parameter value should be overwritten
+   * @default false
+   */
+  overwrite?: boolean;
+  /**
+   * The description of the parameter
+   */
+  description?: string;
+  /**
+   * Type of the parameter, can be one of `String`, `StringList`, or `SecureString`
+   * @default `String`
+   */
+  parameterType?: ParameterType;
+  /**
+   * The parameter tier to use, can be one of `Standard`, `Advanced`, and `Intelligent-Tiering`
+   * @default `Standard`
+   */
+  tier?: ParameterTier;
+  /**
+   * The KMS key id to use to encrypt the parameter
+   */
+  kmsKeyId?: string;
+  /**
+   * Additional options to pass to the AWS SDK v3 client
+   */
+  sdkOptions?: Partial<PutParameterCommandInput>;
+};
 
 /**
  * Generic output type for the SSMProvider get method.
@@ -239,6 +278,7 @@ type SSMGetParametersByNameOutput<InferredFromOptionsType = undefined> =
 export type {
   SSMProviderOptions,
   SSMGetOptions,
+  SSMSetOptions,
   SSMGetOutput,
   SSMGetMultipleOptions,
   SSMGetMultipleOutput,

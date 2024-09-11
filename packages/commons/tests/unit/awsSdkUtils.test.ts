@@ -96,7 +96,31 @@ describe('Helpers: awsSdk', () => {
       expect(middleware).toBeInstanceOf(Function);
     });
 
-    it('adds the Powertools UA to the request headers', async () => {
+    it('adds the Powertools UA to the request headers when no user agent is present', async () => {
+      // Prepare
+      const feature = 'my-feature';
+      const middleware = customUserAgentMiddleware(feature);
+      const next = jest.fn();
+      const args = {
+        request: {
+          headers: {},
+        },
+      } as {
+        request: {
+          headers: Record<string, string>;
+        };
+      };
+
+      // Act
+      await middleware(next)(args);
+
+      // Assess
+      expect(args.request.headers['user-agent']).toEqual(
+        `PT/my-feature/${version} PTEnv/NA`
+      );
+    });
+
+    it('adds the Powertools UA to the request headers when no Powertools UA is present', async () => {
       // Prepare
       const feature = 'my-feature';
       const middleware = customUserAgentMiddleware(feature);
@@ -115,6 +139,50 @@ describe('Helpers: awsSdk', () => {
       // Assess
       expect(args.request.headers['user-agent']).toEqual(
         `foo PT/my-feature/${version} PTEnv/NA`
+      );
+    });
+
+    it('replaces the no-op Powertools UA with the the feature-specific one', async () => {
+      // Prepare
+      const feature = 'my-feature';
+      const middleware = customUserAgentMiddleware(feature);
+      const next = jest.fn();
+      const args = {
+        request: {
+          headers: {
+            'user-agent': 'PT/NO-OP',
+          },
+        },
+      };
+
+      // Act
+      await middleware(next)(args);
+
+      // Assess
+      expect(args.request.headers['user-agent']).toEqual(
+        `PT/my-feature/${version} PTEnv/NA`
+      );
+    });
+
+    it('does not add the Powertools feature-specific UA if it is already present', async () => {
+      // Prepare
+      const feature = 'my-feature';
+      const middleware = customUserAgentMiddleware(feature);
+      const next = jest.fn();
+      const args = {
+        request: {
+          headers: {
+            'user-agent': 'PT/other-feature/1.0 PTEnv/NA',
+          },
+        },
+      };
+
+      // Act
+      await middleware(next)(args);
+
+      // Assess
+      expect(args.request.headers['user-agent']).toEqual(
+        'PT/other-feature/1.0 PTEnv/NA'
       );
     });
   });

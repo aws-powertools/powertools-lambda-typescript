@@ -71,8 +71,8 @@ import { SSMProvider } from './SSMProvider.js';
  *
  *  For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
  *
- *  @param {string} name - Name of the parameter
- *  @param {SSMSetOptions} options - Options to configure the parameter
+ *  @param name - Name of the parameter
+ *  @param options - Options to configure the parameter
  *  @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
  */
 const setParameter = async <

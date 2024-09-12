@@ -10,10 +10,20 @@ import type {
   LogAttributesWithMessage,
 } from './logKeys.js';
 
+/**
+ * Type definition for the log level.
+ *
+ * It includes the lowercase and uppercase versions of each log level.
+ */
 type LogLevel =
   | (typeof LogLevelList)[keyof typeof LogLevelList]
   | Lowercase<(typeof LogLevelList)[keyof typeof LogLevelList]>;
 
+/**
+ * Type definition for the log level thresholds.
+ *
+ * Each log level has a corresponding number that represents its severity.
+ */
 type LogLevelThresholds = {
   [key in Uppercase<LogLevel>]: number;
 };

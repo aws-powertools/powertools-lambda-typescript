@@ -232,10 +232,6 @@ describe('Formatters', () => {
 
   it('when `logRecordOrder` is set, it orders the attributes in the log item taking `additionalLogAttributes` into consideration', () => {
     // Prepare
-    const l = new Logger({
-      logRecordOrder: [''],
-    });
-
     const formatter = new PowertoolsLogFormatter({
       logRecordOrder: new Set<LogKey>([
         'message',

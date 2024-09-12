@@ -12,6 +12,7 @@ export type {
   IdempotencyHandlerOptions,
   ItempotentFunctionOptions,
   AnyFunction,
+  ResponseHook,
 } from './IdempotencyOptions.js';
 export type {
   DynamoDBPersistenceOptions,

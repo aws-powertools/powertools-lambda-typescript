@@ -1,21 +1,20 @@
 import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
-import type {
-  LogAttributes,
-  LogFormatterInterface,
-  LogFormatterOptions,
-} from '../types/Log.js';
-import type { UnformattedAttributes } from '../types/Logger.js';
+import type { LogAttributes } from '../types/Logger.js';
+import type { LogFormatterOptions } from '../types/formatters.js';
+import type { UnformattedAttributes } from '../types/logKeys.js';
 import type { LogItem } from './LogItem.js';
 
 /**
- * This class defines and implements common methods for the formatting of log attributes.
+ * Class that defines and implements common methods for the formatting of log attributes.
  *
- * @class
+ * When creating a custom log formatter, you should extend this class and implement the
+ * {@link formatAttributes()} method to define the structure of the log item.
+ *
+ * @abstract
  */
-abstract class LogFormatter implements LogFormatterInterface {
+abstract class LogFormatter {
   /**
-   * EnvironmentVariablesService instance.
-   * If set, it allows to access environment variables.
+   * Instance of the {@link EnvironmentVariablesService} to use for configuration.
    */
   protected envVarsService?: EnvironmentVariablesService;
 
@@ -24,10 +23,59 @@ abstract class LogFormatter implements LogFormatterInterface {
   }
 
   /**
-   * It formats key-value pairs of log attributes.
+   * Format key-value pairs of log attributes.
    *
-   * @param {UnformattedAttributes} attributes - unformatted attributes
-   * @param {LogAttributes} additionalLogAttributes - additional log attributes
+   * You should implement this method in a subclass to define the structure of the log item.
+   *
+   * @example
+   * ```typescript
+   * import { LogFormatter, LogItem } from '@aws-lambda-powertools/logger';
+   * import type {
+   *   LogAttributes,
+   *   UnformattedAttributes,
+   * } from '@aws-lambda-powertools/logger/types';
+   *
+   * class MyCompanyLogFormatter extends LogFormatter {
+   *   public formatAttributes(
+   *     attributes: UnformattedAttributes,
+   *     additionalLogAttributes: LogAttributes
+   *   ): LogItem {
+   *     const baseAttributes: MyCompanyLog = {
+   *       message: attributes.message,
+   *       service: attributes.serviceName,
+   *       environment: attributes.environment,
+   *       awsRegion: attributes.awsRegion,
+   *       correlationIds: {
+   *         awsRequestId: attributes.lambdaContext?.awsRequestId,
+   *         xRayTraceId: attributes.xRayTraceId,
+   *       },
+   *       lambdaFunction: {
+   *         name: attributes.lambdaContext?.functionName,
+   *         arn: attributes.lambdaContext?.invokedFunctionArn,
+   *         memoryLimitInMB: attributes.lambdaContext?.memoryLimitInMB,
+   *         version: attributes.lambdaContext?.functionVersion,
+   *         coldStart: attributes.lambdaContext?.coldStart,
+   *       },
+   *       logLevel: attributes.logLevel,
+   *       timestamp: this.formatTimestamp(attributes.timestamp), // You can extend this function
+   *       logger: {
+   *         sampleRateValue: attributes.sampleRateValue,
+   *       },
+   *     };
+   *
+   *     const logItem = new LogItem({ attributes: baseAttributes });
+   *     // add any attributes not explicitly defined
+   *     logItem.addAttributes(additionalLogAttributes);
+   *
+   *     return logItem;
+   *   }
+   * }
+   *
+   * export { MyCompanyLogFormatter };
+   * ```
+   *
+   * @param attributes - Unformatted attributes
+   * @param additionalLogAttributes - Additional log attributes
    */
   public abstract formatAttributes(
     attributes: UnformattedAttributes,
@@ -35,10 +83,25 @@ abstract class LogFormatter implements LogFormatterInterface {
   ): LogItem;
 
   /**
-   * Format a given Error parameter.
+   * Format an error into a loggable object.
    *
-   * @param {Error} error - error to format
-   * @returns {LogAttributes} formatted error
+   * @example
+   * ```json
+   * {
+   *   "name": "Error",
+   *   "location": "file.js:1",
+   *   "message": "An error occurred",
+   *   "stack": "Error: An error occurred\n    at file.js:1\n    at file.js:2\n    at file.js:3",
+   *   "cause": {
+   *     "name": "OtherError",
+   *     "location": "file.js:2",
+   *     "message": "Another error occurred",
+   *     "stack": "Error: Another error occurred\n    at file.js:2\n    at file.js:3\n    at file.js:4"
+   *   }
+   * }
+   * ```
+   *
+   * @param error - Error to format
    */
   public formatError(error: Error): LogAttributes {
     return {
@@ -54,11 +117,14 @@ abstract class LogFormatter implements LogFormatterInterface {
   }
 
   /**
-   * Format a given date into an ISO 8601 string, considering the configured timezone.
-   * If `envVarsService` is set and the configured timezone differs from 'UTC',
-   * the date is formatted to that timezone. Otherwise, it defaults to 'UTC'.
+   * Format a date into an ISO 8601 string with the configured timezone.
    *
-   * @param {Date} now - The date to format
+   * If the log formatter is passed an {@link EnvironmentVariablesService} instance
+   * during construction, the timezone is read from the `TZ` environment variable.
+   *
+   * Otherwise, the timezone defaults to ':UTC'.
+   *
+   * @param now - The date to format
    */
   public formatTimestamp(now: Date): string {
     const defaultTimezone = 'UTC';
@@ -75,9 +141,9 @@ abstract class LogFormatter implements LogFormatterInterface {
   }
 
   /**
-   * Get a string containing the location of an error, given a particular stack trace.
+   * Get the location of an error from a stack trace.
    *
-   * @param {string} stack - stack trace
+   * @param stack - stack trace to parse
    */
   public getCodeLocation(stack?: string): string {
     if (!stack) {
@@ -100,14 +166,16 @@ abstract class LogFormatter implements LogFormatterInterface {
 
   /**
    * Create a new Intl.DateTimeFormat object configured with the specified time zone
-   * and formatting options. The time is displayed in 24-hour format (hour12: false).
+   * and formatting options.
    *
-   * @param {string} timeZone - IANA time zone identifier (e.g., "Asia/Dhaka").
+   * The time is displayed in 24-hour format (hour12: false).
+   *
+   * @param timezone - IANA time zone identifier (e.g., "Asia/Dhaka").
    */
-  #getDateFormatter = (timeZone: string): Intl.DateTimeFormat => {
+  #getDateFormatter = (timezone: string): Intl.DateTimeFormat => {
     const twoDigitFormatOption = '2-digit';
-    const validTimeZone = Intl.supportedValuesOf('timeZone').includes(timeZone)
-      ? timeZone
+    const validTimeZone = Intl.supportedValuesOf('timeZone').includes(timezone)
+      ? timezone
       : 'UTC';
 
     return new Intl.DateTimeFormat('en', {
@@ -125,12 +193,12 @@ abstract class LogFormatter implements LogFormatterInterface {
   /**
    * Generate an ISO 8601 timestamp string with the specified time zone and the local time zone offset.
    *
-   * @param {Date} date - date to format
-   * @param {string} timeZone - IANA time zone identifier (e.g., "Asia/Dhaka").
+   * @param date - date to format
+   * @param timezone - IANA time zone identifier (e.g., "Asia/Dhaka").
    */
-  #generateISOTimestampWithOffset(date: Date, timeZone: string): string {
+  #generateISOTimestampWithOffset(date: Date, timezone: string): string {
     const { year, month, day, hour, minute, second } = this.#getDateFormatter(
-      timeZone
+      timezone
     )
       .formatToParts(date)
       .reduce(

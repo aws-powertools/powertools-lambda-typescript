@@ -20,11 +20,12 @@ import {
   LogLevelThreshold,
   Logger,
 } from '../../src/index.js';
-import type { LogAttributes, LogLevel } from '../../src/types/Log.js';
 import type {
   CustomJsonReplacerFn,
-  UnformattedAttributes,
+  LogAttributes,
+  LogLevel,
 } from '../../src/types/Logger.js';
+import type { LogKey, UnformattedAttributes } from '../../src/types/logKeys.js';
 
 const fileNameRegexp = new RegExp(/index.js:\d+$/);
 const fileNameRegexpWithLine = new RegExp(/formatters.test.ts:\d+:\d+/);
@@ -231,14 +232,18 @@ describe('Formatters', () => {
 
   it('when `logRecordOrder` is set, it orders the attributes in the log item taking `additionalLogAttributes` into consideration', () => {
     // Prepare
+    const l = new Logger({
+      logRecordOrder: [''],
+    });
+
     const formatter = new PowertoolsLogFormatter({
-      logRecordOrder: [
+      logRecordOrder: new Set<LogKey>([
         'message',
         'additional_key',
         'timestamp',
         'serviceName',
         'environment',
-      ],
+      ]),
     });
     const additionalLogAttributes: LogAttributes = {
       additional_key: 'additional_value',

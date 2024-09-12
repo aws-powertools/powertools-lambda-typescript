@@ -9,8 +9,6 @@ import type { ConfigServiceInterface } from '../types/ConfigServiceInterface.js'
  * These variables can be a mix of runtime environment variables set by AWS and
  * variables that can be set by the developer additionally.
  *
- * @class
- * @extends {CommonEnvironmentVariablesService}
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/#environment-variables
  */

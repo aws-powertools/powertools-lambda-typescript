@@ -1,9 +1,11 @@
+import type { PowertoolsLogFormatterOptions } from '../types/formatters.js';
+import type { LogRecordOrderKeys } from '../types/formatters.js';
 import type {
   LogAttributes,
-  PowerToolsLogFormatterOptions,
-  PowertoolsLog,
-} from '../types/Log.js';
-import type { LogRecordOrder, UnformattedAttributes } from '../types/Logger.js';
+  PowertoolsLambdaContextKeys,
+  PowertoolsStandardKeys,
+  UnformattedAttributes,
+} from '../types/logKeys.js';
 import { LogFormatter } from './LogFormatter.js';
 import { LogItem } from './LogItem.js';
 
@@ -16,13 +18,14 @@ import { LogItem } from './LogItem.js';
  */
 class PowertoolsLogFormatter extends LogFormatter {
   /**
-   * An array of keys that defines the order of the log record.
+   * List of keys to order log attributes by.
+   *
+   * This can be a set of keys or an array of keys.
    */
-  #logRecordOrder?: LogRecordOrder;
+  #logRecordOrder?: LogRecordOrderKeys;
 
-  public constructor(options?: PowerToolsLogFormatterOptions) {
+  public constructor(options?: PowertoolsLogFormatterOptions) {
     super(options);
-
     this.#logRecordOrder = options?.logRecordOrder;
   }
 
@@ -36,7 +39,9 @@ class PowertoolsLogFormatter extends LogFormatter {
     attributes: UnformattedAttributes,
     additionalLogAttributes: LogAttributes
   ): LogItem {
-    const baseAttributes: PowertoolsLog = {
+    const baseAttributes: Partial<PowertoolsStandardKeys> &
+      Partial<PowertoolsLambdaContextKeys> &
+      LogAttributes = {
       cold_start: attributes.lambdaContext?.coldStart,
       function_arn: attributes.lambdaContext?.invokedFunctionArn,
       function_memory_size: attributes.lambdaContext?.memoryLimitInMB,
@@ -57,8 +62,7 @@ class PowertoolsLogFormatter extends LogFormatter {
       );
     }
 
-    const orderedAttributes = {} as PowertoolsLog;
-
+    const orderedAttributes: LogAttributes = {};
     // If logRecordOrder is set, order the attributes in the log item
     for (const key of this.#logRecordOrder) {
       if (key in baseAttributes && !(key in orderedAttributes)) {

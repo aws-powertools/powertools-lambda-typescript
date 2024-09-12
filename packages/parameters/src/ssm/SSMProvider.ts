@@ -376,11 +376,12 @@ class SSMProvider extends BaseProvider {
     try {
       result = await this.client.send(new PutParameterCommand(sdkOptions));
     } catch (error) {
-      throw new SetParameterError(`Unable to set parameter with name ${name}`);
+      throw new SetParameterError(`Unable to set parameter with name ${name}`, {
+        cause: error,
+      });
     }
 
-    // biome-ignore lint/style/noNonNullAssertion: The API for PutParameter states that there will always be a value returned when the request was successful.
-    return result.Version!;
+    return result.Version as number;
   }
 
   /**

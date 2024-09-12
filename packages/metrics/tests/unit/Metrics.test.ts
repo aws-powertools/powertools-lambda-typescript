@@ -4,6 +4,7 @@
  * @group unit/metrics/class
  */
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import { Logger } from '@aws-lambda-powertools/logger';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context, Handler } from 'aws-lambda';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
@@ -27,6 +28,8 @@ jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
   Console: jest.fn().mockImplementation(() => ({
     log: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
   })),
 }));
 jest.spyOn(console, 'warn').mockImplementation(() => ({}));
@@ -1254,7 +1257,10 @@ describe('Class: Metrics', () => {
   describe('Methods: publishStoredMetrics', () => {
     test('it should log warning if no metrics are added & throwOnEmptyMetrics is false', () => {
       // Prepare
-      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+      const metrics: Metrics = new Metrics({
+        namespace: TEST_NAMESPACE,
+        logger: console,
+      });
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
@@ -1355,7 +1361,7 @@ describe('Class: Metrics', () => {
     test('it should print warning, if no namespace provided in constructor or environment variable', () => {
       // Prepare
       process.env.POWERTOOLS_METRICS_NAMESPACE = '';
-      const metrics: Metrics = new Metrics();
+      const metrics: Metrics = new Metrics({ logger: console });
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       // Act

@@ -1,6 +1,9 @@
 import { Console } from 'node:console';
 import { Utility } from '@aws-lambda-powertools/commons';
-import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type {
+  GenericLogger,
+  HandlerMethodDecorator,
+} from '@aws-lambda-powertools/commons/types';
 import type { Callback, Context, Handler } from 'aws-lambda';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import {
@@ -160,6 +163,11 @@ class Metrics extends Utility implements MetricsInterface {
   private functionName?: string;
 
   /**
+   * Custom logger object to be used for emitting debug, warning, and error messages.
+   */
+  #logger?: GenericLogger;
+
+  /**
    * Flag indicating if this is a single metric instance
    * @default false
    */
@@ -192,6 +200,7 @@ class Metrics extends Utility implements MetricsInterface {
     super();
 
     this.dimensions = {};
+    this.#logger = options.logger;
     this.setOptions(options);
   }
 
@@ -440,6 +449,13 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * Check if there are stored metrics in the buffer.
+   */
+  public hasStoredMetrics(): boolean {
+    return Object.keys(this.storedMetrics).length > 0;
+  }
+
+  /**
    * A class method decorator to automatically log metrics after the method returns or throws an error.
    *
    * The decorator can be used with TypeScript classes and can be configured to optionally capture a `ColdStart` metric (see {@link Metrics.captureColdStartMetric | `captureColdStartMetric()`}),
@@ -539,12 +555,16 @@ class Metrics extends Utility implements MetricsInterface {
    * ```
    */
   public publishStoredMetrics(): void {
-    const hasMetrics = Object.keys(this.storedMetrics).length > 0;
+    const hasMetrics = this.hasStoredMetrics();
     if (!this.shouldThrowOnEmptyMetrics && !hasMetrics) {
-      console.warn(
+      const message =
         'No application metrics to publish. The cold-start metric may be published if enabled. ' +
-          'If application metrics should never be empty, consider using `throwOnEmptyMetrics`'
-      );
+        'If application metrics should never be empty, consider using `throwOnEmptyMetrics`';
+      if (this.#logger?.warn) {
+        this.#logger.warn(message);
+      } else {
+        this.console.warn(message);
+      }
     }
     const emfOutput = this.serializeMetrics();
     hasMetrics && this.console.log(JSON.stringify(emfOutput));
@@ -584,7 +604,9 @@ class Metrics extends Utility implements MetricsInterface {
     }
 
     if (!this.namespace)
-      console.warn('Namespace should be defined, default used');
+      (this.#logger?.warn || this.console.warn)(
+        'Namespace should be defined, default used'
+      );
 
     // We reduce the stored metrics to a single object with the metric
     // name as the key and the value as the value.

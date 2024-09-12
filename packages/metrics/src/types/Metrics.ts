@@ -1,4 +1,7 @@
-import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type {
+  GenericLogger,
+  HandlerMethodDecorator,
+} from '@aws-lambda-powertools/commons/types';
 import type {
   MetricResolution as MetricResolutions,
   MetricUnit as MetricUnits,
@@ -57,6 +60,15 @@ type MetricsOptions = {
    * @see {@link MetricsInterface.setDefaultDimensions | `setDefaultDimensions()`}
    */
   defaultDimensions?: Dimensions;
+  /**
+   * Logger object to be used for emitting debug, warning, and error messages.
+   *
+   * If not provided, debug messages will be suppressed, and warning and error messages will be sent to stdout.
+   *
+   * Note that EMF metrics are always sent directly to stdout, regardless of the logger
+   * to avoid any potential side effects from using a custom logger.
+   */
+  logger?: GenericLogger;
 };
 
 /**

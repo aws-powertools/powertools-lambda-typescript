@@ -47,7 +47,7 @@ class LogItem {
   /**
    * Prepare the log item for printing.
    *
-   * This operation removes empty keys from the log item, see {@link removeEmptyKeys()} for more information.
+   * This operation removes empty keys from the log item, see {@link removeEmptyKeys | removeEmptyKeys()} for more information.
    */
   public prepareForPrint(): void {
     this.setAttributes(this.removeEmptyKeys(this.getAttributes()));

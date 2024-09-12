@@ -8,7 +8,7 @@ import type { LogItem } from './LogItem.js';
  * Class that defines and implements common methods for the formatting of log attributes.
  *
  * When creating a custom log formatter, you should extend this class and implement the
- * {@link formatAttributes()} method to define the structure of the log item.
+ * {@link formatAttributes | formatAttributes()} method to define the structure of the log item.
  *
  * @abstract
  */

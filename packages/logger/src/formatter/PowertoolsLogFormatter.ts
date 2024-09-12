@@ -1,5 +1,7 @@
-import type { PowertoolsLogFormatterOptions } from '../types/formatters.js';
-import type { LogRecordOrderKeys } from '../types/formatters.js';
+import type {
+  LogRecordOrderKeys,
+  PowertoolsLogFormatterOptions,
+} from '../types/formatters.js';
 import type {
   LogAttributes,
   PowertoolsLambdaContextKeys,

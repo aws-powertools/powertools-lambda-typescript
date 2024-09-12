@@ -59,6 +59,13 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: constructor', () => {
+    it('sets the AWS_XRAY_CONTEXT_MISSING environment variable to IGNORE_ERROR when it is not set', () => {
+      // We are setting the environment variable as a side effect of importing the module, setting it within the Tracer would
+      // require introducing async code to the constructor, which is not a good practice, in order to lazy load the AWS X-Ray SDK for Node.js
+      // on demand. Between that option, and setting it as a side effect of importing the module, the latter is the better option.
+      expect(process.env.AWS_XRAY_CONTEXT_MISSING).toBe('IGNORE_ERROR');
+    });
+
     it('instantiates with default settings when no option is passed', () => {
       // Prepare & Act
       const tracer = new Tracer(undefined);

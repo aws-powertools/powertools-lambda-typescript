@@ -1256,15 +1256,17 @@ describe('Class: Metrics', () => {
       // Prepare
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
       // Act
       metrics.publishStoredMetrics();
 
       // Assess
-      expect(consoleWarnSpy).toBeCalledTimes(1);
-      expect(consoleWarnSpy).toBeCalledWith(
+      expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
         'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using `throwOnEmptyMetrics`'
       );
+      expect(consoleLogSpy).not.toHaveBeenCalled();
     });
 
     test('it should call serializeMetrics && log the stringified return value of serializeMetrics', () => {

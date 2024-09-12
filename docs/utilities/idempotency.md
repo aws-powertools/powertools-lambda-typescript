@@ -206,6 +206,8 @@ Similar to the `makeIdempotent` function wrapper, you can quickly make your Lamb
     --8<-- "examples/snippets/idempotency/types.ts:3:16"
     ```
 
+Note that for the middleware to work, your Lambda function handler must return a value different from `undefined`. This is a [known limitation of Middy.js early return feature](https://github.com/middyjs/middy/issues/1236). If your use case requires early returns, you can use the `makeIdempotent` function wrapper instead.
+
 ### Choosing a payload subset for idempotency
 
 Use [`IdempotencyConfig`](#customizing-the-default-behavior) to instruct the idempotent decorator to only use a portion of your payload to verify whether a request is idempotent, and therefore it should not be retried. When dealing with a more elaborate payload, where parts of the payload always change, you should use the **`eventKeyJmesPath`** parameter.

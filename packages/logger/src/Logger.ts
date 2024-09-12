@@ -29,89 +29,60 @@ import type {
 import type { PowertoolsLogData } from './types/logKeys.js';
 
 /**
- * ## Intro
- * The Logger utility provides an opinionated logger with output structured as JSON.
+ * The Logger utility provides an opinionated logger with output structured as JSON for AWS Lambda.
  *
- * ## Key features
- *  * Capture key fields from Lambda context, cold start and structures logging output as JSON
- *  * Log Lambda context when instructed (disabled by default)
- *  * Log sampling prints all logs for a percentage of invocations (disabled by default)
- *  * Append additional keys to structured log at any point in time
+ * **Key features**
+ * * Capture key fields from AWS Lambda context, cold start, and structure log output as JSON
+ * * Append additional keys to one or all log items
+ * * Switch log level to `DEBUG` based on a sample rate value for a percentage of invocations
  *
- * ## Usage
- *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/).
- *
- * ### Basic usage
+ * After initializing the Logger class, you can use the methods to log messages at different levels.
  *
  * @example
  * ```typescript
  * import { Logger } from '@aws-lambda-powertools/logger';
  *
- * // Logger parameters fetched from the environment variables:
- * const logger = new Logger();
- * ```
+ * const logger = new Logger({ serviceName: 'serverlessAirline' });
  *
- * ### Functions usage with middleware
- *
- * If you use function-based Lambda handlers you can use the {@link injectLambdaContext} middleware
- * to automatically add context to your Lambda logs.
- *
- * @example
- * ```typescript
- * import { Logger } from '@aws-lambda-powertools/logger';
- * import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
- * import middy from '@middy/core';
- *
- * const logger = new Logger();
- *
- * const lambdaHandler = async (_event: unknown, _context: unknown) => {
- *     logger.info('This is an INFO log with some context');
+ * export const handler = async (event, context) => {
+ *   logger.info('This is an INFO log');
+ *   logger.warn('This is a WARNING log');
  * };
- *
- * export const handler = middy(lambdaHandler).use(injectLambdaContext(logger));
  * ```
  *
- * ### Object oriented usage with decorators
- *
- * If instead you use TypeScript classes to wrap your Lambda handler you can use the {@link injectLambdaContext} decorator.
- *
- * @example
- * ```typescript
- * import { Logger } from '@aws-lambda-powertools/logger';
- * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
- *
- * const logger = new Logger();
- *
- * class Lambda implements LambdaInterface {
- *     // Decorate your handler class method
- *     ⁣@logger.injectLambdaContext()
- *     public async handler(_event: unknown, _context: unknown): Promise<void> {
- *         logger.info('This is an INFO log with some context');
- *     }
- * }
- *
- * const handlerClass = new Lambda();
- * export const handler = handlerClass.handler.bind(handlerClass);
- * ```
- *
- * ### Functions usage with manual instrumentation
- *
- * If you prefer to manually instrument your Lambda handler you can use the methods in the Logger class directly.
+ * To enrich the log items with information from the Lambda context, you can use the {@link Logger.addContext | addContext()} method.
  *
  * @example
  * ```typescript
  * import { Logger } from '@aws-lambda-powertools/logger';
  *
- * const logger = new Logger();
+ * const logger = new Logger({ serviceName: 'serverlessAirline' });
  *
- * export const handler = async (_event, context) => {
+ * export const handler = async (event, context) => {
  *   logger.addContext(context);
+ *
  *   logger.info('This is an INFO log with some context');
  * };
  * ```
  *
- * @class
+ * You can also add additional attributes to all log items using the {@link Logger.appendKeys | appendKeys()} method.
+ *
+ * @example
+ * ```typescript
+ * export const handler = async (event, context) => {
+ *   logger.appendKeys({ key1: 'value1' });
+ *
+ *   logger.info('This is an INFO log with additional keys');
+ *
+ *   logger.removeKeys(['key1']);
+ * };
+ *```
+ *
+ * If you write your functions as classes and use TypeScript, you can use the {@link Logger.injectLambdaContext} class method decorator
+ * to automatically add context to your logs and clear the state after the invocation.
+ *
+ * If instead you use Middy.js middlewares, you use the {@link "middleware/middy".injectLambdaContext | injectLambdaContext()} middleware.
+ *
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/
  */
 class Logger extends Utility implements LoggerInterface {
@@ -215,11 +186,6 @@ class Logger extends Utility implements LoggerInterface {
     return this.logLevel;
   }
 
-  /**
-   * Initialize the Logger class with an optional set of options (settings).
-   *
-   * @param options - The options to initialize the logger with.
-   */
   public constructor(options: ConstructorOptions = {}) {
     super();
     const { customConfigService, ...rest } = options;
@@ -267,7 +233,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Add the given temporary attributes (key-value pairs) to all log items generated by this Logger instance.
    *
-   * @param attributes
+   * @param attributes - The attributes to add to all log items.
    */
   public appendKeys(attributes: LogAttributes): void {
     for (const attributeKey of Object.keys(attributes)) {
@@ -392,28 +358,25 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Method decorator that adds the current Lambda function context as extra
+   * Class method decorator that adds the current Lambda function context as extra
    * information in all log items.
    *
-   * The decorator can be used only when attached to a Lambda function handler which
-   * is written as method of a class, and should be declared just before the handler declaration.
-   *
-   * Note: Currently TypeScript only supports decorators on classes and methods. If you are using the
-   * function syntax, you should use the middleware instead.
+   * This decorator is useful when you want to add the Lambda context to all log items
+   * and it works only when decorating a class method that is a Lambda function handler.
    *
    * @example
    * ```typescript
    * import { Logger } from '@aws-lambda-powertools/logger';
    * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
    *
-   * const logger = new Logger();
+   * const logger = new Logger({ serviceName: 'serverlessAirline' });
    *
    * class Lambda implements LambdaInterface {
-   *     // Decorate your handler class method
-   *     ⁣@logger.injectLambdaContext()
-   *     public async handler(_event: unknown, _context: unknown): Promise<void> {
-   *         logger.info('This is an INFO log with some context');
-   *     }
+   *   // Decorate your handler class method
+   *   ⁣@logger.injectLambdaContext()
+   *   public async handler(_event: unknown, _context: unknown): Promise<void> {
+   *     logger.info('This is an INFO log with some context');
+   *   }
    * }
    *
    * const handlerClass = new Lambda();
@@ -466,6 +429,9 @@ class Logger extends Utility implements LoggerInterface {
     }
   }
 
+  /**
+   * @deprecated - This method is deprecated and will be removed in the future major versions.
+   */
   public static injectLambdaContextBefore(
     logger: Logger,
     event: unknown,

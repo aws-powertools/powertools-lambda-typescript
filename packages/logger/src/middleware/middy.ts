@@ -7,9 +7,10 @@ import { Logger } from '../Logger.js';
 import type { InjectLambdaContextOptions } from '../types/Logger.js';
 
 /**
- * A middy middleware that helps emitting CloudWatch EMF metrics in your logs.
+ * A Middy.js-compatible middleware to enrich your logs with AWS Lambda context information.
  *
- * Using this middleware on your handler function will automatically add context information to logs, as well as optionally log the event and clear attributes set during the invocation.
+ * Using this middleware on your handler function will automatically add context information to logs,
+ * as well as optionally log the event and clear attributes set during the invocation.
  *
  * @example
  * ```typescript
@@ -17,19 +18,47 @@ import type { InjectLambdaContextOptions } from '../types/Logger.js';
  * import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
  * import middy from '@middy/core';
  *
+ * const logger = new Logger({ serviceName: 'serverlessAirline' });
  *
- * const logger = new Logger();
- *
- * const lambdaHandler = async (_event: any, _context: any) => {
- *     logger.info('This is an INFO log with some context');
- * };
- *
- * export const handler = middy(lambdaHandler).use(injectLambdaContext(logger));
+ * export const handler = middy(() => {
+ *   logger.info('This is an INFO log with some context');
+ * }).use(injectLambdaContext(logger));
  * ```
  *
+ * **Logging the event payload**
+ *
+ * When debugging, you might want to log the event payload to understand the input to your Lambda function.
+ * You can enable this by setting the `logEvent` option to `true` when creating the Logger instance.
+ *
+ * @example
+ * ```typescript
+ * const logger = new Logger({ serviceName: 'serverlessAirline' });
+ *
+ * export const handler = middy(() => {
+ *   logger.info('This is an INFO log with some context');
+ * }).use(injectLambdaContext(logger, {
+ *   logEvent: true,
+ * }));
+ * ```
+ *
+ * **Resetting state**
+ *
+ * To avoid leaking sensitive information across invocations, you can reset the keys added via
+ * {@link Logger.appendKeys()} by setting the `resetKeys` option to `true`.
+ *
+ * @example
+ * ```typescript
+ * const logger = new Logger({ serviceName: 'serverlessAirline' });
+ *
+ * export const handler = middy(() => {
+ *   logger.appendKeys({ key1: 'value1' });
+ *   logger.info('This is an INFO log with some context');
+ * }).use(injectLambdaContext(logger, {
+ *   resetKeys: true,
+ * }));
+ *
  * @param target - The Logger instance(s) to use for logging
- * @param options - (_optional_) Options for the middleware
- * @returns - The middy middleware object
+ * @param options - Options for the middleware such as clearing state or resetting keys
  */
 const injectLambdaContext = (
   target: Logger | Logger[],

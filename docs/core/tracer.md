@@ -390,7 +390,7 @@ This is useful when you need a feature available in X-Ray that is not available 
 
 We only expose [a subset of the methods available](https://docs.powertools.aws.dev/lambda/typescript/latest/api/classes/_aws_lambda_powertools_tracer.provider_ProviderService.ProviderService.html) in the AWS X-Ray SDK for Node.js based on the most common use cases relevant for AWS Lambda and their compatibility with the Tracer utility.
 
-If you need to access a method that is not available you can import it directly from the AWS X-Ray SDK for Node.js. Compatibility with the Tracer utility is not guaranteed.
+If you need to access a method that is not available, you can import it directly from the AWS X-Ray SDK for Node.js. However, please note that compatibility with the Tracer utility is not guaranteed.
 
 ## Testing your code
 

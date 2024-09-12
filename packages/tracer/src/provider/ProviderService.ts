@@ -32,6 +32,17 @@ import {
   isHttpSubsegment,
 } from './utilities.js';
 
+/**
+ * The ProviderService class is a wrapper around the AWS X-Ray SDK for Node.js.
+ *
+ * The service provides exposes a selection of methods to interact with the SDK directly,
+ * these methods were chosen to be the most useful in the context of a Lambda function and
+ * have been tested to work with Powertools for AWS Lambda.
+ *
+ * If you want to use one of the other methods that are not exposed by this class,
+ * you can import the methods directly from the `aws-xray-sdk-core` package, and for most cases,
+ * they should work as expected. However, support for these methods is not guaranteed.
+ */
 class ProviderService implements ProviderServiceInterface {
   /**
    * @deprecated

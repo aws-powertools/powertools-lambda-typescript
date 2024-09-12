@@ -4,7 +4,6 @@
  * @group unit/metrics/class
  */
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { Logger } from '@aws-lambda-powertools/logger';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context, Handler } from 'aws-lambda';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';

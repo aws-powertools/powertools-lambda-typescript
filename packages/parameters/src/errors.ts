@@ -1,19 +1,23 @@
 /**
  * Error thrown when a parameter cannot be retrieved.
+ *
+ * You can use this error to catch and handle errors when getting a parameter, the `cause` property will contain the original error.
  */
 class GetParameterError extends Error {
-  public constructor(message?: string) {
-    super(message);
+  public constructor(message?: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'GetParameterError';
   }
 }
 
 /**
  * Error thrown when a parameter cannot be set.
+ *
+ * You can use this error to catch and handle errors when setting a parameter, the `cause` property will contain the original error.
  */
 class SetParameterError extends Error {
-  public constructor(message?: string) {
-    super(message);
+  public constructor(message?: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'SetParameterError';
   }
 }

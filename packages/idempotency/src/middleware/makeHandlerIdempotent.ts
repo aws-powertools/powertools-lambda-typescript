@@ -90,8 +90,8 @@ const shouldSkipIdempotency = (request: MiddyLikeRequest): boolean => {
  * ).use(makeHandlerIdempotent({ persistenceStore: dynamoDBPersistenceLayer }));
  * ```
  *
- * Note that for the middleware to work, your Lambda function handler must return a value different from `undefined`.
- * This is a [known limitation of Middy.js early return feature](https://github.com/middyjs/middy/issues/1236).
+ * For the middleware to work, your Lambda function handler must return a value different from `undefined`.
+ * This is a [known limitation of the early return feature in Middy.js](https://github.com/middyjs/middy/issues/1236).
  *
  * If your use case requires early returns, you can use the {@link index.makeIdempotent | makeIdempotent()} function wrapper instead.
  *

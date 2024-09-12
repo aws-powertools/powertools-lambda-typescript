@@ -378,7 +378,7 @@ Tracer exposes a `getRootXrayTraceId()` method that allows you to retrieve the [
 
 ### Escape hatch mechanism
 
-You can use `tracer.provider` attribute to access all methods provided by the [AWS X-Ray SDK](https://docs.aws.amazon.com/xray-sdk-for-nodejs/latest/reference/AWSXRay.html).
+You can use `tracer.provider` attribute to access some of the methods provided by the [AWS X-Ray SDK](https://docs.aws.amazon.com/xray-sdk-for-nodejs/latest/reference/AWSXRay.html).
 
 This is useful when you need a feature available in X-Ray that is not available in the Tracer utility, for example [SQL queries tracing](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-sqlclients.html), or [a custom logger](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-configuration.html#xray-sdk-nodejs-configuration-logging).
 
@@ -387,6 +387,10 @@ This is useful when you need a feature available in X-Ray that is not available 
     ```typescript hl_lines="7"
     --8<-- "examples/snippets/tracer/escapeHatch.ts"
     ```
+
+We only expose [a subset of the methods available](https://docs.powertools.aws.dev/lambda/typescript/latest/api/classes/_aws_lambda_powertools_tracer.provider_ProviderService.ProviderService.html) in the AWS X-Ray SDK for Node.js based on the most common use cases relevant for AWS Lambda and their compatibility with the Tracer utility.
+
+If you need to access a method that is not available you can import it directly from the AWS X-Ray SDK for Node.js. Compatibility with the Tracer utility is not guaranteed.
 
 ## Testing your code
 

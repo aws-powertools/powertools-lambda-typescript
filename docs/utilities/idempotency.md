@@ -206,7 +206,7 @@ Similar to the `makeIdempotent` function wrapper, you can quickly make your Lamb
     --8<-- "examples/snippets/idempotency/types.ts:3:16"
     ```
 
-Note that for the middleware to work, your Lambda function handler must return a value different from `undefined`. This is a [known limitation of Middy.js early return feature](https://github.com/middyjs/middy/issues/1236). If your use case requires early returns, you can use the `makeIdempotent` function wrapper instead.
+For the middleware to work, your Lambda function handler must return a value different from `undefined`. This is a [known limitation of the early return feature in Middy.js](https://github.com/middyjs/middy/issues/1236). If your use case requires early returns, you can use the `makeIdempotent` function wrapper instead.
 
 ### Choosing a payload subset for idempotency
 

@@ -51,7 +51,7 @@ type PowertoolsStandardKeys = {
    */
   message: string;
   /**
-   * The percentage rate at which the log level is switched to `DEBUG`.
+   * The percentage rate at which the log level is `DEBUG`.
    *
    * See {@link https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/#sampling-debug-logs | Sampling debug logs} for more information.
    *
@@ -161,7 +161,7 @@ type PowertoolsLogData = {
    */
   serviceName: string;
   /**
-   * The percentage rate at which the log level is switched to `DEBUG`.
+   * The percentage rate at which the log level is `DEBUG`.
    */
   sampleRateValue: number;
   /**

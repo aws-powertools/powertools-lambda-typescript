@@ -9,7 +9,7 @@ import type { InjectLambdaContextOptions } from '../types/Logger.js';
 /**
  * A Middy.js-compatible middleware to enrich your logs with AWS Lambda context information.
  *
- * Using this middleware on your handler function will automatically add context information to logs,
+ * Using this middleware on your handler function will automatically adds context information to logs,
  * as well as optionally log the event and clear attributes set during the invocation.
  *
  * @example

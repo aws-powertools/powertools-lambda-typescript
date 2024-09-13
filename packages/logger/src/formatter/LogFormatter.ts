@@ -120,7 +120,7 @@ abstract class LogFormatter {
    * Format a date into an ISO 8601 string with the configured timezone.
    *
    * If the log formatter is passed an {@link EnvironmentVariablesService} instance
-   * during construction, the timezone is read from the `TZ` environment variable.
+   * during construction, the timezone is read from the `TZ` environment variable, if present.
    *
    * Otherwise, the timezone defaults to ':UTC'.
    *

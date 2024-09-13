@@ -45,7 +45,7 @@ type InjectLambdaContextOptions = {
   /**
    * When `true` the logger will log the event.
    *
-   * To avoid logging sensitive information, we recommend using this option only for debugging purposes.
+   * To avoid logging sensitive information, we recommend using this option only for debugging purposes in local environments.
    */
   logEvent?: boolean;
   /**
@@ -84,7 +84,7 @@ type BaseConstructorOptions = {
    */
   serviceName?: string;
   /**
-   * The percentage rate at which the log level is switched to `DEBUG`.
+   * The percentage rate at which the log level is `DEBUG`.
    *
    * See {@link https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/#sampling-debug-logs | Sampling debug logs} for more information.
    */

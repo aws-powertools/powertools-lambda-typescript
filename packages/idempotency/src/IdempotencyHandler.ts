@@ -92,7 +92,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * @param idempotencyRecord The idempotency record stored in the persistence layer
    * @returns The result of the function if the idempotency record is in a terminal state
    */
-  public static determineResultFromIdempotencyRecord(
+  public determineResultFromIdempotencyRecord(
     idempotencyRecord: IdempotencyRecord
   ): JSONValue {
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.EXPIRED) {
@@ -115,7 +115,14 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       );
     }
 
-    return idempotencyRecord.getResponse();
+    const response = idempotencyRecord.getResponse();
+
+    // If a response hook is provided, call it to allow the user to modify the response
+    if (this.#idempotencyConfig.responseHook) {
+      return this.#idempotencyConfig.responseHook(response, idempotencyRecord);
+    }
+
+    return response;
   }
 
   /**
@@ -381,9 +388,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
 
         returnValue.isIdempotent = true;
         returnValue.result =
-          IdempotencyHandler.determineResultFromIdempotencyRecord(
-            idempotencyRecord
-          );
+          this.determineResultFromIdempotencyRecord(idempotencyRecord);
 
         return returnValue;
       }

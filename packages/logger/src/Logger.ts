@@ -430,7 +430,7 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * @deprecated - This method is deprecated and will be removed in the future major versions.
+   * @deprecated - This method is deprecated and will be removed in the next major version.
    */
   public static injectLambdaContextBefore(
     logger: Logger,

@@ -39,7 +39,7 @@ type Environment = 'dev' | 'local' | 'staging' | 'prod' | AutocompletableString;
  */
 type PowertoolsStandardKeys = {
   /**
-   * Log level of the log item
+   * Log level threshold of the log item
    *
    * @example "INFO"
    */

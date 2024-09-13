@@ -1,18 +1,14 @@
-/**
- * Test Utility class
- *
- * @group unit/commons/utility
- */
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Utility } from '../../src/index.js';
 
 describe('Class: Utility', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
+    vi.resetModules();
   });
 
   describe('Method: getDefaultServiceName', () => {
-    test('it should return the default service name', () => {
+    it('returns the default service name', () => {
       class PowerTool extends Utility {
         public dummyMethod(): string {
           return this.getDefaultServiceName();
@@ -26,10 +22,10 @@ describe('Class: Utility', () => {
   });
 
   describe('Method: getColdStart', () => {
-    test('when called multiple times on the parent class, it returns true the first time, then false afterwards', () => {
+    it('it returns true the first time, then false afterwards, when called multiple times', () => {
       // Prepare
       const utility = new Utility();
-      const getColdStartSpy = jest.spyOn(utility, 'getColdStart');
+      const getColdStartSpy = vi.spyOn(utility, 'getColdStart');
 
       // Act
       utility.getColdStart();
@@ -49,7 +45,7 @@ describe('Class: Utility', () => {
       ]);
     });
 
-    test('when called multiple times on a child class, it returns true the first time, then false afterwards', () => {
+    it('returns the correct values when subclassed', () => {
       // Prepare
       class PowerTool extends Utility {
         public dummyMethod(): boolean {
@@ -57,8 +53,8 @@ describe('Class: Utility', () => {
         }
       }
       const powertool = new PowerTool();
-      const dummyMethodSpy = jest.spyOn(powertool, 'dummyMethod');
-      const getColdStartSpy = jest.spyOn(powertool, 'getColdStart');
+      const dummyMethodSpy = vi.spyOn(powertool, 'dummyMethod');
+      const getColdStartSpy = vi.spyOn(powertool, 'getColdStart');
 
       // Act
       powertool.dummyMethod();
@@ -81,10 +77,10 @@ describe('Class: Utility', () => {
   });
 
   describe('Method: isColdStart', () => {
-    test('when called multiple times on the parent class, it returns true the first time, then false afterwards', () => {
+    it('returns true the first time, then false afterwards when called multiple times', () => {
       // Prepare
       const utility = new Utility();
-      const isColdStartSpy = jest.spyOn(utility, 'isColdStart');
+      const isColdStartSpy = vi.spyOn(utility, 'isColdStart');
 
       // Act
       utility.isColdStart();
@@ -104,7 +100,7 @@ describe('Class: Utility', () => {
       ]);
     });
 
-    test('when called multiple times on a child class, it returns true the first time, then false afterwards', () => {
+    it('returns the correct values when subclassed', () => {
       // Prepare
       class PowerTool extends Utility {
         public dummyMethod(): boolean {
@@ -112,8 +108,8 @@ describe('Class: Utility', () => {
         }
       }
       const powertool = new PowerTool();
-      const dummyMethodSpy = jest.spyOn(powertool, 'dummyMethod');
-      const isColdStartSpy = jest.spyOn(powertool, 'isColdStart');
+      const dummyMethodSpy = vi.spyOn(powertool, 'dummyMethod');
+      const isColdStartSpy = vi.spyOn(powertool, 'isColdStart');
 
       // Act
       powertool.dummyMethod();
@@ -141,7 +137,7 @@ describe('Class: Utility', () => {
         return this.isValidServiceName(name);
       }
     }
-    test('it should allow valid strings', () => {
+    it('allows valid strings', () => {
       const powertool = new PowerTool();
       const goodName = 'serverlessAirline';
 
@@ -150,7 +146,7 @@ describe('Class: Utility', () => {
       expect(result).toBe(true);
     });
 
-    test('it should not allow empty strings', () => {
+    it("doesn't allow empty strings", () => {
       const tooShort = '';
       const powertool = new PowerTool();
       const result = powertool.dummyMethod(tooShort);

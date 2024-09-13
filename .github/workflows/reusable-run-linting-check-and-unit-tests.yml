@@ -40,7 +40,7 @@ jobs:
     strategy:
       matrix:
         version: [18, 20]
-        workspace: ["packages/batch"]
+        workspace: ["packages/batch", "packages/commons"]
       fail-fast: false
     steps:
       - name: Checkout code
@@ -57,7 +57,9 @@ jobs:
       - name: Linting
         run: npm run lint -w ${{ matrix.workspace }}
       - name: Unit tests
-        run: npm run test:unit:coverage -w ${{ matrix.workspace }}
+        run: |
+          npm run test:unit:coverage -w ${{ matrix.workspace }}
+          npm run test:unit:types -w ${{ matrix.workspace }}
   run-linting-check-and-unit-tests-on-utilities:
     runs-on: ubuntu-latest
     env:
@@ -92,8 +94,7 @@ jobs:
             -w packages/event-handler
       - name: Run unit tests
         run: |
-          npm t -w packages/commons \
-            -w packages/logger \
+          npm t -w packages/logger \
             -w packages/tracer \
             -w packages/metrics \
             -w packages/parameters \

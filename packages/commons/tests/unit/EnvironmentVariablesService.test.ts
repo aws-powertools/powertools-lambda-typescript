@@ -1,15 +1,11 @@
-/**
- * Test EnvironmentVariablesService class
- *
- * @group unit/commons/environmentService
- */
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EnvironmentVariablesService } from '../../src/index.js';
 
 describe('Class: EnvironmentVariablesService', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
+    vi.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -18,7 +14,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: get', () => {
-    test('When the variable IS present, it returns the value of a runtime variable', () => {
+    it('returns the value of a runtime variable', () => {
       // Prepare
       process.env.CUSTOM_VARIABLE = 'my custom value';
       const service = new EnvironmentVariablesService();
@@ -30,7 +26,7 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual('my custom value');
     });
 
-    test('When the variable IS NOT present, it returns an empty string', () => {
+    it('returns an empty string when the env variable is not present', () => {
       // Prepare
       process.env.CUSTOM_VARIABLE = undefined;
       const service = new EnvironmentVariablesService();
@@ -44,7 +40,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getServiceName', () => {
-    test('It returns the value of the environment variable POWERTOOLS_SERVICE_NAME', () => {
+    it('returns the value of the environment variable POWERTOOLS_SERVICE_NAME', () => {
       // Prepare
       process.env.POWERTOOLS_SERVICE_NAME = 'shopping-cart-api';
       const service = new EnvironmentVariablesService();
@@ -58,7 +54,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getXrayTraceId', () => {
-    test('It returns the value of the environment variable _X_AMZN_TRACE_ID', () => {
+    it('returns the value of the environment variable _X_AMZN_TRACE_ID', () => {
       // Prepare
       process.env._X_AMZN_TRACE_ID = 'abcd123456789';
       const service = new EnvironmentVariablesService();
@@ -69,7 +65,7 @@ describe('Class: EnvironmentVariablesService', () => {
       // Assess
       expect(value).toEqual('abcd123456789');
     });
-    test('It returns the value of the Root X-Ray segment ID properly formatted', () => {
+    it('returns the value of the Root X-Ray segment ID properly formatted', () => {
       // Prepare
       process.env._X_AMZN_TRACE_ID =
         'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
@@ -82,7 +78,7 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual('1-5759e988-bd862e3fe1be46a994272793');
     });
 
-    test('It returns the value of the Root X-Ray segment ID properly formatted', () => {
+    it('returns the value of the Root X-Ray segment ID properly formatted', () => {
       // Prepare
       process.env._X_AMZN_TRACE_ID = undefined;
       const service = new EnvironmentVariablesService();
@@ -96,7 +92,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getXrayTraceSampled', () => {
-    test('It returns true if the Sampled flag is set in the _X_AMZN_TRACE_ID environment variable', () => {
+    it('returns true if the Sampled flag is set in the _X_AMZN_TRACE_ID environment variable', () => {
       // Prepare
       process.env._X_AMZN_TRACE_ID =
         'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
@@ -109,7 +105,7 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(true);
     });
 
-    test('It returns false if the Sampled flag is not set in the _X_AMZN_TRACE_ID environment variable', () => {
+    it('returns false if the Sampled flag is not set in the _X_AMZN_TRACE_ID environment variable', () => {
       // Prepare
       process.env._X_AMZN_TRACE_ID =
         'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047';
@@ -122,7 +118,7 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(false);
     });
 
-    it('It returns false when no _X_AMZN_TRACE_ID environment variable is present', () => {
+    it('returns false when no _X_AMZN_TRACE_ID environment variable is present', () => {
       // Prepare
       process.env._X_AMZN_TRACE_ID = undefined;
       const service = new EnvironmentVariablesService();
@@ -150,8 +146,8 @@ describe('Class: EnvironmentVariablesService', () => {
       ['0', false],
     ];
 
-    test.each(valuesToTest)(
-      'it takes string "%s" and returns %s',
+    it.each(valuesToTest)(
+      'takes string "%s" and returns %s',
       (input, output) => {
         // Prepare
         const service = new EnvironmentVariablesService();
@@ -164,7 +160,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: isDevMode', () => {
-    test('it returns true if the environment variable POWERTOOLS_DEV is "true"', () => {
+    it('returns true if the environment variable POWERTOOLS_DEV is "true"', () => {
       // Prepare
       process.env.POWERTOOLS_DEV = 'true';
       const service = new EnvironmentVariablesService();
@@ -176,7 +172,7 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(true);
     });
 
-    test('it returns false if the environment variable POWERTOOLS_DEV is "false"', () => {
+    it('returns false if the environment variable POWERTOOLS_DEV is "false"', () => {
       // Prepare
       process.env.POWERTOOLS_DEV = 'false';
       const service = new EnvironmentVariablesService();
@@ -188,7 +184,7 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(false);
     });
 
-    test('it returns false if the environment variable POWERTOOLS_DEV is NOT set', () => {
+    it('returns false if the environment variable POWERTOOLS_DEV is NOT set', () => {
       // Prepare
       process.env.POWERTOOLS_DEV = 'somethingsilly';
       const service = new EnvironmentVariablesService();
@@ -200,7 +196,7 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(false);
     });
 
-    test('it returns false if the environment variable POWERTOOLS_DEV is "somethingsilly"', () => {
+    it('returns false if the environment variable POWERTOOLS_DEV is "somethingsilly"', () => {
       // Prepare
       process.env.POWERTOOLS_DEV = 'somethingsilly';
       const service = new EnvironmentVariablesService();

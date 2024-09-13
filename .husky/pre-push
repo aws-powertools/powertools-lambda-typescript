@@ -1,5 +1,4 @@
 npm t \
-  -w packages/commons \
   -w packages/jmespath \
   -w packages/logger \
   -w packages/metrics \

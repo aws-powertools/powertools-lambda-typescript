@@ -13,8 +13,8 @@ export default defineConfig({
       include: ['packages/*/src/**'],
       exclude: [
         ...coverageConfigDefaults.exclude,
-        'packages/commons/**',
         'packages/batch/src/types.ts',
+        'packages/commons/src/types/**',
         'packages/event-handler/**',
         'packages/idempotency/**',
         'packages/jmespath/**',

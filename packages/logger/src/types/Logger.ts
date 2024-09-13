@@ -76,7 +76,7 @@ type CustomJsonReplacerFn = (key: string, value: unknown) => unknown;
  */
 type BaseConstructorOptions = {
   /**
-   * The level of severity for the logger to log at.
+   * The level threshold for the logger to log at.
    */
   logLevel?: LogLevel;
   /**

@@ -28,7 +28,7 @@ type LogAttributesWithMessage = LogAttributes & {
 };
 
 /**
- * The environment in which the Lambda function is running.
+ * The environment in which the Lambda function is invoked.
  */
 type Environment = 'dev' | 'local' | 'staging' | 'prod' | AutocompletableString;
 
@@ -153,7 +153,7 @@ type LambdaFunctionContext = Pick<
  */
 type PowertoolsLogData = {
   /**
-   * The environment in which the Lambda function is running.
+   * The environment in which the Lambda function is invoked.
    */
   environment?: Environment;
   /**
@@ -175,7 +175,7 @@ type PowertoolsLogData = {
    */
   xRayTraceId?: string;
   /**
-   * The AWS region in which the Lambda function is running.
+   * The AWS region in which the Lambda function is invoked.
    */
   awsRegion: string;
 };
@@ -189,7 +189,7 @@ type BaseLogAttributes = {
    */
   error?: Error;
   /**
-   * Log level of the log item.
+   * Log level threshold of the log item.
    */
   logLevel: LogLevel;
   /**

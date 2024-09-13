@@ -16,7 +16,7 @@ class LogItem {
    * Constructor for LogItem.
    *
    * Attributes are added in the following order:
-   * - Base attributes supported by the Powertool by default
+   * - Standard keys provided by the logger (e.g. `message`, `level`, `timestamp`)
    * - Persistent attributes provided by developer, not formatted (done later)
    * - Ephemeral attributes provided as parameters for a single log item (done later)
    *
@@ -54,9 +54,8 @@ class LogItem {
   }
 
   /**
-   * Remove empty keys from the log item.
-   *
-   * Empty keys are keys with values of `undefined`, empty strings (`''`), or `null`.
+   * Remove empty keys from the log item, where empty keys are defined as keys with
+   * values of `undefined`, empty strings (`''`), or `null`.
    *
    * @param attributes - The attributes to remove empty keys from.
    */

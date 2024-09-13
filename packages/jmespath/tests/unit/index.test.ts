@@ -1,10 +1,6 @@
-/**
- * Test Compliance with the JMESPath specification
- *
- * @group unit/jmespath/coverage
- */
 import { brotliDecompressSync } from 'node:zlib';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
+import { describe, expect, it } from 'vitest';
 import { Functions } from '../../src/Functions.js';
 import { Parser } from '../../src/Parser.js';
 import { PowertoolsFunctions } from '../../src/PowertoolsFunctions.js';

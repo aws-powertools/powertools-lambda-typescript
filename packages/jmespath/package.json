@@ -10,11 +10,11 @@
     "access": "public"
   },
   "scripts": {
-    "test": "npm run test:unit",
-    "test:unit": "jest --group=unit --detectOpenHandles --coverage",
-    "jest": "jest --detectOpenHandles --verbose",
+    "test": "vitest --run",
+    "test:unit": "vitest --run",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "echo 'Not applicable for this package'",
     "test:e2e": "echo 'Not applicable for this package'",
-    "watch": "jest --watch --group=unit",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",

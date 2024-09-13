@@ -874,7 +874,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Print a given log with given log level.
    *
-   * @param logLevel - The log level
+   * @param logLevel - The log level threshold
    * @param input - The log message
    * @param extraInput - The extra input to log
    */

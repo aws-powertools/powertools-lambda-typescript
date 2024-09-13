@@ -77,6 +77,7 @@ class IdempotencyConfig {
     this.maxLocalCacheSize = config.maxLocalCacheSize ?? 1000;
     this.hashFunction = config.hashFunction ?? 'md5';
     this.lambdaContext = config.lambdaContext;
+    this.responseHook = config.responseHook;
     this.#envVarsService = new EnvironmentVariablesService();
     this.#enabled = this.#envVarsService.getIdempotencyEnabled();
   }

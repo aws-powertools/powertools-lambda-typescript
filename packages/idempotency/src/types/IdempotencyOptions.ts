@@ -149,6 +149,14 @@ type IdempotencyHandlerOptions = {
 };
 
 /**
+ * A hook that runs when an idempotent request is made.
+ */
+type ResponseHook = (
+  response: JSONValue,
+  record: IdempotencyRecord
+) => JSONValue;
+
+/**
  * Idempotency configuration options
  */
 type IdempotencyConfigOptions = {
@@ -184,15 +192,11 @@ type IdempotencyConfigOptions = {
    * AWS Lambda Context object containing information about the current invocation, function, and execution environment
    */
   lambdaContext?: Context;
+  /**
+   * A hook that runs when an idempotent request is made
+   */
+  responseHook?: ResponseHook;
 };
-
-/**
- * A hook that runs when an idempotent request is made.
- */
-type ResponseHook = (
-  response: JSONValue,
-  record: IdempotencyRecord
-) => JSONValue;
 
 export type {
   AnyFunction,

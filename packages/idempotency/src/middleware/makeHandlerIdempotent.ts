@@ -1,18 +1,18 @@
-import { IdempotencyHandler } from '../IdempotencyHandler.js';
-import { IdempotencyConfig } from '../IdempotencyConfig.js';
 import {
-  cleanupMiddlewares,
   IDEMPOTENCY_KEY,
+  cleanupMiddlewares,
 } from '@aws-lambda-powertools/commons';
+import type {
+  JSONValue,
+  MiddlewareLikeObj,
+  MiddyLikeRequest,
+} from '@aws-lambda-powertools/commons/types';
+import { IdempotencyConfig } from '../IdempotencyConfig.js';
+import { IdempotencyHandler } from '../IdempotencyHandler.js';
 import type {
   AnyFunction,
   IdempotencyLambdaHandlerOptions,
 } from '../types/IdempotencyOptions.js';
-import type {
-  MiddlewareLikeObj,
-  MiddyLikeRequest,
-  JSONValue,
-} from '@aws-lambda-powertools/commons/types';
 
 /**
  * @internal
@@ -89,6 +89,11 @@ const shouldSkipIdempotency = (request: MiddyLikeRequest): boolean => {
  *   }
  * ).use(makeHandlerIdempotent({ persistenceStore: dynamoDBPersistenceLayer }));
  * ```
+ *
+ * For the middleware to work, your Lambda function handler must return a value different from `undefined`.
+ * This is a [known limitation of the early return feature in Middy.js](https://github.com/middyjs/middy/issues/1236).
+ *
+ * If your use case requires early returns, you can use the {@link index.makeIdempotent | makeIdempotent()} function wrapper instead.
  *
  * @param options - Options for the idempotency middleware
  */

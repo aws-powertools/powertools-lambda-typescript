@@ -64,7 +64,7 @@ describe('Class IdempotencyHandler', () => {
       expect(stubRecord.isExpired()).toBe(false);
       expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
       expect(() =>
-        IdempotencyHandler.determineResultFromIdempotencyRecord(stubRecord)
+        idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
       ).toThrow(IdempotencyAlreadyInProgressError);
     });
 
@@ -83,7 +83,7 @@ describe('Class IdempotencyHandler', () => {
       expect(stubRecord.isExpired()).toBe(false);
       expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
       expect(() =>
-        IdempotencyHandler.determineResultFromIdempotencyRecord(stubRecord)
+        idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
       ).toThrow(IdempotencyInconsistentStateError);
     });
 
@@ -102,8 +102,36 @@ describe('Class IdempotencyHandler', () => {
       expect(stubRecord.isExpired()).toBe(true);
       expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.EXPIRED);
       expect(() =>
-        IdempotencyHandler.determineResultFromIdempotencyRecord(stubRecord)
+        idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
       ).toThrow(IdempotencyInconsistentStateError);
+    });
+
+    test('when response hook is provided, it should should call responseHook during an idempotent request', () => {
+      // Prepare
+      const stubRecord = new IdempotencyRecord({
+        idempotencyKey: 'idempotencyKey',
+        responseData: { responseData: 'responseData' },
+        payloadHash: 'payloadHash',
+        status: IdempotencyRecordStatus.COMPLETED,
+      });
+
+      const mockResponseHook = jest.fn();
+
+      const idempotentHandler = new IdempotencyHandler({
+        functionToMakeIdempotent: mockFunctionToMakeIdempotent,
+        functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
+        persistenceStore: mockIdempotencyOptions.persistenceStore,
+        functionArguments: [],
+        idempotencyConfig: new IdempotencyConfig({
+          responseHook: mockResponseHook,
+        }),
+      });
+
+      // Act
+      idempotentHandler.determineResultFromIdempotencyRecord(stubRecord);
+
+      // Assess
+      expect(mockResponseHook).toHaveBeenCalled();
     });
   });
 

@@ -1,3 +1,4 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler.js';
 import { IdempotencyRecordStatus, MAX_RETRIES } from '../../src/constants.js';
 import {
@@ -128,6 +129,68 @@ describe('Class IdempotencyHandler', () => {
 
       // Assess
       expect(mockResponseHook).toHaveBeenCalled();
+    });
+
+    test('when response hook is provided, it can manipulate response during an idempotent request', () => {
+      // Prepare
+      interface HandlerResponse {
+        message: string;
+        statusCode: number;
+        headers?: Record<string, string>;
+      }
+
+      const responseHook = jest
+        .fn()
+        .mockImplementation(
+          (response: JSONValue, record: IdempotencyRecord) => {
+            const handlerResponse = response as unknown as HandlerResponse;
+            handlerResponse.headers = {
+              'x-idempotency-key': record.idempotencyKey,
+            };
+            return handlerResponse as unknown as JSONValue;
+          }
+        );
+
+      const idempotentHandler = new IdempotencyHandler({
+        functionToMakeIdempotent: mockFunctionToMakeIdempotent,
+        functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
+        persistenceStore: mockIdempotencyOptions.persistenceStore,
+        functionArguments: [],
+        idempotencyConfig: new IdempotencyConfig({
+          responseHook,
+        }),
+      });
+
+      const mockResponse: HandlerResponse = {
+        message: 'Original message',
+        statusCode: 200,
+      };
+
+      const idempotencyRecord = {
+        getStatus: jest.fn().mockReturnValue(IdempotencyRecordStatus.COMPLETED),
+        getResponse: jest.fn().mockReturnValue(mockResponse),
+        idempotencyKey: 'test-key',
+        isExpired: jest.fn().mockReturnValue(false),
+      } as unknown as IdempotencyRecord;
+
+      // Act
+      const result =
+        idempotentHandler.determineResultFromIdempotencyRecord(
+          idempotencyRecord
+        );
+
+      // Assess
+      expect(responseHook).toHaveBeenCalledWith(
+        mockResponse,
+        idempotencyRecord
+      );
+      expect(result).toEqual({
+        message: 'Original message',
+        statusCode: 200,
+        headers: {
+          'x-idempotency-key': 'test-key',
+        },
+      });
     });
   });
 

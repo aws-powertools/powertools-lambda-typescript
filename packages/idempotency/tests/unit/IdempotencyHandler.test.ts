@@ -16,12 +16,17 @@ import { IdempotencyRecord } from '../../src/persistence/index.js';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 
 const mockFunctionToMakeIdempotent = jest.fn();
+const mockResponseHook = jest
+  .fn()
+  .mockImplementation((response, record) => response);
 const mockFunctionPayloadToBeHashed = {};
 const persistenceStore = new PersistenceLayerTestClass();
 const mockIdempotencyOptions = {
   persistenceStore,
   dataKeywordArgument: 'testKeywordArgument',
-  config: new IdempotencyConfig({}),
+  config: new IdempotencyConfig({
+    responseHook: mockResponseHook,
+  }),
 };
 
 const idempotentHandler = new IdempotencyHandler({
@@ -66,6 +71,7 @@ describe('Class IdempotencyHandler', () => {
       expect(() =>
         idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
       ).toThrow(IdempotencyAlreadyInProgressError);
+      expect(mockResponseHook).not.toHaveBeenCalled();
     });
 
     test('when record is in progress and outside expiry window, it rejects with IdempotencyInconsistentStateError', async () => {
@@ -85,6 +91,7 @@ describe('Class IdempotencyHandler', () => {
       expect(() =>
         idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
       ).toThrow(IdempotencyInconsistentStateError);
+      expect(mockResponseHook).not.toHaveBeenCalled();
     });
 
     test('when record is expired, it rejects with IdempotencyInconsistentStateError', async () => {
@@ -104,6 +111,7 @@ describe('Class IdempotencyHandler', () => {
       expect(() =>
         idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
       ).toThrow(IdempotencyInconsistentStateError);
+      expect(mockResponseHook).not.toHaveBeenCalled();
     });
 
     test('when response hook is provided, it should should call responseHook during an idempotent request', () => {
@@ -113,18 +121,6 @@ describe('Class IdempotencyHandler', () => {
         responseData: { responseData: 'responseData' },
         payloadHash: 'payloadHash',
         status: IdempotencyRecordStatus.COMPLETED,
-      });
-
-      const mockResponseHook = jest.fn();
-
-      const idempotentHandler = new IdempotencyHandler({
-        functionToMakeIdempotent: mockFunctionToMakeIdempotent,
-        functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
-        persistenceStore: mockIdempotencyOptions.persistenceStore,
-        functionArguments: [],
-        idempotencyConfig: new IdempotencyConfig({
-          responseHook: mockResponseHook,
-        }),
       });
 
       // Act

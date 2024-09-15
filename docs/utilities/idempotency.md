@@ -783,14 +783,20 @@ You can set up a `responseHook` in the `IdempotentConfig` class to manipulate th
 
 === "Using an Idempotent Response Hook"
 
-    ```typescript hl_lines="15 18 26 55"
+    ```typescript hl_lines="16 19 27 56"
     --8<-- "examples/snippets/idempotency/workingWithResponseHook.ts"
     ```
 
 === "Sample event"
 
     ```json
-    --8<-- "examples/snippets/idempotency/samples/workingWithResponseHook.json"
+    --8<-- "examples/snippets/idempotency/samples/workingWithResponseHookSampleEvent.json"
+    ```
+
+=== "Sample Idempotent response"
+
+    ```json hl_lines="6"
+    --8<-- "examples/snippets/idempotency/samples/workingWithResponseHookIdempotentResponse.json"
     ```
 
 ???+ info "Info: Using custom de-serialization?"

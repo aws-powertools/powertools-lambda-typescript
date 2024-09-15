@@ -783,7 +783,7 @@ You can set up a `responseHook` in the `IdempotentConfig` class to manipulate th
 
 === "Using an Idempotent Response Hook"
 
-    ```typescript hl_lines="20 22 28 36"
+    ```typescript hl_lines="15 18 26 55"
     --8<-- "examples/snippets/idempotency/workingWithResponseHook.ts"
     ```
 

@@ -87,7 +87,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   /**
    * Takes an idempotency key and returns the idempotency record from the persistence layer.
    *
-   * If a response hook is provided in the idempotency configuration, it will be called to before returning the response.
+   * If a response hook is provided in the idempotency configuration, it will be called before returning the response.
    *
    * If the idempotency record is not COMPLETE, then it will throw an error based on the status of the record.
    *

@@ -161,29 +161,24 @@ describe('Class IdempotencyHandler', () => {
         }),
       });
 
-      const mockResponse: HandlerResponse = {
+      const responseData = {
         message: 'Original message',
         statusCode: 200,
       };
 
-      const idempotencyRecord = {
-        getStatus: jest.fn().mockReturnValue(IdempotencyRecordStatus.COMPLETED),
-        getResponse: jest.fn().mockReturnValue(mockResponse),
+      const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'test-key',
-        isExpired: jest.fn().mockReturnValue(false),
-      } as unknown as IdempotencyRecord;
+        responseData,
+        payloadHash: 'payloadHash',
+        status: IdempotencyRecordStatus.COMPLETED,
+      });
 
       // Act
       const result =
-        idempotentHandler.determineResultFromIdempotencyRecord(
-          idempotencyRecord
-        );
+        idempotentHandler.determineResultFromIdempotencyRecord(stubRecord);
 
       // Assess
-      expect(responseHook).toHaveBeenCalledWith(
-        mockResponse,
-        idempotencyRecord
-      );
+      expect(responseHook).toHaveBeenCalledWith(responseData, stubRecord);
       expect(result).toEqual({
         message: 'Original message',
         statusCode: 200,

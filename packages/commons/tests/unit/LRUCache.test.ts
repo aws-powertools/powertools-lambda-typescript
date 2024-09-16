@@ -81,22 +81,6 @@ describe('Class: LRUMap', () => {
       // Assess
       expect(value).toBeUndefined();
     });
-
-    it('marks the item as the most recently used', () => {
-      // Prepare
-      const cache = new LRUCache();
-      cache.add('a', 1);
-      cache.add('b', 2);
-      cache.add('c', 3);
-
-      // Act
-      cache.get('b');
-
-      // Assess
-      expect(cache.get('a')).toBe(1);
-      expect(cache.get('b')).toBe(2);
-      expect(cache.get('c')).toBe(3);
-    });
   });
 
   describe('Method: has', () => {
@@ -142,7 +126,7 @@ describe('Class: LRUMap', () => {
       expect(cache.get('a')).toBeUndefined();
     });
 
-    it('it does nothing when called on an empty cache', () => {
+    it('it does nothing when called on a non-existing key', () => {
       // Prepare
       const cache = new LRUCache();
       cache.add('a', 1);

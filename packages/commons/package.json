@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/commons",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "A shared utility package for Powertools for AWS Lambda (TypeScript) libraries",
   "author": {
     "name": "Amazon Web Services",
@@ -10,11 +10,11 @@
     "access": "public"
   },
   "scripts": {
-    "test": "npm run test:unit",
-    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
-    "jest": "jest --detectOpenHandles --verbose",
+    "test": "vitest --run",
+    "test:unit": "vitest --run",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "vitest --run tests/types --typecheck",
     "test:e2e": "echo 'Not Applicable'",
-    "watch": "jest --watch",
     "generateVersionFile": "echo \"// this file is auto generated, do not modify\nexport const PT_VERSION = '$(jq -r '.version' package.json)';\" > src/version.ts",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",

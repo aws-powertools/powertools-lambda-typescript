@@ -1,14 +1,10 @@
-/**
- * Test fromBase64 function
- *
- * @group unit/commons/fromBase64
- */
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fromBase64 } from '../../src/fromBase64.js';
 
 describe('Function: fromBase64', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
+    vi.resetModules();
   });
 
   it('returns the Uint8Array from a base64 string', () => {

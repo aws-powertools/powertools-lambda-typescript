@@ -1,8 +1,4 @@
-/**
- * Test type utils functions
- *
- * @group unit/commons/typeUtils
- */
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getType,
   isIntegerNumber,
@@ -17,8 +13,8 @@ import {
 
 describe('Functions: typeUtils', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
+    vi.resetModules();
   });
 
   describe('Function: isRecord', () => {

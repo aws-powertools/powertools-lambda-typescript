@@ -40,7 +40,11 @@ jobs:
     strategy:
       matrix:
         version: [18, 20]
-        workspace: ["packages/batch", "packages/commons"]
+        workspace: [
+          "packages/batch",
+          "packages/commons",
+          "packages/jmespath"
+        ]
       fail-fast: false
     steps:
       - name: Checkout code
@@ -82,14 +86,11 @@ jobs:
           nodeVersion: ${{ matrix.version }}
       - name: Run linting
         run: |
-          npm run lint -w packages/commons \
-            -w packages/logger \
+          npm run lint -w packages/logger \
             -w packages/tracer \
             -w packages/metrics \
             -w packages/parameters \
             -w packages/idempotency \
-            -w packages/batch \
-            -w packages/jmespath \
             -w packages/parser \
             -w packages/event-handler
       - name: Run unit tests
@@ -99,8 +100,6 @@ jobs:
             -w packages/metrics \
             -w packages/parameters \
             -w packages/idempotency \
-            -w packages/batch \
-            -w packages/jmespath \
             -w packages/parser \
             -w packages/event-handler
   check-examples:

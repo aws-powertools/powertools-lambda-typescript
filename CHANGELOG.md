@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.8.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.7.0...v2.8.0) (2024-09-16)
+
+
+### Bug Fixes
+
+* **idempotency:** include cause in idempotency persistence layer error ([#2916](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2916)) ([47f0161](https://github.com/aws-powertools/powertools-lambda-typescript/commit/47f016188e5d36611c10466a4755d1228a6e14e1))
+* **tracer:** include request pathname in trace data ([#2955](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2955)) ([6864e53](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6864e53d73f49b15fd88ab35a4f6d22263d0c9fd))
+
+
+### Features
+
+* **logger:** introduce log key reordering functionality ([#2736](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2736)) ([9677258](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9677258f3c872400fca89b625760b7a45f923212))
+* **logger:** introduce loglevel trace [#1589](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1589) ([#2902](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2902)) ([650252c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/650252c6863d95d53ed182888200db314a199b09))
+* **parameters:** adds setParameter function to store SSM parameters ([#3020](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3020)) ([8fd5479](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8fd5479c6da2d60921df92fe7e5e72a0e03d5745))
+
+
+
+
+
 # [2.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.6.0...v2.7.0) (2024-08-08)
 
 

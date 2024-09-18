@@ -1,9 +1,5 @@
-/**
- * Test Middy cleanupMiddlewares function
- *
- * @group unit/commons/cleanupMiddlewares
- */
 import context from '@aws-lambda-powertools/testing-utils/context';
+import { describe, expect, it, vi } from 'vitest';
 import {
   IDEMPOTENCY_KEY,
   LOGGER_KEY,
@@ -15,10 +11,10 @@ import {
 describe('Function: cleanupMiddlewares', () => {
   it('calls the cleanup function that are present', async () => {
     // Prepare
-    const mockCleanupFunction1 = jest.fn();
-    const mockCleanupFunction2 = jest.fn();
-    const mockCleanupFunction3 = jest.fn();
-    const mockCleanupFunction4 = jest.fn();
+    const mockCleanupFunction1 = vi.fn();
+    const mockCleanupFunction2 = vi.fn();
+    const mockCleanupFunction3 = vi.fn();
+    const mockCleanupFunction4 = vi.fn();
     const mockRequest = {
       event: {},
       context: context,

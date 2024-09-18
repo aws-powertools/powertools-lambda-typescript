@@ -61,6 +61,7 @@ This utility requires additional permissions to work as expected.
 | SSM       | **`getParameters`**, **`SSMProvider.getMultiple`**               | **`ssm:GetParametersByPath`**                                                        |
 | SSM       | **`getParametersByName`**, **`SSMProvider.getParametersByName`** | **`ssm:GetParameter`** and **`ssm:GetParameters`**                                   |
 | SSM       | If using **`decrypt: true`**                                     | You must add an additional permission **`kms:Decrypt`**                              |
+| SSM       | **`setParameter`**, **`SSMProvider.set`**                        | **`ssm:PutParameter`**                                                               |
 | Secrets   | **`getSecret`**, **`SecretsProvider.get`**                       | **`secretsmanager:GetSecretValue`**                                                  |
 | DynamoDB  | **`DynamoDBProvider.get`**                                       | **`dynamodb:GetItem`**                                                               |
 | DynamoDB  | **`DynamoDBProvider.getMultiple`**                               | **`dynamodb:Query`**                                                                 |
@@ -102,6 +103,20 @@ For multiple parameters, you can use either:
 
 ```typescript hl_lines="9 13-15 18"
 --8<-- "examples/snippets/parameters/getParametersByNameGracefulErrorHandling.ts"
+```
+
+### Storing parameters
+
+You can store parameters in the System Manager Parameter Store using `setParameter`.
+
+```typescript hl_lines="1 5" title="Storing a parameter in SSM"
+--8<-- "examples/snippets/parameters/setParameter.ts"
+```
+
+If the parameter is already existent, it needs to have the `overwrite` parameter set to `true` to update the value.
+
+```typescript hl_lines="1 7" title="Overwriting an existing parameter in SSM"
+--8<-- "examples/snippets/parameters/setParameterOverwrite.ts"
 ```
 
 ### Fetching secrets
@@ -370,11 +385,13 @@ You can use a special `sdkOptions` object argument to pass any supported option 
 Here is the mapping between this utility's functions and methods and the underlying SDK:
 
 | Provider            | Function/Method                | Client name                       | Function name                                                                                                                                                                                                                                                                                                                                     |
-| ------------------- | ------------------------------ | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------- |--------------------------------| --------------------------------- |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | SSM Parameter Store | `getParameter`                 | `@aws-sdk/client-ssm`             | [GetParameterCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/ssm/command/GetParameterCommand/){target="_blank"}                                                                                                                                                                                                            |
 | SSM Parameter Store | `getParameters`                | `@aws-sdk/client-ssm`             | [GetParametersByPathCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/ssm/command/GetParametersByPathCommand/){target="_blank"}                                                                                                                                                                                              |
 | SSM Parameter Store | `SSMProvider.get`              | `@aws-sdk/client-ssm`             | [GetParameterCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/ssm/command/GetParameterCommand/){target="_blank"}                                                                                                                                                                                                            |
 | SSM Parameter Store | `SSMProvider.getMultiple`      | `@aws-sdk/client-ssm`             | [GetParametersByPathCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/ssm/command/GetParametersByPathCommand){target="_blank"}                                                                                                                                                                                               |
+| SSM Parameter Store | `setParameter`                 | `@aws-sdk/client-ssm`             | [PutParameterCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/ssm/command/PutParameterCommand/){target="_blank"}                                                                                                                                                                                                            |
+| SSM Parameter Store | `SSMProvider.set`              | `@aws-sdk/client-ssm`             | [PutParameterCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/ssm/command/PutParameterCommand/){target="_blank"}                                                                                                                                                                                                            |
 | Secrets Manager     | `getSecret`                    | `@aws-sdk/client-secrets-manager` | [GetSecretValueCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/secrets-manager/command/GetSecretValueCommand/){target="_blank"}                                                                                                                                                                                            |
 | Secrets Manager     | `SecretsProvider.get`          | `@aws-sdk/client-secrets-manager` | [GetSecretValueCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/secrets-manager/command/GetSecretValueCommand/){target="_blank"}                                                                                                                                                                                            |
 | AppConfig           | `AppConfigProvider.get`        | `@aws-sdk/client-appconfigdata`   | [StartConfigurationSessionCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/appconfigdata/command/StartConfigurationSessionCommand/){target="_blank"} & [GetLatestConfigurationCommand](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/appconfigdata/command/GetLatestConfigurationCommand/){target="_blank"} |

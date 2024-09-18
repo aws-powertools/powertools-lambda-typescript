@@ -69,6 +69,9 @@ import {
  * Test 9
  * get parameter twice, but force fetch 2nd time, we count number of SDK requests and
  * check that we made two API calls
+ *
+ * Test 10
+ * store and overwrite a single parameter
  */
 describe('Parameters E2E tests, SSM provider', () => {
   const testStack = new TestStack({
@@ -89,6 +92,7 @@ describe('Parameters E2E tests, SSM provider', () => {
   let paramB: string;
   const paramAValue = 'foo';
   const paramBValue = 'bar';
+  const paramCValue = 'baz';
   let paramEncryptedA: string;
   let paramEncryptedB: string;
   const paramEncryptedAValue = 'foo-encrypted';
@@ -161,6 +165,19 @@ describe('Parameters E2E tests, SSM provider', () => {
       'PARAM_ENCRYPTED_B',
       parameterEncryptedB.parameterName
     );
+
+    const parameterSetC = new TestStringParameter(
+      testStack,
+      {
+        stringValue: paramCValue,
+      },
+      {
+        nameSuffix: 'set/c',
+      }
+    );
+    parameterSetC.grantWrite(testFunction);
+    parameterSetC.grantRead(testFunction);
+    testFunction.addEnvironment('PARAM_C', parameterSetC.parameterName);
 
     // Deploy the stack
     await testStack.deploy();
@@ -346,6 +363,21 @@ describe('Parameters E2E tests, SSM provider', () => {
         expect(testLog).toStrictEqual({
           test: 'get-forced',
           value: 2,
+        });
+      },
+      TEST_CASE_TIMEOUT
+    );
+
+    // Test 10 - store and overwrite single parameter
+    it(
+      'should store and overwrite single parameter',
+      async () => {
+        const logs = invocationLogs.getFunctionLogs();
+        const testLog = TestInvocationLogs.parseFunctionLog(logs[9]);
+
+        expect(testLog).toStrictEqual({
+          test: 'set',
+          value: 'overwritten',
         });
       },
       TEST_CASE_TIMEOUT

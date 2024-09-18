@@ -1,8 +1,4 @@
-/**
- * Test Compliance with the JMESPath specification
- *
- * @group unit/jmespath/compliance/functions
- */
+import { describe, expect, it } from 'vitest';
 import { search } from '../../../src/index.js';
 
 describe('Functions tests', () => {

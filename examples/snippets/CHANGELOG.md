@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.8.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.7.0...v2.8.0) (2024-09-16)
+
+
+### Features
+
+* **logger:** introduce log key reordering functionality ([#2736](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2736)) ([9677258](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9677258f3c872400fca89b625760b7a45f923212))
+* **parameters:** adds setParameter function to store SSM parameters ([#3020](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3020)) ([8fd5479](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8fd5479c6da2d60921df92fe7e5e72a0e03d5745))
+
+
+
+
+
 # [2.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.6.0...v2.7.0) (2024-08-08)
 
 

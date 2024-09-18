@@ -107,19 +107,16 @@ describe('Middy middleware', () => {
       await handler(event, context);
 
       // Assess
-      const loggedData = [
-        JSON.parse(consoleSpy.mock.calls[0][0]),
-        JSON.parse(consoleSpy.mock.calls[1][0]),
-      ];
-      expect(consoleSpy).toBeCalledTimes(2);
-      expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
-      expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics[0].Name).toBe(
+      expect(consoleSpy).toHaveBeenCalledTimes(1);
+      const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(1);
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].Name).toBe(
         'ColdStart'
       );
-      expect(loggedData[0]._aws.CloudWatchMetrics[0].Metrics[0].Unit).toBe(
+      expect(loggedData._aws.CloudWatchMetrics[0].Metrics[0].Unit).toBe(
         'Count'
       );
-      expect(loggedData[0].ColdStart).toBe(1);
+      expect(loggedData.ColdStart).toBe(1);
     });
 
     test('should not capture cold start metrics if set to false', async () => {
@@ -143,9 +140,7 @@ describe('Middy middleware', () => {
       await handler(event, context);
 
       // Assess
-      const loggedData = JSON.parse(consoleSpy.mock.calls[0][0]);
-
-      expect(loggedData._aws.CloudWatchMetrics[0].Metrics.length).toBe(0);
+      expect(consoleSpy).not.toHaveBeenCalled();
     });
 
     test('should not throw on empty metrics if not set', async () => {

@@ -6,8 +6,10 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Logger } from '../../src/Logger.js';
 import { LogLevel, LogLevelThreshold } from '../../src/constants.js';
-import type { LogLevel as LogLevelType } from '../../src/types/Log.js';
-import type { LogFunction } from '../../src/types/Logger.js';
+import type {
+  LogFunction,
+  LogLevel as LogLevelType,
+} from '../../src/types/Logger.js';
 
 /**
  * Helper function to get the console method for a given log level, we use this

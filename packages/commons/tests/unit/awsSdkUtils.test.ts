@@ -1,8 +1,4 @@
-/**
- * Test AWS SDK utilities
- *
- * @group unit/commons/awsSdkUtils
- */
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { customUserAgentMiddleware } from '../../src/awsSdkUtils.js';
 import {
   addUserAgentMiddleware,
@@ -13,7 +9,7 @@ import {
 describe('Helpers: awsSdk', () => {
   describe('Function: userAgentMiddleware', () => {
     beforeAll(() => {
-      jest.spyOn(console, 'warn').mockImplementation(() => ({}));
+      vi.spyOn(console, 'warn').mockImplementation(() => ({}));
     });
 
     it('handles gracefully failures in adding a middleware and only log a warning', () => {
@@ -25,7 +21,7 @@ describe('Helpers: awsSdk', () => {
           },
         },
       };
-      const warningSpy = jest
+      const warningSpy = vi
         .spyOn(console, 'warn')
         .mockImplementation(() => ({}));
 
@@ -41,9 +37,9 @@ describe('Helpers: awsSdk', () => {
           identify: () => [
             'addPowertoolsToUserAgent: after getUserAgentMiddleware',
           ],
-          addRelativeTo: jest.fn(),
+          addRelativeTo: vi.fn(),
         },
-        send: jest.fn(),
+        send: vi.fn(),
         config: {
           defaultSigningName: 'bar',
         },
@@ -62,9 +58,9 @@ describe('Helpers: awsSdk', () => {
       const client = {
         middlewareStack: {
           identify: () => '',
-          addRelativeTo: jest.fn(),
+          addRelativeTo: vi.fn(),
         },
-        send: jest.fn(),
+        send: vi.fn(),
         config: {
           defaultSigningName: 'bar',
         },
@@ -104,7 +100,7 @@ describe('Helpers: awsSdk', () => {
       // Prepare
       const feature = 'my-feature';
       const middleware = customUserAgentMiddleware(feature);
-      const next = jest.fn();
+      const next = vi.fn();
       const args = {
         request: {
           headers: {
@@ -127,13 +123,13 @@ describe('Helpers: awsSdk', () => {
     it('returns true if the client is a valid AWS SDK v3 client', () => {
       // Prepare
       const client = {
-        send: jest.fn(),
+        send: vi.fn(),
         config: {
           defaultSigningName: 'bar',
         },
         middlewareStack: {
           identify: () => '',
-          addRelativeTo: jest.fn(),
+          addRelativeTo: vi.fn(),
         },
       };
 

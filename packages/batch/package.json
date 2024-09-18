@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/batch",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "The batch processing package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -12,11 +12,11 @@
   "scripts": {
     "test": "vitest --run",
     "test:unit": "vitest --run",
-    "test:unit:coverage": "vitest --run --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "echo 'Not Implemented'",
     "test:e2e:nodejs18x": "echo 'Not Implemented'",
     "test:e2e:nodejs20x": "echo 'Not Implemented'",
     "test:e2e": "echo 'Not Implemented'",
-    "watch": "jest --watch",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",

@@ -7,6 +7,7 @@ import {
   GetParameterCommand,
   GetParametersByPathCommand,
   GetParametersCommand,
+  PutParameterCommand,
   SSMClient,
 } from '@aws-sdk/client-ssm';
 import type { GetParametersCommandOutput } from '@aws-sdk/client-ssm';
@@ -21,6 +22,7 @@ import type {
   SSMGetParametersByNameOptions,
   SSMGetParametersByNameOutputInterface,
   SSMProviderOptions,
+  SSMSetOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
 } from '../../src/types/SSMProvider.js';
 
@@ -1307,6 +1309,83 @@ describe('Class: SSMProvider', () => {
       expect(parameters).toEqual({
         '/foo/bar': 'bar',
         '/foo/baz': 'baz',
+      });
+    });
+  });
+
+  describe('Method: set', () => {
+    test('sets a parameter successfully', async () => {
+      const provider: SSMProvider = new SSMProvider();
+      const client = mockClient(SSMClient)
+        .on(PutParameterCommand)
+        .resolves({ Version: 1 });
+      const parameterName: string = '/my-parameter';
+      const options: SSMSetOptions = { value: 'my-value' };
+
+      const version = await provider.set(parameterName, options);
+
+      expect(version).toBe(1);
+      expect(client).toReceiveCommandWith(PutParameterCommand, {
+        Name: parameterName,
+        Value: options.value,
+      });
+    });
+
+    test('sets a parameter with sdk options successfully', async () => {
+      const provider: SSMProvider = new SSMProvider();
+      const client = mockClient(SSMClient)
+        .on(PutParameterCommand)
+        .resolves({ Version: 1 });
+      const parameterName: string = '/my-parameter';
+      const options: SSMSetOptions = {
+        value: 'my-value',
+        sdkOptions: { Overwrite: true },
+      };
+
+      const version = await provider.set(parameterName, options);
+
+      expect(version).toBe(1);
+      expect(client).toReceiveCommandWith(PutParameterCommand, {
+        Name: parameterName,
+        Value: options.value,
+        Overwrite: true,
+      });
+    });
+
+    test('throws an error if setting a parameter fails', async () => {
+      const provider: SSMProvider = new SSMProvider();
+      mockClient(SSMClient)
+        .on(PutParameterCommand)
+        .rejects(new Error('Failed to set parameter'));
+      const parameterName: string = '/my-parameter';
+      const options: SSMSetOptions = { value: 'my-value' };
+
+      await expect(provider.set(parameterName, options)).rejects.toThrow(
+        `Unable to set parameter with name ${parameterName}`
+      );
+    });
+
+    test.each([
+      ['overwrite', true, 'Overwrite'],
+      ['description', 'my-description', 'Description'],
+      ['parameterType', 'SecureString', 'Type'],
+      ['tier', 'Advanced', 'Tier'],
+      ['kmsKeyId', 'my-key-id', 'KeyId'],
+    ])('sets a parameter with %s option', async (key, value, sdkKey) => {
+      const provider: SSMProvider = new SSMProvider();
+      const client = mockClient(SSMClient)
+        .on(PutParameterCommand)
+        .resolves({ Version: 1 });
+      const parameterName: string = '/my-parameter';
+      const options: SSMSetOptions = { value: 'my-value', [key]: value };
+
+      const version = await provider.set(parameterName, options);
+
+      expect(version).toBe(1);
+      expect(client).toReceiveCommandWith(PutParameterCommand, {
+        Name: parameterName,
+        Value: options.value,
+        [sdkKey]: value,
       });
     });
   });

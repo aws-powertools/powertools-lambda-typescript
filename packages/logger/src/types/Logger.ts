@@ -1,23 +1,35 @@
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
+import type { LogLevel as LogLevelList } from '../constants.js';
+import type { LogFormatter } from '../formatter/LogFormatter.js';
 import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
+import type { LogRecordOrderKeys } from './formatters.js';
 import type {
   Environment,
   LogAttributes,
   LogAttributesWithMessage,
-  LogFormatterInterface,
-  LogLevel,
-} from './Log.js';
+} from './logKeys.js';
 
 /**
- * The log function type.
+ * Type definition for the log level.
  *
- * @type {Object} LogFunction
- * @property {function} [critical] - The critical log function.
- * @property {function} [debug] - The debug log function.
- * @property {function} [error] - The error log function.
- * @property {function} [info] - The info log function.
- * @property {function} [warn] - The warn log function.
+ * It includes the lowercase and uppercase versions of each log level.
+ */
+type LogLevel =
+  | (typeof LogLevelList)[keyof typeof LogLevelList]
+  | Lowercase<(typeof LogLevelList)[keyof typeof LogLevelList]>;
+
+/**
+ * Type definition for the log level thresholds.
+ *
+ * Each log level has a corresponding number that represents its severity.
+ */
+type LogLevelThresholds = {
+  [key in Uppercase<LogLevel>]: number;
+};
+
+/**
+ * Type definition for a function that logs messages at different levels to the console.
  */
 type LogFunction = {
   [key in Exclude<Lowercase<LogLevel>, 'silent'>]: (
@@ -27,20 +39,21 @@ type LogFunction = {
 };
 
 /**
- * Options for the `injectLambdaContext` method.
- *
- * @type {Object} InjectLambdaContextOptions
- * @property {boolean} [logEvent] - If `true`, the logger will log the event.
- * @property {boolean} [resetKeys] - If `true`, the logger will reset the keys added via {@link `appendKeys()`}.
+ * Options for the {@link LoggerInterface.injectLambdaContext()} method.
  */
 type InjectLambdaContextOptions = {
+  /**
+   * When `true` the logger will log the event.
+   *
+   * To avoid logging sensitive information, we recommend using this option only for debugging purposes in local environments.
+   */
   logEvent?: boolean;
   /**
-   * @deprecated Use `resetKeys` instead.
+   * @deprecated Use {@link InjectLambdaContextOptions.resetKeys()}` instead.
    */
   clearState?: boolean;
   /**
-   * If `true`, the logger will reset the keys added via {@link index.Logger.appendKeys()}
+   * If `true`, the logger will reset the keys added via {@link LoggerInterface.appendKeys()}
    */
   resetKeys?: boolean;
 };
@@ -60,19 +73,31 @@ type CustomJsonReplacerFn = (key: string, value: unknown) => unknown;
 
 /**
  * Base constructor options for the Logger class.
- *
- * @type {Object} BaseConstructorOptions
- * @property {LogLevel} [logLevel] - The log level.
- * @property {string} [serviceName] - The service name.
- * @property {number} [sampleRateValue] - The sample rate value.
- * @property {ConfigServiceInterface} [customConfigService] - The custom config service.
- * @property {Environment} [environment] - The environment.
  */
 type BaseConstructorOptions = {
+  /**
+   * The level threshold for the logger to log at.
+   */
   logLevel?: LogLevel;
+  /**
+   * Service name to be included in log items for easier correlation.
+   */
   serviceName?: string;
+  /**
+   * The percentage rate at which the log level is `DEBUG`.
+   *
+   * See {@link https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/#sampling-debug-logs | Sampling debug logs} for more information.
+   */
   sampleRateValue?: number;
+  /**
+   * A custom config service that can be passed to the Logger constructor to extend the default behavior.
+   *
+   * See {@link ConfigServiceInterface} for more information.
+   */
   customConfigService?: ConfigServiceInterface;
+  /**
+   * The environment in which the Lambda function is running.
+   */
   environment?: Environment;
   /**
    * A custom JSON replacer function that can be passed to the Logger constructor to extend the default serialization behavior.
@@ -87,13 +112,10 @@ type BaseConstructorOptions = {
 
 /**
  * Options for the `persistentKeys` constructor option.
- *
- * @type {Object} PersistentKeysOption
- * @property {LogAttributes} [persistentKeys] - Keys that will be added in all log items.
  */
 type PersistentKeysOption = {
   /**
-   * Keys that will be added in all log items.
+   * Keys that will be added to all log items.
    */
   persistentKeys?: LogAttributes;
   /**
@@ -102,13 +124,18 @@ type PersistentKeysOption = {
   persistentLogAttributes?: never;
 };
 
-type DeprecatedOption = {
+/**
+ * Deprecated options for the `persistentLogAttributes` constructor option.
+ *
+ * Used to maintain backwards compatibility with the `persistentLogAttributes` option.
+ */
+type DeprecatedPersistentKeysOption = {
   /**
    * @deprecated Use `persistentKeys` instead.
    */
   persistentLogAttributes?: LogAttributes;
   /**
-   * Keys that will be added in all log items.
+   * Keys that will be added to all log items.
    */
   persistentKeys?: never;
 };
@@ -116,16 +143,17 @@ type DeprecatedOption = {
 /**
  * Options for the `logFormatter` constructor option.
  *
- * @type {Object} LogFormatterOption
- * @property {LogFormatterInterface} [logFormatter] - The custom log formatter.
+ * Used to make the `logFormatter` option mutually exclusive with the `logRecordOrder` option.
  */
 type LogFormatterOption = {
   /**
-   * The custom log formatter.
+   * The custom log formatter to process log attributes.
+   *
+   * See {@link https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/#custom-log-formatter-bring-your-own-formatter | Custom Log Formatters} for more information.
    */
-  logFormatter?: LogFormatterInterface;
+  logFormatter?: LogFormatter;
   /**
-   * Optional list of keys to specify order in logs
+   * Optional list of keys to specify order of the keys in logs.
    */
   logRecordOrder?: never;
 };
@@ -133,14 +161,13 @@ type LogFormatterOption = {
 /**
  * Options for the `logRecordOrder` constructor option.
  *
- * @type {Object} LogRecordOrderOption
- * @property {LogRecordOrder} [logRecordOrder] - The log record order.
+ * Used to make the `logRecordOrder` option mutually exclusive with the `logFormatter` option.
  */
 type LogRecordOrderOption = {
   /**
-   * Optional list of keys to specify order in logs
+   * Optional list of keys to specify order of the keys in logs.
    */
-  logRecordOrder?: LogRecordOrder;
+  logRecordOrder?: LogRecordOrderKeys;
   /**
    * The custom log formatter.
    */
@@ -148,54 +175,18 @@ type LogRecordOrderOption = {
 };
 
 /**
- * Options for the Logger class constructor.
- *
- * @type {Object} ConstructorOptions
- * @property {LogLevel} [logLevel] - The log level.
- * @property {string} [serviceName] - The service name.
- * @property {number} [sampleRateValue] - The sample rate value.
- * @property {LogFormatterInterface} [logFormatter] - The custom log formatter.
- * @property {ConfigServiceInterface} [customConfigService] - The custom config service.
- * @property {Environment} [environment] - The environment.
- * @property {LogAttributes} [persistentKeys] - Keys that will be added in all log items.
- * @property {LogRecordOrder} [logRecordOrder] - The log record order.
+ * Options to configure the Logger.
  */
 type ConstructorOptions = BaseConstructorOptions &
-  (PersistentKeysOption | DeprecatedOption) &
+  (PersistentKeysOption | DeprecatedPersistentKeysOption) &
   (LogFormatterOption | LogRecordOrderOption);
-
-type LambdaFunctionContext = Pick<
-  Context,
-  | 'functionName'
-  | 'memoryLimitInMB'
-  | 'functionVersion'
-  | 'invokedFunctionArn'
-  | 'awsRequestId'
-> & {
-  coldStart: boolean;
-};
-
-type PowertoolsLogData = LogAttributes & {
-  environment?: Environment;
-  serviceName: string;
-  sampleRateValue: number;
-  lambdaContext?: LambdaFunctionContext;
-  xRayTraceId?: string;
-  awsRegion: string;
-};
-
-type UnformattedAttributes = PowertoolsLogData & {
-  error?: Error;
-  logLevel: LogLevel;
-  timestamp: Date;
-  message: string;
-};
-
-type LogRecordOrder = Array<keyof UnformattedAttributes | keyof LogAttributes>;
 
 type LogItemMessage = string | LogAttributesWithMessage;
 type LogItemExtraInput = [Error | string] | LogAttributes[];
 
+/**
+ * Interface for the Logger class.
+ */
 type LoggerInterface = {
   addContext(context: Context): void;
   addPersistentLogAttributes(attributes?: LogAttributes): void;
@@ -223,15 +214,15 @@ type LoggerInterface = {
 };
 
 export type {
+  Environment,
+  LogLevelThresholds,
+  LogAttributes,
+  LogLevel,
   LogFunction,
   LoggerInterface,
   LogItemMessage,
   LogItemExtraInput,
-  LambdaFunctionContext,
-  UnformattedAttributes,
-  PowertoolsLogData,
   ConstructorOptions,
   InjectLambdaContextOptions,
   CustomJsonReplacerFn,
-  LogRecordOrder,
 };

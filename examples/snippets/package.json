@@ -35,7 +35,7 @@
     "@aws-sdk/client-appconfigdata": "^3.651.1",
     "@aws-sdk/client-dynamodb": "^3.651.1",
     "@aws-sdk/client-secrets-manager": "^3.651.1",
-    "@aws-sdk/client-ssm": "^3.651.1",
+    "@aws-sdk/client-ssm": "^3.653.0",
     "@aws-sdk/util-dynamodb": "^3.651.1",
     "@middy/core": "^4.7.0",
     "aws-sdk": "^2.1691.0",

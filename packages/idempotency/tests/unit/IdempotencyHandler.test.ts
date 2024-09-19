@@ -1,3 +1,4 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler.js';
 import { IdempotencyRecordStatus, MAX_RETRIES } from '../../src/constants.js';
 import {
@@ -16,12 +17,17 @@ import { IdempotencyRecord } from '../../src/persistence/index.js';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 
 const mockFunctionToMakeIdempotent = jest.fn();
+const mockResponseHook = jest
+  .fn()
+  .mockImplementation((response, record) => response);
 const mockFunctionPayloadToBeHashed = {};
 const persistenceStore = new PersistenceLayerTestClass();
 const mockIdempotencyOptions = {
   persistenceStore,
   dataKeywordArgument: 'testKeywordArgument',
-  config: new IdempotencyConfig({}),
+  config: new IdempotencyConfig({
+    responseHook: mockResponseHook,
+  }),
 };
 
 const idempotentHandler = new IdempotencyHandler({
@@ -64,8 +70,9 @@ describe('Class IdempotencyHandler', () => {
       expect(stubRecord.isExpired()).toBe(false);
       expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
       expect(() =>
-        IdempotencyHandler.determineResultFromIdempotencyRecord(stubRecord)
+        idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
       ).toThrow(IdempotencyAlreadyInProgressError);
+      expect(mockResponseHook).not.toHaveBeenCalled();
     });
 
     test('when record is in progress and outside expiry window, it rejects with IdempotencyInconsistentStateError', async () => {
@@ -83,8 +90,9 @@ describe('Class IdempotencyHandler', () => {
       expect(stubRecord.isExpired()).toBe(false);
       expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
       expect(() =>
-        IdempotencyHandler.determineResultFromIdempotencyRecord(stubRecord)
+        idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
       ).toThrow(IdempotencyInconsistentStateError);
+      expect(mockResponseHook).not.toHaveBeenCalled();
     });
 
     test('when record is expired, it rejects with IdempotencyInconsistentStateError', async () => {
@@ -102,8 +110,82 @@ describe('Class IdempotencyHandler', () => {
       expect(stubRecord.isExpired()).toBe(true);
       expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.EXPIRED);
       expect(() =>
-        IdempotencyHandler.determineResultFromIdempotencyRecord(stubRecord)
+        idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
       ).toThrow(IdempotencyInconsistentStateError);
+      expect(mockResponseHook).not.toHaveBeenCalled();
+    });
+
+    test('when response hook is provided, it should should call responseHook during an idempotent request', () => {
+      // Prepare
+      const stubRecord = new IdempotencyRecord({
+        idempotencyKey: 'idempotencyKey',
+        responseData: { responseData: 'responseData' },
+        payloadHash: 'payloadHash',
+        status: IdempotencyRecordStatus.COMPLETED,
+      });
+
+      // Act
+      idempotentHandler.determineResultFromIdempotencyRecord(stubRecord);
+
+      // Assess
+      expect(mockResponseHook).toHaveBeenCalled();
+    });
+
+    test('when response hook is provided, it can manipulate response during an idempotent request', () => {
+      // Prepare
+      interface HandlerResponse {
+        message: string;
+        statusCode: number;
+        headers?: Record<string, string>;
+      }
+
+      const responseHook = jest
+        .fn()
+        .mockImplementation(
+          (response: JSONValue, record: IdempotencyRecord) => {
+            const handlerResponse = response as unknown as HandlerResponse;
+            handlerResponse.headers = {
+              'x-idempotency-key': record.idempotencyKey,
+            };
+            return handlerResponse as unknown as JSONValue;
+          }
+        );
+
+      const idempotentHandler = new IdempotencyHandler({
+        functionToMakeIdempotent: mockFunctionToMakeIdempotent,
+        functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
+        persistenceStore: mockIdempotencyOptions.persistenceStore,
+        functionArguments: [],
+        idempotencyConfig: new IdempotencyConfig({
+          responseHook,
+        }),
+      });
+
+      const responseData = {
+        message: 'Original message',
+        statusCode: 200,
+      };
+
+      const stubRecord = new IdempotencyRecord({
+        idempotencyKey: 'test-key',
+        responseData,
+        payloadHash: 'payloadHash',
+        status: IdempotencyRecordStatus.COMPLETED,
+      });
+
+      // Act
+      const result =
+        idempotentHandler.determineResultFromIdempotencyRecord(stubRecord);
+
+      // Assess
+      expect(responseHook).toHaveBeenCalledWith(responseData, stubRecord);
+      expect(result).toEqual({
+        message: 'Original message',
+        statusCode: 200,
+        headers: {
+          'x-idempotency-key': 'test-key',
+        },
+      });
     });
   });
 

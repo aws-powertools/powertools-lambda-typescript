@@ -1,0 +1,8 @@
+{
+    "message": "success",
+    "paymentId": "31a964eb-7477-4fe1-99fe-7f8a6a351a7e",
+    "statusCode": 200,
+    "headers": {
+      "x-idempotency-key": "function-name#mHfGv2vJ8h+ZvLIr/qGBbQ=="
+    }
+  }

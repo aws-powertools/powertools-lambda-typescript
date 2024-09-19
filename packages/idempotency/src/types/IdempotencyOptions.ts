@@ -2,6 +2,7 @@ import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
 import type { IdempotencyConfig } from '../IdempotencyConfig.js';
 import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
+import type { IdempotencyRecord } from '../persistence/IdempotencyRecord.js';
 
 /**
  * Configuration options for the idempotency utility.
@@ -148,6 +149,14 @@ type IdempotencyHandlerOptions = {
 };
 
 /**
+ * A hook that runs when an idempotent request is made.
+ */
+type ResponseHook = (
+  response: JSONValue,
+  record: IdempotencyRecord
+) => JSONValue;
+
+/**
  * Idempotency configuration options
  */
 type IdempotencyConfigOptions = {
@@ -183,6 +192,10 @@ type IdempotencyConfigOptions = {
    * AWS Lambda Context object containing information about the current invocation, function, and execution environment
    */
   lambdaContext?: Context;
+  /**
+   * A hook that runs when an idempotent request is made
+   */
+  responseHook?: ResponseHook;
 };
 
 export type {
@@ -191,4 +204,5 @@ export type {
   ItempotentFunctionOptions,
   IdempotencyLambdaHandlerOptions,
   IdempotencyHandlerOptions,
+  ResponseHook,
 };

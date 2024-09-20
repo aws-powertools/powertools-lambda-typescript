@@ -2,7 +2,10 @@ import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
 import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import type { Context } from 'aws-lambda';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
-import type { IdempotencyConfigOptions } from './types/IdempotencyOptions.js';
+import type {
+  IdempotencyConfigOptions,
+  ResponseHook,
+} from './types/IdempotencyOptions.js';
 
 /**
  * Configuration for the idempotency feature.
@@ -52,6 +55,10 @@ class IdempotencyConfig {
    * @default false
    */
   public throwOnNoIdempotencyKey: boolean;
+  /**
+   * A hook that runs when an idempotent request is made.
+   */
+  public responseHook?: ResponseHook;
 
   /**
    * Use the local cache to store idempotency keys.
@@ -70,6 +77,7 @@ class IdempotencyConfig {
     this.maxLocalCacheSize = config.maxLocalCacheSize ?? 1000;
     this.hashFunction = config.hashFunction ?? 'md5';
     this.lambdaContext = config.lambdaContext;
+    this.responseHook = config.responseHook;
     this.#envVarsService = new EnvironmentVariablesService();
     this.#enabled = this.#envVarsService.getIdempotencyEnabled();
   }

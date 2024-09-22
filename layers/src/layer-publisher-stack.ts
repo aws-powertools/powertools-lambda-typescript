@@ -65,6 +65,7 @@ export class LayerPublisherStack extends Stack {
                 'parameters',
                 'idempotency',
                 'batch',
+                'parser',
               ];
 
               // These files are relative to the tmp folder

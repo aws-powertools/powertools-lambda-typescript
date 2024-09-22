@@ -122,11 +122,15 @@ abstract class BasePartialProcessor {
     }
     this.prepare();
 
-    const processingPromises: Promise<SuccessResponse | FailureResponse>[] =
-      this.records.map((record) => this.processRecord(record));
-
-    const processedRecords: (SuccessResponse | FailureResponse)[] =
-      await Promise.all(processingPromises);
+    /**
+     * Process the records in parallel if the option is set to true.
+     * Otherwise, process the records sequentially.
+     */
+    const processedRecords = this.options?.processInParallel
+      ? await Promise.all(
+          this.records.map((record) => this.processRecord(record))
+        )
+      : await this.#processSequentially();
 
     this.clean();
 
@@ -134,9 +138,9 @@ abstract class BasePartialProcessor {
   }
 
   /**
-   * Process a record with an asyncronous handler
+   * Process a record with an asynchronous handler
    *
-   * An implementation of this method is required for asyncronous processors.
+   * An implementation of this method is required for asynchronous processors.
    *
    * When implementing this method, you should at least call the successHandler method
    * when a record succeeds processing and the failureHandler method when a record
@@ -224,9 +228,8 @@ abstract class BasePartialProcessor {
     this.records = records;
     this.handler = handler;
 
-    if (options) {
-      this.options = options;
-    }
+    // By default, we process the records in parallel.
+    this.options = { processInParallel: true, ...options };
 
     return this;
   }
@@ -248,6 +251,17 @@ abstract class BasePartialProcessor {
     this.successMessages.push(record);
 
     return entry;
+  }
+
+  /**
+   * Processes the records sequentially, ensuring that each record is processed one after the other.
+   */
+  async #processSequentially(): Promise<(SuccessResponse | FailureResponse)[]> {
+    const processedRecords: (SuccessResponse | FailureResponse)[] = [];
+    for (const record of this.records) {
+      processedRecords.push(await this.processRecord(record));
+    }
+    return processedRecords;
   }
 }
 

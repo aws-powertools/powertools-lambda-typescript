@@ -123,7 +123,7 @@ abstract class BasePartialProcessor {
     this.prepare();
 
     /**
-     * If `processInParallel` is not set or false, process the records in parallel.
+     * If `processInParallel` is not provided or true, process the records in parallel.
      * Otherwise, process the records sequentially.
      */
     const processInParallel = this.options?.processInParallel ?? true;

@@ -123,17 +123,12 @@ abstract class BasePartialProcessor {
     this.prepare();
 
     /**
-     * Process the records in parallel if the option is set to true.
+     * If `processInParallel` is not set or false, process the records in parallel.
      * Otherwise, process the records sequentially.
      */
-    const processInParallel =
-      this.options?.processInParallel === undefined
-        ? true
-        : this.options.processInParallel;
+    const processInParallel = this.options?.processInParallel ?? true;
     const processedRecords = processInParallel
-      ? await Promise.all(
-          this.records.map((record) => this.processRecord(record))
-        )
+      ? await this.#processInParallel()
       : await this.#processSequentially();
 
     this.clean();
@@ -259,7 +254,16 @@ abstract class BasePartialProcessor {
   }
 
   /**
-   * Processes the records sequentially, ensuring that each record is processed one after the other.
+   * Processes records in parallel using `Promise.all`.
+   */
+  async #processInParallel(): Promise<(SuccessResponse | FailureResponse)[]> {
+    return Promise.all(
+      this.records.map((record) => this.processRecord(record))
+    );
+  }
+
+  /**
+   * Processes records sequentially, ensuring that each record is processed one after the other.
    */
   async #processSequentially(): Promise<(SuccessResponse | FailureResponse)[]> {
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];

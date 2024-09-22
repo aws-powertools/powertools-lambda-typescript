@@ -36,226 +36,216 @@ describe('Class: AsyncBatchProcessor', () => {
   });
 
   describe('Asynchronously processing', () => {
-    const testCases = [
+    const cases = [
       {
-        description: 'with parallel processing',
+        description: 'in parallel',
         options: { processInParallel: true },
       },
       {
-        description: 'with sequential processing',
+        description: 'sequentially',
         options: { processInParallel: false },
       },
     ];
 
     describe('SQS Records', () => {
-      for (const { description, options } of testCases) {
-        describe(description, () => {
-          it('completes processing with no failures', async () => {
-            // Prepare
-            const firstRecord = sqsRecordFactory('success');
-            const secondRecord = sqsRecordFactory('success');
-            const records = [firstRecord, secondRecord];
-            const processor = new BatchProcessor(EventType.SQS);
+      describe.each(cases)('$description', ({ options }) => {
+        it('completes processing with no failures', async () => {
+          // Prepare
+          const firstRecord = sqsRecordFactory('success');
+          const secondRecord = sqsRecordFactory('success');
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.SQS);
 
-            // Act
-            processor.register(records, asyncSqsRecordHandler, options);
-            const processedMessages = await processor.process();
+          // Act
+          processor.register(records, asyncSqsRecordHandler, options);
+          const processedMessages = await processor.process();
 
-            // Assess
-            expect(processedMessages).toStrictEqual([
-              ['success', firstRecord.body, firstRecord],
-              ['success', secondRecord.body, secondRecord],
-            ]);
-          });
+          // Assess
+          expect(processedMessages).toStrictEqual([
+            ['success', firstRecord.body, firstRecord],
+            ['success', secondRecord.body, secondRecord],
+          ]);
+        });
 
-          it('completes processing with with some failures', async () => {
-            // Prepare
-            const firstRecord = sqsRecordFactory('failure');
-            const secondRecord = sqsRecordFactory('success');
-            const thirdRecord = sqsRecordFactory('fail');
-            const records = [firstRecord, secondRecord, thirdRecord];
-            const processor = new BatchProcessor(EventType.SQS);
+        it('completes processing with with some failures', async () => {
+          // Prepare
+          const firstRecord = sqsRecordFactory('failure');
+          const secondRecord = sqsRecordFactory('success');
+          const thirdRecord = sqsRecordFactory('fail');
+          const records = [firstRecord, secondRecord, thirdRecord];
+          const processor = new BatchProcessor(EventType.SQS);
 
-            // Act
-            processor.register(records, asyncSqsRecordHandler, options);
-            const processedMessages = await processor.process();
+          // Act
+          processor.register(records, asyncSqsRecordHandler, options);
+          const processedMessages = await processor.process();
 
-            // Assess
-            expect(processedMessages[1]).toStrictEqual([
-              'success',
-              secondRecord.body,
-              secondRecord,
-            ]);
-            expect(processor.failureMessages.length).toBe(2);
-            expect(processor.response()).toStrictEqual({
-              batchItemFailures: [
-                { itemIdentifier: firstRecord.messageId },
-                { itemIdentifier: thirdRecord.messageId },
-              ],
-            });
-          });
-
-          it('completes processing with all failures', async () => {
-            // Prepare
-            const firstRecord = sqsRecordFactory('failure');
-            const secondRecord = sqsRecordFactory('failure');
-            const thirdRecord = sqsRecordFactory('fail');
-
-            const records = [firstRecord, secondRecord, thirdRecord];
-            const processor = new BatchProcessor(EventType.SQS);
-
-            // Act
-            processor.register(records, asyncSqsRecordHandler, options);
-
-            // Assess
-            await expect(processor.process()).rejects.toThrowError(
-              FullBatchFailureError
-            );
+          // Assess
+          expect(processedMessages[1]).toStrictEqual([
+            'success',
+            secondRecord.body,
+            secondRecord,
+          ]);
+          expect(processor.failureMessages.length).toBe(2);
+          expect(processor.response()).toStrictEqual({
+            batchItemFailures: [
+              { itemIdentifier: firstRecord.messageId },
+              { itemIdentifier: thirdRecord.messageId },
+            ],
           });
         });
-      }
+
+        it('completes processing with all failures', async () => {
+          // Prepare
+          const firstRecord = sqsRecordFactory('failure');
+          const secondRecord = sqsRecordFactory('failure');
+          const thirdRecord = sqsRecordFactory('fail');
+
+          const records = [firstRecord, secondRecord, thirdRecord];
+          const processor = new BatchProcessor(EventType.SQS);
+
+          // Act
+          processor.register(records, asyncSqsRecordHandler, options);
+
+          // Assess
+          await expect(processor.process()).rejects.toThrowError(
+            FullBatchFailureError
+          );
+        });
+      });
     });
 
     describe('Kinesis Records', () => {
-      for (const { description, options } of testCases) {
-        describe(description, () => {
-          it('completes processing with no failures', async () => {
-            // Prepare
-            const firstRecord = kinesisRecordFactory('success');
-            const secondRecord = kinesisRecordFactory('success');
-            const records = [firstRecord, secondRecord];
-            const processor = new BatchProcessor(EventType.KinesisDataStreams);
+      describe.each(cases)('$description', ({ options }) => {
+        it('completes processing with no failures', async () => {
+          // Prepare
+          const firstRecord = kinesisRecordFactory('success');
+          const secondRecord = kinesisRecordFactory('success');
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.KinesisDataStreams);
 
-            // Act
-            processor.register(records, asyncKinesisRecordHandler, options);
-            const processedMessages = await processor.process();
+          // Act
+          processor.register(records, asyncKinesisRecordHandler, options);
+          const processedMessages = await processor.process();
 
-            // Assess
-            expect(processedMessages).toStrictEqual([
-              ['success', firstRecord.kinesis.data, firstRecord],
-              ['success', secondRecord.kinesis.data, secondRecord],
-            ]);
-          });
+          // Assess
+          expect(processedMessages).toStrictEqual([
+            ['success', firstRecord.kinesis.data, firstRecord],
+            ['success', secondRecord.kinesis.data, secondRecord],
+          ]);
+        });
 
-          it('completes processing with some failures', async () => {
-            // Prepare
-            const firstRecord = kinesisRecordFactory('failure');
-            const secondRecord = kinesisRecordFactory('success');
-            const thirdRecord = kinesisRecordFactory('fail');
-            const records = [firstRecord, secondRecord, thirdRecord];
-            const processor = new BatchProcessor(EventType.KinesisDataStreams);
+        it('completes processing with some failures', async () => {
+          // Prepare
+          const firstRecord = kinesisRecordFactory('failure');
+          const secondRecord = kinesisRecordFactory('success');
+          const thirdRecord = kinesisRecordFactory('fail');
+          const records = [firstRecord, secondRecord, thirdRecord];
+          const processor = new BatchProcessor(EventType.KinesisDataStreams);
 
-            // Act
-            processor.register(records, asyncKinesisRecordHandler, options);
-            const processedMessages = await processor.process();
+          // Act
+          processor.register(records, asyncKinesisRecordHandler, options);
+          const processedMessages = await processor.process();
 
-            // Assess
-            expect(processedMessages[1]).toStrictEqual([
-              'success',
-              secondRecord.kinesis.data,
-              secondRecord,
-            ]);
-            expect(processor.failureMessages.length).toBe(2);
-            expect(processor.response()).toStrictEqual({
-              batchItemFailures: [
-                { itemIdentifier: firstRecord.kinesis.sequenceNumber },
-                { itemIdentifier: thirdRecord.kinesis.sequenceNumber },
-              ],
-            });
-          });
-
-          it('completes processing with all failures', async () => {
-            // Prepare
-            const firstRecord = kinesisRecordFactory('failure');
-            const secondRecord = kinesisRecordFactory('failure');
-            const thirdRecord = kinesisRecordFactory('fail');
-
-            const records = [firstRecord, secondRecord, thirdRecord];
-            const processor = new BatchProcessor(EventType.KinesisDataStreams);
-
-            // Act
-            processor.register(records, asyncKinesisRecordHandler, options);
-
-            // Assess
-            await expect(processor.process()).rejects.toThrowError(
-              FullBatchFailureError
-            );
+          // Assess
+          expect(processedMessages[1]).toStrictEqual([
+            'success',
+            secondRecord.kinesis.data,
+            secondRecord,
+          ]);
+          expect(processor.failureMessages.length).toBe(2);
+          expect(processor.response()).toStrictEqual({
+            batchItemFailures: [
+              { itemIdentifier: firstRecord.kinesis.sequenceNumber },
+              { itemIdentifier: thirdRecord.kinesis.sequenceNumber },
+            ],
           });
         });
-      }
+
+        it('completes processing with all failures', async () => {
+          // Prepare
+          const firstRecord = kinesisRecordFactory('failure');
+          const secondRecord = kinesisRecordFactory('failure');
+          const thirdRecord = kinesisRecordFactory('fail');
+
+          const records = [firstRecord, secondRecord, thirdRecord];
+          const processor = new BatchProcessor(EventType.KinesisDataStreams);
+
+          // Act
+          processor.register(records, asyncKinesisRecordHandler, options);
+
+          // Assess
+          await expect(processor.process()).rejects.toThrowError(
+            FullBatchFailureError
+          );
+        });
+      });
     });
 
     describe('DynamoDB Records', () => {
-      for (const { description, options } of testCases) {
-        describe(description, () => {
-          it('completes processing with no failures', async () => {
-            // Prepare
-            const firstRecord = dynamodbRecordFactory('success');
-            const secondRecord = dynamodbRecordFactory('success');
-            const records = [firstRecord, secondRecord];
-            const processor = new BatchProcessor(EventType.DynamoDBStreams);
+      describe.each(cases)('$description', ({ options }) => {
+        it('completes processing with no failures', async () => {
+          // Prepare
+          const firstRecord = dynamodbRecordFactory('success');
+          const secondRecord = dynamodbRecordFactory('success');
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.DynamoDBStreams);
 
-            // Act
-            processor.register(records, asyncDynamodbRecordHandler, options);
-            const processedMessages = await processor.process();
+          // Act
+          processor.register(records, asyncDynamodbRecordHandler, options);
+          const processedMessages = await processor.process();
 
-            // Assess
-            expect(processedMessages).toStrictEqual([
-              ['success', firstRecord.dynamodb?.NewImage?.Message, firstRecord],
-              [
-                'success',
-                secondRecord.dynamodb?.NewImage?.Message,
-                secondRecord,
-              ],
-            ]);
-          });
+          // Assess
+          expect(processedMessages).toStrictEqual([
+            ['success', firstRecord.dynamodb?.NewImage?.Message, firstRecord],
+            ['success', secondRecord.dynamodb?.NewImage?.Message, secondRecord],
+          ]);
+        });
 
-          it('completes processing with some failures', async () => {
-            // Prepare
-            const firstRecord = dynamodbRecordFactory('failure');
-            const secondRecord = dynamodbRecordFactory('success');
-            const thirdRecord = dynamodbRecordFactory('fail');
-            const records = [firstRecord, secondRecord, thirdRecord];
-            const processor = new BatchProcessor(EventType.DynamoDBStreams);
+        it('completes processing with some failures', async () => {
+          // Prepare
+          const firstRecord = dynamodbRecordFactory('failure');
+          const secondRecord = dynamodbRecordFactory('success');
+          const thirdRecord = dynamodbRecordFactory('fail');
+          const records = [firstRecord, secondRecord, thirdRecord];
+          const processor = new BatchProcessor(EventType.DynamoDBStreams);
 
-            // Act
-            processor.register(records, asyncDynamodbRecordHandler, options);
-            const processedMessages = await processor.process();
+          // Act
+          processor.register(records, asyncDynamodbRecordHandler, options);
+          const processedMessages = await processor.process();
 
-            // Assess
-            expect(processedMessages[1]).toStrictEqual([
-              'success',
-              secondRecord.dynamodb?.NewImage?.Message,
-              secondRecord,
-            ]);
-            expect(processor.failureMessages.length).toBe(2);
-            expect(processor.response()).toStrictEqual({
-              batchItemFailures: [
-                { itemIdentifier: firstRecord.dynamodb?.SequenceNumber },
-                { itemIdentifier: thirdRecord.dynamodb?.SequenceNumber },
-              ],
-            });
-          });
-
-          it('completes processing with all failures', async () => {
-            // Prepare
-            const firstRecord = dynamodbRecordFactory('failure');
-            const secondRecord = dynamodbRecordFactory('failure');
-            const thirdRecord = dynamodbRecordFactory('fail');
-
-            const records = [firstRecord, secondRecord, thirdRecord];
-            const processor = new BatchProcessor(EventType.DynamoDBStreams);
-
-            // Act
-            processor.register(records, asyncDynamodbRecordHandler, options);
-
-            // Assess
-            await expect(processor.process()).rejects.toThrowError(
-              FullBatchFailureError
-            );
+          // Assess
+          expect(processedMessages[1]).toStrictEqual([
+            'success',
+            secondRecord.dynamodb?.NewImage?.Message,
+            secondRecord,
+          ]);
+          expect(processor.failureMessages.length).toBe(2);
+          expect(processor.response()).toStrictEqual({
+            batchItemFailures: [
+              { itemIdentifier: firstRecord.dynamodb?.SequenceNumber },
+              { itemIdentifier: thirdRecord.dynamodb?.SequenceNumber },
+            ],
           });
         });
-      }
+
+        it('completes processing with all failures', async () => {
+          // Prepare
+          const firstRecord = dynamodbRecordFactory('failure');
+          const secondRecord = dynamodbRecordFactory('failure');
+          const thirdRecord = dynamodbRecordFactory('fail');
+
+          const records = [firstRecord, secondRecord, thirdRecord];
+          const processor = new BatchProcessor(EventType.DynamoDBStreams);
+
+          // Act
+          processor.register(records, asyncDynamodbRecordHandler, options);
+
+          // Assess
+          await expect(processor.process()).rejects.toThrowError(
+            FullBatchFailureError
+          );
+        });
+      });
     });
   });
 

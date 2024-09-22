@@ -126,7 +126,11 @@ abstract class BasePartialProcessor {
      * Process the records in parallel if the option is set to true.
      * Otherwise, process the records sequentially.
      */
-    const processedRecords = this.options?.processInParallel
+    const processInParallel =
+      this.options?.processInParallel === undefined
+        ? true
+        : this.options.processInParallel;
+    const processedRecords = processInParallel
       ? await Promise.all(
           this.records.map((record) => this.processRecord(record))
         )
@@ -228,8 +232,9 @@ abstract class BasePartialProcessor {
     this.records = records;
     this.handler = handler;
 
-    // By default, we process the records in parallel.
-    this.options = { processInParallel: true, ...options };
+    if (options) {
+      this.options = options;
+    }
 
     return this;
   }

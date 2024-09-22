@@ -109,6 +109,7 @@ export class LayerPublisherStack extends Stack {
                 '@aws-sdk/client-ssm',
                 '@aws-sdk/client-secrets-manager',
                 '@aws-sdk/client-appconfigdata',
+                'zod',
               ];
 
               if (buildFromLocal) {

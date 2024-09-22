@@ -98,7 +98,7 @@ abstract class BasePartialProcessor {
   public abstract prepare(): void;
 
   /**
-   * Process all records with an asyncronous handler
+   * Process all records with an asynchronous handler
    *
    * Once called, the processor will create an array of promises to process each record
    * and wait for all of them to settle before returning the results.

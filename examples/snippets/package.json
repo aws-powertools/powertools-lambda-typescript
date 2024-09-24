@@ -33,14 +33,14 @@
     "@aws-lambda-powertools/parser": "^2.8.0",
     "@aws-lambda-powertools/tracer": "^2.8.0",
     "@aws-sdk/client-appconfigdata": "^3.654.0",
-    "@aws-sdk/client-dynamodb": "^3.654.0",
+    "@aws-sdk/client-dynamodb": "^3.656.0",
     "@aws-sdk/client-secrets-manager": "^3.654.0",
     "@aws-sdk/client-ssm": "^3.654.0",
-    "@aws-sdk/util-dynamodb": "^3.654.0",
+    "@aws-sdk/util-dynamodb": "^3.656.0",
     "@middy/core": "^4.7.0",
     "aws-sdk": "^2.1691.0",
-    "aws-sdk-client-mock": "^4.0.1",
-    "aws-sdk-client-mock-jest": "^4.0.1",
+    "aws-sdk-client-mock": "^4.0.2",
+    "aws-sdk-client-mock-jest": "^4.0.2",
     "hashi-vault-js": "^0.4.16",
     "zod": "^3.23.8"
   }

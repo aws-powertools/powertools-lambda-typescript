@@ -122,10 +122,7 @@ abstract class BasePartialProcessor {
     }
     this.prepare();
 
-    /**
-     * If `processInParallel` is not provided or true, process the records in parallel.
-     * Otherwise, process the records sequentially.
-     */
+    // Default to `true` if `processInParallel` is not specified.
     const processInParallel = this.options?.processInParallel ?? true;
     const processedRecords = processInParallel
       ? await this.#processInParallel()

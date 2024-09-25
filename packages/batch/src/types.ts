@@ -33,7 +33,7 @@ type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
   throwOnFullBatchFailure?: boolean;
   /**
    * Indicates whether the records should be processed in parallel.
-   * When set to `true`, the records will be processed concurrently using `Promise.all`.
+   * When set to `true`, the records will be processed in parallel using `Promise.all`.
    * When set to `false`, the records will be processed sequentially.
    */
   processInParallel?: T extends SqsFifoPartialProcessor ? never : boolean;

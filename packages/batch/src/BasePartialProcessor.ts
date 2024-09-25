@@ -125,8 +125,8 @@ abstract class BasePartialProcessor {
     // Default to `true` if `processInParallel` is not specified.
     const processInParallel = this.options?.processInParallel ?? true;
     const processedRecords = processInParallel
-      ? await this.#processInParallel()
-      : await this.#processSequentially();
+      ? await this.#processRecordsInParallel()
+      : await this.#processRecordsSequentially();
 
     this.clean();
 
@@ -253,7 +253,9 @@ abstract class BasePartialProcessor {
   /**
    * Processes records in parallel using `Promise.all`.
    */
-  async #processInParallel(): Promise<(SuccessResponse | FailureResponse)[]> {
+  async #processRecordsInParallel(): Promise<
+    (SuccessResponse | FailureResponse)[]
+  > {
     return Promise.all(
       this.records.map((record) => this.processRecord(record))
     );
@@ -262,7 +264,9 @@ abstract class BasePartialProcessor {
   /**
    * Processes records sequentially, ensuring that each record is processed one after the other.
    */
-  async #processSequentially(): Promise<(SuccessResponse | FailureResponse)[]> {
+  async #processRecordsSequentially(): Promise<
+    (SuccessResponse | FailureResponse)[]
+  > {
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
     for (const record of this.records) {
       processedRecords.push(await this.processRecord(record));

@@ -482,10 +482,9 @@ Let's suppose you'd like to add a metric named `BatchRecordFailures` for each ba
 
 ### Sequential async processing
 
-By default, the `BatchProcessor` processes records in parallel. However, if you need to preserve the order of records, you can set the `processInParallel` option to `false` to process records sequentially.
+By default, the `BatchProcessor` processes records in parallel using `Promise.all()`. However, if you need to preserve the order of records, you can set the `processInParallel` option to `false` to process records sequentially.
 
-!!! info "Default Behavior"
-    If the `processInParallel` option is not provided, the `BatchProcessor` will process records in parallel using `Promise.all()`
+!!! important "If the `processInParallel` option is not provided, the `BatchProcessor` will process records in parallel."
 
 ```typescript hl_lines="8 17" title="Sequential async processing"
 --8<-- "examples/snippets/batch/sequentialAsyncProcessing.ts"

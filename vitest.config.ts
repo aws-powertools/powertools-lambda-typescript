@@ -16,7 +16,7 @@ export default defineConfig({
         'packages/batch/src/types.ts',
         'packages/commons/src/types/**',
         'packages/event-handler/**',
-        'packages/idempotency/**',
+        'packages/idempotency/src/types/**',
         'packages/jmespath/src/types.ts',
         'packages/logger/**',
         'packages/metrics/**',
@@ -26,5 +26,6 @@ export default defineConfig({
         'packages/tracer/**',
       ],
     },
+    setupFiles: ['./packages/testing/src/setupEnv.ts'],
   },
 });

@@ -1,9 +1,5 @@
-/**
- * Test IdempotencyConfig class
- *
- * @group unit/idempotency/config
- */
 import context from '@aws-lambda-powertools/testing-utils/context';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { IdempotencyConfig } from '../../src/index.js';
 import type { IdempotencyConfigOptions } from '../../src/types/index.js';
 
@@ -11,8 +7,6 @@ describe('Class: IdempotencyConfig', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -21,7 +15,7 @@ describe('Class: IdempotencyConfig', () => {
   });
 
   describe('Method: configure', () => {
-    test('when configured with an empty config object, it initializes the config with default values', () => {
+    it('initializes the config with default values', () => {
       // Prepare
       const configOptions = {};
 
@@ -42,7 +36,7 @@ describe('Class: IdempotencyConfig', () => {
       );
     });
 
-    test('when configured with a config object, it initializes the config with the provided configs', () => {
+    it('initializes the config with the provided configs', () => {
       // Prepare
       const configOptions: IdempotencyConfigOptions = {
         eventKeyJmesPath: 'eventKeyJmesPath',
@@ -73,7 +67,7 @@ describe('Class: IdempotencyConfig', () => {
   });
 
   describe('Method: registerLambdaContext', () => {
-    test('when called, it stores the provided context', async () => {
+    it('stores the provided context', async () => {
       // Prepare
       const config = new IdempotencyConfig({});
 

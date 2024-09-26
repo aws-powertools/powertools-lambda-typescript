@@ -16,7 +16,6 @@ import {
   describe,
   expect,
   it,
-  test,
   vi,
 } from 'vitest';
 import {

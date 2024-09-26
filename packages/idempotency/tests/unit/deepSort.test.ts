@@ -1,33 +1,29 @@
-/**
- * Test deepSort Function
- *
- * @group unit/idempotency/deepSort
- */
+import { describe, expect, it } from 'vitest';
 import { deepSort } from '../../src/deepSort';
 
 describe('Function: deepSort', () => {
-  test('can sort string correctly', () => {
+  it('can sort string correctly', () => {
     expect(deepSort('test')).toEqual('test');
   });
 
-  test('can sort number correctly', () => {
+  it('can sort number correctly', () => {
     expect(deepSort(5)).toEqual(5);
   });
 
-  test('can sort boolean correctly', () => {
+  it('can sort boolean correctly', () => {
     expect(deepSort(true)).toEqual(true);
     expect(deepSort(false)).toEqual(false);
   });
 
-  test('can sort null correctly', () => {
+  it('can sort null correctly', () => {
     expect(deepSort(null)).toEqual(null);
   });
 
-  test('can sort undefined correctly', () => {
+  it('can sort undefined correctly', () => {
     expect(deepSort(undefined)).toEqual(undefined);
   });
 
-  test('can sort object with nested keys correctly', () => {
+  it('can sort object with nested keys correctly', () => {
     // Prepare
     const input = {
       name: 'John',
@@ -56,7 +52,7 @@ describe('Function: deepSort', () => {
     );
   });
 
-  test('can sort deeply nested structures', () => {
+  it('can sort deeply nested structures', () => {
     // Prepare
     const input = {
       z: [{ b: { d: 4, c: 3 }, a: { f: 6, e: 5 } }],
@@ -75,7 +71,7 @@ describe('Function: deepSort', () => {
     );
   });
 
-  test('can sort JSON array with objects containing words as keys and nested objects/arrays correctly', () => {
+  it('can sort JSON array with objects containing words as keys and nested objects/arrays correctly', () => {
     // Prepare
     const input = [
       {
@@ -150,7 +146,7 @@ describe('Function: deepSort', () => {
     );
   });
 
-  test('handles empty objects and arrays correctly', () => {
+  it('handles empty objects and arrays correctly', () => {
     expect(deepSort({})).toEqual({});
     expect(deepSort([])).toEqual([]);
   });

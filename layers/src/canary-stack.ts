@@ -54,6 +54,7 @@ export class CanaryStack extends Stack {
           '@aws-lambda-powertools/parameters',
           '@aws-lambda-powertools/idempotency',
           '@aws-lambda-powertools/batch',
+          '@aws-lambda-powertools/parser',
         ],
       },
       environment: {

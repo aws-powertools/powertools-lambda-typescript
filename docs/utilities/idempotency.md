@@ -373,6 +373,40 @@ sequenceDiagram
 <i>Idempotent successful request cached</i>
 </center>
 
+#### Successful request with responseHook configured
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Response hook
+    participant Persistence Layer
+    alt initial request
+        Client->>Lambda: Invoke (event)
+        Lambda->>Persistence Layer: Get or set idempotency_key=hash(payload)
+        activate Persistence Layer
+        Note over Lambda,Persistence Layer: Set record status to INPROGRESS. <br> Prevents concurrent invocations <br> with the same payload
+        Lambda-->>Lambda: Call your function
+        Lambda->>Persistence Layer: Update record with result
+        deactivate Persistence Layer
+        Persistence Layer-->>Persistence Layer: Update record
+        Note over Lambda,Persistence Layer: Set record status to COMPLETE. <br> New invocations with the same payload <br> now return the same result
+        Lambda-->>Client: Response sent to client
+    else retried request
+        Client->>Lambda: Invoke (event)
+        Lambda->>Persistence Layer: Get or set idempotency_key=hash(payload)
+        activate Persistence Layer
+        Persistence Layer-->>Response hook: Already exists in persistence layer.
+        deactivate Persistence Layer
+        Note over Response hook,Persistence Layer: Record status is COMPLETE and not expired
+        Response hook->>Lambda: Response hook invoked
+        Lambda-->>Client: Manipulated idempotent response sent to client
+    end
+```
+<i>Successful idempotent request with a response hook</i>
+</center>
+
 #### Expired idempotency records
 
 <center>
@@ -535,15 +569,16 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 
 Idempotent decorator can be further configured with **`IdempotencyConfig`** as seen in the previous examples. These are the available options for further configuration
 
-| Parameter                     | Default | Description                                                                                                                                                                                |
-| ----------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **eventKeyJmespath**          | `''`    | JMESPath expression to extract the idempotency key from the event                                                                                                                          |
-| **payloadValidationJmespath** | `''`    | JMESPath expression to validate whether certain parameters have changed in the event while the event payload                                                                               |
-| **throwOnNoIdempotencyKey**   | `false` | Throw an error if no idempotency key was found in the request                                                                                                                              |
-| **expiresAfterSeconds**       | 3600    | The number of seconds to wait before a record is expired                                                                                                                                   |
-| **useLocalCache**             | `false` | Whether to locally cache idempotency results                                                                                                                                               |
-| **localCacheMaxItems**        | 256     | Max number of items to store in local cache                                                                                                                                                |
-| **hashFunction**              | `md5`   | Function to use for calculating hashes, as provided by the [crypto](https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options){target="_blank"} module in the standard library. |
+| Parameter                     | Default     | Description                                                                                                                                                                                                                                |
+| ----------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **eventKeyJmespath**          | `''`        | JMESPath expression to extract the idempotency key from the event record using [built-in functions](./jmespath.md#built-in-jmespath-functions){target="_blank"}                                                                            |
+| **payloadValidationJmespath** | `''`        | JMESPath expression to validate that the specified fields haven't changed across requests for the same idempotency key _e.g., payload tampering._                                                                                          |
+| **throwOnNoIdempotencyKey**   | `false`     | Throw an error if no idempotency key was found in the request                                                                                                                                                                              |
+| **expiresAfterSeconds**       | 3600        | The number of seconds to wait before a record is expired, allowing a new transaction with the same idempotency key                                                                                                                         |
+| **useLocalCache**             | `false`     | Whether to cache idempotency results in-memory to save on persistence storage latency and costs                                                                                                                                            |
+| **localCacheMaxItems**        | 256         | Max number of items to store in local cache                                                                                                                                                                                                |
+| **hashFunction**              | `md5`       | Function to use for calculating hashes, as provided by the [crypto](https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options){target="_blank"} module in the standard library.                                                 |
+| **responseHook**              | `undefined` | Function to use for processing the stored Idempotent response. This function hook is called when an existing idempotent response is found. See [Manipulating The Idempotent Response](idempotency.md#manipulating-the-idempotent-response) |
 
 ### Handling concurrent executions with the same payload
 
@@ -743,6 +778,42 @@ Below an example implementation of a custom persistence layer backed by a generi
     Pay attention to the documentation for each - you may need to perform additional checks inside these methods to ensure the idempotency guarantees remain intact.
 
     For example, the `_putRecord()` method needs to throw an error if a non-expired record already exists in the data store with a matching key.
+
+### Manipulating the Idempotent Response
+
+You can set up a `responseHook` in the `IdempotentConfig` class to manipulate the returned data when an operation is idempotent. The hook function will be called with the current deserialized response object and the Idempotency record.
+
+=== "Using an Idempotent Response Hook"
+
+    ```typescript hl_lines="16 19 27 56"
+    --8<-- "examples/snippets/idempotency/workingWithResponseHook.ts"
+    ```
+
+=== "Sample event"
+
+    ```json
+    --8<-- "examples/snippets/idempotency/samples/workingWithResponseHookSampleEvent.json"
+    ```
+
+=== "Sample Idempotent response"
+
+    ```json hl_lines="6"
+    --8<-- "examples/snippets/idempotency/samples/workingWithResponseHookIdempotentResponse.json"
+    ```
+
+???+ info "Info: Using custom de-serialization?"
+
+    The responseHook is called after the custom de-serialization so the payload you process will be the de-serialized version.
+
+#### Being a good citizen
+
+When using response hooks to manipulate returned data from idempotent operations, it's important to follow best practices to avoid introducing complexity or issues. Keep these guidelines in mind:
+
+1. **Response hook works exclusively when operations are idempotent.** The hook will not be called when an operation is not idempotent, or when the idempotent logic fails.
+
+2. **Catch and Handle Exceptions.** Your response hook code should catch and handle any exceptions that may arise from your logic. Unhandled exceptions will cause the Lambda function to fail unexpectedly.
+
+3. **Keep Hook Logic Simple** Response hooks should consist of minimal and straightforward logic for manipulating response data. Avoid complex conditional branching and aim for hooks that are easy to reason about.
 
 ## Testing your code
 

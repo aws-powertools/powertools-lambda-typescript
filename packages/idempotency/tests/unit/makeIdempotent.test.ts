@@ -35,9 +35,6 @@ describe('Function: makeIdempotent', () => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
     process.env = { ...ENVIRONMENT_VARIABLES };
-    vi.spyOn(console, 'debug').mockImplementation(() => null);
-    vi.spyOn(console, 'warn').mockImplementation(() => null);
-    vi.spyOn(console, 'error').mockImplementation(() => null);
   });
 
   afterAll(() => {

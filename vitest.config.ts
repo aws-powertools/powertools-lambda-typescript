@@ -26,5 +26,6 @@ export default defineConfig({
         'packages/tracer/**',
       ],
     },
+    setupFiles: ['./packages/testing/src/setupEnv.ts'],
   },
 });

@@ -122,7 +122,7 @@ const makeHandlerIdempotent = (
     });
 
     const idempotencyHandler = new IdempotencyHandler({
-      functionToMakeIdempotent: /* istanbul ignore next */ () => ({}),
+      functionToMakeIdempotent: /* v8 ignore next */ () => ({}),
       functionArguments: [],
       idempotencyConfig,
       persistenceStore,

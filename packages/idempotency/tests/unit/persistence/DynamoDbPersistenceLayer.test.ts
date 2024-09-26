@@ -13,7 +13,6 @@ import {
   afterAll,
   afterEach,
   beforeAll,
-  beforeEach,
   describe,
   expect,
   it,
@@ -25,68 +24,43 @@ import {
   IdempotencyItemNotFoundError,
   IdempotencyRecordStatus,
 } from '../../../src/index.js';
-import { DynamoDBPersistenceLayer } from '../../../src/persistence/DynamoDBPersistenceLayer.js';
 import { IdempotencyRecord } from '../../../src/persistence/index.js';
 import type { DynamoDBPersistenceOptions } from '../../../src/types/DynamoDBPersistence.js';
-import 'aws-sdk-client-mock-jest';
+import { DynamoDBPersistenceLayerTestClass } from '../../helpers/idempotencyUtils.js';
 
 const getFutureTimestamp = (seconds: number): number =>
   new Date().getTime() + seconds * 1000;
 
-/* vi.mock('@aws-lambda-powertools/commons', () => ({
-  ...vi.importActual('@aws-lambda-powertools/commons'),
+vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@aws-lambda-powertools/commons')>()),
   addUserAgentMiddleware: vi.fn(),
-})); */
+}));
+
+const dummyTableName = 'someTable';
+const dummyKey = 'someKey';
+const persistenceLayer = new DynamoDBPersistenceLayerTestClass({
+  tableName: dummyTableName,
+});
 
 describe('Class: DynamoDBPersistenceLayer', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
   const client = mockClient(DynamoDBClient);
-  const dummyTableName = 'someTable';
-  const dummyKey = 'someKey';
-
-  class TestDynamoDBPersistenceLayer extends DynamoDBPersistenceLayer {
-    public _deleteRecord(record: IdempotencyRecord): Promise<void> {
-      return super._deleteRecord(record);
-    }
-
-    public _getRecord(idempotencyKey: string): Promise<IdempotencyRecord> {
-      return super._getRecord(idempotencyKey);
-    }
-
-    public _putRecord(_record: IdempotencyRecord): Promise<void> {
-      return super._putRecord(_record);
-    }
-
-    public _updateRecord(record: IdempotencyRecord): Promise<void> {
-      return super._updateRecord(record);
-    }
-  }
 
   beforeAll(() => {
     vi.useFakeTimers().setSystemTime(new Date());
   });
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    process.env = { ...ENVIRONMENT_VARIABLES };
-  });
-
   afterEach(() => {
+    vi.clearAllMocks();
+    vi.resetAllMocks();
     client.reset();
   });
 
   afterAll(() => {
-    process.env = ENVIRONMENT_VARIABLES;
     vi.useRealTimers();
   });
 
   describe('Method: constructor', () => {
-    test('when instantiated with minimum options it creates an instance with default values', () => {
-      // Prepare & Act
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
-
+    it('creates an instance with default values', () => {
       // Assess
       expect(persistenceLayer).toEqual(
         expect.objectContaining({
@@ -102,23 +76,24 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       );
     });
 
-    test('when instantiated with specific options it creates an instance with correct values', () => {
+    it('creates an instance with the provided values', () => {
       // Prepare
-      const testDynamoDBPersistenceLayerOptions: DynamoDBPersistenceOptions = {
-        tableName: dummyTableName,
-        keyAttr: dummyKey,
-        statusAttr: 'someStatusAttr',
-        expiryAttr: 'someExpiryAttr',
-        inProgressExpiryAttr: 'someInProgressExpiryAttr',
-        dataAttr: 'someDataAttr',
-        validationKeyAttr: 'someValidationKeyAttr',
-        staticPkValue: 'someStaticPkValue',
-        sortKeyAttr: 'someSortKeyAttr',
-      };
+      const DynamoDBPersistenceLayerTestClassOptions: DynamoDBPersistenceOptions =
+        {
+          tableName: dummyTableName,
+          keyAttr: dummyKey,
+          statusAttr: 'someStatusAttr',
+          expiryAttr: 'someExpiryAttr',
+          inProgressExpiryAttr: 'someInProgressExpiryAttr',
+          dataAttr: 'someDataAttr',
+          validationKeyAttr: 'someValidationKeyAttr',
+          staticPkValue: 'someStaticPkValue',
+          sortKeyAttr: 'someSortKeyAttr',
+        };
 
       // Act
-      const persistenceLayer = new TestDynamoDBPersistenceLayer(
-        testDynamoDBPersistenceLayerOptions
+      const persistenceLayer = new DynamoDBPersistenceLayerTestClass(
+        DynamoDBPersistenceLayerTestClassOptions
       );
 
       // Assess
@@ -126,42 +101,39 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         expect.objectContaining({
           tableName: dummyTableName,
           keyAttr: dummyKey,
-          statusAttr: testDynamoDBPersistenceLayerOptions.statusAttr,
-          expiryAttr: testDynamoDBPersistenceLayerOptions.expiryAttr,
+          statusAttr: DynamoDBPersistenceLayerTestClassOptions.statusAttr,
+          expiryAttr: DynamoDBPersistenceLayerTestClassOptions.expiryAttr,
           inProgressExpiryAttr:
-            testDynamoDBPersistenceLayerOptions.inProgressExpiryAttr,
-          dataAttr: testDynamoDBPersistenceLayerOptions.dataAttr,
+            DynamoDBPersistenceLayerTestClassOptions.inProgressExpiryAttr,
+          dataAttr: DynamoDBPersistenceLayerTestClassOptions.dataAttr,
           validationKeyAttr:
-            testDynamoDBPersistenceLayerOptions.validationKeyAttr,
-          staticPkValue: testDynamoDBPersistenceLayerOptions.staticPkValue,
-          sortKeyAttr: testDynamoDBPersistenceLayerOptions.sortKeyAttr,
+            DynamoDBPersistenceLayerTestClassOptions.validationKeyAttr,
+          staticPkValue: DynamoDBPersistenceLayerTestClassOptions.staticPkValue,
+          sortKeyAttr: DynamoDBPersistenceLayerTestClassOptions.sortKeyAttr,
         })
       );
     });
 
-    test('when instantiated with a sortKeyAttr that has same value of keyAttr, it throws', () => {
-      // Prepare
-      const testDynamoDBPersistenceLayerOptions: DynamoDBPersistenceOptions = {
-        tableName: dummyTableName,
-        keyAttr: dummyKey,
-        sortKeyAttr: dummyKey,
-      };
-
+    it('throws when sortKeyAttr and keyAttr have the same value', () => {
       // Act & Assess
       expect(
         () =>
-          new TestDynamoDBPersistenceLayer(testDynamoDBPersistenceLayerOptions)
+          new DynamoDBPersistenceLayerTestClass({
+            tableName: dummyTableName,
+            keyAttr: dummyKey,
+            sortKeyAttr: dummyKey,
+          })
       ).toThrowError(
         `keyAttr [${dummyKey}] and sortKeyAttr [${dummyKey}] cannot be the same!`
       );
     });
 
-    test('when instantiated with a custom AWS SDK client it uses that client', () => {
+    it('uses the AWS SDK client provided and appends the UA middleware', () => {
       // Prepare
       const awsSdkV3Client = new DynamoDBClient({});
 
       // Act
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
+      const persistenceLayer = new DynamoDBPersistenceLayerTestClass({
         tableName: dummyTableName,
         awsSdkV3Client,
       });
@@ -180,16 +152,11 @@ describe('Class: DynamoDBPersistenceLayer', () => {
     });
 
     it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
-      // Prepare
-      const awsSdkV3Client = {};
-      const options: DynamoDBPersistenceOptions = {
-        tableName: dummyTableName,
-        awsSdkV3Client: awsSdkV3Client as DynamoDBClient,
-      };
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation();
-
       // Act
-      const persistenceLayer = new TestDynamoDBPersistenceLayer(options);
+      const persistenceLayer = new DynamoDBPersistenceLayerTestClass({
+        tableName: dummyTableName,
+        awsSdkV3Client: {} as DynamoDBClient,
+      });
 
       // Assess
       expect(persistenceLayer).toEqual(
@@ -202,7 +169,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           }),
         })
       );
-      expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+      expect(console.warn).toHaveBeenNthCalledWith(
         1,
         'awsSdkV3Client is not an AWS SDK v3 client, using default client'
       );
@@ -218,11 +185,8 @@ describe('Class: DynamoDBPersistenceLayer', () => {
   });
 
   describe('Method: _putRecord', () => {
-    test('when called with a record that meets conditions, it puts record in DynamoDB table', async () => {
+    it('puts the record in DynamoDB', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const record = new IdempotencyRecord({
@@ -258,9 +222,9 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       });
     });
 
-    test('when called with a record that uses composite key, it puts record in DynamoDB table', async () => {
+    it('puts the record in DynamoDB when using the provided composite key', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
+      const persistenceLayer = new DynamoDBPersistenceLayerTestClass({
         tableName: dummyTableName,
         staticPkValue: 'idempotency#my-lambda-function',
         sortKeyAttr: 'sortKey',
@@ -301,11 +265,8 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       });
     });
 
-    test('when called with a record that has inProgressExpiryTimestamp, it puts record in DynamoDB table', async () => {
+    it('puts the record in DynamoDB when using an in progress expiry timestamp', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
       const status = IdempotencyRecordStatus.INPROGRESS;
       const expiryTimestamp = getFutureTimestamp(10);
       const inProgressExpiryTimestamp = getFutureTimestamp(5);
@@ -344,11 +305,8 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       });
     });
 
-    test('when called and and payload validation is enabled it puts record in DynamoDB table', async () => {
+    it('puts record in DynamoDB table when using payload validation', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
       vi.spyOn(persistenceLayer, 'isPayloadValidationEnabled').mockReturnValue(
         true
       );
@@ -389,12 +347,8 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       });
     });
 
-    test('when called with a record that fails any condition, it throws IdempotencyItemAlreadyExistsError', async () => {
+    it('throws when called with a record that fails any condition', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
-
       const record = new IdempotencyRecord({
         idempotencyKey: dummyKey,
         status: IdempotencyRecordStatus.EXPIRED,
@@ -428,19 +382,13 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       );
     });
 
-    test('when encountering an unknown error, it throws the causing error', async () => {
+    it('throws when encountering an unknown error', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
-      const status = IdempotencyRecordStatus.EXPIRED;
-      const expiryTimestamp = 0;
-      const inProgressExpiryTimestamp = 0;
       const record = new IdempotencyRecord({
         idempotencyKey: dummyKey,
-        status,
-        expiryTimestamp,
-        inProgressExpiryTimestamp,
+        status: IdempotencyRecordStatus.EXPIRED,
+        expiryTimestamp: 0,
+        inProgressExpiryTimestamp: 0,
       });
       client.on(PutItemCommand).rejects(new Error());
 
@@ -450,39 +398,8 @@ describe('Class: DynamoDBPersistenceLayer', () => {
   });
 
   describe('Method: _getRecord', () => {
-    test('it calls DynamoDB with correct parameters', async () => {
+    it('gets the record from DynamoDB', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
-      client.on(GetItemCommand).resolves({
-        Item: marshall({
-          id: dummyKey,
-          status: IdempotencyRecordStatus.INPROGRESS,
-          expiration: getFutureTimestamp(15),
-          in_progress_expiration: getFutureTimestamp(10),
-          data: {},
-        }),
-      });
-
-      // Act
-      await persistenceLayer._getRecord(dummyKey);
-
-      // Assess
-      expect(client).toReceiveCommandWith(GetItemCommand, {
-        TableName: dummyTableName,
-        Key: marshall({
-          id: dummyKey,
-        }),
-        ConsistentRead: true,
-      });
-    });
-
-    test('when called with a record whose key exists, it gets the correct record', async () => {
-      // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
       const status = IdempotencyRecordStatus.INPROGRESS;
       const expiryTimestamp = getFutureTimestamp(15);
       const inProgressExpiryTimestamp = getFutureTimestamp(10);
@@ -501,6 +418,13 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       const record = await persistenceLayer._getRecord(dummyKey);
 
       // Assess
+      expect(client).toReceiveCommandWith(GetItemCommand, {
+        TableName: dummyTableName,
+        Key: marshall({
+          id: dummyKey,
+        }),
+        ConsistentRead: true,
+      });
       expect(record).toBeInstanceOf(IdempotencyRecord);
       expect(record.getStatus()).toEqual(IdempotencyRecordStatus.INPROGRESS);
       expect(record.idempotencyKey).toEqual(dummyKey);
@@ -511,11 +435,8 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       expect(record.expiryTimestamp).toEqual(expiryTimestamp);
     });
 
-    test('when called with a record whose key does not exist, it throws IdempotencyItemNotFoundError', async () => {
+    it('throws when the record does not exist', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
       client.on(GetItemCommand).resolves({ Item: undefined });
 
       // Act & Assess
@@ -524,9 +445,9 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       );
     });
 
-    test('when called with a record in a table that use composite key, it builds the request correctly', async () => {
+    it('it builds the request correctly when using composite keys', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
+      const persistenceLayer = new DynamoDBPersistenceLayerTestClass({
         tableName: dummyTableName,
         staticPkValue: 'idempotency#my-lambda-function',
         sortKeyAttr: 'sortKey',
@@ -554,9 +475,9 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       });
     });
 
-    test('when called with a record that had the ', async () => {
+    it('gets the record and validates the hash correctly', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
+      const persistenceLayer = new DynamoDBPersistenceLayerTestClass({
         tableName: dummyTableName,
         staticPkValue: 'idempotency#my-lambda-function',
         sortKeyAttr: 'sortKey',
@@ -586,11 +507,8 @@ describe('Class: DynamoDBPersistenceLayer', () => {
   });
 
   describe('Method: _updateRecord', () => {
-    test('when called to update a record, it updates the item with the correct parameters', async () => {
+    it('it updates the item with the correct parameters', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = Date.now();
       const record = new IdempotencyRecord({
@@ -617,7 +535,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           '#response_data': 'data',
         },
         ExpressionAttributeValues: marshall({
-          ':status': IdempotencyRecordStatus.EXPIRED,
+          ':status': status,
           ':expiry': expiryTimestamp,
           ':response_data': {},
         }),
@@ -626,9 +544,6 @@ describe('Class: DynamoDBPersistenceLayer', () => {
 
     it('updates the item when the response_data is undefined', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = Date.now();
       const record = new IdempotencyRecord({
@@ -653,26 +568,22 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           '#expiry': 'expiration',
         },
         ExpressionAttributeValues: marshall({
-          ':status': IdempotencyRecordStatus.EXPIRED,
+          ':status': status,
           ':expiry': expiryTimestamp,
         }),
       });
     });
 
-    test('when called to update a record and payload validation is enabled, it adds the payload hash to the update expression', async () => {
+    it('uses the payload hash in the expression when payload validation is enabled', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
       vi.spyOn(
         persistenceLayer,
         'isPayloadValidationEnabled'
       ).mockImplementation(() => true);
-      const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = Date.now();
       const record = new IdempotencyRecord({
         idempotencyKey: dummyKey,
-        status,
+        status: IdempotencyRecordStatus.EXPIRED,
         expiryTimestamp,
         responseData: {},
         payloadHash: 'someHash',
@@ -706,17 +617,12 @@ describe('Class: DynamoDBPersistenceLayer', () => {
   });
 
   describe('Method: _deleteRecord', () => {
-    test('when called with a valid record, it calls the delete operation with the correct parameters', async () => {
+    it('deletes the record using the correct parameters', async () => {
       // Prepare
-      const persistenceLayer = new TestDynamoDBPersistenceLayer({
-        tableName: dummyTableName,
-      });
-      const status = IdempotencyRecordStatus.EXPIRED;
-      const expiryTimestamp = Date.now();
       const record = new IdempotencyRecord({
         idempotencyKey: dummyKey,
-        status,
-        expiryTimestamp,
+        status: IdempotencyRecordStatus.EXPIRED,
+        expiryTimestamp: Date.now(),
       });
 
       // Act
@@ -728,27 +634,5 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         Key: marshall({ id: dummyKey }),
       });
     });
-  });
-
-  test('_putRecord throws Error when Item is undefined', async () => {
-    // Prepare
-    const persistenceLayer = new TestDynamoDBPersistenceLayer({
-      tableName: dummyTableName,
-    });
-    const mockRecord = new IdempotencyRecord({
-      idempotencyKey: 'test-key',
-      status: 'INPROGRESS',
-      expiryTimestamp: Date.now(),
-    });
-
-    DynamoDBClient.prototype.send = vi.fn().mockRejectedValueOnce(
-      new ConditionalCheckFailedException({
-        message: 'Conditional check failed',
-        $metadata: {},
-      })
-    );
-    await expect(
-      persistenceLayer._putRecord(mockRecord)
-    ).rejects.toThrowError();
   });
 });

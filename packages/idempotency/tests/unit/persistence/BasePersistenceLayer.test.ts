@@ -32,8 +32,6 @@ describe('Class: BasePersistenceLayer', () => {
 
   beforeAll(() => {
     vi.useFakeTimers().setSystemTime(new Date());
-    process.env.AWS_LAMBDA_FUNCTION_NAME = 'my-lambda-function';
-    process.env._HANDLER = 'index.handler';
   });
 
   beforeEach(() => {

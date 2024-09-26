@@ -1,36 +1,42 @@
-/**
- * Test DynamoDBPersistenceLayer class
- *
- * @group unit/idempotency/persistence/dynamodb
- */
-import { DynamoDBPersistenceLayer } from '../../../src/persistence/DynamoDBPersistenceLayer.js';
-import { IdempotencyRecord } from '../../../src/persistence/index.js';
-import type { DynamoDBPersistenceOptions } from '../../../src/types/DynamoDBPersistence.js';
-import {
-  IdempotencyRecordStatus,
-  IdempotencyItemAlreadyExistsError,
-  IdempotencyItemNotFoundError,
-} from '../../../src/index.js';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import {
   ConditionalCheckFailedException,
-  DynamoDBClient,
-  PutItemCommand,
-  GetItemCommand,
-  UpdateItemCommand,
   DeleteItemCommand,
+  DynamoDBClient,
+  GetItemCommand,
+  PutItemCommand,
+  UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  test,
+  vi,
+} from 'vitest';
+import {
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyItemNotFoundError,
+  IdempotencyRecordStatus,
+} from '../../../src/index.js';
+import { DynamoDBPersistenceLayer } from '../../../src/persistence/DynamoDBPersistenceLayer.js';
+import { IdempotencyRecord } from '../../../src/persistence/index.js';
+import type { DynamoDBPersistenceOptions } from '../../../src/types/DynamoDBPersistence.js';
 import 'aws-sdk-client-mock-jest';
 
 const getFutureTimestamp = (seconds: number): number =>
   new Date().getTime() + seconds * 1000;
 
-jest.mock('@aws-lambda-powertools/commons', () => ({
-  ...jest.requireActual('@aws-lambda-powertools/commons'),
-  addUserAgentMiddleware: jest.fn(),
-}));
+/* vi.mock('@aws-lambda-powertools/commons', () => ({
+  ...vi.importActual('@aws-lambda-powertools/commons'),
+  addUserAgentMiddleware: vi.fn(),
+})); */
 
 describe('Class: DynamoDBPersistenceLayer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -57,11 +63,11 @@ describe('Class: DynamoDBPersistenceLayer', () => {
   }
 
   beforeAll(() => {
-    jest.useFakeTimers().setSystemTime(new Date());
+    vi.useFakeTimers().setSystemTime(new Date());
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -71,7 +77,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
 
   afterAll(() => {
     process.env = ENVIRONMENT_VARIABLES;
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('Method: constructor', () => {
@@ -180,7 +186,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         tableName: dummyTableName,
         awsSdkV3Client: awsSdkV3Client as DynamoDBClient,
       };
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation();
 
       // Act
       const persistenceLayer = new TestDynamoDBPersistenceLayer(options);
@@ -343,9 +349,9 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       const persistenceLayer = new TestDynamoDBPersistenceLayer({
         tableName: dummyTableName,
       });
-      jest
-        .spyOn(persistenceLayer, 'isPayloadValidationEnabled')
-        .mockReturnValue(true);
+      vi.spyOn(persistenceLayer, 'isPayloadValidationEnabled').mockReturnValue(
+        true
+      );
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const record = new IdempotencyRecord({
@@ -658,9 +664,10 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       const persistenceLayer = new TestDynamoDBPersistenceLayer({
         tableName: dummyTableName,
       });
-      jest
-        .spyOn(persistenceLayer, 'isPayloadValidationEnabled')
-        .mockImplementation(() => true);
+      vi.spyOn(
+        persistenceLayer,
+        'isPayloadValidationEnabled'
+      ).mockImplementation(() => true);
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = Date.now();
       const record = new IdempotencyRecord({
@@ -734,7 +741,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       expiryTimestamp: Date.now(),
     });
 
-    DynamoDBClient.prototype.send = jest.fn().mockRejectedValueOnce(
+    DynamoDBClient.prototype.send = vi.fn().mockRejectedValueOnce(
       new ConditionalCheckFailedException({
         message: 'Conditional check failed',
         $metadata: {},

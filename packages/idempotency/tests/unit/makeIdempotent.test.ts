@@ -1,11 +1,7 @@
-/**
- * Test makeIdempotent function wrapper and middleware
- *
- * @group unit/idempotency
- */
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_RETRIES } from '../../src/constants.js';
 import {
   IdempotencyConfig,
@@ -36,12 +32,12 @@ describe('Function: makeIdempotent', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
     process.env = { ...ENVIRONMENT_VARIABLES };
-    jest.spyOn(console, 'debug').mockImplementation(() => null);
-    jest.spyOn(console, 'warn').mockImplementation(() => null);
-    jest.spyOn(console, 'error').mockImplementation(() => null);
+    vi.spyOn(console, 'debug').mockImplementation(() => null);
+    vi.spyOn(console, 'warn').mockImplementation(() => null);
+    vi.spyOn(console, 'error').mockImplementation(() => null);
   });
 
   afterAll(() => {
@@ -63,11 +59,11 @@ describe('Function: makeIdempotent', () => {
       type === 'wrapper'
         ? makeIdempotent(fn, mockIdempotencyOptions)
         : middy(fn).use(makeHandlerIdempotent(mockIdempotencyOptions));
-    const saveInProgressSpy = jest.spyOn(
+    const saveInProgressSpy = vi.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'saveInProgress'
     );
-    const saveSuccessSpy = jest.spyOn(
+    const saveSuccessSpy = vi.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'saveSuccess'
     );
@@ -99,11 +95,11 @@ describe('Function: makeIdempotent', () => {
       type === 'wrapper'
         ? makeIdempotent(fnError, mockIdempotencyOptions)
         : middy(fnError).use(makeHandlerIdempotent(mockIdempotencyOptions));
-    const saveInProgressSpy = jest.spyOn(
+    const saveInProgressSpy = vi.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'saveInProgress'
     );
-    const deleteRecordSpy = jest.spyOn(
+    const deleteRecordSpy = vi.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'deleteRecord'
     );
@@ -136,12 +132,13 @@ describe('Function: makeIdempotent', () => {
           : middy(fnSuccessfull).use(
               makeHandlerIdempotent(mockIdempotencyOptions)
             );
-      jest
-        .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-        .mockRejectedValue(new Error('Something went wrong'));
+      vi.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveInProgress'
+      ).mockRejectedValue(new Error('Something went wrong'));
 
       // Act && Assess
-      await expect(handler(event, context)).rejects.toThrow({
+      await expect(handler(event, context)).rejects.toMatchObject({
         name: 'IdempotencyPersistenceLayerError',
         message: 'Failed to save in progress record to idempotency store',
         cause: new Error('Something went wrong'),
@@ -159,12 +156,13 @@ describe('Function: makeIdempotent', () => {
           : middy(fnSuccessfull).use(
               makeHandlerIdempotent(mockIdempotencyOptions)
             );
-      jest
-        .spyOn(mockIdempotencyOptions.persistenceStore, 'saveSuccess')
-        .mockRejectedValue(new Error('Something went wrong'));
+      vi.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveSuccess'
+      ).mockRejectedValue(new Error('Something went wrong'));
 
       // Act && Assess
-      await expect(handler(event, context)).rejects.toThrow({
+      await expect(handler(event, context)).rejects.toMatchObject({
         name: 'IdempotencyPersistenceLayerError',
         message: 'Failed to update success record to idempotency store',
         cause: new Error('Something went wrong'),
@@ -180,12 +178,13 @@ describe('Function: makeIdempotent', () => {
         type === 'wrapper'
           ? makeIdempotent(fnError, mockIdempotencyOptions)
           : middy(fnError).use(makeHandlerIdempotent(mockIdempotencyOptions));
-      jest
-        .spyOn(mockIdempotencyOptions.persistenceStore, 'deleteRecord')
-        .mockRejectedValue(new Error('Something went wrong'));
+      vi.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'deleteRecord'
+      ).mockRejectedValue(new Error('Something went wrong'));
 
       // Act && Assess
-      await expect(handler(event, context)).rejects.toThrow({
+      await expect(handler(event, context)).rejects.toMatchObject({
         name: 'IdempotencyPersistenceLayerError',
         message: 'Failed to delete record from idempotency store',
         cause: new Error('Something went wrong'),
@@ -208,9 +207,10 @@ describe('Function: makeIdempotent', () => {
           : middy(fnSuccessfull).use(
               makeHandlerIdempotent(mockIdempotencyOptions)
             );
-      jest
-        .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-        .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      vi.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveInProgress'
+      ).mockRejectedValue(new IdempotencyItemAlreadyExistsError());
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
         expiryTimestamp: Date.now() + 10000,
@@ -219,7 +219,7 @@ describe('Function: makeIdempotent', () => {
         payloadHash: 'payloadHash',
         status: IdempotencyRecordStatus.COMPLETED,
       });
-      const getRecordSpy = jest
+      const getRecordSpy = vi
         .spyOn(mockIdempotencyOptions.persistenceStore, 'getRecord')
         .mockResolvedValue(stubRecord);
 
@@ -248,9 +248,10 @@ describe('Function: makeIdempotent', () => {
           : middy(fnSuccessfull).use(
               makeHandlerIdempotent(mockIdempotencyOptions)
             );
-      jest
-        .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-        .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      vi.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveInProgress'
+      ).mockRejectedValue(new IdempotencyItemAlreadyExistsError());
       const stubRecordInconsistent = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
         expiryTimestamp: Date.now() + 10000,
@@ -267,7 +268,7 @@ describe('Function: makeIdempotent', () => {
         payloadHash: 'payloadHash',
         status: IdempotencyRecordStatus.COMPLETED,
       });
-      const getRecordSpy = jest
+      const getRecordSpy = vi
         .spyOn(mockIdempotencyOptions.persistenceStore, 'getRecord')
         .mockResolvedValueOnce(stubRecordInconsistent)
         .mockResolvedValueOnce(stubRecord);
@@ -296,9 +297,10 @@ describe('Function: makeIdempotent', () => {
           : middy(fnSuccessfull).use(
               makeHandlerIdempotent(mockIdempotencyOptions)
             );
-      jest
-        .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-        .mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      vi.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'saveInProgress'
+      ).mockRejectedValue(new IdempotencyItemAlreadyExistsError());
       const stubRecordInconsistent = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
         expiryTimestamp: Date.now() + 10000,
@@ -307,7 +309,7 @@ describe('Function: makeIdempotent', () => {
         payloadHash: 'payloadHash',
         status: IdempotencyRecordStatus.EXPIRED,
       });
-      const getRecordSpy = jest
+      const getRecordSpy = vi
         .spyOn(mockIdempotencyOptions.persistenceStore, 'getRecord')
         .mockResolvedValue(stubRecordInconsistent);
 
@@ -337,11 +339,11 @@ describe('Function: makeIdempotent', () => {
           : middy(fnSuccessfull).use(
               makeHandlerIdempotent(mockIdempotencyOptions)
             );
-      const saveInProgressSpy = jest.spyOn(
+      const saveInProgressSpy = vi.spyOn(
         mockIdempotencyOptions.persistenceStore,
         'saveInProgress'
       );
-      const saveSuccessSpy = jest.spyOn(
+      const saveSuccessSpy = vi.spyOn(
         mockIdempotencyOptions.persistenceStore,
         'saveSuccess'
       );
@@ -376,11 +378,11 @@ describe('Function: makeIdempotent', () => {
         type === 'wrapper'
           ? makeIdempotent(fnSuccessfull, options)
           : middy(fnSuccessfull).use(makeHandlerIdempotent(options));
-      const saveInProgressSpy = jest.spyOn(
+      const saveInProgressSpy = vi.spyOn(
         mockIdempotencyOptions.persistenceStore,
         'saveInProgress'
       );
-      const saveSuccessSpy = jest.spyOn(
+      const saveSuccessSpy = vi.spyOn(
         mockIdempotencyOptions.persistenceStore,
         'saveSuccess'
       );
@@ -405,11 +407,11 @@ describe('Function: makeIdempotent', () => {
         config,
       }
     );
-    const saveInProgressSpy = jest.spyOn(
+    const saveInProgressSpy = vi.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'saveInProgress'
     );
-    const saveSuccessSpy = jest.spyOn(
+    const saveSuccessSpy = vi.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'saveSuccess'
     );
@@ -441,11 +443,11 @@ describe('Function: makeIdempotent', () => {
         dataIndexArgument: 1,
       }
     );
-    const saveInProgressSpy = jest.spyOn(
+    const saveInProgressSpy = vi.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'saveInProgress'
     );
-    const saveSuccessSpy = jest.spyOn(
+    const saveSuccessSpy = vi.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'saveSuccess'
     );
@@ -475,7 +477,7 @@ describe('Function: makeIdempotent', () => {
         }),
       })
     );
-    const deleteRecordSpy = jest.spyOn(
+    const deleteRecordSpy = vi.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'deleteRecord'
     );
@@ -492,7 +494,7 @@ describe('Function: makeIdempotent', () => {
     };
     const handler = makeIdempotent(fn, mockIdempotencyOptions);
 
-    const saveSuccessSpy = jest.spyOn(
+    const saveSuccessSpy = vi.spyOn(
       mockIdempotencyOptions.persistenceStore,
       'saveSuccess'
     );
@@ -511,11 +513,12 @@ describe('Function: makeIdempotent', () => {
     const handler = middy(fnSuccessfull).use(
       makeHandlerIdempotent(mockIdempotencyOptions)
     );
-    jest
-      .spyOn(mockIdempotencyOptions.persistenceStore, 'saveInProgress')
-      .mockImplementationOnce(() => {
-        throw 'Something went wrong';
-      });
+    vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveInProgress'
+    ).mockImplementationOnce(() => {
+      throw 'Something went wrong';
+    });
     const stubRecordInconsistent = new IdempotencyRecord({
       idempotencyKey: 'idempotencyKey',
       expiryTimestamp: Date.now() + 10000,
@@ -524,7 +527,7 @@ describe('Function: makeIdempotent', () => {
       payloadHash: 'payloadHash',
       status: IdempotencyRecordStatus.EXPIRED,
     });
-    const getRecordSpy = jest
+    const getRecordSpy = vi
       .spyOn(mockIdempotencyOptions.persistenceStore, 'getRecord')
       .mockResolvedValue(stubRecordInconsistent);
 

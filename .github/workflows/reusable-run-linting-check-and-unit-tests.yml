@@ -43,7 +43,8 @@ jobs:
         workspace: [
           "packages/batch",
           "packages/commons",
-          "packages/jmespath"
+          "packages/jmespath",
+          "packages/idempotency"
         ]
       fail-fast: false
     steps:
@@ -90,7 +91,6 @@ jobs:
             -w packages/tracer \
             -w packages/metrics \
             -w packages/parameters \
-            -w packages/idempotency \
             -w packages/parser \
             -w packages/event-handler
       - name: Run unit tests
@@ -99,7 +99,6 @@ jobs:
             -w packages/tracer \
             -w packages/metrics \
             -w packages/parameters \
-            -w packages/idempotency \
             -w packages/parser \
             -w packages/event-handler
   check-examples:

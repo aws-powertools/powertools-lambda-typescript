@@ -1,16 +1,12 @@
-/**
- * Test Event Handler
- *
- * @group unit/event-handler
- */
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { foo } from '../../src/index.js';
 
 describe('Event Handler', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
+    vi.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 

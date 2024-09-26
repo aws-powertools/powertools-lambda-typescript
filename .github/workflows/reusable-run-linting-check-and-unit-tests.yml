@@ -44,7 +44,8 @@ jobs:
           "packages/batch",
           "packages/commons",
           "packages/jmespath",
-          "packages/idempotency"
+          "packages/idempotency",
+          "packages/event-handler"
         ]
       fail-fast: false
     steps:
@@ -91,16 +92,14 @@ jobs:
             -w packages/tracer \
             -w packages/metrics \
             -w packages/parameters \
-            -w packages/parser \
-            -w packages/event-handler
+            -w packages/parser
       - name: Run unit tests
         run: |
           npm t -w packages/logger \
             -w packages/tracer \
             -w packages/metrics \
             -w packages/parameters \
-            -w packages/parser \
-            -w packages/event-handler
+            -w packages/parser
   check-examples:
     runs-on: ubuntu-latest
     env:

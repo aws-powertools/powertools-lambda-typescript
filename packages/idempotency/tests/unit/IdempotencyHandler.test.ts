@@ -109,22 +109,6 @@ describe('Class IdempotencyHandler', () => {
       expect(mockResponseHook).not.toHaveBeenCalled();
     });
 
-    /* it('when response hook is provided, it should should call responseHook during an idempotent request', () => {
-      // Prepare
-      const stubRecord = new IdempotencyRecord({
-        idempotencyKey: 'idempotencyKey',
-        responseData: { responseData: 'responseData' },
-        payloadHash: 'payloadHash',
-        status: IdempotencyRecordStatus.COMPLETED,
-      });
-
-      // Act
-      idempotentHandler.determineResultFromIdempotencyRecord(stubRecord);
-
-      // Assess
-      expect(mockResponseHook).toHaveBeenCalled();
-    }); */
-
     it('calls the provided response hook', () => {
       // Prepare
       interface HandlerResponse {

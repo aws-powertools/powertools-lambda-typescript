@@ -1,57 +1,52 @@
-/**
- * Test BasePersistenceLayer class
- *
- * @group unit/idempotency/persistence/base
- */
 import { createHash } from 'node:crypto';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import {
-  IdempotencyConfig,
-  IdempotencyRecordStatus,
-  IdempotencyItemAlreadyExistsError,
-  IdempotencyValidationError,
-  IdempotencyKeyError,
-} from '../../../src/index.js';
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import {
-  BasePersistenceLayer,
-  IdempotencyRecord,
-} from '../../../src/persistence/index.js';
+  IdempotencyConfig,
+  IdempotencyItemAlreadyExistsError,
+  IdempotencyKeyError,
+  IdempotencyRecordStatus,
+  IdempotencyValidationError,
+} from '../../../src/index.js';
+import { IdempotencyRecord } from '../../../src/persistence/index.js';
 import type { IdempotencyConfigOptions } from '../../../src/types/index.js';
+import { PersistenceLayerTestClass } from '../../helpers/idempotencyUtils.js';
 
-jest.mock('node:crypto', () => ({
-  createHash: jest.fn().mockReturnValue({
-    update: jest.fn(),
-    digest: jest.fn().mockReturnValue('mocked-hash'),
+vi.mock('node:crypto', () => ({
+  createHash: vi.fn().mockReturnValue({
+    update: vi.fn(),
+    digest: vi.fn().mockReturnValue('mocked-hash'),
   }),
 }));
 
 describe('Class: BasePersistenceLayer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
-  class PersistenceLayerTestClass extends BasePersistenceLayer {
-    public _deleteRecord = jest.fn();
-    public _getRecord = jest.fn();
-    public _putRecord = jest.fn();
-    public _updateRecord = jest.fn();
-  }
-
   beforeAll(() => {
-    jest.useFakeTimers().setSystemTime(new Date());
+    vi.useFakeTimers().setSystemTime(new Date());
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
+    vi.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
   afterAll(() => {
     process.env = ENVIRONMENT_VARIABLES;
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('Method: constructor', () => {
-    test('when initialized with no arguments, it initializes with default values', () => {
+    it('initializes with default values', () => {
       // Prepare & Act
       const persistenceLayer = new PersistenceLayerTestClass();
 
@@ -71,7 +66,7 @@ describe('Class: BasePersistenceLayer', () => {
   });
 
   describe('Method: configure', () => {
-    test('when configured with a function name, it appends the function name to the idempotency key prefix', () => {
+    it('appends the function name to the idempotency key prefix', () => {
       // Prepare
       const config = new IdempotencyConfig({});
       const persistenceLayer = new PersistenceLayerTestClass();
@@ -85,7 +80,7 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    test('when configured with an empty config object, it initializes the persistence layer with default configs', () => {
+    it('uses default config when no option is provided', () => {
       // Prepare
       const config = new IdempotencyConfig({});
       const persistenceLayer = new PersistenceLayerTestClass();
@@ -108,7 +103,7 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    test('when configured with a config object, it initializes the persistence layer with the provided configs', () => {
+    it('initializes the persistence layer with the provided configs', () => {
       // Prepare
       const configOptions: IdempotencyConfigOptions = {
         eventKeyJmesPath: 'eventKeyJmesPath',
@@ -141,7 +136,7 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    test('when called twice, it returns without reconfiguring the persistence layer', () => {
+    it('returns the same config instance when called multiple times', () => {
       // Prepare
       const config = new IdempotencyConfig({
         eventKeyJmesPath: 'eventKeyJmesPath',
@@ -166,14 +161,14 @@ describe('Class: BasePersistenceLayer', () => {
   });
 
   describe('Method: deleteRecord', () => {
-    test('when called, it calls the _deleteRecord method with the correct arguments', async () => {
+    it('calls the _deleteRecord method with the correct arguments', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       const baseIdempotencyRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
         status: IdempotencyRecordStatus.EXPIRED,
       });
-      const deleteRecordSpy = jest.spyOn(persistenceLayer, '_deleteRecord');
+      const deleteRecordSpy = vi.spyOn(persistenceLayer, '_deleteRecord');
 
       // Act
       await persistenceLayer.deleteRecord({ foo: 'bar' });
@@ -188,7 +183,7 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    test('when called, it deletes the record from the local cache', async () => {
+    it('it deletes the record from the local cache', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -201,7 +196,7 @@ describe('Class: BasePersistenceLayer', () => {
         status: IdempotencyRecordStatus.EXPIRED,
       });
       await persistenceLayer.saveSuccess({ foo: 'bar' }, { bar: 'baz' });
-      const deleteRecordSpy = jest.spyOn(persistenceLayer, '_deleteRecord');
+      const deleteRecordSpy = vi.spyOn(persistenceLayer, '_deleteRecord');
 
       // Act
       await persistenceLayer.deleteRecord({ foo: 'bar' });
@@ -218,7 +213,7 @@ describe('Class: BasePersistenceLayer', () => {
   });
 
   describe('Method: getRecord', () => {
-    test('when called, it calls the _getRecord method with the correct arguments', async () => {
+    it('calls the _getRecord method with the correct arguments', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -226,7 +221,7 @@ describe('Class: BasePersistenceLayer', () => {
           eventKeyJmesPath: 'foo',
         }),
       });
-      const getRecordSpy = jest.spyOn(persistenceLayer, '_getRecord');
+      const getRecordSpy = vi.spyOn(persistenceLayer, '_getRecord');
 
       // Act
       await persistenceLayer.getRecord({ foo: 'bar' });
@@ -237,7 +232,7 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    test('when called and payload validation fails due to hash mismatch, it throws an IdempotencyValidationError', async () => {
+    it("throws an IdempotencyValidationError when the hashes don't match", async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -250,9 +245,7 @@ describe('Class: BasePersistenceLayer', () => {
         status: IdempotencyRecordStatus.INPROGRESS,
         payloadHash: 'different-hash',
       });
-      jest
-        .spyOn(persistenceLayer, '_getRecord')
-        .mockReturnValue(existingRecord);
+      vi.spyOn(persistenceLayer, '_getRecord').mockReturnValue(existingRecord);
 
       // Act & Assess
       await expect(persistenceLayer.getRecord({ foo: 'bar' })).rejects.toThrow(
@@ -263,7 +256,7 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    test('when called and the hash generation fails, and throwOnNoIdempotencyKey is disabled, it logs a warning', async () => {
+    it('logs a warning when the idempotency key cannot be found', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -272,7 +265,9 @@ describe('Class: BasePersistenceLayer', () => {
           eventKeyJmesPath: 'bar',
         }),
       });
-      const logWarningSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const logWarningSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => ({}));
 
       // Act
       await persistenceLayer.getRecord({ foo: 'bar' });
@@ -283,7 +278,7 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    test('when called and the hash generation fails, and throwOnNoIdempotencyKey is enabled, it throws', async () => {
+    it('throws an error when throwOnNoIdempotencyKey is enabled and the key is not found', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -304,7 +299,7 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    test('when called twice with the same payload, it retrieves the record from the local cache', async () => {
+    it('uses the record from the local cache when called multiple times', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -312,7 +307,7 @@ describe('Class: BasePersistenceLayer', () => {
           useLocalCache: true,
         }),
       });
-      const getRecordSpy = jest
+      const getRecordSpy = vi
         .spyOn(persistenceLayer, '_getRecord')
         .mockReturnValue(
           new IdempotencyRecord({
@@ -330,7 +325,7 @@ describe('Class: BasePersistenceLayer', () => {
       expect(getRecordSpy).toHaveBeenCalledTimes(1);
     });
 
-    test('when called twice with the same payload, if it founds an expired record in the local cache, it retrieves it', async () => {
+    it('loads the value from the persistence layer when the record in the local cache has expired', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -338,7 +333,7 @@ describe('Class: BasePersistenceLayer', () => {
           useLocalCache: true,
         }),
       });
-      const getRecordSpy = jest
+      const getRecordSpy = vi
         .spyOn(persistenceLayer, '_getRecord')
         .mockReturnValue(
           new IdempotencyRecord({
@@ -359,10 +354,10 @@ describe('Class: BasePersistenceLayer', () => {
   });
 
   describe('Method: saveInProgress', () => {
-    test('when called, it calls the _putRecord method with the correct arguments', async () => {
+    it('calls the _putRecord method with the correct arguments', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
-      const putRecordSpy = jest.spyOn(persistenceLayer, '_putRecord');
+      const putRecordSpy = vi.spyOn(persistenceLayer, '_putRecord');
       const remainingTimeInMs = 2000;
 
       // Act
@@ -381,11 +376,11 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    test('when called without remainingTimeInMillis, it logs a warning and then calls the _putRecord method', async () => {
+    it('logs a warning when unable to call remainingTimeInMillis() from the context', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
-      const putRecordSpy = jest.spyOn(persistenceLayer, '_putRecord');
-      const logWarningSpy = jest
+      const putRecordSpy = vi.spyOn(persistenceLayer, '_putRecord');
+      const logWarningSpy = vi
         .spyOn(console, 'warn')
         .mockImplementation(() => ({}));
 
@@ -399,7 +394,7 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    test('when called and there is already a completed record in the cache, it throws an IdempotencyItemAlreadyExistsError', async () => {
+    it('throws an `IdempotencyItemAlreadyExistsError` when there is already a completed record in the cache', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
       persistenceLayer.configure({
@@ -407,7 +402,7 @@ describe('Class: BasePersistenceLayer', () => {
           useLocalCache: true,
         }),
       });
-      const putRecordSpy = jest.spyOn(persistenceLayer, '_putRecord');
+      const putRecordSpy = vi.spyOn(persistenceLayer, '_putRecord');
       await persistenceLayer.saveSuccess({ foo: 'bar' }, { bar: 'baz' });
 
       // Act & Assess
@@ -429,10 +424,10 @@ describe('Class: BasePersistenceLayer', () => {
   });
 
   describe('Method: saveSuccess', () => {
-    test('when called, it calls the _updateRecord method with the correct arguments', async () => {
+    it('calls the _updateRecord method with the correct arguments', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
-      const updateRecordSpy = jest.spyOn(persistenceLayer, '_updateRecord');
+      const updateRecordSpy = vi.spyOn(persistenceLayer, '_updateRecord');
       const result = { bar: 'baz' };
 
       // Act

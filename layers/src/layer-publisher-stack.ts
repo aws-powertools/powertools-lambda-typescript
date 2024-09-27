@@ -65,6 +65,7 @@ export class LayerPublisherStack extends Stack {
                 'parameters',
                 'idempotency',
                 'batch',
+                'parser',
               ];
 
               // These files are relative to the tmp folder
@@ -108,6 +109,7 @@ export class LayerPublisherStack extends Stack {
                 '@aws-sdk/client-ssm',
                 '@aws-sdk/client-secrets-manager',
                 '@aws-sdk/client-appconfigdata',
+                'zod',
               ];
 
               if (buildFromLocal) {

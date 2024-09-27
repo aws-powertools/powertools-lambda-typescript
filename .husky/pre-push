@@ -2,9 +2,7 @@ npm t \
   -w packages/logger \
   -w packages/metrics \
   -w packages/tracer \
-  -w packages/idempotency \
   -w packages/parameters \
-  -w packages/parser \
-  -w packages/event-handler
+  -w packages/parser
 
 npx vitest --run --coverage --changed="$(git merge-base HEAD main)"

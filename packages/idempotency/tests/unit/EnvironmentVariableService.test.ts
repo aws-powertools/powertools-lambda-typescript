@@ -1,15 +1,10 @@
-/**
- * Test EnvironmentVariableService class
- *
- * @group unit/idempotency/environment-variables-service
- */
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
 describe('Class: EnvironmentVariableService', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -18,9 +13,10 @@ describe('Class: EnvironmentVariableService', () => {
   });
 
   describe('Method: getFunctionName', () => {
-    test('When called, it gets the Lambda function name from the environment variable', () => {
+    it('gets the Lambda function name from the environment variable', () => {
       // Prepare
-      const expectedName = process.env.AWS_LAMBDA_FUNCTION_NAME;
+      const expectedName = 'test-function';
+      process.env.AWS_LAMBDA_FUNCTION_NAME = expectedName;
 
       // Act
       const lambdaName = new EnvironmentVariablesService().getFunctionName();
@@ -29,7 +25,7 @@ describe('Class: EnvironmentVariableService', () => {
       expect(lambdaName).toEqual(expectedName);
     });
 
-    test('When called without the environment variable set, it returns an empty string', () => {
+    it('it returns an empty string when the Lambda function name is not set', () => {
       // Prepare
       process.env.AWS_LAMBDA_FUNCTION_NAME = undefined;
 

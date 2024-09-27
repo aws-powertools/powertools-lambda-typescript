@@ -10,13 +10,13 @@
     "access": "public"
   },
   "scripts": {
-    "test": "npm run test:unit",
-    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
-    "jest": "jest --detectOpenHandles --verbose",
+    "test": "vitest --run",
+    "test:unit": "vitest --run",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "echo 'Not Implemented'",
     "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x jest --group=e2e",
     "test:e2e": "jest --group=e2e",
-    "watch": "jest --watch",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",
@@ -125,9 +125,8 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.654.0",
-    "@aws-sdk/lib-dynamodb": "^3.654.0",
-    "aws-sdk-client-mock": "^4.0.1",
-    "aws-sdk-client-mock-jest": "^4.0.1"
+    "@aws-sdk/client-dynamodb": "^3.658.1",
+    "@aws-sdk/lib-dynamodb": "^3.658.1",
+    "aws-sdk-client-mock": "^4.0.2"
   }
 }

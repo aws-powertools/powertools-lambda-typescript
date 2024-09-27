@@ -36,6 +36,62 @@ describe('Function: processPartialResponse()', () => {
     context,
   };
 
+  const handlerWithSqsEvent = async (
+    event: SQSEvent,
+    options: BatchProcessingOptions
+  ) => {
+    const processor = new BatchProcessor(EventType.SQS);
+
+    const handler = async (
+      event: SQSEvent,
+      _context: Context
+    ): Promise<PartialItemFailureResponse> =>
+      processPartialResponse(event, asyncSqsRecordHandler, processor, options);
+
+    return handler(event, context);
+  };
+
+  const handlerWithKinesisEvent = async (
+    event: KinesisStreamEvent,
+    options: BatchProcessingOptions
+  ) => {
+    const processor = new BatchProcessor(EventType.KinesisDataStreams);
+
+    const handler = async (
+      event: KinesisStreamEvent,
+      _context: Context
+    ): Promise<PartialItemFailureResponse> =>
+      processPartialResponse(
+        event,
+        asyncKinesisRecordHandler,
+        processor,
+        options
+      );
+
+    return handler(event, context);
+  };
+
+  const handlerWithDynamoDBEvent = async (
+    event: DynamoDBStreamEvent,
+    options: BatchProcessingOptions
+  ) => {
+    const processor = new BatchProcessor(EventType.DynamoDBStreams);
+
+    const handler = async (
+      event: DynamoDBStreamEvent,
+      _context: Context
+    ): Promise<PartialItemFailureResponse> => {
+      return await processPartialResponse(
+        event,
+        asyncDynamodbRecordHandler,
+        processor,
+        options
+      );
+    };
+
+    return handler(event, context);
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     process.env = { ...ENVIRONMENT_VARIABLES };
@@ -184,23 +240,10 @@ describe('Function: processPartialResponse()', () => {
           sqsRecordFactory('success'),
           sqsRecordFactory('success'),
         ];
-        const processor = new BatchProcessor(EventType.SQS);
         const event: SQSEvent = { Records: records };
 
-        const handler = async (
-          event: SQSEvent,
-          _context: Context
-        ): Promise<PartialItemFailureResponse> => {
-          return processPartialResponse(
-            event,
-            asyncSqsRecordHandler,
-            processor,
-            processingOptions
-          );
-        };
-
         // Act
-        const result = await handler(event, context);
+        const result = await handlerWithSqsEvent(event, processingOptions);
 
         // Assess
         expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -212,23 +255,10 @@ describe('Function: processPartialResponse()', () => {
           kinesisRecordFactory('success'),
           kinesisRecordFactory('success'),
         ];
-        const processor = new BatchProcessor(EventType.KinesisDataStreams);
         const event: KinesisStreamEvent = { Records: records };
 
-        const handler = async (
-          event: KinesisStreamEvent,
-          _context: Context
-        ): Promise<PartialItemFailureResponse> => {
-          return await processPartialResponse(
-            event,
-            asyncKinesisRecordHandler,
-            processor,
-            processingOptions
-          );
-        };
-
         // Act
-        const result = await handler(event, context);
+        const result = await handlerWithKinesisEvent(event, processingOptions);
 
         // Assess
         expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -240,47 +270,22 @@ describe('Function: processPartialResponse()', () => {
           dynamodbRecordFactory('success'),
           dynamodbRecordFactory('success'),
         ];
-        const processor = new BatchProcessor(EventType.DynamoDBStreams);
         const event: DynamoDBStreamEvent = { Records: records };
 
-        const handler = async (
-          event: DynamoDBStreamEvent,
-          _context: Context
-        ): Promise<PartialItemFailureResponse> => {
-          return await processPartialResponse(
-            event,
-            asyncDynamodbRecordHandler,
-            processor,
-            processingOptions
-          );
-        };
-
         // Act
-        const result = await handler(event, context);
+        const result = await handlerWithDynamoDBEvent(event, processingOptions);
 
         // Assess
         expect(result).toStrictEqual({ batchItemFailures: [] });
       });
 
       it('Process partial response through handler for SQS records with incorrect event type', async () => {
-        // Prepare
-        const processor = new BatchProcessor(EventType.SQS);
-
-        const handler = async (
-          event: SQSEvent,
-          _context: Context
-        ): Promise<PartialItemFailureResponse> => {
-          return await processPartialResponse(
-            event,
-            asyncSqsRecordHandler,
-            processor,
-            processingOptions
-          );
-        };
-
         try {
           // Act
-          await handler({} as unknown as SQSEvent, context);
+          await handlerWithSqsEvent(
+            {} as unknown as SQSEvent,
+            processingOptions
+          );
         } catch (error) {
           // Assess
           assert(error instanceof UnexpectedBatchTypeError);
@@ -298,28 +303,13 @@ describe('Function: processPartialResponse()', () => {
           sqsRecordFactory('success'),
           sqsRecordFactory('success'),
         ];
-        const processor = new BatchProcessor(EventType.SQS);
         const event: SQSEvent = { Records: records };
 
-        const handler = async (
-          event: SQSEvent,
-          context: Context
-        ): Promise<PartialItemFailureResponse> => {
-          const options: BatchProcessingOptions = {
-            context: context,
-            ...processingOptions,
-          };
-
-          return await processPartialResponse(
-            event,
-            asyncHandlerWithContext,
-            processor,
-            options
-          );
-        };
-
         // Act
-        const result = await handler(event, context);
+        const result = await handlerWithSqsEvent(event, {
+          context,
+          ...processingOptions,
+        });
 
         // Assess
         expect(result).toStrictEqual({ batchItemFailures: [] });
@@ -328,79 +318,40 @@ describe('Function: processPartialResponse()', () => {
       it('Process partial response through handler for full batch failure', async () => {
         // Prepare
         const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
-        const processor = new BatchProcessor(EventType.SQS);
         const event: SQSEvent = { Records: records };
 
-        const handler = async (
-          event: SQSEvent,
-          _context: Context
-        ): Promise<PartialItemFailureResponse> => {
-          return processPartialResponse(
-            event,
-            asyncSqsRecordHandler,
-            processor,
-            processingOptions
-          );
-        };
-
         // Act & Assess
-        await expect(handler(event, context)).rejects.toThrow(
-          FullBatchFailureError
-        );
+        await expect(
+          handlerWithSqsEvent(event, processingOptions)
+        ).rejects.toThrow(FullBatchFailureError);
       });
 
       it('Process partial response through handler for full batch failure when `throwOnFullBatchFailure` is `true`', async () => {
         // Prepare
         const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
-        const processor = new BatchProcessor(EventType.SQS);
         const event: SQSEvent = { Records: records };
 
-        const handler = async (
-          event: SQSEvent,
-          _context: Context
-        ): Promise<PartialItemFailureResponse> => {
-          return processPartialResponse(
-            event,
-            asyncSqsRecordHandler,
-            processor,
-            {
-              ...options,
-              ...processingOptions,
-              throwOnFullBatchFailure: true,
-            }
-          );
-        };
-
         // Act & Assess
-        await expect(handler(event, context)).rejects.toThrow(
-          FullBatchFailureError
-        );
+        await expect(
+          handlerWithSqsEvent(event, {
+            ...options,
+            ...processingOptions,
+            throwOnFullBatchFailure: true,
+          })
+        ).rejects.toThrow(FullBatchFailureError);
       });
 
       it('Process partial response through handler for full batch failure when `throwOnFullBatchFailure` is `false`', async () => {
         // Prepare
         const records = [sqsRecordFactory('fail'), sqsRecordFactory('fail')];
-        const processor = new BatchProcessor(EventType.SQS);
         const event: SQSEvent = { Records: records };
 
-        const handler = async (
-          event: SQSEvent,
-          _context: Context
-        ): Promise<PartialItemFailureResponse> => {
-          return processPartialResponse(
-            event,
-            asyncSqsRecordHandler,
-            processor,
-            {
-              ...options,
-              ...processingOptions,
-              throwOnFullBatchFailure: false,
-            }
-          );
-        };
-
         // Act
-        const response = await handler(event, context);
+        const response = await handlerWithSqsEvent(event, {
+          ...options,
+          ...processingOptions,
+          throwOnFullBatchFailure: false,
+        });
 
         // Assess
         expect(response).toStrictEqual({

@@ -1,20 +1,13 @@
-/**
- * Logger log levels tests
- *
- * @group unit/logger/logger/logLevels
- */
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
 import { LogJsonIndent, LogLevel } from '../../src/constants.js';
-
-const logSpy = jest.spyOn(console, 'info');
 
 describe('Log levels', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
     process.env = { ...ENVIRONMENT_VARIABLES, POWERTOOLS_DEV: 'true' };
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   it('uses the default service name when none is provided', () => {
@@ -26,8 +19,9 @@ describe('Log levels', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({ service: 'service_undefined' })
     );
   });
@@ -41,8 +35,9 @@ describe('Log levels', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({ service: 'hello-world' })
     );
   });
@@ -56,8 +51,9 @@ describe('Log levels', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({ service: 'hello-world' })
     );
   });
@@ -72,15 +68,15 @@ describe('Log levels', () => {
     childLogger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({ service: 'child-service' })
     );
   });
 
   it('creates a child logger that is distinct from the parent logger', () => {
     // Prepare
-    const debugSpy = jest.spyOn(console, 'debug');
     const logger = new Logger({ logLevel: LogLevel.CRITICAL });
     const childLogger = logger.createChild({
       logLevel: LogLevel.DEBUG,
@@ -93,8 +89,9 @@ describe('Log levels', () => {
     childLogger.debug('Hello, world!');
 
     // Assess
-    expect(debugSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(debugSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.debug).toHaveBeenCalledTimes(1);
+    expect(console.debug).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         service: 'child-service',
         foo: 'bar',
@@ -105,15 +102,6 @@ describe('Log levels', () => {
 
   it('`logRecordOrder` should be passed down to child logger', () => {
     // Prepare
-    const logger = new Logger({ logRecordOrder: ['service', 'timestamp'] });
-    const childLogger = logger.createChild({ serviceName: 'child-service' });
-
-    // Act
-    logger.info('Hello, world!');
-    childLogger.info('Hello, world from child!');
-
-    // Assess
-    expect(logSpy).toHaveBeenCalledTimes(2);
     const expectedKeys = [
       'service',
       'timestamp',
@@ -122,9 +110,19 @@ describe('Log levels', () => {
       'sampling_rate',
       'xray_trace_id',
     ];
-    logSpy.mock.calls.forEach((call, index) => {
-      expect(Object.keys(JSON.parse(call[0]))).toEqual(expectedKeys);
-    });
+    const logger = new Logger({ logRecordOrder: ['service', 'timestamp'] });
+    const childLogger = logger.createChild({ serviceName: 'child-service' });
+
+    // Act
+    logger.info('Hello, world!');
+    childLogger.info('Hello, world from child!');
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(2);
+    // For this test don't care about the values, just the order of the keys
+    const calls = (console.info as Mock).mock.calls;
+    expect(Object.keys(JSON.parse(calls[0][0]))).toEqual(expectedKeys);
+    expect(Object.keys(JSON.parse(calls[1][0]))).toEqual(expectedKeys);
   });
 
   it("doesn't use the global console object by default", () => {
@@ -140,29 +138,29 @@ describe('Log levels', () => {
   it('uses pretty print when POWERTOOLS_DEV is set', () => {
     // Prepare
     const mockDate = new Date(1466424490000);
-    jest.useFakeTimers().setSystemTime(mockDate);
+    vi.useFakeTimers().setSystemTime(mockDate);
     const logger = new Logger();
 
     // Act
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(logSpy).toHaveBeenCalledWith(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveBeenCalledWith(
       JSON.stringify(
         {
           level: 'INFO',
           message: 'Hello, world!',
           sampling_rate: 0,
-          service: 'hello-world',
+          service: 'service_undefined',
           timestamp: '2016-06-20T12:08:10.000Z',
-          xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+          xray_trace_id: '1-abcdef12-3456abcdef123456abcdef12',
         },
         null,
         LogJsonIndent.PRETTY
       )
     );
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 });

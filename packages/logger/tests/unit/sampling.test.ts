@@ -1,9 +1,4 @@
-/**
- * Log Sampling
- *
- * @group unit/logger/logger/sampling
- */
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { LogLevel, LogLevelThreshold, Logger } from '../../src/index.js';
 
@@ -20,8 +15,6 @@ class CustomConfigService extends EnvironmentVariablesService {
   }
 }
 
-const logSpy = jest.spyOn(console, 'info');
-
 describe('Log sampling', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
@@ -30,16 +23,16 @@ describe('Log sampling', () => {
   });
 
   it('informs the customer that sample rate is setting the level to DEBUG', () => {
-    // Prepare
-    const debugSpy = jest.spyOn(console, 'debug');
-
     // Act
     new Logger({ sampleRateValue: 1, logLevel: LogLevel.CRITICAL });
 
     // Assess
-    expect(debugSpy).toHaveBeenCalledTimes(1);
-    expect(debugSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Setting log level to DEBUG due to sampling rate')
+    expect(console.debug).toHaveBeenCalledTimes(1);
+    expect(console.debug).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Setting log level to DEBUG due to sampling rate',
+      })
     );
   });
 
@@ -172,8 +165,9 @@ describe('Log sampling', () => {
     childLogger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({ sampling_rate: 0.5 })
     );
   });

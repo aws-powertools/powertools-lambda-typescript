@@ -18,7 +18,7 @@ export default defineConfig({
         'packages/event-handler/src/types/**',
         'packages/idempotency/src/types/**',
         'packages/jmespath/src/types.ts',
-        'packages/logger/**',
+        'packages/logger/src/types/**',
         'packages/metrics/**',
         'packages/parameters/**',
         'packages/parser/**',

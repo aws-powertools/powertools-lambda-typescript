@@ -95,7 +95,7 @@ jobs:
             -w packages/parser
       - name: Run unit tests
         run: |
-          npm t -w -w packages/tracer \
+          npm t -w packages/tracer \
             -w packages/metrics \
             -w packages/parameters \
             -w packages/parser

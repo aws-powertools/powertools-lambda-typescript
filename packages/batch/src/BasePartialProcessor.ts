@@ -98,7 +98,7 @@ abstract class BasePartialProcessor {
   public abstract prepare(): void;
 
   /**
-   * Process all records with an asyncronous handler
+   * Process all records with an asynchronous handler
    *
    * Once called, the processor will create an array of promises to process each record
    * and wait for all of them to settle before returning the results.
@@ -122,11 +122,11 @@ abstract class BasePartialProcessor {
     }
     this.prepare();
 
-    const processingPromises: Promise<SuccessResponse | FailureResponse>[] =
-      this.records.map((record) => this.processRecord(record));
-
-    const processedRecords: (SuccessResponse | FailureResponse)[] =
-      await Promise.all(processingPromises);
+    // Default to `true` if `processInParallel` is not specified.
+    const processInParallel = this.options?.processInParallel ?? true;
+    const processedRecords = processInParallel
+      ? await this.#processRecordsInParallel()
+      : await this.#processRecordsSequentially();
 
     this.clean();
 
@@ -134,9 +134,9 @@ abstract class BasePartialProcessor {
   }
 
   /**
-   * Process a record with an asyncronous handler
+   * Process a record with an asynchronous handler
    *
-   * An implementation of this method is required for asyncronous processors.
+   * An implementation of this method is required for asynchronous processors.
    *
    * When implementing this method, you should at least call the successHandler method
    * when a record succeeds processing and the failureHandler method when a record
@@ -248,6 +248,30 @@ abstract class BasePartialProcessor {
     this.successMessages.push(record);
 
     return entry;
+  }
+
+  /**
+   * Processes records in parallel using `Promise.all`.
+   */
+  async #processRecordsInParallel(): Promise<
+    (SuccessResponse | FailureResponse)[]
+  > {
+    return Promise.all(
+      this.records.map((record) => this.processRecord(record))
+    );
+  }
+
+  /**
+   * Processes records sequentially, ensuring that each record is processed one after the other.
+   */
+  async #processRecordsSequentially(): Promise<
+    (SuccessResponse | FailureResponse)[]
+  > {
+    const processedRecords: (SuccessResponse | FailureResponse)[] = [];
+    for (const record of this.records) {
+      processedRecords.push(await this.processRecord(record));
+    }
+    return processedRecords;
   }
 }
 

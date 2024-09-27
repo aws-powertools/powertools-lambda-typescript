@@ -416,7 +416,10 @@ For such cases we recommend to use the `BatchProcessorSync` and `processPartialR
     *If your function is `async` returning a `Promise`, use `BatchProcessor` and `processPartialResponse`
     * If your function is not `async`, use `BatchProcessorSync` and `processPartialResponseSync`
 
-The difference between the two processors in implementation is that `BatchProcessor` uses `Promise.all()` while `BatchProcessorSync` loops through each record to preserve the order.
+The difference between the two processors is in how they handle record processing:
+
+* **`BatchProcessor`**: By default, it processes records in parallel using `Promise.all()`. However, it also offers an [option](#sequential-async-processing) to process records sequentially, preserving the order.
+* **`BatchProcessorSync`**: Always processes records sequentially, ensuring the order is preserved by looping through each record one by one.
 
 ???+ question "When is this useful?"
 
@@ -475,6 +478,16 @@ Let's suppose you'd like to add a metric named `BatchRecordFailures` for each ba
 
 ```typescript hl_lines="3 15 19 26 32" title="Extending failure handling mechanism in BatchProcessor"
 --8<-- "examples/snippets/batch/extendingFailure.ts"
+```
+
+### Sequential async processing
+
+By default, the `BatchProcessor` processes records in parallel using `Promise.all()`. However, if you need to preserve the order of records, you can set the `processInParallel` option to `false` to process records sequentially.
+
+!!! important "If the `processInParallel` option is not provided, the `BatchProcessor` will process records in parallel."
+
+```typescript hl_lines="8 17" title="Sequential async processing"
+--8<-- "examples/snippets/batch/sequentialAsyncProcessing.ts"
 ```
 
 ### Create your own partial processor

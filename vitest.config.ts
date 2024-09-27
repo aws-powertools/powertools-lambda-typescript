@@ -15,7 +15,7 @@ export default defineConfig({
         ...coverageConfigDefaults.exclude,
         'packages/batch/src/types.ts',
         'packages/commons/src/types/**',
-        'packages/event-handler/**',
+        'packages/event-handler/src/types/**',
         'packages/idempotency/src/types/**',
         'packages/jmespath/src/types.ts',
         'packages/logger/**',

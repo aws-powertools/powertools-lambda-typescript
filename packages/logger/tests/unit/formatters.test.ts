@@ -1,17 +1,5 @@
-/**
- * Test Logger formatter
- *
- * @group unit/logger/logFormatter
- */
 import { AssertionError } from 'node:assert';
-import {
-  afterAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  jest,
-} from '@jest/globals';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
 import {
@@ -73,8 +61,6 @@ const unformattedAttributes: UnformattedAttributes = {
 
 process.env.POWERTOOLS_DEV = 'true';
 
-const logSpy = jest.spyOn(console, 'info');
-
 const logger = new Logger();
 
 const jsonReplacerFn: CustomJsonReplacerFn = (_: string, value: unknown) =>
@@ -120,14 +106,13 @@ describe('Formatters', () => {
   beforeEach(() => {
     process.env = { ...ENVIRONMENT_VARIABLES };
     const mockDate = new Date(1466424490000);
-    jest.useFakeTimers().setSystemTime(mockDate);
-    jest.resetAllMocks();
+    vi.useFakeTimers().setSystemTime(mockDate);
+    vi.resetAllMocks();
     unformattedAttributes.timestamp = mockDate;
   });
 
   afterAll(() => {
-    jest.useRealTimers();
-    unformattedAttributes.timestamp = new Date();
+    vi.useRealTimers();
   });
 
   // #region base log keys
@@ -477,7 +462,7 @@ describe('Formatters', () => {
       Difference between UTC and `America/New_York`(GMT -04.00) is 240 minutes.
       The positive value indicates that `America/New_York` is behind UTC.
     */
-    jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
+    vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
 
     // Act
     const timestamp = formatterWithEnv.formatTimestamp(new Date());
@@ -493,7 +478,7 @@ describe('Formatters', () => {
       Difference between UTC and `America/New_York`(GMT -04.00) is 240 minutes.
       The positive value indicates that `America/New_York` is behind UTC.
     */
-    jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
+    vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
 
     // Act
     const timestamp = formatterWithEnv.formatTimestamp(new Date());
@@ -509,7 +494,7 @@ describe('Formatters', () => {
       Difference between UTC and `America/New_York`(GMT -04.00) is 240 minutes.
       The positive value indicates that `America/New_York` is behind UTC.
     */
-    jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
+    vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
 
     // Act
     const timestamp = formatterWithEnv.formatTimestamp(new Date());
@@ -521,12 +506,12 @@ describe('Formatters', () => {
   it('it formats the timestamp to ISO 8601 with correct milliseconds for `Asia/Dhaka` timezone', () => {
     // Prepare
     process.env.TZ = 'Asia/Dhaka';
-    jest.useFakeTimers().setSystemTime(new Date('2016-06-20T12:08:10.910Z'));
+    vi.setSystemTime(new Date('2016-06-20T12:08:10.910Z'));
     /*
       Difference between UTC and `Asia/Dhaka`(GMT +06.00) is 360 minutes.
       The negative value indicates that `Asia/Dhaka` is ahead of UTC.
     */
-    jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
+    vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
     const formatter = new PowertoolsLogFormatter({
       envVarsService: new EnvironmentVariablesService(),
     });
@@ -542,12 +527,12 @@ describe('Formatters', () => {
     // Prepare
     process.env.TZ = 'Asia/Dhaka';
     const mockDate = new Date('2016-06-20T20:08:10.910Z');
-    jest.useFakeTimers().setSystemTime(mockDate);
+    vi.setSystemTime(mockDate);
     /*
       Difference between UTC and `Asia/Dhaka`(GMT +06.00) is 360 minutes.
       The negative value indicates that `Asia/Dhaka` is ahead of UTC.
     */
-    jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
+    vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
     const formatter = new PowertoolsLogFormatter({
       envVarsService: new EnvironmentVariablesService(),
     });
@@ -566,7 +551,7 @@ describe('Formatters', () => {
       Difference between UTC and `Asia/Dhaka`(GMT +06.00) is 360 minutes.
       The negative value indicates that `Asia/Dhaka` is ahead of UTC.
     */
-    jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
+    vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
     const formatter = new PowertoolsLogFormatter();
 
     // Act
@@ -579,7 +564,7 @@ describe('Formatters', () => {
   it('defaults to :UTC when the TZ env variable is set to :/etc/localtime', () => {
     // Prepare
     process.env.TZ = ':/etc/localtime';
-    jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(0);
+    vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(0);
     const formatter = new PowertoolsLogFormatter({
       envVarsService: new EnvironmentVariablesService(),
     });
@@ -676,8 +661,9 @@ describe('Formatters', () => {
     logger.info('foo', { circularObject });
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         level: 'INFO',
         message: 'foo',
@@ -696,8 +682,9 @@ describe('Formatters', () => {
     logger.info('foo', bigIntValue);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         level: 'INFO',
         message: 'foo',
@@ -720,8 +707,9 @@ describe('Formatters', () => {
     logger.info('foo', values);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         level: 'INFO',
         message: 'foo',
@@ -738,8 +726,9 @@ describe('Formatters', () => {
     loggerWithReplacer.info('foo', valueWithSet);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         level: 'INFO',
         message: 'foo',
@@ -759,8 +748,9 @@ describe('Formatters', () => {
     loggerWithReplacer.info('foo', valueWithSetAndBigInt);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         level: 'INFO',
         message: 'foo',
@@ -778,8 +768,9 @@ describe('Formatters', () => {
     childLogger.info('foo', { foo: new Set([1, 2]) });
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         level: 'INFO',
         message: 'foo',
@@ -795,8 +786,8 @@ describe('Formatters', () => {
     loggerWithCustomLogFormatter.info('foo');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toEqual({
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(1, {
       logLevel: 12,
       message: 'foo',
       timestamp: expect.any(String),
@@ -811,8 +802,8 @@ describe('Formatters', () => {
     childLogger.info('foo');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toEqual({
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(1, {
       logLevel: 12,
       message: 'foo',
       timestamp: expect.any(String),

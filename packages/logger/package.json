@@ -10,9 +10,10 @@
     "access": "public"
   },
   "scripts": {
-    "test": "npm run test:unit",
-    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
-    "jest": "jest --detectOpenHandles --verbose",
+    "test": "vitest --run tests/unit",
+    "test:unit": "vitest --run tests/unit",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "echo 'Not Implemented'",
     "test:e2e:nodejs18x": "RUNTIME=nodejs18x jest --group=e2e",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x jest --group=e2e",
     "test:e2e": "jest --group=e2e",

@@ -1,11 +1,7 @@
-/**
- * Logger log levels tests
- *
- * @group unit/logger/logger/logLevels
- */
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
 import { LogLevel, LogLevelThreshold } from '../../src/constants.js';
+import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
 import type {
   LogFunction,
   LogLevel as LogLevelType,
@@ -38,7 +34,7 @@ describe('Log levels', () => {
 
   beforeEach(() => {
     process.env = { ...ENVIRONMENT_VARIABLES, POWERTOOLS_DEV: 'true' };
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   it('sets the correct log level when initialized with a log level', () => {
@@ -96,6 +92,36 @@ describe('Log levels', () => {
     );
   });
 
+  it('sets the correct log level when setting the POWERTOOLS_LOG_LEVEL environment variable', () => {
+    // Prepare
+    process.env.POWERTOOLS_LOG_LEVEL = LogLevel.CRITICAL;
+
+    // Act
+    const logger = new Logger();
+
+    // Assess
+    expect(logger.level).toBe(LogLevelThreshold.CRITICAL);
+    expect(logger.getLevelName()).toBe(LogLevel.CRITICAL);
+  });
+
+  it('sets the correct log level when using a custom config service', () => {
+    // Prepare
+    process.env.POWERTOOLS_LOG_LEVEL = undefined;
+    const customConfigService = {
+      getLogLevel: () => LogLevel.WARN,
+      getCurrentEnvironment: vi.fn(),
+      getServiceName: vi.fn(),
+      getSampleRateValue: vi.fn(),
+    } as unknown as ConfigServiceInterface;
+
+    // Act
+    const logger = new Logger({ customConfigService });
+
+    // Assess
+    expect(logger.level).toBe(LogLevelThreshold.WARN);
+    expect(logger.getLevelName()).toBe(LogLevel.WARN);
+  });
+
   it.each([
     { level: LogLevel.TRACE },
     { level: LogLevel.DEBUG },
@@ -105,15 +131,17 @@ describe('Log levels', () => {
     { level: LogLevel.CRITICAL },
   ])('logs at the correct level when calling $level()', ({ level }) => {
     // Prepare
-    const logSpy = jest.spyOn(console, getConsoleMethod(level));
+    const consoleMethod = getConsoleMethod(level);
     const logger = new Logger({ logLevel: level });
 
     // Act
     logger[level.toLowerCase() as keyof LogFunction]('foo');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining(level));
+    expect(console[consoleMethod]).toHaveBeenCalledTimes(1);
+    expect(console[consoleMethod]).toHaveLogged(
+      expect.objectContaining({ level: level })
+    );
   });
 
   it.each([
@@ -126,14 +154,14 @@ describe('Log levels', () => {
     "doesn't log when calling a level more verbose than the current log level ($level vs $moreVerboseLevel)",
     ({ level, moreVerboseLevel }) => {
       // Prepare
-      const logSpy = jest.spyOn(console, getConsoleMethod(moreVerboseLevel));
+      const consoleMethod = getConsoleMethod(moreVerboseLevel);
       const logger = new Logger({ logLevel: level });
 
       // Act
       logger[moreVerboseLevel.toLowerCase() as keyof LogFunction]('foo');
 
       // Assess
-      expect(logSpy).not.toHaveBeenCalled();
+      expect(console[consoleMethod]).not.toHaveBeenCalled();
     }
   );
 
@@ -147,14 +175,14 @@ describe('Log levels', () => {
     'logs when calling a level less verbose than the current log level ($level vs $lessVerboseLevel)',
     ({ level, lessVerboseLevel }) => {
       // Prepare
-      const logSpy = jest.spyOn(console, getConsoleMethod(lessVerboseLevel));
+      const consoleMethod = getConsoleMethod(lessVerboseLevel);
       const logger = new Logger({ logLevel: level });
 
       // Act
       logger[lessVerboseLevel.toLowerCase() as keyof LogFunction]('foo');
 
       // Assess
-      expect(logSpy).toHaveBeenCalledTimes(1);
+      expect(console[consoleMethod]).toHaveBeenCalledTimes(1);
     }
   );
 
@@ -164,7 +192,7 @@ describe('Log levels', () => {
     process.env.LOG_LEVEL = undefined;
     process.env.POWERTOOLS_LOG_LEVEL = undefined;
     const logger = new Logger();
-    const warningSpy = jest.spyOn(logger, 'warn');
+    const warningSpy = vi.spyOn(logger, 'warn');
 
     // Act
     logger.setLogLevel(LogLevel.WARN);
@@ -183,7 +211,7 @@ describe('Log levels', () => {
     process.env.AWS_LAMBDA_LOG_LEVEL = LogLevel.INFO;
     process.env.LOG_LEVEL = undefined;
     process.env.POWERTOOLS_LOG_LEVEL = undefined;
-    const warningSpy = jest.spyOn(console, 'warn');
+    const warningSpy = vi.spyOn(console, 'warn');
 
     // Act
     const logger = new Logger({ logLevel: LogLevel.DEBUG });

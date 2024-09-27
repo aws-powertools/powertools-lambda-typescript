@@ -1,16 +1,10 @@
-/**
- * Test Logger EnvironmentVariablesService class
- *
- * @group unit/logger/config
- */
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
 describe('Class: EnvironmentVariablesService', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 

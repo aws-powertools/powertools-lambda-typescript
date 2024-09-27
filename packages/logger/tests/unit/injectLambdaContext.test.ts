@@ -1,12 +1,7 @@
-/**
- * Logger injectLambdaContext tests
- *
- * @group unit/logger/logger/injectLambdaContext
- */
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
 
@@ -23,8 +18,6 @@ const getContextLogEntries = (overrides?: Record<string, unknown>) => ({
   ...overrides,
 });
 
-const logSpy = jest.spyOn(console, 'info');
-
 describe('Inject Lambda Context', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
@@ -33,7 +26,7 @@ describe('Inject Lambda Context', () => {
       ...ENVIRONMENT_VARIABLES,
       POWERTOOLS_DEV: 'true',
     };
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   it('adds the context to log messages when the feature is enabled', () => {
@@ -45,8 +38,9 @@ describe('Inject Lambda Context', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         ...getContextLogEntries(),
@@ -68,8 +62,9 @@ describe('Inject Lambda Context', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(logSpy.mock.calls[1][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      2,
       expect.objectContaining({
         message: 'Hello, world!',
         ...getContextLogEntries({
@@ -91,8 +86,9 @@ describe('Inject Lambda Context', () => {
     await handler(event, context);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         ...getContextLogEntries(),
@@ -113,15 +109,17 @@ describe('Inject Lambda Context', () => {
     await handler(event, context);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         service: 'parent',
         ...getContextLogEntries(),
       })
     );
-    expect(JSON.parse(logSpy.mock.calls[1][0])).toStrictEqual(
+    expect(console.info).toHaveLoggedNth(
+      2,
       expect.objectContaining({
         message: 'Hello, world!',
         service: 'child',
@@ -156,8 +154,9 @@ describe('Inject Lambda Context', () => {
     await handler(event, context);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         ...getContextLogEntries(),
@@ -175,8 +174,9 @@ describe('Inject Lambda Context', () => {
     childLogger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         service: 'child',

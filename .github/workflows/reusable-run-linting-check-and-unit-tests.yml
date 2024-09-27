@@ -43,9 +43,10 @@ jobs:
         workspace: [
           "packages/batch",
           "packages/commons",
-          "packages/jmespath",
+          "packages/event-handler",
           "packages/idempotency",
-          "packages/event-handler"
+          "packages/jmespath",
+          "packages/logger",
         ]
       fail-fast: false
     steps:
@@ -88,15 +89,13 @@ jobs:
           nodeVersion: ${{ matrix.version }}
       - name: Run linting
         run: |
-          npm run lint -w packages/logger \
-            -w packages/tracer \
+          npm run lint -w -w packages/tracer \
             -w packages/metrics \
             -w packages/parameters \
             -w packages/parser
       - name: Run unit tests
         run: |
-          npm t -w packages/logger \
-            -w packages/tracer \
+          npm t -w packages/tracer \
             -w packages/metrics \
             -w packages/parameters \
             -w packages/parser

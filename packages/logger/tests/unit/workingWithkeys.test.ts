@@ -1,17 +1,10 @@
-/**
- * Logger working with keys tests
- *
- * @group unit/logger/logger/keys
- */
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
 import type { ConstructorOptions } from '../../src/types/Logger.js';
-
-const logSpy = jest.spyOn(console, 'info');
 
 describe('Working with keys', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -21,7 +14,7 @@ describe('Working with keys', () => {
       ...ENVIRONMENT_VARIABLES,
       POWERTOOLS_DEV: 'true',
     };
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   it.each([
@@ -127,10 +120,8 @@ describe('Working with keys', () => {
     logger.info(...inputs);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
-      expect.objectContaining(expected)
-    );
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(1, expect.objectContaining(expected));
   });
 
   it('adds the temporary keys to log messages', () => {
@@ -145,14 +136,16 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'bar',
       })
     );
-    expect(JSON.parse(logSpy.mock.calls[1][0])).toStrictEqual(
+    expect(console.info).toHaveLoggedNth(
+      2,
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'bar',
@@ -175,14 +168,16 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'bar',
       })
     );
-    expect(JSON.parse(logSpy.mock.calls[1][0])).toStrictEqual(
+    expect(console.info).toHaveLoggedNth(
+      2,
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'baz',
@@ -203,14 +198,16 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'bar',
       })
     );
-    expect(JSON.parse(logSpy.mock.calls[1][0])).toStrictEqual(
+    expect(console.info).toHaveLoggedNth(
+      2,
       expect.not.objectContaining({
         foo: 'bar',
       })
@@ -229,8 +226,9 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'bar',
@@ -250,8 +248,9 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'bar',
@@ -274,8 +273,9 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'baz',
@@ -297,8 +297,9 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'baz',
@@ -322,8 +323,9 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'bar',
@@ -351,8 +353,9 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.not.objectContaining({
         foo: 'bar',
       })
@@ -375,8 +378,9 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         foo: 'bar',
       })
@@ -396,8 +400,9 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.not.objectContaining({
         foo: 'bar',
       })
@@ -419,8 +424,9 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         foo: 'bar',
       })
@@ -448,13 +454,15 @@ describe('Working with keys', () => {
     await handler(false, context);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         foo: 'baz',
       })
     );
-    expect(JSON.parse(logSpy.mock.calls[1][0])).toStrictEqual(
+    expect(console.info).toHaveLoggedNth(
+      2,
       expect.objectContaining({
         foo: 'bar',
       })
@@ -486,13 +494,15 @@ describe('Working with keys', () => {
     await handler(false, context);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         foo: 'baz',
       })
     );
-    expect(JSON.parse(logSpy.mock.calls[1][0])).toStrictEqual(
+    expect(console.info).toHaveLoggedNth(
+      2,
       expect.objectContaining({
         foo: 'bar',
       })
@@ -524,10 +534,11 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
-        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+        xray_trace_id: '1-abcdef12-3456abcdef123456abcdef12',
       })
     );
   });
@@ -560,8 +571,9 @@ describe('Working with keys', () => {
     logger.info('Hello, world!');
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.not.objectContaining({
         foo: 'bar',
       })
@@ -597,14 +609,15 @@ describe('Working with keys', () => {
         bar: 'baz',
       },
     } as unknown as ConstructorOptions);
-    const warnSpy = jest.spyOn(console, 'warn');
 
     // Assess
-    expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases'
-      )
+    expect(console.warn).toHaveBeenCalledTimes(1);
+    expect(console.warn).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message:
+          'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases',
+      })
     );
   });
 });

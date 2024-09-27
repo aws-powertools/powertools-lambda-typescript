@@ -1,20 +1,13 @@
-/**
- * Logger log event tests
- *
- * @group unit/logger/logger/logEvent
- */
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
 
 const event = {
   foo: 'bar',
 };
-
-const logSpy = jest.spyOn(console, 'info');
 
 describe('Log event', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -25,7 +18,7 @@ describe('Log event', () => {
       POWERTOOLS_LOGGER_LOG_EVENT: 'true',
       POWERTOOLS_DEV: 'true',
     };
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   it('logs the event with the correct log level and message', () => {
@@ -36,10 +29,8 @@ describe('Log event', () => {
     logger.logEventIfEnabled(event);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
-      expect.objectContaining({ event })
-    );
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(1, expect.objectContaining({ event }));
   });
 
   it("doesn't log the event when the feature is disabled", () => {
@@ -51,7 +42,7 @@ describe('Log event', () => {
     logger.logEventIfEnabled(event);
 
     // Assess
-    expect(logSpy).not.toHaveBeenCalled();
+    expect(console.info).not.toHaveBeenCalled();
   });
 
   it('respects the overwrite flag when provided', () => {
@@ -62,7 +53,7 @@ describe('Log event', () => {
     logger.logEventIfEnabled(event, false);
 
     // Assess
-    expect(logSpy).not.toHaveBeenCalled();
+    expect(console.info).not.toHaveBeenCalled();
   });
 
   it('logs the event when logEvent is set in the Middy.js middleware', async () => {
@@ -76,8 +67,9 @@ describe('Log event', () => {
     await handler(event, context);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         event,
         function_arn:
@@ -104,8 +96,9 @@ describe('Log event', () => {
     await handler(event, context);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(logSpy.mock.calls[0][0])).toStrictEqual(
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
       expect.objectContaining({
         event,
         function_arn:
@@ -129,7 +122,7 @@ describe('Log event', () => {
     await handler(event, context);
 
     // Assess
-    expect(logSpy).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveBeenCalledTimes(1);
   });
 
   it('passes down the log event configuration to child loggers', () => {
@@ -142,6 +135,6 @@ describe('Log event', () => {
     childLogger.logEventIfEnabled(event);
 
     // Assess
-    expect(logSpy).not.toHaveBeenCalled();
+    expect(console.info).not.toHaveBeenCalled();
   });
 });

@@ -14,6 +14,7 @@ import type { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
  * @property context The context object provided by the AWS Lambda runtime
  * @property skipGroupOnError The option to group on error during processing
  * @property throwOnFullBatchFailure The option to throw an error if the entire batch fails
+ * @property processInParallel Indicates whether the records should be processed in parallel
  */
 type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
   /**
@@ -30,6 +31,12 @@ type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
    *  Set this to false to prevent throwing an error if the entire batch fails.
    */
   throwOnFullBatchFailure?: boolean;
+  /**
+   * Indicates whether the records should be processed in parallel.
+   * When set to `true`, the records will be processed in parallel using `Promise.all`.
+   * When set to `false`, the records will be processed sequentially.
+   */
+  processInParallel?: T extends SqsFifoPartialProcessor ? never : boolean;
 };
 
 /**

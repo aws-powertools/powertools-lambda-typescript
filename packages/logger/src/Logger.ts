@@ -119,7 +119,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Log level used internally by the current instance of Logger.
    */
-  private logLevel = 12;
+  private logLevel: number = LogLevelThreshold.INFO;
   /**
    * Persistent log attributes that will be logged in all log items.
    */

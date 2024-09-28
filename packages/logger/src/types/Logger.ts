@@ -206,7 +206,6 @@ type LoggerInterface = {
 
 export type {
   Environment,
-  LogLevelThresholds,
   LogAttributes,
   LogLevel,
   LogFunction,

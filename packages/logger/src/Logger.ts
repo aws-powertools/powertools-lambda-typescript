@@ -9,7 +9,7 @@ import type {
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
-import { LogJsonIndent } from './constants.js';
+import { LogJsonIndent, LogLevelThreshold } from './constants.js';
 import type { LogFormatter } from './formatter/LogFormatter.js';
 import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
@@ -23,7 +23,6 @@ import type {
   LogItemExtraInput,
   LogItemMessage,
   LogLevel,
-  LogLevelThresholds,
   LoggerInterface,
 } from './types/Logger.js';
 import type { PowertoolsLogData } from './types/logKeys.js';
@@ -122,20 +121,6 @@ class Logger extends Utility implements LoggerInterface {
    */
   private logLevel = 12;
   /**
-   * Log level thresholds used internally by the current instance of Logger.
-   *
-   * The levels are in ascending order from the most verbose to the least verbose (no logs).
-   */
-  private readonly logLevelThresholds: LogLevelThresholds = {
-    TRACE: 6,
-    DEBUG: 8,
-    INFO: 12,
-    WARN: 16,
-    ERROR: 20,
-    CRITICAL: 24,
-    SILENT: 28,
-  };
-  /**
    * Persistent log attributes that will be logged in all log items.
    */
   private persistentLogAttributes: LogAttributes = {};
@@ -170,7 +155,7 @@ class Logger extends Utility implements LoggerInterface {
    *
    * We keep this value to be able to reset the log level to the initial value when the sample rate is refreshed.
    */
-  #initialLogLevel = this.logLevelThresholds.INFO;
+  #initialLogLevel: number = LogLevelThreshold.INFO;
   /**
    * Replacer function used to serialize the log items.
    */
@@ -298,7 +283,7 @@ class Logger extends Utility implements LoggerInterface {
     input: LogItemMessage,
     ...extraInput: LogItemExtraInput
   ): void {
-    this.processLogItem(this.logLevelThresholds.CRITICAL, input, extraInput);
+    this.processLogItem(LogLevelThreshold.CRITICAL, input, extraInput);
   }
 
   /**
@@ -308,7 +293,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(this.logLevelThresholds.DEBUG, input, extraInput);
+    this.processLogItem(LogLevelThreshold.DEBUG, input, extraInput);
   }
 
   /**
@@ -318,7 +303,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(this.logLevelThresholds.ERROR, input, extraInput);
+    this.processLogItem(LogLevelThreshold.ERROR, input, extraInput);
   }
 
   /**
@@ -354,7 +339,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public info(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(this.logLevelThresholds.INFO, input, extraInput);
+    this.processLogItem(LogLevelThreshold.INFO, input, extraInput);
   }
 
   /**
@@ -561,7 +546,7 @@ class Logger extends Utility implements LoggerInterface {
   public setLogLevel(logLevel: LogLevel): void {
     if (this.awsLogLevelShortCircuit(logLevel)) return;
     if (this.isValidLogLevel(logLevel)) {
-      this.logLevel = this.logLevelThresholds[logLevel];
+      this.logLevel = LogLevelThreshold[logLevel];
     } else {
       throw new Error(`Invalid log level: ${logLevel}`);
     }
@@ -599,7 +584,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public trace(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(this.logLevelThresholds.TRACE, input, extraInput);
+    this.processLogItem(LogLevelThreshold.TRACE, input, extraInput);
   }
 
   /**
@@ -609,7 +594,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public warn(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    this.processLogItem(this.logLevelThresholds.WARN, input, extraInput);
+    this.processLogItem(LogLevelThreshold.WARN, input, extraInput);
   }
 
   /**
@@ -684,11 +669,11 @@ class Logger extends Utility implements LoggerInterface {
   private awsLogLevelShortCircuit(selectedLogLevel?: string): boolean {
     const awsLogLevel = this.getEnvVarsService().getAwsLogLevel();
     if (this.isValidLogLevel(awsLogLevel)) {
-      this.logLevel = this.logLevelThresholds[awsLogLevel];
+      this.logLevel = LogLevelThreshold[awsLogLevel];
 
       if (
         this.isValidLogLevel(selectedLogLevel) &&
-        this.logLevel > this.logLevelThresholds[selectedLogLevel]
+        this.logLevel > LogLevelThreshold[selectedLogLevel]
       ) {
         this.warn(
           `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${awsLogLevel}). This can lead to data loss, consider adjusting them.`
@@ -800,7 +785,7 @@ class Logger extends Utility implements LoggerInterface {
    */
   private getLogLevelNameFromNumber(logLevel: number): Uppercase<LogLevel> {
     let found: Uppercase<LogLevel> | undefined;
-    for (const [key, value] of Object.entries(this.logLevelThresholds)) {
+    for (const [key, value] of Object.entries(LogLevelThreshold)) {
       if (value === logLevel) {
         found = key as Uppercase<LogLevel>;
         break;
@@ -826,7 +811,7 @@ class Logger extends Utility implements LoggerInterface {
   private isValidLogLevel(
     logLevel?: LogLevel | string
   ): logLevel is Uppercase<LogLevel> {
-    return typeof logLevel === 'string' && logLevel in this.logLevelThresholds;
+    return typeof logLevel === 'string' && logLevel in LogLevelThreshold;
   }
 
   /**
@@ -854,7 +839,7 @@ class Logger extends Utility implements LoggerInterface {
     log.prepareForPrint();
 
     const consoleMethod =
-      logLevel === this.logLevelThresholds.CRITICAL
+      logLevel === LogLevelThreshold.CRITICAL
         ? 'error'
         : (this.getLogLevelNameFromNumber(logLevel).toLowerCase() as keyof Omit<
             LogFunction,
@@ -947,7 +932,7 @@ class Logger extends Utility implements LoggerInterface {
     if (this.awsLogLevelShortCircuit(constructorLogLevel)) return;
 
     if (this.isValidLogLevel(constructorLogLevel)) {
-      this.logLevel = this.logLevelThresholds[constructorLogLevel];
+      this.logLevel = LogLevelThreshold[constructorLogLevel];
       this.#initialLogLevel = this.logLevel;
 
       return;
@@ -956,14 +941,14 @@ class Logger extends Utility implements LoggerInterface {
       ?.getLogLevel()
       ?.toUpperCase();
     if (this.isValidLogLevel(customConfigValue)) {
-      this.logLevel = this.logLevelThresholds[customConfigValue];
+      this.logLevel = LogLevelThreshold[customConfigValue];
       this.#initialLogLevel = this.logLevel;
 
       return;
     }
     const envVarsValue = this.getEnvVarsService()?.getLogLevel()?.toUpperCase();
     if (this.isValidLogLevel(envVarsValue)) {
-      this.logLevel = this.logLevelThresholds[envVarsValue];
+      this.logLevel = LogLevelThreshold[envVarsValue];
       this.#initialLogLevel = this.logLevel;
 
       return;
@@ -990,7 +975,7 @@ class Logger extends Utility implements LoggerInterface {
         this.powertoolsLogData.sampleRateValue = value;
 
         if (
-          this.logLevel > this.logLevelThresholds.DEBUG &&
+          this.logLevel > LogLevelThreshold.DEBUG &&
           value &&
           randomInt(0, 100) / 100 <= value
         ) {

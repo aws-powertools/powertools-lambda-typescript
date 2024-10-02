@@ -28,7 +28,9 @@ To get started, install the library by running:
 npm i @aws-lambda-powertools/metrics
 ```
 
-After initializing the Metrics class, you can add metrics using the [Metrics.addMetric](`addMetric()`) method. The metrics are stored in a buffer and are flushed when calling [Metrics.publishStoredMetrics](`publishStoredMetrics()`). Each metric can have dimensions and metadata added to it.
+After initializing the Metrics class, you can add metrics using the [https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics/#creating-metrics](`addMetric()`) method. The metrics are stored in a buffer and are flushed when calling [https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics/#flushing-metrics](`publishStoredMetrics()`).
+
+Each metric can also have dimensions and metadata added to it.
 
 ```ts
 import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
@@ -48,13 +50,30 @@ export const handler = async (event: { requestId: string }) => {
 
 ### Flushing metrics
 
-As you finish adding all your metrics, you need to serialize and "flush them" by calling [publishStoredMetrics()](`publishStoredMetrics()`), which will emit the metrics to stdout in the Embedded Metric Format (EMF). The metrics are then picked up by the Lambda runtime and sent to CloudWatch.
+As you finish adding all your metrics, you need to serialize and "flush them" by calling `publishStoredMetrics()`, which will emit the metrics to stdout in the Embedded Metric Format (EMF). The metrics are then picked up by the Lambda runtime and sent to CloudWatch.
 
-When you
+The `publishStoredMetrics()` method is synchronous and will block the event loop until the metrics are flushed. If you want Metrics to flush automatically at the end of your Lambda function, you can use the `@logMetrics()` decorator or the `logMetrics()` middleware.
 
 ### Capturing cold start as a metric
 
-You can flush metrics automatically using one of the following methods:
+With Metrics, you can capture cold start as a metric by calling the `captureColdStartMetric()` method. This method will add a metric with the name `ColdStart` and the value `1` to the metrics buffer.
+
+This metric is flushed automatically as soon as the method is called, to ensure that the cold start is captured regardless of whether the metrics are flushed manually or automatically.
+
+```ts
+import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+
+const metrics = new Metrics({
+  namespace: 'serverlessAirline',
+  serviceName: 'orders',
+});
+
+export const handler = async (event: { requestId: string }) => {
+  metrics.captureColdStartMetric();
+};
+```
+
+Note that we don't emit a `ColdStart` metric with value `0` when the function is warm, as this would result in a high volume of metrics being emitted to CloudWatch, so you'll need to rely on the absence of the `ColdStart` metric to determine if the function is warm.
 
 ### Class method decorator
 

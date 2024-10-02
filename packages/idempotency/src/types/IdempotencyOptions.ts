@@ -170,6 +170,10 @@ type IdempotencyConfigOptions = {
    */
   payloadValidationJmesPath?: string;
   /**
+   * Custom JMESPath functions to use when parsing the JMESPath expressions
+   */
+  jmesPathOptions?: Functions;
+  /**
    * Throw an error if no idempotency key was found in the request, defaults to `false`
    */
   throwOnNoIdempotencyKey?: boolean;
@@ -197,10 +201,6 @@ type IdempotencyConfigOptions = {
    * A hook that runs when an idempotent request is made
    */
   responseHook?: ResponseHook;
-  /**
-   * Custom JMESPath functions to use when extracting data from the event
-   */
-  jmesPathOptions?: Functions;
 };
 
 export type {

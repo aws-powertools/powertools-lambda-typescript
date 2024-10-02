@@ -1,15 +1,14 @@
-# Powertools for AWS Lambda (TypeScript) <!-- omit in toc -->
+# Powertools for AWS Lambda (TypeScript)
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
 
 You can use the library in both TypeScript and JavaScript code bases.
 
-- [Intro](#intro)
 - [Usage](#usage)
-    - [Basic usage](#basic-usage)
     - [Flushing metrics](#flushing-metrics)
     - [Capturing cold start as a metric](#capturing-cold-start-as-a-metric)
-    - [Adding metadata](#adding-metadata)
+    - [Class method decorator](#class-method-decorator)
+    - [Middy.js middleware](#middyjs-middleware)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)
@@ -19,9 +18,9 @@ You can use the library in both TypeScript and JavaScript code bases.
     - [Using Lambda Layer](#using-lambda-layer)
 - [License](#license)
 
-## Intro
-
 ## Usage
+
+The library provides a utility function to emit metrics to CloudWatch using [Embedded Metric Format (EMF)](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html).
 
 To get started, install the library by running:
 
@@ -29,78 +28,42 @@ To get started, install the library by running:
 npm i @aws-lambda-powertools/metrics
 ```
 
-### Basic usage
-
-The library provides a utility function to emit metrics to CloudWatch using [Embedded Metric Format (EMF)](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html).
+After initializing the Metrics class, you can add metrics using the [Metrics.addMetric](`addMetric()`) method. The metrics are stored in a buffer and are flushed when calling [Metrics.publishStoredMetrics](`publishStoredMetrics()`). Each metric can have dimensions and metadata added to it.
 
 ```ts
-import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
+import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 
 const metrics = new Metrics({
   namespace: 'serverlessAirline',
   serviceName: 'orders',
+  defaultDimensions: { environment: process.env.ENVIRONMENT },
 });
 
-export const handler = async (
-  _event: unknown,
-  _context: unknown
-): Promise<void> => {
-  metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
-};
-```
-
-### Flushing metrics
-
-As you finish adding all your metrics, you need to serialize and "flush them" by calling publishStoredMetrics(). This will print the metrics to standard output.
-
-You can flush metrics automatically using one of the following methods:
-
-- manually by calling `publishStoredMetrics()` at the end of your Lambda function
-
-```ts
-import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
-
-const metrics = new Metrics({
-  namespace: 'serverlessAirline',
-  serviceName: 'orders',
-});
-
-export const handler = async (
-  _event: unknown,
-  _context: unknown
-): Promise<void> => {
+export const handler = async (event: { requestId: string }) => {
+  metrics.addMetadata('request_id', event.requestId);
   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
   metrics.publishStoredMetrics();
 };
 ```
 
-- middy compatible middleware `logMetrics()`
+### Flushing metrics
+
+As you finish adding all your metrics, you need to serialize and "flush them" by calling [publishStoredMetrics()](`publishStoredMetrics()`), which will emit the metrics to stdout in the Embedded Metric Format (EMF). The metrics are then picked up by the Lambda runtime and sent to CloudWatch.
+
+When you
+
+### Capturing cold start as a metric
+
+You can flush metrics automatically using one of the following methods:
+
+### Class method decorator
+
+If you are using TypeScript and are comfortable with writing classes, you can use the `@logMetrics()` decorator to automatically flush metrics at the end of your Lambda function as well as configure additional options such as throwing an error if no metrics are added, capturing cold start as a metric, and more.
 
 ```ts
-import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
-import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
-import middy from '@middy/core';
-
-const metrics = new Metrics({
-  namespace: 'serverlessAirline',
-  serviceName: 'orders',
-});
-
-const lambdaHandler = async (
-  _event: unknown,
-  _context: unknown
-): Promise<void> => {
-  metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
-};
-
-export const handler = middy(lambdaHandler).use(logMetrics(metrics));
-```
-
-- using decorator `@logMetrics()`
-
-```ts
+import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
+import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 
 const metrics = new Metrics({
   namespace: 'serverlessAirline',
@@ -108,45 +71,27 @@ const metrics = new Metrics({
 });
 
 class Lambda implements LambdaInterface {
-  @metrics.logMetrics()
-  public async handler(_event: unknown, _context: unknown): Promise<void> {
+  ⁣@metrics.logMetrics({ captureColdStartMetric: true, throwOnEmptyMetrics: true })
+  public async handler(event: { requestId: string }, _: Context) {
+    metrics.addMetadata('request_id', event.requestId);
     metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
   }
 }
 
 const handlerClass = new Lambda();
-export const handler = handlerClass.handler.bind(handlerClass); 
+export const handler = handlerClass.handler.bind(handlerClass);
 ```
 
-Using the Middy middleware or decorator will automatically validate, serialize, and flush all your metrics.
+Decorators are a Stage 3 proposal for JavaScript and are not yet part of the ECMAScript standard. The current implmementation in this library is based on the legacy TypeScript decorator syntax enabled by the [`experimentalDecorators` flag](https://www.typescriptlang.org/tsconfig/#experimentalDecorators) set to `true` in the `tsconfig.json` file.
 
-### Capturing cold start as a metric
+### Middy.js middleware
 
-You can optionally capture cold start metrics with the logMetrics middleware or decorator via the captureColdStartMetric param.
+If instead you are using [Middy.js](http://middy.js.org) and prefer to use middleware, you can use the `@logMetrics()` middleware to do the same as the class method decorator.
 
-```ts
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
-
-const metrics = new Metrics({
-  namespace: 'serverlessAirline',
-  serviceName: 'orders',
-});
-
-export class MyFunction implements LambdaInterface {
-  @metrics.logMetrics({ captureColdStartMetric: true })
-  public async handler(_event: unknown, _context: unknown): Promise<void> {
-    metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
-  }
-}
-```
-
-### Adding metadata
-
-You can add high-cardinality data as part of your Metrics log with the `addMetadata` method. This is useful when you want to search highly contextual information along with your metrics in your logs.
+The `@logMetrics()` middleware can be used with Middy.js to automatically flush metrics at the end of your Lambda function as well as configure additional options such as throwing an error if no metrics are added, capturing cold start as a metric, and set default dimensions.
 
 ```ts
-import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
+import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
 import middy from '@middy/core';
 
@@ -155,16 +100,16 @@ const metrics = new Metrics({
   serviceName: 'orders',
 });
 
-const lambdaHandler = async (
-  _event: unknown,
-  _context: unknown
-): Promise<void> => {
+export const handler = middy(async (event) => {
+  metrics.addMetadata('request_id', event.requestId);
   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
-  metrics.addMetadata('bookingId', '7051cd10-6283-11ec-90d6-0242ac120003');
-};
-
-export const handler = middy(lambdaHandler).use(logMetrics(metrics));
+}).use(logMetrics(metrics, {
+  captureColdStartMetric: true,
+  throwOnEmptyMetrics: true,
+}));
 ```
+
+The `logMetrics()` middleware is compatible with `@middy/core@3.x` and above.
 
 ## Contribute
 

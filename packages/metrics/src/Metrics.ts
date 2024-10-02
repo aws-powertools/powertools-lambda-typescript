@@ -26,64 +26,62 @@ import type {
 } from './types/index.js';
 
 /**
- * ## Intro
- * Metrics creates custom metrics asynchronously by logging metrics to standard output following Amazon CloudWatch Embedded Metric Format (EMF).
+ * The Metrics utility creates custom metrics asynchronously by logging metrics to standard output following {@link https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html | Amazon CloudWatch Embedded Metric Format (EMF)}.
  *
  * These metrics can be visualized through Amazon CloudWatch Console.
  *
- * ## Key features
- *   * Aggregate up to 100 metrics using a single CloudWatch EMF object (large JSON blob)
- *   * Validate against common metric definitions mistakes (metric unit, values, max dimensions, max metrics, etc)
- *   * Metrics are created asynchronously by CloudWatch service, no custom stacks needed
- *   * Context manager to create a one off metric with a different dimension
+ * **Key features**
+ * * Aggregating up to 100 metrics using a single CloudWatch EMF object (large JSON blob).
+ * * Validating your metrics against common metric definitions mistakes (for example, metric unit, values, max dimensions, max metrics).
+ * * Metrics are created asynchronously by the CloudWatch service. You do not need any custom stacks, and there is no impact to Lambda function latency.
+ * * Creating a one-off metric with different dimensions.
  *
- * ## Usage
- *
- * ### Functions usage with middleware
- *
- * Using this middleware on your handler function will automatically flush metrics after the function returns or throws an error.
- * Additionally, you can configure the middleware to easily:
- * * ensure that at least one metric is emitted before you flush them
- * * capture a `ColdStart` a metric
- * * set default dimensions for all your metrics
+ * After initializing the Metrics class, you can add metrics using the {@link Metrics.addMetric | `addMetric()`} method.
+ * The metrics are stored in a buffer and are flushed when calling {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`}.
+ * Each metric can have dimensions and metadata added to it.
  *
  * @example
- * ```typescript
- * import { Metrics } from '@aws-lambda-powertools/metrics';
- * import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
- * import middy from '@middy/core';
- *
- * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
- *
- * const lambdaHandler = async (_event: unknown, _context: unknown) => {
- *   ...
- * };
- *
- * export const handler = middy(lambdaHandler).use(logMetrics(metrics));
- * ```
- *
- * ### Object oriented way with decorator
- *
- * If you are used to TypeScript Class usage to encapsulate your Lambda handler you can leverage the {@link Metrics.logMetrics} decorator to automatically:
- *   * capture a `ColdStart` metric
- *   * flush buffered metrics
- *   * throw on empty metrics
- *
- * @example
- *
  * ```typescript
  * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
- * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
  *
- * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+ * const metrics = new Metrics({
+ *   namespace: 'serverlessAirline',
+ *   serviceName: 'orders',
+ *   defaultDimensions: { environment: 'dev' },
+ * });
+ *
+ * export const handler = async (event: { requestId: string }) => {
+ *   metrics.addMetadata('request_id', event.requestId);
+ *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+ *   metrics.publishStoredMetrics();
+ * };
+ * ```
+ *
+ * If you don't want to manually flush the metrics, you can use the {@link Metrics.logMetrics | `logMetrics()`} decorator or
+ * the Middy.js middleware to automatically flush the metrics after the handler function returns or throws an error.
+ *
+ * In addition to this, the decorator and middleware can also be configured to capture a `ColdStart` metric and
+ * set default dimensions for all metrics.
+ *
+ * **Class method decorator**
+ *
+ * @example
+ *
+ * ```typescript
+ * import type { Context } from 'aws-lambda';
+ * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+ * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+ *
+ * const metrics = new Metrics({
+ *   namespace: 'serverlessAirline',
+ *   serviceName: 'orders'
+ * });
  *
  * class Lambda implements LambdaInterface {
- *   // Decorate your handler with the logMetrics decorator
  *   ⁣@metrics.logMetrics({ captureColdStartMetric: true, throwOnEmptyMetrics: true })
- *   public handler(_event: unknown, _context: unknown): Promise<void> {
- *     // ...
- *     metrics.addMetric('test-metric', MetricUnit.Count, 10);
- *     // ...
+ *   public async handler(_event: { requestId: string }, _: Context) {
+ *     metrics.addMetadata('request_id', event.requestId);
+ *     metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
  *   }
  * }
  *
@@ -91,23 +89,35 @@ import type {
  * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  *
- * ### Standard function
+ * Note that decorators are a Stage 3 proposal for JavaScript and are not yet part of the ECMAScript standard.
+ * The current implmementation in this library is based on the legacy TypeScript decorator syntax enabled by the [`experimentalDecorators` flag](https://www.typescriptlang.org/tsconfig/#experimentalDecorators)
+ * set to `true` in the `tsconfig.json` file.
  *
- * If you are used to classic JavaScript functions, you can leverage the different methods provided to create and publish metrics.
+ * **Middy.js middleware**
  *
  * @example
  *
  * ```typescript
  * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+ * import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
+ * import middy from '@middy/core';
  *
- * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+ * const metrics = new Metrics({
+ *   namespace: 'serverlessAirline',
+ *   serviceName: 'orders'
+ * });
  *
- * export const handler = async (_event: unknown, __context: unknown): Promise<void> => {
- *   metrics.captureColdStartMetric();
- *   metrics.addMetric('test-metric', MetricUnit.Count, 10);
- *   metrics.publishStoredMetrics();
- * };
+ * export const handler = middy(async () => {
+ *   metrics.addMetadata('request_id', event.requestId);
+ *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+ * }).use(logMetrics(metrics, {
+ *   captureColdStartMetric: true,
+ *   throwOnEmptyMetrics: true,
+ * }));
  * ```
+ *
+ * The `logMetrics()` middleware is compatible with `@middy/core@3.x` and above.
+ *
  */
 class Metrics extends Utility implements MetricsInterface {
   /**
@@ -186,13 +196,16 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Add a dimension to the metrics.
+   * Add a dimension to metrics.
    *
-   * A dimension is a key-value pair that is used to group metrics.
+   * A dimension is a key-value pair that is used to group metrics, and it is included in all metrics emitted after it is added.
    *
-   * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Dimension for more details.
-   * @param name The name of the dimension
-   * @param value The value of the dimension
+   * When calling the {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`} method, the dimensions are cleared. This type of
+   * dimension is useful when you want to add request-specific dimensions to your metrics. If you want to add dimensions that are
+   * included in all metrics, use the {@link Metrics.setDefaultDimensions | `setDefaultDimensions()`} method.
+   *
+   * @param name - The name of the dimension
+   * @param value - The value of the dimension
    */
   public addDimension(name: string, value: string): void {
     if (MAX_DIMENSION_COUNT <= this.getCurrentDimensionsCount()) {
@@ -206,11 +219,15 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * Add multiple dimensions to the metrics.
    *
-   * A dimension is a key-value pair that is used to group metrics.
+   * This method is useful when you want to add multiple dimensions to the metrics at once.
    *
-   * @param dimensions A key-value pair of dimensions
+   * When calling the {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`} method, the dimensions are cleared. This type of
+   * dimension is useful when you want to add request-specific dimensions to your metrics. If you want to add dimensions that are
+   * included in all metrics, use the {@link Metrics.setDefaultDimensions | `setDefaultDimensions()`} method.
+   *
+   * @param dimensions - An object with key-value pairs of dimensions
    */
-  public addDimensions(dimensions: { [key: string]: string }): void {
+  public addDimensions(dimensions: Dimensions): void {
     const newDimensions = { ...this.dimensions };
     for (const dimensionName of Object.keys(dimensions)) {
       newDimensions[dimensionName] = dimensions[dimensionName];
@@ -226,12 +243,31 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * A high-cardinality data part of your Metrics log.
+   * A metadata key-value pair to be included with metrics.
    *
+   * You can use this method to add high-cardinality data as part of your metrics.
    * This is useful when you want to search highly contextual information along with your metrics in your logs.
    *
-   * @param key The key of the metadata
-   * @param value The value of the metadata
+   * Note that the metadata is not included in the Amazon CloudWatch UI, but it can be used to search and filter logs.
+   *
+   * @example
+   * ```typescript
+   * import { Metrics } from '@aws-lambda-powertools/metrics';
+   *
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders'
+   * });
+   *
+   * export const handler = async (event) => {
+   *   metrics.addMetadata('request_id', event.requestId);
+   *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+   *   metrics.publishStoredMetrics();
+   * };
+   * ```
+   *
+   * @param key - The key of the metadata
+   * @param value - The value of the metadata
    */
   public addMetadata(key: string, value: string): void {
     this.metadata[key] = value;
@@ -240,38 +276,37 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * Add a metric to the metrics buffer.
    *
-   * By default, metrics are buffered and flushed at the end of the Lambda invocation
-   * or when calling {@link Metrics.publishStoredMetrics}.
+   * By default, metrics are buffered and flushed when calling {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`} method,
+   * or at the end of the handler function when using the {@link Metrics.logMetrics | `logMetrics()`} decorator or the Middy.js middleware.
+   *
+   * Metrics are emitted to standard output in the Amazon CloudWatch EMF (Embedded Metric Format) schema. In AWS Lambda, the logs are
+   * automatically picked up by CloudWatch logs and processed asynchronously.
    *
    * You can add a metric by specifying the metric name, unit, and value. For convenience,
-   * we provide a set of constants for the most common units in {@link MetricUnit}.
+   * we provide a set of constants for the most common units in the {@link MetricUnits | MetricUnit} dictionary object.
+   *
+   * Optionally, you can specify a {@link https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition | resolution}, which can be either `High` or `Standard`, using the {@link MetricResolutions | MetricResolution} dictionary object.
+   * By default, metrics are published with a resolution of `Standard`.
    *
    * @example
    * ```typescript
    * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
    *
-   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders'
+   * });
    *
-   * metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+   * export const handler = async () => {
+   *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+   *   metrics.publishStoredMetrics();
+   * };
    * ```
    *
-   * Optionally, you can specify the metric resolution, which can be either `High` or `Standard`.
-   * By default, metrics are published with a resolution of `Standard`, click [here](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition)
-   * to learn more about metric resolutions.
-   *
-   * @example
-   * ```typescript
-   * import { Metrics, MetricUnit, MetricResolution } from '@aws-lambda-powertools/metrics';
-   *
-   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
-   *
-   * metrics.addMetric('successfulBooking', MetricUnit.Count, 1, MetricResolution.High);
-   * ```
-   *
-   * @param name The metric name
-   * @param unit The metric unit
-   * @param value The metric value
-   * @param resolution - The metric resolution
+   * @param name - The metric name
+   * @param unit - The metric unit, see {@link MetricUnits | MetricUnit}
+   * @param value - The metric value
+   * @param resolution - The metric resolution, see {@link MetricResolutions | MetricResolution}
    */
   public addMetric(
     name: string,
@@ -284,23 +319,27 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Create a singleMetric to capture cold start.
+   * Immediately emit a `ColdStart` metric if this is a cold start invocation.
    *
-   * If it's a cold start invocation, this feature will:
-   *   * Create a separate EMF blob that contains a single metric named ColdStart
-   *   * Add function_name and service dimensions
+   * A cold start is when AWS Lambda initializes a new instance of your function. To take advantage of this feature,
+   * you must instantiate the Metrics class outside of the handler function.
    *
-   * This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions,
-   * as well as avoiding potential data loss from metrics not being published for other reasons.
+   * By using this method, the metric will be emitted immediately without you having to call {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`}.
+   *
+   * If you are using the {@link Metrics.logMetrics | `logMetrics()`} decorator, or the Middy.js middleware, you can enable this
+   * feature by setting the `captureColdStartMetric` option to `true`.
    *
    * @example
    * ```typescript
    * import { Metrics } from '@aws-lambda-powertools/metrics';
    *
-   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders'
+   * });
    *
-   * export const handler = async (_event: unknown, __context: unknown): Promise<void> => {
-   *     metrics.captureColdStartMetric();
+   * export const handler = async () => {
+   *   metrics.captureColdStartMetric();
    * };
    * ```
    */
@@ -320,21 +359,71 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Clear all default dimensions.
+   * Clear all previously set default dimensions.
+   *
+   * This will remove all default dimensions set by the {@link Metrics.setDefaultDimensions | `setDefaultDimensions()`} method
+   * or via the `defaultDimensions` parameter in the constructor.
+   *
+   * @example
+   * ```typescript
+   * import { Metrics } from '@aws-lambda-powertools/metrics';
+   *
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders',
+   *   defaultDimensions: { environment: 'dev' },
+   * });
+   *
+   * metrics.setDefaultDimensions({ region: 'us-west-2' });
+   *
+   * // both environment and region dimensions are removed
+   * metrics.clearDefaultDimensions();
+   * ```
    */
   public clearDefaultDimensions(): void {
     this.defaultDimensions = {};
   }
 
   /**
-   * Clear all dimensions.
+   * Clear all the dimensions added to the Metrics instance via {@link Metrics.addDimension | `addDimension()`} or {@link Metrics.addDimensions | `addDimensions()`}.
+   *
+   * These dimensions are normally cleared when calling {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`}, but
+   * you can use this method to clear specific dimensions that you no longer need at runtime.
+   *
+   * This method does not clear the default dimensions set via {@link Metrics.setDefaultDimensions | `setDefaultDimensions()`} or via
+   * the `defaultDimensions` parameter in the constructor.
+   *
+   * @example
+   * ```typescript
+   * import { Metrics } from '@aws-lambda-powertools/metrics';
+   *
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders'
+   * });
+   *
+   * export const handler = async () => {
+   *   metrics.addDimension('region', 'us-west-2');
+   *
+   *   // ...
+   *
+   *   metrics.clearDimensions(); // olnly the region dimension is removed
+   * };
+   * ```
+   *
+   * The method is primarily intended for internal use, but it is exposed for advanced use cases.
    */
   public clearDimensions(): void {
     this.dimensions = {};
   }
 
   /**
-   * Clear all metadata.
+   * Clear all the metadata added to the Metrics instance.
+   *
+   * Metadata is normally cleared when calling {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`}, but
+   * you can use this method to clear specific metadata that you no longer need at runtime.
+   *
+   * The method is primarily intended for internal use, but it is exposed for advanced use cases.
    */
   public clearMetadata(): void {
     this.metadata = {};
@@ -342,26 +431,39 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Clear all the metrics stored in the buffer.
+   *
+   * This is useful when you want to clear the metrics stored in the buffer without publishing them.
+   *
+   * The method is primarily intended for internal use, but it is exposed for advanced use cases.
    */
   public clearMetrics(): void {
     this.storedMetrics = {};
   }
 
   /**
-   * A decorator automating coldstart capture, throw on empty metrics and publishing metrics on handler exit.
+   * A class method decorator to automatically log metrics after the method returns or throws an error.
+   *
+   * The decorator can be used with TypeScript classes and can be configured to optionally capture a `ColdStart` metric (see {@link Metrics.captureColdStartMetric | `captureColdStartMetric()`}),
+   * throw an error if no metrics are emitted (see {@link Metrics.setThrowOnEmptyMetrics | `setThrowOnEmptyMetrics()`}),
+   * and set default dimensions for all metrics (see {@link Metrics.setDefaultDimensions | `setDefaultDimensions()`}).
    *
    * @example
    *
    * ```typescript
-   * import { Metrics } from '@aws-lambda-powertools/metrics';
+   * import type { Context } from 'aws-lambda';
    * import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+   * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
    *
-   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' });
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders'
+   * });
    *
    * class Lambda implements LambdaInterface {
-   *   @metrics.logMetrics({ captureColdStartMetric: true })
-   *   public handler(_event: unknown, __context: unknown): Promise<void> {
-   *     // ...
+   *   ⁣@metrics.logMetrics({ captureColdStartMetric: true })
+   *   public async handler(_event: { requestId: string }, _: Context) {
+   *     metrics.addMetadata('request_id', event.requestId);
+   *     metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
    *   }
    * }
    *
@@ -369,13 +471,18 @@ class Metrics extends Utility implements MetricsInterface {
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    *
-   * @param options - The options to configure the logMetrics decorator
+   * You can configure the decorator with the following options:
+   * - `captureColdStartMetric` - Whether to capture a `ColdStart` metric
+   * - `defaultDimensions` - Default dimensions to add to all metrics
+   * - `throwOnEmptyMetrics` - Whether to throw an error if no metrics are emitted
+   *
+   * @param options - Options to configure the behavior of the decorator, see {@link ExtraOptions}
    */
   public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
     const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } =
       options;
     if (throwOnEmptyMetrics) {
-      this.throwOnEmptyMetrics();
+      this.setThrowOnEmptyMetrics(throwOnEmptyMetrics);
     }
     if (defaultDimensions !== undefined) {
       this.setDefaultDimensions(defaultDimensions);
@@ -411,18 +518,23 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Synchronous function to actually publish your metrics. (Not needed if using logMetrics decorator).
-   * It will create a new EMF blob and log it to standard output to be then ingested by Cloudwatch logs and processed automatically for metrics creation.
+   * Flush the stored metrics to standard output.
+   *
+   * The method empties the metrics buffer and emits the metrics to standard output in the Amazon CloudWatch EMF (Embedded Metric Format) schema.
+   *
+   * When using the {@link Metrics.logMetrics | `logMetrics()`} decorator, or the Middy.js middleware, the metrics are automatically flushed after the handler function returns or throws an error.
    *
    * @example
-   *
    * ```typescript
    * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
    *
-   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName: 'orders' }); // Sets metric namespace, and service as a metric dimension
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders'
+   * });
    *
-   * export const handler = async (_event: unknown, __context: unknown): Promise<void> => {
-   *   metrics.addMetric('test-metric', MetricUnit.Count, 10);
+   * export const handler = async () => {
+   *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
    *   metrics.publishStoredMetrics();
    * };
    * ```
@@ -443,14 +555,16 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Function to create a new metric object compliant with the EMF (Embedded Metric Format) schema which
-   * includes the metric name, unit, and optionally storage resolution.
+   * Serialize the stored metrics into a JSON object compliant with the Amazon CloudWatch EMF (Embedded Metric Format) schema.
    *
-   * The function will create a new EMF blob and log it to standard output to be then ingested by Cloudwatch
-   * logs and processed automatically for metrics creation.
+   * The EMF schema is a JSON object that contains the following properties:
+   * - `_aws`: An object containing the timestamp and the CloudWatch metrics.
+   * - `CloudWatchMetrics`: An array of CloudWatch metrics objects.
+   * - `Namespace`: The namespace of the metrics.
+   * - `Dimensions`: An array of dimensions for the metrics.
+   * - `Metrics`: An array of metric definitions.
    *
-   * @returns metrics as JSON object compliant EMF Schema Specification
-   * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html for more details
+   * The object is then emitted to standard output, which in AWS Lambda is picked up by CloudWatch logs and processed asynchronously.
    */
   public serializeMetrics(): EmfOutput {
     // Storage resolution is included only for High resolution metrics
@@ -515,7 +629,26 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * Set default dimensions that will be added to all metrics.
    *
-   * @param dimensions The default dimensions to be added to all metrics.
+   * This method will merge the provided dimensions with the existing default dimensions.
+   *
+   * @example
+   * ```typescript
+   * import { Metrics } from '@aws-lambda-powertools/metrics';
+   *
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders',
+   *   defaultDimensions: { environment: 'dev' },
+   * });
+   *
+   * // Default dimensions will contain both region and environment
+   * metrics.setDefaultDimensions({
+   *   region: 'us-west-2',
+   *   environment: 'prod',
+   * });
+   * ```
+   *
+   * @param dimensions - The dimensions to be added to the default dimensions object
    */
   public setDefaultDimensions(dimensions: Dimensions | undefined): void {
     const targetDimensions = {
@@ -529,28 +662,69 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Sets the function name to be added to the metric.
+   * Set the function name to be added to each metric as a dimension.
    *
-   * @param value The function name to be added to the metric.
+   * When using the {@link Metrics.logMetrics | `logMetrics()`} decorator, or the Middy.js middleware, the function
+   * name is automatically inferred from the Lambda context.
+   *
+   * @example
+   * ```typescript
+   * import { Metrics } from '@aws-lambda-powertools/metrics';
+   *
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders'
+   * });
+   *
+   * metrics.setFunctionName('my-function-name');
+   * ```
+   *
+   * @param name - The function name
    */
-  public setFunctionName(value: string): void {
-    this.functionName = value;
+  public setFunctionName(name: string): void {
+    this.functionName = name;
   }
 
   /**
-   * CloudWatch EMF uses the same dimensions across all your metrics. Use singleMetric if you have a metric that should have different dimensions.
+   * Set the flag to throw an error if no metrics are emitted.
    *
-   * You don't need to call publishStoredMetrics() after calling addMetric for a singleMetrics, they will be flushed directly.
+   * You can use this method to enable or disable this opt-in feature. This is useful if you want to ensure
+   * that at least one metric is emitted when flushing the metrics. This can be useful to catch bugs where
+   * metrics are not being emitted as expected.
+   *
+   * @param enabled - Whether to throw an error if no metrics are emitted
+   */
+  public setThrowOnEmptyMetrics(enabled: boolean): void {
+    this.shouldThrowOnEmptyMetrics = enabled;
+  }
+
+  /**
+   * Create a new Metrics instance configured to immediately flush a single metric.
+   *
+   * CloudWatch EMF uses the same dimensions and timestamp across all your metrics, this is useful when you have a metric that should have different dimensions
+   * or when you want to emit a single metric without buffering it.
+   *
+   * This method is used internally by the {@link Metrics.captureColdStartMetric | `captureColdStartMetric()`} method to emit the `ColdStart` metric immediately
+   * after the handler function is called.
    *
    * @example
-   *
    * ```typescript
-   * const singleMetric = metrics.singleMetric();
-   * singleMetric.addDimension('InnerDimension', 'true');
-   * singleMetric.addMetric('single-metric', MetricUnit.Percent, 50);
-   * ```
+   * import { Metrics } from '@aws-lambda-powertools/metrics';
    *
-   * @returns the Metrics
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders'
+   * });
+   *
+   * export const handler = async () => {
+   *   const singleMetric = metrics.singleMetric();
+   *   // The single metric will be emitted immediately
+   *   singleMetric.addMetric('coldStart', MetricUnit.Count, 1);
+   *
+   *   // These other metrics will be buffered and emitted when calling `publishStoredMetrics()`
+   *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+   *   metrics.publishStoredMetrics();
+   * };
    */
   public singleMetric(): Metrics {
     return new Metrics({
@@ -562,29 +736,14 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Throw an Error if the metrics buffer is empty.
-   *
-   * @example
-   *
-   * ```typescript
-   * import { Metrics } from '@aws-lambda-powertools/metrics';
-   *
-   * const metrics = new Metrics({ namespace: 'serverlessAirline', serviceName:'orders' });
-   *
-   * export const handler = async (_event: unknown, __context: unknown): Promise<void> => {
-   *     metrics.throwOnEmptyMetrics();
-   *     metrics.publishStoredMetrics(); // will throw since no metrics added.
-   * };
-   * ```
+   * @deprecated Use {@link Metrics.setThrowOnEmptyMetrics | `setThrowOnEmptyMetrics()`} instead.
    */
   public throwOnEmptyMetrics(): void {
     this.shouldThrowOnEmptyMetrics = true;
   }
 
   /**
-   * Gets the current number of dimensions stored.
-   *
-   * @returns the number of dimensions currently stored
+   * Gets the current number of dimensions count.
    */
   private getCurrentDimensionsCount(): number {
     return (
@@ -616,8 +775,8 @@ class Metrics extends Utility implements MetricsInterface {
    * the same name. If the units are inconsistent, we throw an error as this is likely a bug or typo.
    * This can happen if a metric is added without using the `MetricUnit` helper in JavaScript codebases.
    *
-   * @param name The name of the metric
-   * @param unit The unit of the metric
+   * @param name - The name of the metric
+   * @param unit - The unit of the metric
    */
   private isNewMetric(name: string, unit: MetricUnit): boolean {
     if (this.storedMetrics[name]) {
@@ -634,11 +793,10 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Initialize the console property as an instance of the internal version of Console() class (PR #748)
+   * Initialize the console property as an instance of the internal version of `Console()` class (PR #748)
    * or as the global node console if the `POWERTOOLS_DEV' env variable is set and has truthy value.
    *
    * @private
-   * @returns {void}
    */
   private setConsole(): void {
     if (!this.getEnvVarsService().isDevMode()) {
@@ -674,7 +832,7 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * Set the namespace to be used.
    *
-   * @param namespace The namespace to be used
+   * @param namespace - The namespace to be used
    */
   private setNamespace(namespace: string | undefined): void {
     this.namespace = (namespace ||
@@ -687,7 +845,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * This method is used during the initialization of the Metrics instance.
    *
-   * @param options The options to be used
+   * @param options - The options to be used
    */
   private setOptions(options: MetricsOptions): Metrics {
     const {
@@ -712,7 +870,7 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * Set the service to be used.
    *
-   * @param service The service to be used
+   * @param service - The service to be used
    */
   private setService(service: string | undefined): void {
     const targetService =
@@ -729,12 +887,12 @@ class Metrics extends Utility implements MetricsInterface {
    * Store a metric in the buffer.
    *
    * If the buffer is full, or the metric reaches the maximum number of values,
-   * the buffer is published to stdout.
+   * the metrics are published.
    *
-   * @param name The name of the metric to store
-   * @param unit The unit of the metric to store
-   * @param value The value of the metric to store
-   * @param resolution The resolution of the metric to store
+   * @param name - The name of the metric to store
+   * @param unit - The unit of the metric to store
+   * @param value - The value of the metric to store
+   * @param resolution - The resolution of the metric to store
    */
   private storeMetric(
     name: string,

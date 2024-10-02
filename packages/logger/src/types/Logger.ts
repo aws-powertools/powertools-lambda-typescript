@@ -20,15 +20,6 @@ type LogLevel =
   | Lowercase<(typeof LogLevelList)[keyof typeof LogLevelList]>;
 
 /**
- * Type definition for the log level thresholds.
- *
- * Each log level has a corresponding number that represents its severity.
- */
-type LogLevelThresholds = {
-  [key in Uppercase<LogLevel>]: number;
-};
-
-/**
  * Type definition for a function that logs messages at different levels to the console.
  */
 type LogFunction = {
@@ -215,7 +206,6 @@ type LoggerInterface = {
 
 export type {
   Environment,
-  LogLevelThresholds,
   LogAttributes,
   LogLevel,
   LogFunction,

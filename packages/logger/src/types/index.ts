@@ -1,6 +1,5 @@
 export type {
   Environment,
-  LogLevelThresholds,
   LogAttributes,
   LogLevel,
   LogItemMessage,

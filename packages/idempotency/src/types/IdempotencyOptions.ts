@@ -1,4 +1,5 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type { Functions } from '@aws-lambda-powertools/jmespath/functions';
 import type { Context, Handler } from 'aws-lambda';
 import type { IdempotencyConfig } from '../IdempotencyConfig.js';
 import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
@@ -196,6 +197,10 @@ type IdempotencyConfigOptions = {
    * A hook that runs when an idempotent request is made
    */
   responseHook?: ResponseHook;
+  /**
+   * Custom JMESPath functions to use when extracting data from the event
+   */
+  jmesPathOptions?: Functions;
 };
 
 export type {

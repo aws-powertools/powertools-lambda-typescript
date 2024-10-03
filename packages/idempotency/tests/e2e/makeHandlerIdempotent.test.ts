@@ -163,7 +163,7 @@ describe('Idempotency E2E tests, middy middleware usage', () => {
   );
 
   it(
-    'handles idempotent requests sent in parallel',
+    'handles parallel invocations correctly',
     async () => {
       // Prepare
       const payload = {

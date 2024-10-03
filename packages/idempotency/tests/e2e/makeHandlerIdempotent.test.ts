@@ -113,7 +113,7 @@ describe('Idempotency E2E tests, middy middleware usage', () => {
   }, SETUP_TIMEOUT);
 
   it(
-    'returns the same result and runs the handler once',
+    'returns the same result and runs the handler once when called multiple times',
     async () => {
       // Prepare
       const payload = {

@@ -279,8 +279,7 @@ class Metrics extends Utility implements MetricsInterface {
    * By default, metrics are buffered and flushed when calling {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`} method,
    * or at the end of the handler function when using the {@link Metrics.logMetrics | `logMetrics()`} decorator or the Middy.js middleware.
    *
-   * Metrics are emitted to standard output in the Amazon CloudWatch EMF (Embedded Metric Format) schema. In AWS Lambda, the logs are
-   * automatically picked up by CloudWatch logs and processed asynchronously.
+   * Metrics are emitted to standard output in the Amazon CloudWatch EMF (Embedded Metric Format) schema.
    *
    * You can add a metric by specifying the metric name, unit, and value. For convenience,
    * we provide a set of constants for the most common units in the {@link MetricUnits | MetricUnit} dictionary object.
@@ -887,7 +886,7 @@ class Metrics extends Utility implements MetricsInterface {
    * Store a metric in the buffer.
    *
    * If the buffer is full, or the metric reaches the maximum number of values,
-   * the metrics are published.
+   * the metrics are flushed to stdout.
    *
    * @param name - The name of the metric to store
    * @param unit - The unit of the metric to store

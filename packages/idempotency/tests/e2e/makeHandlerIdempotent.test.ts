@@ -284,7 +284,7 @@ describe('Idempotency E2E tests, middy middleware usage', () => {
   );
 
   it(
-    'recovers from an expired idempotency record and processes the subsequent request correctly',
+    'recovers from an expired idempotency record and processes the next request',
     async () => {
       // Prepare
       const payload = {

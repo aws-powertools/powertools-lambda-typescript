@@ -14,6 +14,8 @@ jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
   Console: jest.fn().mockImplementation(() => ({
     log: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
   })),
 }));
 jest.spyOn(console, 'warn').mockImplementation(() => ({}));
@@ -68,6 +70,7 @@ describe('Middy middleware', () => {
       const metrics = new Metrics({
         namespace: 'serverlessAirline',
         serviceName: 'orders',
+        logger: console,
       });
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
       const handler = middy(async (): Promise<void> => undefined).use(

@@ -5,6 +5,7 @@ export type {
   MiddlewareFn,
   CleanupFunction,
 } from './middy.js';
+export type { GenericLogger } from './GenericLogger.js';
 export type { SdkClient, MiddlewareArgsLike } from './awsSdk.js';
 export type {
   JSONPrimitive,

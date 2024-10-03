@@ -1,8 +1,3 @@
-/**
- * Test idempotency decorator
- *
- * @group e2e/idempotency/decorator
- */
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import {
@@ -14,6 +9,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { Duration } from 'aws-cdk-lib';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -166,8 +162,8 @@ describe('Idempotency e2e test decorator, default settings', () => {
     tableNameDataIndex = testStack.findAndGetStackOutputValue('dataIndexTable');
   }, SETUP_TIMEOUT);
 
-  test(
-    'when called twice with the same payload, it returns the same result and runs the handler once',
+  it(
+    'returns the same result and runs the handler once when called multiple times',
     async () => {
       const payload = { foo: 'bar' };
 
@@ -208,8 +204,8 @@ describe('Idempotency e2e test decorator, default settings', () => {
     TEST_CASE_TIMEOUT
   );
 
-  test(
-    'when called twice in parallel, the handler is called only once',
+  it(
+    'handles parallel invocations correctly',
     async () => {
       const payload = { foo: 'bar' };
       const payloadHash = createHash('md5')
@@ -256,8 +252,8 @@ describe('Idempotency e2e test decorator, default settings', () => {
     TEST_CASE_TIMEOUT
   );
 
-  test(
-    'when the function times out, the second request is processed correctly by the handler',
+  it(
+    'recovers from a timed out request and processes the next one',
     async () => {
       const payload = { foo: 'bar' };
       const payloadHash = createHash('md5')
@@ -311,8 +307,8 @@ describe('Idempotency e2e test decorator, default settings', () => {
     TEST_CASE_TIMEOUT
   );
 
-  test(
-    'when the idempotency record is expired, the second request is processed correctly by the handler',
+  it(
+    'recovers from an expired idempotency record and processes the next request',
     async () => {
       const payload = {
         foo: 'baz',
@@ -385,8 +381,8 @@ describe('Idempotency e2e test decorator, default settings', () => {
     TEST_CASE_TIMEOUT
   );
 
-  test(
-    'when called with customized function wrapper, it creates ddb entry with custom attributes',
+  it(
+    'uses the provided custom idempotency record attributes',
     async () => {
       const payload = { foo: 'bar' };
       const payloadHash = createHash('md5')
@@ -425,8 +421,8 @@ describe('Idempotency e2e test decorator, default settings', () => {
     TEST_CASE_TIMEOUT
   );
 
-  test(
-    'when called twice for with different payload using data index arugment, it returns the same result and runs the handler once',
+  it(
+    'takes the data index argument into account when making the function idempotent',
     async () => {
       const payload = [{ id: '1234' }, { id: '5678' }];
       const payloadHash = createHash('md5')

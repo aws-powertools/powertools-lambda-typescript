@@ -1,8 +1,3 @@
-/**
- * Test makeIdempotent function
- *
- * @group e2e/idempotency/makeIdempotent
- */
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import {
@@ -13,6 +8,7 @@ import {
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -167,8 +163,8 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     TEST_CASE_TIMEOUT
   );
 
-  test(
-    'when called with customized function wrapper, it creates ddb entry with custom attributes',
+  it(
+    'creates a DynamoDB item with the correct attributes',
     async () => {
       // Prepare
       const payload = {
@@ -281,8 +277,8 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     TEST_CASE_TIMEOUT
   );
 
-  test(
-    'when called twice with the same payload, it returns the same result and runs the handler once',
+  it(
+    'calls the wrapped function once and always returns the same result when called multiple times',
     async () => {
       // Prepare
       const payload = {

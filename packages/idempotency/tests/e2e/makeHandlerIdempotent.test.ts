@@ -221,7 +221,7 @@ describe('Idempotency E2E tests, middy middleware usage', () => {
   );
 
   it(
-    'recovers from a timed out request and processes the second request correctly',
+    'recovers from a timed out request and processes the next one',
     async () => {
       // Prepare
       const payload = {

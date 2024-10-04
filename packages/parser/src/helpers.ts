@@ -1,13 +1,30 @@
 import { type ZodTypeAny, z } from 'zod';
+/**
+ * @typedef {import('../schemas/alb').AlbSchema} AlbSchema
+ */
 
 /**
  * A helper function to parse a JSON string and validate it against a schema.
- * Use it for built-in schemas like `AlbSchema`, `ApiGatewaySchema`, etc. to extend them with your customer schema.
+ *
+ * Use it for built-in schemas like `AlbSchema`, `ApiGatewaySchema`, etc. that have some fields that are JSON stringified
+ * and extend them with your custom schema.
+ *
+ * For example, if you have an event with a JSON stringified body similar to the following:
+ *
+ * ```json
+ * {
+ *   // ... other fields
+ *   "body": "{\"name\": \"John\", \"age\": 30}",
+ *   "isBase64Encoded": false,
+ * }
+ * ```
+ *
+ * You can extend any built-in schema with your custom schema using the `JSONStringified` helper function.
  *
  * @example
  * ```typescript
  * import { JSONStringified } from '@aws-lambda-powertools/parser/helpers';
- * import { AlbSchema } from '@aws-lambda-powertools/parser/schemas';
+ * import { AlbSchema } from '@aws-lambda-powertools/parser/schemas/alb';
  * import { z } from 'zod';
  *
  * const customSchema = z.object({
@@ -19,6 +36,7 @@ import { type ZodTypeAny, z } from 'zod';
  *   body: JSONStringified(customSchema),
  * });
  *
+ * type ExtendedAlbEvent = z.infer<typeof extendedSchema>;
  * ```
  *
  * @param schema - The schema to validate the JSON string against

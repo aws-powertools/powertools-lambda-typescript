@@ -5,7 +5,8 @@
     "./src/middleware/parser.ts",
     "./src/types/index.ts",
     "./src/envelopes/index.ts",
-    "./src/schemas/index.ts"
+    "./src/schemas/index.ts",
+    "./src/helpers.ts"
   ],
   "readme": "README.md"
 }

@@ -1,8 +1,3 @@
-/**
- * Test logger sample rate feature
- *
- * @group e2e/logger/sampleRate
- */
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import {
@@ -10,6 +5,7 @@ import {
   TestStack,
   invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,

@@ -9,9 +9,7 @@ import type { ConfigServiceInterface as ConfigServiceBaseInterface } from '@aws-
  */
 interface ConfigServiceInterface extends ConfigServiceBaseInterface {
   /**
-   * It returns the value of the POWERTOOLS_METRICS_NAMESPACE environment variable.
-   *
-   * @returns {string}
+   * Get the value of the `POWERTOOLS_METRICS_NAMESPACE` environment variable.
    */
   getNamespace(): string;
 }

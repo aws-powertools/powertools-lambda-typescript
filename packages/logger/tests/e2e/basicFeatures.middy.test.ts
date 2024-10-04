@@ -1,8 +1,3 @@
-/**
- * Test logger basic features
- *
- * @group e2e/logger/basicFeatures
- */
 import { join } from 'node:path';
 import {
   TestInvocationLogs,
@@ -10,6 +5,7 @@ import {
   invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import type { APIGatewayAuthorizerResult } from 'aws-lambda';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,

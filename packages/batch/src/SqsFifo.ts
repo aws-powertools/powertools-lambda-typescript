@@ -34,7 +34,7 @@ export function SqsFifo<
 
     // biome-ignore lint/suspicious/noExplicitAny:
     public constructor(...args: any[]) {
-      super(EventType.SQS, ...args);
+      super(...args);
       this._failedGroupIds = new Set<string>();
     }
 

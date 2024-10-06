@@ -37,6 +37,9 @@ import type { FailureResponse, SuccessResponse } from './types.js';
  * ```
  */
 class SqsFifoPartialProcessor extends SqsFifo(BatchProcessorSync) {
+  public constructor() {
+    super(EventType.SQS);
+  }
   /**
    * Process a record with a synchronous handler
    *

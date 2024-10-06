@@ -1,6 +1,5 @@
 import type { BatchProcessor } from './BatchProcessor.js';
 import type { BatchProcessorSync } from './BatchProcessorSync.js';
-import { EventType } from './constants.js';
 import {
   type BatchProcessingError,
   SqsFifoShortCircuitError,

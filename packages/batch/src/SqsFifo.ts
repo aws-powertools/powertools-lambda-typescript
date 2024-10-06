@@ -117,6 +117,7 @@ export function SqsFifo<
 
     /**
      * Determines whether the current group should be short-circuited.
+     *
      * If we have any failed messages, we should then short circuit the process and
      * fail remaining messages unless `skipGroupOnError` is true
      */
@@ -128,6 +129,7 @@ export function SqsFifo<
 
     /**
      * Determines whether the current group should be skipped.
+     *
      * If `skipGroupOnError` is true and the current group has previously failed,
      * then we should skip processing the current group.
      */

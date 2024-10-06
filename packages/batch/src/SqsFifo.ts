@@ -114,5 +114,29 @@ export function SqsFifo<
     _setCurrentGroup(group?: string): void {
       this._currentGroupId = group;
     }
+
+    /**
+     * Determines whether the current group should be short-circuited.
+     * If we have any failed messages, we should then short circuit the process and
+     * fail remaining messages unless `skipGroupOnError` is true
+     */
+    _shouldShortCircuit(): boolean {
+      return (
+        !this.options?.skipGroupOnError && this.failureMessages.length !== 0
+      );
+    }
+
+    /**
+     * Determines whether the current group should be skipped.
+     * If `skipGroupOnError` is true and the current group has previously failed,
+     * then we should skip processing the current group.
+     */
+    _shouldSkipCurrentGroup(): boolean {
+      return (
+        (this.options?.skipGroupOnError ?? false) &&
+        this._currentGroupId &&
+        this._failedGroupIds.has(this._currentGroupId)
+      );
+    }
   };
 }

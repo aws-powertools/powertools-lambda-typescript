@@ -66,22 +66,11 @@ class SqsFifoPartialProcessorAsync extends SqsFifo(BatchProcessor) {
     for (const record of this.records) {
       this._setCurrentGroup((record as SQSRecord).attributes?.MessageGroupId);
 
-      // If we have any failed messages, we should then short circuit the process and
-      // fail remaining messages unless `skipGroupOnError` is true
-      const shouldShortCircuit =
-        !this.options?.skipGroupOnError && this.failureMessages.length !== 0;
-      if (shouldShortCircuit) {
+      if (this._shouldShortCircuit()) {
         return this._shortCircuitProcessing(currentIndex, processedRecords);
       }
 
-      // If `skipGroupOnError` is true and the current group has previously failed,
-      // then we should skip processing the current group.
-      const shouldSkipCurrentGroup =
-        this.options?.skipGroupOnError &&
-        this._currentGroupId &&
-        this._failedGroupIds.has(this._currentGroupId);
-
-      const result = shouldSkipCurrentGroup
+      const result = this._shouldSkipCurrentGroup()
         ? this._processFailRecord(
             record,
             new SqsFifoMessageGroupShortCircuitError()

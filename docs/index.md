@@ -407,6 +407,9 @@ Knowing which companies are using this library is important to help prioritize t
 [**Elva**](https://elva-group.com){target="_blank" rel="nofollow"}
 { .card }
 
+[**Flyweight**](https://flyweight.io/){target="_blank" rel="nofollow"}
+{ .card }
+
 [**globaldatanet**](https://globaldatanet.com/){target="_blank" rel="nofollow"}
 { .card }
 

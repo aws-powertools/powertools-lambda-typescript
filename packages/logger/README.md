@@ -241,6 +241,7 @@ The following companies, among others, use Powertools:
 - [Caylent](https://caylent.com/)
 - [Certible](https://www.certible.com/)
 - [Elva](https://elva-group.com)
+- [Flyweight](https://flyweight.io/)
 - [globaldatanet](https://globaldatanet.com/)
 - [Hashnode](https://hashnode.com/)
 - [LocalStack](https://localstack.cloud/)

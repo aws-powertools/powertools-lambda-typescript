@@ -70,7 +70,9 @@ class IdempotencyConfig {
   public constructor(config: IdempotencyConfigOptions) {
     this.eventKeyJmesPath = config.eventKeyJmesPath ?? '';
     this.payloadValidationJmesPath = config.payloadValidationJmesPath;
-    this.jmesPathOptions = { customFunctions: new PowertoolsFunctions() };
+    this.jmesPathOptions = {
+      customFunctions: config.jmesPathOptions ?? new PowertoolsFunctions(),
+    };
     this.throwOnNoIdempotencyKey = config.throwOnNoIdempotencyKey ?? false;
     this.expiresAfterSeconds = config.expiresAfterSeconds ?? 3600; // 1 hour default
     this.useLocalCache = config.useLocalCache ?? false;

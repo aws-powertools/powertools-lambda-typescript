@@ -2,7 +2,7 @@ import { JSONStringified } from '@aws-lambda-powertools/parser/helpers';
 import {
   SqsRecordSchema,
   SqsSchema,
-} from '@aws-lambda-powertools/parser/schemas';
+} from '@aws-lambda-powertools/parser/schemas/sqs';
 import { z } from 'zod';
 
 const customSchema = z.object({
@@ -17,3 +17,5 @@ const extendedSchema = SqsSchema.extend({
     })
   ),
 });
+
+type ExtendedSqsEvent = z.infer<typeof extendedSchema>;

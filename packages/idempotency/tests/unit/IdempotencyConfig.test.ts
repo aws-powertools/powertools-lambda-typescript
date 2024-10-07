@@ -1,3 +1,8 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import {
+  Functions,
+  PowertoolsFunctions,
+} from '@aws-lambda-powertools/jmespath/functions';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { IdempotencyConfig } from '../../src/index.js';
@@ -32,12 +37,23 @@ describe('Class: IdempotencyConfig', () => {
           useLocalCache: false,
           hashFunction: 'md5',
           lambdaContext: undefined,
+          jmesPathOptions: expect.objectContaining({
+            customFunctions: expect.any(PowertoolsFunctions),
+          }),
         })
       );
     });
 
     it('initializes the config with the provided configs', () => {
       // Prepare
+      class MyFancyFunctions extends Functions {
+        @Functions.signature({
+          argumentsSpecs: [['string']],
+        })
+        public funcMyFancyFunction(value: string): JSONValue {
+          return JSON.parse(value);
+        }
+      }
       const configOptions: IdempotencyConfigOptions = {
         eventKeyJmesPath: 'eventKeyJmesPath',
         payloadValidationJmesPath: 'payloadValidationJmesPath',
@@ -46,6 +62,7 @@ describe('Class: IdempotencyConfig', () => {
         useLocalCache: true,
         hashFunction: 'hashFunction',
         lambdaContext: context,
+        jmesPathOptions: new MyFancyFunctions(),
       };
 
       // Act
@@ -61,6 +78,9 @@ describe('Class: IdempotencyConfig', () => {
           useLocalCache: true,
           hashFunction: 'hashFunction',
           lambdaContext: context,
+          jmesPathOptions: expect.objectContaining({
+            customFunctions: expect.any(MyFancyFunctions),
+          }),
         })
       );
     });

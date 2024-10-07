@@ -1,5 +1,5 @@
 import { JSONStringified } from '@aws-lambda-powertools/parser/helpers';
-import { AlbSchema } from '@aws-lambda-powertools/parser/schemas';
+import { AlbSchema } from '@aws-lambda-powertools/parser/schemas/alb';
 import { z } from 'zod';
 
 const customSchema = z.object({
@@ -8,5 +8,7 @@ const customSchema = z.object({
 });
 
 const extendedSchema = AlbSchema.extend({
-  body: JSONStringified(customSchema), // (1)!
+  body: JSONStringified(customSchema),
 });
+
+type ExtendedAlbEvent = z.infer<typeof extendedSchema>;

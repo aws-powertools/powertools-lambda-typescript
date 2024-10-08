@@ -13,7 +13,6 @@ import {
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { App } from 'aws-cdk-lib';
 import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
-import type { EventBridgeEvent } from 'aws-lambda';
 import packageJson from '../../package.json';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 import {

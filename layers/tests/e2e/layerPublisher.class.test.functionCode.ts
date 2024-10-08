@@ -13,7 +13,6 @@ import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { SSMClient } from '@aws-sdk/client-ssm';
-import { z } from 'zod';
 
 const logger = new Logger({
   logLevel: 'DEBUG',

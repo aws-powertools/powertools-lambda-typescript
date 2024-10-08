@@ -1,8 +1,4 @@
-/**
- * Test decorator parser
- *
- * @group unit/parser
- */
+import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { JSONStringified } from '../../src/helpers.js';
 import { AlbSchema } from '../../src/schemas/alb.js';
@@ -12,7 +8,7 @@ import {
 } from '../../src/schemas/sns.js';
 import { SqsRecordSchema, SqsSchema } from '../../src/schemas/sqs.js';
 import type { SnsEvent, SqsEvent } from '../../src/types/schema.js';
-import { getTestEvent } from './schema/utils.js';
+import { getTestEvent } from './helpers/utils.js';
 
 const bodySchema = z.object({
   id: z.number(),
@@ -28,7 +24,7 @@ const basePayload = {
   email: 'foo@bar.baz',
 };
 
-describe('JSONStringified', () => {
+describe('Helper: JSONStringified', () => {
   it('should return a valid JSON', () => {
     // Prepare
     const data = {
@@ -79,8 +75,8 @@ describe('JSONStringified', () => {
   it('should parse extended AlbSchema', () => {
     // Prepare
     const testEvent = getTestEvent({
-      eventsPath: '.',
-      filename: 'albEvent',
+      eventsPath: 'alb',
+      filename: 'base',
     });
     testEvent.body = JSON.stringify(structuredClone(basePayload));
 
@@ -99,8 +95,8 @@ describe('JSONStringified', () => {
   it('should parse extended SqsSchema', () => {
     // Prepare
     const testEvent = getTestEvent<SqsEvent>({
-      eventsPath: '.',
-      filename: 'sqsEvent',
+      eventsPath: 'sqs',
+      filename: 'base',
     });
     const stringifiedBody = JSON.stringify(basePayload);
     testEvent.Records[0].body = stringifiedBody;
@@ -128,8 +124,8 @@ describe('JSONStringified', () => {
   it('should parse extended SnsSchema', () => {
     // Prepare
     const testEvent = getTestEvent<SnsEvent>({
-      eventsPath: '.',
-      filename: 'snsEvent',
+      eventsPath: 'sns',
+      filename: 'base',
     });
     testEvent.Records[0].Sns.Message = JSON.stringify(basePayload);
 

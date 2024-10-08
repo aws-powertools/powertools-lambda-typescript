@@ -1,13 +1,9 @@
-/**
- * Test built-in API Gateway HTTP API (v2) schemas
- *
- * @group unit/parser/schema/apigwv2
- */
+import { describe, expect, it } from 'vitest';
 import {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,
 } from '../../../src/schemas/index.js';
-import { getTestEvent } from './utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('API Gateway HTTP (v2) Schemas', () => {
   const eventsPath = 'apigw-http';

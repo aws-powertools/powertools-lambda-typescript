@@ -1,14 +1,10 @@
-/**
- * Test built-in API Gateway REST schemas
- *
- * @group unit/parser/schema/apigw
- */
+import { describe, expect, it } from 'vitest';
 import {
   APIGatewayProxyEventSchema,
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
 } from '../../../src/schemas/index.js';
-import { getTestEvent } from './utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('API Gateway REST Schemas', () => {
   const eventsPath = 'apigw-rest';

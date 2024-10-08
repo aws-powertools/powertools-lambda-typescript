@@ -1,12 +1,7 @@
-/**
- * Test middleware parser
- *
- * @group unit/parser
- */
-
 import { generateMock } from '@anatine/zod-mock';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import type { ZodSchema, z } from 'zod';
 import { EventBridgeEnvelope, SqsEnvelope } from '../../src/envelopes';
 import { parser } from '../../src/middleware/parser.js';

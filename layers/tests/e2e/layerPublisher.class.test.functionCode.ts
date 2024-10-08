@@ -50,9 +50,8 @@ new DynamoDBProvider({ tableName: 'foo', awsSdkV3Client: ddbClient });
 // Instantiating the BatchProcessor will confirm that the utility can be used
 new BatchProcessor(EventType.SQS);
 
-const testSchema = z.object({ instance_id: z.string(), state: z.string() });
-
-const testEventSchema = EventBridgeSchema.extend({ detail: testSchema });
+const testPayload = { name: 'John', age: 42 };
+const testSchema = z.object({ name: z.string(), age: z.number() });
 
 const layerPath = process.env.LAYERS_PATH || '/opt/nodejs/node_modules';
 const expectedVersion = process.env.POWERTOOLS_PACKAGE_VERSION || '0.0.0';

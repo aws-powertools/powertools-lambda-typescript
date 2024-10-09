@@ -876,17 +876,20 @@ class Logger extends Utility implements LoggerInterface {
     extraInput: LogItemExtraInput
   ): void {
     if (logLevel >= this.logLevel) {
-      const xRayTraceId = this.envVarsService.getXrayTraceId() as string;
+      // Only flush buffer when log level is higher than the configured log level
+      if (logLevel > this.logLevel) {
+        const xRayTraceId = this.envVarsService.getXrayTraceId() as string;
 
-      // Print all log items in the context
-      if (this.#context[xRayTraceId]) {
-        for (const contextItem of this.#context[xRayTraceId]) {
-          this.printLog(...contextItem);
+        // Print all log items in the context
+        if (this.#context[xRayTraceId]) {
+          for (const contextItem of this.#context[xRayTraceId]) {
+            this.printLog(...contextItem);
+          }
+
+          // Clear the context after flushing
+          // This also removes entries from other X-Ray trace IDs
+          this.#context = {};
         }
-
-        // Clear the context after flushing
-        // This also removes entries from other X-Ray trace IDs
-        this.#context = {};
       }
 
       if (this.#isInitialized) {

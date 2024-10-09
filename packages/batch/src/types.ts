@@ -6,6 +6,7 @@ import type {
 } from 'aws-lambda';
 import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import type { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
+import type { SqsFifoPartialProcessorAsync } from './SqsFifoPartialProcessorAsync.js';
 
 /**
  * Options for batch processing
@@ -23,10 +24,14 @@ type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
    */
   context?: Context;
   /**
-   * This option is only available for SqsFifoPartialProcessor.
+   * This option is only available for SqsFifoPartialProcessor & SqsFifoPartialProcessorAsync.
    * If true skip the group on error during processing.
    */
-  skipGroupOnError?: T extends SqsFifoPartialProcessor ? boolean : never;
+  skipGroupOnError?: T extends
+    | SqsFifoPartialProcessor
+    | SqsFifoPartialProcessorAsync
+    ? boolean
+    : never;
   /**
    *  Set this to false to prevent throwing an error if the entire batch fails.
    */
@@ -36,7 +41,11 @@ type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
    * When set to `true`, the records will be processed in parallel using `Promise.all`.
    * When set to `false`, the records will be processed sequentially.
    */
-  processInParallel?: T extends SqsFifoPartialProcessor ? never : boolean;
+  processInParallel?: T extends
+    | SqsFifoPartialProcessor
+    | SqsFifoPartialProcessorAsync
+    ? never
+    : boolean;
 };
 
 /**

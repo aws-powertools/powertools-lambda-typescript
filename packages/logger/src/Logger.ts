@@ -139,6 +139,9 @@ class Logger extends Utility implements LoggerInterface {
    * immediately because the logger is not ready yet. This buffer stores those logs until the logger is ready.
    */
   #buffer: [number, Parameters<Logger['createAndPopulateLogItem']>][] = [];
+
+  #context: Record<string, Array<[number, string]>> = {};
+
   /**
    * Flag used to determine if the logger is initialized.
    */
@@ -183,6 +186,7 @@ class Logger extends Utility implements LoggerInterface {
       this.printLog(level, this.createAndPopulateLogItem(...log));
     }
     this.#buffer = [];
+    this.#context = {};
   }
 
   /**
@@ -835,9 +839,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param logLevel - The log level
    * @param log - The log item to print
    */
-  private printLog(logLevel: number, log: LogItem): void {
-    log.prepareForPrint();
-
+  private printLog(logLevel: number, log: LogItem | string): void {
     const consoleMethod =
       logLevel === LogLevelThreshold.CRITICAL
         ? 'error'
@@ -847,11 +849,17 @@ class Logger extends Utility implements LoggerInterface {
           >);
 
     this.console[consoleMethod](
-      JSON.stringify(
-        log.getAttributes(),
-        this.getJsonReplacer(),
-        this.logIndentation
-      )
+      typeof log === 'string' ? log : this.formatLog(log)
+    );
+  }
+
+  private formatLog(log: LogItem): string {
+    log.prepareForPrint();
+
+    return JSON.stringify(
+      log.getAttributes(),
+      this.getJsonReplacer(),
+      this.logIndentation
     );
   }
 
@@ -868,6 +876,22 @@ class Logger extends Utility implements LoggerInterface {
     extraInput: LogItemExtraInput
   ): void {
     if (logLevel >= this.logLevel) {
+      // Only flush buffer when log level is higher than the configured log level
+      if (logLevel > this.logLevel) {
+        const xRayTraceId = this.envVarsService.getXrayTraceId() as string;
+
+        // Print all log items in the context
+        if (this.#context[xRayTraceId]) {
+          for (const contextItem of this.#context[xRayTraceId]) {
+            this.printLog(...contextItem);
+          }
+
+          // Clear the context after flushing
+          // This also removes entries from other X-Ray trace IDs
+          this.#context = {};
+        }
+      }
+
       if (this.#isInitialized) {
         this.printLog(
           logLevel,
@@ -876,6 +900,23 @@ class Logger extends Utility implements LoggerInterface {
       } else {
         this.#buffer.push([logLevel, [logLevel, input, extraInput]]);
       }
+    } else {
+      const xRayTraceId = this.envVarsService.getXrayTraceId() as string;
+
+      // Add the log item to the context
+      const context = this.#context[xRayTraceId] ?? [];
+      context.push([
+        logLevel,
+        this.formatLog(
+          this.createAndPopulateLogItem(logLevel, input, extraInput)
+        ),
+      ]);
+
+      // Assign the updated context to the context property
+      // This also removes other X-Ray trace IDs from the context
+      this.#context = {
+        [xRayTraceId]: context,
+      };
     }
   }
 

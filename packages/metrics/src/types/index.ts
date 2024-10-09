@@ -8,6 +8,6 @@ export type {
   MetricDefinition,
   MetricResolution,
   MetricUnit,
+  MetricsInterface,
 } from './Metrics.js';
 export type { ConfigServiceInterface } from './ConfigServiceInterface.js';
-export type { MetricsInterface } from './MetricsInterface.js';

@@ -58,4 +58,4 @@ class PowertoolsFunctions extends Functions {
   }
 }
 
-export { PowertoolsFunctions };
+export { PowertoolsFunctions, Functions };

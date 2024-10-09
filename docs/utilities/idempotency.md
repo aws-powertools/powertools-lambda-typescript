@@ -573,6 +573,7 @@ Idempotent decorator can be further configured with **`IdempotencyConfig`** as s
 | ----------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **eventKeyJmespath**          | `''`        | JMESPath expression to extract the idempotency key from the event record using [built-in functions](./jmespath.md#built-in-jmespath-functions){target="_blank"}                                                                            |
 | **payloadValidationJmespath** | `''`        | JMESPath expression to validate that the specified fields haven't changed across requests for the same idempotency key _e.g., payload tampering._                                                                                          |
+| **jmesPathOptions**           | `undefined` | Custom JMESPath functions to use when parsing the JMESPath expressions. See [Custom JMESPath Functions](idempotency.md#custom-jmespath-functions)                                                                                           |
 | **throwOnNoIdempotencyKey**   | `false`     | Throw an error if no idempotency key was found in the request                                                                                                                                                                              |
 | **expiresAfterSeconds**       | 3600        | The number of seconds to wait before a record is expired, allowing a new transaction with the same idempotency key                                                                                                                         |
 | **useLocalCache**             | `false`     | Whether to cache idempotency results in-memory to save on persistence storage latency and costs                                                                                                                                            |
@@ -656,6 +657,16 @@ In this example, the **`userId`** and **`productId`** keys are used as the paylo
 Without payload validation, we would have returned the same result as we did for the initial request. Since we're also returning an amount in the response, this could be quite confusing for the client.
 
 By using **`payloadValidationJmesPath="amount"`**, we prevent this potentially confusing behavior and instead throw an error.
+
+### Custom JMESPath Functions
+
+You can provide custom JMESPath functions for evaluating JMESPath expressions by passing them through the **`jmesPathOptions`** parameter. In this example, we use a custom function, `my_fancy_function`, to parse the payload as a JSON object instead of a string.
+
+=== "Custom JMESPath functions"
+
+    ```typescript hl_lines="16 20 28-29"
+    --8<-- "examples/snippets/idempotency/workingWithCustomJmesPathFunctions.ts"
+    ```
 
 ### Making idempotency key required
 

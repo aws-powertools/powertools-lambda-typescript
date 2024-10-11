@@ -117,6 +117,7 @@ abstract class LogFormatter {
     };
     for (const key in error) {
       if (
+        typeof key === 'string' &&
         key !== 'name' &&
         key !== 'message' &&
         key !== 'stack' &&

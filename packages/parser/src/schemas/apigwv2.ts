@@ -245,4 +245,6 @@ const APIGatewayRequestAuthorizerEventV2Schema = z.object({
 export {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,
+  APIGatewayV2RequestAuthorizer,
+  APIGatewayV2RequestContext,
 };

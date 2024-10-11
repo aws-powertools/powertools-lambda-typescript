@@ -718,7 +718,7 @@ class Metrics extends Utility implements MetricsInterface {
    * export const handler = async () => {
    *   const singleMetric = metrics.singleMetric();
    *   // The single metric will be emitted immediately
-   *   singleMetric.addMetric('coldStart', MetricUnit.Count, 1);
+   *   singleMetric.addMetric('ColdStart', MetricUnit.Count, 1);
    *
    *   // These other metrics will be buffered and emitted when calling `publishStoredMetrics()`
    *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);

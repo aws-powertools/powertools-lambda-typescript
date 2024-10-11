@@ -104,16 +104,29 @@ abstract class LogFormatter {
    * @param error - Error to format
    */
   public formatError(error: Error): LogAttributes {
-    return {
-      name: error.name,
+    const { name, message, stack, cause, ...errorAttributes } = error;
+    const formattedError: LogAttributes = {
+      name,
       location: this.getCodeLocation(error.stack),
-      message: error.message,
-      stack: error.stack,
+      message,
+      stack,
       cause:
         error.cause instanceof Error
           ? this.formatError(error.cause)
           : error.cause,
     };
+    for (const key in error) {
+      if (
+        key !== 'name' &&
+        key !== 'message' &&
+        key !== 'stack' &&
+        key !== 'cause'
+      ) {
+        formattedError[key] = (errorAttributes as Record<string, unknown>)[key];
+      }
+    }
+
+    return formattedError;
   }
 
   /**

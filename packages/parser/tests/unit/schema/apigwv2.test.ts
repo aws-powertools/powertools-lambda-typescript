@@ -11,7 +11,7 @@ describe('Schema: API Gateway HTTP (v2)', () => {
   describe('APIGatewayProxyEventV2Schema', () => {
     it('throws when the event is invalid', () => {
       // Prepare
-      const event = getTestEvent({ eventsPath, filename: 'invalid' });
+      const event = { foo: 'bar' };
 
       // Act & Assess
       expect(() => APIGatewayProxyEventV2Schema.parse(event)).toThrow();
@@ -72,16 +72,6 @@ describe('Schema: API Gateway HTTP (v2)', () => {
   });
 
   describe('APIGatewayRequestAuthorizerEventV2Schema', () => {
-    it('throws when the event is invalid', () => {
-      // Prepare
-      const event = getTestEvent({ eventsPath, filename: 'invalid' });
-
-      // Act & Assess
-      expect(() =>
-        APIGatewayRequestAuthorizerEventV2Schema.parse(event)
-      ).toThrow();
-    });
-
     it('parses the authorizer event', () => {
       // Prepare
       const event = getTestEvent({

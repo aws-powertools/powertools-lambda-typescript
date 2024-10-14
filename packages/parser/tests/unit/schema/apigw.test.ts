@@ -12,7 +12,7 @@ describe('Schema: API Gateway REST', () => {
   describe('APIGatewayProxyEventSchema', () => {
     it('throws when the event is invalid', () => {
       // Prepare
-      const event = getTestEvent({ eventsPath, filename: 'invalid' });
+      const event = { foo: 'bar' };
 
       // Act & Assess
       expect(() => APIGatewayProxyEventSchema.parse(event)).toThrow();

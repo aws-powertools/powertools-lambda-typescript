@@ -432,11 +432,11 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Log the AWS Lambda event payload for the current invocation if the environment variable `POWERTOOLS_LOG_EVENT` is set to `true`.
+   * Log the AWS Lambda event payload for the current invocation if the environment variable `POWERTOOLS_LOGGER_LOG_EVENT` is set to `true`.
    *
    * @example
    * ```ts
-   * process.env.POWERTOOLS_LOG_EVENT = 'true';
+   * process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'true';
    *
    * import { Logger } from '@aws-lambda-powertools/logger';
    *

@@ -398,7 +398,7 @@ This has the advantage of keeping cold start metric separate from your applicati
 
 You can add high-cardinality data as part of your Metrics log with the `addMetadata` method. This is useful when you want to search highly contextual information along with your metrics in your logs.
 
-!!! warning
+!!! info
     **This will not be available during metrics visualization** - Use **dimensions** for this purpose
 
 === "handler.ts"
@@ -440,24 +440,18 @@ You can add high-cardinality data as part of your Metrics log with the `addMetad
 
 CloudWatch EMF uses the same dimensions across all your metrics. Use `singleMetric` if you have a metric that should have different dimensions.
 
-!!! info
-    For cost-efficiency, this feature would be used sparsely since you [pay for unique metric](https://aws.amazon.com/cloudwatch/pricing). Keep the following formula in mind:
+Generally, using different dimensions would be an edge case since you [pay for unique metric](https://aws.amazon.com/cloudwatch/pricing).
 
-    **unique metric = (metric_name + dimension_name + dimension_value)**
+Keep the following formula in mind: `unique metric = (metric_name + dimension_name + dimension_value)`.
 
-=== "Middy Middleware"
+=== "Single Metric"
 
-    ```typescript hl_lines="21 23-24"
-    --8<-- "examples/snippets/metrics/singleMetricDifferentDimsMiddy.ts"
+    ```typescript hl_lines="9"
+    --8<-- "examples/snippets/metrics/singleMetric.ts"
     ```
 
-=== "logMetrics decorator"
-
-    ```typescript hl_lines="16 18-19"
-    --8<-- "examples/snippets/metrics/singleMetricDifferentDimsDecorator.ts"
-    ```
-
-    1. Binding your handler method allows your handler to access `this` within the class methods.
+    1. Metadata should be added before calling `addMetric()` to ensure it's included in the same EMF blob.
+    2. Single metrics are emitted as soon as `addMetric()` is called, so you don't need to call `publishStoredMetrics()`.
 
 ## Testing your code
 

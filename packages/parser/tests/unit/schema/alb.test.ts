@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { AlbMultiValueHeadersSchema, AlbSchema } from '../../../src/schemas/';
 import { getTestEvent } from '../helpers/utils.js';
 
-describe('ALB Schemas', () => {
+describe('Schema: ALB', () => {
   const eventsPath = 'alb';
 
-  it('should parse alb event', () => {
+  it('parses an ALB event', () => {
     // Prepare
     const event = getTestEvent({ eventsPath, filename: 'base' });
 
@@ -15,20 +15,8 @@ describe('ALB Schemas', () => {
     // Assess
     expect(parsedEvent).toEqual(event);
   });
-  it('should parse alb event path trailing slash', () => {
-    // Prepare
-    const event = getTestEvent({
-      eventsPath,
-      filename: 'trailing-slash-in-path',
-    });
 
-    // Act
-    const parsedEvent = AlbSchema.parse(event);
-
-    // Assess
-    expect(parsedEvent).toEqual(event);
-  });
-  it('should parse alb event with multi value headers event', () => {
+  it('parses an ALB event with multi value headers', () => {
     // Prepare
     const event = getTestEvent({ eventsPath, filename: 'multi-value-header' });
 
@@ -37,5 +25,13 @@ describe('ALB Schemas', () => {
 
     // Assess
     expect(parsedEvent).toEqual(event);
+  });
+
+  it('throws if event is not a ALB event', () => {
+    // Prepare
+    const event = { foo: 'bar' };
+
+    // Act & Assess
+    expect(() => AlbSchema.parse(event)).toThrow();
   });
 });

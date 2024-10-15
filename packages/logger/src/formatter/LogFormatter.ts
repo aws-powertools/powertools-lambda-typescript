@@ -116,14 +116,8 @@ abstract class LogFormatter {
           : error.cause,
     };
     for (const key in error) {
-      if (
-        typeof key === 'string' &&
-        key !== 'name' &&
-        key !== 'message' &&
-        key !== 'stack' &&
-        key !== 'cause'
-      ) {
-        formattedError[key] = (errorAttributes as Record<string, unknown>)[key];
+      if (typeof key === 'string' && !['name', 'message', 'stack', 'cause'].includes(key)) {
+          formattedError[key] = (errorAttributes as Record<string, unknown>)[key];
       }
     }
 

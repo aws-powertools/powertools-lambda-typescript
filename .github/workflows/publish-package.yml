@@ -19,6 +19,9 @@ on:
           - packages/parameters
           - packages/parser
 
+permissions:
+  contents: read
+
 
 jobs:
   run-unit-tests:

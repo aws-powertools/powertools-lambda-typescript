@@ -17,7 +17,7 @@
       }
     },
     {
-      "data": "eyJIZWxsbyI6ICJXb3JsZCJ9",
+      "data": "eyJIZWxsbyI6IldvcmxkIn0=",
       "recordId": "record2",
       "approximateArrivalTimestamp": 1664028793294,
       "kinesisRecordMetadata": {

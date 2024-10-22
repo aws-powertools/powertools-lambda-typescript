@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SesSchema } from '../../../src/schemas/ses.js';
-import type { SesEvent } from '../../../src/types';
+import type { SesEvent } from '../../../src/types/index.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: SES', () => {

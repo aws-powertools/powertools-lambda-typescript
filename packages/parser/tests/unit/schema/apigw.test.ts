@@ -3,7 +3,7 @@ import {
   APIGatewayProxyEventSchema,
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
-} from '../../../src/schemas/index.js';
+} from '../../../src/schemas/apigw.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: API Gateway REST', () => {

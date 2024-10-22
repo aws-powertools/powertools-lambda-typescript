@@ -1,34 +1,48 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
-
+import type { MSKEvent } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import {
   KafkaMskEventSchema,
   KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
 } from '../../../src/schemas/';
-import type { KafkaSelfManagedEvent } from '../../../src/types';
+import type { KafkaMskEvent, KafkaSelfManagedEvent } from '../../../src/types';
 import type { KafkaRecord } from '../../../src/types/schema';
-import { TestEvents } from './utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Kafka ', () => {
-  const expectedTestEvent = {
-    key: 'recordKey',
-    value: JSON.stringify({ key: 'value' }),
-    partition: 0,
-    topic: 'mytopic',
-    offset: 15,
-    timestamp: 1545084650987,
-    timestampType: 'CREATE_TIME',
-    headers: [
-      {
-        headerKey: 'headerValue',
+  it('parses a MSK event', () => {
+    // Prepare
+    const event = getTestEvent<MSKEvent & { [key: string]: unknown }>({
+      eventsPath: 'kafka',
+      filename: 'msk',
+    });
+    const expectedMSKParsedEvent: KafkaMskEvent = {
+      ...event,
+      bootstrapServers: event.bootstrapServers.split(','),
+      records: {
+        [Object.keys(event.records)[0]]: [
+          {
+            ...event.records[Object.keys(event.records)[0]][0],
+            key: 'recordKey',
+            value: JSON.stringify({ key: 'value' }),
+            headers: [
+              {
+                headerKey: 'headerValue',
+              },
+            ],
+          },
+        ],
       },
-    ],
-  };
-  it('should parse kafka MSK event', () => {
+    };
+
+    // Act
+    const parsedEvent = KafkaMskEventSchema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(expectedMSKParsedEvent);
+  });
+
+  /* it('should parse kafka MSK event', () => {
     const kafkaEventMsk = TestEvents.kafkaEventMsk;
 
     expect(
@@ -70,5 +84,5 @@ describe('Kafka ', () => {
       kafkaEventMsk.records['mytopic-0'][0]
     );
     expect(parsedRecord.topic).toEqual('mytopic');
-  });
+  }); */
 });

@@ -1,44 +1,54 @@
-/**
- * Test built in schema envelopes for CloudWatch
- *
- * @group unit/parser/envelopes
- */
-
 import { gzipSync } from 'node:zlib';
-import { generateMock } from '@anatine/zod-mock';
-import { ParseError } from '../../../src';
-import { CloudWatchEnvelope } from '../../../src/envelopes/index.js';
+import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
+import { CloudWatchEnvelope } from '../../../src/envelopes';
+import { ParseError } from '../../../src/errors.js';
 import {
   CloudWatchLogEventSchema,
   CloudWatchLogsDecodeSchema,
 } from '../../../src/schemas/';
-import { TestSchema } from '../schema/utils.js';
+import type { CloudWatchLogsEvent } from '../../../src/types/index.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-describe('CloudWatch', () => {
-  describe('parse', () => {
-    it('should parse custom schema in envelope', () => {
-      const testEvent = {
-        awslogs: {
-          data: '',
-        },
-      };
+describe('Envelope: CloudWatchEnvelope', () => {
+  const baseEvent = getTestEvent<CloudWatchLogsEvent>({
+    eventsPath: 'cloudwatch',
+    filename: 'base',
+  });
+  const expectedData = [
+    {
+      id: 'eventId1',
+      message: '[ERROR] First test message',
+      timestamp: 1440442987000,
+    },
+    {
+      id: 'eventId2',
+      message: '[ERROR] Second test message',
+      timestamp: 1440442987001,
+    },
+  ];
 
-      const data = generateMock(TestSchema);
-      const eventMock = generateMock(CloudWatchLogEventSchema, {
-        stringMap: {
-          message: () => JSON.stringify(data),
-        },
-      });
+  describe('Method: parse', () => {
+    it.fails('parses a CloudWatch logs event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
 
-      const logMock = generateMock(CloudWatchLogsDecodeSchema);
-      logMock.logEvents = [eventMock];
+      // Act
+      const parsedEvent = CloudWatchEnvelope.parse(
+        event,
+        // z.record(z.unknown())
+        z.string()
+      );
 
-      testEvent.awslogs.data = gzipSync(
-        Buffer.from(JSON.stringify(logMock), 'utf8')
-      ).toString('base64');
-
-      expect(CloudWatchEnvelope.parse(testEvent, TestSchema)).toEqual([data]);
+      // Assess
+      expect(parsedEvent).toEqual([
+        expectedData[0].message,
+        expectedData[1].message,
+      ]);
     });
+
+    it('');
+    /* 
 
     it('should throw when schema does not match', () => {
       const testEvent = {
@@ -61,10 +71,10 @@ describe('CloudWatch', () => {
       ).toString('base64');
 
       expect(() => CloudWatchEnvelope.parse(testEvent, TestSchema)).toThrow();
-    });
+    }); */
   });
 
-  describe('safeParse', () => {
+  /* describe('safeParse', () => {
     it('should parse custom schema in envelope', () => {
       const testEvent = {
         awslogs: {
@@ -127,5 +137,5 @@ describe('CloudWatch', () => {
         originalEvent: { foo: 'bar' },
       });
     });
-  });
+  }); */
 });

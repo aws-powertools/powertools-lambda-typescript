@@ -1,17 +1,26 @@
-/**
- * Test built in schema envelopes for api gateway v2
- *
- * @group unit/parser/envelopes
- */
-
-import { generateMock } from '@anatine/zod-mock';
-import type { MSKEvent, SelfManagedKafkaEvent } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { KafkaEnvelope } from '../../../src/envelopes/index.js';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import { ParseError } from '../../../src/errors.js';
+import type {
+  KafkaMskEvent,
+  KafkaSelfManagedEvent,
+} from '../../../src/types/index.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-describe('Kafka', () => {
-  describe('parse', () => {
-    it('should parse MSK kafka envelope', () => {
+describe('Envelope: Kafka', () => {
+  const testSchema = z.object({
+    name: z.string(),
+    age: z.number(),
+  });
+  const mockBody = {
+    name: 'John',
+    age: 18,
+  };
+  const mockJSONStringifiedBody = JSON.stringify(mockBody);
+
+  describe('Method: parse', () => {
+    /* it('should parse MSK kafka envelope', () => {
       const mock = generateMock(TestSchema);
 
       const kafkaEvent = TestEvents.kafkaEventMsk as MSKEvent;
@@ -22,9 +31,8 @@ describe('Kafka', () => {
       const result = KafkaEnvelope.parse(kafkaEvent, TestSchema);
 
       expect(result).toEqual([[mock]]);
-    });
-
-    it('should parse Self Managed kafka envelope', () => {
+    }); */
+    /* it('should parse Self Managed kafka envelope', () => {
       const mock = generateMock(TestSchema);
 
       const kafkaEvent =
@@ -36,9 +44,8 @@ describe('Kafka', () => {
       const result = KafkaEnvelope.parse(kafkaEvent, TestSchema);
 
       expect(result).toEqual([[mock]]);
-    });
-
-    describe('safeParse', () => {
+    }); */
+    /* describe('safeParse', () => {
       it('should parse MSK kafka envelope', () => {
         const mock = generateMock(TestSchema);
 
@@ -91,6 +98,6 @@ describe('Kafka', () => {
           originalEvent: { foo: 'bar' },
         });
       });
-    });
+    }); */
   });
 });

@@ -1,37 +1,36 @@
-/**
- * Test built in schema envelopes for api gateway v2
- *
- * @group unit/parser/envelopes
- */
-
-import { generateMock } from '@anatine/zod-mock';
-import type { AttributeValue, DynamoDBStreamEvent } from 'aws-lambda';
+import { marshall } from '@aws-sdk/util-dynamodb';
+import type { AttributeValue } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { DynamoDBStreamEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
-import { TestEvents } from '../schema/utils.js';
+import type { DynamoDBStreamEvent } from '../../../src/types/schema.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('DynamoDB', () => {
-  const schema = z.object({
-    Message: z.record(z.literal('S'), z.string()),
-    Id: z.record(z.literal('N'), z.number().min(0).max(100)),
+  const testSchema = z.object({
+    name: z.string(),
+    age: z.number(),
   });
-  const mockOldImage = generateMock(schema);
-  const mockNewImage = generateMock(schema);
-  const dynamodbEvent = TestEvents.dynamoStreamEvent as DynamoDBStreamEvent;
-  // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
-  (dynamodbEvent.Records[0].dynamodb!.NewImage as typeof mockNewImage) =
-    mockNewImage;
-  // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
-  (dynamodbEvent.Records[1].dynamodb!.NewImage as typeof mockNewImage) =
-    mockNewImage;
-  // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
-  (dynamodbEvent.Records[0].dynamodb!.OldImage as typeof mockOldImage) =
-    mockOldImage;
-  // biome-ignore lint/style/noNonNullAssertion: it is ensured that this event has these properties
-  (dynamodbEvent.Records[1].dynamodb!.OldImage as typeof mockOldImage) =
-    mockOldImage;
-  describe('parse', () => {
+  const mockOldImage = {
+    name: 'John',
+    age: 18,
+  };
+  const mockNewImage = {
+    name: 'Jane',
+    age: 21,
+  };
+  const baseEvent = getTestEvent<DynamoDBStreamEvent>({
+    eventsPath: 'dynamodb',
+    filename: 'base',
+  });
+  baseEvent.Records[0].dynamodb.OldImage = mockOldImage;
+  baseEvent.Records[1].dynamodb.OldImage = mockOldImage;
+  baseEvent.Records[0].dynamodb.NewImage = mockNewImage;
+  baseEvent.Records[1].dynamodb.NewImage = mockNewImage;
+
+  describe('Method: parse', () => {
+    it('parses a DynamoDB Stream event', () => {});
     it('parse should parse dynamodb envelope', () => {
       const parsed = DynamoDBStreamEnvelope.parse(dynamodbEvent, schema);
       expect(parsed[0]).toEqual({

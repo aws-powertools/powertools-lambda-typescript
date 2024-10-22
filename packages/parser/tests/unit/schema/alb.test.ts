@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { AlbMultiValueHeadersSchema, AlbSchema } from '../../../src/schemas/';
+import {
+  AlbMultiValueHeadersSchema,
+  AlbSchema,
+} from '../../../src/schemas/alb.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: ALB', () => {

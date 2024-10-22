@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SnsSchema } from '../../../src/schemas/sns.js';
-import type { SnsEvent } from '../../../src/types';
+import type { SnsEvent } from '../../../src/types/index.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: SNS', () => {

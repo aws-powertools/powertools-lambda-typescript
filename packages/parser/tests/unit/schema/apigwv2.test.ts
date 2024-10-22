@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,
-} from '../../../src/schemas/index.js';
+} from '../../../src/schemas/apigwv2.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: API Gateway HTTP (v2)', () => {

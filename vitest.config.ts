@@ -21,7 +21,7 @@ export default defineConfig({
         'packages/logger/src/types/**',
         'packages/metrics/**',
         'packages/parameters/**',
-        'packages/parser/**',
+        'packages/parser/src/types/**',
         'packages/testing/**',
         'packages/tracer/**',
       ],

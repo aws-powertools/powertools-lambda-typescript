@@ -1,22 +1,17 @@
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/index.js';
 import { ParseError } from '../../src/errors.js';
-import { parser } from '../../src/index.js';
+import { parser } from '../../src/middleware/parser.js';
 import { EventBridgeSchema } from '../../src/schemas/index.js';
+import type { EventBridgeEvent } from '../../src/types/index.js';
 import { getTestEvent } from './helpers/utils.js';
 
-class MockLambda {
-  protected echo(event: unknown) {
-    return event;
-  }
-}
-
-describe('Decorator: Parser', () => {
+describe('Middleware: parser', () => {
   const event = {
-    ...getTestEvent({
+    ...getTestEvent<EventBridgeEvent>({
       eventsPath: 'eventbridge',
       filename: 'base',
     }),
@@ -35,15 +30,10 @@ describe('Decorator: Parser', () => {
     const schema = EventBridgeSchema.extend({
       detail: TestSchema,
     });
-    class Mock extends MockLambda implements LambdaInterface {
-      @parser({ schema })
-      public async handler(event: unknown, _context = {} as Context) {
-        return this.echo(event);
-      }
-    }
+    const handler = middy(async (event) => event).use(parser({ schema }));
 
     // Act
-    const response = await new Mock().handler(event);
+    const response = await handler(event, {} as Context);
 
     // Assess
     expect(response).toEqual(event);
@@ -51,15 +41,16 @@ describe('Decorator: Parser', () => {
 
   it('extracts the paylaod from the envelope', async () => {
     // Prepare
-    class Mock extends MockLambda implements LambdaInterface {
-      @parser({ schema: TestSchema, envelope: EventBridgeEnvelope })
-      public async handler(event: unknown, _context = {} as Context) {
-        return this.echo(event);
-      }
-    }
+    const handler = middy(async (event) => event).use(
+      parser({
+        schema: TestSchema,
+        envelope: EventBridgeEnvelope,
+      })
+    );
 
     // Act
-    const response = await new Mock().handler(event);
+    // @ts-expect-error - this is an issue we are tracking #3226
+    const response = await handler(event, {} as Context);
 
     // Assess
     expect(response).toEqual(event.detail);
@@ -105,15 +96,13 @@ describe('Decorator: Parser', () => {
         : EventBridgeSchema.extend({
             detail: TestSchema,
           });
-      class Mock extends MockLambda implements LambdaInterface {
-        @parser({ schema, safeParse: true, ...options })
-        public async handler(event: unknown, _context = {} as Context) {
-          return this.echo(event);
-        }
-      }
+      const handler = middy(async (event) => event).use(
+        parser({ schema, safeParse: true, ...options })
+      );
 
       // Act
-      const response = await new Mock().handler(event);
+      // @ts-expect-error - We are testing events that might not be valid
+      const response = await handler(event, {} as Context);
 
       // Assess
       expect(response).toEqual(expected);

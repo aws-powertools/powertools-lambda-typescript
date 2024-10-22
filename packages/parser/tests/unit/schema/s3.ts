@@ -1,16 +1,11 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
-
+import { describe, expect, it } from 'vitest';
 import {
   S3EventNotificationEventBridgeSchema,
   S3ObjectLambdaEventSchema,
   S3Schema,
   S3SqsEventNotificationSchema,
 } from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('S3 ', () => {
   it('should parse s3 event', () => {

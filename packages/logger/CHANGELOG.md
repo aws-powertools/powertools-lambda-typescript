@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.9.0...v2.10.0) (2024-10-22)
+
+
+### Features
+
+* **logger:** include enumerable properties in formatted errors ([#3195](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3195)) ([4b80d9f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4b80d9ff77a638d2290411764a1b9dc2dc9d8cbd))
+
+
+
+
+
 # [2.9.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.8.0...v2.9.0) (2024-10-07)
 
 **Note:** Version bump only for package @aws-lambda-powertools/logger

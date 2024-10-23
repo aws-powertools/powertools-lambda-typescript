@@ -6,7 +6,6 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import type { KinesisStreamEvent } from 'aws-lambda';
-import { ZodError } from 'zod';
 import { KinesisEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';

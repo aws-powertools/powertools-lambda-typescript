@@ -6,7 +6,6 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import type { MSKEvent, SelfManagedKafkaEvent } from 'aws-lambda';
-import { ZodError } from 'zod';
 import { ParseError } from '../../../src';
 import { KafkaEnvelope } from '../../../src/envelopes/index.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';

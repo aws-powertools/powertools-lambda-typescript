@@ -4,4 +4,4 @@ npm t \
   -w packages/parameters \
   -w packages/parser
 
-npx vitest --run --coverage --changed="$(git merge-base HEAD main)"
+npx vitest --run --coverage --changed="$(git merge-base HEAD main)" tests/unit

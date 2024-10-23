@@ -31,7 +31,7 @@ jobs:
         uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
       - name: Version
         id: bump-version
-        run: npx lerna version --conventional-commits --no-git-tag-version --no-push --no-commit-hooks --yes
+        run: npx lerna version --conventional-commits --force-publish --no-git-tag-version --no-push --no-commit-hooks --yes
       - name: Update user agent version
         run: |
           VERSION=$(cat lerna.json | jq .version -r)

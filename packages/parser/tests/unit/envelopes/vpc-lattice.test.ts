@@ -5,6 +5,8 @@
  */
 
 import { generateMock } from '@anatine/zod-mock';
+import { ZodError } from 'zod';
+import { ParseError } from '../../../src';
 import { VpcLatticeEnvelope } from '../../../src/envelopes/index.js';
 import type { VpcLatticeEvent } from '../../../src/types/index.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';
@@ -76,7 +78,7 @@ describe('VpcLatticeEnvelope', () => {
 
       expect(resp).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: { foo: 'bar' },
       });
     });
@@ -86,12 +88,16 @@ describe('VpcLatticeEnvelope', () => {
 
       testEvent.body = JSON.stringify({ foo: 'bar' });
 
-      const resp = VpcLatticeEnvelope.safeParse(testEvent, TestSchema);
-      expect(resp).toEqual({
+      const parseResult = VpcLatticeEnvelope.safeParse(testEvent, TestSchema);
+      expect(parseResult).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: testEvent,
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
+      }
     });
   });
 });

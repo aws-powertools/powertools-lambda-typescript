@@ -1,7 +1,7 @@
 import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { APIGatewayProxyEventV2Schema } from '../schemas/apigwv2.js';
-import type { ParsedResult } from '../types/index.js';
+import type { ParsedResult, ParsedResultSuccess } from '../types/index.js';
 import { Envelope } from './envelope.js';
 
 /**
@@ -39,6 +39,7 @@ export const ApiGatewayV2Envelope = {
       };
     }
 
-    return parsedBody;
+    // use type assertion to avoid type check, we know it's success here
+    return parsedBody as ParsedResultSuccess<z.infer<T>>;
   },
 };

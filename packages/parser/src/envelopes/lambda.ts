@@ -1,7 +1,7 @@
 import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { LambdaFunctionUrlSchema } from '../schemas/index.js';
-import type { ParsedResult } from '../types/index.js';
+import type { ParsedResult, ParsedResultSuccess } from '../types/index.js';
 import { Envelope } from './envelope.js';
 
 /**
@@ -40,6 +40,6 @@ export const LambdaFunctionUrlEnvelope = {
       };
     }
 
-    return parsedBody;
+    return parsedBody as ParsedResultSuccess<z.infer<T>>;
   },
 };

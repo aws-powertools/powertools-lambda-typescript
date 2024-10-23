@@ -4,6 +4,7 @@
  * @group unit/parser/envelopes/apigwv2
  */
 
+import { ZodError } from 'zod';
 import { ApiGatewayV2Envelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import type { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
@@ -68,6 +69,10 @@ describe('API Gateway HTTP Envelope', () => {
         error: expect.any(ParseError),
         originalEvent: event,
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
+      }
     });
 
     it('should not throw if the body is undefined', () => {

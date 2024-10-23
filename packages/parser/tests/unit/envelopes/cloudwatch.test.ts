@@ -6,6 +6,7 @@
 
 import { gzipSync } from 'node:zlib';
 import { generateMock } from '@anatine/zod-mock';
+import { ZodError } from 'zod';
 import { ParseError } from '../../../src';
 import { CloudWatchEnvelope } from '../../../src/envelopes/index.js';
 import {
@@ -113,11 +114,16 @@ describe('CloudWatch', () => {
         Buffer.from(JSON.stringify(logMock), 'utf8')
       ).toString('base64');
 
-      expect(CloudWatchEnvelope.safeParse(testEvent, TestSchema)).toEqual({
+      const parseResult = CloudWatchEnvelope.safeParse(testEvent, TestSchema);
+      expect(parseResult).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: testEvent,
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
+      }
     });
 
     it('should return success false when envelope does not match', () => {

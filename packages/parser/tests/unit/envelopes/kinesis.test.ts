@@ -6,6 +6,7 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import type { KinesisStreamEvent } from 'aws-lambda';
+import { ZodError } from 'zod';
 import { KinesisEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';
@@ -61,12 +62,16 @@ describe('KinesisEnvelope', () => {
     it('should return original event if record is invalid', () => {
       const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
       testEvent.Records[0].kinesis.data = 'invalid';
-      const resp = KinesisEnvelope.safeParse(testEvent, TestSchema);
-      expect(resp).toEqual({
+      const parseResult = KinesisEnvelope.safeParse(testEvent, TestSchema);
+      expect(parseResult).toEqual({
         success: false,
         error: expect.any(ParseError),
         originalEvent: testEvent,
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(SyntaxError);
+      }
     });
   });
 });

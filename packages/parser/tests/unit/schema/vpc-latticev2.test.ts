@@ -1,23 +1,30 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
+import { describe, expect, it } from 'vitest';
+import { VpcLatticeV2Schema } from '../../../src/schemas/vpc-latticev2.js';
+import type { VpcLatticeEventV2 } from '../../../src/types/schema.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-import { VpcLatticeV2Schema } from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
-
-describe('VpcLatticeV2 ', () => {
-  it('should parse VpcLatticeV2 event', () => {
-    const vpcLatticeV2Event = TestEvents.vpcLatticeV2Event;
-    const parsed = VpcLatticeV2Schema.parse(vpcLatticeV2Event);
-    expect(parsed).toEqual(vpcLatticeV2Event);
+describe('Schema: VpcLatticeV2 ', () => {
+  const baseEvent = getTestEvent<VpcLatticeEventV2>({
+    eventsPath: 'vpc-lattice',
+    filename: 'base-v2',
   });
 
-  it('should parse VpcLatticeV2PathTrailingSlash event', () => {
-    const vpcLatticeEventV2PathTrailingSlash =
-      TestEvents.vpcLatticeEventV2PathTrailingSlash;
-    const parsed = VpcLatticeV2Schema.parse(vpcLatticeEventV2PathTrailingSlash);
-    expect(parsed).toEqual(vpcLatticeEventV2PathTrailingSlash);
+  it('parses a VpcLatticeV2 event', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+
+    // Act
+    const parsedEvent = VpcLatticeV2Schema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(event);
+  });
+
+  it('throws if event is not a VpcLatticeV2 event', () => {
+    // Prepare
+    const event = { foo: 'bar' };
+
+    // Act & Assess
+    expect(() => VpcLatticeV2Schema.parse(event)).toThrow();
   });
 });

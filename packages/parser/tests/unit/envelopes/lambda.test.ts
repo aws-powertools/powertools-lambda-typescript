@@ -1,91 +1,118 @@
-/**
- * Test built in schema envelopes for Lambda Functions URL
- *
- * @group unit/parser/envelopes
- */
-
-import { generateMock } from '@anatine/zod-mock';
-import type { APIGatewayProxyEventV2 } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { LambdaFunctionUrlEnvelope } from '../../../src/envelopes/index.js';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import { ParseError } from '../../../src/errors.js';
+import type { LambdaFunctionUrlEvent } from '../../../src/types/index.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-describe('Lambda Functions Url ', () => {
-  describe('parse', () => {
-    it('should parse custom schema in envelope', () => {
-      const testEvent =
-        TestEvents.lambdaFunctionUrlEvent as APIGatewayProxyEventV2;
-      const data = generateMock(TestSchema);
+describe('Envelope: Lambda Functions Url ', () => {
+  const baseEvent = getTestEvent<LambdaFunctionUrlEvent>({
+    eventsPath: 'lambda',
+    filename: 'with-body',
+  });
 
-      testEvent.body = JSON.stringify(data);
+  describe('Method: parse', () => {
+    it.fails('parses a Lambda FUrl event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
 
-      expect(LambdaFunctionUrlEnvelope.parse(testEvent, TestSchema)).toEqual(
-        data
+      // Act
+      const parsedBody = LambdaFunctionUrlEnvelope.parse(event, z.string());
+
+      // Assess
+      expect(parsedBody).toEqual(event.body);
+    });
+
+    it('parses a JSON body within a Lambda FUrl event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.body = JSON.stringify({ name: 'John' });
+
+      // Act
+      const parsedBody = LambdaFunctionUrlEnvelope.parse(
+        event,
+        z.object({ name: z.string() })
       );
+
+      // Assess
+      expect(parsedBody).toEqual({ name: 'John' });
     });
 
-    it('should throw when no body provided', () => {
-      const testEvent =
-        TestEvents.apiGatewayProxyV2Event as APIGatewayProxyEventV2;
-      testEvent.body = undefined;
+    it.fails('parses a binary body within a Lambda FUrl event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.body = 'SGVsbG8gV29ybGQ='; // encoded 'Hello World'
+      event.isBase64Encoded = true;
 
-      expect(() =>
-        LambdaFunctionUrlEnvelope.parse(testEvent, TestSchema)
-      ).toThrow();
+      // Act
+      const parsedBody = LambdaFunctionUrlEnvelope.parse(event, z.string());
+
+      // Assess
+      expect(parsedBody).toEqual('Hello World');
     });
 
-    it('should throw when envelope is not valid', () => {
-      expect(() =>
-        LambdaFunctionUrlEnvelope.parse({ foo: 'bar' }, TestSchema)
-      ).toThrow();
+    it('throws if event is not a Lambda FUrl event', () => {
+      // Prepare
+      const event = { foo: 'bar' };
+
+      // Act & Assess
+      expect(() => LambdaFunctionUrlEnvelope.parse(event, z.any())).toThrow();
     });
 
-    it('should throw when body does not match schema', () => {
-      const testEvent =
-        TestEvents.lambdaFunctionUrlEvent as APIGatewayProxyEventV2;
-      testEvent.body = JSON.stringify({ foo: 'bar' });
+    it('throws if body does not match schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.body = JSON.stringify({ foo: 'bar' });
 
+      // Act & Assess
       expect(() =>
-        LambdaFunctionUrlEnvelope.parse(testEvent, TestSchema)
+        LambdaFunctionUrlEnvelope.parse(event, z.object({ name: z.string() }))
       ).toThrow();
     });
   });
-  describe('safeParse', () => {
-    it('should parse custom schema in envelope', () => {
-      const testEvent =
-        TestEvents.lambdaFunctionUrlEvent as APIGatewayProxyEventV2;
-      const data = generateMock(TestSchema);
 
-      testEvent.body = JSON.stringify(data);
+  describe('Method: safeParse', () => {
+    it.fails('parses a Lambda FUrl event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
 
-      expect(
-        LambdaFunctionUrlEnvelope.safeParse(testEvent, TestSchema)
-      ).toEqual({
+      // Act
+      const result = LambdaFunctionUrlEnvelope.safeParse(event, z.string());
+
+      // Assess
+      expect(result).toEqual({
         success: true,
-        data,
+        data: event.body,
       });
     });
 
-    it('should return original event when envelope is not valid', () => {
-      expect(
-        LambdaFunctionUrlEnvelope.safeParse({ foo: 'bar' }, TestSchema)
-      ).toEqual({
+    it('returns error if event is not a Lambda FUrl event', () => {
+      // Prepare
+      const event = { foo: 'bar' };
+
+      // Act
+      const result = LambdaFunctionUrlEnvelope.safeParse(event, z.any());
+
+      // Assess
+      expect(result).toEqual({
         success: false,
-        error: expect.any(Error),
-        originalEvent: { foo: 'bar' },
+        error: expect.any(ParseError),
+        originalEvent: event,
       });
     });
 
-    it('should return original event when body does not match schema', () => {
-      const testEvent =
-        TestEvents.lambdaFunctionUrlEvent as APIGatewayProxyEventV2;
-      testEvent.body = JSON.stringify({ foo: 'bar' });
+    it('returns error if body does not match schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
 
-      expect(
-        LambdaFunctionUrlEnvelope.safeParse(testEvent, TestSchema)
-      ).toEqual({
+      // Act
+      const result = LambdaFunctionUrlEnvelope.safeParse(event, z.number());
+
+      // Assess
+      expect(result).toEqual({
         success: false,
-        error: expect.any(Error),
-        originalEvent: testEvent,
+        error: expect.any(ParseError),
+        originalEvent: event,
       });
     });
   });

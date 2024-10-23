@@ -1,22 +1,30 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
+import { describe, expect, it } from 'vitest';
+import { SqsSchema } from '../../../src/schemas/sqs.js';
+import type { SqsEvent } from '../../../src/types/schema.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-import { SqsRecordSchema, SqsSchema } from '../../../src/schemas/';
-import type { SqsEvent } from '../../../src/types';
-import type { SqsRecord } from '../../../src/types/schema';
-import { TestEvents } from './utils.js';
-
-describe('SQS', () => {
-  it('should parse sqs event', () => {
-    const sqsEvent = TestEvents.sqsEvent;
-    expect(SqsSchema.parse(sqsEvent)).toEqual(sqsEvent);
+describe('Schema: SqsSchema ', () => {
+  const baseEvent = getTestEvent<SqsEvent>({
+    eventsPath: 'sqs',
+    filename: 'base',
   });
-  it('should parse record from sqs event', () => {
-    const sqsEvent: SqsEvent = TestEvents.sqsEvent as SqsEvent;
-    const parsed: SqsRecord = SqsRecordSchema.parse(sqsEvent.Records[0]);
-    expect(parsed.body).toEqual('Test message.');
+
+  it('parses a SQS event', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+
+    // Act
+    const parsedEvent = SqsSchema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(event);
+  });
+
+  it('throws if event is not a SQS event', () => {
+    // Prepare
+    const event = { foo: 'bar' };
+
+    // Act & Assess
+    expect(() => SqsSchema.parse(event)).toThrow();
   });
 });

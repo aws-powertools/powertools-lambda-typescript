@@ -47,6 +47,7 @@ jobs:
           "packages/idempotency",
           "packages/jmespath",
           "packages/logger",
+          "packages/parser",
         ]
       fail-fast: false
     steps:
@@ -91,14 +92,12 @@ jobs:
         run: |
           npm run lint -w -w packages/tracer \
             -w packages/metrics \
-            -w packages/parameters \
-            -w packages/parser
+            -w packages/parameters
       - name: Run unit tests
         run: |
           npm t -w packages/tracer \
             -w packages/metrics \
-            -w packages/parameters \
-            -w packages/parser
+            -w packages/parameters
   check-examples:
     runs-on: ubuntu-latest
     env:

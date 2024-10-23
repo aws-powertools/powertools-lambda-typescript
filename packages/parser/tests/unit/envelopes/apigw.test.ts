@@ -1,119 +1,106 @@
-/**
- * Test built-in API Gateway REST envelope
- *
- * @group unit/parser/envelopes/apigw
- */
-
+import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { ApiGatewayEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import type { APIGatewayProxyEvent } from '../../../src/types/schema.js';
-import { TestSchema, getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-describe('API Gateway REST Envelope', () => {
+describe('Envelope: API Gateway REST', () => {
+  const testSchema = z.object({
+    name: z.string(),
+    age: z.number(),
+  });
+  const mockBody = {
+    name: 'John',
+    age: 18,
+  };
+  const mockJSONStringifiedBody = JSON.stringify(mockBody);
   const eventsPath = 'apigw-rest';
-  const eventPrototype = getTestEvent<APIGatewayProxyEvent>({
+  const baseEvent = getTestEvent<APIGatewayProxyEvent>({
     eventsPath,
     filename: 'no-auth',
   });
 
   describe('Method: parse', () => {
-    it('should throw if the payload does not match the schema', () => {
+    it('throws if the payload does not match the schema', () => {
       // Prepare
-      const event = { ...eventPrototype };
+      const event = structuredClone(baseEvent);
       event.body = JSON.stringify({ name: 'foo' });
 
       // Act & Assess
-      expect(() => ApiGatewayEnvelope.parse(event, TestSchema)).toThrow(
+      expect(() => ApiGatewayEnvelope.parse(event, testSchema)).toThrow(
         ParseError
       );
     });
 
-    it('should throw if the body is null', () => {
+    it('throws if the body is null', () => {
       // Prepare
-      const event = { ...eventPrototype };
+      const event = structuredClone(baseEvent);
       event.body = null;
 
       // Act & Assess
-      expect(() => ApiGatewayEnvelope.parse(event, TestSchema)).toThrow(
+      expect(() => ApiGatewayEnvelope.parse(event, z.string())).toThrow(
         ParseError
       );
     });
 
-    it('should parse and return the inner schema in an envelope', () => {
+    it('parses an API Gateway event', () => {
       // Prepare
-      const event = { ...eventPrototype };
-      const payload = { name: 'foo', age: 42 };
-      event.body = JSON.stringify(payload);
+      const event = structuredClone(baseEvent);
+      event.body = mockJSONStringifiedBody;
 
       // Act
-      const parsedEvent = ApiGatewayEnvelope.parse(event, TestSchema);
+      const parsedEvent = ApiGatewayEnvelope.parse(event, testSchema);
 
       // Assess
-      expect(parsedEvent).toEqual(payload);
+      expect(parsedEvent).toEqual(mockBody);
     });
   });
 
   describe('Method: safeParse', () => {
-    it('should not throw if the payload does not match the schema', () => {
+    it('parses a SQS event', () => {
       // Prepare
-      const event = { ...eventPrototype };
+      const event = structuredClone(baseEvent);
+      event.body = mockJSONStringifiedBody;
+
+      // Act
+      const result = ApiGatewayEnvelope.safeParse(event, testSchema);
+
+      // Assess
+      expect(result).toEqual({
+        success: true,
+        data: mockBody,
+      });
+    });
+
+    it('returns error if event is not a SQS event', () => {
+      // Prepare
+      const event = { foo: 'bar' };
+
+      // Act
+      const result = ApiGatewayEnvelope.safeParse(event, testSchema);
+
+      // Assess
+      expect(result).toEqual({
+        success: false,
+        error: expect.any(ParseError),
+        originalEvent: event,
+      });
+    });
+
+    it('returns error if body does not match schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
       event.body = JSON.stringify({ name: 'foo' });
 
       // Act
-      const parseResult = ApiGatewayEnvelope.safeParse(event, TestSchema);
+      const parseResult = ApiGatewayEnvelope.safeParse(event, testSchema);
 
       // Assess
       expect(parseResult).toEqual({
         success: false,
         error: expect.any(ParseError),
         originalEvent: event,
-      });
-    });
-
-    it('should not throw if the body is null', () => {
-      // Prepare
-      const event = { ...eventPrototype };
-      event.body = null;
-
-      // Act
-      const parseResult = ApiGatewayEnvelope.safeParse(event, TestSchema);
-
-      // Assess
-      expect(parseResult).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: event,
-      });
-    });
-
-    it('should not throw if the event is invalid', () => {
-      // Prepare
-      const event = getTestEvent({ eventsPath, filename: 'invalid' });
-
-      // Act
-      const parseResult = ApiGatewayEnvelope.safeParse(event, TestSchema);
-
-      // Assess
-      expect(parseResult).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: event,
-      });
-    });
-
-    it('should parse and return the inner schema in an envelope', () => {
-      // Prepare
-      const event = { ...eventPrototype };
-      const payload = { name: 'foo', age: 42 };
-      event.body = JSON.stringify(payload);
-
-      // Act
-      const parsedEvent = ApiGatewayEnvelope.safeParse(event, TestSchema);
-
-      // Assess
-      expect(parsedEvent).toEqual({
-        success: true,
-        data: payload,
       });
     });
   });

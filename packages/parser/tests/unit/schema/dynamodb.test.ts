@@ -1,17 +1,30 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
+import { describe, expect, it } from 'vitest';
+import { DynamoDBStreamSchema } from '../../../src/schemas/dynamodb.js';
+import type { DynamoDBStreamEvent } from '../../../src/types/schema.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-import { DynamoDBStreamSchema } from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
+describe('Schema: DynamoDB ', () => {
+  const baseEvent = getTestEvent<DynamoDBStreamEvent>({
+    eventsPath: 'dynamodb',
+    filename: 'base',
+  });
 
-describe('DynamoDB ', () => {
-  const dynamoStreamEvent = TestEvents.dynamoStreamEvent;
-  it('should parse a stream of records', () => {
-    expect(DynamoDBStreamSchema.parse(dynamoStreamEvent)).toEqual(
-      dynamoStreamEvent
-    );
+  it('parses a DynamoDB Stream event', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+
+    // Act
+    const parsedEvent = DynamoDBStreamSchema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(event);
+  });
+
+  it('throws if event is not a DynamoDB Stream event', () => {
+    // Prepare
+    const event = { foo: 'bar' };
+
+    // Act & Assess
+    expect(() => DynamoDBStreamSchema.parse(event)).toThrow();
   });
 });

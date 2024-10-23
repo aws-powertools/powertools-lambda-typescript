@@ -1,69 +1,104 @@
-/**
- * Test built in schema envelopes for sqs
- *
- * @group unit/parser/envelopes
- */
-
-import { generateMock } from '@anatine/zod-mock';
-import type { SQSEvent } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { SqsEnvelope } from '../../../src/envelopes/sqs.js';
 import { ParseError } from '../../../src/errors.js';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import type { SqsEvent } from '../../../src/types/index.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-describe('SqsEnvelope ', () => {
-  describe('parse', () => {
-    it('should parse custom schema in envelope', () => {
-      const mock = generateMock(TestSchema);
+describe('Envelope: SqsEnvelope ', () => {
+  const testSchema = z.object({
+    name: z.string(),
+    age: z.number(),
+  });
+  const mockBody = {
+    name: 'John',
+    age: 18,
+  };
+  const mockJSONStringifiedBody = JSON.stringify(mockBody);
+  const baseEvent = getTestEvent<SqsEvent>({
+    eventsPath: 'sqs',
+    filename: 'base',
+  });
 
-      const sqsEvent = TestEvents.sqsEvent as SQSEvent;
-      sqsEvent.Records[0].body = JSON.stringify(mock);
-      sqsEvent.Records[1].body = JSON.stringify(mock);
+  describe('Method: parse', () => {
+    it('parses a SQS event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.Records[0].body = mockJSONStringifiedBody;
+      event.Records[1].body = mockJSONStringifiedBody;
 
-      const resp = SqsEnvelope.parse(sqsEvent, TestSchema);
-      expect(resp).toEqual([mock, mock]);
+      // Act
+      const parsedBody = SqsEnvelope.parse(event, testSchema);
+
+      // Assess
+      expect(parsedBody).toEqual([mockBody, mockBody]);
     });
 
-    it('should throw error if invalid keys for a schema', () => {
-      expect(() => {
-        SqsEnvelope.parse({ Records: [{ foo: 'bar' }] }, TestSchema);
-      }).toThrow();
+    it('throws if event is not a SQS event', () => {
+      // Prepare
+      const event = { foo: 'bar' };
+
+      // Act & Assess
+      expect(() => SqsEnvelope.parse(event, testSchema)).toThrow();
     });
 
-    it('should throw if invalid envelope', () => {
-      expect(() => {
-        SqsEnvelope.parse({ foo: 'bar' }, TestSchema);
-      }).toThrow();
+    it('throws if body does not match schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.Records[0].body = JSON.stringify({ foo: 'bar' });
+      event.Records[1].body = mockJSONStringifiedBody;
+
+      // Act & Assess
+      expect(() => SqsEnvelope.parse(event, testSchema)).toThrow();
     });
   });
-  describe('safeParse', () => {
-    it('should parse custom schema in envelope', () => {
-      const mock = generateMock(TestSchema);
 
-      const sqsEvent = TestEvents.sqsEvent as SQSEvent;
-      sqsEvent.Records[0].body = JSON.stringify(mock);
-      sqsEvent.Records[1].body = JSON.stringify(mock);
+  describe('Method: safeParse', () => {
+    it('parses a SQS event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.Records[0].body = mockJSONStringifiedBody;
+      event.Records[1].body = mockJSONStringifiedBody;
 
-      expect(SqsEnvelope.safeParse(sqsEvent, TestSchema)).toEqual({
+      // Act
+      const result = SqsEnvelope.safeParse(event, testSchema);
+
+      // Assess
+      expect(result).toEqual({
         success: true,
-        data: [mock, mock],
+        data: [mockBody, mockBody],
       });
     });
 
-    it('should return error if event does not match schema', () => {
-      const sqsEvent = TestEvents.sqsEvent as SQSEvent;
-      sqsEvent.Records[0].body = JSON.stringify({ foo: 'bar' });
-      expect(SqsEnvelope.safeParse(sqsEvent, TestSchema)).toEqual({
+    it('returns error if event is not a SQS event', () => {
+      // Prepare
+      const event = { foo: 'bar' };
+
+      // Act
+      const result = SqsEnvelope.safeParse(event, testSchema);
+
+      // Assess
+      expect(result).toEqual({
         success: false,
         error: expect.any(ParseError),
-        originalEvent: sqsEvent,
+        originalEvent: event,
       });
     });
 
-    it('should return error if envelope is invalid', () => {
-      expect(SqsEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({
+    it('returns error if body does not match schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.Records[0].body = JSON.stringify({ foo: 'bar' });
+      event.Records[1].body = mockJSONStringifiedBody;
+
+      // Act
+      const result = SqsEnvelope.safeParse(event, testSchema);
+
+      // Assess
+      expect(result).toEqual({
         success: false,
         error: expect.any(ParseError),
-        originalEvent: { foo: 'bar' },
+        originalEvent: event,
       });
     });
   });

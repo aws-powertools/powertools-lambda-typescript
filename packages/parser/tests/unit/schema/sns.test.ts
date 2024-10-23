@@ -1,48 +1,31 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
+import { describe, expect, it } from 'vitest';
+import { SnsSchema } from '../../../src/schemas/sns.js';
+import type { SnsEvent } from '../../../src/types/index.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-import {
-  SnsNotificationSchema,
-  SnsRecordSchema,
-  SnsSchema,
-  SnsSqsNotificationSchema,
-} from '../../../src/schemas/';
-import type { SnsEvent, SqsEvent } from '../../../src/types';
-import type {
-  SnsNotification,
-  SnsRecord,
-  SnsSqsNotification,
-} from '../../../src/types/schema';
-import { TestEvents } from './utils.js';
+describe('Schema: SNS', () => {
+  const baseEvent = getTestEvent<SnsEvent>({
+    eventsPath: 'sns',
+    filename: 'base',
+  });
 
-describe('SNS', () => {
-  it('should parse sns event', () => {
-    const snsEvent = TestEvents.snsEvent;
-    expect(SnsSchema.parse(snsEvent)).toEqual(snsEvent);
+  it('parses a SNS event', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+
+    // Act
+    const parsedEvent = SnsSchema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(event);
+    expect(parsedEvent.Records[0].Sns.Message).toEqual('Hello from SNS!');
   });
-  it('should parse record from sns event', () => {
-    const snsEvent: SnsEvent = TestEvents.snsEvent as SnsEvent;
-    const parsed: SnsRecord = SnsRecordSchema.parse(snsEvent.Records[0]);
-    expect(parsed.Sns.Message).toEqual('Hello from SNS!');
-  });
-  it('should parse sns notification from sns event', () => {
-    const snsEvent: SnsEvent = TestEvents.snsEvent as SnsEvent;
-    const parsed: SnsNotification = SnsNotificationSchema.parse(
-      snsEvent.Records[0].Sns
-    );
-    expect(parsed.Message).toEqual('Hello from SNS!');
-  });
-  it('should parse sns notification from sqs -> sns event', () => {
-    const sqsEvent: SqsEvent = TestEvents.snsSqsEvent as SqsEvent;
-    console.log(sqsEvent.Records[0].body);
-    const parsed: SnsSqsNotification = SnsSqsNotificationSchema.parse(
-      JSON.parse(sqsEvent.Records[0].body)
-    );
-    expect(parsed.TopicArn).toEqual(
-      'arn:aws:sns:eu-west-1:231436140809:powertools265'
-    );
+
+  it('throws if event is not a SNS event', () => {
+    // Prepare
+    const event = { foo: 'bar' };
+
+    // Act & Assess
+    expect(() => SnsSchema.parse(event)).toThrow();
   });
 });

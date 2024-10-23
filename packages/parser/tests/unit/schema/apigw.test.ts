@@ -1,28 +1,24 @@
-/**
- * Test built-in API Gateway REST schemas
- *
- * @group unit/parser/schema/apigw
- */
+import { describe, expect, it } from 'vitest';
 import {
   APIGatewayProxyEventSchema,
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
-} from '../../../src/schemas/index.js';
-import { getTestEvent } from './utils.js';
+} from '../../../src/schemas/apigw.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-describe('API Gateway REST Schemas', () => {
+describe('Schema: API Gateway REST', () => {
   const eventsPath = 'apigw-rest';
 
   describe('APIGatewayProxyEventSchema', () => {
-    it('should throw when the event is invalid', () => {
+    it('throws when the event is invalid', () => {
       // Prepare
-      const event = getTestEvent({ eventsPath, filename: 'invalid' });
+      const event = { foo: 'bar' };
 
       // Act & Assess
       expect(() => APIGatewayProxyEventSchema.parse(event)).toThrow();
     });
 
-    it('should parse an event with no authorizer', () => {
+    it('parses an event with no authorizer', () => {
       // Prepare
       const event = getTestEvent({ eventsPath, filename: 'no-auth' });
 
@@ -33,7 +29,7 @@ describe('API Gateway REST Schemas', () => {
       expect(parsedEvent).toEqual(event);
     });
 
-    it('should parse an event with a lambda authorizer', () => {
+    it('parses an event with a lambda authorizer', () => {
       // Prepare
       const event = getTestEvent({
         eventsPath,
@@ -47,7 +43,7 @@ describe('API Gateway REST Schemas', () => {
       expect(parsedEvent).toEqual(event);
     });
 
-    it('should parse an event with a JWT authorizer', () => {
+    it('parses an event with a JWT authorizer', () => {
       // Prepare
       const event = getTestEvent({
         eventsPath,
@@ -61,7 +57,7 @@ describe('API Gateway REST Schemas', () => {
       expect(parsedEvent).toEqual(event);
     });
 
-    it('should parse an event with an IAM authorizer', () => {
+    it('parses an event with an IAM authorizer', () => {
       // Prepare
       const event = getTestEvent({
         eventsPath,
@@ -75,7 +71,7 @@ describe('API Gateway REST Schemas', () => {
       expect(parsedEvent).toEqual(event);
     });
 
-    it('should parse an event sent by the AWS console test UI', () => {
+    it('parses an event sent by the AWS console test UI', () => {
       // Prepare
       const event = getTestEvent({
         eventsPath,
@@ -89,7 +85,7 @@ describe('API Gateway REST Schemas', () => {
       expect(parsedEvent).toEqual(event);
     });
 
-    it('should parse an event sent as a part of a websocket API', () => {
+    it('parses an event sent as a part of a websocket API', () => {
       // Prepare
       const event = getTestEvent({
         eventsPath,
@@ -105,7 +101,7 @@ describe('API Gateway REST Schemas', () => {
   });
 
   describe('APIGatewayRequestAuthorizerEventSchema', () => {
-    it('should throw when the event is invalid', () => {
+    it('throws when the event is invalid', () => {
       // Prepare
       const event = getTestEvent({ eventsPath, filename: 'invalid' });
 
@@ -115,7 +111,7 @@ describe('API Gateway REST Schemas', () => {
       ).toThrow();
     });
 
-    it('should parse the authorizer event', () => {
+    it('parses the authorizer event', () => {
       // Prepare
       const event = getTestEvent({
         eventsPath,
@@ -131,7 +127,7 @@ describe('API Gateway REST Schemas', () => {
   });
 
   describe('APIGatewayTokenAuthorizerEventSchema', () => {
-    it('should throw when the event is invalid', () => {
+    it('throws when the event is invalid', () => {
       // Prepare
       const event = getTestEvent({ eventsPath, filename: 'invalid' });
 
@@ -139,7 +135,7 @@ describe('API Gateway REST Schemas', () => {
       expect(() => APIGatewayTokenAuthorizerEventSchema.parse(event)).toThrow();
     });
 
-    it('should parse the event', () => {
+    it('parses the event', () => {
       // Prepare
       const event = getTestEvent({ eventsPath, filename: 'authorizer-token' });
 

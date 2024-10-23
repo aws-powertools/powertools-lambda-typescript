@@ -1,27 +1,40 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
-import { AlbMultiValueHeadersSchema, AlbSchema } from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
+import { describe, expect, it } from 'vitest';
+import {
+  AlbMultiValueHeadersSchema,
+  AlbSchema,
+} from '../../../src/schemas/alb.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-describe('ALB ', () => {
-  it('should parse alb event', () => {
-    const albEvent = TestEvents.albEvent;
-    expect(AlbSchema.parse(albEvent)).toEqual(albEvent);
-  });
-  it('should parse alb event path trailing slash', () => {
-    const albEventPathTrailingSlash = TestEvents.albEventPathTrailingSlash;
-    expect(AlbSchema.parse(albEventPathTrailingSlash)).toEqual(
-      albEventPathTrailingSlash
-    );
-  });
-  it('should parse alb event with multi value headers event', () => {
-    const albMultiValueHeadersEvent = TestEvents.albMultiValueHeadersEvent;
+describe('Schema: ALB', () => {
+  const eventsPath = 'alb';
 
-    expect(AlbMultiValueHeadersSchema.parse(albMultiValueHeadersEvent)).toEqual(
-      albMultiValueHeadersEvent
-    );
+  it('parses an ALB event', () => {
+    // Prepare
+    const event = getTestEvent({ eventsPath, filename: 'base' });
+
+    // Act
+    const parsedEvent = AlbSchema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(event);
+  });
+
+  it('parses an ALB event with multi value headers', () => {
+    // Prepare
+    const event = getTestEvent({ eventsPath, filename: 'multi-value-header' });
+
+    // Act
+    const parsedEvent = AlbMultiValueHeadersSchema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(event);
+  });
+
+  it('throws if event is not a ALB event', () => {
+    // Prepare
+    const event = { foo: 'bar' };
+
+    // Act & Assess
+    expect(() => AlbSchema.parse(event)).toThrow();
   });
 });

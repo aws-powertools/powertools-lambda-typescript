@@ -1,96 +1,109 @@
-/**
- * Test built in schema envelopes for VPC Lattice
- *
- * @group unit/parser/envelopes
- */
-
-import { generateMock } from '@anatine/zod-mock';
-import { VpcLatticeEnvelope } from '../../../src/envelopes/index.js';
+import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
+import { VpcLatticeEnvelope } from '../../../src/envelopes/vpc-lattice.js';
+import { ParseError } from '../../../src/errors.js';
 import type { VpcLatticeEvent } from '../../../src/types/index.js';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-describe('VpcLatticeEnvelope', () => {
-  describe('parse', () => {
-    it('should parse VPC Lattice event', () => {
-      const mock = generateMock(TestSchema);
-      const testEvent = TestEvents.vpcLatticeEvent as VpcLatticeEvent;
+describe('Envelope: VpcLatticeEnvelope', () => {
+  const testSchema = z.object({
+    name: z.string(),
+    age: z.number(),
+  });
+  const mockBody = {
+    name: 'John',
+    age: 18,
+  };
+  const mockJSONStringifiedBody = JSON.stringify(mockBody);
+  const baseEvent = getTestEvent<VpcLatticeEvent>({
+    eventsPath: 'vpc-lattice',
+    filename: 'base',
+  });
 
-      testEvent.body = JSON.stringify(mock);
+  describe('Method: parse', () => {
+    it('parses a VPC Lattice event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.body = mockJSONStringifiedBody;
+      event.is_base64_encoded = false;
 
-      const resp = VpcLatticeEnvelope.parse(testEvent, TestSchema);
+      // Act
+      const parsedBody = VpcLatticeEnvelope.parse(event, testSchema);
 
-      expect(resp).toEqual(mock);
+      // Assess
+      expect(parsedBody).toEqual(mockBody);
     });
 
-    it('should parse VPC Lattice event with trailing slash', () => {
-      const mock = generateMock(TestSchema);
-      const testEvent =
-        TestEvents.vpcLatticeEventPathTrailingSlash as VpcLatticeEvent;
+    it('throws when the body is base64 encoded', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
 
-      testEvent.body = JSON.stringify(mock);
-
-      const resp = VpcLatticeEnvelope.parse(testEvent, TestSchema);
-      expect(resp).toEqual(mock);
+      // Act & Assess
+      expect(() => VpcLatticeEnvelope.parse(event, testSchema)).toThrow();
     });
 
-    it('should throw if event is not a VPC Lattice event', () => {
-      expect(() =>
-        VpcLatticeEnvelope.parse({ foo: 'bar' }, TestSchema)
-      ).toThrow();
+    it('throws if event is not a VPC Lattice event', () => {
+      // Prepare
+      const event = { foo: 'bar' };
+
+      // Act & Assess
+      expect(() => VpcLatticeEnvelope.parse(event, testSchema)).toThrow();
     });
 
-    it('should throw if body does not match schema', () => {
-      const testEvent = TestEvents.vpcLatticeEvent as VpcLatticeEvent;
+    it('throws if body does not match schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.body = JSON.stringify({ foo: 'bar' });
+      event.is_base64_encoded = false;
 
-      testEvent.body = JSON.stringify({ foo: 'bar' });
-
-      expect(() => VpcLatticeEnvelope.parse(testEvent, TestSchema)).toThrow();
+      // Act & Assess
+      expect(() => VpcLatticeEnvelope.parse(event, testSchema)).toThrow();
     });
   });
 
-  describe('safeParse', () => {
-    it('should parse VPC Lattice event', () => {
-      const mock = generateMock(TestSchema);
-      const testEvent = TestEvents.vpcLatticeEvent as VpcLatticeEvent;
+  describe('Method: safeParse', () => {
+    it('parses a VPC Lattice event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.body = mockJSONStringifiedBody;
+      event.is_base64_encoded = false;
 
-      testEvent.body = JSON.stringify(mock);
+      // Act
+      const result = VpcLatticeEnvelope.safeParse(event, testSchema);
 
-      const resp = VpcLatticeEnvelope.safeParse(testEvent, TestSchema);
-
-      expect(resp).toEqual({ success: true, data: mock });
+      // Assess
+      expect(result).toEqual({ success: true, data: mockBody });
     });
 
-    it('should parse VPC Lattice event with trailing slash', () => {
-      const mock = generateMock(TestSchema);
-      const testEvent =
-        TestEvents.vpcLatticeEventPathTrailingSlash as VpcLatticeEvent;
+    it('returns error if event is not a VPC Lattice event', () => {
+      // Prepare
+      const event = { foo: 'bar' };
 
-      testEvent.body = JSON.stringify(mock);
+      // Act
+      const result = VpcLatticeEnvelope.safeParse(event, testSchema);
 
-      const resp = VpcLatticeEnvelope.safeParse(testEvent, TestSchema);
-      expect(resp).toEqual({ success: true, data: mock });
-    });
-
-    it('should return error if event is not a VPC Lattice event', () => {
-      const resp = VpcLatticeEnvelope.safeParse({ foo: 'bar' }, TestSchema);
-
-      expect(resp).toEqual({
+      // Assess
+      expect(result).toEqual({
         success: false,
-        error: expect.any(Error),
-        originalEvent: { foo: 'bar' },
+        error: expect.any(ParseError),
+        originalEvent: event,
       });
     });
 
-    it('should return error if body does not match schema', () => {
-      const testEvent = TestEvents.vpcLatticeEvent as VpcLatticeEvent;
+    it('returns error if body does not match schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.body = JSON.stringify({ foo: 'bar' });
+      event.is_base64_encoded = false;
 
-      testEvent.body = JSON.stringify({ foo: 'bar' });
+      // Act
+      const result = VpcLatticeEnvelope.safeParse(event, testSchema);
 
-      const resp = VpcLatticeEnvelope.safeParse(testEvent, TestSchema);
-      expect(resp).toEqual({
+      // Assess
+      expect(result).toEqual({
         success: false,
-        error: expect.any(Error),
-        originalEvent: testEvent,
+        error: expect.any(ParseError),
+        originalEvent: event,
       });
     });
   });

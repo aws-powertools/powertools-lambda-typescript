@@ -1,24 +1,57 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
+import { describe, expect, it } from 'vitest';
+import { LambdaFunctionUrlSchema } from '../../../src/schemas/lambda.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-import { LambdaFunctionUrlSchema } from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
+describe('Schema: Lambda', () => {
+  const eventsPath = 'lambda';
 
-describe('Lambda ', () => {
-  it('should parse lambda event', () => {
-    const lambdaFunctionUrlEvent = TestEvents.apiGatewayProxyV2Event;
+  it('parses a Lambda FUrl event', () => {
+    // Prepare
+    const event = getTestEvent({
+      eventsPath,
+      filename: 'base',
+    });
 
-    expect(LambdaFunctionUrlSchema.parse(lambdaFunctionUrlEvent)).toEqual(
-      lambdaFunctionUrlEvent
-    );
+    // Act
+    const parsedEvent = LambdaFunctionUrlSchema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(event);
   });
 
-  it('should parse url IAM event', () => {
-    const urlIAMEvent = TestEvents.lambdaFunctionUrlIAMEvent;
+  it('parses a Lambda FUrl with IAM Auth', () => {
+    // Prepare
+    const event = getTestEvent({
+      eventsPath,
+      filename: 'iam-authorizer',
+    });
 
-    expect(LambdaFunctionUrlSchema.parse(urlIAMEvent)).toEqual(urlIAMEvent);
+    // Act
+    const parsedEvent = LambdaFunctionUrlSchema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(event);
+  });
+
+  it('parses a Lambda FUrl with string body', () => {
+    // Prepare
+    const event = getTestEvent({
+      eventsPath,
+      filename: 'with-body',
+    });
+
+    // Act
+    const parsedEvent = LambdaFunctionUrlSchema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(event);
+  });
+
+  it('throws if event is not a Lambda FUrl event', () => {
+    // Prepare
+    const event = { foo: 'bar' };
+
+    // Act & Assess
+    expect(() => LambdaFunctionUrlSchema.parse(event)).toThrow();
   });
 });

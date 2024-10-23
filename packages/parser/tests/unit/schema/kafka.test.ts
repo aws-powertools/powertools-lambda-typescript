@@ -4,9 +4,12 @@ import {
   KafkaMskEventSchema,
   KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
-} from '../../../src/schemas/';
-import type { KafkaMskEvent, KafkaSelfManagedEvent } from '../../../src/types';
-import type { KafkaRecord } from '../../../src/types/schema';
+} from '../../../src/schemas/kafka.js';
+import type {
+  KafkaMskEvent,
+  KafkaRecord,
+  KafkaSelfManagedEvent,
+} from '../../../src/types/schema.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 describe('Kafka ', () => {

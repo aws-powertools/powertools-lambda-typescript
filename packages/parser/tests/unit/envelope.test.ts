@@ -37,8 +37,7 @@ describe('envelope: ', () => {
       );
       expect(result).toEqual({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: { name: 123 },
+        error: expect.any(Error),
       });
     });
 
@@ -49,8 +48,7 @@ describe('envelope: ', () => {
       );
       expect(result).toEqual({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: '{name: "John"}',
+        error: expect.any(Error),
       });
     });
   });

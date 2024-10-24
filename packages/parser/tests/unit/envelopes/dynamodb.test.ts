@@ -6,7 +6,7 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import type { AttributeValue, DynamoDBStreamEvent } from 'aws-lambda';
-import { z } from 'zod';
+import { ZodError, z } from 'zod';
 import { DynamoDBStreamEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { TestEvents } from '../schema/utils.js';
@@ -93,12 +93,19 @@ describe('DynamoDB', () => {
       (invalidDDBEvent.Records[1].dynamodb!.OldImage as typeof mockOldImage) =
         mockOldImage;
 
-      const parsed = DynamoDBStreamEnvelope.safeParse(invalidDDBEvent, schema);
-      expect(parsed).toEqual({
+      const parseResult = DynamoDBStreamEnvelope.safeParse(
+        invalidDDBEvent,
+        schema
+      );
+      expect(parseResult).toEqual({
         success: false,
         error: expect.any(ParseError),
         originalEvent: invalidDDBEvent,
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
+      }
     });
 
     it('safeParse should return error if OldImage is invalid', () => {

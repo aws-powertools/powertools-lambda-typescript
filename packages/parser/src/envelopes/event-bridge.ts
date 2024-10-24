@@ -1,7 +1,7 @@
 import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { EventBridgeSchema } from '../schemas/index.js';
-import type { ParsedResult } from '../types/index.js';
+import type { ParsedResult, ParsedResultSuccess } from '../types/index.js';
 import { Envelope } from './envelope.js';
 
 /**
@@ -37,6 +37,6 @@ export const EventBridgeEnvelope = {
       };
     }
 
-    return parsedDetail;
+    return parsedDetail as ParsedResultSuccess<z.infer<T>>;
   },
 };

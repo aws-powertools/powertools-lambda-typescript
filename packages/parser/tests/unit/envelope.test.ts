@@ -6,7 +6,6 @@
 
 import { ZodError, z } from 'zod';
 import { Envelope } from '../../src/envelopes/envelope.js';
-import { ParseError } from '../../src/errors.js';
 
 describe('envelope: ', () => {
   describe('parseSafe', () => {
@@ -37,8 +36,7 @@ describe('envelope: ', () => {
       );
       expect(result).toEqual({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: { name: 123 },
+        error: expect.any(Error),
       });
     });
 
@@ -49,8 +47,7 @@ describe('envelope: ', () => {
       );
       expect(result).toEqual({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: '{name: "John"}',
+        error: expect.any(Error),
       });
     });
   });

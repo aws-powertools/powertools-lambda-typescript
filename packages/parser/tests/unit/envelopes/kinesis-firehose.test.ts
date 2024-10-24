@@ -5,7 +5,8 @@
  */
 
 import { generateMock } from '@anatine/zod-mock';
-import type { z } from 'zod';
+import { ZodError, type z } from 'zod';
+import { ParseError } from '../../../src';
 import { KinesisFirehoseEnvelope } from '../../../src/envelopes/index.js';
 import type { KinesisFirehoseSchema } from '../../../src/schemas/';
 import { TestEvents, TestSchema } from '../schema/utils.js';
@@ -128,13 +129,19 @@ describe('Kinesis Firehose Envelope', () => {
       expect(resp).toEqual({ success: true, data: [mock, mock] });
     });
     it('should return original event if envelope is invalid', () => {
-      expect(
-        KinesisFirehoseEnvelope.safeParse({ foo: 'bar' }, TestSchema)
-      ).toEqual({
+      const parseResult = KinesisFirehoseEnvelope.safeParse(
+        { foo: 'bar' },
+        TestSchema
+      );
+      expect(parseResult).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: { foo: 'bar' },
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
+      }
     });
     it('should return original event if record is not base64 encoded', () => {
       const testEvent = TestEvents.kinesisFirehosePutEvent as z.infer<
@@ -147,17 +154,8 @@ describe('Kinesis Firehose Envelope', () => {
 
       expect(KinesisFirehoseEnvelope.safeParse(testEvent, TestSchema)).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: testEvent,
-      });
-    });
-    it('should return original event envelope is invalid', () => {
-      expect(
-        KinesisFirehoseEnvelope.safeParse({ foo: 'bar' }, TestSchema)
-      ).toEqual({
-        success: false,
-        error: expect.any(Error),
-        originalEvent: { foo: 'bar' },
       });
     });
   });

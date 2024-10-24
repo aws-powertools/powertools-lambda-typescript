@@ -6,6 +6,8 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
+import { ZodError } from 'zod';
+import { ParseError } from '../../../src';
 import { LambdaFunctionUrlEnvelope } from '../../../src/envelopes/index.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';
 
@@ -70,7 +72,7 @@ describe('Lambda Functions Url ', () => {
         LambdaFunctionUrlEnvelope.safeParse({ foo: 'bar' }, TestSchema)
       ).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: { foo: 'bar' },
       });
     });
@@ -80,13 +82,19 @@ describe('Lambda Functions Url ', () => {
         TestEvents.lambdaFunctionUrlEvent as APIGatewayProxyEventV2;
       testEvent.body = JSON.stringify({ foo: 'bar' });
 
-      expect(
-        LambdaFunctionUrlEnvelope.safeParse(testEvent, TestSchema)
-      ).toEqual({
+      const parseResult = LambdaFunctionUrlEnvelope.safeParse(
+        testEvent,
+        TestSchema
+      );
+      expect(parseResult).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: testEvent,
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
+      }
     });
   });
 });

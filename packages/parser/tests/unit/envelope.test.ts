@@ -6,7 +6,6 @@
 
 import { ZodError, z } from 'zod';
 import { Envelope } from '../../src/envelopes/envelope.js';
-import { ParseError } from '../../src/errors.js';
 
 describe('envelope: ', () => {
   describe('parseSafe', () => {

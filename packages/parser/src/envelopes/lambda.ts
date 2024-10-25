@@ -40,6 +40,6 @@ export const LambdaFunctionUrlEnvelope = {
       };
     }
 
-    return parsedBody as ParsedResultSuccess<z.infer<T>>;
+    return parsedBody;
   },
 };

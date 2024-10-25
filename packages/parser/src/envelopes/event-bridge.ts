@@ -37,6 +37,6 @@ export const EventBridgeEnvelope = {
       };
     }
 
-    return parsedDetail as ParsedResultSuccess<z.infer<T>>;
+    return parsedDetail;
   },
 };

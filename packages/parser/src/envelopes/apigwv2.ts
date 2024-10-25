@@ -40,6 +40,6 @@ export const ApiGatewayV2Envelope = {
     }
 
     // use type assertion to avoid type check, we know it's success here
-    return parsedBody as ParsedResultSuccess<z.infer<T>>;
+    return parsedBody;
   },
 };

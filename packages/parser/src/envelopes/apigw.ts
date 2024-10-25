@@ -36,6 +36,6 @@ export const ApiGatewayEnvelope = {
       };
     }
 
-    return parsedBody as ParsedResultSuccess<z.infer<T>>;
+    return parsedBody;
   },
 };

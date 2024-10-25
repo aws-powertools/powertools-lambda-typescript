@@ -1,5 +1,6 @@
 import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
+import type { ParsedResult } from '../types';
 
 export const Envelope = {
   /**
@@ -34,7 +35,7 @@ export const Envelope = {
    * @param input
    * @param schema
    */
-  safeParse<T extends ZodSchema>(input: unknown, schema: T) {
+  safeParse<T extends ZodSchema>(input: unknown, schema: T): ParsedResult {
     try {
       if (typeof input !== 'object' && typeof input !== 'string') {
         return {

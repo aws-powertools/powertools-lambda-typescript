@@ -1,6 +1,6 @@
 import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
-import type { ParsedResult } from '../types/parser.js';
+import type { ParsedResult } from '../types';
 
 export const Envelope = {
   /**
@@ -35,18 +35,14 @@ export const Envelope = {
    * @param input
    * @param schema
    */
-  safeParse<T extends ZodSchema>(
-    input: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>> {
+  safeParse<T extends ZodSchema>(input: unknown, schema: T): ParsedResult {
     try {
       if (typeof input !== 'object' && typeof input !== 'string') {
         return {
           success: false,
-          error: new ParseError(
+          error: new Error(
             `Invalid data type for envelope. Expected string or object, got ${typeof input}`
           ),
-          originalEvent: input,
         };
       }
 
@@ -61,18 +57,12 @@ export const Envelope = {
           }
         : {
             success: false,
-            error: new ParseError('Failed to parse envelope', {
-              cause: parsed.error,
-            }),
-            originalEvent: input,
+            error: parsed.error,
           };
     } catch (e) {
       return {
         success: false,
-        error: new ParseError('Failed to parse envelope', {
-          cause: e as Error,
-        }),
-        originalEvent: input,
+        error: e as Error,
       };
     }
   },

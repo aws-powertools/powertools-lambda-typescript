@@ -5,11 +5,11 @@
  */
 
 import { LambdaFunctionUrlSchema } from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
+import { TestEvents, makeSchemaStrictForTesting } from './utils.js';
 
 describe('Lambda ', () => {
   it('should parse lambda event', () => {
-    const lambdaFunctionUrlEvent = TestEvents.apiGatewayProxyV2Event;
+    const lambdaFunctionUrlEvent = TestEvents.lambdaFunctionUrlEvent;
 
     expect(LambdaFunctionUrlSchema.parse(lambdaFunctionUrlEvent)).toEqual(
       lambdaFunctionUrlEvent
@@ -20,5 +20,13 @@ describe('Lambda ', () => {
     const urlIAMEvent = TestEvents.lambdaFunctionUrlIAMEvent;
 
     expect(LambdaFunctionUrlSchema.parse(urlIAMEvent)).toEqual(urlIAMEvent);
+  });
+
+  it('should detect missing properties in schema for lambda event', () => {
+    const lambdaFunctionUrlEvent = TestEvents.lambdaFunctionUrlEvent;
+
+    const strictSchema = makeSchemaStrictForTesting(LambdaFunctionUrlSchema);
+
+    expect(() => strictSchema.parse(lambdaFunctionUrlEvent)).not.toThrow();
   });
 });

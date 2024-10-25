@@ -8,7 +8,7 @@ import {
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
 } from '../../../src/schemas/index.js';
-import { getTestEvent } from './utils.js';
+import { getTestEvent, makeSchemaStrictForTesting } from './utils.js';
 
 describe('API Gateway REST Schemas', () => {
   const eventsPath = 'apigw-rest';
@@ -148,6 +148,57 @@ describe('API Gateway REST Schemas', () => {
 
       // Assess
       expect(parsedEvent).toEqual(event);
+    });
+  });
+
+  describe('should detect missing properties in schema for ', () => {
+    it.each([
+      'console-test-ui',
+      'iam-auth',
+      'jwt-authorizer-auth',
+      'lambda-authorizer-auth',
+      'no-auth',
+      'websocket',
+    ])(' %p example event', (filename) => {
+      // Prepare
+      const event = getTestEvent({ eventsPath, filename: filename });
+
+      const strictSchema = makeSchemaStrictForTesting(
+        APIGatewayProxyEventSchema
+      );
+
+      // Act & Assess
+      expect(() => strictSchema.parse(event)).not.toThrow();
+    });
+
+    it('authorizer-request example event', () => {
+      // Prepare
+      const event = getTestEvent({
+        eventsPath,
+        filename: 'authorizer-request',
+      });
+
+      const strictSchema = makeSchemaStrictForTesting(
+        APIGatewayRequestAuthorizerEventSchema
+      );
+
+      // Act & Assess
+      expect(() => strictSchema.parse(event)).not.toThrow();
+    });
+
+    it('authorizer-token example event', () => {
+      // Prepare
+      const event = getTestEvent({
+        eventsPath,
+        filename: 'authorizer-token',
+      });
+
+      const strictSchema = makeSchemaStrictForTesting(
+        APIGatewayTokenAuthorizerEventSchema
+      );
+
+      // Act & Assess
+      expect(() => strictSchema.parse(event)).not.toThrow();
     });
   });
 });

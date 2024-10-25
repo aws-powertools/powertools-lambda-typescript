@@ -5,7 +5,7 @@
  */
 
 import { VpcLatticeSchema } from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
+import { TestEvents, makeSchemaStrictForTesting } from './utils.js';
 
 describe('VPC Lattice ', () => {
   it('should parse vpc lattice event', () => {
@@ -18,5 +18,11 @@ describe('VPC Lattice ', () => {
     expect(VpcLatticeSchema.parse(vpcLatticeEventPathTrailingSlash)).toEqual(
       vpcLatticeEventPathTrailingSlash
     );
+  });
+
+  it('should detect missing properties in schema for vpc lattice event', () => {
+    const vpcLatticeEvent = TestEvents.vpcLatticeEvent;
+    const strictSchema = makeSchemaStrictForTesting(VpcLatticeSchema);
+    expect(() => strictSchema.parse(vpcLatticeEvent)).not.toThrow();
   });
 });

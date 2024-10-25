@@ -9,7 +9,7 @@ import {
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,
 } from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
+import { TestEvents, makeSchemaStrictForTesting } from './utils.js';
 
 describe('CloudFormationCustomResource ', () => {
   it('should parse create event', () => {
@@ -41,5 +41,46 @@ describe('CloudFormationCustomResource ', () => {
         cloudFormationCustomResourceDeleteEvent
       )
     ).toEqual(cloudFormationCustomResourceDeleteEvent);
+  });
+
+  describe('should detect missing properties in schema for ', () => {
+    it('CloudFormationCustomResourceCreateSchema', () => {
+      const cloudFormationCustomResourceCreateEvent =
+        TestEvents.cloudFormationCustomResourceCreateEvent;
+
+      const strictSchema = makeSchemaStrictForTesting(
+        CloudFormationCustomResourceCreateSchema
+      );
+
+      expect(() =>
+        strictSchema.parse(cloudFormationCustomResourceCreateEvent)
+      ).not.toThrow();
+    });
+
+    it('CloudFormationCustomResourceUpdateSchema', () => {
+      const cloudFormationCustomResourceUpdateEvent =
+        TestEvents.cloudFormationCustomResourceUpdateEvent;
+
+      const strictSchema = makeSchemaStrictForTesting(
+        CloudFormationCustomResourceUpdateSchema
+      );
+
+      expect(() =>
+        strictSchema.parse(cloudFormationCustomResourceUpdateEvent)
+      ).not.toThrow();
+    });
+
+    it('CloudFormationCustomResourceDeleteSchema', () => {
+      const cloudFormationCustomResourceDeleteEvent =
+        TestEvents.cloudFormationCustomResourceDeleteEvent;
+
+      const strictSchema = makeSchemaStrictForTesting(
+        CloudFormationCustomResourceDeleteSchema
+      );
+
+      expect(() =>
+        strictSchema.parse(cloudFormationCustomResourceDeleteEvent)
+      ).not.toThrow();
+    });
   });
 });

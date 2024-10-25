@@ -7,7 +7,7 @@
 import { SesRecordSchema, SesSchema } from '../../../src/schemas/';
 import type { SesEvent } from '../../../src/types';
 import type { SesRecord } from '../../../src/types/schema';
-import { TestEvents } from './utils.js';
+import { TestEvents, makeSchemaStrictForTesting } from './utils.js';
 
 describe('SES', () => {
   it('should parse ses event', () => {
@@ -20,5 +20,11 @@ describe('SES', () => {
     const parsed: SesRecord = SesRecordSchema.parse(sesEvent.Records[0]);
 
     expect(parsed.ses.mail.source).toEqual('janedoe@example.com');
+  });
+
+  it('should detect missing properties in schema for ses event', () => {
+    const sesEvent = TestEvents.sesEvent;
+    const strictSchema = makeSchemaStrictForTesting(SesSchema);
+    expect(() => strictSchema.parse(sesEvent)).not.toThrow();
   });
 });

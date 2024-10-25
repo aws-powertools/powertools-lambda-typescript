@@ -131,3 +131,71 @@ export const getTestEvent = <T extends Record<string, unknown>>({
       'utf-8'
     )
   ) as T;
+
+type ZodShape = { [k: string]: z.ZodTypeAny };
+
+/**
+ * Creates a strict version of a schema for testing purposes without modifying the original
+ */
+export const makeSchemaStrictForTesting = <T extends z.ZodTypeAny>(
+  schema: T
+): T => {
+  if (schema instanceof z.ZodObject) {
+    const shape = schema._def.shape() as ZodShape;
+    const newShape = Object.fromEntries(
+      Object.entries(shape).map(([key, value]) => [
+        key,
+        makeSchemaStrictForTesting(value),
+      ])
+    );
+
+    return z.object(newShape).strict() as unknown as T;
+  }
+
+  if (schema instanceof z.ZodArray) {
+    const elementSchema = schema.element;
+    return z.array(makeSchemaStrictForTesting(elementSchema)) as unknown as T;
+  }
+
+  if (schema instanceof z.ZodUnion) {
+    const options = schema._def.options as readonly [
+      z.ZodTypeAny,
+      z.ZodTypeAny,
+      ...z.ZodTypeAny[],
+    ];
+    const newOptions = options.map((option) =>
+      makeSchemaStrictForTesting(option)
+    );
+    // Ensure we have at least two elements for the union
+    return z.union([
+      newOptions[0],
+      newOptions[1],
+      ...newOptions.slice(2),
+    ]) as unknown as T;
+  }
+
+  if (schema instanceof z.ZodRecord) {
+    const keySchema = schema.keySchema;
+    const valueSchema = schema.valueSchema;
+    return z.record(
+      makeSchemaStrictForTesting(keySchema),
+      makeSchemaStrictForTesting(valueSchema)
+    ) as unknown as T;
+  }
+
+  // Handle extended schemas
+  if (schema instanceof z.ZodObject && schema._def.shape instanceof Function) {
+    const shape = schema._def.shape() as ZodShape;
+    const newShape = Object.fromEntries(
+      Object.entries(shape).map(([key, value]) => [
+        key,
+        makeSchemaStrictForTesting(value),
+      ])
+    );
+
+    return z.object(newShape).strict() as unknown as T;
+  }
+
+  // Return other types as-is
+  return schema;
+};

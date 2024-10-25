@@ -7,7 +7,7 @@ import {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,
 } from '../../../src/schemas/index.js';
-import { getTestEvent } from './utils.js';
+import { getTestEvent, makeSchemaStrictForTesting } from './utils.js';
 
 describe('API Gateway HTTP (v2) Schemas', () => {
   const eventsPath = 'apigw-http';
@@ -98,6 +98,36 @@ describe('API Gateway HTTP (v2) Schemas', () => {
 
       // Assess
       expect(parsedEvent).toEqual(event);
+    });
+  });
+
+  describe('should detect missing properties in schema for ', () => {
+    it.each([
+      'iam-auth',
+      'jwt-authorizer-auth',
+      'lambda-authorizer-auth',
+      'no-auth',
+    ])('event %s', (filename) => {
+      // Prepare
+      const event = getTestEvent({ eventsPath, filename });
+      const strictSchema = makeSchemaStrictForTesting(
+        APIGatewayProxyEventV2Schema
+      );
+      // Act & Assess
+      expect(() => strictSchema.parse(event)).not.toThrow();
+    });
+
+    it('authorizer-request event', () => {
+      // Prepare
+      const event = getTestEvent({
+        eventsPath,
+        filename: 'authorizer-request',
+      });
+      const strictSchema = makeSchemaStrictForTesting(
+        APIGatewayRequestAuthorizerEventV2Schema
+      );
+      // Act & Assess
+      expect(() => strictSchema.parse(event)).not.toThrow();
     });
   });
 });

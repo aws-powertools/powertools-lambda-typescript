@@ -10,7 +10,7 @@ import {
   S3Schema,
   S3SqsEventNotificationSchema,
 } from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
+import { TestEvents, makeSchemaStrictForTesting } from './utils.js';
 
 describe('S3 ', () => {
   it('should parse s3 event', () => {
@@ -102,5 +102,43 @@ describe('S3 ', () => {
     expect(
       parsed.userIdentity?.sessionContext?.attributes.mfaAuthenticated
     ).toEqual(false);
+  });
+
+  describe('should detect missing properties in schema for ', () => {
+    it('s3 event', () => {
+      const s3Event = TestEvents.s3Event;
+      const strictSchema = makeSchemaStrictForTesting(S3Schema);
+      expect(strictSchema.parse(s3Event)).toEqual(s3Event);
+    });
+
+    it('s3 event bridge notification event created', () => {
+      const s3EventBridgeNotificationObjectCreatedEvent =
+        TestEvents.s3EventBridgeNotificationObjectCreatedEvent;
+      const strictSchema = makeSchemaStrictForTesting(
+        S3EventNotificationEventBridgeSchema
+      );
+      expect(() =>
+        strictSchema.parse(s3EventBridgeNotificationObjectCreatedEvent)
+      ).not.toThrow();
+    });
+
+    it('s3 event bridge notification event detelted', () => {
+      const s3EventBridgeNotificationObjectDeletedEvent =
+        TestEvents.s3EventBridgeNotificationObjectDeletedEvent;
+      const strictSchema = makeSchemaStrictForTesting(
+        S3EventNotificationEventBridgeSchema
+      );
+      expect(() =>
+        strictSchema.parse(s3EventBridgeNotificationObjectDeletedEvent)
+      ).not.toThrow();
+    });
+
+    it('s3 sqs notification event', () => {
+      const s3SqsEvent = TestEvents.s3SqsEvent;
+      const strictSchema = makeSchemaStrictForTesting(
+        S3SqsEventNotificationSchema
+      );
+      expect(() => strictSchema.parse(s3SqsEvent)).not.toThrow();
+    });
   });
 });

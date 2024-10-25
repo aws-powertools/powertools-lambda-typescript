@@ -8,6 +8,7 @@ import { generateMock } from '@anatine/zod-mock';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import type { ZodSchema, z } from 'zod';
+import { ParseError } from '../../src';
 import { EventBridgeEnvelope, SqsEnvelope } from '../../src/envelopes';
 import { parser } from '../../src/middleware/parser.js';
 import { SqsSchema } from '../../src/schemas';
@@ -179,7 +180,7 @@ describe('Middleware: parser', () => {
         )
       ).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: 42,
       });
     });
@@ -238,7 +239,7 @@ describe('Middleware: parser', () => {
         )
       ).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: event,
       });
     });

@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.9.0...v2.10.0) (2024-10-22)
+
+**Note:** Version bump only for package code-snippets
+
+
+
+
+
+# [2.9.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.8.0...v2.9.0) (2024-10-07)
+
+
+### Features
+
+* **batch:** sequential async processing of records for `BatchProcessor` ([#3109](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3109)) ([e31279a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e31279af90446050a7974fbe25c34758f64915f9))
+* **idempotency:** ability to specify JMESPath custom functions ([#3150](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3150)) ([869b6fc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/869b6fced659ad820ffe79a0b905022061570974))
+* **idempotency:** manipulate idempotent response via response hook ([#3071](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3071)) ([f7c1769](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f7c176901a36698f591d897c2abde54cf30c9ea9))
+
+
+
+
+
 # [2.8.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.7.0...v2.8.0) (2024-09-16)
 
 

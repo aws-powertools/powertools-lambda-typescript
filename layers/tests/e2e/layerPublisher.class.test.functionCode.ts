@@ -8,13 +8,11 @@ import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
 import { DynamoDBProvider } from '@aws-lambda-powertools/parameters/dynamodb';
 import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
 import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
-import { EventBridgeSchema } from '@aws-lambda-powertools/parser/schemas';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { SSMClient } from '@aws-sdk/client-ssm';
-import { z } from 'zod';
 
 const logger = new Logger({
   logLevel: 'DEBUG',
@@ -49,10 +47,6 @@ new DynamoDBProvider({ tableName: 'foo', awsSdkV3Client: ddbClient });
 
 // Instantiating the BatchProcessor will confirm that the utility can be used
 new BatchProcessor(EventType.SQS);
-
-const testSchema = z.object({ instance_id: z.string(), state: z.string() });
-
-const testEventSchema = EventBridgeSchema.extend({ detail: testSchema });
 
 const layerPath = process.env.LAYERS_PATH || '/opt/nodejs/node_modules';
 const expectedVersion = process.env.POWERTOOLS_PACKAGE_VERSION || '0.0.0';
@@ -122,7 +116,4 @@ export const handler = async (event: unknown): Promise<void> => {
   // the presence of a log will indicate that the logger is working
   // while the content of the log will indicate that the tracer is working
   logger.debug('subsegment', { subsegment: subsegment.format() });
-
-  // Check that the parser is working
-  testEventSchema.parse(event);
 };

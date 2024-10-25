@@ -18,7 +18,7 @@ jobs:
       RELEASE_VERSION: ${{ steps.set-release-version.outputs.RELEASE_VERSION }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938  # v4.2.0
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871  # v4.2.1
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0 # fetch all history, commits and tags, lerna scans it to the last tag and looks at commits, we need all of it to determine the next version
@@ -31,7 +31,7 @@ jobs:
         uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
       - name: Version
         id: bump-version
-        run: npx lerna version --conventional-commits --no-git-tag-version --no-push --no-commit-hooks --yes
+        run: npx lerna version --conventional-commits --force-publish --no-git-tag-version --no-push --no-commit-hooks --yes
       - name: Update user agent version
         run: |
           VERSION=$(cat lerna.json | jq .version -r)

@@ -60,3 +60,13 @@ A two parts series that gives an overview of Powertools and its features startin
 * [First Look at Lambda Powertools TypeScript](https://dev.to/aws-builders/first-look-at-lambda-powertools-typescript-2k3p){target="_blank"}
 
 * [Lambda Powertools TypeScript is Generally Available](https://dev.to/aws-builders/lambda-powertools-typescript-is-generally-available-1dm8){target="_blank"}
+
+<!-- markdownlint-disable MD013 -->
+### EventBridge: working around API Destination 5s maximum client timeout constraint, using Powertools for AWS Lambda Idempotency
+<!-- markdownlint-enable MD013 -->
+
+> **Author: [Paul Santus](https://www.linkedin.com/in/paulsantus/){target="_blank"} :material-linkedin:**
+
+This article discusses how to use the Idempotency feature to work around EventBridge API Destinations' built-in maximum client execution timeout (5s) and allow long-running queries, while still benefitting from automated retry and DLQ, and preventing concurrent calls.
+
+* [https://dev.to/aws-builders/eventbridge-working-around-api-destination-5s-maximum-client-timeout-constraint-using-lambda-powertools-idempotency-1cb3](https://dev.to/aws-builders/eventbridge-working-around-api-destination-5s-maximum-client-timeout-constraint-using-lambda-powertools-idempotency-1cb3){target="_blank"}

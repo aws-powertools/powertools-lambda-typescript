@@ -1,8 +1,3 @@
-/**
- * Test makeHandlerIdempotent middleware
- *
- * @group e2e/idempotency/makeHandlerIdempotent
- */
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import {
@@ -13,6 +8,7 @@ import {
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { Duration } from 'aws-cdk-lib';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -116,8 +112,8 @@ describe('Idempotency E2E tests, middy middleware usage', () => {
     tableNameExpired = testStack.findAndGetStackOutputValue('expiredTable');
   }, SETUP_TIMEOUT);
 
-  test(
-    'when called twice with the same payload, it returns the same result and runs the handler once',
+  it(
+    'returns the same result and runs the handler once when called multiple times',
     async () => {
       // Prepare
       const payload = {
@@ -166,8 +162,8 @@ describe('Idempotency E2E tests, middy middleware usage', () => {
     TEST_CASE_TIMEOUT
   );
 
-  test(
-    'when two identical requests are sent in parallel, the handler is called only once',
+  it(
+    'handles parallel invocations correctly',
     async () => {
       // Prepare
       const payload = {
@@ -224,8 +220,8 @@ describe('Idempotency E2E tests, middy middleware usage', () => {
     TEST_CASE_TIMEOUT
   );
 
-  test(
-    'when the function times out, the second request is processed correctly by the handler',
+  it(
+    'recovers from a timed out request and processes the next one',
     async () => {
       // Prepare
       const payload = {
@@ -287,8 +283,8 @@ describe('Idempotency E2E tests, middy middleware usage', () => {
     TEST_CASE_TIMEOUT
   );
 
-  test(
-    'when the idempotency record is expired, the second request is processed correctly by the handler',
+  it(
+    'recovers from an expired idempotency record and processes the next request',
     async () => {
       // Prepare
       const payload = {

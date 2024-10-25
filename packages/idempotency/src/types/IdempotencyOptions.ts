@@ -1,4 +1,5 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type { Functions } from '@aws-lambda-powertools/jmespath/functions';
 import type { Context, Handler } from 'aws-lambda';
 import type { IdempotencyConfig } from '../IdempotencyConfig.js';
 import type { BasePersistenceLayer } from '../persistence/BasePersistenceLayer.js';
@@ -168,6 +169,10 @@ type IdempotencyConfigOptions = {
    * An optional JMESPath expression to extract the payload to be validated from the event record
    */
   payloadValidationJmesPath?: string;
+  /**
+   * Custom JMESPath functions to use when parsing the JMESPath expressions
+   */
+  jmesPathOptions?: Functions;
   /**
    * Throw an error if no idempotency key was found in the request, defaults to `false`
    */

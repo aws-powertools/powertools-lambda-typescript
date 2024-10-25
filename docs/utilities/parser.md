@@ -106,13 +106,15 @@ You can extend every built-in schema to include your own schema, and yet have al
 === "Example payload"
 
     ```json
-    --8<-- "examples/snippets/parser/examplePayload.json"
+    --8<-- "examples/snippets/parser/samples/examplePayload.json"
     ```
+
+### JSON stringified payloads
 
 If you want to extend a schema and transform a JSON stringified payload to an object, you can use helper function `JSONStringified`:
 
 === "AlbSchema with JSONStringified"
-    ```typescript hl_lines="12"
+    ```typescript hl_lines="11"
     --8<-- "examples/snippets/parser/extendAlbSchema.ts"
     ```
 
@@ -121,20 +123,34 @@ If you want to extend a schema and transform a JSON stringified payload to an ob
 === "ALB example payload"
 
     ```json hl_lines="26"
-    --8<-- "examples/snippets/parser/exampleAlbPayload.json"
+    --8<-- "examples/snippets/parser/samples/exampleAlbPayload.json"
+    ```
+
+=== "APIGatewayProxyEventV2Schema with JSONStringified"
+    ```typescript hl_lines="6"
+    --8<--
+     examples/snippets/parser/extendAPIGatewayProxyEventV2Schema.ts::4
+     examples/snippets/parser/extendAPIGatewayProxyEventV2Schema.ts:6:
+    --8<--
+    ```
+
+    1. This is compatible also with API Gateway REST API schemas
+
+=== "API Gateway HTTP API example payload"
+
+    ```json hl_lines="39"
+    --8<-- "examples/snippets/parser/samples/exampleAPIGatewayProxyEventV2.json"
     ```
 
 === "SQS Schema with JSONStringified"
-    ```typescript hl_lines="23-25 30 34"
+    ```typescript hl_lines="16"
     --8<-- "examples/snippets/parser/extendSqsSchema.ts"
     ```
-
-    1. make sure to set your schema to the correct key in the JSON payload
 
 === "SQS example payload"
 
     ```json hl_lines="6 28"
-    --8<-- "examples/snippets/parser/exampleSqsPayload.json"
+    --8<-- "examples/snippets/parser/samples/exampleSqsPayload.json"
     ```
 
 ## Envelopes

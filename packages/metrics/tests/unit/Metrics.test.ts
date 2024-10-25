@@ -1112,7 +1112,7 @@ describe('Class: Metrics', () => {
     let publishStoredMetricsSpy: jest.SpyInstance;
     let addMetricSpy: jest.SpyInstance;
     let captureColdStartMetricSpy: jest.SpyInstance;
-    let throwOnEmptyMetricsSpy: jest.SpyInstance;
+    let setThrowOnEmptyMetricsSpy: jest.SpyInstance;
     let setDefaultDimensionsSpy: jest.SpyInstance;
     const decoratorLambdaExpectedReturnValue = 'Lambda invoked!';
     const decoratorLambdaMetric = 'decorator-lambda-test-metric';
@@ -1122,7 +1122,7 @@ describe('Class: Metrics', () => {
       publishStoredMetricsSpy = jest.spyOn(metrics, 'publishStoredMetrics');
       addMetricSpy = jest.spyOn(metrics, 'addMetric');
       captureColdStartMetricSpy = jest.spyOn(metrics, 'captureColdStartMetric');
-      throwOnEmptyMetricsSpy = jest.spyOn(metrics, 'throwOnEmptyMetrics');
+      setThrowOnEmptyMetricsSpy = jest.spyOn(metrics, 'setThrowOnEmptyMetrics');
       setDefaultDimensionsSpy = jest.spyOn(metrics, 'setDefaultDimensions');
     });
 
@@ -1145,7 +1145,7 @@ describe('Class: Metrics', () => {
       );
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
       expect(captureColdStartMetricSpy).not.toBeCalled();
-      expect(throwOnEmptyMetricsSpy).not.toBeCalled();
+      expect(setThrowOnEmptyMetricsSpy).not.toBeCalled();
       expect(setDefaultDimensionsSpy).not.toBeCalled();
     });
 
@@ -1170,7 +1170,7 @@ describe('Class: Metrics', () => {
       );
       expect(captureColdStartMetricSpy).toBeCalledTimes(1);
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
-      expect(throwOnEmptyMetricsSpy).not.toBeCalled();
+      expect(setThrowOnEmptyMetricsSpy).not.toBeCalled();
       expect(setDefaultDimensionsSpy).not.toBeCalled();
     });
 
@@ -1193,7 +1193,7 @@ describe('Class: Metrics', () => {
         MetricUnit.Count,
         1
       );
-      expect(throwOnEmptyMetricsSpy).toBeCalledTimes(1);
+      expect(setThrowOnEmptyMetricsSpy).toBeCalledTimes(1);
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
       expect(captureColdStartMetricSpy).not.toBeCalled();
       expect(setDefaultDimensionsSpy).not.toBeCalled();
@@ -1227,7 +1227,7 @@ describe('Class: Metrics', () => {
         defaultDimensions
       );
       expect(publishStoredMetricsSpy).toBeCalledTimes(1);
-      expect(throwOnEmptyMetricsSpy).not.toBeCalled();
+      expect(setThrowOnEmptyMetricsSpy).not.toBeCalled();
       expect(captureColdStartMetricSpy).not.toBeCalled();
     });
 

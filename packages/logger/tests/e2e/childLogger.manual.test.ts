@@ -1,14 +1,10 @@
-/**
- * Test logger child logger
- *
- * @group e2e/logger/childLogger
- */
 import { join } from 'node:path';
 import {
   TestInvocationLogs,
   TestStack,
   invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,

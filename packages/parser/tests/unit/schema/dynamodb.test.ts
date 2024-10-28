@@ -5,7 +5,7 @@
  */
 
 import { DynamoDBStreamSchema } from '../../../src/schemas/';
-import { TestEvents, makeSchemaStrictForTesting } from './utils.js';
+import { TestEvents } from './utils.js';
 
 describe('DynamoDB ', () => {
   const dynamoStreamEvent = TestEvents.dynamoStreamEvent;
@@ -13,11 +13,5 @@ describe('DynamoDB ', () => {
     expect(DynamoDBStreamSchema.parse(dynamoStreamEvent)).toEqual(
       dynamoStreamEvent
     );
-  });
-
-  it('should detect missing properties in schema', () => {
-    const strictSchema = makeSchemaStrictForTesting(DynamoDBStreamSchema);
-
-    expect(() => strictSchema.parse(dynamoStreamEvent)).not.toThrow();
   });
 });

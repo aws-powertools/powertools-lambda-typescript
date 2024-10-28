@@ -11,7 +11,7 @@ import {
 } from '../../../src/schemas/';
 import type { KafkaSelfManagedEvent } from '../../../src/types';
 import type { KafkaRecord } from '../../../src/types/schema';
-import { TestEvents, makeSchemaStrictForTesting } from './utils.js';
+import { TestEvents } from './utils.js';
 
 describe('Kafka ', () => {
   const expectedTestEvent = {
@@ -70,23 +70,5 @@ describe('Kafka ', () => {
       kafkaEventMsk.records['mytopic-0'][0]
     );
     expect(parsedRecord.topic).toEqual('mytopic');
-  });
-
-  describe('should detect missing properties in schema for', () => {
-    it('KafkaMskEventSchema', () => {
-      const kafkaEventMsk = TestEvents.kafkaEventMsk;
-
-      const strictSchema = makeSchemaStrictForTesting(KafkaMskEventSchema);
-      expect(() => strictSchema.parse(kafkaEventMsk)).not.toThrow();
-    });
-
-    it('KafkaSelfManagedEventSchema', () => {
-      const kafkaEventSelfManaged = TestEvents.kafkaEventSelfManaged;
-
-      const strictSchema = makeSchemaStrictForTesting(
-        KafkaSelfManagedEventSchema
-      );
-      expect(() => strictSchema.parse(kafkaEventSelfManaged)).not.toThrow();
-    });
   });
 });

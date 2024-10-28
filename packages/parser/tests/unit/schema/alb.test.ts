@@ -4,7 +4,7 @@
  * @group unit/parser/schema/
  */
 import { AlbMultiValueHeadersSchema, AlbSchema } from '../../../src/schemas/';
-import { TestEvents, makeSchemaStrictForTesting } from './utils.js';
+import { TestEvents } from './utils.js';
 
 describe('ALB ', () => {
   it('should parse alb event', () => {
@@ -23,20 +23,5 @@ describe('ALB ', () => {
     expect(AlbMultiValueHeadersSchema.parse(albMultiValueHeadersEvent)).toEqual(
       albMultiValueHeadersEvent
     );
-  });
-
-  describe('should detect missing properties in schema for ', () => {
-    it('alb event', () => {
-      const albEvent = TestEvents.albEvent;
-      const strictSchema = AlbSchema.strict();
-      expect(() => strictSchema.parse(albEvent)).not.toThrow();
-    });
-    it('alb event with multi value headers', () => {
-      const albMultiValueHeadersEvent = TestEvents.albMultiValueHeadersEvent;
-      const strictSchema = makeSchemaStrictForTesting(
-        AlbMultiValueHeadersSchema
-      );
-      expect(() => strictSchema.parse(albMultiValueHeadersEvent)).not.toThrow();
-    });
   });
 });

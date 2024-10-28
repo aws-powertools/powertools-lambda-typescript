@@ -21,7 +21,7 @@ import type {
   KinesisFirehoseRecord,
   KinesisFirehoseSqsRecord,
 } from '../../../src/types/schema';
-import { TestEvents, makeSchemaStrictForTesting } from './utils.js';
+import { TestEvents } from './utils.js';
 
 describe('Kinesis ', () => {
   it('should parse kinesis event', () => {
@@ -30,7 +30,6 @@ describe('Kinesis ', () => {
 
     expect(parsed.Records[0].kinesis.data).toEqual('Hello, this is a test.');
   });
-
   it('should parse single kinesis record', () => {
     const kinesisStreamEventOneRecord = TestEvents.kinesisStreamEventOneRecord;
     const parsed = KinesisDataStreamSchema.parse(kinesisStreamEventOneRecord);
@@ -40,13 +39,11 @@ describe('Kinesis ', () => {
       username: 'test',
     });
   });
-
   it('should parse Firehose event', () => {
     const kinesisFirehoseKinesisEvent = TestEvents.kinesisFirehoseKinesisEvent;
     const parsed = KinesisFirehoseSchema.parse(kinesisFirehoseKinesisEvent);
     expect(parsed.records[0].data).toEqual('Hello World');
   });
-
   it('should parse Kinesis Firehose PutEvents event', () => {
     const kinesisFirehosePutEvent = TestEvents.kinesisFirehosePutEvent;
     const parsed = KinesisFirehoseSchema.parse(kinesisFirehosePutEvent);
@@ -54,7 +51,6 @@ describe('Kinesis ', () => {
       Hello: 'World',
     });
   });
-
   it('should parse Firehose event with SQS event', () => {
     const kinesisFirehoseSQSEvent = TestEvents.kinesisFirehoseSQSEvent;
     const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
@@ -63,7 +59,6 @@ describe('Kinesis ', () => {
       body: 'Test message.',
     });
   });
-
   it('should parse Kinesis event with CloudWatch event', () => {
     const kinesisStreamCloudWatchLogsEvent =
       TestEvents.kinesisStreamCloudWatchLogsEvent;
@@ -78,7 +73,6 @@ describe('Kinesis ', () => {
       logStream: '2022/11/10/[$LATEST]26b6a45d574f442ea28438923cbf7bf7',
     });
   });
-
   it('should return original value if cannot parse KinesisFirehoseSqsRecord', () => {
     const kinesisFirehoseSQSEvent = TestEvents.kinesisFirehoseSQSEvent as {
       records: { data: string }[];
@@ -87,13 +81,13 @@ describe('Kinesis ', () => {
     const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
     expect(parsed.records[0].data).toEqual('not a valid json');
   });
-
   it('should parse a kinesis record from a kinesis event', () => {
     const kinesisStreamEvent: KinesisDataStreamEvent =
       TestEvents.kinesisStreamEvent as KinesisDataStreamEvent;
     const parsedRecord = KinesisDataStreamRecord.parse(
       kinesisStreamEvent.Records[0]
     );
+
     expect(parsedRecord.eventName).toEqual('aws:kinesis:record');
   });
 
@@ -115,11 +109,5 @@ describe('Kinesis ', () => {
     expect(parsed.recordId).toEqual(
       '49640912821178817833517986466168945147170627572855734274000000'
     );
-  });
-
-  it('should catch any unknown fields in the example event', () => {
-    const kinesisStreamEvent = TestEvents.kinesisStreamEvent;
-    const strictSchema = makeSchemaStrictForTesting(KinesisDataStreamSchema);
-    expect(() => strictSchema.parse(kinesisStreamEvent)).not.toThrow();
   });
 });

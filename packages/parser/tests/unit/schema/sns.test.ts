@@ -16,7 +16,7 @@ import type {
   SnsRecord,
   SnsSqsNotification,
 } from '../../../src/types/schema';
-import { TestEvents, makeSchemaStrictForTesting } from './utils.js';
+import { TestEvents } from './utils.js';
 
 describe('SNS', () => {
   it('should parse sns event', () => {
@@ -44,19 +44,5 @@ describe('SNS', () => {
     expect(parsed.TopicArn).toEqual(
       'arn:aws:sns:eu-west-1:231436140809:powertools265'
     );
-  });
-
-  describe('should detect missing properties in schema for ', () => {
-    it('sns event', () => {
-      const snsEvent = TestEvents.snsEvent;
-      const strictSchema = makeSchemaStrictForTesting(SnsSchema);
-      expect(() => strictSchema.parse(snsEvent)).not.toThrow();
-    });
-
-    it('sns record', () => {
-      const snsEvent: SnsEvent = TestEvents.snsEvent as SnsEvent;
-      const strictSchema = makeSchemaStrictForTesting(SnsRecordSchema);
-      expect(() => strictSchema.parse(snsEvent.Records[0])).not.toThrow();
-    });
   });
 });

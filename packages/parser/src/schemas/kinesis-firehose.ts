@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { SqsRecordSchema } from './sqs.js';
 
-const KinesisRecordMetaData = z.object({
+const KinesisRecordMetadata = z.object({
   shardId: z.string(),
   partitionKey: z.string(),
   approximateArrivalTimestamp: z.number().positive(),
@@ -12,7 +12,7 @@ const KinesisRecordMetaData = z.object({
 const KinesisFireHoseRecordBase = z.object({
   recordId: z.string(),
   approximateArrivalTimestamp: z.number().positive(),
-  kinesisRecordMetaData: KinesisRecordMetaData.optional(),
+  kinesisRecordMetadata: KinesisRecordMetadata.nullish(),
 });
 
 const KinesisFireHoseBaseSchema = z.object({

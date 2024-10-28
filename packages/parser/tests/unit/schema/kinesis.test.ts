@@ -153,4 +153,34 @@ describe('Kinesis ', () => {
 
     expect(parsed).toStrictEqual(kinesisFirehoseSQSEvent);
   });
+  it('should parse a kinesis record from a kinesis event', () => {
+    const kinesisStreamEvent: KinesisDataStreamEvent =
+      TestEvents.kinesisStreamEvent as KinesisDataStreamEvent;
+    const parsedRecord = KinesisDataStreamRecord.parse(
+      kinesisStreamEvent.Records[0]
+    );
+
+    expect(parsedRecord.eventSource).toEqual('aws:kinesis');
+    expect(parsedRecord.eventName).toEqual('aws:kinesis:record');
+  });
+
+  it('should parse a kinesis firehose record from a kinesis firehose event', () => {
+    const kinesisFirehoseEvent: KinesisFireHoseEvent =
+      TestEvents.kinesisFirehoseKinesisEvent as KinesisFireHoseEvent;
+    const parsedRecord: KinesisFirehoseRecord =
+      KinesisFirehoseRecordSchema.parse(kinesisFirehoseEvent.records[0]);
+
+    expect(parsedRecord.data).toEqual('Hello World');
+  });
+
+  it('should parse a sqs record from a kinesis firehose event', () => {
+    const kinesisFireHoseSqsEvent: KinesisFireHoseSqsEvent =
+      TestEvents.kinesisFirehoseSQSEvent as KinesisFireHoseSqsEvent;
+    const parsed: KinesisFirehoseSqsRecord =
+      KinesisFirehoseSqsRecordSchema.parse(kinesisFireHoseSqsEvent.records[0]);
+
+    expect(parsed.recordId).toEqual(
+      '49640912821178817833517986466168945147170627572855734274000000'
+    );
+  });
 });

@@ -7,8 +7,8 @@ export {
 export {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,
-  APIGatewayV2RequestAuthorizer,
-  APIGatewayV2RequestContext,
+  APIGatewayV2RequestAuthorizerSchema,
+  APIGatewayV2RequestContextSchema,
 } from './apigwv2.js';
 export {
   CloudFormationCustomResourceCreateSchema,

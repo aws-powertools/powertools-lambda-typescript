@@ -38,7 +38,7 @@ import {
  *
  * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-access-control.html}
  */
-const APIGatewayV2RequestAuthorizer = z.object({
+const APIGatewayV2RequestAuthorizerSchema = z.object({
   jwt: z
     .object({
       claims: z.record(z.string(), z.any()),
@@ -91,10 +91,10 @@ const APIGatewayV2RequestAuthorizer = z.object({
  * }
  * ```
  */
-const APIGatewayV2RequestContext = z.object({
+const APIGatewayV2RequestContextSchema = z.object({
   accountId: z.string(),
   apiId: z.string(),
-  authorizer: APIGatewayV2RequestAuthorizer.optional(),
+  authorizer: APIGatewayV2RequestAuthorizerSchema.optional(),
   authentication: z
     .object({
       clientCert: APIGatewayCert.optional(),
@@ -171,7 +171,7 @@ const APIGatewayProxyEventV2Schema = z.object({
   cookies: APIGatewayStringArray.optional(),
   headers: APIGatewayRecord,
   queryStringParameters: APIGatewayRecord.optional(),
-  requestContext: APIGatewayV2RequestContext,
+  requestContext: APIGatewayV2RequestContextSchema,
   body: z.string().optional(),
   pathParameters: APIGatewayRecord.nullish(),
   isBase64Encoded: z.boolean(),
@@ -237,7 +237,7 @@ const APIGatewayRequestAuthorizerEventV2Schema = z.object({
   cookies: APIGatewayStringArray.optional(),
   headers: APIGatewayRecord.optional(),
   queryStringParameters: APIGatewayRecord.optional(),
-  requestContext: APIGatewayV2RequestContext,
+  requestContext: APIGatewayV2RequestContextSchema,
   pathParameters: APIGatewayRecord.nullish(),
   stageVariables: APIGatewayRecord.nullish(),
 });
@@ -245,6 +245,6 @@ const APIGatewayRequestAuthorizerEventV2Schema = z.object({
 export {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,
-  APIGatewayV2RequestAuthorizer,
-  APIGatewayV2RequestContext,
+  APIGatewayV2RequestAuthorizerSchema,
+  APIGatewayV2RequestContextSchema,
 };

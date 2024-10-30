@@ -6,7 +6,10 @@
 import {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,
+  APIGatewayRequestAuthorizerV2Schema,
+  APIGatewayRequestContextV2Schema,
 } from '../../../src/schemas/index.js';
+import type { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
 import { getTestEvent } from './utils.js';
 
 describe('API Gateway HTTP (v2) Schemas', () => {
@@ -98,6 +101,38 @@ describe('API Gateway HTTP (v2) Schemas', () => {
 
       // Assess
       expect(parsedEvent).toEqual(event);
+    });
+  });
+
+  describe('APIGatewayRequestContextV2Schema', () => {
+    it('parses the request context', () => {
+      // Prepare
+      const payload = getTestEvent<APIGatewayProxyEventV2>({
+        eventsPath,
+        filename: 'iam-auth',
+      }).requestContext;
+
+      // Act
+      const parsedPayload = APIGatewayRequestContextV2Schema.parse(payload);
+
+      // Assess
+      expect(parsedPayload).toEqual(payload);
+    });
+  });
+
+  describe('APIGatewayRequestAuthorizerV2Schema', () => {
+    it('parses the authorizer', () => {
+      // Prepare
+      const payload = getTestEvent<APIGatewayProxyEventV2>({
+        eventsPath,
+        filename: 'iam-auth',
+      }).requestContext.authorizer;
+
+      // Act
+      const parsedPayload = APIGatewayRequestAuthorizerV2Schema.parse(payload);
+
+      // Assess
+      expect(parsedPayload).toEqual(payload);
     });
   });
 });

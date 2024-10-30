@@ -31,6 +31,7 @@ const KinesisDataStreamRecord = z.object({
   eventVersion: z.string(),
   eventID: z.string(),
   eventName: z.literal('aws:kinesis:record'),
+  awsRegion: z.string(),
   invokeIdentityArn: z.string(),
   eventSourceARN: z.string(),
   kinesis: KinesisDataStreamRecordPayload,

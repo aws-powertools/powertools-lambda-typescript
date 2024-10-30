@@ -6,6 +6,7 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import type { SQSEvent } from 'aws-lambda';
+import { ZodError } from 'zod';
 import { SqsEnvelope } from '../../../src/envelopes/sqs.js';
 import { ParseError } from '../../../src/errors.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';
@@ -52,11 +53,16 @@ describe('SqsEnvelope ', () => {
     it('should return error if event does not match schema', () => {
       const sqsEvent = TestEvents.sqsEvent as SQSEvent;
       sqsEvent.Records[0].body = JSON.stringify({ foo: 'bar' });
-      expect(SqsEnvelope.safeParse(sqsEvent, TestSchema)).toEqual({
+      const parseResult = SqsEnvelope.safeParse(sqsEvent, TestSchema);
+      expect(parseResult).toEqual({
         success: false,
         error: expect.any(ParseError),
         originalEvent: sqsEvent,
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
+      }
     });
 
     it('should return error if envelope is invalid', () => {

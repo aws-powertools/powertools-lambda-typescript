@@ -6,6 +6,7 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import type { EventBridgeEvent } from 'aws-lambda';
+import { ZodError } from 'zod';
 import { EventBridgeEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';
@@ -85,13 +86,19 @@ describe('EventBridgeEnvelope ', () => {
         foo: 'bar',
       };
 
-      expect(
-        EventBridgeEnvelope.safeParse(eventBridgeEvent, TestSchema)
-      ).toEqual({
+      const parseResult = EventBridgeEnvelope.safeParse(
+        eventBridgeEvent,
+        TestSchema
+      );
+      expect(parseResult).toEqual({
         success: false,
         error: expect.any(ParseError),
         originalEvent: eventBridgeEvent,
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
+      }
     });
 
     it('should safe parse eventbridge event and return original event if invalid data type', () => {
@@ -106,7 +113,7 @@ describe('EventBridgeEnvelope ', () => {
         EventBridgeEnvelope.safeParse(eventBridgeEvent, TestSchema)
       ).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: eventBridgeEvent,
       });
     });

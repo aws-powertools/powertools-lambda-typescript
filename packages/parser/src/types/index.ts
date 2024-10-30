@@ -11,6 +11,8 @@ export type {
   APIGatewayProxyEvent,
   ALBMultiValueHeadersEvent,
   APIGatewayProxyEventV2,
+  APIGatewayRequestContextV2,
+  APIGatewayRequestAuthorizerV2,
   S3Event,
   S3EventNotificationEventBridge,
   S3SqsEventNotification,

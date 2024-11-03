@@ -281,7 +281,7 @@ If you're looking to shave a few microseconds, or milliseconds depending on your
 
 When your function makes outgoing requests to APIs, Tracer automatically traces those calls and adds the API to the service graph as a downstream service.
 
-You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS=false`** environment variable or by passing the `captureHTTPSRequests: false` option to the `Tracer` constructor.
+You can opt-out from this feature by setting the **`POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS=false`** environment variable or by passing the `captureHTTPsRequests: false` option to the `Tracer` constructor.
 
 !!! info
     The following snippet shows how to trace [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/fetch) requests, but you can use any HTTP client library built on top it, or on [http](https://nodejs.org/api/http.html), and [https](https://nodejs.org/api/https.html).

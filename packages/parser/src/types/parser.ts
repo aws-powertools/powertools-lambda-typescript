@@ -28,7 +28,7 @@ type ParsedResultSuccess<Output> = {
 type ParsedResultError<Input> = {
   success: false;
   error: ZodError | Error;
-  originalEvent: Input;
+  originalEvent?: Input;
 };
 
 /**

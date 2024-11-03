@@ -13,7 +13,6 @@ import {
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { App } from 'aws-cdk-lib';
 import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
-import type { EventBridgeEvent } from 'aws-lambda';
 import packageJson from '../../package.json';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 import {
@@ -133,24 +132,6 @@ describe('Layers E2E tests', () => {
           functionName: testStack.findAndGetStackOutputValue(
             `test${outputFormat}Fn`
           ),
-          // Uses an EventBridge event payload to test parser functionality
-          payload: {
-            version: '0',
-            id: '6a7e8feb-b491-4cf7-a9f1-bf3703467718',
-            'detail-type': 'EC2 Instance State-change Notification',
-            source: 'aws.ec2',
-            account: '111122223333',
-            time: '2017-12-22T18:43:48Z',
-            region: 'us-west-1',
-            resources: [
-              'arn:aws:ec2:us-west-1:123456789012:instance/i-1234567890abcdef0',
-            ],
-            detail: {
-              instance_id: 'i-1234567890abcdef0',
-              state: 'terminated',
-            },
-            'replay-name': 'replay_archive',
-          } satisfies EventBridgeEvent<string, unknown>,
         })
       );
     }

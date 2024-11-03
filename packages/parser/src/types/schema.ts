@@ -2,6 +2,8 @@ import type { z } from 'zod';
 import type {
   APIGatewayProxyEventSchema,
   APIGatewayProxyEventV2Schema,
+  APIGatewayRequestAuthorizerV2Schema,
+  APIGatewayRequestContextV2Schema,
   AlbMultiValueHeadersSchema,
   AlbSchema,
   CloudFormationCustomResourceCreateSchema,
@@ -42,6 +44,14 @@ type ALBMultiValueHeadersEvent = z.infer<typeof AlbMultiValueHeadersSchema>;
 type APIGatewayProxyEvent = z.infer<typeof APIGatewayProxyEventSchema>;
 
 type APIGatewayProxyEventV2 = z.infer<typeof APIGatewayProxyEventV2Schema>;
+
+type APIGatewayRequestAuthorizerV2 = z.infer<
+  typeof APIGatewayRequestAuthorizerV2Schema
+>;
+
+type APIGatewayRequestContextV2 = z.infer<
+  typeof APIGatewayRequestContextV2Schema
+>;
 
 type CloudFormationCustomResourceCreateEvent = z.infer<
   typeof CloudFormationCustomResourceCreateSchema
@@ -114,6 +124,8 @@ export type {
   ALBMultiValueHeadersEvent,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
+  APIGatewayRequestAuthorizerV2,
+  APIGatewayRequestContextV2,
   CloudFormationCustomResourceCreateEvent,
   CloudFormationCustomResourceDeleteEvent,
   CloudFormationCustomResourceUpdateEvent,

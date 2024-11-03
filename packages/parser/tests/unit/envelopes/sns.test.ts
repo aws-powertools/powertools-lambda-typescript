@@ -6,7 +6,7 @@
 
 import { generateMock } from '@anatine/zod-mock';
 import type { SNSEvent, SQSEvent } from 'aws-lambda';
-import type { z } from 'zod';
+import { ZodError, type z } from 'zod';
 import { SnsEnvelope, SnsSqsEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';
@@ -43,7 +43,7 @@ describe('Sns and SQS Envelope', () => {
     it('should return error when envelope is not valid', () => {
       expect(SnsSqsEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: { foo: 'bar' },
       });
     });
@@ -57,11 +57,16 @@ describe('Sns and SQS Envelope', () => {
 
       snsSqsTestEvent.Records[0].body = JSON.stringify(snsEvent);
 
-      expect(SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema)).toEqual({
+      const parseResult = SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema);
+      expect(parseResult).toEqual({
         success: false,
         error: expect.any(ParseError),
         originalEvent: snsSqsTestEvent,
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
+      }
     });
     it('should return error if sns message is not valid', () => {
       const snsSqsTestEvent = TestEvents.snsSqsEvent as SQSEvent;
@@ -83,7 +88,7 @@ describe('Sns and SQS Envelope', () => {
 
       expect(SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema)).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(SyntaxError),
         originalEvent: snsSqsTestEvent,
       });
     });
@@ -147,16 +152,21 @@ describe('SnsEnvelope', () => {
         });
       });
 
-      expect(SnsEnvelope.safeParse(testEvent, TestSchema)).toEqual({
+      const parseResult = SnsEnvelope.safeParse(testEvent, TestSchema);
+      expect(parseResult).toEqual({
         success: false,
         error: expect.any(ParseError),
         originalEvent: testEvent,
       });
+
+      if (!parseResult.success && parseResult.error) {
+        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
+      }
     });
     it('should return error when envelope is not valid', () => {
       expect(SnsEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(ParseError),
         originalEvent: { foo: 'bar' },
       });
     });

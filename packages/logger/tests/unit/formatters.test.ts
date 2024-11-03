@@ -357,7 +357,6 @@ describe('Formatters', () => {
     },
     {
       error: new AssertionError({
-        message: 'Expected values to be strictly equal',
         actual: 1,
         expected: 2,
         operator: 'strictEqual',
@@ -369,6 +368,11 @@ describe('Formatters', () => {
         ),
         message: expect.stringMatching(/Expected values to be strictly equal/),
         cause: undefined,
+        actual: 1,
+        expected: 2,
+        operator: 'strictEqual',
+        code: 'ERR_ASSERTION',
+        generatedMessage: true,
       },
     },
     {
@@ -432,16 +436,65 @@ describe('Formatters', () => {
         cause: 'bar',
       },
     },
-  ])('formats errors correctly ($name)', ({ error, name, expectedFields }) => {
+  ])(
+    'formats standard errors correctly ($name)',
+    ({ error, name, expectedFields }) => {
+      // Act
+      const formattedError = formatter.formatError(error);
+
+      // Assess
+      expect(formattedError).toEqual({
+        location: expect.stringMatching(fileNameRegexp),
+        stack: expect.stringMatching(fileNameRegexpWithLine),
+        name,
+        ...expectedFields,
+      });
+    }
+  );
+
+  it('formats custom errors by including only enumerable properties', () => {
+    // Prepare
+    const customSymbol = Symbol('customSymbol');
+    class CustomError extends Error {
+      public otherProperty: string;
+
+      public constructor(
+        message: string,
+        public readonly code: number
+      ) {
+        super(message);
+        this.name = 'CustomError';
+        this.otherProperty = 'otherProperty';
+      }
+
+      public [customSymbol] = (): void => {
+        // do nothing
+      };
+    }
+
+    class SuperCustomError extends CustomError {
+      public extraProperty: string;
+      public constructor(message: string, code: number) {
+        super(message, code);
+        this.name = 'SuperCustomError';
+        this.extraProperty = 'extraProperty';
+      }
+    }
+
     // Act
-    const formattedError = formatter.formatError(error);
+    const formattedError = formatter.formatError(
+      new SuperCustomError('Something went wrong', 500)
+    );
 
     // Assess
     expect(formattedError).toEqual({
       location: expect.stringMatching(fileNameRegexp),
       stack: expect.stringMatching(fileNameRegexpWithLine),
-      name,
-      ...expectedFields,
+      name: 'SuperCustomError',
+      message: 'Something went wrong',
+      code: 500,
+      otherProperty: 'otherProperty',
+      extraProperty: 'extraProperty',
     });
   });
 

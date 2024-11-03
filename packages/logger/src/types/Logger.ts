@@ -197,6 +197,7 @@ type LoggerInterface = {
   refreshSampleRateCalculation(): void;
   removeKeys(keys?: string[]): void;
   removePersistentLogAttributes(keys?: string[]): void;
+  resetKeys(): void;
   setLogLevel(logLevel: LogLevel): void;
   setPersistentLogAttributes(attributes?: LogAttributes): void;
   shouldLogEvent(overwriteValue?: boolean): boolean;

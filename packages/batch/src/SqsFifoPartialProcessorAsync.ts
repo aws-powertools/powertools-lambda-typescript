@@ -52,7 +52,7 @@ class SqsFifoPartialProcessorAsync extends BatchProcessor {
   /**
    * A set of group IDs that have already encountered failures.
    */
-  #failedGroupIds: Set<string>;
+  readonly #failedGroupIds: Set<string>;
 
   public constructor() {
     super(EventType.SQS);

@@ -47,6 +47,7 @@ jobs:
           "packages/idempotency",
           "packages/jmespath",
           "packages/logger",
+          "packages/tracer",
         ]
       fail-fast: false
     steps:
@@ -89,14 +90,12 @@ jobs:
           nodeVersion: ${{ matrix.version }}
       - name: Run linting
         run: |
-          npm run lint -w -w packages/tracer \
-            -w packages/metrics \
+          npm run lint -w packages/metrics \
             -w packages/parameters \
             -w packages/parser
       - name: Run unit tests
         run: |
-          npm t -w packages/tracer \
-            -w packages/metrics \
+          npm t -w packages/metrics \
             -w packages/parameters \
             -w packages/parser
   check-examples:

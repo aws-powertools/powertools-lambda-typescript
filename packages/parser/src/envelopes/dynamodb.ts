@@ -12,6 +12,7 @@ import { Envelope } from './envelope.js';
  * length of the list is the record's amount in the original event.
  */
 export const DynamoDBStreamEnvelope = {
+  symbol: 'array' as const,
   parse<T extends ZodSchema>(
     data: unknown,
     schema: T

@@ -17,6 +17,7 @@ import { Envelope } from './envelope.js';
  *  https://docs.aws.amazon.com/lambda/latest/dg/services-kinesisfirehose.html
  */
 export const KinesisFirehoseEnvelope = {
+  symbol: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = KinesisFirehoseSchema.parse(data);
 

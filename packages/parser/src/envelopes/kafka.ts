@@ -17,6 +17,7 @@ import { Envelope } from './envelope.js';
  */
 
 export const KafkaEnvelope = {
+  symbol: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     // manually fetch event source to decide between Msk or SelfManaged
     const eventSource = (data as KafkaMskEvent).eventSource;

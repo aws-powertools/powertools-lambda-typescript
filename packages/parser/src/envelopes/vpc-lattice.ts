@@ -9,6 +9,7 @@ import { Envelope } from './envelope.js';
  */
 
 export const VpcLatticeEnvelope = {
+  symbol: 'object' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
     const parsedEnvelope = VpcLatticeSchema.parse(data);
 

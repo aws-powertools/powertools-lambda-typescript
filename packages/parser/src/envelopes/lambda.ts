@@ -8,6 +8,7 @@ import { Envelope } from './envelope.js';
  * Lambda function URL envelope to extract data within body key
  */
 export const LambdaFunctionUrlEnvelope = {
+  symbol: 'object' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
     const parsedEnvelope = LambdaFunctionUrlSchema.parse(data);
 

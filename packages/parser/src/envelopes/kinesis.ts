@@ -15,6 +15,7 @@ import { Envelope } from './envelope.js';
  * all items in the list will be parsed as str and not as JSON (and vice versa)
  */
 export const KinesisEnvelope = {
+  symbol: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = KinesisDataStreamSchema.parse(data);
 

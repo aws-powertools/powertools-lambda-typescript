@@ -8,6 +8,7 @@ import { Envelope } from './envelope.js';
  * Amazon VPC Lattice envelope to extract data within body key
  */
 export const VpcLatticeV2Envelope = {
+  symbol: 'object' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
     const parsedEnvelope = VpcLatticeV2Schema.parse(data);
 

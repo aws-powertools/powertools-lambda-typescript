@@ -8,6 +8,7 @@ import { Envelope } from './envelope.js';
  * Envelope for EventBridge schema that extracts and parses data from the `detail` key.
  */
 export const EventBridgeEnvelope = {
+  symbol: 'object' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
     return Envelope.parse(EventBridgeSchema.parse(data).detail, schema);
   },

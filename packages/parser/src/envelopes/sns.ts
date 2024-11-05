@@ -15,6 +15,7 @@ import { Envelope } from './envelope.js';
  * all items in the list will be parsed as str and npt as JSON (and vice versa)
  */
 export const SnsEnvelope = {
+  symbol: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = SnsSchema.parse(data);
 
@@ -70,6 +71,7 @@ export const SnsEnvelope = {
  *
  */
 export const SnsSqsEnvelope = {
+  symbol: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
     const parsedEnvelope = SqsSchema.parse(data);
 

@@ -8,6 +8,7 @@ import { Envelope } from './envelope.js';
  * API Gateway envelope to extract data within body key
  */
 export const ApiGatewayEnvelope = {
+  symbol: 'object' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
     return Envelope.parse(APIGatewayProxyEventSchema.parse(data).body, schema);
   },

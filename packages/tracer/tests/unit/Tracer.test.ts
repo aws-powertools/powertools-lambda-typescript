@@ -12,11 +12,6 @@ import type { ProviderServiceInterface } from '../../src/types/ProviderService.j
 import { Tracer } from './../../src/index.js';
 import type { CaptureLambdaHandlerOptions } from './../../src/types/index.js';
 
-/* vi.hoisted(() => {
-  process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
-  process.env.AWS_XRAY_LOGGING_LEVEL = 'silent';
-}); */
-
 const createCaptureAsyncFuncMock = (
   provider: ProviderServiceInterface,
   subsegment?: Subsegment

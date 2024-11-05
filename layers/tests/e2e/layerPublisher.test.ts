@@ -1,8 +1,3 @@
-/**
- * Test LayerPublisherStack class
- *
- * @group e2e/layers/all
- */
 import { join } from 'node:path';
 import {
   TestInvocationLogs,
@@ -13,23 +8,14 @@ import {
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { App } from 'aws-cdk-lib';
 import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import packageJson from '../../package.json';
-import { LayerPublisherStack } from '../../src/layer-publisher-stack';
+import { LayerPublisherStack } from '../../src/layer-publisher-stack.js';
 import {
   RESOURCE_NAME_PREFIX,
   SETUP_TIMEOUT,
   TEARDOWN_TIMEOUT,
-} from './constants';
-
-jest.spyOn(console, 'log').mockImplementation();
-
-function assertLogs(
-  logs: TestInvocationLogs | undefined
-): asserts logs is TestInvocationLogs {
-  if (!logs) {
-    throw new Error('Function logs are not available');
-  }
-}
+} from './constants.js';
 
 /**
  * This test has two stacks:
@@ -137,70 +123,78 @@ describe('Layers E2E tests', () => {
     }
   }, SETUP_TIMEOUT);
 
-  describe.each(cases)(
-    'utilities tests for %s output format',
+  it.each(cases)(
+    'imports and instantiates all utilities (%s)',
     (outputFormat) => {
-      it('should have no errors in the logs, which indicates the pacakges version matches the expected one', () => {
-        const maybeInvocationLogs = invocationLogsMap.get(outputFormat);
-        assertLogs(maybeInvocationLogs);
-        const invocationLogs = maybeInvocationLogs;
-        const logs = invocationLogs.getFunctionLogs('ERROR');
+      const invocationLogs = invocationLogsMap.get(
+        outputFormat
+      ) as TestInvocationLogs;
 
-        expect(logs.length).toBe(0);
-      });
+      expect(invocationLogs.doesAnyFunctionLogsContains('ERROR')).toBe(false);
+    }
+  );
 
-      it('should have one warning related to missing Metrics namespace', () => {
-        const maybeInvocationLogs = invocationLogsMap.get(outputFormat);
-        assertLogs(maybeInvocationLogs);
-        const invocationLogs = maybeInvocationLogs;
-        const logs = invocationLogs.getFunctionLogs('WARN');
+  it.each(cases)(
+    'emits a warning log for missing Metrics namespace (%s)',
+    (outputFormat) => {
+      const invocationLogs = invocationLogsMap.get(
+        outputFormat
+      ) as TestInvocationLogs;
+      const logs = invocationLogs.getFunctionLogs('WARN');
 
-        expect(logs.length).toBe(1);
-        expect(logs[0]).toContain('Namespace should be defined, default used');
-      });
+      expect(logs.length).toBe(1);
+      expect(
+        invocationLogs.doesAnyFunctionLogsContains(
+          /Namespace should be defined, default used/,
+          'WARN'
+        )
+      ).toBe(true);
+      /* expect(logEntry.message).toEqual(
+        'Namespace should be defined, default used'
+      ); */
+    }
+  );
 
-      it('should have one info log related to coldstart metric', () => {
-        const maybeInvocationLogs = invocationLogsMap.get(outputFormat);
-        assertLogs(maybeInvocationLogs);
-        const invocationLogs = maybeInvocationLogs;
-        const logs = invocationLogs.getFunctionLogs();
+  it.each(cases)('emits an EMF log (%s)', (outputFormat) => {
+    const invocationLogs = invocationLogsMap.get(
+      outputFormat
+    ) as TestInvocationLogs;
 
-        const emfLogEntry = logs.find((log) =>
-          log.match(
-            /{"_aws":{"Timestamp":\d+,"CloudWatchMetrics":\[\{"Namespace":"\S+","Dimensions":\[\["service"\]\],"Metrics":\[\{"Name":"ColdStart","Unit":"Count"\}\]\}\]},"service":"\S+","ColdStart":1}/
-          )
-        );
+    expect(
+      invocationLogs.doesAnyFunctionLogsContains(
+        /{"_aws":{"Timestamp":\d+,"CloudWatchMetrics":\[\{"Namespace":"\S+","Dimensions":\[\["service"\]\],"Metrics":\[\{"Name":"ColdStart","Unit":"Count"\}\]\}\]},"service":"\S+","ColdStart":1}/
+      )
+    ).toBe(true);
+  });
 
-        expect(emfLogEntry).toBeDefined();
-      });
+  it.each(cases)(
+    'emits a debug log with tracer subsegment info (%s)',
+    (outputFormat) => {
+      const invocationLogs = invocationLogsMap.get(
+        outputFormat
+      ) as TestInvocationLogs;
+      const logs = invocationLogs.getFunctionLogs('DEBUG');
 
-      it('should have one debug log with tracer subsegment info', () => {
-        const maybeInvocationLogs = invocationLogsMap.get(outputFormat);
-        assertLogs(maybeInvocationLogs);
-        const invocationLogs = maybeInvocationLogs;
-        const logs = invocationLogs.getFunctionLogs('DEBUG');
-
-        expect(logs.length).toBe(1);
-        const logEntry = TestInvocationLogs.parseFunctionLog(logs[0]);
-        expect(logEntry.message).toContain('subsegment');
-        expect(logEntry.subsegment).toBeDefined();
-        const subsegment = JSON.parse(logEntry.subsegment as string);
-        const traceIdFromLog = subsegment.trace_id;
-        expect(subsegment).toEqual(
-          expect.objectContaining({
-            id: expect.any(String),
-            name: '### index.handler',
-            start_time: expect.any(Number),
-            end_time: expect.any(Number),
-            type: 'subsegment',
-            annotations: {
-              ColdStart: true,
-            },
-            parent_id: expect.any(String),
-            trace_id: traceIdFromLog,
-          })
-        );
-      });
+      expect(logs.length).toBe(1);
+      const logEntry = TestInvocationLogs.parseFunctionLog(logs[0]);
+      expect(logEntry.message).toContain('subsegment');
+      expect(logEntry.subsegment).toBeDefined();
+      const subsegment = JSON.parse(logEntry.subsegment as string);
+      const traceIdFromLog = subsegment.trace_id;
+      expect(subsegment).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          name: '### index.handler',
+          start_time: expect.any(Number),
+          end_time: expect.any(Number),
+          type: 'subsegment',
+          annotations: {
+            ColdStart: true,
+          },
+          parent_id: expect.any(String),
+          trace_id: traceIdFromLog,
+        })
+      );
     }
   );
 

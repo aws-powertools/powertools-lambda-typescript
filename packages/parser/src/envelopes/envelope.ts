@@ -1,6 +1,6 @@
 import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
-import type { ParsedResult } from '../types/index.js';
+import type { ParsedResult } from '../types/parser.js';
 
 export const Envelope = {
   /**

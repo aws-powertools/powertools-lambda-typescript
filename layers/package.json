@@ -7,15 +7,19 @@
   "private": true,
   "description": "This CDK app is meant to be used to publish Powertools for AWS Lambda (TypeScript) Lambda Layer. It is composed of a single stack deploying the Layer into the target account.",
   "scripts": {
+    "test": "vitest --run tests/unit",
+    "test:unit": "vitest --run tests/unit",
+    "test:unit:coverage": "echo 'Not Implemented'",
+    "test:unit:types": "echo 'Not Implemented'",
+    "test:e2e:nodejs18x": "echo 'Not Implemented'",
+    "test:e2e:nodejs20x": "echo 'Not Implemented'",
+    "test:e2e": "vitest --run tests/e2e",
     "build": "echo 'Not applicable, run `npx cdk synth` instead to build the stack'",
-    "test": "echo 'Not applicable'",
     "jest": "jest --detectOpenHandles",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
-    "test:unit": "jest --group=unit",
-    "test:e2e": "jest --group=e2e",
     "createLayerFolder": "cdk synth --context BuildFromLocal=true"
   },
   "repository": {

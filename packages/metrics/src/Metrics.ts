@@ -163,9 +163,11 @@ class Metrics extends Utility implements MetricsInterface {
   private functionName?: string;
 
   /**
-   * Custom logger object to be used for emitting debug, warning, and error messages.
+   * Custom logger object used for emitting debug, warning, and error messages.
+   *
+   * Note that this logger is not used for emitting metrics which are emitted to standard output using the `Console` object.
    */
-  readonly #logger?: GenericLogger;
+  readonly #logger: GenericLogger;
 
   /**
    * Flag indicating if this is a single metric instance
@@ -200,8 +202,8 @@ class Metrics extends Utility implements MetricsInterface {
     super();
 
     this.dimensions = {};
-    this.#logger = options.logger;
     this.setOptions(options);
+    this.#logger = options.logger || this.console;
   }
 
   /**
@@ -557,14 +559,10 @@ class Metrics extends Utility implements MetricsInterface {
   public publishStoredMetrics(): void {
     const hasMetrics = this.hasStoredMetrics();
     if (!this.shouldThrowOnEmptyMetrics && !hasMetrics) {
-      const message =
+      this.#logger.warn(
         'No application metrics to publish. The cold-start metric may be published if enabled. ' +
-        'If application metrics should never be empty, consider using `throwOnEmptyMetrics`';
-      if (this.#logger?.warn) {
-        this.#logger.warn(message);
-      } else {
-        this.console.warn(message);
-      }
+          'If application metrics should never be empty, consider using `throwOnEmptyMetrics`'
+      );
     }
     const emfOutput = this.serializeMetrics();
     hasMetrics && this.console.log(JSON.stringify(emfOutput));
@@ -604,9 +602,7 @@ class Metrics extends Utility implements MetricsInterface {
     }
 
     if (!this.namespace)
-      (this.#logger?.warn || this.console.warn)(
-        'Namespace should be defined, default used'
-      );
+      this.#logger.warn('Namespace should be defined, default used');
 
     // We reduce the stored metrics to a single object with the metric
     // name as the key and the value as the value.

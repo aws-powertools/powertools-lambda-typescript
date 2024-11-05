@@ -1,8 +1,3 @@
-/**
- * Test Tracer middleware
- *
- * @group unit/tracer/all
- */
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
@@ -12,19 +7,16 @@ import {
   Subsegment,
   setContextMissingStrategy,
 } from 'aws-xray-sdk-core';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { captureLambdaHandler } from '../../src/middleware/middy.js';
 import { Tracer } from './../../src/index.js';
-
-jest.spyOn(console, 'debug').mockImplementation(() => null);
-jest.spyOn(console, 'warn').mockImplementation(() => null);
-jest.spyOn(console, 'error').mockImplementation(() => null);
 
 describe('Middy middleware', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
+    vi.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -32,13 +24,13 @@ describe('Middy middleware', () => {
     process.env = ENVIRONMENT_VARIABLES;
   });
   describe('Middleware: captureLambdaHandler', () => {
-    test('when used while tracing is disabled, it does nothing', async () => {
+    it('does nothing when used while tracing is disabled', async () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const setSegmentSpy = jest
+      const setSegmentSpy = vi
         .spyOn(tracer.provider, 'setSegment')
-        .mockImplementation();
-      const getSegmentSpy = jest
+        .mockImplementation(() => null);
+      const getSegmentSpy = vi
         .spyOn(tracer.provider, 'getSegment')
         .mockImplementationOnce(
           () => new Segment('facade', process.env._X_AMZN_TRACE_ID || null)
@@ -60,13 +52,13 @@ describe('Middy middleware', () => {
       expect(getSegmentSpy).toHaveBeenCalledTimes(0);
     });
 
-    test('when used while tracing is disabled, even if the handler throws an error, it does nothing', async () => {
+    it('does nothing when used while tracing is disabled, even if the handler throws an error', async () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const setSegmentSpy = jest
+      const setSegmentSpy = vi
         .spyOn(tracer.provider, 'setSegment')
-        .mockImplementation();
-      const getSegmentSpy = jest
+        .mockImplementation(() => null);
+      const getSegmentSpy = vi
         .spyOn(tracer.provider, 'getSegment')
         .mockImplementationOnce(
           () => new Segment('facade', process.env._X_AMZN_TRACE_ID || null)
@@ -89,12 +81,12 @@ describe('Middy middleware', () => {
       expect.assertions(3);
     });
 
-    test('when used while POWERTOOLS_TRACER_CAPTURE_RESPONSE is set to false, it does not capture the response as metadata', async () => {
+    it('does not capture the response when used while POWERTOOLS_TRACER_CAPTURE_RESPONSE is set to false', async () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
       const tracer: Tracer = new Tracer();
-      jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
-      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+      vi.spyOn(tracer.provider, 'setSegment').mockImplementation(() => null);
+      const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
 
       const handler = middy(async (_event: unknown, _context: Context) => ({
         foo: 'bar',
@@ -108,11 +100,11 @@ describe('Middy middleware', () => {
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = undefined;
     });
 
-    test('when used while captureResponse set to false, it does not capture the response as metadata', async () => {
+    it('does not capture the resposne as metadata when used while captureResponse set to false', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
-      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+      vi.spyOn(tracer.provider, 'setSegment').mockImplementation(() => null);
+      const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
 
       const handler = middy(async (_event: unknown, _context: Context) => ({
         foo: 'bar',
@@ -125,11 +117,11 @@ describe('Middy middleware', () => {
       expect(putMetadataSpy).toHaveBeenCalledTimes(0);
     });
 
-    test('when used while captureResponse set to true, it captures the response as metadata', async () => {
+    it('captures the response as metadata when used while captureResponse set to true', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
-      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+      vi.spyOn(tracer.provider, 'setSegment').mockImplementation(() => null);
+      const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
 
       const handler = middy(async (_event: unknown, _context: Context) => ({
         foo: 'bar',
@@ -145,11 +137,11 @@ describe('Middy middleware', () => {
       });
     });
 
-    test('when used with standard config, it captures the response as metadata', async () => {
+    it('captures the response as metadata when used with standard config', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      jest.spyOn(tracer.provider, 'setSegment').mockImplementation();
-      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+      vi.spyOn(tracer.provider, 'setSegment').mockImplementation(() => null);
+      const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
 
       const handler = middy(async (_event: unknown, _context: Context) => ({
         foo: 'bar',
@@ -165,22 +157,22 @@ describe('Middy middleware', () => {
       });
     });
 
-    test('when used while POWERTOOLS_TRACER_CAPTURE_ERROR is set to false, it does not capture the exceptions', async () => {
+    it('does not capture exceptions when used while POWERTOOLS_TRACER_CAPTURE_ERROR is set to false', async () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
         '## index.handler'
       );
-      const setSegmentSpy = jest
+      const setSegmentSpy = vi
         .spyOn(tracer.provider, 'setSegment')
-        .mockImplementation();
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
+        .mockImplementation(() => null);
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => newSubsegment
+      );
       setContextMissingStrategy(() => null);
-      const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
-      const addErrorFlagSpy = jest.spyOn(newSubsegment, 'addErrorFlag');
+      const addErrorSpy = vi.spyOn(newSubsegment, 'addError');
+      const addErrorFlagSpy = vi.spyOn(newSubsegment, 'addErrorFlag');
       const lambdaHandler: Handler = async (
         _event: unknown,
         _context: Context
@@ -202,20 +194,20 @@ describe('Middy middleware', () => {
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = undefined;
     });
 
-    test('when used with standard config, it captures the exception correctly', async () => {
+    it('captures the exception correctly when used with standard config', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
         '## index.handler'
       );
-      const setSegmentSpy = jest
+      const setSegmentSpy = vi
         .spyOn(tracer.provider, 'setSegment')
-        .mockImplementation();
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
+        .mockImplementation(() => null);
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => newSubsegment
+      );
       setContextMissingStrategy(() => null);
-      const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
+      const addErrorSpy = vi.spyOn(newSubsegment, 'addError');
       const lambdaHandler: Handler = async (
         _event: unknown,
         _context: Context
@@ -238,17 +230,16 @@ describe('Middy middleware', () => {
       expect.assertions(5);
     });
 
-    test('when used with standard config, it annotates ColdStart correctly', async () => {
+    it('annotates the ColdStart correctly when used with standard config', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      jest.spyOn(tracer.provider, 'setSegment').mockImplementation(() => ({}));
-      jest
-        .spyOn(tracer.provider, 'getSegment')
+      vi.spyOn(tracer.provider, 'setSegment').mockImplementation(() => ({}));
+      vi.spyOn(tracer.provider, 'getSegment')
         .mockImplementationOnce(() => new Segment('facade'))
         .mockImplementationOnce(() => new Subsegment('## index.handler'))
         .mockImplementationOnce(() => new Segment('facade'))
         .mockImplementation(() => new Subsegment('## index.handler'));
-      const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
+      const putAnnotationSpy = vi.spyOn(tracer, 'putAnnotation');
 
       const handler = middy(async (_event: unknown, _context: Context) => ({
         foo: 'bar',
@@ -265,15 +256,14 @@ describe('Middy middleware', () => {
       expect(putAnnotationSpy).toHaveBeenNthCalledWith(3, 'ColdStart', false);
     });
 
-    test('when used with standard config, it annotates Service correctly', async () => {
+    it('annotates the Service correctly when used with standard config', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      jest.spyOn(tracer.provider, 'setSegment').mockImplementation(() => ({}));
-      jest
-        .spyOn(tracer.provider, 'getSegment')
+      vi.spyOn(tracer.provider, 'setSegment').mockImplementation(() => ({}));
+      vi.spyOn(tracer.provider, 'getSegment')
         .mockImplementationOnce(() => new Segment('facade'))
         .mockImplementation(() => new Subsegment('## index.handler'));
-      const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
+      const putAnnotationSpy = vi.spyOn(tracer, 'putAnnotation');
 
       const handler = middy(async (_event: unknown, _context: Context) => ({
         foo: 'bar',
@@ -292,28 +282,27 @@ describe('Middy middleware', () => {
       );
     });
 
-    test('when enabled, and another middleware returns early, it still closes and restores the segments correctly', async () => {
+    it('closes and restores segments correctly when another middleware returns early', async () => {
       // Prepare
       const tracer = new Tracer();
-      const setSegmentSpy = jest
+      const setSegmentSpy = vi
         .spyOn(tracer.provider, 'setSegment')
         .mockImplementation(() => ({}));
-      jest.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
-      jest
-        .spyOn(tracer, 'addServiceNameAnnotation')
-        .mockImplementation(() => ({}));
+      vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+      vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(
+        () => ({})
+      );
       const facadeSegment1 = new Segment('facade');
       const handlerSubsegment1 = new Subsegment('## index.handlerA');
-      jest
-        .spyOn(facadeSegment1, 'addNewSubsegment')
-        .mockImplementation(() => handlerSubsegment1);
+      vi.spyOn(facadeSegment1, 'addNewSubsegment').mockImplementation(
+        () => handlerSubsegment1
+      );
       const facadeSegment2 = new Segment('facade');
       const handlerSubsegment2 = new Subsegment('## index.handlerB');
-      jest
-        .spyOn(facadeSegment2, 'addNewSubsegment')
-        .mockImplementation(() => handlerSubsegment2);
-      jest
-        .spyOn(tracer.provider, 'getSegment')
+      vi.spyOn(facadeSegment2, 'addNewSubsegment').mockImplementation(
+        () => handlerSubsegment2
+      );
+      vi.spyOn(tracer.provider, 'getSegment')
         .mockImplementationOnce(() => facadeSegment1)
         .mockImplementationOnce(() => facadeSegment2);
       const myCustomMiddleware = (): middy.MiddlewareObj => {
@@ -360,25 +349,22 @@ describe('Middy middleware', () => {
     const tracer = new Tracer();
     const facadeSegment = new Segment('facade');
     const handlerSubsegment = new Subsegment('## index.handler');
-    jest
-      .spyOn(tracer.provider, 'getSegment')
+    vi.spyOn(tracer.provider, 'getSegment')
       .mockImplementationOnce(() => facadeSegment)
       .mockImplementationOnce(() => handlerSubsegment);
-    jest.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
-    jest
-      .spyOn(tracer, 'addServiceNameAnnotation')
-      .mockImplementation(() => ({}));
-    const setSegmentSpy = jest
+    vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+    vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(() => ({}));
+    const setSegmentSpy = vi
       .spyOn(tracer.provider, 'setSegment')
       .mockImplementation(() => ({}));
-    jest
-      .spyOn(facadeSegment, 'addNewSubsegment')
-      .mockImplementation(() => handlerSubsegment);
+    vi.spyOn(facadeSegment, 'addNewSubsegment').mockImplementation(
+      () => handlerSubsegment
+    );
     const handler = middy((): void => {
       console.log('Hello world!');
     }).use(captureLambdaHandler(tracer));
-    const logWarningSpy = jest.spyOn(console, 'warn');
-    const closeSpy = jest
+    const logWarningSpy = vi.spyOn(console, 'warn');
+    const closeSpy = vi
       .spyOn(handlerSubsegment, 'close')
       .mockImplementation(() => {
         throw new Error('dummy error');

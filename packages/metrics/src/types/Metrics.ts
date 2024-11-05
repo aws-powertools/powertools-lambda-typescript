@@ -66,7 +66,7 @@ type MetricsOptions = {
    * If not provided, debug messages will be suppressed, and warning and error messages will be sent to stdout.
    *
    * Note that EMF metrics are always sent directly to stdout, regardless of the logger
-   * to avoid any potential side effects from using a custom logger.
+   * to avoid compatibility issues with custom loggers.
    */
   logger?: GenericLogger;
 };

@@ -62,11 +62,11 @@ describe('Types ', () => {
     type Result = ParserOutput<typeof userSchema, typeof testCase.envelope>;
 
     // This will fail TypeScript compilation if Result is is an array
-    const result = { name: 'John', age: 30 } satisfies Result;
+    const result = [{ name: 'John', age: 30 }] satisfies Result;
 
     // Runtime checks to ensure it's an array with single element
-    expect(Array.isArray(result)).toBe(false);
-    expect(result).toEqual({ name: 'John', age: 30 });
+    expect(Array.isArray(result)).toBe(true);
+    expect(result).toEqual([{ name: 'John', age: 30 }]);
 
     // Type assertion to ensure it's specifically User[]
     type AssertIsUserArray<T> = T extends z.infer<typeof userSchema>[]

@@ -24,7 +24,10 @@ export const SnsEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     const parsedEnvelope = SnsSchema.safeParse(data);
 
     if (!parsedEnvelope.success) {
@@ -72,7 +75,7 @@ export const SnsEnvelope = {
  */
 export const SnsSqsEnvelope = {
   symbol: 'array' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
+  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = SqsSchema.parse(data);
 
     return parsedEnvelope.Records.map((record) => {
@@ -84,7 +87,10 @@ export const SnsSqsEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     const parsedEnvelope = SqsSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {

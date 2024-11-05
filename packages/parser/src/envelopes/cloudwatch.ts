@@ -23,7 +23,10 @@ export const CloudWatchEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     const parsedEnvelope = CloudWatchLogsSchema.safeParse(data);
 
     if (!parsedEnvelope.success) {

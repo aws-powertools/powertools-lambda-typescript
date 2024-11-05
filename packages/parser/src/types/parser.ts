@@ -44,14 +44,20 @@ type ParsedResult<Input = unknown, Output = unknown> =
 type ZodInferredResult<
   TSchema extends ZodSchema,
   TEnvelope extends Envelope,
-> = TEnvelope extends ArrayEnvelope ? z.infer<TSchema>[] : z.infer<TSchema>;
+> = undefined extends TEnvelope
+  ? z.infer<TSchema>
+  : TEnvelope extends ArrayEnvelope
+    ? z.infer<TSchema>[]
+    : z.infer<TSchema>;
 
 type ZodInferredSafeParseResult<
   TSchema extends ZodSchema,
   TEnvelope extends Envelope,
-> = TEnvelope extends ArrayEnvelope
-  ? ParsedResult<unknown, z.infer<TSchema>[]>
-  : ParsedResult<unknown, z.infer<TSchema>>;
+> = undefined extends TEnvelope
+  ? ParsedResult<unknown, z.infer<TSchema>>
+  : TEnvelope extends ArrayEnvelope
+    ? ParsedResult<unknown, z.infer<TSchema>[]>
+    : ParsedResult<unknown, z.infer<TSchema>>;
 
 /**
  * The output of the parser function, can be either schema inferred type or a ParsedResult

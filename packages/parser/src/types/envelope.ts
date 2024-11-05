@@ -6,16 +6,7 @@ type DynamoDBStreamEnvelopeResponse<Schema extends ZodSchema> = {
   OldImage: z.infer<Schema>;
 };
 
-interface Envelope {
-  symbol: 'array' | 'object';
-  parse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): z.infer<T> | z.infer<T>[];
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult;
-}
-
-interface ArrayEnvelope extends Omit<Envelope, 'symbol'> {
+interface ArrayEnvelope {
   symbol: 'array';
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[];
   safeParse<T extends ZodSchema>(
@@ -24,7 +15,7 @@ interface ArrayEnvelope extends Omit<Envelope, 'symbol'> {
   ): ParsedResult<unknown, z.infer<T>[]>;
 }
 
-interface ObjectEnvelope extends Omit<Envelope, 'symbol'> {
+interface ObjectEnvelope {
   symbol: 'object';
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>;
   safeParse<T extends ZodSchema>(
@@ -32,6 +23,8 @@ interface ObjectEnvelope extends Omit<Envelope, 'symbol'> {
     schema: T
   ): ParsedResult<unknown, z.infer<T>>;
 }
+
+type Envelope = ArrayEnvelope | ObjectEnvelope | undefined;
 
 export type {
   ArrayEnvelope,

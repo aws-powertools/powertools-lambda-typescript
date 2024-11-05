@@ -24,7 +24,10 @@ export const KinesisEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     const parsedEnvelope = KinesisDataStreamSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {

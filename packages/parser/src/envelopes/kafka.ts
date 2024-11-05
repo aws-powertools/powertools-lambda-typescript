@@ -36,7 +36,10 @@ export const KafkaEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     // manually fetch event source to deside between Msk or SelfManaged
     const eventSource = (data as KafkaMskEvent).eventSource;
 

@@ -1,7 +1,7 @@
 import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { APIGatewayProxyEventSchema } from '../schemas/apigw.js';
-import type { ParsedResult } from '../types';
+import type { ParsedResult } from '../types/index.js';
 import { Envelope } from './envelope.js';
 
 /**
@@ -13,7 +13,10 @@ export const ApiGatewayEnvelope = {
     return Envelope.parse(APIGatewayProxyEventSchema.parse(data).body, schema);
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>> {
     const parsedEnvelope = APIGatewayProxyEventSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {

@@ -27,7 +27,10 @@ export const DynamoDBStreamEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, DynamoDBStreamEnvelopeResponse<z.infer<T>>[]> {
     const parsedEnvelope = DynamoDBStreamSchema.safeParse(data);
 
     if (!parsedEnvelope.success) {

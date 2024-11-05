@@ -26,7 +26,10 @@ export const KinesisFirehoseEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     const parsedEnvelope = KinesisFirehoseSchema.safeParse(data);
 
     if (!parsedEnvelope.success) {

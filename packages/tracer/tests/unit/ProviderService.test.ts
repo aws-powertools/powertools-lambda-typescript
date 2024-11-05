@@ -1,62 +1,54 @@
-/**
- * Test ProviderService class
- *
- * @group unit/tracer/providerservice
- */
 import { channel } from 'node:diagnostics_channel';
 import http from 'node:http';
 import https from 'node:https';
 import { URL } from 'node:url';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import {
-  Segment,
-  Subsegment,
-  captureAWS,
-  captureAWSClient,
-  captureAWSv3Client,
-  captureAsyncFunc,
-  captureFunc,
-  captureHTTPsGlobal,
-  getNamespace,
-  getSegment,
-  setContextMissingStrategy,
-  setDaemonAddress,
-  setLogger,
-  setSegment,
-} from 'aws-xray-sdk-core';
+import xraySDK from 'aws-xray-sdk-core';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProviderService } from '../../src/provider/ProviderService.js';
 import type { HttpSubsegment } from '../../src/types/ProviderService.js';
 import { mockFetch } from '../helpers/mockRequests.js';
 
-jest.mock('aws-xray-sdk-core', () => ({
-  ...jest.requireActual('aws-xray-sdk-core'),
-  captureAWS: jest.fn(),
-  captureAWSClient: jest.fn(),
-  captureAWSv3Client: jest.fn(),
-  captureAsyncFunc: jest.fn(),
-  captureHTTPsGlobal: jest.fn(),
-  captureFunc: jest.fn(),
-  getNamespace: jest.fn(),
-  getSegment: jest.fn(),
-  setContextMissingStrategy: jest.fn(),
-  setDaemonAddress: jest.fn(),
-  setLogger: jest.fn(),
-  setSegment: jest.fn(),
+const { Segment, Subsegment } = xraySDK;
+const mocks = vi.hoisted(() => ({
+  captureAWS: vi.fn(),
+  captureAWSClient: vi.fn(),
+  captureAWSv3Client: vi.fn(),
+  captureAsyncFunc: vi.fn(),
+  captureHTTPsGlobal: vi.fn(),
+  captureFunc: vi.fn(),
+  getNamespace: vi.fn(),
+  getSegment: vi.fn(),
+  setContextMissingStrategy: vi.fn(),
+  setDaemonAddress: vi.fn(),
+  setLogger: vi.fn(),
+  setSegment: vi.fn(),
 }));
 
-jest.mock('@aws-lambda-powertools/commons', () => ({
-  ...jest.requireActual('@aws-lambda-powertools/commons'),
-  addUserAgentMiddleware: jest.fn(),
+vi.mock('aws-xray-sdk-core', async (importOriginal) => ({
+  default: {
+    ...(
+      await importOriginal<{
+        default: typeof import('aws-xray-sdk-core');
+      }>()
+    ).default,
+    ...mocks,
+  },
+}));
+
+vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@aws-lambda-powertools/commons')>()),
+  addUserAgentMiddleware: vi.fn(),
 }));
 
 describe('Class: ProviderService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Method: captureAWS', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
+    it('calls the correct underlying function with proper arguments', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -64,13 +56,13 @@ describe('Class: ProviderService', () => {
       provider.captureAWS({});
 
       // Assess
-      expect(captureAWS).toHaveBeenCalledTimes(1);
-      expect(captureAWS).toHaveBeenCalledWith({});
+      expect(mocks.captureAWS).toHaveBeenCalledTimes(1);
+      expect(mocks.captureAWS).toHaveBeenCalledWith({});
     });
   });
 
   describe('Method: captureAWSClient', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
+    it('calls the correct underlying function with proper arguments', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -78,13 +70,13 @@ describe('Class: ProviderService', () => {
       provider.captureAWSClient({});
 
       // Assess
-      expect(captureAWSClient).toHaveBeenCalledTimes(1);
-      expect(captureAWSClient).toHaveBeenCalledWith({});
+      expect(mocks.captureAWSClient).toHaveBeenCalledTimes(1);
+      expect(mocks.captureAWSClient).toHaveBeenCalledWith({});
     });
   });
 
   describe('Method: captureAWSv3Client', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
+    it('calls the correct underlying function with proper arguments', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -92,11 +84,11 @@ describe('Class: ProviderService', () => {
       provider.captureAWSv3Client({});
 
       // Assess
-      expect(captureAWSv3Client).toHaveBeenCalledTimes(1);
-      expect(captureAWSv3Client).toHaveBeenCalledWith({});
+      expect(mocks.captureAWSv3Client).toHaveBeenCalledTimes(1);
+      expect(mocks.captureAWSv3Client).toHaveBeenCalledWith({});
     });
 
-    test('when called, it adds the correct user agent middleware', () => {
+    it('adds the correct user agent middleware', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -114,7 +106,7 @@ describe('Class: ProviderService', () => {
   });
 
   describe('Method: captureAsyncFunc', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
+    it('calls the correct underlying function function', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -122,8 +114,8 @@ describe('Class: ProviderService', () => {
       provider.captureAsyncFunc('my-func', () => true);
 
       // Assess
-      expect(captureAsyncFunc).toHaveBeenCalledTimes(1);
-      expect(captureAsyncFunc).toHaveBeenCalledWith(
+      expect(mocks.captureAsyncFunc).toHaveBeenCalledTimes(1);
+      expect(mocks.captureAsyncFunc).toHaveBeenCalledWith(
         'my-func',
         expect.anything()
       );
@@ -131,7 +123,7 @@ describe('Class: ProviderService', () => {
   });
 
   describe('Method: captureHTTPsGlobal', () => {
-    test('when called, it forwards the correct parameter and calls the correct function, twice', () => {
+    it('calls the correct underlying function with proper arguments', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -139,14 +131,14 @@ describe('Class: ProviderService', () => {
       provider.captureHTTPsGlobal();
 
       // Assess
-      expect(captureHTTPsGlobal).toHaveBeenCalledTimes(2);
-      expect(captureHTTPsGlobal).toHaveBeenNthCalledWith(1, http);
-      expect(captureHTTPsGlobal).toHaveBeenNthCalledWith(2, https);
+      expect(mocks.captureHTTPsGlobal).toHaveBeenCalledTimes(2);
+      expect(mocks.captureHTTPsGlobal).toHaveBeenNthCalledWith(1, http);
+      expect(mocks.captureHTTPsGlobal).toHaveBeenNthCalledWith(2, https);
     });
   });
 
   describe('Method: captureFunc', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
+    it('calls the correct underlying function with proper arguments', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -154,27 +146,16 @@ describe('Class: ProviderService', () => {
       provider.captureFunc('my-func', () => true);
 
       // Assess
-      expect(captureFunc).toHaveBeenCalledTimes(1);
-      expect(captureFunc).toHaveBeenCalledWith('my-func', expect.anything());
-    });
-  });
-
-  describe('Method: captureFunc', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
-      // Prepare
-      const provider: ProviderService = new ProviderService();
-
-      // Act
-      provider.captureFunc('my-func', () => true);
-
-      // Assess
-      expect(captureFunc).toHaveBeenCalledTimes(1);
-      expect(captureFunc).toHaveBeenCalledWith('my-func', expect.anything());
+      expect(mocks.captureFunc).toHaveBeenCalledTimes(1);
+      expect(mocks.captureFunc).toHaveBeenCalledWith(
+        'my-func',
+        expect.anything()
+      );
     });
   });
 
   describe('Method: getNamespace', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
+    it('calls the correct sdk function', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -182,27 +163,13 @@ describe('Class: ProviderService', () => {
       provider.getNamespace();
 
       // Assess
-      expect(getNamespace).toHaveBeenCalledTimes(1);
-      expect(getNamespace).toHaveBeenCalledWith();
-    });
-  });
-
-  describe('Method: getSegment', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
-      // Prepare
-      const provider: ProviderService = new ProviderService();
-
-      // Act
-      provider.getSegment();
-
-      // Assess
-      expect(getSegment).toHaveBeenCalledTimes(1);
-      expect(getSegment).toHaveBeenCalledWith();
+      expect(mocks.getNamespace).toHaveBeenCalledTimes(1);
+      expect(mocks.getNamespace).toHaveBeenCalledWith();
     });
   });
 
   describe('Method: setContextMissingStrategy', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
+    it('calls the correct sdk function', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -210,13 +177,13 @@ describe('Class: ProviderService', () => {
       provider.setContextMissingStrategy('LOG_ERROR');
 
       // Assess
-      expect(setContextMissingStrategy).toHaveBeenCalledTimes(1);
-      expect(setContextMissingStrategy).toHaveBeenCalledWith('LOG_ERROR');
+      expect(mocks.setContextMissingStrategy).toHaveBeenCalledTimes(1);
+      expect(mocks.setContextMissingStrategy).toHaveBeenCalledWith('LOG_ERROR');
     });
   });
 
   describe('Method: setDaemonAddress', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
+    it('calls the correct sdk function', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -224,13 +191,15 @@ describe('Class: ProviderService', () => {
       provider.setDaemonAddress('http://localhost:8000');
 
       // Assess
-      expect(setDaemonAddress).toHaveBeenCalledTimes(1);
-      expect(setDaemonAddress).toHaveBeenCalledWith('http://localhost:8000');
+      expect(mocks.setDaemonAddress).toHaveBeenCalledTimes(1);
+      expect(mocks.setDaemonAddress).toHaveBeenCalledWith(
+        'http://localhost:8000'
+      );
     });
   });
 
   describe('Method: setLogger', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
+    it('calls the correct sdk function', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -238,30 +207,31 @@ describe('Class: ProviderService', () => {
       provider.setLogger({});
 
       // Assess
-      expect(setLogger).toHaveBeenCalledTimes(1);
-      expect(setLogger).toHaveBeenCalledWith({});
+      expect(mocks.setLogger).toHaveBeenCalledTimes(1);
+      expect(mocks.setLogger).toHaveBeenCalledWith({});
     });
   });
 
   describe('Method: setSegment', () => {
-    test('when called, it forwards the correct parameter, and call the correct function', () => {
+    it('calls the correct sdk function', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
+      const subsegment = new Subsegment('## foo-bar');
 
       // Act
-      provider.setSegment({ name: '## foo-bar' } as unknown as Subsegment);
+      provider.setSegment(subsegment);
 
       // Assess
-      expect(setSegment).toHaveBeenCalledTimes(1);
-      expect(setSegment).toHaveBeenCalledWith({ name: '## foo-bar' });
+      expect(mocks.setSegment).toHaveBeenCalledTimes(1);
+      expect(mocks.setSegment).toHaveBeenCalledWith(subsegment);
     });
   });
 
   describe('Method: putAnnotation', () => {
-    test('when called and there is no segment, it logs a warning and does not throw', () => {
+    it('logs a warning and does not throw when there is no active segment', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
-      const logSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const logSpy = vi.spyOn(console, 'warn');
 
       // Act
       provider.putAnnotation('foo', 'bar');
@@ -273,15 +243,15 @@ describe('Class: ProviderService', () => {
       );
     });
 
-    test('when called and the current segment is not a subsegment, it logs a warning and does not annotate the segment', () => {
+    it('logs a warning and does not annotate the segment when called on a segment', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const facade = new Segment('facade');
-      const logWarningSpy = jest.spyOn(console, 'warn').mockImplementation();
-      jest
-        .spyOn(provider, 'getSegment')
-        .mockImplementation(() => new Segment('facade'));
-      const addAnnotationSpy = jest.spyOn(facade, 'addAnnotation');
+      const logWarningSpy = vi.spyOn(console, 'warn');
+      vi.spyOn(provider, 'getSegment').mockImplementation(
+        () => new Segment('facade')
+      );
+      const addAnnotationSpy = vi.spyOn(facade, 'addAnnotation');
 
       // Act
       provider.putAnnotation('foo', 'bar');
@@ -294,12 +264,12 @@ describe('Class: ProviderService', () => {
       expect(addAnnotationSpy).toHaveBeenCalledTimes(0);
     });
 
-    test('when called and the current segment is a subsegment, it annotates it', () => {
+    it('annotates the currently active segment', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
-      jest.spyOn(provider, 'getSegment').mockImplementation(() => segment);
-      const segmentSpy = jest.spyOn(segment, 'addAnnotation');
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      const segmentSpy = vi.spyOn(segment, 'addAnnotation');
 
       // Act
       provider.putAnnotation('foo', 'bar');
@@ -311,10 +281,10 @@ describe('Class: ProviderService', () => {
   });
 
   describe('Method: putMetadata', () => {
-    test('when called and there is no segment, it logs a warning and does not throw', () => {
+    it('logs a warning and does not throw when called and there is no segment', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
-      const logWarningSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const logWarningSpy = vi.spyOn(console, 'warn');
 
       // Act
       provider.putMetadata('foo', 'bar');
@@ -326,15 +296,15 @@ describe('Class: ProviderService', () => {
       );
     });
 
-    test('when called and the current segment is not a subsegment, it logs a warning and does not annotate the segment', () => {
+    it('logs a warning and does not annotate the segment when called on a segment', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const facade = new Segment('facade');
-      const logSpy = jest.spyOn(console, 'warn').mockImplementation();
-      jest
-        .spyOn(provider, 'getSegment')
-        .mockImplementation(() => new Segment('facade'));
-      const facadeSpy = jest.spyOn(facade, 'addMetadata');
+      const logSpy = vi.spyOn(console, 'warn');
+      vi.spyOn(provider, 'getSegment').mockImplementation(
+        () => new Segment('facade')
+      );
+      const facadeSpy = vi.spyOn(facade, 'addMetadata');
 
       // Act
       provider.putMetadata('foo', 'bar');
@@ -347,12 +317,12 @@ describe('Class: ProviderService', () => {
       expect(facadeSpy).toHaveBeenCalledTimes(0);
     });
 
-    test('when called and the current segment is a subsegment, it adds the metadata', () => {
+    it('adds the metadata on the currently active subsegment', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
-      jest.spyOn(provider, 'getSegment').mockImplementation(() => segment);
-      const segmentSpy = jest.spyOn(segment, 'addMetadata');
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      const segmentSpy = vi.spyOn(segment, 'addMetadata');
 
       // Act
       provider.putMetadata('foo', 'bar', 'baz');
@@ -382,16 +352,15 @@ describe('Class: ProviderService', () => {
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
       const subsegment = segment.addNewSubsegment('aws.amazon.com');
-      jest
-        .spyOn(segment, 'addNewSubsegment')
-        .mockImplementationOnce(() => subsegment);
-      jest
-        .spyOn(provider, 'getSegment')
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment')
         .mockImplementationOnce(() => segment)
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
-      jest.spyOn(subsegment, 'close');
-      jest.spyOn(provider, 'setSegment');
+      vi.spyOn(subsegment, 'close');
+      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -425,16 +394,15 @@ describe('Class: ProviderService', () => {
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
       const subsegment = segment.addNewSubsegment('aws.amazon.com');
-      jest
-        .spyOn(segment, 'addNewSubsegment')
-        .mockImplementationOnce(() => subsegment);
-      jest
-        .spyOn(provider, 'getSegment')
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment')
         .mockImplementationOnce(() => segment)
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
-      jest.spyOn(subsegment, 'close');
-      jest.spyOn(provider, 'setSegment');
+      vi.spyOn(subsegment, 'close');
+      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -465,17 +433,16 @@ describe('Class: ProviderService', () => {
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
       const subsegment = segment.addNewSubsegment('aws.amazon.com');
-      jest.spyOn(subsegment, 'addThrottleFlag');
-      jest
-        .spyOn(segment, 'addNewSubsegment')
-        .mockImplementationOnce(() => subsegment);
-      jest
-        .spyOn(provider, 'getSegment')
+      vi.spyOn(subsegment, 'addThrottleFlag');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment')
         .mockImplementationOnce(() => segment)
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
-      jest.spyOn(subsegment, 'close');
-      jest.spyOn(provider, 'setSegment');
+      vi.spyOn(subsegment, 'close');
+      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -502,17 +469,16 @@ describe('Class: ProviderService', () => {
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
       const subsegment = segment.addNewSubsegment('aws.amazon.com');
-      jest.spyOn(subsegment, 'addErrorFlag');
-      jest
-        .spyOn(segment, 'addNewSubsegment')
-        .mockImplementationOnce(() => subsegment);
-      jest
-        .spyOn(provider, 'getSegment')
+      vi.spyOn(subsegment, 'addErrorFlag');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment')
         .mockImplementationOnce(() => segment)
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
-      jest.spyOn(subsegment, 'close');
-      jest.spyOn(provider, 'setSegment');
+      vi.spyOn(subsegment, 'close');
+      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -539,17 +505,16 @@ describe('Class: ProviderService', () => {
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
       const subsegment = segment.addNewSubsegment('aws.amazon.com');
-      jest.spyOn(subsegment, 'addFaultFlag');
-      jest
-        .spyOn(segment, 'addNewSubsegment')
-        .mockImplementationOnce(() => subsegment);
-      jest
-        .spyOn(provider, 'getSegment')
+      vi.spyOn(subsegment, 'addFaultFlag');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment')
         .mockImplementationOnce(() => segment)
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
-      jest.spyOn(subsegment, 'close');
-      jest.spyOn(provider, 'setSegment');
+      vi.spyOn(subsegment, 'close');
+      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -575,9 +540,9 @@ describe('Class: ProviderService', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
-      jest.spyOn(segment, 'addNewSubsegment');
-      jest.spyOn(provider, 'getSegment').mockImplementation(() => segment);
-      jest.spyOn(provider, 'setSegment');
+      vi.spyOn(segment, 'addNewSubsegment');
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -593,16 +558,15 @@ describe('Class: ProviderService', () => {
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
       const subsegment = segment.addNewSubsegment('aws.amazon.com');
-      jest
-        .spyOn(segment, 'addNewSubsegment')
-        .mockImplementationOnce(() => subsegment);
-      jest
-        .spyOn(provider, 'getSegment')
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment')
         .mockImplementationOnce(() => segment)
         .mockImplementationOnce(() => subsegment)
         .mockImplementationOnce(() => subsegment);
-      jest.spyOn(subsegment, 'close');
-      jest.spyOn(provider, 'setSegment');
+      vi.spyOn(subsegment, 'close');
+      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -627,17 +591,16 @@ describe('Class: ProviderService', () => {
     const provider: ProviderService = new ProviderService();
     const segment = new Subsegment('## dummySegment');
     const subsegment = segment.addNewSubsegment('aws.amazon.com');
-    jest.spyOn(subsegment, 'addError');
-    jest
-      .spyOn(segment, 'addNewSubsegment')
-      .mockImplementationOnce(() => subsegment);
-    jest
-      .spyOn(provider, 'getSegment')
+    vi.spyOn(subsegment, 'addError');
+    vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+      () => subsegment
+    );
+    vi.spyOn(provider, 'getSegment')
       .mockImplementationOnce(() => segment)
       .mockImplementationOnce(() => subsegment)
       .mockImplementationOnce(() => subsegment);
-    jest.spyOn(subsegment, 'close');
-    jest.spyOn(provider, 'setSegment');
+    vi.spyOn(subsegment, 'close');
+    vi.spyOn(provider, 'setSegment');
 
     // Act
     provider.instrumentFetch();

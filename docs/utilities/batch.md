@@ -149,11 +149,17 @@ Enable the `skipGroupOnError` option for seamless processing of messages from va
 
 === "Recommended"
 
-    ```typescript hl_lines="1-4 8"
+    ```typescript hl_lines="1-4 8 20"
     --8<-- "examples/snippets/batch/gettingStartedSQSFifo.ts"
     ```
     
     1. **Step 1**. Creates a partial failure batch processor for SQS FIFO queues. See [partial failure mechanics for details](#partial-failure-mechanics)
+
+=== "Async processing"
+
+    ```typescript hl_lines="1-4 8 20"
+    --8<-- "examples/snippets/batch/gettingStartedSQSFifoAsync.ts"
+    ```
 
 === "Enabling skipGroupOnError flag"
 
@@ -162,8 +168,8 @@ Enable the `skipGroupOnError` option for seamless processing of messages from va
     ```
 
 !!! Note
-    Note that SqsFifoPartialProcessor is synchronous using `processPartialResponseSync`.
-    This is because we need to preserve the order of messages in the queue. See [Async or sync processing section](#async-or-sync-processing) for more details.
+    Note that `SqsFifoPartialProcessor` is synchronous using `processPartialResponseSync`.
+    If you need asynchronous processing while preserving the order of messages in the queue, use `SqsFifoPartialProcessorAsync` with `processPartialResponse`.
 
 ### Processing messages from Kinesis
 

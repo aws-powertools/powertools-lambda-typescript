@@ -1,11 +1,6 @@
-/**
- * Test LayerPublisherStack class
- *
- * @group unit/layers/all
- */
-
 import { App } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
+import { describe, it } from 'vitest';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack';
 
 describe('Class: LayerPublisherStack', () => {

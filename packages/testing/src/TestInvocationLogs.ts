@@ -34,17 +34,17 @@ class TestInvocationLogs {
   }
 
   /**
-   * Find all functional logs whether it contains a given text
-   * @param text
-   * @param levelToFilter level to filter
-   * @returns
+   * Test whether any of the function logs contain the provided text or regex.
+   *
+   * @param needle - text or regex to search for in the logs
+   * @param levelToFilter - level to filter
    */
   public doesAnyFunctionLogsContains(
-    text: string,
+    needle: string | RegExp,
     levelToFilter?: keyof typeof LogLevel
   ): boolean {
     const filteredLogs = this.getFunctionLogs(levelToFilter).filter((log) =>
-      log.includes(text)
+      typeof needle === 'string' ? log.includes(needle) : needle.test(log)
     );
 
     return filteredLogs.length > 0;

@@ -1,8 +1,3 @@
-/**
- * Test Tracer class
- *
- * @group unit/tracer/all
- */
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
@@ -11,35 +6,23 @@ import {
   Subsegment,
   setContextMissingStrategy,
 } from 'aws-xray-sdk-core';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
 import type { ProviderServiceInterface } from '../../src/types/ProviderService.js';
 import { Tracer } from './../../src/index.js';
 import type { CaptureLambdaHandlerOptions } from './../../src/types/index.js';
 
-type CaptureAsyncFuncMock = jest.SpyInstance<
-  unknown,
-  [
-    name: string,
-    fcn: (subsegment?: Subsegment) => unknown,
-    parent?: Segment | Subsegment,
-  ]
->;
 const createCaptureAsyncFuncMock = (
   provider: ProviderServiceInterface,
   subsegment?: Subsegment
-): CaptureAsyncFuncMock =>
-  jest
+) =>
+  vi
     .spyOn(provider, 'captureAsyncFunc')
     .mockImplementation(async (methodName, callBackFn) => {
       const newSubsegment = subsegment || new Subsegment(`### ${methodName}`);
-      jest.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
+      vi.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
       return await callBackFn(newSubsegment);
     });
-
-jest.spyOn(console, 'log').mockImplementation(() => null);
-jest.spyOn(console, 'debug').mockImplementation(() => null);
-jest.spyOn(console, 'warn').mockImplementation(() => null);
-jest.spyOn(console, 'error').mockImplementation(() => null);
 
 describe('Class: Tracer', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -49,8 +32,8 @@ describe('Class: Tracer', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
+    vi.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -202,7 +185,7 @@ describe('Class: Tracer', () => {
   });
 
   describe('Environment Variables configs', () => {
-    test('when AWS_EXECUTION_ENV environment variable is equal to AWS_Lambda_amplify-mock, tracing is disabled', () => {
+    it('disables tracing when AWS_EXECUTION_ENV environment variable is equal to AWS_Lambda_amplify-mock', () => {
       // Prepare
       process.env.AWS_EXECUTION_ENV = 'AWS_Lambda_amplify-mock';
 
@@ -217,7 +200,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when AWS_SAM_LOCAL environment variable is set, tracing is disabled', () => {
+    it('disables tracing when AWS_SAM_LOCAL environment variable is set', () => {
       // Prepare
       process.env.AWS_SAM_LOCAL = 'true';
 
@@ -232,7 +215,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when AWS_EXECUTION_ENV environment variable is set, tracing is enabled', () => {
+    it('leaves tracing enabled when AWS_EXECUTION_ENV environment variable is set', () => {
       // Prepare
       process.env.AWS_EXECUTION_ENV = 'nodejs20.x';
 
@@ -247,7 +230,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when AWS_EXECUTION_ENV environment variable is NOT set, tracing is disabled', () => {
+    it('disables tracing when AWS_EXECUTION_ENV environment variable is NOT set', () => {
       // Prepare
       process.env.AWS_EXECUTION_ENV = undefined;
 
@@ -262,7 +245,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when POWERTOOLS_TRACE_ENABLED environment variable is set, a tracer with tracing disabled is returned', () => {
+    it('disables tracing when POWERTOOLS_TRACE_ENABLED environment variable is set to false', () => {
       // Prepare
       process.env.POWERTOOLS_TRACE_ENABLED = 'false';
 
@@ -277,7 +260,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when POWERTOOLS_SERVICE_NAME environment variable is set, a tracer with the correct serviceName is returned', () => {
+    it('picks up the service name from the POWERTOOLS_SERVICE_NAME environment variable', () => {
       // Prepare
       process.env.POWERTOOLS_SERVICE_NAME = 'my-backend-service';
 
@@ -292,7 +275,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable is set, a tracer with captureResponse disabled is returned', () => {
+    it('configures the capture response feature from the POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
 
@@ -307,7 +290,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable is set to invalid value, a tracer with captureResponse enabled is returned', () => {
+    it('ignores invalid values for the POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = '';
 
@@ -322,7 +305,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when POWERTOOLS_TRACER_CAPTURE_ERROR environment variable is set, a tracer with captureError disabled is returned', () => {
+    it('configures the capture error feature using the POWERTOOLS_TRACER_CAPTURE_ERROR environment variable', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
 
@@ -337,7 +320,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when POWERTOOLS_TRACER_CAPTURE_ERROR environment variable is set to invalid value, a tracer with captureError enabled is returned', () => {
+    it('ignores invalid POWERTOOLS_TRACER_CAPTURE_ERROR environment variable values', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = '';
 
@@ -352,7 +335,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS environment variable is set, captureHTTPsGlobal is called', () => {
+    it('configures the http instrumentation feature using the POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS environment variable', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS = 'false';
 
@@ -367,7 +350,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS environment variable is set to invalid value, captureHTTPsGlobal is called', () => {
+    it('ignores invalid values for the POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS environment variable', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS = '';
 
@@ -384,10 +367,10 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: annotateColdStart', () => {
-    test('when called while tracing is disabled, it does nothing', () => {
+    it('does nothing when tracing is disabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const putAnnotationSpy = jest.spyOn(tracer, 'putAnnotation');
+      const putAnnotationSpy = vi.spyOn(tracer, 'putAnnotation');
 
       // Act
       tracer.annotateColdStart();
@@ -396,10 +379,10 @@ describe('Class: Tracer', () => {
       expect(putAnnotationSpy).toBeCalledTimes(0);
     });
 
-    test('when called multiple times, it annotates true the first time and then false afterwards', () => {
+    it('annotates the cold start only once', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const putAnnotationSpy = jest
+      const putAnnotationSpy = vi
         .spyOn(tracer, 'putAnnotation')
         .mockImplementation(() => null);
 
@@ -421,10 +404,10 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: addServiceNameAnnotation', () => {
-    test('when called while tracing is disabled, it does nothing', () => {
+    it('does nothing when tracing is disabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const putAnnotation = jest.spyOn(tracer, 'putAnnotation');
+      const putAnnotation = vi.spyOn(tracer, 'putAnnotation');
 
       // Act
       tracer.addServiceNameAnnotation();
@@ -433,10 +416,10 @@ describe('Class: Tracer', () => {
       expect(putAnnotation).toBeCalledTimes(0);
     });
 
-    test('when called while a serviceName has been set, it adds it as annotation', () => {
+    it('uses the provided service name when one is set', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ serviceName: 'foo' });
-      const putAnnotation = jest
+      const putAnnotation = vi
         .spyOn(tracer, 'putAnnotation')
         .mockImplementation(() => null);
 
@@ -448,11 +431,11 @@ describe('Class: Tracer', () => {
       expect(putAnnotation).toBeCalledWith('Service', 'foo');
     });
 
-    test('when called when a serviceName has not been set in the constructor or environment variables, it adds the default service name as an annotation', () => {
+    it('uses the default service name when one is not provided', () => {
       // Prepare
       process.env.POWERTOOLS_SERVICE_NAME = undefined;
       const tracer: Tracer = new Tracer();
-      const putAnnotation = jest
+      const putAnnotation = vi
         .spyOn(tracer, 'putAnnotation')
         .mockImplementation(() => null);
 
@@ -466,10 +449,10 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: addResponseAsMetadata', () => {
-    test('when called while tracing is disabled, it does nothing', () => {
+    it('does nothing when tracing is disabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+      const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
 
       // Act
       tracer.addResponseAsMetadata({ foo: 'bar' }, context.functionName);
@@ -478,11 +461,11 @@ describe('Class: Tracer', () => {
       expect(putMetadataSpy).toBeCalledTimes(0);
     });
 
-    test('when called while POWERTOOLS_TRACER_CAPTURE_RESPONSE is set to false, it does nothing', () => {
+    it('does nothing when the feature is disabled via the POWERTOOLS_TRACER_CAPTURE_RESPONSE env variable', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
       const tracer: Tracer = new Tracer();
-      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+      const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
 
       // Act
       tracer.addResponseAsMetadata({ foo: 'bar' }, context.functionName);
@@ -492,10 +475,10 @@ describe('Class: Tracer', () => {
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = undefined;
     });
 
-    test('when called with data equal to undefined, it does nothing', () => {
+    it('it does nothing when the response is undefined', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
+      const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
 
       // Act
       tracer.addResponseAsMetadata(undefined, context.functionName);
@@ -504,10 +487,10 @@ describe('Class: Tracer', () => {
       expect(putMetadataSpy).toBeCalledTimes(0);
     });
 
-    test('when called with default config, it calls tracer.putMetadata correctly', () => {
+    it('calls the underlying provider method correctly', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const putMetadataSpy = jest
+      const putMetadataSpy = vi
         .spyOn(tracer, 'putMetadata')
         .mockImplementation(() => null);
 
@@ -524,10 +507,10 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: addErrorAsMetadata', () => {
-    test('when called while tracing is disabled, it does nothing', () => {
+    it('does nothing when tracing is disabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const getSegmentSpy = jest.spyOn(tracer, 'getSegment');
+      const getSegmentSpy = vi.spyOn(tracer, 'getSegment');
 
       // Act
       tracer.addErrorAsMetadata(new Error('foo'));
@@ -536,14 +519,14 @@ describe('Class: Tracer', () => {
       expect(getSegmentSpy).toBeCalledTimes(0);
     });
 
-    test('when called while POWERTOOLS_TRACER_CAPTURE_ERROR is set to false, it does not capture the error', () => {
+    it('does not capture the error when called while POWERTOOLS_TRACER_CAPTURE_ERROR is set to false', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
       const tracer: Tracer = new Tracer();
       const subsegment = new Subsegment(`## ${context.functionName}`);
-      jest.spyOn(tracer, 'getSegment').mockImplementation(() => subsegment);
-      const addErrorFlagSpy = jest.spyOn(subsegment, 'addErrorFlag');
-      const addErrorSpy = jest.spyOn(subsegment, 'addError');
+      vi.spyOn(tracer, 'getSegment').mockImplementation(() => subsegment);
+      const addErrorFlagSpy = vi.spyOn(subsegment, 'addErrorFlag');
+      const addErrorSpy = vi.spyOn(subsegment, 'addError');
 
       // Act
       tracer.addErrorAsMetadata(new Error('foo'));
@@ -554,13 +537,13 @@ describe('Class: Tracer', () => {
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = undefined;
     });
 
-    test('when called with default config, it calls subsegment.addError correctly', () => {
+    it('calls subsegment.addError correctly when called with default config', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const subsegment = new Subsegment(`## ${context.functionName}`);
-      jest.spyOn(tracer, 'getSegment').mockImplementation(() => subsegment);
-      const addErrorFlagSpy = jest.spyOn(subsegment, 'addErrorFlag');
-      const addErrorSpy = jest.spyOn(subsegment, 'addError');
+      vi.spyOn(tracer, 'getSegment').mockImplementation(() => subsegment);
+      const addErrorFlagSpy = vi.spyOn(subsegment, 'addErrorFlag');
+      const addErrorSpy = vi.spyOn(subsegment, 'addError');
 
       // Act
       tracer.addErrorAsMetadata(new Error('foo'));
@@ -571,10 +554,10 @@ describe('Class: Tracer', () => {
       expect(addErrorSpy).toBeCalledWith(new Error('foo'), false);
     });
 
-    test('when called and the segment is not found, it returns instead of throwing', () => {
+    it('returns instead of throwing when called and the segment is not found', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      jest.spyOn(tracer, 'getSegment').mockImplementation(() => undefined);
+      vi.spyOn(tracer, 'getSegment').mockImplementation(() => undefined);
 
       // Act & Assess
       expect(() => tracer.addErrorAsMetadata(new Error('foo'))).not.toThrow();
@@ -582,7 +565,7 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: getRootXrayTraceId', () => {
-    test('when called, it returns the X-Ray trace ID', () => {
+    it('returns the X-Ray Trace ID when called', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
 
@@ -595,13 +578,13 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: getSegment', () => {
-    test('when called and no segment is returned, it logs a warning', () => {
+    it('logs a warning when called and no segment is returned', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => undefined);
-      jest.spyOn(console, 'warn').mockImplementation(() => null);
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => undefined
+      );
+      vi.spyOn(console, 'warn').mockImplementation(() => null);
 
       // Act
       tracer.getSegment();
@@ -612,7 +595,7 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when called outside of a namespace or without parent segment, and tracing is disabled, it returns a dummy subsegment', () => {
+    it('returns a dummy segment when called outside of a namespace or without parent segment, and tracing is disabled', () => {
       // Prepare
       process.env.AWS_EXECUTION_ENV = undefined; // This will disable the tracer, simulating local execution
       const tracer: Tracer = new Tracer();
@@ -625,14 +608,12 @@ describe('Class: Tracer', () => {
       expect((segment as Subsegment).name).toBe('## Dummy segment');
     });
 
-    test('when called within a namespace, it returns the parent segment', () => {
+    it('returns the parent segment when called within a namespace', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(
-          () => new Segment('facade', process.env._X_AMZN_TRACE_ID || null)
-        );
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => new Segment('facade', process.env._X_AMZN_TRACE_ID || null)
+      );
 
       // Act
       const segment = tracer.getSegment();
@@ -649,7 +630,7 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: isTraceSampled', () => {
-    test('when called, it returns true if the Sampled flag is set', () => {
+    it('returns true if the Sampled flag is set', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
 
@@ -660,7 +641,7 @@ describe('Class: Tracer', () => {
       expect(xRayTraceSampled).toBe(false);
     });
 
-    test('when called and Trace is disabled, it returns false', () => {
+    it('returns false when called and Trace is disabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
 
@@ -673,7 +654,7 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: setSegment', () => {
-    test('when called outside of a namespace or without parent segment, and Tracer is enabled, it throws an error', () => {
+    it('throws when called outside of a namespace or without parent segment, and Tracer is enabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
 
@@ -686,11 +667,11 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when called outside of a namespace or without parent segment, and tracing is disabled, it does nothing', () => {
+    it('does nothing when called outside of a namespace or without parent segment, and tracing is disabled', () => {
       // Prepare
       process.env.AWS_EXECUTION_ENV = undefined; // This will disable the tracer, simulating local execution
       const tracer: Tracer = new Tracer();
-      const setSegmentSpy = jest.spyOn(tracer.provider, 'setSegment');
+      const setSegmentSpy = vi.spyOn(tracer.provider, 'setSegment');
 
       // Act
       const newSubsegment = new Subsegment('## foo.bar');
@@ -700,15 +681,13 @@ describe('Class: Tracer', () => {
       expect(setSegmentSpy).toBeCalledTimes(0);
     });
 
-    test('when called within a namespace, it sets the segment', () => {
+    it('sets the segment as active when called', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(
-          () => new Segment('facade', process.env._X_AMZN_TRACE_ID || null)
-        );
-      const providerSetSegmentSpy = jest
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => new Segment('facade', process.env._X_AMZN_TRACE_ID || null)
+      );
+      const providerSetSegmentSpy = vi
         .spyOn(tracer.provider, 'setSegment')
         .mockImplementation(() => ({}));
 
@@ -730,10 +709,10 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: putAnnotation', () => {
-    test('when called while tracing is disabled, it does nothing', () => {
+    it('does nothing when tracing is disabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const putAnnotationSpy = jest.spyOn(tracer.provider, 'putAnnotation');
+      const putAnnotationSpy = vi.spyOn(tracer.provider, 'putAnnotation');
 
       // Act
       tracer.putAnnotation('foo', 'bar');
@@ -742,10 +721,10 @@ describe('Class: Tracer', () => {
       expect(putAnnotationSpy).toBeCalledTimes(0);
     });
 
-    test('it calls the provider method with the correct arguments', () => {
+    it('calls the provider method with the correct arguments', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const putAnnotationSpy = jest.spyOn(tracer.provider, 'putAnnotation');
+      const putAnnotationSpy = vi.spyOn(tracer.provider, 'putAnnotation');
 
       // Act
       tracer.putAnnotation('foo', 'bar');
@@ -757,10 +736,10 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: putMetadata', () => {
-    test('when tracing is disabled, it does nothing', () => {
+    it('does nothing when tracing is disabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const putMetadataSpy = jest.spyOn(tracer.provider, 'putMetadata');
+      const putMetadataSpy = vi.spyOn(tracer.provider, 'putMetadata');
 
       // Act
       tracer.putMetadata('foo', 'bar');
@@ -769,10 +748,10 @@ describe('Class: Tracer', () => {
       expect(putMetadataSpy).toBeCalledTimes(0);
     });
 
-    test('it calls the provider method with the correct arguments', () => {
+    it('calls the provider method with the correct arguments', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const putMetadataSpy = jest.spyOn(tracer.provider, 'putMetadata');
+      const putMetadataSpy = vi.spyOn(tracer.provider, 'putMetadata');
 
       // Act
       tracer.putMetadata('foo', 'bar');
@@ -783,10 +762,10 @@ describe('Class: Tracer', () => {
       expect(putMetadataSpy).toBeCalledWith('foo', 'bar', 'hello-world');
     });
 
-    test('when passed a custom namespace, it calls the provider method with the correct arguments', () => {
+    it('calls the provider method with the correct arguments when a custom namespace is passed directly', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const putMetadataSpy = jest.spyOn(tracer.provider, 'putMetadata');
+      const putMetadataSpy = vi.spyOn(tracer.provider, 'putMetadata');
 
       // Act
       tracer.putMetadata('foo', 'bar', 'baz');
@@ -796,10 +775,10 @@ describe('Class: Tracer', () => {
       expect(putMetadataSpy).toBeCalledWith('foo', 'bar', 'baz');
     });
 
-    test('when a custom namespace was set in the constructor, it calls the provider method with the correct arguments', () => {
+    it('calls the provider method with the correct arguments when the namespace is inferred by the service name', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ serviceName: 'baz' });
-      const putMetadataSpy = jest.spyOn(tracer.provider, 'putMetadata');
+      const putMetadataSpy = vi.spyOn(tracer.provider, 'putMetadata');
 
       // Act
       tracer.putMetadata('foo', 'bar');
@@ -833,18 +812,13 @@ describe('Class: Tracer', () => {
       return new Lambda();
     };
 
-    test('when used as decorator while tracing is disabled, it does nothing', async () => {
+    it('does nothing when tracing is disabled', async () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(
-          () => new Segment('facade', process.env._X_AMZN_TRACE_ID || null)
-        );
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => new Segment('facade', process.env._X_AMZN_TRACE_ID || null)
       );
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
       const lambda = getLambdaClass(tracer);
 
       // Act
@@ -854,34 +828,11 @@ describe('Class: Tracer', () => {
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(0);
     });
 
-    test('when used as decorator while POWERTOOLS_TRACER_CAPTURE_RESPONSE is set to false, it does not capture the response as metadata', async () => {
-      // Prepare
-      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
-      const tracer: Tracer = new Tracer();
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
-      const putMetadataSpy = jest.spyOn(tracer, 'putMetadata');
-      const lambda = getLambdaClass(tracer);
-
-      // Act
-      await lambda.handler(event, context);
-
-      // Assess
-      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-      expect(putMetadataSpy).toHaveBeenCalledTimes(0);
-      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = undefined;
-    });
-
-    test('when used as decorator while captureResponse is set to false, it does not capture the response as metadata', async () => {
+    it('does not capture the response as metadata when the feature is disabled', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
-      const addResponseAsMetadataSpy = jest.spyOn(
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
+      const addResponseAsMetadataSpy = vi.spyOn(
         tracer,
         'addResponseAsMetadata'
       );
@@ -897,14 +848,11 @@ describe('Class: Tracer', () => {
       expect(addResponseAsMetadataSpy).toHaveBeenCalledTimes(0);
     });
 
-    test('when used as decorator while captureResponse is set to true, it captures the response as metadata', async () => {
+    it('captures the response as metadata by default', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
-      const addResponseAsMetadataSpy = jest.spyOn(
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
+      const addResponseAsMetadataSpy = vi.spyOn(
         tracer,
         'addResponseAsMetadata'
       );
@@ -926,47 +874,15 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when used as decorator and with standard config, it captures the response as metadata', async () => {
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
-      const addResponseAsMetadataSpy = jest.spyOn(
-        tracer,
-        'addResponseAsMetadata'
-      );
-      const lambda = getLambdaClass(tracer);
-
-      // Act
-      await lambda.handler(event, context);
-
-      // Assess
-      expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
-      expect(captureAsyncFuncSpy).toHaveBeenCalledWith(
-        '## index.handler',
-        expect.anything()
-      );
-      expect(addResponseAsMetadataSpy).toHaveBeenCalledTimes(1);
-      expect(addResponseAsMetadataSpy).toHaveBeenCalledWith(
-        { foo: 'bar' },
-        'index.handler'
-      );
-    });
-
-    test('when used as decorator while POWERTOOLS_TRACER_CAPTURE_ERROR is set to false, it does not capture the exceptions', async () => {
+    it('does not capture exceptions when the feature is disabled', async () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
       const tracer: Tracer = new Tracer();
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
       const newSubsegment = new Subsegment('### dummyMethod');
-      jest.spyOn(tracer, 'getSegment').mockImplementation(() => newSubsegment);
-      const addErrorFlagSpy = jest.spyOn(newSubsegment, 'addErrorFlag');
-      const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
+      vi.spyOn(tracer, 'getSegment').mockImplementation(() => newSubsegment);
+      const addErrorFlagSpy = vi.spyOn(newSubsegment, 'addErrorFlag');
+      const addErrorSpy = vi.spyOn(newSubsegment, 'addError');
       const lambda = getLambdaClass(tracer, { shouldThrow: true });
 
       // Act & Assess
@@ -979,18 +895,15 @@ describe('Class: Tracer', () => {
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = undefined;
     });
 
-    test('when used as decorator and with standard config, it captures the exception', async () => {
+    it('captures exceptions as metadata by default', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
-      const addErrorAsMetadataSpy = jest.spyOn(tracer, 'addErrorAsMetadata');
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
+      const addErrorAsMetadataSpy = vi.spyOn(tracer, 'addErrorAsMetadata');
       const newSubsegment = new Subsegment('### dummyMethod');
-      jest.spyOn(tracer, 'getSegment').mockImplementation(() => newSubsegment);
-      const addErrorFlagSpy = jest.spyOn(newSubsegment, 'addErrorFlag');
-      const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
+      vi.spyOn(tracer, 'getSegment').mockImplementation(() => newSubsegment);
+      const addErrorFlagSpy = vi.spyOn(newSubsegment, 'addErrorFlag');
+      const addErrorSpy = vi.spyOn(newSubsegment, 'addError');
       const lambda = getLambdaClass(tracer, { shouldThrow: true });
 
       // Act & Assess
@@ -1003,11 +916,11 @@ describe('Class: Tracer', () => {
       expect.assertions(6);
     });
 
-    test('when used as decorator and with standard config, it annotates ColdStart', async () => {
+    it('adds the ColdStart annotation', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const captureAsyncFuncSpy = createCaptureAsyncFuncMock(tracer.provider);
-      const annotateColdStartSpy = jest.spyOn(tracer, 'annotateColdStart');
+      const annotateColdStartSpy = vi.spyOn(tracer, 'annotateColdStart');
       const lambda = getLambdaClass(tracer);
 
       // Act
@@ -1022,11 +935,11 @@ describe('Class: Tracer', () => {
       expect(annotateColdStartSpy).toHaveBeenCalledTimes(1);
     });
 
-    test('when used as decorator and with standard config, it adds the Service annotation', async () => {
+    it('adds the Service annotation', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const captureAsyncFuncSpy = createCaptureAsyncFuncMock(tracer.provider);
-      const addServiceNameAnnotationSpy = jest.spyOn(
+      const addServiceNameAnnotationSpy = vi.spyOn(
         tracer,
         'addServiceNameAnnotation'
       );
@@ -1045,20 +958,20 @@ describe('Class: Tracer', () => {
       expect(addServiceNameAnnotationSpy).toHaveBeenCalledTimes(1);
     });
 
-    test('when used as decorator on an async method, the method is awaited correctly', async () => {
+    it('awaits async methods correctly', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
         '### dummyMethod'
       );
 
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => newSubsegment
+      );
       setContextMissingStrategy(() => null);
-      const subsegmentCloseSpy = jest
+      const subsegmentCloseSpy = vi
         .spyOn(newSubsegment, 'close')
-        .mockImplementation();
+        .mockImplementation(() => null);
       createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
 
       class Lambda implements LambdaInterface {
@@ -1088,7 +1001,7 @@ describe('Class: Tracer', () => {
         }
       }
       const lambda = new Lambda('someValue');
-      const otherDummyMethodSpy = jest.spyOn(lambda, 'otherDummyMethod');
+      const otherDummyMethodSpy = vi.spyOn(lambda, 'otherDummyMethod');
 
       // Act
       const handler = lambda.handler.bind(lambda);
@@ -1110,17 +1023,17 @@ describe('Class: Tracer', () => {
       const tracer: Tracer = new Tracer();
       const handlerSubsegment: Segment | Subsegment | undefined =
         new Subsegment('### dummyMethod');
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => handlerSubsegment);
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => handlerSubsegment
+      );
       setContextMissingStrategy(() => null);
-      jest
-        .spyOn(tracer.provider, 'captureAsyncFunc')
-        .mockImplementation(async (methodName, callBackFn) => {
+      vi.spyOn(tracer.provider, 'captureAsyncFunc').mockImplementation(
+        async (methodName, callBackFn) => {
           await callBackFn(handlerSubsegment);
-        });
-      const logWarningSpy = jest.spyOn(console, 'warn');
-      const closeSpy = jest
+        }
+      );
+      const logWarningSpy = vi.spyOn(console, 'warn');
+      const closeSpy = vi
         .spyOn(handlerSubsegment, 'close')
         .mockImplementation(() => {
           throw new Error('dummy error');
@@ -1142,13 +1055,10 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: captureMethod', () => {
-    test('when called while tracing is disabled, it does nothing', async () => {
+    it('does nothing when tracing is disabled', async () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
         public async dummyMethod(some: string): Promise<string> {
@@ -1170,14 +1080,11 @@ describe('Class: Tracer', () => {
       expect(captureAsyncFuncSpy).toBeCalledTimes(0);
     });
 
-    test('when used as decorator and with standard config, it captures the response as metadata', async () => {
+    it('captures the response as metdata by default', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
-      const addResponseAsMetadataSpy = jest.spyOn(
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
+      const addResponseAsMetadataSpy = vi.spyOn(
         tracer,
         'addResponseAsMetadata'
       );
@@ -1212,14 +1119,11 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when used as decorator and with captureResponse set to false, it does not capture the response as metadata', async () => {
+    it('does not capture the response as metadata when the feature is disabled', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
-      const addResponseAsMetadataSpy = jest.spyOn(
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
+      const addResponseAsMetadataSpy = vi.spyOn(
         tracer,
         'addResponseAsMetadata'
       );
@@ -1250,14 +1154,11 @@ describe('Class: Tracer', () => {
       expect(addResponseAsMetadataSpy).toHaveBeenCalledTimes(0);
     });
 
-    test('when used as decorator and with captureResponse set to true, it does captures the response as metadata', async () => {
+    it('captures the response as methadata when the feature is enabled', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
-      const addResponseAsMetadataSpy = jest.spyOn(
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
+      const addResponseAsMetadataSpy = vi.spyOn(
         tracer,
         'addResponseAsMetadata'
       );
@@ -1288,18 +1189,18 @@ describe('Class: Tracer', () => {
       expect(addResponseAsMetadataSpy).toHaveBeenCalledTimes(1);
     });
 
-    test('when used as decorator and with standard config, it captures the exception correctly', async () => {
+    it('captures the exception correctly', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
         '### dummyMethod'
       );
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => newSubsegment
+      );
       setContextMissingStrategy(() => null);
       const captureAsyncFuncSpy = createCaptureAsyncFuncMock(tracer.provider);
-      const addErrorSpy = jest.spyOn(newSubsegment, 'addError');
+      const addErrorSpy = vi.spyOn(newSubsegment, 'addError');
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
         public async dummyMethod(_some: string): Promise<string> {
@@ -1333,51 +1234,15 @@ describe('Class: Tracer', () => {
       expect.assertions(6);
     });
 
-    test('when used as decorator and when calling other methods/props in the class they are called in the orginal scope', async () => {
+    it('preserves the this scope correctly when used as decorator', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
         '### dummyMethod'
       );
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-
-      class Lambda implements LambdaInterface {
-        @tracer.captureMethod()
-        public async dummyMethod(): Promise<string> {
-          return `otherMethod:${this.otherMethod()}`;
-        }
-
-        @tracer.captureLambdaHandler()
-        public async handler(
-          _event: unknown,
-          _context: Context
-        ): Promise<string> {
-          return await this.dummyMethod();
-        }
-
-        public otherMethod(): string {
-          return 'otherMethod';
-        }
-      }
-
-      // Act / Assess
-      expect(await new Lambda().handler({}, context)).toEqual(
-        'otherMethod:otherMethod'
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => newSubsegment
       );
-    });
-
-    test('when used as decorator and when calling a method in the class, it has access to member variables', async () => {
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
-        '### dummyMethod'
-      );
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
       setContextMissingStrategy(() => null);
 
       class Lambda implements LambdaInterface {
@@ -1406,20 +1271,20 @@ describe('Class: Tracer', () => {
       expect(await lambda.dummyMethod()).toEqual('memberVariable:someValue');
     });
 
-    test('when used as decorator on an async method, the method is awaited correctly', async () => {
+    it('awaits the async method correctly when used as decorator', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
         '### dummyMethod'
       );
 
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => newSubsegment
+      );
       setContextMissingStrategy(() => null);
-      const subsegmentCloseSpy = jest
+      const subsegmentCloseSpy = vi
         .spyOn(newSubsegment, 'close')
-        .mockImplementation();
+        .mockImplementation(() => null);
       createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
 
       class Lambda implements LambdaInterface {
@@ -1445,9 +1310,7 @@ describe('Class: Tracer', () => {
 
       // Act
       const lambda = new Lambda();
-      const otherDummyMethodSpy = jest
-        .spyOn(lambda, 'otherDummyMethod')
-        .mockImplementation();
+      const otherDummyMethodSpy = vi.spyOn(lambda, 'otherDummyMethod');
       const handler = lambda.handler.bind(lambda);
       await handler({}, context);
 
@@ -1460,13 +1323,10 @@ describe('Class: Tracer', () => {
       expect(dummyCallOrder).toBeLessThan(otherDummyCallOrder);
     });
 
-    test('when used as decorator together with another external decorator, the method name is detected properly', async () => {
+    it('detects the method name correctly when used as decorator together with another external decorator', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
-      );
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
 
       function passThrough() {
         // A decorator that calls the original method.
@@ -1512,21 +1372,18 @@ describe('Class: Tracer', () => {
       );
     });
 
-    test('when used as decorator and with a custom subSegmentName, it sets the correct name for the subsegment', async () => {
+    it('sets the correct name for the subsegment when used as decorator and with a custom subSegmentName', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
         '### dummyMethod'
       );
-      jest.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => newSubsegment);
-      setContextMissingStrategy(() => null);
-      const captureAsyncFuncSpy = jest.spyOn(
-        tracer.provider,
-        'captureAsyncFunc'
+      vi.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => newSubsegment
       );
+      setContextMissingStrategy(() => null);
+      const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
       class Lambda implements LambdaInterface {
         @tracer.captureMethod({ subSegmentName: '#### myCustomMethod' })
         public async dummyMethod(some: string): Promise<string> {
@@ -1557,17 +1414,17 @@ describe('Class: Tracer', () => {
       const tracer: Tracer = new Tracer();
       const handlerSubsegment: Segment | Subsegment | undefined =
         new Subsegment('### dummyMethod');
-      jest
-        .spyOn(tracer.provider, 'getSegment')
-        .mockImplementation(() => handlerSubsegment);
+      vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
+        () => handlerSubsegment
+      );
       setContextMissingStrategy(() => null);
-      jest
-        .spyOn(tracer.provider, 'captureAsyncFunc')
-        .mockImplementation(async (methodName, callBackFn) => {
+      vi.spyOn(tracer.provider, 'captureAsyncFunc').mockImplementation(
+        async (methodName, callBackFn) => {
           await callBackFn(handlerSubsegment);
-        });
-      const logWarningSpy = jest.spyOn(console, 'warn');
-      const closeSpy = jest
+        }
+      );
+      const logWarningSpy = vi.spyOn(console, 'warn');
+      const closeSpy = vi
         .spyOn(handlerSubsegment, 'close')
         .mockImplementation(() => {
           throw new Error('dummy error');
@@ -1602,10 +1459,10 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: captureAWS', () => {
-    test('when called while tracing is disabled, it does nothing', () => {
+    it('does nothing when called while tracing is disabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const captureAWSSpy = jest
+      const captureAWSSpy = vi
         .spyOn(tracer.provider, 'captureAWS')
         .mockImplementation(() => null);
 
@@ -1616,10 +1473,10 @@ describe('Class: Tracer', () => {
       expect(captureAWSSpy).toBeCalledTimes(0);
     });
 
-    test('when called it returns the decorated object that was passed to it', () => {
+    it('returns the decorated object that was passed to it', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAWSSpy = jest
+      const captureAWSSpy = vi
         .spyOn(tracer.provider, 'captureAWS')
         .mockImplementation(() => null);
 
@@ -1633,10 +1490,10 @@ describe('Class: Tracer', () => {
   });
 
   describe('Method: captureAWSv3Client', () => {
-    test('when called while tracing is disabled, it does nothing', () => {
+    it('does nothing when tracing is disabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
-      const captureAWSv3ClientSpy = jest
+      const captureAWSv3ClientSpy = vi
         .spyOn(tracer.provider, 'captureAWSv3Client')
         .mockImplementation(() => null);
 
@@ -1647,10 +1504,10 @@ describe('Class: Tracer', () => {
       expect(captureAWSv3ClientSpy).toBeCalledTimes(0);
     });
 
-    test('when called it returns the decorated object that was passed to it', () => {
+    it('returns the decorated object that was passed to it', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const captureAWSv3ClientSpy = jest
+      const captureAWSv3ClientSpy = vi
         .spyOn(tracer.provider, 'captureAWSv3Client')
         .mockImplementation(() => null);
 
@@ -1660,76 +1517,6 @@ describe('Class: Tracer', () => {
       // Assess
       expect(captureAWSv3ClientSpy).toBeCalledTimes(1);
       expect(captureAWSv3ClientSpy).toBeCalledWith({});
-    });
-  });
-
-  describe('Method: captureAWSClient', () => {
-    test('when called while tracing is disabled, it does nothing', () => {
-      // Prepare
-      const tracer: Tracer = new Tracer({ enabled: false });
-      const captureAWSClientSpy = jest.spyOn(
-        tracer.provider,
-        'captureAWSClient'
-      );
-
-      // Act
-      tracer.captureAWSClient({});
-
-      // Assess
-      expect(captureAWSClientSpy).toBeCalledTimes(0);
-    });
-
-    test('when called with a base AWS SDK v2 client, it calls the provider method to patch it', () => {
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const captureAWSClientSpy = jest
-        .spyOn(tracer.provider, 'captureAWSClient')
-        .mockImplementation(() => null);
-
-      // Act
-      tracer.captureAWSClient({});
-
-      // Assess
-      expect(captureAWSClientSpy).toBeCalledTimes(1);
-      expect(captureAWSClientSpy).toBeCalledWith({});
-    });
-
-    test('when called with a complex AWS SDK v2 client, it calls the provider method to patch it', () => {
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const captureAWSClientSpy = jest
-        .spyOn(tracer.provider, 'captureAWSClient')
-        .mockImplementationOnce(() => {
-          throw new Error('service.customizeRequests is not a function');
-        })
-        .mockImplementation(() => null);
-
-      // Act
-      // This is the shape of a DocumentClient from the AWS SDK v2
-      tracer.captureAWSClient({ service: {} });
-
-      // Assess
-      expect(captureAWSClientSpy).toBeCalledTimes(2);
-      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(1, { service: {} });
-      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(2, {});
-    });
-
-    test('when called with an uncompatible object, it throws an error', () => {
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const captureAWSClientSpy = jest.spyOn(
-        tracer.provider,
-        'captureAWSClient'
-      );
-
-      // Act / Assess
-      expect(() => {
-        tracer.captureAWSClient({});
-      }).toThrow('service.customizeRequests is not a function');
-      expect(captureAWSClientSpy).toBeCalledTimes(2);
-      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(1, {});
-      expect(captureAWSClientSpy).toHaveBeenNthCalledWith(2, undefined);
-      expect.assertions(4);
     });
   });
 });

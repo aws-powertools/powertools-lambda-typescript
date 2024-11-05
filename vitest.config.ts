@@ -23,7 +23,7 @@ export default defineConfig({
         'packages/parameters/**',
         'packages/parser/**',
         'packages/testing/**',
-        'packages/tracer/**',
+        'packages/tracer/src/types/**',
       ],
     },
     setupFiles: ['./packages/testing/src/setupEnv.ts'],

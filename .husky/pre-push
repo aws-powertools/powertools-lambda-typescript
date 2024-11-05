@@ -1,6 +1,5 @@
 npm t \
   -w packages/metrics \
-  -w packages/tracer \
   -w packages/parameters \
   -w packages/parser
 

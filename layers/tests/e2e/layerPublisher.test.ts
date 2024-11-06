@@ -17,10 +17,6 @@ import {
   TEARDOWN_TIMEOUT,
 } from './constants.js';
 
-vi.hoisted(() => {
-  process.env.AWS_PROFILE = 'aamorosi-Admin';
-});
-
 /**
  * This test has two stacks:
  * 1. LayerPublisherStack - publishes a layer version using the LayerPublisher construct and containing the Powertools utilities from the repo

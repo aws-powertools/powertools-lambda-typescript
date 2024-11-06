@@ -749,6 +749,7 @@ class Metrics extends Utility implements MetricsInterface {
       serviceName: this.dimensions.service,
       defaultDimensions: this.defaultDimensions,
       singleMetric: true,
+      logger: this.#logger,
     });
   }
 

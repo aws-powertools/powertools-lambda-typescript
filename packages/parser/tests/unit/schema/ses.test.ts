@@ -1,9 +1,4 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
-
+import { describe, expect, it } from 'vitest';
 import { SesRecordSchema, SesSchema } from '../../../src/schemas/';
 import type { SesEvent } from '../../../src/types';
 import type { SesRecord } from '../../../src/types/schema';

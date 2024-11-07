@@ -1,11 +1,6 @@
-/**
- * Test built in schema envelopes for sqs
- *
- * @group unit/parser/envelopes
- */
-
 import { generateMock } from '@anatine/zod-mock';
 import type { SQSEvent } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
 import { SqsEnvelope } from '../../../src/envelopes/sqs.js';
 import { ParseError } from '../../../src/errors.js';

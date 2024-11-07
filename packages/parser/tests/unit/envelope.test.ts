@@ -1,9 +1,4 @@
-/**
- * Test decorator parser
- *
- * @group unit/parser
- */
-
+import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
 import { Envelope } from '../../src/envelopes/envelope.js';
 

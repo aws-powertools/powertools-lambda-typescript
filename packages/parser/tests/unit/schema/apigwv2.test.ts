@@ -1,8 +1,4 @@
-/**
- * Test built-in API Gateway HTTP API (v2) schemas
- *
- * @group unit/parser/schema/apigwv2
- */
+import { describe, expect, it } from 'vitest';
 import {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,

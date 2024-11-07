@@ -1,6 +1,5 @@
 npm t \
   -w packages/metrics \
-  -w packages/parameters \
-  -w packages/parser
+  -w packages/parameters
 
 npx vitest --run --coverage --changed="$(git merge-base HEAD main)" tests/unit

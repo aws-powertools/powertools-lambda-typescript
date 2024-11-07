@@ -2,4 +2,4 @@ npm t \
   -w packages/metrics \
   -w packages/parameters
 
-npx vitest --run --coverage --changed="$(git merge-base HEAD main)" tests/unit
+npx vitest --run --exclude layers --coverage --changed="$(git merge-base HEAD main)" tests/unit

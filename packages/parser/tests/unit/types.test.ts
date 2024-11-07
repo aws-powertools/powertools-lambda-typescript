@@ -14,7 +14,7 @@ import {
   SqsEnvelope,
   VpcLatticeEnvelope,
   VpcLatticeV2Envelope,
-} from '../../src/envelopes';
+} from '../../src/envelopes/index.js';
 import type { ParserOutput } from '../../src/types/parser';
 
 describe('Types ', () => {

@@ -3,7 +3,7 @@ import { ParseError } from '../errors.js';
 import { DynamoDBStreamSchema } from '../schemas/index.js';
 import type { DynamoDBStreamEnvelopeResponse } from '../types/envelope.js';
 import type { ParsedResult, ParsedResultError } from '../types/index.js';
-import { Envelope } from './envelope.js';
+import { Envelope, envelopeDiscriminator } from './envelope.js';
 
 /**
  * DynamoDB Stream Envelope to extract data within NewImage/OldImage
@@ -12,7 +12,11 @@ import { Envelope } from './envelope.js';
  * length of the list is the record's amount in the original event.
  */
 export const DynamoDBStreamEnvelope = {
-  symbol: 'array' as const,
+  /**
+   * This is a discriminator to differentiate whether an envelope returns an array or an object
+   * @hidden
+   */
+  [envelopeDiscriminator]: 'array' as const,
   parse<T extends ZodSchema>(
     data: unknown,
     schema: T

@@ -2,7 +2,7 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope } from './envelope.js';
+import { Envelope, envelopeDiscriminator } from './envelope.js';
 
 /**
  * Kinesis Data Stream Envelope to extract array of Records
@@ -15,7 +15,11 @@ import { Envelope } from './envelope.js';
  * all items in the list will be parsed as str and not as JSON (and vice versa)
  */
 export const KinesisEnvelope = {
-  symbol: 'array' as const,
+  /**
+   * This is a discriminator to differentiate whether an envelope returns an array or an object
+   * @hidden
+   */
+  [envelopeDiscriminator]: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = KinesisDataStreamSchema.parse(data);
 

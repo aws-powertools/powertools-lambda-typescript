@@ -1,4 +1,5 @@
 import type { ZodSchema, z } from 'zod';
+import type { envelopeDiscriminator } from '../envelopes/envelope.js';
 import type { ParsedResult } from './parser.js';
 
 type DynamoDBStreamEnvelopeResponse<Schema extends ZodSchema> = {
@@ -7,7 +8,7 @@ type DynamoDBStreamEnvelopeResponse<Schema extends ZodSchema> = {
 };
 
 interface ArrayEnvelope {
-  symbol: 'array';
+  [envelopeDiscriminator]: 'array';
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[];
   safeParse<T extends ZodSchema>(
     data: unknown,
@@ -16,7 +17,7 @@ interface ArrayEnvelope {
 }
 
 interface ObjectEnvelope {
-  symbol: 'object';
+  [envelopeDiscriminator]: 'object';
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>;
   safeParse<T extends ZodSchema>(
     data: unknown,

@@ -2,13 +2,17 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { VpcLatticeV2Schema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope } from './envelope.js';
+import { Envelope, envelopeDiscriminator } from './envelope.js';
 
 /**
  * Amazon VPC Lattice envelope to extract data within body key
  */
 export const VpcLatticeV2Envelope = {
-  symbol: 'object' as const,
+  /**
+   * This is a discriminator to differentiate whether an envelope returns an array or an object
+   * @hidden
+   */
+  [envelopeDiscriminator]: 'object' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
     const parsedEnvelope = VpcLatticeV2Schema.parse(data);
 

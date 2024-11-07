@@ -123,3 +123,5 @@ if (
   process.env.AWS_REGION = 'eu-west-1';
 }
 process.env._HANDLER = 'index.handler';
+process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
+process.env.AWS_XRAY_LOGGING_LEVEL = 'silent';

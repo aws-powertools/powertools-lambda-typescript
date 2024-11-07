@@ -321,7 +321,7 @@ class Tracer extends Utility implements TracerInterface {
    * @deprecated Use {@link captureAWSv3Client} instead.
    * @param service - AWS SDK v2 client
    */
-  public captureAWSClient<T>(service: T): T {
+  /* v8 ignore start */ public captureAWSClient<T>(service: T): T {
     if (!this.isTracingEnabled()) return service;
 
     try {
@@ -338,7 +338,7 @@ class Tracer extends Utility implements TracerInterface {
         throw error;
       }
     }
-  }
+  } /* v8 ignore stop */
 
   /**
    * Patch an AWS SDK v3 client and create traces when your application makes calls to that AWS service.

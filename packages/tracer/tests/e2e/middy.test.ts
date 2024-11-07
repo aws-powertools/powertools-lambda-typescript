@@ -1,14 +1,10 @@
-/**
- * Test tracer when using the Middy.js instrumentation
- *
- * @group e2e/tracer/middy
- */
 import { join } from 'node:path';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { getTraces } from '@aws-lambda-powertools/testing-utils/utils/xray-traces';
 import type { EnrichedXRayTraceDocumentParsed } from 'packages/testing/lib/cjs/types.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { invokeAllTestCases } from '../helpers/invokeAllTests.js';
 import {
   RESOURCE_NAME_PREFIX,

@@ -1,15 +1,11 @@
-/**
- * Test EnvironmentVariablesService class
- *
- * @group unit/tracer/all
- */
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
 describe('Class: EnvironmentVariablesService', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
+    vi.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -18,7 +14,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getTracingEnabled', () => {
-    test('It returns the value of the environment variable POWERTOOLS_TRACE_ENABLED', () => {
+    it('returns the value of the environment variable POWERTOOLS_TRACE_ENABLED', () => {
       // Prepare
       process.env.POWERTOOLS_TRACE_ENABLED = 'false';
       const service = new EnvironmentVariablesService();
@@ -32,7 +28,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getTracingCaptureResponse', () => {
-    test('It returns the value of the environment variable POWERTOOLS_TRACER_CAPTURE_RESPONSE', () => {
+    it('returns the value of the environment variable POWERTOOLS_TRACER_CAPTURE_RESPONSE', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
       const service = new EnvironmentVariablesService();
@@ -46,7 +42,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getTracingCaptureError', () => {
-    test('It returns the value of the environment variable POWERTOOLS_TRACER_CAPTURE_ERROR', () => {
+    it('returns the value of the environment variable POWERTOOLS_TRACER_CAPTURE_ERROR', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
       const service = new EnvironmentVariablesService();
@@ -60,7 +56,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getCaptureHTTPsRequests', () => {
-    test('It returns the value of the environment variable POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS', () => {
+    it('returns the value of the environment variable POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS', () => {
       // Prepare
       process.env.POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS = 'false';
       const service = new EnvironmentVariablesService();
@@ -74,7 +70,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getSamLocal', () => {
-    test('It returns the value of the environment variable AWS_SAM_LOCAL', () => {
+    it('returns the value of the environment variable AWS_SAM_LOCAL', () => {
       // Prepare
       process.env.AWS_SAM_LOCAL = 'true';
       const service = new EnvironmentVariablesService();
@@ -88,7 +84,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getAwsExecutionEnv', () => {
-    test('It returns the value of the environment variable AWS_EXECUTION_ENV', () => {
+    it('returns the value of the environment variable AWS_EXECUTION_ENV', () => {
       // Prepare
       process.env.AWS_EXECUTION_ENV = 'nodejs20.x';
       const service = new EnvironmentVariablesService();

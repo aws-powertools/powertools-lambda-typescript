@@ -1,57 +1,35 @@
 import type { ZodSchema, z } from 'zod';
-import type {
-  ApiGatewayEnvelope,
-  ApiGatewayV2Envelope,
-  CloudWatchEnvelope,
-  DynamoDBStreamEnvelope,
-  EventBridgeEnvelope,
-  KafkaEnvelope,
-  KinesisEnvelope,
-  KinesisFirehoseEnvelope,
-  LambdaFunctionUrlEnvelope,
-  SnsEnvelope,
-  SnsSqsEnvelope,
-  SqsEnvelope,
-  VpcLatticeEnvelope,
-  VpcLatticeV2Envelope,
-} from '../envelopes/index.js';
+import type { envelopeDiscriminator } from '../envelopes/envelope.js';
+import type { ParsedResult } from './parser.js';
 
 type DynamoDBStreamEnvelopeResponse<Schema extends ZodSchema> = {
   NewImage: z.infer<Schema>;
   OldImage: z.infer<Schema>;
 };
 
-type Envelope =
-  | typeof ApiGatewayEnvelope
-  | typeof ApiGatewayV2Envelope
-  | typeof CloudWatchEnvelope
-  | typeof DynamoDBStreamEnvelope
-  | typeof EventBridgeEnvelope
-  | typeof KafkaEnvelope
-  | typeof KinesisEnvelope
-  | typeof KinesisFirehoseEnvelope
-  | typeof LambdaFunctionUrlEnvelope
-  | typeof SnsEnvelope
-  | typeof SnsSqsEnvelope
-  | typeof SqsEnvelope
-  | typeof VpcLatticeEnvelope
-  | typeof VpcLatticeV2Envelope
-  | undefined;
+interface ArrayEnvelope {
+  [envelopeDiscriminator]: 'array';
+  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[];
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]>;
+}
 
-/**
- * Envelopes that return an array, needed to narrow down the return type of the parser
- */
-type EnvelopeArrayReturnType =
-  | typeof CloudWatchEnvelope
-  | typeof DynamoDBStreamEnvelope
-  | typeof KafkaEnvelope
-  | typeof KinesisEnvelope
-  | typeof KinesisFirehoseEnvelope
-  | typeof SnsEnvelope
-  | typeof SqsEnvelope;
+interface ObjectEnvelope {
+  [envelopeDiscriminator]: 'object';
+  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>;
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>>;
+}
+
+type Envelope = ArrayEnvelope | ObjectEnvelope | undefined;
 
 export type {
-  Envelope,
+  ArrayEnvelope,
   DynamoDBStreamEnvelopeResponse,
-  EnvelopeArrayReturnType,
+  Envelope,
+  ObjectEnvelope,
 };

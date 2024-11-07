@@ -35,7 +35,7 @@ import type { ParserOptions, ParserOutput } from '../types/parser.js';
  */
 const parser = <
   TSchema extends ZodType,
-  TEnvelope extends Envelope = undefined,
+  TEnvelope extends Envelope,
   TSafeParse extends boolean = false,
 >(
   options: ParserOptions<TSchema, TEnvelope, TSafeParse>

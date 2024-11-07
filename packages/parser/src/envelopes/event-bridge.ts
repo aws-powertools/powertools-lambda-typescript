@@ -2,12 +2,17 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { EventBridgeSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope } from './envelope.js';
+import { Envelope, envelopeDiscriminator } from './envelope.js';
 
 /**
  * Envelope for EventBridge schema that extracts and parses data from the `detail` key.
  */
 export const EventBridgeEnvelope = {
+  /**
+   * This is a discriminator to differentiate whether an envelope returns an array or an object
+   * @hidden
+   */
+  [envelopeDiscriminator]: 'object' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
     return Envelope.parse(EventBridgeSchema.parse(data).detail, schema);
   },

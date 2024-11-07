@@ -15,7 +15,7 @@ import {
   VpcLatticeEnvelope,
   VpcLatticeV2Envelope,
 } from '../../src/envelopes/index.js';
-import type { ParserOutput } from '../../src/types/parser';
+import type { ParserOutput } from '../../src/types/parser.js';
 
 describe('Types ', () => {
   const userSchema = z.object({

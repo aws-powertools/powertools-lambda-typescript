@@ -58,10 +58,9 @@ class SqsFifoPartialProcessorAsync extends BatchProcessor {
 
   /**
    * Handles a failure for a given record.
-   * Adds the current group ID to the set of failed group IDs if `skipGroupOnError` is true.
+   *
    * @param record - The record that failed.
    * @param exception - The error that occurred.
-   * @returns The failure response.
    */
   public failureHandler(
     record: EventSourceDataClassTypes,

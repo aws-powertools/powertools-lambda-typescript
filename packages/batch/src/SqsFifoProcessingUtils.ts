@@ -73,6 +73,7 @@ class SqsFifoProcessingUtils {
 
   /**
    * Handles failure for current group
+   * Adds the current group ID to the set of failed group IDs if `skipGroupOnError` is true.
    *
    * @param options - The options for the batch processing.
    */

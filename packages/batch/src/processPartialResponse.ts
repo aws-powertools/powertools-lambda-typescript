@@ -70,7 +70,7 @@ import type {
  * @param event The event object containing the batch of records
  * @param recordHandler Async function to process each record from the batch
  * @param processor Batch processor instance to handle the batch processing
- * @param options Batch processing options, which can vary with chosen batch processor implementation
+ * @param options Batch processing options, see {{@link BatchProcessingOptions}}
  */
 const processPartialResponse = async <T extends BasePartialBatchProcessor>(
   event: { Records: BaseRecord[] },

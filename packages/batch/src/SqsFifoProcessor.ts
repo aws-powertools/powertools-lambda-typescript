@@ -4,9 +4,11 @@ import type {
 } from './types.js';
 
 /**
- * Utility class to handle processing of SQS FIFO messages.
+ * Class representing a processor for SQS FIFO messages.
+ * This class provides utilities for handling message groups, including tracking failed groups,
+ * determining whether to short-circuit processing, and skipping groups based on processing options.
  */
-class SqsFifoProcessingUtils {
+class SqsFifoProcessor {
   /**
    * The ID of the current message group being processed.
    */
@@ -84,4 +86,4 @@ class SqsFifoProcessingUtils {
   }
 }
 
-export { SqsFifoProcessingUtils };
+export { SqsFifoProcessor };

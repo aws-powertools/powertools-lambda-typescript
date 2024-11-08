@@ -1,6 +1,6 @@
 import type { SQSRecord } from 'aws-lambda';
 import { BatchProcessor } from './BatchProcessor.js';
-import { SqsFifoProcessingUtils } from './SqsFifoProcessingUtils.js';
+import { SqsFifoProcessor } from './SqsFifoProcessor.js';
 import { EventType } from './constants.js';
 import {
   type BatchProcessingError,
@@ -47,13 +47,13 @@ import type {
  */
 class SqsFifoPartialProcessorAsync extends BatchProcessor {
   /**
-   * Utility class for processing SQS FIFO queues
+   *  Processor for handling SQS FIFO message
    */
-  readonly #utils: SqsFifoProcessingUtils;
+  readonly #processor: SqsFifoProcessor;
 
   public constructor() {
     super(EventType.SQS);
-    this.#utils = new SqsFifoProcessingUtils();
+    this.#processor = new SqsFifoProcessor();
   }
 
   /**
@@ -66,7 +66,7 @@ class SqsFifoPartialProcessorAsync extends BatchProcessor {
     record: EventSourceDataClassTypes,
     exception: Error
   ): FailureResponse {
-    this.#utils.processFailureForCurrentGroup(this.options);
+    this.#processor.processFailureForCurrentGroup(this.options);
 
     return super.failureHandler(record, exception);
   }
@@ -95,15 +95,17 @@ class SqsFifoPartialProcessorAsync extends BatchProcessor {
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
     let currentIndex = 0;
     for (const record of this.records) {
-      this.#utils.setCurrentGroup(
+      this.#processor.setCurrentGroup(
         (record as SQSRecord).attributes?.MessageGroupId
       );
 
-      if (this.#utils.shouldShortCircuit(this.failureMessages, this.options)) {
+      if (
+        this.#processor.shouldShortCircuit(this.failureMessages, this.options)
+      ) {
         return this.shortCircuitProcessing(currentIndex, processedRecords);
       }
 
-      const result = this.#utils.shouldSkipCurrentGroup(this.options)
+      const result = this.#processor.shouldSkipCurrentGroup(this.options)
         ? this.#processFailRecord(
             record,
             new SqsFifoMessageGroupShortCircuitError()

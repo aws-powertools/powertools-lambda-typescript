@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
   ApiGatewayEnvelope,
@@ -30,7 +31,7 @@ describe('Types ', () => {
     { envelope: LambdaFunctionUrlEnvelope, name: 'LambdaFunctionUrl' },
     { envelope: VpcLatticeEnvelope, name: 'VpcLattice' },
     { envelope: VpcLatticeV2Envelope, name: 'VpcLatticeV2' },
-  ])('should infer object for $name envelope', (testCase) => {
+  ])('infers object types for $name envelope', (testCase) => {
     type Result = ParserOutput<typeof userSchema, typeof testCase.envelope>;
     // Define the expected type
 
@@ -57,7 +58,7 @@ describe('Types ', () => {
     { envelope: SqsEnvelope, name: 'Sqs' },
     { envelope: SnsEnvelope, name: 'Sns' },
     { envelope: SnsSqsEnvelope, name: 'SnsSqs' },
-  ])('should infer array type with $name envelope', (testCase) => {
+  ])('infers array types with $name envelope', (testCase) => {
     // Define the expected type
     type Result = ParserOutput<typeof userSchema, typeof testCase.envelope>;
 

@@ -1,10 +1,5 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
-
 import { gunzipSync } from 'node:zlib';
+import { describe, expect, it } from 'vitest';
 import {
   KinesisDataStreamRecord,
   KinesisDataStreamSchema,

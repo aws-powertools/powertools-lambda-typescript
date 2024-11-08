@@ -1,9 +1,4 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
-
+import { describe, expect, it } from 'vitest';
 import { SqsRecordSchema, SqsSchema } from '../../../src/schemas/';
 import type { SqsEvent } from '../../../src/types';
 import type { SqsRecord } from '../../../src/types/schema';

@@ -1,11 +1,6 @@
-/**
- * Test built in schema envelopes for Kinesis
- *
- * @group unit/parser/envelopes
- */
-
 import { generateMock } from '@anatine/zod-mock';
 import type { KinesisStreamEvent } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import { KinesisEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';

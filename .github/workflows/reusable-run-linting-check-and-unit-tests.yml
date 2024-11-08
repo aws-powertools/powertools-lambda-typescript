@@ -48,6 +48,7 @@ jobs:
           "packages/jmespath",
           "packages/logger",
           "packages/tracer",
+          "packages/parser",
         ]
       fail-fast: false
     steps:
@@ -91,13 +92,11 @@ jobs:
       - name: Run linting
         run: |
           npm run lint -w packages/metrics \
-            -w packages/parameters \
-            -w packages/parser
+            -w packages/parameters
       - name: Run unit tests
         run: |
           npm t -w packages/metrics \
-            -w packages/parameters \
-            -w packages/parser
+            -w packages/parameters
   check-examples:
     runs-on: ubuntu-latest
     env:

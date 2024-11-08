@@ -1,9 +1,4 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
-
+import { describe, expect, it } from 'vitest';
 import { VpcLatticeV2Schema } from '../../../src/schemas/';
 import { TestEvents } from './utils.js';
 

@@ -1,11 +1,6 @@
-/**
- * Test built in schema envelopes for api gateway v2
- *
- * @group unit/parser/envelopes
- */
-
 import { generateMock } from '@anatine/zod-mock';
 import type { AttributeValue, DynamoDBStreamEvent } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
 import { DynamoDBStreamEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';

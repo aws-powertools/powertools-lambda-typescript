@@ -1,9 +1,4 @@
-/**
- * Test built in schema
- *
- * @group unit/parser/schema/
- */
-
+import { describe, expect, it } from 'vitest';
 import {
   S3EventNotificationEventBridgeSchema,
   S3ObjectLambdaEventSchema,

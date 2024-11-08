@@ -1,12 +1,7 @@
-/**
- * Test decorator parser
- *
- * @group unit/parser
- */
-
 import { generateMock } from '@anatine/zod-mock';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/lib/esm/types';
 import type { Context } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/index.js';
 import { ParseError } from '../../src/errors.js';

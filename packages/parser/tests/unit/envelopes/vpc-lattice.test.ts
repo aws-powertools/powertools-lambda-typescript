@@ -1,10 +1,5 @@
-/**
- * Test built in schema envelopes for VPC Lattice
- *
- * @group unit/parser/envelopes
- */
-
 import { generateMock } from '@anatine/zod-mock';
+import { describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
 import { ParseError } from '../../../src';
 import { VpcLatticeEnvelope } from '../../../src/envelopes/index.js';

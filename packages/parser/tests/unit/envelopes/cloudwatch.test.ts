@@ -1,11 +1,6 @@
-/**
- * Test built in schema envelopes for CloudWatch
- *
- * @group unit/parser/envelopes
- */
-
 import { gzipSync } from 'node:zlib';
 import { generateMock } from '@anatine/zod-mock';
+import { describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
 import { ParseError } from '../../../src';
 import { CloudWatchEnvelope } from '../../../src/envelopes/index.js';

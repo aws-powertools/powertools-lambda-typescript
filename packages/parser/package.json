@@ -10,10 +10,14 @@
     "access": "public"
   },
   "scripts": {
-    "test": "npm run test:unit",
-    "test:unit": "jest --group=unit --detectOpenHandles --coverage --verbose",
-    "jest": "jest --detectOpenHandles --coverage --verbose",
-    "watch": "jest --watch",
+    "test": "vitest --run tests/unit",
+    "test:unit": "vitest --run tests/unit",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "vitest --run tests/types --typecheck",
+    "test:unit:watch": "vitest tests/unit",
+    "test:e2e:nodejs18x": "echo 'Not implemented'",
+    "test:e2e:nodejs20x": "echo 'Not implemented'",
+    "test:e2e": "echo 'Not implemented'",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",

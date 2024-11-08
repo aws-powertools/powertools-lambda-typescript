@@ -1,11 +1,6 @@
-/**
- * Test built in schema envelopes for SNS
- *
- * @group unit/parser/envelopes
- */
-
 import { generateMock } from '@anatine/zod-mock';
 import type { SNSEvent, SQSEvent } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import { ZodError, type z } from 'zod';
 import { SnsEnvelope, SnsSqsEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';

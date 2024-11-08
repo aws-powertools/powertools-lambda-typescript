@@ -102,7 +102,10 @@ const filenames = [
 
 type TestEvents = { [K in (typeof filenames)[number]]: unknown };
 const loadFileContent = (filename: string): string =>
-  readFileSync(`./tests/events/${filename}.json`, 'utf-8');
+  readFileSync(
+    join(__dirname, '..', '..', 'events', `${filename}.json`),
+    'utf-8'
+  );
 
 const createTestEvents = (fileList: readonly string[]): TestEvents => {
   const testEvents: Partial<TestEvents> = {};

@@ -1,8 +1,4 @@
-/**
- * Test decorator parser
- *
- * @group unit/parser
- */
+import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { JSONStringified } from '../../src/helpers.js';
 import { AlbSchema } from '../../src/schemas/alb.js';

@@ -1,11 +1,6 @@
-/**
- * Test built in schema envelopes for Lambda Functions URL
- *
- * @group unit/parser/envelopes
- */
-
 import { generateMock } from '@anatine/zod-mock';
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
 import { ParseError } from '../../../src';
 import { LambdaFunctionUrlEnvelope } from '../../../src/envelopes/index.js';

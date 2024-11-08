@@ -1,10 +1,5 @@
-/**
- * Test built in schema envelopes for Kinesis Firehose
- *
- * @group unit/parser/envelopes
- */
-
 import { generateMock } from '@anatine/zod-mock';
+import { describe, expect, it } from 'vitest';
 import { ZodError, type z } from 'zod';
 import { ParseError } from '../../../src';
 import { KinesisFirehoseEnvelope } from '../../../src/envelopes/index.js';

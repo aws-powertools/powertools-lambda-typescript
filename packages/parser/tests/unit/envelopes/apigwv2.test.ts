@@ -1,9 +1,4 @@
-/**
- * Test built-in API Gateway HTTP API (v2) envelope
- *
- * @group unit/parser/envelopes/apigwv2
- */
-
+import { describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
 import { ApiGatewayV2Envelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';

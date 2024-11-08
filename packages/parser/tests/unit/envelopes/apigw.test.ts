@@ -1,9 +1,4 @@
-/**
- * Test built-in API Gateway REST envelope
- *
- * @group unit/parser/envelopes/apigw
- */
-
+import { describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
 import { ApiGatewayEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';

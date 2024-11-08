@@ -1,11 +1,6 @@
-/**
- * Test built in schema envelopes for api gateway v2
- *
- * @group unit/parser/envelopes
- */
-
 import { generateMock } from '@anatine/zod-mock';
 import type { MSKEvent, SelfManagedKafkaEvent } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import { ParseError } from '../../../src';
 import { KafkaEnvelope } from '../../../src/envelopes/index.js';
 import { TestEvents, TestSchema } from '../schema/utils.js';

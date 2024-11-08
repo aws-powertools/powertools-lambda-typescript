@@ -12,3 +12,4 @@ export { BatchProcessor } from './BatchProcessor.js';
 export { processPartialResponseSync } from './processPartialResponseSync.js';
 export { processPartialResponse } from './processPartialResponse.js';
 export { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
+export { SqsFifoPartialProcessorAsync } from './SqsFifoPartialProcessorAsync.js';

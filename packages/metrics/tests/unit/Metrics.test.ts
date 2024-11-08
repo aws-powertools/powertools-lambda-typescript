@@ -27,6 +27,8 @@ jest.mock('node:console', () => ({
   ...jest.requireActual('node:console'),
   Console: jest.fn().mockImplementation(() => ({
     log: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
   })),
 }));
 jest.spyOn(console, 'warn').mockImplementation(() => ({}));
@@ -1254,9 +1256,17 @@ describe('Class: Metrics', () => {
   describe('Methods: publishStoredMetrics', () => {
     test('it should log warning if no metrics are added & throwOnEmptyMetrics is false', () => {
       // Prepare
-      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      const customLogger = {
+        warn: jest.fn(),
+        debug: jest.fn(),
+        error: jest.fn(),
+        info: jest.fn(),
+      };
+      const metrics: Metrics = new Metrics({
+        namespace: TEST_NAMESPACE,
+        logger: customLogger,
+      });
+      const consoleWarnSpy = jest.spyOn(customLogger, 'warn');
 
       // Act
       metrics.publishStoredMetrics();
@@ -1266,7 +1276,6 @@ describe('Class: Metrics', () => {
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         'No application metrics to publish. The cold-start metric may be published if enabled. If application metrics should never be empty, consider using `throwOnEmptyMetrics`'
       );
-      expect(consoleLogSpy).not.toHaveBeenCalled();
     });
 
     test('it should call serializeMetrics && log the stringified return value of serializeMetrics', () => {
@@ -1355,8 +1364,14 @@ describe('Class: Metrics', () => {
     test('it should print warning, if no namespace provided in constructor or environment variable', () => {
       // Prepare
       process.env.POWERTOOLS_METRICS_NAMESPACE = '';
-      const metrics: Metrics = new Metrics();
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const customLogger = {
+        warn: jest.fn(),
+        debug: jest.fn(),
+        error: jest.fn(),
+        info: jest.fn(),
+      };
+      const metrics: Metrics = new Metrics({ logger: customLogger });
+      const consoleWarnSpy = jest.spyOn(customLogger, 'warn');
 
       // Act
       metrics.serializeMetrics();

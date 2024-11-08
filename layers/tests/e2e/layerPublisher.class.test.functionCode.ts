@@ -17,7 +17,7 @@ import { SSMClient } from '@aws-sdk/client-ssm';
 const logger = new Logger({
   logLevel: 'DEBUG',
 });
-const metrics = new Metrics();
+const metrics = new Metrics({ logger });
 const tracer = new Tracer();
 
 // Instantiating these clients and the respective providers/persistence layers

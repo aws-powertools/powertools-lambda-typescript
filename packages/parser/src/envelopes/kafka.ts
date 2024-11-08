@@ -5,7 +5,7 @@ import {
   KafkaSelfManagedEventSchema,
 } from '../schemas/kafka.js';
 import type { KafkaMskEvent, ParsedResult } from '../types/index.js';
-import { Envelope } from './envelope.js';
+import { Envelope, envelopeDiscriminator } from './envelope.js';
 
 /**
  * Kafka event envelope to extract data within body key
@@ -17,6 +17,11 @@ import { Envelope } from './envelope.js';
  */
 
 export const KafkaEnvelope = {
+  /**
+   * This is a discriminator to differentiate whether an envelope returns an array or an object
+   * @hidden
+   */
+  [envelopeDiscriminator]: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     // manually fetch event source to decide between Msk or SelfManaged
     const eventSource = (data as KafkaMskEvent).eventSource;
@@ -35,7 +40,10 @@ export const KafkaEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     // manually fetch event source to deside between Msk or SelfManaged
     const eventSource = (data as KafkaMskEvent).eventSource;
 

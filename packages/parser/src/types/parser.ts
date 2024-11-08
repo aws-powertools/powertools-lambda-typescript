@@ -1,5 +1,5 @@
 import type { ZodError, ZodSchema, z } from 'zod';
-import type { Envelope, EnvelopeArrayReturnType } from './envelope.js';
+import type { ArrayEnvelope, Envelope } from './envelope.js';
 
 /**
  * Options for the parser used in middy middleware and decorator
@@ -46,7 +46,7 @@ type ZodInferredResult<
   TEnvelope extends Envelope,
 > = undefined extends TEnvelope
   ? z.infer<TSchema>
-  : TEnvelope extends EnvelopeArrayReturnType
+  : TEnvelope extends ArrayEnvelope
     ? z.infer<TSchema>[]
     : z.infer<TSchema>;
 
@@ -55,9 +55,9 @@ type ZodInferredSafeParseResult<
   TEnvelope extends Envelope,
 > = undefined extends TEnvelope
   ? ParsedResult<unknown, z.infer<TSchema>>
-  : TEnvelope extends EnvelopeArrayReturnType
-    ? ParsedResult<unknown, z.infer<TSchema>>
-    : ParsedResult<unknown, z.infer<TSchema>[]>;
+  : TEnvelope extends ArrayEnvelope
+    ? ParsedResult<unknown, z.infer<TSchema>[]>
+    : ParsedResult<unknown, z.infer<TSchema>>;
 
 /**
  * The output of the parser function, can be either schema inferred type or a ParsedResult
@@ -66,13 +66,9 @@ type ParserOutput<
   TSchema extends ZodSchema,
   TEnvelope extends Envelope,
   TSafeParse = false,
-> = undefined extends TSafeParse
-  ? ZodInferredResult<TSchema, TEnvelope>
-  : TSafeParse extends true
-    ? ZodInferredSafeParseResult<TSchema, TEnvelope>
-    : TSafeParse extends false
-      ? ZodInferredResult<TSchema, TEnvelope>
-      : never;
+> = TSafeParse extends true
+  ? ZodInferredSafeParseResult<TSchema, TEnvelope>
+  : ZodInferredResult<TSchema, TEnvelope>;
 
 export type {
   ParserOptions,

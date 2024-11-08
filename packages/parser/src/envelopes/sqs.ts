@@ -2,7 +2,7 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope } from './envelope.js';
+import { Envelope, envelopeDiscriminator } from './envelope.js';
 
 /**
  *  SQS Envelope to extract array of Records
@@ -14,6 +14,11 @@ import { Envelope } from './envelope.js';
  *  all items in the list will be parsed as str and npt as JSON (and vice versa)
  */
 export const SqsEnvelope = {
+  /**
+   * This is a discriminator to differentiate whether an envelope returns an array or an object
+   * @hidden
+   */
+  [envelopeDiscriminator]: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = SqsSchema.parse(data);
 
@@ -22,7 +27,10 @@ export const SqsEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     const parsedEnvelope = SqsSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {

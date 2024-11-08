@@ -143,15 +143,10 @@ describe('Layers E2E tests', () => {
       const logs = invocationLogs.getFunctionLogs('WARN');
 
       expect(logs.length).toBe(1);
-      expect(
-        invocationLogs.doesAnyFunctionLogsContains(
-          /Namespace should be defined, default used/,
-          'WARN'
-        )
-      ).toBe(true);
-      /* expect(logEntry.message).toEqual(
+      const logEntry = TestInvocationLogs.parseFunctionLog(logs[0]);
+      expect(logEntry.message).toEqual(
         'Namespace should be defined, default used'
-      ); */
+      );
     }
   );
 

@@ -2,7 +2,7 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import type { ParsedResult } from '../types/parser.js';
 
-export const Envelope = {
+const Envelope = {
   /**
    * Abstract function to parse the content of the envelope using provided schema.
    * Both inputs are provided as unknown by the user.
@@ -67,3 +67,11 @@ export const Envelope = {
     }
   },
 };
+
+/**
+ * This is a discriminator to differentiate whether an envelope returns an array or an object
+ * @hidden
+ */
+const envelopeDiscriminator = Symbol.for('returnType');
+
+export { Envelope, envelopeDiscriminator };

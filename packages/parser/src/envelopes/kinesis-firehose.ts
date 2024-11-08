@@ -2,7 +2,7 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { KinesisFirehoseSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope } from './envelope.js';
+import { Envelope, envelopeDiscriminator } from './envelope.js';
 
 /**
  * Kinesis Firehose Envelope to extract array of Records
@@ -17,6 +17,11 @@ import { Envelope } from './envelope.js';
  *  https://docs.aws.amazon.com/lambda/latest/dg/services-kinesisfirehose.html
  */
 export const KinesisFirehoseEnvelope = {
+  /**
+   * This is a discriminator to differentiate whether an envelope returns an array or an object
+   * @hidden
+   */
+  [envelopeDiscriminator]: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = KinesisFirehoseSchema.parse(data);
 
@@ -25,7 +30,10 @@ export const KinesisFirehoseEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     const parsedEnvelope = KinesisFirehoseSchema.safeParse(data);
 
     if (!parsedEnvelope.success) {

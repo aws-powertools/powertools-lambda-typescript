@@ -3,7 +3,7 @@ import { ParseError } from '../errors.js';
 import { SnsSchema, SnsSqsNotificationSchema } from '../schemas/sns.js';
 import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope } from './envelope.js';
+import { Envelope, envelopeDiscriminator } from './envelope.js';
 
 /**
  * SNS Envelope to extract array of Records
@@ -15,6 +15,11 @@ import { Envelope } from './envelope.js';
  * all items in the list will be parsed as str and npt as JSON (and vice versa)
  */
 export const SnsEnvelope = {
+  /**
+   * This is a discriminator to differentiate whether an envelope returns an array or an object
+   * @hidden
+   */
+  [envelopeDiscriminator]: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = SnsSchema.parse(data);
 
@@ -23,7 +28,10 @@ export const SnsEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     const parsedEnvelope = SnsSchema.safeParse(data);
 
     if (!parsedEnvelope.success) {
@@ -70,7 +78,12 @@ export const SnsEnvelope = {
  *
  */
 export const SnsSqsEnvelope = {
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
+  /**
+   * This is a discriminator to differentiate whether an envelope returns an array or an object
+   * @hidden
+   */
+  [envelopeDiscriminator]: 'array' as const,
+  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = SqsSchema.parse(data);
 
     return parsedEnvelope.Records.map((record) => {
@@ -82,7 +95,10 @@ export const SnsSqsEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>[]> {
     const parsedEnvelope = SqsSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {

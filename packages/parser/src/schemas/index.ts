@@ -5,6 +5,10 @@ export {
   APIGatewayTokenAuthorizerEventSchema,
 } from './apigw.js';
 export {
+  AppSyncResolverSchema,
+  AppSyncBatchResolverSchema,
+} from './appsync.js';
+export {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,
   APIGatewayRequestAuthorizerV2Schema,

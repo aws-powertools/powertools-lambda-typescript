@@ -70,13 +70,13 @@ import type {
  * @param event The event object containing the batch of records
  * @param recordHandler Async function to process each record from the batch
  * @param processor Batch processor instance to handle the batch processing
- * @param options Batch processing options
+ * @param options Batch processing options, see {{@link BatchProcessingOptions}}
  */
-const processPartialResponse = async (
+const processPartialResponse = async <T extends BasePartialBatchProcessor>(
   event: { Records: BaseRecord[] },
   recordHandler: CallableFunction,
-  processor: BasePartialBatchProcessor,
-  options?: BatchProcessingOptions
+  processor: T,
+  options?: BatchProcessingOptions<T>
 ): Promise<PartialItemFailureResponse> => {
   if (!event.Records || !Array.isArray(event.Records)) {
     throw new UnexpectedBatchTypeError();

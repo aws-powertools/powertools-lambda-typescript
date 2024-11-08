@@ -1,5 +1,5 @@
 import type { SQSRecord } from 'aws-lambda';
-import { BatchProcessorSync } from './BatchProcessorSync.js';
+import { BatchProcessor } from './BatchProcessor.js';
 import { SqsFifoProcessor } from './SqsFifoProcessor.js';
 import { EventType } from './constants.js';
 import {
@@ -17,8 +17,8 @@ import type {
 /**
  * Batch processor for SQS FIFO queues
  *
- * This class extends the {@link BatchProcessorSync} class and provides
- * a mechanism to process records from SQS FIFO queues synchronously.
+ * This class extends the {@link BatchProcessor} class and provides
+ * a mechanism to process records from SQS FIFO queues asynchronously.
  *
  * By default, we will stop processing at the first failure and mark unprocessed messages as failed to preserve ordering.
  *
@@ -28,24 +28,24 @@ import type {
  * ```typescript
  * import {
  *   BatchProcessor,
- *   EventType,
- *   processPartialResponseSync,
+ *   SqsFifoPartialProcessorAsync,
+ *   processPartialResponse,
  * } from '@aws-lambda-powertools/batch';
  * import type { SQSRecord, SQSHandler } from 'aws-lambda';
  *
- * const processor = new BatchProcessor(EventType.SQS);
+ * const processor = new SqsFifoPartialProcessorAsync();
  *
  * const recordHandler = async (record: SQSRecord): Promise<void> => {
  *   const payload = JSON.parse(record.body);
  * };
  *
  * export const handler: SQSHandler = async (event, context) =>
- *   processPartialResponseSync(event, recordHandler, processor, {
+ *   processPartialResponse(event, recordHandler, processor, {
  *     context,
  *   });
  * ```
  */
-class SqsFifoPartialProcessor extends BatchProcessorSync {
+class SqsFifoPartialProcessorAsync extends BatchProcessor {
   /**
    *  Processor for handling SQS FIFO message
    */
@@ -58,10 +58,9 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
 
   /**
    * Handles a failure for a given record.
-   * Adds the current group ID to the set of failed group IDs if `skipGroupOnError` is true.
+   *
    * @param record - The record that failed.
    * @param exception - The error that occurred.
-   * @returns The failure response.
    */
   public failureHandler(
     record: EventSourceDataClassTypes,
@@ -73,9 +72,9 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
   }
 
   /**
-   * Process a record with a synchronous handler
+   * Process a record with a asynchronous handler
    *
-   * This method orchestrates the processing of a batch of records synchronously
+   * This method orchestrates the processing of a batch of records asynchronously
    * for SQS FIFO queues.
    *
    * The method calls the prepare hook to initialize the processor and then
@@ -90,7 +89,7 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
    * Then, it calls the clean hook to clean up the processor and returns the
    * processed records.
    */
-  public processSync(): (SuccessResponse | FailureResponse)[] {
+  public async process(): Promise<(SuccessResponse | FailureResponse)[]> {
     this.prepare();
 
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
@@ -111,7 +110,7 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
             record,
             new SqsFifoMessageGroupShortCircuitError()
           )
-        : this.processRecordSync(record);
+        : await this.processRecord(record);
 
       processedRecords.push(result);
       currentIndex++;
@@ -165,4 +164,4 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
   }
 }
 
-export { SqsFifoPartialProcessor };
+export { SqsFifoPartialProcessorAsync };

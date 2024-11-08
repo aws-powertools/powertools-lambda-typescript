@@ -131,7 +131,7 @@ const AppSyncResolverSchema = z.object({
  * A zod schema for a batch AppSync resolver event
  *
  * @example
- * /*
+ * ```json
  * [{
  *   "arguments": {
  *     "id": "1973493"

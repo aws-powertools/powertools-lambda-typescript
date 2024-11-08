@@ -59,6 +59,10 @@
       "require": "./lib/cjs/schemas/apigwv2.js",
       "import": "./lib/esm/schemas/apigwv2.js"
     },
+    "./schemas/appsync": {
+      "require": "./lib/cjs/schemas/appsync.js",
+      "import": "./lib/esm/schemas/appsync.js"
+    },
     "./schemas/cloudformation-custom-resources": {
       "require": "./lib/cjs/schemas/cloudformation-custom-resources.js",
       "import": "./lib/esm/schemas/cloudformation-custom-resources.js"
@@ -203,6 +207,10 @@
         "./lib/cjs/schemas/apigwv2.d.ts",
         "./lib/esm/schemas/apigwv2.d.ts"
       ],
+      "schemas/appsync": [
+        "./lib/cjs/schemas/appsync.d.ts",
+        "./lib/esm/schemas/appsync.d.ts"
+      ],
       "schemas/cloudformation-custom-resources": [
         "./lib/cjs/schemas/cloudformation-custom-resources.d.ts",
         "./lib/esm/schemas/cloudformation-custom-resources.d.ts"
@@ -235,7 +243,10 @@
         "./lib/cjs/schemas/lambda.d.ts",
         "./lib/esm/schemas/lambda.d.ts"
       ],
-      "schemas/s3": ["./lib/cjs/schemas/s3.d.ts", "./lib/esm/schemas/s3.d.ts"],
+      "schemas/s3": [
+        "./lib/cjs/schemas/s3.d.ts",
+        "./lib/esm/schemas/s3.d.ts"
+      ],
       "schemas/ses": [
         "./lib/cjs/schemas/ses.d.ts",
         "./lib/esm/schemas/ses.d.ts"
@@ -312,7 +323,10 @@
         "./lib/cjs/envelopes/vpc-latticev2.d.ts",
         "./lib/esm/envelopes/vpc-latticev2.d.ts"
       ],
-      "helpers": ["./lib/cjs/helpers.d.ts", "./lib/esm/helpers.d.ts"]
+      "helpers": [
+        "./lib/cjs/helpers.d.ts",
+        "./lib/esm/helpers.d.ts"
+      ]
     }
   },
   "main": "./lib/cjs/index.js",

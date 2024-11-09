@@ -110,6 +110,7 @@ const AppSyncResolverSchema = z.object({
   identity: z.optional(AppSyncIdentity),
   source: z.record(z.any()).nullable(),
   request: z.object({
+    domainName: z.string().nullable(),
     headers: z.record(z.string()),
   }),
   info: z.object({

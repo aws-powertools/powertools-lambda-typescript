@@ -9,13 +9,8 @@
       "list": []
     }
   },
-  "identity": {
-    "resolverContext": {
-      "field1": "value"
-    }
-  },
   "request": {
-    "domainName": null,
+    "domainName": "mycustomdomain.example.com",
     "headers": {
       "x-forwarded-for": "1.1.1.1, 2.2.2.2",
       "cloudfront-viewer-country": "US",
@@ -46,7 +41,9 @@
     }
   },
   "prev": {
-    "result": {}
+    "result": {
+      "field1": "value1"
+    }
   },
   "info": {
     "selectionSetList": ["id", "field1", "field2"],

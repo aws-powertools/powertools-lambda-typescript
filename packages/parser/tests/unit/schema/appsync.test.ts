@@ -34,6 +34,10 @@ describe('AppSync Resolver Schemas', () => {
       filename: 'null-prev',
     },
     {
+      name: 'should parse resolver event with custom domain name',
+      filename: 'custom-domain-name',
+    },
+    {
       name: 'should parse resolver event with cognito identity and rbac groups',
       filename: 'cognito-identity-group',
     },

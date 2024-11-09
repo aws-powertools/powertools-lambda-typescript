@@ -33,6 +33,7 @@
     "username": "jdoe"
   },
   "request": {
+    "domainName": null,
     "headers": {
       "x-forwarded-for": "1.1.1.1, 2.2.2.2",
       "cloudfront-viewer-country": "US",

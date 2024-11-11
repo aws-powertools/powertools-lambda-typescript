@@ -1,5 +1,5 @@
 import { Console } from 'node:console';
-import { Utility } from '@aws-lambda-powertools/commons';
+import { Utility, isIntegerNumber } from '@aws-lambda-powertools/commons';
 import type {
   GenericLogger,
   HandlerMethodDecorator,
@@ -197,6 +197,11 @@ class Metrics extends Utility implements MetricsInterface {
    * @default {}
    */
   private storedMetrics: StoredMetrics = {};
+
+  /**
+   * Custom timestamp for the metrics
+   */
+  #timestamp?: number;
 
   public constructor(options: MetricsOptions = {}) {
     super();
@@ -572,6 +577,23 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * Sets the timestamp for the metric.
+   * If an integer is provided, it is assumed to be the epoch time in milliseconds.
+   * If a Date object is provided, it will be converted to epoch time in milliseconds.
+   *
+   * @param timestamp - The timestamp to set, which can be a number or a Date object.
+   */
+  public setTimestamp(timestamp: number | Date): void {
+    if (!this.#validateEmfTimestamp(timestamp)) {
+      this.#logger.warn(
+        "This metric doesn't meet the requirements and will be skipped by Amazon CloudWatch. " +
+          'Ensure the timestamp is within 14 days in the past or up to 2 hours in the future and is also a valid number or Date object.'
+      );
+    }
+    this.#timestamp = this.#convertTimestampToEmfFormat(timestamp);
+  }
+
+  /**
    * Serialize the stored metrics into a JSON object compliant with the Amazon CloudWatch EMF (Embedded Metric Format) schema.
    *
    * The EMF schema is a JSON object that contains the following properties:
@@ -627,7 +649,7 @@ class Metrics extends Utility implements MetricsInterface {
 
     return {
       _aws: {
-        Timestamp: new Date().getTime(),
+        Timestamp: this.#timestamp ?? new Date().getTime(),
         CloudWatchMetrics: [
           {
             Namespace: this.namespace || DEFAULT_NAMESPACE,
@@ -939,6 +961,54 @@ class Metrics extends Utility implements MetricsInterface {
         this.publishStoredMetrics();
       }
     }
+  }
+
+  /**
+   * Validates a given timestamp based on CloudWatch Timestamp guidelines.
+   *
+   * Timestamp must meet CloudWatch requirements, otherwise an InvalidTimestampError will be raised.
+   * The time stamp can be up to two weeks in the past and up to two hours into the future.
+   * See [Timestamps](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#about_timestamp)
+   * for valid values.
+   *
+   * @param timestamp - Date object or epoch time in milliseconds representing the timestamp to validate.
+   */
+  #validateEmfTimestamp(timestamp: number | Date): boolean {
+    const EMF_MAX_TIMESTAMP_PAST_AGE = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
+    const EMF_MAX_TIMESTAMP_FUTURE_AGE = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+
+    if (!(timestamp instanceof Date) && !isIntegerNumber(timestamp)) {
+      return false;
+    }
+
+    const timestampMs =
+      timestamp instanceof Date ? timestamp.getTime() : timestamp;
+
+    const currentTime = new Date().getTime();
+
+    const minValidTimestamp = currentTime - EMF_MAX_TIMESTAMP_PAST_AGE;
+    const maxValidTimestamp = currentTime + EMF_MAX_TIMESTAMP_FUTURE_AGE;
+
+    return timestampMs >= minValidTimestamp && timestampMs <= maxValidTimestamp;
+  }
+
+  /**
+   * Converts a given timestamp to EMF (Embedded Metric Format) compatible format.
+   *
+   * @param timestamp - The timestamp to convert, which can be either a number (in milliseconds) or a Date object.
+   * @returns The timestamp in milliseconds. If the input is invalid, returns 0.
+   */
+  #convertTimestampToEmfFormat(timestamp: number | Date): number {
+    if (isIntegerNumber(timestamp)) {
+      return timestamp;
+    }
+    if (timestamp instanceof Date) {
+      return timestamp.getTime();
+    }
+    // If this point is reached, input was neither a valid number nor Date
+    // Return 0 which represents the initial date of epoch time
+    // This will be skipped by Amazon CloudWatch
+    return 0;
   }
 }
 

@@ -23,7 +23,7 @@ class LogItem {
    * @param params - The parameters for the LogItem.
    */
   public constructor(params: { attributes: LogAttributes }) {
-    this.addAttributes(params.attributes);
+    this.attributes = params.attributes;
   }
 
   /**
@@ -32,7 +32,7 @@ class LogItem {
    * @param attributes - The attributes to add to the log item.
    */
   public addAttributes(attributes: LogAttributes): this {
-    merge(this.attributes, attributes);
+    merge(attributes, this.attributes);
 
     return this;
   }
@@ -50,7 +50,7 @@ class LogItem {
    * This operation removes empty keys from the log item, see {@link removeEmptyKeys | removeEmptyKeys()} for more information.
    */
   public prepareForPrint(): void {
-    this.setAttributes(this.removeEmptyKeys(this.getAttributes()));
+    this.attributes = this.removeEmptyKeys(this.getAttributes());
   }
 
   /**

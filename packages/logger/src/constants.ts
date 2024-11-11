@@ -37,4 +37,18 @@ const LogLevelThreshold = {
   SILENT: 28,
 } as const;
 
-export { LogJsonIndent, LogLevel, LogLevelThreshold };
+/**
+ * Reserved keys that are included in every log item when using the default log formatter.
+ *
+ * These keys are reserved and cannot be overwritten by custom log attributes.
+ */
+const ReservedKeys = [
+  'level',
+  'message',
+  'sampling_rate',
+  'service',
+  'timestamp',
+  'xray_trace_id',
+];
+
+export { LogJsonIndent, LogLevel, LogLevelThreshold, ReservedKeys };

@@ -9,7 +9,7 @@ import type {
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
-import { LogJsonIndent, LogLevelThreshold } from './constants.js';
+import { LogJsonIndent, LogLevelThreshold, ReservedKeys } from './constants.js';
 import type { LogFormatter } from './formatter/LogFormatter.js';
 import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
@@ -221,10 +221,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param attributes - The attributes to add to all log items.
    */
   public appendKeys(attributes: LogAttributes): void {
-    for (const attributeKey of Object.keys(attributes)) {
-      this.#keys.set(attributeKey, 'temp');
-    }
-    merge(this.temporaryLogAttributes, attributes);
+    this.#appendAnyKeys(attributes, 'temp');
   }
 
   /**
@@ -233,10 +230,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param attributes - The attributes to add to all log items.
    */
   public appendPersistentKeys(attributes: LogAttributes): void {
-    for (const attributeKey of Object.keys(attributes)) {
-      this.#keys.set(attributeKey, 'persistent');
-    }
-    merge(this.persistentLogAttributes, attributes);
+    this.#appendAnyKeys(attributes, 'persistent');
   }
 
   /**
@@ -293,6 +287,13 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
+    for (const extra of extraInput) {
+      if (!(extra instanceof Error) && !(typeof extra === 'string')) {
+        for (const key of Object.keys(extra)) {
+          this.#checkReservedKeyAndWarn(key);
+        }
+      }
+    }
     this.processLogItem(LogLevelThreshold.DEBUG, input, extraInput);
   }
 
@@ -666,6 +667,25 @@ class Logger extends Utility implements LoggerInterface {
     merge(this.powertoolsLogData, attributes);
   }
 
+  /**
+   * Shared logic for adding keys to the logger instance.
+   *
+   * @param attributes - The attributes to add to the log item.
+   * @param type - The type of the attributes to add.
+   */
+  #appendAnyKeys(attributes: LogAttributes, type: 'temp' | 'persistent'): void {
+    for (const attributeKey of Object.keys(attributes)) {
+      if (this.#checkReservedKeyAndWarn(attributeKey) === false) {
+        this.#keys.set(attributeKey, 'temp');
+      }
+    }
+    if (type === 'temp') {
+      merge(this.temporaryLogAttributes, attributes);
+    } else {
+      merge(this.persistentLogAttributes, attributes);
+    }
+  }
+
   private awsLogLevelShortCircuit(selectedLogLevel?: string): boolean {
     const awsLogLevel = this.getEnvVarsService().getAwsLogLevel();
     if (this.isValidLogLevel(awsLogLevel)) {
@@ -752,6 +772,19 @@ class Logger extends Utility implements LoggerInterface {
       unformattedBaseAttributes,
       additionalAttributes
     );
+  }
+
+  /**
+   * Check if a given key is reserved and warn the user if it is.
+   *
+   * @param key - The key to check
+   */
+  #checkReservedKeyAndWarn(key: string): boolean {
+    if (ReservedKeys.includes(key)) {
+      this.warn(`The key "${key}" is a reserved key and will be dropped.`);
+      return true;
+    }
+    return false;
   }
 
   /**

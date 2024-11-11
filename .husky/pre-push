@@ -1,6 +1,5 @@
 npm t \
-  -w packages/metrics \
-  -w packages/parameters
+  -w packages/metrics
 
 npx vitest --run \
   --exclude tests/unit/layer-publisher.test.ts \

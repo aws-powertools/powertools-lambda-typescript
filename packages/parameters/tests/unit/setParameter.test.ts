@@ -1,14 +1,9 @@
-/**
- * Test setParameter function
- *
- * @group unit/parameters/ssm/setParameter/function
- */
 import { PutParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
-import { setParameter } from '../../src/ssm/index.js';
 import { SSMProvider } from '../../src/ssm/SSMProvider.js';
-import 'aws-sdk-client-mock-jest';
+import { setParameter } from '../../src/ssm/index.js';
 import type { SSMSetOptions } from '../../src/types/SSMProvider.js';
 
 describe('Function: setParameter', () => {
@@ -16,14 +11,10 @@ describe('Function: setParameter', () => {
   const client = mockClient(SSMClient);
 
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  afterEach(() => {
     client.reset();
   });
 
-  test('when called and a default provider does not exist, it instantiates one and sets the parameter', async () => {
+  it('instantiates a new client when called and a default provider does not exist', async () => {
     // Prepare
     const options: SSMSetOptions = { value: 'my-value' };
     client.on(PutParameterCommand).resolves({ Version: 1 });
@@ -39,7 +30,7 @@ describe('Function: setParameter', () => {
     expect(version).toBe(1);
   });
 
-  test('when called and a default provider exists, it uses it and sets the parameter', async () => {
+  it('uses the existing provider when called and a default one exists in the cache', async () => {
     // Prepare
     const provider = new SSMProvider();
     DEFAULT_PROVIDERS.ssm = provider;
@@ -58,7 +49,7 @@ describe('Function: setParameter', () => {
     expect(DEFAULT_PROVIDERS.ssm).toBe(provider);
   });
 
-  test('when called and the sdk client throws an error a custom error should be thrown from the function', async () => {
+  it('rethrows the error thrown by the underlying sdk client', async () => {
     // Prepare
     const options: SSMSetOptions = { value: 'my-value' };
     client.on(PutParameterCommand).rejects(new Error('Could not send command'));
@@ -71,7 +62,7 @@ describe('Function: setParameter', () => {
     );
   });
 
-  test('when called with additional sdk options, it sets the parameter with the sdk options successfully', async () => {
+  it('uses the provided sdkOptions when provided', async () => {
     // Prepare
     const options: SSMSetOptions = {
       value: 'my-value',
@@ -91,14 +82,14 @@ describe('Function: setParameter', () => {
     expect(version).toBe(1);
   });
 
-  test.each([
+  it.each([
     ['overwrite', true, 'Overwrite'],
     ['description', 'my-description', 'Description'],
     ['parameterType', 'SecureString', 'Type'],
     ['tier', 'Advanced', 'Tier'],
     ['kmsKeyId', 'my-key-id', 'KeyId'],
   ])(
-    'when called with %s option, it sets the parameter with the option successfully',
+    'sets the parameter with the option when called with %s option',
     async (option, value, sdkOption) => {
       //Prepare
       const options: SSMSetOptions = { value: 'my-value', [option]: value };

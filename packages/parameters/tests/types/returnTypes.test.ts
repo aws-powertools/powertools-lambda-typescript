@@ -16,7 +16,7 @@ import {
 import { toBase64 } from '@smithy/util-base64';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
-import { beforeEach, describe, expectTypeOf, it, vi } from 'vitest';
+import { beforeEach, describe, expectTypeOf, it } from 'vitest';
 import { getAppConfig } from '../../src/appconfig/index.js';
 import { Transform } from '../../src/index.js';
 import { getSecret } from '../../src/secrets/index.js';

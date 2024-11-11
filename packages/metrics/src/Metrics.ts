@@ -1,4 +1,5 @@
 import { Console } from 'node:console';
+import { isDate } from 'node:util/types';
 import { Utility, isIntegerNumber } from '@aws-lambda-powertools/commons';
 import type {
   GenericLogger,
@@ -977,12 +978,11 @@ class Metrics extends Utility implements MetricsInterface {
     const EMF_MAX_TIMESTAMP_PAST_AGE = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
     const EMF_MAX_TIMESTAMP_FUTURE_AGE = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
 
-    if (!(timestamp instanceof Date) && !isIntegerNumber(timestamp)) {
+    if (!isDate(timestamp) && !isIntegerNumber(timestamp)) {
       return false;
     }
 
-    const timestampMs =
-      timestamp instanceof Date ? timestamp.getTime() : timestamp;
+    const timestampMs = isDate(timestamp) ? timestamp.getTime() : timestamp;
 
     const currentTime = new Date().getTime();
 
@@ -1002,7 +1002,7 @@ class Metrics extends Utility implements MetricsInterface {
     if (isIntegerNumber(timestamp)) {
       return timestamp;
     }
-    if (timestamp instanceof Date) {
+    if (isDate(timestamp)) {
       return timestamp.getTime();
     }
     // If this point is reached, input was neither a valid number nor Date

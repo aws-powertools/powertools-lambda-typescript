@@ -476,6 +476,31 @@ interface MetricsInterface {
    */
   setThrowOnEmptyMetrics(enabled: boolean): void;
   /**
+   * Sets the timestamp for the metric.
+   *
+   * If an integer is provided, it is assumed to be the epoch time in milliseconds.
+   * If a Date object is provided, it will be converted to epoch time in milliseconds.
+   *
+   * @example
+   * ```typescript
+   * import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
+   *
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders',
+   * });
+   *
+   * export const handler = async () => {
+   *   const metricTimestamp = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
+   *   metrics.setTimestamp(metricTimestamp);
+   *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+   * };
+   * ```
+   *
+   * @param timestamp - The timestamp to set, which can be a number or a Date object.
+   */
+  setTimestamp(timestamp: number | Date): void;
+  /**
    * Create a new Metrics instance configured to immediately flush a single metric.
    *
    * CloudWatch EMF uses the same dimensions and timestamp across all your metrics, this is useful when you have a metric that should have different dimensions

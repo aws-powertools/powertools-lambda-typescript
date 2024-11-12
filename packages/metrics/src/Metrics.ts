@@ -10,6 +10,8 @@ import { EnvironmentVariablesService } from './config/EnvironmentVariablesServic
 import {
   COLD_START_METRIC,
   DEFAULT_NAMESPACE,
+  EMF_MAX_TIMESTAMP_FUTURE_AGE,
+  EMF_MAX_TIMESTAMP_PAST_AGE,
   MAX_DIMENSION_COUNT,
   MAX_METRICS_SIZE,
   MAX_METRIC_VALUES_SIZE,
@@ -975,9 +977,6 @@ class Metrics extends Utility implements MetricsInterface {
    * @param timestamp - Date object or epoch time in milliseconds representing the timestamp to validate.
    */
   #validateEmfTimestamp(timestamp: number | Date): boolean {
-    const EMF_MAX_TIMESTAMP_PAST_AGE = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
-    const EMF_MAX_TIMESTAMP_FUTURE_AGE = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
-
     if (!isDate(timestamp) && !isIntegerNumber(timestamp)) {
       return false;
     }

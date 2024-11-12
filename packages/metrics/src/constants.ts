@@ -18,6 +18,16 @@ const MAX_METRIC_VALUES_SIZE = 100;
  * The maximum number of dimensions that can be added to a metric (0-indexed).
  */
 const MAX_DIMENSION_COUNT = 29;
+/**
+ * The maximum age of a timestamp in milliseconds that can be emitted in a metric.
+ * This is set to 14 days.
+ */
+const EMF_MAX_TIMESTAMP_PAST_AGE = 14 * 24 * 60 * 60 * 1000;
+/**
+ * The maximum age of a timestamp in milliseconds that can be emitted in a metric.
+ * This is set to 2 hours.
+ */
+const EMF_MAX_TIMESTAMP_FUTURE_AGE = 2 * 60 * 60 * 1000;
 
 /**
  * The unit of the metric.
@@ -73,4 +83,6 @@ export {
   MAX_DIMENSION_COUNT,
   MetricUnit,
   MetricResolution,
+  EMF_MAX_TIMESTAMP_PAST_AGE,
+  EMF_MAX_TIMESTAMP_FUTURE_AGE,
 };

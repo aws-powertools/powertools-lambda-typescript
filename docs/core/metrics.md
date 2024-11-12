@@ -229,6 +229,18 @@ You can add default dimensions to your metrics by passing them as parameters in 
 
 If you'd like to remove them at some point, you can use the `clearDefaultDimensions` method.
 
+### Changing default timestamp
+
+When creating metrics, we use the current timestamp. If you want to change the timestamp of all the metrics you create, utilize the `setTimestamp` function. You can specify a datetime object or an integer representing an epoch timestamp in milliseconds.
+
+Note that when specifying the timestamp using an integer, it must adhere to the epoch timezone format in milliseconds.
+
+=== "setTimestamp method"
+
+    ```typescript hl_lines="13"
+    --8<-- "examples/snippets/metrics/setTimestamp.ts"
+    ```
+
 ### Flushing metrics
 
 As you finish adding all your metrics, you need to serialize and "flush them" by calling `publishStoredMetrics()`. This will print the metrics to standard output.

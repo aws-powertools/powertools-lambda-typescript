@@ -159,7 +159,7 @@
     "@aws-sdk/client-dynamodb": "^3.687.0",
     "@aws-sdk/client-secrets-manager": "^3.687.0",
     "@aws-sdk/client-ssm": "^3.687.0",
-    "@aws-sdk/util-dynamodb": "^3.687.0",
+    "@aws-sdk/util-dynamodb": "^3.689.0",
     "@smithy/util-base64": "^3.0.0",
     "aws-sdk-client-mock": "^4.1.0",
     "aws-sdk-client-mock-jest": "^4.1.0"

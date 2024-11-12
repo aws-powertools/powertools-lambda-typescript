@@ -992,7 +992,7 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * Validates a given timestamp based on CloudWatch Timestamp guidelines.
    *
-   * Timestamp must meet CloudWatch requirements, otherwise an InvalidTimestampError will be raised.
+   * Timestamp must meet CloudWatch requirements.
    * The time stamp can be up to two weeks in the past and up to two hours into the future.
    * See [Timestamps](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#about_timestamp)
    * for valid values.

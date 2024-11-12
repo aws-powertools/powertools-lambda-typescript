@@ -20,7 +20,7 @@ export default defineConfig({
         'packages/jmespath/src/types.ts',
         'packages/logger/src/types/**',
         'packages/metrics/**',
-        'packages/parameters/**',
+        'packages/parameters/src/types/**',
         'packages/parser/src/types/**',
         'layers/**',
         'packages/testing/**',

@@ -1,8 +1,3 @@
-/**
- * Test DynamoDBProvider class
- *
- * @group unit/parameters/DynamoDBProvider/class
- */
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import {
   DynamoDBClient,
@@ -15,21 +10,24 @@ import type {
 } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DynamoDBProvider } from '../../src/dynamodb/index.js';
 import type { DynamoDBProviderOptions } from '../../src/types/DynamoDBProvider.js';
-import 'aws-sdk-client-mock-jest';
-jest.mock('@aws-lambda-powertools/commons', () => ({
-  ...jest.requireActual('@aws-lambda-powertools/commons'),
-  addUserAgentMiddleware: jest.fn(),
+
+vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@aws-lambda-powertools/commons')>()),
+  addUserAgentMiddleware: vi.fn(),
 }));
 
 describe('Class: DynamoDBProvider', () => {
+  const client = mockClient(DynamoDBClient);
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    client.reset();
   });
 
   describe('Method: constructor', () => {
-    test('when the class instantiates without SDK client and client config it has default options', async () => {
+    it('instantiates a new AWS SDK with default options', async () => {
       // Prepare
       const options: DynamoDBProviderOptions = {
         tableName: 'test-table',
@@ -47,7 +45,7 @@ describe('Class: DynamoDBProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
+    it('uses the provided config to instantiate a new AWS SDK', async () => {
       // Prepare
       const options: DynamoDBProviderOptions = {
         tableName: 'test-table',
@@ -64,7 +62,7 @@ describe('Class: DynamoDBProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
+    it('uses the provided AWS SDK client', async () => {
       // Prepare
       const awsSdkV3Client = new DynamoDBClient({
         endpoint: 'http://localhost:8000',
@@ -94,7 +92,7 @@ describe('Class: DynamoDBProvider', () => {
         tableName: 'test-table',
         awsSdkV3Client: awsSdkV3Client as DynamoDBClient,
       };
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       // Act
       const provider = new DynamoDBProvider(options);
@@ -114,13 +112,13 @@ describe('Class: DynamoDBProvider', () => {
   });
 
   describe('Method: _get', () => {
-    test('when called and the sdk client returns no items, it returns undefined', async () => {
+    it('returns undefined when the underlying sdk client returns no items', async () => {
       // Prepare
       const provider = new DynamoDBProvider({
         tableName: 'test-table',
       });
       const parameterPath = 'foo';
-      mockClient(DynamoDBClient).on(GetItemCommand).resolves({});
+      client.on(GetItemCommand).resolves({});
 
       // Act
       const parameter = await provider.get(parameterPath);
@@ -129,21 +127,19 @@ describe('Class: DynamoDBProvider', () => {
       expect(parameter).toBeUndefined();
     });
 
-    test('when called with only a name, it gets the parameter using the default attribute values and table name', async () => {
+    it('gets the parameter using default key and table names when called with only a name', async () => {
       // Prepare
       const provider = new DynamoDBProvider({
         tableName: 'test-table',
       });
       const parameterName = 'foo';
       const parameterValue = 'bar';
-      const client = mockClient(DynamoDBClient)
-        .on(GetItemCommand)
-        .resolves({
-          Item: marshall({
-            id: parameterName,
-            value: parameterValue,
-          }),
-        });
+      client.on(GetItemCommand).resolves({
+        Item: marshall({
+          id: parameterName,
+          value: parameterValue,
+        }),
+      });
 
       // Act
       const parameter = await provider.get(parameterName);
@@ -162,7 +158,7 @@ describe('Class: DynamoDBProvider', () => {
       expect(parameter).toEqual(parameterValue);
     });
 
-    test('when called with only a name, it gets the parameter using the attribute values and table name provided to the constructor', async () => {
+    it('uses the key and table name set in the constructor', async () => {
       // Prepare
       const provider = new DynamoDBProvider({
         tableName: 'test-table',
@@ -171,14 +167,12 @@ describe('Class: DynamoDBProvider', () => {
       });
       const parameterName = 'foo';
       const parameterValue = 'bar';
-      const client = mockClient(DynamoDBClient)
-        .on(GetItemCommand)
-        .resolves({
-          Item: marshall({
-            key: parameterName,
-            val: parameterValue,
-          }),
-        });
+      client.on(GetItemCommand).resolves({
+        Item: marshall({
+          key: parameterName,
+          val: parameterValue,
+        }),
+      });
 
       // Act
       const parameter = await provider.get(parameterName);
@@ -197,21 +191,19 @@ describe('Class: DynamoDBProvider', () => {
       expect(parameter).toEqual(parameterValue);
     });
 
-    test('when called with name and sdkOptions, it gets the parameter using the options provided', async () => {
+    it('uses the provided sdkOptions', async () => {
       // Prepare
       const provider = new DynamoDBProvider({
         tableName: 'test-table',
       });
       const parameterName = 'foo';
       const parameterValue = 'bar';
-      const client = mockClient(DynamoDBClient)
-        .on(GetItemCommand)
-        .resolves({
-          Item: marshall({
-            id: parameterName,
-            value: parameterValue,
-          }),
-        });
+      client.on(GetItemCommand).resolves({
+        Item: marshall({
+          id: parameterName,
+          value: parameterValue,
+        }),
+      });
 
       // Act
       const parameter = await provider.get(parameterName, {
@@ -235,21 +227,19 @@ describe('Class: DynamoDBProvider', () => {
       expect(parameter).toEqual(parameterValue);
     });
 
-    test('when called with sdkOptions that override arguments passed to the method, it gets the parameter using the arguments', async () => {
+    it('uses the sdkOptions overrides passed to the method', async () => {
       // Prepare
       const provider = new DynamoDBProvider({
         tableName: 'test-table',
       });
       const parameterName = 'foo';
       const parameterValue = 'bar';
-      const client = mockClient(DynamoDBClient)
-        .on(GetItemCommand)
-        .resolves({
-          Item: marshall({
-            id: parameterName,
-            value: parameterValue,
-          }),
-        });
+      client.on(GetItemCommand).resolves({
+        Item: marshall({
+          id: parameterName,
+          value: parameterValue,
+        }),
+      });
 
       // Act
       await provider.get(parameterName, {
@@ -277,33 +267,31 @@ describe('Class: DynamoDBProvider', () => {
   });
 
   describe('Method: _getMultiple', () => {
-    test('when called with only a path, it gets the parameters using the default attribute values and table name', async () => {
+    it('uses the default key and table name when called with only a path', async () => {
       // Prepare
       const provider = new DynamoDBProvider({
         tableName: 'test-table',
       });
       const parameterPath = 'foo';
-      const client = mockClient(DynamoDBClient)
-        .on(QueryCommand)
-        .resolves({
-          Items: [
-            marshall({
-              id: parameterPath,
-              sk: 'a',
-              value: 'parameter-a',
-            }),
-            marshall({
-              id: parameterPath,
-              sk: 'b',
-              value: 'parameter-b',
-            }),
-            marshall({
-              id: parameterPath,
-              sk: 'c',
-              value: 'parameter-c',
-            }),
-          ],
-        });
+      client.on(QueryCommand).resolves({
+        Items: [
+          marshall({
+            id: parameterPath,
+            sk: 'a',
+            value: 'parameter-a',
+          }),
+          marshall({
+            id: parameterPath,
+            sk: 'b',
+            value: 'parameter-b',
+          }),
+          marshall({
+            id: parameterPath,
+            sk: 'c',
+            value: 'parameter-c',
+          }),
+        ],
+      });
 
       // Act
       const parameters = await provider.getMultiple(parameterPath);
@@ -329,7 +317,7 @@ describe('Class: DynamoDBProvider', () => {
       });
     });
 
-    test('when called with only a path, it gets the parameter using the attribute values and table name provided to the constructor', async () => {
+    it('uses the key and table name set in the constructor when called with only a path', async () => {
       // Prepare
       const provider = new DynamoDBProvider({
         tableName: 'test-table',
@@ -338,27 +326,25 @@ describe('Class: DynamoDBProvider', () => {
         sortAttr: 'sort',
       });
       const parameterPath = 'foo';
-      const client = mockClient(DynamoDBClient)
-        .on(QueryCommand)
-        .resolves({
-          Items: [
-            marshall({
-              key: parameterPath,
-              sort: 'a',
-              val: 'parameter-a',
-            }),
-            marshall({
-              key: parameterPath,
-              sort: 'b',
-              val: 'parameter-b',
-            }),
-            marshall({
-              key: parameterPath,
-              sort: 'c',
-              val: 'parameter-c',
-            }),
-          ],
-        });
+      client.on(QueryCommand).resolves({
+        Items: [
+          marshall({
+            key: parameterPath,
+            sort: 'a',
+            val: 'parameter-a',
+          }),
+          marshall({
+            key: parameterPath,
+            sort: 'b',
+            val: 'parameter-b',
+          }),
+          marshall({
+            key: parameterPath,
+            sort: 'c',
+            val: 'parameter-c',
+          }),
+        ],
+      });
 
       // Act
       const parameters = await provider.getMultiple(parameterPath);
@@ -384,33 +370,31 @@ describe('Class: DynamoDBProvider', () => {
       });
     });
 
-    test('when called with a path and sdkOptions, it gets the parameters using the options provided', async () => {
+    it('uses the provided sdkOptions', async () => {
       // Prepare
       const provider = new DynamoDBProvider({
         tableName: 'test-table',
       });
       const parameterPath = 'foo';
-      const client = mockClient(DynamoDBClient)
-        .on(QueryCommand)
-        .resolves({
-          Items: [
-            marshall({
-              id: parameterPath,
-              sk: 'a',
-              value: 'parameter-a',
-            }),
-            marshall({
-              id: parameterPath,
-              sk: 'b',
-              value: 'parameter-b',
-            }),
-            marshall({
-              id: parameterPath,
-              sk: 'c',
-              value: 'parameter-c',
-            }),
-          ],
-        });
+      client.on(QueryCommand).resolves({
+        Items: [
+          marshall({
+            id: parameterPath,
+            sk: 'a',
+            value: 'parameter-a',
+          }),
+          marshall({
+            id: parameterPath,
+            sk: 'b',
+            value: 'parameter-b',
+          }),
+          marshall({
+            id: parameterPath,
+            sk: 'c',
+            value: 'parameter-c',
+          }),
+        ],
+      });
 
       // Act
       const parameters = await provider.getMultiple(parameterPath, {
@@ -442,13 +426,13 @@ describe('Class: DynamoDBProvider', () => {
       });
     });
 
-    test('when multiple pages are found, it returns an object with all the parameters', async () => {
+    it('scrolls through the pages and aggregates the results when multiple pages are found', async () => {
       // Prepare
       const provider = new DynamoDBProvider({
         tableName: 'test-table',
       });
       const parameterPath = 'foo';
-      mockClient(DynamoDBClient)
+      client
         .on(QueryCommand)
         .resolvesOnce({
           Items: [
@@ -494,33 +478,31 @@ describe('Class: DynamoDBProvider', () => {
       });
     });
 
-    test('when called with sdkOptions that override arguments or internals, it discards the ones passed in sdkOptions and leaves others untouched', async () => {
+    it('uses the provided sdkOptions overrides but discards internal configs that should not be overridden', async () => {
       // Prepare
       const provider = new DynamoDBProvider({
         tableName: 'test-table',
       });
       const parameterPath = 'foo';
-      const client = mockClient(DynamoDBClient)
-        .on(QueryCommand)
-        .resolves({
-          Items: [
-            marshall({
-              id: parameterPath,
-              sk: 'a',
-              value: 'parameter-a',
-            }),
-            marshall({
-              id: parameterPath,
-              sk: 'b',
-              value: 'parameter-b',
-            }),
-            marshall({
-              id: parameterPath,
-              sk: 'c',
-              value: 'parameter-c',
-            }),
-          ],
-        });
+      client.on(QueryCommand).resolves({
+        Items: [
+          marshall({
+            id: parameterPath,
+            sk: 'a',
+            value: 'parameter-a',
+          }),
+          marshall({
+            id: parameterPath,
+            sk: 'b',
+            value: 'parameter-b',
+          }),
+          marshall({
+            id: parameterPath,
+            sk: 'c',
+            value: 'parameter-c',
+          }),
+        ],
+      });
 
       // Act
       await provider.getMultiple(parameterPath, {

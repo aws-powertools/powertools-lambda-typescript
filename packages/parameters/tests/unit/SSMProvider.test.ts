@@ -1,8 +1,4 @@
-/**
- * Test SSMProvider class
- *
- * @group unit/parameters/ssm/class
- */
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import {
   GetParameterCommand,
   GetParametersByPathCommand,
@@ -11,12 +7,11 @@ import {
   SSMClient,
 } from '@aws-sdk/client-ssm';
 import type { GetParametersCommandOutput } from '@aws-sdk/client-ssm';
-import { mockClient } from 'aws-sdk-client-mock';
-import { SSMProvider } from '../../src/ssm/index.js';
-import 'aws-sdk-client-mock-jest';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import { toBase64 } from '@smithy/util-base64';
+import { mockClient } from 'aws-sdk-client-mock';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
+import { SSMProvider } from '../../src/ssm/index.js';
 import type {
   SSMGetParametersByNameFromCacheOutputType,
   SSMGetParametersByNameOptions,
@@ -27,21 +22,21 @@ import type {
 } from '../../src/types/SSMProvider.js';
 
 const encoder = new TextEncoder();
-jest.mock('@aws-lambda-powertools/commons', () => ({
-  ...jest.requireActual('@aws-lambda-powertools/commons'),
-  addUserAgentMiddleware: jest.fn(),
+vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@aws-lambda-powertools/commons')>()),
+  addUserAgentMiddleware: vi.fn(),
 }));
 
 describe('Class: SSMProvider', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
   describe('Method: constructor', () => {
-    test('when the class instantiates without SDK client and client config it has default options', async () => {
+    it('adds the middleware to the created AWS SDK', async () => {
       // Prepare
       const options: SSMProviderOptions = {};
 
@@ -57,7 +52,7 @@ describe('Class: SSMProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
+    it('creates a new AWS SDK using the provided client config', async () => {
       // Prepare
       const options: SSMProviderOptions = {
         clientConfig: {
@@ -73,7 +68,7 @@ describe('Class: SSMProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
+    it('uses the provided AWS SDK client', async () => {
       // Prepare
       const awsSdkV3Client = new SSMClient({
         endpoint: 'http://localhost:3000',
@@ -101,7 +96,7 @@ describe('Class: SSMProvider', () => {
       const options: SSMProviderOptions = {
         awsSdkV3Client: awsSdkV3Client as SSMClient,
       };
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       // Act
       const provider = new SSMProvider(options);
@@ -122,11 +117,11 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: getParametersByName', () => {
     class SSMProviderMock extends SSMProvider {
-      public getParametersBatchByName = jest.fn();
-      public getParametersByNameWithDecryptOption = jest.fn();
+      public getParametersBatchByName = vi.fn();
+      public getParametersByNameWithDecryptOption = vi.fn();
     }
 
-    test('when called with no parameters to decrypt, it calls both getParametersByNameWithDecryptOption and getParametersBatchByName, then returns', async () => {
+    it('calls both getParametersByNameWithDecryptOption and getParametersBatchByName when called with no parameters to decrypt', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters: Record<string, SSMGetParametersByNameOptions> = {
@@ -165,7 +160,7 @@ describe('Class: SSMProvider', () => {
       expect(provider.getParametersBatchByName).toHaveBeenCalledTimes(1);
     });
 
-    test('when called with all parameters to decrypt, it calls only getParametersBatchByName', async () => {
+    it('calls only getParametersBatchByName when called with all parameters to decrypt', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters: Record<string, SSMGetParametersByNameOptions> = {
@@ -199,7 +194,7 @@ describe('Class: SSMProvider', () => {
       ).not.toHaveBeenCalled();
     });
 
-    test('when called with some parameters to decrypt, it calls both getParametersByNameWithDecryptOption and getParametersBatchByName, then returns', async () => {
+    it('calls both getParametersByNameWithDecryptOption and getParametersBatchByName when called with some parameters to decrypt', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters: Record<string, SSMGetParametersByNameOptions> = {
@@ -258,7 +253,7 @@ describe('Class: SSMProvider', () => {
       expect(provider.getParametersBatchByName).toHaveBeenCalledTimes(1);
     });
 
-    test('when called and getParametersBatchByName returns an error and throwOnError is false, it returns the errors', async () => {
+    it('handles the error and returns it when getParametersBatchByName throws and throwOnError is false', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters: Record<string, SSMGetParametersByNameOptions> = {
@@ -293,7 +288,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('when called and getParametersBatchByName returns an error and throwOnError is false, it returns the errors', async () => {
+    it('handles the error and returns it when getParametersBatchByName throws and throwOnError is false', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters: Record<string, SSMGetParametersByNameOptions> = {
@@ -323,7 +318,7 @@ describe('Class: SSMProvider', () => {
   });
 
   describe('Method: _get', () => {
-    test('when called without any options but with POWERTOOLS_PARAMETERS_SSM_DECRYPT env var enabled, it gets the parameter with decryption', async () => {
+    it('decrypts the parameter when configured via env variable', async () => {
       // Prepare
       process.env.POWERTOOLS_PARAMETERS_SSM_DECRYPT = 'true';
       const provider = new SSMProvider();
@@ -348,7 +343,7 @@ describe('Class: SSMProvider', () => {
       expect(value).toBe(parameterValue);
     });
 
-    test('when called without sdkOptions, it gets the parameter using the name and with no decryption', async () => {
+    it('gets the parameter using default config', async () => {
       // Prepare
       const provider = new SSMProvider();
       const parameterName = 'foo';
@@ -371,7 +366,7 @@ describe('Class: SSMProvider', () => {
       expect(value).toBe(parameterValue);
     });
 
-    test('when called with sdkOptions, it gets the parameter using the parameters', async () => {
+    it('uses the provided sdkOptions when getting a paramter', async () => {
       // Prepare
       const provider = new SSMProvider();
       const client = mockClient(SSMClient).on(GetParameterCommand).resolves({});
@@ -389,7 +384,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('when called with the decrypt option, the WithDecryption parameter is passed to the sdk client', async () => {
+    it('decrypts the parameter when enabling decrypt', async () => {
       // Prepare
       const provider = new SSMProvider();
       const client = mockClient(SSMClient).on(GetParameterCommand).resolves({});
@@ -407,7 +402,7 @@ describe('Class: SSMProvider', () => {
   });
 
   describe('Method: _getMultiple', () => {
-    test('when called with only a path, it passes it to the sdk', async () => {
+    it('uses the provided path and passes it to the underlying sdk', async () => {
       // Prepare
       const provider = new SSMProvider();
       const client = mockClient(SSMClient)
@@ -424,7 +419,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('when called with a path and sdkOptions, it passes them to the sdk', async () => {
+    it('passes down the provided sdkOptions to the underlying SDK', async () => {
       // Prepare
       const provider = new SSMProvider();
       const client = mockClient(SSMClient)
@@ -446,7 +441,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('when called with no options, it uses the default sdk options', async () => {
+    it('uses the default options when no options are provided', async () => {
       // Prepare
       const provider = new SSMProvider();
       const client = mockClient(SSMClient)
@@ -465,7 +460,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('when called with decrypt or recursive, it passes them to the sdk', async () => {
+    it('uses the provided config when recursive or decrypt are enabled', async () => {
       // Prepare
       const provider = new SSMProvider();
       const client = mockClient(SSMClient)
@@ -489,7 +484,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('when multiple parameters that share the same path as suffix are retrieved, it returns an object with the names only', async () => {
+    it('returns an object with the names when multiple parameters that share the same path as suffix are retrieved', async () => {
       // Prepare
       const provider = new SSMProvider();
       mockClient(SSMClient)
@@ -518,7 +513,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('when multiple pages are found, it returns an object with all the parameters', async () => {
+    it('scrolls through the pages and aggregates the results when when multiple pages are found', async () => {
       // Prepare
       const provider = new SSMProvider();
       mockClient(SSMClient)
@@ -555,7 +550,7 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: _getParametersByName', () => {
     class SSMProviderMock extends SSMProvider {
-      public transformAndCacheGetParametersResponse = jest.fn();
+      public transformAndCacheGetParametersResponse = vi.fn();
 
       public _getParametersByName(
         parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -566,7 +561,7 @@ describe('Class: SSMProvider', () => {
       }
     }
 
-    test('when called with a list of parameters, it passes them to the sdk', async () => {
+    it('passes down the config when called with a list of parameters', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const client = mockClient(SSMClient)
@@ -642,8 +637,8 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: getParametersBatchByName', () => {
     class SSMProviderMock extends SSMProvider {
-      public getParametersByNameFromCache = jest.fn();
-      public getParametersByNameInChunks = jest.fn();
+      public getParametersByNameFromCache = vi.fn();
+      public getParametersByNameInChunks = vi.fn();
 
       public getParametersBatchByName(
         parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -658,7 +653,7 @@ describe('Class: SSMProvider', () => {
       }
     }
 
-    test('when called with a list of parameters, if they are all cached, it returns them immediately', async () => {
+    it('returns parameters from cache when present', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       provider.getParametersByNameFromCache.mockResolvedValueOnce({
@@ -691,7 +686,7 @@ describe('Class: SSMProvider', () => {
       expect(provider.getParametersByNameInChunks).toHaveBeenCalledTimes(0);
     });
 
-    test('when called with a list of parameters, if none of them are cached, it retrieves them and then returns', async () => {
+    it('retrieves the parameters from remote when not present in the cache', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       provider.getParametersByNameFromCache.mockResolvedValueOnce({
@@ -739,7 +734,7 @@ describe('Class: SSMProvider', () => {
       );
     });
 
-    test('when called with a list of parameters, if some of them are cached, it retrieves the missing ones, and then returns them all', async () => {
+    it('retrieves the parameters not present in the cache and returns them, together with the cached ones', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       provider.getParametersByNameFromCache.mockResolvedValueOnce({
@@ -801,7 +796,7 @@ describe('Class: SSMProvider', () => {
       }
     }
 
-    test('when called with a batch of parameters, it returns an object with parameters split by cached and to fetch', async () => {
+    it('returns an object with parameters split by cached and to fetch', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -829,7 +824,7 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: getParametersByNameInChunks', () => {
     class SSMProviderMock extends SSMProvider {
-      public _getParametersByName = jest.fn();
+      public _getParametersByName = vi.fn();
       public maxGetParametersItems = 1;
 
       public async getParametersByNameInChunks(
@@ -845,7 +840,7 @@ describe('Class: SSMProvider', () => {
       }
     }
 
-    test('when called with a batch of parameters to retrieve, it splits them in chunks and retrieves them', async () => {
+    it('splits the parameters in chunks and retrieves them', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -879,7 +874,7 @@ describe('Class: SSMProvider', () => {
       expect(provider._getParametersByName).toHaveBeenCalledTimes(2);
     });
 
-    test('when retrieving parameters, if throwOnError is true, it throws an error if any parameter is not found', async () => {
+    it('throws if any parameter is not found', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -900,7 +895,7 @@ describe('Class: SSMProvider', () => {
       ).rejects.toThrowError('Parameter not found');
     });
 
-    test('when retrieving parameters, if throwOnError is false, it returns an object with the parameters values and the errors', async () => {
+    it('returns an object with params and errors when throwOnError is false', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -935,7 +930,7 @@ describe('Class: SSMProvider', () => {
 
   describe('Method: getParametersByNameWithDecryptOption', () => {
     class SSMProviderMock extends SSMProvider {
-      public _get = jest.fn();
+      public _get = vi.fn();
 
       public async getParametersByNameWithDecryptOption(
         parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -948,7 +943,7 @@ describe('Class: SSMProvider', () => {
       }
     }
 
-    test('when called with a batch of parameters to retrieve, it returns an object with the parameters values', async () => {
+    it('returns an object with the parameters values', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -969,7 +964,7 @@ describe('Class: SSMProvider', () => {
       expect(errors).toEqual([]);
     });
 
-    test('when called with a batch of parameters to retrieve, and throwOnError is set to false, it returns an object with the parameters values and the errors', async () => {
+    it('returns an object with the params and the errors when throwOnError is set to false', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -991,7 +986,7 @@ describe('Class: SSMProvider', () => {
       expect(errors).toEqual(['/foo/baz']);
     });
 
-    test('when called with a batch of parameters to retrieve, and throwOnError is set to true, it throws an error if any parameter retrieval throws', async () => {
+    it('throws an error if any parameter retrieval throws and throwOnError is set to true', async () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -1022,7 +1017,7 @@ describe('Class: SSMProvider', () => {
       }
     }
 
-    test('when called without any errors, it does not throw and returns an empty errors array', () => {
+    it('does not throw and returns an empty errors array when no error is thrown', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const result = {
@@ -1036,7 +1031,7 @@ describe('Class: SSMProvider', () => {
       expect(errors).toEqual([]);
     });
 
-    test('when called with errors, and throwOnError is set to false, it returns the errors array', () => {
+    it('returns the errors array when called with errors', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const result = {
@@ -1050,7 +1045,7 @@ describe('Class: SSMProvider', () => {
       expect(errors).toEqual(['/foo/bar', '/foo/baz']);
     });
 
-    test('when called with errors, and throwOnError is set to true, it throws an error', () => {
+    it('throws an error when throwOnError is set to true and there are errors', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const result = {
@@ -1074,7 +1069,7 @@ describe('Class: SSMProvider', () => {
       }
     }
 
-    test('when called with a batch of parameters, and none has decrypt set to TRUE, it returns an object with all the parameters in batch', () => {
+    it('returns an object with all the parameters in batch and none has decrypt set to TRUE', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -1098,7 +1093,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('when called with a batch of parameters, it returns an object with parameters split by decrypt and not to decrypt', () => {
+    it('returns an object with parameters split by decrypt and not to decrypt', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -1129,7 +1124,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('when called with a batch of parameters, it respects any local overrides by giving them precedence over global config', () => {
+    it('respects any local overrides by giving them precedence over global config', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -1181,7 +1176,7 @@ describe('Class: SSMProvider', () => {
       }
     }
 
-    test('when called and no parameter is named _errors, it does not throw', () => {
+    it('does not throw when called and no parameter is named _errors', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -1195,7 +1190,7 @@ describe('Class: SSMProvider', () => {
       ).not.toThrow();
     });
 
-    test('when called and a parameter is named _errors, and throwOnError is set to false (graceful error mode), it does not throw', () => {
+    it('does not throw when called and a parameter is named _errors, and throwOnError is set to false (graceful error mode)', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -1212,7 +1207,7 @@ describe('Class: SSMProvider', () => {
       );
     });
 
-    test('when called and a parameter is named _errors, and throwOnError is set to true (fail fast mode), it throws an error', () => {
+    it('throws when called and a parameter is named _errors, and throwOnError is set to true (fail fast mode)', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -1243,7 +1238,7 @@ describe('Class: SSMProvider', () => {
       }
     }
 
-    test('when called with a response that has no Parameters list, it returns an empty object', () => {
+    it('returns an empty object when called with a response that has no Parameters list', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const response = {};
@@ -1259,7 +1254,7 @@ describe('Class: SSMProvider', () => {
       expect(parameters).toEqual({});
     });
 
-    test('when called with an empty response, it returns an empty object', () => {
+    it('returns an empty object when called with an empty response', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const response = {
@@ -1277,7 +1272,7 @@ describe('Class: SSMProvider', () => {
       expect(parameters).toEqual({});
     });
 
-    test('when called with a response, it returns an object with the parameters', () => {
+    it('returns an object with the parameters when called with a response', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const response = {
@@ -1314,7 +1309,7 @@ describe('Class: SSMProvider', () => {
   });
 
   describe('Method: set', () => {
-    test('sets a parameter successfully', async () => {
+    it('sets a parameter successfully', async () => {
       const provider: SSMProvider = new SSMProvider();
       const client = mockClient(SSMClient)
         .on(PutParameterCommand)
@@ -1331,7 +1326,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('sets a parameter with sdk options successfully', async () => {
+    it('sets a parameter with sdk options successfully', async () => {
       const provider: SSMProvider = new SSMProvider();
       const client = mockClient(SSMClient)
         .on(PutParameterCommand)
@@ -1352,7 +1347,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    test('throws an error if setting a parameter fails', async () => {
+    it('throws an error if setting a parameter fails', async () => {
       const provider: SSMProvider = new SSMProvider();
       mockClient(SSMClient)
         .on(PutParameterCommand)
@@ -1365,7 +1360,7 @@ describe('Class: SSMProvider', () => {
       );
     });
 
-    test.each([
+    it.each([
       ['overwrite', true, 'Overwrite'],
       ['description', 'my-description', 'Description'],
       ['parameterType', 'SecureString', 'Type'],

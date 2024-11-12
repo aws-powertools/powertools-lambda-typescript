@@ -1,15 +1,10 @@
-/**
- * Test Parameters EnvironmentVariablesService class
- *
- * @group unit/parameters/config
- */
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
 describe('Class: EnvironmentVariablesService', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
     process.env = { ...ENVIRONMENT_VARIABLES };
   });
 
@@ -18,7 +13,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getParametersMaxAge', () => {
-    test('it returns undefined if the POWERTOOLS_PARAMETERS_MAX_AGE is empty', () => {
+    it('returns undefined if the POWERTOOLS_PARAMETERS_MAX_AGE is empty', () => {
       // Prepare
       const service = new EnvironmentVariablesService();
 
@@ -29,7 +24,7 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(undefined);
     });
 
-    test('it returns a number if the POWERTOOLS_PARAMETERS_MAX_AGE has a numeric value', () => {
+    it('returns a number if the POWERTOOLS_PARAMETERS_MAX_AGE has a numeric value', () => {
       // Prepare
       process.env.POWERTOOLS_PARAMETERS_MAX_AGE = '36';
       const service = new EnvironmentVariablesService();
@@ -41,11 +36,11 @@ describe('Class: EnvironmentVariablesService', () => {
       expect(value).toEqual(36);
     });
 
-    test('it logs a warning if the POWERTOOLS_PARAMETERS_MAX_AGE has a non-numeric value', () => {
+    it('logs a warning if the POWERTOOLS_PARAMETERS_MAX_AGE has a non-numeric value', () => {
       // Prepare
       process.env.POWERTOOLS_PARAMETERS_MAX_AGE = 'invalid';
       const service = new EnvironmentVariablesService();
-      const warnLogspy = jest.spyOn(console, 'warn').mockImplementation();
+      const warnLogspy = vi.spyOn(console, 'warn');
 
       // Act
       const value = service.getParametersMaxAge();
@@ -59,7 +54,7 @@ describe('Class: EnvironmentVariablesService', () => {
   });
 
   describe('Method: getSSMDecrypt', () => {
-    test('it returns the value of the environment variable POWERTOOLS_PARAMETERS_SSM_DECRYPT', () => {
+    it('returns the value of the environment variable POWERTOOLS_PARAMETERS_SSM_DECRYPT', () => {
       // Prepare
       process.env.POWERTOOLS_PARAMETERS_SSM_DECRYPT = 'true';
       const service = new EnvironmentVariablesService();

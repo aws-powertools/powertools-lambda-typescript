@@ -1,9 +1,5 @@
-/**
- * Test BaseProvider class
- *
- * @group unit/parameters/baseProvider/class
- */
 import { toBase64 } from '@smithy/util-base64';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
 import {
   BaseProvider,
@@ -20,9 +16,9 @@ import {
 } from '../../src/index.js';
 
 const encoder = new TextEncoder();
-jest.mock('@aws-lambda-powertools/commons', () => ({
-  ...jest.requireActual('@aws-lambda-powertools/commons'),
-  addUserAgentMiddleware: jest.fn(),
+vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@aws-lambda-powertools/commons')>()),
+  addUserAgentMiddleware: vi.fn(),
 }));
 
 class TestProvider extends BaseProvider {
@@ -63,11 +59,11 @@ class TestProvider extends BaseProvider {
 
 describe('Class: BaseProvider', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Method: addToCache', () => {
-    test('when called with a value and maxAge equal to 0, it skips the cache entirely', () => {
+    it('skips the cache when maxAge is set to 0', () => {
       // Prepare
       const provider = new TestProvider();
 
@@ -78,7 +74,7 @@ describe('Class: BaseProvider', () => {
       expect(provider._getKeyTest('my-key')).toBeUndefined();
     });
 
-    test('when called with a value and maxAge, it places the value in the cache', () => {
+    it('sets the value in the cache when maxAge is set', () => {
       // Prepare
       const provider = new TestProvider();
 
@@ -95,7 +91,7 @@ describe('Class: BaseProvider', () => {
   });
 
   describe('Method: get', () => {
-    test('when the underlying _get method throws an error, it throws a GetParameterError', async () => {
+    it('throws a GetParameterError when the underlying _get method throws an error', async () => {
       // Prepare
       const provider = new TestProvider();
 
@@ -105,7 +101,7 @@ describe('Class: BaseProvider', () => {
       );
     });
 
-    test('when called and a cached value is available, it returns an the cached value', async () => {
+    it('returns the cached value when one is available in the cache', async () => {
       // Prepare
       const provider = new TestProvider();
       provider._add(
@@ -120,15 +116,11 @@ describe('Class: BaseProvider', () => {
       expect(values).toEqual('my-value');
     });
 
-    test('when called with forceFetch, even whith cached value available, it returns the remote value', async () => {
+    it('skips the cache when forceFetch is set', async () => {
       // Prepare
       const mockData = 'my-remote-value';
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_get')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_get').mockResolvedValue(mockData);
       provider._add(
         ['my-parameter', undefined].toString(),
         new ExpirableValue('my-value', 5000)
@@ -141,17 +133,13 @@ describe('Class: BaseProvider', () => {
       expect(values).toEqual('my-remote-value');
     });
 
-    test('when called and cached value is expired, it returns the remote value', async () => {
+    it('returns the remote value when the cached one is expired', async () => {
       // Prepare
       const mockData = 'my-remote-value';
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_get')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_get').mockResolvedValue(mockData);
       const expirableValue = new ExpirableValue('my-other-value', 0);
-      jest.spyOn(expirableValue, 'isExpired').mockImplementation(() => true);
+      vi.spyOn(expirableValue, 'isExpired').mockImplementation(() => true);
       provider._add(['my-path', undefined].toString(), expirableValue);
 
       // Act
@@ -161,15 +149,11 @@ describe('Class: BaseProvider', () => {
       expect(values).toEqual('my-remote-value');
     });
 
-    test('when called with a json transform, and the value is a valid string representation of a JSON, it returns an object', async () => {
+    it('transforms a JSON object', async () => {
       // Prepare
       const mockData = JSON.stringify({ foo: 'bar' });
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_get')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_get').mockResolvedValue(mockData);
 
       // Act
       const value = await provider.get('my-parameter', { transform: 'json' });
@@ -181,15 +165,11 @@ describe('Class: BaseProvider', () => {
       });
     });
 
-    test('when called with a json transform, and the value is NOT a valid string representation of a JSON, it throws', async () => {
+    it('throws when attempting to transform an invalid JSON', async () => {
       // Prepare
       const mockData = `${JSON.stringify({ foo: 'bar' })}{`;
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_get')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_get').mockResolvedValue(mockData);
 
       // Act & Assess
       await expect(
@@ -197,15 +177,11 @@ describe('Class: BaseProvider', () => {
       ).rejects.toThrowError(TransformParameterError);
     });
 
-    test('when called with a binary transform, and the value is a valid string representation of a binary, it returns the decoded value', async () => {
+    it('returns the decoded value when called with a binary transform, and the value is a valid string representation of a binary', async () => {
       // Prepare
       const mockData = toBase64(encoder.encode('my-value'));
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_get')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_get').mockResolvedValue(mockData);
 
       // Act
       const value = await provider.get('my-parameter', { transform: 'binary' });
@@ -215,15 +191,11 @@ describe('Class: BaseProvider', () => {
       expect(value).toEqual('my-value');
     });
 
-    test('when called with a binary transform, and the value is NOT a valid string representation of a binary, it throws', async () => {
+    it('throws when called with a binary transform, and the value is NOT a valid string representation of a binary', async () => {
       // Prepare
       const mockData = 'qw';
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_get')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_get').mockResolvedValue(mockData);
 
       // Act & Assess
       await expect(
@@ -231,18 +203,13 @@ describe('Class: BaseProvider', () => {
       ).rejects.toThrowError(TransformParameterError);
     });
 
-    test('when called with no transform, and the value is a valid binary, it returns the binary as-is', async () => {
+    it('returns the binary as-is when called with no transform, and the value is a valid binary', async () => {
       // Prepare
       const mockData = encoder.encode('my-value');
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_get')
-        .mockImplementation(
-          () =>
-            new Promise((resolve, _reject) =>
-              resolve(mockData as unknown as string)
-            )
-        );
+      vi.spyOn(provider, '_get').mockResolvedValue(
+        mockData as unknown as string
+      );
 
       // Act
       const value = await provider.get('my-parameter');
@@ -252,18 +219,13 @@ describe('Class: BaseProvider', () => {
       expect(value).toEqual(mockData);
     });
 
-    test('when called with a binary transform, and the value is a valid binary but NOT base64 encoded, it throws', async () => {
+    it('throws when called with a binary transform, and the value is a valid binary but NOT base64 encoded', async () => {
       // Prepare
       const mockData = encoder.encode('my-value');
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_get')
-        .mockImplementation(
-          () =>
-            new Promise((resolve, _reject) =>
-              resolve(mockData as unknown as string)
-            )
-        );
+      vi.spyOn(provider, '_get').mockResolvedValue(
+        mockData as unknown as string
+      );
 
       // Act & Assess
       await expect(
@@ -271,15 +233,11 @@ describe('Class: BaseProvider', () => {
       ).rejects.toThrowError(TransformParameterError);
     });
 
-    test('when called with an auto transform, and the value is a valid JSON, it returns the parsed value', async () => {
+    it('returns the parsed value when called with an auto transform, and the value is a valid JSON', async () => {
       // Prepare
       const mockData = JSON.stringify({ foo: 'bar' });
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_get')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_get').mockResolvedValue(mockData);
 
       // Act
       const value = await provider.get('my-parameter.json', {
@@ -292,31 +250,11 @@ describe('Class: BaseProvider', () => {
   });
 
   describe('Method: getMultiple', () => {
-    test('when the underlying _getMultiple throws an error, it throws a GetParameterError', async () => {
+    it('throws a GetParameterError when the underlying _getMultiple throws', async () => {
       // Prepare
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () =>
-            new Promise((_resolve, reject) => reject(new Error('Some error.')))
-        );
-
-      // Act & Assess
-      await expect(provider.getMultiple('my-parameter')).rejects.toThrowError(
-        GetParameterError
-      );
-    });
-
-    test('when the underlying _getMultiple does not return an object, it throws a GetParameterError', async () => {
-      // Prepare
-      const provider = new TestProvider();
-      jest.spyOn(provider, '_getMultiple').mockImplementation(
-        () =>
-          new Promise((resolve, _reject) =>
-            // need to type cast to force the error
-            resolve('not an object' as unknown as Record<string, string>)
-          )
+      vi.spyOn(provider, '_getMultiple').mockRejectedValue(
+        new Error('Some error.')
       );
 
       // Act & Assess
@@ -325,15 +263,24 @@ describe('Class: BaseProvider', () => {
       );
     });
 
-    test('when called with a json transform, and all the values are a valid string representation of a JSON, it returns an object with all the values', async () => {
+    it('throws a GetParameterError when the underlying _getMultiple does not return an object', async () => {
+      // Prepare
+      const provider = new TestProvider();
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(
+        'not an object' as unknown as Record<string, string>
+      );
+
+      // Act & Assess
+      await expect(provider.getMultiple('my-parameter')).rejects.toThrowError(
+        GetParameterError
+      );
+    });
+
+    it('returns an object with transformed values when called with a json transform, and all the values are valid', async () => {
       // Prepare
       const mockData = { A: JSON.stringify({ foo: 'bar' }) };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
 
       // Act
       const values = await provider.getMultiple('my-path', {
@@ -349,15 +296,11 @@ describe('Class: BaseProvider', () => {
       });
     });
 
-    test('when called, it returns an object with the values', async () => {
+    it('it returns an object with the transformed values', async () => {
       // Prepare
       const mockData = { A: 'foo', B: 'bar' };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
 
       // Act
       const values = await provider.getMultiple('my-path');
@@ -370,18 +313,14 @@ describe('Class: BaseProvider', () => {
       });
     });
 
-    test('when called with a json transform, and one of the values is NOT a valid string representation of a JSON, it returns an object with partial failures', async () => {
+    it('returns an object with partial failures when called with a json transform, and one of the values is NOT a valid string representation of a JSON', async () => {
       // Prepare
       const mockData = {
         A: JSON.stringify({ foo: 'bar' }),
         B: `${JSON.stringify({ foo: 'bar' })}{`,
       };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
 
       // Act
       const values = await provider.getMultiple('my-path', {
@@ -398,15 +337,11 @@ describe('Class: BaseProvider', () => {
       });
     });
 
-    test('when called with a json transform and throwOnTransformError equal to TRUE, and at least ONE the values is NOT a valid string representation of a JSON, it throws', async () => {
+    it('throws when called with a json transform and throwOnTransformError equal to TRUE, and at least ONE the values is NOT a valid string representation of a JSON', async () => {
       // Prepare
       const mockData = { A: `${JSON.stringify({ foo: 'bar' })}{` };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
 
       // Act & Assess
       await expect(
@@ -417,15 +352,11 @@ describe('Class: BaseProvider', () => {
       ).rejects.toThrowError(TransformParameterError);
     });
 
-    test('when called with a binary transform, and all the values are a valid string representation of a binary, it returns an object with all the values', async () => {
+    it('returns an object with transformed values and binary transform is used on valid string representation of a binaries', async () => {
       // Prepare
       const mockData = { A: toBase64(encoder.encode('my-value')).toString() };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
 
       // Act
       const values = await provider.getMultiple('my-path', {
@@ -439,15 +370,11 @@ describe('Class: BaseProvider', () => {
       });
     });
 
-    test('when called with a binary transform, and one of the values is NOT a valid string representation of a binary, it returns an object with partial failures', async () => {
+    it('returns an object with partial failures when called with a binary transform, and one of the values is NOT a valid string representation of a binary', async () => {
       // Prepare
       const mockData = { A: toBase64(encoder.encode('my-value')), B: 'qw' };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
 
       // Act
       const values = await provider.getMultiple('my-path', {
@@ -462,15 +389,11 @@ describe('Class: BaseProvider', () => {
       });
     });
 
-    test('when called with a binary transform and throwOnTransformError equal to TRUE, and at least ONE the values is NOT a valid string representation of a binary, it throws', async () => {
+    it('throws when called with a binary transform and throwOnTransformError equal to TRUE, and at least ONE the values is NOT a valid string representation of a binary', async () => {
       // Prepare
       const mockData = { A: 'qw' };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
 
       // Act & Assess
       await expect(
@@ -481,15 +404,11 @@ describe('Class: BaseProvider', () => {
       ).rejects.toThrowError(TransformParameterError);
     });
 
-    test('when called with auto transform and the key of the parameter ends with `.binary`, and all the values are a valid string representation of a binary, it returns an object with all the transformed values', async () => {
+    it('returns an object with the transformed values when auto transform is used and the key of the parameter ends with `.binary`', async () => {
       // Prepare
       const mockData = { 'A.binary': toBase64(encoder.encode('my-value')) };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
 
       // Act
       const values = await provider.getMultiple('my-path', {
@@ -497,22 +416,17 @@ describe('Class: BaseProvider', () => {
       });
 
       // Assess
-      expect(typeof values).toBe('object');
-      expect(values).toMatchObject({
+      expect(values).toStrictEqual({
         'A.binary': 'my-value',
       });
     });
 
-    test('when called with auto transform and the key of the parameter DOES NOT end with `.binary` or `.json`, it returns an object with all the values NOT transformed', async () => {
+    it('leaves the values untransformed when using auto transform and the name does not end in `.binary` or `.json`', async () => {
       // Prepare
       const mockBinary = toBase64(encoder.encode('my-value'));
       const mockData = { 'A.foo': mockBinary };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
 
       // Act
       const values = await provider.getMultiple('my-path', {
@@ -520,34 +434,28 @@ describe('Class: BaseProvider', () => {
       });
 
       // Assess
-      expect(typeof values).toBe('object');
-      expect(values).toMatchObject({
+      expect(values).toStrictEqual({
         'A.foo': mockBinary,
       });
     });
 
-    test('when called with a binary transform, and at least ONE the values is undefined, it returns an object with one of the values undefined', async () => {
+    it('handles undefined values by leaving them as-is', async () => {
       // Prepare
       const mockData = { A: undefined };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
 
       // Act
       const values = await provider.getMultiple('my-path', {
         transform: 'auto',
       });
 
-      expect(typeof values).toBe('object');
-      expect(values).toMatchObject({
+      expect(values).toStrictEqual({
         A: undefined,
       });
     });
 
-    test('when called and values cached are available, it returns an object with the cached values', async () => {
+    it('returns an object with cached values when available', async () => {
       // Prepare
       const provider = new TestProvider();
       provider._add(
@@ -559,38 +467,32 @@ describe('Class: BaseProvider', () => {
       const values = await provider.getMultiple('my-path');
 
       // Assess
-      expect(typeof values).toBe('object');
-      expect(values).toMatchObject({
+      expect(values).toStrictEqual({
         A: 'my-value',
       });
     });
 
-    test('when called and values cached are expired, it returns an object with the remote values', async () => {
+    it('returns an object with the remote values when the cached ones are expired', async () => {
       // Prepare
       const mockData = { A: 'my-value' };
       const provider = new TestProvider();
-      jest
-        .spyOn(provider, '_getMultiple')
-        .mockImplementation(
-          () => new Promise((resolve, _reject) => resolve(mockData))
-        );
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
       const expirableValue = new ExpirableValue({ B: 'my-other-value' }, 0);
-      jest.spyOn(expirableValue, 'isExpired').mockImplementation(() => true);
+      vi.spyOn(expirableValue, 'isExpired').mockImplementation(() => true);
       provider._add(['my-path', undefined].toString(), expirableValue);
 
       // Act
       const values = await provider.getMultiple('my-path');
 
       // Assess
-      expect(typeof values).toBe('object');
-      expect(values).toMatchObject({
+      expect(values).toStrictEqual({
         A: 'my-value',
       });
     });
   });
 
   describe('Method: clearCache', () => {
-    test('when called, it clears the store', () => {
+    it('clears the store', () => {
       // Prepare
       const provider = new TestProvider();
       provider._add(
@@ -608,12 +510,12 @@ describe('Class: BaseProvider', () => {
 });
 
 describe('Function: clearCaches', () => {
-  test('when called, it clears all the caches', () => {
+  it('clears all the caches', () => {
     // Prepare
     const provider1 = new TestProvider();
     const provider2 = new TestProvider();
-    const provider1Spy = jest.spyOn(provider1, 'clearCache');
-    const provider2Spy = jest.spyOn(provider2, 'clearCache');
+    const provider1Spy = vi.spyOn(provider1, 'clearCache');
+    const provider2Spy = vi.spyOn(provider2, 'clearCache');
     DEFAULT_PROVIDERS.ssm = provider1;
     DEFAULT_PROVIDERS.secretsManager = provider2;
 
@@ -627,10 +529,10 @@ describe('Function: clearCaches', () => {
 });
 
 describe('Class: GetOptions', () => {
-  it('should set the default maxAge when not provided', () => {
+  it('sets the default maxAge when not provided', () => {
     // Prepare
     const envVarsService = {
-      getParametersMaxAge: jest.fn(),
+      getParametersMaxAge: vi.fn(),
     };
     const options = new GetOptions(
       envVarsService as unknown as EnvironmentVariablesService
@@ -642,10 +544,10 @@ describe('Class: GetOptions', () => {
 });
 
 describe('Class: GetMultipleOptions', () => {
-  it('should set throwOnTransformError to false when not provided', () => {
+  it('sets throwOnTransformError to false when not provided', () => {
     // Prepare
     const envVarsService = {
-      getParametersMaxAge: jest.fn(),
+      getParametersMaxAge: vi.fn(),
     };
     const options = new GetMultipleOptions(
       envVarsService as unknown as EnvironmentVariablesService

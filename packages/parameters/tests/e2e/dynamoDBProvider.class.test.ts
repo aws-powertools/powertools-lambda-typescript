@@ -1,8 +1,3 @@
-/**
- * Test DynamoDBProvider class
- *
- * @group e2e/parameters/dynamodb/class
- */
 import { join } from 'node:path';
 import {
   TestInvocationLogs,
@@ -11,6 +6,7 @@ import {
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { TestDynamodbTableWithItems } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,

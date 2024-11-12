@@ -267,9 +267,12 @@ class AppConfigProvider extends BaseProvider {
   /**
    * Retrieving multiple configurations is not supported by AWS AppConfig.
    */
-  public async getMultiple(path: string, _options?: unknown): Promise<void> {
+  /* v8 ignore start */ public async getMultiple(
+    path: string,
+    _options?: unknown
+  ): Promise<void> {
     await super.getMultiple(path);
-  }
+  } /* v8 ignore stop */
 
   /**
    * Retrieve a configuration from AWS AppConfig.

@@ -1,34 +1,29 @@
-/**
- * Test SecretsProvider class
- *
- * @group unit/parameters/SecretsProvider/class
- */
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import { mockClient } from 'aws-sdk-client-mock';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SecretsProvider } from '../../src/secrets/index.js';
 import type { SecretsProviderOptions } from '../../src/types/SecretsProvider.js';
-import 'aws-sdk-client-mock-jest';
-import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 
 const encoder = new TextEncoder();
-jest.mock('@aws-lambda-powertools/commons', () => ({
-  ...jest.requireActual('@aws-lambda-powertools/commons'),
-  addUserAgentMiddleware: jest.fn(),
+vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@aws-lambda-powertools/commons')>()),
+  addUserAgentMiddleware: vi.fn(),
 }));
 
 describe('Class: SecretsProvider', () => {
   const client = mockClient(SecretsManagerClient);
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    client.reset();
   });
 
   describe('Method: constructor', () => {
-    test('when the class instantiates without SDK client and client config it has default options', async () => {
+    it('instantiates a new AWS SDK with default options', async () => {
       // Prepare
       const options: SecretsProviderOptions = {};
 
@@ -44,7 +39,7 @@ describe('Class: SecretsProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
+    it('uses the provided config to instantiate a new AWS SDK', async () => {
       // Prepare
       const options: SecretsProviderOptions = {
         clientConfig: {
@@ -60,7 +55,7 @@ describe('Class: SecretsProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
+    it('uses the provided AWS SDK client', async () => {
       // Prepare
       const awsSdkV3Client = new SecretsManagerClient({
         endpoint: 'http://localhost:3000',
@@ -88,7 +83,7 @@ describe('Class: SecretsProvider', () => {
       const options: SecretsProviderOptions = {
         awsSdkV3Client: awsSdkV3Client as SecretsManagerClient,
       };
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       // Act
       const provider = new SecretsProvider(options);
@@ -108,7 +103,7 @@ describe('Class: SecretsProvider', () => {
   });
 
   describe('Method: _get', () => {
-    test('when called with only a name, it gets the secret string', async () => {
+    it('gets the secret string when called with only a name', async () => {
       // Prepare
       const provider = new SecretsProvider();
       const secretName = 'foo';
@@ -123,7 +118,7 @@ describe('Class: SecretsProvider', () => {
       expect(result).toBe('bar');
     });
 
-    test('when called with only a name, it gets the secret binary', async () => {
+    it('gets the secret binary when called with only a name', async () => {
       // Prepare
       const provider = new SecretsProvider();
       const secretName = 'foo';
@@ -139,7 +134,7 @@ describe('Class: SecretsProvider', () => {
       expect(result).toBe(mockData);
     });
 
-    test('when called with a name and sdkOptions, it gets the secret using the options provided', async () => {
+    it('gets the secret using the options provided', async () => {
       // Prepare
       const provider = new SecretsProvider();
       const secretName = 'foo';
@@ -161,7 +156,7 @@ describe('Class: SecretsProvider', () => {
       });
     });
 
-    test('when called with sdkOptions that override arguments passed to the method, it gets the secret using the arguments', async () => {
+    it('gets the secret using the sdkOptions overrides provided', async () => {
       // Prepare
       const provider = new SecretsProvider();
       const secretName = 'foo';
@@ -184,7 +179,7 @@ describe('Class: SecretsProvider', () => {
   });
 
   describe('Method: _getMultiple', () => {
-    test('when called, it throws an error', async () => {
+    it('throws when when called', async () => {
       // Prepare
       const provider = new SecretsProvider();
 

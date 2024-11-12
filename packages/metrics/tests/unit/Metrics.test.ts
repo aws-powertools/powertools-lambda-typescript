@@ -2269,11 +2269,13 @@ describe('Class: Metrics', () => {
 
     for (const { format, getTimestamp } of testCases) {
       describe(`when timestamp is provided as ${format}`, () => {
+        const twoHours = 2 * 60 * 60 * 1000;
+        const fourteenDays = 14 * 24 * 60 * 60 * 1000;
+
         test('should set the timestamp if provided in the future', () => {
           // Prepare
           const testMetric = 'test-metric';
           const metrics: Metrics = new Metrics();
-          //Add 10 minutes to mockDate object  and still remain as date object
           const timestampMs = mockDate.getTime() + 10 * 60 * 1000; // Add 10 minutes in milliseconds
 
           // Act
@@ -2315,7 +2317,7 @@ describe('Class: Metrics', () => {
         test('should not log a warning if the timestamp exact two hours in the future and set the timestamp', () => {
           // Prepare
           const testMetric = 'test-metric';
-          const timestampMs = mockDate.getTime() + 2 * 60 * 60 * 1000; // Add 2 hours and 1 ms
+          const timestampMs = mockDate.getTime() + twoHours;
           const customLogger = {
             warn: jest.fn(),
             debug: jest.fn(),
@@ -2344,7 +2346,7 @@ describe('Class: Metrics', () => {
         test('should log a warning if the timestamp is more than two hours in the future but still set the timestamp', () => {
           // Prepare
           const testMetric = 'test-metric';
-          const timestampMs = mockDate.getTime() + 2 * 60 * 60 * 1000 + 1; // Add 2 hours and 1 ms
+          const timestampMs = mockDate.getTime() + twoHours + 1;
           const customLogger = {
             warn: jest.fn(),
             debug: jest.fn(),
@@ -2376,7 +2378,7 @@ describe('Class: Metrics', () => {
         test('should not log a warning if the timestamp is exact 14 days in the past and set the timestamp', () => {
           // Prepare
           const testMetric = 'test-metric';
-          const timestampMs = mockDate.getTime() - 14 * 24 * 60 * 60 * 1000; // Subtract 14 days
+          const timestampMs = mockDate.getTime() - fourteenDays;
           const customLogger = {
             warn: jest.fn(),
             debug: jest.fn(),
@@ -2405,7 +2407,7 @@ describe('Class: Metrics', () => {
         test('should log a warning if the timestamp is more than 14 days in the past but still set the timestamp', () => {
           // Prepare
           const testMetric = 'test-metric';
-          const timestampMs = mockDate.getTime() - 14 * 24 * 60 * 60 * 1000 - 1; // Subtract 14 days and 1 ms
+          const timestampMs = mockDate.getTime() - fourteenDays - 1;
           const customLogger = {
             warn: jest.fn(),
             debug: jest.fn(),

@@ -481,6 +481,13 @@ interface MetricsInterface {
    * If an integer is provided, it is assumed to be the epoch time in milliseconds.
    * If a Date object is provided, it will be converted to epoch time in milliseconds.
    *
+   * The timestamp must be a Date object or an integer representing an epoch time.
+   * This should not exceed 14 days in the past or be more than 2 hours in the future.
+   * Any metrics failing to meet this criteria will be skipped by Amazon CloudWatch.
+   *
+   * See: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html
+   * See: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CloudWatch-Logs-Monitoring-CloudWatch-Metrics.html
+   *
    * @example
    * ```typescript
    * import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
@@ -496,7 +503,6 @@ interface MetricsInterface {
    *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
    * };
    * ```
-   *
    * @param timestamp - The timestamp to set, which can be a number or a Date object.
    */
   setTimestamp(timestamp: number | Date): void;

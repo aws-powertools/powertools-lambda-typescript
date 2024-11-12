@@ -1,8 +1,3 @@
-/**
- * Test AppConfigProvider class
- *
- * @group unit/parameters/AppConfigProvider/class
- */
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import {
   AppConfigDataClient,
@@ -11,31 +6,28 @@ import {
 } from '@aws-sdk/client-appconfigdata';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppConfigProvider } from '../../src/appconfig/index.js';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
-import type { AppConfigProviderOptions } from '../../src/types/AppConfigProvider.js';
-import 'aws-sdk-client-mock-jest';
 import { APPCONFIG_TOKEN_EXPIRATION } from '../../src/constants';
+import type { AppConfigProviderOptions } from '../../src/types/AppConfigProvider.js';
 
-jest.mock('@aws-lambda-powertools/commons', () => ({
-  ...jest.requireActual('@aws-lambda-powertools/commons'),
-  addUserAgentMiddleware: jest.fn(),
+vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@aws-lambda-powertools/commons')>()),
+  addUserAgentMiddleware: vi.fn(),
 }));
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 describe('Class: AppConfigProvider', () => {
   const client = mockClient(AppConfigDataClient);
 
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  afterEach(() => {
+    vi.clearAllMocks();
     client.reset();
   });
 
   describe('Method: constructor', () => {
-    test('when the class instantiates without SDK client and client config it has default options', async () => {
+    it('instantiates a new AWS SDK and adds a middleware to it', async () => {
       // Prepare
       const options: AppConfigProviderOptions = {
         application: 'MyApp',
@@ -54,7 +46,7 @@ describe('Class: AppConfigProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    test('when the user provides a client config in the options, the class instantiates a new client with client config options', async () => {
+    it('instantiates a new AWS SDK client using the provided config', async () => {
       // Prepare
       const options: AppConfigProviderOptions = {
         application: 'MyApp',
@@ -72,7 +64,7 @@ describe('Class: AppConfigProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    test('when the user provides an SDK client in the options, the class instantiates with it', async () => {
+    it('uses the provided AWS SDK client', async () => {
       // Prepare
       const awsSdkV3Client = new AppConfigDataClient({
         endpoint: 'http://localhost:8000',
@@ -104,7 +96,7 @@ describe('Class: AppConfigProvider', () => {
         environment: 'MyAppProdEnv',
         awsSdkV3Client: awsSdkV3Client as AppConfigDataClient,
       };
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       // Act
       const provider = new AppConfigProvider(options);
@@ -124,7 +116,7 @@ describe('Class: AppConfigProvider', () => {
   });
 
   describe('Method: _get', () => {
-    test('when called with name and options, it returns binary configuration', async () => {
+    it('returns the binary configuration as-is', async () => {
       // Prepare
       const options: AppConfigProviderOptions = {
         application: 'MyApp',
@@ -155,7 +147,7 @@ describe('Class: AppConfigProvider', () => {
       expect(result).toBe(mockData);
     });
 
-    test('when called without application option, it will be retrieved from POWERTOOLS_SERVICE_NAME and provider successfully return configuration', async () => {
+    it('uses the application name from the POWERTOOLS_SERVICE_NAME env variable', async () => {
       // Prepare
       process.env.POWERTOOLS_SERVICE_NAME = 'MyApp';
       const config = {
@@ -186,7 +178,7 @@ describe('Class: AppConfigProvider', () => {
       expect(result).toBe(mockData);
     });
 
-    test('when called without application option and POWERTOOLS_SERVICE_NAME is not set, it throws an Error', async () => {
+    it('throws when no application is set', async () => {
       // Prepare
       process.env.POWERTOOLS_SERVICE_NAME = '';
       const options = {
@@ -199,7 +191,7 @@ describe('Class: AppConfigProvider', () => {
       }).toThrow();
     });
 
-    test('when configuration response does not have the next token it should force a new session by removing the stored token', async () => {
+    it('invalidates the cached token when the response does not have a next token present, thus forcing a new session', async () => {
       // Prepare
       class AppConfigProviderMock extends AppConfigProvider {
         public _addToStore(key: string, value: string): void {
@@ -236,7 +228,7 @@ describe('Class: AppConfigProvider', () => {
       expect(provider._storeHas(name)).toBe(false);
     });
 
-    test('when session response does not have an initial token, it throws an error', async () => {
+    it('throws when the session response does not include an initial token', async () => {
       // Prepare
       const options: AppConfigProviderOptions = {
         application: 'MyApp',
@@ -253,7 +245,7 @@ describe('Class: AppConfigProvider', () => {
       await expect(provider.get(name)).rejects.toThrow();
     });
 
-    test('when session returns an empty configuration on the second call, it returns the last value', async () => {
+    it('returns the last value when the session returns an empty configuration on the second call', async () => {
       // Prepare
       const options: AppConfigProviderOptions = {
         application: 'MyApp',
@@ -295,7 +287,7 @@ describe('Class: AppConfigProvider', () => {
       expect(result2).toBe(mockData);
     });
 
-    test('when the session token has expired, it starts a new session and retrieves the token', async () => {
+    it('starts a new session and fetches the token when the session token has expired', async () => {
       // Prepare
       const options: AppConfigProviderOptions = {
         application: 'MyApp',
@@ -332,12 +324,12 @@ describe('Class: AppConfigProvider', () => {
           Configuration: mockData2,
           NextPollConfigurationToken: fakeNextToken1,
         });
-      jest.setSystemTime(new Date('2022-03-10'));
+      vi.setSystemTime(new Date('2022-03-10'));
 
       // Act
       const result1 = await provider.get(name, { forceFetch: true });
       // Mock time skip of 24hrs
-      jest.setSystemTime(new Date('2022-03-11'));
+      vi.setSystemTime(new Date('2022-03-11'));
       const result2 = await provider.get(name, { forceFetch: true });
 
       // Assess
@@ -347,7 +339,7 @@ describe('Class: AppConfigProvider', () => {
   });
 
   describe('Method: _getMultiple', () => {
-    test('when called it throws an Error, because this method is not supported by AppConfig API', async () => {
+    it('throws when called because of the method being unsopported', async () => {
       // Prepare
       const config = {
         application: 'MyApp',
@@ -365,11 +357,11 @@ describe('Class: AppConfigProvider', () => {
 
 describe('Class: ExpirableValue', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Method: constructor', () => {
-    test('when created, it has ttl set to at least maxAge seconds from test start', () => {
+    it('has TTL set to at least maxAge seconds from test start', () => {
       // Prepare
       const seconds = 10;
       const nowTimestamp = Date.now();
@@ -384,7 +376,7 @@ describe('Class: ExpirableValue', () => {
   });
 
   describe('Method: isExpired', () => {
-    test('when called, it returns true when maxAge is in the future', () => {
+    it('returns true when maxAge is in the future', () => {
       // Prepare
       const seconds = 60;
 
@@ -395,7 +387,7 @@ describe('Class: ExpirableValue', () => {
       expect(expirableValue.isExpired()).toBeFalsy();
     });
 
-    test('when called, it returns false when maxAge is in the past', () => {
+    it('returns false when maxAge is in the past', () => {
       // Prepare
       const seconds = -60;
 

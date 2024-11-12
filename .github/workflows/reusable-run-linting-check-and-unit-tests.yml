@@ -49,6 +49,7 @@ jobs:
           "packages/logger",
           "packages/tracer",
           "packages/parser",
+          "packages/parameters",
         ]
       fail-fast: false
     steps:
@@ -91,12 +92,10 @@ jobs:
           nodeVersion: ${{ matrix.version }}
       - name: Run linting
         run: |
-          npm run lint -w packages/metrics \
-            -w packages/parameters
+          npm run lint -w packages/metrics
       - name: Run unit tests
         run: |
-          npm t -w packages/metrics \
-            -w packages/parameters
+          npm t -w packages/metrics
   check-examples:
     runs-on: ubuntu-latest
     env:

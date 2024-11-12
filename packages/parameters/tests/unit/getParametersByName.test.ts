@@ -1,18 +1,19 @@
-/**
- * Test getParametersByName function
- *
- * @group unit/parameters/ssm/getParametersByName/function
- */
+import { GetParametersCommand, SSMClient } from '@aws-sdk/client-ssm';
+import { mockClient } from 'aws-sdk-client-mock';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
 import { SSMProvider, getParametersByName } from '../../src/ssm/index.js';
 import type { SSMGetParametersByNameOptions } from '../../src/types/SSMProvider.js';
 
 describe('Function: getParametersByName', () => {
+  const client = mockClient(SSMClient);
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+    client.reset();
   });
 
-  test('when called and a default provider does not exist, it instantiates one and returns the value', async () => {
+  it('instantiates a new client and returns the value when no default provider exists', async () => {
     // Prepare
     const parameters: Record<string, SSMGetParametersByNameOptions> = {
       '/foo/bar': {
@@ -23,9 +24,24 @@ describe('Function: getParametersByName', () => {
         transform: 'json',
       },
     };
-    const getParametersByNameSpy = jest
-      .spyOn(SSMProvider.prototype, 'getParametersByName')
-      .mockImplementation();
+    mockClient(SSMClient)
+      .on(GetParametersCommand)
+      .resolves({
+        Parameters: [
+          {
+            Name: '/foo/bar',
+            Value: 'bar',
+          },
+          {
+            Name: '/foo/baz',
+            Value: '{"baz": "qux"}',
+          },
+        ],
+      });
+    const getParametersByNameSpy = vi.spyOn(
+      SSMProvider.prototype,
+      'getParametersByName'
+    );
 
     // Act
     await getParametersByName(parameters);
@@ -34,7 +50,7 @@ describe('Function: getParametersByName', () => {
     expect(getParametersByNameSpy).toHaveBeenCalledWith(parameters, undefined);
   });
 
-  test('when called and a default provider exists, it uses it and returns the value', async () => {
+  it('uses the cached provider when one is present in the cache', async () => {
     // Prepare
     const provider = new SSMProvider();
     DEFAULT_PROVIDERS.ssm = provider;
@@ -46,9 +62,21 @@ describe('Function: getParametersByName', () => {
         maxAge: 2000,
       },
     };
-    const getParametersByNameSpy = jest
-      .spyOn(provider, 'getParametersByName')
-      .mockImplementation();
+    mockClient(SSMClient)
+      .on(GetParametersCommand)
+      .resolves({
+        Parameters: [
+          {
+            Name: '/foo/bar',
+            Value: 'bar',
+          },
+          {
+            Name: '/foo/baz',
+            Value: 'baz',
+          },
+        ],
+      });
+    const getParametersByNameSpy = vi.spyOn(provider, 'getParametersByName');
 
     // Act
     await getParametersByName(parameters);

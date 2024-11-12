@@ -1,8 +1,3 @@
-/**
- * Test SSMProvider class
- *
- * @group e2e/parameters/ssm/class
- */
 import { join } from 'node:path';
 import {
   TestInvocationLogs,
@@ -10,6 +5,7 @@ import {
   invokeFunctionOnce,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   TestSecureStringParameter,
   TestStringParameter,

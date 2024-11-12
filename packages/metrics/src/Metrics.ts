@@ -982,7 +982,6 @@ class Metrics extends Utility implements MetricsInterface {
     }
 
     const timestampMs = isDate(timestamp) ? timestamp.getTime() : timestamp;
-
     const currentTime = new Date().getTime();
 
     const minValidTimestamp = currentTime - EMF_MAX_TIMESTAMP_PAST_AGE;
@@ -992,7 +991,7 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Converts a given timestamp to EMF (Embedded Metric Format) compatible format.
+   * Converts a given timestamp to EMF compatible format.
    *
    * @param timestamp - The timestamp to convert, which can be either a number (in milliseconds) or a Date object.
    * @returns The timestamp in milliseconds. If the input is invalid, returns 0.
@@ -1004,9 +1003,11 @@ class Metrics extends Utility implements MetricsInterface {
     if (isDate(timestamp)) {
       return timestamp.getTime();
     }
-    // If this point is reached, input was neither a valid number nor Date
-    // Return 0 which represents the initial date of epoch time
-    // This will be skipped by Amazon CloudWatch
+    /**
+     * If this point is reached, it indicates timestamp was neither a valid number nor Date
+     * Returning zero represents the initial date of epoch time,
+     * which will be skipped by Amazon CloudWatch.
+     **/
     return 0;
   }
 }

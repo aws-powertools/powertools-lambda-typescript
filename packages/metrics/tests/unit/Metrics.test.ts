@@ -2265,7 +2265,7 @@ describe('Class: Metrics', () => {
       },
       {
         format: 'Date object',
-        getTimestamp: (timestamp: number) => new Date(timestamp),
+        getTimestamp: (timestampMs: number) => new Date(timestampMs),
       },
     ];
 
@@ -2313,7 +2313,7 @@ describe('Class: Metrics', () => {
           );
         });
 
-        test('should not log a warning if the timestamp is withing valid future range', () => {
+        test('should not log a warning if the timestamp is within valid future range', () => {
           // Prepare
           const testMetric = 'test-metric';
           const timestampMs = mockDate.getTime() + EMF_MAX_TIMESTAMP_FUTURE_AGE;

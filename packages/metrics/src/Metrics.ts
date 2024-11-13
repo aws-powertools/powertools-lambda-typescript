@@ -1,5 +1,6 @@
 import { Console } from 'node:console';
-import { Utility } from '@aws-lambda-powertools/commons';
+import { isDate } from 'node:util/types';
+import { Utility, isIntegerNumber } from '@aws-lambda-powertools/commons';
 import type {
   GenericLogger,
   HandlerMethodDecorator,
@@ -9,6 +10,8 @@ import { EnvironmentVariablesService } from './config/EnvironmentVariablesServic
 import {
   COLD_START_METRIC,
   DEFAULT_NAMESPACE,
+  EMF_MAX_TIMESTAMP_FUTURE_AGE,
+  EMF_MAX_TIMESTAMP_PAST_AGE,
   MAX_DIMENSION_COUNT,
   MAX_METRICS_SIZE,
   MAX_METRIC_VALUES_SIZE,
@@ -197,6 +200,11 @@ class Metrics extends Utility implements MetricsInterface {
    * @default {}
    */
   private storedMetrics: StoredMetrics = {};
+
+  /**
+   * Custom timestamp for the metrics
+   */
+  #timestamp?: number;
 
   public constructor(options: MetricsOptions = {}) {
     super();
@@ -572,6 +580,46 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * Sets the timestamp for the metric.
+   *
+   * If an integer is provided, it is assumed to be the epoch time in milliseconds.
+   * If a Date object is provided, it will be converted to epoch time in milliseconds.
+   *
+   * The timestamp must be a Date object or an integer representing an epoch time.
+   * This should not exceed 14 days in the past or be more than 2 hours in the future.
+   * Any metrics failing to meet this criteria will be skipped by Amazon CloudWatch.
+   *
+   * See: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html
+   * See: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CloudWatch-Logs-Monitoring-CloudWatch-Metrics.html
+   *
+   * @example
+   * ```typescript
+   * import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
+   *
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders',
+   * });
+   *
+   * export const handler = async () => {
+   *   const metricTimestamp = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
+   *   metrics.setTimestamp(metricTimestamp);
+   *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+   * };
+   * ```
+   * @param timestamp - The timestamp to set, which can be a number or a Date object.
+   */
+  public setTimestamp(timestamp: number | Date): void {
+    if (!this.#validateEmfTimestamp(timestamp)) {
+      this.#logger.warn(
+        "This metric doesn't meet the requirements and will be skipped by Amazon CloudWatch. " +
+          'Ensure the timestamp is within 14 days in the past or up to 2 hours in the future and is also a valid number or Date object.'
+      );
+    }
+    this.#timestamp = this.#convertTimestampToEmfFormat(timestamp);
+  }
+
+  /**
    * Serialize the stored metrics into a JSON object compliant with the Amazon CloudWatch EMF (Embedded Metric Format) schema.
    *
    * The EMF schema is a JSON object that contains the following properties:
@@ -627,7 +675,7 @@ class Metrics extends Utility implements MetricsInterface {
 
     return {
       _aws: {
-        Timestamp: new Date().getTime(),
+        Timestamp: this.#timestamp ?? new Date().getTime(),
         CloudWatchMetrics: [
           {
             Namespace: this.namespace || DEFAULT_NAMESPACE,
@@ -939,6 +987,51 @@ class Metrics extends Utility implements MetricsInterface {
         this.publishStoredMetrics();
       }
     }
+  }
+
+  /**
+   * Validates a given timestamp based on CloudWatch Timestamp guidelines.
+   *
+   * Timestamp must meet CloudWatch requirements.
+   * The time stamp can be up to two weeks in the past and up to two hours into the future.
+   * See [Timestamps](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#about_timestamp)
+   * for valid values.
+   *
+   * @param timestamp - Date object or epoch time in milliseconds representing the timestamp to validate.
+   */
+  #validateEmfTimestamp(timestamp: number | Date): boolean {
+    if (!isDate(timestamp) && !isIntegerNumber(timestamp)) {
+      return false;
+    }
+
+    const timestampMs = isDate(timestamp) ? timestamp.getTime() : timestamp;
+    const currentTime = new Date().getTime();
+
+    const minValidTimestamp = currentTime - EMF_MAX_TIMESTAMP_PAST_AGE;
+    const maxValidTimestamp = currentTime + EMF_MAX_TIMESTAMP_FUTURE_AGE;
+
+    return timestampMs >= minValidTimestamp && timestampMs <= maxValidTimestamp;
+  }
+
+  /**
+   * Converts a given timestamp to EMF compatible format.
+   *
+   * @param timestamp - The timestamp to convert, which can be either a number (in milliseconds) or a Date object.
+   * @returns The timestamp in milliseconds. If the input is invalid, returns 0.
+   */
+  #convertTimestampToEmfFormat(timestamp: number | Date): number {
+    if (isIntegerNumber(timestamp)) {
+      return timestamp;
+    }
+    if (isDate(timestamp)) {
+      return timestamp.getTime();
+    }
+    /**
+     * If this point is reached, it indicates timestamp was neither a valid number nor Date
+     * Returning zero represents the initial date of epoch time,
+     * which will be skipped by Amazon CloudWatch.
+     **/
+    return 0;
   }
 }
 

@@ -10,6 +10,8 @@ import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariabl
 import {
   COLD_START_METRIC,
   DEFAULT_NAMESPACE,
+  EMF_MAX_TIMESTAMP_FUTURE_AGE,
+  EMF_MAX_TIMESTAMP_PAST_AGE,
   MAX_DIMENSION_COUNT,
   MAX_METRICS_SIZE,
   MAX_METRIC_VALUES_SIZE,
@@ -32,8 +34,20 @@ jest.mock('node:console', () => ({
   })),
 }));
 jest.spyOn(console, 'warn').mockImplementation(() => ({}));
+const OriginalDate = Date;
 const mockDate = new Date(1466424490000);
-const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
+/**
+ * If the constructor is called without arguments, it returns a predefined mock date.
+ * Otherwise, it delegates to the original Date constructor with the provided arguments.
+ */
+const dateSpy = jest
+  .spyOn(global, 'Date')
+  .mockImplementation((...args: ConstructorParameters<typeof Date>) => {
+    if ((args as unknown[]).length === 0) {
+      return mockDate;
+    }
+    return new OriginalDate(...args);
+  });
 jest.spyOn(console, 'log').mockImplementation();
 jest.spyOn(console, 'warn').mockImplementation();
 
@@ -2240,6 +2254,251 @@ describe('Class: Metrics', () => {
       // Act & Assess
       // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(metrics['console']).toEqual(console);
+    });
+  });
+
+  describe('Method: setTimestamp', () => {
+    const testCases = [
+      {
+        format: 'milliseconds',
+        getTimestamp: (timestampMs: number) => timestampMs,
+      },
+      {
+        format: 'Date object',
+        getTimestamp: (timestampMs: number) => new Date(timestampMs),
+      },
+    ];
+
+    for (const { format, getTimestamp } of testCases) {
+      describe(`when timestamp is provided as ${format}`, () => {
+        test('should set the timestamp if provided in the future', () => {
+          // Prepare
+          const testMetric = 'test-metric';
+          const metrics: Metrics = new Metrics();
+          const timestampMs = mockDate.getTime() + 10 * 60 * 1000; // Add 10 minutes in milliseconds
+
+          // Act
+          metrics.addMetric(testMetric, MetricUnit.Count, 10);
+          metrics.setTimestamp(getTimestamp(timestampMs));
+          const loggedData = metrics.serializeMetrics();
+
+          // Assess
+          expect(loggedData).toEqual(
+            expect.objectContaining({
+              _aws: expect.objectContaining({
+                Timestamp: timestampMs,
+              }),
+            })
+          );
+        });
+
+        test('should set the timestamp if provided in the past', () => {
+          // Prepare
+          const testMetric = 'test-metric';
+          const metrics: Metrics = new Metrics();
+          const timestampMs = mockDate.getTime() - 10 * 60 * 1000; // Subtract 10 minutes in milliseconds
+
+          // Act
+          metrics.addMetric(testMetric, MetricUnit.Count, 10);
+          metrics.setTimestamp(getTimestamp(timestampMs));
+          const loggedData = metrics.serializeMetrics();
+
+          // Assess
+          expect(loggedData).toEqual(
+            expect.objectContaining({
+              _aws: expect.objectContaining({
+                Timestamp: timestampMs,
+              }),
+            })
+          );
+        });
+
+        test('should not log a warning if the timestamp is within valid future range', () => {
+          // Prepare
+          const testMetric = 'test-metric';
+          const timestampMs = mockDate.getTime() + EMF_MAX_TIMESTAMP_FUTURE_AGE;
+          const customLogger = {
+            warn: jest.fn(),
+            debug: jest.fn(),
+            error: jest.fn(),
+            info: jest.fn(),
+          };
+          const metrics: Metrics = new Metrics({ logger: customLogger });
+          const consoleWarnSpy = jest.spyOn(customLogger, 'warn');
+
+          // Act
+          metrics.addMetric(testMetric, MetricUnit.Count, 10);
+          metrics.setTimestamp(getTimestamp(timestampMs));
+          const loggedData = metrics.serializeMetrics();
+
+          // Assess
+          expect(consoleWarnSpy).not.toHaveBeenCalled();
+          expect(loggedData).toEqual(
+            expect.objectContaining({
+              _aws: expect.objectContaining({
+                Timestamp: timestampMs,
+              }),
+            })
+          );
+        });
+
+        test('should log a warning if the timestamp is more than the future range but still set the timestamp', () => {
+          // Prepare
+          const testMetric = 'test-metric';
+          const timestampMs =
+            mockDate.getTime() + EMF_MAX_TIMESTAMP_FUTURE_AGE + 1;
+          const customLogger = {
+            warn: jest.fn(),
+            debug: jest.fn(),
+            error: jest.fn(),
+            info: jest.fn(),
+          };
+          const metrics: Metrics = new Metrics({ logger: customLogger });
+          const consoleWarnSpy = jest.spyOn(customLogger, 'warn');
+
+          // Act
+          metrics.addMetric(testMetric, MetricUnit.Count, 10);
+          metrics.setTimestamp(getTimestamp(timestampMs));
+          const loggedData = metrics.serializeMetrics();
+
+          // Assess
+          expect(consoleWarnSpy).toHaveBeenCalledWith(
+            "This metric doesn't meet the requirements and will be skipped by Amazon CloudWatch. " +
+              'Ensure the timestamp is within 14 days in the past or up to 2 hours in the future and is also a valid number or Date object.'
+          );
+          expect(loggedData).toEqual(
+            expect.objectContaining({
+              _aws: expect.objectContaining({
+                Timestamp: timestampMs,
+              }),
+            })
+          );
+        });
+
+        test('should not log a warning if the timestamp is within past range and set the timestamp', () => {
+          // Prepare
+          const testMetric = 'test-metric';
+          const timestampMs = mockDate.getTime() - EMF_MAX_TIMESTAMP_PAST_AGE;
+          const customLogger = {
+            warn: jest.fn(),
+            debug: jest.fn(),
+            error: jest.fn(),
+            info: jest.fn(),
+          };
+          const metrics: Metrics = new Metrics({ logger: customLogger });
+          const consoleWarnSpy = jest.spyOn(customLogger, 'warn');
+
+          // Act
+          metrics.addMetric(testMetric, MetricUnit.Count, 10);
+          metrics.setTimestamp(getTimestamp(timestampMs));
+          const loggedData = metrics.serializeMetrics();
+
+          // Assess
+          expect(consoleWarnSpy).not.toHaveBeenCalled();
+          expect(loggedData).toEqual(
+            expect.objectContaining({
+              _aws: expect.objectContaining({
+                Timestamp: timestampMs,
+              }),
+            })
+          );
+        });
+
+        test('should log a warning if the timestamp is more than past range but still set the timestamp', () => {
+          // Prepare
+          const testMetric = 'test-metric';
+          const timestampMs =
+            mockDate.getTime() - EMF_MAX_TIMESTAMP_PAST_AGE - 1;
+          const customLogger = {
+            warn: jest.fn(),
+            debug: jest.fn(),
+            error: jest.fn(),
+            info: jest.fn(),
+          };
+          const metrics: Metrics = new Metrics({ logger: customLogger });
+          const consoleWarnSpy = jest.spyOn(customLogger, 'warn');
+
+          // Act
+          metrics.addMetric(testMetric, MetricUnit.Count, 10);
+          metrics.setTimestamp(getTimestamp(timestampMs));
+          const loggedData = metrics.serializeMetrics();
+
+          // Assess
+          expect(consoleWarnSpy).toHaveBeenCalledWith(
+            "This metric doesn't meet the requirements and will be skipped by Amazon CloudWatch. " +
+              'Ensure the timestamp is within 14 days in the past or up to 2 hours in the future and is also a valid number or Date object.'
+          );
+          expect(loggedData).toEqual(
+            expect.objectContaining({
+              _aws: expect.objectContaining({
+                Timestamp: timestampMs,
+              }),
+            })
+          );
+        });
+      });
+    }
+
+    test('should log warning and set timestamp to 0 if not a number provided', () => {
+      // Prepare
+      const testMetric = 'test-metric';
+      const customLogger = {
+        warn: jest.fn(),
+        debug: jest.fn(),
+        error: jest.fn(),
+        info: jest.fn(),
+      };
+      const metrics: Metrics = new Metrics({ logger: customLogger });
+      const consoleWarnSpy = jest.spyOn(customLogger, 'warn');
+
+      // Act
+      metrics.addMetric(testMetric, MetricUnit.Count, 10);
+      metrics.setTimestamp(Number.NaN);
+      const loggedData = metrics.serializeMetrics();
+
+      // Assess
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        "This metric doesn't meet the requirements and will be skipped by Amazon CloudWatch. " +
+          'Ensure the timestamp is within 14 days in the past or up to 2 hours in the future and is also a valid number or Date object.'
+      );
+      expect(loggedData).toEqual(
+        expect.objectContaining({
+          _aws: expect.objectContaining({
+            Timestamp: 0,
+          }),
+        })
+      );
+    });
+
+    test('should log warning and set timestamp to 0 if not a integer number provided', () => {
+      // Prepare
+      const testMetric = 'test-metric';
+      const customLogger = {
+        warn: jest.fn(),
+        debug: jest.fn(),
+        error: jest.fn(),
+        info: jest.fn(),
+      };
+      const metrics: Metrics = new Metrics({ logger: customLogger });
+      const consoleWarnSpy = jest.spyOn(customLogger, 'warn');
+
+      // Act
+      metrics.addMetric(testMetric, MetricUnit.Count, 10);
+      metrics.setTimestamp(1.1);
+      const loggedData = metrics.serializeMetrics();
+
+      // Assess
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        "This metric doesn't meet the requirements and will be skipped by Amazon CloudWatch. " +
+          'Ensure the timestamp is within 14 days in the past or up to 2 hours in the future and is also a valid number or Date object.'
+      );
+      expect(loggedData).toEqual(
+        expect.objectContaining({
+          _aws: expect.objectContaining({
+            Timestamp: 0,
+          }),
+        })
+      );
     });
   });
 });

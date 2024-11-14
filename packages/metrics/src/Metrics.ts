@@ -218,6 +218,7 @@ class Metrics extends Utility implements MetricsInterface {
    * Add a dimension to metrics.
    *
    * A dimension is a key-value pair that is used to group metrics, and it is included in all metrics emitted after it is added.
+   * Invalid dimension values are skipped and a warning is logged.
    *
    * When calling the {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`} method, the dimensions are cleared. This type of
    * dimension is useful when you want to add request-specific dimensions to your metrics. If you want to add dimensions that are
@@ -227,6 +228,12 @@ class Metrics extends Utility implements MetricsInterface {
    * @param value - The value of the dimension
    */
   public addDimension(name: string, value: string): void {
+    if (!value) {
+      this.#logger.warn(
+        `Dimension value is invalid for ${name} and will be skipped.`
+      );
+      return;
+    }
     if (MAX_DIMENSION_COUNT <= this.getCurrentDimensionsCount()) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`

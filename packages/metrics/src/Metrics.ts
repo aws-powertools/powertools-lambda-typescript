@@ -246,6 +246,7 @@ class Metrics extends Utility implements MetricsInterface {
    * Add multiple dimensions to the metrics.
    *
    * This method is useful when you want to add multiple dimensions to the metrics at once.
+   * Invalid dimension values are skipped and a warning is logged.
    *
    * When calling the {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`} method, the dimensions are cleared. This type of
    * dimension is useful when you want to add request-specific dimensions to your metrics. If you want to add dimensions that are
@@ -256,7 +257,14 @@ class Metrics extends Utility implements MetricsInterface {
   public addDimensions(dimensions: Dimensions): void {
     const newDimensions = { ...this.dimensions };
     for (const dimensionName of Object.keys(dimensions)) {
-      newDimensions[dimensionName] = dimensions[dimensionName];
+      const value = dimensions[dimensionName];
+      if (value) {
+        newDimensions[dimensionName] = value;
+      } else {
+        this.#logger.warn(
+          `Dimension value is invalid for ${dimensionName} and will be skipped.`
+        );
+      }
     }
     if (Object.keys(newDimensions).length > MAX_DIMENSION_COUNT) {
       throw new RangeError(

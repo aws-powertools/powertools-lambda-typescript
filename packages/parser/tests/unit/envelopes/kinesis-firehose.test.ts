@@ -4,15 +4,21 @@ import { ZodError, type z } from 'zod';
 import { ParseError } from '../../../src';
 import { KinesisFirehoseEnvelope } from '../../../src/envelopes/index.js';
 import type { KinesisFirehoseSchema } from '../../../src/schemas/';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import type {
+  KinesisFireHoseEvent,
+  KinesisFireHoseSqsEvent,
+} from '../../../src/types';
+import { TestEvents, TestSchema, getTestEvent } from '../schema/utils.js';
 
 describe('Kinesis Firehose Envelope', () => {
+  const eventsPath = 'kinesis';
   describe('parse', () => {
     it('should parse records for PutEvent', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = TestEvents.kinesisFirehosePutEvent as z.infer<
-        typeof KinesisFirehoseSchema
-      >;
+      const testEvent = getTestEvent<KinesisFireHoseEvent>({
+        eventsPath,
+        filename: 'firehose-put',
+      });
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -24,9 +30,10 @@ describe('Kinesis Firehose Envelope', () => {
 
     it('should parse a single record for SQS event', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = TestEvents.kinesisFirehoseSQSEvent as z.infer<
-        typeof KinesisFirehoseSchema
-      >;
+      const testEvent = getTestEvent<KinesisFireHoseSqsEvent>({
+        eventsPath,
+        filename: 'firehose-sqs',
+      });
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -38,9 +45,10 @@ describe('Kinesis Firehose Envelope', () => {
 
     it('should parse records for kinesis event', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = TestEvents.kinesisFirehoseKinesisEvent as z.infer<
-        typeof KinesisFirehoseSchema
-      >;
+      const testEvent = getTestEvent<KinesisFireHoseEvent>({
+        eventsPath,
+        filename: 'firehose',
+      });
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -50,9 +58,10 @@ describe('Kinesis Firehose Envelope', () => {
       expect(resp).toEqual([mock, mock]);
     });
     it('should throw if record is not base64 encoded', () => {
-      const testEvent = TestEvents.kinesisFirehosePutEvent as z.infer<
-        typeof KinesisFirehoseSchema
-      >;
+      const testEvent = getTestEvent<KinesisFireHoseEvent>({
+        eventsPath,
+        filename: 'firehose-put',
+      });
 
       testEvent.records.map((record) => {
         record.data = 'not base64 encoded';
@@ -68,9 +77,10 @@ describe('Kinesis Firehose Envelope', () => {
       }).toThrow();
     });
     it('should throw when schema does not match record', () => {
-      const testEvent = TestEvents.kinesisFirehosePutEvent as z.infer<
-        typeof KinesisFirehoseSchema
-      >;
+      const testEvent = getTestEvent<KinesisFireHoseEvent>({
+        eventsPath,
+        filename: 'firehose-put',
+      });
 
       testEvent.records.map((record) => {
         record.data = Buffer.from('not a valid json').toString('base64');
@@ -84,9 +94,10 @@ describe('Kinesis Firehose Envelope', () => {
   describe('safeParse', () => {
     it('should parse records for PutEvent', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = TestEvents.kinesisFirehosePutEvent as z.infer<
-        typeof KinesisFirehoseSchema
-      >;
+      const testEvent = getTestEvent<KinesisFireHoseEvent>({
+        eventsPath,
+        filename: 'firehose-put',
+      });
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -98,9 +109,10 @@ describe('Kinesis Firehose Envelope', () => {
 
     it('should parse a single record for SQS event', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = TestEvents.kinesisFirehoseSQSEvent as z.infer<
-        typeof KinesisFirehoseSchema
-      >;
+      const testEvent = getTestEvent<KinesisFireHoseSqsEvent>({
+        eventsPath,
+        filename: 'firehose-sqs',
+      });
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -112,9 +124,10 @@ describe('Kinesis Firehose Envelope', () => {
 
     it('should parse records for kinesis event', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = TestEvents.kinesisFirehoseKinesisEvent as z.infer<
-        typeof KinesisFirehoseSchema
-      >;
+      const testEvent = getTestEvent<KinesisFireHoseEvent>({
+        eventsPath,
+        filename: 'firehose',
+      });
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -139,9 +152,10 @@ describe('Kinesis Firehose Envelope', () => {
       }
     });
     it('should return original event if record is not base64 encoded', () => {
-      const testEvent = TestEvents.kinesisFirehosePutEvent as z.infer<
-        typeof KinesisFirehoseSchema
-      >;
+      const testEvent = getTestEvent<KinesisFireHoseEvent>({
+        eventsPath,
+        filename: 'firehose-put',
+      });
 
       testEvent.records.map((record) => {
         record.data = 'not base64 encoded';

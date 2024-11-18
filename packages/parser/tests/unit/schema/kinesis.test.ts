@@ -18,12 +18,15 @@ import type {
   KinesisFirehoseRecord,
   KinesisFirehoseSqsRecord,
 } from '../../../src/types/schema';
-import { TestEvents } from './utils.js';
+import { TestEvents, getTestEvent } from './utils.js';
 
 describe('Kinesis ', () => {
+  const eventsPath = 'kinesis';
   it('should parse kinesis event', () => {
-    const kinesisStreamEvent =
-      TestEvents.kinesisStreamEvent as KinesisDataStreamEvent;
+    const kinesisStreamEvent = getTestEvent<KinesisDataStreamEvent>({
+      eventsPath,
+      filename: 'stream',
+    });
     const parsed = KinesisDataStreamSchema.parse(kinesisStreamEvent);
 
     const transformedInput = {
@@ -41,8 +44,10 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse single kinesis record', () => {
-    const kinesisStreamEventOneRecord =
-      TestEvents.kinesisStreamEventOneRecord as KinesisDataStreamEvent;
+    const kinesisStreamEventOneRecord = getTestEvent<KinesisDataStreamEvent>({
+      eventsPath,
+      filename: 'stream-one-record',
+    });
     const parsed = KinesisDataStreamSchema.parse(kinesisStreamEventOneRecord);
 
     const transformedInput = {
@@ -62,8 +67,10 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Firehose event', () => {
-    const kinesisFirehoseKinesisEvent =
-      TestEvents.kinesisFirehoseKinesisEvent as KinesisFireHoseEvent;
+    const kinesisFirehoseKinesisEvent = getTestEvent<KinesisFireHoseEvent>({
+      eventsPath,
+      filename: 'firehose',
+    });
     const parsed = KinesisFirehoseSchema.parse(kinesisFirehoseKinesisEvent);
 
     const transformedInput = {
@@ -79,8 +86,11 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Kinesis Firehose PutEvents event', () => {
-    const kinesisFirehosePutEvent =
-      TestEvents.kinesisFirehosePutEvent as KinesisFireHoseEvent;
+    const kinesisFirehosePutEvent = getTestEvent<KinesisFireHoseEvent>({
+      eventsPath,
+      filename: 'firehose-put',
+    });
+
     const parsed = KinesisFirehoseSchema.parse(kinesisFirehosePutEvent);
 
     const transformedInput = {
@@ -96,8 +106,11 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Firehose event with SQS event', () => {
-    const kinesisFirehoseSQSEvent =
-      TestEvents.kinesisFirehoseSQSEvent as KinesisFireHoseSqsEvent;
+    const kinesisFirehoseSQSEvent = getTestEvent<KinesisFireHoseSqsEvent>({
+      eventsPath,
+      filename: 'firehose-sqs',
+    });
+
     const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
 
     const transformedInput = {
@@ -116,7 +129,10 @@ describe('Kinesis ', () => {
   });
   it('should parse Kinesis event with CloudWatch event', () => {
     const kinesisStreamCloudWatchLogsEvent =
-      TestEvents.kinesisStreamCloudWatchLogsEvent as KinesisDataStreamEvent;
+      getTestEvent<KinesisDataStreamEvent>({
+        eventsPath,
+        filename: 'stream-cloudwatch-logs',
+      });
     const parsed = KinesisDataStreamSchema.parse(
       kinesisStreamCloudWatchLogsEvent
     );
@@ -140,9 +156,10 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should return original value if cannot parse KinesisFirehoseSqsRecord', () => {
-    const kinesisFirehoseSQSEvent = TestEvents.kinesisFirehoseSQSEvent as {
-      records: { data: string }[];
-    };
+    const kinesisFirehoseSQSEvent = getTestEvent<KinesisFireHoseSqsEvent>({
+      eventsPath,
+      filename: 'firehose-sqs',
+    });
     kinesisFirehoseSQSEvent.records[0].data = 'not a valid json';
     const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
 
@@ -150,7 +167,10 @@ describe('Kinesis ', () => {
   });
   it('should parse a kinesis record from a kinesis event', () => {
     const kinesisStreamEvent: KinesisDataStreamEvent =
-      TestEvents.kinesisStreamEvent as KinesisDataStreamEvent;
+      getTestEvent<KinesisDataStreamEvent>({
+        eventsPath,
+        filename: 'stream-one-record',
+      });
     const parsedRecord = KinesisDataStreamRecord.parse(
       kinesisStreamEvent.Records[0]
     );
@@ -161,7 +181,7 @@ describe('Kinesis ', () => {
 
   it('should parse a kinesis firehose record from a kinesis firehose event', () => {
     const kinesisFirehoseEvent: KinesisFireHoseEvent =
-      TestEvents.kinesisFirehoseKinesisEvent as KinesisFireHoseEvent;
+      getTestEvent<KinesisFireHoseEvent>({ eventsPath, filename: 'firehose' });
     const parsedRecord: KinesisFirehoseRecord =
       KinesisFirehoseRecordSchema.parse(kinesisFirehoseEvent.records[0]);
 
@@ -170,7 +190,10 @@ describe('Kinesis ', () => {
 
   it('should parse a sqs record from a kinesis firehose event', () => {
     const kinesisFireHoseSqsEvent: KinesisFireHoseSqsEvent =
-      TestEvents.kinesisFirehoseSQSEvent as KinesisFireHoseSqsEvent;
+      getTestEvent<KinesisFireHoseSqsEvent>({
+        eventsPath,
+        filename: 'firehose-sqs',
+      });
     const parsed: KinesisFirehoseSqsRecord =
       KinesisFirehoseSqsRecordSchema.parse(kinesisFireHoseSqsEvent.records[0]);
 

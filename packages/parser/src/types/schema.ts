@@ -16,6 +16,7 @@ import type {
   KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
   KinesisDataStreamSchema,
+  KinesisDynamoDBStreamSchema,
   KinesisFirehoseRecordSchema,
   KinesisFirehoseSchema,
   KinesisFirehoseSqsRecordSchema,
@@ -79,6 +80,8 @@ type KafkaMskEvent = z.infer<typeof KafkaMskEventSchema>;
 
 type KinesisDataStreamEvent = z.infer<typeof KinesisDataStreamSchema>;
 
+type KinesisDynamoDBStreamEvent = z.infer<typeof KinesisDynamoDBStreamSchema>;
+
 type KinesisFireHoseEvent = z.infer<typeof KinesisFirehoseSchema>;
 
 type KinesisFirehoseRecord = z.infer<typeof KinesisFirehoseRecordSchema>;
@@ -136,6 +139,7 @@ export type {
   KafkaMskEvent,
   KafkaRecord,
   KinesisDataStreamEvent,
+  KinesisDynamoDBStreamEvent,
   KinesisFireHoseEvent,
   KinesisFirehoseRecord,
   KinesisFireHoseSqsEvent,

@@ -27,7 +27,11 @@ export {
   KafkaSelfManagedEventSchema,
   KafkaRecordSchema,
 } from './kafka.js';
-export { KinesisDataStreamSchema, KinesisDataStreamRecord } from './kinesis.js';
+export {
+  KinesisDataStreamSchema,
+  KinesisDynamoDBStreamSchema,
+  KinesisDataStreamRecord,
+} from './kinesis.js';
 export {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,

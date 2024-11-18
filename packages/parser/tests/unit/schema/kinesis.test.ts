@@ -9,12 +9,14 @@ import {
   KinesisFirehoseSqsSchema,
   SqsRecordSchema,
 } from '../../../src/schemas/';
+import { KinesisDynamoDBStreamSchema } from '../../../src/schemas/kinesis';
 import type {
   KinesisDataStreamEvent,
   KinesisFireHoseEvent,
   KinesisFireHoseSqsEvent,
 } from '../../../src/types';
 import type {
+  KinesisDynamoDBStreamEvent,
   KinesisFirehoseRecord,
   KinesisFirehoseSqsRecord,
 } from '../../../src/types/schema';
@@ -177,6 +179,58 @@ describe('Kinesis ', () => {
 
     expect(parsedRecord.eventSource).toEqual('aws:kinesis');
     expect(parsedRecord.eventName).toEqual('aws:kinesis:record');
+  });
+
+  it('should parse a kinesis record from dynamodb stream event', () => {
+    const dynamodbStreamKinesisEvent = getTestEvent<KinesisDynamoDBStreamEvent>(
+      { eventsPath, filename: 'dynamodb-stream' }
+    );
+    const expectedRecords = [
+      {
+        awsRegion: 'eu-west-1',
+        eventID: 'd9428029-0f63-4056-86da-ce10d545b1b9',
+        eventName: 'INSERT',
+        userIdentity: null,
+        recordFormat: 'application/json',
+        tableName: 'PowertoolsEventsStack-DynamoDBTable59784FC0-8NKAMTERTAXY',
+        dynamodb: {
+          ApproximateCreationDateTime: 1731924555370,
+          Keys: { id: { S: 'record-1qit2y819gi' } },
+          NewImage: {
+            id: { S: 'record-1qit2y819gi' },
+            data: { S: 'data-x6aq7ckdpgk' },
+          },
+          SizeBytes: 60,
+        },
+        eventSource: 'aws:dynamodb',
+      },
+      {
+        awsRegion: 'eu-west-1',
+        eventID: 'aa56cad4-311a-46c8-ab5f-c7a13a7a6298',
+        eventName: 'INSERT',
+        userIdentity: null,
+        recordFormat: 'application/json',
+        tableName: 'PowertoolsEventsStack-DynamoDBTable59784FC0-8NKAMTERTAXY',
+        dynamodb: {
+          ApproximateCreationDateTime: 1731924555370,
+          Keys: { id: { S: 'record-fvxn3q4q5jw' } },
+          NewImage: {
+            id: { S: 'record-fvxn3q4q5jw' },
+            data: { S: 'data-4eompjs89n5' },
+          },
+          SizeBytes: 60,
+        },
+        eventSource: 'aws:dynamodb',
+      },
+    ];
+
+    const parsedRecord = KinesisDynamoDBStreamSchema.parse(
+      dynamodbStreamKinesisEvent
+    );
+
+    expect(parsedRecord.Records.map((record) => record.kinesis.data)).toEqual(
+      expectedRecords
+    );
   });
 
   it('should parse a kinesis firehose record from a kinesis firehose event', () => {

@@ -93,7 +93,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
                 );
                 
                 new Function(this, 'Function', {
-                  runtime: Runtime.NODEJS_20_X,
+                  runtime: Runtime.NODEJS_22_X,
                   // Add the Layer to a Lambda function
                   layers: [powertoolsLayer],
                   code: Code.fromInline(`...`),
@@ -189,7 +189,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
               function_name = "lambda_function_name"
               role          = ...
               handler       = "index.handler"
-              runtime 		= "nodejs20.x"
+              runtime 		= "nodejs22.x"
               layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:15"]
               source_code_hash = filebase64sha256("lambda_function_payload.zip")
             }
@@ -214,7 +214,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
                 tracingConfig: {
                     mode: 'Active'
                 },
-                runtime: aws.lambda.Runtime.NodeJS20dX,
+                runtime: aws.lambda.Runtime.NodeJS22dX,
                 handler: 'index.handler',
                 role: role.arn,
                 architectures: ['x86_64']

@@ -78,7 +78,7 @@ Here is an example using `esbuild` bundler.
         super(scope, id, props);
 
         const handler = new NodejsFunction(this, 'helloWorldFunction', {
-          runtime: Runtime.NODEJS_20_X,
+          runtime: Runtime.NODEJS_22_X,
           handler: 'handler',
           entry: 'src/index.ts',
           bundling: {
@@ -105,7 +105,7 @@ Here is an example using `esbuild` bundler.
       HelloWorldFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs20.x
+          Runtime: nodejs22.x
           Handler: src/index.handler
         Metadata:
           BuildMethod: esbuild

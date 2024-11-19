@@ -431,6 +431,45 @@ describe('Class: Metrics', () => {
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
     });
+
+    describe('invalid values should not be added as dimensions', () => {
+      const testCases = [
+        { value: undefined as unknown as string, description: 'undefined' },
+        { value: null as unknown as string, description: 'null' },
+        { value: '', description: 'empty string' },
+      ];
+
+      for (const { value, description } of testCases) {
+        it(`it should not add dimension with ${description} value and log a warning`, () => {
+          // Prepare
+          const customLogger = {
+            warn: jest.fn(),
+            debug: jest.fn(),
+            error: jest.fn(),
+            info: jest.fn(),
+          };
+          const metrics: Metrics = new Metrics({
+            namespace: TEST_NAMESPACE,
+            logger: customLogger,
+          });
+          const consoleWarnSpy = jest.spyOn(customLogger, 'warn');
+          const testDimensionName = 'test-dimension';
+
+          // Act
+          metrics.addDimension(testDimensionName, value);
+
+          // Assess
+          expect(consoleWarnSpy).toHaveBeenCalledWith(
+            `The dimension ${testDimensionName} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+          );
+          expect(metrics).toEqual(
+            expect.objectContaining({
+              dimensions: {},
+            })
+          );
+        });
+      }
+    });
   });
 
   describe('Method: addDimensions', () => {
@@ -519,6 +558,53 @@ describe('Class: Metrics', () => {
       ).toThrowError(
         `Unable to add 1 dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
+    });
+
+    describe('invalid values should not be added as dimensions', () => {
+      const testCases = [
+        { value: undefined as unknown as string, description: 'undefined' },
+        { value: null as unknown as string, description: 'null' },
+        { value: '', description: 'empty string' },
+      ];
+
+      for (const { value, description } of testCases) {
+        it(`it should not add dimension with ${description} value and log a warning`, () => {
+          // Prepare
+          const customLogger = {
+            warn: jest.fn(),
+            debug: jest.fn(),
+            error: jest.fn(),
+            info: jest.fn(),
+          };
+          const metrics: Metrics = new Metrics({
+            namespace: TEST_NAMESPACE,
+            logger: customLogger,
+          });
+          const consoleWarnSpy = jest.spyOn(customLogger, 'warn');
+          const dimensionsToBeAdded: LooseObject = {
+            'test-dimension-1': 'test-value-1',
+            'test-dimension-2': 'test-value-2',
+          };
+          const testDimensionName = 'test-dimension';
+
+          // Act
+          metrics.addDimensions(dimensionsToBeAdded);
+          metrics.addDimensions({ [testDimensionName]: value });
+
+          // Assess
+          expect(consoleWarnSpy).toHaveBeenCalledWith(
+            `The dimension ${testDimensionName} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+          );
+          expect(metrics).toEqual(
+            expect.objectContaining({
+              dimensions: {
+                'test-dimension-1': 'test-value-1',
+                'test-dimension-2': 'test-value-2',
+              },
+            })
+          );
+        });
+      }
     });
   });
 

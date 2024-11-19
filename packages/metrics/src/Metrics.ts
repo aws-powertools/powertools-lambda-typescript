@@ -218,6 +218,7 @@ class Metrics extends Utility implements MetricsInterface {
    * Add a dimension to metrics.
    *
    * A dimension is a key-value pair that is used to group metrics, and it is included in all metrics emitted after it is added.
+   * Invalid dimension values are skipped and a warning is logged.
    *
    * When calling the {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`} method, the dimensions are cleared. This type of
    * dimension is useful when you want to add request-specific dimensions to your metrics. If you want to add dimensions that are
@@ -227,6 +228,12 @@ class Metrics extends Utility implements MetricsInterface {
    * @param value - The value of the dimension
    */
   public addDimension(name: string, value: string): void {
+    if (!value) {
+      this.#logger.warn(
+        `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+      );
+      return;
+    }
     if (MAX_DIMENSION_COUNT <= this.getCurrentDimensionsCount()) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
@@ -239,6 +246,7 @@ class Metrics extends Utility implements MetricsInterface {
    * Add multiple dimensions to the metrics.
    *
    * This method is useful when you want to add multiple dimensions to the metrics at once.
+   * Invalid dimension values are skipped and a warning is logged.
    *
    * When calling the {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`} method, the dimensions are cleared. This type of
    * dimension is useful when you want to add request-specific dimensions to your metrics. If you want to add dimensions that are
@@ -249,7 +257,14 @@ class Metrics extends Utility implements MetricsInterface {
   public addDimensions(dimensions: Dimensions): void {
     const newDimensions = { ...this.dimensions };
     for (const dimensionName of Object.keys(dimensions)) {
-      newDimensions[dimensionName] = dimensions[dimensionName];
+      const value = dimensions[dimensionName];
+      if (value) {
+        newDimensions[dimensionName] = value;
+      } else {
+        this.#logger.warn(
+          `The dimension ${dimensionName} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+        );
+      }
     }
     if (Object.keys(newDimensions).length > MAX_DIMENSION_COUNT) {
       throw new RangeError(

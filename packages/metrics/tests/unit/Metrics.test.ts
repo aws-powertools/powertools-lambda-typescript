@@ -460,7 +460,7 @@ describe('Class: Metrics', () => {
 
           // Assess
           expect(consoleWarnSpy).toHaveBeenCalledWith(
-            `Dimension value is invalid for ${testDimensionName} and will be skipped.`
+            `The dimension ${testDimensionName} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
           );
           expect(metrics).toEqual(
             expect.objectContaining({
@@ -593,7 +593,7 @@ describe('Class: Metrics', () => {
 
           // Assess
           expect(consoleWarnSpy).toHaveBeenCalledWith(
-            `Dimension value is invalid for ${testDimensionName} and will be skipped.`
+            `The dimension ${testDimensionName} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
           );
           expect(metrics).toEqual(
             expect.objectContaining({

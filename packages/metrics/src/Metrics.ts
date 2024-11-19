@@ -230,7 +230,7 @@ class Metrics extends Utility implements MetricsInterface {
   public addDimension(name: string, value: string): void {
     if (!value) {
       this.#logger.warn(
-        `Dimension value is invalid for ${name} and will be skipped.`
+        `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
       );
       return;
     }
@@ -262,7 +262,7 @@ class Metrics extends Utility implements MetricsInterface {
         newDimensions[dimensionName] = value;
       } else {
         this.#logger.warn(
-          `Dimension value is invalid for ${dimensionName} and will be skipped.`
+          `The dimension ${dimensionName} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
         );
       }
     }

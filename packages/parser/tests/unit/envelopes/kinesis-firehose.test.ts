@@ -1,14 +1,13 @@
 import { generateMock } from '@anatine/zod-mock';
 import { describe, expect, it } from 'vitest';
-import { ZodError, type z } from 'zod';
+import { ZodError } from 'zod';
 import { ParseError } from '../../../src';
 import { KinesisFirehoseEnvelope } from '../../../src/envelopes/index.js';
-import type { KinesisFirehoseSchema } from '../../../src/schemas/';
 import type {
   KinesisFireHoseEvent,
   KinesisFireHoseSqsEvent,
 } from '../../../src/types';
-import { TestEvents, TestSchema, getTestEvent } from '../schema/utils.js';
+import { TestSchema, getTestEvent } from '../schema/utils.js';
 
 describe('Kinesis Firehose Envelope', () => {
   const eventsPath = 'kinesis';

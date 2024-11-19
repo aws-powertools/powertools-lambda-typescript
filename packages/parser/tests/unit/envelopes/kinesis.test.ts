@@ -1,10 +1,9 @@
 import { generateMock } from '@anatine/zod-mock';
-import type { KinesisStreamEvent } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { KinesisEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import type { KinesisDataStreamEvent } from '../../../src/types/schema.js';
-import { TestEvents, TestSchema, getTestEvent } from '../schema/utils.js';
+import { TestSchema, getTestEvent } from '../schema/utils.js';
 
 describe('KinesisEnvelope', () => {
   const eventsPath = 'kinesis';

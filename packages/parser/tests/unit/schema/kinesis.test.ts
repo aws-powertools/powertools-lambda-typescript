@@ -7,7 +7,6 @@ import {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsRecordSchema,
   KinesisFirehoseSqsSchema,
-  SqsRecordSchema,
 } from '../../../src/schemas/';
 import { KinesisDynamoDBStreamSchema } from '../../../src/schemas/kinesis';
 import type {
@@ -20,7 +19,7 @@ import type {
   KinesisFirehoseRecord,
   KinesisFirehoseSqsRecord,
 } from '../../../src/types/schema';
-import { TestEvents, getTestEvent } from './utils.js';
+import { getTestEvent } from './utils.js';
 
 describe('Kinesis ', () => {
   const eventsPath = 'kinesis';

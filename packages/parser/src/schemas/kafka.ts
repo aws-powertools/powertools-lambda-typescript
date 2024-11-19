@@ -40,7 +40,7 @@ const KafkaBaseEventSchema = z.object({
  * @example
  * ```json
  * {
- *   "eventSource":"aws:SelfManagedKafka",
+ *   "eventSource":"SelfManagedKafka",
  *   "bootstrapServers":"b-2.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092,b-1.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092",
  *   "records":{
  *      "mytopic-0":[
@@ -79,7 +79,7 @@ const KafkaBaseEventSchema = z.object({
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-kafka.html}
  */
 const KafkaSelfManagedEventSchema = KafkaBaseEventSchema.extend({
-  eventSource: z.literal('aws:SelfManagedKafka'),
+  eventSource: z.literal('SelfManagedKafka'),
 });
 
 /**

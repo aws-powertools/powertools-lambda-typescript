@@ -56,14 +56,6 @@ class TestNodejsFunction extends NodejsFunction {
       logGroup,
     });
 
-    // @ts-ignore
-    if (getRuntimeKey() === 'nodejs22x') {
-      (this.node.defaultChild as CfnResource).addPropertyOverride(
-        'Runtime',
-        'nodejs22.x'
-      );
-    }
-
     new CfnOutput(this, extraProps.nameSuffix, {
       value: this.functionName,
     });

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.10.0...v2.11.0) (2024-11-20)
+
+
+### Features
+
+* **batch:** Async Processing of Records for for SQS Fifo ([#3160](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3160)) ([e73b575](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e73b575b784b7a59ca8cde02d4ca51ec97789d19))
+* **metrics:** ability to set custom timestamp with `setTimestamp` for metrics ([#3310](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3310)) ([0fb94c3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0fb94c38cbead6333ff4a17354c81ce73fe51afd))
+
+
+
+
+
 # [2.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.9.0...v2.10.0) (2024-10-22)
 
 **Note:** Version bump only for package code-snippets

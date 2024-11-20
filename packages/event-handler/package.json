@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/event-handler",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "description": "Lightweight routing to reduce boilerplate for API Gateway REST/HTTP API, ALB and Lambda Function URLs",
   "author": {
     "name": "Amazon Web Services",
@@ -51,7 +51,7 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.10.0"
+    "@aws-lambda-powertools/commons": "^2.11.0"
   },
   "keywords": [
     "aws",

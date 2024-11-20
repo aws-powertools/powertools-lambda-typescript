@@ -11,13 +11,25 @@ import { TestSchema, getTestEvent } from '../schema/utils.js';
 
 describe('Kinesis Firehose Envelope', () => {
   const eventsPath = 'kinesis';
+  const kinesisFirehosePutEvent = getTestEvent<KinesisFireHoseEvent>({
+    eventsPath,
+    filename: 'firehose-put',
+  });
+
+  const kinesisFirehoseSQSEvent = getTestEvent<KinesisFireHoseSqsEvent>({
+    eventsPath,
+    filename: 'firehose-sqs',
+  });
+
+  const kinesisFirehoseEvent = getTestEvent<KinesisFireHoseEvent>({
+    eventsPath,
+    filename: 'firehose',
+  });
+
   describe('parse', () => {
     it('should parse records for PutEvent', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = getTestEvent<KinesisFireHoseEvent>({
-        eventsPath,
-        filename: 'firehose-put',
-      });
+      const testEvent = structuredClone(kinesisFirehosePutEvent);
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -29,10 +41,7 @@ describe('Kinesis Firehose Envelope', () => {
 
     it('should parse a single record for SQS event', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = getTestEvent<KinesisFireHoseSqsEvent>({
-        eventsPath,
-        filename: 'firehose-sqs',
-      });
+      const testEvent = structuredClone(kinesisFirehoseSQSEvent);
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -44,10 +53,7 @@ describe('Kinesis Firehose Envelope', () => {
 
     it('should parse records for kinesis event', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = getTestEvent<KinesisFireHoseEvent>({
-        eventsPath,
-        filename: 'firehose',
-      });
+      const testEvent = structuredClone(kinesisFirehoseEvent);
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -57,10 +63,7 @@ describe('Kinesis Firehose Envelope', () => {
       expect(resp).toEqual([mock, mock]);
     });
     it('should throw if record is not base64 encoded', () => {
-      const testEvent = getTestEvent<KinesisFireHoseEvent>({
-        eventsPath,
-        filename: 'firehose-put',
-      });
+      const testEvent = structuredClone(kinesisFirehosePutEvent);
 
       testEvent.records.map((record) => {
         record.data = 'not base64 encoded';
@@ -76,10 +79,7 @@ describe('Kinesis Firehose Envelope', () => {
       }).toThrow();
     });
     it('should throw when schema does not match record', () => {
-      const testEvent = getTestEvent<KinesisFireHoseEvent>({
-        eventsPath,
-        filename: 'firehose-put',
-      });
+      const testEvent = structuredClone(kinesisFirehosePutEvent);
 
       testEvent.records.map((record) => {
         record.data = Buffer.from('not a valid json').toString('base64');
@@ -93,10 +93,7 @@ describe('Kinesis Firehose Envelope', () => {
   describe('safeParse', () => {
     it('should parse records for PutEvent', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = getTestEvent<KinesisFireHoseEvent>({
-        eventsPath,
-        filename: 'firehose-put',
-      });
+      const testEvent = structuredClone(kinesisFirehosePutEvent);
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -108,10 +105,7 @@ describe('Kinesis Firehose Envelope', () => {
 
     it('should parse a single record for SQS event', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = getTestEvent<KinesisFireHoseSqsEvent>({
-        eventsPath,
-        filename: 'firehose-sqs',
-      });
+      const testEvent = structuredClone(kinesisFirehoseSQSEvent);
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -123,10 +117,7 @@ describe('Kinesis Firehose Envelope', () => {
 
     it('should parse records for kinesis event', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = getTestEvent<KinesisFireHoseEvent>({
-        eventsPath,
-        filename: 'firehose',
-      });
+      const testEvent = structuredClone(kinesisFirehoseEvent);
 
       testEvent.records.map((record) => {
         record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
@@ -151,10 +142,7 @@ describe('Kinesis Firehose Envelope', () => {
       }
     });
     it('should return original event if record is not base64 encoded', () => {
-      const testEvent = getTestEvent<KinesisFireHoseEvent>({
-        eventsPath,
-        filename: 'firehose-put',
-      });
+      const testEvent = structuredClone(kinesisFirehosePutEvent);
 
       testEvent.records.map((record) => {
         record.data = 'not base64 encoded';

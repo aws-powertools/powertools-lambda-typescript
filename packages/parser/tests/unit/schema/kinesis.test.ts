@@ -23,15 +23,45 @@ import { getTestEvent } from './utils.js';
 
 describe('Kinesis ', () => {
   const eventsPath = 'kinesis';
-  it('should parse kinesis event', () => {
-    const kinesisStreamEvent = getTestEvent<KinesisDataStreamEvent>({
+
+  const kinesisStreamEvent = getTestEvent<KinesisDataStreamEvent>({
+    eventsPath,
+    filename: 'stream',
+  });
+
+  const kinesisStreamEventOneRecord = getTestEvent<KinesisDataStreamEvent>({
+    eventsPath,
+    filename: 'stream-one-record',
+  });
+
+  const kinesisFirehoseEvent = getTestEvent<KinesisFireHoseEvent>({
+    eventsPath,
+    filename: 'firehose',
+  });
+
+  const kinesisFirehosePutEvent = getTestEvent<KinesisFireHoseEvent>({
+    eventsPath,
+    filename: 'firehose-put',
+  });
+
+  const kinesisFirehoseSQSEvent = getTestEvent<KinesisFireHoseSqsEvent>({
+    eventsPath,
+    filename: 'firehose-sqs',
+  });
+
+  const kinesisStreamCloudWatchLogsEvent = getTestEvent<KinesisDataStreamEvent>(
+    {
       eventsPath,
-      filename: 'stream',
-    });
-    const parsed = KinesisDataStreamSchema.parse(kinesisStreamEvent);
+      filename: 'stream-cloudwatch-logs',
+    }
+  );
+
+  it('should parse kinesis event', () => {
+    const testEvent = structuredClone(kinesisStreamEvent);
+    const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
-      Records: kinesisStreamEvent.Records.map((record, index) => {
+      Records: testEvent.Records.map((record, index) => {
         return {
           ...record,
           kinesis: {
@@ -45,14 +75,11 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse single kinesis record', () => {
-    const kinesisStreamEventOneRecord = getTestEvent<KinesisDataStreamEvent>({
-      eventsPath,
-      filename: 'stream-one-record',
-    });
-    const parsed = KinesisDataStreamSchema.parse(kinesisStreamEventOneRecord);
+    const testEvent = structuredClone(kinesisStreamEventOneRecord);
+    const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
-      Records: kinesisStreamEventOneRecord.Records.map((record, index) => {
+      Records: testEvent.Records.map((record, index) => {
         return {
           ...record,
           kinesis: {
@@ -68,15 +95,12 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Firehose event', () => {
-    const kinesisFirehoseKinesisEvent = getTestEvent<KinesisFireHoseEvent>({
-      eventsPath,
-      filename: 'firehose',
-    });
-    const parsed = KinesisFirehoseSchema.parse(kinesisFirehoseKinesisEvent);
+    const testEvent = structuredClone(kinesisFirehoseEvent);
+    const parsed = KinesisFirehoseSchema.parse(testEvent);
 
     const transformedInput = {
-      ...kinesisFirehoseKinesisEvent,
-      records: kinesisFirehoseKinesisEvent.records.map((record) => {
+      ...testEvent,
+      records: testEvent.records.map((record) => {
         return {
           ...record,
           data: Buffer.from(record.data, 'base64').toString(),
@@ -87,16 +111,13 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Kinesis Firehose PutEvents event', () => {
-    const kinesisFirehosePutEvent = getTestEvent<KinesisFireHoseEvent>({
-      eventsPath,
-      filename: 'firehose-put',
-    });
+    const testEvent = structuredClone(kinesisFirehosePutEvent);
 
-    const parsed = KinesisFirehoseSchema.parse(kinesisFirehosePutEvent);
+    const parsed = KinesisFirehoseSchema.parse(testEvent);
 
     const transformedInput = {
-      ...kinesisFirehosePutEvent,
-      records: kinesisFirehosePutEvent.records.map((record) => {
+      ...testEvent,
+      records: testEvent.records.map((record) => {
         return {
           ...record,
           data: Buffer.from(record.data, 'base64').toString(),
@@ -107,16 +128,13 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Firehose event with SQS event', () => {
-    const kinesisFirehoseSQSEvent = getTestEvent<KinesisFireHoseSqsEvent>({
-      eventsPath,
-      filename: 'firehose-sqs',
-    });
+    const testEvent = structuredClone(kinesisFirehoseSQSEvent);
 
-    const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
+    const parsed = KinesisFirehoseSqsSchema.parse(testEvent);
 
     const transformedInput = {
-      ...kinesisFirehoseSQSEvent,
-      records: kinesisFirehoseSQSEvent.records.map((record) => {
+      ...testEvent,
+      records: testEvent.records.map((record) => {
         return {
           ...record,
           data: JSON.parse(
@@ -129,17 +147,12 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Kinesis event with CloudWatch event', () => {
-    const kinesisStreamCloudWatchLogsEvent =
-      getTestEvent<KinesisDataStreamEvent>({
-        eventsPath,
-        filename: 'stream-cloudwatch-logs',
-      });
-    const parsed = KinesisDataStreamSchema.parse(
-      kinesisStreamCloudWatchLogsEvent
-    );
+    const testEvent = structuredClone(kinesisStreamCloudWatchLogsEvent);
+
+    const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
-      Records: kinesisStreamCloudWatchLogsEvent.Records.map((record, index) => {
+      Records: testEvent.Records.map((record, index) => {
         return {
           ...record,
           kinesis: {
@@ -157,33 +170,28 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should return original value if cannot parse KinesisFirehoseSqsRecord', () => {
-    const kinesisFirehoseSQSEvent = getTestEvent<KinesisFireHoseSqsEvent>({
-      eventsPath,
-      filename: 'firehose-sqs',
-    });
-    kinesisFirehoseSQSEvent.records[0].data = 'not a valid json';
-    const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
+    const testEvent = structuredClone(kinesisFirehoseSQSEvent);
+    testEvent.records[0].data = 'not a valid json';
 
-    expect(parsed).toStrictEqual(kinesisFirehoseSQSEvent);
+    const parsed = KinesisFirehoseSqsSchema.parse(testEvent);
+
+    expect(parsed).toStrictEqual(testEvent);
   });
   it('should parse a kinesis record from a kinesis event', () => {
-    const kinesisStreamEvent: KinesisDataStreamEvent =
-      getTestEvent<KinesisDataStreamEvent>({
-        eventsPath,
-        filename: 'stream-one-record',
-      });
-    const parsedRecord = KinesisDataStreamRecord.parse(
-      kinesisStreamEvent.Records[0]
-    );
+    const testEvent: KinesisDataStreamEvent =
+      structuredClone(kinesisStreamEvent);
+
+    const parsedRecord = KinesisDataStreamRecord.parse(testEvent.Records[0]);
 
     expect(parsedRecord.eventSource).toEqual('aws:kinesis');
     expect(parsedRecord.eventName).toEqual('aws:kinesis:record');
   });
 
   it('should parse a kinesis record from dynamodb stream event', () => {
-    const dynamodbStreamKinesisEvent = getTestEvent<KinesisDynamoDBStreamEvent>(
-      { eventsPath, filename: 'dynamodb-stream' }
-    );
+    const testEvent = getTestEvent<KinesisDynamoDBStreamEvent>({
+      eventsPath,
+      filename: 'dynamodb-stream',
+    });
     const expectedRecords = [
       {
         awsRegion: 'eu-west-1',
@@ -223,9 +231,7 @@ describe('Kinesis ', () => {
       },
     ];
 
-    const parsedRecord = KinesisDynamoDBStreamSchema.parse(
-      dynamodbStreamKinesisEvent
-    );
+    const parsedRecord = KinesisDynamoDBStreamSchema.parse(testEvent);
 
     expect(parsedRecord.Records.map((record) => record.kinesis.data)).toEqual(
       expectedRecords
@@ -233,20 +239,15 @@ describe('Kinesis ', () => {
   });
 
   it('should parse a kinesis firehose record from a kinesis firehose event', () => {
-    const kinesisFirehoseEvent: KinesisFireHoseEvent =
-      getTestEvent<KinesisFireHoseEvent>({ eventsPath, filename: 'firehose' });
+    const testEvent = structuredClone(kinesisFirehoseEvent);
     const parsedRecord: KinesisFirehoseRecord =
-      KinesisFirehoseRecordSchema.parse(kinesisFirehoseEvent.records[0]);
+      KinesisFirehoseRecordSchema.parse(testEvent.records[0]);
 
     expect(parsedRecord.data).toEqual('Hello World');
   });
 
   it('should parse a sqs record from a kinesis firehose event', () => {
-    const kinesisFireHoseSqsEvent: KinesisFireHoseSqsEvent =
-      getTestEvent<KinesisFireHoseSqsEvent>({
-        eventsPath,
-        filename: 'firehose-sqs',
-      });
+    const kinesisFireHoseSqsEvent = structuredClone(kinesisFirehoseSQSEvent);
     const parsed: KinesisFirehoseSqsRecord =
       KinesisFirehoseSqsRecordSchema.parse(kinesisFireHoseSqsEvent.records[0]);
 

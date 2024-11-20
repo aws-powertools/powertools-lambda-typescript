@@ -11,6 +11,7 @@ import type {
   CloudFormationCustomResourceUpdateSchema,
   CloudWatchLogsSchema,
   DynamoDBStreamSchema,
+  DynamoDBStreamToKinesisRecord,
   EventBridgeSchema,
   KafkaMskEventSchema,
   KafkaRecordSchema,
@@ -69,6 +70,10 @@ type CloudFormationCustomResourceUpdateEvent = z.infer<
 type CloudWatchLogsEvent = z.infer<typeof CloudWatchLogsSchema>;
 
 type DynamoDBStreamEvent = z.infer<typeof DynamoDBStreamSchema>;
+
+type DynamoDBStreamToKinesisRecordEvent = z.infer<
+  typeof DynamoDBStreamToKinesisRecord
+>;
 
 type EventBridgeEvent = z.infer<typeof EventBridgeSchema>;
 
@@ -134,6 +139,7 @@ export type {
   CloudFormationCustomResourceUpdateEvent,
   CloudWatchLogsEvent,
   DynamoDBStreamEvent,
+  DynamoDBStreamToKinesisRecordEvent,
   EventBridgeEvent,
   KafkaSelfManagedEvent,
   KafkaMskEvent,

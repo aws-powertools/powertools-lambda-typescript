@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.10.0...v2.11.0) (2024-11-20)
+
+
+### Bug Fixes
+
+* **metrics:** skip empty string dimension values ([#3319](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3319)) ([924d49d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/924d49dcac8cc999782db51e61d8e854b752cd5c))
+* **parser:** add aws region to kinesis event ([#3260](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3260)) ([246f132](https://github.com/aws-powertools/powertools-lambda-typescript/commit/246f13253bdba1f6963cf53605b0ae10698f063e))
+* **parser:** event type literal for selfManagedKafka ([#3325](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3325)) ([5350afe](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5350afed92d02b7b8d47f387705f70c59deeeb65))
+* **parser:** fix cause errors nested structure ([#3250](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3250)) ([1ff97cb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1ff97cb758b2e44a76ce108d8e54c9335088abba))
+
+
+### Features
+
+* **batch:** Async Processing of Records for for SQS Fifo ([#3160](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3160)) ([e73b575](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e73b575b784b7a59ca8cde02d4ca51ec97789d19))
+* **metrics:** ability to set custom timestamp with `setTimestamp` for metrics ([#3310](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3310)) ([0fb94c3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0fb94c38cbead6333ff4a17354c81ce73fe51afd))
+* **metrics:** add ability to pass custom logger ([#3057](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3057)) ([a531b90](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a531b90031826970673eb8bfad78dee6edd0a359))
+
+
+
+
+
 # [2.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.9.0...v2.10.0) (2024-10-22)
 
 

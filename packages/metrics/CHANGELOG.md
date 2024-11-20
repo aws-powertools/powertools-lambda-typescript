@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.10.0...v2.11.0) (2024-11-20)
+
+
+### Bug Fixes
+
+* **metrics:** skip empty string dimension values ([#3319](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3319)) ([924d49d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/924d49dcac8cc999782db51e61d8e854b752cd5c))
+
+
+### Features
+
+* **metrics:** ability to set custom timestamp with `setTimestamp` for metrics ([#3310](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3310)) ([0fb94c3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0fb94c38cbead6333ff4a17354c81ce73fe51afd))
+* **metrics:** add ability to pass custom logger ([#3057](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3057)) ([a531b90](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a531b90031826970673eb8bfad78dee6edd0a359))
+
+
+
+
+
 # [2.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.9.0...v2.10.0) (2024-10-22)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics

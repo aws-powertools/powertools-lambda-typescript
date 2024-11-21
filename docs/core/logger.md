@@ -70,7 +70,7 @@ Check API docs to learn more about [Logger constructor options](https://docs.pow
       ShoppingCartApiFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs20.x
+          Runtime: nodejs22.x
           Environment:
             Variables:
               POWERTOOLS_LOG_LEVEL: WARN

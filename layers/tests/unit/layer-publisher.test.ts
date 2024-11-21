@@ -20,7 +20,7 @@ describe('Class: LayerPublisherStack', () => {
     // Assess
     template.resourceCountIs('AWS::Lambda::LayerVersion', 1);
     template.hasResourceProperties('AWS::Lambda::LayerVersion', {
-      CompatibleRuntimes: ['nodejs18.x', 'nodejs20.x'],
+      CompatibleRuntimes: ['nodejs18.x', 'nodejs20.x', 'nodejs22.x'],
       LicenseInfo: 'MIT-0',
       /* CompatibleArchitectures: [
         'x86_64',

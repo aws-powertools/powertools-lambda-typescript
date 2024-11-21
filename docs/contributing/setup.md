@@ -25,7 +25,7 @@ graph LR
 Unless you're using the pre-configured Cloud environment, you'll need the following installed:
 
 * [GitHub account](https://github.com/join){target="_blank" rel="nofollow"}. You'll need to be able to fork, clone, and contribute via pull request.
-* [Node.js 20.x](https://nodejs.org/download/release/latest-v20.x/){target="_blank" rel="nofollow"}. The repository contains an `.nvmrc` file, so if you use tools like [nvm](https://github.com/nvm-sh/nvm#nvmrc), [fnm](https://github.com/Schniz/fnm) you can switch version quickly.
+* [Node.js 22.x](https://nodejs.org/download/release/latest-v22.x/){target="_blank" rel="nofollow"}. The repository contains an `.nvmrc` file, so if you use tools like [nvm](https://github.com/nvm-sh/nvm#nvmrc), [fnm](https://github.com/Schniz/fnm) you can switch version quickly.
 * [npm 10.x](https://www.npmjs.com/). We use it to install dependencies and manage the workspaces.
 * [Docker](https://docs.docker.com/engine/install/){target="_blank" rel="nofollow"}. We use it to run documentation, and non-JavaScript tooling.
 * [Fork the repository](https://github.com/aws-powertools/powertools-lambda-typescript/fork). You'll work against your fork of this repository.

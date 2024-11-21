@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { CfnOutput, Duration } from 'aws-cdk-lib';
+import { CfnOutput, type CfnResource, Duration } from 'aws-cdk-lib';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';

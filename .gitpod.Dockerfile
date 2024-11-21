@@ -1,5 +1,5 @@
-# See gitpod image here: https://hub.docker.com/layers/gitpod/workspace-base/latest
-FROM gitpod/workspace-base@sha256:d69d08a0e1fa62b6d8db9e7ffe63dc21a58f0242946d945d776a819aec652130
+# See gitpod image here: https://hub.docker.com/r/gitpod/workspace-base
+FROM gitpod/workspace-base@sha256-f08b7c4d5caf9e9a570deb49bf9987d4f725b7d1320dc2e948f795635f441747
 
 USER gitpod
 

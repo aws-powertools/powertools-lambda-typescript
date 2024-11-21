@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parameters",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "description": "The parameters package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -17,6 +17,7 @@
     "test:unit:watch": "vitest tests/unit",
     "test:e2e:nodejs18x": "RUNTIME=nodejs18x vitest --run tests/e2e",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x vitest --run tests/e2e",
+    "test:e2e:nodejs22x": "RUNTIME=nodejs22x vitest --run tests/e2e",
     "test:e2e": "vitest --run tests/e2e",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
@@ -165,7 +166,7 @@
     "aws-sdk-client-mock-jest": "^4.1.0"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.10.0"
+    "@aws-lambda-powertools/commons": "^2.11.0"
   },
   "peerDependencies": {
     "@aws-sdk/client-appconfigdata": ">=3.x",

@@ -3,14 +3,15 @@ import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda';
 /**
  * The default AWS Lambda runtime to use when none is provided.
  */
-const defaultRuntime = 'nodejs20x';
+const defaultRuntime = 'nodejs22x';
 
 /**
  * The AWS Lambda runtimes that are supported by the project.
  */
 const TEST_RUNTIMES = {
   nodejs18x: Runtime.NODEJS_18_X,
-  [defaultRuntime]: Runtime.NODEJS_20_X,
+  nodejs20x: Runtime.NODEJS_20_X,
+  [defaultRuntime]: Runtime.NODEJS_22_X,
 } as const;
 
 /**

@@ -1,6 +1,6 @@
 {
   "name": "layers",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "bin": {
     "layer": "bin/layers.js"
   },
@@ -13,6 +13,7 @@
     "test:unit:types": "echo 'Not Implemented'",
     "test:e2e:nodejs18x": "echo 'Not Implemented'",
     "test:e2e:nodejs20x": "echo 'Not Implemented'",
+    "test:e2e:nodejs22x": "echo 'Not Implemented'",
     "test:e2e": "vitest --run tests/e2e",
     "build": "echo 'Not applicable, run `npx cdk synth` instead to build the stack'",
     "jest": "jest --detectOpenHandles",
@@ -40,8 +41,8 @@
     "source-map-support": "^0.5.21"
   },
   "dependencies": {
-    "aws-cdk": "^2.166.0",
-    "aws-cdk-lib": "^2.166.0",
+    "aws-cdk": "^2.168.0",
+    "aws-cdk-lib": "^2.168.0",
     "esbuild": "^0.24.0"
   }
 }

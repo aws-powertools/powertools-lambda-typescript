@@ -7,27 +7,61 @@ import {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsRecordSchema,
   KinesisFirehoseSqsSchema,
-  SqsRecordSchema,
 } from '../../../src/schemas/';
+import { KinesisDynamoDBStreamSchema } from '../../../src/schemas/kinesis';
 import type {
   KinesisDataStreamEvent,
   KinesisFireHoseEvent,
   KinesisFireHoseSqsEvent,
 } from '../../../src/types';
 import type {
+  KinesisDynamoDBStreamEvent,
   KinesisFirehoseRecord,
   KinesisFirehoseSqsRecord,
 } from '../../../src/types/schema';
-import { TestEvents } from './utils.js';
+import { getTestEvent } from './utils.js';
 
 describe('Kinesis ', () => {
+  const eventsPath = 'kinesis';
+
+  const kinesisStreamEvent = getTestEvent<KinesisDataStreamEvent>({
+    eventsPath,
+    filename: 'stream',
+  });
+
+  const kinesisStreamEventOneRecord = getTestEvent<KinesisDataStreamEvent>({
+    eventsPath,
+    filename: 'stream-one-record',
+  });
+
+  const kinesisFirehoseEvent = getTestEvent<KinesisFireHoseEvent>({
+    eventsPath,
+    filename: 'firehose',
+  });
+
+  const kinesisFirehosePutEvent = getTestEvent<KinesisFireHoseEvent>({
+    eventsPath,
+    filename: 'firehose-put',
+  });
+
+  const kinesisFirehoseSQSEvent = getTestEvent<KinesisFireHoseSqsEvent>({
+    eventsPath,
+    filename: 'firehose-sqs',
+  });
+
+  const kinesisStreamCloudWatchLogsEvent = getTestEvent<KinesisDataStreamEvent>(
+    {
+      eventsPath,
+      filename: 'stream-cloudwatch-logs',
+    }
+  );
+
   it('should parse kinesis event', () => {
-    const kinesisStreamEvent =
-      TestEvents.kinesisStreamEvent as KinesisDataStreamEvent;
-    const parsed = KinesisDataStreamSchema.parse(kinesisStreamEvent);
+    const testEvent = structuredClone(kinesisStreamEvent);
+    const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
-      Records: kinesisStreamEvent.Records.map((record, index) => {
+      Records: testEvent.Records.map((record, index) => {
         return {
           ...record,
           kinesis: {
@@ -41,12 +75,11 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse single kinesis record', () => {
-    const kinesisStreamEventOneRecord =
-      TestEvents.kinesisStreamEventOneRecord as KinesisDataStreamEvent;
-    const parsed = KinesisDataStreamSchema.parse(kinesisStreamEventOneRecord);
+    const testEvent = structuredClone(kinesisStreamEventOneRecord);
+    const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
-      Records: kinesisStreamEventOneRecord.Records.map((record, index) => {
+      Records: testEvent.Records.map((record, index) => {
         return {
           ...record,
           kinesis: {
@@ -62,13 +95,12 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Firehose event', () => {
-    const kinesisFirehoseKinesisEvent =
-      TestEvents.kinesisFirehoseKinesisEvent as KinesisFireHoseEvent;
-    const parsed = KinesisFirehoseSchema.parse(kinesisFirehoseKinesisEvent);
+    const testEvent = structuredClone(kinesisFirehoseEvent);
+    const parsed = KinesisFirehoseSchema.parse(testEvent);
 
     const transformedInput = {
-      ...kinesisFirehoseKinesisEvent,
-      records: kinesisFirehoseKinesisEvent.records.map((record) => {
+      ...testEvent,
+      records: testEvent.records.map((record) => {
         return {
           ...record,
           data: Buffer.from(record.data, 'base64').toString(),
@@ -79,13 +111,13 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Kinesis Firehose PutEvents event', () => {
-    const kinesisFirehosePutEvent =
-      TestEvents.kinesisFirehosePutEvent as KinesisFireHoseEvent;
-    const parsed = KinesisFirehoseSchema.parse(kinesisFirehosePutEvent);
+    const testEvent = structuredClone(kinesisFirehosePutEvent);
+
+    const parsed = KinesisFirehoseSchema.parse(testEvent);
 
     const transformedInput = {
-      ...kinesisFirehosePutEvent,
-      records: kinesisFirehosePutEvent.records.map((record) => {
+      ...testEvent,
+      records: testEvent.records.map((record) => {
         return {
           ...record,
           data: Buffer.from(record.data, 'base64').toString(),
@@ -96,13 +128,13 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Firehose event with SQS event', () => {
-    const kinesisFirehoseSQSEvent =
-      TestEvents.kinesisFirehoseSQSEvent as KinesisFireHoseSqsEvent;
-    const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
+    const testEvent = structuredClone(kinesisFirehoseSQSEvent);
+
+    const parsed = KinesisFirehoseSqsSchema.parse(testEvent);
 
     const transformedInput = {
-      ...kinesisFirehoseSQSEvent,
-      records: kinesisFirehoseSQSEvent.records.map((record) => {
+      ...testEvent,
+      records: testEvent.records.map((record) => {
         return {
           ...record,
           data: JSON.parse(
@@ -115,14 +147,12 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should parse Kinesis event with CloudWatch event', () => {
-    const kinesisStreamCloudWatchLogsEvent =
-      TestEvents.kinesisStreamCloudWatchLogsEvent as KinesisDataStreamEvent;
-    const parsed = KinesisDataStreamSchema.parse(
-      kinesisStreamCloudWatchLogsEvent
-    );
+    const testEvent = structuredClone(kinesisStreamCloudWatchLogsEvent);
+
+    const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
-      Records: kinesisStreamCloudWatchLogsEvent.Records.map((record, index) => {
+      Records: testEvent.Records.map((record, index) => {
         return {
           ...record,
           kinesis: {
@@ -140,37 +170,84 @@ describe('Kinesis ', () => {
     expect(parsed).toStrictEqual(transformedInput);
   });
   it('should return original value if cannot parse KinesisFirehoseSqsRecord', () => {
-    const kinesisFirehoseSQSEvent = TestEvents.kinesisFirehoseSQSEvent as {
-      records: { data: string }[];
-    };
-    kinesisFirehoseSQSEvent.records[0].data = 'not a valid json';
-    const parsed = KinesisFirehoseSqsSchema.parse(kinesisFirehoseSQSEvent);
+    const testEvent = structuredClone(kinesisFirehoseSQSEvent);
+    testEvent.records[0].data = 'not a valid json';
 
-    expect(parsed).toStrictEqual(kinesisFirehoseSQSEvent);
+    const parsed = KinesisFirehoseSqsSchema.parse(testEvent);
+
+    expect(parsed).toStrictEqual(testEvent);
   });
   it('should parse a kinesis record from a kinesis event', () => {
-    const kinesisStreamEvent: KinesisDataStreamEvent =
-      TestEvents.kinesisStreamEvent as KinesisDataStreamEvent;
-    const parsedRecord = KinesisDataStreamRecord.parse(
-      kinesisStreamEvent.Records[0]
-    );
+    const testEvent: KinesisDataStreamEvent =
+      structuredClone(kinesisStreamEvent);
+
+    const parsedRecord = KinesisDataStreamRecord.parse(testEvent.Records[0]);
 
     expect(parsedRecord.eventSource).toEqual('aws:kinesis');
     expect(parsedRecord.eventName).toEqual('aws:kinesis:record');
   });
 
+  it('should parse a kinesis record from dynamodb stream event', () => {
+    const testEvent = getTestEvent<KinesisDynamoDBStreamEvent>({
+      eventsPath,
+      filename: 'dynamodb-stream',
+    });
+    const expectedRecords = [
+      {
+        awsRegion: 'eu-west-1',
+        eventID: 'd9428029-0f63-4056-86da-ce10d545b1b9',
+        eventName: 'INSERT',
+        userIdentity: null,
+        recordFormat: 'application/json',
+        tableName: 'PowertoolsEventsStack-DynamoDBTable59784FC0-8NKAMTERTAXY',
+        dynamodb: {
+          ApproximateCreationDateTime: 1731924555370,
+          Keys: { id: { S: 'record-1qit2y819gi' } },
+          NewImage: {
+            id: { S: 'record-1qit2y819gi' },
+            data: { S: 'data-x6aq7ckdpgk' },
+          },
+          SizeBytes: 60,
+        },
+        eventSource: 'aws:dynamodb',
+      },
+      {
+        awsRegion: 'eu-west-1',
+        eventID: 'aa56cad4-311a-46c8-ab5f-c7a13a7a6298',
+        eventName: 'INSERT',
+        userIdentity: null,
+        recordFormat: 'application/json',
+        tableName: 'PowertoolsEventsStack-DynamoDBTable59784FC0-8NKAMTERTAXY',
+        dynamodb: {
+          ApproximateCreationDateTime: 1731924555370,
+          Keys: { id: { S: 'record-fvxn3q4q5jw' } },
+          NewImage: {
+            id: { S: 'record-fvxn3q4q5jw' },
+            data: { S: 'data-4eompjs89n5' },
+          },
+          SizeBytes: 60,
+        },
+        eventSource: 'aws:dynamodb',
+      },
+    ];
+
+    const parsedRecord = KinesisDynamoDBStreamSchema.parse(testEvent);
+
+    expect(parsedRecord.Records.map((record) => record.kinesis.data)).toEqual(
+      expectedRecords
+    );
+  });
+
   it('should parse a kinesis firehose record from a kinesis firehose event', () => {
-    const kinesisFirehoseEvent: KinesisFireHoseEvent =
-      TestEvents.kinesisFirehoseKinesisEvent as KinesisFireHoseEvent;
+    const testEvent = structuredClone(kinesisFirehoseEvent);
     const parsedRecord: KinesisFirehoseRecord =
-      KinesisFirehoseRecordSchema.parse(kinesisFirehoseEvent.records[0]);
+      KinesisFirehoseRecordSchema.parse(testEvent.records[0]);
 
     expect(parsedRecord.data).toEqual('Hello World');
   });
 
   it('should parse a sqs record from a kinesis firehose event', () => {
-    const kinesisFireHoseSqsEvent: KinesisFireHoseSqsEvent =
-      TestEvents.kinesisFirehoseSQSEvent as KinesisFireHoseSqsEvent;
+    const kinesisFireHoseSqsEvent = structuredClone(kinesisFirehoseSQSEvent);
     const parsed: KinesisFirehoseSqsRecord =
       KinesisFirehoseSqsRecordSchema.parse(kinesisFireHoseSqsEvent.records[0]);
 

@@ -35,7 +35,7 @@ const Envelope = {
    * @param input
    * @param schema
    */
-  safeParse<T extends ZodSchema>(input: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(input: unknown, schema: T): ParsedResult<unknown, z.infer<T>> {
     try {
       if (typeof input !== 'object' && typeof input !== 'string') {
         return {

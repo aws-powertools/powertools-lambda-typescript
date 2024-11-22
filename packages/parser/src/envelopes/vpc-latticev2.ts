@@ -19,7 +19,7 @@ export const VpcLatticeV2Envelope = {
     return Envelope.parse(parsedEnvelope.body, schema);
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult {
+  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult<unknown, z.infer<T>> {
     const parsedEnvelope = VpcLatticeV2Schema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {

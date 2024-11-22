@@ -78,6 +78,7 @@ Parser comes with the following built-in schemas:
 | **KafkaSelfManagedEventSchema**              | Lambda Event Source payload for self managed Kafka payload                            |
 | **KinesisDataStreamSchema**                  | Lambda Event Source payload for Amazon Kinesis Data Streams                           |
 | **KinesisFirehoseSchema**                    | Lambda Event Source payload for Amazon Kinesis Firehose                               |
+| **KinesisDynamoDBStreamSchema**              | Lambda Event Source payload for DynamodbStream record wrapped in Kinesis Data stream  |
 | **KinesisFirehoseSqsSchema**                 | Lambda Event Source payload for SQS messages wrapped in Kinesis Firehose records      |
 | **LambdaFunctionUrlSchema**                  | Lambda Event Source payload for Lambda Function URL payload                           |
 | **S3EventNotificationEventBridgeSchema**     | Lambda Event Source payload for Amazon S3 Event Notification to EventBridge.          |

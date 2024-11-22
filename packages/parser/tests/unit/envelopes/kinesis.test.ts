@@ -1,15 +1,22 @@
 import { generateMock } from '@anatine/zod-mock';
-import type { KinesisStreamEvent } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { KinesisEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import type { KinesisDataStreamEvent } from '../../../src/types/schema.js';
+import { TestSchema, getTestEvent } from '../schema/utils.js';
 
 describe('KinesisEnvelope', () => {
+  const eventsPath = 'kinesis';
+
+  const kinesisStreamEvent = getTestEvent<KinesisDataStreamEvent>({
+    eventsPath,
+    filename: 'stream',
+  });
+
   describe('parse', () => {
     it('should parse Kinesis Stream event', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
+      const testEvent = structuredClone(kinesisStreamEvent);
 
       testEvent.Records.map((record) => {
         record.kinesis.data = Buffer.from(JSON.stringify(mock)).toString(
@@ -24,8 +31,9 @@ describe('KinesisEnvelope', () => {
       expect(() => KinesisEnvelope.parse({ foo: 'bar' }, TestSchema)).toThrow();
     });
     it('should throw if record is invalid', () => {
-      const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
+      const testEvent = structuredClone(kinesisStreamEvent);
       testEvent.Records[0].kinesis.data = 'invalid';
+
       expect(() => KinesisEnvelope.parse(testEvent, TestSchema)).toThrow();
     });
   });
@@ -33,7 +41,7 @@ describe('KinesisEnvelope', () => {
   describe('safeParse', () => {
     it('should parse Kinesis Stream event', () => {
       const mock = generateMock(TestSchema);
-      const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
+      const testEvent = structuredClone(kinesisStreamEvent);
 
       testEvent.Records.map((record) => {
         record.kinesis.data = Buffer.from(JSON.stringify(mock)).toString(
@@ -54,7 +62,7 @@ describe('KinesisEnvelope', () => {
       });
     });
     it('should return original event if record is invalid', () => {
-      const testEvent = TestEvents.kinesisStreamEvent as KinesisStreamEvent;
+      const testEvent = structuredClone(kinesisStreamEvent);
       testEvent.Records[0].kinesis.data = 'invalid';
       const parseResult = KinesisEnvelope.safeParse(testEvent, TestSchema);
       expect(parseResult).toEqual({

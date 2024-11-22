@@ -13,11 +13,13 @@ import type {
   CloudFormationCustomResourceUpdateSchema,
   CloudWatchLogsSchema,
   DynamoDBStreamSchema,
+  DynamoDBStreamToKinesisRecord,
   EventBridgeSchema,
   KafkaMskEventSchema,
   KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
   KinesisDataStreamSchema,
+  KinesisDynamoDBStreamSchema,
   KinesisFirehoseRecordSchema,
   KinesisFirehoseSchema,
   KinesisFirehoseSqsRecordSchema,
@@ -75,6 +77,10 @@ type CloudWatchLogsEvent = z.infer<typeof CloudWatchLogsSchema>;
 
 type DynamoDBStreamEvent = z.infer<typeof DynamoDBStreamSchema>;
 
+type DynamoDBStreamToKinesisRecordEvent = z.infer<
+  typeof DynamoDBStreamToKinesisRecord
+>;
+
 type EventBridgeEvent = z.infer<typeof EventBridgeSchema>;
 
 type KafkaSelfManagedEvent = z.infer<typeof KafkaSelfManagedEventSchema>;
@@ -84,6 +90,8 @@ type KafkaRecord = z.infer<typeof KafkaRecordSchema>;
 type KafkaMskEvent = z.infer<typeof KafkaMskEventSchema>;
 
 type KinesisDataStreamEvent = z.infer<typeof KinesisDataStreamSchema>;
+
+type KinesisDynamoDBStreamEvent = z.infer<typeof KinesisDynamoDBStreamSchema>;
 
 type KinesisFireHoseEvent = z.infer<typeof KinesisFirehoseSchema>;
 
@@ -139,11 +147,13 @@ export type {
   CloudFormationCustomResourceUpdateEvent,
   CloudWatchLogsEvent,
   DynamoDBStreamEvent,
+  DynamoDBStreamToKinesisRecordEvent,
   EventBridgeEvent,
   KafkaSelfManagedEvent,
   KafkaMskEvent,
   KafkaRecord,
   KinesisDataStreamEvent,
+  KinesisDynamoDBStreamEvent,
   KinesisFireHoseEvent,
   KinesisFirehoseRecord,
   KinesisFireHoseSqsEvent,

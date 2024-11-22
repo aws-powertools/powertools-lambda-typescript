@@ -31,6 +31,19 @@ const DynamoDBStreamRecord = z.object({
   userIdentity: UserIdentity.optional(),
 });
 
+const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
+  recordFormat: z.literal('application/json'),
+  tableName: z.string(),
+  userIdentity: UserIdentity.nullish(),
+  dynamodb: DynamoDBStreamChangeRecord.omit({
+    SequenceNumber: true,
+    StreamViewType: true,
+  }),
+}).omit({
+  eventVersion: true,
+  eventSourceARN: true,
+});
+
 /**
  * Zod schema for Amazon DynamoDB Stream event.
  *
@@ -111,6 +124,7 @@ const DynamoDBStreamSchema = z.object({
 });
 
 export {
+  DynamoDBStreamToKinesisRecord,
   DynamoDBStreamSchema,
   DynamoDBStreamRecord,
   DynamoDBStreamChangeRecord,

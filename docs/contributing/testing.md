@@ -85,7 +85,7 @@ To run integration tests you'll need to set up an AWS account and obtain credent
 * `npm test:e2e -ws` to run all the integration tests for all the modules sequentially
 * `test:e2e:parallel` to run all the integration tests for all the modules in parallel
 * `npm test:e2e -w packages/metrics` to run all the integration tests for the `metrics` module
-* `npm run test:e2e:nodejs20x -w packages/metrics` to run all the integration tests for the `metrics` module using the `nodejs20x` runtime
+* `npm run test:e2e:nodejs22x -w packages/metrics` to run all the integration tests for the `metrics` module using the `nodejs22x` runtime
 
 The tests will deploy the necessary AWS resources using AWS CDK, and will run the Lambda functions using the AWS SDK. After that, the tests will verify the Lambda functions behave as expected by checking logs, metrics, traces, and other resources as needed. Finally, the tests will destroy all the AWS resources created at the beginning.
 

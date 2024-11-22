@@ -10,7 +10,7 @@ Transform: AWS::Serverless-2016-10-31
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html
 Globals:
   Function:
-    Runtime: nodejs20.x
+    Runtime: nodejs22.x
     Tracing: Active
     Architectures:
       - arm64

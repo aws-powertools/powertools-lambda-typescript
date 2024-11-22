@@ -63,7 +63,7 @@ To use it in an ESM project, you can instruct your bundler to use the `require` 
             super(scope, id, props);
 
             const handler = new NodejsFunction(this, 'helloWorldFunction', {
-            runtime: Runtime.NODEJS_20_X,
+            runtime: Runtime.NODEJS_22_X,
             handler: 'handler',
             entry: 'src/index.ts',
             bundling: {
@@ -90,7 +90,7 @@ To use it in an ESM project, you can instruct your bundler to use the `require` 
         HelloWorldFunction:
             Type: AWS::Serverless::Function
             Properties:
-            Runtime: nodejs20.x
+            Runtime: nodejs22.x
             Handler: src/index.handler
             Metadata:
             BuildMethod: esbuild
@@ -140,7 +140,7 @@ The `Tracer` utility is instantiated outside of the Lambda handler. In doing thi
       HelloWorldFunction:
         Type: AWS::Serverless::Function
         Properties:
-          Runtime: nodejs20.x
+          Runtime: nodejs22.x
           Tracing: Active
           Environment:
             Variables:

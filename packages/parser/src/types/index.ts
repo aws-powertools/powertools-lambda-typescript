@@ -13,6 +13,8 @@ export type {
   APIGatewayProxyEventV2,
   APIGatewayRequestContextV2,
   APIGatewayRequestAuthorizerV2,
+  AppSyncResolverEvent,
+  AppSyncBatchResolverEvent,
   S3Event,
   S3EventNotificationEventBridge,
   S3SqsEventNotification,

@@ -1,0 +1,18 @@
+{
+  "arguments": {
+    "id": "my identifier"
+  },
+  "source": {
+    "name": "Value",
+    "nested": {
+      "name": "value",
+      "list": []
+    }
+  },
+  "prev": {
+    "result": {
+      "field1": "value1"
+    }
+  },
+  "stash": {}
+}

@@ -6,6 +6,8 @@ import type {
   APIGatewayRequestContextV2Schema,
   AlbMultiValueHeadersSchema,
   AlbSchema,
+  AppSyncBatchResolverSchema,
+  AppSyncResolverSchema,
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,
@@ -54,6 +56,10 @@ type APIGatewayRequestAuthorizerV2 = z.infer<
 type APIGatewayRequestContextV2 = z.infer<
   typeof APIGatewayRequestContextV2Schema
 >;
+
+type AppSyncResolverEvent = z.infer<typeof AppSyncResolverSchema>;
+
+type AppSyncBatchResolverEvent = z.infer<typeof AppSyncBatchResolverSchema>;
 
 type CloudFormationCustomResourceCreateEvent = z.infer<
   typeof CloudFormationCustomResourceCreateSchema
@@ -134,6 +140,8 @@ export type {
   APIGatewayProxyEventV2,
   APIGatewayRequestAuthorizerV2,
   APIGatewayRequestContextV2,
+  AppSyncResolverEvent,
+  AppSyncBatchResolverEvent,
   CloudFormationCustomResourceCreateEvent,
   CloudFormationCustomResourceDeleteEvent,
   CloudFormationCustomResourceUpdateEvent,

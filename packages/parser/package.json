@@ -60,6 +60,10 @@
       "require": "./lib/cjs/schemas/apigwv2.js",
       "import": "./lib/esm/schemas/apigwv2.js"
     },
+    "./schemas/appsync": {
+      "require": "./lib/cjs/schemas/appsync.js",
+      "import": "./lib/esm/schemas/appsync.js"
+    },
     "./schemas/cloudformation-custom-resources": {
       "require": "./lib/cjs/schemas/cloudformation-custom-resources.js",
       "import": "./lib/esm/schemas/cloudformation-custom-resources.js"
@@ -183,10 +187,7 @@
   },
   "typesVersions": {
     "*": {
-      "types": [
-        "./lib/cjs/types/index.d.ts",
-        "./lib/esm/types/index.d.ts"
-      ],
+      "types": ["./lib/cjs/types/index.d.ts", "./lib/esm/types/index.d.ts"],
       "middleware": [
         "./lib/cjs/middleware/parser.d.ts",
         "./lib/esm/middleware/parser.d.ts"
@@ -206,6 +207,10 @@
       "schemas/api-gatewayv2": [
         "./lib/cjs/schemas/apigwv2.d.ts",
         "./lib/esm/schemas/apigwv2.d.ts"
+      ],
+      "schemas/appsync": [
+        "./lib/cjs/schemas/appsync.d.ts",
+        "./lib/esm/schemas/appsync.d.ts"
       ],
       "schemas/cloudformation-custom-resources": [
         "./lib/cjs/schemas/cloudformation-custom-resources.d.ts",
@@ -327,9 +332,7 @@
   },
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

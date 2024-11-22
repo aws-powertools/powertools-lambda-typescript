@@ -1,5 +1,6 @@
 import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
+import { DynamoDBStreamToKinesisRecord } from './dynamodb.js';
 
 const KinesisDataStreamRecordPayload = z.object({
   kinesisSchemaVersion: z.string(),
@@ -7,11 +8,11 @@ const KinesisDataStreamRecordPayload = z.object({
   sequenceNumber: z.string(),
   approximateArrivalTimestamp: z.number(),
   data: z.string().transform((data) => {
-    const decompresed = decompress(data);
+    const decompressed = decompress(data);
     const decoded = Buffer.from(data, 'base64').toString('utf-8');
     try {
       // If data was not compressed, try to parse it as JSON otherwise it must be string
-      return decompresed === data ? JSON.parse(decoded) : decompresed;
+      return decompressed === data ? JSON.parse(decoded) : decompressed;
     } catch (e) {
       return decoded;
     }
@@ -35,6 +36,21 @@ const KinesisDataStreamRecord = z.object({
   invokeIdentityArn: z.string(),
   eventSourceARN: z.string(),
   kinesis: KinesisDataStreamRecordPayload,
+});
+
+const KinesisDynamoDBStreamSchema = z.object({
+  Records: z.array(
+    KinesisDataStreamRecord.extend({
+      kinesis: KinesisDataStreamRecordPayload.extend({
+        data: z
+          .string()
+          .transform((data) => {
+            return JSON.parse(Buffer.from(data, 'base64').toString('utf8'));
+          })
+          .pipe(DynamoDBStreamToKinesisRecord),
+      }),
+    })
+  ),
 });
 
 /**
@@ -88,7 +104,8 @@ const KinesisDataStreamSchema = z.object({
 });
 
 export {
-  KinesisDataStreamSchema,
   KinesisDataStreamRecord,
   KinesisDataStreamRecordPayload,
+  KinesisDataStreamSchema,
+  KinesisDynamoDBStreamSchema,
 };

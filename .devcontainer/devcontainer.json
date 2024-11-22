@@ -8,14 +8,15 @@
     // Append -bullseye or -buster to pin to an OS version.
     // Use -bullseye variants on local arm64/Apple Silicon.
     "args": {
-      "VARIANT": "20-bullseye"
+      "VARIANT": "22-bullseye"
     }
   },
   "customizations": {
     // Add the ids of extensions you want installed when the container is created.
     "extensions": [
       "biomejs.biome",
-      "firsttris.vscode-jest-runner"
+      "firsttris.vscode-jest-runner",
+      "vitest.explorer"
     ],
     "vscode": {
       "git.enableCommitSigning": true

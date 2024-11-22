@@ -66,7 +66,7 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typedoc": "^0.26.11",
-    "typedoc-plugin-missing-exports": "^3.0.0",
+    "typedoc-plugin-missing-exports": "^3.0.2",
     "typedoc-plugin-zod": "^1.2.1",
     "typescript": "^5.6.3",
     "vitest": "^2.0.5"

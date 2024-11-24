@@ -1418,6 +1418,29 @@ describe('Class: Metrics', () => {
       expect(consoleLogSpy).toBeCalledWith(JSON.stringify(mockData));
     });
 
+    test('it should not log anything if metrics are disabled', () => {
+      // Prepare
+      process.env.POWERTOOLS_METRICS_DISABLED = 'true';
+      const customLogger = {
+        log: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        error: jest.fn(),
+        info: jest.fn(),
+      };
+      const metrics: Metrics = new Metrics({
+        namespace: TEST_NAMESPACE,
+        logger: customLogger,
+      });
+      const consoleLogSpy = jest.spyOn(customLogger, 'log');
+
+      // Act
+      metrics.publishStoredMetrics();
+
+      // Assess
+      expect(consoleLogSpy).toHaveBeenCalledTimes(0);
+    });
+
     test('it should call clearMetrics function', () => {
       // Prepare
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
@@ -2340,6 +2363,32 @@ describe('Class: Metrics', () => {
       // Act & Assess
       // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(metrics['console']).toEqual(console);
+    });
+  });
+
+  describe('Method: isDisabled', () => {
+    it('should be enabled by default', () => {
+      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+
+      // Act & Assess
+      expect(metrics.isDisabled()).toBe(false);
+    });
+
+    it('should be disabled if POWERTOOLS_DEV is set to true', () => {
+      process.env.POWERTOOLS_DEV = 'true';
+      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+
+      // Act & Assess
+      expect(metrics.isDisabled()).toBe(true);
+    });
+
+    it('should be disabled if POWERTOOLS_METRICS_DISABLED is set to true', () => {
+      // Prepare
+      process.env.POWERTOOLS_METRICS_DISABLED = 'true';
+      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+
+      // Act & Assess
+      expect(metrics.isDisabled()).toBe(true);
     });
   });
 

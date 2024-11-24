@@ -244,7 +244,7 @@ class Metrics extends Utility implements MetricsInterface {
       Object.hasOwn(this.defaultDimensions, name)
     ) {
       this.#logger.warn(
-        `Dimension with "${name}" has already been added. The previous value will be overwritten.`
+        `Dimension "${name}" has already been added. The previous value will be overwritten.`
       );
     }
     this.dimensions[name] = value;

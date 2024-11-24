@@ -375,7 +375,7 @@ describe('Class: Metrics', () => {
         })
       );
       expect(logger.warn).toHaveBeenCalledWith(
-        `Dimension with "test-dimension" has already been added. The previous value will be overwritten.`
+        `Dimension "test-dimension" has already been added. The previous value will be overwritten.`
       );
     });
 

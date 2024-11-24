@@ -19,7 +19,7 @@ export default defineConfig({
         'packages/idempotency/src/types/**',
         'packages/jmespath/src/types.ts',
         'packages/logger/src/types/**',
-        'packages/metrics/**',
+        'packages/metrics/src/types/**',
         'packages/parameters/src/types/**',
         'packages/parser/src/types/**',
         'layers/**',

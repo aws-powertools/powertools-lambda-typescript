@@ -1,14 +1,10 @@
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import {
   type CloudWatchClient,
   type Dimension,
   ListMetricsCommand,
   type ListMetricsCommandOutput,
 } from '@aws-sdk/client-cloudwatch';
-import type { Context, Handler } from 'aws-lambda';
 import promiseRetry from 'promise-retry';
-import { MetricUnit, type Metrics } from '../../src/index.js';
-import type { ExtraOptions } from '../../src/types/index.js';
 
 const getMetrics = async (
   cloudWatchClient: CloudWatchClient,
@@ -43,29 +39,7 @@ const getMetrics = async (
   }, retryOptions);
 };
 
-const setupDecoratorLambdaHandler = (
-  metrics: Metrics,
-  options: ExtraOptions = {}
-): Handler => {
-  class LambdaFunction implements LambdaInterface {
-    @metrics.logMetrics(options)
-    public async handler<TEvent>(
-      _event: TEvent,
-      _context: Context
-    ): Promise<string> {
-      metrics.addMetric('decorator-lambda-test-metric', MetricUnit.Count, 1);
-
-      return 'Lambda invoked!';
-    }
-  }
-
-  const handlerClass = new LambdaFunction();
-  const handler = handlerClass.handler.bind(handlerClass);
-
-  return handler;
-};
-
 const sortDimensions = (dimensions?: Dimension[]): Dimension[] | undefined =>
   dimensions?.sort((a, b) => (a.Name || '').localeCompare(b?.Name || ''));
 
-export { getMetrics, setupDecoratorLambdaHandler, sortDimensions };
+export { getMetrics, sortDimensions };

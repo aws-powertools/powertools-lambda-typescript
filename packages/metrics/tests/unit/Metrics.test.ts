@@ -3,7 +3,10 @@
  *
  * @group unit/metrics/class
  */
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import type {
+  GenericLogger,
+  LambdaInterface,
+} from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context, Handler } from 'aws-lambda';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
@@ -350,7 +353,13 @@ describe('Class: Metrics', () => {
 
     test('it should update existing dimension value if same dimension is added again', () => {
       // Prepare
-      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+      const logger = {
+        warn: jest.fn(),
+      } as unknown as GenericLogger;
+      const metrics: Metrics = new Metrics({
+        namespace: TEST_NAMESPACE,
+        logger,
+      });
       const dimensionName = 'test-dimension';
 
       // Act
@@ -364,6 +373,9 @@ describe('Class: Metrics', () => {
             [dimensionName]: 'test-value-2',
           },
         })
+      );
+      expect(logger.warn).toHaveBeenCalledWith(
+        `Dimension with "test-dimension" has already been added. The previous value will be overwritten.`
       );
     });
 
@@ -521,7 +533,7 @@ describe('Class: Metrics', () => {
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const dimensionsToBeAdded: LooseObject = {};
-      for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
+      for (let i = 0; i < MAX_DIMENSION_COUNT - 1; i++) {
         dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
 
@@ -531,7 +543,7 @@ describe('Class: Metrics', () => {
       ).not.toThrowError();
       // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['dimensions']).length).toBe(
-        MAX_DIMENSION_COUNT
+        MAX_DIMENSION_COUNT - 1 // Starts from 1 because the service dimension is already added by default
       );
     });
 
@@ -541,7 +553,7 @@ describe('Class: Metrics', () => {
       const dimensionName = 'test-dimension';
       const dimensionValue = 'test-value';
       const dimensionsToBeAdded: LooseObject = {};
-      for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
+      for (let i = 0; i < MAX_DIMENSION_COUNT - 1; i++) {
         dimensionsToBeAdded[`${dimensionName}-${i}`] = `${dimensionValue}-${i}`;
       }
 
@@ -549,14 +561,14 @@ describe('Class: Metrics', () => {
       metrics.addDimensions(dimensionsToBeAdded);
       // biome-ignore  lint/complexity/useLiteralKeys: This needs to be accessed with literal key for testing
       expect(Object.keys(metrics['dimensions']).length).toBe(
-        MAX_DIMENSION_COUNT
+        MAX_DIMENSION_COUNT - 1 // Starts from 1 because the service dimension is already added by default
       );
       expect(() =>
         metrics.addDimensions({
           'another-dimension': 'another-dimension-value',
         })
       ).toThrowError(
-        `Unable to add 1 dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+        `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
     });
 

@@ -202,6 +202,11 @@ class Metrics extends Utility implements MetricsInterface {
   private storedMetrics: StoredMetrics = {};
 
   /**
+   * Whether to disable metrics
+   */
+  private disabled = false;
+
+  /**
    * Custom timestamp for the metrics
    */
   #timestamp?: number;
@@ -473,6 +478,13 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * Whether metrics are disabled.
+   */
+  protected isDisabled(): boolean {
+    return this.disabled;
+  }
+
+  /**
    * A class method decorator to automatically log metrics after the method returns or throws an error.
    *
    * The decorator can be used with TypeScript classes and can be configured to optionally capture a `ColdStart` metric (see {@link Metrics.captureColdStartMetric | `captureColdStartMetric()`}),
@@ -579,8 +591,12 @@ class Metrics extends Utility implements MetricsInterface {
           'If application metrics should never be empty, consider using `throwOnEmptyMetrics`'
       );
     }
-    const emfOutput = this.serializeMetrics();
-    hasMetrics && this.console.log(JSON.stringify(emfOutput));
+
+    if (!this.disabled) {
+      const emfOutput = this.serializeMetrics();
+      hasMetrics && this.console.log(JSON.stringify(emfOutput));
+    }
+
     this.clearMetrics();
     this.clearDimensions();
     this.clearMetadata();
@@ -914,6 +930,15 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * Set the disbaled flag based on the environment variables `POWERTOOLS_METRICS_DISABLED` and `POWERTOOLS_DEV`.
+   *
+   * The `POWERTOOLS_METRICS_DISABLED` environment variable takes precedence over `POWERTOOLS_DEV`.
+   */
+  private setDisabled(): void {
+    this.disabled = this.getEnvVarsService().getMetricsDisabled();
+  }
+
+  /**
    * Set the options to be used by the Metrics instance.
    *
    * This method is used during the initialization of the Metrics instance.
@@ -932,6 +957,7 @@ class Metrics extends Utility implements MetricsInterface {
     this.setEnvVarsService();
     this.setConsole();
     this.setCustomConfigService(customConfigService);
+    this.setDisabled();
     this.setNamespace(namespace);
     this.setService(serviceName);
     this.setDefaultDimensions(defaultDimensions);

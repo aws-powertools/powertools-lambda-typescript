@@ -943,13 +943,7 @@ class Metrics extends Utility implements MetricsInterface {
    * The `POWERTOOLS_METRICS_DISABLED` environment variable takes precedence over `POWERTOOLS_DEV`.
    */
   private setDisabled(): void {
-    const devMode = this.getEnvVarsService().isDevMode();
-    if (devMode) this.disabled = true;
-
-    // This returns boolean or undefined, so we have to use explicit checks on true and false
-    const metricsDisabled = this.getEnvVarsService().getMetricsDisabled();
-    if (metricsDisabled === true) this.disabled = true;
-    if (metricsDisabled === false) this.disabled = false;
+    this.disabled = this.getEnvVarsService().getMetricsDisabled();
   }
 
   /**

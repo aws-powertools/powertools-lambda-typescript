@@ -23,16 +23,18 @@ class EnvironmentVariablesService
   }
 
   /**
-   * Get the value of the `POWERTOOLS_METRICS_DISABLED` environment variable.
+   * Get the value of the `POWERTOOLS_METRICS_DISABLED` or `POWERTOOLS_DEV` environment variables.
+   *
+   * The `POWERTOOLS_METRICS_DISABLED` environment variable takes precedence over `POWERTOOLS_DEV`.
    */
-  public getMetricsDisabled(): boolean | undefined {
+  public getMetricsDisabled(): boolean {
     const value = this.get(this.disabledVariable);
 
-    if (this.isValueTrue(value)) return true;
-
     if (this.isValueFalse(value)) return false;
+    if (this.isValueTrue(value)) return true;
+    if (this.isDevMode()) return true;
 
-    return undefined;
+    return false;
   }
 }
 

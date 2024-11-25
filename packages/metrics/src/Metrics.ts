@@ -244,6 +244,14 @@ class Metrics extends Utility implements MetricsInterface {
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
     }
+    if (
+      Object.hasOwn(this.dimensions, name) ||
+      Object.hasOwn(this.defaultDimensions, name)
+    ) {
+      this.#logger.warn(
+        `Dimension "${name}" has already been added. The previous value will be overwritten.`
+      );
+    }
     this.dimensions[name] = value;
   }
 
@@ -260,25 +268,9 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - An object with key-value pairs of dimensions
    */
   public addDimensions(dimensions: Dimensions): void {
-    const newDimensions = { ...this.dimensions };
-    for (const dimensionName of Object.keys(dimensions)) {
-      const value = dimensions[dimensionName];
-      if (value) {
-        newDimensions[dimensionName] = value;
-      } else {
-        this.#logger.warn(
-          `The dimension ${dimensionName} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
-        );
-      }
+    for (const [name, value] of Object.entries(dimensions)) {
+      this.addDimension(name, value);
     }
-    if (Object.keys(newDimensions).length > MAX_DIMENSION_COUNT) {
-      throw new RangeError(
-        `Unable to add ${
-          Object.keys(dimensions).length
-        } dimensions: the number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
-      );
-    }
-    this.dimensions = newDimensions;
   }
 
   /**

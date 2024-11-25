@@ -13,11 +13,28 @@ class EnvironmentVariablesService
 {
   private namespaceVariable = 'POWERTOOLS_METRICS_NAMESPACE';
 
+  private readonly disabledVariable = 'POWERTOOLS_METRICS_DISABLED';
+
   /**
    * Get the value of the `POWERTOOLS_METRICS_NAMESPACE` environment variable.
    */
   public getNamespace(): string {
     return this.get(this.namespaceVariable);
+  }
+
+  /**
+   * Get the value of the `POWERTOOLS_METRICS_DISABLED` or `POWERTOOLS_DEV` environment variables.
+   *
+   * The `POWERTOOLS_METRICS_DISABLED` environment variable takes precedence over `POWERTOOLS_DEV`.
+   */
+  public getMetricsDisabled(): boolean {
+    const value = this.get(this.disabledVariable);
+
+    if (this.isValueFalse(value)) return false;
+    if (this.isValueTrue(value)) return true;
+    if (this.isDevMode()) return true;
+
+    return false;
   }
 }
 

@@ -94,6 +94,17 @@ class EnvironmentVariablesService implements ConfigServiceInterface {
   }
 
   /**
+   * Helper function to determine if a value is considered falsy.
+   *
+   * @param value The value to check for falsiness.
+   */
+  public isValueFalse(value: string): boolean {
+    const falsyValues: string[] = ['0', 'n', 'no', 'f', 'false', 'off'];
+
+    return falsyValues.includes(value.toLowerCase());
+  }
+
+  /**
    * Get the AWS X-Ray Trace data from the environment variable.
    *
    * The method parses the environment variable `_X_AMZN_TRACE_ID` and returns an object with the key-value pairs.

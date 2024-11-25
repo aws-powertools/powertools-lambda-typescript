@@ -159,6 +159,37 @@ describe('Class: EnvironmentVariablesService', () => {
     );
   });
 
+  describe('Method: isValueFalse', () => {
+    const valuesToTest: Array<Array<string | boolean>> = [
+      ['0', true],
+      ['n', true],
+      ['no', true],
+      ['f', true],
+      ['FALSE', true],
+      ['off', true],
+      ['1', false],
+      ['y', false],
+      ['yes', false],
+      ['t', false],
+      ['TRUE', false],
+      ['on', false],
+      ['', false],
+      ['somethingsilly', false],
+    ];
+
+    it.each(valuesToTest)(
+      'takes string "%s" and returns %s',
+      (input, output) => {
+        // Prepare
+        const service = new EnvironmentVariablesService();
+        // Act
+        const value = service.isValueFalse(input as string);
+        // Assess
+        expect(value).toBe(output);
+      }
+    );
+  });
+
   describe('Method: isDevMode', () => {
     it('returns true if the environment variable POWERTOOLS_DEV is "true"', () => {
       // Prepare

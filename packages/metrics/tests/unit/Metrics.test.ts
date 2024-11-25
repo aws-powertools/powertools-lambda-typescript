@@ -2371,7 +2371,8 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act & Assess
-      expect(metrics.isDisabled()).toBe(false);
+      // biome-ignore lint/complexity/useLiteralKeys: accessing protected method
+      expect(metrics['isDisabled']()).toBe(false);
     });
 
     it('should be disabled if POWERTOOLS_DEV is set to true', () => {
@@ -2379,7 +2380,8 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act & Assess
-      expect(metrics.isDisabled()).toBe(true);
+      // biome-ignore lint/complexity/useLiteralKeys: accessing protected method
+      expect(metrics['isDisabled']()).toBe(true);
     });
 
     it('should be disabled if POWERTOOLS_METRICS_DISABLED is set to true', () => {
@@ -2388,7 +2390,27 @@ describe('Class: Metrics', () => {
       const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
 
       // Act & Assess
-      expect(metrics.isDisabled()).toBe(true);
+      // biome-ignore lint/complexity/useLiteralKeys: accessing protected method
+      expect(metrics['isDisabled']()).toBe(true);
+    });
+
+    it('should be enabled if POWERTOOLS_METRICS_DISABLED is set to false', () => {
+      process.env.POWERTOOLS_METRICS_DISABLED = 'false';
+      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+
+      // Act & Assess
+      // biome-ignore lint/complexity/useLiteralKeys: accessing protected method
+      expect(metrics['isDisabled']()).toBe(false);
+    });
+
+    it('should be enabled if POWERTOOLS_DEV is set to true and POWERTOOLS_METRICS_DISABLED is set to false', () => {
+      process.env.POWERTOOLS_DEV = 'true';
+      process.env.POWERTOOLS_METRICS_DISABLED = 'false';
+      const metrics: Metrics = new Metrics({ namespace: TEST_NAMESPACE });
+
+      // Act & Assess
+      // biome-ignore lint/complexity/useLiteralKeys: accessing protected method
+      expect(metrics['isDisabled']()).toBe(false);
     });
   });
 

@@ -488,7 +488,7 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * Whether metrics are disabled.
    */
-  public isDisabled(): boolean {
+  protected isDisabled(): boolean {
     return this.disabled;
   }
 
@@ -603,8 +603,6 @@ class Metrics extends Utility implements MetricsInterface {
     if (!this.disabled) {
       const emfOutput = this.serializeMetrics();
       hasMetrics && this.console.log(JSON.stringify(emfOutput));
-    } else {
-      // TODO log warning that metrics are disabled?
     }
 
     this.clearMetrics();
@@ -941,13 +939,17 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Set the disbaled flag based on the environment variables `POWERTOOLS_METRICS_DISABLED` and `POWERTOOLS_DEV`.
+   *
+   * The `POWERTOOLS_METRICS_DISABLED` environment variable takes precedence over `POWERTOOLS_DEV`.
    */
   private setDisabled(): void {
-    this.disabled =
-      this.getEnvVarsService().isDevMode() ||
-      this.getEnvVarsService().getMetricsDisabled();
+    const devMode = this.getEnvVarsService().isDevMode();
+    if (devMode) this.disabled = true;
 
-    // TODO if POWERTOOLS_METRICS_DISABLED is set to false, and dev mode is enabled, then POWERTOOLS_METRICS_DISABLED takes precedence and the utility stays enabled.
+    // This returns boolean or undefined, so we have to use explicit checks on true and false
+    const metricsDisabled = this.getEnvVarsService().getMetricsDisabled();
+    if (metricsDisabled === true) this.disabled = true;
+    if (metricsDisabled === false) this.disabled = false;
   }
 
   /**
@@ -969,10 +971,10 @@ class Metrics extends Utility implements MetricsInterface {
     this.setEnvVarsService();
     this.setConsole();
     this.setCustomConfigService(customConfigService);
+    this.setDisabled();
     this.setNamespace(namespace);
     this.setService(serviceName);
     this.setDefaultDimensions(defaultDimensions);
-    this.setDisabled();
     this.isSingleMetric = singleMetric || false;
 
     return this;

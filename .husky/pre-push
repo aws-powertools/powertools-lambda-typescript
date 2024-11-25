@@ -1,6 +1,3 @@
-npm t \
-  -w packages/metrics
-
 npx vitest --run \
   --exclude tests/unit/layer-publisher.test.ts \
   --coverage --coverage.thresholds.100 \

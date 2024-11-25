@@ -1,8 +1,3 @@
-/**
- * Test metrics standard functions
- *
- * @group e2e/metrics/decorator
- */
 import { join } from 'node:path';
 import {
   TestStack,
@@ -12,6 +7,7 @@ import {
   CloudWatchClient,
   GetMetricStatisticsCommand,
 } from '@aws-sdk/client-cloudwatch';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { getMetrics, sortDimensions } from '../helpers/metricsUtils.js';
 import { MetricsTestNodejsFunction } from '../helpers/resources.js';
 import {
@@ -74,7 +70,7 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
 
   describe('ColdStart metrics', () => {
     it(
-      'should capture ColdStart Metric',
+      'captures the ColdStart Metric',
       async () => {
         const {
           EXPECTED_NAMESPACE: expectedNamespace,
@@ -106,15 +102,6 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
         // Check coldstart metric value
         const adjustedStartTime = new Date(startTime.getTime() - ONE_MINUTE);
         const endTime = new Date(new Date().getTime() + ONE_MINUTE);
-        console.log(
-          `Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ColdStart --start-time ${Math.floor(
-            adjustedStartTime.getTime() / 1000
-          )} --end-time ${Math.floor(
-            endTime.getTime() / 1000
-          )} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify(
-            expectedDimensions
-          )}'`
-        );
         const coldStartMetricStat = await cloudwatchClient.send(
           new GetMetricStatisticsCommand({
             Namespace: expectedNamespace,
@@ -139,7 +126,7 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
 
   describe('Default and extra dimensions', () => {
     it(
-      'should produce a Metric with the default and extra one dimensions',
+      'produces a Metric with the default and extra one dimensions',
       async () => {
         const {
           EXPECTED_NAMESPACE: expectedNamespace,
@@ -179,15 +166,6 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
           startTime.getTime() - 3 * ONE_MINUTE
         );
         const endTime = new Date(new Date().getTime() + ONE_MINUTE);
-        console.log(
-          `Manual command: aws cloudwatch get-metric-statistics --namespace ${expectedNamespace} --metric-name ${expectedMetricName} --start-time ${Math.floor(
-            adjustedStartTime.getTime() / 1000
-          )} --end-time ${Math.floor(
-            endTime.getTime() / 1000
-          )} --statistics 'Sum' --period 60 --dimensions '${JSON.stringify(
-            expectedDimensions
-          )}'`
-        );
         const metricStat = await cloudwatchClient.send(
           new GetMetricStatisticsCommand({
             Namespace: expectedNamespace,

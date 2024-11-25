@@ -827,9 +827,9 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * @deprecated Use {@link Metrics.setThrowOnEmptyMetrics | `setThrowOnEmptyMetrics()`} instead.
    */
-  public throwOnEmptyMetrics(): void {
+  /* v8 ignore start */ public throwOnEmptyMetrics(): void {
     this.shouldThrowOnEmptyMetrics = true;
-  }
+  } /* v8 ignore stop */
 
   /**
    * Gets the current number of dimensions count.

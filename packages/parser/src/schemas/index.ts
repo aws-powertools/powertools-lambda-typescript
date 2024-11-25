@@ -5,6 +5,10 @@ export {
   APIGatewayTokenAuthorizerEventSchema,
 } from './apigw.js';
 export {
+  AppSyncResolverSchema,
+  AppSyncBatchResolverSchema,
+} from './appsync.js';
+export {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,
   APIGatewayRequestAuthorizerV2Schema,
@@ -20,14 +24,21 @@ export {
   CloudWatchLogsDecodeSchema,
   CloudWatchLogsSchema,
 } from './cloudwatch.js';
-export { DynamoDBStreamSchema } from './dynamodb.js';
+export {
+  DynamoDBStreamSchema,
+  DynamoDBStreamToKinesisRecord,
+} from './dynamodb.js';
 export { EventBridgeSchema } from './eventbridge.js';
 export {
   KafkaMskEventSchema,
   KafkaSelfManagedEventSchema,
   KafkaRecordSchema,
 } from './kafka.js';
-export { KinesisDataStreamSchema, KinesisDataStreamRecord } from './kinesis.js';
+export {
+  KinesisDataStreamSchema,
+  KinesisDynamoDBStreamSchema,
+  KinesisDataStreamRecord,
+} from './kinesis.js';
 export {
   KinesisFirehoseSchema,
   KinesisFirehoseSqsSchema,

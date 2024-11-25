@@ -25,7 +25,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872

@@ -39,7 +39,7 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        version: [18, 20]
+        version: [18, 20, 22]
         workspace: [
           "packages/batch",
           "packages/commons",
@@ -76,7 +76,7 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        version: [18, 20]
+        version: [18, 20, 22]
       fail-fast: false
     steps:
       - name: Checkout code
@@ -113,7 +113,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
@@ -131,7 +131,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
@@ -149,7 +149,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
@@ -165,7 +165,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872

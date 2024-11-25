@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parser",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "description": "The parser package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -17,6 +17,7 @@
     "test:unit:watch": "vitest tests/unit",
     "test:e2e:nodejs18x": "echo 'Not implemented'",
     "test:e2e:nodejs20x": "echo 'Not implemented'",
+    "test:e2e:nodejs22x": "echo 'Not implemented'",
     "test:e2e": "echo 'Not implemented'",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
@@ -58,6 +59,10 @@
     "./schemas/api-gatewayv2": {
       "require": "./lib/cjs/schemas/apigwv2.js",
       "import": "./lib/esm/schemas/apigwv2.js"
+    },
+    "./schemas/appsync": {
+      "require": "./lib/cjs/schemas/appsync.js",
+      "import": "./lib/esm/schemas/appsync.js"
     },
     "./schemas/cloudformation-custom-resources": {
       "require": "./lib/cjs/schemas/cloudformation-custom-resources.js",
@@ -182,10 +187,7 @@
   },
   "typesVersions": {
     "*": {
-      "types": [
-        "./lib/cjs/types/index.d.ts",
-        "./lib/esm/types/index.d.ts"
-      ],
+      "types": ["./lib/cjs/types/index.d.ts", "./lib/esm/types/index.d.ts"],
       "middleware": [
         "./lib/cjs/middleware/parser.d.ts",
         "./lib/esm/middleware/parser.d.ts"
@@ -205,6 +207,10 @@
       "schemas/api-gatewayv2": [
         "./lib/cjs/schemas/apigwv2.d.ts",
         "./lib/esm/schemas/apigwv2.d.ts"
+      ],
+      "schemas/appsync": [
+        "./lib/cjs/schemas/appsync.d.ts",
+        "./lib/esm/schemas/appsync.d.ts"
       ],
       "schemas/cloudformation-custom-resources": [
         "./lib/cjs/schemas/cloudformation-custom-resources.d.ts",
@@ -326,9 +332,7 @@
   },
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

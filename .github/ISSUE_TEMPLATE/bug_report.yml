@@ -67,6 +67,7 @@ body:
     attributes:
       label: AWS Lambda function runtime
       options:
+        - 22.x
         - 20.x
         - 18.x
     validations:

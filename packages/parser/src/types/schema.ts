@@ -6,16 +6,20 @@ import type {
   APIGatewayRequestContextV2Schema,
   AlbMultiValueHeadersSchema,
   AlbSchema,
+  AppSyncBatchResolverSchema,
+  AppSyncResolverSchema,
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,
   CloudWatchLogsSchema,
   DynamoDBStreamSchema,
+  DynamoDBStreamToKinesisRecord,
   EventBridgeSchema,
   KafkaMskEventSchema,
   KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
   KinesisDataStreamSchema,
+  KinesisDynamoDBStreamSchema,
   KinesisFirehoseRecordSchema,
   KinesisFirehoseSchema,
   KinesisFirehoseSqsRecordSchema,
@@ -53,6 +57,10 @@ type APIGatewayRequestContextV2 = z.infer<
   typeof APIGatewayRequestContextV2Schema
 >;
 
+type AppSyncResolverEvent = z.infer<typeof AppSyncResolverSchema>;
+
+type AppSyncBatchResolverEvent = z.infer<typeof AppSyncBatchResolverSchema>;
+
 type CloudFormationCustomResourceCreateEvent = z.infer<
   typeof CloudFormationCustomResourceCreateSchema
 >;
@@ -69,6 +77,10 @@ type CloudWatchLogsEvent = z.infer<typeof CloudWatchLogsSchema>;
 
 type DynamoDBStreamEvent = z.infer<typeof DynamoDBStreamSchema>;
 
+type DynamoDBStreamToKinesisRecordEvent = z.infer<
+  typeof DynamoDBStreamToKinesisRecord
+>;
+
 type EventBridgeEvent = z.infer<typeof EventBridgeSchema>;
 
 type KafkaSelfManagedEvent = z.infer<typeof KafkaSelfManagedEventSchema>;
@@ -78,6 +90,8 @@ type KafkaRecord = z.infer<typeof KafkaRecordSchema>;
 type KafkaMskEvent = z.infer<typeof KafkaMskEventSchema>;
 
 type KinesisDataStreamEvent = z.infer<typeof KinesisDataStreamSchema>;
+
+type KinesisDynamoDBStreamEvent = z.infer<typeof KinesisDynamoDBStreamSchema>;
 
 type KinesisFireHoseEvent = z.infer<typeof KinesisFirehoseSchema>;
 
@@ -126,16 +140,20 @@ export type {
   APIGatewayProxyEventV2,
   APIGatewayRequestAuthorizerV2,
   APIGatewayRequestContextV2,
+  AppSyncResolverEvent,
+  AppSyncBatchResolverEvent,
   CloudFormationCustomResourceCreateEvent,
   CloudFormationCustomResourceDeleteEvent,
   CloudFormationCustomResourceUpdateEvent,
   CloudWatchLogsEvent,
   DynamoDBStreamEvent,
+  DynamoDBStreamToKinesisRecordEvent,
   EventBridgeEvent,
   KafkaSelfManagedEvent,
   KafkaMskEvent,
   KafkaRecord,
   KinesisDataStreamEvent,
+  KinesisDynamoDBStreamEvent,
   KinesisFireHoseEvent,
   KinesisFirehoseRecord,
   KinesisFireHoseSqsEvent,

@@ -10,7 +10,11 @@ describe('Creating metrics', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    process.env = { ...ENVIRONMENT_VARIABLES, POWERTOOLS_DEV: 'true' };
+    process.env = {
+      ...ENVIRONMENT_VARIABLES,
+      POWERTOOLS_DEV: 'true',
+      POWERTOOLS_METRICS_DISABLED: 'false',
+    };
     vi.resetAllMocks();
   });
 

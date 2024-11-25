@@ -7,7 +7,11 @@ describe('Initialize Metrics', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
   beforeEach(() => {
-    process.env = { ...ENVIRONMENT_VARIABLES, POWERTOOLS_DEV: 'true' };
+    process.env = {
+      ...ENVIRONMENT_VARIABLES,
+      POWERTOOLS_DEV: 'true',
+      POWERTOOLS_METRICS_DISABLED: 'false',
+    };
     vi.resetAllMocks();
   });
 
@@ -152,5 +156,61 @@ describe('Initialize Metrics', () => {
     // Assess
     // biome-ignore lint/complexity/useLiteralKeys: we need to access the internal console object
     expect(metrics['console']).not.toEqual(console);
+  });
+
+  class TestMetrics extends Metrics {
+    public isDisabled(): boolean {
+      return super.isDisabled();
+    }
+  }
+
+  it('does not disable metrics when POWERTOOLS_METRICS_DISABLED nor POWERTOOLS_DEV are not set', () => {
+    // Preapare
+    process.env.POWERTOOLS_DEV = undefined;
+    process.env.POWERTOOLS_METRICS_DISABLED = undefined;
+    const metrics = new TestMetrics();
+
+    // Act & Assess
+    expect(metrics.isDisabled()).toBe(false);
+  });
+
+  it('disables metrics when POWERTOOLS_METRICS_DISABLED is set to true', () => {
+    // Preapare
+    process.env.POWERTOOLS_DEV = undefined;
+    process.env.POWERTOOLS_METRICS_DISABLED = 'true';
+    const metrics = new TestMetrics();
+
+    // Act & Assess
+    expect(metrics.isDisabled()).toBe(true);
+  });
+
+  it('disables metrics when POWERTOOLS_DEV is set to true', () => {
+    // Preapare
+    process.env.POWERTOOLS_DEV = 'true';
+    process.env.POWERTOOLS_METRICS_DISABLED = undefined;
+    const metrics = new TestMetrics();
+
+    // Act & Assess
+    expect(metrics.isDisabled()).toBe(true);
+  });
+
+  it('does not disable metrics when POWERTOOLS_METRICS_DISABLED is set to false', () => {
+    // Preapare
+    process.env.POWERTOOLS_DEV = undefined;
+    process.env.POWERTOOLS_METRICS_DISABLED = 'false';
+    const metrics = new TestMetrics();
+
+    // Act & Assess
+    expect(metrics.isDisabled()).toBe(false);
+  });
+
+  it('does not disable metrics when POWERTOOLS_METRICS_DISABLED overrides POWERTOOLS_DEV', () => {
+    // Preapare
+    process.env.POWERTOOLS_DEV = 'true';
+    process.env.POWERTOOLS_METRICS_DISABLED = 'false';
+    const metrics = new TestMetrics();
+
+    // Act & Assess
+    expect(metrics.isDisabled()).toBe(false);
   });
 });

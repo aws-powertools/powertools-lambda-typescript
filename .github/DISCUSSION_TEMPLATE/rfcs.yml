@@ -1,8 +1,4 @@
-name: Request for Comments (RFC)
-description: Feature design and detailed proposals
-title: "RFC: TITLE"
-labels: ["RFC", "triage"]
-projects: ["aws-powertools/7"]
+title: "RFC: <Title>"
 body:
   - type: markdown
     attributes:
@@ -16,23 +12,23 @@ body:
   - type: dropdown
     id: area
     attributes:
-      label: Which Powertools for AWS Lambda (TypeScript) utility does this relate to?
+      label: Which area does this RFC relate to?
       options:
-        - Automation
-        - Governance
-        - Tests
-        - Batch
-        - Commons
-        - Event Handler
-        - Tracer
         - Logger
         - Metrics
-        - Parameters
+        - Tracer
+        - Parser
+        - Batch
         - Idempotency
+        - Event Handler
+        - Parameters
         - JMESPath
         - Batch Processing
         - Validation
-        - Parser
+        - Commons
+        - Automation
+        - Governance
+        - Tests
         - Other
     validations:
       required: true
@@ -92,7 +88,7 @@ body:
     attributes:
       label: Acknowledgment
       options:
-        - label: This feature request meets [Powertools for AWS Lambda (TypeScript) Tenets](https://docs.powertools.aws.dev/lambda/typescript/latest/#tenets)
+        - label: This RFC meets [Powertools for AWS Lambda (TypeScript) Tenets](https://docs.powertools.aws.dev/lambda/typescript/latest/#tenets)
           required: true
         - label: Should this be considered in other Powertools for AWS Lambda languages? i.e. [Python](https://github.com/aws-powertools/powertools-lambda-python/), [Java](https://github.com/aws-powertools/powertools-lambda-java/), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet/)
           required: false

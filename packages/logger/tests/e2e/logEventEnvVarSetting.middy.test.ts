@@ -25,7 +25,7 @@ describe('Logger E2E tests, log event via env var setting with middy', () => {
   // Location of the lambda function code
   const lambdaFunctionCodeFilePath = join(
     __dirname,
-    'logEventEnvVarSetting.middy6.test.FunctionCode.ts'
+    'logEventEnvVarSetting.middy.test.FunctionCode.ts'
   );
 
   const invocationCount = 3;

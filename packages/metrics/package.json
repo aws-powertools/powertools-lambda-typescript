@@ -70,7 +70,7 @@
     "promise-retry": "^2.0.1"
   },
   "peerDependencies": {
-    "@middy/core": "4.x || 5.x"
+    "@middy/core": "4.x || 5.x || 6.x"
   },
   "peerDependenciesMeta": {
     "@middy/core": {

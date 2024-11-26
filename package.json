@@ -63,6 +63,7 @@
     "markdownlint-cli2": "^0.15.0",
     "middy4": "npm:@middy/core@^4.7.0",
     "middy5": "npm:@middy/core@^5.4.3",
+    "middy6": "npm:@middy/core@^6.0.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typedoc": "^0.26.11",

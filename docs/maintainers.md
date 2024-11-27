@@ -148,7 +148,7 @@ RFC is a collaborative process to help us get to the most optimal solution given
 
 Make sure you ask these questions in mind when reviewing:
 
-- Does it use our [RFC template](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=RFC%2Ctriage&template=rfc.yml&title=RFC%3A+TITLE)?
+- Does it use our [RFC template](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/new?category=rfcs)?
 - Does the match our [Tenets](https://docs.powertools.aws.dev/lambda/typescript/latest/#tenets)?
 - Does the proposal address the use case? If so, is the recommended usage explicit?
 - Does it focus on the mechanics to solve the use case over fine-grained implementation details?

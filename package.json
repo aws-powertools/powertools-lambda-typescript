@@ -53,7 +53,7 @@
     "@biomejs/biome": "^1.9.4",
     "@types/aws-lambda": "^8.10.145",
     "@types/node": "^22.10.0",
-    "@vitest/coverage-v8": "^2.1.5",
+    "@vitest/coverage-v8": "^2.1.6",
     "husky": "^9.1.7",
     "lerna": "8.1.2",
     "lint-staged": "^15.2.10",

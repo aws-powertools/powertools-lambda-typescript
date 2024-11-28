@@ -47,10 +47,11 @@ updates:
         - "@aws-cdk/cli-lib-alpha"
         - "aws-cdk-lib"
         - "aws-cdk"
-      typedoc:
+      typescript:
         patterns:
         - "typedoc"
         - "typedoc-plugin-*"
+        - "typescript"
       vitest:
         patterns:
         - "vitest"

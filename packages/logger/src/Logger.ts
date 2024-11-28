@@ -115,7 +115,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * JSON indentation used to format the logs.
    */
-  private logIndentation: number = LogJsonIndent.COMPACT;
+  protected logIndentation: number = LogJsonIndent.COMPACT;
   /**
    * Log level used internally by the current instance of Logger.
    */
@@ -700,7 +700,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param input - The main input of the log item, this can be a string or an object with additional attributes
    * @param extraInput - Additional attributes to be added to the log item
    */
-  private createAndPopulateLogItem(
+  protected createAndPopulateLogItem(
     logLevel: number,
     input: LogItemMessage,
     extraInput: LogItemExtraInput
@@ -783,7 +783,7 @@ class Logger extends Utility implements LoggerInterface {
    *
    * @param logLevel - The log level to get the name of
    */
-  private getLogLevelNameFromNumber(logLevel: number): Uppercase<LogLevel> {
+  protected getLogLevelNameFromNumber(logLevel: number): Uppercase<LogLevel> {
     let found: Uppercase<LogLevel> | undefined;
     for (const [key, value] of Object.entries(LogLevelThreshold)) {
       if (value === logLevel) {
@@ -835,7 +835,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param logLevel - The log level
    * @param log - The log item to print
    */
-  private printLog(logLevel: number, log: LogItem): void {
+  protected printLog(logLevel: number, log: LogItem): void {
     log.prepareForPrint();
 
     const consoleMethod =
@@ -862,7 +862,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param input - The log message
    * @param extraInput - The extra input to log
    */
-  private processLogItem(
+  protected processLogItem(
     logLevel: number,
     input: LogItemMessage,
     extraInput: LogItemExtraInput

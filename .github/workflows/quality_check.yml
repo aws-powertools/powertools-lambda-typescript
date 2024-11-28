@@ -8,8 +8,6 @@ on:
   merge_group:
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize]
 
 permissions:
   contents: read

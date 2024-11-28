@@ -60,7 +60,6 @@
     "markdownlint-cli2": "^0.15.0",
     "middy4": "npm:@middy/core@^4.7.0",
     "middy5": "npm:@middy/core@^5.4.3",
-    "ts-node": "^10.9.2",
     "typedoc": "^0.26.11",
     "typedoc-plugin-missing-exports": "^3.0.2",
     "typedoc-plugin-zod": "^1.2.1",

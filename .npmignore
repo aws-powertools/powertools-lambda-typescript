@@ -12,7 +12,8 @@ coverage
 tslint.json
 tsconfig.json
 MakeFile
-jest.config.cjs
+vitest.config.ts
+vitest.workspace.ts
 .npmignore
 .eslintignore
 .huskyrc.js

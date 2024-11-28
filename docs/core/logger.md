@@ -828,7 +828,7 @@ When you extend the default JSON serializer, we will call your custom serializer
 
 When unit testing your code that makes use of `logger.addContext()` or `injectLambdaContext` middleware and decorator, you can optionally pass a dummy Lambda Context if you want your logs to contain this information.
 
-This is a Jest sample that provides the minimum information necessary for Logger to inject context data:
+This is a sample that provides the minimum information necessary for Logger to inject context data:
 
 === "handler.test.ts"
 
@@ -836,10 +836,12 @@ This is a Jest sample that provides the minimum information necessary for Logger
     --8<-- "examples/snippets/logger/unitTesting.ts"
     ```
 
-### Suppress logs with Jest
+### Suppress logs
 
-When unit testing your code with [Jest](https://jestjs.io) you can use the `POWERTOOLS_DEV` environment variable in conjunction with the Jest `--silent` CLI option to suppress logs from Logger.
+When unit testing your code with [Jest](https://jestjs.io) or [Vitest](http://vitest.dev) you can use the `POWERTOOLS_DEV` environment variable in conjunction with the `--silent` CLI option to suppress logs from Logger.
 
-```bash title="Disabling logs while testing with Jest"
-export POWERTOOLS_DEV=true && npx jest --silent
+```bash title="Disabling logs while testing with Vitest"
+export POWERTOOLS_DEV=true && npx vitest --silent
 ```
+
+Alternatively, you can also set the `POWERTOOLS_DEV` environment variable to `true` in your test setup file, or in a hoisted block at the top of your test file.

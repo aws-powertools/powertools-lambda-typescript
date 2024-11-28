@@ -1,15 +1,16 @@
 import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
-import { handler } from './testingYourCodeFunctionsHandler';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { handler } from './testingYourCodeFunctionsHandler.js';
 
 describe('Function tests', () => {
-  const providerSpy = jest.spyOn(AppConfigProvider.prototype, 'get');
+  const providerSpy = vi.spyOn(AppConfigProvider.prototype, 'get');
 
-  beforeEach(() => {
-    jest.clearAllMocks();
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
-  test('it retrieves the config once and uses the correct name', async () => {
+  it('retrieves the config once and uses the correct name', async () => {
     // Prepare
     const expectedConfig = {
       feature: {

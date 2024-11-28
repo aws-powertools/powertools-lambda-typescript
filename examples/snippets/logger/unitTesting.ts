@@ -1,4 +1,6 @@
-declare const handler: (event: unknown, context: unknown) => Promise<void>;
+import type { Context } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
+declare const handler: (event: unknown, context: Context) => Promise<true>;
 
 const context = {
   callbackWaitsForEmptyEventLoop: true,
@@ -14,11 +16,17 @@ const context = {
   done: () => console.log('Done!'),
   fail: () => console.log('Failed!'),
   succeed: () => console.log('Succeeded!'),
-};
+} satisfies Context;
 
 describe('MyUnitTest', () => {
-  test('Lambda invoked successfully', async () => {
+  it('invokes the handler successfully', async () => {
+    // Prepare
     const testEvent = { test: 'test' };
-    await handler(testEvent, context);
+
+    // Act
+    const result = await handler(testEvent, context);
+
+    // Assert
+    expect(result).toBe(true);
   });
 });

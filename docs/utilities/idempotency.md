@@ -832,7 +832,7 @@ The idempotency utility provides several routes to test your code.
 
 ### Disabling the idempotency utility
 
-When testing your code, you may wish to disable the idempotency logic altogether and focus on testing your business logic. To do this, you can set the environment variable POWERTOOLS_IDEMPOTENCY_DISABLED with a truthy value.
+When testing your code, you may wish to disable the idempotency logic altogether and focus on testing your business logic. To do this, you can set the environment variable `POWERTOOLS_IDEMPOTENCY_DISABLED` with a truthy value.
 
 ### Testing with local DynamoDB
 
@@ -840,13 +840,13 @@ When testing your Lambda function locally, you can use a local DynamoDB instance
 
 === "handler.test.ts"
 
-    ```typescript hl_lines="7-9"
+    ```typescript hl_lines="18"
     --8<-- "examples/snippets/idempotency/workingWithLocalDynamoDB.test.ts"
     ```
 
 === "handler.ts"
 
-    ```typescript hl_lines="7-9"
+    ```typescript
     --8<-- "examples/snippets/idempotency/workingWithLocalDynamoDB.ts"
     ```
 

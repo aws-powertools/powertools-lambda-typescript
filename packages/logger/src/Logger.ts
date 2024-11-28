@@ -846,6 +846,7 @@ class Logger extends Utility implements LoggerInterface {
             'critical'
           >);
 
+    // TODO: make this.console protected or create getConsole/getConsoleMethod?
     this.console[consoleMethod](
       JSON.stringify(
         log.getAttributes(),

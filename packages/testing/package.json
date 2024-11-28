@@ -11,7 +11,6 @@
     "test": "vitest --run",
     "test:unit": "vitest --run",
     "test:e2e": "echo 'Not implemented'",
-    "watch": "jest --watch",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build": "npm run build:esm & npm run build:cjs",

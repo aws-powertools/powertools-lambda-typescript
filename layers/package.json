@@ -16,7 +16,6 @@
     "test:e2e:nodejs22x": "echo 'Not Implemented'",
     "test:e2e": "vitest --run tests/e2e",
     "build": "echo 'Not applicable, run `npx cdk synth` instead to build the stack'",
-    "jest": "jest --detectOpenHandles",
     "cdk": "cdk",
     "package": "echo 'Not applicable'",
     "lint": "biome lint .",

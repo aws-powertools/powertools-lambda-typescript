@@ -450,11 +450,11 @@ The **`clientConfig`** parameter enables you to pass in a custom [config object]
 
 ### Mocking parameter values
 
-For unit testing your applications, you can mock the calls to the parameters utility to avoid calling AWS APIs. This can be achieved in a number of ways - in this example, we use [Jest mock functions](https://jestjs.io/docs/es6-class-mocks#the-4-ways-to-create-an-es6-class-mock) to patch the `getParameters` function.
+For unit testing your applications, you can mock the calls to the parameters utility to avoid calling AWS APIs. This can be achieved in a number of ways - in this example, we mock the module import to patch the `getParameters` function.
 
 === "handler.test.ts"
-	```typescript hl_lines="2 4-9 13 18"
-	--8<-- "examples/snippets/parameters/testingYourCodeFunctionsJestMock.ts"
+	```typescript hl_lines="4-6 12 22"
+	--8<-- "examples/snippets/parameters/testingYourCodeFunctionsMock.ts"
 	```
 
 === "handler.ts"
@@ -464,11 +464,11 @@ For unit testing your applications, you can mock the calls to the parameters uti
 
 With this pattern in place, you can customize the return values of the mocked function to test different scenarios without calling AWS APIs.
 
-A similar pattern can be applied also to any of the built-in provider classes - in this other example, we use [Jest spyOn method](https://jestjs.io/docs/es6-class-mocks#mocking-a-specific-method-of-a-class) to patch the `get` function of the `AppConfigProvider` class. This is useful also when you want to test that the correct arguments are being passed to the Parameters utility.
+A similar pattern can be applied also to any of the built-in provider classes - in this other example, we use spies to patch the `get` function of the `AppConfigProvider` class. This is useful also when you want to test that the correct arguments are being passed to the Parameters utility.
 
 === "handler.test.ts"
-	```typescript hl_lines="2 5 8 19 26-27"
-	--8<-- "examples/snippets/parameters/testingYourCodeProvidersJestMock.ts"
+	```typescript hl_lines="2 7 21-23"
+	--8<-- "examples/snippets/parameters/testingYourCodeProvidersMock.ts"
 	```
 
 === "handler.ts"
@@ -476,11 +476,11 @@ A similar pattern can be applied also to any of the built-in provider classes - 
 	--8<-- "examples/snippets/parameters/testingYourCodeProvidersHandler.ts"
 	```
 
-For when you want to mock the AWS SDK v3 client directly, we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) and [`aws-sdk-client-mock-jest`](https://www.npmjs.com/package/aws-sdk-client-mock-jest) libraries. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
+For when you want to mock the AWS SDK v3 client directly, we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) and [`aws-sdk-client-mock-vitest`](https://www.npmjs.com/package/aws-sdk-client-mock-vitest) libraries. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
 
 === "handler.test.ts"
-	```typescript hl_lines="2-8 11 14 18 23-30"
-	--8<-- "examples/snippets/parameters/testingYourCodeClientJestMock.ts"
+	```typescript hl_lines="2-7 12 16 21-28"
+	--8<-- "examples/snippets/parameters/testingYourCodeClientMock.ts"
 	```
 
 === "handler.ts"
@@ -495,6 +495,6 @@ Parameters utility caches all parameter values for performance and cost reasons.
 Within your tests, you can use `clearCache` method available in [every provider](#built-in-provider-class). When using multiple providers or higher level functions like `getParameter`, use the `clearCaches` standalone function to clear cache globally.
 
 === "handler.test.ts"
-	```typescript hl_lines="1 9"
+	```typescript hl_lines="1 6"
 	--8<-- "examples/snippets/parameters/testingYourCodeClearCache.ts"
 	```

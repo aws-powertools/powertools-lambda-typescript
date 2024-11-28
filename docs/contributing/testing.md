@@ -13,17 +13,7 @@ Tests are defined alongside the code they test, and can be found under the `test
 
 Each test type has its own folder, and each test file is named after the feature it tests. For example, the tests for the `@aws-lambda-powertools/logger` module can be found under `packages/logger/tests/unit` and `packages/logger/tests/e2e`.
 
-Tests are written using [Jest](https://jestjs.io) and are grouped into categories. You can run each group separately or all together thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups).
-
-Each test file needs to be tagged with the proper group, otherwise, it won't be executed. The group is defined in the header of the file, and it follows this convention:
-
-```typescript
-/**
- * Tests metrics
- *
- * @group unit/<YOUR CATEGORY>/<YOUR SUB CATEGORY>
- */
-```
+Tests use [Vitest](http://vitest.dev) as test runner and are grouped by packages and type. You can run each group separately or all together by passing extra arguments to the test command.
 
 The test file should contain one or more tests organized using the `describe` and `it` functions. Each test should be named after the feature it tests, and should be as descriptive as possible. For example, the test for the `Logger` class `info` method is named `should log info message`.
 
@@ -67,7 +57,6 @@ To run unit tests, you can use of the following commands from the root folder:
 * `npm test -ws` to run all the unit tests for all the modules sequentially
 * `npm run test:parallel` to run all the unit tests for all the modules in parallel
 * `npm test -w packages/metrics` to run all the unit tests for the `metrics` module
-* `npm run jest -w packages/metrics -- --group=unit/metrics/middleware` to run all the unit tests for the `metrics` module that are tagged with the `unit/metrics/middleware` group
 
 We enforce 100% code coverage for unit tests. The test command will fail if the coverage is not 100% both on your local machine and in CI.
 
@@ -93,12 +82,12 @@ Below is a diagram that shows the flow of the integration tests:
 
 ```mermaid
 sequenceDiagram
-    Dev Environment / CI->>+Jest: npm run test:e2e
-    Jest-->Jest: Synthetize CloudFormation Stack
-    Jest->>+AWS: Deploy Stack
-    Jest->>+AWS: Invoke Lambda function
-    AWS->>Jest: Report logs / results
-    Jest-->Jest: Assert logs/result
-    Jest->>+AWS: Destroy Stack
-    Jest->>+Dev Environment / CI: show test results
+    Dev Environment / CI->>+Vitest: npm run test:e2e
+    Vitest-->Vitest: Synthetize CloudFormation Stack
+    Vitest->>+AWS: Deploy Stack
+    Vitest->>+AWS: Invoke Lambda function
+    AWS->>Vitest: Report logs / results
+    Vitest-->Vitest: Assert logs/result
+    Vitest->>+AWS: Destroy Stack
+    Vitest->>+Dev Environment / CI: show test results
 ```

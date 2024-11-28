@@ -15,7 +15,6 @@
     // Add the ids of extensions you want installed when the container is created.
     "extensions": [
       "biomejs.biome",
-      "firsttris.vscode-jest-runner",
       "vitest.explorer"
     ],
     "vscode": {

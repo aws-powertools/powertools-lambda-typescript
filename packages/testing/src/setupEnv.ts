@@ -1,5 +1,7 @@
-import { toReceiveCommandWith } from 'aws-sdk-client-mock-vitest';
-import type { CustomMatcher } from 'aws-sdk-client-mock-vitest';
+import {
+  type CustomMatcher,
+  toReceiveCommandWith,
+} from 'aws-sdk-client-mock-vitest';
 import { expect, vi } from 'vitest';
 
 expect.extend({ toReceiveCommandWith });

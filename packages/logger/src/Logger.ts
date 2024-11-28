@@ -115,7 +115,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * JSON indentation used to format the logs.
    */
-  protected logIndentation: number = LogJsonIndent.COMPACT;
+  private logIndentation: number = LogJsonIndent.COMPACT;
   /**
    * Log level used internally by the current instance of Logger.
    */
@@ -783,7 +783,7 @@ class Logger extends Utility implements LoggerInterface {
    *
    * @param logLevel - The log level to get the name of
    */
-  protected getLogLevelNameFromNumber(logLevel: number): Uppercase<LogLevel> {
+  private getLogLevelNameFromNumber(logLevel: number): Uppercase<LogLevel> {
     let found: Uppercase<LogLevel> | undefined;
     for (const [key, value] of Object.entries(LogLevelThreshold)) {
       if (value === logLevel) {

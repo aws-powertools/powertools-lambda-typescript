@@ -1,4 +1,4 @@
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 vi.hoisted(() => {
   process.env.POWERTOOLS_DEV = 'true';
@@ -9,7 +9,10 @@ describe('Metrics tests', () => {
     // Prepare
     const metricsSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    // Act & Assess
+    // Act
     // ...
+
+    // Assess
+    expect(metricsSpy).toHaveBeenCalledOnce();
   });
 });

@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/layers.ts",
+  "app": "npx tsx bin/layers.ts",
   "watch": {
     "include": ["**"],
     "exclude": [

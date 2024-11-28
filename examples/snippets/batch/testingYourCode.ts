@@ -1,5 +1,6 @@
-import { handler, processor } from './gettingStartedSQS';
-import sqsEvent from './samples/sampleSQSEvent.json';
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import { handler, processor } from './gettingStartedSQS.js';
 
 const context = {
   callbackWaitsForEmptyEventLoop: true,
@@ -18,15 +19,14 @@ const context = {
 };
 
 describe('Function tests', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  test('should return one failed message', async () => {
+  it('returns one failed message', async () => {
     // Prepare
+    const event = JSON.parse(
+      readFileSync('./samples/sampleSQSEvent.json', 'utf8')
+    );
     const processorResult = processor; // access processor for additional assertions
-    const successfulRecord = sqsEvent.Records[0];
-    const failedRecord = sqsEvent.Records[1];
+    const successfulRecord = event.Records[0];
+    const failedRecord = event.Records[1];
     const expectedResponse = {
       batchItemFailures: [
         {
@@ -36,7 +36,7 @@ describe('Function tests', () => {
     };
 
     // Act
-    const response = await handler(sqsEvent, context, () => {});
+    const response = await handler(event, context, () => {});
 
     // Assess
     expect(response).toEqual(expectedResponse);

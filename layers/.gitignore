@@ -1,6 +1,6 @@
 *.js
 !.eslintrc.js
-!jest.config.js
+!vitest.config.ts
 *.d.ts
 node_modules
 

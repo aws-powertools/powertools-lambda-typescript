@@ -4,21 +4,19 @@ import {
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 import { mockClient } from 'aws-sdk-client-mock';
-import { handler } from './testingYourCodeFunctionsHandler';
-import 'aws-sdk-client-mock-jest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { handler } from './testingYourCodeFunctionsHandler.js';
+import 'aws-sdk-client-mock-vitest';
 
 describe('Function tests', () => {
   const client = mockClient(SecretsManagerClient);
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   afterEach(() => {
+    vi.clearAllMocks();
     client.reset();
   });
 
-  test('it returns the correct error message', async () => {
+  it('returns the correct error message', async () => {
     // Prepare
     client.on(GetSecretValueCommand).rejectsOnce(
       new ResourceNotFoundException({

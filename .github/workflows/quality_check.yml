@@ -1,0 +1,128 @@
+name: Code quality
+
+# USAGE
+#
+# Automatically triggered when a PR is added to the merge queue.
+
+on:
+  merge_group:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    strategy:
+      matrix:
+        version: [18, 20, 22]
+        workspace: [
+          "packages/batch",
+          "packages/commons",
+          "packages/event-handler",
+          "packages/idempotency",
+          "packages/jmespath",
+          "packages/logger",
+          "packages/tracer",
+          "packages/parser",
+          "packages/parameters",
+          "packages/metrics"
+        ]
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Setup NodeJS
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ matrix.version }}
+          cache: "npm"
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
+        with:
+          nodeVersion: ${{ matrix.version }}
+      - name: Linting
+        run: npm run lint -w ${{ matrix.workspace }}
+      - name: Unit tests
+        run: |
+          npm run test:unit:coverage -w ${{ matrix.workspace }}
+          npm run test:unit:types -w ${{ matrix.workspace }}
+  check-examples:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    strategy:
+      matrix:
+        example: ["app"]
+      fail-fast: false
+    defaults:
+      run:
+        working-directory: examples/${{ matrix.example }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Setup NodeJS
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
+      - name: Run linting
+        run: npm run lint
+      - name: Run tests
+        run: npm t
+  check-layer-publisher:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Setup NodeJS
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
+      - name: Run linting
+        run: npm run lint -w layers
+      - name: Run tests
+        run: npm run test:unit -w layers
+  check-docs-snippets:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Setup NodeJS
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
+      - name: Run linting
+        run: npm run lint -w examples/snippets
+  check-docs:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Setup NodeJS
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@d406bac5563f1d8c793519a3eedfe620f6a14872
+      - name: Run linting
+        run: npm run lint:markdown

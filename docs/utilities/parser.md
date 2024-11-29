@@ -1,7 +1,6 @@
 ---
 title: Parser (Zod)
 descrition: Utility
-status: new
 ---
 
 <!-- markdownlint-disable MD043 --->
@@ -17,8 +16,6 @@ This utility provides data validation and parsing using [Zod](https://zod.dev){t
 * Available for Middy.js middleware and TypeScript method decorators
 
 ## Getting started
-
-### Install
 
 ```bash
 npm install @aws-lambda-powertools/parser zod@~3

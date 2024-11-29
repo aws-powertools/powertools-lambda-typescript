@@ -70,6 +70,7 @@ These settings will be used across all metrics emitted:
 | -------------------- | ---------------------------------------------------------------- | ------------------------------ | ------------------- | -------------- | ------------------- | --------------------- |
 | **Service**          | Optionally, sets **service** metric dimension across all metrics | `POWERTOOLS_SERVICE_NAME`      | `service_undefined` | Any string     | `serverlessAirline` | `serviceName`         |
 | **Metric namespace** | Logical container where all metrics will be placed               | `POWERTOOLS_METRICS_NAMESPACE` | `default_namespace` | Any string     | `serverlessAirline` | `default_namespace`   |
+| **Enabled**          | Whether to emit metrics to standard output or not                | `POWERTOOLS_METRICS_ENABLED`   | `true`              | Boolean        | `false`             |                       |
 
 !!! tip
     Use your application name or main service as the metric namespace to easily group all metrics
@@ -199,7 +200,7 @@ You can add default dimensions to your metrics by passing them as parameters in 
 === "Middy middleware"
 
     !!! tip "A note about Middy"
-        We guarantee support for both Middy.js `v4.x` & `v5.x` with the latter being available only if you are using ES modules.
+        We guarantee support for Middy.js `v4.x` through `v6.x` versions.
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="24-26"
@@ -465,22 +466,26 @@ Keep the following formula in mind: `unique metric = (metric_name + dimension_na
     1. Metadata should be added before calling `addMetric()` to ensure it's included in the same EMF blob.
     2. Single metrics are emitted as soon as `addMetric()` is called, so you don't need to call `publishStoredMetrics()`.
 
+### Customizing the logger
+
+You can customize how Metrics logs warnings and debug messages to standard output by passing a custom logger as a constructor parameter. This is useful when you want to silence warnings or debug messages, or when you want to log them to a different output.
+
+=== "Custom logger"
+
+    ```typescript hl_lines="4 9"
+    --8<-- "examples/snippets/metrics/customLogger.ts"
+    ```
+
 ## Testing your code
 
-When unit testing your code that uses the `Metrics` utility, you may want to silence the logs emitted by the utility or assert that metrics are being emitted correctly. By default, the utility manages its own `console` instance, which means that you can't easily access or mock the logs emitted by the utility.
+When unit testing your code that uses the Metrics utility, you may want to silence the logs emitted by the utility. To do so, you can set the `POWERTOOLS_DEV` environment variable to `true`. This instructs the utility to not emit any logs to standard output.
 
-To make it easier to test your code, you can set the `POWERTOOLS_DEV` environment variable to `true` to instruct the utility to use the global `console` object instead of its own.
+If instead you want to spy on the logs emitted by the utility, you must set the `POWERTOOLS_DEV` environment variable to `true` in conjunction with the `POWERTOOLS_METRICS_ENABLED` environment variable also set to `true`.
 
-This allows you to spy on the logs emitted by the utility and assert that the metrics are being emitted correctly.
+When `POWERTOOLS_DEV` is enabled, Metrics uses the global `console` to emit metrics to standard out. This allows you to easily spy on the logs emitted and make assertions on them.
 
 === "Spying on emitted metrics"
 
-    ```typescript hl_lines="4 10"
+    ```typescript hl_lines="4-5 12"
     --8<-- "examples/snippets/metrics/testingMetrics.ts"
     ```
-
-When running your tests with both [Jest](https://jestjs.io) and [Vitest](http://vitest.dev), you can use the `--silent` flag to silence the logs emitted by the utility.
-
-```bash title="Disabling logs while testing"
-export POWERTOOLS_DEV=true && npx vitest --silent
-```

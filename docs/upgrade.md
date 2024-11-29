@@ -198,7 +198,7 @@ Below is an example of how to configure your `.eslintrc.json` file:
 
 ### Log sampling
 
-!!! note "Disregard if you are not using the [log sampling feature](./core/logger.md#sampling-logs)."
+!!! note "Disregard if you are not using the [log sampling feature](./core/logger.md#sampling-debug-logs)."
 
 In v1, log sampling implementation was inconsistent from other Powertools for AWS Lambda languages _(Python, .NET, and Java)_.
 
@@ -217,7 +217,7 @@ Logger `sampleRateValue` **continues** to determine the percentage of concurrent
 
 In v1, `Logger` exposed the [standard](./core/logger.md#standard-structured-keys) as a single argument, _e.g., `formatAttributes(attributes: UnformattedAttributes)`_. It expected a plain object with keys and values you wanted in the final log output.
 
-In v2, you have more control over **standard** (`attributes`) and [**custom keys**](./core/logger.md#appending-persistent-additional-log-keys-and-values) (`additionalLogAttributes`) in the `formatAttributes` method. Also, you now return a `LogItem` object to increase type safety when defining the final log output.
+In v2, you have more control over **standard** (`attributes`) and [**custom keys**](./core/logger.md#appending-additional-keys) (`additionalLogAttributes`) in the `formatAttributes` method. Also, you now return a `LogItem` object to increase type safety when defining the final log output.
 
 === "Before"
 

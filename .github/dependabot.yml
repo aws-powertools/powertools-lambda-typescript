@@ -41,13 +41,18 @@ updates:
         - "@aws-sdk/*"
         - "@smithy/*"
         - "aws-sdk-client-mock"
-        - "aws-sdk-client-mock-jest"
+        - "aws-sdk-client-mock-vitest"
       aws-cdk:
         patterns:
         - "@aws-cdk/cli-lib-alpha"
         - "aws-cdk-lib"
         - "aws-cdk"
-      typedoc:
+      typescript:
         patterns:
         - "typedoc"
         - "typedoc-plugin-*"
+        - "typescript"
+      vitest:
+        patterns:
+        - "vitest"
+        - "@vitest/*"

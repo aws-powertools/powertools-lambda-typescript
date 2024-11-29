@@ -473,20 +473,11 @@ To make it easier to test your code, you can set the `POWERTOOLS_DEV` environmen
 
 This allows you to spy on the logs emitted by the utility and assert that the metrics are being emitted correctly.
 
-```typescript title="Spying on emitted metrics"
-describe('Metrics tests', () => {
-  beforeAll(() => {
-    process.env.POWERTOOLS_DEV = 'true';
-  })
+=== "Spying on emitted metrics"
 
-  it('function metrics properly', async () => {
-    // Prepare
-    const metricsSpy = jest.spyOn(console, 'log').mockImplementation();
-    
-    // Act & Assess
-  });
-});
-```
+    ```typescript hl_lines="4 10"
+    --8<-- "examples/snippets/metrics/testingMetrics.ts"
+    ```
 
 When running your tests with both [Jest](https://jestjs.io) and [Vitest](http://vitest.dev), you can use the `--silent` flag to silence the logs emitted by the utility.
 

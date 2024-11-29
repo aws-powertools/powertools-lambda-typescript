@@ -154,7 +154,7 @@ You can quickly start by importing the `Tracer` class, initialize it outside the
 === "Middy Middleware"
 
     !!! tip "A note about Middy"
-        We guarantee support for both Middy.js `v4.x` & `v5.x` with the latter being available only if you are using ES modules.
+        We guarantee support for Middy.js `v4.x` through `v6.x` versions.
         Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
     ```typescript hl_lines="2 15 17"

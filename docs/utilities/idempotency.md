@@ -187,7 +187,7 @@ The configuration options for the `@idempotent` decorator are the same as the on
 ### MakeHandlerIdempotent Middy middleware
 
 !!! tip "A note about Middy"
-    We guarantee support for both Middy.js `v4.x` & `v5.x` with the latter being available only if you are using ES modules.
+    We guarantee support for Middy.js `v4.x` through `v6.x` versions.
     Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 
 If you are using [Middy.js](https://middy.js.org){target="_blank"} as your middleware engine, you can use the `makeHandlerIdempotent` middleware to make your Lambda handler idempotent.

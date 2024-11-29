@@ -56,12 +56,12 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 
     | Feature                                                               | Install                                                                                                           | Default dependency  |
     | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------- |
-    | **[Tracer](./core/tracer.md#install)**                                | **`npm i @aws-lambda-powertools/tracer`**{.copyMe}:clipboard:                                                     | `aws-xray-sdk-core` |
-    | **[Idempotency](./utilities/idempotency.md#install)**                 | **`npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb`**{.copyMe}:clipboard: | `jmespath`          |
-    | **[Parameters (SSM)](./utilities/parameters.md#install)**             | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-ssm`**{.copyMe}:clipboard:                             |                     |
-    | **[Parameters (Secrets Manager)](./utilities/parameters.md#install)** | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-secrets-manager`**{.copyMe}:clipboard:                 |                     |
-    | **[Parameters (AppConfig)](./utilities/parameters.md#install)**       | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-appconfigdata`**{.copyMe}:clipboard:                   |                     |
-    | **[Parser](./utilities/parser.md#install)**                           | **`npm i @aws-lambda-powertools/parser zod@~3`**{.copyMe}:clipboard:                                              |                     |
+    | **[Tracer](./core/tracer.md)**                                        | **`npm i @aws-lambda-powertools/tracer`**{.copyMe}:clipboard:                                                     | `aws-xray-sdk-core` |
+    | **[Idempotency](./utilities/idempotency.md)**                         | **`npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb`**{.copyMe}:clipboard: |                     |
+    | **[Parameters (SSM)](./utilities/parameters.md)**                     | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-ssm`**{.copyMe}:clipboard:                             |                     |
+    | **[Parameters (Secrets Manager)](./utilities/parameters.md)**         | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-secrets-manager`**{.copyMe}:clipboard:                 |                     |
+    | **[Parameters (AppConfig)](./utilities/parameters.md)**               | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-appconfigdata`**{.copyMe}:clipboard:                   |                     |
+    | **[Parser](./utilities/parser.md)**                                   | **`npm i @aws-lambda-powertools/parser zod@~3`**{.copyMe}:clipboard:                                              |                     |
 
 === "Lambda Layer"
 
@@ -223,27 +223,18 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 
         === "Amplify"
 
-            ```zsh hl_lines="9 19"
-            # Create a new one with the layer
-            ❯ amplify add function
-            ? Select which capability you want to add: Lambda function (serverless function)
-            ? Provide an AWS Lambda function name: <NAME-OF-FUNCTION>
-            ? Choose the runtime that you want to use: NodeJS
-            ? Do you want to configure advanced settings? Yes
-            ...
-            ? Do you want to enable Lambda layers for this function? Yes
-            ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:16
-            ❯ amplify push -y
-            
-            # Updating an existing function and add the layer
-            ❯ amplify update function
-            ? Select the Lambda function you want to update test2
-            General information
-            - Name: <NAME-OF-FUNCTION>
-            ? Which setting do you want to update? Lambda layers configuration
-            ? Do you want to enable Lambda layers for this function? Yes
-            ? Enter up to 5 existing Lambda layer ARNs (comma-separated): arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:16
-            ? Do you want to edit the local lambda function now? No
+            Remember to replace the region with your AWS region, e.g., `eu-west-1`. Amplify Gen 2 currently does not support obtaining the region dynamically.
+
+            ```typescript hl_lines="9 19"
+            import { defineFunction } from "@aws-amplify/backend";
+
+            export const myFunction = defineFunction({
+              name: "my-function",
+              layers: {
+                "@aws-lambda-powertools/*":
+                  "arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:16",
+              },
+            });
             ```
 
 ### Lambda Layer
@@ -334,6 +325,7 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------- |
 | **POWERTOOLS_SERVICE_NAME**                  | Set service name used for tracing namespace, metrics dimension and structured logging                         | All                                     | `service_undefined` |
 | **POWERTOOLS_METRICS_NAMESPACE**             | Set namespace used for metrics                                                                                | [Metrics](core/metrics.md)              | `default_namespace` |
+| **POWERTOOLS_METRICS_ENABLED**               | Explicitly disables emitting metrics to stdout                                                                | [Metrics](core/metrics.md)              | `true`              |
 | **POWERTOOLS_TRACE_ENABLED**                 | Explicitly disables tracing                                                                                   | [Tracer](core/tracer.md)                | `true`              |
 | **POWERTOOLS_TRACER_CAPTURE_RESPONSE**       | Capture Lambda or method return as metadata.                                                                  | [Tracer](core/tracer.md)                | `true`              |
 | **POWERTOOLS_TRACER_CAPTURE_ERROR**          | Capture Lambda or method exception as metadata.                                                               | [Tracer](core/tracer.md)                | `true`              |
@@ -347,6 +339,18 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
 | **POWERTOOLS_IDEMPOTENCY_DISABLED**          | Disable the Idempotency logic without changing your code, useful for testing                                  | [Idempotency](utilities/idempotency.md) | `false`             |
 
 Each Utility page provides information on example values and allowed values.
+
+### Optimizing for non-production environments
+
+Whether you're prototyping locally or against a non-production environment, you can use `POWERTOOLS_DEV` to increase verbosity across multiple utilities.
+
+When `POWERTOOLS_DEV` is set to a truthy value (`1`, `true`), it'll have the following effects:
+
+| Utility           | Effect                                                                                                                                                                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| __Logger__        | Increase JSON indentation to 4 and uses global `console` to emit logs to ease testing and local debugging when running functions locally. However, Amazon CloudWatch Logs view will degrade as each new line is treated as a new message |
+| __Tracer__        | Disables tracing operations in non-Lambda environments. This already happens automatically in the Tracer utility                                                                                                                         |
+| __Metrics__       | Disables emitting metrics to stdout. Can be overridden by setting `POWERTOOLS_METRICS_ENABLED` to `true`                                                                                                                                 |
 
 ## Support Powertools for AWS Lambda (TypeScript)
 

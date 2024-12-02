@@ -1,5 +1,5 @@
 # version 9.5.35
-FROM squidfunk/mkdocs-material@sha256:d063d8460d449d5094da4b58c6e9b2aa8da869bb3a113a21401e0fe00bb8a628
+FROM squidfunk/mkdocs-material@sha256:3f571e7f83702812ab63e73c912dfea762abecd12b3d9bae678211bb625ba9ad
 
 COPY requirements.txt /tmp/
 RUN pip install --require-hashes -r /tmp/requirements.txt

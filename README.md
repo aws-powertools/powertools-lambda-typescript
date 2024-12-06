@@ -27,7 +27,7 @@ Find the complete project's [documentation here](https://docs.powertools.aws.dev
 - **[Idempotency](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/)** - Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
 - **[Batch Processing](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)** - Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
 - **[JMESPath Functions](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/)** - Built-in JMESPath functions to easily deserialize common encoded JSON payloads in Lambda functions.
-- **[Parser (Zod)](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)** - Utility that provides data validation and parsing using Zod, a TypeScript-first schema declaration and validation library.
+- **[Parser (Zod)](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parser/)** - Utility that provides data validation and parsing using Zod, a TypeScript-first schema declaration and validation library.
 
 ## Install
 

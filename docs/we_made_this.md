@@ -70,3 +70,21 @@ A two parts series that gives an overview of Powertools and its features startin
 This article discusses how to use the Idempotency feature to work around EventBridge API Destinations' built-in maximum client execution timeout (5s) and allow long-running queries, while still benefitting from automated retry and DLQ, and preventing concurrent calls.
 
 * [https://dev.to/aws-builders/eventbridge-working-around-api-destination-5s-maximum-client-timeout-constraint-using-lambda-powertools-idempotency-1cb3](https://dev.to/aws-builders/eventbridge-working-around-api-destination-5s-maximum-client-timeout-constraint-using-lambda-powertools-idempotency-1cb3){target="_blank"}
+
+## Videos
+
+#### Supercharge Lambda functions with Powertools for AWS Lambda
+
+> **Author: [Raphael Manke](https://www.linkedin.com/in/raphael-manke/){target="_blank"} :material-linkedin:**
+
+An overview of all the Powertools for AWS Lambda features put into a real world example.
+
+<iframe width="620" height="378" src="https://youtu.be/DYf7kpR24dk?si=qm2wWg0asxLUY8xe" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+#### AWS re:Invent 2024 - Gain expert-level knowledge about Powertools for AWS Lambda (OPN402)
+
+> **Author: [Andrea Amorosi](https://www.linkedin.com/in/dreamorosi/){target="_blank"} :material-linkedin:**
+
+Did you learn serverless best practices but are unsure about implementation? Have you used Powertools for AWS Lambda but felt you barely scratched the surface? This session dives deep into observability practices, safe retries with idempotency, mono- and multi-function APIs, and more. Learn about each practice in depth, achieve expert-level knowledge, and hear from maintainers about what’s next.
+
+<iframe width="620" height="378" src="https://youtu.be/kxJTq8FTkDA?si=tV75z2HVGlPxYtPA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>

@@ -9,7 +9,7 @@ const SnsMsgAttribute = z.object({
  * Zod schema for a SNS event notification record.
  */
 const SnsNotificationSchema = z.object({
-  Subject: z.string().optional(),
+  Subject: z.string().nullable(),
   TopicArn: z.string(),
   UnsubscribeUrl: z.string().url(),
   UnsubscribeURL: z.string().url().optional(),

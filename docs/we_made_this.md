@@ -73,18 +73,22 @@ This article discusses how to use the Idempotency feature to work around EventBr
 
 ## Videos
 
-#### Supercharge Lambda functions with Powertools for AWS Lambda
+### Supercharge Lambda functions with Powertools for AWS Lambda
 
 > **Author: [Raphael Manke](https://www.linkedin.com/in/raphael-manke/){target="_blank"} :material-linkedin:**
 
 An overview of all the Powertools for AWS Lambda features put into a real world example.
 
+<!-- markdownlint-disable MD013 -->
 <iframe width="620" height="378" src="https://youtu.be/DYf7kpR24dk?si=qm2wWg0asxLUY8xe" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<!-- markdownlint-enable MD013 -->
 
-#### AWS re:Invent 2024 - Gain expert-level knowledge about Powertools for AWS Lambda (OPN402)
+### AWS re:Invent 2024 - Gain expert-level knowledge about Powertools for AWS Lambda (OPN402)
 
 > **Author: [Andrea Amorosi](https://www.linkedin.com/in/dreamorosi/){target="_blank"} :material-linkedin:**
 
 Did you learn serverless best practices but are unsure about implementation? Have you used Powertools for AWS Lambda but felt you barely scratched the surface? This session dives deep into observability practices, safe retries with idempotency, mono- and multi-function APIs, and more. Learn about each practice in depth, achieve expert-level knowledge, and hear from maintainers about what’s next.
 
+<!-- markdownlint-disable MD013 -->
 <iframe width="620" height="378" src="https://youtu.be/kxJTq8FTkDA?si=tV75z2HVGlPxYtPA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<!-- markdownlint-enable MD013 -->

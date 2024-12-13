@@ -56,7 +56,7 @@
     "@vitest/coverage-v8": "^2.1.8",
     "husky": "^9.1.7",
     "lerna": "8.1.2",
-    "lint-staged": "^15.2.10",
+    "lint-staged": "^15.2.11",
     "markdownlint-cli2": "^0.15.0",
     "middy4": "npm:@middy/core@^4.7.0",
     "middy5": "npm:@middy/core@^5.4.3",

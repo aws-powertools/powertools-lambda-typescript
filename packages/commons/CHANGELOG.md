@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.12.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.11.0...v2.12.0) (2024-12-17)
+
+
+### Features
+
+* **metrics:** disable metrics with `POWERTOOLS_METRICS_DISABLED` ([#3351](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3351)) ([7e8578e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7e8578e630218c9a987754bf789895ab63c3547f))
+
+
+
+
+
 # [2.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.10.0...v2.11.0) (2024-11-20)
 
 

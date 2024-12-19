@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.12.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.11.0...v2.12.0) (2024-12-17)
+
+
+### Bug Fixes
+
+* **parser:** make SNS subject field nullish ([#3415](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3415)) ([0da9cea](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0da9ceaeccd088af09963690959871a2ca165729))
+
+
+### Features
+
+* **logger:** change selected method visibility to protected ([#3377](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3377)) ([93a19a5](https://github.com/aws-powertools/powertools-lambda-typescript/commit/93a19a5181b6875d57a589e17c620b7a4631c085))
+* **metrics:** disable metrics with `POWERTOOLS_METRICS_DISABLED` ([#3351](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3351)) ([7e8578e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7e8578e630218c9a987754bf789895ab63c3547f))
+* **metrics:** warn when overwriting dimension ([#3352](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3352)) ([12f3e44](https://github.com/aws-powertools/powertools-lambda-typescript/commit/12f3e448d8104b08518370a71db12646dededa4f))
+* **parser:** Add appsync resolver event Zod schemas ([#3301](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3301)) ([318f34b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/318f34b40331df7665939f92370797feb7b22dd0))
+* **parser:** add schema for DynamoDB - Kinesis Stream event ([#3328](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3328)) ([a8dfa74](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a8dfa74bff22dcde273f11295c1defcc904e98d3))
+
+
+
+
+
 # [2.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.10.0...v2.11.0) (2024-11-20)
 
 

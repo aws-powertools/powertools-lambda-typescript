@@ -168,6 +168,16 @@ describe('DynamoDBMarshalled', () => {
     Id: z.number(),
   });
 
+  const extendedSchema = DynamoDBStreamSchema.extend({
+    Records: z.array(
+      DynamoDBStreamRecord.extend({
+        dynamodb: z.object({
+          NewImage: DynamoDBMarshalled(schema).optional(),
+        }),
+      })
+    ),
+  });
+
   it('should correctly unmarshall and validate a valid DynamoDB stream record', () => {
     // Prepare
     const testInput = [
@@ -207,18 +217,7 @@ describe('DynamoDBMarshalled', () => {
     testEvent.Records[0].dynamodb.NewImage = testInput[0];
     testEvent.Records[1].dynamodb.NewImage = testInput[1];
 
-    // Act
-    const extendedSchema = DynamoDBStreamSchema.extend({
-      Records: z.array(
-        DynamoDBStreamRecord.extend({
-          dynamodb: z.object({
-            NewImage: DynamoDBMarshalled(schema).optional(),
-          }),
-        })
-      ),
-    });
-
-    // Assess
+    // Act & Assess
     expect(extendedSchema.parse(testEvent)).toStrictEqual({
       Records: [
         {
@@ -266,18 +265,7 @@ describe('DynamoDBMarshalled', () => {
     testEvent.Records[0].dynamodb.NewImage = testInput[0];
     testEvent.Records[1].dynamodb.NewImage = testInput[1];
 
-    // Act
-    const extendedSchema = DynamoDBStreamSchema.extend({
-      Records: z.array(
-        DynamoDBStreamRecord.extend({
-          dynamodb: z.object({
-            NewImage: DynamoDBMarshalled(schema).optional(),
-          }),
-        })
-      ),
-    });
-
-    // Assess
+    // Act & Assess
     expect(() => extendedSchema.parse(testEvent)).toThrow();
   });
 
@@ -308,18 +296,7 @@ describe('DynamoDBMarshalled', () => {
     testEvent.Records[0].dynamodb.NewImage = testInput[0];
     testEvent.Records[1].dynamodb.NewImage = testInput[1];
 
-    // Act
-    const extendedSchema = DynamoDBStreamSchema.extend({
-      Records: z.array(
-        DynamoDBStreamRecord.extend({
-          dynamodb: z.object({
-            NewImage: DynamoDBMarshalled(schema).optional(),
-          }),
-        })
-      ),
-    });
-
-    // Assess
+    // Act & Assess
     expect(() => extendedSchema.parse(testEvent)).toThrow(ZodError);
   });
 });

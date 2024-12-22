@@ -20,6 +20,7 @@ import { type ZodTypeAny, z } from 'zod';
  *     })
  *   ),
  * });
+ * type eventSchema = z.infer<typeof extendedSchema>;
  * ```
  * For example, if you have a DynamoDB stream event like the following:
  *

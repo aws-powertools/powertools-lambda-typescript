@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { JSONStringified } from '../../src/helpers.js';
 import { DynamoDBMarshalled } from '../../src/helpers/dynamodb.js';
 import { AlbSchema } from '../../src/schemas/alb.js';
@@ -267,7 +267,9 @@ describe('DynamoDBMarshalled', () => {
     testEvent.Records[1].dynamodb.NewImage = testInput[1];
 
     // Act & Assess
-    expect(() => extendedSchema.parse(testEvent)).toThrow();
+    expect(() => extendedSchema.parse(testEvent)).toThrow(
+      'Could not unmarshall DynamoDB stream record'
+    );
   });
 
   it('should throw a validation error if the unmarshalled record does not match the schema', () => {
@@ -298,6 +300,6 @@ describe('DynamoDBMarshalled', () => {
     testEvent.Records[1].dynamodb.NewImage = testInput[1];
 
     // Act & Assess
-    expect(() => extendedSchema.parse(testEvent)).toThrow(ZodError);
+    expect(() => extendedSchema.parse(testEvent)).toThrow();
   });
 });

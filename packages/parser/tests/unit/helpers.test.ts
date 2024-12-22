@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { DynamoDBMarshalled, JSONStringified } from '../../src/helpers.js';
+import { JSONStringified } from '../../src/helpers.js';
+import { DynamoDBMarshalled } from '../../src/helpers/dynamodb.js';
 import { AlbSchema } from '../../src/schemas/alb.js';
 import {
   DynamoDBStreamRecord,
@@ -244,7 +245,7 @@ describe('DynamoDBMarshalled', () => {
           S: 'New item!',
         },
         Id: {
-          NNN: '101',
+          NNN: '101', //unknown type
         },
       },
       {

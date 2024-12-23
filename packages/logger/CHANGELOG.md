@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.12.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.11.0...v2.12.0) (2024-12-17)
+
+
+### Features
+
+* **logger:** change selected method visibility to protected ([#3377](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3377)) ([93a19a5](https://github.com/aws-powertools/powertools-lambda-typescript/commit/93a19a5181b6875d57a589e17c620b7a4631c085))
+
+
+
+
+
 # [2.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.10.0...v2.11.0) (2024-11-20)
 
 **Note:** Version bump only for package @aws-lambda-powertools/logger

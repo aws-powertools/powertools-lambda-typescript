@@ -30,8 +30,8 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.146",
     "@types/node": "22.10.2",
-    "aws-cdk": "^2.173.2",
-    "aws-cdk-lib": "^2.173.2",
+    "aws-cdk": "^2.173.3",
+    "aws-cdk-lib": "^2.173.3",
     "constructs": "^10.4.2",
     "source-map-support": "^0.5.21",
     "tsx": "^4.19.2",

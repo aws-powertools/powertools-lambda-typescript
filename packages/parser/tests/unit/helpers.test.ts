@@ -1,13 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { JSONStringified } from '../../src/helpers.js';
+import { DynamoDBMarshalled } from '../../src/helpers/dynamodb.js';
 import { AlbSchema } from '../../src/schemas/alb.js';
+import {
+  DynamoDBStreamRecord,
+  DynamoDBStreamSchema,
+} from '../../src/schemas/dynamodb';
 import {
   SnsNotificationSchema,
   SnsRecordSchema,
 } from '../../src/schemas/sns.js';
 import { SqsRecordSchema, SqsSchema } from '../../src/schemas/sqs.js';
-import type { SnsEvent, SqsEvent } from '../../src/types/schema.js';
+import type {
+  DynamoDBStreamEvent,
+  SnsEvent,
+  SqsEvent,
+} from '../../src/types/schema.js';
 import { getTestEvent } from './schema/utils.js';
 
 const bodySchema = z.object({
@@ -150,5 +159,147 @@ describe('JSONStringified', () => {
         },
       ],
     });
+  });
+});
+
+describe('DynamoDBMarshalled', () => {
+  // Prepare
+  const schema = z.object({
+    Message: z.string(),
+    Id: z.number(),
+  });
+
+  const extendedSchema = DynamoDBStreamSchema.extend({
+    Records: z.array(
+      DynamoDBStreamRecord.extend({
+        dynamodb: z.object({
+          NewImage: DynamoDBMarshalled(schema).optional(),
+        }),
+      })
+    ),
+  });
+
+  it('should correctly unmarshall and validate a valid DynamoDB stream record', () => {
+    // Prepare
+    const testInput = [
+      {
+        Message: {
+          S: 'New item!',
+        },
+        Id: {
+          N: '101',
+        },
+      },
+      {
+        Message: {
+          S: 'This item has changed',
+        },
+        Id: {
+          N: '101',
+        },
+      },
+    ];
+    const expectedOutput = [
+      {
+        Id: 101,
+        Message: 'New item!',
+      },
+      {
+        Id: 101,
+        Message: 'This item has changed',
+      },
+    ];
+
+    const testEvent = getTestEvent<DynamoDBStreamEvent>({
+      eventsPath: '.',
+      filename: 'dynamoStreamEvent',
+    });
+
+    testEvent.Records[0].dynamodb.NewImage = testInput[0];
+    testEvent.Records[1].dynamodb.NewImage = testInput[1];
+
+    // Act & Assess
+    expect(extendedSchema.parse(testEvent)).toStrictEqual({
+      Records: [
+        {
+          ...testEvent.Records[0],
+          dynamodb: {
+            NewImage: expectedOutput[0],
+          },
+        },
+        {
+          ...testEvent.Records[1],
+          dynamodb: {
+            NewImage: expectedOutput[1],
+          },
+        },
+      ],
+    });
+  });
+
+  it('should throw an error if the DynamoDB stream record cannot be unmarshalled', () => {
+    // Prepare
+    const testInput = [
+      {
+        Message: {
+          S: 'New item!',
+        },
+        Id: {
+          NNN: '101', //unknown type
+        },
+      },
+      {
+        Message: {
+          S: 'This item has changed',
+        },
+        Id: {
+          N: '101',
+        },
+      },
+    ];
+
+    const testEvent = getTestEvent<DynamoDBStreamEvent>({
+      eventsPath: '.',
+      filename: 'dynamoStreamEvent',
+    });
+
+    testEvent.Records[0].dynamodb.NewImage = testInput[0];
+    testEvent.Records[1].dynamodb.NewImage = testInput[1];
+
+    // Act & Assess
+    expect(() => extendedSchema.parse(testEvent)).toThrow(
+      'Could not unmarshall DynamoDB stream record'
+    );
+  });
+
+  it('should throw a validation error if the unmarshalled record does not match the schema', () => {
+    // Prepare
+    const testInput = [
+      {
+        Message: {
+          S: 'New item!',
+        },
+        Id: {
+          N: '101',
+        },
+      },
+      {
+        Message: {
+          S: 'This item has changed',
+        },
+        // Id is missing
+      },
+    ];
+
+    const testEvent = getTestEvent<DynamoDBStreamEvent>({
+      eventsPath: '.',
+      filename: 'dynamoStreamEvent',
+    });
+
+    testEvent.Records[0].dynamodb.NewImage = testInput[0];
+    testEvent.Records[1].dynamodb.NewImage = testInput[1];
+
+    // Act & Assess
+    expect(() => extendedSchema.parse(testEvent)).toThrow();
   });
 });

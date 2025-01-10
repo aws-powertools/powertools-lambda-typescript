@@ -180,6 +180,10 @@
       "require": "./lib/cjs/helpers.js",
       "import": "./lib/esm/helpers.js"
     },
+    "./helpers/dynamodb": {
+      "require": "./lib/cjs/helpers/dynamodb.js",
+      "import": "./lib/esm/helpers/dynamodb.js"
+    },
     "./types": {
       "require": "./lib/cjs/types/index.js",
       "import": "./lib/esm/types/index.js"
@@ -363,7 +367,8 @@
   ],
   "peerDependencies": {
     "@middy/core": "4.x || 5.x || 6.x",
-    "zod": ">=3.x"
+    "zod": ">=3.x",
+    "@aws-sdk/util-dynamodb": ">=3.x"
   },
   "peerDependenciesMeta": {
     "zod": {

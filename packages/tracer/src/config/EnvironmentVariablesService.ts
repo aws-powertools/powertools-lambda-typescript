@@ -69,4 +69,6 @@ class EnvironmentVariablesService
   }
 }
 
-export { EnvironmentVariablesService };
+const environmentVariablesService = new EnvironmentVariablesService();
+
+export { EnvironmentVariablesService, environmentVariablesService };

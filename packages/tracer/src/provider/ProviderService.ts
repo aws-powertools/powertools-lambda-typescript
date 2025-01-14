@@ -26,6 +26,7 @@ import http from 'node:http';
 import https from 'node:https';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import type { DiagnosticsChannel } from 'undici-types';
+import { environmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import {
   findHeaderAndDecode,
   getRequestURL,
@@ -94,22 +95,6 @@ class ProviderService implements ProviderServiceInterface {
     return getSegment();
   }
 
-  private getRootTraceId(): Record<string, string> | undefined {
-    const xRayTraceEnv = process.env._X_AMZN_TRACE_ID || '';
-
-    if (!xRayTraceEnv.includes('=')) return { Root: xRayTraceEnv };
-
-    const xRayTraceData: Record<string, string> = {};
-
-    for (const field of xRayTraceEnv.split(';')) {
-      const [key, value] = field.split('=');
-
-      xRayTraceData[key] = value;
-    }
-
-    return xRayTraceData;
-  }
-
   /**
    * Instrument `fetch` requests with AWS X-Ray
    *
@@ -143,14 +128,12 @@ class ProviderService implements ProviderServiceInterface {
         );
         subsegment.addAttribute('namespace', 'remote');
 
+        // addHeader is not part of the type definition but it's available https://github.com/nodejs/undici/blob/main/docs/docs/api/DiagnosticsChannel.md#undicirequestcreate
         // @ts-expect-error
         request.addHeader(
           'X-Amzn-Trace-Id',
-          `Root=${this.getRootTraceId()?.Root};Parent=${subsegment.id};Sampled=${subsegment.notTraced ? '0' : '1'}`
+          `Root=${environmentVariablesService.getXrayTraceId()};Parent=${subsegment.id};Sampled=${subsegment.notTraced ? '0' : '1'}`
         );
-
-        // @ts-expect-error
-        request.addHeader('foo', 'bar');
 
         (subsegment as HttpSubsegment).http = {
           request: {

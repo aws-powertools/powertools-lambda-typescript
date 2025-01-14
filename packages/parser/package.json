@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parser",
-  "version": "2.12.0",
+  "version": "2.13.0",
   "description": "The parser package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -366,9 +366,9 @@
     "nodejs"
   ],
   "peerDependencies": {
+    "@aws-sdk/util-dynamodb": ">=3.x",
     "@middy/core": "4.x || 5.x || 6.x",
-    "zod": ">=3.x",
-    "@aws-sdk/util-dynamodb": ">=3.x"
+    "zod": ">=3.x"
   },
   "peerDependenciesMeta": {
     "zod": {

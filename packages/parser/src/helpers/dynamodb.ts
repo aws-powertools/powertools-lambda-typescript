@@ -63,7 +63,10 @@ import { type ZodTypeAny, z } from 'zod';
  */
 const DynamoDBMarshalled = <T extends ZodTypeAny>(schema: T) =>
   z
-    .record(z.string(), z.custom<AttributeValue>())
+    .union([
+      z.custom<AttributeValue>(),
+      z.record(z.string(), z.custom<AttributeValue>()),
+    ])
     .transform((str, ctx) => {
       try {
         return unmarshall(str);

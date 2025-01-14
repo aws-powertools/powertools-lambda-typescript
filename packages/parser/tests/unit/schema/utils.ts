@@ -121,6 +121,14 @@ const createTestEvents = (fileList: readonly string[]): TestEvents => {
 
 export const TestEvents = createTestEvents(filenames);
 
+/**
+ * Reads and parses a JSON file from the specified events path and filename, returning the parsed object.
+ *
+ * @template T - The expected type of the parsed JSON object.
+ * @param {Object} params - The parameters for the function.
+ * @param {string} params.eventsPath - The relative path to the directory containing the event files.
+ * @param {string} params.filename - The name of the JSON file (without extension) to be read and parsed.
+ */
 export const getTestEvent = <T extends Record<string, unknown>>({
   eventsPath,
   filename,

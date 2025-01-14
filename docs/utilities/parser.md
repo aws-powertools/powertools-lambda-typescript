@@ -151,6 +151,21 @@ If you want to extend a schema and transform a JSON stringified payload to an ob
     --8<-- "examples/snippets/parser/samples/exampleSqsPayload.json"
     ```
 
+### DynamoDB Stream event parsing
+
+If you want to parse a DynamoDB stream event with unmarshalling, you can use the helper function `DynamoDBMarshalled`:
+
+=== "DynamoDBStreamSchema with DynamoDBMarshalled"
+    ```typescript hl_lines="17"
+    --8<-- "examples/snippets/parser/extendDynamoDBStreamSchema.ts"
+    ```
+
+=== "DynamoDBStream event payload"
+
+    ```json hl_lines="13-20 49-56"
+    --8<-- "examples/snippets/parser/samples/exampleDynamoDBStreamPayload.json"
+    ```
+
 ## Envelopes
 
 When trying to parse your payload you might encounter the following situations:

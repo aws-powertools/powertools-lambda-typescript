@@ -142,3 +142,16 @@ export const getTestEvent = <T extends Record<string, unknown>>({
       'utf-8'
     )
   ) as T;
+
+export function omit<T extends Record<string, unknown>, Keys extends keyof T>(
+  keys: readonly Keys[],
+  obj: T
+): Omit<T, Keys> {
+  const result = { ...obj };
+
+  for (const key of keys) {
+    delete result[key];
+  }
+
+  return result;
+}

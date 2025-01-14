@@ -26,6 +26,7 @@ import http from 'node:http';
 import https from 'node:https';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import type { DiagnosticsChannel } from 'undici-types';
+import { environmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import {
   findHeaderAndDecode,
   getRequestURL,
@@ -126,6 +127,13 @@ class ProviderService implements ProviderServiceInterface {
           requestURL.hostname
         );
         subsegment.addAttribute('namespace', 'remote');
+
+        // addHeader is not part of the type definition but it's available https://github.com/nodejs/undici/blob/main/docs/docs/api/DiagnosticsChannel.md#undicirequestcreate
+        // @ts-expect-error
+        request.addHeader(
+          'X-Amzn-Trace-Id',
+          `Root=${environmentVariablesService.getXrayTraceId()};Parent=${subsegment.id};Sampled=${subsegment.notTraced ? '0' : '1'}`
+        );
 
         (subsegment as HttpSubsegment).http = {
           request: {

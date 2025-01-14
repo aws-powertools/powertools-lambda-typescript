@@ -1,5 +1,6 @@
 import { channel } from 'node:diagnostics_channel';
 import type { URL } from 'node:url';
+import { vi } from 'vitest';
 
 type MockFetchOptions = {
   origin?: string | URL;
@@ -31,7 +32,7 @@ const mockFetch = ({
   statusCode,
   headers,
   throwError,
-}: MockFetchOptions): void => {
+}: MockFetchOptions) => {
   const requestCreateChannel = channel('undici:request:create');
   const responseHeadersChannel = channel('undici:request:headers');
   const errorChannel = channel('undici:request:error');
@@ -40,6 +41,7 @@ const mockFetch = ({
     origin,
     method: method ?? 'GET',
     path,
+    addHeader: vi.fn(),
   };
 
   requestCreateChannel.publish({
@@ -70,6 +72,8 @@ const mockFetch = ({
       headers: encodedHeaders,
     },
   });
+
+  return request;
 };
 
 export { mockFetch };

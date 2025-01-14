@@ -1,7 +1,5 @@
 /**
  * Test built-in AppSync resolver schemas
- *
- * @group unit/parser/schema/appsync
  */
 
 import { faker } from '@faker-js/faker';
@@ -13,11 +11,6 @@ import {
 import type { AppSyncResolverEvent } from '../../../src/types';
 import { getTestEvent, omit } from './utils';
 
-type Table = {
-  name: string;
-  event: AppSyncResolverEvent;
-};
-
 describe('AppSync Resolver Schemas', () => {
   const eventsPath = 'appsync';
 
@@ -26,23 +19,23 @@ describe('AppSync Resolver Schemas', () => {
     filename: 'resolver',
   });
 
-  const table: Table[] = [
+  const table = [
     {
-      name: 'should parse resolver event with null source',
+      name: 'null source',
       event: {
         ...appSyncResolverEvent,
         source: null,
       },
     },
     {
-      name: 'should parse resolver event with null prev',
+      name: 'null prev',
       event: {
         ...appSyncResolverEvent,
         prev: null,
       },
     },
     {
-      name: 'should parse resolver event without custom domain',
+      name: 'no custom domain',
       event: {
         ...appSyncResolverEvent,
         request: {
@@ -52,7 +45,7 @@ describe('AppSync Resolver Schemas', () => {
       },
     },
     {
-      name: 'should parse resolver event with cognito identity and no rbac groups',
+      name: 'cognito identity and no rbac groups',
       event: {
         ...appSyncResolverEvent,
         identity: {
@@ -70,7 +63,7 @@ describe('AppSync Resolver Schemas', () => {
       },
     },
     {
-      name: 'with iam identity with no cognito fields',
+      name: 'iam identity with no cognito fields',
       event: {
         ...appSyncResolverEvent,
         identity: {
@@ -79,14 +72,14 @@ describe('AppSync Resolver Schemas', () => {
           cognitoIdentityAuthType: null,
           cognitoIdentityId: null,
           cognitoIdentityPoolId: null,
-          sourceIp: [faker.internet.ip()],
+          sourceIp: ['1.1.1.1'],
           userArn: 'arn:aws:sts::012345678901:assumed-role/role',
           username: 'AROAXYKJUOW6FHGUSK5FA:username',
         },
       },
     },
     {
-      name: 'should parse resolver event with iam identity with cognito fields',
+      name: 'iam identity with cognito fields',
       event: {
         ...appSyncResolverEvent,
         identity: {
@@ -102,7 +95,7 @@ describe('AppSync Resolver Schemas', () => {
       },
     },
     {
-      name: 'should parse resolver event with lambda identity',
+      name: 'lambda identity',
       event: {
         ...appSyncResolverEvent,
         identity: {
@@ -113,7 +106,7 @@ describe('AppSync Resolver Schemas', () => {
       },
     },
     {
-      name: 'should parse resolver event with oidc identity',
+      name: 'oidc identity',
       event: {
         ...appSyncResolverEvent,
         identity: {
@@ -160,7 +153,7 @@ describe('AppSync Resolver Schemas', () => {
       expect(parsedEvent).toEqual(event);
     });
 
-    it.each(table)('$name', ({ event }: Table) => {
+    it.each(table)('should parse resolver event with $name', ({ event }) => {
       const parsedEvent = AppSyncResolverSchema.parse(event);
       expect(parsedEvent).toEqual(event);
     });
@@ -191,7 +184,7 @@ describe('AppSync Resolver Schemas', () => {
     });
 
     it('should parse batches of appsync resolver events', () => {
-      const events = table.map((table: Table) => table.event);
+      const events = table.map((table) => table.event);
       const parsedEvent = AppSyncBatchResolverSchema.parse(events);
       expect(parsedEvent).toEqual(events);
     });

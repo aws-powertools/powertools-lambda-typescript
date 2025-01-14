@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.12.0...v2.13.0) (2025-01-14)
+
+
+### Features
+
+* **parser:** `DynamoDBMarshalled` helper to parse DynamoDB data structure ([#3442](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3442)) ([e154e58](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e154e58986187d8210d18f6ca79d8b710d87d600))
+
+
+
+
+
 # [2.12.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.11.0...v2.12.0) (2024-12-17)
 
 **Note:** Version bump only for package code-snippets

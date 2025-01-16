@@ -17,26 +17,55 @@ describe('Schema: DynamoDB ', () => {
     const parsedEvent = DynamoDBStreamSchema.parse(event);
 
     // Assess
-    const expectedResult = structuredClone(event);
-    expectedResult.Records[0].dynamodb.Keys = {
-      Id: 101,
-    };
-    expectedResult.Records[0].dynamodb.NewImage = {
-      Message: 'New item!',
-      Id: 101,
-    };
-    expectedResult.Records[1].dynamodb.Keys = {
-      Id: 101,
-    };
-    expectedResult.Records[1].dynamodb.OldImage = {
-      Message: 'New item!',
-      Id: 101,
-    };
-    expectedResult.Records[1].dynamodb.NewImage = {
-      Message: 'This item has changed',
-      Id: 101,
-    };
-    expect(parsedEvent).toStrictEqual(expectedResult);
+    expect(parsedEvent).toStrictEqual({
+      Records: [
+        {
+          eventID: '1',
+          eventVersion: '1.0',
+          dynamodb: {
+            ApproximateCreationDateTime: 1693997155.0,
+            Keys: {
+              Id: 101,
+            },
+            NewImage: {
+              Message: 'New item!',
+              Id: 101,
+            },
+            StreamViewType: 'NEW_IMAGE',
+            SequenceNumber: '111',
+            SizeBytes: 26,
+          },
+          awsRegion: 'us-west-2',
+          eventName: 'INSERT',
+          eventSourceARN: 'eventsource_arn',
+          eventSource: 'aws:dynamodb',
+        },
+        {
+          eventID: '2',
+          eventVersion: '1.0',
+          dynamodb: {
+            OldImage: {
+              Message: 'New item!',
+              Id: 101,
+            },
+            SequenceNumber: '222',
+            Keys: {
+              Id: 101,
+            },
+            SizeBytes: 59,
+            NewImage: {
+              Message: 'This item has changed',
+              Id: 101,
+            },
+            StreamViewType: 'NEW_AND_OLD_IMAGES',
+          },
+          awsRegion: 'us-west-2',
+          eventName: 'MODIFY',
+          eventSourceARN: 'source_arn',
+          eventSource: 'aws:dynamodb',
+        },
+      ],
+    });
   });
 
   it('throws if event is not a DynamoDB Stream event', () => {

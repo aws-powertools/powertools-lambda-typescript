@@ -1,4 +1,3 @@
-import { unmarshallDynamoDB } from '@aws-lambda-powertools/commons/utils/unmarshallDynamoDB';
 import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { DynamoDBStreamSchema } from '../schemas/index.js';
@@ -30,10 +29,7 @@ export const DynamoDBStreamEnvelope = {
       recordIndex: number
     ) => {
       try {
-        return image
-          ? // @ts-expect-error - unmarshallDynamoDB expects AttributeValue but we are passing unknown
-            Envelope.parse(unmarshallDynamoDB(image), schema)
-          : undefined;
+        return image ? Envelope.parse(image, schema) : undefined;
       } catch (error) {
         throw new ParseError(
           `Failed to parse DynamoDB record at index ${recordIndex}`,
@@ -77,8 +73,7 @@ export const DynamoDBStreamEnvelope = {
     }
 
     const processImage = (image: unknown) =>
-      // @ts-expect-error - unmarshallDynamoDB expects AttributeValue but we are passing unknown
-      image ? Envelope.safeParse(unmarshallDynamoDB(image), schema) : undefined;
+      image ? Envelope.safeParse(image, schema) : undefined;
 
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;

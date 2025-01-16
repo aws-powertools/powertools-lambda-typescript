@@ -149,6 +149,45 @@ describe('Function: unmarshallDynamoDB', () => {
     });
   });
 
+  it('unmarshalls a DynamoDB binary attribute', () => {
+    // Prepare
+    const value = {
+      Data: {
+        B: new Uint8Array(
+          Buffer.from('dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk', 'base64')
+        ),
+      },
+    };
+
+    // Act
+    const result = unmarshallDynamoDB(value);
+
+    // Assess
+    expect(result).toStrictEqual({ Data: expect.any(Uint8Array) });
+  });
+
+  it('unmarshalls a DynamoDB binary set attribute', () => {
+    // Prepare
+    const value = {
+      Data: {
+        BS: [
+          new Uint8Array(
+            Buffer.from('dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk', 'base64')
+          ),
+          new Uint8Array(
+            Buffer.from('dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk', 'base64')
+          ),
+        ],
+      },
+    };
+
+    // Act
+    const result = unmarshallDynamoDB(value);
+
+    // Assess
+    expect(result).toStrictEqual({ Data: expect.any(Set) });
+  });
+
   it('throws if an unsupported type is passed', () => {
     // Prepare
     const value = { Message: { NNN: '123' } };

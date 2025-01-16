@@ -25,21 +25,21 @@ describe('Envelope: DynamoDB Stream', () => {
       expect(() => DynamoDBStreamEnvelope.parse(event, z.number())).toThrow();
     });
 
-    it('parse should parse dynamodb envelope', () => {
+    it('parses a DynamoDB Stream event', () => {
       // Prepare
       const testEvent = structuredClone(baseEvent);
 
       // Act
-      const parsed = DynamoDBStreamEnvelope.parse(testEvent, schema);
+      const result = DynamoDBStreamEnvelope.parse(testEvent, schema);
 
       // Assess
-      expect(parsed[0]).toEqual({
+      expect(result[0]).toEqual({
         NewImage: {
           Message: 'New item!',
           Id: 101,
         },
       });
-      expect(parsed[1]).toEqual({
+      expect(result[1]).toEqual({
         OldImage: {
           Message: 'New item!',
           Id: 101,
@@ -58,10 +58,10 @@ describe('Envelope: DynamoDB Stream', () => {
       const event = structuredClone(baseEvent);
 
       // Act
-      const parsedEvent = DynamoDBStreamEnvelope.safeParse(event, schema);
+      const result = DynamoDBStreamEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(parsedEvent).toEqual({
+      expect(result).toEqual({
         success: true,
         data: [
           {
@@ -91,10 +91,10 @@ describe('Envelope: DynamoDB Stream', () => {
       event.Records[0].dynamodb = undefined;
 
       // Act
-      const parsedEvent = DynamoDBStreamEnvelope.safeParse(event, schema);
+      const result = DynamoDBStreamEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(parsedEvent).toEqual({
+      expect(result).toEqual({
         success: false,
         error: new ParseError('Failed to parse DynamoDB Stream envelope', {
           cause: new ZodError([
@@ -120,10 +120,10 @@ describe('Envelope: DynamoDB Stream', () => {
       });
 
       // Act
-      const parsedEvent = DynamoDBStreamEnvelope.safeParse(event, schema);
+      const result = DynamoDBStreamEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(parsedEvent).toEqual({
+      expect(result).toEqual({
         success: false,
         error: new ParseError('Failed to parse record at index 1', {
           cause: new ZodError([

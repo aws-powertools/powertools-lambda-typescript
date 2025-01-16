@@ -3,7 +3,7 @@ import { DynamoDBStreamSchema } from '../../../src/schemas/dynamodb.js';
 import type { DynamoDBStreamEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../schema/utils.js';
 
-describe('Schema: DynamoDB ', () => {
+describe('Schema: DynamoDB', () => {
   const baseEvent = getTestEvent<DynamoDBStreamEvent>({
     eventsPath: 'dynamodb',
     filename: 'base',
@@ -14,10 +14,10 @@ describe('Schema: DynamoDB ', () => {
     const event = structuredClone(baseEvent);
 
     // Act
-    const parsedEvent = DynamoDBStreamSchema.parse(event);
+    const result = DynamoDBStreamSchema.parse(event);
 
     // Assess
-    expect(parsedEvent).toStrictEqual({
+    expect(result).toStrictEqual({
       Records: [
         {
           eventID: '1',
@@ -68,7 +68,7 @@ describe('Schema: DynamoDB ', () => {
     });
   });
 
-  it('throws if event is not a DynamoDB Stream event', () => {
+  it('throws if the event is not a DynamoDB Stream event', () => {
     // Prepare
     const event = {
       Records: [],

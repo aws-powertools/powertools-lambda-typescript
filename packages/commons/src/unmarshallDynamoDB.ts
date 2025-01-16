@@ -7,55 +7,46 @@ class UnmarshallDynamoDBAttributeError extends Error {
   }
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: we need to use any here to support the different types of DynamoDB attributes
+const typeHandlers: Record<string, (value: any) => unknown> = {
+  NULL: () => null,
+  S: (value) => value,
+  B: (value) => value,
+  BS: (value) => new Set(value),
+  SS: (value) => new Set(value),
+  BOOL: (value) => Boolean(value),
+  N: (value) => convertNumber(value),
+  NS: (value) => new Set((value as Array<string>).map(convertNumber)),
+  L: (value) => (value as Array<AttributeValue>).map(convertAttributeValue),
+  M: (value) =>
+    Object.entries(value).reduce(
+      (acc, [key, value]) => {
+        acc[key] = convertAttributeValue(value as AttributeValue);
+        return acc;
+      },
+      {} as Record<string, unknown>
+    ),
+};
+
 const convertAttributeValue = (
   data: AttributeValue | Record<string, AttributeValue>
 ): unknown => {
-  for (const [key, value] of Object.entries(data)) {
-    if (value !== undefined) {
-      if (key === 'NULL') {
-        return null;
-      }
-      if (key === 'S' || key === 'B') {
-        return value;
-      }
-      if (key === 'BS' || key === 'SS') {
-        return new Set(value);
-      }
-      if (key === 'BOOL') {
-        return Boolean(value);
-      }
-      if (key === 'N') {
-        return convertNumber(value);
-      }
-      if (key === 'NS') {
-        return new Set(
-          (value as Array<string>).map((item) => convertNumber(item))
-        );
-      }
-      if (key === 'L') {
-        return (value as Array<AttributeValue>).map((item) =>
-          convertAttributeValue(item)
-        );
-      }
-      if (key === 'M') {
-        return Object.entries(value).reduce(
-          (acc, [key, value]) =>
-            (
-              // biome-ignore lint/suspicious/noAssignInExpressions: we are intentionally assigning the value to the accumulator
-              // biome-ignore lint/style/noCommaOperator: required for the reduce function
-              (acc[key] = convertAttributeValue(value as AttributeValue)), acc
-            ),
-          {} as Record<string, unknown>
-        );
-      }
+  const [type, value] = Object.entries(data)[0];
 
+  if (value !== undefined) {
+    const handler = typeHandlers[type];
+    if (!handler) {
       throw new UnmarshallDynamoDBAttributeError(
-        `Unsupported type passed: ${key}`
+        `Unsupported type passed: ${type}`
       );
     }
-    /* v8 ignore next */
+
+    return handler(value);
   }
-  /* v8 ignore next */
+
+  throw new UnmarshallDynamoDBAttributeError(
+    `Value is undefined for type: ${type}`
+  );
 };
 
 const convertNumber = (numString: string) => {

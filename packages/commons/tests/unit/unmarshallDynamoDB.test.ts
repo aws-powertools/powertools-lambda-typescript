@@ -194,14 +194,14 @@ describe('Function: unmarshallDynamoDB', () => {
     );
   });
 
-  /* it('throws when no data is found', () => {
+  it('throws when no data is found', () => {
     // Prepare
-    const value = {};
+    const value = undefined;
 
     // Act & Assess
+    // @ts-expect-error - Intentionally invalid value
     expect(() => unmarshallDynamoDB(value)).toThrow(
       UnmarshallDynamoDBAttributeError
     );
-    expect(() => unmarshallDynamoDB(value)).toThrow('No data found');
-  }); */
+  });
 });

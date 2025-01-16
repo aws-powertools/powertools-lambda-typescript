@@ -1,8 +1,9 @@
-import type { ZodSchema, z } from 'zod';
+import { unmarshallDynamoDB } from '@aws-lambda-powertools/commons/utils/unmarshallDynamoDB';
+import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { DynamoDBStreamSchema } from '../schemas/index.js';
 import type { DynamoDBStreamEnvelopeResponse } from '../types/envelope.js';
-import type { ParsedResult, ParsedResultError } from '../types/index.js';
+import type { ParsedResult } from '../types/index.js';
 import { Envelope, envelopeDiscriminator } from './envelope.js';
 
 /**
@@ -23,12 +24,41 @@ export const DynamoDBStreamEnvelope = {
   ): DynamoDBStreamEnvelopeResponse<z.infer<T>>[] {
     const parsedEnvelope = DynamoDBStreamSchema.parse(data);
 
-    return parsedEnvelope.Records.map((record) => {
-      return {
-        NewImage: Envelope.parse(record.dynamodb.NewImage, schema),
-        OldImage: Envelope.parse(record.dynamodb.OldImage, schema),
-      };
-    });
+    const processImage = (
+      image: unknown,
+      imageType: 'NewImage' | 'OldImage',
+      recordIndex: number
+    ) => {
+      try {
+        return image
+          ? // @ts-expect-error - unmarshallDynamoDB expects AttributeValue but we are passing unknown
+            Envelope.parse(unmarshallDynamoDB(image), schema)
+          : undefined;
+      } catch (error) {
+        throw new ParseError(
+          `Failed to parse DynamoDB record at index ${recordIndex}`,
+          {
+            cause: new ZodError(
+              ((error as Error).cause as ZodError).issues.map((issue) => ({
+                ...issue,
+                path: [
+                  'Records',
+                  recordIndex,
+                  'dynamodb',
+                  imageType,
+                  ...issue.path,
+                ],
+              }))
+            ),
+          }
+        );
+      }
+    };
+
+    return parsedEnvelope.Records.map((record, index) => ({
+      NewImage: processImage(record.dynamodb.NewImage, 'NewImage', index),
+      OldImage: processImage(record.dynamodb.OldImage, 'OldImage', index),
+    }));
   },
 
   safeParse<T extends ZodSchema>(
@@ -36,7 +66,6 @@ export const DynamoDBStreamEnvelope = {
     schema: T
   ): ParsedResult<unknown, DynamoDBStreamEnvelopeResponse<z.infer<T>>[]> {
     const parsedEnvelope = DynamoDBStreamSchema.safeParse(data);
-
     if (!parsedEnvelope.success) {
       return {
         success: false,
@@ -46,39 +75,56 @@ export const DynamoDBStreamEnvelope = {
         originalEvent: data,
       };
     }
-    const parsedLogEvents: DynamoDBStreamEnvelopeResponse<z.infer<T>>[] = [];
 
-    for (const record of parsedEnvelope.data.Records) {
-      const parsedNewImage = Envelope.safeParse(
-        record.dynamodb.NewImage,
-        schema
-      );
-      const parsedOldImage = Envelope.safeParse(
-        record.dynamodb.OldImage,
-        schema
-      );
-      if (!parsedNewImage.success || !parsedOldImage.success) {
-        return {
+    const processImage = (image: unknown) =>
+      // @ts-expect-error - unmarshallDynamoDB expects AttributeValue but we are passing unknown
+      image ? Envelope.safeParse(unmarshallDynamoDB(image), schema) : undefined;
+
+    const result = parsedEnvelope.data.Records.reduce<{
+      success: boolean;
+      records: DynamoDBStreamEnvelopeResponse<z.infer<T>>[];
+      errors: { index: number; issues: ZodIssue[] };
+    }>(
+      (acc, record, index) => {
+        const newImage = processImage(record.dynamodb.NewImage);
+        const oldImage = processImage(record.dynamodb.OldImage);
+
+        if (newImage?.success === false || oldImage?.success === false) {
+          const issues: ZodIssue[] = [];
+          for (const key of ['NewImage', 'OldImage']) {
+            const image = key === 'NewImage' ? newImage : oldImage;
+            if (image?.success === false) {
+              issues.push(
+                ...(image.error as ZodError).issues.map((issue) => ({
+                  ...issue,
+                  path: ['Records', index, 'dynamodb', key, ...issue.path],
+                }))
+              );
+            }
+          }
+          acc.success = false;
+          acc.errors = { index, issues };
+          return acc;
+        }
+
+        acc.records.push({
+          NewImage: newImage?.data,
+          OldImage: oldImage?.data,
+        });
+        return acc;
+      },
+      { success: true, records: [], errors: { index: 0, issues: [] } }
+    );
+
+    return result.success
+      ? { success: true, data: result.records }
+      : {
           success: false,
-          error: !parsedNewImage.success
-            ? new ParseError('Failed to parse NewImage', {
-                cause: parsedNewImage.error,
-              })
-            : new ParseError('Failed to parse OldImage', {
-                cause: (parsedOldImage as ParsedResultError<unknown>).error,
-              }),
+          error: new ParseError(
+            `Failed to parse record at index ${result.errors.index}`,
+            { cause: new ZodError(result.errors.issues) }
+          ),
           originalEvent: data,
         };
-      }
-      parsedLogEvents.push({
-        NewImage: parsedNewImage.data,
-        OldImage: parsedOldImage.data,
-      });
-    }
-
-    return {
-      success: true,
-      data: parsedLogEvents,
-    };
   },
 };

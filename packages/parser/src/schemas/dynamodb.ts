@@ -120,7 +120,7 @@ const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html}
  */
 const DynamoDBStreamSchema = z.object({
-  Records: z.array(DynamoDBStreamRecord),
+  Records: z.array(DynamoDBStreamRecord).min(1),
 });
 
 export {

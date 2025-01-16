@@ -379,7 +379,6 @@
     }
   },
   "devDependencies": {
-    "@anatine/zod-mock": "^3.13.3",
-    "@faker-js/faker": "^9.0.2"
+    "@anatine/zod-mock": "^3.13.3"
   }
 }

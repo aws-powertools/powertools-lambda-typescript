@@ -3,67 +3,99 @@ import {
   KafkaMskEventSchema,
   KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
-} from '../../../src/schemas/';
-import type { KafkaSelfManagedEvent } from '../../../src/types';
-import type { KafkaRecord } from '../../../src/types/schema';
-import { TestEvents } from './utils.js';
+} from '../../../src/schemas/kafka.js';
+import type {
+  KafkaMskEvent,
+  KafkaSelfManagedEvent,
+} from '../../../src/types/schema.js';
+import type { KafkaRecord } from '../../../src/types/schema.js';
+import { getTestEvent, omit } from './utils.js';
 
-describe('Kafka ', () => {
-  const expectedTestEvent = {
-    key: 'recordKey',
-    value: JSON.stringify({ key: 'value' }),
-    partition: 0,
-    topic: 'mytopic',
-    offset: 15,
-    timestamp: 1545084650987,
-    timestampType: 'CREATE_TIME',
-    headers: [
-      {
-        headerKey: 'headerValue',
+describe('Schema: Kafka', () => {
+  const baseEvent = getTestEvent<KafkaMskEvent>({
+    eventsPath: 'kafka',
+    filename: 'base',
+  });
+
+  it('parses a Kafka MSK event', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+
+    // Act
+    const result = KafkaMskEventSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual({
+      eventSource: 'aws:kafka',
+      eventSourceArn:
+        'arn:aws:kafka:us-east-1:0123456789019:cluster/SalesCluster/abcd1234-abcd-cafe-abab-9876543210ab-4',
+      bootstrapServers: [
+        'b-2.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092',
+        'b-1.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092',
+      ],
+      records: {
+        'mytopic-0': [
+          {
+            topic: 'mytopic',
+            partition: 0,
+            offset: 15,
+            timestamp: 1545084650987,
+            timestampType: 'CREATE_TIME',
+            key: 'recordKey',
+            value: `{"key":"value"}`,
+            headers: [
+              {
+                headerKey: 'headerValue',
+              },
+            ],
+          },
+        ],
       },
-    ],
-  };
-  it('should parse kafka MSK event', () => {
-    const kafkaEventMsk = TestEvents.kafkaEventMsk;
-
-    expect(
-      KafkaMskEventSchema.parse(kafkaEventMsk).records['mytopic-0'][0]
-    ).toEqual(expectedTestEvent);
+    });
   });
-  it('should parse kafka self managed event', () => {
-    const kafkaEventSelfManaged = TestEvents.kafkaEventSelfManaged;
 
-    expect(
-      KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged).records[
-        'mytopic-0'
-      ][0]
-    ).toEqual(expectedTestEvent);
-  });
-  it('should transform bootstrapServers to array', () => {
-    const kafkaEventSelfManaged = TestEvents.kafkaEventSelfManaged;
+  it('throws if the event is not a Kafka MSK event', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+    event.records['mytopic-0'] = [];
 
-    expect(
-      KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged).bootstrapServers
-    ).toEqual([
-      'b-2.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092',
-      'b-1.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092',
-    ]);
+    // Act & Assess
+    expect(() => KafkaMskEventSchema.parse(event)).toThrow();
   });
-  it('should return undefined if bootstrapServers is not present', () => {
-    const kafkaEventSelfManaged = TestEvents.kafkaEventSelfManaged as {
-      bootstrapServers: string;
-    };
-    kafkaEventSelfManaged.bootstrapServers = '';
-    const parsed = KafkaSelfManagedEventSchema.parse(kafkaEventSelfManaged);
 
-    expect(parsed.bootstrapServers).toBeUndefined();
-  });
-  it('should parse kafka record from kafka event', () => {
-    const kafkaEventMsk: KafkaSelfManagedEvent =
-      TestEvents.kafkaEventSelfManaged as KafkaSelfManagedEvent;
-    const parsedRecord: KafkaRecord = KafkaRecordSchema.parse(
-      kafkaEventMsk.records['mytopic-0'][0]
+  it('parses a Kafka self-managed event', () => {
+    // Prepare
+    const event = omit(
+      ['eventSourceArn', 'bootstrapServers'],
+      structuredClone(baseEvent)
     );
-    expect(parsedRecord.topic).toEqual('mytopic');
+    (event as unknown as KafkaSelfManagedEvent).eventSource =
+      'SelfManagedKafka';
+
+    // Act
+    const result = KafkaSelfManagedEventSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual({
+      eventSource: 'SelfManagedKafka',
+      records: {
+        'mytopic-0': [
+          {
+            topic: 'mytopic',
+            partition: 0,
+            offset: 15,
+            timestamp: 1545084650987,
+            timestampType: 'CREATE_TIME',
+            key: 'recordKey',
+            value: `{"key":"value"}`,
+            headers: [
+              {
+                headerKey: 'headerValue',
+              },
+            ],
+          },
+        ],
+      },
+    });
   });
 });

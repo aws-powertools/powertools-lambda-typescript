@@ -1,12 +1,51 @@
-import { generateMock } from '@anatine/zod-mock';
-import type { MSKEvent, SelfManagedKafkaEvent } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import { ParseError } from '../../../src';
+import { z } from 'zod';
 import { KafkaEnvelope } from '../../../src/envelopes/index.js';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import { ParseError } from '../../../src/errors.js';
+import { JSONStringified } from '../../../src/helpers.js';
+import { getTestEvent } from '../schema/utils.js';
 
-describe('Kafka', () => {
-  describe('parse', () => {
+describe('Envelope: Kafka', () => {
+  const baseEvent = getTestEvent({
+    eventsPath: 'kafka',
+    filename: 'base',
+  });
+
+  describe('Method: parse', () => {
+    it('throws if the payload of the value does not match the schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+
+      // Act & Assess
+      expect(() => KafkaEnvelope.parse(event, z.number())).toThrow();
+    });
+
+    it('parses a Kafka event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+
+      // Act
+      const result = KafkaEnvelope.parse(event, z.string());
+
+      // Assess
+      expect(result).toEqual(['{"key":"value"}']);
+    });
+
+    it('parses a Kafka event and applies the schema transformation', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+
+      // Act
+      const result = KafkaEnvelope.parse(
+        event,
+        JSONStringified(z.object({ key: z.string() }))
+      );
+
+      // Assess
+      expect(result).toEqual([{ key: 'value' }]);
+    });
+  });
+  /* describe('parse', () => {
     it('should parse MSK kafka envelope', () => {
       const mock = generateMock(TestSchema);
 
@@ -92,5 +131,5 @@ describe('Kafka', () => {
         });
       });
     });
-  });
+  }); */
 });

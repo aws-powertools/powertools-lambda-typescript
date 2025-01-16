@@ -32,7 +32,7 @@ const KafkaBaseEventSchema = z.object({
       return bootstrapServers ? bootstrapServers.split(',') : undefined;
     })
     .nullish(),
-  records: z.record(z.string(), z.array(KafkaRecordSchema)),
+  records: z.record(z.string(), z.array(KafkaRecordSchema).min(1)),
 });
 
 /** Zod schema for Kafka event from Self Managed Kafka

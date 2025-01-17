@@ -3,7 +3,7 @@ import { ParseError } from '../errors.js';
 import { DynamoDBStreamSchema } from '../schemas/index.js';
 import type { DynamoDBStreamEnvelopeResponse } from '../types/envelope.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope, envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator } from './envelope.js';
 
 /**
  * DynamoDB Stream Envelope to extract data within NewImage/OldImage
@@ -35,7 +35,7 @@ export const DynamoDBStreamEnvelope = {
           `Failed to parse DynamoDB record at index ${recordIndex}`,
           {
             cause: new ZodError(
-              ((error as Error).cause as ZodError).issues.map((issue) => ({
+              (error as ZodError).issues.map((issue) => ({
                 ...issue,
                 path: [
                   'Records',

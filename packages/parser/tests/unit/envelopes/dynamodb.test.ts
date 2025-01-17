@@ -22,7 +22,24 @@ describe('Envelope: DynamoDB Stream', () => {
       const event = structuredClone(baseEvent);
 
       // Act & Assess
-      expect(() => DynamoDBStreamEnvelope.parse(event, z.number())).toThrow();
+      expect(() => DynamoDBStreamEnvelope.parse(event, z.number())).toThrow(
+        expect.objectContaining({
+          message: expect.stringContaining(
+            'Failed to parse DynamoDB record at index 0'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'number',
+                received: 'object',
+                message: 'Expected number, received object',
+                path: ['Records', 0, 'dynamodb', 'NewImage'],
+              },
+            ],
+          }),
+        })
+      );
     });
 
     it('parses a DynamoDB Stream event', () => {

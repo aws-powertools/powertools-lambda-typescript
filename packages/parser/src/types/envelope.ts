@@ -3,8 +3,8 @@ import type { envelopeDiscriminator } from '../envelopes/envelope.js';
 import type { ParsedResult } from './parser.js';
 
 type DynamoDBStreamEnvelopeResponse<Schema extends ZodSchema> = {
-  NewImage: z.infer<Schema>;
-  OldImage: z.infer<Schema>;
+  NewImage?: z.infer<Schema>;
+  OldImage?: z.infer<Schema>;
 };
 
 interface ArrayEnvelope {

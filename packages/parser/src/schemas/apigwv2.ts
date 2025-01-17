@@ -230,7 +230,7 @@ const APIGatewayRequestAuthorizerEventV2Schema = z.object({
   version: z.literal('2.0'),
   type: z.literal('REQUEST'),
   routeArn: z.string(),
-  identitySource: APIGatewayStringArray,
+  identitySource: APIGatewayStringArray.nullish(),
   routeKey: z.string(),
   rawPath: z.string(),
   rawQueryString: z.string(),

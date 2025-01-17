@@ -2,7 +2,6 @@
  * Test built-in AppSync resolver schemas
  */
 
-import { faker } from '@faker-js/faker';
 import { describe, expect, it } from 'vitest';
 import {
   AppSyncBatchResolverSchema,
@@ -56,7 +55,7 @@ describe('AppSync Resolver Schemas', () => {
           groups: null,
           issuer:
             'https://cognito-idp.us-west-2.amazonaws.com/us-west-xxxxxxxxxxx',
-          sourceIp: [faker.internet.ip()],
+          sourceIp: ['1.1.1.1'],
           sub: '192879fc-a240-4bf1-ab5a-d6a00f3063f9',
           username: 'jdoe',
         },
@@ -88,7 +87,7 @@ describe('AppSync Resolver Schemas', () => {
           cognitoIdentityAuthType: 'cognitoIdentityAuthType',
           cognitoIdentityId: 'cognitoIdentityId',
           cognitoIdentityPoolId: 'cognitoIdentityPoolId',
-          sourceIp: [faker.internet.ip()],
+          sourceIp: ['1.1.1.1'],
           userArn: 'arn:aws:sts::012345678901:assumed-role/role',
           username: 'AROAXYKJUOW6FHGUSK5FA:username',
         },

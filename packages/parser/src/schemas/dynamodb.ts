@@ -1,22 +1,23 @@
 import { unmarshallDynamoDB } from '@aws-lambda-powertools/commons/utils/unmarshallDynamoDB';
 import { z } from 'zod';
 
-const DynamoDBStreamChangeRecord = z
-  .object({
-    ApproximateCreationDateTime: z.number().optional(),
-    Keys: z.record(z.string(), z.record(z.string(), z.any())),
-    NewImage: z.record(z.string(), z.any()).optional(),
-    OldImage: z.record(z.string(), z.any()).optional(),
-    SequenceNumber: z.string(),
-    SizeBytes: z.number(),
-    StreamViewType: z.enum([
-      'NEW_IMAGE',
-      'OLD_IMAGE',
-      'NEW_AND_OLD_IMAGES',
-      'KEYS_ONLY',
-    ]),
-  })
-  .transform((object, ctx) => {
+const DynamoDBStreamChangeRecordBase = z.object({
+  ApproximateCreationDateTime: z.number().optional(),
+  Keys: z.record(z.string(), z.record(z.string(), z.any())),
+  NewImage: z.record(z.string(), z.any()).optional(),
+  OldImage: z.record(z.string(), z.any()).optional(),
+  SequenceNumber: z.string(),
+  SizeBytes: z.number(),
+  StreamViewType: z.enum([
+    'NEW_IMAGE',
+    'OLD_IMAGE',
+    'NEW_AND_OLD_IMAGES',
+    'KEYS_ONLY',
+  ]),
+});
+
+const DynamoDBStreamChangeRecord = DynamoDBStreamChangeRecordBase.transform(
+  (object, ctx) => {
     const result = { ...object };
 
     const unmarshallAttributeValue = (
@@ -61,7 +62,8 @@ const DynamoDBStreamChangeRecord = z
     }
 
     return result;
-  });
+  }
+);
 
 const UserIdentity = z.object({
   type: z.enum(['Service']),
@@ -83,25 +85,10 @@ const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
   recordFormat: z.literal('application/json'),
   tableName: z.string(),
   userIdentity: UserIdentity.nullish(),
-  dynamodb: z
-    .object({
-      ApproximateCreationDateTime: z.number().optional(),
-      Keys: z.record(z.string(), z.record(z.string(), z.any())),
-      NewImage: z.record(z.string(), z.any()).optional(),
-      OldImage: z.record(z.string(), z.any()).optional(),
-      SequenceNumber: z.string(),
-      SizeBytes: z.number(),
-      StreamViewType: z.enum([
-        'NEW_IMAGE',
-        'OLD_IMAGE',
-        'NEW_AND_OLD_IMAGES',
-        'KEYS_ONLY',
-      ]),
-    })
-    .omit({
-      SequenceNumber: true,
-      StreamViewType: true,
-    }),
+  dynamodb: DynamoDBStreamChangeRecordBase.omit({
+    SequenceNumber: true,
+    StreamViewType: true,
+  }),
 }).omit({
   eventVersion: true,
   eventSourceARN: true,

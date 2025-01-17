@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
+import { ZodError, z } from 'zod';
 import { KafkaEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
@@ -44,92 +44,88 @@ describe('Envelope: Kafka', () => {
       // Assess
       expect(result).toEqual([{ key: 'value' }]);
     });
+
+    it('parses a self managed Kafka event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.eventSource = 'SelfManagedKafka';
+
+      // Act
+      const result = KafkaEnvelope.parse(event, z.string());
+
+      // Assess
+      expect(result).toEqual(['{"key":"value"}']);
+    });
   });
-  /* describe('parse', () => {
-    it('should parse MSK kafka envelope', () => {
-      const mock = generateMock(TestSchema);
 
-      const kafkaEvent = TestEvents.kafkaEventMsk as MSKEvent;
-      kafkaEvent.records['mytopic-0'][0].value = Buffer.from(
-        JSON.stringify(mock)
-      ).toString('base64');
+  describe('Method: safeParse', () => {
+    it('parses a Kafka event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
 
-      const result = KafkaEnvelope.parse(kafkaEvent, TestSchema);
+      // Act
+      const result = KafkaEnvelope.safeParse(event, z.string());
 
-      expect(result).toEqual([[mock]]);
-    });
-
-    it('should parse Self Managed kafka envelope', () => {
-      const mock = generateMock(TestSchema);
-
-      const kafkaEvent =
-        TestEvents.kafkaEventSelfManaged as SelfManagedKafkaEvent;
-      kafkaEvent.records['mytopic-0'][0].value = Buffer.from(
-        JSON.stringify(mock)
-      ).toString('base64');
-
-      const result = KafkaEnvelope.parse(kafkaEvent, TestSchema);
-
-      expect(result).toEqual([[mock]]);
-    });
-
-    describe('safeParse', () => {
-      it('should parse MSK kafka envelope', () => {
-        const mock = generateMock(TestSchema);
-
-        const kafkaEvent = TestEvents.kafkaEventMsk as MSKEvent;
-        kafkaEvent.records['mytopic-0'][0].value = Buffer.from(
-          JSON.stringify(mock)
-        ).toString('base64');
-
-        const result = KafkaEnvelope.safeParse(kafkaEvent, TestSchema);
-
-        expect(result).toEqual({
-          success: true,
-          data: [mock],
-        });
-      });
-
-      it('should parse Self Managed kafka envelope', () => {
-        const mock = generateMock(TestSchema);
-
-        const kafkaEvent =
-          TestEvents.kafkaEventSelfManaged as SelfManagedKafkaEvent;
-        kafkaEvent.records['mytopic-0'][0].value = Buffer.from(
-          JSON.stringify(mock)
-        ).toString('base64');
-
-        const result = KafkaEnvelope.safeParse(kafkaEvent, TestSchema);
-
-        expect(result).toEqual({
-          success: true,
-          data: [mock],
-        });
-      });
-
-      it('should return original event on failure', () => {
-        const kafkaEvent = TestEvents.kafkaEventMsk as MSKEvent;
-        kafkaEvent.records['mytopic-0'][0].value = 'not a valid json';
-
-        const parseResult = KafkaEnvelope.safeParse(kafkaEvent, TestSchema);
-
-        expect(parseResult).toEqual({
-          success: false,
-          error: expect.any(ParseError),
-          originalEvent: kafkaEvent,
-        });
-
-        if (!parseResult.success && parseResult.error) {
-          expect(parseResult.error.cause).toBeInstanceOf(SyntaxError);
-        }
-      });
-      it('should return original event and error if envelope is invalid', () => {
-        expect(KafkaEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({
-          success: false,
-          error: expect.any(ParseError),
-          originalEvent: { foo: 'bar' },
-        });
+      // Assess
+      expect(result).toEqual({
+        success: true,
+        data: ['{"key":"value"}'],
       });
     });
-  }); */
+
+    it('returns an error if the event is not a valid Kafka event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.eventSource = 'SelfManagedKafka';
+      // @ts-expect-error - Intentionally invalid event
+      event.records['mytopic-0'] = [];
+
+      // Act
+      const result = KafkaEnvelope.safeParse(event, z.string());
+
+      // Assess
+      expect(result).toEqual({
+        success: false,
+        error: new ParseError('Failed to parse Kafka envelope', {
+          cause: new ZodError([
+            {
+              code: 'too_small',
+              minimum: 1,
+              type: 'array',
+              inclusive: true,
+              exact: false,
+              message: 'Array must contain at least 1 element(s)',
+              path: ['records', 'mytopic-0'],
+            },
+          ]),
+        }),
+        originalEvent: event,
+      });
+    });
+
+    it('returns the original event and the error if the payload of the value does not match the schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+
+      // Act
+      const result = KafkaEnvelope.safeParse(event, z.number());
+
+      // Assess
+      expect(result).toEqual({
+        success: false,
+        error: new ParseError('Failed to parse Kafka envelope', {
+          cause: new ZodError([
+            {
+              code: 'invalid_type',
+              expected: 'number',
+              received: 'string',
+              path: ['records', 'mytopic-0'],
+              message: 'Expected number, received string',
+            },
+          ]),
+        }),
+        originalEvent: event,
+      });
+    });
+  });
 });

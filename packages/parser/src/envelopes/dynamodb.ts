@@ -29,7 +29,7 @@ export const DynamoDBStreamEnvelope = {
       recordIndex: number
     ) => {
       try {
-        return image ? Envelope.parse(image, schema) : undefined;
+        return image ? schema.parse(image) : undefined;
       } catch (error) {
         throw new ParseError(
           `Failed to parse DynamoDB record at index ${recordIndex}`,
@@ -73,7 +73,7 @@ export const DynamoDBStreamEnvelope = {
     }
 
     const processImage = (image: unknown) =>
-      image ? Envelope.safeParse(image, schema) : undefined;
+      image ? schema.safeParse(image) : undefined;
 
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;

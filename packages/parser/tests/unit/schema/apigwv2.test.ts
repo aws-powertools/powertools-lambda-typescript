@@ -98,6 +98,21 @@ describe('API Gateway HTTP (v2) Schemas', () => {
       // Assess
       expect(parsedEvent).toEqual(event);
     });
+
+    it('should parse the authorizer event with null identitySource', () => {
+      // Prepare
+      const event = getTestEvent({
+        eventsPath,
+        filename: 'authorizer-request',
+      });
+      event.identitySource = null;
+
+      // Act
+      const parsedEvent = APIGatewayRequestAuthorizerEventV2Schema.parse(event);
+
+      // Assess
+      expect(parsedEvent).toEqual(event);
+    });
   });
 
   describe('APIGatewayRequestContextV2Schema', () => {

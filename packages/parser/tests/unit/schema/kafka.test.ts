@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   KafkaMskEventSchema,
-  KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
 } from '../../../src/schemas/kafka.js';
 import type {
   KafkaMskEvent,
   KafkaSelfManagedEvent,
 } from '../../../src/types/schema.js';
-import type { KafkaRecord } from '../../../src/types/schema.js';
 import { getTestEvent, omit } from './utils.js';
 
 describe('Schema: Kafka', () => {

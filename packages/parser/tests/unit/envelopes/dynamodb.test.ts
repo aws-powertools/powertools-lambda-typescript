@@ -7,10 +7,12 @@ import type { DynamoDBStreamEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../schema/utils.js';
 
 describe('Envelope: DynamoDB Stream', () => {
-  const schema = z.object({
-    Message: z.string(),
-    Id: z.number(),
-  });
+  const schema = z
+    .object({
+      Message: z.string(),
+      Id: z.number(),
+    })
+    .strict();
   const baseEvent = getTestEvent<DynamoDBStreamEvent>({
     eventsPath: 'dynamodb',
     filename: 'base',
@@ -22,7 +24,16 @@ describe('Envelope: DynamoDB Stream', () => {
       const event = structuredClone(baseEvent);
 
       // Act & Assess
-      expect(() => DynamoDBStreamEnvelope.parse(event, z.number())).toThrow(
+      expect(() =>
+        DynamoDBStreamEnvelope.parse(
+          event,
+          z
+            .object({
+              Message: z.string(),
+            })
+            .strict()
+        )
+      ).toThrow(
         expect.objectContaining({
           message: expect.stringContaining(
             'Failed to parse DynamoDB record at index 0'
@@ -30,10 +41,9 @@ describe('Envelope: DynamoDB Stream', () => {
           cause: expect.objectContaining({
             issues: [
               {
-                code: 'invalid_type',
-                expected: 'number',
-                received: 'object',
-                message: 'Expected number, received object',
+                code: 'unrecognized_keys',
+                keys: ['Id'],
+                message: "Unrecognized key(s) in object: 'Id'",
                 path: ['Records', 0, 'dynamodb', 'NewImage'],
               },
             ],
@@ -144,6 +154,43 @@ describe('Envelope: DynamoDB Stream', () => {
         success: false,
         error: new ParseError('Failed to parse record at index 1', {
           cause: new ZodError([
+            {
+              code: 'invalid_type',
+              expected: 'string',
+              received: 'number',
+              path: ['Records', 1, 'dynamodb', 'NewImage', 'Message'],
+              message: 'Expected string, received number',
+            },
+          ]),
+        }),
+        originalEvent: event,
+      });
+    });
+
+    it('returns a combined error if multiple records fail to parse', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.Records[0].dynamodb.NewImage = marshall({ Id: 2 });
+      event.Records[1].dynamodb.NewImage = marshall({
+        Message: 42,
+        Id: 101,
+      });
+
+      // Act
+      const result = DynamoDBStreamEnvelope.safeParse(event, schema);
+
+      // Assess
+      expect(result).toEqual({
+        success: false,
+        error: new ParseError('Failed to parse records at indexes 0, 1', {
+          cause: new ZodError([
+            {
+              code: 'invalid_type',
+              expected: 'string',
+              received: 'undefined',
+              path: ['Records', 0, 'dynamodb', 'NewImage', 'Message'],
+              message: 'Required',
+            },
             {
               code: 'invalid_type',
               expected: 'string',

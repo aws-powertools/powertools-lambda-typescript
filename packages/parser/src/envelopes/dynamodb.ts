@@ -78,7 +78,7 @@ export const DynamoDBStreamEnvelope = {
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
       records: DynamoDBStreamEnvelopeResponse<z.infer<T>>[];
-      errors: { index: number; issues: ZodIssue[] };
+      errors: { index?: number; issues?: ZodIssue[] };
     }>(
       (acc, record, index) => {
         const newImage = processImage(record.dynamodb.NewImage);
@@ -98,7 +98,8 @@ export const DynamoDBStreamEnvelope = {
             }
           }
           acc.success = false;
-          acc.errors = { index, issues };
+          // @ts-expect-error - index is assigned
+          acc.errors[index] = { issues };
           return acc;
         }
 
@@ -108,18 +109,26 @@ export const DynamoDBStreamEnvelope = {
         });
         return acc;
       },
-      { success: true, records: [], errors: { index: 0, issues: [] } }
+      { success: true, records: [], errors: {} }
     );
 
-    return result.success
-      ? { success: true, data: result.records }
-      : {
-          success: false,
-          error: new ParseError(
-            `Failed to parse record at index ${result.errors.index}`,
-            { cause: new ZodError(result.errors.issues) }
-          ),
-          originalEvent: data,
-        };
+    if (result.success) {
+      return { success: true, data: result.records };
+    }
+
+    const errorMessage =
+      Object.keys(result.errors).length > 1
+        ? `Failed to parse records at indexes ${Object.keys(result.errors).join(', ')}`
+        : `Failed to parse record at index ${Object.keys(result.errors)[0]}`;
+    const errorCause = new ZodError(
+      // @ts-expect-error - issues are assigned because success is false
+      Object.values(result.errors).flatMap((error) => error.issues)
+    );
+
+    return {
+      success: false,
+      error: new ParseError(errorMessage, { cause: errorCause }),
+      originalEvent: data,
+    };
   },
 };

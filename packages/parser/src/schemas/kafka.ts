@@ -28,9 +28,7 @@ const KafkaRecordSchema = z.object({
 const KafkaBaseEventSchema = z.object({
   bootstrapServers: z
     .string()
-    .transform((bootstrapServers) => {
-      return bootstrapServers ? bootstrapServers.split(',') : undefined;
-    })
+    .transform((bootstrapServers) => bootstrapServers.split(','))
     .nullish(),
   records: z.record(z.string(), z.array(KafkaRecordSchema).min(1)),
 });

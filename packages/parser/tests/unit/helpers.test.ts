@@ -169,6 +169,11 @@ describe('DynamoDBMarshalled', () => {
     Id: z.number(),
   });
 
+  const baseEvent = getTestEvent<DynamoDBStreamEvent>({
+    eventsPath: 'dynamodb',
+    filename: 'base',
+  });
+
   const extendedSchema = DynamoDBStreamSchema.extend({
     Records: z.array(
       DynamoDBStreamRecord.extend({
@@ -210,11 +215,7 @@ describe('DynamoDBMarshalled', () => {
       },
     ];
 
-    const testEvent = getTestEvent<DynamoDBStreamEvent>({
-      eventsPath: '.',
-      filename: 'dynamoStreamEvent',
-    });
-
+    const testEvent = structuredClone(baseEvent);
     testEvent.Records[0].dynamodb.NewImage = testInput[0];
     testEvent.Records[1].dynamodb.NewImage = testInput[1];
 
@@ -258,11 +259,7 @@ describe('DynamoDBMarshalled', () => {
       },
     ];
 
-    const testEvent = getTestEvent<DynamoDBStreamEvent>({
-      eventsPath: '.',
-      filename: 'dynamoStreamEvent',
-    });
-
+    const testEvent = structuredClone(baseEvent);
     testEvent.Records[0].dynamodb.NewImage = testInput[0];
     testEvent.Records[1].dynamodb.NewImage = testInput[1];
 
@@ -291,11 +288,7 @@ describe('DynamoDBMarshalled', () => {
       },
     ];
 
-    const testEvent = getTestEvent<DynamoDBStreamEvent>({
-      eventsPath: '.',
-      filename: 'dynamoStreamEvent',
-    });
-
+    const testEvent = structuredClone(baseEvent);
     testEvent.Records[0].dynamodb.NewImage = testInput[0];
     testEvent.Records[1].dynamodb.NewImage = testInput[1];
 

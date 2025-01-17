@@ -1,6 +1,7 @@
+import { unmarshallDynamoDB } from '@aws-lambda-powertools/commons/utils/unmarshallDynamoDB';
 import { z } from 'zod';
 
-const DynamoDBStreamChangeRecord = z.object({
+const DynamoDBStreamChangeRecordBase = z.object({
   ApproximateCreationDateTime: z.number().optional(),
   Keys: z.record(z.string(), z.record(z.string(), z.any())),
   NewImage: z.record(z.string(), z.any()).optional(),
@@ -14,6 +15,55 @@ const DynamoDBStreamChangeRecord = z.object({
     'KEYS_ONLY',
   ]),
 });
+
+const DynamoDBStreamChangeRecord = DynamoDBStreamChangeRecordBase.transform(
+  (object, ctx) => {
+    const result = { ...object };
+
+    const unmarshallAttributeValue = (
+      imageName: 'NewImage' | 'OldImage' | 'Keys',
+      image: Record<string, unknown>
+    ) => {
+      try {
+        // @ts-expect-error
+        return unmarshallDynamoDB(image) as Record<string, unknown>;
+      } catch (err) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `Could not unmarshall ${imageName} in DynamoDB stream record`,
+          fatal: true,
+          path: [imageName],
+        });
+        return z.NEVER;
+      }
+    };
+
+    const unmarshalledKeys = unmarshallAttributeValue('Keys', object.Keys);
+    if (unmarshalledKeys === z.NEVER) return z.NEVER;
+    // @ts-expect-error - We are intentionally mutating the object
+    result.Keys = unmarshalledKeys;
+
+    if (object.NewImage) {
+      const unmarshalled = unmarshallAttributeValue(
+        'NewImage',
+        object.NewImage
+      );
+      if (unmarshalled === z.NEVER) return z.NEVER;
+      result.NewImage = unmarshalled;
+    }
+
+    if (object.OldImage) {
+      const unmarshalled = unmarshallAttributeValue(
+        'OldImage',
+        object.OldImage
+      );
+      if (unmarshalled === z.NEVER) return z.NEVER;
+      result.OldImage = unmarshalled;
+    }
+
+    return result;
+  }
+);
 
 const UserIdentity = z.object({
   type: z.enum(['Service']),
@@ -35,7 +85,7 @@ const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
   recordFormat: z.literal('application/json'),
   tableName: z.string(),
   userIdentity: UserIdentity.nullish(),
-  dynamodb: DynamoDBStreamChangeRecord.omit({
+  dynamodb: DynamoDBStreamChangeRecordBase.omit({
     SequenceNumber: true,
     StreamViewType: true,
   }),
@@ -120,7 +170,7 @@ const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html}
  */
 const DynamoDBStreamSchema = z.object({
-  Records: z.array(DynamoDBStreamRecord),
+  Records: z.array(DynamoDBStreamRecord).min(1),
 });
 
 export {

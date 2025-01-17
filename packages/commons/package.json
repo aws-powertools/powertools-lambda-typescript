@@ -49,6 +49,10 @@
       "import": "./lib/esm/LRUCache.js",
       "require": "./lib/cjs/LRUCache.js"
     },
+    "./utils/unmarshallDynamoDB": {
+      "import": "./lib/esm/unmarshallDynamoDB.js",
+      "require": "./lib/cjs/unmarshallDynamoDB.js"
+    },
     "./types": {
       "import": "./lib/esm/types/index.js",
       "require": "./lib/cjs/types/index.js"
@@ -67,6 +71,10 @@
       "utils/lru-cache": [
         "lib/cjs/LRUCache.d.ts",
         "lib/esm/LRUCache.d.ts"
+      ],
+      "utils/unmarshallDynamoDB": [
+        "lib/cjs/unmarshallDynamoDB.d.ts",
+        "lib/esm/unmarshallDynamoDB.d.ts"
       ],
       "types": [
         "lib/cjs/types/index.d.ts",

@@ -365,8 +365,10 @@
     "typescript",
     "nodejs"
   ],
+  "dependencies": {
+    "@aws-lambda-powertools/commons": "^2.13.0"
+  },
   "peerDependencies": {
-    "@aws-sdk/util-dynamodb": ">=3.x",
     "@middy/core": "4.x || 5.x || 6.x",
     "zod": ">=3.x"
   },

@@ -1,5 +1,5 @@
+import { unmarshallDynamoDB } from '@aws-lambda-powertools/commons/utils/unmarshallDynamoDB';
 import type { AttributeValue } from '@aws-sdk/client-dynamodb';
-import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { type ZodTypeAny, z } from 'zod';
 
 /**
@@ -69,7 +69,7 @@ const DynamoDBMarshalled = <T extends ZodTypeAny>(schema: T) =>
     ])
     .transform((str, ctx) => {
       try {
-        return unmarshall(str);
+        return unmarshallDynamoDB(str);
       } catch (err) {
         ctx.addIssue({
           code: 'custom',

@@ -1,11 +1,33 @@
-import type { ZodSchema, z } from 'zod';
+import { ZodError, type ZodIssue, type ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import {
   KafkaMskEventSchema,
   KafkaSelfManagedEventSchema,
 } from '../schemas/kafka.js';
 import type { KafkaMskEvent, ParsedResult } from '../types/index.js';
-import { Envelope, envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator } from './envelope.js';
+
+/**
+ * Get the event source from the data.
+ *
+ * Before we can access the event source, we need to parse the data with a minimal schema.
+ *
+ * @param data - The data to extract the event source from
+ */
+const extractEventSource = (
+  data: unknown
+): 'aws:kafka' | 'SelfManagedKafka' => {
+  const verifiedData = z
+    .object({
+      eventSource: z.union([
+        z.literal('aws:kafka'),
+        z.literal('SelfManagedKafka'),
+      ]),
+    })
+    .parse(data);
+
+  return verifiedData.eventSource;
+};
 
 /**
  * Kafka event envelope to extract data within body key
@@ -15,7 +37,6 @@ import { Envelope, envelopeDiscriminator } from './envelope.js';
  * Note: Records will be parsed the same way so if model is str,
  * all items in the list will be parsed as str and not as JSON (and vice versa)
  */
-
 export const KafkaEnvelope = {
   /**
    * This is a discriminator to differentiate whether an envelope returns an array or an object
@@ -23,21 +44,21 @@ export const KafkaEnvelope = {
    */
   [envelopeDiscriminator]: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
-    // manually fetch event source to decide between Msk or SelfManaged
-    const eventSource = (data as KafkaMskEvent).eventSource;
+    const eventSource = extractEventSource(data);
 
-    const parsedEnvelope:
-      | z.infer<typeof KafkaMskEventSchema>
-      | z.infer<typeof KafkaSelfManagedEventSchema> =
+    const parsedEnvelope =
       eventSource === 'aws:kafka'
         ? KafkaMskEventSchema.parse(data)
         : KafkaSelfManagedEventSchema.parse(data);
 
-    return Object.values(parsedEnvelope.records).map((topicRecord) => {
-      return topicRecord.map((record) => {
-        return Envelope.parse(record.value, schema);
-      });
-    });
+    const values: z.infer<T>[] = [];
+    for (const topicRecord of Object.values(parsedEnvelope.records)) {
+      for (const record of topicRecord) {
+        values.push(schema.parse(record.value));
+      }
+    }
+
+    return values;
   },
 
   safeParse<T extends ZodSchema>(
@@ -61,27 +82,37 @@ export const KafkaEnvelope = {
         originalEvent: data,
       };
     }
-    const parsedRecords: z.infer<T>[] = [];
 
-    for (const topicRecord of Object.values(parsedEnvelope.data.records)) {
+    const values: z.infer<T>[] = [];
+    const issues: ZodIssue[] = [];
+    for (const [topicKey, topicRecord] of Object.entries(
+      parsedEnvelope.data.records
+    )) {
       for (const record of topicRecord) {
-        const parsedRecord = Envelope.safeParse(record.value, schema);
+        const parsedRecord = schema.safeParse(record.value);
         if (!parsedRecord.success) {
-          return {
-            success: false,
-            error: new ParseError('Failed to parse Kafka record', {
-              cause: parsedRecord.error,
-            }),
-            originalEvent: data,
-          };
+          issues.push(
+            ...(parsedRecord.error as ZodError).issues.map((issue) => ({
+              ...issue,
+              path: ['records', topicKey, ...issue.path],
+            }))
+          );
         }
-        parsedRecords.push(parsedRecord.data);
+        values.push(parsedRecord.data);
       }
     }
 
-    return {
-      success: true,
-      data: parsedRecords,
-    };
+    return issues.length > 0
+      ? {
+          success: false,
+          error: new ParseError('Failed to parse Kafka envelope', {
+            cause: new ZodError(issues),
+          }),
+          originalEvent: data,
+        }
+      : {
+          success: true,
+          data: values,
+        };
   },
 };

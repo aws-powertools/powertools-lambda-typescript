@@ -376,6 +376,9 @@
     },
     "@middy/core": {
       "optional": true
+    },
+    "@aws-sdk/util-dynamodb": {
+      "optional": true
     }
   },
   "devDependencies": {

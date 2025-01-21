@@ -14,7 +14,7 @@ const CloudWatchLogsDecodeSchema = z.object({
   logGroup: z.string(),
   logStream: z.string(),
   subscriptionFilters: z.array(z.string()),
-  logEvents: z.array(CloudWatchLogEventSchema),
+  logEvents: z.array(CloudWatchLogEventSchema).min(1),
 });
 
 const decompressRecordToJSON = (

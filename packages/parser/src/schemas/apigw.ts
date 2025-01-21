@@ -43,18 +43,19 @@ const APIGatewayEventIdentity = z.object({
  *
  * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html#context-variable-reference}
  */
-const APIGatewayEventRequestContext = z
+const APIGatewayEventRequestContextSchema = z
   .object({
     accountId: z.string(),
     apiId: z.string(),
     deploymentId: z.string().nullish(),
     authorizer: z
-      .union([
+      .discriminatedUnion('integrationLatency', [
         z.object({
           integrationLatency: z.number(),
           principalId: z.string(),
         }),
         z.object({
+          integrationLatency: z.NEVER,
           claims: z.record(z.string(), z.any()),
           scopes: APIGatewayStringArray.optional(),
         }),
@@ -161,7 +162,7 @@ const APIGatewayProxyEventSchema = z.object({
   multiValueQueryStringParameters: z.record(APIGatewayStringArray).nullable(),
   pathParameters: APIGatewayRecord.nullish(),
   stageVariables: APIGatewayRecord.nullish(),
-  requestContext: APIGatewayEventRequestContext,
+  requestContext: APIGatewayEventRequestContextSchema,
   body: z.string().nullable(),
   isBase64Encoded: z.boolean(),
 });
@@ -232,7 +233,7 @@ const APIGatewayRequestAuthorizerEventSchema = z.object({
   multiValueQueryStringParameters: z.record(APIGatewayStringArray),
   pathParameters: APIGatewayRecord,
   stageVariables: APIGatewayRecord,
-  requestContext: APIGatewayEventRequestContext,
+  requestContext: APIGatewayEventRequestContextSchema,
   domainName: z.string().optional(),
   deploymentId: z.string().optional(),
   apiId: z.string().optional(),
@@ -262,4 +263,5 @@ export {
   APIGatewayProxyEventSchema,
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
+  APIGatewayEventRequestContextSchema,
 };

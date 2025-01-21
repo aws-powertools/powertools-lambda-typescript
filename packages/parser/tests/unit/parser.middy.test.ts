@@ -8,7 +8,7 @@ import { EventBridgeEnvelope, SqsEnvelope } from '../../src/envelopes';
 import { parser } from '../../src/middleware/parser.js';
 import { SqsSchema } from '../../src/schemas';
 import type { EventBridgeEvent, ParsedResult, SqsEvent } from '../../src/types';
-import { TestEvents, TestSchema, getTestEvent } from './schema/utils';
+import { TestSchema, getTestEvent } from './schema/utils';
 
 describe('Middleware: parser', () => {
   type TestEvent = z.infer<typeof TestSchema>;

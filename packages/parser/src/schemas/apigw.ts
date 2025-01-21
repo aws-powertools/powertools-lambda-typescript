@@ -49,13 +49,12 @@ const APIGatewayEventRequestContextSchema = z
     apiId: z.string(),
     deploymentId: z.string().nullish(),
     authorizer: z
-      .discriminatedUnion('integrationLatency', [
+      .union([
         z.object({
           integrationLatency: z.number(),
           principalId: z.string(),
         }),
         z.object({
-          integrationLatency: z.NEVER,
           claims: z.record(z.string(), z.any()),
           scopes: APIGatewayStringArray.optional(),
         }),

@@ -1,43 +1,66 @@
 import { describe, expect, it } from 'vitest';
-import {
-  SnsNotificationSchema,
-  SnsRecordSchema,
-  SnsSchema,
-  SnsSqsNotificationSchema,
-} from '../../../src/schemas/';
-import type { SnsEvent, SqsEvent } from '../../../src/types';
-import type {
-  SnsNotification,
-  SnsRecord,
-  SnsSqsNotification,
-} from '../../../src/types/schema';
-import { TestEvents } from './utils.js';
+import { SnsSchema } from '../../../src/schemas/sns.js';
+import type { SnsEvent } from '../../../src/types/schema.js';
+import { getTestEvent } from './utils.js';
 
-describe('SNS', () => {
-  it('should parse sns event', () => {
-    const snsEvent = TestEvents.snsEvent;
-    expect(SnsSchema.parse(snsEvent)).toEqual(snsEvent);
+describe('Schema: SNS', () => {
+  const baseEvent = getTestEvent<SnsEvent>({
+    eventsPath: 'sns',
+    filename: 'base',
   });
-  it('should parse record from sns event', () => {
-    const snsEvent: SnsEvent = TestEvents.snsEvent as SnsEvent;
-    const parsed: SnsRecord = SnsRecordSchema.parse(snsEvent.Records[0]);
-    expect(parsed.Sns.Message).toEqual('Hello from SNS!');
+
+  it('parses a SNS event', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+
+    // Act
+    const result = SnsSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual({
+      Records: [
+        {
+          EventSource: 'aws:sns',
+          EventVersion: '1.0',
+          EventSubscriptionArn:
+            'arn:aws:sns:us-east-2:123456789012:ExampleTopic',
+          Sns: {
+            SignatureVersion: '1',
+            Timestamp: '2019-01-02T12:45:07.000Z',
+            Signature:
+              'tcc6faL2yUC6dgZdmrwh1Y4cGa/ebXEkAi6RibDsvpi+tE/1+82j...65r==',
+            SigningCertUrl:
+              'https://sns.us-east-2.amazonaws.com/SimpleNotification',
+            MessageId: '95df01b4-ee98-5cb9-9903-4c221d41eb5e',
+            Message: 'Hello from SNS!',
+            MessageAttributes: {
+              Test: {
+                Type: 'String',
+                Value: 'TestString',
+              },
+              TestBinary: {
+                Type: 'Binary',
+                Value: 'TestBinary',
+              },
+            },
+            Type: 'Notification',
+            UnsubscribeUrl:
+              'https://sns.us-east-2.amazonaws.com/?Action=Unsubscribe',
+            TopicArn: 'arn:aws:sns:us-east-2:123456789012:ExampleTopic',
+            Subject: 'TestInvoke',
+          },
+        },
+      ],
+    });
   });
-  it('should parse sns notification from sns event', () => {
-    const snsEvent: SnsEvent = TestEvents.snsEvent as SnsEvent;
-    const parsed: SnsNotification = SnsNotificationSchema.parse(
-      snsEvent.Records[0].Sns
-    );
-    expect(parsed.Message).toEqual('Hello from SNS!');
-  });
-  it('should parse sns notification from sqs -> sns event', () => {
-    const sqsEvent: SqsEvent = TestEvents.snsSqsEvent as SqsEvent;
-    console.log(sqsEvent.Records[0].body);
-    const parsed: SnsSqsNotification = SnsSqsNotificationSchema.parse(
-      JSON.parse(sqsEvent.Records[0].body)
-    );
-    expect(parsed.TopicArn).toEqual(
-      'arn:aws:sns:eu-west-1:231436140809:powertools265'
-    );
+
+  it('throws if the event is not a SNS event', () => {
+    // Prepare
+    const event = {
+      Records: [],
+    };
+
+    // Act & Assess
+    expect(() => SnsSchema.parse(event)).toThrow();
   });
 });

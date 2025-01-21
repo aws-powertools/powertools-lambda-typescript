@@ -62,7 +62,6 @@ const filenames = [
   's3SqsEvent',
   'secretsManagerEvent',
   'sesEvent',
-  'snsEvent',
   'snsSqsEvent',
   'snsSqsFifoEvent',
   'sqsEvent',

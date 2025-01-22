@@ -39,25 +39,24 @@ export const SnsSqsEnvelope = {
           SnsSqsNotificationSchema.parse(JSON.parse(record.body)).Message
         );
       } catch (error) {
-        let cause = error as Error;
-        if (error instanceof ZodError) {
-          cause = new ZodError(
-            (error as ZodError).issues.map((issue) => ({
-              ...issue,
-              path: ['Records', recordIndex, 'body', ...issue.path],
-            }))
-          );
-        }
         throw new ParseError(
           `Failed to parse SQS Record at index ${recordIndex}`,
           {
-            cause: new ZodError([
-              {
-                code: 'custom',
-                message: 'Invalid JSON',
-                path: ['Records', recordIndex, 'body'],
-              },
-            ]),
+            cause:
+              error instanceof ZodError
+                ? new ZodError(
+                    (error as ZodError).issues.map((issue) => ({
+                      ...issue,
+                      path: ['Records', recordIndex, 'body', ...issue.path],
+                    }))
+                  )
+                : new ZodError([
+                    {
+                      code: 'custom',
+                      message: 'Invalid JSON',
+                      path: ['Records', recordIndex, 'body'],
+                    },
+                  ]),
           }
         );
       }

@@ -141,5 +141,10 @@ describe('Envelope: SnsSqsEnvelope', () => {
     });
   });
 
-  describe('Method: safeParse', () => {});
+  describe('Method: safeParse', () => {
+    it('parses an SNS notification within an SQS envelope', () => {
+      // TODO: Implement
+      expect(1).toBe(1);
+    });
+  });
 });

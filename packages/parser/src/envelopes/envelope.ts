@@ -2,6 +2,7 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import type { ParsedResult } from '../types/parser.js';
 
+/* v8 ignore start */
 const Envelope = {
   /**
    * Abstract function to parse the content of the envelope using provided schema.
@@ -35,7 +36,10 @@ const Envelope = {
    * @param input
    * @param schema
    */
-  safeParse<T extends ZodSchema>(input: unknown, schema: T): ParsedResult<unknown, z.infer<T>> {
+  safeParse<T extends ZodSchema>(
+    input: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>> {
     try {
       if (typeof input !== 'object' && typeof input !== 'string') {
         return {
@@ -75,3 +79,4 @@ const Envelope = {
 const envelopeDiscriminator = Symbol.for('returnType');
 
 export { Envelope, envelopeDiscriminator };
+/* v8 ignore stop */

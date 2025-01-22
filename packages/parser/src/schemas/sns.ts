@@ -113,7 +113,7 @@ const SnsRecordSchema = z.object({
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-sns.html#sns-sample-event}
  */
 const SnsSchema = z.object({
-  Records: z.array(SnsRecordSchema),
+  Records: z.array(SnsRecordSchema).min(1),
 });
 
 export {

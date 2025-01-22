@@ -84,9 +84,13 @@ describe('Envelope: SnsSqsEnvelope', () => {
       // Act & Assess
       expect(() => SnsSqsEnvelope.parse(event, schema)).toThrow(
         new ParseError('Failed to parse SQS Record at index 0', {
-          cause: new SyntaxError(
-            `Unexpected token 'i', "invalid" is not valid JSON`
-          ),
+          cause: new ZodError([
+            {
+              code: 'custom',
+              message: 'Invalid JSON',
+              path: ['Records', 0, 'body'],
+            },
+          ]),
         })
       );
     });

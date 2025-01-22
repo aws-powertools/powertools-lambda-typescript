@@ -51,7 +51,13 @@ export const SnsSqsEnvelope = {
         throw new ParseError(
           `Failed to parse SQS Record at index ${recordIndex}`,
           {
-            cause,
+            cause: new ZodError([
+              {
+                code: 'custom',
+                message: 'Invalid JSON',
+                path: ['Records', recordIndex, 'body'],
+              },
+            ]),
           }
         );
       }

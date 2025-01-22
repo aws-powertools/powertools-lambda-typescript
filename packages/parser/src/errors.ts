@@ -12,4 +12,14 @@ class ParseError extends Error {
   }
 }
 
-export { ParseError };
+/**
+ * Custom error thrown when decompression fails.
+ */
+class DecompressError extends ParseError {
+  constructor(message: string, options?: { cause?: Error }) {
+    super(message, options);
+    this.name = 'DecompressError';
+  }
+}
+
+export { ParseError, DecompressError };

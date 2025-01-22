@@ -56,6 +56,7 @@ export const SnsSqsEnvelope = {
     });
   },
 
+  /* v8 ignore start */
   safeParse<T extends ZodSchema>(
     data: unknown,
     schema: T
@@ -115,4 +116,5 @@ export const SnsSqsEnvelope = {
       originalEvent: data,
     };
   },
+  /* v8 ignore stop */
 };

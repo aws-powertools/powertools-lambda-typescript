@@ -8,6 +8,7 @@ export { KinesisEnvelope } from './kinesis.js';
 export { KinesisFirehoseEnvelope } from './kinesis-firehose.js';
 export { LambdaFunctionUrlEnvelope } from './lambda.js';
 export { SnsEnvelope } from './sns.js';
-export { SqsEnvelope, SnsSqsEnvelope } from './sqs.js';
+export { SqsEnvelope } from './sqs.js';
+export { SnsSqsEnvelope } from './snssqs.js';
 export { VpcLatticeEnvelope } from './vpc-lattice.js';
 export { VpcLatticeV2Envelope } from './vpc-latticev2.js';

@@ -1,29 +1,21 @@
 import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
 import { ParseError } from '../errors.js';
-import { type SqsRecordSchema, SqsSchema } from '../schemas/sqs.js';
+import { SnsSqsNotificationSchema } from '../schemas/sns.js';
+import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult } from '../types/index.js';
 import { envelopeDiscriminator } from './envelope.js';
 
 /**
- * SQS Envelope to extract array of Records
+ *  SNS plus SQS Envelope to extract array of Records
  *
- * The record's `body` parameter is a string and needs to be parsed against the provided schema.
+ *  Published messages from SNS to SQS has a slightly different payload.
+ *  Since SNS payload is marshalled into `Record` key in SQS, we have to:
  *
- * If you know that the `body` is a JSON string, you can use `JSONStringified` to parse it,
- * for example:
- *
- * ```ts
- * import { JSONStringified } from '@aws-lambda-powertools/helpers';
- * import { SqsEnvelope } from '@aws-lambda-powertools/parser/envelopes/sqs';
- *
- * const schema = z.object({
- *   name: z.string(),
- * });
- *
- * const parsed = SqsEnvelope.parse(event, JSONStringified(schema));
- * ```
+ *  1. Parse SQS schema with incoming data
+ *  2. `JSON.parse()` the SNS payload and parse against SNS Notification schema
+ *  3. Finally, parse the payload against the provided schema
  */
-const SqsEnvelope = {
+export const SnsSqsEnvelope = {
   /**
    * This is a discriminator to differentiate whether an envelope returns an array or an object
    * @hidden
@@ -40,23 +32,27 @@ const SqsEnvelope = {
     }
 
     return parsedEnvelope.Records.map((record, recordIndex) => {
-      let parsedRecord: z.infer<typeof SqsRecordSchema>;
       try {
-        parsedRecord = schema.parse(record.body);
+        return schema.parse(
+          SnsSqsNotificationSchema.parse(JSON.parse(record.body)).Message
+        );
       } catch (error) {
+        let cause = error as Error;
+        if (error instanceof ZodError) {
+          cause = new ZodError(
+            (error as ZodError).issues.map((issue) => ({
+              ...issue,
+              path: ['Records', recordIndex, 'body', ...issue.path],
+            }))
+          );
+        }
         throw new ParseError(
           `Failed to parse SQS Record at index ${recordIndex}`,
           {
-            cause: new ZodError(
-              (error as ZodError).issues.map((issue) => ({
-                ...issue,
-                path: ['Records', recordIndex, 'body', ...issue.path],
-              }))
-            ),
+            cause,
           }
         );
       }
-      return parsedRecord;
     });
   },
 
@@ -120,5 +116,3 @@ const SqsEnvelope = {
     };
   },
 };
-
-export { SqsEnvelope };

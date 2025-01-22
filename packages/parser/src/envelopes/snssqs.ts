@@ -6,14 +6,16 @@ import type { ParsedResult } from '../types/index.js';
 import { envelopeDiscriminator } from './envelope.js';
 
 /**
- *  SNS plus SQS Envelope to extract array of Records
+ * SNS plus SQS Envelope to extract array of Records
  *
- *  Published messages from SNS to SQS has a slightly different payload.
- *  Since SNS payload is marshalled into `Record` key in SQS, we have to:
+ * Published messages from SNS to SQS has a slightly different payload structure
+ * than regular SNS messages, and when sent to SQS, they are stringified into the
+ * `body` field of each SQS record.
  *
- *  1. Parse SQS schema with incoming data
- *  2. `JSON.parse()` the SNS payload and parse against SNS Notification schema
- *  3. Finally, parse the payload against the provided schema
+ * To parse the `Message` field of the SNS notification, we need to:
+ * 1. Parse SQS schema with incoming data
+ * 2. `JSON.parse()` the SNS payload and parse against SNS Notification schema
+ * 3. Finally, parse the payload against the provided schema
  */
 export const SnsSqsEnvelope = {
   /**
@@ -56,7 +58,6 @@ export const SnsSqsEnvelope = {
     });
   },
 
-  /* v8 ignore start */
   safeParse<T extends ZodSchema>(
     data: unknown,
     schema: T
@@ -78,7 +79,37 @@ export const SnsSqsEnvelope = {
       errors: { index?: number; issues?: ZodIssue[] };
     }>(
       (acc, record, index) => {
-        const parsedRecord = schema.safeParse(record.body);
+        let parsedBody: unknown;
+        try {
+          parsedBody = JSON.parse(record.body);
+        } catch (error) {
+          acc.success = false;
+          // @ts-expect-error - index is assigned
+          acc.errors[index] = {
+            issues: [
+              {
+                code: 'custom',
+                message: 'Invalid JSON',
+                path: ['Records', index, 'body'],
+              },
+            ],
+          };
+          return acc;
+        }
+
+        const parsedNotification =
+          SnsSqsNotificationSchema.safeParse(parsedBody);
+        if (!parsedNotification.success) {
+          const issues = parsedNotification.error.issues.map((issue) => ({
+            ...issue,
+            path: ['Records', index, 'body', ...issue.path],
+          }));
+          acc.success = false;
+          // @ts-expect-error - index is assigned
+          acc.errors[index] = { issues };
+          return acc;
+        }
+        const parsedRecord = schema.safeParse(parsedNotification.data.Message);
 
         if (!parsedRecord.success) {
           const issues = parsedRecord.error.issues.map((issue) => ({
@@ -116,5 +147,4 @@ export const SnsSqsEnvelope = {
       originalEvent: data,
     };
   },
-  /* v8 ignore stop */
 };

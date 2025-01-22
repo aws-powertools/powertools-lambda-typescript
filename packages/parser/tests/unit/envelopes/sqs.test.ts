@@ -4,7 +4,7 @@ import { SqsEnvelope } from '../../../src/envelopes/sqs.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { SqsEvent } from '../../../src/types/schema.js';
-import { TestSchema, getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../schema/utils.js';
 
 describe('Envelope: SqsEnvelope', () => {
   const schema = z

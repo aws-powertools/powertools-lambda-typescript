@@ -133,8 +133,8 @@ describe('JSONStringified', () => {
   it('should parse extended SnsSchema', () => {
     // Prepare
     const testEvent = getTestEvent<SnsEvent>({
-      eventsPath: '.',
-      filename: 'snsEvent',
+      eventsPath: 'sns',
+      filename: 'base',
     });
     testEvent.Records[0].Sns.Message = JSON.stringify(basePayload);
 

@@ -36,7 +36,6 @@ const filenames = [
   's3ObjectEventTempCredentials',
   's3SqsEvent',
   'sesEvent',
-  'snsEvent',
   'snsSqsEvent',
   'snsSqsFifoEvent',
   'sqsEvent',

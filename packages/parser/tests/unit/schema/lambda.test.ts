@@ -1,19 +1,37 @@
 import { describe, expect, it } from 'vitest';
 import { LambdaFunctionUrlSchema } from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
+import { getTestEvent } from './utils.js';
 
-describe('Lambda ', () => {
-  it('should parse lambda event', () => {
-    const lambdaFunctionUrlEvent = TestEvents.apiGatewayProxyV2Event;
+describe('Schema: LambdaFunctionUrl', () => {
+  const eventsPath = 'lambda';
 
-    expect(LambdaFunctionUrlSchema.parse(lambdaFunctionUrlEvent)).toEqual(
-      lambdaFunctionUrlEvent
-    );
+  it('throw when the event is invalid', () => {
+    // Prepare
+    const event = getTestEvent({ eventsPath, filename: 'invalid' });
+
+    // Act & Assess
+    expect(() => LambdaFunctionUrlSchema.parse(event)).toThrow();
   });
 
-  it('should parse url IAM event', () => {
-    const urlIAMEvent = TestEvents.lambdaFunctionUrlIAMEvent;
+  it('parses a valid event', () => {
+    // Prepare
+    const event = getTestEvent({ eventsPath, filename: 'get-request' });
 
-    expect(LambdaFunctionUrlSchema.parse(urlIAMEvent)).toEqual(urlIAMEvent);
+    // Act
+    const parsedEvent = LambdaFunctionUrlSchema.parse(event);
+
+    // Assess
+    expect(parsedEvent).toEqual(event);
+  });
+
+  it('parses iam event', () => {
+    // Prepare
+    const event = getTestEvent({ eventsPath, filename: 'iam-auth' });
+
+    // Act
+    const parsedEvent = LambdaFunctionUrlSchema.parse(event);
+
+    //
+    expect(parsedEvent).toEqual(event);
   });
 });

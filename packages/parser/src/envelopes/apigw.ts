@@ -2,7 +2,7 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { APIGatewayProxyEventSchema } from '../schemas/apigw.js';
 import type { ParsedResult } from '../types/parser.js';
-import { Envelope, envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator } from './envelope.js';
 
 /**
  * API Gateway envelope to extract data within body key
@@ -14,36 +14,38 @@ export const ApiGatewayEnvelope = {
    */
   [envelopeDiscriminator]: 'object' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
-    return Envelope.parse(APIGatewayProxyEventSchema.parse(data).body, schema);
+    try {
+      return APIGatewayProxyEventSchema.extend({
+        body: schema,
+      }).parse(data).body;
+    } catch (error) {
+      throw new ParseError('Failed to parse API Gateway body', {
+        cause: error as Error,
+      });
+    }
   },
 
   safeParse<T extends ZodSchema>(
     data: unknown,
     schema: T
   ): ParsedResult<unknown, z.infer<T>> {
-    const parsedEnvelope = APIGatewayProxyEventSchema.safeParse(data);
-    if (!parsedEnvelope.success) {
+    const result = APIGatewayProxyEventSchema.extend({
+      body: schema,
+    }).safeParse(data);
+
+    if (!result.success) {
       return {
         success: false,
-        error: new ParseError('Failed to parse ApiGatewayEnvelope', {
-          cause: parsedEnvelope.error,
+        error: new ParseError('Failed to parse API Gateway body', {
+          cause: result.error,
         }),
         originalEvent: data,
       };
     }
 
-    const parsedBody = Envelope.safeParse(parsedEnvelope.data.body, schema);
-
-    if (!parsedBody.success) {
-      return {
-        success: false,
-        error: new ParseError('Failed to parse ApiGatewayEnvelope body', {
-          cause: parsedBody.error,
-        }),
-        originalEvent: data,
-      };
-    }
-
-    return parsedBody;
+    return {
+      success: true,
+      data: result.data.body,
+    };
   },
 };

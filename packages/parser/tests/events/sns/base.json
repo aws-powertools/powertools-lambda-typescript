@@ -2,7 +2,7 @@
   "Records": [
     {
       "EventVersion": "1.0",
-      "EventSubscriptionArn": "arn:aws:sns:us-east-2:123456789012:sns-la ...",
+      "EventSubscriptionArn": "arn:aws:sns:us-east-2:123456789012:ExampleTopic",
       "EventSource": "aws:sns",
       "Sns": {
         "SignatureVersion": "1",
@@ -23,7 +23,7 @@
         },
         "Type": "Notification",
         "UnsubscribeUrl": "https://sns.us-east-2.amazonaws.com/?Action=Unsubscribe",
-        "TopicArn": "arn:aws:sns:us-east-2:123456789012:sns-lambda",
+        "TopicArn": "arn:aws:sns:us-east-2:123456789012:ExampleTopic",
         "Subject": "TestInvoke"
       }
     }

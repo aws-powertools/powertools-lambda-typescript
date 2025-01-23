@@ -1,70 +1,153 @@
-import { generateMock } from '@anatine/zod-mock';
-import type { SQSEvent } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import { ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 import { SqsEnvelope } from '../../../src/envelopes/sqs.js';
 import { ParseError } from '../../../src/errors.js';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import { JSONStringified } from '../../../src/helpers.js';
+import type { SqsEvent } from '../../../src/types/schema.js';
+import { getTestEvent } from '../schema/utils.js';
 
-describe('SqsEnvelope ', () => {
-  describe('parse', () => {
-    it('should parse custom schema in envelope', () => {
-      const mock = generateMock(TestSchema);
+describe('Envelope: SqsEnvelope', () => {
+  const schema = z
+    .object({
+      message: z.string(),
+    })
+    .strict();
+  const baseEvent = getTestEvent<SqsEvent>({
+    eventsPath: 'sqs',
+    filename: 'base',
+  });
 
-      const sqsEvent = TestEvents.sqsEvent as SQSEvent;
-      sqsEvent.Records[0].body = JSON.stringify(mock);
-      sqsEvent.Records[1].body = JSON.stringify(mock);
+  describe('Method: parse', () => {
+    it('throws if one of the payloads does not match the schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
 
-      const resp = SqsEnvelope.parse(sqsEvent, TestSchema);
-      expect(resp).toEqual([mock, mock]);
+      // Act & Assess
+      expect(() => SqsEnvelope.parse(event, JSONStringified(schema))).toThrow(
+        expect.objectContaining({
+          message: expect.stringContaining(
+            'Failed to parse SQS Record at index 0'
+          ),
+          cause: new ZodError([
+            {
+              code: 'custom',
+              message: 'Invalid JSON',
+              path: ['Records', 0, 'body'],
+            },
+          ]),
+        })
+      );
     });
 
-    it('should throw error if invalid keys for a schema', () => {
-      expect(() => {
-        SqsEnvelope.parse({ Records: [{ foo: 'bar' }] }, TestSchema);
-      }).toThrow();
-    });
+    it('parses an SQS event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.Records[0].body = JSON.stringify({ message: 'hello' });
 
-    it('should throw if invalid envelope', () => {
-      expect(() => {
-        SqsEnvelope.parse({ foo: 'bar' }, TestSchema);
-      }).toThrow();
+      // Act
+      const result = SqsEnvelope.parse(event, JSONStringified(schema));
+
+      // Assess
+      expect(result).toStrictEqual([{ message: 'hello' }, { message: 'foo1' }]);
     });
   });
   describe('safeParse', () => {
-    it('should parse custom schema in envelope', () => {
-      const mock = generateMock(TestSchema);
+    it('parses an SQS event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.Records[1].body = 'bar';
 
-      const sqsEvent = TestEvents.sqsEvent as SQSEvent;
-      sqsEvent.Records[0].body = JSON.stringify(mock);
-      sqsEvent.Records[1].body = JSON.stringify(mock);
+      // Act
+      const result = SqsEnvelope.safeParse(event, z.string());
 
-      expect(SqsEnvelope.safeParse(sqsEvent, TestSchema)).toEqual({
+      // Assess
+      expect(result).toStrictEqual({
         success: true,
-        data: [mock, mock],
+        data: ['Test message.', 'bar'],
       });
     });
 
-    it('should return error if event does not match schema', () => {
-      const sqsEvent = TestEvents.sqsEvent as SQSEvent;
-      sqsEvent.Records[0].body = JSON.stringify({ foo: 'bar' });
-      const parseResult = SqsEnvelope.safeParse(sqsEvent, TestSchema);
-      expect(parseResult).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: sqsEvent,
-      });
+    it('returns an error if the event is not a valid SQS event', () => {
+      // Prepare
+      const event = {
+        Records: [],
+      };
 
-      if (!parseResult.success && parseResult.error) {
-        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
-      }
+      // Act
+      const result = SqsEnvelope.safeParse(event, z.string());
+
+      // Assess
+      expect(result).toEqual({
+        success: false,
+        error: new ParseError('Failed to parse SQS envelope', {
+          cause: new ZodError([
+            {
+              code: 'too_small',
+              minimum: 1,
+              type: 'array',
+              inclusive: true,
+              exact: false,
+              message: 'Array must contain at least 1 element(s)',
+              path: ['Records'],
+            },
+          ]),
+        }),
+        originalEvent: event,
+      });
     });
 
-    it('should return error if envelope is invalid', () => {
-      expect(SqsEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({
+    it('returns an error if any of the records fail to parse', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+
+      // Act
+      const result = SqsEnvelope.safeParse(event, JSONStringified(schema));
+
+      // Assess
+      expect(result).toEqual({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: { foo: 'bar' },
+        error: new ParseError('Failed to parse SQS Record at index 0', {
+          cause: new ZodError([
+            {
+              code: 'custom',
+              message: 'Invalid JSON',
+              path: ['Records', 0, 'body'],
+            },
+          ]),
+        }),
+        originalEvent: event,
+      });
+    });
+
+    it('returns a combined error if multiple records fail to parse', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+
+      // Act
+      const result = SqsEnvelope.safeParse(event, z.number());
+
+      // Assess
+      expect(result).toEqual({
+        success: false,
+        error: new ParseError('Failed to parse SQS Records at indexes 0, 1', {
+          cause: new ZodError([
+            {
+              code: 'invalid_type',
+              expected: 'number',
+              received: 'string',
+              path: ['Records', 0, 'body'],
+              message: 'Expected number, received string',
+            },
+            {
+              code: 'invalid_type',
+              expected: 'number',
+              received: 'string',
+              path: ['Records', 1, 'body'],
+              message: 'Expected number, received string',
+            },
+          ]),
+        }),
+        originalEvent: event,
       });
     });
   });

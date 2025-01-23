@@ -93,7 +93,7 @@ const SqsRecordSchema = z.object({
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#example-standard-queue-message-event}
  */
 const SqsSchema = z.object({
-  Records: z.array(SqsRecordSchema),
+  Records: z.array(SqsRecordSchema).min(1),
 });
 
 export { SqsSchema, SqsRecordSchema };

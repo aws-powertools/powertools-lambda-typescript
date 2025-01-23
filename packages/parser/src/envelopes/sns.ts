@@ -1,9 +1,8 @@
-import type { ZodSchema, z } from 'zod';
+import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
 import { ParseError } from '../errors.js';
-import { SnsSchema, SnsSqsNotificationSchema } from '../schemas/sns.js';
-import { SqsSchema } from '../schemas/sqs.js';
+import { SnsSchema } from '../schemas/sns.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope, envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator } from './envelope.js';
 
 /**
  * SNS Envelope to extract array of Records
@@ -23,8 +22,19 @@ export const SnsEnvelope = {
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = SnsSchema.parse(data);
 
-    return parsedEnvelope.Records.map((record) => {
-      return Envelope.parse(record.Sns.Message, schema);
+    return parsedEnvelope.Records.map((record, index) => {
+      try {
+        return schema.parse(record.Sns.Message);
+      } catch (error) {
+        throw new ParseError(`Failed to parse SNS record at index ${index}`, {
+          cause: new ZodError(
+            (error as ZodError).issues.map((issue) => ({
+              ...issue,
+              path: ['Records', index, 'Sns', 'Message', ...issue.path],
+            }))
+          ),
+        });
+      }
     });
   },
 
@@ -44,112 +54,47 @@ export const SnsEnvelope = {
       };
     }
 
-    const parsedMessages: z.infer<T>[] = [];
-    for (const record of parsedEnvelope.data.Records) {
-      const parsedMessage = Envelope.safeParse(record.Sns.Message, schema);
-      if (!parsedMessage.success) {
-        return {
-          success: false,
-          error: new ParseError('Failed to parse SNS message', {
-            cause: parsedMessage.error,
-          }),
-          originalEvent: data,
-        };
-      }
-      parsedMessages.push(parsedMessage.data);
+    const result = parsedEnvelope.data.Records.reduce<{
+      success: boolean;
+      messages: z.infer<T>[];
+      errors: { index?: number; issues?: ZodIssue[] };
+    }>(
+      (acc, message, index) => {
+        const parsedMessage = schema.safeParse(message.Sns.Message);
+        if (!parsedMessage.success) {
+          acc.success = false;
+          const issues = parsedMessage.error.issues.map((issue) => ({
+            ...issue,
+            path: ['Records', index, 'Sns', 'Message', ...issue.path],
+          }));
+          // @ts-expect-error - index is assigned
+          acc.errors[index] = { issues };
+          return acc;
+        }
+
+        acc.messages.push(parsedMessage.data);
+        return acc;
+      },
+      { success: true, messages: [], errors: {} }
+    );
+
+    if (result.success) {
+      return { success: true, data: result.messages };
     }
+
+    const errorMessage =
+      Object.keys(result.errors).length > 1
+        ? `Failed to parse SNS messages at indexes ${Object.keys(result.errors).join(', ')}`
+        : `Failed to parse SNS message at index ${Object.keys(result.errors)[0]}`;
+    const errorCause = new ZodError(
+      // @ts-expect-error - issues are assigned because success is false
+      Object.values(result.errors).flatMap((error) => error.issues)
+    );
 
     return {
-      success: true,
-      data: parsedMessages,
+      success: false,
+      error: new ParseError(errorMessage, { cause: errorCause }),
+      originalEvent: data,
     };
-  },
-};
-
-/**
- *  SNS plus SQS Envelope to extract array of Records
- *
- *  Published messages from SNS to SQS has a slightly different payload.
- *  Since SNS payload is marshalled into `Record` key in SQS, we have to:
- *
- *  1. Parse SQS schema with incoming data
- *  2. Unmarshall SNS payload and parse against SNS Notification schema not SNS/SNS Record
- *  3. Finally, parse provided model against payload extracted
- *
- */
-export const SnsSqsEnvelope = {
-  /**
-   * This is a discriminator to differentiate whether an envelope returns an array or an object
-   * @hidden
-   */
-  [envelopeDiscriminator]: 'array' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
-    const parsedEnvelope = SqsSchema.parse(data);
-
-    return parsedEnvelope.Records.map((record) => {
-      const snsNotification = SnsSqsNotificationSchema.parse(
-        JSON.parse(record.body)
-      );
-
-      return Envelope.parse(snsNotification.Message, schema);
-    });
-  },
-
-  safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>[]> {
-    const parsedEnvelope = SqsSchema.safeParse(data);
-    if (!parsedEnvelope.success) {
-      return {
-        success: false,
-        error: new ParseError('Failed to parse SQS envelope', {
-          cause: parsedEnvelope.error,
-        }),
-        originalEvent: data,
-      };
-    }
-
-    const parsedMessages: z.infer<T>[] = [];
-
-    // JSON.parse can throw an error, thus we catch it and return ParsedErrorResult
-    try {
-      for (const record of parsedEnvelope.data.Records) {
-        const snsNotification = SnsSqsNotificationSchema.safeParse(
-          JSON.parse(record.body)
-        );
-        if (!snsNotification.success) {
-          return {
-            success: false,
-            error: new ParseError('Failed to parse SNS notification', {
-              cause: snsNotification.error,
-            }),
-            originalEvent: data,
-          };
-        }
-        const parsedMessage = Envelope.safeParse(
-          snsNotification.data.Message,
-          schema
-        );
-        if (!parsedMessage.success) {
-          return {
-            success: false,
-            error: new ParseError('Failed to parse SNS message', {
-              cause: parsedMessage.error,
-            }),
-            originalEvent: data,
-          };
-        }
-        parsedMessages.push(parsedMessage.data);
-      }
-    } catch (e) {
-      return {
-        success: false,
-        error: e as Error,
-        originalEvent: data,
-      };
-    }
-
-    return { success: true, data: parsedMessages };
   },
 };

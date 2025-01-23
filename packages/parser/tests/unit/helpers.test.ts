@@ -104,8 +104,8 @@ describe('JSONStringified', () => {
   it('should parse extended SqsSchema', () => {
     // Prepare
     const testEvent = getTestEvent<SqsEvent>({
-      eventsPath: '.',
-      filename: 'sqsEvent',
+      eventsPath: 'sqs',
+      filename: 'base',
     });
     const stringifiedBody = JSON.stringify(basePayload);
     testEvent.Records[0].body = stringifiedBody;
@@ -133,8 +133,8 @@ describe('JSONStringified', () => {
   it('should parse extended SnsSchema', () => {
     // Prepare
     const testEvent = getTestEvent<SnsEvent>({
-      eventsPath: '.',
-      filename: 'snsEvent',
+      eventsPath: 'sns',
+      filename: 'base',
     });
     testEvent.Records[0].Sns.Message = JSON.stringify(basePayload);
 

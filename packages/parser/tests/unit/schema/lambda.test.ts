@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LambdaFunctionUrlSchema } from '../../../src/schemas/';
-import { TestEvents, getTestEvent } from './utils.js';
+import { getTestEvent } from './utils.js';
 
 describe('Schema: LambdaFunctionUrl ', () => {
   const eventsPath = 'lambda';

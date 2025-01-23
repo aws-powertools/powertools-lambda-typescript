@@ -2,7 +2,7 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { LambdaFunctionUrlSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope, envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator } from './envelope.js';
 
 /**
  * Lambda function URL envelope to extract data within body key

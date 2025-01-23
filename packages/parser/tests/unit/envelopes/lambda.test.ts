@@ -1,14 +1,10 @@
-import { generateMock } from '@anatine/zod-mock';
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
 import { ParseError } from '../../../src';
 import { LambdaFunctionUrlEnvelope } from '../../../src/envelopes/index.js';
 import { JSONStringified } from '../../../src/helpers';
-import type {
-  APIGatewayProxyEventV2,
-  LambdaFunctionUrlEvent,
-} from '../../../src/types';
-import { TestEvents, TestSchema, getTestEvent, omit } from '../schema/utils.js';
+import type { LambdaFunctionUrlEvent } from '../../../src/types';
+import { getTestEvent, omit } from '../schema/utils.js';
 
 describe('Lambda Functions Url ', () => {
   const schema = z

@@ -5,6 +5,25 @@ import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult } from '../types/index.js';
 import { envelopeDiscriminator } from './envelope.js';
 
+const setError = <T>(
+  acc: {
+    success: boolean;
+    records: T;
+    errors: {
+      [key: number | string]: { issues: ZodIssue[] };
+    };
+  },
+  index: number,
+  issues: ZodIssue[]
+) => {
+  acc.success = false;
+  acc.errors[index] = {
+    issues,
+  };
+
+  return acc;
+};
+
 /**
  * SNS plus SQS Envelope to extract array of Records
  *
@@ -42,21 +61,20 @@ export const SnsSqsEnvelope = {
         throw new ParseError(
           `Failed to parse SQS Record at index ${recordIndex}`,
           {
-            cause:
+            cause: new ZodError(
               error instanceof ZodError
-                ? new ZodError(
-                    (error as ZodError).issues.map((issue) => ({
-                      ...issue,
-                      path: ['Records', recordIndex, 'body', ...issue.path],
-                    }))
-                  )
-                : new ZodError([
+                ? (error as ZodError).issues.map((issue) => ({
+                    ...issue,
+                    path: ['Records', recordIndex, 'body', ...issue.path],
+                  }))
+                : [
                     {
                       code: 'custom',
                       message: 'Invalid JSON',
                       path: ['Records', recordIndex, 'body'],
                     },
-                  ]),
+                  ]
+            ),
           }
         );
       }
@@ -81,50 +99,52 @@ export const SnsSqsEnvelope = {
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
       records: z.infer<T>[];
-      errors: { index?: number; issues?: ZodIssue[] };
+      errors: {
+        [key: number | string]: { issues: ZodIssue[] };
+      };
     }>(
       (acc, record, index) => {
+        const baseErrorPath = ['Records', index, 'body'];
+
+        // First parse the body of the record as JSON
         let parsedBody: unknown;
         try {
           parsedBody = JSON.parse(record.body);
         } catch (error) {
-          acc.success = false;
-          // @ts-expect-error - index is assigned
-          acc.errors[index] = {
-            issues: [
-              {
-                code: 'custom',
-                message: 'Invalid JSON',
-                path: ['Records', index, 'body'],
-              },
-            ],
-          };
-          return acc;
+          return setError(acc, index, [
+            {
+              code: 'custom',
+              message: 'Invalid JSON',
+              path: baseErrorPath,
+            },
+          ]);
         }
 
+        // Then parse it using the SNS notification schema
         const parsedNotification =
           SnsSqsNotificationSchema.safeParse(parsedBody);
         if (!parsedNotification.success) {
-          const issues = parsedNotification.error.issues.map((issue) => ({
-            ...issue,
-            path: ['Records', index, 'body', ...issue.path],
-          }));
-          acc.success = false;
-          // @ts-expect-error - index is assigned
-          acc.errors[index] = { issues };
-          return acc;
+          return setError(
+            acc,
+            index,
+            parsedNotification.error.issues.map((issue) => ({
+              ...issue,
+              path: [...baseErrorPath, ...issue.path],
+            }))
+          );
         }
-        const parsedRecord = schema.safeParse(parsedNotification.data.Message);
 
+        // Finally, parse the message against the provided schema
+        const parsedRecord = schema.safeParse(parsedNotification.data.Message);
         if (!parsedRecord.success) {
-          const issues = parsedRecord.error.issues.map((issue) => ({
-            ...issue,
-            path: ['Records', index, 'body', ...issue.path],
-          }));
-          acc.success = false;
-          // @ts-expect-error - index is assigned
-          acc.errors[index] = { issues };
-          return acc;
+          return setError(
+            acc,
+            index,
+            parsedRecord.error.issues.map((issue) => ({
+              ...issue,
+              path: [...baseErrorPath, ...issue.path],
+            }))
+          );
         }
 
         acc.records.push(parsedRecord.data);
@@ -145,7 +165,6 @@ export const SnsSqsEnvelope = {
       success: false,
       error: new ParseError(errorMessage, {
         cause: new ZodError(
-          // @ts-expect-error - issues are assigned because success is false
           Object.values(result.errors).flatMap((error) => error.issues)
         ),
       }),

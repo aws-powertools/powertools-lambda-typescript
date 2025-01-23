@@ -8,7 +8,7 @@ import { ParseError } from '../../src/errors.js';
 import { parser } from '../../src/index.js';
 import { EventBridgeSchema } from '../../src/schemas/index.js';
 import type { EventBridgeEvent, ParsedResult } from '../../src/types';
-import { TestSchema, getTestEvent } from './schema/utils';
+import { TestSchema, getTestEvent } from './schema/utils.js';
 
 describe('Parser Decorator', () => {
   const customEventBridgeSchema = EventBridgeSchema.extend({

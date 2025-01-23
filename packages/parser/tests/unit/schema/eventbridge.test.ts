@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EventBridgeSchema } from '../../../src/schemas/eventbridge.js';
 import type { EventBridgeEvent } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from '../schema/utils.js';
+import { getTestEvent, omit } from './utils.js';
 
 describe('Schema: EventBridge', () => {
   const baseEvent = getTestEvent<EventBridgeEvent>({

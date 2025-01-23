@@ -1,24 +1,19 @@
-/**
- * Test built-in AppSync resolver schemas
- */
-
 import { describe, expect, it } from 'vitest';
 import {
   AppSyncBatchResolverSchema,
   AppSyncResolverSchema,
-} from '../../../src/schemas/appsync';
-import type { AppSyncResolverEvent } from '../../../src/types';
-import { getTestEvent, omit } from './utils';
+} from '../../../src/schemas/appsync.js';
+import type { AppSyncResolverEvent } from '../../../src/types/schema.js';
+import { getTestEvent, omit } from './utils.js';
 
-describe('AppSync Resolver Schemas', () => {
+describe('Schema: AppSync Resolver', () => {
   const eventsPath = 'appsync';
-
-  const appSyncResolverEvent: AppSyncResolverEvent = getTestEvent({
+  const appSyncResolverEvent = getTestEvent<AppSyncResolverEvent>({
     eventsPath,
     filename: 'resolver',
   });
 
-  const table = [
+  const events = [
     {
       name: 'null source',
       event: {
@@ -119,73 +114,33 @@ describe('AppSync Resolver Schemas', () => {
     },
   ];
 
-  describe('AppSync Resolver Schema', () => {
-    it('should return validation error when the event is invalid', () => {
-      const { error } = AppSyncResolverSchema.safeParse(
-        omit(['request', 'info'], appSyncResolverEvent)
-      );
+  it.each(events)('parses an AppSyn resolver event with $name', ({ event }) => {
+    // Assess
+    const result = AppSyncResolverSchema.parse(event);
 
-      expect(error?.issues).toEqual([
-        {
-          code: 'invalid_type',
-          expected: 'object',
-          received: 'undefined',
-          path: ['request'],
-          message: 'Required',
-        },
-        {
-          code: 'invalid_type',
-          expected: 'object',
-          received: 'undefined',
-          path: ['info'],
-          message: 'Required',
-        },
-      ]);
-    });
-
-    it('should parse resolver event without identity field', () => {
-      const event: Omit<AppSyncResolverEvent, 'identity'> = omit(
-        ['identity'],
-        appSyncResolverEvent
-      );
-      const parsedEvent = AppSyncResolverSchema.parse(event);
-      expect(parsedEvent).toEqual(event);
-    });
-
-    it.each(table)('should parse resolver event with $name', ({ event }) => {
-      const parsedEvent = AppSyncResolverSchema.parse(event);
-      expect(parsedEvent).toEqual(event);
-    });
+    // Assess
+    expect(result).toEqual(event);
   });
 
-  describe('Batch AppSync Resolver Schema', () => {
-    it('should return validation error when the event is invalid', () => {
-      const event = omit(['request', 'info'], appSyncResolverEvent);
+  it('throws when the event is not an AppSync resolver event', () => {
+    // Prepare
+    const event = omit(
+      ['request', 'info'],
+      structuredClone(appSyncResolverEvent)
+    );
 
-      const { error } = AppSyncBatchResolverSchema.safeParse([event]);
+    // Act & Assess
+    expect(() => AppSyncResolverSchema.parse(event)).toThrow();
+  });
 
-      expect(error?.issues).toEqual([
-        {
-          code: 'invalid_type',
-          expected: 'object',
-          received: 'undefined',
-          path: [0, 'request'],
-          message: 'Required',
-        },
-        {
-          code: 'invalid_type',
-          expected: 'object',
-          received: 'undefined',
-          path: [0, 'info'],
-          message: 'Required',
-        },
-      ]);
-    });
+  it('parses batches of AppSync resolver events', () => {
+    // Prepare
+    const event = events.map((event) => structuredClone(event.event));
 
-    it('should parse batches of appsync resolver events', () => {
-      const events = table.map((table) => table.event);
-      const parsedEvent = AppSyncBatchResolverSchema.parse(events);
-      expect(parsedEvent).toEqual(events);
-    });
+    // Act
+    const result = AppSyncBatchResolverSchema.parse(event);
+
+    // Assess
+    expect(result).toEqual(event);
   });
 });

@@ -51,7 +51,8 @@ describe('Envelope: SqsEnvelope', () => {
       expect(result).toStrictEqual([{ message: 'hello' }, { message: 'foo1' }]);
     });
   });
-  describe('safeParse', () => {
+
+  describe('Method: safeParse', () => {
     it('parses an SQS event', () => {
       // Prepare
       const event = structuredClone(baseEvent);

@@ -2,26 +2,40 @@ import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { SnsSqsNotificationSchema } from '../schemas/sns.js';
 import { SqsSchema } from '../schemas/sqs.js';
-import type { ParsedResult } from '../types/index.js';
+import type { ParsedResult, SnsSqsNotification } from '../types/index.js';
 import { envelopeDiscriminator } from './envelope.js';
 
-const setError = <T>(
-  acc: {
-    success: boolean;
-    records: T;
-    errors: {
-      [key: number | string]: { issues: ZodIssue[] };
-    };
-  },
-  index: number,
-  issues: ZodIssue[]
-) => {
-  acc.success = false;
-  acc.errors[index] = {
-    issues,
-  };
+const createError = (index: number, issues: ZodIssue[]) => ({
+  issues: issues.map((issue) => ({
+    ...issue,
+    path: ['Records', index, 'body', ...issue.path],
+  })),
+});
 
-  return acc;
+type ParseStepSuccess<T> = {
+  success: true;
+  data: T;
+};
+
+type ParseStepError = {
+  success: false;
+  error: { issues: ZodIssue[] };
+};
+
+type ParseStepResult<T> = ParseStepSuccess<T> | ParseStepError;
+
+const parseStep = <U>(
+  parser: (data: unknown) => z.SafeParseReturnType<unknown, U>,
+  data: unknown,
+  index: number
+): ParseStepResult<U> => {
+  const result = parser(data);
+  return result.success
+    ? { success: true, data: result.data }
+    : {
+        success: false,
+        error: createError(index, result.error.issues),
+      };
 };
 
 /**
@@ -96,6 +110,38 @@ export const SnsSqsEnvelope = {
       };
     }
 
+    const parseRecord = (
+      record: { body: string },
+      index: number
+    ): ParseStepResult<z.infer<T>> => {
+      try {
+        const body = JSON.parse(record.body);
+        const notification = parseStep<SnsSqsNotification>(
+          (data) => SnsSqsNotificationSchema.safeParse(data),
+          body,
+          index
+        );
+        if (!notification.success) return notification;
+
+        return parseStep<z.infer<T>>(
+          (data) => schema.safeParse(data),
+          notification.data.Message,
+          index
+        );
+      } catch {
+        return {
+          success: false,
+          error: createError(index, [
+            {
+              code: 'custom',
+              message: 'Invalid JSON',
+              path: [],
+            },
+          ]),
+        };
+      }
+    };
+
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
       records: z.infer<T>[];
@@ -104,50 +150,13 @@ export const SnsSqsEnvelope = {
       };
     }>(
       (acc, record, index) => {
-        const baseErrorPath = ['Records', index, 'body'];
-
-        // First parse the body of the record as JSON
-        let parsedBody: unknown;
-        try {
-          parsedBody = JSON.parse(record.body);
-        } catch (error) {
-          return setError(acc, index, [
-            {
-              code: 'custom',
-              message: 'Invalid JSON',
-              path: baseErrorPath,
-            },
-          ]);
+        const parsed = parseRecord(record, index);
+        if (!parsed.success) {
+          acc.success = false;
+          acc.errors[index] = parsed.error;
+        } else {
+          acc.records.push(parsed.data);
         }
-
-        // Then parse it using the SNS notification schema
-        const parsedNotification =
-          SnsSqsNotificationSchema.safeParse(parsedBody);
-        if (!parsedNotification.success) {
-          return setError(
-            acc,
-            index,
-            parsedNotification.error.issues.map((issue) => ({
-              ...issue,
-              path: [...baseErrorPath, ...issue.path],
-            }))
-          );
-        }
-
-        // Finally, parse the message against the provided schema
-        const parsedRecord = schema.safeParse(parsedNotification.data.Message);
-        if (!parsedRecord.success) {
-          return setError(
-            acc,
-            index,
-            parsedRecord.error.issues.map((issue) => ({
-              ...issue,
-              path: [...baseErrorPath, ...issue.path],
-            }))
-          );
-        }
-
-        acc.records.push(parsedRecord.data);
         return acc;
       },
       { success: true, records: [], errors: {} }
@@ -157,15 +166,17 @@ export const SnsSqsEnvelope = {
       return { success: true, data: result.records };
     }
 
+    const indexes = Object.keys(result.errors);
     const errorMessage =
-      Object.keys(result.errors).length > 1
-        ? `Failed to parse SQS Records at indexes ${Object.keys(result.errors).join(', ')}`
-        : `Failed to parse SQS Record at index ${Object.keys(result.errors)[0]}`;
+      indexes.length > 1
+        ? `Failed to parse SQS Records at indexes ${indexes.join(', ')}`
+        : `Failed to parse SQS Record at index ${indexes[0]}`;
+
     return {
       success: false,
       error: new ParseError(errorMessage, {
         cause: new ZodError(
-          Object.values(result.errors).flatMap((error) => error.issues)
+          Object.values(result.errors).flatMap((e) => e.issues)
         ),
       }),
       originalEvent: data,

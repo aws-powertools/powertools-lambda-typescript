@@ -1,242 +1,193 @@
-import { generateMock } from '@anatine/zod-mock';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import type { ZodSchema, z } from 'zod';
-import { ParseError } from '../../src';
-import { EventBridgeEnvelope, SqsEnvelope } from '../../src/envelopes';
+import { z } from 'zod';
+import { EventBridgeEnvelope } from '../../src/envelopes/event-bridge.js';
+import { SqsEnvelope } from '../../src/envelopes/sqs.js';
+import { ParseError } from '../../src/errors.js';
 import { parser } from '../../src/middleware/parser.js';
-import { SqsSchema } from '../../src/schemas';
-import type { EventBridgeEvent, ParsedResult, SqsEvent } from '../../src/types';
-import { TestEvents, TestSchema } from './schema/utils';
+import type {
+  EventBridgeEvent,
+  ParsedResult,
+  SqsEvent,
+} from '../../src/types/index.js';
+import { getTestEvent } from './schema/utils.js';
 
 describe('Middleware: parser', () => {
-  type TestEvent = z.infer<typeof TestSchema>;
-  const handler = async (
-    event: unknown,
-    _context: Context
-  ): Promise<unknown> => {
-    return event;
-  };
+  const schema = z
+    .object({
+      name: z.string(),
+      age: z.number(),
+    })
+    .strict();
+  const baseSqsEvent = getTestEvent<SqsEvent>({
+    eventsPath: 'sqs',
+    filename: 'base',
+  });
+  const baseEventBridgeEvent = getTestEvent<EventBridgeEvent>({
+    eventsPath: 'eventbridge',
+    filename: 'base',
+  });
+  const JSONPayload = { name: 'John', age: 18 };
 
-  describe(' when envelope is provided ', () => {
-    const middyfiedHandlerSchemaEnvelope = middy()
-      .use(parser({ schema: TestSchema, envelope: SqsEnvelope }))
-      .handler(async (event, _): Promise<TestEvent[]> => {
-        return event;
-      });
-    it('should parse request body with schema and envelope', async () => {
-      const bodyMock = generateMock(TestSchema);
+  const handlerWithSchemaAndEnvelope = middy()
+    .use(parser({ schema: z.string(), envelope: SqsEnvelope }))
+    .handler(async (event) => event);
 
-      const event = generateMock(SqsSchema, {
-        stringMap: {
-          body: () => JSON.stringify(bodyMock),
-        },
-      });
+  it('parses an event with schema and envelope', async () => {
+    // Prepare
+    const event = structuredClone(baseSqsEvent);
+    event.Records[1].body = 'bar';
 
-      const result = (await middyfiedHandlerSchemaEnvelope(
-        event as unknown as TestEvent[],
+    // Act
+    const result = await handlerWithSchemaAndEnvelope(
+      event as unknown as string[],
+      {} as Context
+    );
+
+    // Assess
+    expect(result).toStrictEqual(['Test message.', 'bar']);
+  });
+
+  it('throws when envelope does not match', async () => {
+    // Prepare
+    const event = structuredClone(baseEventBridgeEvent);
+
+    // Act & Assess
+    expect(
+      middy()
+        .use(parser({ schema: z.string(), envelope: SqsEnvelope }))
+        .handler((event) => event)(event as unknown as string[], {} as Context)
+    ).rejects.toThrow();
+  });
+
+  it('throws when schema does not match', async () => {
+    // Prepare
+    const event = structuredClone(baseSqsEvent);
+    // @ts-expect-error - setting an invalid body
+    event.Records[1].body = undefined;
+
+    // Act & Assess
+    expect(
+      handlerWithSchemaAndEnvelope(event as unknown as string[], {} as Context)
+    ).rejects.toThrow();
+  });
+
+  it('parses the event successfully', async () => {
+    // Prepare
+    const event = 42;
+
+    // Act
+    const result = await middy()
+      .use(parser({ schema: z.number() }))
+      .handler((event) => event)(event as unknown as number, {} as Context);
+
+    // Assess
+    expect(result).toEqual(event);
+  });
+
+  it('throws when the event does not match the schema', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+
+    // Act & Assess
+    expect(
+      middy((event) => event).use(parser({ schema: z.number() }))(
+        event as unknown as number,
         {} as Context
-      )) as TestEvent[];
-      for (const item of result) {
-        expect(item).toEqual(bodyMock);
-      }
-    });
+      )
+    ).rejects.toThrow();
+  });
 
-    it('should throw when envelope does not match', async () => {
-      await expect(async () => {
-        await middyfiedHandlerSchemaEnvelope(
-          { name: 'John', age: 18 } as unknown as TestEvent[],
-          {} as Context
-        );
-      }).rejects.toThrow();
-    });
+  it('returns the payload when using safeParse', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
 
-    it('should throw when schema does not match', async () => {
-      const event = generateMock(SqsSchema, {
-        stringMap: {
-          body: () => '42',
-        },
-      });
+    // Act
+    const result = await middy()
+      .use(parser({ schema: schema, safeParse: true }))
+      .handler((event) => event)(
+      event as unknown as ParsedResult<unknown, z.infer<typeof schema>>,
+      {} as Context
+    );
 
-      await expect(
-        middyfiedHandlerSchemaEnvelope(
-          event as unknown as TestEvent[],
-          {} as Context
-        )
-      ).rejects.toThrow();
-    });
-
-    it('should throw when provided schema is invalid', async () => {
-      const middyfiedHandler = middy(handler).use(
-        parser({ schema: {} as ZodSchema, envelope: SqsEnvelope })
-      );
-
-      await expect(
-        middyfiedHandler(42 as unknown as TestEvent[], {} as Context)
-      ).rejects.toThrow();
-    });
-
-    it('should throw when envelope is correct but schema is invalid', async () => {
-      const event = generateMock(SqsSchema, {
-        stringMap: {
-          body: () => JSON.stringify({ name: 'John', foo: 'bar' }),
-        },
-      });
-
-      const middyfiedHandler = middy(handler).use(
-        parser({ schema: {} as ZodSchema, envelope: SqsEnvelope })
-      );
-
-      await expect(
-        middyfiedHandler(event as unknown as TestEvent[], {} as Context)
-      ).rejects.toThrow();
+    // Assess
+    expect(result).toEqual({
+      success: true,
+      data: event,
     });
   });
 
-  describe(' when envelope is not provided', () => {
-    it('should parse the event with built-in schema', async () => {
-      const event = generateMock(SqsSchema);
+  it('returns the error when using safeParse and the payload is invalid', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
 
-      const middyfiedHandler = middy()
-        .use(parser({ schema: SqsSchema }))
-        .handler(async (event, _) => {
-          return event;
-        });
+    // Act
+    const result = await middy()
+      .use(parser({ schema: z.string(), safeParse: true }))
+      .handler((event) => event)(
+      event as unknown as ParsedResult<unknown, string>,
+      {} as Context
+    );
 
-      expect(
-        await middyfiedHandler(event as unknown as SqsEvent, {} as Context)
-      ).toEqual(event);
+    // Assess
+    expect(result).toEqual({
+      success: false,
+      error: expect.any(ParseError),
+      originalEvent: event,
     });
+  });
 
-    it('should parse custom event', async () => {
-      const event = { name: 'John', age: 18 };
-      const middyfiedHandler = middy()
-        .use(parser({ schema: TestSchema }))
-        .handler(async (event, _): Promise<TestEvent> => {
-          return event;
-        });
+  it('returns the payload when using safeParse with envelope', async () => {
+    // Prepare
+    const detail = structuredClone(JSONPayload);
+    const event = structuredClone(baseEventBridgeEvent);
+    event.detail = detail;
 
-      expect(
-        await middyfiedHandler(event as unknown as TestEvent, {} as Context)
-      ).toEqual(event);
+    // Act
+    const result = await middy()
+      .use(
+        parser({
+          schema: schema,
+          envelope: EventBridgeEnvelope,
+          safeParse: true,
+        })
+      )
+      .handler((event) => event)(
+      event as unknown as ParsedResult<unknown, z.infer<typeof schema>>,
+      {} as Context
+    );
+
+    // Assess
+    expect(result).toStrictEqual({
+      success: true,
+      data: detail,
     });
+  });
 
-    it('should throw when the schema does not match', async () => {
-      const middyfiedHandler = middy(handler).use(
-        parser({ schema: TestSchema })
-      );
+  it('returns an error when using safeParse with envelope and the payload is invalid', async () => {
+    // Prepare
+    const event = structuredClone(baseEventBridgeEvent);
 
-      await expect(
-        middyfiedHandler(42 as unknown as TestEvent, {} as Context)
-      ).rejects.toThrow();
-    });
+    // Act
+    const result = await middy()
+      .use(
+        parser({
+          schema: z.string(),
+          envelope: EventBridgeEnvelope,
+          safeParse: true,
+        })
+      )
+      .handler((event) => event)(
+      event as unknown as ParsedResult<unknown, string>,
+      {} as Context
+    );
 
-    it('should throw when provided schema is invalid', async () => {
-      const middyfiedHandler = middy(handler).use(
-        parser({ schema: {} as ZodSchema })
-      );
-
-      await expect(
-        middyfiedHandler({ foo: 'bar' } as unknown as TestEvent, {} as Context)
-      ).rejects.toThrow();
-    });
-
-    it('should return the event when safeParse is true', async () => {
-      const event = { name: 'John', age: 18 };
-      const middyfiedHandler = middy()
-        .use(parser({ schema: TestSchema, safeParse: true }))
-        .handler(
-          async (event, _): Promise<ParsedResult<unknown, TestEvent>> => {
-            return event;
-          }
-        );
-
-      expect(
-        await middyfiedHandler(
-          event as unknown as ParsedResult<unknown, TestEvent>,
-          {} as Context
-        )
-      ).toEqual({
-        success: true,
-        data: event,
-      });
-    });
-
-    it('should return error when safeParse is true and schema does not match', async () => {
-      const middyfiedHandler = middy(handler).use(
-        parser({ schema: TestSchema, safeParse: true })
-      );
-
-      expect(
-        await middyfiedHandler(
-          42 as unknown as ParsedResult<unknown, TestEvent>,
-          {} as Context
-        )
-      ).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: 42,
-      });
-    });
-
-    it('should return event when envelope and safeParse are true', async () => {
-      const detail = generateMock(TestSchema);
-      const event = TestEvents.eventBridgeEvent as EventBridgeEvent;
-
-      event.detail = detail;
-
-      const middyfiedHandler = middy()
-        .use(
-          parser({
-            schema: TestSchema,
-            envelope: EventBridgeEnvelope,
-            safeParse: true,
-          })
-        )
-        .handler(
-          async (event, _): Promise<ParsedResult<unknown, TestEvent>> => {
-            return event;
-          }
-        );
-
-      expect(
-        await middyfiedHandler(
-          event as unknown as ParsedResult<unknown, TestEvent>,
-          {} as Context
-        )
-      ).toEqual({
-        success: true,
-        data: detail,
-      });
-    });
-
-    it('should return error when envelope provided, safeParse is true, and schema does not match', async () => {
-      const event = TestEvents.eventBridgeEvent as EventBridgeEvent;
-
-      const middyfiedHandler = middy()
-        .use(
-          parser({
-            schema: TestSchema,
-            envelope: EventBridgeEnvelope,
-            safeParse: true,
-          })
-        )
-        .handler(
-          async (event, _): Promise<ParsedResult<unknown, TestEvent>> => {
-            return event;
-          }
-        );
-      expect(
-        await middyfiedHandler(
-          event as unknown as ParsedResult<unknown, TestEvent>,
-          {} as Context
-        )
-      ).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: event,
-      });
+    // Assess
+    expect(result).toStrictEqual({
+      success: false,
+      error: expect.any(ParseError),
+      originalEvent: event,
     });
   });
 });

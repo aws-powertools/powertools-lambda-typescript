@@ -1,5 +1,6 @@
 import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
+import { DecompressError } from '../errors.js';
 
 const CloudWatchLogEventSchema = z.object({
   id: z.string(),
@@ -13,15 +14,21 @@ const CloudWatchLogsDecodeSchema = z.object({
   logGroup: z.string(),
   logStream: z.string(),
   subscriptionFilters: z.array(z.string()),
-  logEvents: z.array(CloudWatchLogEventSchema),
+  logEvents: z.array(CloudWatchLogEventSchema).min(1),
 });
 
 const decompressRecordToJSON = (
   data: string
 ): z.infer<typeof CloudWatchLogsDecodeSchema> => {
-  const uncompressed = gunzipSync(Buffer.from(data, 'base64')).toString('utf8');
+  try {
+    const uncompressed = gunzipSync(Buffer.from(data, 'base64')).toString(
+      'utf8'
+    );
 
-  return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
+    return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
+  } catch (error) {
+    throw new DecompressError('Failed to decompress CloudWatch log data');
+  }
 };
 
 /**

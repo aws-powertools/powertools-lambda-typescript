@@ -1,17 +1,11 @@
-import type { ZodSchema, z } from 'zod';
+import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { CloudWatchLogsSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope, envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator } from './envelope.js';
 
 /**
- * CloudWatch Envelope to extract a List of log records.
- *
- *  The record's body parameter is a string (after being base64 decoded and gzipped),
- *  though it can also be a JSON encoded string.
- *  Regardless of its type it'll be parsed into a BaseModel object.
- *
- *  Note: The record will be parsed the same way so if model is str
+ * CloudWatch Envelope to extract messages from the `awslogs.data.logEvents` key.
  */
 export const CloudWatchEnvelope = {
   /**
@@ -22,8 +16,29 @@ export const CloudWatchEnvelope = {
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
     const parsedEnvelope = CloudWatchLogsSchema.parse(data);
 
-    return parsedEnvelope.awslogs.data.logEvents.map((record) => {
-      return Envelope.parse(record.message, schema);
+    return parsedEnvelope.awslogs.data.logEvents.map((record, index) => {
+      try {
+        return schema.parse(record.message);
+      } catch (error) {
+        throw new ParseError(
+          `Failed to parse CloudWatch log event at index ${index}`,
+          {
+            cause: new ZodError(
+              (error as ZodError).issues.map((issue) => ({
+                ...issue,
+                path: [
+                  'awslogs',
+                  'data',
+                  'logEvents',
+                  index,
+                  'message',
+                  ...issue.path,
+                ],
+              }))
+            ),
+          }
+        );
+      }
     });
   },
 
@@ -31,36 +46,82 @@ export const CloudWatchEnvelope = {
     data: unknown,
     schema: T
   ): ParsedResult<unknown, z.infer<T>[]> {
-    const parsedEnvelope = CloudWatchLogsSchema.safeParse(data);
+    let parsedEnvelope: ParsedResult<unknown, z.infer<T>>;
+    try {
+      parsedEnvelope = CloudWatchLogsSchema.safeParse(data);
+    } catch (error) {
+      parsedEnvelope = {
+        success: false,
+        error: error as Error,
+      };
+    }
 
     if (!parsedEnvelope.success) {
       return {
         success: false,
-        error: new ParseError('Failed to parse CloudWatch envelope', {
+        error: new ParseError('Failed to parse CloudWatch Log envelope', {
           cause: parsedEnvelope.error,
         }),
         originalEvent: data,
       };
     }
-    const parsedLogEvents: z.infer<T>[] = [];
 
-    for (const record of parsedEnvelope.data.awslogs.data.logEvents) {
-      const parsedMessage = Envelope.safeParse(record.message, schema);
-      if (!parsedMessage.success) {
-        return {
-          success: false,
-          error: new ParseError('Failed to parse CloudWatch log event', {
-            cause: parsedMessage.error,
-          }),
-          originalEvent: data,
-        };
+    const result = parsedEnvelope.data.awslogs.data.logEvents.reduce(
+      (
+        acc: {
+          success: boolean;
+          messages: z.infer<T>;
+          errors: { [key: number]: { issues: ZodIssue[] } };
+        },
+        record: { message: string },
+        index: number
+      ) => {
+        const result = schema.safeParse(record.message);
+        if (!result.success) {
+          const issues = result.error.issues.map((issue) => ({
+            ...issue,
+            path: [
+              'awslogs',
+              'data',
+              'logEvents',
+              index,
+              'message',
+              ...issue.path,
+            ],
+          }));
+
+          acc.success = false;
+          acc.errors[index] = { issues };
+          return acc;
+        }
+
+        acc.messages.push(result.data);
+        return acc;
+      },
+      {
+        success: true,
+        messages: [],
+        errors: {},
       }
-      parsedLogEvents.push(parsedMessage.data);
+    );
+
+    if (result.success) {
+      return { success: true, data: result.messages };
     }
 
+    const errorMessage =
+      Object.keys(result.errors).length > 1
+        ? `Failed to parse CloudWatch Log messages at indexes ${Object.keys(result.errors).join(', ')}`
+        : `Failed to parse CloudWatch Log message at index ${Object.keys(result.errors)[0]}`;
+    const errorCause = new ZodError(
+      // @ts-expect-error - issues are assigned because success is false
+      Object.values(result.errors).flatMap((error) => error.issues)
+    );
+
     return {
-      success: true,
-      data: parsedLogEvents,
+      success: false,
+      error: new ParseError(errorMessage, { cause: errorCause }),
+      originalEvent: data,
     };
   },
 };

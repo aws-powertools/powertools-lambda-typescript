@@ -1,7 +1,6 @@
 {
   "version": "2.0",
   "routeKey": "$default",
-  "rawPath": "/my/path/",
   "rawQueryString": "parameter1=value1&parameter1=value2&parameter2=value",
   "cookies": ["cookie1", "cookie2"],
   "headers": {
@@ -31,7 +30,7 @@
     "domainPrefix": "<url-id>",
     "http": {
       "method": "POST",
-      "path": "/my/path",
+      "path": "/",
       "protocol": "HTTP/1.1",
       "sourceIp": "123.123.123.123",
       "userAgent": "agent"
@@ -42,7 +41,7 @@
     "time": "12/Mar/2020:19:03:58 +0000",
     "timeEpoch": 1583348638390
   },
-  "body": "Hello from client!",
+  "body": null,
   "pathParameters": null,
   "isBase64Encoded": false,
   "stageVariables": null

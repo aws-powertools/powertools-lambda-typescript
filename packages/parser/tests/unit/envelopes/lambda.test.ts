@@ -104,7 +104,7 @@ describe('Envelope: Lambda function URL', () => {
       });
     });
 
-    it('returns an error with original event if Lambda function URL event is not valid', () => {
+    it('returns an error when the event is not valid', () => {
       // Prepare
       const event = omit(['rawPath'], structuredClone(baseEvent));
 

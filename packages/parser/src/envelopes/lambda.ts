@@ -14,37 +14,38 @@ export const LambdaFunctionUrlEnvelope = {
    */
   [envelopeDiscriminator]: 'object' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
-    const parsedEnvelope = LambdaFunctionUrlSchema.parse(data);
-
-    if (!parsedEnvelope.body) {
-      throw new Error('Body field of Lambda function URL event is undefined');
+    try {
+      return LambdaFunctionUrlSchema.extend({
+        body: schema,
+      }).parse(data).body;
+    } catch (error) {
+      throw new ParseError('Failed to parse Lambda function URL body', {
+        cause: error as Error,
+      });
     }
-
-    return Envelope.parse(parsedEnvelope.body, schema);
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult<unknown, z.infer<T>> {
-    const parsedEnvelope = LambdaFunctionUrlSchema.safeParse(data);
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>> {
+    const results = LambdaFunctionUrlSchema.extend({
+      body: schema,
+    }).safeParse(data);
 
-    if (!parsedEnvelope.success) {
-      return {
-        success: false,
-        error: new ParseError('Failed to parse Lambda function URL envelope'),
-        originalEvent: data,
-      };
-    }
-
-    const parsedBody = Envelope.safeParse(parsedEnvelope.data.body, schema);
-    if (!parsedBody.success) {
+    if (!results.success) {
       return {
         success: false,
         error: new ParseError('Failed to parse Lambda function URL body', {
-          cause: parsedBody.error,
+          cause: results.error,
         }),
         originalEvent: data,
       };
     }
 
-    return parsedBody;
+    return {
+      success: true,
+      data: results.data.body,
+    };
   },
 };

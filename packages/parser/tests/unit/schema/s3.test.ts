@@ -4,98 +4,212 @@ import {
   S3ObjectLambdaEventSchema,
   S3Schema,
   S3SqsEventNotificationSchema,
-} from '../../../src/schemas/';
-import { TestEvents } from './utils.js';
+} from '../../../src/schemas/s3.js';
+import type {
+  S3Event,
+  S3EventNotificationEventBridge,
+  S3ObjectLambdaEvent,
+  S3SqsEventNotification,
+} from '../../../src/types/schema.js';
+import { getTestEvent, omit } from './utils.js';
 
-describe('S3 ', () => {
-  it('should parse s3 event', () => {
-    const s3Event = TestEvents.s3Event;
-
-    expect(S3Schema.parse(s3Event)).toEqual(s3Event);
+describe('Schema: S3', () => {
+  const eventsPath = 's3';
+  const baseEvent = getTestEvent<S3Event>({
+    eventsPath,
+    filename: 'base',
+  });
+  const baseLambdaEvent = getTestEvent<S3ObjectLambdaEvent>({
+    eventsPath,
+    filename: 'object-iam-user',
   });
 
-  it('should parse s3 event bridge notification event created', () => {
-    const s3EventBridgeNotificationObjectCreatedEvent =
-      TestEvents.s3EventBridgeNotificationObjectCreatedEvent;
+  it('parses an S3 event', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
 
-    expect(
-      S3EventNotificationEventBridgeSchema.parse(
-        s3EventBridgeNotificationObjectCreatedEvent
-      )
-    ).toEqual(s3EventBridgeNotificationObjectCreatedEvent);
+    // Act
+    const result = S3Schema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
   });
 
-  it('should parse s3 event bridge notification event detelted', () => {
-    const s3EventBridgeNotificationObjectDeletedEvent =
-      TestEvents.s3EventBridgeNotificationObjectDeletedEvent;
+  it('throws if the event is not an S3 event', () => {
+    // Prepare
+    const event = {
+      Records: [],
+    };
 
-    expect(
-      S3EventNotificationEventBridgeSchema.parse(
-        s3EventBridgeNotificationObjectDeletedEvent
-      )
-    ).toEqual(s3EventBridgeNotificationObjectDeletedEvent);
-  });
-  it('should parse s3 event bridge notification event expired', () => {
-    const s3EventBridgeNotificationObjectExpiredEvent =
-      TestEvents.s3EventBridgeNotificationObjectExpiredEvent;
-
-    expect(
-      S3EventNotificationEventBridgeSchema.parse(
-        s3EventBridgeNotificationObjectExpiredEvent
-      )
-    ).toEqual(s3EventBridgeNotificationObjectExpiredEvent);
+    // Act & Assess
+    expect(() => S3Schema.parse(event)).toThrow();
   });
 
-  it('should parse s3 sqs notification event', () => {
-    const s3SqsEvent = TestEvents.s3SqsEvent;
-    expect(S3SqsEventNotificationSchema.parse(s3SqsEvent)).toEqual(s3SqsEvent);
+  it('throws if the event is missing required fields', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+    // @ts-expect-error - Intentionally remove required field
+    event.Records[0].s3.bucket.name = undefined;
+
+    // Act & Assess
+    expect(() => S3Schema.parse(event)).toThrow();
   });
 
-  it('should parse s3 event with decoded key', () => {
-    const s3EventDecodedKey = TestEvents.s3EventDecodedKey;
-    expect(S3Schema.parse(s3EventDecodedKey)).toEqual(s3EventDecodedKey);
+  it('parses an S3 Glacier event', () => {
+    // Prepare
+    const event = getTestEvent<S3Event>({
+      eventsPath,
+      filename: 'glacier',
+    });
+
+    // Act
+    const result = S3Schema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
   });
 
-  it('should parse s3 event delete object', () => {
-    const s3EventDeleteObject = TestEvents.s3EventDeleteObject;
-    expect(S3Schema.parse(s3EventDeleteObject)).toEqual(s3EventDeleteObject);
+  it('parses an S3 event with a decoded key', () => {
+    // Prepare
+    const event = getTestEvent<S3Event>({
+      eventsPath,
+      filename: 'decoded-key',
+    });
+
+    // Act
+    const result = S3Schema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
   });
 
-  it('should parse s3 event glacier', () => {
-    const s3EventGlacier = TestEvents.s3EventGlacier;
-    expect(S3Schema.parse(s3EventGlacier)).toEqual(s3EventGlacier);
+  it('parses an S3 event with a deleted object', () => {
+    // Prepare
+    const event = getTestEvent<S3Event>({
+      eventsPath,
+      filename: 'delete-object',
+    });
+
+    // Act
+    const result = S3Schema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
   });
 
-  it('should parse s3 object event iam user', () => {
-    const s3ObjectEventIAMUser = TestEvents.s3ObjectEventIAMUser;
-    expect(S3ObjectLambdaEventSchema.parse(s3ObjectEventIAMUser)).toEqual(
-      s3ObjectEventIAMUser
-    );
+  it('parses an S3 Object Lambda with an IAM user', () => {
+    // Prepare
+    const event = structuredClone(baseLambdaEvent);
+
+    // Act
+    const result = S3ObjectLambdaEventSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
   });
 
-  it('should parse s3 object event temp credentials', () => {
-    // ignore any because we don't want typed json
-    const s3ObjectEventTempCredentials =
-      // biome-ignore lint/suspicious/noExplicitAny: no specific typing needed
-      TestEvents.s3ObjectEventTempCredentials as any;
-    const parsed = S3ObjectLambdaEventSchema.parse(
-      s3ObjectEventTempCredentials
-    );
+  it('throws if the S3 Object Lambda event is missing required fields', () => {
+    // Prepare
+    const event = omit(['getObjectContext'], structuredClone(baseLambdaEvent));
 
-    expect(parsed.userRequest).toEqual(
-      s3ObjectEventTempCredentials.userRequest
-    );
-    expect(parsed.getObjectContext).toEqual(
-      s3ObjectEventTempCredentials.getObjectContext
-    );
-    expect(parsed.configuration).toEqual(
-      s3ObjectEventTempCredentials.configuration
-    );
-    expect(parsed.userRequest).toEqual(
-      s3ObjectEventTempCredentials.userRequest
-    );
-    expect(
-      parsed.userIdentity?.sessionContext?.attributes.mfaAuthenticated
-    ).toEqual(false);
+    // Act & Assess
+    expect(() => S3ObjectLambdaEventSchema.parse(event)).toThrow();
+  });
+
+  it('parses an S3 Object Lambda with temporary credentials', () => {
+    // Prepare
+    const event = getTestEvent<S3ObjectLambdaEvent>({
+      eventsPath,
+      filename: 'object-temp-credentials',
+    });
+    const expected = structuredClone(event);
+    // @ts-expect-error - Modifying the expected result to account for type coercion
+    expected.userIdentity.sessionContext.attributes.mfaAuthenticated = false;
+
+    // Act
+    const result = S3ObjectLambdaEventSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
+
+  it('parses an S3 Object Notification EventBridge event', () => {
+    // Prepare
+    const event = getTestEvent<S3EventNotificationEventBridge>({
+      eventsPath,
+      filename: 'eventbridge-object-created',
+    });
+
+    // Act
+    const result = S3EventNotificationEventBridgeSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
+  it('parses an S3 Object Notification EventBridge event for an object deleted', () => {
+    // Prepare
+    const event = getTestEvent<S3EventNotificationEventBridge>({
+      eventsPath,
+      filename: 'eventbridge-object-deleted',
+    });
+
+    // Act
+    const result = S3EventNotificationEventBridgeSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
+  it('parses an S3 Object Notification EventBridge event for an object expired', () => {
+    // Prepare
+    const event = getTestEvent<S3EventNotificationEventBridge>({
+      eventsPath,
+      filename: 'eventbridge-object-expired',
+    });
+
+    // Act
+    const result = S3EventNotificationEventBridgeSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
+  it('parses an S3 Object Notification EventBridge event for an object restored', () => {
+    // Prepare
+    const event = getTestEvent<S3EventNotificationEventBridge>({
+      eventsPath,
+      filename: 'eventbridge-object-restored',
+    });
+
+    // Act
+    const result = S3EventNotificationEventBridgeSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
+  it('parses an S3 event notification SQS event', () => {
+    // Prepare
+    const event = getTestEvent<S3SqsEventNotification>({
+      eventsPath,
+      filename: 'sqs-event',
+    });
+
+    // Prepare
+    const result = S3SqsEventNotificationSchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
+  it('throws if the S3 event notification SQS event is not valid', () => {
+    // Prepare
+    const event = {
+      Records: [],
+    };
+
+    // Act & Assess
+    expect(() => S3SqsEventNotificationSchema.parse(event)).toThrow();
   });
 });

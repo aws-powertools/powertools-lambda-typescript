@@ -6,7 +6,7 @@ import { AlbSchema } from '../../src/schemas/alb.js';
 import {
   DynamoDBStreamRecord,
   DynamoDBStreamSchema,
-} from '../../src/schemas/dynamodb';
+} from '../../src/schemas/dynamodb.js';
 import {
   SnsNotificationSchema,
   SnsRecordSchema,
@@ -33,8 +33,8 @@ const basePayload = {
   email: 'foo@bar.baz',
 };
 
-describe('JSONStringified', () => {
-  it('should return a valid JSON', () => {
+describe('Helper: JSONStringified', () => {
+  it('returns a valid JSON', () => {
     // Prepare
     const data = {
       body: JSON.stringify(structuredClone(basePayload)),
@@ -51,7 +51,7 @@ describe('JSONStringified', () => {
     });
   });
 
-  it('should throw an error if the JSON payload is invalid', () => {
+  it('throws an error if the JSON payload is invalid', () => {
     // Prepare
     const data = {
       body: JSON.stringify({ ...basePayload, email: 'invalid' }),
@@ -66,7 +66,7 @@ describe('JSONStringified', () => {
     expect(() => extendedSchema.parse(data)).toThrow();
   });
 
-  it('should throw an error if the JSON is malformed', () => {
+  it('throws an error if the JSON is malformed', () => {
     // Prepare
     const data = {
       body: 'invalid',
@@ -81,11 +81,11 @@ describe('JSONStringified', () => {
     expect(() => extendedSchema.parse(data)).toThrow();
   });
 
-  it('should parse extended AlbSchema', () => {
+  it('parses extended AlbSchema', () => {
     // Prepare
     const testEvent = getTestEvent({
-      eventsPath: '.',
-      filename: 'albEvent',
+      eventsPath: 'alb',
+      filename: 'base',
     });
     testEvent.body = JSON.stringify(structuredClone(basePayload));
 
@@ -101,7 +101,7 @@ describe('JSONStringified', () => {
     });
   });
 
-  it('should parse extended SqsSchema', () => {
+  it('parses extended SqsSchema', () => {
     // Prepare
     const testEvent = getTestEvent<SqsEvent>({
       eventsPath: 'sqs',
@@ -130,7 +130,7 @@ describe('JSONStringified', () => {
     });
   });
 
-  it('should parse extended SnsSchema', () => {
+  it('parses extended SnsSchema', () => {
     // Prepare
     const testEvent = getTestEvent<SnsEvent>({
       eventsPath: 'sns',
@@ -162,7 +162,7 @@ describe('JSONStringified', () => {
   });
 });
 
-describe('DynamoDBMarshalled', () => {
+describe('Helper: DynamoDBMarshalled', () => {
   // Prepare
   const schema = z.object({
     Message: z.string(),
@@ -184,115 +184,96 @@ describe('DynamoDBMarshalled', () => {
     ),
   });
 
-  it('should correctly unmarshall and validate a valid DynamoDB stream record', () => {
+  it('unmarshalls and validates a valid DynamoDB stream record', () => {
     // Prepare
-    const testInput = [
-      {
-        Message: {
-          S: 'New item!',
-        },
-        Id: {
-          N: '101',
-        },
+    const event = structuredClone(baseEvent);
+    event.Records[0].dynamodb.NewImage = {
+      Message: {
+        S: 'New item!',
       },
-      {
-        Message: {
-          S: 'This item has changed',
-        },
-        Id: {
-          N: '101',
-        },
+      Id: {
+        N: '101',
       },
-    ];
-    const expectedOutput = [
-      {
-        Id: 101,
-        Message: 'New item!',
+    };
+    event.Records[1].dynamodb.NewImage = {
+      Message: {
+        S: 'This item has changed',
       },
-      {
-        Id: 101,
-        Message: 'This item has changed',
+      Id: {
+        N: '101',
       },
-    ];
-
-    const testEvent = structuredClone(baseEvent);
-    testEvent.Records[0].dynamodb.NewImage = testInput[0];
-    testEvent.Records[1].dynamodb.NewImage = testInput[1];
+    };
 
     // Act & Assess
-    expect(extendedSchema.parse(testEvent)).toStrictEqual({
+    expect(extendedSchema.parse(event)).toStrictEqual({
       Records: [
         {
-          ...testEvent.Records[0],
+          ...event.Records[0],
           dynamodb: {
-            NewImage: expectedOutput[0],
+            NewImage: {
+              Id: 101,
+              Message: 'New item!',
+            },
           },
         },
         {
-          ...testEvent.Records[1],
+          ...event.Records[1],
           dynamodb: {
-            NewImage: expectedOutput[1],
+            NewImage: {
+              Id: 101,
+              Message: 'This item has changed',
+            },
           },
         },
       ],
     });
   });
 
-  it('should throw an error if the DynamoDB stream record cannot be unmarshalled', () => {
+  it('throws an error if the DynamoDB stream record cannot be unmarshalled', () => {
     // Prepare
-    const testInput = [
-      {
-        Message: {
-          S: 'New item!',
-        },
-        Id: {
-          NNN: '101', //unknown type
-        },
+    const event = structuredClone(baseEvent);
+    event.Records[0].dynamodb.NewImage = {
+      Message: {
+        S: 'New item!',
       },
-      {
-        Message: {
-          S: 'This item has changed',
-        },
-        Id: {
-          N: '101',
-        },
+      Id: {
+        NNN: '101', //unknown type
       },
-    ];
-
-    const testEvent = structuredClone(baseEvent);
-    testEvent.Records[0].dynamodb.NewImage = testInput[0];
-    testEvent.Records[1].dynamodb.NewImage = testInput[1];
+    };
+    event.Records[1].dynamodb.NewImage = {
+      Message: {
+        S: 'This item has changed',
+      },
+      Id: {
+        N: '101',
+      },
+    };
 
     // Act & Assess
-    expect(() => extendedSchema.parse(testEvent)).toThrow(
+    expect(() => extendedSchema.parse(event)).toThrow(
       'Could not unmarshall DynamoDB stream record'
     );
   });
 
-  it('should throw a validation error if the unmarshalled record does not match the schema', () => {
+  it('throws a validation error if the unmarshalled record does not match the schema', () => {
     // Prepare
-    const testInput = [
-      {
-        Message: {
-          S: 'New item!',
-        },
-        Id: {
-          N: '101',
-        },
+    const event = structuredClone(baseEvent);
+    event.Records[0].dynamodb.NewImage = {
+      Message: {
+        S: 'New item!',
       },
-      {
-        Message: {
-          S: 'This item has changed',
-        },
-        // Id is missing
+      Id: {
+        N: '101',
       },
-    ];
-
-    const testEvent = structuredClone(baseEvent);
-    testEvent.Records[0].dynamodb.NewImage = testInput[0];
-    testEvent.Records[1].dynamodb.NewImage = testInput[1];
+    };
+    event.Records[1].dynamodb.NewImage = {
+      // Id is missing
+      Message: {
+        S: 'This item has changed',
+      },
+    };
 
     // Act & Assess
-    expect(() => extendedSchema.parse(testEvent)).toThrow();
+    expect(() => extendedSchema.parse(event)).toThrow();
   });
 });

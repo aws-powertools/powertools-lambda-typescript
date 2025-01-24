@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SesSchema } from '../../../src/schemas/ses.js';
 import type { SesEvent } from '../../../src/types/index.js';
-import { getTestEvent, omit } from './utils.js';
+import { getTestEvent } from './utils.js';
 
 describe('Schema: SES', () => {
   const baseEvent = getTestEvent<SesEvent>({

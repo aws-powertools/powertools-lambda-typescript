@@ -35,13 +35,19 @@ const KinesisFirehoseRecordSchema = KinesisFireHoseRecordBase.extend({
  * Zod schema for a SQS record from an Kinesis Firehose event.
  */
 const KinesisFirehoseSqsRecordSchema = KinesisFireHoseRecordBase.extend({
-  data: z.string().transform((data) => {
+  data: z.string().transform((data, ctx) => {
     try {
       return SqsRecordSchema.parse(
         JSON.parse(Buffer.from(data, 'base64').toString('utf8'))
       );
     } catch (e) {
-      return data;
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Failed to parse SQS record',
+        fatal: true,
+      });
+
+      return z.NEVER;
     }
   }),
 });

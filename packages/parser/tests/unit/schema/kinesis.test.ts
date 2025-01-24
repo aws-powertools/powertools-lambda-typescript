@@ -21,7 +21,7 @@ import type {
 } from '../../../src/types/schema';
 import { getTestEvent } from './utils.js';
 
-describe('Kinesis ', () => {
+describe('Schema: Kinesis', () => {
   const eventsPath = 'kinesis';
 
   const kinesisStreamEvent = getTestEvent<KinesisDataStreamEvent>({
@@ -56,8 +56,11 @@ describe('Kinesis ', () => {
     }
   );
 
-  it('should parse kinesis event', () => {
+  it('parses kinesis event', () => {
+    // Prepare
     const testEvent = structuredClone(kinesisStreamEvent);
+
+    // Act
     const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
@@ -72,10 +75,14 @@ describe('Kinesis ', () => {
       }),
     };
 
+    // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
-  it('should parse single kinesis record', () => {
+  it('parses single kinesis record', () => {
+    // Prepare
     const testEvent = structuredClone(kinesisStreamEventOneRecord);
+
+    // Act
     const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
@@ -92,10 +99,14 @@ describe('Kinesis ', () => {
       }),
     };
 
+    // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
-  it('should parse Firehose event', () => {
+  it('parses Firehose event', () => {
+    // Prepare
     const testEvent = structuredClone(kinesisFirehoseEvent);
+
+    // Act
     const parsed = KinesisFirehoseSchema.parse(testEvent);
 
     const transformedInput = {
@@ -108,11 +119,15 @@ describe('Kinesis ', () => {
         };
       }),
     };
+
+    // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
-  it('should parse Kinesis Firehose PutEvents event', () => {
+  it('parses Kinesis Firehose PutEvents event', () => {
+    // Prepare
     const testEvent = structuredClone(kinesisFirehosePutEvent);
 
+    // Act
     const parsed = KinesisFirehoseSchema.parse(testEvent);
 
     const transformedInput = {
@@ -125,11 +140,14 @@ describe('Kinesis ', () => {
       }),
     };
 
+    // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
-  it('should parse Firehose event with SQS event', () => {
+  it('parses Firehose event with SQS event', () => {
+    // Prepare
     const testEvent = structuredClone(kinesisFirehoseSQSEvent);
 
+    // Act
     const parsed = KinesisFirehoseSqsSchema.parse(testEvent);
 
     const transformedInput = {
@@ -138,21 +156,24 @@ describe('Kinesis ', () => {
         return {
           ...record,
           data: JSON.parse(
-            Buffer.from(record.data as string, 'base64').toString()
+            Buffer.from(record.data as unknown as string, 'base64').toString()
           ),
         };
       }),
     };
 
+    // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
-  it('should parse Kinesis event with CloudWatch event', () => {
+  it('parses Kinesis event with CloudWatch event', () => {
+    // Prepare
     const testEvent = structuredClone(kinesisStreamCloudWatchLogsEvent);
 
+    // Act
     const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
-      Records: testEvent.Records.map((record, index) => {
+      Records: testEvent.Records.map((record) => {
         return {
           ...record,
           kinesis: {
@@ -167,31 +188,39 @@ describe('Kinesis ', () => {
       }),
     };
 
+    // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
-  it('should return original value if cannot parse KinesisFirehoseSqsRecord', () => {
-    const testEvent = structuredClone(kinesisFirehoseSQSEvent);
-    testEvent.records[0].data = 'not a valid json';
+  it('throws if cannot parse SQS record of KinesisFirehoseSqsRecord', () => {
+    // Prepare
+    const testEvent = getTestEvent<KinesisFireHoseSqsEvent>({
+      eventsPath,
+      filename: 'firehose-sqs-invalid',
+    });
 
-    const parsed = KinesisFirehoseSqsSchema.parse(testEvent);
-
-    expect(parsed).toStrictEqual(testEvent);
+    // Act & Assess
+    expect(() => KinesisFirehoseSqsSchema.parse(testEvent)).toThrow();
   });
-  it('should parse a kinesis record from a kinesis event', () => {
+  it('parses a kinesis record from a kinesis event', () => {
+    // Prepare
     const testEvent: KinesisDataStreamEvent =
       structuredClone(kinesisStreamEvent);
 
+    // Act
     const parsedRecord = KinesisDataStreamRecord.parse(testEvent.Records[0]);
 
+    // Assess
     expect(parsedRecord.eventSource).toEqual('aws:kinesis');
     expect(parsedRecord.eventName).toEqual('aws:kinesis:record');
   });
 
-  it('should parse a kinesis record from dynamodb stream event', () => {
+  it('parses a kinesis record from dynamodb stream event', () => {
+    // Prepare
     const testEvent = getTestEvent<KinesisDynamoDBStreamEvent>({
       eventsPath,
       filename: 'dynamodb-stream',
     });
+
     const expectedRecords = [
       {
         awsRegion: 'eu-west-1',
@@ -231,26 +260,36 @@ describe('Kinesis ', () => {
       },
     ];
 
+    // Act
     const parsedRecord = KinesisDynamoDBStreamSchema.parse(testEvent);
 
+    // Assess
     expect(parsedRecord.Records.map((record) => record.kinesis.data)).toEqual(
       expectedRecords
     );
   });
 
-  it('should parse a kinesis firehose record from a kinesis firehose event', () => {
+  it('parses a kinesis firehose record from a kinesis firehose event', () => {
+    // Prepare
     const testEvent = structuredClone(kinesisFirehoseEvent);
+
+    // Act
     const parsedRecord: KinesisFirehoseRecord =
       KinesisFirehoseRecordSchema.parse(testEvent.records[0]);
 
+    // Assess
     expect(parsedRecord.data).toEqual('Hello World');
   });
 
-  it('should parse a sqs record from a kinesis firehose event', () => {
+  it('parses a sqs record from a kinesis firehose event', () => {
+    // Prepare
     const kinesisFireHoseSqsEvent = structuredClone(kinesisFirehoseSQSEvent);
+
+    // Act
     const parsed: KinesisFirehoseSqsRecord =
       KinesisFirehoseSqsRecordSchema.parse(kinesisFireHoseSqsEvent.records[0]);
 
+    // Assess
     expect(parsed.recordId).toEqual(
       '49640912821178817833517986466168945147170627572855734274000000'
     );

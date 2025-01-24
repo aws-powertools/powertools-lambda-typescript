@@ -173,7 +173,7 @@ const SesRecordSchema = z.object({
  * @see {@link https://docs.aws.amazon.com/ses/latest/dg/receiving-email-notifications-examples.html}
  */
 const SesSchema = z.object({
-  Records: z.array(SesRecordSchema),
+  Records: z.array(SesRecordSchema).min(1),
 });
 
 export { SesSchema, SesRecordSchema };

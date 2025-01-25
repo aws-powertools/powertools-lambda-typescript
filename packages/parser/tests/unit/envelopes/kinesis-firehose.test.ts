@@ -1,157 +1,231 @@
-import { generateMock } from '@anatine/zod-mock';
 import { describe, expect, it } from 'vitest';
-import { ZodError } from 'zod';
-import { ParseError } from '../../../src';
+import { ZodError, z } from 'zod';
 import { KinesisFirehoseEnvelope } from '../../../src/envelopes/index.js';
+import { ParseError } from '../../../src/errors.js';
+import { JSONStringified } from '../../../src/helpers.js';
 import type {
   KinesisFireHoseEvent,
   KinesisFireHoseSqsEvent,
-} from '../../../src/types';
-import { TestSchema, getTestEvent } from '../schema/utils.js';
+} from '../../../src/types/schema.js';
+import { getTestEvent, omit } from '../schema/utils.js';
 
-describe('Kinesis Firehose Envelope', () => {
+const encode = (data: unknown) => Buffer.from(String(data)).toString('base64');
+
+describe('Envelope: Kinesis Firehose', () => {
   const eventsPath = 'kinesis';
   const kinesisFirehosePutEvent = getTestEvent<KinesisFireHoseEvent>({
     eventsPath,
     filename: 'firehose-put',
   });
-
   const kinesisFirehoseSQSEvent = getTestEvent<KinesisFireHoseSqsEvent>({
     eventsPath,
     filename: 'firehose-sqs',
   });
 
-  const kinesisFirehoseEvent = getTestEvent<KinesisFireHoseEvent>({
-    eventsPath,
-    filename: 'firehose',
-  });
+  describe('Method: parse', () => {
+    it('throws if one of the payloads does not match the schema', () => {
+      // Prepare
+      const event = structuredClone(kinesisFirehosePutEvent);
 
-  describe('parse', () => {
-    it('should parse records for PutEvent', () => {
-      const mock = generateMock(TestSchema);
-      const testEvent = structuredClone(kinesisFirehosePutEvent);
-
-      testEvent.records.map((record) => {
-        record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
-      });
-
-      const resp = KinesisFirehoseEnvelope.parse(testEvent, TestSchema);
-      expect(resp).toEqual([mock, mock]);
-    });
-
-    it('should parse a single record for SQS event', () => {
-      const mock = generateMock(TestSchema);
-      const testEvent = structuredClone(kinesisFirehoseSQSEvent);
-
-      testEvent.records.map((record) => {
-        record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
-      });
-
-      const resp = KinesisFirehoseEnvelope.parse(testEvent, TestSchema);
-      expect(resp).toEqual([mock]);
-    });
-
-    it('should parse records for kinesis event', () => {
-      const mock = generateMock(TestSchema);
-      const testEvent = structuredClone(kinesisFirehoseEvent);
-
-      testEvent.records.map((record) => {
-        record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
-      });
-
-      const resp = KinesisFirehoseEnvelope.parse(testEvent, TestSchema);
-      expect(resp).toEqual([mock, mock]);
-    });
-    it('should throw if record is not base64 encoded', () => {
-      const testEvent = structuredClone(kinesisFirehosePutEvent);
-
-      testEvent.records.map((record) => {
-        record.data = 'not base64 encoded';
-      });
-
-      expect(() => {
-        KinesisFirehoseEnvelope.parse(testEvent, TestSchema);
-      }).toThrow();
-    });
-    it('should throw if envelope is invalid', () => {
-      expect(() => {
-        KinesisFirehoseEnvelope.parse({ foo: 'bar' }, TestSchema);
-      }).toThrow();
-    });
-    it('should throw when schema does not match record', () => {
-      const testEvent = structuredClone(kinesisFirehosePutEvent);
-
-      testEvent.records.map((record) => {
-        record.data = Buffer.from('not a valid json').toString('base64');
-      });
-
-      expect(() => {
-        KinesisFirehoseEnvelope.parse(testEvent, TestSchema);
-      }).toThrow();
-    });
-  });
-  describe('safeParse', () => {
-    it('should parse records for PutEvent', () => {
-      const mock = generateMock(TestSchema);
-      const testEvent = structuredClone(kinesisFirehosePutEvent);
-
-      testEvent.records.map((record) => {
-        record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
-      });
-
-      const resp = KinesisFirehoseEnvelope.safeParse(testEvent, TestSchema);
-      expect(resp).toEqual({ success: true, data: [mock, mock] });
-    });
-
-    it('should parse a single record for SQS event', () => {
-      const mock = generateMock(TestSchema);
-      const testEvent = structuredClone(kinesisFirehoseSQSEvent);
-
-      testEvent.records.map((record) => {
-        record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
-      });
-
-      const resp = KinesisFirehoseEnvelope.safeParse(testEvent, TestSchema);
-      expect(resp).toEqual({ success: true, data: [mock] });
-    });
-
-    it('should parse records for kinesis event', () => {
-      const mock = generateMock(TestSchema);
-      const testEvent = structuredClone(kinesisFirehoseEvent);
-
-      testEvent.records.map((record) => {
-        record.data = Buffer.from(JSON.stringify(mock)).toString('base64');
-      });
-
-      const resp = KinesisFirehoseEnvelope.safeParse(testEvent, TestSchema);
-      expect(resp).toEqual({ success: true, data: [mock, mock] });
-    });
-    it('should return original event if envelope is invalid', () => {
-      const parseResult = KinesisFirehoseEnvelope.safeParse(
-        { foo: 'bar' },
-        TestSchema
+      // Act & Assess
+      expect(() => KinesisFirehoseEnvelope.parse(event, z.number())).toThrow(
+        expect.objectContaining({
+          message: expect.stringContaining(
+            'Failed to parse Kinesis Firehose record at index 0'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'number',
+                received: 'string',
+                path: ['records', 0, 'data'],
+                message: 'Expected number, received string',
+              },
+            ],
+          }),
+        })
       );
-      expect(parseResult).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: { foo: 'bar' },
-      });
-
-      if (!parseResult.success && parseResult.error) {
-        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
-      }
     });
-    it('should return original event if record is not base64 encoded', () => {
-      const testEvent = structuredClone(kinesisFirehosePutEvent);
 
-      testEvent.records.map((record) => {
-        record.data = 'not base64 encoded';
+    it('parses a Kinesis Firehose event', () => {
+      // Prepare
+      const event = structuredClone(kinesisFirehosePutEvent);
+      event.records[1].data = encode('foo');
+
+      // Act
+      const result = KinesisFirehoseEnvelope.parse(event, z.string());
+
+      // Assess
+      expect(result).toEqual(['Hello World', 'foo']);
+    });
+
+    it('parses a Kinesis Firehose event and applies the schema transformation', () => {
+      // Prepare
+      const event = structuredClone(kinesisFirehosePutEvent);
+      event.records[0].data = encode(JSON.stringify({ Hello: 'foo' }));
+
+      // Act
+      const result = KinesisFirehoseEnvelope.parse(
+        event,
+        JSONStringified(z.object({ Hello: z.string() }))
+      );
+
+      // Assess
+      expect(result).toStrictEqual([{ Hello: 'foo' }, { Hello: 'World' }]);
+    });
+
+    it('throws if the event is not a Kinesis Data Stream event', () => {
+      // Prepare
+      const event = structuredClone(kinesisFirehosePutEvent);
+      event.records = [];
+
+      // Act & Assess
+      expect(() => KinesisFirehoseEnvelope.parse(event, z.string())).toThrow(
+        new ParseError('Failed to parse Kinesis Firehose envelope', {
+          cause: new ZodError([
+            {
+              code: 'too_small',
+              minimum: 1,
+              type: 'array',
+              inclusive: true,
+              exact: false,
+              message: 'Array must contain at least 1 element(s)',
+              path: ['records'],
+            },
+          ]),
+        })
+      );
+    });
+  });
+
+  describe('Method: safeParse', () => {
+    it('parses a Kinesis Firehose event with SQS data', () => {
+      // Prepare
+      const event = structuredClone(kinesisFirehoseSQSEvent);
+
+      // Act
+      const result = KinesisFirehoseEnvelope.safeParse(
+        event,
+        JSONStringified(
+          z.object({
+            body: z.string(),
+          })
+        )
+      );
+
+      // Assess
+      expect(result).toEqual({
+        success: true,
+        data: [
+          {
+            body: 'Test message.',
+          },
+        ],
       });
+    });
 
-      expect(KinesisFirehoseEnvelope.safeParse(testEvent, TestSchema)).toEqual({
+    it('returns an error if the event is not a Kinesis Data Stream event', () => {
+      // Prepare
+      const event = omit(
+        ['invocationId'],
+        structuredClone(kinesisFirehosePutEvent)
+      );
+
+      // Act
+      const result = KinesisFirehoseEnvelope.safeParse(event, z.string());
+
+      // Assess
+      expect(result).toEqual({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: testEvent,
+        error: new ParseError('Failed to parse Kinesis Firehose envelope', {
+          cause: new ZodError([
+            {
+              code: 'invalid_type',
+              expected: 'string',
+              received: 'undefined',
+              path: ['invocationId'],
+              message: 'Required',
+            },
+          ]),
+        }),
+        originalEvent: event,
+      });
+    });
+
+    it('returns an error if one of the payloads does not match the schema', () => {
+      // Prepare
+      const event = structuredClone(kinesisFirehosePutEvent);
+      event.records[0].data = encode(JSON.stringify({ foo: 'bar' }));
+
+      // Act
+      const result = KinesisFirehoseEnvelope.safeParse(
+        event,
+        JSONStringified(
+          z.object({
+            foo: z.string(),
+          })
+        )
+      );
+
+      // Assess
+      expect(result).toEqual({
+        success: false,
+        error: new ParseError(
+          'Failed to parse Kinesis Firehose record at index 1',
+          {
+            cause: new ZodError([
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                received: 'undefined',
+                path: ['records', 1, 'data', 'foo'],
+                message: 'Required',
+              },
+            ]),
+          }
+        ),
+        originalEvent: event,
+      });
+    });
+
+    it('returns a combined error if multiple records fail to parse', () => {
+      // Prepare
+      const event = structuredClone(kinesisFirehosePutEvent);
+
+      // Act
+      const result = KinesisFirehoseEnvelope.safeParse(
+        event,
+        z.object({
+          foo: z.string(),
+        })
+      );
+
+      // Assess
+      expect(result).toEqual({
+        success: false,
+        error: new ParseError(
+          'Failed to parse Kinesis Firehose records at indexes 0, 1',
+          {
+            cause: new ZodError([
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                received: 'string',
+                path: ['records', 0, 'data'],
+                message: 'Expected object, received string',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                received: 'string',
+                path: ['records', 1, 'data'],
+                message: 'Expected object, received string',
+              },
+            ]),
+          }
+        ),
+        originalEvent: event,
       });
     });
   });

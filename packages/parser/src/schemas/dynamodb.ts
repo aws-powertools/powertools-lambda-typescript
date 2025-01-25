@@ -89,6 +89,46 @@ const DynamoDBStreamRecord = z.object({
   userIdentity: UserIdentity.optional(),
 });
 
+// _aws-lambda-powertools_parser.helpers_dynamodb.DynamoDBMarshalled.html
+// _aws-lambda-powertools_parser.helpers.JSONStringified
+
+/**
+ * Zod schema for Amazon DynamoDB Stream event sent to an Amazon Kinesis stream.
+ *
+ * By default, we unmarshall the `dynamodb.Keys`, `dynamodb.NewImage`, and `dynamodb.OldImage` fields
+ * for you.
+ *
+ * If you want to extend the schema and provide your own Zod schema for any of these fields,
+ * you can use the {@link @aws-lambda-powertools/parser!helpers/dynamodb.DynamoDBMarshalled | `DynamoDBMarshalled`} helper. In that case, we won't unmarshall the other fields.
+ *
+ * To extend the schema, you can use the {@link DynamoDBStreamToKinesisRecord | `DynamoDBStreamToKinesisRecord`} child schema and the {@link @aws-lambda-powertools/parser!helpers/dynamodb.DynamoDBMarshalled | `DynamoDBMarshalled`}
+ * helper together.
+ *
+ * @example
+ * ```ts
+ * import {
+ *   DynamoDBStreamToKinesisRecord,
+ *   DynamoDBStreamToKinesisChangeRecord,
+ * } from '@aws-lambda-powertools/parser/schemas/dynamodb';
+ * import { KinesisEnvelope } from '@aws-lambda-powertools/parser/envelopes/dynamodb';
+ * import { DynamoDBMarshalled } from '@aws-lambda-powertools/parser/helpers/dynamodb';
+ *
+ * const CustomSchema = DynamoDBStreamToKinesisRecord.extend({
+ *   dynamodb: DynamoDBStreamToKinesisChangeRecord.extend({
+ *    NewImage: DynamoDBMarshalled(
+ *      z.object({
+ *        id: z.string(),
+ *        attribute: z.number(),
+ *        stuff: z.array(z.string()),
+ *      })
+ *    ),
+ *    // Add the lines below only if you want these keys to be unmarshalled
+ *    Keys: DynamoDBMarshalled(z.unknown()),
+ *    OldImage: DynamoDBMarshalled(z.unknown()),
+ *  }),
+ * });
+ * ```
+ */
 const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
   recordFormat: z.literal('application/json'),
   tableName: z.string(),

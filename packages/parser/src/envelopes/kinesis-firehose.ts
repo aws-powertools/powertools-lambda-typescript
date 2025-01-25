@@ -5,7 +5,7 @@ import {
   KinesisFirehoseSchema,
 } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope, envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator } from './envelope.js';
 
 /**
  * Kinesis Firehose Envelope to extract array of Records

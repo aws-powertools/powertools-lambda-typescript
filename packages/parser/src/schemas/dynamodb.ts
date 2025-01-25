@@ -1,5 +1,6 @@
 import { unmarshallDynamoDB } from '@aws-lambda-powertools/commons/utils/unmarshallDynamoDB';
 import { z } from 'zod';
+import type { KinesisEnvelope } from '../envelopes/kinesis.js';
 import type { DynamoDBMarshalled } from '../helpers/dynamodb.js';
 
 const DynamoDBStreamChangeRecordBase = z.object({
@@ -91,7 +92,10 @@ const DynamoDBStreamRecord = z.object({
 });
 
 /**
- * Zod schema for Amazon DynamoDB Stream event sent to an Amazon Kinesis stream.
+ * Zod schema for Amazon DynamoDB Stream event sent to an Amazon Kinesis Stream.
+ *
+ * This schema is best used in conjunction with the {@link KinesisEnvelope | `KinesisEnvelope`} when
+ * you want to work with the DynamoDB stream event coming from an Amazon Kinesis Stream.
  *
  * By default, we unmarshall the `dynamodb.Keys`, `dynamodb.NewImage`, and `dynamodb.OldImage` fields
  * for you.

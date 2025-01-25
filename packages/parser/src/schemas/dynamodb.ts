@@ -1,5 +1,6 @@
 import { unmarshallDynamoDB } from '@aws-lambda-powertools/commons/utils/unmarshallDynamoDB';
 import { z } from 'zod';
+import type { DynamoDBMarshalled } from '../helpers/dynamodb.js';
 
 const DynamoDBStreamChangeRecordBase = z.object({
   ApproximateCreationDateTime: z.number().optional(),
@@ -89,9 +90,6 @@ const DynamoDBStreamRecord = z.object({
   userIdentity: UserIdentity.optional(),
 });
 
-// _aws-lambda-powertools_parser.helpers_dynamodb.DynamoDBMarshalled.html
-// _aws-lambda-powertools_parser.helpers.JSONStringified
-
 /**
  * Zod schema for Amazon DynamoDB Stream event sent to an Amazon Kinesis stream.
  *
@@ -99,9 +97,9 @@ const DynamoDBStreamRecord = z.object({
  * for you.
  *
  * If you want to extend the schema and provide your own Zod schema for any of these fields,
- * you can use the {@link @aws-lambda-powertools/parser!helpers/dynamodb.DynamoDBMarshalled | `DynamoDBMarshalled`} helper. In that case, we won't unmarshall the other fields.
+ * you can use the {@link DynamoDBMarshalled | `DynamoDBMarshalled`} helper. In that case, we won't unmarshall the other fields.
  *
- * To extend the schema, you can use the {@link DynamoDBStreamToKinesisRecord | `DynamoDBStreamToKinesisRecord`} child schema and the {@link @aws-lambda-powertools/parser!helpers/dynamodb.DynamoDBMarshalled | `DynamoDBMarshalled`}
+ * To extend the schema, you can use the {@link DynamoDBStreamToKinesisRecord | `DynamoDBStreamToKinesisRecord`} child schema and the {@link DynamoDBMarshalled | `DynamoDBMarshalled`}
  * helper together.
  *
  * @example
@@ -127,6 +125,8 @@ const DynamoDBStreamRecord = z.object({
  *    OldImage: DynamoDBMarshalled(z.unknown()),
  *  }),
  * });
+ *
+ * type CustomEvent = z.infer<typeof CustomSchema>;
  * ```
  */
 const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({

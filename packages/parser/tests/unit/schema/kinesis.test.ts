@@ -208,10 +208,10 @@ describe('Schema: Kinesis', () => {
         tableName: 'PowertoolsEventsStack-DynamoDBTable59784FC0-8NKAMTERTAXY',
         dynamodb: {
           ApproximateCreationDateTime: 1731924555370,
-          Keys: { id: { S: 'record-1qit2y819gi' } },
+          Keys: { id: 'record-1qit2y819gi' },
           NewImage: {
-            id: { S: 'record-1qit2y819gi' },
-            data: { S: 'data-x6aq7ckdpgk' },
+            id: 'record-1qit2y819gi',
+            data: 'data-x6aq7ckdpgk',
           },
           SizeBytes: 60,
         },
@@ -226,10 +226,10 @@ describe('Schema: Kinesis', () => {
         tableName: 'PowertoolsEventsStack-DynamoDBTable59784FC0-8NKAMTERTAXY',
         dynamodb: {
           ApproximateCreationDateTime: 1731924555370,
-          Keys: { id: { S: 'record-fvxn3q4q5jw' } },
+          Keys: { id: 'record-fvxn3q4q5jw' },
           NewImage: {
-            id: { S: 'record-fvxn3q4q5jw' },
-            data: { S: 'data-4eompjs89n5' },
+            id: 'record-fvxn3q4q5jw',
+            data: 'data-4eompjs89n5',
           },
           SizeBytes: 60,
         },

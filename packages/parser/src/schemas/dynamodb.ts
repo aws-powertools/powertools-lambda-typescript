@@ -16,53 +16,61 @@ const DynamoDBStreamChangeRecordBase = z.object({
   ]),
 });
 
-const DynamoDBStreamChangeRecord = DynamoDBStreamChangeRecordBase.transform(
-  (object, ctx) => {
-    const result = { ...object };
-
-    const unmarshallAttributeValue = (
-      imageName: 'NewImage' | 'OldImage' | 'Keys',
-      image: Record<string, unknown>
-    ) => {
-      try {
-        // @ts-expect-error
-        return unmarshallDynamoDB(image) as Record<string, unknown>;
-      } catch (err) {
-        ctx.addIssue({
-          code: 'custom',
-          message: `Could not unmarshall ${imageName} in DynamoDB stream record`,
-          fatal: true,
-          path: [imageName],
-        });
-        return z.NEVER;
-      }
-    };
-
-    const unmarshalledKeys = unmarshallAttributeValue('Keys', object.Keys);
-    if (unmarshalledKeys === z.NEVER) return z.NEVER;
-    // @ts-expect-error - We are intentionally mutating the object
-    result.Keys = unmarshalledKeys;
-
-    if (object.NewImage) {
-      const unmarshalled = unmarshallAttributeValue(
-        'NewImage',
-        object.NewImage
-      );
-      if (unmarshalled === z.NEVER) return z.NEVER;
-      result.NewImage = unmarshalled;
-    }
-
-    if (object.OldImage) {
-      const unmarshalled = unmarshallAttributeValue(
-        'OldImage',
-        object.OldImage
-      );
-      if (unmarshalled === z.NEVER) return z.NEVER;
-      result.OldImage = unmarshalled;
-    }
-
-    return result;
+const DynamoDBStreamToKinesisChangeRecord = DynamoDBStreamChangeRecordBase.omit(
+  {
+    SequenceNumber: true,
+    StreamViewType: true,
   }
+);
+
+const unmarshallDynamoDBTransform = (
+  object:
+    | z.infer<typeof DynamoDBStreamChangeRecordBase>
+    | z.infer<typeof DynamoDBStreamToKinesisChangeRecord>,
+  ctx: z.RefinementCtx
+) => {
+  const result = { ...object };
+
+  const unmarshallAttributeValue = (
+    imageName: 'NewImage' | 'OldImage' | 'Keys',
+    image: Record<string, unknown>
+  ) => {
+    try {
+      // @ts-expect-error
+      return unmarshallDynamoDB(image) as Record<string, unknown>;
+    } catch (err) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Could not unmarshall ${imageName} in DynamoDB stream record`,
+        fatal: true,
+        path: [imageName],
+      });
+      return z.NEVER;
+    }
+  };
+
+  const unmarshalledKeys = unmarshallAttributeValue('Keys', object.Keys);
+  if (unmarshalledKeys === z.NEVER) return z.NEVER;
+  // @ts-expect-error - We are intentionally mutating the object
+  result.Keys = unmarshalledKeys;
+
+  if (object.NewImage) {
+    const unmarshalled = unmarshallAttributeValue('NewImage', object.NewImage);
+    if (unmarshalled === z.NEVER) return z.NEVER;
+    result.NewImage = unmarshalled;
+  }
+
+  if (object.OldImage) {
+    const unmarshalled = unmarshallAttributeValue('OldImage', object.OldImage);
+    if (unmarshalled === z.NEVER) return z.NEVER;
+    result.OldImage = unmarshalled;
+  }
+
+  return result;
+};
+
+const DynamoDBStreamChangeRecord = DynamoDBStreamChangeRecordBase.transform(
+  unmarshallDynamoDBTransform
 );
 
 const UserIdentity = z.object({
@@ -85,10 +93,9 @@ const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
   recordFormat: z.literal('application/json'),
   tableName: z.string(),
   userIdentity: UserIdentity.nullish(),
-  dynamodb: DynamoDBStreamChangeRecordBase.omit({
-    SequenceNumber: true,
-    StreamViewType: true,
-  }),
+  dynamodb: DynamoDBStreamToKinesisChangeRecord.transform(
+    unmarshallDynamoDBTransform
+  ),
 }).omit({
   eventVersion: true,
   eventSourceARN: true,
@@ -175,6 +182,7 @@ const DynamoDBStreamSchema = z.object({
 
 export {
   DynamoDBStreamToKinesisRecord,
+  DynamoDBStreamToKinesisChangeRecord,
   DynamoDBStreamSchema,
   DynamoDBStreamRecord,
   DynamoDBStreamChangeRecord,

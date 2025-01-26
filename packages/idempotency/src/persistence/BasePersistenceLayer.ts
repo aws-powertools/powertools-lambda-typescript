@@ -46,15 +46,15 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   /**
    * Initialize the base persistence layer from the configuration settings
    *
-   * @param {BasePersistenceLayerConfigureOptions} config - configuration object for the persistence layer
+   * @param {BasePersistenceLayerConfigureOptions} options - configuration object for the persistence layer
    */
-  public configure(config: BasePersistenceLayerOptions): void {
-    // Extracting the idempotency config from the config object for easier access
-    const { config: idempotencyConfig } = config;
-
-    if (config?.functionName && config.functionName.trim() !== '') {
-      this.idempotencyKeyPrefix = `${this.idempotencyKeyPrefix}.${config.functionName}`;
-    }
+    public configure(options: BasePersistenceLayerOptions): void {
+      // Extracting the idempotency config from the config object for easier access
+      const { config: idempotencyConfig } = options;
+  
+      if (options?.functionName && options.functionName.trim() !== '') {
+        this.idempotencyKeyPrefix = `${this.idempotencyKeyPrefix}.${options.functionName}`;
+      }
 
     // Prevent reconfiguration
     if (this.configured) {

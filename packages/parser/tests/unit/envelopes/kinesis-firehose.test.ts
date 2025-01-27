@@ -7,7 +7,7 @@ import type {
   KinesisFireHoseEvent,
   KinesisFireHoseSqsEvent,
 } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from '../schema/utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 const encode = (data: unknown) => Buffer.from(String(data)).toString('base64');
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CloudWatchLogsSchema } from '../../../src/schemas/cloudwatch.js';
 import type { CloudWatchLogsEvent } from '../../../src/types/index.js';
-import { getTestEvent } from './utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: CloudWatchLogs', () => {
   const baseEvent = getTestEvent<CloudWatchLogsEvent>({

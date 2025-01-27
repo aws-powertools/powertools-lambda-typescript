@@ -5,7 +5,7 @@ import { ParseError } from '../../../src';
 import { CloudWatchEnvelope } from '../../../src/envelopes/index.js';
 import { DecompressError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
-import { getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 const decompressRecordToJSON = (
   data: string

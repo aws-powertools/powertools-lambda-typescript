@@ -3,7 +3,7 @@ import { ZodError, z } from 'zod';
 import { EventBridgeEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import type { EventBridgeEvent } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from '../schema/utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Envelope: EventBridgeEnvelope', () => {
   const schema = z.object({

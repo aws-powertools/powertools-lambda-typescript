@@ -6,7 +6,7 @@ import {
   APIGatewayRequestContextV2Schema,
 } from '../../../src/schemas/index.js';
 import type { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
-import { getTestEvent } from './utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: API Gateway HTTP (v2)', () => {
   const eventsPath = 'apigw-http';

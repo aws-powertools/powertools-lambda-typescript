@@ -3,7 +3,7 @@ import { ZodError, z } from 'zod';
 import { KinesisEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import type { KinesisDataStreamEvent } from '../../../src/types/schema.js';
-import { getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 const encode = (data: unknown) => Buffer.from(String(data)).toString('base64');
 

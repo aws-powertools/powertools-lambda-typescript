@@ -9,7 +9,7 @@ import type {
   CloudFormationCustomResourceDeleteEvent,
   CloudFormationCustomResourceUpdateEvent,
 } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from './utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Schema: CloudFormationCustomResource ', () => {
   const eventsPath = 'cloudformation';

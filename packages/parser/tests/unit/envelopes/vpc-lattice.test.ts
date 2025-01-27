@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError } from 'zod';
-import { z } from 'zod';
+import { ZodError, z } from 'zod';
 import { VpcLatticeEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';

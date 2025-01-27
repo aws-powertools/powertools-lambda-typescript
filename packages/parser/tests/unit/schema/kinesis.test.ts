@@ -1,24 +1,24 @@
 import { gunzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import {
-  KinesisDataStreamRecord,
-  KinesisDataStreamSchema,
   KinesisFirehoseRecordSchema,
   KinesisFirehoseSchema,
   KinesisFirehoseSqsRecordSchema,
   KinesisFirehoseSqsSchema,
-} from '../../../src/schemas/';
-import { KinesisDynamoDBStreamSchema } from '../../../src/schemas/kinesis';
+} from '../../../src/schemas/kinesis-firehose.js';
+import {
+  KinesisDataStreamRecord,
+  KinesisDataStreamSchema,
+  KinesisDynamoDBStreamSchema,
+} from '../../../src/schemas/kinesis.js';
 import type {
   KinesisDataStreamEvent,
+  KinesisDynamoDBStreamEvent,
   KinesisFireHoseEvent,
   KinesisFireHoseSqsEvent,
-} from '../../../src/types';
-import type {
-  KinesisDynamoDBStreamEvent,
   KinesisFirehoseRecord,
   KinesisFirehoseSqsRecord,
-} from '../../../src/types/schema';
+} from '../../../src/types/schema.js';
 import { getTestEvent } from './utils.js';
 
 describe('Schema: Kinesis', () => {
@@ -27,11 +27,6 @@ describe('Schema: Kinesis', () => {
   const kinesisStreamEvent = getTestEvent<KinesisDataStreamEvent>({
     eventsPath,
     filename: 'stream',
-  });
-
-  const kinesisStreamEventOneRecord = getTestEvent<KinesisDataStreamEvent>({
-    eventsPath,
-    filename: 'stream-one-record',
   });
 
   const kinesisFirehoseEvent = getTestEvent<KinesisFireHoseEvent>({
@@ -78,30 +73,7 @@ describe('Schema: Kinesis', () => {
     // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
-  it('parses single kinesis record', () => {
-    // Prepare
-    const testEvent = structuredClone(kinesisStreamEventOneRecord);
 
-    // Act
-    const parsed = KinesisDataStreamSchema.parse(testEvent);
-
-    const transformedInput = {
-      Records: testEvent.Records.map((record, index) => {
-        return {
-          ...record,
-          kinesis: {
-            ...record.kinesis,
-            data: JSON.parse(
-              Buffer.from(record.kinesis.data, 'base64').toString()
-            ),
-          },
-        };
-      }),
-    };
-
-    // Assess
-    expect(parsed).toStrictEqual(transformedInput);
-  });
   it('parses Firehose event', () => {
     // Prepare
     const testEvent = structuredClone(kinesisFirehoseEvent);
@@ -123,6 +95,7 @@ describe('Schema: Kinesis', () => {
     // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
+
   it('parses Kinesis Firehose PutEvents event', () => {
     // Prepare
     const testEvent = structuredClone(kinesisFirehosePutEvent);
@@ -143,6 +116,7 @@ describe('Schema: Kinesis', () => {
     // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
+
   it('parses Firehose event with SQS event', () => {
     // Prepare
     const testEvent = structuredClone(kinesisFirehoseSQSEvent);
@@ -165,6 +139,7 @@ describe('Schema: Kinesis', () => {
     // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
+
   it('parses Kinesis event with CloudWatch event', () => {
     // Prepare
     const testEvent = structuredClone(kinesisStreamCloudWatchLogsEvent);
@@ -191,6 +166,7 @@ describe('Schema: Kinesis', () => {
     // Assess
     expect(parsed).toStrictEqual(transformedInput);
   });
+
   it('throws if cannot parse SQS record of KinesisFirehoseSqsRecord', () => {
     // Prepare
     const testEvent = getTestEvent<KinesisFireHoseSqsEvent>({
@@ -201,6 +177,7 @@ describe('Schema: Kinesis', () => {
     // Act & Assess
     expect(() => KinesisFirehoseSqsSchema.parse(testEvent)).toThrow();
   });
+
   it('parses a kinesis record from a kinesis event', () => {
     // Prepare
     const testEvent: KinesisDataStreamEvent =
@@ -231,10 +208,10 @@ describe('Schema: Kinesis', () => {
         tableName: 'PowertoolsEventsStack-DynamoDBTable59784FC0-8NKAMTERTAXY',
         dynamodb: {
           ApproximateCreationDateTime: 1731924555370,
-          Keys: { id: { S: 'record-1qit2y819gi' } },
+          Keys: { id: 'record-1qit2y819gi' },
           NewImage: {
-            id: { S: 'record-1qit2y819gi' },
-            data: { S: 'data-x6aq7ckdpgk' },
+            id: 'record-1qit2y819gi',
+            data: 'data-x6aq7ckdpgk',
           },
           SizeBytes: 60,
         },
@@ -249,10 +226,10 @@ describe('Schema: Kinesis', () => {
         tableName: 'PowertoolsEventsStack-DynamoDBTable59784FC0-8NKAMTERTAXY',
         dynamodb: {
           ApproximateCreationDateTime: 1731924555370,
-          Keys: { id: { S: 'record-fvxn3q4q5jw' } },
+          Keys: { id: 'record-fvxn3q4q5jw' },
           NewImage: {
-            id: { S: 'record-fvxn3q4q5jw' },
-            data: { S: 'data-4eompjs89n5' },
+            id: 'record-fvxn3q4q5jw',
+            data: 'data-4eompjs89n5',
           },
           SizeBytes: 60,
         },

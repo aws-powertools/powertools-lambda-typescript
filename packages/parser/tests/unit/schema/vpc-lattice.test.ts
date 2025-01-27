@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { VpcLatticeSchema } from '../../../src/schemas/vpc-lattice.js';
 import type { VpcLatticeEvent } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from './utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Schema: VPC Lattice', () => {
   const baseEvent = getTestEvent<VpcLatticeEvent>({

@@ -19,7 +19,7 @@ import type {
   KinesisFirehoseRecord,
   KinesisFirehoseSqsRecord,
 } from '../../../src/types/schema.js';
-import { getTestEvent } from './utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: Kinesis', () => {
   const eventsPath = 'kinesis';

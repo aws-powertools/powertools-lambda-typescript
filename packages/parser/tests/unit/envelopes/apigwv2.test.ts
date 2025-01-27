@@ -4,7 +4,7 @@ import { ApiGatewayV2Envelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from '../schema/utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Envelope: API Gateway HTTP', () => {
   const schema = z

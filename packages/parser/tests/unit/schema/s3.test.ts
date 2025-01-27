@@ -11,7 +11,7 @@ import type {
   S3ObjectLambdaEvent,
   S3SqsEventNotification,
 } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from './utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Schema: S3', () => {
   const eventsPath = 's3';

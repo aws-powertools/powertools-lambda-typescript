@@ -11,7 +11,7 @@ import type {
   ParsedResult,
   SqsEvent,
 } from '../../src/types/index.js';
-import { getTestEvent } from './schema/utils.js';
+import { getTestEvent } from './helpers/utils.js';
 
 describe('Middleware: parser', () => {
   const schema = z

@@ -4,7 +4,7 @@ import { VpcLatticeV2Envelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { VpcLatticeEventV2 } from '../../../src/types/index.js';
-import { getTestEvent, omit } from '../schema/utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Envelope: VPC Lattice v2', () => {
   const schema = z

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SqsSchema } from '../../../src/schemas/sqs.js';
 import type { SqsEvent } from '../../../src/types/schema.js';
-import { getTestEvent } from './utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: SQS', () => {
   const baseEvent = getTestEvent<SqsEvent>({

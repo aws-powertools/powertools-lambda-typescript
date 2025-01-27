@@ -4,7 +4,7 @@ import { ZodError, z } from 'zod';
 import { DynamoDBStreamEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import type { DynamoDBStreamEvent } from '../../../src/types/schema.js';
-import { getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Envelope: DynamoDB Stream', () => {
   const schema = z

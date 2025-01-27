@@ -1,5 +1,5 @@
 {
-  "raw_path": "/testpath/",
+  "raw_path": "/testpath",
   "method": "GET",
   "headers": {
     "user_agent": "curl/7.64.1",
@@ -10,6 +10,6 @@
   "query_string_parameters": {
     "order-id": "1"
   },
-  "body": "eyJ0ZXN0IjogImV2ZW50In0=",
-  "is_base64_encoded": true
+  "body": "{\"message\": \"Hello from Lambda!\"}",
+  "is_base64_encoded": false
 }

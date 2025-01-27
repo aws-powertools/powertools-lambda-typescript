@@ -379,8 +379,5 @@
     "@middy/core": {
       "optional": true
     }
-  },
-  "devDependencies": {
-    "@anatine/zod-mock": "^3.13.3"
   }
 }

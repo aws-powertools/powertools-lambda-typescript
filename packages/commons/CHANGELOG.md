@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.0...v2.13.1) (2025-01-28)
+
+
+### Bug Fixes
+
+* **parser:** DynamoDBStream schema & envelope ([#3482](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3482)) ([7f7f8ce](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7f7f8ced2953e0fc72a33cd2b6e8af15fae8d3d6))
+
+
+
+
+
 # [2.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.12.0...v2.13.0) (2025-01-14)
 
 **Note:** Version bump only for package @aws-lambda-powertools/commons

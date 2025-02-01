@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { JSONStringified } from '../helpers.js';
 import { EventBridgeSchema } from './eventbridge.js';
 import { SqsRecordSchema } from './sqs.js';
 
@@ -170,11 +171,14 @@ const S3Schema = z.object({
 });
 
 const S3SqsEventNotificationRecordSchema = SqsRecordSchema.extend({
-  body: z.string(),
+  body: JSONStringified(S3Schema),
 });
 
 /**
  * Zod schema for S3 -> SQS -> Lambda event notification.
+ *
+ * Each SQS record’s body field is automatically parsed from a JSON string
+ * and then validated as an S3 event.
  *
  * @example
  * ```json

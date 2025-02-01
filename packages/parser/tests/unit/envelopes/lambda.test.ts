@@ -4,7 +4,7 @@ import { ParseError } from '../../../src';
 import { LambdaFunctionUrlEnvelope } from '../../../src/envelopes/index.js';
 import { JSONStringified } from '../../../src/helpers';
 import type { LambdaFunctionUrlEvent } from '../../../src/types';
-import { getTestEvent, omit } from '../schema/utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Envelope: Lambda function URL', () => {
   const schema = z

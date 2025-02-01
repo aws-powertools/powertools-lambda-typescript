@@ -4,7 +4,7 @@ import { SnsEnvelope } from '../../../src/envelopes/sns.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { SnsEvent } from '../../../src/types/schema.js';
-import { getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Envelope: SnsEnvelope', () => {
   const baseEvent = getTestEvent<SnsEvent>({

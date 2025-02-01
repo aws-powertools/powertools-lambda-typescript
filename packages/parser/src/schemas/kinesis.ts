@@ -1,6 +1,9 @@
 import { gunzipSync } from 'node:zlib';
+import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
 import { z } from 'zod';
 import { DynamoDBStreamToKinesisRecord } from './dynamodb.js';
+
+const decoder = new TextDecoder();
 
 const KinesisDataStreamRecordPayload = z.object({
   kinesisSchemaVersion: z.string(),
@@ -9,7 +12,7 @@ const KinesisDataStreamRecordPayload = z.object({
   approximateArrivalTimestamp: z.number(),
   data: z.string().transform((data) => {
     const decompressed = decompress(data);
-    const decoded = Buffer.from(data, 'base64').toString('utf-8');
+    const decoded = decoder.decode(fromBase64(data, 'base64'));
     try {
       // If data was not compressed, try to parse it as JSON otherwise it must be string
       return decompressed === data ? JSON.parse(decoded) : decompressed;
@@ -21,7 +24,7 @@ const KinesisDataStreamRecordPayload = z.object({
 
 const decompress = (data: string): string => {
   try {
-    return JSON.parse(gunzipSync(Buffer.from(data, 'base64')).toString('utf8'));
+    return JSON.parse(gunzipSync(fromBase64(data, 'base64')).toString('utf8'));
   } catch (e) {
     return data;
   }
@@ -45,7 +48,8 @@ const KinesisDynamoDBStreamSchema = z.object({
         data: z
           .string()
           .transform((data) => {
-            return JSON.parse(Buffer.from(data, 'base64').toString('utf8'));
+            const decoded = decoder.decode(fromBase64(data, 'base64'));
+            return JSON.parse(decoded);
           })
           .pipe(DynamoDBStreamToKinesisRecord),
       }),
@@ -100,7 +104,7 @@ const KinesisDynamoDBStreamSchema = z.object({
  *
  */
 const KinesisDataStreamSchema = z.object({
-  Records: z.array(KinesisDataStreamRecord),
+  Records: z.array(KinesisDataStreamRecord).min(1),
 });
 
 export {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SnsSchema } from '../../../src/schemas/sns.js';
 import type { SnsEvent } from '../../../src/types/schema.js';
-import { getTestEvent } from './utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: SNS', () => {
   const baseEvent = getTestEvent<SnsEvent>({

@@ -3,7 +3,7 @@ import { ZodError, z } from 'zod';
 import { KafkaEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
-import { getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Envelope: Kafka', () => {
   const baseEvent = getTestEvent({

@@ -4,7 +4,7 @@ import {
   AppSyncResolverSchema,
 } from '../../../src/schemas/appsync.js';
 import type { AppSyncResolverEvent } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from './utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Schema: AppSync Resolver', () => {
   const eventsPath = 'appsync';

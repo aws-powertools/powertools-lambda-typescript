@@ -196,11 +196,15 @@ describe('Schema: S3', () => {
       filename: 'sqs-event',
     });
 
+    const expected = structuredClone(event);
+    // @ts-expect-error - Modifying the expected result to account for transform
+    expected.Records[0].body = JSON.parse(expected.Records[0].body);
+
     // Prepare
     const result = S3SqsEventNotificationSchema.parse(event);
 
     // Assess
-    expect(result).toStrictEqual(event);
+    expect(result).toStrictEqual(expected);
   });
 
   it('throws if the S3 event notification SQS event is not valid', () => {

@@ -620,4 +620,119 @@ describe('Working with keys', () => {
       })
     );
   });
+
+  it("doesn't overwrite standard keys when appending keys", () => {
+    // Prepare
+    const logger = new Logger();
+
+    // Act
+    logger.appendKeys({
+      level: 'Hello, World!',
+    });
+    logger.info('foo');
+
+    // Assess
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        level: 'INFO',
+      })
+    );
+    expect(console.warn).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'The key "level" is a reserved key and will be dropped.',
+      })
+    );
+  });
+
+  it("doesn't overwrite standard keys when appending persistent keys", () => {
+    // Prepare
+    const logger = new Logger();
+
+    // Act
+    logger.appendPersistentKeys({
+      timestamp: 'Hello, World!',
+    });
+    logger.info('foo');
+
+    // Assess
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        timestamp: expect.not.stringMatching('Hello, World!'),
+      })
+    );
+    expect(console.warn).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'The key "timestamp" is a reserved key and will be dropped.',
+      })
+    );
+  });
+
+  it("doesn't overwrite standard keys when appending keys via constructor", () => {
+    // Prepare
+    const logger = new Logger({
+      persistentKeys: {
+        sampling_rate: 'Hello, World!',
+      },
+    });
+
+    // Act
+    logger.info('foo');
+
+    // Assess
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        sampling_rate: expect.not.stringMatching('Hello, World!'),
+      })
+    );
+    expect(console.warn).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message:
+          'The key "sampling_rate" is a reserved key and will be dropped.',
+      })
+    );
+  });
+
+  it("doesn't overwrite standard keys when passing keys to log method", () => {
+    // Prepare
+    const logger = new Logger();
+
+    // Act
+    logger.info(
+      {
+        message: 'foo',
+        timestamp: 'Hello, World!',
+      },
+      {
+        level: 'Hello, World!',
+      }
+    );
+
+    // Assess
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'foo',
+        timestamp: expect.not.stringMatching('Hello, World!'),
+        level: 'INFO',
+      })
+    );
+    expect(console.warn).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'The key "timestamp" is a reserved key and will be dropped.',
+      })
+    );
+    expect(console.warn).toHaveLoggedNth(
+      2,
+      expect.objectContaining({
+        message: 'The key "level" is a reserved key and will be dropped.',
+      })
+    );
+  });
 });

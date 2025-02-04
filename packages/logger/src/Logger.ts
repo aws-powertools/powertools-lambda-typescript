@@ -221,7 +221,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param attributes - The attributes to add to all log items.
    */
   public appendKeys(attributes: LogAttributes): void {
-    this.#appendAnyKeys(attributes, 'temp');
+    this.#appendKeys(attributes, 'temp');
   }
 
   /**
@@ -230,7 +230,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param attributes - The attributes to add to all log items.
    */
   public appendPersistentKeys(attributes: LogAttributes): void {
-    this.#appendAnyKeys(attributes, 'persistent');
+    this.#appendKeys(attributes, 'persistent');
   }
 
   /**
@@ -287,13 +287,6 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    for (const extra of extraInput) {
-      if (!(extra instanceof Error) && !(typeof extra === 'string')) {
-        for (const key of Object.keys(extra)) {
-          this.#checkReservedKeyAndWarn(key);
-        }
-      }
-    }
     this.processLogItem(LogLevelThreshold.DEBUG, input, extraInput);
   }
 
@@ -673,10 +666,10 @@ class Logger extends Utility implements LoggerInterface {
    * @param attributes - The attributes to add to the log item.
    * @param type - The type of the attributes to add.
    */
-  #appendAnyKeys(attributes: LogAttributes, type: 'temp' | 'persistent'): void {
+  #appendKeys(attributes: LogAttributes, type: 'temp' | 'persistent'): void {
     for (const attributeKey of Object.keys(attributes)) {
       if (this.#checkReservedKeyAndWarn(attributeKey) === false) {
-        this.#keys.set(attributeKey, 'temp');
+        this.#keys.set(attributeKey, type);
       }
     }
     if (type === 'temp') {
@@ -732,6 +725,11 @@ class Logger extends Utility implements LoggerInterface {
     } else {
       const { message: inputMessage, ...rest } = input;
       message = inputMessage;
+      for (const key of Object.keys(rest)) {
+        if (this.#checkReservedKeyAndWarn(key)) {
+          delete rest[key];
+        }
+      }
       otherInput = rest;
     }
 
@@ -758,6 +756,13 @@ class Logger extends Utility implements LoggerInterface {
     merge(additionalAttributes, otherInput);
     // then we merge the extra input attributes (if any)
     for (const item of extraInput) {
+      if (!(item instanceof Error) && !(typeof item === 'string')) {
+        for (const key of Object.keys(item)) {
+          if (this.#checkReservedKeyAndWarn(key)) {
+            delete item[key];
+          }
+        }
+      }
       const attributes: LogAttributes =
         item instanceof Error
           ? { error: item }
@@ -1123,7 +1128,7 @@ class Logger extends Utility implements LoggerInterface {
   private setPowertoolsLogData(
     serviceName?: ConstructorOptions['serviceName'],
     environment?: ConstructorOptions['environment'],
-    persistentKeys: ConstructorOptions['persistentKeys'] = {}
+    persistentKeys?: ConstructorOptions['persistentKeys']
   ): void {
     this.addToPowertoolsLogData({
       awsRegion: this.getEnvVarsService().getAwsRegion(),
@@ -1137,7 +1142,7 @@ class Logger extends Utility implements LoggerInterface {
         this.getEnvVarsService().getServiceName() ||
         this.getDefaultServiceName(),
     });
-    this.appendPersistentKeys(persistentKeys);
+    persistentKeys && this.appendPersistentKeys(persistentKeys);
   }
 }
 

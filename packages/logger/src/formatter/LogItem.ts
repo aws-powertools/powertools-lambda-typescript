@@ -32,7 +32,7 @@ class LogItem {
    * @param attributes - The attributes to add to the log item.
    */
   public addAttributes(attributes: LogAttributes): this {
-    merge(attributes, this.attributes);
+    merge(this.attributes, attributes);
 
     return this;
   }

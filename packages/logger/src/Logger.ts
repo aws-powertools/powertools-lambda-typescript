@@ -704,76 +704,112 @@ class Logger extends Utility implements LoggerInterface {
 
   /**
    * Create a log item and populate it with the given log level, input, and extra input.
-   *
-   * We start with creating an object with base attributes managed by Powertools.
-   * Then we create a second object with persistent attributes provided by customers either
-   * directly to the log entry or through initial configuration and `appendKeys` method.
-   *
-   * Once we have the two objects, we pass them to the formatter that will apply the desired
-   * formatting to the log item.
-   *
-   * @param logLevel - The log level of the log item to be printed
-   * @param input - The main input of the log item, this can be a string or an object with additional attributes
-   * @param extraInput - Additional attributes to be added to the log item
    */
   protected createAndPopulateLogItem(
     logLevel: number,
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): LogItem {
-    const unformattedBaseAttributes: UnformattedAttributes = {
+    const unformattedBaseAttributes = this.#createBaseAttributes(logLevel);
+    const additionalAttributes = this.#createAdditionalAttributes();
+
+    this.#processMainInput(
+      input,
+      unformattedBaseAttributes,
+      additionalAttributes
+    );
+    this.#processExtraInput(extraInput, additionalAttributes);
+
+    return this.getLogFormatter().formatAttributes(
+      unformattedBaseAttributes,
+      additionalAttributes
+    );
+  }
+
+  /**
+   * Create the base attributes for a log item
+   */
+  #createBaseAttributes(logLevel: number): UnformattedAttributes {
+    return {
       logLevel: this.getLogLevelNameFromNumber(logLevel),
       timestamp: new Date(),
       xRayTraceId: this.envVarsService.getXrayTraceId(),
       ...this.getPowertoolsLogData(),
       message: '',
     };
+  }
 
-    const additionalAttributes: LogAttributes = {};
-    // Add additional attributes from persistent and temporary keys
+  /**
+   * Create additional attributes from persistent and temporary keys
+   */
+  #createAdditionalAttributes(): LogAttributes {
+    const attributes: LogAttributes = {};
+
     for (const [key, type] of this.#keys) {
       if (!this.#checkReservedKeyAndWarn(key)) {
-        additionalAttributes[key] =
+        attributes[key] =
           type === 'persistent'
             ? this.persistentLogAttributes[key]
             : this.temporaryLogAttributes[key];
       }
     }
 
-    // Handle input message
-    if (typeof input === 'string') {
-      unformattedBaseAttributes.message = input;
-    } else {
-      const { message, ...rest } = input;
-      unformattedBaseAttributes.message = message;
+    return attributes;
+  }
 
-      // Add remaining input properties if they're not reserved
-      for (const [key, value] of Object.entries(rest)) {
-        if (!this.#checkReservedKeyAndWarn(key)) {
-          additionalAttributes[key] = value;
-        }
-      }
+  /**
+   * Process the main input message and add it to the attributes
+   */
+  #processMainInput(
+    input: LogItemMessage,
+    baseAttributes: UnformattedAttributes,
+    additionalAttributes: LogAttributes
+  ): void {
+    if (typeof input === 'string') {
+      baseAttributes.message = input;
+      return;
     }
 
-    // Handle extra input attributes
+    const { message, ...rest } = input;
+    baseAttributes.message = message;
+
+    for (const [key, value] of Object.entries(rest)) {
+      if (!this.#checkReservedKeyAndWarn(key)) {
+        additionalAttributes[key] = value;
+      }
+    }
+  }
+
+  /**
+   * Process extra input items and add them to additional attributes
+   */
+  #processExtraInput(
+    extraInput: LogItemExtraInput,
+    additionalAttributes: LogAttributes
+  ): void {
     for (const item of extraInput) {
       if (item instanceof Error) {
         additionalAttributes.error = item;
       } else if (typeof item === 'string') {
         additionalAttributes.extra = item;
       } else {
-        for (const [key, value] of Object.entries(item)) {
-          if (!this.#checkReservedKeyAndWarn(key)) {
-            additionalAttributes[key] = value;
-          }
-        }
+        this.#processExtraObject(item, additionalAttributes);
       }
     }
+  }
 
-    return this.getLogFormatter().formatAttributes(
-      unformattedBaseAttributes,
-      additionalAttributes
-    );
+  /**
+   * Process an extra input object and add its properties to additional attributes
+   */
+  #processExtraObject(
+    item: Record<string, unknown>,
+    additionalAttributes: LogAttributes
+  ): void {
+    for (const [key, value] of Object.entries(item)) {
+      if (!this.#checkReservedKeyAndWarn(key)) {
+        additionalAttributes[key] = value;
+      }
+    }
   }
 
   /**

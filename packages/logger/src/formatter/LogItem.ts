@@ -23,7 +23,7 @@ class LogItem {
    * @param params - The parameters for the LogItem.
    */
   public constructor(params: { attributes: LogAttributes }) {
-    this.attributes = params.attributes;
+    this.setAttributes(params.attributes);
   }
 
   /**

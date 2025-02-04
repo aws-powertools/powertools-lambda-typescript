@@ -25,7 +25,10 @@ import type {
   LogLevel,
   LoggerInterface,
 } from './types/Logger.js';
-import type { PowertoolsLogData } from './types/logKeys.js';
+import type {
+  PowertoolsLogData,
+  UnformattedAttributes,
+} from './types/logKeys.js';
 
 /**
  * The Logger utility provides an opinionated logger with output structured as JSON for AWS Lambda.
@@ -718,59 +721,53 @@ class Logger extends Utility implements LoggerInterface {
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): LogItem {
-    let message = '';
-    let otherInput: { [key: string]: unknown } = {};
-    if (typeof input === 'string') {
-      message = input;
-    } else {
-      const { message: inputMessage, ...rest } = input;
-      message = inputMessage;
-      for (const key of Object.keys(rest)) {
-        if (this.#checkReservedKeyAndWarn(key)) {
-          delete rest[key];
-        }
-      }
-      otherInput = rest;
-    }
-
-    // create base attributes
-    const unformattedBaseAttributes = {
+    const unformattedBaseAttributes: UnformattedAttributes = {
       logLevel: this.getLogLevelNameFromNumber(logLevel),
       timestamp: new Date(),
-      message,
       xRayTraceId: this.envVarsService.getXrayTraceId(),
       ...this.getPowertoolsLogData(),
+      message: '',
     };
 
     const additionalAttributes: LogAttributes = {};
-    // gradually add additional attributes picking only the last added for each key
+    // Add additional attributes from persistent and temporary keys
     for (const [key, type] of this.#keys) {
-      if (type === 'persistent') {
-        additionalAttributes[key] = this.persistentLogAttributes[key];
-      } else {
-        additionalAttributes[key] = this.temporaryLogAttributes[key];
+      if (!this.#checkReservedKeyAndWarn(key)) {
+        additionalAttributes[key] =
+          type === 'persistent'
+            ? this.persistentLogAttributes[key]
+            : this.temporaryLogAttributes[key];
       }
     }
 
-    // if the main input is not a string, then it's an object with additional attributes, so we merge it
-    merge(additionalAttributes, otherInput);
-    // then we merge the extra input attributes (if any)
+    // Handle input message
+    if (typeof input === 'string') {
+      unformattedBaseAttributes.message = input;
+    } else {
+      const { message, ...rest } = input;
+      unformattedBaseAttributes.message = message;
+
+      // Add remaining input properties if they're not reserved
+      for (const [key, value] of Object.entries(rest)) {
+        if (!this.#checkReservedKeyAndWarn(key)) {
+          additionalAttributes[key] = value;
+        }
+      }
+    }
+
+    // Handle extra input attributes
     for (const item of extraInput) {
-      if (!(item instanceof Error) && !(typeof item === 'string')) {
-        for (const key of Object.keys(item)) {
-          if (this.#checkReservedKeyAndWarn(key)) {
-            delete item[key];
+      if (item instanceof Error) {
+        additionalAttributes.error = item;
+      } else if (typeof item === 'string') {
+        additionalAttributes.extra = item;
+      } else {
+        for (const [key, value] of Object.entries(item)) {
+          if (!this.#checkReservedKeyAndWarn(key)) {
+            additionalAttributes[key] = value;
           }
         }
       }
-      const attributes: LogAttributes =
-        item instanceof Error
-          ? { error: item }
-          : typeof item === 'string'
-            ? { extra: item }
-            : item;
-
-      merge(additionalAttributes, attributes);
     }
 
     return this.getLogFormatter().formatAttributes(

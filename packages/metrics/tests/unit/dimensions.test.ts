@@ -11,7 +11,7 @@ describe('Working with dimensions', () => {
       POWERTOOLS_DEV: 'true',
       POWERTOOLS_METRICS_DISABLED: 'false',
     };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it('adds default dimensions to the metric via constructor', () => {

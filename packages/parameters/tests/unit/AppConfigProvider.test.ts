@@ -60,7 +60,9 @@ describe('Class: AppConfigProvider', () => {
       const provider = new AppConfigProvider(options);
 
       // Assess
-      expect(provider.client.config.region()).resolves.toEqual('eu-south-2');
+      await expect(provider.client.config.region()).resolves.toEqual(
+        'eu-south-2'
+      );
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
@@ -96,7 +98,6 @@ describe('Class: AppConfigProvider', () => {
         environment: 'MyAppProdEnv',
         awsSdkV3Client: awsSdkV3Client as AppConfigDataClient,
       };
-      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       // Act
       const provider = new AppConfigProvider(options);
@@ -107,7 +108,7 @@ describe('Class: AppConfigProvider', () => {
           serviceId: 'AppConfigData',
         })
       );
-      expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+      expect(console.warn).toHaveBeenNthCalledWith(
         1,
         'awsSdkV3Client is not an AWS SDK v3 client, using default client'
       );

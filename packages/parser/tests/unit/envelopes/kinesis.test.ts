@@ -104,7 +104,7 @@ describe('Envelope: Kinesis', () => {
       const result = KinesisEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse Kinesis Data Stream envelope', {
           cause: new ZodError([
@@ -137,7 +137,7 @@ describe('Envelope: Kinesis', () => {
       );
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError(
           'Failed to parse Kinesis Data Stream record at index 1',
@@ -170,7 +170,7 @@ describe('Envelope: Kinesis', () => {
       );
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError(
           'Failed to parse Kinesis Data Stream records at indexes 0, 1',

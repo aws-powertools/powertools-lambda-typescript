@@ -11,7 +11,7 @@ describe('ColdStart metric', () => {
       POWERTOOLS_DEV: 'true',
       POWERTOOLS_METRICS_DISABLED: 'false',
     };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it('emits a cold start metric', () => {

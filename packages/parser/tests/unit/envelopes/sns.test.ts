@@ -84,7 +84,7 @@ describe('Envelope: SnsEnvelope', () => {
       const result = SnsEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).toStrictEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SNS envelope', {
           cause: new ZodError([
@@ -119,7 +119,7 @@ describe('Envelope: SnsEnvelope', () => {
       );
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SNS message at index 1', {
           cause: new ZodError([
@@ -152,7 +152,7 @@ describe('Envelope: SnsEnvelope', () => {
       );
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SNS messages at indexes 0, 1', {
           cause: new ZodError([

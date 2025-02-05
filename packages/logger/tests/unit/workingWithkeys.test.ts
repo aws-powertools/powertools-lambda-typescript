@@ -14,7 +14,7 @@ describe('Working with keys', () => {
       ...ENVIRONMENT_VARIABLES,
       POWERTOOLS_DEV: 'true',
     };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it.each([

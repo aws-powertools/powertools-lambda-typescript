@@ -26,7 +26,7 @@ describe('Inject Lambda Context', () => {
       ...ENVIRONMENT_VARIABLES,
       POWERTOOLS_DEV: 'true',
     };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it('adds the context to log messages when the feature is enabled', () => {

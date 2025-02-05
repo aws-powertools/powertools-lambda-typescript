@@ -148,15 +148,15 @@ In each case, the printed log will look like this:
 
     ```json hl_lines="2-6"
     {
+        "level": "INFO",
+        "message": "This is an INFO log with some context",
+        "timestamp": "2021-12-12T21:21:08.921Z",
+        "service": "serverlessAirline",
         "cold_start": true,
         "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1",
         "function_memory_size": 128,
         "function_request_id": "c6af9ac6-7b61-11e6-9a41-93e812345678",
         "function_name": "shopping-cart-api-lambda-prod-eu-west-1",
-        "level": "INFO",
-        "message": "This is an INFO log with some context",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T21:21:08.921Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```

@@ -8,6 +8,7 @@ import type {
   Environment,
   LogAttributes,
   LogAttributesWithMessage,
+  LogKeys,
 } from './logKeys.js';
 
 /**
@@ -187,8 +188,8 @@ type LogItemExtraInput = [Error | string] | LogAttributes[];
  */
 type LoggerInterface = {
   addContext(context: Context): void;
-  addPersistentLogAttributes(attributes?: LogAttributes): void;
-  appendKeys(attributes?: LogAttributes): void;
+  appendPersistentKeys(attributes?: LogKeys): void;
+  appendKeys(attributes?: LogKeys): void;
   createChild(options?: ConstructorOptions): LoggerInterface;
   critical(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
   debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;

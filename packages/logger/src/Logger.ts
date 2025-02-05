@@ -26,6 +26,7 @@ import type {
   LoggerInterface,
 } from './types/Logger.js';
 import type {
+  LogKeys,
   PowertoolsLogData,
   UnformattedAttributes,
 } from './types/logKeys.js';
@@ -134,7 +135,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Temporary log attributes that can be appended with `appendKeys()` method.
    */
-  private temporaryLogAttributes: LogAttributes = {};
+  private temporaryLogAttributes: LogKeys = {};
   /**
    * Buffer used to store logs until the logger is initialized.
    *
@@ -210,7 +211,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * @deprecated This method is deprecated and will be removed in the future major versions, please use {@link appendPersistentKeys() `appendPersistentKeys()`} instead.
    */
-  public addPersistentLogAttributes(attributes: LogAttributes): void {
+  public addPersistentLogAttributes(attributes: LogKeys): void {
     this.appendPersistentKeys(attributes);
   }
 
@@ -222,7 +223,7 @@ class Logger extends Utility implements LoggerInterface {
    *
    * @param attributes - The attributes to add to all log items.
    */
-  public appendKeys(attributes: LogAttributes): void {
+  public appendKeys(attributes: LogKeys): void {
     this.#appendKeys(attributes, 'temp');
   }
 
@@ -234,7 +235,7 @@ class Logger extends Utility implements LoggerInterface {
    *
    * @param attributes - The attributes to add to all log items.
    */
-  public appendPersistentKeys(attributes: LogAttributes): void {
+  public appendPersistentKeys(attributes: LogKeys): void {
     this.#appendKeys(attributes, 'persistent');
   }
 
@@ -519,7 +520,7 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Remove all temporary log attributes added with `appendKeys()` method.
+   * Remove all temporary log attributes added with {@link appendKeys() `appendKeys()`} method.
    */
   public resetKeys(): void {
     for (const key of Object.keys(this.temporaryLogAttributes)) {
@@ -552,7 +553,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * @deprecated This method is deprecated and will be removed in the future major versions, please use {@link appendPersistentKeys() `appendPersistentKeys()`} instead.
    */
-  public setPersistentLogAttributes(attributes: LogAttributes): void {
+  public setPersistentLogAttributes(attributes: LogKeys): void {
     this.persistentLogAttributes = attributes;
   }
 
@@ -664,7 +665,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param attributes - The attributes to add to the log item.
    * @param type - The type of the attributes to add.
    */
-  #appendKeys(attributes: LogAttributes, type: 'temp' | 'persistent'): void {
+  #appendKeys(attributes: LogKeys, type: 'temp' | 'persistent'): void {
     for (const attributeKey of Object.keys(attributes)) {
       if (this.#checkReservedKeyAndWarn(attributeKey) === false) {
         this.#keys.set(attributeKey, type);

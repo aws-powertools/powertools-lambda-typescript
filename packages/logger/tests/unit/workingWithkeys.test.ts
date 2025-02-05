@@ -627,6 +627,7 @@ describe('Working with keys', () => {
 
     // Act
     logger.appendKeys({
+      // @ts-expect-error - testing invalid key at runtime
       level: 'Hello, World!',
     });
     logger.info('foo');
@@ -652,6 +653,7 @@ describe('Working with keys', () => {
 
     // Act
     logger.appendPersistentKeys({
+      // @ts-expect-error - testing invalid key at runtime
       timestamp: 'Hello, World!',
     });
     logger.info('foo');
@@ -707,6 +709,7 @@ describe('Working with keys', () => {
     logger.info(
       {
         message: 'foo',
+        // @ts-expect-error - testing invalid key at runtime
         timestamp: 'Hello, World!',
       },
       {

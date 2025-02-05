@@ -48,7 +48,6 @@ const ReservedKeys = [
   'sampling_rate',
   'service',
   'timestamp',
-  'xray_trace_id',
 ];
 
 export { LogJsonIndent, LogLevel, LogLevelThreshold, ReservedKeys };

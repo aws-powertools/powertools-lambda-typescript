@@ -108,7 +108,14 @@ type PersistentKeysOption = {
   /**
    * Keys that will be added to all log items.
    */
-  persistentKeys?: LogAttributes;
+  persistentKeys?: LogAttributes & {
+    message?: never;
+    level?: never;
+    sampling_rate?: never;
+    service?: never;
+    timestamp?: never;
+    error?: never;
+  };
   /**
    * @deprecated Use `persistentKeys` instead.
    */

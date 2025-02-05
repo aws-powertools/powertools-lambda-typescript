@@ -675,6 +675,7 @@ describe('Working with keys', () => {
     // Prepare
     const logger = new Logger({
       persistentKeys: {
+        // @ts-expect-error - testing invalid key at runtime
         sampling_rate: 'Hello, World!',
       },
     });

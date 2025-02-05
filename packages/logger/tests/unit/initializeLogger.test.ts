@@ -151,9 +151,9 @@ describe('Log levels', () => {
         {
           level: 'INFO',
           message: 'Hello, world!',
-          sampling_rate: 0,
-          service: 'hello-world',
           timestamp: '2016-06-20T12:08:10.000Z',
+          service: 'hello-world',
+          sampling_rate: 0,
           xray_trace_id: '1-abcdef12-3456abcdef123456abcdef12',
         },
         null,

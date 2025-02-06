@@ -1,5 +1,5 @@
-import { Logger } from '@aws-lambda-powertools/logger';
 import { BaseProvider } from '@aws-lambda-powertools/parameters/base';
+import { GetParameterError } from '@aws-lambda-powertools/parameters/errors';
 import Vault from 'hashi-vault-js';
 import type {
   HashiCorpVaultGetOptions,
@@ -9,7 +9,6 @@ import type {
 class HashiCorpVaultProvider extends BaseProvider {
   public client: Vault;
   readonly #token: string;
-  readonly #logger: Logger;
 
   /**
    * It initializes the HashiCorpVaultProvider class.
@@ -17,9 +16,7 @@ class HashiCorpVaultProvider extends BaseProvider {
    * @param {HashiCorpVaultProviderOptions} config - The configuration object.
    */
   public constructor(config: HashiCorpVaultProviderOptions) {
-    super({
-      proto: Vault,
-    });
+    super({});
 
     const { url, token, clientConfig, vaultClient } = config;
     if (vaultClient) {
@@ -39,9 +36,6 @@ class HashiCorpVaultProvider extends BaseProvider {
       this.client = new Vault(config);
     }
     this.#token = token;
-    this.#logger = new Logger({
-      serviceName: 'HashiCorpVaultProvider',
-    });
   }
 
   /**
@@ -55,13 +49,13 @@ class HashiCorpVaultProvider extends BaseProvider {
    * @param {string} name - The name of the secret
    * @param {HashiCorpVaultGetOptions} options - Options to customize the retrieval of the secret
    */
-  public async get(
+  public async get<T extends Record<string, unknown>>(
     name: string,
     options?: HashiCorpVaultGetOptions
-  ): Promise<Record<string, unknown> | undefined> {
+  ): Promise<T | undefined> {
     return super.get(name, options) as Promise<
       Record<string, unknown> | undefined
-    >;
+    > as Promise<T | undefined>;
   }
 
   /**
@@ -92,9 +86,6 @@ class HashiCorpVaultProvider extends BaseProvider {
     );
 
     if (response.isVaultError) {
-      this.#logger.error('An error occurred', {
-        error: response.vaultHelpMessage,
-      });
       throw response;
     }
     return response.data;
@@ -108,8 +99,8 @@ class HashiCorpVaultProvider extends BaseProvider {
   protected async _getMultiple(
     _path: string,
     _options?: unknown
-  ): Promise<void> {
-    throw new Error('Method not implemented.');
+  ): Promise<Record<string, unknown> | undefined> {
+    throw new GetParameterError('Method not implemented.');
   }
 }
 

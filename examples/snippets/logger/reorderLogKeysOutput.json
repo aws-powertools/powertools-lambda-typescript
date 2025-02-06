@@ -1,9 +1,9 @@
 {
-  "timestamp": "2024-09-03T02:59:06.603Z",
-  "additionalKey": "additionalValue",
   "level": "INFO",
   "message": "Hello, World!",
-  "sampling_rate": 0,
+  "timestamp": "2024-09-03T02:59:06.603Z",
   "service": "serverlessAirline",
+  "additionalKey": "additionalValue",
+  "sampling_rate": 0,
   "xray_trace_id": "1-66d67b7a-79bc7b2346b32af01b437cf8"
 }

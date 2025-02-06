@@ -10,7 +10,7 @@ describe('Working with metadata', () => {
       POWERTOOLS_DEV: 'true',
       POWERTOOLS_METRICS_DISABLED: 'false',
     };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it('adds metadata to the metric', () => {

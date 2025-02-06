@@ -203,7 +203,7 @@ describe('Envelope: CloudWatch', () => {
       );
 
       // Assess
-      expect(result).toStrictEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError(
           'Failed to parse CloudWatch Log message at index 0',
@@ -234,7 +234,7 @@ describe('Envelope: CloudWatch', () => {
       );
 
       // Assess
-      expect(result).toStrictEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError(
           'Failed to parse CloudWatch Log messages at indexes 0, 1, 2',

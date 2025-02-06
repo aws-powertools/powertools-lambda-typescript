@@ -104,7 +104,7 @@ describe('Envelope: VPC Lattice', () => {
       const result = VpcLatticeEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse VPC Lattice body', {
           cause: new ZodError([

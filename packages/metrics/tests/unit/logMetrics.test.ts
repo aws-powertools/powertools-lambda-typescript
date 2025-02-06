@@ -15,7 +15,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
       POWERTOOLS_DEV: 'true',
       POWERTOOLS_METRICS_DISABLED: 'false',
     };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it('captures the cold start metric on the first invocation', async () => {

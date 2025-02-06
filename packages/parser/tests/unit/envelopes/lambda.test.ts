@@ -112,7 +112,7 @@ describe('Envelope: Lambda function URL', () => {
       const result = LambdaFunctionUrlEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse Lambda function URL body', {
           cause: new ZodError([

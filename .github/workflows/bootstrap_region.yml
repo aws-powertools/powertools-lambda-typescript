@@ -57,7 +57,7 @@ jobs:
         name: Install CDK
         working-directory: build
         run: |
-          npm i aws-cdk
+          npm i aws-cdk@2.178.0
       - id: cdk-project
         name: CDK Project
         working-directory: build/project
@@ -83,6 +83,8 @@ jobs:
       - id: go-setup
         name: Setup Go
         uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
+        with:
+          go-version: '>=1.23.0'
       - id: go-env
         name: Go Env
         run: go env

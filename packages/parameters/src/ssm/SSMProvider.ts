@@ -278,7 +278,7 @@ class SSMProvider extends BaseProvider {
    */
   public constructor(config?: SSMProviderOptions) {
     super({
-      proto: SSMClient as new (config?: unknown) => SSMClient,
+      awsSdkV3ClientPrototype: SSMClient as new (config?: unknown) => SSMClient,
       ...(config ?? {}),
     });
   }

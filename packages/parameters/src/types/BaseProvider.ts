@@ -1,6 +1,28 @@
 import type { Transform } from '../constants.js';
 
 /**
+ * Options for the BaseProvider class constructor.
+ */
+type BaseProviderConstructorOptions = {
+  /**
+   * AWS SDK v3 client instance to use for operations.
+   */
+  awsSdkV3Client?: unknown;
+  /**
+   * Optional configuration to pass during client initialization to customize AWS SDK v3 clients.
+   */
+  clientConfig?: unknown;
+  /**
+   * AWS SDK v3 client prototype.
+   *
+   * If the `awsSdkV3Client` is not provided, this will be used to create a new client.
+   */
+  awsSdkV3ClientPrototype: new (
+    config?: unknown
+  ) => unknown;
+};
+
+/**
  * Type for the transform option.
  */
 type TransformOptions = (typeof Transform)[keyof typeof Transform];
@@ -79,6 +101,7 @@ interface BaseProviderInterface {
 }
 
 export type {
+  BaseProviderConstructorOptions,
   GetOptionsInterface,
   GetMultipleOptionsInterface,
   BaseProviderInterface,

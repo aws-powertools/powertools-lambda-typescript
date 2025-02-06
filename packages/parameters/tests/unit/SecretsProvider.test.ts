@@ -51,7 +51,9 @@ describe('Class: SecretsProvider', () => {
       const provider = new SecretsProvider(options);
 
       // Assess
-      expect(provider.client.config.region()).resolves.toEqual('eu-south-2');
+      await expect(provider.client.config.region()).resolves.toEqual(
+        'eu-south-2'
+      );
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
@@ -83,7 +85,6 @@ describe('Class: SecretsProvider', () => {
       const options: SecretsProviderOptions = {
         awsSdkV3Client: awsSdkV3Client as SecretsManagerClient,
       };
-      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       // Act
       const provider = new SecretsProvider(options);
@@ -94,7 +95,7 @@ describe('Class: SecretsProvider', () => {
           serviceId: 'Secrets Manager',
         })
       );
-      expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+      expect(console.warn).toHaveBeenNthCalledWith(
         1,
         'awsSdkV3Client is not an AWS SDK v3 client, using default client'
       );

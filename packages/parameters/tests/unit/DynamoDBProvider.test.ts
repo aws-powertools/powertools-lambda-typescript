@@ -58,7 +58,9 @@ describe('Class: DynamoDBProvider', () => {
       const provider = new DynamoDBProvider(options);
 
       // Assess
-      expect(provider.client.config.region()).resolves.toEqual('eu-south-2');
+      await expect(provider.client.config.region()).resolves.toEqual(
+        'eu-south-2'
+      );
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
@@ -92,7 +94,6 @@ describe('Class: DynamoDBProvider', () => {
         tableName: 'test-table',
         awsSdkV3Client: awsSdkV3Client as DynamoDBClient,
       };
-      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       // Act
       const provider = new DynamoDBProvider(options);
@@ -103,7 +104,7 @@ describe('Class: DynamoDBProvider', () => {
           serviceId: 'DynamoDB',
         })
       );
-      expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+      expect(console.warn).toHaveBeenNthCalledWith(
         1,
         'awsSdkV3Client is not an AWS SDK v3 client, using default client'
       );

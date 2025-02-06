@@ -170,7 +170,7 @@ describe('Envelope: SnsSqsEnvelope', () => {
       const result = SnsSqsEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SQS envelope', {
           cause: new ZodError([
@@ -198,7 +198,7 @@ describe('Envelope: SnsSqsEnvelope', () => {
       const result = SnsSqsEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SQS Record at index 0', {
           cause: new ZodError([
@@ -222,7 +222,7 @@ describe('Envelope: SnsSqsEnvelope', () => {
       const result = SnsSqsEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SQS Record at index 0', {
           cause: new ZodError([
@@ -282,7 +282,7 @@ describe('Envelope: SnsSqsEnvelope', () => {
       const result = SnsSqsEnvelope.safeParse(event, JSONStringified(schema));
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SQS Record at index 1', {
           cause: new ZodError([
@@ -323,7 +323,7 @@ describe('Envelope: SnsSqsEnvelope', () => {
       const result = SnsSqsEnvelope.safeParse(event, z.number());
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SQS Records at indexes 0, 1', {
           cause: new ZodError([

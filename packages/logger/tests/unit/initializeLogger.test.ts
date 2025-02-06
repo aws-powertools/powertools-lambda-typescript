@@ -7,7 +7,7 @@ describe('Log levels', () => {
 
   beforeEach(() => {
     process.env = { ...ENVIRONMENT_VARIABLES, POWERTOOLS_DEV: 'true' };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it('uses the default service name when none is provided', () => {

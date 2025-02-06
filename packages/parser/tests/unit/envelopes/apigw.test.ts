@@ -108,7 +108,7 @@ describe('Envelope: API Gateway REST', () => {
       const result = ApiGatewayEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse API Gateway body', {
           cause: new ZodError([

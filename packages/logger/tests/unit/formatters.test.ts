@@ -107,7 +107,7 @@ describe('Formatters', () => {
     process.env = { ...ENVIRONMENT_VARIABLES };
     const mockDate = new Date(1466424490000);
     vi.useFakeTimers().setSystemTime(mockDate);
-    vi.resetAllMocks();
+    vi.clearAllMocks();
     unformattedAttributes.timestamp = mockDate;
   });
 

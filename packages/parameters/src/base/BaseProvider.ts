@@ -48,12 +48,12 @@ abstract class BaseProvider implements BaseProviderInterface {
   }: {
     awsSdkV3Client?: unknown;
     clientConfig?: unknown;
-    proto: new (config?: unknown) => unknown;
+    proto?: new (config?: unknown) => unknown;
   }) {
     this.store = new Map();
     this.envVarsService = new EnvironmentVariablesService();
     if (awsSdkV3Client) {
-      if (!isSdkClient(awsSdkV3Client)) {
+      if (!isSdkClient(awsSdkV3Client) && proto) {
         console.warn(
           'awsSdkV3Client is not an AWS SDK v3 client, using default client'
         );
@@ -61,10 +61,12 @@ abstract class BaseProvider implements BaseProviderInterface {
       } else {
         this.client = awsSdkV3Client;
       }
-    } else {
+    } else if (proto) {
       this.client = new proto(clientConfig ?? {});
     }
-    addUserAgentMiddleware(this.client, 'parameters');
+    if (isSdkClient(this.client)) {
+      addUserAgentMiddleware(this.client, 'parameters');
+    }
   }
 
   /**

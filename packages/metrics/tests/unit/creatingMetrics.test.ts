@@ -15,7 +15,7 @@ describe('Creating metrics', () => {
       POWERTOOLS_DEV: 'true',
       POWERTOOLS_METRICS_DISABLED: 'false',
     };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it('creates a compliant CloudWatch EMF metric', () => {

@@ -3,6 +3,7 @@ export {
   APIGatewayProxyEventSchema,
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
+  APIGatewayEventRequestContextSchema,
 } from './apigw.js';
 export {
   AppSyncResolverSchema,

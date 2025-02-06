@@ -1,6 +1,9 @@
+import { unmarshallDynamoDB } from '@aws-lambda-powertools/commons/utils/unmarshallDynamoDB';
 import { z } from 'zod';
+import type { KinesisEnvelope } from '../envelopes/kinesis.js';
+import type { DynamoDBMarshalled } from '../helpers/dynamodb.js';
 
-const DynamoDBStreamChangeRecord = z.object({
+const DynamoDBStreamChangeRecordBase = z.object({
   ApproximateCreationDateTime: z.number().optional(),
   Keys: z.record(z.string(), z.record(z.string(), z.any())),
   NewImage: z.record(z.string(), z.any()).optional(),
@@ -14,6 +17,63 @@ const DynamoDBStreamChangeRecord = z.object({
     'KEYS_ONLY',
   ]),
 });
+
+const DynamoDBStreamToKinesisChangeRecord = DynamoDBStreamChangeRecordBase.omit(
+  {
+    SequenceNumber: true,
+    StreamViewType: true,
+  }
+);
+
+const unmarshallDynamoDBTransform = (
+  object:
+    | z.infer<typeof DynamoDBStreamChangeRecordBase>
+    | z.infer<typeof DynamoDBStreamToKinesisChangeRecord>,
+  ctx: z.RefinementCtx
+) => {
+  const result = { ...object };
+
+  const unmarshallAttributeValue = (
+    imageName: 'NewImage' | 'OldImage' | 'Keys',
+    image: Record<string, unknown>
+  ) => {
+    try {
+      // @ts-expect-error
+      return unmarshallDynamoDB(image) as Record<string, unknown>;
+    } catch (err) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Could not unmarshall ${imageName} in DynamoDB stream record`,
+        fatal: true,
+        path: [imageName],
+      });
+      return z.NEVER;
+    }
+  };
+
+  const unmarshalledKeys = unmarshallAttributeValue('Keys', object.Keys);
+  if (unmarshalledKeys === z.NEVER) return z.NEVER;
+  // @ts-expect-error - We are intentionally mutating the object
+  result.Keys = unmarshalledKeys;
+
+  if (object.NewImage) {
+    const unmarshalled = unmarshallAttributeValue('NewImage', object.NewImage);
+    if (unmarshalled === z.NEVER) return z.NEVER;
+    result.NewImage = unmarshalled;
+  }
+
+  if (object.OldImage) {
+    const unmarshalled = unmarshallAttributeValue('OldImage', object.OldImage);
+    if (unmarshalled === z.NEVER) return z.NEVER;
+    result.OldImage = unmarshalled;
+  }
+
+  return result;
+};
+
+const DynamoDBStreamChangeRecord = DynamoDBStreamChangeRecordBase.transform(
+  unmarshallDynamoDBTransform
+);
 
 const UserIdentity = z.object({
   type: z.enum(['Service']),
@@ -31,14 +91,55 @@ const DynamoDBStreamRecord = z.object({
   userIdentity: UserIdentity.optional(),
 });
 
+/**
+ * Zod schema for Amazon DynamoDB Stream event sent to an Amazon Kinesis Stream.
+ *
+ * This schema is best used in conjunction with the {@link KinesisEnvelope | `KinesisEnvelope`} when
+ * you want to work with the DynamoDB stream event coming from an Amazon Kinesis Stream.
+ *
+ * By default, we unmarshall the `dynamodb.Keys`, `dynamodb.NewImage`, and `dynamodb.OldImage` fields
+ * for you.
+ *
+ * If you want to extend the schema and provide your own Zod schema for any of these fields,
+ * you can use the {@link DynamoDBMarshalled | `DynamoDBMarshalled`} helper. In that case, we won't unmarshall the other fields.
+ *
+ * To extend the schema, you can use the {@link DynamoDBStreamToKinesisRecord | `DynamoDBStreamToKinesisRecord`} child schema and the {@link DynamoDBMarshalled | `DynamoDBMarshalled`}
+ * helper together.
+ *
+ * @example
+ * ```ts
+ * import {
+ *   DynamoDBStreamToKinesisRecord,
+ *   DynamoDBStreamToKinesisChangeRecord,
+ * } from '@aws-lambda-powertools/parser/schemas/dynamodb';
+ * import { KinesisEnvelope } from '@aws-lambda-powertools/parser/envelopes/dynamodb';
+ * import { DynamoDBMarshalled } from '@aws-lambda-powertools/parser/helpers/dynamodb';
+ *
+ * const CustomSchema = DynamoDBStreamToKinesisRecord.extend({
+ *   dynamodb: DynamoDBStreamToKinesisChangeRecord.extend({
+ *    NewImage: DynamoDBMarshalled(
+ *      z.object({
+ *        id: z.string(),
+ *        attribute: z.number(),
+ *        stuff: z.array(z.string()),
+ *      })
+ *    ),
+ *    // Add the lines below only if you want these keys to be unmarshalled
+ *    Keys: DynamoDBMarshalled(z.unknown()),
+ *    OldImage: DynamoDBMarshalled(z.unknown()),
+ *  }),
+ * });
+ *
+ * type CustomEvent = z.infer<typeof CustomSchema>;
+ * ```
+ */
 const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
   recordFormat: z.literal('application/json'),
   tableName: z.string(),
   userIdentity: UserIdentity.nullish(),
-  dynamodb: DynamoDBStreamChangeRecord.omit({
-    SequenceNumber: true,
-    StreamViewType: true,
-  }),
+  dynamodb: DynamoDBStreamToKinesisChangeRecord.transform(
+    unmarshallDynamoDBTransform
+  ),
 }).omit({
   eventVersion: true,
   eventSourceARN: true,
@@ -120,11 +221,12 @@ const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html}
  */
 const DynamoDBStreamSchema = z.object({
-  Records: z.array(DynamoDBStreamRecord),
+  Records: z.array(DynamoDBStreamRecord).min(1),
 });
 
 export {
   DynamoDBStreamToKinesisRecord,
+  DynamoDBStreamToKinesisChangeRecord,
   DynamoDBStreamSchema,
   DynamoDBStreamRecord,
   DynamoDBStreamChangeRecord,

@@ -28,11 +28,9 @@ const KafkaRecordSchema = z.object({
 const KafkaBaseEventSchema = z.object({
   bootstrapServers: z
     .string()
-    .transform((bootstrapServers) => {
-      return bootstrapServers ? bootstrapServers.split(',') : undefined;
-    })
+    .transform((bootstrapServers) => bootstrapServers.split(','))
     .nullish(),
-  records: z.record(z.string(), z.array(KafkaRecordSchema)),
+  records: z.record(z.string(), z.array(KafkaRecordSchema).min(1)),
 });
 
 /** Zod schema for Kafka event from Self Managed Kafka

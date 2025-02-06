@@ -34,7 +34,7 @@ describe('Log levels', () => {
 
   beforeEach(() => {
     process.env = { ...ENVIRONMENT_VARIABLES, POWERTOOLS_DEV: 'true' };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it('sets the correct log level when initialized with a log level', () => {

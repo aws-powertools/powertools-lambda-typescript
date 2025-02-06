@@ -364,7 +364,7 @@ describe('Class: ProviderService', () => {
 
       // Act
       provider.instrumentFetch();
-      mockFetch({
+      const mockRequest = mockFetch({
         origin: 'https://aws.amazon.com',
         path: '/blogs',
         headers: {
@@ -387,6 +387,12 @@ describe('Class: ProviderService', () => {
       });
       expect(subsegment.close).toHaveBeenCalledTimes(1);
       expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
+      expect(mockRequest.addHeader).toHaveBeenLastCalledWith(
+        'X-Amzn-Trace-Id',
+        expect.stringMatching(
+          /Root=1-abcdef12-3456abcdef123456abcdef12;Parent=\S{16};Sampled=1/
+        )
+      );
     });
 
     it('excludes the content_length header when invalid or not found', async () => {
@@ -615,5 +621,40 @@ describe('Class: ProviderService', () => {
     expect(subsegment.addError).toHaveBeenCalledTimes(1);
     expect(subsegment.close).toHaveBeenCalledTimes(1);
     expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
+  });
+
+  it('forwards the correct sampling decision in the request header', async () => {
+    // Prepare
+    const provider: ProviderService = new ProviderService();
+    const segment = new Subsegment('## dummySegment');
+    const subsegment = segment.addNewSubsegment('aws.amazon.com');
+    subsegment.notTraced = true;
+    vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+      () => subsegment
+    );
+    vi.spyOn(provider, 'getSegment')
+      .mockImplementationOnce(() => segment)
+      .mockImplementationOnce(() => subsegment)
+      .mockImplementationOnce(() => subsegment);
+    vi.spyOn(subsegment, 'close');
+    vi.spyOn(provider, 'setSegment');
+
+    // Act
+    provider.instrumentFetch();
+    const mockRequest = mockFetch({
+      origin: 'https://aws.amazon.com',
+      path: '/blogs',
+      headers: {
+        'content-length': '100',
+      },
+    });
+
+    // Assess
+    expect(mockRequest.addHeader).toHaveBeenLastCalledWith(
+      'X-Amzn-Trace-Id',
+      expect.stringMatching(
+        /Root=1-abcdef12-3456abcdef123456abcdef12;Parent=\S{16};Sampled=0/
+      )
+    );
   });
 });

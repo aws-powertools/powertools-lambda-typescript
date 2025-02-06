@@ -18,7 +18,7 @@ describe('Log event', () => {
       POWERTOOLS_LOGGER_LOG_EVENT: 'true',
       POWERTOOLS_DEV: 'true',
     };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it('logs the event with the correct log level and message', () => {

@@ -19,7 +19,10 @@ import type {
 import type { Handler } from 'aws-lambda';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 import xraySdk from 'aws-xray-sdk-core';
-import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
+import {
+  type EnvironmentVariablesService,
+  environmentVariablesService,
+} from './config/EnvironmentVariablesService.js';
 import { ProviderService } from './provider/ProviderService.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type { ProviderServiceInterface } from './types/ProviderService.js';
@@ -862,14 +865,6 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Set and initialize `envVarsService`.
-   * Used internally during initialization.
-   */
-  private setEnvVarsService(): void {
-    this.envVarsService = new EnvironmentVariablesService();
-  }
-
-  /**
    * Method that reconciles the configuration passed with the environment variables.
    * Used internally during initialization.
    *
@@ -879,7 +874,7 @@ class Tracer extends Utility implements TracerInterface {
     const { enabled, serviceName, captureHTTPsRequests, customConfigService } =
       options;
 
-    this.setEnvVarsService();
+    this.envVarsService = environmentVariablesService;
     this.setCustomConfigService(customConfigService);
     this.setTracingEnabled(enabled);
     this.setCaptureResponse();

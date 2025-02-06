@@ -107,7 +107,7 @@ describe('Formatters', () => {
     process.env = { ...ENVIRONMENT_VARIABLES };
     const mockDate = new Date(1466424490000);
     vi.useFakeTimers().setSystemTime(mockDate);
-    vi.resetAllMocks();
+    vi.clearAllMocks();
     unformattedAttributes.timestamp = mockDate;
   });
 
@@ -185,7 +185,7 @@ describe('Formatters', () => {
   it('when `logRecordOrder` is set, it orders the attributes in the log item', () => {
     // Prepare
     const formatter = new PowertoolsLogFormatter({
-      logRecordOrder: ['message', 'timestamp', 'serviceName', 'environment'],
+      logRecordOrder: ['message', 'timestamp', 'service'],
     });
     const additionalLogAttributes: LogAttributes = {};
 
@@ -198,21 +198,19 @@ describe('Formatters', () => {
     const response = value.getAttributes();
 
     // Assess
-    expect(JSON.stringify(response)).toEqual(
-      JSON.stringify({
-        message: 'This is a WARN log',
-        timestamp: '2016-06-20T12:08:10.000Z',
-        cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
-        function_memory_size: '123',
-        function_name: 'my-lambda-function',
-        function_request_id: 'abcdefg123456789',
-        level: 'WARN',
-        sampling_rate: 0.25,
-        service: 'hello-world',
-        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-      })
-    );
+    expect(response).toStrictEqual({
+      message: 'This is a WARN log',
+      timestamp: '2016-06-20T12:08:10.000Z',
+      service: 'hello-world',
+      level: 'WARN',
+      cold_start: true,
+      function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
+      function_memory_size: '123',
+      function_name: 'my-lambda-function',
+      function_request_id: 'abcdefg123456789',
+      sampling_rate: 0.25,
+      xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+    });
   });
 
   it('when `logRecordOrder` is set, it orders the attributes in the log item taking `additionalLogAttributes` into consideration', () => {
@@ -222,8 +220,8 @@ describe('Formatters', () => {
         'message',
         'additional_key',
         'timestamp',
-        'serviceName',
-        'environment',
+        'level',
+        'service',
       ]),
     });
     const additionalLogAttributes: LogAttributes = {
@@ -240,23 +238,21 @@ describe('Formatters', () => {
     const response = value.getAttributes();
 
     // Assess
-    expect(JSON.stringify(response)).toEqual(
-      JSON.stringify({
-        message: 'This is a WARN log',
-        additional_key: 'additional_value',
-        timestamp: '2016-06-20T12:08:10.000Z',
-        cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
-        function_memory_size: '123',
-        function_name: 'my-lambda-function',
-        function_request_id: 'abcdefg123456789',
-        level: 'WARN',
-        sampling_rate: 0.25,
-        service: 'hello-world',
-        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-        another_key: 'another_value',
-      })
-    );
+    expect(response).toStrictEqual({
+      message: 'This is a WARN log',
+      additional_key: 'additional_value',
+      timestamp: '2016-06-20T12:08:10.000Z',
+      level: 'WARN',
+      service: 'hello-world',
+      cold_start: true,
+      function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
+      function_memory_size: '123',
+      function_name: 'my-lambda-function',
+      function_request_id: 'abcdefg123456789',
+      sampling_rate: 0.25,
+      xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      another_key: 'another_value',
+    });
   });
 
   it('when `logRecordOrder` is set, even if a key does not exist in attributes, it orders the attributes correctly', () => {
@@ -267,8 +263,7 @@ describe('Formatters', () => {
         'additional_key',
         'not_present',
         'timestamp',
-        'serviceName',
-        'environment',
+        'level',
       ],
     });
     const additionalLogAttributes: LogAttributes = {
@@ -284,22 +279,20 @@ describe('Formatters', () => {
     const response = value.getAttributes();
 
     // Assess
-    expect(JSON.stringify(response)).toEqual(
-      JSON.stringify({
-        message: 'This is a WARN log',
-        additional_key: 'additional_value',
-        timestamp: '2016-06-20T12:08:10.000Z',
-        cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
-        function_memory_size: '123',
-        function_name: 'my-lambda-function',
-        function_request_id: 'abcdefg123456789',
-        level: 'WARN',
-        sampling_rate: 0.25,
-        service: 'hello-world',
-        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-      })
-    );
+    expect(response).toStrictEqual({
+      message: 'This is a WARN log',
+      additional_key: 'additional_value',
+      timestamp: '2016-06-20T12:08:10.000Z',
+      level: 'WARN',
+      service: 'hello-world',
+      cold_start: true,
+      function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
+      function_memory_size: '123',
+      function_name: 'my-lambda-function',
+      function_request_id: 'abcdefg123456789',
+      sampling_rate: 0.25,
+      xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+    });
   });
 
   it('when logRecordOrder is not set, it will not order the attributes in the log item', () => {
@@ -318,22 +311,20 @@ describe('Formatters', () => {
     const response = value.getAttributes();
 
     // Assess
-    expect(JSON.stringify(response)).toEqual(
-      JSON.stringify({
-        cold_start: true,
-        function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
-        function_memory_size: '123',
-        function_name: 'my-lambda-function',
-        function_request_id: 'abcdefg123456789',
-        level: 'WARN',
-        message: 'This is a WARN log',
-        sampling_rate: 0.25,
-        service: 'hello-world',
-        timestamp: '2016-06-20T12:08:10.000Z',
-        xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
-        additional_key: 'additional_value',
-      })
-    );
+    expect(response).toStrictEqual({
+      level: 'WARN',
+      message: 'This is a WARN log',
+      timestamp: '2016-06-20T12:08:10.000Z',
+      service: 'hello-world',
+      cold_start: true,
+      function_arn: 'arn:aws:lambda:eu-west-1:123456789012:function:Example',
+      function_memory_size: '123',
+      function_name: 'my-lambda-function',
+      function_request_id: 'abcdefg123456789',
+      sampling_rate: 0.25,
+      xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      additional_key: 'additional_value',
+    });
   });
 
   // #region format errors

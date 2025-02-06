@@ -1,153 +1,109 @@
-import { generateMock } from '@anatine/zod-mock';
-import type { LambdaInterface } from '@aws-lambda-powertools/commons/lib/esm/types';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import type { z } from 'zod';
+import { type ZodSchema, z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/index.js';
 import { ParseError } from '../../src/errors.js';
 import { parser } from '../../src/index.js';
 import { EventBridgeSchema } from '../../src/schemas/index.js';
-import type { EventBridgeEvent, ParsedResult } from '../../src/types';
-import { TestEvents, TestSchema } from './schema/utils';
+import type { EventBridgeEvent, ParsedResult } from '../../src/types/index.js';
+import { getTestEvent } from './helpers/utils.js';
 
-describe('Parser Decorator', () => {
-  const customEventBridgeSchema = EventBridgeSchema.extend({
-    detail: TestSchema,
+describe('Decorator: parser', () => {
+  const schema = z.object({
+    name: z.string(),
+    age: z.number(),
+  });
+  const payload = {
+    name: 'John Doe',
+    age: 30,
+  };
+  const extendedSchema = EventBridgeSchema.extend({
+    detail: schema,
+  });
+  type event = z.infer<typeof extendedSchema>;
+  const baseEvent = getTestEvent<EventBridgeEvent>({
+    eventsPath: 'eventbridge',
+    filename: 'base',
   });
 
-  type TestEvent = z.infer<typeof TestSchema>;
-
   class TestClass implements LambdaInterface {
-    @parser({ schema: TestSchema })
-    public async handler(
-      event: TestEvent,
-      _context: Context
-    ): Promise<TestEvent> {
+    @parser({ schema: extendedSchema })
+    public async handler(event: event, _context: Context): Promise<event> {
       return event;
     }
 
-    @parser({ schema: customEventBridgeSchema })
-    public async handlerWithCustomSchema(
-      event: unknown,
-      _context: Context
-    ): Promise<unknown> {
-      return event;
-    }
-
-    @parser({ schema: TestSchema, envelope: EventBridgeEnvelope })
+    @parser({ schema, envelope: EventBridgeEnvelope })
     public async handlerWithParserCallsAnotherMethod(
-      event: TestEvent,
+      event: z.infer<typeof schema>,
       _context: Context
     ): Promise<unknown> {
       return this.anotherMethod(event);
     }
 
-    @parser({ schema: TestSchema, envelope: EventBridgeEnvelope })
-    public async handlerWithSchemaAndEnvelope(
-      event: TestEvent,
-      _context: Context
-    ): Promise<unknown> {
-      return event;
-    }
-
     @parser({
-      schema: TestSchema,
+      schema,
       safeParse: true,
     })
     public async handlerWithSchemaAndSafeParse(
-      event: ParsedResult<unknown, TestEvent>,
+      event: ParsedResult<unknown, event>,
       _context: Context
-    ): Promise<ParsedResult> {
+    ): Promise<ParsedResult<unknown, event>> {
       return event;
     }
 
     @parser({
-      schema: TestSchema,
+      schema,
       envelope: EventBridgeEnvelope,
       safeParse: true,
     })
     public async harndlerWithEnvelopeAndSafeParse(
-      event: ParsedResult<TestEvent, TestEvent>,
+      event: ParsedResult<event, event>,
       _context: Context
     ): Promise<ParsedResult> {
       return event;
     }
 
-    private async anotherMethod(event: TestEvent): Promise<TestEvent> {
+    private async anotherMethod<T extends ZodSchema>(
+      event: z.infer<T>
+    ): Promise<z.infer<T>> {
       return event;
     }
   }
-
   const lambda = new TestClass();
 
-  it('should parse custom schema event', async () => {
-    const testEvent = generateMock(TestSchema);
+  it('parses the event using the schema provided', async () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+    event.detail = payload;
 
-    const resp = await lambda.handler(testEvent, {} as Context);
+    // Act
+    // @ts-expect-error - extended schema
+    const result = await lambda.handler(event, {} as Context);
 
-    expect(resp).toEqual(testEvent);
+    // Assess
+    expect(result).toEqual(event);
   });
 
-  it('should parse custom schema with envelope event', async () => {
-    const customPayload = generateMock(TestSchema);
-    const testEvent = TestEvents.eventBridgeEvent as EventBridgeEvent;
-    testEvent.detail = customPayload;
+  it('preserves the class method scope when decorated', async () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+    event.detail = payload;
 
-    const resp = await lambda.handlerWithSchemaAndEnvelope(
-      testEvent as unknown as TestEvent,
+    const result = await lambda.handlerWithParserCallsAnotherMethod(
+      // @ts-expect-error - extended schema
+      event,
       {} as Context
     );
 
-    expect(resp).toEqual(customPayload);
+    expect(result).toEqual(event.detail);
   });
 
-  it('should parse extended envelope event', async () => {
-    const customPayload = generateMock(TestSchema);
-
-    const testEvent = generateMock(customEventBridgeSchema);
-    testEvent.detail = customPayload;
-
-    const resp: z.infer<typeof customEventBridgeSchema> =
-      (await lambda.handlerWithCustomSchema(
-        testEvent,
-        {} as Context
-      )) as z.infer<typeof customEventBridgeSchema>;
-
-    expect(customEventBridgeSchema.parse(resp)).toEqual(testEvent);
-    expect(resp.detail).toEqual(customPayload);
-  });
-
-  it('should parse and call private async method', async () => {
-    const customPayload = generateMock(TestSchema);
-    const testEvent = TestEvents.eventBridgeEvent as EventBridgeEvent;
-    testEvent.detail = customPayload;
-
-    const resp = await lambda.handlerWithParserCallsAnotherMethod(
-      testEvent as unknown as TestEvent,
-      {} as Context
-    );
-
-    expect(resp).toEqual(customPayload);
-  });
-
-  it('should parse event with schema and safeParse', async () => {
-    const testEvent = generateMock(TestSchema);
-
-    const resp = await lambda.handlerWithSchemaAndSafeParse(
-      testEvent as unknown as ParsedResult<unknown, TestEvent>,
-      {} as Context
-    );
-
-    expect(resp).toEqual({
-      success: true,
-      data: testEvent,
-    });
-  });
-
-  it('should parse event with schema and safeParse and return error', async () => {
+  it('returns a parse error when schema validation fails with safeParse enabled', async () => {
+    // Act & Assess
     expect(
       await lambda.handlerWithSchemaAndSafeParse(
-        { foo: 'bar' } as unknown as ParsedResult<unknown, TestEvent>,
+        { foo: 'bar' } as unknown as ParsedResult<unknown, event>,
         {} as Context
       )
     ).toEqual({
@@ -157,26 +113,29 @@ describe('Parser Decorator', () => {
     });
   });
 
-  it('should parse event with envelope and safeParse', async () => {
-    const testEvent = generateMock(TestSchema);
-    const event = TestEvents.eventBridgeEvent as EventBridgeEvent;
-    event.detail = testEvent;
+  it('parses the event with envelope and safeParse', async () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+    event.detail = payload;
 
-    const resp = await lambda.harndlerWithEnvelopeAndSafeParse(
-      event as unknown as ParsedResult<TestEvent, TestEvent>,
+    // Act
+    const result = await lambda.harndlerWithEnvelopeAndSafeParse(
+      event as unknown as ParsedResult<event, event>,
       {} as Context
     );
 
-    expect(resp).toEqual({
+    // Assess
+    expect(result).toEqual({
       success: true,
-      data: testEvent,
+      data: event.detail,
     });
   });
 
-  it('should parse event with envelope and safeParse and return error', async () => {
+  it('returns a parse error when schema/envelope validation fails with safeParse enabled', async () => {
+    // Act & Assess
     expect(
       await lambda.harndlerWithEnvelopeAndSafeParse(
-        { foo: 'bar' } as unknown as ParsedResult<TestEvent, TestEvent>,
+        { foo: 'bar' } as unknown as ParsedResult<event, event>,
         {} as Context
       )
     ).toEqual({

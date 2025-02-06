@@ -1,5 +1,4 @@
 import { Console } from 'node:console';
-import { isDate } from 'node:util/types';
 import { Utility, isIntegerNumber } from '@aws-lambda-powertools/commons';
 import type {
   GenericLogger,
@@ -1033,11 +1032,12 @@ class Metrics extends Utility implements MetricsInterface {
    * @param timestamp - Date object or epoch time in milliseconds representing the timestamp to validate.
    */
   #validateEmfTimestamp(timestamp: number | Date): boolean {
-    if (!isDate(timestamp) && !isIntegerNumber(timestamp)) {
+    const isDate = timestamp instanceof Date;
+    if (!isDate && !isIntegerNumber(timestamp)) {
       return false;
     }
 
-    const timestampMs = isDate(timestamp) ? timestamp.getTime() : timestamp;
+    const timestampMs = isDate ? timestamp.getTime() : timestamp;
     const currentTime = new Date().getTime();
 
     const minValidTimestamp = currentTime - EMF_MAX_TIMESTAMP_PAST_AGE;
@@ -1056,7 +1056,7 @@ class Metrics extends Utility implements MetricsInterface {
     if (isIntegerNumber(timestamp)) {
       return timestamp;
     }
-    if (isDate(timestamp)) {
+    if (timestamp instanceof Date) {
       return timestamp.getTime();
     }
     /**

@@ -1,119 +1,135 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 import { ApiGatewayV2Envelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
+import { JSONStringified } from '../../../src/helpers.js';
 import type { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
-import { TestSchema, getTestEvent } from '../schema/utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
-describe('API Gateway HTTP Envelope', () => {
-  const eventsPath = 'apigw-http';
-  const eventPrototype = getTestEvent<APIGatewayProxyEventV2>({
-    eventsPath,
+describe('Envelope: API Gateway HTTP', () => {
+  const schema = z
+    .object({
+      message: z.string(),
+    })
+    .strict();
+  const baseEvent = getTestEvent<APIGatewayProxyEventV2>({
+    eventsPath: 'apigw-http',
     filename: 'no-auth',
   });
 
   describe('Method: parse', () => {
-    it('should throw if the payload does not match the schema', () => {
+    it('throws if the payload does not match the schema', () => {
       // Prepare
-      const event = { ...eventPrototype };
-      event.body = JSON.stringify({ name: 'foo' });
+      const event = structuredClone(baseEvent);
 
       // Act & Assess
-      expect(() => ApiGatewayV2Envelope.parse(event, TestSchema)).toThrow(
-        ParseError
+      expect(() => ApiGatewayV2Envelope.parse(event, schema)).toThrow(
+        expect.objectContaining({
+          message: expect.stringContaining(
+            'Failed to parse API Gateway HTTP body'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                received: 'undefined',
+                path: ['body'],
+                message: 'Required',
+              },
+            ],
+          }),
+        })
       );
     });
 
-    it('should throw if the body is undefined', () => {
+    it('parses an API Gateway HTTP event with plain text', () => {
       // Prepare
-      const event = { ...eventPrototype };
-      event.body = undefined;
-
-      // Act & Assess
-      expect(() => ApiGatewayV2Envelope.parse(event, TestSchema)).toThrow(
-        ParseError
-      );
-    });
-
-    it('should parse and return the inner schema in an envelope', () => {
-      // Prepare
-      const event = { ...eventPrototype };
-      const payload = { name: 'foo', age: 42 };
-      event.body = JSON.stringify(payload);
+      const event = structuredClone(baseEvent);
+      event.body = 'hello world';
 
       // Act
-      const parsedEvent = ApiGatewayV2Envelope.parse(event, TestSchema);
+      const result = ApiGatewayV2Envelope.parse(event, z.string());
 
       // Assess
-      expect(parsedEvent).toEqual(payload);
+      expect(result).toEqual('hello world');
+    });
+
+    it('parses an API Gateway HTTP event with JSON-stringified body', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.body = JSON.stringify({ message: 'hello world' });
+
+      // Act
+      const result = ApiGatewayV2Envelope.parse(event, JSONStringified(schema));
+
+      // Assess
+      expect(result).toStrictEqual({ message: 'hello world' });
+    });
+
+    it('parses an API Gateway HTTP event with binary body', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.body = 'aGVsbG8gd29ybGQ='; // base64 encoded 'hello world'
+      event.headers['content-type'] = 'application/octet-stream';
+      event.isBase64Encoded = true;
+
+      // Act
+      const result = ApiGatewayV2Envelope.parse(event, z.string());
+
+      // Assess
+      expect(result).toEqual('aGVsbG8gd29ybGQ=');
     });
   });
 
   describe('Method: safeParse', () => {
-    it('should not throw if the payload does not match the schema', () => {
+    it('parses an API Gateway HTTP event', () => {
       // Prepare
-      const event = { ...eventPrototype };
-      event.body = JSON.stringify({ name: 'foo' });
+      const event = structuredClone(baseEvent);
+      event.body = JSON.stringify({ message: 'hello world' });
 
       // Act
-      const parseResult = ApiGatewayV2Envelope.safeParse(event, TestSchema);
+      const result = ApiGatewayV2Envelope.safeParse(
+        event,
+        JSONStringified(schema)
+      );
 
       // Assess
-      expect(parseResult).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: event,
-      });
-
-      if (!parseResult.success && parseResult.error) {
-        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
-      }
-    });
-
-    it('should not throw if the body is undefined', () => {
-      // Prepare
-      const event = { ...eventPrototype };
-      event.body = undefined;
-
-      // Act
-      const parseResult = ApiGatewayV2Envelope.safeParse(event, TestSchema);
-
-      // Assess
-      expect(parseResult).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: event,
-      });
-    });
-
-    it('should not throw if the event is invalid', () => {
-      // Prepare
-      const event = getTestEvent({ eventsPath, filename: 'invalid' });
-
-      // Act
-      const parseResult = ApiGatewayV2Envelope.safeParse(event, TestSchema);
-
-      // Assess
-      expect(parseResult).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: event,
-      });
-    });
-
-    it('should parse and return the inner schema in an envelope', () => {
-      // Prepare
-      const event = { ...eventPrototype };
-      const payload = { name: 'foo', age: 42 };
-      event.body = JSON.stringify(payload);
-
-      // Act
-      const parsedEvent = ApiGatewayV2Envelope.safeParse(event, TestSchema);
-
-      // Assess
-      expect(parsedEvent).toEqual({
+      expect(result).toEqual({
         success: true,
-        data: payload,
+        data: { message: 'hello world' },
+      });
+    });
+
+    it('returns an error if the event is not a valid API Gateway HTTP event', () => {
+      // Prepare
+      const event = omit(['rawPath'], structuredClone(baseEvent));
+
+      // Act
+      const result = ApiGatewayV2Envelope.safeParse(event, schema);
+
+      // Assess
+      expect(result).be.deep.equal({
+        success: false,
+        error: new ParseError('Failed to parse API Gateway HTTP body', {
+          cause: new ZodError([
+            {
+              code: 'invalid_type',
+              expected: 'string',
+              received: 'undefined',
+              path: ['rawPath'],
+              message: 'Required',
+            },
+            {
+              code: 'invalid_type',
+              expected: 'object',
+              received: 'undefined',
+              path: ['body'],
+              message: 'Required',
+            },
+          ]),
+        }),
+        originalEvent: event,
       });
     });
   });

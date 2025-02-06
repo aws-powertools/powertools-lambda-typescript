@@ -2,7 +2,7 @@ import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { VpcLatticeV2Schema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope, envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator } from './envelope.js';
 
 /**
  * Amazon VPC Lattice envelope to extract data within body key
@@ -14,35 +14,38 @@ export const VpcLatticeV2Envelope = {
    */
   [envelopeDiscriminator]: 'object' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
-    const parsedEnvelope = VpcLatticeV2Schema.parse(data);
-
-    return Envelope.parse(parsedEnvelope.body, schema);
+    try {
+      return VpcLatticeV2Schema.extend({
+        body: schema,
+      }).parse(data).body;
+    } catch (error) {
+      throw new ParseError('Failed to parse VPC Lattice v2 body', {
+        cause: error as Error,
+      });
+    }
   },
 
-  safeParse<T extends ZodSchema>(data: unknown, schema: T): ParsedResult<unknown, z.infer<T>> {
-    const parsedEnvelope = VpcLatticeV2Schema.safeParse(data);
-    if (!parsedEnvelope.success) {
+  safeParse<T extends ZodSchema>(
+    data: unknown,
+    schema: T
+  ): ParsedResult<unknown, z.infer<T>> {
+    const result = VpcLatticeV2Schema.extend({
+      body: schema,
+    }).safeParse(data);
+
+    if (!result.success) {
       return {
         success: false,
-        error: new ParseError('Failed to parse VpcLatticeV2 envelope.', {
-          cause: parsedEnvelope.error,
+        error: new ParseError('Failed to parse VPC Lattice v2 body', {
+          cause: result.error,
         }),
         originalEvent: data,
       };
     }
 
-    const parsedBody = Envelope.safeParse(parsedEnvelope.data.body, schema);
-
-    if (!parsedBody.success) {
-      return {
-        success: false,
-        error: new ParseError('Failed to parse VpcLatticeV2 body.', {
-          cause: parsedBody.error,
-        }),
-        originalEvent: data,
-      };
-    }
-
-    return parsedBody;
+    return {
+      success: true,
+      data: result.data.body,
+    };
   },
 };

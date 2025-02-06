@@ -1,168 +1,174 @@
-import { generateMock } from '@anatine/zod-mock';
-import type { SNSEvent, SQSEvent } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import { ZodError, type z } from 'zod';
-import { SnsEnvelope, SnsSqsEnvelope } from '../../../src/envelopes/index.js';
+import { ZodError, z } from 'zod';
+import { SnsEnvelope } from '../../../src/envelopes/sns.js';
 import { ParseError } from '../../../src/errors.js';
-import { TestEvents, TestSchema } from '../schema/utils.js';
+import { JSONStringified } from '../../../src/helpers.js';
+import type { SnsEvent } from '../../../src/types/schema.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-describe('Sns and SQS Envelope', () => {
-  describe('SnsSqsEnvelope parse', () => {
-    it('should parse sqs inside sns envelope', () => {
-      const snsSqsTestEvent = TestEvents.snsSqsEvent as SQSEvent;
+describe('Envelope: SnsEnvelope', () => {
+  const baseEvent = getTestEvent<SnsEvent>({
+    eventsPath: 'sns',
+    filename: 'base',
+  });
 
-      const data = generateMock(TestSchema);
-      const snsEvent = JSON.parse(snsSqsTestEvent.Records[0].body);
-      snsEvent.Message = JSON.stringify(data);
+  describe('Method: parse', () => {
+    it('throws if one of the payloads does not match the schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
 
-      snsSqsTestEvent.Records[0].body = JSON.stringify(snsEvent);
+      // Act & Assess
+      expect(() =>
+        SnsEnvelope.parse(
+          event,
+          z
+            .object({
+              Message: z.string(),
+            })
+            .strict()
+        )
+      ).toThrow(
+        expect.objectContaining({
+          message: expect.stringContaining(
+            'Failed to parse SNS record at index 0'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                received: 'string',
+                path: ['Records', 0, 'Sns', 'Message'],
+                message: 'Expected object, received string',
+              },
+            ],
+          }),
+        })
+      );
+    });
 
-      expect(SnsSqsEnvelope.parse(snsSqsTestEvent, TestSchema)).toEqual([data]);
+    it('parses a SNS event', () => {
+      // Prepare
+      const testEvent = structuredClone(baseEvent);
+
+      // Act
+      const result = SnsEnvelope.parse(testEvent, z.string());
+
+      // Assess
+      expect(result).toStrictEqual(['Hello from SNS!']);
     });
   });
-  describe('SnsSqsEnvelope safeParse', () => {
-    it('should parse sqs inside sns envelope', () => {
-      const snsSqsTestEvent = TestEvents.snsSqsEvent as SQSEvent;
 
-      const data = generateMock(TestSchema);
-      const snsEvent = JSON.parse(snsSqsTestEvent.Records[0].body);
-      snsEvent.Message = JSON.stringify(data);
+  describe('Method: safeParse', () => {
+    it('parses a SNS event', () => {
+      // Prepare
+      const testEvent = structuredClone(baseEvent);
 
-      snsSqsTestEvent.Records[0].body = JSON.stringify(snsEvent);
+      // Act
+      const result = SnsEnvelope.safeParse(testEvent, z.string());
 
-      expect(SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema)).toEqual({
+      // Assess
+      expect(result).toStrictEqual({
         success: true,
-        data: [data],
+        data: ['Hello from SNS!'],
       });
     });
-    it('should return error when envelope is not valid', () => {
-      expect(SnsSqsEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({
+
+    it('returns an error if the event is not a valid SNS event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      // @ts-expect-error - force invalid event
+      event.Records[0].Sns = undefined;
+
+      // Act
+      const result = SnsEnvelope.safeParse(event, z.string());
+
+      // Assess
+      expect(result).be.deep.equal({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: { foo: 'bar' },
+        error: new ParseError('Failed to parse SNS envelope', {
+          cause: new ZodError([
+            {
+              code: 'invalid_type',
+              expected: 'object',
+              received: 'undefined',
+              path: ['Records', 0, 'Sns'],
+              message: 'Required',
+            },
+          ]),
+        }),
+        originalEvent: event,
       });
     });
-    it('should return error if message does not match schema', () => {
-      const snsSqsTestEvent = TestEvents.snsSqsEvent as SQSEvent;
 
-      const snsEvent = JSON.parse(snsSqsTestEvent.Records[0].body);
-      snsEvent.Message = JSON.stringify({
-        foo: 'bar',
-      });
+    it('returns an error if any of the messages do not match the schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.Records[1] = structuredClone(event.Records[0]);
+      event.Records[0].Sns.Message = JSON.stringify({ foo: 'bar' });
+      event.Records[1].Sns.Message = JSON.stringify({ foo: 36 });
 
-      snsSqsTestEvent.Records[0].body = JSON.stringify(snsEvent);
+      // Act
+      const result = SnsEnvelope.safeParse(
+        event,
+        JSONStringified(
+          z.object({
+            foo: z.string(),
+          })
+        )
+      );
 
-      const parseResult = SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema);
-      expect(parseResult).toEqual({
+      // Assess
+      expect(result).be.deep.equal({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: snsSqsTestEvent,
+        error: new ParseError('Failed to parse SNS message at index 1', {
+          cause: new ZodError([
+            {
+              code: 'invalid_type',
+              expected: 'string',
+              received: 'number',
+              path: ['Records', 1, 'Sns', 'Message', 'foo'],
+              message: 'Expected string, received number',
+            },
+          ]),
+        }),
+        originalEvent: event,
       });
-
-      if (!parseResult.success && parseResult.error) {
-        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
-      }
     });
-    it('should return error if sns message is not valid', () => {
-      const snsSqsTestEvent = TestEvents.snsSqsEvent as SQSEvent;
 
-      snsSqsTestEvent.Records[0].body = JSON.stringify({
-        foo: 'bar',
-      });
+    it('returns a combined error if multiple records fail to parse', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.Records[1] = structuredClone(event.Records[0]);
 
-      expect(SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema)).toEqual({
+      // Act
+      const result = SnsEnvelope.safeParse(
+        event,
+        JSONStringified(
+          z.object({
+            foo: z.string(),
+          })
+        )
+      );
+
+      // Assess
+      expect(result).be.deep.equal({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: snsSqsTestEvent,
-      });
-    });
-    it('should return error if JSON parse fails for record.body', () => {
-      const snsSqsTestEvent = TestEvents.snsSqsEvent as SQSEvent;
-
-      snsSqsTestEvent.Records[0].body = 'not a json string';
-
-      expect(SnsSqsEnvelope.safeParse(snsSqsTestEvent, TestSchema)).toEqual({
-        success: false,
-        error: expect.any(SyntaxError),
-        originalEvent: snsSqsTestEvent,
-      });
-    });
-  });
-});
-describe('SnsEnvelope', () => {
-  describe('parse', () => {
-    it('should parse custom schema in envelope', () => {
-      const testEvent = TestEvents.snsEvent as SNSEvent;
-
-      const testRecords = [] as z.infer<typeof TestSchema>[];
-
-      testEvent.Records.map((record) => {
-        const value = generateMock(TestSchema);
-        testRecords.push(value);
-        record.Sns.Message = JSON.stringify(value);
-      });
-
-      expect(SnsEnvelope.parse(testEvent, TestSchema)).toEqual(testRecords);
-    });
-
-    it('should throw if message does not macht schema', () => {
-      const testEvent = TestEvents.snsEvent as SNSEvent;
-
-      testEvent.Records.map((record) => {
-        record.Sns.Message = JSON.stringify({
-          foo: 'bar',
-        });
-      });
-
-      expect(() => SnsEnvelope.parse(testEvent, TestSchema)).toThrow();
-    });
-    it('should throw if envelope is not valid', () => {
-      expect(() => SnsEnvelope.parse({ foo: 'bar' }, TestSchema)).toThrow();
-    });
-  });
-  describe('safeParse', () => {
-    it('should parse custom schema in envelope', () => {
-      const testEvent = TestEvents.snsEvent as SNSEvent;
-
-      const testRecords = [] as z.infer<typeof TestSchema>[];
-
-      testEvent.Records.map((record) => {
-        const value = generateMock(TestSchema);
-        testRecords.push(value);
-        record.Sns.Message = JSON.stringify(value);
-      });
-
-      expect(SnsEnvelope.safeParse(testEvent, TestSchema)).toEqual({
-        success: true,
-        data: testRecords,
-      });
-    });
-
-    it('should return error when message does not macht schema', () => {
-      const testEvent = TestEvents.snsEvent as SNSEvent;
-
-      testEvent.Records.map((record) => {
-        record.Sns.Message = JSON.stringify({
-          foo: 'bar',
-        });
-      });
-
-      const parseResult = SnsEnvelope.safeParse(testEvent, TestSchema);
-      expect(parseResult).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: testEvent,
-      });
-
-      if (!parseResult.success && parseResult.error) {
-        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
-      }
-    });
-    it('should return error when envelope is not valid', () => {
-      expect(SnsEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({
-        success: false,
-        error: expect.any(ParseError),
-        originalEvent: { foo: 'bar' },
+        error: new ParseError('Failed to parse SNS messages at indexes 0, 1', {
+          cause: new ZodError([
+            {
+              code: 'custom',
+              message: 'Invalid JSON',
+              path: ['Records', 0, 'Sns', 'Message'],
+            },
+            {
+              code: 'custom',
+              message: 'Invalid JSON',
+              path: ['Records', 1, 'Sns', 'Message'],
+            },
+          ]),
+        }),
+        originalEvent: event,
       });
     });
   });

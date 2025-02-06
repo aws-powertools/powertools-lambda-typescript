@@ -35,13 +35,19 @@ const KinesisFirehoseRecordSchema = KinesisFireHoseRecordBase.extend({
  * Zod schema for a SQS record from an Kinesis Firehose event.
  */
 const KinesisFirehoseSqsRecordSchema = KinesisFireHoseRecordBase.extend({
-  data: z.string().transform((data) => {
+  data: z.string().transform((data, ctx) => {
     try {
       return SqsRecordSchema.parse(
         JSON.parse(Buffer.from(data, 'base64').toString('utf8'))
       );
     } catch (e) {
-      return data;
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Failed to parse SQS record',
+        fatal: true,
+      });
+
+      return z.NEVER;
     }
   }),
 });
@@ -89,7 +95,7 @@ const KinesisFirehoseSqsRecordSchema = KinesisFireHoseRecordBase.extend({
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/services-kinesisfirehose.html}
  */
 const KinesisFirehoseSchema = KinesisFireHoseBaseSchema.extend({
-  records: z.array(KinesisFirehoseRecordSchema),
+  records: z.array(KinesisFirehoseRecordSchema).min(1),
 });
 
 /**
@@ -114,7 +120,7 @@ const KinesisFirehoseSchema = KinesisFireHoseBaseSchema.extend({
  * @see {@link types.KinesisFireHoseSqsEvent | KinesisFireHoseSqsEvent}
  */
 const KinesisFirehoseSqsSchema = KinesisFireHoseBaseSchema.extend({
-  records: z.array(KinesisFirehoseSqsRecordSchema),
+  records: z.array(KinesisFirehoseSqsRecordSchema).min(1),
 });
 
 export {

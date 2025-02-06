@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parser",
-  "version": "2.12.0",
+  "version": "2.13.1",
   "description": "The parser package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -179,6 +179,10 @@
     "./helpers": {
       "require": "./lib/cjs/helpers.js",
       "import": "./lib/esm/helpers.js"
+    },
+    "./helpers/dynamodb": {
+      "require": "./lib/cjs/helpers/dynamodb.js",
+      "import": "./lib/esm/helpers/dynamodb.js"
     },
     "./types": {
       "require": "./lib/cjs/types/index.js",
@@ -361,6 +365,9 @@
     "typescript",
     "nodejs"
   ],
+  "dependencies": {
+    "@aws-lambda-powertools/commons": "^2.13.1"
+  },
   "peerDependencies": {
     "@middy/core": "4.x || 5.x || 6.x",
     "zod": ">=3.x"
@@ -372,9 +379,5 @@
     "@middy/core": {
       "optional": true
     }
-  },
-  "devDependencies": {
-    "@anatine/zod-mock": "^3.13.3",
-    "@faker-js/faker": "^9.0.2"
   }
 }

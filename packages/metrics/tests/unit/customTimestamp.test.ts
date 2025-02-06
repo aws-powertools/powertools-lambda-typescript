@@ -15,7 +15,7 @@ describe('Setting custom timestamp', () => {
       POWERTOOLS_DEV: 'true',
       POWERTOOLS_METRICS_DISABLED: 'false',
     };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
     vi.useFakeTimers().setSystemTime(new Date());
   });
 

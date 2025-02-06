@@ -1,131 +1,270 @@
-import { gzipSync } from 'node:zlib';
-import { generateMock } from '@anatine/zod-mock';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 import { ParseError } from '../../../src';
 import { CloudWatchEnvelope } from '../../../src/envelopes/index.js';
-import {
-  CloudWatchLogEventSchema,
-  CloudWatchLogsDecodeSchema,
-} from '../../../src/schemas/';
-import { TestSchema } from '../schema/utils.js';
+import { DecompressError } from '../../../src/errors.js';
+import { JSONStringified } from '../../../src/helpers.js';
+import { getTestEvent } from '../helpers/utils.js';
 
-describe('CloudWatch', () => {
-  describe('parse', () => {
-    it('should parse custom schema in envelope', () => {
-      const testEvent = {
-        awslogs: {
-          data: '',
-        },
-      };
+const decompressRecordToJSON = (
+  data: string
+): {
+  logEvents: {
+    message: string;
+    id: string;
+    timestamp: number;
+  }[];
+  messageType: string;
+  owner: string;
+  logGroup: string;
+  logStream: string;
+  subscriptionFilters: string[];
+} => {
+  const uncompressed = gunzipSync(Buffer.from(data, 'base64')).toString('utf8');
 
-      const data = generateMock(TestSchema);
-      const eventMock = generateMock(CloudWatchLogEventSchema, {
-        stringMap: {
-          message: () => JSON.stringify(data),
-        },
-      });
+  return JSON.parse(uncompressed);
+};
 
-      const logMock = generateMock(CloudWatchLogsDecodeSchema);
-      logMock.logEvents = [eventMock];
+const compressJSONToRecord = (data: unknown): string => {
+  const jsonString = JSON.stringify(data);
+  return gzipSync(Buffer.from(jsonString, 'utf8')).toString('base64');
+};
 
-      testEvent.awslogs.data = gzipSync(
-        Buffer.from(JSON.stringify(logMock), 'utf8')
-      ).toString('base64');
+describe('Envelope: CloudWatch', () => {
+  const baseEvent = getTestEvent<{ awslogs: { data: string } }>({
+    eventsPath: 'cloudwatch',
+    filename: 'base',
+  });
+  const data = decompressRecordToJSON(structuredClone(baseEvent).awslogs.data);
+  const mockLogMessages = [
+    {
+      level: 'DEBUG',
+      message: 'Hello from other.ts',
+      sample_rate: 1,
+    },
+    {
+      level: 'INFO',
+      message: 'processing event',
+      sample_rate: 1,
+    },
+  ];
+  const JSONOnlyEvent = {
+    awslogs: {
+      data: compressJSONToRecord({
+        ...data,
+        logEvents: [
+          {
+            ...data.logEvents[0],
+            message: JSON.stringify(mockLogMessages[0]),
+          },
+          {
+            ...data.logEvents[1],
+            message: JSON.stringify(mockLogMessages[1]),
+          },
+        ],
+      }),
+    },
+  };
 
-      expect(CloudWatchEnvelope.parse(testEvent, TestSchema)).toEqual([data]);
+  describe('Method: parse', () => {
+    it('throws if one of the payloads does not match the schema', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+
+      // Act & Assess
+      expect(() =>
+        CloudWatchEnvelope.parse(
+          event,
+          z
+            .object({
+              message: z.string(),
+            })
+            .strict()
+        )
+      ).toThrow(
+        expect.objectContaining({
+          message: expect.stringContaining(
+            'Failed to parse CloudWatch log event at index 0'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                received: 'string',
+                path: ['awslogs', 'data', 'logEvents', 0, 'message'],
+                message: 'Expected object, received string',
+              },
+            ],
+          }),
+        })
+      );
     });
 
-    it('should throw when schema does not match', () => {
-      const testEvent = {
-        awslogs: {
-          data: '',
-        },
-      };
+    it('parses a CloudWatch Logs event', () => {
+      // Prepare
+      const event = structuredClone(JSONOnlyEvent);
 
-      const eventMock = generateMock(CloudWatchLogEventSchema, {
-        stringMap: {
-          message: () => JSON.stringify({ foo: 'bar' }),
-        },
-      });
+      // Act
+      const result = CloudWatchEnvelope.parse(
+        event,
+        JSONStringified(
+          z.object({
+            level: z.string(),
+            message: z.string(),
+            sample_rate: z.number(),
+          })
+        )
+      );
 
-      const logMock = generateMock(CloudWatchLogsDecodeSchema);
-      logMock.logEvents = [eventMock];
-
-      testEvent.awslogs.data = gzipSync(
-        Buffer.from(JSON.stringify(logMock), 'utf8')
-      ).toString('base64');
-
-      expect(() => CloudWatchEnvelope.parse(testEvent, TestSchema)).toThrow();
+      // Assess
+      expect(result).toStrictEqual(mockLogMessages);
     });
   });
 
-  describe('safeParse', () => {
-    it('should parse custom schema in envelope', () => {
-      const testEvent = {
-        awslogs: {
-          data: '',
-        },
-      };
+  describe('Method: safeParse', () => {
+    it('parses a CloudWatch Logs event', () => {
+      // Prepare
+      const event = structuredClone(JSONOnlyEvent);
 
-      const data = generateMock(TestSchema);
-      const eventMock = generateMock(CloudWatchLogEventSchema, {
-        stringMap: {
-          message: () => JSON.stringify(data),
-        },
-      });
+      // Act
+      const result = CloudWatchEnvelope.safeParse(
+        event,
+        JSONStringified(
+          z.object({
+            level: z.string(),
+            message: z.string(),
+            sample_rate: z.number(),
+          })
+        )
+      );
 
-      const logMock = generateMock(CloudWatchLogsDecodeSchema);
-      logMock.logEvents = [eventMock];
-
-      testEvent.awslogs.data = gzipSync(
-        Buffer.from(JSON.stringify(logMock), 'utf8')
-      ).toString('base64');
-
-      const actual = CloudWatchEnvelope.safeParse(testEvent, TestSchema);
-      expect(actual).toEqual({
+      // Assess
+      expect(result).toStrictEqual({
         success: true,
-        data: [data],
+        data: mockLogMessages,
       });
     });
 
-    it('should return success false when schema does not match', () => {
-      const testEvent = {
+    it('returns an error if the event is not a valid CloudWatch Logs event', () => {
+      // Prepare
+      const event = {
         awslogs: {
-          data: '',
+          data: 'invalid',
         },
       };
 
-      const eventMock = generateMock(CloudWatchLogEventSchema, {
-        stringMap: {
-          message: () => JSON.stringify({ foo: 'bar' }),
-        },
-      });
+      // Act
+      const result = CloudWatchEnvelope.safeParse(event, z.object({}));
 
-      const logMock = generateMock(CloudWatchLogsDecodeSchema);
-      logMock.logEvents = [eventMock];
-
-      testEvent.awslogs.data = gzipSync(
-        Buffer.from(JSON.stringify(logMock), 'utf8')
-      ).toString('base64');
-
-      const parseResult = CloudWatchEnvelope.safeParse(testEvent, TestSchema);
-      expect(parseResult).toEqual({
+      // Assess
+      expect(result).toStrictEqual({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: testEvent,
+        error: new ParseError('Failed to parse CloudWatch Log envelope', {
+          cause: new DecompressError(
+            'Failed to decompress CloudWatch log data'
+          ),
+        }),
+        originalEvent: event,
       });
-
-      if (!parseResult.success && parseResult.error) {
-        expect(parseResult.error.cause).toBeInstanceOf(ZodError);
-      }
     });
 
-    it('should return success false when envelope does not match', () => {
-      expect(CloudWatchEnvelope.safeParse({ foo: 'bar' }, TestSchema)).toEqual({
+    it('returns an error if any of the messages fail to parse', () => {
+      // Prepare
+      const event = {
+        awslogs: {
+          data: compressJSONToRecord({
+            ...data,
+            logEvents: [
+              {
+                ...data.logEvents[0],
+                message: 'invalid',
+              },
+              {
+                ...data.logEvents[1],
+                message: JSON.stringify(mockLogMessages[1]),
+              },
+            ],
+          }),
+        },
+      };
+
+      // Act
+      const result = CloudWatchEnvelope.safeParse(
+        event,
+        JSONStringified(
+          z.object({
+            level: z.string(),
+            message: z.string(),
+            sample_rate: z.number(),
+          })
+        )
+      );
+
+      // Assess
+      expect(result).be.deep.equal({
         success: false,
-        error: expect.any(ParseError),
-        originalEvent: { foo: 'bar' },
+        error: new ParseError(
+          'Failed to parse CloudWatch Log message at index 0',
+          {
+            cause: new ZodError([
+              {
+                code: 'custom',
+                message: 'Invalid JSON',
+                path: ['awslogs', 'data', 'logEvents', 0, 'message'],
+              },
+            ]),
+          }
+        ),
+        originalEvent: event,
+      });
+    });
+
+    it('returns a combined error if multiple records fail to parse', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+
+      // Act
+      const result = CloudWatchEnvelope.safeParse(
+        event,
+        z.object({
+          message: z.string(),
+        })
+      );
+
+      // Assess
+      expect(result).be.deep.equal({
+        success: false,
+        error: new ParseError(
+          'Failed to parse CloudWatch Log messages at indexes 0, 1, 2',
+          {
+            cause: new ZodError([
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                received: 'string',
+                path: ['awslogs', 'data', 'logEvents', 0, 'message'],
+                message: 'Expected object, received string',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                received: 'string',
+                path: ['awslogs', 'data', 'logEvents', 1, 'message'],
+                message: 'Expected object, received string',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                received: 'string',
+                path: ['awslogs', 'data', 'logEvents', 2, 'message'],
+                message: 'Expected object, received string',
+              },
+            ]),
+          }
+        ),
+        originalEvent: event,
       });
     });
   });

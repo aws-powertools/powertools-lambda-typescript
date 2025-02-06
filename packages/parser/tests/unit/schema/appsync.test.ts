@@ -1,141 +1,146 @@
-/**
- * Test built-in AppSync resolver schemas
- *
- * @group unit/parser/schema/appsync
- */
-
 import { describe, expect, it } from 'vitest';
 import {
   AppSyncBatchResolverSchema,
   AppSyncResolverSchema,
-} from '../../../src/schemas/appsync';
-import type { AppSyncResolverEvent } from '../../../src/types';
-import { getTestEvent } from './utils';
+} from '../../../src/schemas/appsync.js';
+import type { AppSyncResolverEvent } from '../../../src/types/schema.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
-type Table = {
-  name: string;
-  filename: string;
-};
-
-describe('AppSync Resolver Schemas', () => {
+describe('Schema: AppSync Resolver', () => {
   const eventsPath = 'appsync';
+  const appSyncResolverEvent = getTestEvent<AppSyncResolverEvent>({
+    eventsPath,
+    filename: 'resolver',
+  });
 
-  const table = [
+  const events = [
     {
-      name: 'should parse resolver event without identity field',
-      filename: 'no-identity',
+      name: 'null source',
+      event: {
+        ...appSyncResolverEvent,
+        source: null,
+      },
     },
     {
-      name: 'should parse resolver event with null source',
-      filename: 'null-source',
+      name: 'null prev',
+      event: {
+        ...appSyncResolverEvent,
+        prev: null,
+      },
     },
     {
-      name: 'should parse resolver event with null prev',
-      filename: 'null-prev',
+      name: 'no custom domain',
+      event: {
+        ...appSyncResolverEvent,
+        request: {
+          ...appSyncResolverEvent.request,
+          domainName: null,
+        },
+      },
     },
     {
-      name: 'should parse resolver event with custom domain name',
-      filename: 'custom-domain-name',
+      name: 'cognito identity and no rbac groups',
+      event: {
+        ...appSyncResolverEvent,
+        identity: {
+          claims: {
+            sub: '192879fc-a240-4bf1-ab5a-d6a00f3063f9',
+          },
+          defaultAuthStrategy: 'ALLOW',
+          groups: null,
+          issuer:
+            'https://cognito-idp.us-west-2.amazonaws.com/us-west-xxxxxxxxxxx',
+          sourceIp: ['1.1.1.1'],
+          sub: '192879fc-a240-4bf1-ab5a-d6a00f3063f9',
+          username: 'jdoe',
+        },
+      },
     },
     {
-      name: 'should parse resolver event with cognito identity and rbac groups',
-      filename: 'cognito-identity-group',
+      name: 'iam identity with no cognito fields',
+      event: {
+        ...appSyncResolverEvent,
+        identity: {
+          accountId: '012345678901',
+          cognitoIdentityAuthProvider: null,
+          cognitoIdentityAuthType: null,
+          cognitoIdentityId: null,
+          cognitoIdentityPoolId: null,
+          sourceIp: ['1.1.1.1'],
+          userArn: 'arn:aws:sts::012345678901:assumed-role/role',
+          username: 'AROAXYKJUOW6FHGUSK5FA:username',
+        },
+      },
     },
     {
-      name: 'should parse resolver event with cognito identity and no rbac groups',
-      filename: 'cognito-identity-null-group',
+      name: 'iam identity with cognito fields',
+      event: {
+        ...appSyncResolverEvent,
+        identity: {
+          accountId: '012345678901',
+          cognitoIdentityAuthProvider: 'cognitoIdentityAuthProvider',
+          cognitoIdentityAuthType: 'cognitoIdentityAuthType',
+          cognitoIdentityId: 'cognitoIdentityId',
+          cognitoIdentityPoolId: 'cognitoIdentityPoolId',
+          sourceIp: ['1.1.1.1'],
+          userArn: 'arn:aws:sts::012345678901:assumed-role/role',
+          username: 'AROAXYKJUOW6FHGUSK5FA:username',
+        },
+      },
     },
     {
-      name: 'with iam identity with no cognito fields',
-      filename: 'iam-identity-no-cognito',
+      name: 'lambda identity',
+      event: {
+        ...appSyncResolverEvent,
+        identity: {
+          resolverContext: {
+            field1: 'value',
+          },
+        },
+      },
     },
     {
-      name: 'should parse resolver event with iam identity with cognito fields',
-      filename: 'iam-identity-cognito',
-    },
-    {
-      name: 'should parse resolver event with lambda identity',
-      filename: 'lambda-identity',
-    },
-    {
-      name: 'should parse resolver event with oidc identity',
-      filename: 'oidc-identity',
+      name: 'oidc identity',
+      event: {
+        ...appSyncResolverEvent,
+        identity: {
+          claims: {
+            sub: 'sub',
+          },
+          issuer: 'issuer',
+          sub: 'sub',
+        },
+      },
     },
   ];
 
-  describe('AppSync Resolver Schema', () => {
-    it('should return validation error when the event is invalid', () => {
-      const event = getTestEvent({ eventsPath, filename: 'invalid' });
+  it.each(events)('parses an AppSyn resolver event with $name', ({ event }) => {
+    // Assess
+    const result = AppSyncResolverSchema.parse(event);
 
-      const { error } = AppSyncResolverSchema.safeParse(event);
-
-      expect(error?.issues).toEqual([
-        {
-          code: 'invalid_type',
-          expected: 'object',
-          received: 'undefined',
-          path: ['request'],
-          message: 'Required',
-        },
-        {
-          code: 'invalid_type',
-          expected: 'object',
-          received: 'undefined',
-          path: ['info'],
-          message: 'Required',
-        },
-      ]);
-    });
-
-    it.each(table)('$name', ({ filename }) => {
-      const event = getTestEvent<AppSyncResolverEvent>({
-        eventsPath,
-        filename,
-      });
-
-      const parsedEvent = AppSyncResolverSchema.parse(event);
-
-      expect(parsedEvent).toEqual(event);
-    });
+    // Assess
+    expect(result).toEqual(event);
   });
 
-  describe('Batch AppSync Resolver Schema', () => {
-    it('should return validation error when the event is invalid', () => {
-      const event = getTestEvent<AppSyncResolverEvent>({
-        eventsPath,
-        filename: 'invalid',
-      });
+  it('throws when the event is not an AppSync resolver event', () => {
+    // Prepare
+    const event = omit(
+      ['request', 'info'],
+      structuredClone(appSyncResolverEvent)
+    );
 
-      const { error } = AppSyncBatchResolverSchema.safeParse([event]);
+    // Act & Assess
+    expect(() => AppSyncResolverSchema.parse(event)).toThrow();
+  });
 
-      expect(error?.issues).toEqual([
-        {
-          code: 'invalid_type',
-          expected: 'object',
-          received: 'undefined',
-          path: [0, 'request'],
-          message: 'Required',
-        },
-        {
-          code: 'invalid_type',
-          expected: 'object',
-          received: 'undefined',
-          path: [0, 'info'],
-          message: 'Required',
-        },
-      ]);
-    });
+  it('parses batches of AppSync resolver events', () => {
+    // Prepare
+    const event = events.map((event) => structuredClone(event.event));
 
-    it('should parse batches of appsync resolver events', () => {
-      const filenames = table.map((table: Table) => table.filename);
+    // Act
+    const result = AppSyncBatchResolverSchema.parse(event);
 
-      const events = filenames.map((filename) =>
-        getTestEvent<AppSyncResolverEvent>({ eventsPath, filename })
-      );
-
-      const parsedEvent = AppSyncBatchResolverSchema.parse(events);
-
-      expect(parsedEvent).toEqual(events);
-    });
+    // Assess
+    expect(result).toEqual(event);
   });
 });

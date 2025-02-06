@@ -64,7 +64,9 @@ describe('Class: SSMProvider', () => {
       const provider = new SSMProvider(options);
 
       // Assess
-      expect(provider.client.config.region()).resolves.toEqual('eu-south-2');
+      await expect(provider.client.config.region()).resolves.toEqual(
+        'eu-south-2'
+      );
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
@@ -96,7 +98,6 @@ describe('Class: SSMProvider', () => {
       const options: SSMProviderOptions = {
         awsSdkV3Client: awsSdkV3Client as SSMClient,
       };
-      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       // Act
       const provider = new SSMProvider(options);
@@ -107,7 +108,7 @@ describe('Class: SSMProvider', () => {
           serviceId: 'SSM',
         })
       );
-      expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+      expect(console.warn).toHaveBeenNthCalledWith(
         1,
         'awsSdkV3Client is not an AWS SDK v3 client, using default client'
       );

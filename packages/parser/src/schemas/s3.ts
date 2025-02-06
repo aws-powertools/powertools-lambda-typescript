@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { JSONStringified } from '../helpers.js';
 import { EventBridgeSchema } from './eventbridge.js';
 import { SqsRecordSchema } from './sqs.js';
 
@@ -166,15 +167,18 @@ const S3EventNotificationEventBridgeSchema = EventBridgeSchema.extend({
  * @see {@link https://docs.aws.amazon.com/AmazonS3/latest/userguide/notification-content-structure.html}
  */
 const S3Schema = z.object({
-  Records: z.array(S3RecordSchema),
+  Records: z.array(S3RecordSchema).min(1),
 });
 
 const S3SqsEventNotificationRecordSchema = SqsRecordSchema.extend({
-  body: z.string(),
+  body: JSONStringified(S3Schema),
 });
 
 /**
  * Zod schema for S3 -> SQS -> Lambda event notification.
+ *
+ * Each SQS record’s body field is automatically parsed from a JSON string
+ * and then validated as an S3 event.
  *
  * @example
  * ```json
@@ -204,7 +208,7 @@ const S3SqsEventNotificationRecordSchema = SqsRecordSchema.extend({
  * @see {@link types.S3SqsEventNotification | S3SqsEventNotification }
  */
 const S3SqsEventNotificationSchema = z.object({
-  Records: z.array(S3SqsEventNotificationRecordSchema),
+  Records: z.array(S3SqsEventNotificationRecordSchema).min(1),
 });
 
 const S3ObjectContext = z.object({

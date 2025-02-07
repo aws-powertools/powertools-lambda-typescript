@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
 import {
   ApiGatewayEnvelope,
@@ -69,10 +69,6 @@ describe('Types ', () => {
     expect(Array.isArray(result)).toBe(true);
     expect(result).toEqual([{ name: 'John', age: 30 }]);
 
-    // Type assertion to ensure it's specifically User[]
-    type AssertIsUserArray<T> = T extends z.infer<typeof userSchema>[]
-      ? true
-      : false;
-    type Test = AssertIsUserArray<Result>;
+    expectTypeOf(result).toEqualTypeOf<z.infer<typeof userSchema>[]>();
   });
 });

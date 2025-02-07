@@ -34,7 +34,7 @@ type ParsedResultError<Input> = {
 /**
  * The result of parsing an event using the safeParse, can either be a success or an error
  */
-type ParsedResult<Input = unknown, Output = unknown> =
+type ParsedResult<Input = unknown, Output = Input> =
   | ParsedResultSuccess<Output>
   | ParsedResultError<Input>;
 
@@ -54,7 +54,7 @@ type ZodInferredSafeParseResult<
   TSchema extends ZodSchema,
   TEnvelope extends Envelope,
 > = undefined extends TEnvelope
-  ? ParsedResult<unknown, z.infer<TSchema>>
+  ? ParsedResult<z.infer<TSchema>, z.infer<TSchema>>
   : TEnvelope extends ArrayEnvelope
     ? ParsedResult<unknown, z.infer<TSchema>[]>
     : ParsedResult<unknown, z.infer<TSchema>>;

@@ -136,7 +136,7 @@ describe('Envelope: Kinesis Firehose', () => {
       const result = KinesisFirehoseEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse Kinesis Firehose envelope', {
           cause: new ZodError([
@@ -169,7 +169,7 @@ describe('Envelope: Kinesis Firehose', () => {
       );
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError(
           'Failed to parse Kinesis Firehose record at index 1',
@@ -202,7 +202,7 @@ describe('Envelope: Kinesis Firehose', () => {
       );
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError(
           'Failed to parse Kinesis Firehose records at indexes 0, 1',

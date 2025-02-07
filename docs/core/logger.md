@@ -52,6 +52,9 @@ These settings will be used across all logs emitted:
 | **Logging level** | Sets how verbose Logger should be, from the most verbose to the least verbose (no logs)                          | `POWERTOOLS_LOG_LEVEL`          | `INFO`              | `DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`, `SILENT` | `ERROR`             | `logLevel`            |
 | **Sample rate**   | Probability that a Lambda invocation will print all the log items regardless of the log level setting            | `POWERTOOLS_LOGGER_SAMPLE_RATE` | `0`                 | `0.0` to `1.0`                                         | `0.1`               | `sampleRateValue`     |
 
+???+ info
+    When `POWERTOOLS_DEV` environment variable is present and set to `"true"` or `"1"`, Logger will pretty-print log messages for easier readability. We recommend to use this setting only when debugging on local environments.
+
 See all environment variables in the [Environment variables](../index.md/#environment-variables) section.
 Check API docs to learn more about [Logger constructor options](https://docs.powertools.aws.dev/lambda/typescript/latest/api/types/_aws_lambda_powertools_logger.types.ConstructorOptions.html){target="_blank"}.
 
@@ -91,8 +94,8 @@ Your Logger will include the following keys to your structured logging (default 
 | **xray_trace_id**: `string` | `1-5759e988-bd862e3fe1be46a994272793`                                                                            | X-Ray Trace ID. This value is always presented in Lambda environment, whether [tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"} or not. Logger will always log this value. |
 | **error**: `Object`         | `{ name: "Error", location: "/my-project/handler.ts:18", message: "Unexpected error #1", stack: "[stacktrace]"}` | Optional - An object containing information about the Error passed to the logger                                                                                                                                                |
 
-???+ info
-    When `POWERTOOLS_DEV` environment variable is present and set to `"true"` or `"1"`, Logger will pretty-print log messages for easier readability. We recommend to use this setting only when debugging on local environments.
+???+ note
+    If you emit a log message with a key that matches one of `level`, `message`, `sampling_rate`, `service`, or `timestamp`, the Logger will log a warning message and ignore the key.
 
 ### Capturing Lambda context info
 
@@ -145,15 +148,15 @@ In each case, the printed log will look like this:
 
     ```json hl_lines="2-6"
     {
+        "level": "INFO",
+        "message": "This is an INFO log with some context",
+        "timestamp": "2021-12-12T21:21:08.921Z",
+        "service": "serverlessAirline",
         "cold_start": true,
         "function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:shopping-cart-api-lambda-prod-eu-west-1",
         "function_memory_size": 128,
         "function_request_id": "c6af9ac6-7b61-11e6-9a41-93e812345678",
         "function_name": "shopping-cart-api-lambda-prod-eu-west-1",
-        "level": "INFO",
-        "message": "This is an INFO log with some context",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T21:21:08.921Z",
         "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
     }
     ```
@@ -210,6 +213,8 @@ You can append additional keys using either mechanism:
 * Add **extra keys** to a single log message by passing them to the log method directly
 * Append **temporary keys** to all future log messages via the `appendKeys()` method until `resetKeys()` is called
 * Set **Persistent keys** for the logger instance via the `persistentKeys` constructor option or the `appendPersistentKeys()` method
+
+To prevent you from accidentally overwriting some of the [standard keys](#standard-structured-keys), we will log a warning message and ignore the key if you try to overwrite them.
 
 #### Extra keys
 

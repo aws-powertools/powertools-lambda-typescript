@@ -205,6 +205,33 @@ expect.extend({
   },
 });
 
+// Custom equality tester for ZodError
+// see https://github.com/vitest-dev/vitest/issues/7315 & https://github.com/colinhacks/zod/issues/3950
+
+class ZodErrorLike extends Error {
+  public issues: Array<unknown>;
+  constructor() {
+    super();
+    this.issues = [];
+  }
+}
+
+function isZodError(value: unknown): value is ZodErrorLike {
+  return value instanceof Error && value.name === 'ZodError';
+}
+
+expect.addEqualityTesters([
+  function (a, b) {
+    const aOk = isZodError(a);
+    const bOk = isZodError(b);
+    if (aOk && bOk) {
+      // or this.equals(a.message, b.message)
+      return this.equals(a.issues, b.issues);
+    }
+    return aOk !== bOk ? false : undefined;
+  },
+]);
+
 declare module 'vitest' {
   // biome-ignore lint/suspicious/noExplicitAny: vitest typings expect an any type
   interface Assertion<T = any> extends CustomMatcher<T> {

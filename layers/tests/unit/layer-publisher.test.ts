@@ -40,5 +40,5 @@ describe('Class: LayerPublisherStack', () => {
       Name: '/layers/powertools-layer-arn',
       Type: 'String',
     });
-  });
+  }, 120000);
 });

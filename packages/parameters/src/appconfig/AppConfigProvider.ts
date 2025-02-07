@@ -198,7 +198,7 @@ class AppConfigProvider extends BaseProvider {
    */
   public constructor(options: AppConfigProviderOptions) {
     super({
-      proto: AppConfigDataClient as new (
+      awsSdkV3ClientPrototype: AppConfigDataClient as new (
         config?: unknown
       ) => AppConfigDataClient,
       clientConfig: options.clientConfig,

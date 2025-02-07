@@ -84,7 +84,7 @@ describe('Envelope: Kafka', () => {
       const result = KafkaEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse Kafka envelope', {
           cause: new ZodError([
@@ -111,7 +111,7 @@ describe('Envelope: Kafka', () => {
       const result = KafkaEnvelope.safeParse(event, z.number());
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse Kafka envelope', {
           cause: new ZodError([

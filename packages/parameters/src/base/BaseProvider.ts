@@ -8,6 +8,7 @@ import {
 import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import { GetParameterError, TransformParameterError } from '../errors.js';
 import type {
+  BaseProviderConstructorOptions,
   BaseProviderInterface,
   GetMultipleOptionsInterface,
   GetOptionsInterface,
@@ -44,27 +45,25 @@ abstract class BaseProvider implements BaseProviderInterface {
   public constructor({
     awsSdkV3Client,
     clientConfig,
-    proto,
-  }: {
-    awsSdkV3Client?: unknown;
-    clientConfig?: unknown;
-    proto: new (config?: unknown) => unknown;
-  }) {
+    awsSdkV3ClientPrototype,
+  }: BaseProviderConstructorOptions) {
     this.store = new Map();
     this.envVarsService = new EnvironmentVariablesService();
     if (awsSdkV3Client) {
-      if (!isSdkClient(awsSdkV3Client)) {
+      if (!isSdkClient(awsSdkV3Client) && awsSdkV3ClientPrototype) {
         console.warn(
           'awsSdkV3Client is not an AWS SDK v3 client, using default client'
         );
-        this.client = new proto(clientConfig ?? {});
+        this.client = new awsSdkV3ClientPrototype(clientConfig ?? {});
       } else {
         this.client = awsSdkV3Client;
       }
-    } else {
-      this.client = new proto(clientConfig ?? {});
+    } else if (awsSdkV3ClientPrototype) {
+      this.client = new awsSdkV3ClientPrototype(clientConfig ?? {});
     }
-    addUserAgentMiddleware(this.client, 'parameters');
+    if (isSdkClient(this.client)) {
+      addUserAgentMiddleware(this.client, 'parameters');
+    }
   }
 
   /**

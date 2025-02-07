@@ -44,16 +44,16 @@ class PowertoolsLogFormatter extends LogFormatter {
     const baseAttributes: Partial<PowertoolsStandardKeys> &
       Partial<PowertoolsLambdaContextKeys> &
       LogAttributes = {
+      level: attributes.logLevel,
+      message: attributes.message,
+      timestamp: this.formatTimestamp(attributes.timestamp),
+      service: attributes.serviceName,
       cold_start: attributes.lambdaContext?.coldStart,
       function_arn: attributes.lambdaContext?.invokedFunctionArn,
       function_memory_size: attributes.lambdaContext?.memoryLimitInMB,
       function_name: attributes.lambdaContext?.functionName,
       function_request_id: attributes.lambdaContext?.awsRequestId,
-      level: attributes.logLevel,
-      message: attributes.message,
       sampling_rate: attributes.sampleRateValue,
-      service: attributes.serviceName,
-      timestamp: this.formatTimestamp(attributes.timestamp),
       xray_trace_id: attributes.xRayTraceId,
     };
 

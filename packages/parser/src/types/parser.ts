@@ -1,5 +1,5 @@
 import type { ZodError, ZodSchema, z } from 'zod';
-import type { ArrayEnvelope, Envelope, ObjectEnvelope } from './envelope.js';
+import type { ArrayEnvelope, Envelope } from './envelope.js';
 
 /**
  * Options for the parser used in middy middleware and decorator
@@ -90,35 +90,36 @@ type ParseFunction = {
     safeParse: true
   ): ParsedResult<z.infer<T>>;
 
-  // Object envelope cases
-  <T extends ZodSchema>(
+  // Generic envelope case
+  <T extends ZodSchema, E extends Envelope>(
     data: unknown,
-    envelope: ObjectEnvelope,
+    envelope: E,
     schema: T,
     safeParse?: false
-  ): z.infer<T>;
+  ): E extends ArrayEnvelope ? z.infer<T>[] : z.infer<T>;
 
-  <T extends ZodSchema>(
+  <T extends ZodSchema, E extends Envelope>(
     data: unknown,
-    envelope: ObjectEnvelope,
+    envelope: E,
     schema: T,
     safeParse: true
-  ): ParsedResult<unknown, z.infer<T>>;
+  ): E extends ArrayEnvelope
+    ? ParsedResult<unknown, z.infer<T>[]>
+    : ParsedResult<unknown, z.infer<T>>;
 
-  // Array envelope cases
-  <T extends ZodSchema>(
+  // Generic envelope case with safeParse
+  <T extends ZodSchema, E extends Envelope, S extends boolean = false>(
     data: unknown,
-    envelope: ArrayEnvelope,
+    envelope: E,
     schema: T,
-    safeParse?: false
-  ): z.infer<T>[];
-
-  <T extends ZodSchema>(
-    data: unknown,
-    envelope: ArrayEnvelope,
-    schema: T,
-    safeParse: true
-  ): ParsedResult<unknown, z.infer<T>[]>;
+    safeParse?: S
+  ): S extends true
+    ? E extends ArrayEnvelope
+      ? ParsedResult<unknown, z.infer<T>[]>
+      : ParsedResult<unknown, z.infer<T>>
+    : E extends ArrayEnvelope
+      ? z.infer<T>[]
+      : z.infer<T>;
 };
 
 export type {

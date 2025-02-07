@@ -9,7 +9,7 @@ description: Public roadmap for Powertools for AWS Lambda (TypeScript)
 
 Our public roadmap outlines the high level direction we are working towards. We update this document when our priorities change: security and stability are our top priority.
 
-!!! info "For most up-to-date information, see our [board of activities](https://github.com/orgs/aws-powertools/projects/7/views/3?query=is%3Aopen+sort%3Aupdated-desc){target="_blank"}."
+!!! info "For most up-to-date information, see our [board of activities](https://github.com/orgs/aws-powertools/projects/7/views/13?query=is%3Aopen+sort%3Aupdated-desc){target="_blank"}."
 
 ### Key areas
 
@@ -21,10 +21,14 @@ You can help us prioritize by [upvoting existing feature requests](https://githu
 
 [![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET){target="_blank"}
 
-#### Event Handler REST
+#### Event Handler REST (p0)
 
-- [ ] [RFC to discuss initial thoughts and feasibility for TS/JS ecosystem](https://github.com/aws-powertools/powertools-lambda-typescript/issues/413)
-- [ ] Explore pros & cons of whether to build atop lean frameworks (e.g., Hono) or from scratch
+This is a roadmap item that we carry forward from 2024 and involves the creation of a new utility for customers to work with REST APIs built on AWS Lambda, and Amazon API Gateway REST and HTTP APIs, Application Load Balancer (ALB), Lambda Function URLs, and VPC Lattice. It's one of the most requested features in terms of feature parity from our customers.
+
+You can follow the progress of this feature in the [Event Handler REST milestone](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/17). Below are some of the key macro tasks that we will be working on:
+
+- [x] [Explore pros & cons of whether to build atop lean frameworks (e.g., Hono) or from scratch](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2409)
+- [x] [RFC to discuss initial thoughts and feasibility for TS/JS ecosystem](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3500)
 - [ ] Support for API Gateway REST API resolver
 - [ ] Support for API Gateway HTTP API resolver
 - [ ] Support for Lambda Function URL resolver
@@ -39,11 +43,57 @@ You can help us prioritize by [upvoting existing feature requests](https://githu
 - [ ] Support for injecting request details _(consider not doing globals like Python legacy)_
 - [ ] Support for Router _(multi-file routes)_
 
-#### Improve operational excellence
+#### Service Team co-launches (p1)
 
-We continue to work on increasing operational excellence to remove as much undifferentiated heavy lifting for maintainers, so that we can focus on delivering features that help you.
+This is a catch-all roadmap item that stands in for activities that the team will be doing to support the launch of new features. Powertools for AWS continued partnership with AWS Service Teams involves the team working with product teams from the earliest stages of design to ensure that features are built by working backwards from the customer.
 
-This means improving our automation workflows, project management, and test coverage.
+We will announce these features as they are launched and will update this roadmap with more details as they become available.
+
+#### Feature parity (p2)
+
+To close the gap between Powertools for AWS Lambda (Python) and Powertools for AWS Lambda (TypeScript), we will focus our efforts on adding targeted features that are currently missing from the TypeScript version. These include (but are not limited to):
+
+##### Logger
+
+- [ ] [Ability to buffer logs](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3410)
+- [ ] [Ability to add a correlation ID to logs via decorator/middleware](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2863)
+- [ ] [Ability to refresh debug log sampling rate via decorator/middleware](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3278)
+
+##### Event Handler
+
+In addition to the Event Handler REST feature mentioned above, we will also be working on the following:
+
+- [ ] Implement resolver for Amazon Bedrock Agents
+- [ ] Create RFC for AppSync GraphQL resolver
+
+##### Validation
+
+For the Validation utility, we'll experiment with a community-driven approach to building a new Powertools for AWS Lambda utility.
+
+We will update this roadmap with more details as they become available.
+
+#### Governance & Advanced Use Cases (p3)
+
+To streghten our offering for more advanced customers as well as enterprises, we will be working on a set of activities that will help us better support their needs and practices. These include:
+
+- [ ] [Publish Lambda layers to GovCloud](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3423)
+- [ ] Publish China regions
+- [ ] [Publish SSM Parameters to lookup Lambda layers ARNs](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3439)
+- [ ] Improve OSS supply chain posture (Q2) by making sure we're auditing our dependencies for compatible licenses and include NOTICE files in our Lambda layers
+- [ ] Create a new "Advanced Use Cases" section in the docs - to help customers with more complex use cases, such as running Powertools for AWS Lambda in container environments
+- [ ] Set up CI/CD for performance testing
+- [ ] Improve performance of our core utilities
+- [ ] [Improve performance overhead of Lambda layers](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1725)
+
+#### Community engagement & new customers (p4)
+
+To ensure we are attracting tomorrow's customers as well as new contributors to the project, we will be working on a set of activities that will help us better engage with the community and new customers. These include:
+
+- [ ] [Create a new "Getting Started" guide in the docs](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2948)
+- [ ] Further improve the "Contributing" & "How to find contributions" pages
+- [ ] Surface contribution opportunities in Discord & other community channels
+- [ ] Improve release notes announcements  in Discord & other community channels
+- [ ] We will also attempt to create a community-developed new utility (see [Validation](#validation) above)
 
 ### Roadmap status definition
 
@@ -111,43 +161,3 @@ A: Because job zero is security and operational stability, we can't provide spec
 **Q: How can I provide feedback or ask for more information?**
 
 A: For existing features, you can directly comment on issues. For anything else, please open an issue.
-
-### Launched
-
-#### JMESPath Functions
-
-> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/)
-
-Feature parity on JMESPath Powertools Functions feature
-
-- [x] Support for extracting data
-- [x] Support for envelopes (unwrap before data extraction)
-- [x] Support for built-in `powertools_json` JMESPath function
-- [x] Support for built-in `powertools_base64` JMESPath function
-- [x] Support for built-in `powertools_base64_gzip` JMESPath function
-- [x] Support for Bring Your Own JMESPath function
-
-#### Parser (Zod)
-
-> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parser/)
-
-Feature parity on Parser feature
-
-- [x] Support for defining your own Zod schema
-- [x] Support for popular Lambda Event Sources as built-in schemas
-- [x] Support for envelope (wrapping before schema validation)
-- [x] Support for user-defined envelopes
-
-#### Version 2 release
-
-> [Docs](https://docs.powertools.aws.dev/lambda/typescript/latest/upgrade/)
-
-Over the past year, we have gathered a number of feature requests and improvements that we want to implement but that are not backwards compatible with the current API surface. We are going to release our next major version (v2) by the end of 2023, which will include some of these changes:
-
-- [x] **ES Modules support ([#521](https://github.com/aws-powertools/powertools-lambda-typescript/issues/521))** - Thanks to the work of the community we have been able to validate the feasibility of dual support for CommonJS and ES Modules. We are currently working on a plan to implement this.
-- [x] **TypeScript 5.x support ([#1375](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1375))** - This new version of TypeScript brings breaking changes to the experimental decorators API, which we use in our core utilities. We need to investigate the impact of this change and how to best support it.
-- [x] **Support for 3rd party observability providers ([#1500](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1500))** - Many of our customers would like to use Powertools for AWS to send logs, traces, and metrics to providers other than Amazon CloudWatch.
-
-You can find the full list of changes in the [v2 RFC](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1714) and follow the progress in the [v2 milestone](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/12).
-
-Just like for the feature parity, if you have any feedback or would like to contribute to the discussion, please leave a comment in the RFC or join the discussion in our [Discord community](https://discord.gg/B8zZKbbyET){target="_blank"}.

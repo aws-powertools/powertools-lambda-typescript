@@ -34,7 +34,7 @@ type ParsedResultError<Input> = {
 /**
  * The result of parsing an event using the safeParse, can either be a success or an error
  */
-type ParsedResult<Input = unknown, Output = unknown> =
+type ParsedResult<Input = unknown, Output = Input> =
   | ParsedResultSuccess<Output>
   | ParsedResultError<Input>;
 
@@ -54,7 +54,7 @@ type ZodInferredSafeParseResult<
   TSchema extends ZodSchema,
   TEnvelope extends Envelope,
 > = undefined extends TEnvelope
-  ? ParsedResult<unknown, z.infer<TSchema>>
+  ? ParsedResult<z.infer<TSchema>, z.infer<TSchema>>
   : TEnvelope extends ArrayEnvelope
     ? ParsedResult<unknown, z.infer<TSchema>[]>
     : ParsedResult<unknown, z.infer<TSchema>>;
@@ -70,10 +70,63 @@ type ParserOutput<
   ? ZodInferredSafeParseResult<TSchema, TEnvelope>
   : ZodInferredResult<TSchema, TEnvelope>;
 
+/**
+ * The parser function that can parse the data using the provided schema and envelope
+ * we use function overloads to provide the correct return type based on the provided envelope
+ **/
+type ParseFunction = {
+  // No envelope cases
+  <T extends ZodSchema>(
+    data: z.infer<T>,
+    envelope: undefined,
+    schema: T,
+    safeParse?: false
+  ): z.infer<T>;
+
+  <T extends ZodSchema>(
+    data: z.infer<T>,
+    envelope: undefined,
+    schema: T,
+    safeParse: true
+  ): ParsedResult<z.infer<T>>;
+
+  // Generic envelope case
+  <T extends ZodSchema, E extends Envelope>(
+    data: unknown,
+    envelope: E,
+    schema: T,
+    safeParse?: false
+  ): E extends ArrayEnvelope ? z.infer<T>[] : z.infer<T>;
+
+  <T extends ZodSchema, E extends Envelope>(
+    data: unknown,
+    envelope: E,
+    schema: T,
+    safeParse: true
+  ): E extends ArrayEnvelope
+    ? ParsedResult<unknown, z.infer<T>[]>
+    : ParsedResult<unknown, z.infer<T>>;
+
+  // Generic envelope case with safeParse
+  <T extends ZodSchema, E extends Envelope, S extends boolean = false>(
+    data: unknown,
+    envelope: E,
+    schema: T,
+    safeParse?: S
+  ): S extends true
+    ? E extends ArrayEnvelope
+      ? ParsedResult<unknown, z.infer<T>[]>
+      : ParsedResult<unknown, z.infer<T>>
+    : E extends ArrayEnvelope
+      ? z.infer<T>[]
+      : z.infer<T>;
+};
+
 export type {
-  ParserOptions,
+  ParseFunction,
   ParsedResult,
   ParsedResultError,
   ParsedResultSuccess,
+  ParserOptions,
   ParserOutput,
 };

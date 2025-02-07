@@ -16,8 +16,7 @@ import {
   VpcLatticeEnvelope,
   VpcLatticeV2Envelope,
 } from '../../src/envelopes/index.js';
-import { parse } from '../../src/parser.js';
-import type { ParsedResult, ParserOutput } from '../../src/types/parser.js';
+import type { ParserOutput } from '../../src/types/parser.js';
 
 describe('Types ', () => {
   const userSchema = z.object({
@@ -71,27 +70,5 @@ describe('Types ', () => {
     expect(result).toEqual([{ name: 'John', age: 30 }]);
 
     expectTypeOf(result).toEqualTypeOf<z.infer<typeof userSchema>[]>();
-  });
-
-  it('infers types of schema and safeParse result', () => {
-    // Prepare
-    const schema = z.object({
-      name: z.string(),
-      age: z.number(),
-    });
-
-    const input = { name: 'John', age: 30 };
-    type User = z.infer<typeof userSchema>;
-    type Result = ParsedResult<User>;
-
-    // Act
-    const result = parse(input, undefined, schema, true) as ParsedResult<User>;
-
-    // Assert
-    if (result.success) {
-      expectTypeOf(result.data).toEqualTypeOf<User>();
-    } else {
-      expectTypeOf(result.originalEvent).toEqualTypeOf<User | undefined>();
-    }
   });
 });

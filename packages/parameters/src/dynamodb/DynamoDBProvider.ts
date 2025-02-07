@@ -248,7 +248,9 @@ class DynamoDBProvider extends BaseProvider {
    */
   public constructor(config: DynamoDBProviderOptions) {
     super({
-      proto: DynamoDBClient as new (config?: unknown) => DynamoDBClient,
+      awsSdkV3ClientPrototype: DynamoDBClient as new (
+        config?: unknown
+      ) => DynamoDBClient,
       ...config,
     });
 

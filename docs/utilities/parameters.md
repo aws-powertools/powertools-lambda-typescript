@@ -297,6 +297,11 @@ All caching logic is handled by the `BaseProvider`, and provided that the return
 
 Here's an example of implementing a custom parameter store using an external service like HashiCorp Vault, a widely popular key-value secret storage.
 
+=== "Provider usage"
+	```typescript hl_lines="5-8 12-16"
+	--8<-- "examples/snippets/parameters/customProviderVaultUsage.ts"
+	```
+
 === "Provider implementation"
 	```typescript
 	--8<-- "examples/snippets/parameters/customProviderVault.ts"
@@ -305,11 +310,6 @@ Here's an example of implementing a custom parameter store using an external ser
 === "Provider types"
 	```typescript
 	--8<-- "examples/snippets/parameters/customProviderVaultTypes.ts"
-	```
-
-=== "Provider usage"
-	```typescript
-	--8<-- "examples/snippets/parameters/customProviderVaultUsage.ts"
 	```
 
 ### Deserializing values with transform parameter

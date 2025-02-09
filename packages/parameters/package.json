@@ -6,60 +6,28 @@
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
-  "license": "MIT-0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest --run tests/unit",
+    "test:unit": "vitest --run tests/unit",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "vitest --run tests/types --typecheck",
+    "test:unit:watch": "vitest tests/unit",
+    "test:e2e:nodejs18x": "RUNTIME=nodejs18x vitest --run tests/e2e",
+    "test:e2e:nodejs20x": "RUNTIME=nodejs20x vitest --run tests/e2e",
+    "test:e2e:nodejs22x": "RUNTIME=nodejs22x vitest --run tests/e2e",
+    "test:e2e": "vitest --run tests/e2e",
+    "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+  },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/parameters#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
-  },
-  "bugs": {
-    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
-  },
-  "keywords": [
-    "aws",
-    "lambda",
-    "powertools",
-    "ssm",
-    "secrets",
-    "serverless",
-    "nodejs"
-  ],
-  "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.13.1"
-  },
-  "peerDependencies": {
-    "@aws-sdk/client-appconfigdata": ">=3.x",
-    "@aws-sdk/client-dynamodb": ">=3.x",
-    "@aws-sdk/client-secrets-manager": ">=3.x",
-    "@aws-sdk/client-ssm": ">=3.x",
-    "@aws-sdk/util-dynamodb": ">=3.x",
-    "@middy/core": "4.x || 5.x || 6.x"
-  },
-  "peerDependenciesMeta": {
-    "@middy/core": {
-      "optional": true
-    },
-    "@aws-sdk/client-appconfigdata": {
-      "optional": true
-    },
-    "@aws-sdk/client-dynamodb": {
-      "optional": true
-    },
-    "@aws-sdk/client-secrets-manager": {
-      "optional": true
-    },
-    "@aws-sdk/client-ssm": {
-      "optional": true
-    },
-    "@aws-sdk/util-dynamodb": {
-      "optional": true
-    }
-  },
-  "main": "./lib/cjs/index.js",
-  "types": "./lib/cjs/index.d.ts",
-  "files": [
-    "lib"
-  ],
+  "license": "MIT-0",
   "type": "module",
   "exports": {
     ".": {
@@ -163,6 +131,68 @@
         "lib/cjs/errors.d.ts",
         "lib/esm/errors.d.ts"
       ]
+    }
+  },
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "ssm",
+    "secrets",
+    "serverless",
+    "nodejs"
+  ],
+  "devDependencies": {
+    "@aws-lambda-powertools/testing-utils": "file:../testing",
+    "@aws-sdk/client-appconfigdata": "^3.743.0",
+    "@aws-sdk/client-dynamodb": "^3.743.0",
+    "@aws-sdk/client-secrets-manager": "^3.743.0",
+    "@aws-sdk/client-ssm": "^3.743.0",
+    "@aws-sdk/util-dynamodb": "^3.743.0",
+    "@smithy/util-base64": "^4.0.0",
+    "aws-sdk-client-mock": "^4.1.0"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/commons": "^2.13.1"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-appconfigdata": ">=3.x",
+    "@aws-sdk/client-dynamodb": ">=3.x",
+    "@aws-sdk/client-secrets-manager": ">=3.x",
+    "@aws-sdk/client-ssm": ">=3.x",
+    "@aws-sdk/util-dynamodb": ">=3.x",
+    "@middy/core": "4.x || 5.x || 6.x"
+  },
+  "peerDependenciesMeta": {
+    "@middy/core": {
+      "optional": true
+    },
+    "@aws-sdk/client-appconfigdata": {
+      "optional": true
+    },
+    "@aws-sdk/client-dynamodb": {
+      "optional": true
+    },
+    "@aws-sdk/client-secrets-manager": {
+      "optional": true
+    },
+    "@aws-sdk/client-ssm": {
+      "optional": true
+    },
+    "@aws-sdk/util-dynamodb": {
+      "optional": true
     }
   }
 }

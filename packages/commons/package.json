@@ -6,27 +6,25 @@
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
-  "license": "MIT-0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest --run",
+    "test:unit": "vitest --run",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "vitest --run tests/types --typecheck",
+    "test:e2e": "echo 'Not Applicable'",
+    "generateVersionFile": "echo \"// this file is auto generated, do not modify\nexport const PT_VERSION = '$(jq -r '.version' package.json)';\" > src/version.ts",
+    "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+  },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/commons#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
-  },
-  "bugs": {
-    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
-  },
-  "keywords": [
-    "aws",
-    "lambda",
-    "powertools",
-    "serverless",
-    "nodejs"
-  ],
-  "main": "./lib/cjs/index.js",
-  "types": "./lib/cjs/index.d.ts",
-  "files": [
-    "lib"
-  ],
+  "license": "MIT-0",
   "type": "module",
   "exports": {
     ".": {
@@ -83,5 +81,27 @@
         "lib/esm/types/index.d.ts"
       ]
     }
+  },
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "serverless",
+    "nodejs"
+  ],
+  "devDependencies": {
+    "@aws-lambda-powertools/testing-utils": "file:../testing"
   }
 }

@@ -85,6 +85,7 @@ Parser comes with the following built-in schemas:
 | **SesSchema**                                | Lambda Event Source payload for Amazon Simple Email Service                           |
 | **SnsSchema**                                | Lambda Event Source payload for Amazon Simple Notification Service                    |
 | **SqsSchema**                                | Lambda Event Source payload for Amazon SQS                                            |
+| **TransferFamilySchema**                     | Lambda Event Source payload for AWS Transfer Family events                            |
 | **VpcLatticeSchema**                         | Lambda Event Source payload for Amazon VPC Lattice                                    |
 | **VpcLatticeV2Schema**                       | Lambda Event Source payload for Amazon VPC Lattice v2 payload                         |
 

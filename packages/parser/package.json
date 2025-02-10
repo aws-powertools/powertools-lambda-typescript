@@ -112,6 +112,10 @@
       "require": "./lib/cjs/schemas/sqs.js",
       "import": "./lib/esm/schemas/sqs.js"
     },
+    "./schemas/transfer-family": {
+      "require": "./lib/cjs/schemas/transfer-family.js",
+      "import": "./lib/esm/schemas/transfer-family.js"
+    },
     "./schemas/vpc-lattice": {
       "require": "./lib/cjs/schemas/vpc-lattice.js",
       "import": "./lib/esm/schemas/vpc-lattice.js"
@@ -322,6 +326,10 @@
       "envelopes/sqs": [
         "./lib/cjs/envelopes/sqs.d.ts",
         "./lib/esm/envelopes/sqs.d.ts"
+      ],
+      "schemas/transfer-family": [
+        "./lib/cjs/schemas/transfer-family.d.ts",
+        "./lib/esm/schemas/transfer-family.d.ts"
       ],
       "envelopes/vpc-lattice": [
         "./lib/cjs/envelopes/vpc-lattice.d.ts",

@@ -129,6 +129,16 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
                     - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:19
             ```
 
+            You can also use AWS SSM Parameter Store to dynamically add Powertools for AWS Lambda. The `{version}` placeholder is the semantic version number (e,g. 2.1.0) for a release or `_latest_`.
+
+            ```yaml hl_lines="5"
+            MyLambdaFunction:
+              Type: AWS::Serverless::Function
+                Properties:
+                  Layers:
+                    - {{resolve:ssm:/aws/service/powertools/typescript/generic/all/{version}}}
+            ```
+
             If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
 
             ```yaml hl_lines="5-14"
@@ -193,6 +203,23 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
               layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:19"]
               source_code_hash = filebase64sha256("lambda_function_payload.zip")
             }
+            ```
+
+            You can use [data sources](https://developer.hashicorp.com/terraform/language/data-sources) to resolve the SSM Parameter Store in your code, allowing you to pin to `_latest_` or a specific Powertools for AWS Lambda version.
+
+            ```terraform
+              data "aws_ssm_parameter" "powertools_version" {
+                # Replace {version} with your chosen Powertools for AWS Lambda version or latest
+                name = "/aws/service/powertools/python/generic/all/{version}"
+              }
+
+              resource "aws_lambda_function" "test_lambda" {
+                ...
+
+                runtime = "nodejs22.x"
+
+                layers = [data.aws_ssm_parameter.powertools_version.value]
+              }
             ```
 
         === "Pulumi"

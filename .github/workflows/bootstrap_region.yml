@@ -63,12 +63,12 @@ jobs:
         name: Create Workdir
         run: |
           mkdir -p build/project
-          - id: cdk-project
-          name: CDK Project
-          working-directory: build/project
-          run: |
-            npx cdk init app --language=typescript
-            AWS_REGION="${{ inputs.region }}" npx cdk bootstrap
+      - id: cdk-project
+        name: CDK Project
+        working-directory: build/project
+        run: |
+          npx cdk init app --language=typescript
+          AWS_REGION="${{ inputs.region }}" npx cdk bootstrap
 
   copy_layers:
     name: Copy Layers

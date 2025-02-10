@@ -37,6 +37,7 @@ import type {
   SnsSqsNotificationSchema,
   SqsRecordSchema,
   SqsSchema,
+  TransferFamilySchema,
   VpcLatticeSchema,
   VpcLatticeV2Schema,
 } from '../schemas/index.js';
@@ -129,6 +130,8 @@ type SqsEvent = z.infer<typeof SqsSchema>;
 
 type SqsRecord = z.infer<typeof SqsRecordSchema>;
 
+type TransferFamilyEvent = z.infer<typeof TransferFamilySchema>;
+
 type VpcLatticeEvent = z.infer<typeof VpcLatticeSchema>;
 
 type VpcLatticeEventV2 = z.infer<typeof VpcLatticeV2Schema>;
@@ -171,6 +174,7 @@ export type {
   SnsRecord,
   SqsEvent,
   SqsRecord,
+  TransferFamilyEvent,
   VpcLatticeEvent,
   VpcLatticeEventV2,
 };

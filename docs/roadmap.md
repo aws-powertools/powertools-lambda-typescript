@@ -25,10 +25,10 @@ You can help us prioritize by [upvoting existing feature requests](https://githu
 
 This is a roadmap item that we carry forward from 2024 and involves the creation of a new utility for customers to work with REST APIs built on AWS Lambda, and Amazon API Gateway REST and HTTP APIs, Application Load Balancer (ALB), Lambda Function URLs, and VPC Lattice. It's one of the most requested features in terms of feature parity from our customers.
 
-You can follow the progress of this feature in the [Event Handler REST milestone](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/17). Below are some of the key macro tasks that we will be working on:
+You can follow the progress of this feature in the [Event Handler REST milestone](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/17){target="_blank"}. Below are some of the key macro tasks that we will be working on:
 
-- [x] [Explore pros & cons of whether to build atop lean frameworks (e.g., Hono) or from scratch](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2409)
-- [x] [RFC to discuss initial thoughts and feasibility for TS/JS ecosystem](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3500)
+- [x] [Explore pros & cons of whether to build atop lean frameworks (e.g., Hono) or from scratch](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2409){target="_blank"}
+- [x] [RFC to discuss initial thoughts and feasibility for TS/JS ecosystem](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3500){target="_blank"}
 - [ ] Support for API Gateway REST API resolver
 - [ ] Support for API Gateway HTTP API resolver
 - [ ] Support for Lambda Function URL resolver
@@ -55,9 +55,9 @@ To close the gap between Powertools for AWS Lambda (Python) and Powertools for A
 
 ##### Logger
 
-- [ ] [Ability to buffer logs](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3410)
-- [ ] [Ability to add a correlation ID to logs via decorator/middleware](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2863)
-- [ ] [Ability to refresh debug log sampling rate via decorator/middleware](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3278)
+- [ ] [Ability to buffer logs](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3410){target="_blank"}
+- [ ] [Ability to add a correlation ID to logs via decorator/middleware](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2863){target="_blank"}
+- [ ] [Ability to refresh debug log sampling rate via decorator/middleware](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3278){target="_blank"}
 
 ##### Event Handler
 
@@ -76,20 +76,20 @@ We will update this roadmap with more details as they become available.
 
 To streghten our offering for more advanced customers as well as enterprises, we will be working on a set of activities that will help us better support their needs and practices. These include:
 
-- [ ] [Publish Lambda layers to GovCloud](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3423)
+- [ ] [Publish Lambda layers to GovCloud](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3423){target="_blank"}
 - [ ] Publish China regions
-- [ ] [Publish SSM Parameters to lookup Lambda layers ARNs](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3439)
+- [ ] [Publish SSM Parameters to lookup Lambda layers ARNs](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3439){target="_blank"}
 - [ ] Improve OSS supply chain posture (Q2) by making sure we're auditing our dependencies for compatible licenses and include NOTICE files in our Lambda layers
 - [ ] Create a new "Advanced Use Cases" section in the docs - to help customers with more complex use cases, such as running Powertools for AWS Lambda in container environments
 - [ ] Set up CI/CD for performance testing
 - [ ] Improve performance of our core utilities
-- [ ] [Improve performance overhead of Lambda layers](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1725)
+- [ ] [Improve performance overhead of Lambda layers](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1725){target="_blank"}
 
 #### Community engagement & new customers (p4)
 
 To ensure we are attracting tomorrow's customers as well as new contributors to the project, we will be working on a set of activities that will help us better engage with the community and new customers. These include:
 
-- [ ] [Create a new "Getting Started" guide in the docs](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2948)
+- [ ] [Create a new "Getting Started" guide in the docs](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2948){target="_blank"}
 - [ ] Further improve the "Contributing" & "How to find contributions" pages
 - [ ] Surface contribution opportunities in Discord & other community channels
 - [ ] Improve release notes announcements  in Discord & other community channels

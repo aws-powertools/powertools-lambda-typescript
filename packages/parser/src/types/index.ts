@@ -38,6 +38,7 @@ export type {
   SnsEvent,
   SnsSqsNotification,
   SqsEvent,
+  TransferFamilyEvent,
   VpcLatticeEvent,
   VpcLatticeEventV2,
 } from './schema.js';

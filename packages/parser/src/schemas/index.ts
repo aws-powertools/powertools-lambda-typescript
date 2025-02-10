@@ -61,5 +61,6 @@ export {
   SnsNotificationSchema,
 } from './sns.js';
 export { SqsSchema, SqsRecordSchema } from './sqs.js';
+export { TransferFamilySchema } from './transfer-family.js';
 export { VpcLatticeSchema } from './vpc-lattice.js';
 export { VpcLatticeV2Schema } from './vpc-latticev2.js';

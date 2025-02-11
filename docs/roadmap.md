@@ -15,11 +15,7 @@ Our public roadmap outlines the high level direction we are working towards. We 
 
 Security and operational excellence take precedence above all else. This means bug fixing, stability, customer's support, and internal compliance may delay one or more key areas below.
 
-**Missing something or want us to prioritize an existing area?**
-
-You can help us prioritize by [upvoting existing feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc++label%3Atype%2Ffeature-request+), leaving a comment on what use cases it could unblock for you, and by joining our discussions on Discord.
-
-[![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET){target="_blank"}
+!!! info "We may choose to reprioritize or defer items based on customer feedback, security, and operational impacts, and business value."
 
 #### Event Handler REST (p0)
 
@@ -43,13 +39,7 @@ You can follow the progress of this feature in the [Event Handler REST milestone
 - [ ] Support for injecting request details _(consider not doing globals like Python legacy)_
 - [ ] Support for Router _(multi-file routes)_
 
-#### Service Team co-launches (p1)
-
-This is a catch-all roadmap item that stands in for activities that the team will be doing to support the launch of new features. Powertools for AWS continued partnership with AWS Service Teams involves the team working with product teams from the earliest stages of design to ensure that features are built by working backwards from the customer.
-
-We will announce these features as they are launched and will update this roadmap with more details as they become available.
-
-#### Feature parity (p2)
+#### Feature parity (p1)
 
 To close the gap between Powertools for AWS Lambda (Python) and Powertools for AWS Lambda (TypeScript), we will focus our efforts on adding targeted features that are currently missing from the TypeScript version. These include (but are not limited to):
 
@@ -58,6 +48,7 @@ To close the gap between Powertools for AWS Lambda (Python) and Powertools for A
 - [ ] [Ability to buffer logs](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3410){target="_blank"}
 - [ ] [Ability to add a correlation ID to logs via decorator/middleware](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2863){target="_blank"}
 - [ ] [Ability to refresh debug log sampling rate via decorator/middleware](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3278){target="_blank"}
+- [ ] [Ability to pretty print stack traces](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1362){target="_blank"}
 
 ##### Event Handler
 
@@ -72,12 +63,12 @@ For the Validation utility, we'll experiment with a community-driven approach to
 
 We will update this roadmap with more details as they become available.
 
-#### Governance & Advanced Use Cases (p3)
+#### Governance & Advanced Use Cases (p2)
 
 To streghten our offering for more advanced customers as well as enterprises, we will be working on a set of activities that will help us better support their needs and practices. These include:
 
 - [ ] [Publish Lambda layers to GovCloud](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3423){target="_blank"}
-- [ ] Publish Layers to China regions
+- [ ] Publish Lambda layers to China regions
 - [ ] [Publish SSM Parameters to lookup Lambda layers ARNs](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3439){target="_blank"}
 - [ ] Improve OSS supply chain posture (Q2) by making sure we're auditing our dependencies for compatible licenses and include NOTICE files in our Lambda layers
 - [ ] Create a new "Advanced Use Cases" section in the docs - to help customers with more complex use cases, such as running Powertools for AWS Lambda in container environments
@@ -85,7 +76,7 @@ To streghten our offering for more advanced customers as well as enterprises, we
 - [ ] Improve performance of our core utilities
 - [ ] [Improve performance overhead of Lambda layers](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1725){target="_blank"}
 
-#### Community engagement & new customers (p4)
+#### Community engagement & new customers (p3)
 
 To ensure we are attracting tomorrow's customers as well as new contributors to the project, we will be working on a set of activities that will help us better engage with the community and new customers. These include:
 
@@ -94,6 +85,12 @@ To ensure we are attracting tomorrow's customers as well as new contributors to 
 - [ ] Surface contribution opportunities in Discord & other community channels
 - [ ] Improve release notes announcements  in Discord & other community channels
 - [ ] We will also attempt to create a community-developed new utility (see [Validation](#validation) above)
+
+### Missing something?
+
+You can help us prioritize by [upvoting existing feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc++label%3Atype%2Ffeature-request+), leaving a comment on what use cases it could unblock for you, and by joining our discussions on Discord.
+
+[![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET){target="_blank"}
 
 ### Roadmap status definition
 

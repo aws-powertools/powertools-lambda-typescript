@@ -96,7 +96,7 @@ jobs:
         run: go env
       - id: go-install-pkg
         name: Install
-        run: go install github.com/aws-powertools/actions/layer-balancer/cmd/balance@@29979bc5339bf54f76a11ac36ff67701986bb0f0
+        run: go install github.com/aws-powertools/actions/layer-balancer/cmd/balance@29979bc5339bf54f76a11ac36ff67701986bb0f0
       - id: run-balance
         name: Run Balance
         run: balance -read-region us-east-1 -write-region ${{ inputs.region }} -write-role ${{ secrets.BALANCE_ROLE_ARN }} -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false

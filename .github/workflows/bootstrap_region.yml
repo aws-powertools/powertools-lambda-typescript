@@ -38,7 +38,7 @@ jobs:
     name: Bootstrap Region
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       id-token: write
     environment: layer-${{ inputs.environment }}
     steps:
@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: bootstrap
     permissions:
-      contents: write
+      contents: read
       id-token: write
     environment: layer-${{ inputs.environment }}
     steps:

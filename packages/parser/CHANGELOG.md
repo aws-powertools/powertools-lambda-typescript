@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.1...v2.14.0) (2025-02-10)
+
+
+### Bug Fixes
+
+* **parser:** parse sqs record body field as JSON and S3Schema in S3SqsEventNoificationRecordSchema ([#3529](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3529)) ([bcd4b9f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/bcd4b9f7864543b25c57143c2903ed68c16d3987))
+
+
+### Features
+
+* **parser:** add TransferFamilySchema for AWS Transfer Family events ([#3575](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3575)) ([2c27c5e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2c27c5e717ff6a8f9b54148dbde3ab7dc83b5baf))
+* **parser:** simplify `ParseResult` and `parse` inference ([#3568](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3568)) ([95762ad](https://github.com/aws-powertools/powertools-lambda-typescript/commit/95762ade4b51fc40860302dd77a97819dac44a98))
+
+
+
+
+
 ## [2.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.0...v2.13.1) (2025-01-28)
 
 

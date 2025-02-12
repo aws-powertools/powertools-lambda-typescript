@@ -16,7 +16,8 @@
     "examples/snippets",
     "layers",
     "examples/app",
-    "packages/event-handler"
+    "packages/event-handler",
+    "packages/validation"
   ],
   "scripts": {
     "test": "npm t -ws",

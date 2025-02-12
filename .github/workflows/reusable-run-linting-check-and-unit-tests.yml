@@ -50,6 +50,7 @@ jobs:
           "packages/tracer",
           "packages/parser",
           "packages/parameters",
+          "packages/validation",
           "packages/metrics"
         ]
       fail-fast: false

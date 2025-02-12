@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.1...v2.14.0) (2025-02-10)
+
+
+### Bug Fixes
+
+* **logger:** prevent overwriting standard keys ([#3553](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3553)) ([f0bdf3c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f0bdf3cdb1fe25ff7baea352215f41501ca6c5c2))
+
+
+
+
+
 ## [2.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.0...v2.13.1) (2025-01-28)
 
 **Note:** Version bump only for package @aws-lambda-powertools/logger

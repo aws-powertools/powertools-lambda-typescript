@@ -22,7 +22,7 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 | **ESM support**       | Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                             | -                    |
 | **Middy.js**          | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.    | Yes                  |
 | **Types imports**     | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.             | Yes                  |
-| **Logger**            | Changed [log sampling](./core/logger.md#sampling-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
+| **Logger**            | Changed [log sampling](./core/logger.md#sampling-debug-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
 | **Logger**            | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                          | Yes                  |
 | **Logger**            | Removed `ContextExamples` from `@aws-lambda-powertools/commons` package.                                                       | Yes                  |
 | **Logger and Tracer** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                        | Yes                  |
@@ -305,7 +305,7 @@ In v2, you have more control over **standard** (`attributes`) and [**custom keys
     export { MyCompanyLogFormatter };
     ```
 
-    1. This new argument contains all [your custom keys](./core/logger.md#appending-persistent-additional-log-keys-and-values).
+    1. This new argument contains all [your custom keys](./core/logger.md#appending-additional-keys).
     2. `LogItem` is the new return object instead of a plain object.
     3. If you prefer adding at the initialization, use: <br/><br/> **`LogItem({persistentAttributes: additionalLogAttributes, attributes: baseAttributes})`**
 

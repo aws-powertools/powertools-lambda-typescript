@@ -11,6 +11,7 @@
     "packages/jmespath",
     "packages/parser",
     "packages/event-handler",
+    "packages/validation",
     "examples/app",
     "layers",
     "examples/snippets"

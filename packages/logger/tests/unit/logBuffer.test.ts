@@ -19,9 +19,9 @@ describe('SizedItem', () => {
     const invalidValue = { message: 'not a string' };
 
     // Act & Assess
-    expect(() => {
-      new SizedItem(invalidValue, 1);
-    }).toThrowError('Value should be a string');
+    expect(
+      () => new SizedItem({ message: 'not a string' } as unknown as string, 1)
+    ).toThrowError('Value should be a string');
   });
 });
 

@@ -1,146 +1,153 @@
-import { describe, expect, it, vi } from 'vitest';
-import { CircularMap, SizedItem, SizedSet } from '../../src/logBuffer.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Logger } from '../../src/Logger.js';
+import { LogLevelThreshold } from '../../src/constants.js';
 
-describe('SizedItem', () => {
-  it('calculates the byteSize based on string value', () => {
-    // Prepare
-    const logEntry = 'hello world';
+class TestLogger extends Logger {
+  public enableBuffering() {
+    this.isBufferEnabled = true;
+  }
+  public disableBuffering() {
+    this.isBufferEnabled = false;
+  }
 
-    // Act
-    const item = new SizedItem(logEntry, 1);
+  public flushBufferWrapper(): void {
+    this.flushBuffer();
+  }
 
-    // Assess
-    const expectedByteSize = Buffer.byteLength(logEntry);
-    expect(item.byteSize).toBe(expectedByteSize);
-  });
-
-  it('throws an error if value is not a string', () => {
-    // Prepare
-    const invalidValue = { message: 'not a string' };
-
-    // Act & Assess
-    expect(
-      () => new SizedItem(invalidValue as unknown as string, 1)
-    ).toThrowError('Value should be a string');
-  });
-});
-
-describe('SizedSet', () => {
-  it('adds an item and updates currentBytesSize correctly', () => {
-    // Prepare
-    const set = new SizedSet<string>();
-    const item = new SizedItem('value', 1);
-
-    // Act
-    set.add(item);
-
-    // Assess
-    expect(set.currentBytesSize).toBe(item.byteSize);
-    expect(set.has(item)).toBe(true);
-  });
-
-  it('deletes an item and updates currentBytesSize correctly', () => {
-    // Prepare
-    const set = new SizedSet<string>();
-    const item = new SizedItem('value', 1);
-    set.add(item);
-    const initialSize = set.currentBytesSize;
-
-    // Act
-    const result = set.delete(item);
-
-    // Assess
-    expect(result).toBe(true);
-    expect(set.currentBytesSize).toBe(initialSize - item.byteSize);
-    expect(set.has(item)).toBe(false);
-  });
-
-  it('clears all items and resets currentBytesSize to 0', () => {
-    // Prepare
-    const set = new SizedSet<string>();
-    set.add(new SizedItem('b', 1));
-    set.add(new SizedItem('d', 1));
-
-    // Act
-    set.clear();
-
-    // Assess
-    expect(set.currentBytesSize).toBe(0);
-    expect(set.size).toBe(0);
-  });
-
-  it('removes the first inserted item with shift', () => {
-    // Prepare
-    const set = new SizedSet<string>();
-    const item1 = new SizedItem('first', 1);
-    const item2 = new SizedItem('second', 1);
-    set.add(item1);
-    set.add(item2);
-
-    // Act
-    const shiftedItem = set.shift();
-
-    // Assess
-    expect(shiftedItem).toEqual(item1);
-    expect(set.has(item1)).toBe(false);
-    expect(set.currentBytesSize).toBe(item2.byteSize);
-  });
-});
-
-describe('CircularMap', () => {
-  it('adds items to a new buffer for a given key', () => {
-    // Prepare
-    const maxBytes = 200;
-    const circularMap = new CircularMap<string>({
-      maxBytesSize: maxBytes,
+  public overrideBufferLogItem(): void {
+    this.bufferLogItem = vi.fn().mockImplementation(() => {
+      throw new Error('bufferLogItem error');
     });
+  }
 
-    // Act
-    circularMap.setItem('trace-1', 'first log', 1);
+  public setbufferLevelThreshold(level: number): void {
+    this.bufferLogThreshold = level;
+  }
+}
 
-    // Assess
-    const buffer = circularMap.get('trace-1');
-    expect(buffer).toBeDefined();
-    if (buffer) {
-      expect(buffer.currentBytesSize).toBeGreaterThan(0);
-      expect(buffer.size).toBe(1);
-    }
-  });
+describe('bufferLog', () => {
+  const ENVIRONMENT_VARIABLES = process.env;
 
-  it('throws an error when an item exceeds maxBytesSize', () => {
-    // Prepare
-    const maxBytes = 10;
-    const circularMap = new CircularMap<string>({
-      maxBytesSize: maxBytes,
-    });
-
-    // Act & Assess
-    expect(() => {
-      circularMap.setItem('trace-1', 'a very long message', 1);
-    }).toThrowError('Item too big');
-  });
-
-  it('evicts items when the buffer overflows and call the overflow callback', () => {
-    // Prepare
-    const options = {
-      maxBytesSize: 15,
-      onBufferOverflow: vi.fn(),
+  beforeEach(() => {
+    process.env = {
+      ...ENVIRONMENT_VARIABLES,
+      POWERTOOLS_LOGGER_LOG_EVENT: 'true',
+      POWERTOOLS_DEV: 'true',
     };
-    const circularMap = new CircularMap<string>(options);
-    const smallEntry = '12345';
+    vi.clearAllMocks();
+  });
 
-    const entryByteSize = Buffer.byteLength(smallEntry);
-    const entriesCount = Math.ceil(options.maxBytesSize / entryByteSize);
+  it('outputs a warning when there is an error buffering the log', () => {
+    const logger = new TestLogger();
+    logger.enableBuffering();
+    logger.overrideBufferLogItem();
 
-    // Act
-    for (let i = 0; i < entriesCount; i++) {
-      circularMap.setItem('trace-1', smallEntry, 1);
-    }
+    logger.debug('This is a debug');
+    expect(console.debug).toBeCalledTimes(1);
+    expect(console.warn).toBeCalledTimes(1);
+  });
+});
 
-    // Assess
-    expect(options.onBufferOverflow).toHaveBeenCalledTimes(1);
-    expect(circularMap.get('trace-1')?.currentBytesSize).toBeLessThan(
-      options.maxBytesSize
+describe('flushBuffer', () => {
+  const ENVIRONMENT_VARIABLES = process.env;
+
+  beforeEach(() => {
+    process.env = {
+      ...ENVIRONMENT_VARIABLES,
+      POWERTOOLS_LOGGER_LOG_EVENT: 'true',
+      POWERTOOLS_DEV: 'true',
+    };
+    vi.clearAllMocks();
+  });
+
+  it('outputs buffered logs', () => {
+    const logger = new TestLogger({ logLevel: 'SILENT' });
+    logger.enableBuffering();
+    logger.setbufferLevelThreshold(LogLevelThreshold.CRITICAL);
+
+    logger.debug('This is a debug');
+    logger.warn('This is a warning');
+    logger.critical('this is a critical');
+
+    expect(console.warn).toHaveBeenCalledTimes(0);
+    expect(console.error).toHaveBeenCalledTimes(0);
+
+    logger.flushBufferWrapper();
+
+    expect(console.warn).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledTimes(1);
+  });
+
+  it('handles an empty buffer', () => {
+    const logger = new TestLogger({ logLevel: 'SILENT' });
+    logger.enableBuffering();
+
+    logger.flushBufferWrapper();
+  });
+
+  it('does not output buffered logs when trace id is not set', () => {
+    process.env._X_AMZN_TRACE_ID = undefined;
+
+    const logger = new TestLogger({});
+    logger.enableBuffering();
+
+    logger.debug('This is a debug');
+    logger.warn('this is a warning');
+
+    expect(console.debug).toHaveBeenCalledTimes(0);
+    expect(console.warn).toHaveBeenCalledTimes(1);
+
+    logger.flushBufferWrapper();
+
+    expect(console.debug).toHaveBeenCalledTimes(0);
+    expect(console.warn).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('shouldBufferLog', () => {
+  const ENVIRONMENT_VARIABLES = process.env;
+
+  beforeEach(() => {
+    process.env = {
+      ...ENVIRONMENT_VARIABLES,
+      POWERTOOLS_LOGGER_LOG_EVENT: 'true',
+      POWERTOOLS_DEV: 'true',
+    };
+    vi.clearAllMocks();
+  });
+  it('returns false when _X_AMZN_TRACE_ID is not set', () => {
+    const logger = new TestLogger({});
+    process.env._X_AMZN_TRACE_ID = undefined;
+    logger.enableBuffering();
+
+    expect(logger.shouldBufferLog(undefined, LogLevelThreshold.TRACE)).toBe(
+      false
     );
+  });
+
+  it('returns false when the buffer is disabled', () => {
+    const logger = new TestLogger({});
+    logger.disableBuffering();
+
+    const trace = process.env._X_AMZN_TRACE_ID;
+
+    expect(logger.shouldBufferLog(trace, LogLevelThreshold.TRACE)).toBe(false);
+  });
+
+  it('returns false when the log level above the bufferLevelThreshold', () => {
+    const logger = new TestLogger({});
+    logger.enableBuffering();
+
+    const trace = process.env._X_AMZN_TRACE_ID;
+
+    expect(logger.shouldBufferLog(trace, LogLevelThreshold.INFO)).toBe(false);
+  });
+
+  it('returns true when the criteria is met', () => {
+    const logger = new TestLogger({});
+    logger.enableBuffering();
+    const trace = process.env._X_AMZN_TRACE_ID;
+
+    expect(logger.shouldBufferLog(trace, LogLevelThreshold.TRACE)).toBe(true);
   });
 });

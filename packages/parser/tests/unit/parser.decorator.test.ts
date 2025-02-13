@@ -2,7 +2,7 @@ import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { type ZodSchema, z } from 'zod';
-import { EventBridgeEnvelope } from '../../src/envelopes/index.js';
+import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
 import { ParseError } from '../../src/errors.js';
 import { parser } from '../../src/index.js';
 import { EventBridgeSchema } from '../../src/schemas/index.js';

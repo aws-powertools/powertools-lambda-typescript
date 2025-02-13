@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { KinesisFirehoseEnvelope } from '../../../src/envelopes/index.js';
+import { KinesisFirehoseEnvelope } from '../../../src/envelopes/kinesis-firehose.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type {

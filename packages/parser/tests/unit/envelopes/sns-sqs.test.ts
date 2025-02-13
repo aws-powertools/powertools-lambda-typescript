@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { SnsSqsEnvelope } from '../../../src/envelopes/snssqs.js';
+import { SnsSqsEnvelope } from '../../../src/envelopes/sns-sqs.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { SqsEvent } from '../../../src/types/schema.js';

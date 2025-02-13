@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { KinesisEnvelope } from '../../../src/envelopes/index.js';
+import { KinesisEnvelope } from '../../../src/envelopes/kinesis.js';
 import { ParseError } from '../../../src/errors.js';
 import type { KinesisDataStreamEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../helpers/utils.js';

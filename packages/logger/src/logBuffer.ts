@@ -1,4 +1,5 @@
 import { isString } from '@aws-lambda-powertools/commons/typeutils';
+
 export class SizedItem<V> {
   public value: V;
   public logLevel: number;
@@ -46,8 +47,8 @@ export class SizedSet<V> extends Set<SizedItem<V>> {
 }
 
 export class CircularMap<V> extends Map<string, SizedSet<V>> {
-  #maxBytesSize: number;
-  #onBufferOverflow?: () => void;
+  readonly #maxBytesSize: number;
+  readonly #onBufferOverflow?: () => void;
 
   constructor({
     maxBytesSize,
@@ -82,7 +83,7 @@ export class CircularMap<V> extends Map<string, SizedSet<V>> {
     return this;
   }
 
-  #deleteFromBufferUntilSizeIsLessThanMax = (
+  readonly #deleteFromBufferUntilSizeIsLessThanMax = (
     buffer: SizedSet<V>,
     item: SizedItem<V>
   ) => {

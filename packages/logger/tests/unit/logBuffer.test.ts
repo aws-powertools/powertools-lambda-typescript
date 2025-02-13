@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { CircularMap, SizedItem, SizedSet } from '../../src/logBuffer';
+import { CircularMap, SizedItem, SizedSet } from '../../src/logBuffer.js';
 
 describe('SizedItem', () => {
   it('calculates the byteSize based on string value', () => {
@@ -20,7 +20,7 @@ describe('SizedItem', () => {
 
     // Act & Assess
     expect(
-      () => new SizedItem({ message: 'not a string' } as unknown as string, 1)
+      () => new SizedItem(invalidValue as unknown as string, 1)
     ).toThrowError('Value should be a string');
   });
 });

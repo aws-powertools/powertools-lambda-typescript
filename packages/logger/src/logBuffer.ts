@@ -1,15 +1,16 @@
-import { buffer } from 'node:stream/consumers';
-import { it } from 'node:test';
-
+import { isString } from '@aws-lambda-powertools/commons/typeutils';
 export class SizedItem<V> {
   public value: V;
   public logLevel: number;
   public byteSize: number;
 
   constructor(value: V, logLevel: number) {
+    if (!isString(value)) {
+      throw new Error('Value should be a string');
+    }
     this.value = value;
     this.logLevel = logLevel;
-    this.byteSize = Buffer.byteLength(JSON.stringify(value));
+    this.byteSize = Buffer.byteLength(value as unknown as string);
   }
 }
 

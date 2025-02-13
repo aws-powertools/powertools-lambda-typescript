@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { ApiGatewayEnvelope } from '../../../src/envelopes/api-gateway.js';
+import { ApiGatewayEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { APIGatewayProxyEvent } from '../../../src/types/schema.js';

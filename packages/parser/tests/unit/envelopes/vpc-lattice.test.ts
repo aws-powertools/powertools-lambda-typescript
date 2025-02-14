@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { VpcLatticeEnvelope } from '../../../src/envelopes/index.js';
+import { VpcLatticeEnvelope } from '../../../src/envelopes/vpc-lattice.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { VpcLatticeEvent } from '../../../src/types/index.js';

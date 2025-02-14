@@ -1,7 +1,7 @@
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { DynamoDBStreamEnvelope } from '../../../src/envelopes/index.js';
+import { DynamoDBStreamEnvelope } from '../../../src/envelopes/dynamodb.js';
 import { ParseError } from '../../../src/errors.js';
 import type { DynamoDBStreamEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../helpers/utils.js';

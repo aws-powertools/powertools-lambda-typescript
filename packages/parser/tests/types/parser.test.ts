@@ -1,7 +1,8 @@
 import { describe } from 'node:test';
 import { expect, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
-import { EventBridgeEnvelope, SqsEnvelope } from '../../src/envelopes/index.js';
+import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
+import { SqsEnvelope } from '../../src/envelopes/sqs.js';
 import { parse } from '../../src/parser.js';
 import type { EventBridgeEvent, SqsEvent } from '../../src/types/schema.js';
 import { getTestEvent } from '../unit/helpers/utils.js';

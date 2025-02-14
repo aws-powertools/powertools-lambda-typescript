@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.147",
-    "@types/node": "22.13.2",
+    "@types/node": "22.13.4",
     "aws-cdk-lib": "^2.178.1",
     "constructs": "^10.4.2",
     "source-map-support": "^0.5.21",
@@ -48,7 +48,7 @@
     "@aws-sdk/lib-dynamodb": "^3.744.0",
     "@middy/core": "^4.7.0",
     "@types/aws-lambda": "^8.10.147",
-    "@types/node": "22.13.2",
+    "@types/node": "22.13.4",
     "aws-cdk": "^2.178.1",
     "constructs": "^10.4.2",
     "esbuild": "^0.25.0",

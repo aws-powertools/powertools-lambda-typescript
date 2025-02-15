@@ -49,7 +49,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * @param {BasePersistenceLayerConfigureOptions} options - configuration object for the persistence layer
    */
   public configure(options: BasePersistenceLayerOptions): void {
-    // Extracting the idempotency configuration from the options for easier access
     const { config: idempotencyConfig, keyPrefix, functionName } = options;
 
     if (keyPrefix?.trim()) {

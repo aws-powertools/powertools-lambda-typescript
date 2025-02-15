@@ -37,7 +37,7 @@ describe('Given a class with a function to decorate', () => {
     expect(result).toBe('private foo');
   });
 
-  it('configure persistenceStore idempotency key with custom keyPrefix', async () => {
+  it('passes the custom keyPrefix to the persistenceStore', async () => {
     // Prepare
     const configureSpy = vi.spyOn(BasePersistenceLayer.prototype, 'configure');
     const idempotencyConfig = new IdempotencyConfig({});
@@ -62,7 +62,7 @@ describe('Given a class with a function to decorate', () => {
     // Act
     const result = await handler({}, context);
 
-    // Assert
+    // Assess
     expect(result).toBeTruthy();
 
     expect(configureSpy).toHaveBeenCalled();

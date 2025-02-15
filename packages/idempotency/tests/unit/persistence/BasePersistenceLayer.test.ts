@@ -80,7 +80,7 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
-    it('should trim function name before appending as key prefix', () => {
+    it('trims the function name before appending as key prefix', () => {
       // Prepare
       const config = new IdempotencyConfig({});
       const persistenceLayer = new PersistenceLayerTestClass();

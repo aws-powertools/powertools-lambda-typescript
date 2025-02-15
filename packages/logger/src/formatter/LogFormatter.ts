@@ -25,7 +25,14 @@ abstract class LogFormatter {
   /**
    * Format key-value pairs of log attributes.
    *
-   * You should implement this method in a subclass to define the structure of the log item.
+   * You should implement this method in a subclass to define the structure of the log item
+   * and instantiate a new {@link LogItem} object with the formatted attributes.
+   *
+   * Note that when implementing this method, you should avoid mutating the `attributes` and
+   * `additionalLogAttributes` objects directly. Instead, create a new object with the desired
+   * structure and return it.
+   *
+   * If mutation is necessary, you can create a `structuredClone` of the object to avoid side effects.
    *
    * @example
    * ```typescript
@@ -40,7 +47,7 @@ abstract class LogFormatter {
    *     attributes: UnformattedAttributes,
    *     additionalLogAttributes: LogAttributes
    *   ): LogItem {
-   *     const baseAttributes: MyCompanyLog = {
+   *     const baseAttributes = {
    *       message: attributes.message,
    *       service: attributes.serviceName,
    *       environment: attributes.environment,
@@ -116,8 +123,11 @@ abstract class LogFormatter {
           : error.cause,
     };
     for (const key in error) {
-      if (typeof key === 'string' && !['name', 'message', 'stack', 'cause'].includes(key)) {
-          formattedError[key] = (errorAttributes as Record<string, unknown>)[key];
+      if (
+        typeof key === 'string' &&
+        !['name', 'message', 'stack', 'cause'].includes(key)
+      ) {
+        formattedError[key] = (errorAttributes as Record<string, unknown>)[key];
       }
     }
 

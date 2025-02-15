@@ -588,7 +588,7 @@ If you prefer to log in a specific timezone, you can configure it by setting the
 
 ### Using multiple Logger instances across your code
 
-The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [extra keys](#appending-additional-keys), and [the log formatter](#custom-log-formatter-bring-your-own-formatter).
+The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [extra keys](#appending-additional-keys), and [the log formatter](#custom-log-formatter).
 
 Once a child logger is created, the logger and its parent will act as separate instances of the Logger class, and as such any change to one won't be applied to the other.
 
@@ -754,9 +754,11 @@ Sampling decision happens at the Logger initialization. This means sampling may 
     }
     ```
 
-### Custom Log formatter (Bring Your Own Formatter)
+### Custom Log formatter
 
-You can customize the structure (keys and values) of your log items by passing a custom log formatter, an object that implements the `LogFormatter` abstract class.
+You can customize the structure (keys and values) of your logs by passing a custom log formatter, a class that implements the `LogFormatter` interface, to the `Logger` constructor.
+
+When working with custom log formatters, you take full control over the structure of your logs. This allows you to optionally drop or transform keys, add new ones, or change the format to suit your company's logging standards or use Logger with a third-party logging service.
 
 === "handler.ts"
 
@@ -764,15 +766,11 @@ You can customize the structure (keys and values) of your log items by passing a
     --8<-- "examples/snippets/logger/bringYourOwnFormatterHandler.ts"
     ```
 
-This is how the `MyCompanyLogFormatter` (dummy name) would look like:
-
 === "utils/formatters/MyCompanyLogFormatter.ts"
 
     ```typescript
     --8<-- "examples/snippets/logger/bringYourOwnFormatterClass.ts"
     ```
-
-This is how the printed log would look:
 
 === "Example CloudWatch Logs excerpt"
 
@@ -804,8 +802,7 @@ This is how the printed log would look:
     }
     ```
 
-!!! tip "Custom Log formatter and Child loggers"
-    It is not necessary to pass the `LogFormatter` each time a [child logger](#using-multiple-logger-instances-across-your-code) is created. The parent's LogFormatter will be inherited by the child logger.
+Note that when implementing this method, you should avoid mutating the `attributes` and `additionalLogAttributes` objects directly. Instead, create a new object with the desired structure and return it. If mutation is necessary, you can create a [`structuredClone`](https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone) of the object to avoid side effects.
 
 ### Bring your own JSON serializer
 

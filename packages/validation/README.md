@@ -1,19 +1,13 @@
 # Powertools for AWS Lambda (TypeScript) - Validation Utility
 
+This utility provides JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.
+
 > [!Warning]
 > This feature is currently under development. As such it's considered not stable and we might make significant breaking changes before going before its release. You are welcome to [provide feedback](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3519) and [contribute to the project](https://docs.powertools.aws.dev/lambda/typescript/latest/contributing/getting_started/).
 
-Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
+Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features). You can use the library in both TypeScript and JavaScript code bases.
 
-You can use the library in both TypeScript and JavaScript code bases.
-
-## Intro
-
-This utility provides JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.
-
-## Usage
-
-To get started, install the library by running:
+To get started, install the package by running:
 
 ```sh
 npm i @aws-lambda-powertools/validation

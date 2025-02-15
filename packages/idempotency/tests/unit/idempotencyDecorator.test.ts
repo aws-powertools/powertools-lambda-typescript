@@ -61,7 +61,6 @@ describe('Given a class with a function to decorate', () => {
 
     // Act
     const result = await handler({}, context);
-    
 
     // Assert
     expect(result).toBeTruthy();

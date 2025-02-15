@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { AlbSchema } from '../../../src/schemas/alb.js';
+import { AlbSchema } from '../../../src/schemas/index.js';
 import type { ALBEvent } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from './utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Schema: ALB', () => {
   const eventsPath = 'alb';

@@ -1,21 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
-import {
-  ApiGatewayEnvelope,
-  ApiGatewayV2Envelope,
-  CloudWatchEnvelope,
-  DynamoDBStreamEnvelope,
-  EventBridgeEnvelope,
-  KafkaEnvelope,
-  KinesisEnvelope,
-  KinesisFirehoseEnvelope,
-  LambdaFunctionUrlEnvelope,
-  SnsEnvelope,
-  SnsSqsEnvelope,
-  SqsEnvelope,
-  VpcLatticeEnvelope,
-  VpcLatticeV2Envelope,
-} from '../../src/envelopes/index.js';
+import { ApiGatewayEnvelope } from '../../src/envelopes/api-gateway.js';
+import { ApiGatewayV2Envelope } from '../../src/envelopes/api-gatewayv2.js';
+import { CloudWatchEnvelope } from '../../src/envelopes/cloudwatch.js';
+import { DynamoDBStreamEnvelope } from '../../src/envelopes/dynamodb.js';
+import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
+import { KafkaEnvelope } from '../../src/envelopes/kafka.js';
+import { KinesisFirehoseEnvelope } from '../../src/envelopes/kinesis-firehose.js';
+import { KinesisEnvelope } from '../../src/envelopes/kinesis.js';
+import { LambdaFunctionUrlEnvelope } from '../../src/envelopes/lambda.js';
+import { SnsSqsEnvelope } from '../../src/envelopes/sns-sqs.js';
+import { SnsEnvelope } from '../../src/envelopes/sns.js';
+import { SqsEnvelope } from '../../src/envelopes/sqs.js';
+import { VpcLatticeEnvelope } from '../../src/envelopes/vpc-lattice.js';
+import { VpcLatticeV2Envelope } from '../../src/envelopes/vpc-latticev2.js';
 import type { ParserOutput } from '../../src/types/parser.js';
 
 describe('Types ', () => {
@@ -69,10 +67,6 @@ describe('Types ', () => {
     expect(Array.isArray(result)).toBe(true);
     expect(result).toEqual([{ name: 'John', age: 30 }]);
 
-    // Type assertion to ensure it's specifically User[]
-    type AssertIsUserArray<T> = T extends z.infer<typeof userSchema>[]
-      ? true
-      : false;
-    type Test = AssertIsUserArray<Result>;
+    expectTypeOf(result).toEqualTypeOf<z.infer<typeof userSchema>[]>();
   });
 });

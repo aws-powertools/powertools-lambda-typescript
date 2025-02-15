@@ -2,10 +2,10 @@ import { gunzipSync, gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
 import { ParseError } from '../../../src';
-import { CloudWatchEnvelope } from '../../../src/envelopes/index.js';
+import { CloudWatchEnvelope } from '../../../src/envelopes/cloudwatch.js';
 import { DecompressError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
-import { getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 const decompressRecordToJSON = (
   data: string
@@ -203,7 +203,7 @@ describe('Envelope: CloudWatch', () => {
       );
 
       // Assess
-      expect(result).toStrictEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError(
           'Failed to parse CloudWatch Log message at index 0',
@@ -234,7 +234,7 @@ describe('Envelope: CloudWatch', () => {
       );
 
       // Assess
-      expect(result).toStrictEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError(
           'Failed to parse CloudWatch Log messages at indexes 0, 1, 2',

@@ -4,7 +4,7 @@ import { SqsEnvelope } from '../../../src/envelopes/sqs.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { SqsEvent } from '../../../src/types/schema.js';
-import { getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Envelope: SqsEnvelope', () => {
   const schema = z
@@ -78,7 +78,7 @@ describe('Envelope: SqsEnvelope', () => {
       const result = SqsEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SQS envelope', {
           cause: new ZodError([
@@ -105,7 +105,7 @@ describe('Envelope: SqsEnvelope', () => {
       const result = SqsEnvelope.safeParse(event, JSONStringified(schema));
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SQS Record at index 0', {
           cause: new ZodError([
@@ -128,7 +128,7 @@ describe('Envelope: SqsEnvelope', () => {
       const result = SqsEnvelope.safeParse(event, z.number());
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SQS Records at indexes 0, 1', {
           cause: new ZodError([

@@ -50,7 +50,6 @@ describe('Class: DynamoDBPersistenceLayer', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-    vi.resetAllMocks();
     client.reset();
   });
 
@@ -306,9 +305,9 @@ describe('Class: DynamoDBPersistenceLayer', () => {
 
     it('puts record in DynamoDB table when using payload validation', async () => {
       // Prepare
-      vi.spyOn(persistenceLayer, 'isPayloadValidationEnabled').mockReturnValue(
-        true
-      );
+      const persistenceLayerSpy = vi
+        .spyOn(persistenceLayer, 'isPayloadValidationEnabled')
+        .mockReturnValue(true);
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = 0;
       const record = new IdempotencyRecord({
@@ -344,6 +343,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         ConditionExpression:
           'attribute_not_exists(#id) OR #expiry < :now OR (#status = :inprogress AND attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now_in_millis)',
       });
+      persistenceLayerSpy.mockRestore();
     });
 
     it('throws when called with a record that fails any condition', async () => {
@@ -353,6 +353,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         status: IdempotencyRecordStatus.EXPIRED,
         expiryTimestamp: 0,
       });
+      const expiration = Date.now();
       client.on(PutItemCommand).rejects(
         new ConditionalCheckFailedException({
           $metadata: {
@@ -363,7 +364,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           Item: {
             id: { S: 'test-key' },
             status: { S: 'INPROGRESS' },
-            expiration: { N: Date.now().toString() },
+            expiration: { N: expiration.toString() },
           },
         })
       );
@@ -373,9 +374,9 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         new IdempotencyItemAlreadyExistsError(
           `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
           new IdempotencyRecord({
-            idempotencyKey: record.idempotencyKey,
-            status: IdempotencyRecordStatus.EXPIRED,
-            expiryTimestamp: Date.now() / 1000 - 1,
+            idempotencyKey: 'test-key',
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiryTimestamp: expiration,
           })
         )
       );
@@ -575,10 +576,9 @@ describe('Class: DynamoDBPersistenceLayer', () => {
 
     it('uses the payload hash in the expression when payload validation is enabled', async () => {
       // Prepare
-      vi.spyOn(
-        persistenceLayer,
-        'isPayloadValidationEnabled'
-      ).mockImplementation(() => true);
+      const persistenceLayerSpy = vi
+        .spyOn(persistenceLayer, 'isPayloadValidationEnabled')
+        .mockImplementation(() => true);
       const expiryTimestamp = Date.now();
       const record = new IdempotencyRecord({
         idempotencyKey: dummyKey,
@@ -612,6 +612,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           ':validation_key': record.payloadHash,
         }),
       });
+      persistenceLayerSpy.mockRestore();
     });
   });
 

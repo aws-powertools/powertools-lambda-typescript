@@ -95,7 +95,7 @@ const KinesisFirehoseSqsRecordSchema = KinesisFireHoseRecordBase.extend({
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/services-kinesisfirehose.html}
  */
 const KinesisFirehoseSchema = KinesisFireHoseBaseSchema.extend({
-  records: z.array(KinesisFirehoseRecordSchema),
+  records: z.array(KinesisFirehoseRecordSchema).min(1),
 });
 
 /**
@@ -120,7 +120,7 @@ const KinesisFirehoseSchema = KinesisFireHoseBaseSchema.extend({
  * @see {@link types.KinesisFireHoseSqsEvent | KinesisFireHoseSqsEvent}
  */
 const KinesisFirehoseSqsSchema = KinesisFireHoseBaseSchema.extend({
-  records: z.array(KinesisFirehoseSqsRecordSchema),
+  records: z.array(KinesisFirehoseSqsRecordSchema).min(1),
 });
 
 export {

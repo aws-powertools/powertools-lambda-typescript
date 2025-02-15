@@ -1,10 +1,10 @@
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { DynamoDBStreamEnvelope } from '../../../src/envelopes/index.js';
+import { DynamoDBStreamEnvelope } from '../../../src/envelopes/dynamodb.js';
 import { ParseError } from '../../../src/errors.js';
 import type { DynamoDBStreamEvent } from '../../../src/types/schema.js';
-import { getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Envelope: DynamoDB Stream', () => {
   const schema = z
@@ -121,7 +121,7 @@ describe('Envelope: DynamoDB Stream', () => {
       const result = DynamoDBStreamEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse DynamoDB Stream envelope', {
           cause: new ZodError([
@@ -150,7 +150,7 @@ describe('Envelope: DynamoDB Stream', () => {
       const result = DynamoDBStreamEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse record at index 1', {
           cause: new ZodError([
@@ -180,7 +180,7 @@ describe('Envelope: DynamoDB Stream', () => {
       const result = DynamoDBStreamEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse records at indexes 0, 1', {
           cause: new ZodError([

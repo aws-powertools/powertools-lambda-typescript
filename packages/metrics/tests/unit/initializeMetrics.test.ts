@@ -12,7 +12,7 @@ describe('Initialize Metrics', () => {
       POWERTOOLS_DEV: 'true',
       POWERTOOLS_METRICS_DISABLED: 'false',
     };
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it('uses the default service name when none is provided', () => {

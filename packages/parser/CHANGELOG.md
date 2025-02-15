@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.1...v2.14.0) (2025-02-10)
+
+
+### Bug Fixes
+
+* **parser:** parse sqs record body field as JSON and S3Schema in S3SqsEventNoificationRecordSchema ([#3529](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3529)) ([bcd4b9f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/bcd4b9f7864543b25c57143c2903ed68c16d3987))
+
+
+### Features
+
+* **parser:** add TransferFamilySchema for AWS Transfer Family events ([#3575](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3575)) ([2c27c5e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2c27c5e717ff6a8f9b54148dbde3ab7dc83b5baf))
+* **parser:** simplify `ParseResult` and `parse` inference ([#3568](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3568)) ([95762ad](https://github.com/aws-powertools/powertools-lambda-typescript/commit/95762ade4b51fc40860302dd77a97819dac44a98))
+
+
+
+
+
+## [2.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.0...v2.13.1) (2025-01-28)
+
+
+### Bug Fixes
+
+* **parser:** allow Kinesis envelopes to handle non-JSON strings ([#3531](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3531)) ([d18e03d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d18e03d06e4fa4970aa24c4c041793d58a7cde79))
+* **parser:** allow SQS envelopes to handle non-JSON strings ([#3513](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3513)) ([89f0006](https://github.com/aws-powertools/powertools-lambda-typescript/commit/89f0006e9b50448372a5ce70592ea1af5a75ec35))
+* **parser:** allow VPC envelopes to handle non-JSON strings ([#3534](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3534)) ([603988d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/603988d4ad187501aa93ea405a3a136e260dba13))
+* **parser:** API Gateway Envelopes handle non-JSON ([#3511](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3511)) ([a4846af](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a4846afd09c29032f79b79cfa1410675440d7dae))
+* **parser:** CloudWatch Log Envelope handles non-JSON ([#3505](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3505)) ([781a14e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/781a14e11b55767df24739badc77c6d309982d51))
+* **parser:** DynamoDBStream schema & envelope ([#3482](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3482)) ([7f7f8ce](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7f7f8ced2953e0fc72a33cd2b6e8af15fae8d3d6))
+* **parser:** EventBridge envelope uses correct path ([#3504](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3504)) ([7cce60b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7cce60b41b8b72c5aeee5eb17b87d159af3123ac))
+* **parser:** Firehose SQS should fail for invalid SQS message ([#3526](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3526)) ([4721dda](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4721ddaf943ec6695536bdd19e7c29ebf03cb4ed))
+* **parser:** Kafka Envelope + tests ([#3489](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3489)) ([bd6b24a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/bd6b24aa66b79ce267395b5376418bdabc0e31af))
+* **parser:** LambdaFunctionUrl envelope assumes JSON string in body ([#3514](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3514)) ([09aa287](https://github.com/aws-powertools/powertools-lambda-typescript/commit/09aa287c9d44e50b843c0702d86a682c939b9525))
+* **parser:** make identitySource nulablel in APIGatewayRequestAuthorizerEventV2Schema ([#3485](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3485)) ([8692de6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8692de67292cf77db5f25e0ca8c572d71d72eadb))
+* **parser:** min array length on Records ([#3521](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3521)) ([89a6281](https://github.com/aws-powertools/powertools-lambda-typescript/commit/89a62811c4b1732b77c225d64e8cda98b38968fa))
+* **parser:** set min length of 1 to s3 event lists ([#3524](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3524)) ([937be64](https://github.com/aws-powertools/powertools-lambda-typescript/commit/937be641b3ee82748fc1bdec0291abe5ef0e7a97))
+* **parser:** SNS Envelope handles non-JSON ([#3506](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3506)) ([4d7f05f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4d7f05f7415cc52fae42de643ceaffcf764c2472))
+
+
+
+
+
 # [2.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.12.0...v2.13.0) (2025-01-14)
 
 

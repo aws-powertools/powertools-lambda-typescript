@@ -11,11 +11,12 @@
     "packages/jmespath",
     "packages/parser",
     "packages/event-handler",
+    "packages/validation",
     "examples/app",
     "layers",
     "examples/snippets"
   ],
-  "version": "2.13.0",
+  "version": "2.14.0",
   "npmClient": "npm",
   "message": "chore(release): %s [skip ci]"
 }

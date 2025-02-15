@@ -1,9 +1,12 @@
 import type { z } from 'zod';
 import type {
+  APIGatewayEventRequestContextSchema,
   APIGatewayProxyEventSchema,
   APIGatewayProxyEventV2Schema,
+  APIGatewayRequestAuthorizerEventSchema,
   APIGatewayRequestAuthorizerV2Schema,
   APIGatewayRequestContextV2Schema,
+  APIGatewayTokenAuthorizerEventSchema,
   AlbMultiValueHeadersSchema,
   AlbSchema,
   AppSyncBatchResolverSchema,
@@ -11,6 +14,8 @@ import type {
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,
   CloudFormationCustomResourceUpdateSchema,
+  CloudWatchLogEventSchema,
+  CloudWatchLogsDecodeSchema,
   CloudWatchLogsSchema,
   DynamoDBStreamSchema,
   DynamoDBStreamToKinesisRecord,
@@ -18,6 +23,7 @@ import type {
   KafkaMskEventSchema,
   KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
+  KinesisDataStreamRecord,
   KinesisDataStreamSchema,
   KinesisDynamoDBStreamSchema,
   KinesisFirehoseRecordSchema,
@@ -37,6 +43,7 @@ import type {
   SnsSqsNotificationSchema,
   SqsRecordSchema,
   SqsSchema,
+  TransferFamilySchema,
   VpcLatticeSchema,
   VpcLatticeV2Schema,
 } from '../schemas/index.js';
@@ -46,6 +53,18 @@ type ALBEvent = z.infer<typeof AlbSchema>;
 type ALBMultiValueHeadersEvent = z.infer<typeof AlbMultiValueHeadersSchema>;
 
 type APIGatewayProxyEvent = z.infer<typeof APIGatewayProxyEventSchema>;
+
+type APIGatewayRequestAuthorizerEvent = z.infer<
+  typeof APIGatewayRequestAuthorizerEventSchema
+>;
+
+type APIGatewayTokenAuthorizerEvent = z.infer<
+  typeof APIGatewayTokenAuthorizerEventSchema
+>;
+
+type APIGatewayEventRequestContext = z.infer<
+  typeof APIGatewayEventRequestContextSchema
+>;
 
 type APIGatewayProxyEventV2 = z.infer<typeof APIGatewayProxyEventV2Schema>;
 
@@ -60,6 +79,10 @@ type APIGatewayRequestContextV2 = z.infer<
 type AppSyncResolverEvent = z.infer<typeof AppSyncResolverSchema>;
 
 type AppSyncBatchResolverEvent = z.infer<typeof AppSyncBatchResolverSchema>;
+
+type CloudWatchLogEvent = z.infer<typeof CloudWatchLogEventSchema>;
+
+type CloudWatchLogsDecode = z.infer<typeof CloudWatchLogsDecodeSchema>;
 
 type CloudFormationCustomResourceCreateEvent = z.infer<
   typeof CloudFormationCustomResourceCreateSchema
@@ -92,6 +115,8 @@ type KafkaMskEvent = z.infer<typeof KafkaMskEventSchema>;
 type KinesisDataStreamEvent = z.infer<typeof KinesisDataStreamSchema>;
 
 type KinesisDynamoDBStreamEvent = z.infer<typeof KinesisDynamoDBStreamSchema>;
+
+type KinesisDataStreamRecordEvent = z.infer<typeof KinesisDataStreamRecord>;
 
 type KinesisFireHoseEvent = z.infer<typeof KinesisFirehoseSchema>;
 
@@ -129,6 +154,8 @@ type SqsEvent = z.infer<typeof SqsSchema>;
 
 type SqsRecord = z.infer<typeof SqsRecordSchema>;
 
+type TransferFamilyEvent = z.infer<typeof TransferFamilySchema>;
+
 type VpcLatticeEvent = z.infer<typeof VpcLatticeSchema>;
 
 type VpcLatticeEventV2 = z.infer<typeof VpcLatticeV2Schema>;
@@ -136,41 +163,48 @@ type VpcLatticeEventV2 = z.infer<typeof VpcLatticeV2Schema>;
 export type {
   ALBEvent,
   ALBMultiValueHeadersEvent,
+  APIGatewayEventRequestContext,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
+  APIGatewayRequestAuthorizerEvent,
   APIGatewayRequestAuthorizerV2,
   APIGatewayRequestContextV2,
-  AppSyncResolverEvent,
+  APIGatewayTokenAuthorizerEvent,
   AppSyncBatchResolverEvent,
+  AppSyncResolverEvent,
   CloudFormationCustomResourceCreateEvent,
   CloudFormationCustomResourceDeleteEvent,
   CloudFormationCustomResourceUpdateEvent,
+  CloudWatchLogEvent,
+  CloudWatchLogsDecode,
   CloudWatchLogsEvent,
   DynamoDBStreamEvent,
   DynamoDBStreamToKinesisRecordEvent,
   EventBridgeEvent,
-  KafkaSelfManagedEvent,
   KafkaMskEvent,
   KafkaRecord,
+  KafkaSelfManagedEvent,
   KinesisDataStreamEvent,
+  KinesisDataStreamRecordEvent,
   KinesisDynamoDBStreamEvent,
   KinesisFireHoseEvent,
-  KinesisFirehoseRecord,
   KinesisFireHoseSqsEvent,
+  KinesisFirehoseRecord,
   KinesisFirehoseSqsRecord,
   LambdaFunctionUrlEvent,
   S3Event,
   S3EventNotificationEventBridge,
-  S3SqsEventNotification,
   S3ObjectLambdaEvent,
+  S3SqsEventNotification,
   SesEvent,
   SesRecord,
   SnsEvent,
-  SnsSqsNotification,
   SnsNotification,
   SnsRecord,
+  SnsSqsNotification,
   SqsEvent,
   SqsRecord,
+  TransferFamilyEvent,
   VpcLatticeEvent,
   VpcLatticeEventV2,
 };

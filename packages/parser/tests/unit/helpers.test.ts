@@ -17,7 +17,7 @@ import type {
   SnsEvent,
   SqsEvent,
 } from '../../src/types/schema.js';
-import { getTestEvent } from './schema/utils.js';
+import { getTestEvent } from './helpers/utils.js';
 
 const bodySchema = z.object({
   id: z.number(),

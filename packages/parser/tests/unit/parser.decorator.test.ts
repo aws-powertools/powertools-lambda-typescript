@@ -2,12 +2,12 @@ import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { type ZodSchema, z } from 'zod';
-import { EventBridgeEnvelope } from '../../src/envelopes/index.js';
+import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
 import { ParseError } from '../../src/errors.js';
 import { parser } from '../../src/index.js';
 import { EventBridgeSchema } from '../../src/schemas/index.js';
 import type { EventBridgeEvent, ParsedResult } from '../../src/types/index.js';
-import { getTestEvent } from './schema/utils.js';
+import { getTestEvent } from './helpers/utils.js';
 
 describe('Decorator: parser', () => {
   const schema = z.object({

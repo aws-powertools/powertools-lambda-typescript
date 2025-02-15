@@ -1,0 +1,69 @@
+{
+  "name": "@aws-lambda-powertools/validation",
+  "version": "2.14.0",
+  "description": "An utility to validate events and responses using JSON Schemas",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "private": true,
+  "scripts": {
+    "test": "vitest --run",
+    "test:unit": "vitest --run",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "echo 'Not Implemented'",
+    "test:e2e:nodejs18x": "echo \"Not implemented\"",
+    "test:e2e:nodejs20x": "echo \"Not implemented\"",
+    "test:e2e:nodejs22x": "echo \"Not implemented\"",
+    "test:e2e": "echo \"Not implemented\"",
+    "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "echo \"Not implemented\"",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+  },
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
+  "license": "MIT-0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
+    }
+  },
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/commons": "^2.14.0",
+    "@aws-lambda-powertools/jmespath": "^2.14.0",
+    "ajv": "^8.17.1"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "json-schema",
+    "validation",
+    "event",
+    "handler",
+    "nodejs",
+    "serverless"
+  ]
+}

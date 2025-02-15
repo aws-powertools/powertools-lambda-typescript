@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { EventBridgeEnvelope } from '../../../src/envelopes/index.js';
+import { EventBridgeEnvelope } from '../../../src/envelopes/eventbridge.js';
 import { ParseError } from '../../../src/errors.js';
 import type { EventBridgeEvent } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from '../schema/utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Envelope: EventBridgeEnvelope', () => {
   const schema = z.object({
@@ -90,7 +90,7 @@ describe('Envelope: EventBridgeEnvelope', () => {
       const result = EventBridgeEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse EventBridge envelope', {
           cause: new ZodError([

@@ -6,7 +6,8 @@
     "./src/types/index.ts",
     "./src/envelopes/index.ts",
     "./src/schemas/index.ts",
-    "./src/helpers.ts"
+    "./src/helpers.ts",
+    "./src/helpers/dynamodb.ts"
   ],
   "readme": "README.md"
 }

@@ -281,7 +281,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * @param data the data payload that will be hashed to create the hash portion of the idempotency key
    * @returns the idempotency key
    */
-  private getHashedIdempotencyKey(data: JSONValue): string {
+  protected getHashedIdempotencyKey(data: JSONValue): string {
     const payload = this.eventKeyJmesPath
       ? (search(
           this.eventKeyJmesPath,

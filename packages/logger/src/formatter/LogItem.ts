@@ -23,7 +23,7 @@ class LogItem {
    * @param params - The parameters for the LogItem.
    */
   public constructor(params: { attributes: LogAttributes }) {
-    this.addAttributes(params.attributes);
+    this.setAttributes(params.attributes);
   }
 
   /**
@@ -50,7 +50,7 @@ class LogItem {
    * This operation removes empty keys from the log item, see {@link removeEmptyKeys | removeEmptyKeys()} for more information.
    */
   public prepareForPrint(): void {
-    this.setAttributes(this.removeEmptyKeys(this.getAttributes()));
+    this.attributes = this.removeEmptyKeys(this.getAttributes());
   }
 
   /**

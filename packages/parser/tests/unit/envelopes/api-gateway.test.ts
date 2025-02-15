@@ -4,7 +4,7 @@ import { ApiGatewayEnvelope } from '../../../src/envelopes/index.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { APIGatewayProxyEvent } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from '../schema/utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Envelope: API Gateway REST', () => {
   const schema = z
@@ -108,7 +108,7 @@ describe('Envelope: API Gateway REST', () => {
       const result = ApiGatewayEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse API Gateway body', {
           cause: new ZodError([

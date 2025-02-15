@@ -1,8 +1,11 @@
-import type { ZodSchema, z } from 'zod';
+import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
 import { ParseError } from '../errors.js';
-import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
+import {
+  type KinesisDataStreamRecord,
+  KinesisDataStreamSchema,
+} from '../schemas/kinesis.js';
 import type { ParsedResult } from '../types/index.js';
-import { Envelope, envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator } from './envelope.js';
 
 /**
  * Kinesis Data Stream Envelope to extract array of Records
@@ -21,10 +24,39 @@ export const KinesisEnvelope = {
    */
   [envelopeDiscriminator]: 'array' as const,
   parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
-    const parsedEnvelope = KinesisDataStreamSchema.parse(data);
+    let parsedEnvelope: z.infer<typeof KinesisDataStreamSchema>;
+    try {
+      parsedEnvelope = KinesisDataStreamSchema.parse(data);
+    } catch (error) {
+      throw new ParseError('Failed to parse Kinesis Data Stream envelope', {
+        cause: error as Error,
+      });
+    }
 
-    return parsedEnvelope.Records.map((record) => {
-      return Envelope.parse(record.kinesis.data, schema);
+    return parsedEnvelope.Records.map((record, recordIndex) => {
+      let parsedRecord: z.infer<typeof KinesisDataStreamRecord>;
+      try {
+        parsedRecord = schema.parse(record.kinesis.data);
+      } catch (error) {
+        throw new ParseError(
+          `Failed to parse Kinesis Data Stream record at index ${recordIndex}`,
+          {
+            cause: new ZodError(
+              (error as ZodError).issues.map((issue) => ({
+                ...issue,
+                path: [
+                  'Records',
+                  recordIndex,
+                  'kinesis',
+                  'data',
+                  ...issue.path,
+                ],
+              }))
+            ),
+          }
+        );
+      }
+      return parsedRecord;
     });
   },
 
@@ -43,25 +75,48 @@ export const KinesisEnvelope = {
       };
     }
 
-    const parsedRecords: z.infer<T>[] = [];
+    const result = parsedEnvelope.data.Records.reduce<{
+      success: boolean;
+      records: z.infer<T>[];
+      errors: { index?: number; issues?: ZodIssue[] };
+    }>(
+      (acc, record, index) => {
+        const parsedRecord = schema.safeParse(record.kinesis.data);
 
-    for (const record of parsedEnvelope.data.Records) {
-      const parsedRecord = Envelope.safeParse(record.kinesis.data, schema);
-      if (!parsedRecord.success) {
-        return {
-          success: false,
-          error: new ParseError('Failed to parse Kinesis Data Stream record', {
-            cause: parsedRecord.error,
-          }),
-          originalEvent: data,
-        };
-      }
-      parsedRecords.push(parsedRecord.data);
+        if (!parsedRecord.success) {
+          const issues = parsedRecord.error.issues.map((issue) => ({
+            ...issue,
+            path: ['Records', index, 'kinesis', 'data', ...issue.path],
+          }));
+          acc.success = false;
+          // @ts-expect-error - index is assigned
+          acc.errors[index] = { issues };
+          return acc;
+        }
+
+        acc.records.push(parsedRecord.data);
+        return acc;
+      },
+      { success: true, records: [], errors: {} }
+    );
+
+    if (result.success) {
+      return { success: true, data: result.records };
     }
 
+    const errorMessage =
+      Object.keys(result.errors).length > 1
+        ? `Failed to parse Kinesis Data Stream records at indexes ${Object.keys(result.errors).join(', ')}`
+        : `Failed to parse Kinesis Data Stream record at index ${Object.keys(result.errors)[0]}`;
     return {
-      success: true,
-      data: parsedRecords,
+      success: false,
+      error: new ParseError(errorMessage, {
+        cause: new ZodError(
+          // @ts-expect-error - issues are assigned because success is false
+          Object.values(result.errors).flatMap((error) => error.issues)
+        ),
+      }),
+      originalEvent: data,
     };
   },
 };

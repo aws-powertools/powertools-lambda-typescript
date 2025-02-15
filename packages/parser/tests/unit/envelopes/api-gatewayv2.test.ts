@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { ApiGatewayV2Envelope } from '../../../src/envelopes/index.js';
+import { ApiGatewayV2Envelope } from '../../../src/envelopes/api-gatewayv2.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
-import { getTestEvent, omit } from '../schema/utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Envelope: API Gateway HTTP', () => {
   const schema = z
@@ -109,7 +109,7 @@ describe('Envelope: API Gateway HTTP', () => {
       const result = ApiGatewayV2Envelope.safeParse(event, schema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse API Gateway HTTP body', {
           cause: new ZodError([

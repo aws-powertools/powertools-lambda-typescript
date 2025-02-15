@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parser",
-  "version": "2.13.0",
+  "version": "2.14.0",
   "description": "The parser package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -112,6 +112,10 @@
       "require": "./lib/cjs/schemas/sqs.js",
       "import": "./lib/esm/schemas/sqs.js"
     },
+    "./schemas/transfer-family": {
+      "require": "./lib/cjs/schemas/transfer-family.js",
+      "import": "./lib/esm/schemas/transfer-family.js"
+    },
     "./schemas/vpc-lattice": {
       "require": "./lib/cjs/schemas/vpc-lattice.js",
       "import": "./lib/esm/schemas/vpc-lattice.js"
@@ -120,61 +124,9 @@
       "require": "./lib/cjs/schemas/vpc-latticev2.js",
       "import": "./lib/esm/schemas/vpc-latticev2.js"
     },
-    "./envelopes": {
-      "require": "./lib/cjs/envelopes/index.js",
-      "import": "./lib/esm/envelopes/index.js"
-    },
-    "./envelopes/api-gateway": {
-      "require": "./lib/cjs/envelopes/apigw.js",
-      "import": "./lib/esm/envelopes/apigw.js"
-    },
-    "./envelopes/api-gatewayv2": {
-      "require": "./lib/cjs/envelopes/apigwv2.js",
-      "import": "./lib/esm/envelopes/apigwv2.js"
-    },
-    "./envelopes/cloudwatch": {
-      "require": "./lib/cjs/envelopes/cloudwatch.js",
-      "import": "./lib/esm/envelopes/cloudwatch.js"
-    },
-    "./envelopes/dynamodb": {
-      "require": "./lib/cjs/envelopes/dynamodb.js",
-      "import": "./lib/esm/envelopes/dynamodb.js"
-    },
-    "./envelopes/eventbridge": {
-      "require": "./lib/cjs/envelopes/eventbridge.js",
-      "import": "./lib/esm/envelopes/eventbridge.js"
-    },
-    "./envelopes/kafka": {
-      "require": "./lib/cjs/envelopes/kafka.js",
-      "import": "./lib/esm/envelopes/kafka.js"
-    },
-    "./envelopes/kinesis": {
-      "require": "./lib/cjs/envelopes/kinesis.js",
-      "import": "./lib/esm/envelopes/kinesis.js"
-    },
-    "./envelopes/kinesis-firehose": {
-      "require": "./lib/cjs/envelopes/kinesis-firehose.js",
-      "import": "./lib/esm/envelopes/kinesis-firehose.js"
-    },
-    "./envelopes/lambda": {
-      "require": "./lib/cjs/envelopes/lambda.js",
-      "import": "./lib/esm/envelopes/lambda.js"
-    },
-    "./envelopes/sns": {
-      "require": "./lib/cjs/envelopes/sns.js",
-      "import": "./lib/esm/envelopes/sns.js"
-    },
-    "./envelopes/sqs": {
-      "require": "./lib/cjs/envelopes/sqs.js",
-      "import": "./lib/esm/envelopes/sqs.js"
-    },
-    "./envelopes/vpc-lattice": {
-      "require": "./lib/cjs/envelopes/vpc-lattice.js",
-      "import": "./lib/esm/envelopes/vpc-lattice.js"
-    },
-    "./envelopes/vpc-latticev2": {
-      "require": "./lib/cjs/envelopes/vpc-latticev2.js",
-      "import": "./lib/esm/envelopes/vpc-latticev2.js"
+    "./envelopes/*.ts": {
+      "require": "./lib/cjs/envelopes/*.js",
+      "import": "./lib/esm/envelopes/*.js"
     },
     "./helpers": {
       "require": "./lib/cjs/helpers.js",
@@ -192,7 +144,7 @@
   "typesVersions": {
     "*": {
       "types": [
-        "./lib/cjs/types/index.d.ts",
+        "./lib/cjs/types/index.d.ts", 
         "./lib/esm/types/index.d.ts"
       ],
       "middleware": [
@@ -252,7 +204,7 @@
         "./lib/esm/schemas/lambda.d.ts"
       ],
       "schemas/s3": [
-        "./lib/cjs/schemas/s3.d.ts",
+        "./lib/cjs/schemas/s3.d.ts", 
         "./lib/esm/schemas/s3.d.ts"
       ],
       "schemas/ses": [
@@ -275,73 +227,19 @@
         "./lib/cjs/schemas/vpc-latticev2.d.ts",
         "./lib/esm/schemas/vpc-latticev2.d.ts"
       ],
-      "envelopes": [
-        "./lib/cjs/envelopes/index.d.ts",
-        "./lib/esm/envelopes/index.d.ts"
-      ],
-      "envelopes/api-gateway": [
-        "./lib/cjs/envelopes/apigw.d.ts",
-        "./lib/esm/envelopes/apigw.d.ts"
-      ],
-      "envelopes/api-gatewayv2": [
-        "./lib/cjs/envelopes/apigwv2.d.ts",
-        "./lib/esm/envelopes/apigwv2.d.ts"
-      ],
-      "envelopes/cloudwatch": [
-        "./lib/cjs/envelopes/cloudwatch.d.ts",
-        "./lib/esm/envelopes/cloudwatch.d.ts"
-      ],
-      "envelopes/dynamodb": [
-        "./lib/cjs/envelopes/dynamodb.d.ts",
-        "./lib/esm/envelopes/dynamodb.d.ts"
-      ],
-      "envelopes/eventbridge": [
-        "./lib/cjs/envelopes/eventbridge.d.ts",
-        "./lib/esm/envelopes/eventbridge.d.ts"
-      ],
-      "envelopes/kafka": [
-        "./lib/cjs/envelopes/kafka.d.ts",
-        "./lib/esm/envelopes/kafka.d.ts"
-      ],
-      "envelopes/kinesis": [
-        "./lib/cjs/envelopes/kinesis.d.ts",
-        "./lib/esm/envelopes/kinesis.d.ts"
-      ],
-      "envelopes/kinesis-firehose": [
-        "./lib/cjs/envelopes/kinesis-firehose.d.ts",
-        "./lib/esm/envelopes/kinesis-firehose.d.ts"
-      ],
-      "envelopes/lambda": [
-        "./lib/cjs/envelopes/lambda.d.ts",
-        "./lib/esm/envelopes/lambda.d.ts"
-      ],
-      "envelopes/sns": [
-        "./lib/cjs/envelopes/sns.d.ts",
-        "./lib/esm/envelopes/sns.d.ts"
-      ],
-      "envelopes/sqs": [
-        "./lib/cjs/envelopes/sqs.d.ts",
-        "./lib/esm/envelopes/sqs.d.ts"
-      ],
-      "envelopes/vpc-lattice": [
-        "./lib/cjs/envelopes/vpc-lattice.d.ts",
-        "./lib/esm/envelopes/vpc-lattice.d.ts"
-      ],
-      "envelopes/vpc-latticev2": [
-        "./lib/cjs/envelopes/vpc-latticev2.d.ts",
-        "./lib/esm/envelopes/vpc-latticev2.d.ts"
+      "envelopes/*.ts": [
+        "./lib/cjs/envelopes/*.d.ts",
+        "./lib/esm/envelopes/*.d.ts"
       ],
       "helpers": [
-        "./lib/cjs/helpers.d.ts",
+        "./lib/cjs/helpers.d.ts", 
         "./lib/esm/helpers.d.ts"
       ]
     }
   },
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
@@ -366,7 +264,7 @@
     "nodejs"
   ],
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.13.0"
+    "@aws-lambda-powertools/commons": "^2.14.0"
   },
   "peerDependencies": {
     "@middy/core": "4.x || 5.x || 6.x",
@@ -379,8 +277,5 @@
     "@middy/core": {
       "optional": true
     }
-  },
-  "devDependencies": {
-    "@anatine/zod-mock": "^3.13.3"
   }
 }

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { KafkaEnvelope } from '../../../src/envelopes/index.js';
+import { KafkaEnvelope } from '../../../src/envelopes/kafka.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
-import { getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Envelope: Kafka', () => {
   const baseEvent = getTestEvent({
@@ -84,7 +84,7 @@ describe('Envelope: Kafka', () => {
       const result = KafkaEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse Kafka envelope', {
           cause: new ZodError([
@@ -111,7 +111,7 @@ describe('Envelope: Kafka', () => {
       const result = KafkaEnvelope.safeParse(event, z.number());
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse Kafka envelope', {
           cause: new ZodError([

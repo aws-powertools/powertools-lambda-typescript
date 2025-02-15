@@ -153,7 +153,7 @@ class SecretsProvider extends BaseProvider {
    */
   public constructor(config?: SecretsProviderOptions) {
     super({
-      proto: SecretsManagerClient as new (
+      awsSdkV3ClientPrototype: SecretsManagerClient as new (
         config?: unknown
       ) => SecretsManagerClient,
       ...(config ?? {}),

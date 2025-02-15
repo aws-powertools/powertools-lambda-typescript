@@ -4,7 +4,7 @@ import { SnsEnvelope } from '../../../src/envelopes/sns.js';
 import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers.js';
 import type { SnsEvent } from '../../../src/types/schema.js';
-import { getTestEvent } from '../schema/utils.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Envelope: SnsEnvelope', () => {
   const baseEvent = getTestEvent<SnsEvent>({
@@ -84,7 +84,7 @@ describe('Envelope: SnsEnvelope', () => {
       const result = SnsEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).toStrictEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SNS envelope', {
           cause: new ZodError([
@@ -119,7 +119,7 @@ describe('Envelope: SnsEnvelope', () => {
       );
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SNS message at index 1', {
           cause: new ZodError([
@@ -152,7 +152,7 @@ describe('Envelope: SnsEnvelope', () => {
       );
 
       // Assess
-      expect(result).toEqual({
+      expect(result).be.deep.equal({
         success: false,
         error: new ParseError('Failed to parse SNS messages at indexes 0, 1', {
           cause: new ZodError([

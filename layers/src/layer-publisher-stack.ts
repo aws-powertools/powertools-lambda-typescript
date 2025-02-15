@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { join, resolve, sep } from 'node:path';
 import { CfnOutput, RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib';
 import {
+  Architecture,
   CfnLayerVersionPermission,
   Code,
   LayerVersion,
@@ -42,8 +43,7 @@ export class LayerPublisherStack extends Stack {
         Runtime.NODEJS_22_X,
       ],
       license: 'MIT-0',
-      // This is needed because the following regions do not support the compatibleArchitectures property #1400
-      // ...(![ 'eu-south-2', 'eu-central-2', 'ap-southeast-4' ].includes(Stack.of(this).region) ? { compatibleArchitectures: [Architecture.X86_64] } : {}),
+      compatibleArchitectures: [Architecture.ARM_64, Architecture.X86_64],
       code: Code.fromAsset(resolve(__dirname), {
         bundling: {
           // This is here only because is required by CDK, however it is not used since the bundling is done locally

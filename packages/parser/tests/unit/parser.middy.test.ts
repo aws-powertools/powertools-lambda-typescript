@@ -2,7 +2,7 @@ import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { EventBridgeEnvelope } from '../../src/envelopes/event-bridge.js';
+import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
 import { SqsEnvelope } from '../../src/envelopes/sqs.js';
 import { ParseError } from '../../src/errors.js';
 import { parser } from '../../src/middleware/parser.js';
@@ -11,7 +11,7 @@ import type {
   ParsedResult,
   SqsEvent,
 } from '../../src/types/index.js';
-import { getTestEvent } from './schema/utils.js';
+import { getTestEvent } from './helpers/utils.js';
 
 describe('Middleware: parser', () => {
   const schema = z
@@ -107,7 +107,7 @@ describe('Middleware: parser', () => {
     const result = await middy()
       .use(parser({ schema: schema, safeParse: true }))
       .handler((event) => event)(
-      event as unknown as ParsedResult<unknown, z.infer<typeof schema>>,
+      event as unknown as ParsedResult<z.infer<typeof schema>>,
       {} as Context
     );
 
@@ -126,7 +126,7 @@ describe('Middleware: parser', () => {
     const result = await middy()
       .use(parser({ schema: z.string(), safeParse: true }))
       .handler((event) => event)(
-      event as unknown as ParsedResult<unknown, string>,
+      event as unknown as ParsedResult<string>,
       {} as Context
     );
 

@@ -215,7 +215,7 @@ You can also gracefully handle schema validation errors by catching `SchemaValid
     export const handler = async (event: InboundSchema, context: Context) => {
       try {
         await validate({
-          event,
+          payload: event,
           schema: inboundSchema,
         })
 
@@ -552,7 +552,7 @@ For example, to validate using the schema above, you can define a custom format 
     export const handler = async (event: any, context: Context) => {
       try {
         await validate({
-          event,
+          payload: event,
           schema: schemaWithCustomFormat,
           formats: customFormats,
         })
@@ -661,6 +661,45 @@ You can use the `externalRefs` option to pass a list of schemas that you want to
       type InboundSchema,
       type OutboundSchema
     };
+    ```
+
+### Bringing your own `ajv` instance
+
+By default, we use JSON Schema draft-07. If you want to use a different draft, you can pass your own `ajv` instance to any of the validation methods.
+
+This is also useful if you want to configure `ajv` with custom options like keywords and more.
+
+=== "advanced_custom_format.ts"
+
+    ```typescript
+    import { validate } from '@aws-lambda-powertools/validation';
+    import Ajv2019 from "ajv/dist/2019"
+    import { Logger } from '@aws-lambda-powertools/logger';
+
+    const logger = new Logger();
+
+    const ajv = new Ajv2019();
+
+    export const handler = async (event: any, context: Context) => {
+      try {
+        await validate({
+          payload: event,
+          schema: schemaWithCustomFormat,
+          ajv,
+        })
+
+        return { // since we are not validating the output, we can return anything
+          message: 'ok'
+        }
+      } catch (error) {
+        if (error instanceof SchemaValidationError) {
+          logger.error('Schema validation failed', error)
+          throw new Error('Invalid event payload')
+        }
+
+        throw error
+      }
+    }
     ```
 
 ## Should I use this or Parser?

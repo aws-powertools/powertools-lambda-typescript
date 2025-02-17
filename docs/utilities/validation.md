@@ -20,7 +20,7 @@ This utility provides [JSON Schema](https://json-schema.org) validation for even
 ## Getting started
 
 ```bash
-npm install @aws-lambda-powertools/validation
+npm install @aws-lambda-powertools/validation ajv
 ```
 
 You can validate inbound and outbound payloads using the validator class method decorator or Middy.js middleware.

@@ -695,6 +695,31 @@ This means that we will raise **`IdempotencyKeyError`** if the evaluation of **`
     --8<-- "examples/snippets/idempotency/samples/workingWIthIdempotencyRequiredKeyError.json"
     ```
 
+### Customizing the idempotency key prefix
+
+!!! warning
+    Changing the idempotency key generation will invalidate existing idempotency records
+
+You can use the `keyPrefix` parameter in any of the idempotency configurations to define a custom prefix for your idempotency key. This allows you to decouple the idempotency key from the function name, which is especially useful during application refactorings.
+
+=== "Using a custom prefix with function wrapper"
+
+    ```typescript hl_lines="25"
+    --8<-- "examples/snippets/idempotency/customKeyPrefixFnWrapper.ts"
+    ```
+
+=== "Using a custom prefix with decorator"
+
+    ```typescript hl_lines="13"
+    --8<-- "examples/snippets/idempotency/customKeyPrefixDecorator.ts"
+    ```
+
+=== "Using a custom prefix with Middy.js middleware"
+
+    ```typescript hl_lines="14"
+    --8<-- "examples/snippets/idempotency/customKeyPrefixMiddleware.ts"
+    ```
+
 ### Batch integration
 
 You can easily integrate with [Batch](batch.md) utility by using idempotency wrapper around your processing function.

@@ -117,8 +117,10 @@ const makeHandlerIdempotent = (
       ? options.config
       : new IdempotencyConfig({});
     const persistenceStore = options.persistenceStore;
+    const keyPrefix = options.keyPrefix;
     persistenceStore.configure({
       config: idempotencyConfig,
+      keyPrefix: keyPrefix,
     });
 
     const idempotencyHandler = new IdempotencyHandler({
@@ -126,6 +128,7 @@ const makeHandlerIdempotent = (
       functionArguments: [],
       idempotencyConfig,
       persistenceStore,
+      keyPrefix,
       functionPayloadToBeHashed: undefined,
     });
     setIdempotencyHandlerInRequestInternal(request, idempotencyHandler);

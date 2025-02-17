@@ -393,6 +393,45 @@ describe('Function: makeIdempotent', () => {
       expect(saveSuccessSpy).toHaveBeenCalledTimes(0);
     }
   );
+
+  it.each([
+    {
+      type: 'wrapper',
+    },
+    { type: 'middleware' },
+  ])(
+    'passes keyPrefix correctly in idempotency handler ($type)',
+    async ({ type }) => {
+      // Prepare
+      const keyPrefix = 'my-custom-prefix';
+      const options = {
+        ...mockIdempotencyOptions,
+        keyPrefix,
+        config: new IdempotencyConfig({
+          eventKeyJmesPath: 'idempotencyKey',
+        }),
+      };
+      const handler =
+        type === 'wrapper'
+          ? makeIdempotent(fnSuccessfull, options)
+          : middy(fnSuccessfull).use(makeHandlerIdempotent(options));
+
+      const configureSpy = vi.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'configure'
+      );
+    
+      // Act
+      const result = await handler(event, context);
+
+      // Assess
+      expect(result).toBe(true);
+      expect(configureSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ keyPrefix })
+      );
+    }
+  );
+
   it('uses the first argument when when wrapping an arbitrary function', async () => {
     // Prepare
     const config = new IdempotencyConfig({});

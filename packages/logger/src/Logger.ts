@@ -1,10 +1,6 @@
 import { Console } from 'node:console';
 import { randomInt } from 'node:crypto';
-import {
-  Utility,
-  isNull,
-  isNullOrUndefined,
-} from '@aws-lambda-powertools/commons';
+import { Utility, isNullOrUndefined } from '@aws-lambda-powertools/commons';
 import type {
   AsyncHandler,
   HandlerMethodDecorator,

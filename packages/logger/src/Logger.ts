@@ -1,6 +1,6 @@
 import { Console } from 'node:console';
 import { randomInt } from 'node:crypto';
-import { Utility } from '@aws-lambda-powertools/commons';
+import { Utility, isNullOrUndefined } from '@aws-lambda-powertools/commons';
 import type {
   AsyncHandler,
   HandlerMethodDecorator,
@@ -777,6 +777,9 @@ class Logger extends Utility implements LoggerInterface {
     additionalAttributes: LogAttributes
   ): void {
     for (const item of extraInput) {
+      if (isNullOrUndefined(item)) {
+        continue;
+      }
       if (item instanceof Error) {
         additionalAttributes.error = item;
       } else if (typeof item === 'string') {

@@ -601,7 +601,7 @@ describe('Working with keys', () => {
 
   it('logs a warning when using both the deprecated persistentLogAttributes and persistentKeys options', () => {
     // Prepare
-    const logger = new Logger({
+    new Logger({
       persistentKeys: {
         foo: 'bar',
       },
@@ -739,4 +739,24 @@ describe('Working with keys', () => {
       })
     );
   });
+
+  it.each([{ value: null }, { value: undefined }])(
+    'handles null and undefined values when passing them to the log method ($value)',
+    ({ value }) => {
+      // Prepare
+      const logger = new Logger();
+
+      // Act
+      // @ts-expect-error - these values are already forbidden by TypeScript, but JavaScript-only customers might pass them
+      logger.info('foo', value);
+
+      // Assess
+      expect(console.info).toHaveLoggedNth(
+        1,
+        expect.objectContaining({
+          message: 'foo',
+        })
+      );
+    }
+  );
 });

@@ -143,7 +143,10 @@ class Logger extends Utility implements LoggerInterface {
    * Sometimes we need to log warnings before the logger is fully initialized, however we can't log them
    * immediately because the logger is not ready yet. This buffer stores those logs until the logger is ready.
    */
-  #initBuffer: [number, Parameters<Logger['createAndPopulateLogItem']>][] = [];
+  readonly #initBuffer: [
+    number,
+    Parameters<Logger['createAndPopulateLogItem']>,
+  ][] = [];
   /**
    * Flag used to determine if the logger is initialized.
    */
@@ -180,12 +183,12 @@ class Logger extends Utility implements LoggerInterface {
    * maxBufferBytesSize is the max size of the buffer. Additions to the buffer beyond this size will
    * cause older logs to be evicted from the buffer
    */
-  #maxBufferBytesSize = 1024;
+  readonly #maxBufferBytesSize = 1024;
 
   /**
    * buffer stores logs up to `maxBufferBytesSize`
    */
-  #buffer: CircularMap<string> = new CircularMap({
+  readonly #buffer: CircularMap<string> = new CircularMap({
     maxBytesSize: this.#maxBufferBytesSize,
   });
 

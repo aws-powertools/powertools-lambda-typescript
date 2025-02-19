@@ -977,12 +977,12 @@ class Logger extends Utility implements LoggerInterface {
           this.createAndPopulateLogItem(logLevel, input, extraInput),
           logLevel
         );
-      } catch (e) {
+      } catch (error) {
         this.printLog(
           LogLevelThreshold.WARN,
           this.createAndPopulateLogItem(
             LogLevelThreshold.WARN,
-            `Unable to buffer log: ${e}`,
+            `Unable to buffer log: ${(error as Error).message}`,
             extraInput
           )
         );

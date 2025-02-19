@@ -26,18 +26,9 @@ class TestLogger extends Logger {
 }
 
 describe('bufferLog', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
-  beforeEach(() => {
-    process.env = {
-      ...ENVIRONMENT_VARIABLES,
-      POWERTOOLS_LOGGER_LOG_EVENT: 'true',
-      POWERTOOLS_DEV: 'true',
-    };
-    vi.clearAllMocks();
-  });
   it('outputs a warning when there is an error buffering the log', () => {
     // Prepare
+    process.env.POWERTOOLS_DEV = 'true';
     const logger = new TestLogger();
     logger.enableBuffering();
     logger.overrideBufferLogItem();

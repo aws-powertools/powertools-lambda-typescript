@@ -969,11 +969,11 @@ class Logger extends Utility implements LoggerInterface {
       return;
     }
 
-    const trace_id = this.envVarsService.getXrayTraceId();
-    if (trace_id !== undefined && this.shouldBufferLog(trace_id, logLevel)) {
+    const traceId = this.envVarsService.getXrayTraceId();
+    if (traceId !== undefined && this.shouldBufferLog(traceId, logLevel)) {
       try {
         this.bufferLogItem(
-          trace_id,
+          traceId,
           this.createAndPopulateLogItem(logLevel, input, extraInput),
           logLevel
         );
@@ -1251,12 +1251,12 @@ class Logger extends Utility implements LoggerInterface {
    * @returns
    */
   protected flushBuffer(): void {
-    const trace_id = this.envVarsService.getXrayTraceId();
-    if (trace_id === undefined) {
+    const traceId = this.envVarsService.getXrayTraceId();
+    if (traceId === undefined) {
       return;
     }
 
-    const buffer = this.#buffer.get(trace_id) || [];
+    const buffer = this.#buffer.get(traceId) || [];
 
     for (const item of buffer) {
       const consoleMethod =
@@ -1268,18 +1268,18 @@ class Logger extends Utility implements LoggerInterface {
       this.console[consoleMethod](item.value);
     }
 
-    this.#buffer.delete(trace_id);
+    this.#buffer.delete(traceId);
   }
   /**
    * shouldBufferLog returns true if the log meets the criteria to be buffered
-   * @param trace_id _X_AMZN_TRACE_ID
+   * @param traceId _X_AMZN_TRACE_ID
    * @param logLevel The  level of the log being considered
    * @returns
    */
-  shouldBufferLog(trace_id: string | undefined, logLevel: number): boolean {
+  shouldBufferLog(traceId: string | undefined, logLevel: number): boolean {
     return (
       this.isBufferEnabled &&
-      trace_id !== undefined &&
+      traceId !== undefined &&
       logLevel <= this.bufferLogThreshold
     );
   }

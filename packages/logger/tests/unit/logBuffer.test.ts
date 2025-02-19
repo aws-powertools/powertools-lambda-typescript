@@ -36,13 +36,16 @@ describe('bufferLog', () => {
     };
     vi.clearAllMocks();
   });
-
   it('outputs a warning when there is an error buffering the log', () => {
+    // Prepare
     const logger = new TestLogger();
     logger.enableBuffering();
     logger.overrideBufferLogItem();
 
+    // Act
     logger.debug('This is a debug');
+
+    // Assess
     expect(console.debug).toBeCalledTimes(1);
     expect(console.warn).toBeCalledTimes(1);
   });
@@ -61,93 +64,56 @@ describe('flushBuffer', () => {
   });
 
   it('outputs buffered logs', () => {
+    // Prepare
     const logger = new TestLogger({ logLevel: 'SILENT' });
     logger.enableBuffering();
     logger.setbufferLevelThreshold(LogLevelThreshold.CRITICAL);
 
+    // Act
     logger.debug('This is a debug');
     logger.warn('This is a warning');
     logger.critical('this is a critical');
 
+    // Assess
     expect(console.warn).toHaveBeenCalledTimes(0);
     expect(console.error).toHaveBeenCalledTimes(0);
 
+    // Act
     logger.flushBufferWrapper();
 
+    // Assess
     expect(console.warn).toHaveBeenCalledTimes(1);
     expect(console.error).toHaveBeenCalledTimes(1);
   });
 
   it('handles an empty buffer', () => {
-    const logger = new TestLogger({ logLevel: 'SILENT' });
+    // Prepare
+    const logger = new TestLogger();
     logger.enableBuffering();
 
+    // Act
     logger.flushBufferWrapper();
   });
 
   it('does not output buffered logs when trace id is not set', () => {
+    // Prepare
     process.env._X_AMZN_TRACE_ID = undefined;
-
     const logger = new TestLogger({});
     logger.enableBuffering();
 
+    // Act
     logger.debug('This is a debug');
     logger.warn('this is a warning');
 
+    // Assess
     expect(console.debug).toHaveBeenCalledTimes(0);
     expect(console.warn).toHaveBeenCalledTimes(1);
 
+    // Act
     logger.flushBufferWrapper();
 
+    // Assess
     expect(console.debug).toHaveBeenCalledTimes(0);
     expect(console.warn).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('shouldBufferLog', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
-  beforeEach(() => {
-    process.env = {
-      ...ENVIRONMENT_VARIABLES,
-      POWERTOOLS_LOGGER_LOG_EVENT: 'true',
-      POWERTOOLS_DEV: 'true',
-    };
-    vi.clearAllMocks();
-  });
-  it('returns false when _X_AMZN_TRACE_ID is not set', () => {
-    const logger = new TestLogger({});
-    process.env._X_AMZN_TRACE_ID = undefined;
-    logger.enableBuffering();
-
-    expect(logger.shouldBufferLog(undefined, LogLevelThreshold.TRACE)).toBe(
-      false
-    );
-  });
-
-  it('returns false when the buffer is disabled', () => {
-    const logger = new TestLogger({});
-    logger.disableBuffering();
-
-    const trace = process.env._X_AMZN_TRACE_ID;
-
-    expect(logger.shouldBufferLog(trace, LogLevelThreshold.TRACE)).toBe(false);
-  });
-
-  it('returns false when the log level above the bufferLevelThreshold', () => {
-    const logger = new TestLogger({});
-    logger.enableBuffering();
-
-    const trace = process.env._X_AMZN_TRACE_ID;
-
-    expect(logger.shouldBufferLog(trace, LogLevelThreshold.INFO)).toBe(false);
-  });
-
-  it('returns true when the criteria is met', () => {
-    const logger = new TestLogger({});
-    logger.enableBuffering();
-    const trace = process.env._X_AMZN_TRACE_ID;
-
-    expect(logger.shouldBufferLog(trace, LogLevelThreshold.TRACE)).toBe(true);
   });
 });

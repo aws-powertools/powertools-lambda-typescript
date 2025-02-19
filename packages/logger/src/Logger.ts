@@ -13,6 +13,7 @@ import { LogJsonIndent, LogLevelThreshold, ReservedKeys } from './constants.js';
 import type { LogFormatter } from './formatter/LogFormatter.js';
 import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
+import { CircularMap } from './logBuffer.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type {
   ConstructorOptions,
@@ -142,7 +143,10 @@ class Logger extends Utility implements LoggerInterface {
    * Sometimes we need to log warnings before the logger is fully initialized, however we can't log them
    * immediately because the logger is not ready yet. This buffer stores those logs until the logger is ready.
    */
-  #buffer: [number, Parameters<Logger['createAndPopulateLogItem']>][] = [];
+  readonly #initBuffer: [
+    number,
+    Parameters<Logger['createAndPopulateLogItem']>,
+  ][] = [];
   /**
    * Flag used to determine if the logger is initialized.
    */
@@ -166,6 +170,29 @@ class Logger extends Utility implements LoggerInterface {
   #jsonReplacerFn?: CustomJsonReplacerFn;
 
   /**
+   * Represents whether the buffering functionality is enabled in the logger
+   */
+  protected isBufferEnabled = false;
+
+  /**
+   * Log level threshold for the buffer
+   * Logs with a level lower than this threshold will be buffered
+   */
+  protected bufferLogThreshold: number = LogLevelThreshold.DEBUG;
+  /**
+   * Max size of the buffer. Additions to the buffer beyond this size will
+   * cause older logs to be evicted from the buffer
+   */
+  readonly #maxBufferBytesSize = 1024;
+
+  /**
+   * Contains buffered logs, grouped by _X_AMZN_TRACE_ID, each group with a max size of `maxBufferBytesSize`
+   */
+  readonly #buffer: CircularMap<string> = new CircularMap({
+    maxBytesSize: this.#maxBufferBytesSize,
+  });
+
+  /**
    * Log level used by the current instance of Logger.
    *
    * Returns the log level as a number. The higher the number, the less verbose the logs.
@@ -182,11 +209,11 @@ class Logger extends Utility implements LoggerInterface {
     // all logs are buffered until the logger is initialized
     this.setOptions(rest);
     this.#isInitialized = true;
-    for (const [level, log] of this.#buffer) {
+    for (const [level, log] of this.#initBuffer) {
       // we call the method directly and create the log item just in time
       this.printLog(level, this.createAndPopulateLogItem(...log));
     }
-    this.#buffer = [];
+    this.#initBuffer = [];
   }
 
   /**
@@ -919,7 +946,7 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Print a given log with given log level.
+   * Print or buffer a given log with given log level.
    *
    * @param logLevel - The log level threshold
    * @param input - The log message
@@ -937,7 +964,33 @@ class Logger extends Utility implements LoggerInterface {
           this.createAndPopulateLogItem(logLevel, input, extraInput)
         );
       } else {
-        this.#buffer.push([logLevel, [logLevel, input, extraInput]]);
+        this.#initBuffer.push([logLevel, [logLevel, input, extraInput]]);
+      }
+      return;
+    }
+
+    const traceId = this.envVarsService.getXrayTraceId();
+    if (traceId !== undefined && this.shouldBufferLog(traceId, logLevel)) {
+      try {
+        this.bufferLogItem(
+          traceId,
+          this.createAndPopulateLogItem(logLevel, input, extraInput),
+          logLevel
+        );
+      } catch (error) {
+        this.printLog(
+          LogLevelThreshold.WARN,
+          this.createAndPopulateLogItem(
+            LogLevelThreshold.WARN,
+            `Unable to buffer log: ${(error as Error).message}`,
+            [error as Error]
+          )
+        );
+
+        this.printLog(
+          logLevel,
+          this.createAndPopulateLogItem(logLevel, input, extraInput)
+        );
       }
     }
   }
@@ -1168,6 +1221,68 @@ class Logger extends Utility implements LoggerInterface {
         this.getDefaultServiceName(),
     });
     persistentKeys && this.appendPersistentKeys(persistentKeys);
+  }
+
+  /**
+   * Add a log to the buffer
+   * @param xrayTraceId - _X_AMZN_TRACE_ID of the request
+   * @param log - Log to be buffered
+   * @param logLevel - level of log to be buffered
+   */
+  protected bufferLogItem(
+    xrayTraceId: string,
+    log: LogItem,
+    logLevel: number
+  ): void {
+    log.prepareForPrint();
+
+    const stringified = JSON.stringify(
+      log.getAttributes(),
+      this.getJsonReplacer(),
+      this.logIndentation
+    );
+
+    this.#buffer.setItem(xrayTraceId, stringified, logLevel);
+  }
+
+  /**
+   * Flushes all items of the respective _X_AMZN_TRACE_ID within
+   * the buffer.
+   */
+  protected flushBuffer(): void {
+    const traceId = this.envVarsService.getXrayTraceId();
+    if (traceId === undefined) {
+      return;
+    }
+
+    const buffer = this.#buffer.get(traceId) || [];
+
+    for (const item of buffer) {
+      const consoleMethod =
+        item.logLevel === LogLevelThreshold.CRITICAL
+          ? 'error'
+          : (this.getLogLevelNameFromNumber(
+              item.logLevel
+            ).toLowerCase() as keyof Omit<LogFunction, 'critical'>);
+      this.console[consoleMethod](item.value);
+    }
+
+    this.#buffer.delete(traceId);
+  }
+  /**
+   * Tests if the log meets the criteria to be buffered
+   * @param traceId - _X_AMZN_TRACE_ID of the request
+   * @param logLevel - The  level of the log being considered
+   */
+  protected shouldBufferLog(
+    traceId: string | undefined,
+    logLevel: number
+  ): boolean {
+    return (
+      this.isBufferEnabled &&
+      traceId !== undefined &&
+      logLevel <= this.bufferLogThreshold
+    );
   }
 }
 

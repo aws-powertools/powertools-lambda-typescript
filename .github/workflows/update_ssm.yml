@@ -66,7 +66,7 @@ jobs:
         run: |
           echo 'CONVERTED_REGION=${{ matrix.region }}' | tr 'a-z\-' 'A-Z_' >> "$GITHUB_OUTPUT"
       - id: creds
-        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets[format('{0}', steps.transform.outputs.CONVERTED_REGION)] }}

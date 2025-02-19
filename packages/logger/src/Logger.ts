@@ -170,23 +170,23 @@ class Logger extends Utility implements LoggerInterface {
   #jsonReplacerFn?: CustomJsonReplacerFn;
 
   /**
-   * isBufferEnabled represents whether the buffering functionality is enabled in the logger
+   * Represents whether the buffering functionality is enabled in the logger
    */
   protected isBufferEnabled = false;
 
   /**
-   * bufferLogThreshold represents the log level threshold for the buffer
+   * Log level threshold for the buffer
    * Logs with a level lower than this threshold will be buffered
    */
   protected bufferLogThreshold: number = LogLevelThreshold.DEBUG;
   /**
-   * maxBufferBytesSize is the max size of the buffer. Additions to the buffer beyond this size will
+   * Max size of the buffer. Additions to the buffer beyond this size will
    * cause older logs to be evicted from the buffer
    */
   readonly #maxBufferBytesSize = 1024;
 
   /**
-   * buffer stores logs up to `maxBufferBytesSize`
+   * Contains buffered logs, grouped by _X_AMZN_TRACE_ID, each group with a max size of `maxBufferBytesSize`
    */
   readonly #buffer: CircularMap<string> = new CircularMap({
     maxBytesSize: this.#maxBufferBytesSize,
@@ -946,7 +946,7 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Print a given log with given log level.
+   * Print or buffer a given log with given log level.
    *
    * @param logLevel - The log level threshold
    * @param input - The log message
@@ -1224,10 +1224,10 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * bufferLogItem adds a log to the buffer
-   * @param xrayTraceId
-   * @param log
-   * @param logLevel
+   * Add a log to the buffer
+   * @param xrayTraceId - _X_AMZN_TRACE_ID of the request
+   * @param log - Log to be buffered
+   * @param logLevel - level of log to be buffered
    */
   protected bufferLogItem(
     xrayTraceId: string,
@@ -1246,9 +1246,8 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * flushBuffer logs the items of the respective _X_AMZN_TRACE_ID within
+   * Flushes all items of the respective _X_AMZN_TRACE_ID within
    * the buffer.
-   * @returns
    */
   protected flushBuffer(): void {
     const traceId = this.envVarsService.getXrayTraceId();
@@ -1271,12 +1270,14 @@ class Logger extends Utility implements LoggerInterface {
     this.#buffer.delete(traceId);
   }
   /**
-   * shouldBufferLog returns true if the log meets the criteria to be buffered
-   * @param traceId _X_AMZN_TRACE_ID
-   * @param logLevel The  level of the log being considered
-   * @returns
+   * Tests if the log meets the criteria to be buffered
+   * @param traceId - _X_AMZN_TRACE_ID of the request
+   * @param logLevel - The  level of the log being considered
    */
-  shouldBufferLog(traceId: string | undefined, logLevel: number): boolean {
+  protected shouldBufferLog(
+    traceId: string | undefined,
+    logLevel: number
+  ): boolean {
     return (
       this.isBufferEnabled &&
       traceId !== undefined &&

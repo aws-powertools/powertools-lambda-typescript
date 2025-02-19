@@ -983,7 +983,7 @@ class Logger extends Utility implements LoggerInterface {
           this.createAndPopulateLogItem(
             LogLevelThreshold.WARN,
             `Unable to buffer log: ${(error as Error).message}`,
-            extraInput
+            [error as Error]
           )
         );
 

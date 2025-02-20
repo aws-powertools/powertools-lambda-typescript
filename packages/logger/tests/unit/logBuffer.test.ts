@@ -133,7 +133,7 @@ describe('flushBuffer', () => {
       expect.objectContaining({
         level: 'WARN',
         message:
-          '1 were evicted from the buffer and are not shown. Increase buffer size to store more logs in the buffer',
+          'Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer',
       })
     );
   });

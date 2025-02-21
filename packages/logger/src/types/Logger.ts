@@ -174,11 +174,43 @@ type LogRecordOrderOption = {
 };
 
 /**
+ * Options for the `logBuffer` constructor option.
+ *
+ * Used to configure the log buffer functionality.
+ */
+type LogBufferOption = {
+  logBufferOptions?: {
+    /**
+     * Whether logs should be buffered
+     */
+    enabled?: boolean;
+
+    /**
+     * Maximum size in bytes of each buffer.
+     */
+    maxBytes?: number;
+    /**
+     * Flush the buffer when an error is logged
+     */
+    flushOnErrorLog?: boolean;
+    /**
+     * The threshold to buffer logs. Logs with a level below
+     * this threshold will be buffered
+     */
+    bufferAtVerbosity?: Omit<
+      LogLevel,
+      'ERROR' | 'error' | 'CRITICAL' | 'critical' | 'SILENT' | 'silent'
+    >;
+  };
+};
+
+/**
  * Options to configure the Logger.
  */
 type ConstructorOptions = BaseConstructorOptions &
   (PersistentKeysOption | DeprecatedPersistentKeysOption) &
-  (LogFormatterOption | LogRecordOrderOption);
+  (LogFormatterOption | LogRecordOrderOption) &
+  LogBufferOption;
 
 type LogItemMessage = string | LogAttributesWithMessage;
 type LogItemExtraInput = [Error | string] | LogAttributes[];
@@ -194,6 +226,7 @@ type LoggerInterface = {
   critical(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
   debug(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
   error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void;
+  flushBuffer(): void;
   getLevelName(): Uppercase<LogLevel>;
   getLogEvent(): boolean;
   getPersistentLogAttributes(): LogAttributes;

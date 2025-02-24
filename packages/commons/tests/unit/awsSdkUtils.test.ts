@@ -96,11 +96,11 @@ describe('Helpers: awsSdk', () => {
       expect(middleware).toBeInstanceOf(Function);
     });
 
+    const feature = 'my-feature';
+    const middleware = customUserAgentMiddleware(feature);
+
     it('adds the Powertools UA to the request headers when no user agent is present', async () => {
       // Prepare
-      const feature = 'my-feature';
-      const middleware = customUserAgentMiddleware(feature);
-      const next = vi.fn();
       const args = {
         request: {
           headers: {},
@@ -112,7 +112,7 @@ describe('Helpers: awsSdk', () => {
       };
 
       // Act
-      await middleware(next)(args);
+      await middleware(vi.fn())(args);
 
       // Assess
       expect(args.request.headers['user-agent']).toEqual(
@@ -122,9 +122,6 @@ describe('Helpers: awsSdk', () => {
 
     it('adds the Powertools UA to the request headers when no Powertools UA is present', async () => {
       // Prepare
-      const feature = 'my-feature';
-      const middleware = customUserAgentMiddleware(feature);
-      const next = vi.fn();
       const args = {
         request: {
           headers: {
@@ -134,7 +131,7 @@ describe('Helpers: awsSdk', () => {
       };
 
       // Act
-      await middleware(next)(args);
+      await middleware(vi.fn())(args);
 
       // Assess
       expect(args.request.headers['user-agent']).toEqual(
@@ -144,9 +141,6 @@ describe('Helpers: awsSdk', () => {
 
     it('replaces the no-op Powertools UA with the the feature-specific one', async () => {
       // Prepare
-      const feature = 'my-feature';
-      const middleware = customUserAgentMiddleware(feature);
-      const next = vi.fn();
       const args = {
         request: {
           headers: {
@@ -156,7 +150,7 @@ describe('Helpers: awsSdk', () => {
       };
 
       // Act
-      await middleware(next)(args);
+      await middleware(vi.fn())(args);
 
       // Assess
       expect(args.request.headers['user-agent']).toEqual(
@@ -166,9 +160,6 @@ describe('Helpers: awsSdk', () => {
 
     it('does not add the Powertools feature-specific UA if it is already present', async () => {
       // Prepare
-      const feature = 'my-feature';
-      const middleware = customUserAgentMiddleware(feature);
-      const next = vi.fn();
       const args = {
         request: {
           headers: {
@@ -178,7 +169,7 @@ describe('Helpers: awsSdk', () => {
       };
 
       // Act
-      await middleware(next)(args);
+      await middleware(vi.fn())(args);
 
       // Assess
       expect(args.request.headers['user-agent']).toEqual(

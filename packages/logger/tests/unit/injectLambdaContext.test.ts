@@ -184,4 +184,40 @@ describe('Inject Lambda Context', () => {
       })
     );
   });
+
+  it('refreshes sample rate calculation before each invocation using decorator', async () => {
+    // Prepare
+    const logger = new Logger({ sampleRateValue: 0.5 });
+    const refreshSpy = vi.spyOn(logger, 'refreshSampleRateCalculation');
+
+    class Lambda {
+      @logger.injectLambdaContext()
+      public async handler(_event: unknown, _context: Context): Promise<void> {
+        logger.info('test');
+      }
+    }
+    const lambda = new Lambda();
+
+    // Act
+    await lambda.handler({}, {} as Context);
+
+    // Assess
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('refreshes sample rate calculation before each invocation using middleware', async () => {
+    // Prepare
+    const logger = new Logger({ sampleRateValue: 0.5 });
+    const refreshSpy = vi.spyOn(logger, 'refreshSampleRateCalculation');
+
+    const handler = middy(async () => {
+      logger.info('Hello, world!');
+    }).use(injectLambdaContext(logger));
+
+    // Act
+    await handler(event, context);
+
+    // Assess
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+  });
 });

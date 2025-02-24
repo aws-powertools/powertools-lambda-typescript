@@ -100,7 +100,7 @@ describe('Helpers: awsSdk', () => {
       // Prepare
       const feature = 'my-feature';
       const middleware = customUserAgentMiddleware(feature);
-      const next = jest.fn();
+      const next = vi.fn();
       const args = {
         request: {
           headers: {},
@@ -146,7 +146,7 @@ describe('Helpers: awsSdk', () => {
       // Prepare
       const feature = 'my-feature';
       const middleware = customUserAgentMiddleware(feature);
-      const next = jest.fn();
+      const next = vi.fn();
       const args = {
         request: {
           headers: {
@@ -168,7 +168,7 @@ describe('Helpers: awsSdk', () => {
       // Prepare
       const feature = 'my-feature';
       const middleware = customUserAgentMiddleware(feature);
-      const next = jest.fn();
+      const next = vi.fn();
       const args = {
         request: {
           headers: {

@@ -87,9 +87,6 @@ const injectLambdaContext = (
       if (isResetStateEnabled) {
         setCleanupFunction(request);
       }
-
-      logger.refreshSampleRateCalculation();
-
       Logger.injectLambdaContextBefore(
         logger,
         request.event,

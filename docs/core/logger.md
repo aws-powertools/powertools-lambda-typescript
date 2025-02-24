@@ -634,7 +634,7 @@ Once a child logger is created, the logger and its parent will act as separate i
 
 ### Sampling debug logs
 
-Use sampling when you want to dynamically change your log level to **DEBUG** based on a **percentage of your concurrent/cold start invocations**.
+Use sampling when you want to dynamically change your log level to **DEBUG** based on a **percentage of your invocations**.
 
 You can use values ranging from `0` to `1` (100%) when setting the `sampleRateValue` constructor option or `POWERTOOLS_LOGGER_SAMPLE_RATE` env var.
 
@@ -643,10 +643,9 @@ You can use values ranging from `0` to `1` (100%) when setting the `sampleRateVa
 
     This feature takes into account transient issues where additional debugging information can be useful.
 
-Sampling decision happens at the Logger initialization. This means sampling may happen significantly more or less than depending on your traffic patterns, for example a steady low number of invocations and thus few cold starts.
+Sampling decision happens at the Logger initialization. When using the `injectLambdaContext` method either as a decorator or middleware, the sampling decision is refreshed at the beginning of each Lambda invocation for you.
 
-!!! note
-    Open a [feature request](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=type%2Ffeature-request%2Ctriage&projects=aws-powertools%2F7&template=feature_request.yml&title=Feature+request%3A+TITLE) if you want Logger to calculate sampling for every invocation
+If you're not using either of these, you'll need to manually call the `refreshSamplingRate()` function at the start of your handler to refresh the sampling decision for each invocation.
 
 === "handler.ts"
 

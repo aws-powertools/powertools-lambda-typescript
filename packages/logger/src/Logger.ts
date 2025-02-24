@@ -413,6 +413,7 @@ class Logger extends Utility implements LoggerInterface {
         context,
         callback
       ) {
+        loggerRef.refreshSampleRateCalculation();
         Logger.injectLambdaContextBefore(loggerRef, event, context, options);
 
         let result: unknown;

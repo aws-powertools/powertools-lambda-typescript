@@ -10,6 +10,8 @@ export const handler = async (
   _event: unknown,
   _context: unknown
 ): Promise<void> => {
+  // Refresh sample rate calculation on runtime, only when not using injectLambdaContext
+  logger.refreshSampleRateCalculation();
   // This log item (equal to log level 'ERROR') will be printed to standard output
   // in all Lambda invocations
   logger.error('This is an ERROR log');

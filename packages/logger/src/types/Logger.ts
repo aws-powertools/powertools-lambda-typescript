@@ -184,7 +184,6 @@ type LogBufferOption = {
      * Whether logs should be buffered
      */
     enabled?: boolean;
-
     /**
      * Maximum size of the buffer in bytes
      * @default `20480`
@@ -192,11 +191,13 @@ type LogBufferOption = {
     maxBytes?: number;
     /**
      * Flush the buffer when an error is logged
+     * @default `true`
      */
     flushOnErrorLog?: boolean;
     /**
      * The threshold to buffer logs. Logs with a level below
      * this threshold will be buffered
+     * @default `'DEBUG'`
      */
     bufferAtVerbosity?: Omit<
       LogLevel,

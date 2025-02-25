@@ -28,7 +28,7 @@ on:
         description: AWS region to bootstrap (i.e. eu-west-1)
 
 name: Region Bootstrap
-run-name: Region Bootstrap ${{ inputs.region }}
+run-name: Region Bootstrap ${{ inputs.region }} - ${{ inputs.environment }}
 
 permissions:
   contents: read

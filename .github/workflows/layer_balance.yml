@@ -4,11 +4,6 @@
 # Ensures new regions are deployable in future releases
 #
 # JOB 1 PROCESS
-#
-# 1. Installs CDK
-# 2. Bootstraps region
-#
-# JOB 2 PROCESS
 # 1. Sets up Go
 # 2. Installs the balance script
 # 3. Runs balance script to copy layers between aws regions

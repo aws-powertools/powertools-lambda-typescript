@@ -172,7 +172,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Represents whether the buffering functionality is enabled in the logger
    */
-  protected isBufferEnabled = true;
+  protected isBufferEnabled = false;
 
   /**
    * Whether the buffer should be flushed when an error is logged

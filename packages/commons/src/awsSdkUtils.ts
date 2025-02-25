@@ -47,9 +47,23 @@ const isSdkClient = (client: unknown): client is SdkClient =>
 const customUserAgentMiddleware = (feature: string) => {
   return <T extends MiddlewareArgsLike>(next: (arg0: T) => Promise<T>) =>
     async (args: T) => {
-      const powertoolsUserAgent = `PT/${feature}/${PT_VERSION} PTEnv/${EXEC_ENV}`;
+      const existingUserAgent = args.request.headers['user-agent'] || '';
+      if (existingUserAgent.includes('PT/NO-OP')) {
+        const featureSpecificUserAgent = existingUserAgent.replace(
+          'PT/NO-OP',
+          `PT/${feature}/${PT_VERSION} PTEnv/${EXEC_ENV}`
+        );
+
+        args.request.headers['user-agent'] = featureSpecificUserAgent;
+        return await next(args);
+      }
+      if (existingUserAgent.includes('PT/')) {
+        return await next(args);
+      }
       args.request.headers['user-agent'] =
-        `${args.request.headers['user-agent']} ${powertoolsUserAgent}`;
+        existingUserAgent === ''
+          ? `PT/${feature}/${PT_VERSION} PTEnv/${EXEC_ENV}`
+          : `${existingUserAgent} PT/${feature}/${PT_VERSION} PTEnv/${EXEC_ENV}`;
 
       return await next(args);
     };

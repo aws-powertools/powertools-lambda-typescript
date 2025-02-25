@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
+
+
+### Bug Fixes
+
+* **logger:** handle illegal `null`/`undefined` as extra args ([#3614](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3614)) ([6f99073](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6f99073cf61d2e49b01d8f7dcc9b4edf36166ad9))
+
+
+### Features
+
+* **logger:** add circular buffer ([#3593](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3593)) ([618cdee](https://github.com/aws-powertools/powertools-lambda-typescript/commit/618cdeefd8838bf291b5b9df73d765c30d2457df))
+* **logger:** Add log buffer and flush method ([#3617](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3617)) ([6968ca8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6968ca87f55ef7574c7904e268ba0604d4b591b7))
+* **logger:** Emit a warning on buffer flush ([#3639](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3639)) ([f471552](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f4715520322e768f4cc743388069f91d424b0ebd))
+* **logger:** refresh sample rate calculation per invocation ([#3644](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3644)) ([1d66a2a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1d66a2a0d0af36d6c8aa86b0c559f8489fe9ef77))
+
+
+
+
+
 # [2.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.1...v2.14.0) (2025-02-10)
 
 

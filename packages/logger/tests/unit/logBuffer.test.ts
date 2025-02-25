@@ -107,4 +107,34 @@ describe('flushBuffer', () => {
     expect(console.debug).toHaveBeenCalledTimes(0);
     expect(console.warn).toHaveBeenCalledTimes(1);
   });
+
+  it('outputs a warning when buffered logs have been evicted', () => {
+    // Prepare
+    const logger = new TestLogger({ logLevel: 'ERROR' });
+    logger.enableBuffering();
+    logger.setbufferLevelThreshold(LogLevelThreshold.INFO);
+
+    // Act
+    const longMessage = 'blah'.repeat(10);
+
+    let i = 0;
+    while (i < 4) {
+      logger.info(
+        `${i} This is a really long log message intended to exceed the buffer ${longMessage}`
+      );
+      i++;
+    }
+
+    // Act
+    logger.flushBufferWrapper();
+
+    // Assess
+    expect(console.warn).toHaveLogged(
+      expect.objectContaining({
+        level: 'WARN',
+        message:
+          'Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer',
+      })
+    );
+  });
 });

@@ -96,26 +96,49 @@ describe('Helpers: awsSdk', () => {
       expect(middleware).toBeInstanceOf(Function);
     });
 
-    it('adds the Powertools UA to the request headers', async () => {
+    const feature = 'my-feature';
+    const middleware = customUserAgentMiddleware(feature);
+
+    it.each([
+      {
+        case: 'adds the feature-specific UA when none is present',
+        headers: {},
+        expected: `PT/my-feature/${version} PTEnv/NA`,
+      },
+      {
+        case: 'concatenates the ua to existing ones',
+        headers: {
+          'user-agent': 'foo',
+        },
+        expected: `foo PT/my-feature/${version} PTEnv/NA`,
+      },
+      {
+        case: 'replaces no-op UA with the feature-specific one',
+        headers: {
+          'user-agent': 'PT/NO-OP',
+        },
+        expected: `PT/my-feature/${version} PTEnv/NA`,
+      },
+      {
+        case: 'leaves a feature-specific UA intact',
+        headers: {
+          'user-agent': 'PT/other-feature/1.0 PTEnv/NA',
+        },
+        expected: 'PT/other-feature/1.0 PTEnv/NA',
+      },
+    ])('it $case', async ({ headers, expected }) => {
       // Prepare
-      const feature = 'my-feature';
-      const middleware = customUserAgentMiddleware(feature);
-      const next = vi.fn();
       const args = {
         request: {
-          headers: {
-            'user-agent': 'foo',
-          },
+          headers,
         },
       };
 
       // Act
-      await middleware(next)(args);
+      await middleware(vi.fn())(args);
 
       // Assess
-      expect(args.request.headers['user-agent']).toEqual(
-        `foo PT/my-feature/${version} PTEnv/NA`
-      );
+      expect(args.request.headers['user-agent']).toEqual(expected);
     });
   });
 

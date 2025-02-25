@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
+
+
+### Bug Fixes
+
+* **ci:** Add permissions to jobs ([#3586](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3586)) ([90c93ea](https://github.com/aws-powertools/powertools-lambda-typescript/commit/90c93eac603b9a496aac1aee8e010fbc983aabdc))
+* **ci:** fix path for latest SSM param ([#3585](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3585)) ([e34952d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e34952dacf0b55219f57aaf32a5422bd2595d7a9))
+* **logger:** handle illegal `null`/`undefined` as extra args ([#3614](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3614)) ([6f99073](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6f99073cf61d2e49b01d8f7dcc9b4edf36166ad9))
+
+
+### Features
+
+* **idempotency:** add support for custom key prefix ([#3532](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3532)) ([7be7a83](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7be7a83a07e86927221ba34ec1dbae7e73cf6e32))
+* **logger:** add circular buffer ([#3593](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3593)) ([618cdee](https://github.com/aws-powertools/powertools-lambda-typescript/commit/618cdeefd8838bf291b5b9df73d765c30d2457df))
+* **logger:** Add log buffer and flush method ([#3617](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3617)) ([6968ca8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6968ca87f55ef7574c7904e268ba0604d4b591b7))
+* **logger:** Emit a warning on buffer flush ([#3639](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3639)) ([f471552](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f4715520322e768f4cc743388069f91d424b0ebd))
+* **logger:** refresh sample rate calculation per invocation ([#3644](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3644)) ([1d66a2a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1d66a2a0d0af36d6c8aa86b0c559f8489fe9ef77))
+* **parser:** provide sub-path exports ([#3598](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3598)) ([09f0aaa](https://github.com/aws-powertools/powertools-lambda-typescript/commit/09f0aaaf92233d326acd9e5fbd21a5c241cdbfe7))
+
+
+
+
+
 # [2.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.1...v2.14.0) (2025-02-10)
 
 

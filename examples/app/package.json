@@ -1,6 +1,6 @@
 {
   "name": "powertools-sample-app",
-  "version": "2.14.0",
+  "version": "2.15.0",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -38,12 +38,12 @@
     "vitest": "^3.0.5"
   },
   "dependencies": {
-    "@aws-lambda-powertools/batch": "^2.14.0",
-    "@aws-lambda-powertools/idempotency": "^2.14.0",
-    "@aws-lambda-powertools/logger": "^2.14.0",
-    "@aws-lambda-powertools/metrics": "^2.14.0",
-    "@aws-lambda-powertools/parameters": "^2.14.0",
-    "@aws-lambda-powertools/tracer": "^2.14.0",
+    "@aws-lambda-powertools/batch": "^2.15.0",
+    "@aws-lambda-powertools/idempotency": "^2.15.0",
+    "@aws-lambda-powertools/logger": "^2.15.0",
+    "@aws-lambda-powertools/metrics": "^2.15.0",
+    "@aws-lambda-powertools/parameters": "^2.15.0",
+    "@aws-lambda-powertools/tracer": "^2.15.0",
     "@aws-sdk/client-ssm": "^3.750.0",
     "@aws-sdk/lib-dynamodb": "^3.751.0",
     "@middy/core": "^4.7.0",

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
+
+
+### Features
+
+* **parser:** provide sub-path exports ([#3598](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3598)) ([09f0aaa](https://github.com/aws-powertools/powertools-lambda-typescript/commit/09f0aaaf92233d326acd9e5fbd21a5c241cdbfe7))
+
+
+
+
+
 # [2.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.1...v2.14.0) (2025-02-10)
 
 

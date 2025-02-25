@@ -1255,7 +1255,10 @@ class Logger extends Utility implements LoggerInterface {
       return;
     }
 
-    const buffer = this.#buffer.get(traceId) || [];
+    const buffer = this.#buffer.get(traceId);
+    if (buffer === undefined) {
+      return;
+    }
 
     for (const item of buffer) {
       const consoleMethod =
@@ -1265,6 +1268,16 @@ class Logger extends Utility implements LoggerInterface {
               item.logLevel
             ).toLowerCase() as keyof Omit<LogFunction, 'critical'>);
       this.console[consoleMethod](item.value);
+    }
+    if (buffer.hasEvictedLog) {
+      this.printLog(
+        LogLevelThreshold.WARN,
+        this.createAndPopulateLogItem(
+          LogLevelThreshold.WARN,
+          'Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer',
+          []
+        )
+      );
     }
 
     this.#buffer.delete(traceId);

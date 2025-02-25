@@ -1,0 +1,74 @@
+# bootstraps new regions
+#
+# PURPOSE
+# Ensures new regions are deployable in future releases
+#
+# JOB 1 PROCESS
+#
+# 1. Installs CDK
+# 2. Bootstraps region
+#
+# JOB 2 PROCESS
+# 1. Sets up Go
+# 2. Installs the balance script
+# 3. Runs balance script to copy layers between aws regions
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options:
+          - beta
+          - prod
+        description: Deployment environment
+      region:
+        type: string
+        required: true
+        description: AWS region to deploy into (i.e. eu-west-1)
+      start_at:
+        type: string
+        required: false
+        description: Layer version to start at
+  
+name: Region Balance
+run-name: Region Balance ${{ inputs.region }} - ${{ inputs.environment }}
+  
+permissions:
+  contents: read
+  
+jobs:
+  copy_layers:
+    name: Copy Layers
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment: layer-${{ inputs.environment }}
+    steps:
+      - id: credentials
+        name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.REGION_IAM_ROLE }}
+          mask-aws-account-id: true
+      - id: go-setup
+        name: Setup Go
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+        with:
+          go-version: '>=1.23.0'
+      - id: go-env
+        name: Go Env
+        run: go env
+      - id: go-install-pkg
+        name: Install
+        run: go install github.com/aws-powertools/actions/layer-balancer/cmd/balance@29979bc5339bf54f76a11ac36ff67701986bb0f0
+      - id: run-balance-new-region
+        name: Run Balance
+        if: ${{ inputs.start_at == '' }}
+        run: balance -read-region us-east-1 -write-region ${{ inputs.region }} -write-role ${{ secrets.BALANCE_ROLE_ARN }} -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
+      - id: run-balance-existing
+        name: Run Balance (Existing Region)
+        if: ${{ inputs.start_at != '' }}
+        run: balance -read-region us-east-1 -start-at ${{ inputs.start_at }} -write-region ${{ inputs.region }} -write-role ${{ secrets.BALANCE_ROLE_ARN }} -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false

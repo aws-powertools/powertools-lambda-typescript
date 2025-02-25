@@ -1245,10 +1245,11 @@ class Logger extends Utility implements LoggerInterface {
       maxBytesSize: this.#maxBufferBytesSize,
     });
 
-    if (options.enabled !== undefined) {
-      this.isBufferEnabled = options.enabled;
+    if (options.enabled === false) {
+      this.isBufferEnabled = false;
+    } else {
+      this.isBufferEnabled = true;
     }
-
     const bufferAtLogLevel = options.bufferAtVerbosity?.toUpperCase();
 
     if (this.isValidLogLevel(bufferAtLogLevel)) {

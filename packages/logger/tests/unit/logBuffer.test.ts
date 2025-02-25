@@ -36,6 +36,20 @@ describe('Log Buffer', () => {
       expect(console.debug).toBeCalledTimes(0);
     });
 
+    it('buffers logs when the config object is provided, but not specifically enabled', () => {
+      // Prepare
+      const logger = new TestLogger({
+        logLevel: LogLevel.ERROR,
+        logBufferOptions: { maxBytes: 100 },
+      });
+
+      // Act
+      logger.debug('This is a log message');
+      logger.flushBuffer();
+      // Assess
+      expect(console.debug).toBeCalledTimes(1);
+    });
+
     it('sets a max buffer sized when specified', () => {
       // Prepare
       const logger = new TestLogger({

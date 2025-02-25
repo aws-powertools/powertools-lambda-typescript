@@ -186,7 +186,8 @@ type LogBufferOption = {
     enabled?: boolean;
 
     /**
-     * Maximum size in bytes of each buffer.
+     * Maximum size of the buffer in bytes
+     * @default `20480`
      */
     maxBytes?: number;
     /**

@@ -188,7 +188,7 @@ class Logger extends Utility implements LoggerInterface {
    * Max size of the buffer. Additions to the buffer beyond this size will
    * cause older logs to be evicted from the buffer
    */
-  #maxBufferBytesSize = 1024;
+  #maxBufferBytesSize = 20480;
 
   /**
    * Contains buffered logs, grouped by _X_AMZN_TRACE_ID, each group with a max size of `maxBufferBytesSize`
@@ -1284,7 +1284,7 @@ class Logger extends Utility implements LoggerInterface {
    * Flushes all items of the respective _X_AMZN_TRACE_ID within
    * the buffer.
    */
-  flushBuffer(): void {
+  public flushBuffer(): void {
     const traceId = this.envVarsService.getXrayTraceId();
     if (traceId === undefined) {
       return;

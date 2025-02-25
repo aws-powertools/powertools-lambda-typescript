@@ -39,7 +39,11 @@ describe('Log Buffer', () => {
     it('sets a max buffer sized when specified', () => {
       // Prepare
       const logger = new TestLogger({
-        logBufferOptions: { maxBytes: 250, bufferAtVerbosity: LogLevel.DEBUG },
+        logBufferOptions: {
+          maxBytes: 250,
+          bufferAtVerbosity: LogLevel.DEBUG,
+          enabled: true,
+        },
       });
 
       // Act
@@ -73,7 +77,7 @@ describe('Log Buffer', () => {
     it('outputs a warning when there is an error buffering the log', () => {
       // Prepare
       process.env.POWERTOOLS_DEV = 'true';
-      const logger = new TestLogger();
+      const logger = new TestLogger({ logBufferOptions: { enabled: true } });
       logger.overrideBufferLogItem();
 
       // Act
@@ -88,7 +92,10 @@ describe('Log Buffer', () => {
       // Prepare
       const logger = new TestLogger({
         logLevel: 'SILENT',
-        logBufferOptions: { bufferAtVerbosity: LogLevel.CRITICAL },
+        logBufferOptions: {
+          enabled: true,
+          bufferAtVerbosity: LogLevel.CRITICAL,
+        },
       });
 
       // Act
@@ -110,7 +117,7 @@ describe('Log Buffer', () => {
 
     it('handles an empty buffer', () => {
       // Prepare
-      const logger = new TestLogger();
+      const logger = new TestLogger({ logBufferOptions: { enabled: true } });
 
       // Act
       logger.flushBuffer();
@@ -119,7 +126,7 @@ describe('Log Buffer', () => {
     it('does not output buffered logs when trace id is not set', () => {
       // Prepare
       process.env._X_AMZN_TRACE_ID = undefined;
-      const logger = new TestLogger({});
+      const logger = new TestLogger({ logBufferOptions: { enabled: true } });
 
       // Act
       logger.debug('This is a debug');
@@ -141,7 +148,11 @@ describe('Log Buffer', () => {
       // Prepare
       const logger = new TestLogger({
         logLevel: LogLevel.ERROR,
-        logBufferOptions: { bufferAtVerbosity: LogLevel.INFO },
+        logBufferOptions: {
+          enabled: true,
+          bufferAtVerbosity: LogLevel.INFO,
+          maxBytes: 1024,
+        },
       });
 
       // Act
@@ -172,7 +183,7 @@ describe('Log Buffer', () => {
       // Prepare
       const logger = new TestLogger({
         logLevel: LogLevel.ERROR,
-        logBufferOptions: { bufferAtVerbosity: LogLevel.DEBUG },
+        logBufferOptions: { enabled: true, bufferAtVerbosity: LogLevel.DEBUG },
       });
 
       const spy = vi.spyOn(logger, 'flushBuffer');

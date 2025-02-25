@@ -287,6 +287,8 @@ You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for
     | `ap-southeast-2` | [arn:aws:lambda:ap-southeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard: |
     | `ap-southeast-3` | [arn:aws:lambda:ap-southeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard: |
     | `ap-southeast-4` | [arn:aws:lambda:ap-southeast-4:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard: |
+    | `ap-southeast-5` | [arn:aws:lambda:ap-southeast-5:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard: |
+    | `ap-southeast-7` | [arn:aws:lambda:ap-southeast-7:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard: |
     | `eu-central-1`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard:   |
     | `eu-central-2`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard:   |
     | `eu-west-1`      | [arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard:      |
@@ -302,6 +304,7 @@ You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules) for
     | `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard:     |
     | `me-central-1`   | [arn:aws:lambda:me-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard:     |
     | `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard:   |
+    | `mx-central-1`   | [arn:aws:lambda:mx-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:21](#){: .copyMe}:clipboard:   |
 
 **Want to inspect the contents of the Layer?**
 

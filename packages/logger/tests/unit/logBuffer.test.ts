@@ -36,6 +36,21 @@ describe('Log Buffer', () => {
       expect(console.debug).toBeCalledTimes(0);
     });
 
+    it('does not flush on error logs when flushOnErrorLog is disabled ', () => {
+      // Prepare
+      const logger = new TestLogger({
+        logLevel: LogLevel.ERROR,
+        logBufferOptions: { enabled: true, flushOnErrorLog: false },
+      });
+
+      // Act
+      logger.debug('This is a log message');
+      logger.error('This is an error message');
+      // Assess
+      expect(console.debug).toBeCalledTimes(0);
+      expect(console.error).toBeCalledTimes(1);
+    });
+
     it('buffers logs when the config object is provided, but not specifically enabled', () => {
       // Prepare
       const logger = new TestLogger({

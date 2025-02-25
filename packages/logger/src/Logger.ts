@@ -1250,6 +1250,12 @@ class Logger extends Utility implements LoggerInterface {
     } else {
       this.isBufferEnabled = true;
     }
+
+    if (options.flushOnErrorLog === false) {
+      this.flushOnErrorLog = false;
+    } else {
+      this.flushOnErrorLog = true;
+    }
     const bufferAtLogLevel = options.bufferAtVerbosity?.toUpperCase();
 
     if (this.isValidLogLevel(bufferAtLogLevel)) {

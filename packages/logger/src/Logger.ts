@@ -1253,8 +1253,6 @@ class Logger extends Utility implements LoggerInterface {
 
     if (this.isValidLogLevel(bufferAtLogLevel)) {
       this.bufferAtVerbosity = LogLevelThreshold[bufferAtLogLevel];
-
-      return;
     }
   }
 

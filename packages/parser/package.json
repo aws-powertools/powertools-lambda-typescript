@@ -124,7 +124,11 @@
       "require": "./lib/cjs/schemas/vpc-latticev2.js",
       "import": "./lib/esm/schemas/vpc-latticev2.js"
     },
-    "./envelopes/*.ts": {
+    "./envelopes": {
+      "require": "./lib/cjs/envelopes/index.js",
+      "import": "./lib/esm/envelopes/index.js"
+    },
+    "./envelopes/*": {
       "require": "./lib/cjs/envelopes/*.js",
       "import": "./lib/esm/envelopes/*.js"
     },
@@ -227,7 +231,11 @@
         "./lib/cjs/schemas/vpc-latticev2.d.ts",
         "./lib/esm/schemas/vpc-latticev2.d.ts"
       ],
-      "envelopes/*.ts": [
+      "envelopes": [
+        "./lib/cjs/envelopes/index.d.ts",
+        "./lib/esm/envelopes/index.d.ts"
+      ],
+      "envelopes/*": [
         "./lib/cjs/envelopes/*.d.ts",
         "./lib/esm/envelopes/*.d.ts"
       ],

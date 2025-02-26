@@ -46,7 +46,7 @@ class TestStack {
    * @internal
    * Reference to the AWS CDK CLI object.
    */
-  #cli: Toolkit;
+  readonly #cli: Toolkit;
   /**
    * @internal
    * Reference to the AWS CDK Cloud Assembly context.
@@ -72,10 +72,8 @@ class TestStack {
         async notify(msg) {
           if (process.env.RUNNER_DEBUG === '1') {
             testConsole.log(msg);
-          } else {
-            if (['warning', 'error'].includes(msg.level)) {
-              testConsole.log(msg);
-            }
+          } else if (['warning', 'error'].includes(msg.level)) {
+            testConsole.log(msg);
           }
         },
         async requestResponse(msg) {

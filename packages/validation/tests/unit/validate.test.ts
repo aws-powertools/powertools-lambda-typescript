@@ -1,7 +1,8 @@
 import Ajv from 'ajv';
 import { describe, expect, it } from 'vitest';
-import { SchemaValidationError } from '../../src/SchemaValidationError';
-import { type ValidateParams, validate } from '../../src/validate';
+import { SchemaValidationError } from '../../src/errors';
+import type { ValidateParams } from '../../src/types';
+import { validate } from '../../src/validate';
 
 describe('validate function', () => {
   it('returns validated data when payload is valid', () => {
@@ -63,7 +64,6 @@ describe('validate function', () => {
     };
 
     const envelope = 'data.user';
-
     const params: ValidateParams = { payload, schema, envelope };
 
     // Act
@@ -147,5 +147,22 @@ describe('validate function', () => {
 
     // Assess
     expect(result).toEqual(payload);
+  });
+
+  it('throws SchemaValidationError when schema compilation fails', () => {
+    // Prepare
+    // An invalid schema is provided to force ajvInstance.compile() to fail.
+    const payload = { name: 'John' };
+    const schema = {
+      type: 'object',
+      properties: {
+        name: { type: 'invalid-type' }, // invalid type to trigger failure
+      },
+    };
+
+    const params: ValidateParams = { payload, schema };
+
+    // Act & Assess
+    expect(() => validate(params)).toThrow(SchemaValidationError);
   });
 });

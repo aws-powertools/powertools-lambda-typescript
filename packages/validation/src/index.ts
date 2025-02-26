@@ -1,3 +1,3 @@
 export const foo = () => true;
-export * from './validate';
-export * from './SchemaValidationError';
+export { validate } from './validate';
+export { SchemaValidationError } from './errors';

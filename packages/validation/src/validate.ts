@@ -1,18 +1,7 @@
-import { search } from '@aws-lambda-powertools/jmespath';
+import { search } from '@aws-lambda-powertools/jmespath'; // Use default export
 import Ajv, { type ValidateFunction } from 'ajv';
-import { SchemaValidationError } from './SchemaValidationError';
-
-export interface ValidateParams<T = unknown> {
-  payload: unknown;
-  schema: object;
-  envelope?: string;
-  formats?: Record<
-    string,
-    string | RegExp | { type?: string; validate: (data: string) => boolean }
-  >;
-  externalRefs?: object[];
-  ajv?: Ajv;
-}
+import { SchemaValidationError } from './errors';
+import type { ValidateParams } from './types';
 
 export function validate<T = unknown>(params: ValidateParams<T>): T {
   const { payload, schema, envelope, formats, externalRefs, ajv } = params;
@@ -21,7 +10,16 @@ export function validate<T = unknown>(params: ValidateParams<T>): T {
 
   if (formats) {
     for (const key of Object.keys(formats)) {
-      ajvInstance.addFormat(key, formats[key]);
+      let formatDefinition = formats[key];
+      if (
+        typeof formatDefinition === 'object' &&
+        formatDefinition !== null &&
+        !(formatDefinition instanceof RegExp) &&
+        !('async' in formatDefinition)
+      ) {
+        formatDefinition = { ...formatDefinition, async: false };
+      }
+      ajvInstance.addFormat(key, formatDefinition);
     }
   }
 

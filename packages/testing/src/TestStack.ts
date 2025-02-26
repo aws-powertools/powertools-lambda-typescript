@@ -1,16 +1,26 @@
+import { Console } from 'node:console';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { AwsCdkCli, RequireApproval } from '@aws-cdk/cli-lib-alpha';
-import type { ICloudAssemblyDirectoryProducer } from '@aws-cdk/cli-lib-alpha';
+import {
+  type ICloudAssemblySource,
+  RequireApproval,
+  StackSelectionStrategy,
+  Toolkit,
+} from '@aws-cdk/toolkit-lib';
 import { App, Stack } from 'aws-cdk-lib';
 import { generateTestUniqueName } from './helpers.js';
 import type { TestStackProps } from './types.js';
 
+const testConsole = new Console({
+  stdout: process.stdout,
+  stderr: process.stderr,
+});
+
 /**
  * Test stack that can be deployed to the selected environment.
  */
-class TestStack implements ICloudAssemblyDirectoryProducer {
+class TestStack {
   /**
    * Reference to the AWS CDK App object.
    * @default new App()
@@ -36,7 +46,12 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
    * @internal
    * Reference to the AWS CDK CLI object.
    */
-  #cli: AwsCdkCli;
+  readonly #cli: Toolkit;
+  /**
+   * @internal
+   * Reference to the AWS CDK Cloud Assembly context.
+   */
+  #cx?: ICloudAssemblySource;
 
   public constructor({ stackNameProps, app, stack }: TestStackProps) {
     this.testName = generateTestUniqueName({
@@ -44,8 +59,30 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
       testPrefix: stackNameProps.stackNamePrefix,
     });
     this.app = app ?? new App();
-    this.stack = stack ?? new Stack(this.app, this.testName);
-    this.#cli = AwsCdkCli.fromCloudAssemblyDirectoryProducer(this);
+    this.stack =
+      stack ??
+      new Stack(this.app, this.testName, {
+        tags: {
+          Service: 'Powertools-for-AWS-e2e-tests',
+        },
+      });
+    this.#cli = new Toolkit({
+      color: false,
+      ioHost: {
+        async notify(msg) {
+          if (
+            process.env.RUNNER_DEBUG === '1' ||
+            ['warning', 'error'].includes(msg.level)
+          ) {
+            testConsole.log(msg);
+          }
+        },
+        async requestResponse(msg) {
+          testConsole.log(msg);
+          return msg.defaultResponse;
+        },
+      },
+    });
   }
 
   /**
@@ -54,15 +91,20 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
    * It returns the outputs of the deployed stack.
    */
   public async deploy(): Promise<Record<string, string>> {
-    const outputFilePath = join(
-      tmpdir(),
-      'powertools-e2e-testing',
-      `${this.stack.stackName}.outputs.json`
+    const outdir = join(tmpdir(), 'powertools-e2e-testing');
+    const outputFilePath = join(outdir, `${this.stack.stackName}.outputs.json`);
+    this.#cx = await this.#cli.fromAssemblyBuilder(
+      async () => this.app.synth(),
+      {
+        outdir,
+      }
     );
-    await this.#cli.deploy({
-      stacks: [this.stack.stackName],
-      requireApproval: RequireApproval.NEVER,
+    await this.#cli.deploy(this.#cx, {
+      stacks: {
+        strategy: StackSelectionStrategy.ALL_STACKS,
+      },
       outputsFile: outputFilePath,
+      requireApproval: RequireApproval.NEVER,
     });
 
     this.outputs = JSON.parse(await readFile(outputFilePath, 'utf-8'))[
@@ -76,9 +118,13 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
    * Destroy the test stack.
    */
   public async destroy(): Promise<void> {
-    await this.#cli.destroy({
-      stacks: [this.stack.stackName],
-      requireApproval: false,
+    if (!this.#cx) {
+      throw new Error('Cannot destroy stack without a Cloud Assembly');
+    }
+    await this.#cli.destroy(this.#cx, {
+      stacks: {
+        strategy: StackSelectionStrategy.ALL_STACKS,
+      },
     });
   }
 
@@ -95,22 +141,6 @@ class TestStack implements ICloudAssemblyDirectoryProducer {
 
     return this.outputs[value];
   };
-
-  /**
-   * Produce the Cloud Assembly directory.
-   */
-  public async produce(_context: Record<string, unknown>): Promise<string> {
-    return this.app.synth().directory;
-  }
-
-  /**
-   * Synthesize the test stack.
-   */
-  public async synth(): Promise<void> {
-    await this.#cli.synth({
-      stacks: [this.stack.stackName],
-    });
-  }
 }
 
 export { TestStack };

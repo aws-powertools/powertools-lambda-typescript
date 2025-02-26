@@ -17,8 +17,6 @@ const testConsole = new Console({
   stderr: process.stderr,
 });
 
-testConsole.log(process.env.RUNNER_DEBUG);
-
 /**
  * Test stack that can be deployed to the selected environment.
  */
@@ -61,12 +59,18 @@ class TestStack {
       testPrefix: stackNameProps.stackNamePrefix,
     });
     this.app = app ?? new App();
-    this.stack = stack ?? new Stack(this.app, this.testName);
+    this.stack =
+      stack ??
+      new Stack(this.app, this.testName, {
+        tags: {
+          Service: 'Powertools-for-AWS-e2e-tests',
+        },
+      });
     this.#cli = new Toolkit({
       color: false,
       ioHost: {
         async notify(msg) {
-          if (process.env.RUNNER_DEBUG === 'true') {
+          if (process.env.RUNNER_DEBUG === '1') {
             testConsole.log(msg);
           } else {
             if (['info', 'warning', 'error'].includes(msg.level)) {

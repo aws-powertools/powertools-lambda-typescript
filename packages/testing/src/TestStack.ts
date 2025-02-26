@@ -17,6 +17,8 @@ const testConsole = new Console({
   stderr: process.stderr,
 });
 
+testConsole.log(process.env.RUNNER_DEBUG);
+
 /**
  * Test stack that can be deployed to the selected environment.
  */

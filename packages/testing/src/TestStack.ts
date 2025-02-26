@@ -70,9 +70,10 @@ class TestStack {
       color: false,
       ioHost: {
         async notify(msg) {
-          if (process.env.RUNNER_DEBUG === '1') {
-            testConsole.log(msg);
-          } else if (['warning', 'error'].includes(msg.level)) {
+          if (
+            process.env.RUNNER_DEBUG === '1' ||
+            ['warning', 'error'].includes(msg.level)
+          ) {
             testConsole.log(msg);
           }
         },

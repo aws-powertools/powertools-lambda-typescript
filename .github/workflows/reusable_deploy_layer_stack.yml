@@ -49,6 +49,8 @@ jobs:
             "ap-southeast-2",
             "ap-southeast-3",
             "ap-southeast-4",
+            "ap-southeast-5",
+            "ap-southeast-7",
             "ca-central-1",
             "ca-west-1",
             "eu-west-1",
@@ -61,6 +63,7 @@ jobs:
             "me-south-1",
             "me-central-1",
             "il-central-1",
+            "mx-central-1"
           ]
     steps:
       - name: checkout
@@ -93,7 +96,7 @@ jobs:
           cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt
       - name: Save Layer ARN artifact
         if: ${{ inputs.stage == 'PROD' }}
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: cdk-layer-stack-${{ matrix.region }}
           path: ./cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.

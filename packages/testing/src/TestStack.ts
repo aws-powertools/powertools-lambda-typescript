@@ -73,7 +73,7 @@ class TestStack {
           if (process.env.RUNNER_DEBUG === '1') {
             testConsole.log(msg);
           } else {
-            if (['info', 'warning', 'error'].includes(msg.level)) {
+            if (['warning', 'error'].includes(msg.level)) {
               testConsole.log(msg);
             }
           }

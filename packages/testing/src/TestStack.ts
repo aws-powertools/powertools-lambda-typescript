@@ -1,3 +1,4 @@
+import { Console } from 'node:console';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -10,6 +11,11 @@ import {
 import { App, Stack } from 'aws-cdk-lib';
 import { generateTestUniqueName } from './helpers.js';
 import type { TestStackProps } from './types.js';
+
+const testConsole = new Console({
+  stdout: process.stdout,
+  stderr: process.stderr,
+});
 
 /**
  * Test stack that can be deployed to the selected environment.
@@ -46,6 +52,11 @@ class TestStack {
    * Reference to the AWS CDK Cloud Assembly context.
    */
   #cx?: ICloudAssemblySource;
+  /**
+   * @internal
+   * Reference to the console object.
+   */
+  static #console: Console;
 
   public constructor({ stackNameProps, app, stack }: TestStackProps) {
     this.testName = generateTestUniqueName({
@@ -58,10 +69,16 @@ class TestStack {
       color: false,
       ioHost: {
         async notify(msg) {
-          console.log(msg);
+          if (process.env.ACTIONS_RUNNER_DEBUG === 'true') {
+            testConsole.log(msg);
+          } else {
+            if (['info', 'warning', 'error'].includes(msg.level)) {
+              testConsole.log(msg);
+            }
+          }
         },
         async requestResponse(msg) {
-          console.log(msg);
+          testConsole.log(msg);
           return msg.defaultResponse;
         },
       },

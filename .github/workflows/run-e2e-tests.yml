@@ -17,7 +17,6 @@ jobs:
     env:
       NODE_ENV: dev
       PR_NUMBER: ${{ inputs.prNumber }}
-      RUNNER_DEBUG: ${{ runner.debug }}
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
@@ -75,4 +74,5 @@ jobs:
           CI: true
           ARCH: ${{ matrix.arch }}
           JSII_SILENCE_WARNING_DEPRECATED_NODE_VERSION: true
+          RUNNER_DEBUG: ${{ env.RUNNER_DEBUG }}
         run: npm run test:e2e -w ${{ matrix.package }}

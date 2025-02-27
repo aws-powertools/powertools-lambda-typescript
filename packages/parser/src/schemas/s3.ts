@@ -8,7 +8,7 @@ const S3Identity = z.object({
 });
 
 const S3RequestParameters = z.object({
-  sourceIPAddress: z.string().ip(),
+  sourceIPAddress: z.union([z.string().ip(), z.literal('s3.amazonaws.com')]),
 });
 
 const S3ResponseElements = z.object({

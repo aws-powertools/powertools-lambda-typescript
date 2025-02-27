@@ -1,25 +1,15 @@
-import { search } from '@aws-lambda-powertools/jmespath'; // Use default export
+import { search } from '@aws-lambda-powertools/jmespath';
 import Ajv, { type ValidateFunction } from 'ajv';
-import { SchemaValidationError } from './errors';
-import type { ValidateParams } from './types';
+import { SchemaValidationError } from './errors.js';
+import type { ValidateParams } from './types.js';
 
 export function validate<T = unknown>(params: ValidateParams<T>): T {
   const { payload, schema, envelope, formats, externalRefs, ajv } = params;
-
   const ajvInstance = ajv || new Ajv({ allErrors: true });
 
   if (formats) {
     for (const key of Object.keys(formats)) {
-      let formatDefinition = formats[key];
-      if (
-        typeof formatDefinition === 'object' &&
-        formatDefinition !== null &&
-        !(formatDefinition instanceof RegExp) &&
-        !('async' in formatDefinition)
-      ) {
-        formatDefinition = { ...formatDefinition, async: false };
-      }
-      ajvInstance.addFormat(key, formatDefinition);
+      ajvInstance.addFormat(key, formats[key]);
     }
   }
 

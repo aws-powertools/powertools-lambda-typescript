@@ -1,5 +1,4 @@
 import type Ajv from 'ajv';
-
 export interface ValidateParams<T = unknown> {
   payload: unknown;
   schema: object;
@@ -8,7 +7,11 @@ export interface ValidateParams<T = unknown> {
     string,
     | string
     | RegExp
-    | { type?: string; validate: (data: string) => boolean; async?: boolean }
+    | {
+        type?: 'string' | 'number';
+        validate: (data: string) => boolean;
+        async?: boolean;
+      }
   >;
   externalRefs?: object[];
   ajv?: Ajv;

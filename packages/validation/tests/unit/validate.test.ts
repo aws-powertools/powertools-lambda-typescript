@@ -1,8 +1,8 @@
 import Ajv from 'ajv';
 import { describe, expect, it } from 'vitest';
-import { SchemaValidationError } from '../../src/errors';
-import type { ValidateParams } from '../../src/types';
-import { validate } from '../../src/validate';
+import { SchemaValidationError } from '../../src/errors.js';
+import type { ValidateParams } from '../../src/types.js';
+import { validate } from '../../src/validate.js';
 
 describe('validate function', () => {
   it('returns validated data when payload is valid', () => {
@@ -151,12 +151,11 @@ describe('validate function', () => {
 
   it('throws SchemaValidationError when schema compilation fails', () => {
     // Prepare
-    // An invalid schema is provided to force ajvInstance.compile() to fail.
     const payload = { name: 'John' };
     const schema = {
       type: 'object',
       properties: {
-        name: { type: 'invalid-type' }, // invalid type to trigger failure
+        name: { type: 'invalid-type' },
       },
     };
 

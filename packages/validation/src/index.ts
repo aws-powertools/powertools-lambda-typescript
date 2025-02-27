@@ -1,2 +1,2 @@
 export { validate } from './validate';
-export { SchemaValidationError } from './errors';
+export { SchemaValidationError } from './errors.js';

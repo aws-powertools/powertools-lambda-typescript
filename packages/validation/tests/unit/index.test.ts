@@ -1,16 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { foo } from '../../src/index.js';
+import { SchemaValidationError, validate } from '../../src/index.js';
 
-describe('Validation', () => {
+describe('Index exports', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should return true', () => {
-    // Act
-    const result = foo();
+  it('should export validate as a function', () => {
+    // Act & Assess
+    expect(typeof validate).toBe('function');
+  });
 
-    // Assess
-    expect(result).toBe(true);
+  it('should export SchemaValidationError as a function', () => {
+    // Act & Assess
+    expect(typeof SchemaValidationError).toBe('function');
   });
 });

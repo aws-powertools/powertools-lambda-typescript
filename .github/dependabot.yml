@@ -44,7 +44,7 @@ updates:
         - "aws-sdk-client-mock-vitest"
       aws-cdk:
         patterns:
-        - "@aws-cdk/cli-lib-alpha"
+        - "@aws-cdk/toolkit-lib"
         - "aws-cdk-lib"
         - "aws-cdk"
       typescript:

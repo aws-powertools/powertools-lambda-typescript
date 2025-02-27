@@ -32,22 +32,29 @@ watch: [
 nav:
   - Homepage:
       - index.md
+      - Getting Started:
+          - getting-started/index.md
+          - Navigating the toolkit: getting-started/navigating-the-toolkit.md
+          - Installation: getting-started/installation.md
+          - TypeScript settings: getting-started/typescript-settings.md
+          - Lambda layers: getting-started/lambda-layers.md
+          - Workshop: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank
+      - Features:
+          - features/index.md 
+          - features/tracer.md
+          - features/logger.md
+          - features/metrics.md
+          - features/parameters.md
+          - features/idempotency.md
+          - features/batch.md
+          - features/jmespath.md
+          - features/parser.md
+          - features/validation.md
       - Changelog: changelog.md
       - Upgrade guide: upgrade.md
-      - We Made This (Community): we_made_this.md
-      - Workshop: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank
+      - Community Content: we_made_this.md
       - Roadmap: roadmap.md
-      - Features:
-          - core/tracer.md
-          - core/logger.md
-          - core/metrics.md
-          - utilities/parameters.md
-          - utilities/idempotency.md
-          - utilities/batch.md
-          - utilities/jmespath.md
-          - utilities/parser.md
-          - utilities/validation.md
-  - API reference: api"
+  - API reference: api/" target="_blank
   - Processes:
       - Roadmap: roadmap.md
       - Versioning policy: versioning.md

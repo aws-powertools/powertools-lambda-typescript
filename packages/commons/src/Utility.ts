@@ -51,7 +51,7 @@
  * ```
  */
 export class Utility {
-  private coldStart = true;
+  protected coldStart = true;
   private readonly defaultServiceName: string = 'service_undefined';
 
   /**

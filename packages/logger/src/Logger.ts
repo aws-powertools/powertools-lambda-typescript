@@ -419,6 +419,7 @@ class Logger extends Utility implements LoggerInterface {
         context,
         callback
       ) {
+        loggerRef.refreshSampleRateCalculation();
         Logger.injectLambdaContextBefore(loggerRef, event, context, options);
 
         let result: unknown;
@@ -493,9 +494,13 @@ class Logger extends Utility implements LoggerInterface {
    * This method allows recalculating the initial sampling decision for changing
    * the log level to DEBUG based on a sample rate value used during initialization,
    * potentially yielding a different outcome.
+   *
+   * This only works for warm starts, because we don't to avoid double sampling.
    */
   public refreshSampleRateCalculation(): void {
-    this.setInitialSampleRate(this.powertoolsLogData.sampleRateValue);
+    if (!this.coldStart) {
+      this.setInitialSampleRate(this.powertoolsLogData.sampleRateValue);
+    }
   }
 
   /**

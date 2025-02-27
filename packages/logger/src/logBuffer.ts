@@ -17,6 +17,7 @@ export class SizedItem<V> {
 
 export class SizedSet<V> extends Set<SizedItem<V>> {
   public currentBytesSize = 0;
+  public hasEvictedLog = false;
 
   add(item: SizedItem<V>): this {
     this.currentBytesSize += item.byteSize;
@@ -89,6 +90,7 @@ export class CircularMap<V> extends Map<string, SizedSet<V>> {
   ) => {
     while (buffer.currentBytesSize + item.byteSize >= this.#maxBytesSize) {
       buffer.shift();
+      buffer.hasEvictedLog = true;
     }
   };
 }

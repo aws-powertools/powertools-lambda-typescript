@@ -50,13 +50,40 @@ jobs:
     environment: SSM
     strategy:
       matrix:
-        region: ["af-south-1", "ap-east-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3",
-            "ap-south-1", "ap-south-2", "ap-southeast-1", "ap-southeast-2", "ap-southeast-3",
-            "ap-southeast-4", "ca-central-1", "ca-west-1", "eu-central-1", "eu-central-2",
-            "eu-north-1", "eu-south-1", "eu-south-2", "eu-west-1", "eu-west-2", "eu-west-3",
-            "il-central-1", "me-central-1", "me-south-1", "sa-east-1", "us-east-1",
-            "us-east-2", "us-west-1", "us-west-2", "ap-southeast-5"
-          ]
+        region: [
+          "af-south-1", 
+          "eu-central-1", 
+          "eu-central-2",
+          "us-east-1",
+          "us-east-2", 
+          "us-west-1", 
+          "us-west-2", 
+          "ap-east-1", 
+          "ap-south-1", 
+          "ap-south-2", 
+          "ap-northeast-1", 
+          "ap-northeast-2", 
+          "ap-northeast-3",
+          "ap-southeast-1", 
+          "ap-southeast-2", 
+          "ap-southeast-3",
+          "ap-southeast-4", 
+          "ap-southeast-5",
+          "ap-southeast-7",
+          "ca-central-1", 
+          "ca-west-1", 
+          "eu-west-1", 
+          "eu-west-2", 
+          "eu-west-3",
+          "eu-south-1", 
+          "eu-south-2", 
+          "eu-north-1", 
+          "sa-east-1", 
+          "me-south-1", 
+          "me-central-1", 
+          "il-central-1", 
+          "mx-central-1"
+        ]
 
     permissions:
       contents: write
@@ -66,7 +93,7 @@ jobs:
         run: |
           echo 'CONVERTED_REGION=${{ matrix.region }}' | tr 'a-z\-' 'A-Z_' >> "$GITHUB_OUTPUT"
       - id: creds
-        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets[format('{0}', steps.transform.outputs.CONVERTED_REGION)] }}

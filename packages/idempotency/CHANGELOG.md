@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
+
+
+### Features
+
+* **idempotency:** add support for custom key prefix ([#3532](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3532)) ([7be7a83](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7be7a83a07e86927221ba34ec1dbae7e73cf6e32))
+
+
+
+
+
 # [2.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.1...v2.14.0) (2025-02-10)
 
 **Note:** Version bump only for package @aws-lambda-powertools/idempotency

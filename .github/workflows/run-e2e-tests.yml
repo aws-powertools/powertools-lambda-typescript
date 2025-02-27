@@ -55,7 +55,7 @@ jobs:
         with:
           ref: ${{ steps.extract_PR_details.outputs.headSHA }}
       - name: Setup NodeJS
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: '22'
       - name: Setup dependencies
@@ -63,7 +63,7 @@ jobs:
         with:
           nodeVersion: '22'
       - name: Setup AWS credentials
-        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: eu-west-1
@@ -74,4 +74,5 @@ jobs:
           CI: true
           ARCH: ${{ matrix.arch }}
           JSII_SILENCE_WARNING_DEPRECATED_NODE_VERSION: true
+          RUNNER_DEBUG: ${{ env.RUNNER_DEBUG }}
         run: npm run test:e2e -w ${{ matrix.package }}

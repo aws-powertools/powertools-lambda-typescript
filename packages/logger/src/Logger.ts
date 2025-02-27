@@ -175,22 +175,25 @@ class Logger extends Utility implements LoggerInterface {
   protected isBufferEnabled = false;
 
   /**
+   * Whether the buffer should be flushed when an error is logged
+   */
+  protected flushOnErrorLog = true;
+  /**
    * Log level threshold for the buffer
    * Logs with a level lower than this threshold will be buffered
+   * Default is DEBUG
    */
-  protected bufferLogThreshold: number = LogLevelThreshold.DEBUG;
+  protected bufferAtVerbosity: number = LogLevelThreshold.DEBUG;
   /**
    * Max size of the buffer. Additions to the buffer beyond this size will
    * cause older logs to be evicted from the buffer
    */
-  readonly #maxBufferBytesSize = 1024;
+  #maxBufferBytesSize = 20480;
 
   /**
    * Contains buffered logs, grouped by _X_AMZN_TRACE_ID, each group with a max size of `maxBufferBytesSize`
    */
-  readonly #buffer: CircularMap<string> = new CircularMap({
-    maxBytesSize: this.#maxBufferBytesSize,
-  });
+  #buffer?: CircularMap<string>;
 
   /**
    * Log level used by the current instance of Logger.
@@ -330,6 +333,9 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
+    if (this.isBufferEnabled && this.flushOnErrorLog) {
+      this.flushBuffer();
+    }
     this.processLogItem(LogLevelThreshold.ERROR, input, extraInput);
   }
 
@@ -1174,6 +1180,7 @@ class Logger extends Utility implements LoggerInterface {
       environment,
       jsonReplacerFn,
       logRecordOrder,
+      logBufferOptions,
     } = options;
 
     if (persistentLogAttributes && persistentKeys) {
@@ -1199,6 +1206,10 @@ class Logger extends Utility implements LoggerInterface {
     this.setConsole();
     this.setLogIndentation();
     this.#jsonReplacerFn = jsonReplacerFn;
+
+    if (logBufferOptions !== undefined) {
+      this.#setLogBuffering(logBufferOptions);
+    }
 
     return this;
   }
@@ -1230,6 +1241,35 @@ class Logger extends Utility implements LoggerInterface {
     persistentKeys && this.appendPersistentKeys(persistentKeys);
   }
 
+  #setLogBuffering(
+    options: NonNullable<ConstructorOptions['logBufferOptions']>
+  ) {
+    if (options.maxBytes !== undefined) {
+      this.#maxBufferBytesSize = options.maxBytes;
+    }
+
+    this.#buffer = new CircularMap({
+      maxBytesSize: this.#maxBufferBytesSize,
+    });
+
+    if (options.enabled === false) {
+      this.isBufferEnabled = false;
+    } else {
+      this.isBufferEnabled = true;
+    }
+
+    if (options.flushOnErrorLog === false) {
+      this.flushOnErrorLog = false;
+    } else {
+      this.flushOnErrorLog = true;
+    }
+    const bufferAtLogLevel = options.bufferAtVerbosity?.toUpperCase();
+
+    if (this.isValidLogLevel(bufferAtLogLevel)) {
+      this.bufferAtVerbosity = LogLevelThreshold[bufferAtLogLevel];
+    }
+  }
+
   /**
    * Add a log to the buffer
    * @param xrayTraceId - _X_AMZN_TRACE_ID of the request
@@ -1249,20 +1289,23 @@ class Logger extends Utility implements LoggerInterface {
       this.logIndentation
     );
 
-    this.#buffer.setItem(xrayTraceId, stringified, logLevel);
+    this.#buffer?.setItem(xrayTraceId, stringified, logLevel);
   }
 
   /**
    * Flushes all items of the respective _X_AMZN_TRACE_ID within
    * the buffer.
    */
-  protected flushBuffer(): void {
+  public flushBuffer(): void {
     const traceId = this.envVarsService.getXrayTraceId();
     if (traceId === undefined) {
       return;
     }
 
-    const buffer = this.#buffer.get(traceId) || [];
+    const buffer = this.#buffer?.get(traceId);
+    if (buffer === undefined) {
+      return;
+    }
 
     for (const item of buffer) {
       const consoleMethod =
@@ -1273,8 +1316,18 @@ class Logger extends Utility implements LoggerInterface {
             ).toLowerCase() as keyof Omit<LogFunction, 'critical'>);
       this.console[consoleMethod](item.value);
     }
+    if (buffer.hasEvictedLog) {
+      this.printLog(
+        LogLevelThreshold.WARN,
+        this.createAndPopulateLogItem(
+          LogLevelThreshold.WARN,
+          'Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer',
+          []
+        )
+      );
+    }
 
-    this.#buffer.delete(traceId);
+    this.#buffer?.delete(traceId);
   }
   /**
    * Tests if the log meets the criteria to be buffered
@@ -1288,7 +1341,7 @@ class Logger extends Utility implements LoggerInterface {
     return (
       this.isBufferEnabled &&
       traceId !== undefined &&
-      logLevel <= this.bufferLogThreshold
+      logLevel <= this.bufferAtVerbosity
     );
   }
 }

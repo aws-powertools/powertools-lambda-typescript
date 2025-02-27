@@ -91,6 +91,7 @@ class SqsFifoPartialProcessorAsync extends BatchProcessor {
    */
   public async process(): Promise<(SuccessResponse | FailureResponse)[]> {
     this.prepare();
+    this.#processor.prepare();
 
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
     let currentIndex = 0;

@@ -634,7 +634,7 @@ Once a child logger is created, the logger and its parent will act as separate i
 
 ### Sampling debug logs
 
-Use sampling when you want to dynamically change your log level to **DEBUG** based on a **percentage of your concurrent invocations**.
+Use sampling when you want to dynamically change your log level to **DEBUG** based on a **percentage of your invocations**.
 
 You can use values ranging from `0` to `1` (100%) when setting the `sampleRateValue` constructor option or `POWERTOOLS_LOGGER_SAMPLE_RATE` env var.
 

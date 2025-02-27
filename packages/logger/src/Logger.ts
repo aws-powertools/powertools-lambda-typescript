@@ -490,7 +490,13 @@ class Logger extends Utility implements LoggerInterface {
    * potentially yielding a different outcome.
    */
   public refreshSampleRateCalculation(): void {
-    this.setInitialSampleRate(this.powertoolsLogData.sampleRateValue);
+    /**
+     * we don't want to refresh the sample rate for cold starts
+     * because it might lead to double sampling, one in constructor and one here
+     */
+    if (!this.coldStart) {
+      this.setInitialSampleRate(this.powertoolsLogData.sampleRateValue);
+    }
   }
 
   /**

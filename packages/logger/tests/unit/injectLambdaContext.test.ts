@@ -185,7 +185,7 @@ describe('Inject Lambda Context', () => {
     );
   });
 
-  it('refreshes sample rate calculation before each invocation using decorator', async () => {
+  it('refreshes sample rate calculation before each invocation using decorator for warm start only', async () => {
     // Prepare
     const logger = new Logger({ sampleRateValue: 0.5 });
     const refreshSpy = vi.spyOn(logger, 'refreshSampleRateCalculation');
@@ -197,7 +197,6 @@ describe('Inject Lambda Context', () => {
       }
     }
     const lambda = new Lambda();
-
     // Act
     await lambda.handler({}, {} as Context);
 
@@ -205,7 +204,7 @@ describe('Inject Lambda Context', () => {
     expect(refreshSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('refreshes sample rate calculation before each invocation using middleware', async () => {
+  it('refreshes sample rate calculation before each invocation using middleware for warm start only', async () => {
     // Prepare
     const logger = new Logger({ sampleRateValue: 0.5 });
     const refreshSpy = vi.spyOn(logger, 'refreshSampleRateCalculation');

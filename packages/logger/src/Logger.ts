@@ -440,7 +440,9 @@ class Logger extends Utility implements LoggerInterface {
             });
           }
           throw error;
+          /* v8 ignore start */
         } finally {
+          /* v8 ignore stop */
           if (options?.clearState || options?.resetKeys) loggerRef.resetKeys();
         }
       };

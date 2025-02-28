@@ -385,8 +385,8 @@ class Logger extends Utility implements LoggerInterface {
    * Class method decorator that adds the current Lambda function context as extra
    * information in all log items.
    *
-   * This decorator is useful when you want to add the Lambda context to all log items
-   * and it works only when decorating a class method that is a Lambda function handler.
+   * This decorator is useful when you want to enrich your logs with information
+   * from the function context, such as the function name, version, and request ID, and more.
    *
    * @example
    * ```typescript
@@ -407,7 +407,18 @@ class Logger extends Utility implements LoggerInterface {
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    *
+   * The decorator can also be used to log the Lambda invocation event; this can be configured both via
+   * the `logEvent` parameter and the `POWERTOOLS_LOGGER_LOG_EVENT` environment variable. When both
+   * are set, the `logEvent` parameter takes precedence.
+   *
+   * Additionally, the decorator can be used to reset the temporary keys added with the `appendKeys()` method
+   * after the invocation, or to flush the buffer when an uncaught error is thrown in the handler.
+   *
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
+   *
+   * @param options.logEvent - When `true` the logger will log the event.
+   * @param options.resetKeys - When `true` the logger will clear temporary keys added with {@link Logger.appendKeys() `appendKeys()`} method.
+   * @param options.flushBufferOnUncaughtError - When `true` the logger will flush the buffer when an uncaught error is thrown in the handler.
    */
   public injectLambdaContext(
     options?: InjectLambdaContextOptions
@@ -440,9 +451,8 @@ class Logger extends Utility implements LoggerInterface {
             });
           }
           throw error;
-          /* v8 ignore start */
+          /* v8 ignore next */
         } finally {
-          /* v8 ignore stop */
           if (options?.clearState || options?.resetKeys) loggerRef.resetKeys();
         }
       };

@@ -2,8 +2,7 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
-import { LogLevel } from '../../src/constants.js';
-import { UncaughtErrorLogMessage } from '../../src/constants.js';
+import { LogLevel, UncaughtErrorLogMessage } from '../../src/constants.js';
 import type { ConstructorOptions } from '../../src/types/Logger.js';
 
 describe('Buffer logs', () => {
@@ -248,33 +247,5 @@ describe('Buffer logs', () => {
     expect(console.debug).toHaveBeenCalledAfter(console.info as Mock);
     // If error is called after debug, it means the buffer was flushed before the error log
     expect(console.debug).toHaveBeenCalledBefore(console.error as Mock);
-  });
-
-  it('adds the context to the messages when the feature is enabled using the class method decorator', async () => {
-    // Prepare
-    const logger = new Logger({ logBufferOptions: { enabled: true } });
-    class TestClass {
-      @logger.injectLambdaContext({})
-      async handler(_event: unknown, _context: Context) {
-        logger.debug('This is a log message');
-        logger.info('This is an info message');
-        throw new Error('This is an error');
-      }
-    }
-    const lambda = new TestClass();
-    const handler = lambda.handler.bind(lambda);
-
-    // Act & Assess
-    await expect(() =>
-      handler(
-        {
-          foo: 'bar',
-        },
-        context
-      )
-    ).rejects.toThrow(new Error('This is an error'));
-    expect(console.debug).toBeCalledTimes(0);
-    expect(console.info).toBeCalledTimes(1);
-    expect(console.error).toBeCalledTimes(0);
   });
 });

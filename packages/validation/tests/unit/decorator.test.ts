@@ -99,4 +99,36 @@ describe('validator decorator', () => {
     // Assess
     expect(result).toEqual(descriptor);
   });
+
+  it('should validate inbound only', async () => {
+    // Prepare
+    class TestClassInbound {
+      @validator({ inboundSchema })
+      async process(input: { value: number }): Promise<{ data: string }> {
+        return { data: JSON.stringify(input) };
+      }
+    }
+    const instance = new TestClassInbound();
+    const input = { value: 10 };
+    // Act
+    const output = await instance.process(input);
+    // Assess
+    expect(output).toEqual({ data: JSON.stringify(input) });
+  });
+
+  it('should validate outbound only', async () => {
+    // Prepare
+    class TestClassOutbound {
+      @validator({ outboundSchema })
+      async process(input: { text: string }): Promise<{ result: number }> {
+        return { result: 42 };
+      }
+    }
+    const instance = new TestClassOutbound();
+    const input = { text: 'hello' };
+    // Act
+    const output = await instance.process(input);
+    // Assess
+    expect(output).toEqual({ result: 42 });
+  });
 });

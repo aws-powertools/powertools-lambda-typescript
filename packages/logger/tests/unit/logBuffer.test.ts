@@ -208,6 +208,23 @@ describe('Buffer logs', () => {
     // Assess
     expect(() => logger.clearBuffer()).not.toThrow();
   });
+
+  it('it clears the buffer', () => {
+    // Prepare
+    const logger = new Logger({
+      logLevel: LogLevel.ERROR,
+      logBufferOptions: { enabled: true, bufferAtVerbosity: LogLevel.DEBUG },
+    });
+
+    // Arrange
+    logger.debug('This is a log message');
+    logger.clearBuffer();
+
+    logger.flushBuffer();
+
+    // Assess
+    expect(console.debug).not.toBeCalled;
+  });
   it('it flushes the buffer when an error in logged', () => {
     // Prepare
     const logger = new Logger({

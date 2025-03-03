@@ -57,15 +57,6 @@ export class Utility {
   /**
    * Get the cold start status of the current execution environment.
    *
-   * @example
-   * ```typescript
-   * import { Utility } from '@aws-lambda-powertools/commons';
-   *
-   * const utility = new Utility();
-   * utility.isColdStart(); // true
-   * utility.isColdStart(); // false
-   * ```
-   *
    * The method also flips the cold start status to `false` after the first invocation.
    */
   protected getColdStart(): boolean {

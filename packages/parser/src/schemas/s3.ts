@@ -8,7 +8,7 @@ const S3Identity = z.object({
 });
 
 const S3RequestParameters = z.object({
-  sourceIPAddress: z.string().ip(),
+  sourceIPAddress: z.union([z.string().ip(), z.literal('s3.amazonaws.com')]),
 });
 
 const S3ResponseElements = z.object({
@@ -24,7 +24,7 @@ const S3Message = z.object({
     size: z.number().optional(),
     urlDecodedKey: z.string().optional(),
     eTag: z.string().optional(),
-    sequencer: z.string(),
+    sequencer: z.string().optional(), // Only present in PUT and DELETE events
     versionId: z.optional(z.string()),
   }),
   bucket: z.object({

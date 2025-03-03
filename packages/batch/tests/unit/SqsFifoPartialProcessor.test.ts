@@ -185,4 +185,40 @@ describe('SQS FIFO Processors', () => {
       });
     });
   }
+
+  it('continues processing and moves to the next group when `skipGroupOnError` is true', async () => {
+    // Prepare
+    const firstRecord = sqsRecordFactory('fail', '1');
+    const secondRecord = sqsRecordFactory('success', '2');
+    const firstRecordAgain = sqsRecordFactory('success', '1');
+    const event1 = {
+      Records: [firstRecord, secondRecord],
+    };
+    const event2 = {
+      Records: [firstRecordAgain],
+    };
+    const processor = new SqsFifoPartialProcessor();
+    const fn = vi.fn((record) => {
+      if (record.body.includes('fail')) {
+        throw new Error('Processing failed');
+      }
+
+      return record;
+    });
+
+    // Act
+    const result1 = processPartialResponseSync(event1, fn, processor, {
+      skipGroupOnError: true,
+      throwOnFullBatchFailure: false,
+    });
+    const result2 = processPartialResponseSync(event2, fn, processor, {
+      skipGroupOnError: true,
+      throwOnFullBatchFailure: false,
+    });
+
+    // Assess
+    expect(result1.batchItemFailures.length).toBe(1);
+    expect(result2.batchItemFailures.length).toBe(0);
+    expect(fn).toHaveBeenCalledTimes(3);
+  });
 });

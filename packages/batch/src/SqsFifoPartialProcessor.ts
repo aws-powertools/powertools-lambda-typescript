@@ -92,6 +92,7 @@ class SqsFifoPartialProcessor extends BatchProcessorSync {
    */
   public processSync(): (SuccessResponse | FailureResponse)[] {
     this.prepare();
+    this.#processor.prepare();
 
     const processedRecords: (SuccessResponse | FailureResponse)[] = [];
     let currentIndex = 0;

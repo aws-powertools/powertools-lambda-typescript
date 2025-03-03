@@ -97,6 +97,20 @@ describe('Schema: S3', () => {
     expect(result).toStrictEqual(event);
   });
 
+  it('parses an S3 LifeCycle event with a deleted object', () => {
+    // Prepare
+    const event = getTestEvent<S3Event>({
+      eventsPath,
+      filename: 's3-lifecycle-event',
+    });
+
+    // Act
+    const result = S3Schema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
   it('parses an S3 Object Lambda with an IAM user', () => {
     // Prepare
     const event = structuredClone(baseLambdaEvent);

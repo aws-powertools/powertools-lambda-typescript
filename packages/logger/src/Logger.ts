@@ -9,7 +9,12 @@ import type {
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
-import { LogJsonIndent, LogLevelThreshold, ReservedKeys } from './constants.js';
+import {
+  LogJsonIndent,
+  LogLevelThreshold,
+  ReservedKeys,
+  UncaughtErrorLogMessage,
+} from './constants.js';
 import type { LogFormatter } from './formatter/LogFormatter.js';
 import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
@@ -39,6 +44,7 @@ import type {
  * * Capture key fields from AWS Lambda context, cold start, and structure log output as JSON
  * * Append additional keys to one or all log items
  * * Switch log level to `DEBUG` based on a sample rate value for a percentage of invocations
+ * * Ability to buffer logs in memory and flush them when there's an error
  *
  * After initializing the Logger class, you can use the methods to log messages at different levels.
  *
@@ -54,7 +60,7 @@ import type {
  * };
  * ```
  *
- * To enrich the log items with information from the Lambda context, you can use the {@link Logger.addContext | addContext()} method.
+ * To enrich the log items with information from the Lambda context, you can use the {@link Logger.addContext | `addContext()`} method.
  *
  * @example
  * ```typescript
@@ -69,7 +75,7 @@ import type {
  * };
  * ```
  *
- * You can also add additional attributes to all log items using the {@link Logger.appendKeys | appendKeys()} method.
+ * You can also add additional attributes to all log items using the {@link Logger.appendKeys | `appendKeys()`} method.
  *
  * @example
  * ```typescript
@@ -82,10 +88,10 @@ import type {
  * };
  *```
  *
- * If you write your functions as classes and use TypeScript, you can use the {@link Logger.injectLambdaContext} class method decorator
+ * If you write your functions as classes and use TypeScript, you can use the {@link Logger.injectLambdaContext | `injectLambdaContext()`} class method decorator
  * to automatically add context to your logs and clear the state after the invocation.
  *
- * If instead you use Middy.js middlewares, you use the {@link "middleware/middy".injectLambdaContext | injectLambdaContext()} middleware.
+ * If instead you use Middy.js middlewares, you use the {@link "middleware/middy".injectLambdaContext | `injectLambdaContext()`} middleware.
  *
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/
  */
@@ -97,7 +103,7 @@ class Logger extends Utility implements LoggerInterface {
    * full control over the output of the logs. In testing environments, we use the
    * default console instance.
    *
-   * This property is initialized in the constructor in setOptions().
+   * This property is initialized in the constructor in `setOptions()`.
    */
   private console!: Console;
   /**
@@ -191,7 +197,7 @@ class Logger extends Utility implements LoggerInterface {
   #maxBufferBytesSize = 20480;
 
   /**
-   * Contains buffered logs, grouped by _X_AMZN_TRACE_ID, each group with a max size of `maxBufferBytesSize`
+   * Contains buffered logs, grouped by `_X_AMZN_TRACE_ID`, each group with a max size of `maxBufferBytesSize`
    */
   #buffer?: CircularMap<string>;
 
@@ -379,8 +385,8 @@ class Logger extends Utility implements LoggerInterface {
    * Class method decorator that adds the current Lambda function context as extra
    * information in all log items.
    *
-   * This decorator is useful when you want to add the Lambda context to all log items
-   * and it works only when decorating a class method that is a Lambda function handler.
+   * This decorator is useful when you want to enrich your logs with information
+   * from the function context, such as the function name, version, and request ID, and more.
    *
    * @example
    * ```typescript
@@ -401,7 +407,18 @@ class Logger extends Utility implements LoggerInterface {
    * export const handler = handlerClass.handler.bind(handlerClass);
    * ```
    *
+   * The decorator can also be used to log the Lambda invocation event; this can be configured both via
+   * the `logEvent` parameter and the `POWERTOOLS_LOGGER_LOG_EVENT` environment variable. When both
+   * are set, the `logEvent` parameter takes precedence.
+   *
+   * Additionally, the decorator can be used to reset the temporary keys added with the `appendKeys()` method
+   * after the invocation, or to flush the buffer when an uncaught error is thrown in the handler.
+   *
    * @see https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators
+   *
+   * @param options.logEvent - When `true` the logger will log the event.
+   * @param options.resetKeys - When `true` the logger will clear temporary keys added with {@link Logger.appendKeys() `appendKeys()`} method.
+   * @param options.flushBufferOnUncaughtError - When `true` the logger will flush the buffer when an uncaught error is thrown in the handler.
    */
   public injectLambdaContext(
     options?: InjectLambdaContextOptions
@@ -419,16 +436,25 @@ class Logger extends Utility implements LoggerInterface {
         context,
         callback
       ) {
-        Logger.injectLambdaContextBefore(loggerRef, event, context, options);
+        loggerRef.refreshSampleRateCalculation();
+        loggerRef.addContext(context);
+        loggerRef.logEventIfEnabled(event, options?.logEvent);
 
-        let result: unknown;
         try {
-          result = await originalMethod.apply(this, [event, context, callback]);
+          return await originalMethod.apply(this, [event, context, callback]);
+        } catch (error) {
+          if (options?.flushBufferOnUncaughtError) {
+            loggerRef.flushBuffer();
+            loggerRef.error({
+              message: UncaughtErrorLogMessage,
+              error,
+            });
+          }
+          throw error;
+          /* v8 ignore next */
         } finally {
           if (options?.clearState || options?.resetKeys) loggerRef.resetKeys();
         }
-
-        return result;
       };
     };
   }
@@ -449,7 +475,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * @deprecated - This method is deprecated and will be removed in the next major version.
    */
-  public static injectLambdaContextBefore(
+  /* v8 ignore start */ public static injectLambdaContextBefore(
     logger: Logger,
     event: unknown,
     context: Context,
@@ -462,7 +488,7 @@ class Logger extends Utility implements LoggerInterface {
       shouldLogEvent = options.logEvent;
     }
     logger.logEventIfEnabled(event, shouldLogEvent);
-  }
+  } /* v8 ignore stop */
 
   /**
    * Log the AWS Lambda event payload for the current invocation if the environment variable `POWERTOOLS_LOGGER_LOG_EVENT` is set to `true`.
@@ -493,9 +519,13 @@ class Logger extends Utility implements LoggerInterface {
    * This method allows recalculating the initial sampling decision for changing
    * the log level to DEBUG based on a sample rate value used during initialization,
    * potentially yielding a different outcome.
+   *
+   * This only works for warm starts, because we don't to avoid double sampling.
    */
   public refreshSampleRateCalculation(): void {
-    this.setInitialSampleRate(this.powertoolsLogData.sampleRateValue);
+    if (!this.coldStart) {
+      this.setInitialSampleRate(this.powertoolsLogData.sampleRateValue);
+    }
   }
 
   /**
@@ -1234,6 +1264,11 @@ class Logger extends Utility implements LoggerInterface {
     persistentKeys && this.appendPersistentKeys(persistentKeys);
   }
 
+  /**
+   * Configure the buffer settings for the Logger instance.
+   *
+   * @param options - Options to configure the Logger instance
+   */
   #setLogBuffering(
     options: NonNullable<ConstructorOptions['logBufferOptions']>
   ) {
@@ -1264,10 +1299,11 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Add a log to the buffer
-   * @param xrayTraceId - _X_AMZN_TRACE_ID of the request
+   * Add a log to the buffer.
+   *
+   * @param xrayTraceId - `_X_AMZN_TRACE_ID` of the request
    * @param log - Log to be buffered
-   * @param logLevel - level of log to be buffered
+   * @param logLevel - The level of log to be buffered
    */
   protected bufferLogItem(
     xrayTraceId: string,
@@ -1275,19 +1311,22 @@ class Logger extends Utility implements LoggerInterface {
     logLevel: number
   ): void {
     log.prepareForPrint();
-
-    const stringified = JSON.stringify(
-      log.getAttributes(),
-      this.getJsonReplacer(),
-      this.logIndentation
+    this.#buffer?.setItem(
+      xrayTraceId,
+      JSON.stringify(
+        log.getAttributes(),
+        this.getJsonReplacer(),
+        this.logIndentation
+      ),
+      logLevel
     );
-
-    this.#buffer?.setItem(xrayTraceId, stringified, logLevel);
   }
 
   /**
-   * Flushes all items of the respective _X_AMZN_TRACE_ID within
-   * the buffer.
+   * Flush all logs in the request buffer.
+   *
+   * This is called automatically when you use the {@link injectLambdaContext | `@logger.injectLambdaContext()`} decorator and
+   * your function throws an error.
    */
   public flushBuffer(): void {
     const traceId = this.envVarsService.getXrayTraceId();
@@ -1323,9 +1362,10 @@ class Logger extends Utility implements LoggerInterface {
     this.#buffer?.delete(traceId);
   }
   /**
-   * Tests if the log meets the criteria to be buffered
-   * @param traceId - _X_AMZN_TRACE_ID of the request
-   * @param logLevel - The  level of the log being considered
+   * Test if the log meets the criteria to be buffered.
+   *
+   * @param traceId - `_X_AMZN_TRACE_ID` of the request
+   * @param logLevel - The level of the log being considered
    */
   protected shouldBufferLog(
     traceId: string | undefined,

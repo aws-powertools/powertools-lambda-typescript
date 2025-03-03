@@ -129,12 +129,14 @@ describe('Log sampling', () => {
     expect(logger.getLevelName()).toBe(LogLevel.INFO);
   });
 
-  it('when sample rate calculation is refreshed, it respects probability sampling and change log level to DEBUG ', () => {
+  it('when sample rate calculation is refreshed, it respects probability sampling and change log level to DEBUG when not in coldStart ', () => {
     // Prepare
     const logger = new Logger({
       logLevel: LogLevel.ERROR,
       sampleRateValue: 0.1, // 10% probability
     });
+
+    logger.getColdStart(); // Set coldStart to false
 
     let logLevelChangedToDebug = 0;
     const numOfIterations = 1000;

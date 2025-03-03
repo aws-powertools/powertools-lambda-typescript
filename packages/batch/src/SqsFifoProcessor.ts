@@ -33,6 +33,14 @@ class SqsFifoProcessor {
   }
 
   /**
+   * Prepares the processor for a new batch of messages.
+   */
+  public prepare(): void {
+    this.#currentGroupId = undefined;
+    this.#failedGroupIds.clear();
+  }
+
+  /**
    * Sets the current group ID for the message being processed.
    *
    * @param group - The group ID of the current message being processed.

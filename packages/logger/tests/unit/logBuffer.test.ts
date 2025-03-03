@@ -1,8 +1,10 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
+import middy from 'middy5';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
 import { LogLevel, UncaughtErrorLogMessage } from '../../src/constants.js';
+import { injectLambdaContext } from '../../src/middleware/middy.js';
 import type { ConstructorOptions } from '../../src/types/Logger.js';
 
 describe('Buffer logs', () => {
@@ -226,6 +228,41 @@ describe('Buffer logs', () => {
     }
     const lambda = new TestClass();
     const handler = lambda.handler.bind(lambda);
+
+    // Act & Assess
+    await expect(() =>
+      handler(
+        {
+          foo: 'bar',
+        },
+        context
+      )
+    ).rejects.toThrow(new Error('This is an error'));
+    expect(console.debug).toBeCalledTimes(1);
+    expect(console.info).toBeCalledTimes(1);
+    expect(console.error).toHaveLogged(
+      expect.objectContaining({
+        message: UncaughtErrorLogMessage,
+      })
+    );
+    // If debug is called after info, it means it was buffered and then flushed
+    expect(console.debug).toHaveBeenCalledAfter(console.info as Mock);
+    // If error is called after debug, it means the buffer was flushed before the error log
+    expect(console.debug).toHaveBeenCalledBefore(console.error as Mock);
+  });
+  it('flushes the buffer when an uncaught error is thrown in a middy', async () => {
+    // Prepare
+    const logger = new Logger({ logBufferOptions: { enabled: true } });
+
+    const handlerFn = async (_event: unknown, _context: Context) => {
+      logger.debug('This is a log message');
+      logger.info('This is an info message');
+      throw new Error('This is an error');
+    };
+
+    const handler = middy()
+      .use(injectLambdaContext(logger, { flushBufferOnUncaughtError: true }))
+      .handler(handlerFn);
 
     // Act & Assess
     await expect(() =>

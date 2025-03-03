@@ -1361,6 +1361,21 @@ class Logger extends Utility implements LoggerInterface {
 
     this.#buffer?.delete(traceId);
   }
+
+  /**
+   * Empties the buffer for the current request
+   *
+   */
+  public clearBuffer(): void {
+    const traceId = this.envVarsService.getXrayTraceId();
+
+    if (traceId === undefined) {
+      return;
+    }
+
+    this.#buffer?.delete(traceId);
+  }
+
   /**
    * Test if the log meets the criteria to be buffered.
    *

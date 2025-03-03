@@ -50,4 +50,16 @@ const ReservedKeys = [
   'timestamp',
 ];
 
-export { LogJsonIndent, LogLevel, LogLevelThreshold, ReservedKeys };
+/**
+ * Message logged when an uncaught error occurs in a Lambda function.
+ */
+const UncaughtErrorLogMessage =
+  'Uncaught error detected, flushing log buffer before exit';
+
+export {
+  LogJsonIndent,
+  LogLevel,
+  LogLevelThreshold,
+  ReservedKeys,
+  UncaughtErrorLogMessage,
+};

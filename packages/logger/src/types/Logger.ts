@@ -48,6 +48,12 @@ type InjectLambdaContextOptions = {
    * If `true`, the logger will reset the keys added via {@link LoggerInterface.appendKeys()}
    */
   resetKeys?: boolean;
+  /**
+   * Whether to flush the log buffer when an uncaught error is logged.
+   *
+   * @default `false`
+   */
+  flushBufferOnUncaughtError?: boolean;
 };
 
 /**
@@ -197,7 +203,7 @@ type LogBufferOption = {
     /**
      * The threshold to buffer logs. Logs with a level below
      * this threshold will be buffered
-     * @default `'DEBUG'`
+     * @default `DEBUG`
      */
     bufferAtVerbosity?: Omit<
       LogLevel,

@@ -92,7 +92,7 @@ describe('validator decorator', () => {
     const descriptor: PropertyDescriptor = {};
     // Act
     const result = validator({ inboundSchema })(
-      null as unknown,
+      null as unknown as object,
       'testMethod',
       descriptor
     );

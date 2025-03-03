@@ -4,6 +4,7 @@ import type {
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons/types';
 import { Logger } from '../Logger.js';
+import { UncaughtErrorLogMessage } from '../constants.js';
 import type { InjectLambdaContextOptions } from '../types/Logger.js';
 
 /**
@@ -76,13 +77,11 @@ const injectLambdaContext = (
   const setCleanupFunction = (request: MiddyLikeRequest): void => {
     request.internal = {
       ...request.internal,
-      [LOGGER_KEY]: injectLambdaContextAfterOrOnError,
+      [LOGGER_KEY]: onAfter,
     };
   };
 
-  const injectLambdaContextBefore = async (
-    request: MiddyLikeRequest
-  ): Promise<void> => {
+  const onBefore = async (request: MiddyLikeRequest): Promise<void> => {
     for (const logger of loggers) {
       if (isResetStateEnabled) {
         setCleanupFunction(request);
@@ -99,18 +98,33 @@ const injectLambdaContext = (
     }
   };
 
-  const injectLambdaContextAfterOrOnError = async (): Promise<void> => {
+  const onAfter = async (): Promise<void> => {
     if (isResetStateEnabled) {
       for (const logger of loggers) {
         logger.resetKeys();
       }
     }
+
+    for (const logger of loggers) {
+      logger.clearBuffer();
+    }
+  };
+  const onError = async ({ error }): Promise<void> => {
+    if (options?.flushBufferOnUncaughtError) {
+      for (const logger of loggers) {
+        logger.flushBuffer();
+        logger.error({
+          message: UncaughtErrorLogMessage,
+          error,
+        });
+      }
+    }
   };
 
   return {
-    before: injectLambdaContextBefore,
-    after: injectLambdaContextAfterOrOnError,
-    onError: injectLambdaContextAfterOrOnError,
+    before: onBefore,
+    after: onAfter,
+    onError,
   };
 };
 

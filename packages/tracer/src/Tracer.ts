@@ -914,7 +914,7 @@ class Tracer extends Utility implements TracerInterface {
 
       return;
     }
-    this.serviceName = this.getDefaultServiceName();
+    this.serviceName = this.defaultServiceName;
   }
 
   /**

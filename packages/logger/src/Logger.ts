@@ -1259,7 +1259,7 @@ class Logger extends Utility implements LoggerInterface {
         serviceName ||
         this.getCustomConfigService()?.getServiceName() ||
         this.getEnvVarsService().getServiceName() ||
-        this.getDefaultServiceName(),
+        this.defaultServiceName,
     });
     persistentKeys && this.appendPersistentKeys(persistentKeys);
   }

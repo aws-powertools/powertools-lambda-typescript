@@ -52,7 +52,7 @@
  */
 export class Utility {
   protected coldStart = true;
-  private readonly defaultServiceName: string = 'service_undefined';
+  protected readonly defaultServiceName: string = 'service_undefined';
 
   /**
    * Get the cold start status of the current execution environment.
@@ -68,7 +68,7 @@ export class Utility {
    *
    * The method also flips the cold start status to `false` after the first invocation.
    */
-  public getColdStart(): boolean {
+  protected getColdStart(): boolean {
     if (this.coldStart) {
       this.coldStart = false;
 
@@ -76,31 +76,6 @@ export class Utility {
     }
 
     return false;
-  }
-
-  /**
-   * Get the cold start status of the current execution environment.
-   *
-   * @example
-   * ```typescript
-   * import { Utility } from '@aws-lambda-powertools/commons';
-   *
-   * const utility = new Utility();
-   * utility.isColdStart(); // true
-   * utility.isColdStart(); // false
-   * ```
-   *
-   * @see {@link getColdStart}
-   */
-  public isColdStart(): boolean {
-    return this.getColdStart();
-  }
-
-  /**
-   * Get the default service name.
-   */
-  protected getDefaultServiceName(): string {
-    return this.defaultServiceName;
   }
 
   /**

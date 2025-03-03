@@ -373,7 +373,7 @@ class Metrics extends Utility implements MetricsInterface {
    * ```
    */
   public captureColdStartMetric(): void {
-    if (!this.isColdStart()) return;
+    if (!this.getColdStart()) return;
     const singleMetric = this.singleMetric();
 
     if (this.defaultDimensions.service) {
@@ -975,7 +975,7 @@ class Metrics extends Utility implements MetricsInterface {
       ((service ||
         this.getCustomConfigService()?.getServiceName() ||
         this.getEnvVarsService().getServiceName()) as string) ||
-      this.getDefaultServiceName();
+      this.defaultServiceName;
     if (targetService.length > 0) {
       this.setDefaultDimensions({ service: targetService });
     }

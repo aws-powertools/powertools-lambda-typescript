@@ -197,6 +197,17 @@ describe('Buffer logs', () => {
     );
   });
 
+  it('it safely short circuits when clearBuffer is called without a trace id', () => {
+    // Prepare
+    process.env._X_AMZN_TRACE_ID = undefined;
+    const logger = new Logger({
+      logLevel: LogLevel.ERROR,
+      logBufferOptions: { enabled: true, bufferAtVerbosity: LogLevel.DEBUG },
+    });
+
+    // Assess
+    expect(() => logger.clearBuffer()).not.toThrow();
+  });
   it('it flushes the buffer when an error in logged', () => {
     // Prepare
     const logger = new Logger({

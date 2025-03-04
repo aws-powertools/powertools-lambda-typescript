@@ -301,4 +301,55 @@ describe('Buffer logs', () => {
       expect(console.debug).toHaveBeenCalledBefore(console.error as Mock);
     }
   );
+  it.each([
+    {
+      handlerFactory: (logger: Logger) =>
+        middy()
+          .use(
+            injectLambdaContext(logger, { flushBufferOnUncaughtError: false })
+          )
+          .handler(async () => {
+            logger.debug('This is a log message');
+            logger.info('This is an info message');
+            throw new Error('This is an error');
+          }),
+      case: 'middleware',
+    },
+    {
+      handlerFactory: (logger: Logger) => {
+        class TestClass {
+          @logger.injectLambdaContext({ flushBufferOnUncaughtError: false })
+          async handler(_event: unknown, _context: Context) {
+            logger.debug('This is a log message');
+            logger.info('This is an info message');
+            throw new Error('This is an error');
+          }
+        }
+        const lambda = new TestClass();
+        return lambda.handler.bind(lambda);
+      },
+      case: 'decorator',
+    },
+  ])(
+    'clears the buffer when an uncaught error is thrown and flushBufferOnUncaughtError is false ($case)',
+    async ({ handlerFactory }) => {
+      // Prepare
+      const logger = new Logger({ logBufferOptions: { enabled: true } });
+      const handler = handlerFactory(logger);
+
+      // Act & Assess
+      await expect(() =>
+        handler(
+          {
+            foo: 'bar',
+          },
+          context
+        )
+      ).rejects.toThrow(new Error('This is an error'));
+
+      // Assess
+      expect(console.debug).not.toBeCalled;
+      expect(console.info).not.toBeCalled;
+    }
+  );
 });

@@ -2,10 +2,7 @@ import { SchemaValidationError } from './errors.js';
 import type { ValidatorOptions } from './types.js';
 import { validate } from './validate.js';
 
-export function validationMiddleware(options: ValidatorOptions) {
-  if (!options.inboundSchema && !options.outboundSchema) {
-    return {};
-  }
+export function validation(options: ValidatorOptions) {
   return {
     before: async (handler: { event: unknown }) => {
       if (options.inboundSchema) {

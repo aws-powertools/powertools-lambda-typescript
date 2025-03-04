@@ -1,6 +1,7 @@
+import middy from '@middy/core';
 import { describe, expect, it } from 'vitest';
 import { SchemaValidationError } from '../../src/errors.js';
-import { validationMiddleware } from '../../src/middleware.js';
+import { validation } from '../../src/middleware.js';
 
 const inboundSchema = {
   type: 'object',
@@ -20,68 +21,53 @@ const outboundSchema = {
   additionalProperties: false,
 };
 
-describe('validatorMiddleware', () => {
+const response = { outputValue: 20 };
+const baseHandler = async (event: unknown) => {
+  return response;
+};
+
+describe('validation middleware with Middy', () => {
   it('should validate inbound and outbound successfully', async () => {
     // Prepare
-    const middleware = validationMiddleware({ inboundSchema, outboundSchema });
-    const handler = {
-      event: { inputValue: 10 },
-      response: { outputValue: 20 },
-    };
+    const middleware = validation({ inboundSchema, outboundSchema });
+    const wrappedHandler = middy(baseHandler).use(middleware);
+    const event = { inputValue: 10 };
     // Act
-    if (middleware.before) {
-      await middleware.before(handler);
-    }
-    if (middleware.after) {
-      await middleware.after(handler);
-    }
+    const result = await wrappedHandler(event);
     // Assess
-    expect(handler.event).toEqual({ inputValue: 10 });
-    expect(handler.response).toEqual({ outputValue: 20 });
+    expect(result).toEqual(response);
   });
 
   it('should throw error on inbound validation failure', async () => {
     // Prepare
-    const middleware = validationMiddleware({ inboundSchema });
-    const handler = {
-      event: { inputValue: 'invalid' },
-      response: {},
-    };
+    const middleware = validation({ inboundSchema });
+    const wrappedHandler = middy(baseHandler).use(middleware);
+    const invalidEvent = { inputValue: 'invalid' };
     // Act & Assess
-    await expect(middleware.before?.(handler)).rejects.toThrow(
+    await expect(wrappedHandler(invalidEvent)).rejects.toThrow(
       SchemaValidationError
     );
   });
 
   it('should throw error on outbound validation failure', async () => {
-    // Prepare
-    const middleware = validationMiddleware({ outboundSchema });
-    const handler = {
-      event: {},
-      response: { outputValue: 'invalid' },
+    const invalidHandler = async (_event: unknown) => {
+      return { outputValue: 'invalid' };
     };
+    const middleware = validation({ outboundSchema });
+    const wrappedHandler = middy(invalidHandler).use(middleware);
+    const event = { any: 'value' };
     // Act & Assess
-    await expect(middleware.after?.(handler)).rejects.toThrow(
-      SchemaValidationError
-    );
+    await expect(wrappedHandler(event)).rejects.toThrow(SchemaValidationError);
   });
 
   it('should no-op when no schemas are provided', async () => {
     // Prepare
-    const middleware = validationMiddleware({});
-    const handler = {
-      event: { someKey: 'value' },
-      response: { anotherKey: 'value' },
-    };
+    const middleware = validation({});
+    const wrappedHandler = middy(baseHandler).use(middleware);
+    const event = { anyKey: 'anyValue' };
     // Act
-    if (middleware.before) {
-      await middleware.before(handler);
-    }
-    if (middleware.after) {
-      await middleware.after(handler);
-    }
+    const result = await wrappedHandler(event);
     // Assess
-    expect(handler.event).toEqual({ someKey: 'value' });
-    expect(handler.response).toEqual({ anotherKey: 'value' });
+    expect(result).toEqual(response);
   });
 });

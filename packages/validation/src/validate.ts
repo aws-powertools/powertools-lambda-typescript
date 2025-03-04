@@ -1,9 +1,9 @@
 import { search } from '@aws-lambda-powertools/jmespath';
-import Ajv, { type ValidateFunction } from 'ajv';
+import { Ajv, type ValidateFunction } from 'ajv';
 import { SchemaValidationError } from './errors.js';
 import type { ValidateParams } from './types.js';
 
-export function validate<T = unknown>(params: ValidateParams<T>): T {
+export function validate<T = unknown>(params: ValidateParams): T {
   const { payload, schema, envelope, formats, externalRefs, ajv } = params;
   const ajvInstance = ajv || new Ajv({ allErrors: true });
 

@@ -254,7 +254,7 @@ When emitting cold start metrics, we use the `context.functionName` as the `func
 
 === "with logMetrics decorator"
 
-    ```typescript hl_lines="11"
+    ```typescript hl_lines="12"
     --8<-- "examples/snippets/metrics/functionNameDecorator.ts"
     ```
 

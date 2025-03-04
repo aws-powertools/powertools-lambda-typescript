@@ -112,6 +112,13 @@ type ExtraOptions = {
    * @see {@link MetricsInterface.captureColdStartMetric | `captureColdStartMetric()`}
    */
   captureColdStartMetric?: boolean;
+  /**
+   * Set the metric instances function name for `ColdStart` metric.
+   *
+   * @default request.context.functionName
+   * @see {@link MetricsInterface.setFunctionName | `setFunctionName()`}
+   */
+  functionName?: string;
 };
 
 /**

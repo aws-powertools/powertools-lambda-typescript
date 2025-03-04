@@ -477,6 +477,17 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * Check if a function name has been defined.
+   *
+   * This is useful when you want to only set a function name if it is not already set.
+   *
+   * The method is primarily intended for internal use, but it is exposed for advanced use cases.
+   */
+  public hasFunctionName(): boolean {
+    return this.functionName != null;
+  }
+
+  /**
    * Whether metrics are disabled.
    */
   protected isDisabled(): boolean {
@@ -518,17 +529,25 @@ class Metrics extends Utility implements MetricsInterface {
    * - `captureColdStartMetric` - Whether to capture a `ColdStart` metric
    * - `defaultDimensions` - Default dimensions to add to all metrics
    * - `throwOnEmptyMetrics` - Whether to throw an error if no metrics are emitted
+   * - `functionName` - Set the function name used for cold starts
    *
    * @param options - Options to configure the behavior of the decorator, see {@link ExtraOptions}
    */
   public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
-    const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } =
-      options;
+    const {
+      throwOnEmptyMetrics,
+      defaultDimensions,
+      captureColdStartMetric,
+      functionName,
+    } = options;
     if (throwOnEmptyMetrics) {
       this.setThrowOnEmptyMetrics(throwOnEmptyMetrics);
     }
     if (defaultDimensions !== undefined) {
       this.setDefaultDimensions(defaultDimensions);
+    }
+    if (functionName !== undefined) {
+      this.setFunctionName(functionName);
     }
 
     return (_target, _propertyKey, descriptor) => {
@@ -543,7 +562,9 @@ class Metrics extends Utility implements MetricsInterface {
         context: Context,
         callback: Callback
       ): Promise<unknown> {
-        metricsRef.functionName = context.functionName;
+        if (!metricsRef.hasFunctionName()) {
+          metricsRef.functionName = context.functionName;
+        }
         if (captureColdStartMetric) metricsRef.captureColdStartMetric();
 
         let result: unknown;

@@ -184,7 +184,7 @@ You can call `addMetric()` with the same name multiple times. The values will be
 
 ### Adding default dimensions
 
-You can add default dimensions to your metrics by passing them as parameters in 4 ways:  
+You can add default dimensions to your metrics by passing them as parameters in 4 ways:
 
 * in the constructor
 * in the [Middy-compatible](https://github.com/middyjs/middy){target=_blank} middleware
@@ -229,6 +229,36 @@ You can add default dimensions to your metrics by passing them as parameters in 
     1. Binding your handler method allows your handler to access `this` within the class methods.
 
 If you'd like to remove them at some point, you can use the `clearDefaultDimensions` method.
+
+### Setting function name
+
+When emitting cold start metrics, we use the `context.functionName` as the `function_name`
+ dimension. If you want to change the function name you can set the `functionName` by
+ passing it as a parameter in 3 ways:
+
+* in the [Middy-compatible](https://github.com/middyjs/middy){target=_blank} middleware
+* using the `setFunctionName` method
+* in the decorator
+
+=== "Middy middleware"
+
+    ```typescript hl_lines="22"
+    --8<-- "examples/snippets/metrics/functionNameMiddy.ts"
+    ```
+
+=== "setFunctionName method"
+
+    ```typescript hl_lines="9"
+    --8<-- "examples/snippets/metrics/setFunctionName.ts"
+    ```
+
+=== "with logMetrics decorator"
+
+    ```typescript hl_lines="11"
+    --8<-- "examples/snippets/metrics/functionNameDecorator.ts"
+    ```
+
+    1. Binding your handler method allows your handler to access `this` within the class methods.
 
 ### Changing default timestamp
 

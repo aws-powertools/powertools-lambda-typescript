@@ -449,13 +449,12 @@ class Logger extends Utility implements LoggerInterface {
               message: UncaughtErrorLogMessage,
               error,
             });
-          } else {
-            loggerRef.clearBuffer();
           }
           throw error;
           /* v8 ignore next */
         } finally {
           if (options?.clearState || options?.resetKeys) loggerRef.resetKeys();
+          loggerRef.clearBuffer();
         }
       };
     };

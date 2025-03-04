@@ -1,33 +1,38 @@
 import { SchemaValidationError } from './errors.js';
 import type { ValidatorOptions } from './types.js';
 import { validate } from './validate.js';
-
-type AsyncMethod = (...args: unknown[]) => Promise<unknown>;
-
-export function validator(options: ValidatorOptions): MethodDecorator {
+export function validator(options: ValidatorOptions) {
   return (
-    _target,
-    _propertyKey,
-    descriptor: TypedPropertyDescriptor<AsyncMethod>
+    _target: unknown,
+    _propertyKey: string | symbol,
+    descriptor: PropertyDescriptor
   ) => {
     if (!descriptor.value) {
       return descriptor;
     }
-    if (!options.inboundSchema && !options.outboundSchema) {
+    const {
+      inboundSchema,
+      outboundSchema,
+      envelope,
+      formats,
+      externalRefs,
+      ajv,
+    } = options;
+    if (!inboundSchema && !outboundSchema) {
       return descriptor;
     }
     const originalMethod = descriptor.value;
-    descriptor.value = async function (...args: unknown[]): Promise<unknown> {
+    descriptor.value = async function (...args: unknown[]) {
       let validatedInput = args[0];
-      if (options.inboundSchema) {
+      if (inboundSchema) {
         try {
           validatedInput = validate({
-            payload: args[0],
-            schema: options.inboundSchema,
-            envelope: options.envelope,
-            formats: options.formats,
-            externalRefs: options.externalRefs,
-            ajv: options.ajv,
+            payload: validatedInput,
+            schema: inboundSchema,
+            envelope: envelope,
+            formats: formats,
+            externalRefs: externalRefs,
+            ajv: ajv,
           });
         } catch (error) {
           throw new SchemaValidationError('Inbound validation failed', error);
@@ -37,17 +42,17 @@ export function validator(options: ValidatorOptions): MethodDecorator {
         validatedInput,
         ...args.slice(1),
       ]);
-      if (options.outboundSchema) {
+      if (outboundSchema) {
         try {
           return validate({
             payload: result,
-            schema: options.outboundSchema,
-            formats: options.formats,
-            externalRefs: options.externalRefs,
-            ajv: options.ajv,
+            schema: outboundSchema,
+            formats: formats,
+            externalRefs: externalRefs,
+            ajv: ajv,
           });
         } catch (error) {
-          throw new SchemaValidationError('Outbound validation failed', error);
+          throw new SchemaValidationError('Outbound Validation failed', error);
         }
       }
       return result;

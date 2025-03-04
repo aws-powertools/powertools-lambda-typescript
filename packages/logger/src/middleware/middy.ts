@@ -77,11 +77,11 @@ const injectLambdaContext = (
   const setCleanupFunction = (request: MiddyLikeRequest): void => {
     request.internal = {
       ...request.internal,
-      [LOGGER_KEY]: onAfter,
+      [LOGGER_KEY]: after,
     };
   };
 
-  const onBefore = async (request: MiddyLikeRequest): Promise<void> => {
+  const before = async (request: MiddyLikeRequest): Promise<void> => {
     for (const logger of loggers) {
       if (isResetStateEnabled) {
         setCleanupFunction(request);
@@ -98,18 +98,17 @@ const injectLambdaContext = (
     }
   };
 
-  const onAfter = async (): Promise<void> => {
-    if (isResetStateEnabled) {
-      for (const logger of loggers) {
+  const after = async (): Promise<void> => {
+    for (const logger of loggers) {
+      logger.clearBuffer();
+
+      if (isResetStateEnabled) {
         logger.resetKeys();
       }
     }
-
-    for (const logger of loggers) {
-      logger.clearBuffer();
-    }
   };
-  const onError = async ({ error }): Promise<void> => {
+
+  const onError = async ({ error }: { error: unknown }): Promise<void> => {
     if (options?.flushBufferOnUncaughtError) {
       for (const logger of loggers) {
         logger.flushBuffer();
@@ -122,8 +121,8 @@ const injectLambdaContext = (
   };
 
   return {
-    before: onBefore,
-    after: onAfter,
+    before,
+    after,
     onError,
   };
 };

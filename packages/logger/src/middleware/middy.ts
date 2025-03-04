@@ -109,13 +109,15 @@ const injectLambdaContext = (
   };
 
   const onError = async ({ error }: { error: unknown }): Promise<void> => {
-    if (options?.flushBufferOnUncaughtError) {
-      for (const logger of loggers) {
+    for (const logger of loggers) {
+      if (options?.flushBufferOnUncaughtError) {
         logger.flushBuffer();
         logger.error({
           message: UncaughtErrorLogMessage,
           error,
         });
+      } else {
+        logger.clearBuffer();
       }
     }
   };

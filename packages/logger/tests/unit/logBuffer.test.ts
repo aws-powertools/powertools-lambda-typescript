@@ -1,8 +1,10 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
+import middy from 'middy5';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
 import { LogLevel, UncaughtErrorLogMessage } from '../../src/constants.js';
+import { injectLambdaContext } from '../../src/middleware/middy.js';
 import type { ConstructorOptions } from '../../src/types/Logger.js';
 
 describe('Buffer logs', () => {
@@ -195,6 +197,34 @@ describe('Buffer logs', () => {
     );
   });
 
+  it('it safely short circuits when clearBuffer is called without a trace id', () => {
+    // Prepare
+    process.env._X_AMZN_TRACE_ID = undefined;
+    const logger = new Logger({
+      logLevel: LogLevel.ERROR,
+      logBufferOptions: { enabled: true, bufferAtVerbosity: LogLevel.DEBUG },
+    });
+
+    // Assess
+    expect(() => logger.clearBuffer()).not.toThrow();
+  });
+
+  it('it clears the buffer', () => {
+    // Prepare
+    const logger = new Logger({
+      logLevel: LogLevel.ERROR,
+      logBufferOptions: { enabled: true, bufferAtVerbosity: LogLevel.DEBUG },
+    });
+
+    // Arrange
+    logger.debug('This is a log message');
+    logger.clearBuffer();
+
+    logger.flushBuffer();
+
+    // Assess
+    expect(console.debug).not.toBeCalled;
+  });
   it('it flushes the buffer when an error in logged', () => {
     // Prepare
     const logger = new Logger({
@@ -213,39 +243,113 @@ describe('Buffer logs', () => {
     expect(console.error).toBeCalledTimes(1);
   });
 
-  it('flushes the buffer when an uncaught error is thrown', async () => {
-    // Prepare
-    const logger = new Logger({ logBufferOptions: { enabled: true } });
-    class TestClass {
-      @logger.injectLambdaContext({ flushBufferOnUncaughtError: true })
-      async handler(_event: unknown, _context: Context) {
-        logger.debug('This is a log message');
-        logger.info('This is an info message');
-        throw new Error('This is an error');
-      }
-    }
-    const lambda = new TestClass();
-    const handler = lambda.handler.bind(lambda);
+  it.each([
+    {
+      handlerFactory: (logger: Logger) =>
+        middy()
+          .use(
+            injectLambdaContext(logger, { flushBufferOnUncaughtError: true })
+          )
+          .handler(async () => {
+            logger.debug('This is a log message');
+            logger.info('This is an info message');
+            throw new Error('This is an error');
+          }),
+      case: 'middleware',
+    },
+    {
+      handlerFactory: (logger: Logger) => {
+        class TestClass {
+          @logger.injectLambdaContext({ flushBufferOnUncaughtError: true })
+          async handler(_event: unknown, _context: Context) {
+            logger.debug('This is a log message');
+            logger.info('This is an info message');
+            throw new Error('This is an error');
+          }
+        }
+        const lambda = new TestClass();
+        return lambda.handler.bind(lambda);
+      },
+      case: 'decorator',
+    },
+  ])(
+    'flushes the buffer when an uncaught error is thrown ($case)',
+    async ({ handlerFactory }) => {
+      // Prepare
+      const logger = new Logger({ logBufferOptions: { enabled: true } });
+      const handler = handlerFactory(logger);
 
-    // Act & Assess
-    await expect(() =>
-      handler(
-        {
-          foo: 'bar',
-        },
-        context
-      )
-    ).rejects.toThrow(new Error('This is an error'));
-    expect(console.debug).toBeCalledTimes(1);
-    expect(console.info).toBeCalledTimes(1);
-    expect(console.error).toHaveLogged(
-      expect.objectContaining({
-        message: UncaughtErrorLogMessage,
-      })
-    );
-    // If debug is called after info, it means it was buffered and then flushed
-    expect(console.debug).toHaveBeenCalledAfter(console.info as Mock);
-    // If error is called after debug, it means the buffer was flushed before the error log
-    expect(console.debug).toHaveBeenCalledBefore(console.error as Mock);
-  });
+      // Act & Assess
+      await expect(() =>
+        handler(
+          {
+            foo: 'bar',
+          },
+          context
+        )
+      ).rejects.toThrow(new Error('This is an error'));
+      expect(console.debug).toBeCalledTimes(1);
+      expect(console.info).toBeCalledTimes(1);
+      expect(console.error).toHaveLogged(
+        expect.objectContaining({
+          message: UncaughtErrorLogMessage,
+        })
+      );
+      // If debug is called after info, it means it was buffered and then flushed
+      expect(console.debug).toHaveBeenCalledAfter(console.info as Mock);
+      // If error is called after debug, it means the buffer was flushed before the error log
+      expect(console.debug).toHaveBeenCalledBefore(console.error as Mock);
+    }
+  );
+  it.each([
+    {
+      handlerFactory: (logger: Logger) =>
+        middy()
+          .use(
+            injectLambdaContext(logger, { flushBufferOnUncaughtError: false })
+          )
+          .handler(async () => {
+            logger.debug('This is a log message');
+            logger.info('This is an info message');
+            throw new Error('This is an error');
+          }),
+      case: 'middleware',
+    },
+    {
+      handlerFactory: (logger: Logger) => {
+        class TestClass {
+          @logger.injectLambdaContext({ flushBufferOnUncaughtError: false })
+          async handler(_event: unknown, _context: Context) {
+            logger.debug('This is a log message');
+            logger.info('This is an info message');
+            throw new Error('This is an error');
+          }
+        }
+        const lambda = new TestClass();
+        return lambda.handler.bind(lambda);
+      },
+      case: 'decorator',
+    },
+  ])(
+    'clears the buffer when an uncaught error is thrown and flushBufferOnUncaughtError is false ($case)',
+    async ({ handlerFactory }) => {
+      // Prepare
+      const logger = new Logger({ logBufferOptions: { enabled: true } });
+      const handler = handlerFactory(logger);
+
+      // Act & Assess
+      await expect(() =>
+        handler(
+          {
+            foo: 'bar',
+          },
+          context
+        )
+      ).rejects.toThrow(new Error('This is an error'));
+
+      // Assess
+      expect(console.debug).not.toBeCalled;
+      expect(console.info).not.toBeCalled;
+    }
+  );
 });

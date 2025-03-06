@@ -180,7 +180,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Buffer configuration options.
    */
-  #bufferConfig: {
+  readonly #bufferConfig: {
     /**
      * Whether the buffer should is enabled
      */

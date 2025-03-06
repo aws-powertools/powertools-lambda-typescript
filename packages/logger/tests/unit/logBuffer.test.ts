@@ -5,7 +5,6 @@ import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
 import { LogLevel, UncaughtErrorLogMessage } from '../../src/constants.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
-import type { ConstructorOptions } from '../../src/types/Logger.js';
 
 describe('Buffer logs', () => {
   const ENVIRONMENT_VARIABLES = process.env;

@@ -567,7 +567,7 @@ When configuring the buffer, you can set the following options to fine-tune how 
 | Parameter           | Description                                      | Configuration                       | Default |
 |-------------------- |------------------------------------------------- |------------------------------------ | ------- |
 | `enabled`           | Enable or disable log buffering                  | `true`, `false`                     | `false` |
-| `maxBytes`          | Maximum size of the log buffer in bytes          | `number`                            | 20480   |
+| `maxBytes`          | Maximum size of the log buffer in bytes          | `number`                            | `20480` |
 | `bufferAtVerbosity` | Minimum log level to buffer                      | `TRACE`, `DEBUG`, `INFO`, `WARNING` | `DEBUG` |
 | `flushOnErrorLog`   | Automatically flush buffer when logging an error | `true`, `false`                     | `true`  |
 

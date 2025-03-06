@@ -994,18 +994,6 @@ class Logger extends Utility implements LoggerInterface {
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): void {
-    if (logLevel >= this.logLevel) {
-      if (this.#isInitialized) {
-        this.printLog(
-          logLevel,
-          this.createAndPopulateLogItem(logLevel, input, extraInput)
-        );
-      } else {
-        this.#initBuffer.push([logLevel, [logLevel, input, extraInput]]);
-      }
-      return;
-    }
-
     const traceId = this.envVarsService.getXrayTraceId();
     if (traceId !== undefined && this.shouldBufferLog(traceId, logLevel)) {
       try {
@@ -1028,6 +1016,19 @@ class Logger extends Utility implements LoggerInterface {
           logLevel,
           this.createAndPopulateLogItem(logLevel, input, extraInput)
         );
+      }
+
+      return;
+    }
+
+    if (logLevel >= this.logLevel) {
+      if (this.#isInitialized) {
+        this.printLog(
+          logLevel,
+          this.createAndPopulateLogItem(logLevel, input, extraInput)
+        );
+      } else {
+        this.#initBuffer.push([logLevel, [logLevel, input, extraInput]]);
       }
     }
   }
@@ -1230,10 +1231,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setConsole();
     this.setLogIndentation();
     this.#jsonReplacerFn = jsonReplacerFn;
-
-    if (logBufferOptions !== undefined) {
-      this.#setLogBuffering(logBufferOptions);
-    }
+    this.#setLogBuffering(logBufferOptions);
 
     return this;
   }
@@ -1270,30 +1268,27 @@ class Logger extends Utility implements LoggerInterface {
    *
    * @param options - Options to configure the Logger instance
    */
-  #setLogBuffering(
-    options: NonNullable<ConstructorOptions['logBufferOptions']>
-  ) {
-    if (options.maxBytes !== undefined) {
+  #setLogBuffering(options?: ConstructorOptions['logBufferOptions']) {
+    if (options === undefined) {
+      return;
+    }
+    // `enabled` is a boolean, so we set it to true if it's not explicitly set to false
+    this.isBufferEnabled = options?.enabled !== false;
+    // if `enabled` is false, we don't need to set any other options
+    if (this.isBufferEnabled === false) return;
+
+    if (options?.maxBytes !== undefined) {
       this.#maxBufferBytesSize = options.maxBytes;
     }
-
     this.#buffer = new CircularMap({
       maxBytesSize: this.#maxBufferBytesSize,
     });
 
-    if (options.enabled === false) {
-      this.isBufferEnabled = false;
-    } else {
-      this.isBufferEnabled = true;
-    }
-
-    if (options.flushOnErrorLog === false) {
+    if (options?.flushOnErrorLog === false) {
       this.flushOnErrorLog = false;
-    } else {
-      this.flushOnErrorLog = true;
     }
-    const bufferAtLogLevel = options.bufferAtVerbosity?.toUpperCase();
 
+    const bufferAtLogLevel = options?.bufferAtVerbosity?.toUpperCase();
     if (this.isValidLogLevel(bufferAtLogLevel)) {
       this.bufferAtVerbosity = LogLevelThreshold[bufferAtLogLevel];
     }
@@ -1341,12 +1336,9 @@ class Logger extends Utility implements LoggerInterface {
     }
 
     for (const item of buffer) {
-      const consoleMethod =
-        item.logLevel === LogLevelThreshold.CRITICAL
-          ? 'error'
-          : (this.getLogLevelNameFromNumber(
-              item.logLevel
-            ).toLowerCase() as keyof Omit<LogFunction, 'critical'>);
+      const consoleMethod = this.getLogLevelNameFromNumber(
+        item.logLevel
+      ).toLowerCase() as keyof Omit<LogFunction, 'critical'>;
       this.console[consoleMethod](item.value);
     }
     if (buffer.hasEvictedLog) {
@@ -1369,11 +1361,9 @@ class Logger extends Utility implements LoggerInterface {
    */
   public clearBuffer(): void {
     const traceId = this.envVarsService.getXrayTraceId();
-
     if (traceId === undefined) {
       return;
     }
-
     this.#buffer?.delete(traceId);
   }
 

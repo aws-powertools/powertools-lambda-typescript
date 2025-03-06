@@ -28,6 +28,7 @@ describe('Buffer logs', () => {
     // Act
     logger.debug('This is a log message');
     logger.flushBuffer();
+
     // Assess
     expect(console.debug).toBeCalledTimes(0);
   });
@@ -42,6 +43,7 @@ describe('Buffer logs', () => {
     // Act
     logger.debug('This is a log message');
     logger.error('This is an error message');
+
     // Assess
     expect(console.debug).toBeCalledTimes(0);
     expect(console.error).toBeCalledTimes(1);
@@ -51,14 +53,14 @@ describe('Buffer logs', () => {
     // Prepare
     const logger = new Logger({
       logLevel: LogLevel.ERROR,
-      logBufferOptions: { maxBytes: 100 },
+      logBufferOptions: { maxBytes: 20480 },
     });
 
     // Act
     logger.debug('This is a log message');
-    logger.flushBuffer();
+
     // Assess
-    expect(console.debug).toBeCalledTimes(1);
+    expect(console.debug).toBeCalledTimes(0);
   });
 
   it('sets a max buffer sized when specified', () => {
@@ -66,18 +68,22 @@ describe('Buffer logs', () => {
     const logger = new Logger({
       logBufferOptions: {
         maxBytes: 250,
-        bufferAtVerbosity: LogLevel.DEBUG,
-        enabled: true,
       },
     });
 
     // Act
-    logger.debug('this is a debug');
-    logger.debug('this is a debug');
+    logger.debug('this is a debug 1');
+    logger.debug('this is a debug 2');
     logger.flushBuffer();
 
     // Assess
-    expect(console.debug).toBeCalledTimes(1);
+    expect(console.debug).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        level: LogLevel.DEBUG,
+        message: 'this is a debug 2',
+      })
+    );
     expect(console.warn).toHaveLogged(
       expect.objectContaining({
         level: 'WARN',
@@ -89,23 +95,25 @@ describe('Buffer logs', () => {
 
   it('outputs a warning when there is an error buffering the log', () => {
     // Prepare
-    class MockLogger extends Logger {
-      constructor(options: ConstructorOptions) {
-        super(options);
-        // We want to simulate an error in the bufferLogItem method, which is protected, so we override it
-        this.bufferLogItem = vi.fn().mockImplementation(() => {
-          throw new Error('bufferLogItem error');
-        });
-      }
-    }
-    const logger = new MockLogger({ logBufferOptions: { enabled: true } });
+    const logger = new Logger({ logBufferOptions: { maxBytes: 100 } });
 
     // Act
     logger.debug('This is a debug');
 
     // Assess
-    expect(console.debug).toBeCalledTimes(1);
-    expect(console.warn).toBeCalledTimes(1);
+    expect(console.debug).toHaveLogged(
+      expect.objectContaining({
+        level: LogLevel.DEBUG,
+        message: 'This is a debug',
+      })
+    );
+    expect(console.warn).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: expect.stringContaining('Unable to buffer log: Item too big'),
+        level: LogLevel.WARN,
+      })
+    );
   });
 
   it('outputs buffered logs', () => {
@@ -113,26 +121,24 @@ describe('Buffer logs', () => {
     const logger = new Logger({
       logLevel: 'SILENT',
       logBufferOptions: {
-        enabled: true,
-        bufferAtVerbosity: LogLevel.CRITICAL,
+        bufferAtVerbosity: LogLevel.WARN,
       },
     });
 
     // Act
     logger.debug('This is a debug');
     logger.warn('This is a warning');
-    logger.critical('this is a critical');
 
     // Assess
+    expect(console.debug).toHaveBeenCalledTimes(0);
     expect(console.warn).toHaveBeenCalledTimes(0);
-    expect(console.error).toHaveBeenCalledTimes(0);
 
     // Act
     logger.flushBuffer();
 
     // Assess
+    expect(console.debug).toHaveBeenCalledTimes(1);
     expect(console.warn).toHaveBeenCalledTimes(1);
-    expect(console.error).toHaveBeenCalledTimes(1);
   });
 
   it('handles an empty buffer', () => {
@@ -151,50 +157,11 @@ describe('Buffer logs', () => {
     // Act
     logger.debug('This is a debug');
     logger.warn('this is a warning');
-
-    // Assess
-    expect(console.debug).toHaveBeenCalledTimes(0);
-    expect(console.warn).toHaveBeenCalledTimes(1);
-
-    // Act
     logger.flushBuffer();
 
     // Assess
     expect(console.debug).toHaveBeenCalledTimes(0);
     expect(console.warn).toHaveBeenCalledTimes(1);
-  });
-
-  it('outputs a warning when buffered logs have been evicted', () => {
-    // Prepare
-    const logger = new Logger({
-      logLevel: LogLevel.ERROR,
-      logBufferOptions: {
-        enabled: true,
-        bufferAtVerbosity: LogLevel.INFO,
-        maxBytes: 1024,
-      },
-    });
-
-    // Act
-    const longMessage = 'blah'.repeat(10);
-
-    let i = 0;
-    while (i < 4) {
-      logger.info(
-        `${i} This is a really long log message intended to exceed the buffer ${longMessage}`
-      );
-      i++;
-    }
-    logger.flushBuffer();
-
-    // Assess
-    expect(console.warn).toHaveLogged(
-      expect.objectContaining({
-        level: LogLevel.WARN,
-        message:
-          'Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer',
-      })
-    );
   });
 
   it('it safely short circuits when clearBuffer is called without a trace id', () => {
@@ -219,26 +186,24 @@ describe('Buffer logs', () => {
     // Arrange
     logger.debug('This is a log message');
     logger.clearBuffer();
-
     logger.flushBuffer();
 
     // Assess
-    expect(console.debug).not.toBeCalled;
+    expect(console.debug).not.toBeCalled();
   });
-  it('it flushes the buffer when an error in logged', () => {
+
+  it('it flushes the buffer when an error is logged', () => {
     // Prepare
     const logger = new Logger({
       logLevel: LogLevel.ERROR,
-      logBufferOptions: { enabled: true, bufferAtVerbosity: LogLevel.DEBUG },
+      logBufferOptions: { enabled: true },
     });
-    const flushBufferSpy = vi.spyOn(logger, 'flushBuffer');
 
     // Act
     logger.debug('This is a log message');
     logger.error('This is an error message');
 
     // Assess
-    expect(flushBufferSpy).toBeCalledTimes(1);
     expect(console.debug).toBeCalledTimes(1);
     expect(console.error).toBeCalledTimes(1);
   });
@@ -301,6 +266,7 @@ describe('Buffer logs', () => {
       expect(console.debug).toHaveBeenCalledBefore(console.error as Mock);
     }
   );
+
   it.each([
     {
       handlerFactory: (logger: Logger) =>

@@ -41,10 +41,12 @@ import type {
  * The Logger utility provides an opinionated logger with output structured as JSON for AWS Lambda.
  *
  * **Key features**
- * * Capture key fields from AWS Lambda context, cold start, and structure log output as JSON
- * * Append additional keys to one or all log items
- * * Switch log level to `DEBUG` based on a sample rate value for a percentage of invocations
- * * Ability to buffer logs in memory and flush them when there's an error
+ * Capturing key fields from the Lambda context, cold starts, and structure logging output as JSON.
+ * Logging Lambda invocation events when instructed (disabled by default).
+ * Switch log level to `DEBUG` for a percentage of invocations (sampling).
+ * Buffering logs for a specific request or invocation, and flushing them automatically on error or manually as needed.
+ * Appending additional keys to structured logs at any point in time.
+ * Providing a custom log formatter (Bring Your Own Formatter) to output logs in a structure compatible with your organization’s Logging RFC.
  *
  * After initializing the Logger class, you can use the methods to log messages at different levels.
  *

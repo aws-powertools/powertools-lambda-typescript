@@ -9,7 +9,8 @@ Logger provides an opinionated logger with output structured as JSON.
 
 * Capturing key fields from the Lambda context, cold starts, and structure logging output as JSON.
 * Logging Lambda invocation events when instructed (disabled by default).
-* Printing all the logs only for a percentage of invocations via log sampling (disabled by default).
+* Switch log level to `DEBUG` for a percentage of invocations (sampling).
+* Buffering logs for a specific request or invocation, and flushing them automatically on error or manually as needed.
 * Appending additional keys to structured logs at any point in time.
 * Providing a custom log formatter (Bring Your Own Formatter) to output logs in a structure compatible with your organization’s Logging RFC.
 

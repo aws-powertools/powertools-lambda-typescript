@@ -178,7 +178,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Buffer configuration options.
    */
-  #bufferOptions: {
+  #bufferConfig: {
     /**
      * Whether the buffer should is enabled
      */
@@ -306,13 +306,13 @@ class Logger extends Utility implements LoggerInterface {
           environment: this.powertoolsLogData.environment,
           persistentLogAttributes: this.persistentLogAttributes,
           jsonReplacerFn: this.#jsonReplacerFn,
-          ...(this.#bufferOptions.enabled && {
+          ...(this.#bufferConfig.enabled && {
             logBufferOptions: {
-              maxBytes: this.#bufferOptions.maxBytes,
+              maxBytes: this.#bufferConfig.maxBytes,
               bufferAtVerbosity: this.getLogLevelNameFromNumber(
-                this.#bufferOptions.bufferAtVerbosity
+                this.#bufferConfig.bufferAtVerbosity
               ),
-              flushOnErrorLog: this.#bufferOptions.flushOnErrorLog,
+              flushOnErrorLog: this.#bufferConfig.flushOnErrorLog,
             },
           }),
         },
@@ -360,7 +360,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (this.#bufferOptions.enabled && this.#bufferOptions.flushOnErrorLog) {
+    if (this.#bufferConfig.enabled && this.#bufferConfig.flushOnErrorLog) {
       this.flushBuffer();
     }
     this.processLogItem(LogLevelThreshold.ERROR, input, extraInput);
@@ -1294,24 +1294,24 @@ class Logger extends Utility implements LoggerInterface {
       return;
     }
     // `enabled` is a boolean, so we set it to true if it's not explicitly set to false
-    this.#bufferOptions.enabled = options?.enabled !== false;
+    this.#bufferConfig.enabled = options?.enabled !== false;
     // if `enabled` is false, we don't need to set any other options
-    if (this.#bufferOptions.enabled === false) return;
+    if (this.#bufferConfig.enabled === false) return;
 
     if (options?.maxBytes !== undefined) {
-      this.#bufferOptions.maxBytes = options.maxBytes;
+      this.#bufferConfig.maxBytes = options.maxBytes;
     }
     this.#buffer = new CircularMap({
-      maxBytesSize: this.#bufferOptions.maxBytes,
+      maxBytesSize: this.#bufferConfig.maxBytes,
     });
 
     if (options?.flushOnErrorLog === false) {
-      this.#bufferOptions.flushOnErrorLog = false;
+      this.#bufferConfig.flushOnErrorLog = false;
     }
 
     const bufferAtLogLevel = options?.bufferAtVerbosity?.toUpperCase();
     if (this.isValidLogLevel(bufferAtLogLevel)) {
-      this.#bufferOptions.bufferAtVerbosity =
+      this.#bufferConfig.bufferAtVerbosity =
         LogLevelThreshold[bufferAtLogLevel];
     }
   }
@@ -1400,9 +1400,9 @@ class Logger extends Utility implements LoggerInterface {
     logLevel: number
   ): boolean {
     return (
-      this.#bufferOptions.enabled &&
+      this.#bufferConfig.enabled &&
       traceId !== undefined &&
-      logLevel <= this.#bufferOptions.bufferAtVerbosity
+      logLevel <= this.#bufferConfig.bufferAtVerbosity
     );
   }
 }

@@ -547,6 +547,167 @@ We prioritise log level settings in this order:
 
 In the event you have set a log level in Powertools to a level that is lower than the ACL setting, we will output a warning log message informing you that your messages will be discarded by Lambda.
 
+### Buffering logs
+
+Log buffering enables you to buffer logs for a specific request or invocation. Enable log buffering by passing `logBufferOptions` when initializing a Logger instance. You can buffer logs at the `WARNING`, `INFO`,  `DEBUG`, or `TRACE` level, and flush them automatically on error or manually as needed.
+
+!!! tip "This is useful when you want to reduce the number of log messages emitted while still having detailed logs when needed, such as when troubleshooting issues."
+
+=== "logBufferingGettingStarted.ts"
+
+    ```typescript hl_lines="4-7"
+    --8<-- "examples/snippets/logger/logBufferingGettingStarted.ts"
+    ```
+
+#### Configuring the buffer
+
+When configuring the buffer, you can set the following options to fine-tune how logs are captured, stored, and emitted. You can configure the following options in the `logBufferOptions` constructor parameter:
+
+| Parameter           | Description                                      | Configuration                       | Default |
+|-------------------- |------------------------------------------------- |------------------------------------ | ------- |
+| `enabled`           | Enable or disable log buffering                  | `true`, `false`                     | `false` |
+| `maxBytes`          | Maximum size of the log buffer in bytes          | `number`                            | 20480   |
+| `bufferAtVerbosity` | Minimum log level to buffer                      | `TRACE`, `DEBUG`, `INFO`, `WARNING` | `DEBUG` |
+| `flushOnErrorLog`   | Automatically flush buffer when logging an error | `true`, `false`                     | `true`  |
+
+=== "logBufferingBufferAtVerbosity.ts"
+
+    ```typescript hl_lines="5"
+    --8<-- "examples/snippets/logger/logBufferingBufferAtVerbosity.ts"
+    ```
+
+    1. Setting `bufferAtVerbosity: 'warn'` configures log buffering for `WARNING` and all lower severity levels like `INFO`, `DEBUG`, and `TRACE`.
+    2. Calling `logger.clearBuffer()` will clear the buffer without emitting the logs.
+
+=== "logBufferingflushOnErrorLog.ts"
+
+    ```typescript hl_lines="6"
+    --8<-- "examples/snippets/logger/logBufferingflushOnErrorLog.ts"
+    ```
+
+    1. Disabling `flushOnErrorLog` will not flush the buffer when logging an error. This is useful when you want to control when the buffer is flushed by calling the `logger.flushBuffer()` method.
+
+#### Flushing on errors
+
+When using the `logger.injectLambdaContext()` class method decorator or the `injectLambdaContext()` middleware, you can configure the logger to automatically flush the buffer when an error occurs. This is done by setting the `flushBufferOnUncaughtError` option to `true` in the decorator or middleware options.
+
+=== "logBufferingFlushOnErrorDecorator.ts"
+
+    ```typescript hl_lines="6 10-12"
+    --8<-- "examples/snippets/logger/logBufferingFlushOnErrorDecorator.ts"
+    ```
+
+=== "logBufferingFlushOnErrorMiddy.ts"
+
+    ```typescript hl_lines="6 11"
+    --8<-- "examples/snippets/logger/logBufferingFlushOnErrorMiddy.ts"
+    ```
+
+#### Buffering workflows
+
+##### Manual flush
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Logger
+    participant CloudWatch
+    Client->>Lambda: Invoke Lambda
+    Lambda->>Logger: Initialize with DEBUG level buffering
+    Logger-->>Lambda: Logger buffer ready
+    Lambda->>Logger: logger.debug("First debug log")
+    Logger-->>Logger: Buffer first debug log
+    Lambda->>Logger: logger.info("Info log")
+    Logger->>CloudWatch: Directly log info message
+    Lambda->>Logger: logger.debug("Second debug log")
+    Logger-->>Logger: Buffer second debug log
+    Lambda->>Logger: logger.flush_buffer()
+    Logger->>CloudWatch: Emit buffered logs to stdout
+    Lambda->>Client: Return execution result
+```
+<i>Flushing buffer manually</i>
+</center>
+
+##### Flushing when logging an error
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Logger
+    participant CloudWatch
+    Client->>Lambda: Invoke Lambda
+    Lambda->>Logger: Initialize with DEBUG level buffering
+    Logger-->>Lambda: Logger buffer ready
+    Lambda->>Logger: logger.debug("First log")
+    Logger-->>Logger: Buffer first debug log
+    Lambda->>Logger: logger.debug("Second log")
+    Logger-->>Logger: Buffer second debug log
+    Lambda->>Logger: logger.debug("Third log")
+    Logger-->>Logger: Buffer third debug log
+    Lambda->>Lambda: Exception occurs
+    Lambda->>Logger: logger.error("Error details")
+    Logger->>CloudWatch: Emit buffered debug logs
+    Logger->>CloudWatch: Emit error log
+    Lambda->>Client: Raise exception
+```
+<i>Flushing buffer when an error happens</i>
+</center>
+
+##### Flushing on error
+
+This works only when using the `logger.injectLambdaContext()` class method decorator or the `injectLambdaContext()` middleware. You can configure the logger to automatically flush the buffer when an error occurs by setting the `flushBufferOnUncaughtError` option to `true` in the decorator or middleware options.
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Logger
+    participant CloudWatch
+    Client->>Lambda: Invoke Lambda
+    Lambda->>Logger: Using decorator
+    Logger-->>Lambda: Logger context injected
+    Lambda->>Logger: logger.debug("First log")
+    Logger-->>Logger: Buffer first debug log
+    Lambda->>Logger: logger.debug("Second log")
+    Logger-->>Logger: Buffer second debug log
+    Lambda->>Lambda: Uncaught Exception
+    Lambda->>CloudWatch: Automatically emit buffered debug logs
+    Lambda->>Client: Raise uncaught exception
+```
+<i>Flushing buffer when an uncaught exception happens</i>
+</center>
+
+#### Buffering FAQs
+
+1. **Does the buffer persist across Lambda invocations?**
+   No, each Lambda invocation has its own buffer. The buffer is initialized when the Lambda function is invoked and is cleared after the function execution completes or when flushed manually.
+
+2. **Are my logs buffered during cold starts?**
+   No, we never buffer logs during cold starts. This is because we want to ensure that logs emitted during this phase are always available for debugging and monitoring purposes. The buffer is only used during the execution of the Lambda function.
+
+3. **How can I prevent log buffering from consuming excessive memory?**
+   You can limit the size of the buffer by setting the `maxBytes` option in the `logBufferOptions` constructor parameter. This will ensure that the buffer does not grow indefinitely and consume excessive memory.
+
+4. **What happens if the log buffer reaches its maximum size?**
+   Older logs are removed from the buffer to make room for new logs. This means that if the buffer is full, you may lose some logs if they are not flushed before the buffer reaches its maximum size. When this happens, we emit a warning when flushing the buffer to indicate that some logs have been dropped.
+
+5. **What timestamp is used when I flush the logs?**
+   The timestamp preserves the original time when the log record was created. If you create a log record at 11:00:10 and flush it at 11:00:25, the log line will retain its original timestamp of 11:00:10.
+
+6. **What happens if I try to add a log line that is bigger than max buffer size?**
+   The log will be emitted directly to standard output and not buffered. When this happens, we emit a warning to indicate that the log line was too big to be buffered.
+
+7. **What happens if Lambda times out without flushing the buffer?**
+   Logs that are still in the buffer will be lost. If you are using the log buffer to log asynchronously, you should ensure that the buffer is flushed before the Lambda function times out. You can do this by calling the `logger.flushBuffer()` method at the end of your Lambda function.
+
+8. **Do child loggers inherit the buffer?**
+   No, child loggers do not inherit the buffer from their parent logger but only the buffer configuration. This means that if you create a child logger, it will have its own buffer and will not share the buffer with the parent logger.
+
 ### Reordering log keys position
 
 You can change the order of [standard Logger keys](#standard-structured-keys) or any keys that will be appended later at runtime via the `logRecordOrder` parameter.
@@ -566,7 +727,7 @@ You can change the order of [standard Logger keys](#standard-structured-keys) or
     --8<-- "examples/snippets/logger/reorderLogKeysOutput.json"
     ```
 
-### Setting timestamp to custom Timezone
+### Setting timestamp to custom timezone
 
 By default, Logger emits records with the default Lambda timestamp in **UTC**, i.e. `2016-06-20T12:08:10.000Z`
 
@@ -586,7 +747,7 @@ If you prefer to log in a specific timezone, you can configure it by setting the
     --8<-- "examples/snippets/logger/customTimezoneOutput.json"
     ```
 
-### Using multiple Logger instances across your code
+### Creating child loggers
 
 The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [extra keys](#appending-additional-keys), and [the log formatter](#custom-log-formatter).
 
@@ -803,7 +964,7 @@ When working with custom log formatters, you take full control over the structur
 
 Note that when implementing this method, you should avoid mutating the `attributes` and `additionalLogAttributes` objects directly. Instead, create a new object with the desired structure and return it. If mutation is necessary, you can create a [`structuredClone`](https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone) of the object to avoid side effects.
 
-### Bring your own JSON serializer
+### Extend JSON replacer function
 
 You can extend the default JSON serializer by passing a custom serializer function to the `Logger` constructor, using the `jsonReplacerFn` option. This is useful when you want to customize the serialization of specific values.
 

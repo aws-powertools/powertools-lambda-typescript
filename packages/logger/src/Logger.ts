@@ -176,25 +176,35 @@ class Logger extends Utility implements LoggerInterface {
   #jsonReplacerFn?: CustomJsonReplacerFn;
 
   /**
-   * Represents whether the buffering functionality is enabled in the logger
+   * Buffer configuration options.
    */
-  protected isBufferEnabled = false;
-
-  /**
-   * Whether the buffer should be flushed when an error is logged
-   */
-  protected flushOnErrorLog = true;
-  /**
-   * Log level threshold for the buffer
-   * Logs with a level lower than this threshold will be buffered
-   * Default is DEBUG
-   */
-  protected bufferAtVerbosity: number = LogLevelThreshold.DEBUG;
-  /**
-   * Max size of the buffer. Additions to the buffer beyond this size will
-   * cause older logs to be evicted from the buffer
-   */
-  #maxBufferBytesSize = 20480;
+  #bufferOptions: {
+    /**
+     * Whether the buffer should is enabled
+     */
+    enabled: boolean;
+    /**
+     * Whether the buffer should be flushed when an error is logged
+     */
+    flushOnErrorLog: boolean;
+    /**
+     * Max size of the buffer. Additions to the buffer beyond this size will
+     * cause older logs to be evicted from the buffer
+     */
+    maxBytes: number;
+    /**
+     * Log level threshold for the buffer
+     * Logs with a level lower than this threshold will be buffered
+     * Default is DEBUG
+     * Can be specified as a number (LogLevelThreshold value) or a string (log level name)
+     */
+    bufferAtVerbosity: number;
+  } = {
+    enabled: false,
+    flushOnErrorLog: true,
+    maxBytes: 20480,
+    bufferAtVerbosity: LogLevelThreshold.DEBUG,
+  };
 
   /**
    * Contains buffered logs, grouped by `_X_AMZN_TRACE_ID`, each group with a max size of `maxBufferBytesSize`
@@ -295,8 +305,16 @@ class Logger extends Utility implements LoggerInterface {
           customConfigService: this.getCustomConfigService(),
           environment: this.powertoolsLogData.environment,
           persistentLogAttributes: this.persistentLogAttributes,
-          temporaryLogAttributes: this.temporaryLogAttributes,
           jsonReplacerFn: this.#jsonReplacerFn,
+          ...(this.#bufferOptions.enabled && {
+            logBufferOptions: {
+              maxBytes: this.#bufferOptions.maxBytes,
+              bufferAtVerbosity: this.getLogLevelNameFromNumber(
+                this.#bufferOptions.bufferAtVerbosity
+              ),
+              flushOnErrorLog: this.#bufferOptions.flushOnErrorLog,
+            },
+          }),
         },
         options
       )
@@ -305,6 +323,9 @@ class Logger extends Utility implements LoggerInterface {
       childLogger.addContext(
         this.powertoolsLogData.lambdaContext as unknown as Context
       );
+    if (this.temporaryLogAttributes) {
+      childLogger.appendKeys(this.temporaryLogAttributes);
+    }
 
     return childLogger;
   }
@@ -339,7 +360,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (this.isBufferEnabled && this.flushOnErrorLog) {
+    if (this.#bufferOptions.enabled && this.#bufferOptions.flushOnErrorLog) {
       this.flushBuffer();
     }
     this.processLogItem(LogLevelThreshold.ERROR, input, extraInput);
@@ -1273,24 +1294,25 @@ class Logger extends Utility implements LoggerInterface {
       return;
     }
     // `enabled` is a boolean, so we set it to true if it's not explicitly set to false
-    this.isBufferEnabled = options?.enabled !== false;
+    this.#bufferOptions.enabled = options?.enabled !== false;
     // if `enabled` is false, we don't need to set any other options
-    if (this.isBufferEnabled === false) return;
+    if (this.#bufferOptions.enabled === false) return;
 
     if (options?.maxBytes !== undefined) {
-      this.#maxBufferBytesSize = options.maxBytes;
+      this.#bufferOptions.maxBytes = options.maxBytes;
     }
     this.#buffer = new CircularMap({
-      maxBytesSize: this.#maxBufferBytesSize,
+      maxBytesSize: this.#bufferOptions.maxBytes,
     });
 
     if (options?.flushOnErrorLog === false) {
-      this.flushOnErrorLog = false;
+      this.#bufferOptions.flushOnErrorLog = false;
     }
 
     const bufferAtLogLevel = options?.bufferAtVerbosity?.toUpperCase();
     if (this.isValidLogLevel(bufferAtLogLevel)) {
-      this.bufferAtVerbosity = LogLevelThreshold[bufferAtLogLevel];
+      this.#bufferOptions.bufferAtVerbosity =
+        LogLevelThreshold[bufferAtLogLevel];
     }
   }
 
@@ -1378,9 +1400,9 @@ class Logger extends Utility implements LoggerInterface {
     logLevel: number
   ): boolean {
     return (
-      this.isBufferEnabled &&
+      this.#bufferOptions.enabled &&
       traceId !== undefined &&
-      logLevel <= this.bufferAtVerbosity
+      logLevel <= this.#bufferOptions.bufferAtVerbosity
     );
   }
 }

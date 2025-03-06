@@ -208,6 +208,23 @@ describe('Buffer logs', () => {
     expect(console.error).toBeCalledTimes(1);
   });
 
+  it('passes down the same buffer config to child loggers', () => {
+    // Prepare
+    const logger = new Logger({
+      logLevel: LogLevel.TRACE,
+      logBufferOptions: { enabled: true, bufferAtVerbosity: LogLevel.INFO },
+    });
+    const childLogger = logger.createChild();
+
+    // Assess
+    childLogger.debug('This is a log message');
+    childLogger.info('This is an info message');
+
+    // Assess
+    expect(console.debug).toBeCalledTimes(0);
+    expect(console.info).toBeCalledTimes(0);
+  });
+
   it.each([
     {
       handlerFactory: (logger: Logger) =>

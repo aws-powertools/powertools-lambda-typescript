@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
+
+
+### Bug Fixes
+
+* **batch:** clear message group references after request ([#3674](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3674)) ([270115e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/270115e288a552bdb32083f04f23530725a86243))
+* **ci:** Update layer balance scripts ([#3660](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3660)) ([aa14637](https://github.com/aws-powertools/powertools-lambda-typescript/commit/aa14637b0531b7a4a36d38158f684b68723c822e))
+* **parser:** envelope sub-path exports regression ([#3667](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3667)) ([beac102](https://github.com/aws-powertools/powertools-lambda-typescript/commit/beac1021107f4c117a561829b3b9ab1f404a4e14))
+* **parser:** update S3 Event Schema ([#3671](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3671)) ([c14c7b3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c14c7b3e7e1366379cd5062c91e09a62ddf7a42a))
+
+
+### Features
+
+* **logger:** Enable log buffering feature ([#3641](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3641)) ([8203016](https://github.com/aws-powertools/powertools-lambda-typescript/commit/82030167abe3797392b919db2b4a006ae47e0ef7))
+* **logger:** flush buffer on uncaught error decorator ([#3676](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3676)) ([28db2e3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/28db2e3c34e5fe27cb894112bf5c248704b3d9ea))
+* **logger:** Flush buffer on uncaught error in Middy middleware ([#3690](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3690)) ([23eebe4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/23eebe46bd4d07315545ecefa672d53d14ac9a72))
+* **logger:** refresh sample rate calculation before each invocation ([#3672](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3672)) ([8c8d6b2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8c8d6b2ea4ccd473f56b05913169cc5995765562))
+* **validation:** add [@validator](https://github.com/validator) decorator for JSON Schema validation ([#3679](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3679)) ([ae6b7cf](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ae6b7cf9dae3e1d233b9c51ca1e1dc04b26efa9a))
+* **validation:** Add Middy.js middleware for JSON Schema validation ([#3694](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3694)) ([443202b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/443202bad2672ff26cc8237f417b8bf14bbd02d9))
+* **validation:** implement validate function ([#3662](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3662)) ([f55127b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f55127b7f894b5c673e739da06cbaabe12d0d1ca))
+
+
+
+
+
 # [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
 
 

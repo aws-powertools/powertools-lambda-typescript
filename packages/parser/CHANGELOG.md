@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
+
+
+### Bug Fixes
+
+* **parser:** envelope sub-path exports regression ([#3667](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3667)) ([beac102](https://github.com/aws-powertools/powertools-lambda-typescript/commit/beac1021107f4c117a561829b3b9ab1f404a4e14))
+* **parser:** update S3 Event Schema ([#3671](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3671)) ([c14c7b3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c14c7b3e7e1366379cd5062c91e09a62ddf7a42a))
+
+
+
+
+
 # [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
 
 

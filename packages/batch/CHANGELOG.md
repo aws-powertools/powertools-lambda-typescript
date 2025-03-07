@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
+
+
+### Bug Fixes
+
+* **batch:** clear message group references after request ([#3674](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3674)) ([270115e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/270115e288a552bdb32083f04f23530725a86243))
+
+
+
+
+
 # [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
 
 **Note:** Version bump only for package @aws-lambda-powertools/batch

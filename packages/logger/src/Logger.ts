@@ -41,10 +41,12 @@ import type {
  * The Logger utility provides an opinionated logger with output structured as JSON for AWS Lambda.
  *
  * **Key features**
- * * Capture key fields from AWS Lambda context, cold start, and structure log output as JSON
- * * Append additional keys to one or all log items
- * * Switch log level to `DEBUG` based on a sample rate value for a percentage of invocations
- * * Ability to buffer logs in memory and flush them when there's an error
+ * Capturing key fields from the Lambda context, cold starts, and structure logging output as JSON.
+ * Logging Lambda invocation events when instructed (disabled by default).
+ * Switch log level to `DEBUG` for a percentage of invocations (sampling).
+ * Buffering logs for a specific request or invocation, and flushing them automatically on error or manually as needed.
+ * Appending additional keys to structured logs at any point in time.
+ * Providing a custom log formatter (Bring Your Own Formatter) to output logs in a structure compatible with your organization’s Logging RFC.
  *
  * After initializing the Logger class, you can use the methods to log messages at different levels.
  *
@@ -176,25 +178,35 @@ class Logger extends Utility implements LoggerInterface {
   #jsonReplacerFn?: CustomJsonReplacerFn;
 
   /**
-   * Represents whether the buffering functionality is enabled in the logger
+   * Buffer configuration options.
    */
-  protected isBufferEnabled = false;
-
-  /**
-   * Whether the buffer should be flushed when an error is logged
-   */
-  protected flushOnErrorLog = true;
-  /**
-   * Log level threshold for the buffer
-   * Logs with a level lower than this threshold will be buffered
-   * Default is DEBUG
-   */
-  protected bufferAtVerbosity: number = LogLevelThreshold.DEBUG;
-  /**
-   * Max size of the buffer. Additions to the buffer beyond this size will
-   * cause older logs to be evicted from the buffer
-   */
-  #maxBufferBytesSize = 20480;
+  readonly #bufferConfig: {
+    /**
+     * Whether the buffer should is enabled
+     */
+    enabled: boolean;
+    /**
+     * Whether the buffer should be flushed when an error is logged
+     */
+    flushOnErrorLog: boolean;
+    /**
+     * Max size of the buffer. Additions to the buffer beyond this size will
+     * cause older logs to be evicted from the buffer
+     */
+    maxBytes: number;
+    /**
+     * Log level threshold for the buffer
+     * Logs with a level lower than this threshold will be buffered
+     * Default is DEBUG
+     * Can be specified as a number (LogLevelThreshold value) or a string (log level name)
+     */
+    bufferAtVerbosity: number;
+  } = {
+    enabled: false,
+    flushOnErrorLog: true,
+    maxBytes: 20480,
+    bufferAtVerbosity: LogLevelThreshold.DEBUG,
+  };
 
   /**
    * Contains buffered logs, grouped by `_X_AMZN_TRACE_ID`, each group with a max size of `maxBufferBytesSize`
@@ -295,8 +307,16 @@ class Logger extends Utility implements LoggerInterface {
           customConfigService: this.getCustomConfigService(),
           environment: this.powertoolsLogData.environment,
           persistentLogAttributes: this.persistentLogAttributes,
-          temporaryLogAttributes: this.temporaryLogAttributes,
           jsonReplacerFn: this.#jsonReplacerFn,
+          ...(this.#bufferConfig.enabled && {
+            logBufferOptions: {
+              maxBytes: this.#bufferConfig.maxBytes,
+              bufferAtVerbosity: this.getLogLevelNameFromNumber(
+                this.#bufferConfig.bufferAtVerbosity
+              ),
+              flushOnErrorLog: this.#bufferConfig.flushOnErrorLog,
+            },
+          }),
         },
         options
       )
@@ -305,6 +325,9 @@ class Logger extends Utility implements LoggerInterface {
       childLogger.addContext(
         this.powertoolsLogData.lambdaContext as unknown as Context
       );
+    if (this.temporaryLogAttributes) {
+      childLogger.appendKeys(this.temporaryLogAttributes);
+    }
 
     return childLogger;
   }
@@ -339,7 +362,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (this.isBufferEnabled && this.flushOnErrorLog) {
+    if (this.#bufferConfig.enabled && this.#bufferConfig.flushOnErrorLog) {
       this.flushBuffer();
     }
     this.processLogItem(LogLevelThreshold.ERROR, input, extraInput);
@@ -994,18 +1017,6 @@ class Logger extends Utility implements LoggerInterface {
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): void {
-    if (logLevel >= this.logLevel) {
-      if (this.#isInitialized) {
-        this.printLog(
-          logLevel,
-          this.createAndPopulateLogItem(logLevel, input, extraInput)
-        );
-      } else {
-        this.#initBuffer.push([logLevel, [logLevel, input, extraInput]]);
-      }
-      return;
-    }
-
     const traceId = this.envVarsService.getXrayTraceId();
     if (traceId !== undefined && this.shouldBufferLog(traceId, logLevel)) {
       try {
@@ -1028,6 +1039,19 @@ class Logger extends Utility implements LoggerInterface {
           logLevel,
           this.createAndPopulateLogItem(logLevel, input, extraInput)
         );
+      }
+
+      return;
+    }
+
+    if (logLevel >= this.logLevel) {
+      if (this.#isInitialized) {
+        this.printLog(
+          logLevel,
+          this.createAndPopulateLogItem(logLevel, input, extraInput)
+        );
+      } else {
+        this.#initBuffer.push([logLevel, [logLevel, input, extraInput]]);
       }
     }
   }
@@ -1230,10 +1254,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setConsole();
     this.setLogIndentation();
     this.#jsonReplacerFn = jsonReplacerFn;
-
-    if (logBufferOptions !== undefined) {
-      this.#setLogBuffering(logBufferOptions);
-    }
+    this.#setLogBuffering(logBufferOptions);
 
     return this;
   }
@@ -1270,32 +1291,30 @@ class Logger extends Utility implements LoggerInterface {
    *
    * @param options - Options to configure the Logger instance
    */
-  #setLogBuffering(
-    options: NonNullable<ConstructorOptions['logBufferOptions']>
-  ) {
-    if (options.maxBytes !== undefined) {
-      this.#maxBufferBytesSize = options.maxBytes;
+  #setLogBuffering(options?: ConstructorOptions['logBufferOptions']) {
+    if (options === undefined) {
+      return;
     }
+    // `enabled` is a boolean, so we set it to true if it's not explicitly set to false
+    this.#bufferConfig.enabled = options?.enabled !== false;
+    // if `enabled` is false, we don't need to set any other options
+    if (this.#bufferConfig.enabled === false) return;
 
+    if (options?.maxBytes !== undefined) {
+      this.#bufferConfig.maxBytes = options.maxBytes;
+    }
     this.#buffer = new CircularMap({
-      maxBytesSize: this.#maxBufferBytesSize,
+      maxBytesSize: this.#bufferConfig.maxBytes,
     });
 
-    if (options.enabled === false) {
-      this.isBufferEnabled = false;
-    } else {
-      this.isBufferEnabled = true;
+    if (options?.flushOnErrorLog === false) {
+      this.#bufferConfig.flushOnErrorLog = false;
     }
 
-    if (options.flushOnErrorLog === false) {
-      this.flushOnErrorLog = false;
-    } else {
-      this.flushOnErrorLog = true;
-    }
-    const bufferAtLogLevel = options.bufferAtVerbosity?.toUpperCase();
-
+    const bufferAtLogLevel = options?.bufferAtVerbosity?.toUpperCase();
     if (this.isValidLogLevel(bufferAtLogLevel)) {
-      this.bufferAtVerbosity = LogLevelThreshold[bufferAtLogLevel];
+      this.#bufferConfig.bufferAtVerbosity =
+        LogLevelThreshold[bufferAtLogLevel];
     }
   }
 
@@ -1341,12 +1360,9 @@ class Logger extends Utility implements LoggerInterface {
     }
 
     for (const item of buffer) {
-      const consoleMethod =
-        item.logLevel === LogLevelThreshold.CRITICAL
-          ? 'error'
-          : (this.getLogLevelNameFromNumber(
-              item.logLevel
-            ).toLowerCase() as keyof Omit<LogFunction, 'critical'>);
+      const consoleMethod = this.getLogLevelNameFromNumber(
+        item.logLevel
+      ).toLowerCase() as keyof Omit<LogFunction, 'critical'>;
       this.console[consoleMethod](item.value);
     }
     if (buffer.hasEvictedLog) {
@@ -1369,11 +1385,9 @@ class Logger extends Utility implements LoggerInterface {
    */
   public clearBuffer(): void {
     const traceId = this.envVarsService.getXrayTraceId();
-
     if (traceId === undefined) {
       return;
     }
-
     this.#buffer?.delete(traceId);
   }
 
@@ -1388,9 +1402,9 @@ class Logger extends Utility implements LoggerInterface {
     logLevel: number
   ): boolean {
     return (
-      this.isBufferEnabled &&
+      this.#bufferConfig.enabled &&
       traceId !== undefined &&
-      logLevel <= this.bufferAtVerbosity
+      logLevel <= this.#bufferConfig.bufferAtVerbosity
     );
   }
 }

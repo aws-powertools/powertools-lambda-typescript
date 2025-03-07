@@ -213,7 +213,7 @@ Logger `sampleRateValue` **continues** to determine the percentage of concurrent
 
 ### Custom log formatter
 
-!!! note "Disregard if you are not customizing log output with a [custom log formatter](./core/logger.md#custom-log-formatter-bring-your-own-formatter)."
+!!! note "Disregard if you are not customizing log output with a [custom log formatter](./core/logger.md#custom-log-formatter)."
 
 In v1, `Logger` exposed the [standard](./core/logger.md#standard-structured-keys) as a single argument, _e.g., `formatAttributes(attributes: UnformattedAttributes)`_. It expected a plain object with keys and values you wanted in the final log output.
 

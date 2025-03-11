@@ -18,7 +18,7 @@
     "test:e2e": "echo \"Not implemented\"",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
-    "build": "echo \"Not implemented\"",
+    "build": "npm run build:esm & npm run build:cjs",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
@@ -29,12 +29,42 @@
   "exports": {
     ".": {
       "require": {
-        "types": "./lib/cjs/index.d.ts",
-        "default": "./lib/cjs/index.js"
+        "types": "./lib/cjs/indvalidateex.d.ts",
+        "default": "./lib/cjs/validate.js"
       },
       "import": {
-        "types": "./lib/esm/index.d.ts",
-        "default": "./lib/esm/index.js"
+        "types": "./lib/esm/validate.d.ts",
+        "default": "./lib/esm/validate.js"
+      }
+    },
+    "./middleware": {
+      "require": {
+        "types": "./lib/cjs/middleware.d.ts",
+        "default": "./lib/cjs/middleware.js"
+      },
+      "import": {
+        "types": "./lib/esm/middleware.d.ts",
+        "default": "./lib/esm/middleware.js"
+      }
+    },
+    "./errors": {
+      "require": {
+        "types": "./lib/cjs/errors.d.ts",
+        "default": "./lib/cjs/errors.js"
+      },
+      "import": {
+        "types": "./lib/esm/errors.d.ts",
+        "default": "./lib/esm/errors.js"
+      }
+    },
+    "./decorator": {
+      "require": {
+        "types": "./lib/cjs/decorator.d.ts",
+        "default": "./lib/cjs/decorator.js"
+      },
+      "import": {
+        "types": "./lib/esm/decorator.d.ts",
+        "default": "./lib/esm/decorator.js"
       }
     }
   },

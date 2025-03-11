@@ -1,7 +1,56 @@
 import { SchemaValidationError } from './errors.js';
 import type { ValidatorOptions } from './types.js';
 import { validate } from './validate.js';
-export function validator(options: ValidatorOptions) {
+
+/**
+ * Class method decorator to validate the input and output of a method using JSON Schema.
+ *
+ * @example
+ * ```typescript
+ * import { validator } from '@aws-lambda-powertools/validation/decorator';
+ * import type { Context } from 'aws-lambda';
+ *
+ * const inboundSchema = {
+ *   type: 'object',
+ *   properties: {
+ *     value: { type: 'number' },
+ *   },
+ *   required: ['value'],
+ *   additionalProperties: false,
+ * };
+ *
+ * const outboundSchema = {
+ *   type: 'object',
+ *   properties: {
+ *     result: { type: 'number' },
+ *   },
+ *   required: ['result'],
+ *   additionalProperties: false,
+ * };
+ *
+ * class Lambda {
+ *   ⁣@validator({
+ *     inboundSchema,
+ *     outboundSchema,
+ *   })
+ *   async handler(event: { value: number }, _context: Context) {
+ *     // Your handler logic here
+ *     return { result: event.value * 2 };
+ *   }
+ * }
+ *
+ * const lambda = new Lambda();
+ * export const handler = lambda.handler.bind(lambda);
+ * ```
+ *
+ * @param options.inboundSchema - The JSON schema for inbound validation.
+ * @param options.outboundSchema - The JSON schema for outbound validation.
+ * @param options.envelope - Optional JMESPath expression to use as envelope for the payload.
+ * @param options.formats - Optional formats for validation.
+ * @param options.externalRefs - Optional external references for validation.
+ * @param options.ajv - Optional Ajv instance to use for validation, if not provided a new instance will be created.
+ */
+function validator(options: ValidatorOptions) {
   return (
     _target: unknown,
     _propertyKey: string | symbol,
@@ -35,7 +84,9 @@ export function validator(options: ValidatorOptions) {
             ajv: ajv,
           });
         } catch (error) {
-          throw new SchemaValidationError('Inbound validation failed', error);
+          throw new SchemaValidationError('Inbound validation failed', {
+            cause: error,
+          });
         }
       }
       const result = await originalMethod.apply(this, [
@@ -52,7 +103,9 @@ export function validator(options: ValidatorOptions) {
             ajv: ajv,
           });
         } catch (error) {
-          throw new SchemaValidationError('Outbound Validation failed', error);
+          throw new SchemaValidationError('Outbound Validation failed', {
+            cause: error,
+          });
         }
       }
       return result;
@@ -60,3 +113,5 @@ export function validator(options: ValidatorOptions) {
     return descriptor;
   };
 }
+
+export { validator };

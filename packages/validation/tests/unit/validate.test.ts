@@ -1,6 +1,9 @@
 import Ajv from 'ajv';
 import { describe, expect, it } from 'vitest';
-import { SchemaValidationError } from '../../src/errors.js';
+import {
+  SchemaCompilationError,
+  SchemaValidationError,
+} from '../../src/errors.js';
 import type { ValidateParams } from '../../src/types.js';
 import { validate } from '../../src/validate.js';
 
@@ -17,8 +20,7 @@ describe('validate function', () => {
       required: ['name', 'age'],
       additionalProperties: false,
     };
-
-    const params: ValidateParams<typeof payload> = { payload, schema };
+    const params: ValidateParams = { payload, schema };
 
     // Act
     const result = validate<typeof payload>(params);
@@ -149,7 +151,7 @@ describe('validate function', () => {
     expect(result).toEqual(payload);
   });
 
-  it('throws SchemaValidationError when schema compilation fails', () => {
+  it('throws the correct error when schema compilation fails', () => {
     // Prepare
     const payload = { name: 'John' };
     const schema = {
@@ -162,6 +164,6 @@ describe('validate function', () => {
     const params: ValidateParams = { payload, schema };
 
     // Act & Assess
-    expect(() => validate(params)).toThrow(SchemaValidationError);
+    expect(() => validate(params)).toThrow(SchemaCompilationError);
   });
 });

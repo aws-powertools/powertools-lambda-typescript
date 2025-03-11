@@ -1,9 +1,18 @@
 import { search } from '@aws-lambda-powertools/jmespath';
 import { Ajv, type ValidateFunction } from 'ajv';
-import { SchemaValidationError } from './errors.js';
+import { SchemaCompilationError, SchemaValidationError } from './errors.js';
 import type { ValidateParams } from './types.js';
 
-export function validate<T = unknown>(params: ValidateParams): T {
+/**
+ *
+ * @param params.payload - The payload to validate.
+ * @param params.schema - The JSON schema to validate against.
+ * @param params.envelope - Optional JMESPath expression to use as envelope for the payload.
+ * @param params.formats - Optional formats for validation.
+ * @param params.externalRefs - Optional external references for validation.
+ * @param params.ajv - Optional Ajv instance to use for validation, if not provided a new instance will be created.
+ */
+const validate = <T = unknown>(params: ValidateParams): T => {
   const { payload, schema, envelope, formats, externalRefs, ajv } = params;
   const ajvInstance = ajv || new Ajv({ allErrors: true });
 
@@ -23,7 +32,9 @@ export function validate<T = unknown>(params: ValidateParams): T {
   try {
     validateFn = ajvInstance.compile(schema);
   } catch (error) {
-    throw new SchemaValidationError('Failed to compile schema', error);
+    throw new SchemaCompilationError('Failed to compile schema', {
+      cause: error,
+    });
   }
 
   const trimmedEnvelope = envelope?.trim();
@@ -33,11 +44,12 @@ export function validate<T = unknown>(params: ValidateParams): T {
 
   const valid = validateFn(dataToValidate);
   if (!valid) {
-    throw new SchemaValidationError(
-      'Schema validation failed',
-      validateFn.errors
-    );
+    throw new SchemaValidationError('Schema validation failed', {
+      cause: validateFn.errors,
+    });
   }
 
   return dataToValidate as T;
-}
+};
+
+export { validate };

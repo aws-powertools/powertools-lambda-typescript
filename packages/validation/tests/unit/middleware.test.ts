@@ -2,7 +2,7 @@ import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { SchemaValidationError } from '../../src/errors.js';
-import { validation } from '../../src/middleware.js';
+import { validator } from '../../src/middleware.js';
 
 const inboundSchema = {
   type: 'object',
@@ -28,11 +28,11 @@ const baseHandler = async (event: { inputValue: unknown }) => {
   };
 };
 
-describe('Middleware: validation', () => {
+describe('Middleware: validator', () => {
   it('validates both inbound and outbound successfully', async () => {
     // Prepare
     const handler = middy(baseHandler).use(
-      validation({ inboundSchema, outboundSchema })
+      validator({ inboundSchema, outboundSchema })
     );
 
     // Act
@@ -44,7 +44,7 @@ describe('Middleware: validation', () => {
 
   it('throws an error on inbound validation failure', async () => {
     // Prepare
-    const handler = middy(baseHandler).use(validation({ inboundSchema }));
+    const handler = middy(baseHandler).use(validator({ inboundSchema }));
 
     // Act & Assess
     await expect(
@@ -64,7 +64,7 @@ describe('Middleware: validation', () => {
   it('throws an error on outbound validation failure', async () => {
     const handler = middy(() => {
       return 'invalid output';
-    }).use(validation({ outboundSchema }));
+    }).use(validator({ outboundSchema }));
 
     // Act & Assess
     await expect(handler({ inputValue: 10 }, {} as Context)).rejects.toThrow(
@@ -81,7 +81,7 @@ describe('Middleware: validation', () => {
 
   it('skips validation when no schemas are provided', async () => {
     // Prepare
-    const handler = middy(baseHandler).use(validation({}));
+    const handler = middy(baseHandler).use(validator({}));
 
     // Act
     const result = await handler({ inputValue: 'bar' }, {} as Context);

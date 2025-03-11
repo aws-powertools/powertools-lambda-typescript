@@ -43,6 +43,91 @@ import { validate } from './validate.js';
  * export const handler = lambda.handler.bind(lambda);
  * ```
  *
+ * When validating nested payloads, you can also provide an optional JMESPath expression to extract a specific part of the payload
+ * before validation using the `envelope` parameter. This is useful when the payload is nested or when you want to validate only a specific part of it.
+ *
+ * @example
+ * ```typescript
+ * import { validator } from '@aws-lambda-powertools/validation/decorator';
+ *
+ * class Lambda {
+ *   ⁣@validator({
+ *     inboundSchema: {
+ *       type: 'number',
+ *     },
+ *     envelope: 'nested',
+ *   })
+ *   async handler(event: number, _context: Context) {
+ *     return { result: event * 2 };
+ *   }
+ * }
+ *
+ * const lambda = new Lambda();
+ * export const handler = lambda.handler.bind(lambda);
+ * ```
+ *
+ * Since the Validation utility is built on top of Ajv, you can also provide custom formats and external references
+ * to the validation process. This allows you to extend the validation capabilities of Ajv to suit your specific needs.
+ *
+ * @example
+ * ```typescript
+ * import { validate } from '@aws-lambda-powertools/validation';
+ *
+ * const formats = {
+ *   ageRange: (value: number) => return value >= 0 && value <= 120,
+ * };
+ *
+ * const definitionSchema = {
+ *   $id: 'https://example.com/schemas/definitions.json',
+ *   definitions: {
+ *     user: {
+ *       type: 'object',
+ *       properties: {
+ *         name: { type: 'string' },
+ *         age: { type: 'number', format: 'ageRange' },
+ *       },
+ *       required: ['name', 'age'],
+ *       additionalProperties: false,
+ *     }
+ *   }
+ * } as const;
+ *
+ * const schema = {
+ *   $id: 'https://example.com/schemas/user.json',
+ *   type: 'object',
+ *   properties: {
+ *     user: { $ref: 'definitions.json#/definitions/user' },
+ *   },
+ *   required: ['user'],
+ *   additionalProperties: false,
+ * } as const;
+ *
+ * const payload = {
+ *   user: {
+ *     name: 'Alice',
+ *     age: 25,
+ *   },
+ * };
+ *
+ * class Lambda {
+ *   ⁣@validator({
+ *     inboundSchema: schema,
+ *     externalRefs: [definitionSchema],
+ *     formats,
+ *   })
+ *   async handler(event: { value: number }, _context: Context) {
+ *     // Your handler logic here
+ *     return { result: event.value * 2 };
+ *   }
+ * }
+ *
+ * const lambda = new Lambda();
+ * export const handler = lambda.handler.bind(lambda);
+ * ```
+ *
+ * Additionally, you can provide an existing Ajv instance to reuse the same instance across multiple validations. If
+ * you don't provide an Ajv instance, a new one will be created for each validation.
+ *
  * @param options.inboundSchema - The JSON schema for inbound validation.
  * @param options.outboundSchema - The JSON schema for outbound validation.
  * @param options.envelope - Optional JMESPath expression to use as envelope for the payload.

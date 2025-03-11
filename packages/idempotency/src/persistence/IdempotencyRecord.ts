@@ -5,6 +5,7 @@ import type {
   IdempotencyRecordOptions,
   IdempotencyRecordStatusValue,
 } from '../types/IdempotencyRecord.js';
+import type { DynamoDBPersistenceLayer } from './DynamoDBPersistenceLayer.js';
 
 /**
  * Class representing an idempotency record.
@@ -19,6 +20,10 @@ class IdempotencyRecord {
    * The idempotency key of the record that is used to identify the record.
    */
   public idempotencyKey: string;
+  /**
+   * An optional sort key that can be used with the {@link DynamoDBPersistenceLayer | `DynamoDBPersistenceLayer`}.
+   */
+  public sortKey?: string;
   /**
    * The expiry timestamp of the in progress record in milliseconds UTC.
    */
@@ -46,6 +51,7 @@ class IdempotencyRecord {
     this.responseData = config.responseData;
     this.payloadHash = config.payloadHash;
     this.status = config.status;
+    this.sortKey = config.sortKey;
   }
 
   /**

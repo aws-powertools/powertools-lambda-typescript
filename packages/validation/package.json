@@ -6,7 +6,6 @@
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
-  "private": true,
   "scripts": {
     "test": "vitest --run",
     "test:unit": "vitest --run",
@@ -29,7 +28,7 @@
   "exports": {
     ".": {
       "require": {
-        "types": "./lib/cjs/indvalidateex.d.ts",
+        "types": "./lib/cjs/validate.d.ts",
         "default": "./lib/cjs/validate.js"
       },
       "import": {

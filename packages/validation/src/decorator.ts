@@ -141,9 +141,6 @@ function validator(options: ValidatorOptions) {
     _propertyKey: string | symbol,
     descriptor: PropertyDescriptor
   ) => {
-    if (!descriptor.value) {
-      return descriptor;
-    }
     const {
       inboundSchema,
       outboundSchema,

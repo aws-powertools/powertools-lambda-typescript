@@ -122,6 +122,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
 
     return new IdempotencyRecord({
       idempotencyKey: item[this.keyAttr],
+      sortKey: this.sortKeyAttr && item[this.sortKeyAttr],
       status: item[this.statusAttr],
       expiryTimestamp: item[this.expiryAttr],
       inProgressExpiryTimestamp: item[this.inProgressExpiryAttr],
@@ -207,6 +208,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
           item &&
           new IdempotencyRecord({
             idempotencyKey: item[this.keyAttr],
+            sortKey: this.sortKeyAttr && item[this.sortKeyAttr],
             status: item[this.statusAttr],
             expiryTimestamp: item[this.expiryAttr],
             inProgressExpiryTimestamp: item[this.inProgressExpiryAttr],
@@ -214,7 +216,9 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
             payloadHash: item[this.validationKeyAttr],
           });
         throw new IdempotencyItemAlreadyExistsError(
-          `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
+          `Failed to put record for already existing idempotency key: ${record.idempotencyKey}${
+            this.sortKeyAttr ? ` and sort key: ${record.sortKey}` : ''
+          }`,
           idempotencyRecord
         );
       }

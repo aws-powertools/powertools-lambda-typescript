@@ -120,7 +120,11 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         );
       }
       throw new IdempotencyAlreadyInProgressError(
-        `There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}`
+        `There is already an execution in progress with idempotency key: ${idempotencyRecord.idempotencyKey}${
+          idempotencyRecord.sortKey
+            ? ` and sort key: ${idempotencyRecord.sortKey}`
+            : ''
+        }`
       );
     }
 

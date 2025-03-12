@@ -77,22 +77,23 @@ describe('validate function', () => {
 
   it('uses provided ajv instance and custom formats', () => {
     // Prepare
-    const payload = { email: 'test@example.com' };
+    const payload = { email: 'test@example.com', region: 'us-east-1' };
     const schema = {
       type: 'object',
       properties: {
         email: { type: 'string', format: 'custom-email' },
+        region: { type: 'string', format: 'allowedRegions' },
       },
-      required: ['email'],
+      required: ['email', 'region'],
       additionalProperties: false,
     };
 
     const ajvInstance = new Ajv({ allErrors: true });
     const formats = {
       'custom-email': {
-        type: 'string',
         validate: (email: string) => email.includes('@'),
       },
+      allowedRegions: /^(us-east-1|us-west-1|)$/,
     };
 
     const params: ValidateParams = {

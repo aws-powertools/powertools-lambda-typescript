@@ -2,6 +2,7 @@ import type {
   Ajv,
   AnySchema,
   AsyncFormatDefinition,
+  Format,
   FormatDefinition,
 } from 'ajv';
 
@@ -37,17 +38,18 @@ type ValidateParams = {
    */
   formats?: Record<
     string,
-    | string
+    Format
+    /* | string
     | RegExp
     | FormatDefinition<string>
     | FormatDefinition<number>
     | AsyncFormatDefinition<string>
-    | AsyncFormatDefinition<number>
+    | AsyncFormatDefinition<number> */
   >;
   /**
    * Optional external references for validation.
    */
-  externalRefs?: object[];
+  externalRefs?: AnySchema | AnySchema[];
   /**
    * Optional Ajv instance to use for validation, if not provided a new instance will be created.
    */
@@ -64,17 +66,15 @@ type ValidateParams = {
  * @param externalRefs - Optional external references for validation.
  * @param ajv - Optional Ajv instance to use for validation, if not provided a new instance will be created.
  */
-type ValidatorOptions = Prettify<
-  Omit<ValidateParams, 'payload' | 'schema'> & {
-    /**
-     * The JSON schema for inbound validation.
-     */
-    inboundSchema?: AnySchema;
-    /**
-     * The JSON schema for outbound validation.
-     */
-    outboundSchema?: AnySchema;
-  }
->;
+interface ValidatorOptions extends Omit<ValidateParams, 'payload' | 'schema'> {
+  /**
+   * The JSON schema for inbound validation.
+   */
+  inboundSchema?: AnySchema;
+  /**
+   * The JSON schema for outbound validation.
+   */
+  outboundSchema?: AnySchema;
+}
 
 export type { ValidateParams, ValidatorOptions };

@@ -7,7 +7,7 @@ Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serve
 To get started, install the package by running:
 
 ```sh
-npm i @aws-lambda-powertools/validation ajv@~8
+npm i @aws-lambda-powertools/validation
 ```
 
 ## Features
@@ -18,7 +18,7 @@ You can also use the standalone `validate` function, if you want more control ov
 
 ### Validator decorator
 
-The @validator decorator is a class method decorator that you can use to validate both the incoming event and the response payload.
+The `@validator` decorator is a TypeScript class method decorator that you can use to validate both the incoming event and the response payload.
 
 If the validation fails, we will throw a `SchemaValidationError`.
 
@@ -63,7 +63,7 @@ It's not mandatory to validate both the inbound and outbound payloads. You can e
 
 ### Validator middleware
 
-If you are using Middy.js, you can use the `validator` middleware to validate the incoming event and response payload.
+If you are using Middy.js, you can instead use the `validator` middleware to validate the incoming event and response payload.
 
 ```typescript
 import { validator } from '@aws-lambda-powertools/validation/middleware';
@@ -95,11 +95,13 @@ export const handler = middy()
   });
 ```
 
+Like the `@validator` decorator, you can choose to validate only the inbound or outbound payload.
+
 ### Standalone validate function
 
-The `validate` function gives you more control over the validation process, and is typically used within the Lambda handler, or any other function that performs validation.
+The `validate` function gives you more control over the validation process, and is typically used within the Lambda handler, or any other function that needs to validate data.
 
-You can also gracefully handle schema validation errors by catching `SchemaValidationError` errors.
+When using the standalone function, you can gracefully handle schema validation errors by catching `SchemaValidationError` errors.
 
 ```typescript
 import { validate } from '@aws-lambda-powertools/validation';
@@ -141,9 +143,9 @@ export const handler = async (event: unknown) => {
 
 ### JMESPath support
 
-In some cases you might want to validate only a portion of the event payload - this is what the envelope option is for.
+In some cases you might want to validate only a portion of the event payload - this is what the `envelope` option is for.
 
-You can use JMESPath to specify the path to the property you want to validate. The validator will unwrap the event before validating it.
+You can use JMESPath expressions to specify the path to the property you want to validate. The validator will unwrap the event before validating it.
 
 ```typescript
 import { validate } from '@aws-lambda-powertools/validation';
@@ -172,7 +174,7 @@ const validatedData = validate({
 
 ### Extending the validator
 
-Since the validator is built on top of [Ajv](https://ajv.js.org/), you can extend the validator with custom formats and external schemas, as well as bringing your own `ajv` instance.
+Since the validator is built on top of [Ajv](https://ajv.js.org/), you can extend it with custom formats and external schemas, as well as bringing your own `ajv` instance.
 
 The example below shows how to pass additional options to the `validate` function, but you can also pass them to the `@validator` decorator and `validator` middleware.
 
@@ -222,6 +224,8 @@ const validatedData = validate({
   formats,
 });
 ```
+
+For more information on how to use the `validate` function, please refer to the [documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/validation).
 
 ## Contribute
 

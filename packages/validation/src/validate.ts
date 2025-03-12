@@ -129,9 +129,7 @@ const validate = <T = unknown>(params: ValidateParams): T => {
   }
 
   if (externalRefs) {
-    for (const refSchema of externalRefs) {
-      ajvInstance.addSchema(refSchema);
-    }
+    ajvInstance.addSchema(externalRefs);
   }
 
   let validateFn: ValidateFunction;

@@ -128,6 +128,7 @@ import { validate } from './validate.js';
  * Additionally, you can provide an existing Ajv instance to reuse the same instance across multiple validations. If
  * you don't provide an Ajv instance, a new one will be created for each validation.
  *
+ * @param options - The validation options
  * @param options.inboundSchema - The JSON schema for inbound validation.
  * @param options.outboundSchema - The JSON schema for outbound validation.
  * @param options.envelope - Optional JMESPath expression to use as envelope for the payload.
@@ -149,7 +150,7 @@ function validator(options: ValidatorOptions) {
       externalRefs,
       ajv,
     } = options;
-    if (!inboundSchema && !outboundSchema) {
+    if (!options.inboundSchema && !outboundSchema) {
       return descriptor;
     }
     const originalMethod = descriptor.value;

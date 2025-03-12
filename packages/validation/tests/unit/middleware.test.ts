@@ -1,7 +1,8 @@
 import middy from '@middy/core';
+import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { SchemaValidationError } from '../../src/errors.js';
-import { validation } from '../../src/middleware.js';
+import { validator } from '../../src/middleware.js';
 
 const inboundSchema = {
   type: 'object',
@@ -21,53 +22,71 @@ const outboundSchema = {
   additionalProperties: false,
 };
 
-const response = { outputValue: 20 };
-const baseHandler = async (event: unknown) => {
-  return response;
+const baseHandler = async (event: { inputValue: unknown }) => {
+  return {
+    outputValue: event.inputValue,
+  };
 };
 
-describe('validation middleware with Middy', () => {
-  it('should validate inbound and outbound successfully', async () => {
+describe('Middleware: validator', () => {
+  it('validates both inbound and outbound successfully', async () => {
     // Prepare
-    const middleware = validation({ inboundSchema, outboundSchema });
-    const wrappedHandler = middy(baseHandler).use(middleware);
-    const event = { inputValue: 10 };
+    const handler = middy(baseHandler).use(
+      validator({ inboundSchema, outboundSchema })
+    );
+
     // Act
-    const result = await wrappedHandler(event);
+    const result = await handler({ inputValue: 10 }, {} as Context);
+
     // Assess
-    expect(result).toEqual(response);
+    expect(result).toEqual({ outputValue: 10 });
   });
 
-  it('should throw error on inbound validation failure', async () => {
+  it('throws an error on inbound validation failure', async () => {
     // Prepare
-    const middleware = validation({ inboundSchema });
-    const wrappedHandler = middy(baseHandler).use(middleware);
-    const invalidEvent = { inputValue: 'invalid' };
+    const handler = middy(baseHandler).use(validator({ inboundSchema }));
+
     // Act & Assess
-    await expect(wrappedHandler(invalidEvent)).rejects.toThrow(
-      SchemaValidationError
+    await expect(
+      handler({ inputValue: 'invalid' }, {} as Context)
+    ).rejects.toThrow(
+      new SchemaValidationError('Inbound schema validation failed', {
+        cause: [
+          expect.objectContaining({
+            keyword: 'type',
+            message: 'must be number',
+          }),
+        ],
+      })
     );
   });
 
-  it('should throw error on outbound validation failure', async () => {
-    const invalidHandler = async (_event: unknown) => {
-      return { outputValue: 'invalid' };
-    };
-    const middleware = validation({ outboundSchema });
-    const wrappedHandler = middy(invalidHandler).use(middleware);
-    const event = { any: 'value' };
+  it('throws an error on outbound validation failure', async () => {
+    const handler = middy(() => {
+      return 'invalid output';
+    }).use(validator({ outboundSchema }));
+
     // Act & Assess
-    await expect(wrappedHandler(event)).rejects.toThrow(SchemaValidationError);
+    await expect(handler({ inputValue: 10 }, {} as Context)).rejects.toThrow(
+      new SchemaValidationError('Outbound schema validation failed', {
+        cause: [
+          expect.objectContaining({
+            keyword: 'type',
+            message: 'must be object',
+          }),
+        ],
+      })
+    );
   });
 
-  it('should no-op when no schemas are provided', async () => {
+  it('skips validation when no schemas are provided', async () => {
     // Prepare
-    const middleware = validation({});
-    const wrappedHandler = middy(baseHandler).use(middleware);
-    const event = { anyKey: 'anyValue' };
+    const handler = middy(baseHandler).use(validator({}));
+
     // Act
-    const result = await wrappedHandler(event);
+    const result = await handler({ inputValue: 'bar' }, {} as Context);
+
     // Assess
-    expect(result).toEqual(response);
+    expect(result).toEqual({ outputValue: 'bar' });
   });
 });

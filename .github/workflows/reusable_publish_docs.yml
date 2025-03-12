@@ -82,10 +82,6 @@ jobs:
         run: |
           rm -rf site
           mkdocs build
-      - name: Build API docs
-        run: |
-          rm -rf api
-          npm run docs-generateApiDoc
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:

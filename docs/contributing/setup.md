@@ -65,10 +65,49 @@ You can use `npm run setup-local` to install all dependencies locally and setup 
 !!! note "Curious about what `setup-local` does under the hood?"
     We use npm scripts to [automate common tasks](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/package.json#L24){target="_blank" rel="nofollow"} locally and in Continuous Integration environments.
 
-## Local documentation
+### Local documentation
 
 You might find useful to run both the documentation website and the API reference locally while contributing:
 
-* **Docs website**: `npm run docs-runLocalDocker`
-    * If this is your first time running the docs, you need to build the image: `npm run docs-buildDockerImage`
-* **API reference**: `npm run docs-api-build-run`
+#### Using Docker (recommended)
+
+1. Build the Docker image (only needed the first time):
+
+   ```bash
+   npm run docs-buildDockerImage
+   ```
+
+2. Run the documentation website:
+
+   ```bash
+   npm run docs-runLocalDocker
+   ```
+
+#### Using Python directly
+
+If you have Python installed, you can run the documentation website and API reference locally without Docker:
+
+1. Create a virtual environment:
+
+   ```bash
+   python3 -m venv .venv
+   ```
+
+2. Activate the virtual environment:
+
+   ```bash
+   source .venv/bin/activate # Linux/Mac
+   .venv\Scripts\activate # Windows
+   ```
+
+3. Install the required dependencies:
+
+   ```bash
+   pip install -r docs/requirements.txt
+   ```
+
+4. Run the documentation website:
+
+   ```bash
+   mkdocs serve
+   ```

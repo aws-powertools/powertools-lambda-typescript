@@ -1,14 +1,12 @@
 ---
-title: Validation (JSON Schema)
+title: Validation
 descrition: Utility
+status: new
 ---
 
 <!-- markdownlint-disable MD043 --->
 
 This utility provides [JSON Schema](https://json-schema.org) validation for events and responses, including JMESPath support to unwrap events before validation.
-
-!!! warning
-    This feature is currently under development. As such it's considered not stable and we might make significant breaking changes before going before its release. You are welcome to [provide feedback](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3519) and [contribute to its implementation](https://github.com/aws-powertools/powertools-lambda-typescript/milestone/18).
 
 ## Key features
 
@@ -20,7 +18,7 @@ This utility provides [JSON Schema](https://json-schema.org) validation for even
 ## Getting started
 
 ```bash
-npm install @aws-lambda-powertools/validation ajv
+npm install @aws-lambda-powertools/validation
 ```
 
 You can validate inbound and outbound payloads using the validator class method decorator or Middy.js middleware.
@@ -41,75 +39,16 @@ If the validation fails, we will throw a `SchemaValidationError`.
 
     All our decorators assume that the method they are decorating is an async method. This means that even when decorating a synchronous method, it will return a promise. If this is not the desired behavior, you can use one of the other patterns to validate your payloads.
 
-=== "getting_started_decorator.ts"
+=== "gettingStartedDecorator.ts"
 
     ```typescript
-    import { validator } from '@aws-lambda-powertools/validation';
-    import type { Context } from 'aws-lambda';
-    import {
-      inboundSchema,
-      outboundSchema,
-      type InboundSchema,
-      type OutboundSchema
-    } from './getting_started_schemas.js';
-
-    class Lambda {
-      @validator({
-        inboundSchema,
-        outboundSchema,
-      })
-      async handler(event: InboundSchema, context: Context): Promise<OutboundSchema> {
-        return {
-          statusCode: 200,
-          body: `Hello from ${event.userId}`,
-        }
-      }
-    }
-
-    export const handler = new Lambda().handler
+    --8<-- "examples/snippets/validation/gettingStartedDecorator.ts"
     ```
 
-=== "getting_started_schemas.ts"
+=== "schemas.ts"
 
     ```typescript
-    const inboundSchema = {
-      type: 'object',
-      properties: {
-        userId: {
-          type: 'string'
-        }
-      },
-      required: ['userId']
-    } as const;
-
-    type InboundSchema = {
-      userId: string;
-    };
-
-    const outboundSchema = {
-      type: 'object',
-      properties: {
-        body: {
-          type: 'string'
-        },
-        statusCode: {
-          type: 'number'
-        }
-      },
-      required: ['body', 'statusCode']
-    } as const;
-
-    type OutboundSchema = {
-      body: string;
-      statusCode: number;
-    };
-
-    export {
-      inboundSchema,
-      outboundSchema,
-      type InboundSchema,
-      type OutboundSchema
-    };
+    --8<-- "examples/snippets/validation/schemas.ts"
     ```
 
 It's not mandatory to validate both the inbound and outbound payloads. You can either use one, the other, or both.
@@ -125,73 +64,16 @@ If you are using Middy.js, you can use the `validator` middleware to validate th
 
 Like the class method decorator, if the validation fails, we will throw a `SchemaValidationError`, and you don't need to use both the inbound and outbound schemas if you don't need to.
 
-=== "getting_started_middy.ts"
+=== "gettingStartedMiddy.ts"
 
     ```typescript
-    import { validator } from '@aws-lambda-powertools/validation/middleware';
-    import middy from '@middy/core';
-    import {
-      inboundSchema,
-      outboundSchema,
-      type InboundSchema,
-      type OutboundSchema
-    } from './getting_started_schemas.js';
-
-    export const handler = middy()
-      .use(validator({
-        inboundSchema,
-        outboundSchema,
-      }))
-      .handler(
-        async (event: InboundSchema, context: Context): Promise<OutboundSchema> => {
-          return {
-            statusCode: 200,
-            body: `Hello from ${event.userId}`,
-          }
-        });
+    --8<-- "examples/snippets/validation/gettingStartedMiddy.ts"
     ```
 
-=== "getting_started_schemas.ts"
+=== "schemas.ts"
 
     ```typescript
-    const inboundSchema = {
-      type: 'object',
-      properties: {
-        userId: {
-          type: 'string'
-        }
-      },
-      required: ['userId']
-    } as const;
-
-    type InboundSchema = {
-      userId: string;
-    };
-
-    const outboundSchema = {
-      type: 'object',
-      properties: {
-        body: {
-          type: 'string'
-        },
-        statusCode: {
-          type: 'number'
-        }
-      },
-      required: ['body', 'statusCode']
-    } as const;
-
-    type OutboundSchema = {
-      body: string;
-      statusCode: number;
-    };
-
-    export {
-      inboundSchema,
-      outboundSchema,
-      type InboundSchema,
-      type OutboundSchema
-    };
+    --8<-- "examples/snippets/validation/schemas.ts"
     ```
 
 ### Standalone validation
@@ -200,80 +82,16 @@ The `validate` function gives you more control over the validation process, and 
 
 You can also gracefully handle schema validation errors by catching `SchemaValidationError` errors.
 
-=== "getting_started_standalone.ts"
+=== "gettingStartedStandalone.ts"
 
     ```typescript
-    import { validate, SchemaValidationError } from '@aws-lambda-powertools/validation';
-    import { Logger } from '@aws-lambda-powertools/logger';
-    import {
-      inboundSchema,
-      type InboundSchema,
-    } from './getting_started_schemas.js';
-
-    const logger = new Logger();
-
-    export const handler = async (event: InboundSchema, context: Context) => {
-      try {
-        await validate({
-          payload: event,
-          schema: inboundSchema,
-        })
-
-        return { // since we are not validating the output, we can return anything
-          message: 'ok'
-        }
-      } catch (error) {
-        if (error instanceof SchemaValidationError) {
-          logger.error('Schema validation failed', error)
-          throw new Error('Invalid event payload')
-        }
-
-        throw error
-      }
-    }
+    --8<-- "examples/snippets/validation/gettingStartedStandalone.ts"
     ```
 
-=== "getting_started_schemas.ts"
+=== "schemas.ts"
 
     ```typescript
-    const inboundSchema = {
-      type: 'object',
-      properties: {
-        userId: {
-          type: 'string'
-        }
-      },
-      required: ['userId']
-    } as const;
-
-    type InboundSchema = {
-      userId: string;
-    };
-
-    const outboundSchema = {
-      type: 'object',
-      properties: {
-        body: {
-          type: 'string'
-        },
-        statusCode: {
-          type: 'number'
-        }
-      },
-      required: ['body', 'statusCode']
-    } as const;
-
-    type OutboundSchema = {
-      body: string;
-      statusCode: number;
-    };
-
-    export {
-      inboundSchema,
-      outboundSchema,
-      type InboundSchema,
-      type OutboundSchema
-    };
+    --8<-- "examples/snippets/validation/schemas.ts"
     ```
 
 ### Unwrapping events prior to validation
@@ -284,92 +102,22 @@ Envelopes are [JMESPath expressions](https://jmespath.org/tutorial.html) to extr
 
 Here is a sample custom EventBridge event, where we only want to validate the `detail` part of the event:
 
-=== "getting_started_envelope.ts"
+=== "gettingStartedEnvelope.ts"
 
     ```typescript
-    import { validator } from '@aws-lambda-powertools/validation';
-    import type { Context } from 'aws-lambda';
-    import {
-      inboundSchema,
-      type InboundSchema,
-      type OutboundSchema
-    } from './getting_started_schemas.js';
-
-    class Lambda {
-      @validator({
-        inboundSchema,
-        envelope: 'detail',
-      })
-      async handler(event: InboundSchema, context: Context) {
-        return {
-          message: `processed ${event.userId}`,
-          success: true,
-        }
-      }
-    }
-
-    export const handler = new Lambda().handler
+    --8<-- "examples/snippets/validation/gettingStartedEnvelope.ts"
     ```
 
-=== "getting_started_schemas.ts"
+=== "schemas.ts"
 
     ```typescript
-    const inboundSchema = {
-      type: 'object',
-      properties: {
-        userId: {
-          type: 'string'
-        }
-      },
-      required: ['userId']
-    } as const;
-
-    type InboundSchema = {
-      userId: string;
-    };
-
-    const outboundSchema = {
-      type: 'object',
-      properties: {
-        body: {
-          type: 'string'
-        },
-        statusCode: {
-          type: 'number'
-        }
-      },
-      required: ['body', 'statusCode']
-    } as const;
-
-    type OutboundSchema = {
-      body: string;
-      statusCode: number;
-    };
-
-    export {
-      inboundSchema,
-      outboundSchema,
-      type InboundSchema,
-      type OutboundSchema
-    };
+    --8<-- "examples/snippets/validation/schemas.ts"
     ```
 
-=== "getting_started_envelope_event.json"
+=== "gettingStartedEnvelopeEvent.json"
 
     ```json
-    {
-      "version": "0",
-      "id": "12345678-1234-1234-1234-123456789012",
-      "detail-type": "myDetailType",
-      "source": "myEventSource",
-      "account": "123456789012",
-      "time": "2017-12-22T18:43:48Z",
-      "region": "us-west-2",
-      "resources": [],
-      "detail": {
-        "userId": "123"
-      }
-    }
+    --8<-- "examples/snippets/validation/samples/gettingStartedEnvelopeEvent.json"
     ```
 
 This is quite powerful as it allows you to validate only the part of the event that you are interested in, and thanks to JMESPath, you can extract records from [arrays](https://jmespath.org/tutorial.html#list-and-slice-projections), combine [pipe](https://jmespath.org/tutorial.html#pipe-expressions) and filter expressions, and more.
@@ -382,115 +130,22 @@ We provide built-in envelopes to easily extract payloads from popular AWS event 
 
 Here is an example of how you can use the built-in envelope for SQS events:
 
-=== "getting_started_envelope_builtin.ts"
+=== "gettingStartedEnvelopeBuiltin.ts"
 
     ```typescript
-    import { validator } from '@aws-lambda-powertools/validation';
-    import { SQS } from '@aws-lambda-powertools/validation/envelopes/sqs';
-    import type { Context } from 'aws-lambda';
-    import {
-      inboundSchema,
-      type InboundSchema,
-    } from './getting_started_schemas.js';
-
-    const logger = new Logger();
-
-    export const handler = middy()
-      .use(validator({
-        inboundSchema,
-        envelope: SQS,
-      }))
-      .handler(
-        async (event: Array<InboundSchema>, context: Context) => {
-          for (const record of event) {
-            logger.info(`Processing message ${record.userId}`);
-          }
-        }
-      )
+    --8<-- "examples/snippets/validation/gettingStartedEnvelopeBuiltin.ts"
     ```
 
-=== "getting_started_schemas.ts"
+=== "schemas.ts"
 
     ```typescript
-    const inboundSchema = {
-      type: 'object',
-      properties: {
-        userId: {
-          type: 'string'
-        }
-      },
-      required: ['userId']
-    } as const;
-
-    type InboundSchema = {
-      userId: string;
-    };
-
-    const outboundSchema = {
-      type: 'object',
-      properties: {
-        body: {
-          type: 'string'
-        },
-        statusCode: {
-          type: 'number'
-        }
-      },
-      required: ['body', 'statusCode']
-    } as const;
-
-    type OutboundSchema = {
-      body: string;
-      statusCode: number;
-    };
-
-    export {
-      inboundSchema,
-      outboundSchema,
-      type InboundSchema,
-      type OutboundSchema
-    };
+    --8<-- "examples/snippets/validation/schemas.ts"
     ```
 
-=== "getting_started_envelope_event.json"
+=== "gettingStartedSQSEnvelopeEvent.json"
 
     ```json
-    {
-      "Records": [
-        {
-          "messageId": "c80e8021-a70a-42c7-a470-796e1186f753",
-          "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
-          "body": "{\"userId\":\"123\"}",
-          "attributes": {
-            "ApproximateReceiveCount": "3",
-            "SentTimestamp": "1529104986221",
-            "SenderId": "AIDAIC6K7FJUZ7Q",
-            "ApproximateFirstReceiveTimestamp": "1529104986230"
-          },
-          "messageAttributes": {},
-          "md5OfBody": "098f6bcd4621d373cade4e832627b4f6",
-          "eventSource": "aws:sqs",
-          "eventSourceARN": "arn:aws:sqs:us-west-2:123456789012:my-queue",
-          "awsRegion": "us-west-2"
-        },
-        {
-          "messageId": "c80e8021-a70a-42c7-a470-796e1186f753",
-          "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
-          "body": "{\"userId\":\"456\"}",
-          "attributes": {
-            "ApproximateReceiveCount": "3",
-            "SentTimestamp": "1529104986221",
-            "SenderId": "AIDAIC6K7FJUZ7Q",
-            "ApproximateFirstReceiveTimestamp": "1529104986230"
-          },
-          "messageAttributes": {},
-          "md5OfBody": "098f6bcd4621d373cade4e832627b4f6",
-          "eventSource": "aws:sqs",
-          "eventSourceARN": "arn:aws:sqs:us-west-2:123456789012:my-queue",
-          "awsRegion": "us-west-2"
-        }
-      ]
-    }
+    --8<-- "examples/snippets/validation/samples/gettingStartedSQSEnvelopeEvent.json"
     ```
 
 For a complete list of built-in envelopes, check the built-in envelopes section [here](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/#built-in-envelopes).
@@ -505,70 +160,20 @@ This is useful when you have a specific format that is not covered by the built-
 
 JSON Schemas with custom formats like `awsaccountid` will fail validation if the format is not defined. You can define custom formats using the `formats` option to any of the validation methods.
 
-=== "schema_with_custom_format.json"
+=== "schemaWithCustomFormat.json"
 
     ```json
-    {
-      "type": "object",
-      "properties": {
-        "accountId": {
-          "type": "string",
-          "format": "awsaccountid"
-        },
-        "creditCard": {
-          "type": "string",
-          "format": "creditcard"
-        }
-      },
-      "required": ["accountId"]
-    }
+    --8<-- "examples/snippets/validation/samples/schemaWithCustomFormat.json"
     ```
 
 For each one of these custom formats, you need to tell us how to validate them. To do so, you can either pass a `RegExp` object or a function that receives the value and returns a boolean.
 
 For example, to validate using the schema above, you can define a custom format for `awsaccountid` like this:
 
-=== "advanced_custom_format.ts"
+=== "advancedCustomFormats.ts"
 
     ```typescript
-    import { validate, SchemaValidationError } from '@aws-lambda-powertools/validation';
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    const logger = new Logger();
-
-    const customFormats = {
-      awsaccountid: new RegExp('^[0-9]{12}$'),
-      creditcard: (value: string) => {
-        // Luhn algorithm (for demonstration purposes only - do not use in production)
-        const sum = value.split('').reverse().reduce((acc, digit, index) => {
-          const num = parseInt(digit, 10);
-          return acc + (index % 2 === 0 ? num : num < 5 ? num * 2 : num * 2 - 9);
-        }, 0);
-
-        return sum % 10 === 0;
-      }
-    };
-
-    export const handler = async (event: any, context: Context) => {
-      try {
-        await validate({
-          payload: event,
-          schema: schemaWithCustomFormat,
-          formats: customFormats,
-        })
-
-        return { // since we are not validating the output, we can return anything
-          message: 'ok'
-        }
-      } catch (error) {
-        if (error instanceof SchemaValidationError) {
-          logger.error('Schema validation failed', error)
-          throw new Error('Invalid event payload')
-        }
-
-        throw error
-      }
-    }
+    --8<-- "examples/snippets/validation/advancedCustomFormats.ts"
     ```
 
 ### Built-in JMESpath functions
@@ -589,78 +194,16 @@ JSON Schema allows schemas to reference other schemas using the `$ref` keyword. 
 
 You can use the `externalRefs` option to pass a list of schemas that you want to reference in your inbound and outbound schemas.
 
-=== "advanced_custom_format.ts"
+=== "advancedExternalRefs.ts"
 
     ```typescript
-    import { validate } from '@aws-lambda-powertools/validation';
-    import {
-      inboundSchema,
-      outboundSchema,
-      defsSchema,
-      type InboundSchema,
-    } from './schemas_with_external_ref.ts';
-
-    class Lambda {
-      @validator({
-        inboundSchema,
-        outboundSchema,
-        externalRefs: [defsSchema],
-      })
-      async handler(event: InboundSchema, context: Context) {
-        return {
-          message: `processed ${event.userId}`,
-          success: true,
-        }
-      }
-    }
+    --8<-- "examples/snippets/validation/advancedExternalRefs.ts"
     ```
 
-=== "schemas_with_external_ref.ts"
+=== "schemasWithExternalRefs.ts"
 
-    ```ts
-    const defsSchema = {
-      $id: 'http://example.com/schemas/defs.json',
-      definitions: {
-        int: { type: 'integer' },
-        str: { type: 'string' },
-      },
-    } as const;
-
-    const inboundSchema = {
-      $id: 'http://example.com/schemas/inbound.json',
-      type: 'object',
-      properties: {
-        userId: { $ref: 'defs.json#/definitions/str' }
-      },
-      required: ['userId']
-    } as const;
-
-    type InboundSchema = {
-      userId: string;
-    };
-
-    const outboundSchema = {
-      $id: 'http://example.com/schemas/outbound.json',
-      type: 'object',
-      properties: {
-        body: { $ref: 'defs.json#/definitions/str' },
-        statusCode: { $ref: 'defs.json#/definitions/int' }
-      },
-      required: ['body', 'statusCode']
-    } as const;
-
-    type OutboundSchema = {
-      body: string;
-      statusCode: number;
-    };
-
-    export {
-      defsSchema,
-      inboundSchema,
-      outboundSchema,
-      type InboundSchema,
-      type OutboundSchema
-    };
+    ```typescript
+    --8<-- "examples/snippets/validation/schemasWithExternalRefs.ts"
     ```
 
 ### Bringing your own `ajv` instance
@@ -669,37 +212,10 @@ By default, we use JSON Schema draft-07. If you want to use a different draft, y
 
 This is also useful if you want to configure `ajv` with custom options like keywords and more.
 
-=== "advanced_custom_format.ts"
+=== "advancedBringAjvInstance.ts"
 
     ```typescript
-    import { validate } from '@aws-lambda-powertools/validation';
-    import Ajv2019 from "ajv/dist/2019"
-    import { Logger } from '@aws-lambda-powertools/logger';
-
-    const logger = new Logger();
-
-    const ajv = new Ajv2019();
-
-    export const handler = async (event: any, context: Context) => {
-      try {
-        await validate({
-          payload: event,
-          schema: schemaWithCustomFormat,
-          ajv,
-        })
-
-        return { // since we are not validating the output, we can return anything
-          message: 'ok'
-        }
-      } catch (error) {
-        if (error instanceof SchemaValidationError) {
-          logger.error('Schema validation failed', error)
-          throw new Error('Invalid event payload')
-        }
-
-        throw error
-      }
-    }
+    --8<-- "examples/snippets/validation/advancedBringAjvInstance.ts"
     ```
 
 ## Should I use this or Parser?

@@ -46,6 +46,7 @@ nav:
           - utilities/batch.md
           - utilities/jmespath.md
           - utilities/parser.md
+          - utilities/validation.md
   - API reference: api"
   - Processes:
       - Roadmap: roadmap.md

@@ -6,7 +6,7 @@ import schemaWithCustomFormat from './samples/schemaWithCustomFormat.json';
 const logger = new Logger();
 
 const customFormats = {
-  awsaccountid: /^[0-9]{12}$/,
+  awsaccountid: /^\d{12}$/,
   creditcard: (value: string) => {
     // Luhn algorithm (for demonstration purposes only - do not use in production)
     const sum = value

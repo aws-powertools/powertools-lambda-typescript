@@ -4,12 +4,35 @@ site_author: Amazon Web Services
 repo_url: https://github.com/aws-powertools/powertools-lambda-typescript
 edit_uri: edit/main/docs
 site_url: https://docs.powertools.aws.dev/lambda/typescript
+watch: [
+  docs,
+  packages/batch/src,
+  examples/snippets/batch,
+  packages/commons/src,
+  packages/event-handler/src,
+  examples/snippets/event-handler,
+  packages/idempotency/src,
+  examples/snippets/idempotency,
+  packages/jmespath/src,
+  examples/snippets/jmespath,
+  packages/logger/src,
+  examples/snippets/logger,
+  packages/metrics/src,
+  examples/snippets/metrics,
+  packages/parameters/src,
+  examples/snippets/parameters,
+  packages/parser/src,
+  examples/snippets/parser,
+  packages/tracer/src,
+  examples/snippets/tracer,
+  packages/validation/src,
+  examples/snippets/validation,
+]
 
 nav:
   - Homepage:
       - index.md
       - Changelog: changelog.md
-      - API reference: api/" target="_blank
       - Upgrade guide: upgrade.md
       - We Made This (Community): we_made_this.md
       - Workshop: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank
@@ -23,6 +46,7 @@ nav:
           - utilities/batch.md
           - utilities/jmespath.md
           - utilities/parser.md
+  - API reference: api"
   - Processes:
       - Roadmap: roadmap.md
       - Versioning policy: versioning.md
@@ -101,7 +125,7 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
 
-copyright: Copyright &copy; 2023 Amazon Web Services
+copyright: Copyright &copy; 2025 Amazon Web Services
 
 plugins:
   - privacy
@@ -112,6 +136,12 @@ plugins:
         - snippets/node_modules/*
         - snippets/package.json
         - snippets/CHANGELOG.md
+  - typedoc:
+      source: '.'
+      output_dir: 'api'
+      tsconfig: 'tsconfig.json'
+      options: 'typedoc.json'
+      name: 'API Reference'
 
 extra_css:
   - stylesheets/extra.css

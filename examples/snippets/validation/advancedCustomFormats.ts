@@ -30,7 +30,6 @@ export const handler = async (event: unknown) => {
     });
 
     return {
-      // since we are not validating the output, we can return anything
       message: 'ok',
     };
   } catch (error) {

@@ -41,7 +41,7 @@ If the validation fails, we will throw a `SchemaValidationError`.
 
 === "gettingStartedDecorator.ts"
 
-    ```typescript
+    ```typescript hl_lines="1 11-14"
     --8<-- "examples/snippets/validation/gettingStartedDecorator.ts"
     ```
 
@@ -66,7 +66,7 @@ Like the class method decorator, if the validation fails, we will throw a `Schem
 
 === "gettingStartedMiddy.ts"
 
-    ```typescript
+    ```typescript hl_lines="1 12-15"
     --8<-- "examples/snippets/validation/gettingStartedMiddy.ts"
     ```
 
@@ -84,9 +84,11 @@ You can also gracefully handle schema validation errors by catching `SchemaValid
 
 === "gettingStartedStandalone.ts"
 
-    ```typescript
+    ```typescript hl_lines="2 3 10-13 19"
     --8<-- "examples/snippets/validation/gettingStartedStandalone.ts"
     ```
+
+    1. Since we are not validating the output, we can return anything
 
 === "schemas.ts"
 
@@ -104,7 +106,7 @@ Here is a sample custom EventBridge event, where we only want to validate the `d
 
 === "gettingStartedEnvelope.ts"
 
-    ```typescript
+    ```typescript hl_lines="8"
     --8<-- "examples/snippets/validation/gettingStartedEnvelope.ts"
     ```
 
@@ -132,7 +134,7 @@ Here is an example of how you can use the built-in envelope for SQS events:
 
 === "gettingStartedEnvelopeBuiltin.ts"
 
-    ```typescript
+    ```typescript hl_lines="1 13"
     --8<-- "examples/snippets/validation/gettingStartedEnvelopeBuiltin.ts"
     ```
 
@@ -172,7 +174,7 @@ For example, to validate using the schema above, you can define a custom format 
 
 === "advancedCustomFormats.ts"
 
-    ```typescript
+    ```typescript hl_lines="29"
     --8<-- "examples/snippets/validation/advancedCustomFormats.ts"
     ```
 
@@ -196,7 +198,7 @@ You can use the `externalRefs` option to pass a list of schemas that you want to
 
 === "advancedExternalRefs.ts"
 
-    ```typescript
+    ```typescript hl_lines="14"
     --8<-- "examples/snippets/validation/advancedExternalRefs.ts"
     ```
 
@@ -214,7 +216,7 @@ This is also useful if you want to configure `ajv` with custom options like keyw
 
 === "advancedBringAjvInstance.ts"
 
-    ```typescript
+    ```typescript hl_lines="9 16"
     --8<-- "examples/snippets/validation/advancedBringAjvInstance.ts"
     ```
 

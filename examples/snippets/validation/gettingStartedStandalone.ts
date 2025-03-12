@@ -7,14 +7,13 @@ const logger = new Logger();
 
 export const handler = async (event: InboundSchema) => {
   try {
-    await validate({
+    validate({
       payload: event,
       schema: inboundSchema,
     });
 
     return {
-      // since we are not validating the output, we can return anything
-      message: 'ok',
+      message: 'ok', // (1)!
     };
   } catch (error) {
     if (error instanceof SchemaValidationError) {

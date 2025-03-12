@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD013  -->
 # Powertools for AWS Lambda (TypeScript) <!-- omit in toc -->
 
-![NodeSupport](https://img.shields.io/static/v1?label=node&message=%2016|%2018|%2020&color=green?style=flat-square&logo=node)
+![NodeSupport](https://img.shields.io/static/v1?label=node&message=%2018|%2020|%2022&color=green?style=flat-square&logo=node)
 ![GitHub Release](https://img.shields.io/github/v/release/aws-powertools/powertools-lambda-typescript?style=flat-square)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)
@@ -28,6 +28,7 @@ Find the complete project's [documentation here](https://docs.powertools.aws.dev
 - **[Batch Processing](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)** - Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
 - **[JMESPath Functions](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/)** - Built-in JMESPath functions to easily deserialize common encoded JSON payloads in Lambda functions.
 - **[Parser (Zod)](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parser/)** - Utility that provides data validation and parsing using Zod, a TypeScript-first schema declaration and validation library.
+- **[Validation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/validation/)** - JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.
 
 ## Install
 
@@ -41,6 +42,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 - **Batch**: `npm install @aws-lambda-powertools/batch`
 - **JMESPath Functions**: `npm install @aws-lambda-powertools/jmespath`
 - **Parser**: `npm install @aws-lambda-powertools/parser zod@~3`
+- **Validation**: `npm install @aws-lambda-powertools/validation ajv@~8`
 
 ### Examples
 

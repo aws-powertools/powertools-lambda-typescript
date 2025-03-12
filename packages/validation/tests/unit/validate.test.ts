@@ -93,7 +93,7 @@ describe('validate function', () => {
       'custom-email': {
         validate: (email: string) => email.includes('@'),
       },
-      allowedRegions: /^(us-east-1|us-west-1|)$/,
+      allowedRegions: /^(us-east-1|us-west-1)$/,
     };
 
     const params: ValidateParams = {

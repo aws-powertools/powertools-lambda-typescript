@@ -42,7 +42,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 - **Batch**: `npm install @aws-lambda-powertools/batch`
 - **JMESPath Functions**: `npm install @aws-lambda-powertools/jmespath`
 - **Parser**: `npm install @aws-lambda-powertools/parser zod@~3`
-- **Validation**: `npm install @aws-lambda-powertools/validation ajv@~8`
+- **Validation**: `npm install @aws-lambda-powertools/validation`
 
 ### Examples
 

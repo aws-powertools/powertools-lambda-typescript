@@ -120,42 +120,29 @@ You might find useful to run both the documentation website and the API referenc
 1. Build the Docker image (only needed the first time):
 
    ```bash
-   npm run docs-buildDockerImage
+   npm run docs:docker:build
    ```
 
 2. Run the documentation website:
 
    ```bash
-   npm run docs-runLocalDocker
+   npm run docs:docker:run
    ```
 
 #### Using Python directly
 
-If you have Python installed, you can run the documentation website and API reference locally without Docker:
+If you have Python 3.x installed, you can run the documentation website and API reference locally without Docker:
 
-1. Create a virtual environment:
+1. Create a virtual environment and install dependencies:
 
    ```bash
-   python3 -m venv .venv
+   npm run docs:local:setup
    ```
 
-2. Activate the virtual environment:
+2. Run the documentation website:
 
    ```bash
-   source .venv/bin/activate # Linux/Mac
-   .venv\Scripts\activate # Windows
-   ```
-
-3. Install the required dependencies:
-
-   ```bash
-   pip install -r docs/requirements.txt
-   ```
-
-4. Run the documentation website:
-
-   ```bash
-   mkdocs serve
+   npm run docs:local:run
    ```
 
 ## Conventions

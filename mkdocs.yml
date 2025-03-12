@@ -141,7 +141,7 @@ plugins:
       output_dir: 'api'
       tsconfig: 'tsconfig.json'
       options: 'typedoc.json'
-      name: 'API Docs'
+      name: 'API Reference'
 
 extra_css:
   - stylesheets/extra.css

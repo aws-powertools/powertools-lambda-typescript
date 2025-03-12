@@ -1,5 +1,6 @@
 import { SchemaValidationError } from './errors.js';
 import type { ValidatorOptions } from './types.js';
+import { getErrorCause } from './utils.js';
 import { validate } from './validate.js';
 
 /**
@@ -167,8 +168,8 @@ function validator(options: ValidatorOptions) {
             ajv: ajv,
           });
         } catch (error) {
-          throw new SchemaValidationError('Inbound validation failed', {
-            cause: error,
+          throw new SchemaValidationError('Inbound schema validation failed', {
+            cause: getErrorCause(error),
           });
         }
       }
@@ -186,8 +187,8 @@ function validator(options: ValidatorOptions) {
             ajv: ajv,
           });
         } catch (error) {
-          throw new SchemaValidationError('Outbound Validation failed', {
-            cause: error,
+          throw new SchemaValidationError('Outbound schema validation failed', {
+            cause: getErrorCause(error),
           });
         }
       }

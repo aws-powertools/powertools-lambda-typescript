@@ -1,10 +1,4 @@
-import type {
-  Ajv,
-  AnySchema,
-  AsyncFormatDefinition,
-  Format,
-  FormatDefinition,
-} from 'ajv';
+import type { Ajv, AnySchema, Format } from 'ajv';
 
 type Prettify<T> = {
   [K in keyof T]: T[K];
@@ -36,16 +30,7 @@ type ValidateParams = {
   /**
    * Optional formats for validation.
    */
-  formats?: Record<
-    string,
-    Format
-    /* | string
-    | RegExp
-    | FormatDefinition<string>
-    | FormatDefinition<number>
-    | AsyncFormatDefinition<string>
-    | AsyncFormatDefinition<number> */
-  >;
+  formats?: Record<string, Format>;
   /**
    * Optional external references for validation.
    */

@@ -220,6 +220,8 @@ This is also useful if you want to configure `ajv` with custom options like keyw
     --8<-- "examples/snippets/validation/advancedBringAjvInstance.ts"
     ```
 
+    1. You can pass your own `ajv` instance to any of the validation methods. This is useful if you want to configure `ajv` with custom options like keywords and more.
+
 ## Should I use this or Parser?
 
 One of Powertools for AWS Lambda [tenets](../index.md#tenets) is to be progressive. This means that our utilities are designed to be incrementally adopted by customers at any stage of their serverless journey.

@@ -13,11 +13,10 @@ export const handler = async (event: unknown) => {
     await validate({
       payload: event,
       schema: inboundSchema,
-      ajv,
+      ajv, // (1)!
     });
 
     return {
-      // since we are not validating the output, we can return anything
       message: 'ok',
     };
   } catch (error) {

@@ -1423,7 +1423,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param correlationIdPath - The path to the correlation ID in the event object
    * @param event - The event object
    */
-  public setCorrelationIdFromPath(
+  protected setCorrelationIdFromPath(
     correlationIdPath: string,
     event: unknown
   ): void {
@@ -1440,8 +1440,20 @@ class Logger extends Utility implements LoggerInterface {
     }
   }
 
+  /**
+   * Set the correlation ID in the log attributes.
+   * @param value - The value to set as the correlation ID
+   */
   public setCorrelationId(value: unknown): void {
     this.appendKeys({ correlation_id: value });
+  }
+
+  /**
+   * Get the correlation ID from the log attributes.
+   * @returns The correlation ID from the log attributes
+   */
+  public getCorrelationId(): unknown {
+    return this.temporaryLogAttributes.correlation_id;
   }
 }
 

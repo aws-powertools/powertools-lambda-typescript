@@ -805,7 +805,7 @@ You can use values ranging from `0` to `1` (100%) when setting the `sampleRateVa
 
     This feature takes into account transient issues where additional debugging information can be useful.
 
-Sampling decision happens at the Logger initialization. When using the `injectLambdaContext` method either as a decorator or middleware, the sampling decision is refreshed at the beginning of each Lambda invocation for you, except for cold starts.
+Sampling decision happens at the Logger initialization. When using the `injectLambdaContext` method either as a decorator or Middy.js middleware, the sampling decision is refreshed at the beginning of each Lambda invocation for you, except for cold starts.
 
 If you're not using either of these, you'll need to manually call the `refreshSamplingRate()` function at the start of your handler to refresh the sampling decision for each invocation.
 
@@ -814,6 +814,9 @@ If you're not using either of these, you'll need to manually call the `refreshSa
     ```typescript hl_lines="6"
     --8<-- "examples/snippets/logger/logSampling.ts"
     ```
+
+    1. The log level must be set to a more verbose level than `DEBUG` for log sampling to kick in.
+    2. You need to call `logger.refreshSamplingRate()` at the start of your handler if you're not using the `injectLambdaContext()` class method decorator or Middy.js middleware.
 
 === "Example CloudWatch Logs excerpt - Invocation #1"
 

@@ -140,7 +140,9 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Standard attributes managed by Powertools that will be logged in all log items.
    */
-  private powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{};
+  private powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{
+    sampleRateValue: 0,
+  };
   /**
    * Temporary log attributes that can be appended with `appendKeys()` method.
    */
@@ -212,6 +214,11 @@ class Logger extends Utility implements LoggerInterface {
    * Contains buffered logs, grouped by `_X_AMZN_TRACE_ID`, each group with a max size of `maxBufferBytesSize`
    */
   #buffer?: CircularMap<string>;
+
+  #debugLogSampling = {
+    sampleRateValue: 0,
+    refreshedTimes: 0,
+  };
 
   /**
    * Log level used by the current instance of Logger.
@@ -302,7 +309,7 @@ class Logger extends Utility implements LoggerInterface {
         {
           logLevel: this.getLevelName(),
           serviceName: this.powertoolsLogData.serviceName,
-          sampleRateValue: this.powertoolsLogData.sampleRateValue,
+          sampleRateValue: this.#debugLogSampling.sampleRateValue,
           logFormatter: this.getLogFormatter(),
           customConfigService: this.getCustomConfigService(),
           environment: this.powertoolsLogData.environment,
@@ -547,9 +554,26 @@ class Logger extends Utility implements LoggerInterface {
    * This only works for warm starts, because we don't to avoid double sampling.
    */
   public refreshSampleRateCalculation(): void {
-    if (!this.coldStart) {
-      this.setInitialSampleRate(this.powertoolsLogData.sampleRateValue);
+    if (this.#debugLogSampling.refreshedTimes === 0) {
+      this.#debugLogSampling.refreshedTimes++;
+      return;
     }
+    if (
+      this.#shouldEnableDebugSampling() &&
+      this.logLevel > LogLevelThreshold.TRACE
+    ) {
+      this.setLogLevel('DEBUG');
+      this.debug('Setting log level to DEBUG due to sampling rate');
+    } else {
+      this.setLogLevel(this.getLogLevelNameFromNumber(this.#initialLogLevel));
+    }
+  }
+
+  #shouldEnableDebugSampling() {
+    return (
+      this.#debugLogSampling.sampleRateValue &&
+      randomInt(0, 100) / 100 <= this.#debugLogSampling.sampleRateValue
+    );
   }
 
   /**
@@ -1142,30 +1166,24 @@ class Logger extends Utility implements LoggerInterface {
    * @param sampleRateValue - The sample rate value
    */
   private setInitialSampleRate(sampleRateValue?: number): void {
-    this.powertoolsLogData.sampleRateValue = 0;
     const constructorValue = sampleRateValue;
     const customConfigValue =
       this.getCustomConfigService()?.getSampleRateValue();
     const envVarsValue = this.getEnvVarsService().getSampleRateValue();
     for (const value of [constructorValue, customConfigValue, envVarsValue]) {
       if (this.isValidSampleRate(value)) {
+        this.#debugLogSampling.sampleRateValue = value;
         this.powertoolsLogData.sampleRateValue = value;
 
         if (
-          this.logLevel > LogLevelThreshold.DEBUG &&
-          value &&
-          randomInt(0, 100) / 100 <= value
+          this.#shouldEnableDebugSampling() &&
+          this.logLevel > LogLevelThreshold.TRACE
         ) {
-          // only change logLevel if higher than debug, i.e. don't change from e.g. tracing to debug
           this.setLogLevel('DEBUG');
           this.debug('Setting log level to DEBUG due to sampling rate');
-        } else {
-          this.setLogLevel(
-            this.getLogLevelNameFromNumber(this.#initialLogLevel)
-          );
         }
 
-        return;
+        break;
       }
     }
   }

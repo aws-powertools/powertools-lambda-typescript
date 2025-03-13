@@ -377,3 +377,4 @@ if (
 process.env._HANDLER = 'index.handler';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 process.env.AWS_XRAY_LOGGING_LEVEL = 'silent';
+process.env.AWS_LAMBDA_INITIALIZATION_TYPE = 'on-demand';

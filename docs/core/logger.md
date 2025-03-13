@@ -207,6 +207,72 @@ When debugging in non-production environments, you can log the incoming event us
 
 Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`true`/`false`) this feature. When using Middy.js middleware or class method decorator, the `logEvent` option will take precedence over the environment variable.
 
+### Setting a Correlation ID
+
+To gest started, install `@aws-lambda-powertools/jmespath` package and configure the search function for the correlationId:
+
+=== "Setup the Logger to use JMESPath search"
+
+    ```typescript
+    --8<-- "examples/snippets/logger/correlationIdLogger.ts"
+    ```
+
+    ???+ tip You can retrieve correlation IDs via `getCorrelationId` method.
+
+You can set a correlation ID using `correlationIdPath` parameter by passing a JMESPath expression, including our custom JMESPath functions or set it manually by calling `setCorrelationId` function.
+
+=== "Setting correlation ID manually"
+
+    ```typescript
+    --8<-- "examples/snippets/logger/correlationIdManual.ts"
+    ```
+
+=== "Middy.js Middleware"
+
+    ```typescript
+    --8<-- "examples/snippets/logger/correlationIdMiddy.ts"
+    ```
+
+=== "Decorator"
+
+    ```typescript
+    --8<-- "examples/snippets/logger/correlationIdDecorator.ts"
+    ```
+
+=== "payload.json"
+
+    ```typescript
+    --8<-- "examples/snippets/logger/correlationIdPayload.json"
+    ```
+
+=== "log-output.json"
+
+    ```json hl_lines="6"
+    --8<-- "examples/snippets/logger/correlationIdOutput.json"
+    ```
+
+To ease routine tasks like extracting correlation ID from popular event sources, we provide built-in JMESPath expressions.
+
+=== "Decorator"
+
+    ```typescript
+    --8<-- "examples/snippets/logger/correlationIdPaths.ts"
+    ```
+
+???+ note "Note: Any object key named with `-` must be escaped"
+    For example, **`request.headers."x-amzn-trace-id"`**.
+
+| Name                          | Expression                            | Description                     |
+| ----------------------------- | ------------------------------------- | ------------------------------- |
+| **API_GATEWAY_REST**          | `'requestContext.requestId'`          | API Gateway REST API request ID |
+| **API_GATEWAY_HTTP**          | `'requestContext.requestId'`          | API Gateway HTTP API request ID |
+| **APPSYNC_RESOLVER**          | `'request.headers."x-amzn-trace-id"'` | AppSync X-Ray Trace ID          |
+| **APPLICATION_LOAD_BALANCER** | `'headers."x-amzn-trace-id"'`         | ALB X-Ray Trace ID              |
+| **EVENT_BRIDGE**              | `"id"`                                | EventBridge Event ID            |
+| **LAMBDA_FUNCTION_URL**       | `'requestContext.requestId'`          | Lambda Function URL request ID  |
+| **S3_OBJECT_LAMBDA**          | `'xAmzRequestId'`                     | S3 Object trigger request ID    |
+| **VPC_LATTICE**               | `'headers."x-amzn-trace-id'`          | VPC Lattice X-Ray Trace ID      |
+
 ### Appending additional keys
 
 You can append additional keys using either mechanism:

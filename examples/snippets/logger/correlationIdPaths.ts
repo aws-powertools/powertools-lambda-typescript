@@ -1,6 +1,9 @@
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { search } from '@aws-lambda-powertools/jmespath';
-import { Logger, correlationPaths } from '@aws-lambda-powertools/logger';
+import { Logger } from '@aws-lambda-powertools/logger';
+import {
+  correlationPaths,
+  search,
+} from '@aws-lambda-powertools/logger/correlationId';
 
 const logger = new Logger({
   correlationIdSearchFn: search,

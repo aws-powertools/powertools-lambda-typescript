@@ -1,10 +1,7 @@
-import { search } from '@aws-lambda-powertools/jmespath';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
-const logger = new Logger({
-  correlationIdSearchFn: search,
-});
+const logger = new Logger();
 
 export const handler = async (
   event: APIGatewayProxyEvent,

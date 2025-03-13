@@ -47,6 +47,10 @@
     "./types": {
       "import": "./lib/esm/types/index.js",
       "require": "./lib/cjs/types/index.js"
+    },
+    "./correlationId": {
+      "import": "./lib/esm/correlationId.js",
+      "require": "./lib/cjs//correlationId.js"
     }
   },
   "typesVersions": {
@@ -79,9 +83,7 @@
       "optional": true
     }
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

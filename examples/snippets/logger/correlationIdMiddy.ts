@@ -1,5 +1,5 @@
-import { search } from '@aws-lambda-powertools/jmespath';
 import { Logger } from '@aws-lambda-powertools/logger';
+import { search } from '@aws-lambda-powertools/logger/correlationId';
 import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
 import middy from '@middy/core';
 

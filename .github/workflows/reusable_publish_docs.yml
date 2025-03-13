@@ -88,9 +88,6 @@ jobs:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
           mask-aws-account-id: true
-      - name: Copy API Docs
-        run: |
-          cp -r api site/
       - name: Create Artifact (Site)
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:

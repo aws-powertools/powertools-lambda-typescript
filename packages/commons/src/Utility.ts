@@ -63,7 +63,7 @@ export class Utility {
   }
 
   /**
-   * Get the value of the `POWERTOOLS_SERVICE_NAME` environment variable.
+   * Get the value of the `AWS_LAMBDA_INITIALIZATION_TYPE` environment variable.
    */
   protected getInitializationType():
     | 'unknown'

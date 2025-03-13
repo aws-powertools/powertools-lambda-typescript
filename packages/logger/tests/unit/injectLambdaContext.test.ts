@@ -234,67 +234,6 @@ describe('Inject Lambda Context', () => {
       vi.clearAllMocks();
     });
 
-    it('should set correlation ID when search function is provided', () => {
-      const searchFn = vi.fn().mockReturnValue('12345-test-id');
-
-      // Prepare
-      const logger = new Logger({
-        correlationIdSearchFn: searchFn,
-      });
-
-      // Act
-      logger.setCorrelationIdFromPath('headers.x-correlation-id', testEvent);
-      logger.info('Test message');
-
-      // Assess
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Test message',
-          correlation_id: '12345-test-id',
-        })
-      );
-    });
-
-    it('should warn when no search function is provided', () => {
-      // Prepare
-      const logger = new Logger();
-      const warnSpy = vi.spyOn(console, 'warn');
-
-      // Act
-      logger.setCorrelationIdFromPath('headers.x-correlation-id', testEvent);
-
-      // Assess
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'correlationIdPath is set but no search function was provided'
-        )
-      );
-      expect(console.info).not.toHaveBeenCalledWith(
-        expect.stringMatching(/correlation_id/)
-      );
-    });
-
-    it('should not set correlation ID when search function returns undefined', () => {
-      // Prepare
-      const nullSearchFn = vi.fn().mockReturnValue(undefined);
-      const logger = new Logger({ correlationIdSearchFn: nullSearchFn });
-
-      // Act
-      logger.setCorrelationIdFromPath('headers.x-correlation-id', testEvent);
-      logger.info('Test message');
-
-      // Assess
-      expect(nullSearchFn).toHaveBeenCalledWith(
-        'headers.x-correlation-id',
-        testEvent
-      );
-      expect(console.info).not.toHaveBeenCalledWith(
-        expect.stringMatching(/correlation_id/)
-      );
-    });
-
     it('should set correlation ID through middleware', async () => {
       // Prepare
       const searchFn = vi.fn().mockReturnValue('12345-test-id');
@@ -356,6 +295,29 @@ describe('Inject Lambda Context', () => {
           ...getContextLogEntries(),
         })
       );
+    });
+
+    it('should set correlation ID manually', () => {
+      // Prepare
+      const logger = new Logger();
+
+      // Act
+      logger.addContext(context);
+      logger.setCorrelationId('12345-test-id');
+      logger.info('Hello, world!');
+
+      // Assess
+      expect(console.info).toHaveBeenCalledTimes(1);
+      expect(console.info).toHaveLoggedNth(
+        1,
+        expect.objectContaining({
+          message: 'Hello, world!',
+          correlation_id: '12345-test-id',
+          ...getContextLogEntries(),
+        })
+      );
+
+      expect(logger.getCorrelationId()).toBe('12345-test-id');
     });
   });
 });

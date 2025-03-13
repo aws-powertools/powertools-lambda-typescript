@@ -68,10 +68,14 @@
     "@types/lodash.merge": "^4.6.9"
   },
   "peerDependencies": {
-    "@middy/core": "4.x || 5.x || 6.x"
+    "@middy/core": "4.x || 5.x || 6.x",
+    "@aws-lambda-powertools/jmespath": "2.x"
   },
   "peerDependenciesMeta": {
     "@middy/core": {
+      "optional": true
+    },
+    "@aws-lambda-powertools/jmespath": {
       "optional": true
     }
   },

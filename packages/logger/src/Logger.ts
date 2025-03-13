@@ -214,6 +214,11 @@ class Logger extends Utility implements LoggerInterface {
   #buffer?: CircularMap<string>;
 
   /**
+   * Search function for the correlation ID.
+   */
+  #correlationIdSearchFn?: (expression: string, data: unknown) => unknown;
+
+  /**
    * Log level used by the current instance of Logger.
    *
    * Returns the log level as a number. The higher the number, the less verbose the logs.
@@ -462,6 +467,9 @@ class Logger extends Utility implements LoggerInterface {
         loggerRef.refreshSampleRateCalculation();
         loggerRef.addContext(context);
         loggerRef.logEventIfEnabled(event, options?.logEvent);
+        if (options?.correlationIdPath) {
+          loggerRef.setCorrelationIdFromPath(options?.correlationIdPath, event);
+        }
 
         try {
           return await originalMethod.apply(this, [event, context, callback]);
@@ -1229,6 +1237,7 @@ class Logger extends Utility implements LoggerInterface {
       jsonReplacerFn,
       logRecordOrder,
       logBufferOptions,
+      correlationIdSearchFn,
     } = options;
 
     if (persistentLogAttributes && persistentKeys) {
@@ -1255,6 +1264,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setLogIndentation();
     this.#jsonReplacerFn = jsonReplacerFn;
     this.#setLogBuffering(logBufferOptions);
+    this.#correlationIdSearchFn = correlationIdSearchFn;
 
     return this;
   }
@@ -1406,6 +1416,32 @@ class Logger extends Utility implements LoggerInterface {
       traceId !== undefined &&
       logLevel <= this.#bufferConfig.bufferAtVerbosity
     );
+  }
+
+  /**
+   * Extract the correlation ID from the event using the provided path and append it to the log attributes.
+   * @param correlationIdPath - The path to the correlation ID in the event object
+   * @param event - The event object
+   */
+  public setCorrelationIdFromPath(
+    correlationIdPath: string,
+    event: unknown
+  ): void {
+    if (!this.#correlationIdSearchFn) {
+      this.warn(
+        'correlationIdPath is set but no search function was provided. The correlation ID will not be added to the log attributes.'
+      );
+    } else {
+      const correlationId = this.#correlationIdSearchFn(
+        correlationIdPath,
+        event
+      );
+      if (correlationId) this.setCorrelationId(correlationId);
+    }
+  }
+
+  public setCorrelationId(value: unknown): void {
+    this.appendKeys({ correlation_id: value });
   }
 }
 

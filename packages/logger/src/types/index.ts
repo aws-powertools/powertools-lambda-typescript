@@ -10,3 +10,9 @@ export type {
   LoggerInterface,
 } from './Logger.js';
 export type { UnformattedAttributes } from './logKeys.js';
+export type {
+  JSONPrimitive,
+  JSONObject,
+  JSONArray,
+  JSONValue,
+} from './json.js';

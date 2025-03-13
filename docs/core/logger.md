@@ -805,114 +805,41 @@ You can use values ranging from `0` to `1` (100%) when setting the `sampleRateVa
 
     This feature takes into account transient issues where additional debugging information can be useful.
 
-Sampling decision happens at the Logger initialization. When using the `injectLambdaContext` method either as a decorator or middleware, the sampling decision is refreshed at the beginning of each Lambda invocation for you, except for cold starts.
+Sampling decision happens at the Logger initialization. When using the `injectLambdaContext` method either as a decorator or Middy.js middleware, the sampling decision is refreshed at the beginning of each Lambda invocation for you, except for cold starts.
 
 If you're not using either of these, you'll need to manually call the `refreshSamplingRate()` function at the start of your handler to refresh the sampling decision for each invocation.
 
 === "handler.ts"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="5 9"
     --8<-- "examples/snippets/logger/logSampling.ts"
     ```
 
-=== "Example CloudWatch Logs excerpt - Invocation #1"
+    1. The log level must be set to a more verbose level than `DEBUG` for log sampling to kick in.
+    2. You need to call `logger.refreshSamplingRate()` at the start of your handler **only** if you're not using the `injectLambdaContext()` class method decorator or Middy.js middleware.
+
+=== "Example Logs Request #1 (not sampled)"
 
     ```json
-    {
-        "level": "ERROR",
-        "message": "This is an ERROR log",
-        "sampling_rate": "0.5",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.334Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "DEBUG",
-        "message": "This is a DEBUG log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.337Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "INFO",
-        "message": "This is an INFO log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.338Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "WARN",
-        "message": "This is a WARN log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.338Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
+    --8<-- "examples/snippets/logger/samples/debugLogSamplingNotSampled.json"
     ```
 
-=== "Example CloudWatch Logs excerpt - Invocation #2"
+=== "Example Logs Request #2 (sampled)"
 
     ```json
-    {
-        "level": "ERROR",
-        "message": "This is an ERROR log",
-        "sampling_rate": "0.5",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.334Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
+    --8<-- "examples/snippets/logger/samples/debugLogSamplingSampled.json"
     ```
 
-=== "Example CloudWatch Logs excerpt - Invocation #3"
+=== "Example Logs Request #3 (sampled)"
 
     ```json
-    {
-        "level": "ERROR",
-        "message": "This is an ERROR log",
-        "sampling_rate": "0.5",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.334Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "DEBUG",
-        "message": "This is a DEBUG log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.337Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "INFO",
-        "message": "This is an INFO log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.338Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "WARN",
-        "message": "This is a WARN log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.338Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
+    --8<-- "examples/snippets/logger/samples/debugLogSamplingSampled.json"
     ```
 
-=== "Example CloudWatch Logs excerpt - Invocation #4"
+=== "Example Logs Request #4 (not sampled)"
 
     ```json
-    {
-        "level": "ERROR",
-        "message": "This is an ERROR log",
-        "sampling_rate": "0.5",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.334Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
+    --8<-- "examples/snippets/logger/samples/debugLogSamplingNotSampled.json"
     ```
 
 ### Custom Log formatter

@@ -1,4 +1,7 @@
-import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type {
+  HandlerMethodDecorator,
+  JSONObject,
+} from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
 import type { LogLevel as LogLevelList } from '../constants.js';
 import type { LogFormatter } from '../formatter/LogFormatter.js';
@@ -226,7 +229,7 @@ type CorrelationIdOption = {
   /**
    * The search function for the correlation ID.
    */
-  correlationIdSearchFn?: (expression: string, data: unknown) => unknown;
+  correlationIdSearchFn?: (expression: string, data: JSONObject) => unknown;
 };
 
 /**

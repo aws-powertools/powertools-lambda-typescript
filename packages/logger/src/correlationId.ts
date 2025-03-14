@@ -8,7 +8,6 @@ import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
  * to extract the correlation ID from the event data.
  * @param expression - The JMESPath expression to use for searching the correlation ID.
  * @param data - The event data to search in.
- * @returns - The correlation ID extracted from the event data.
  */
 const search = (expression: string, data: unknown) => {
   return JMESPathSearch(expression, data as JSONObject, {

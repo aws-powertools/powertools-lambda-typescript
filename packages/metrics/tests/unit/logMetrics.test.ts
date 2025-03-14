@@ -204,7 +204,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     );
   });
 
-  it('set function name in the cold start metric to context.functionName when using the Middy.js middleware', async () => {
+  it('default function name in the cold start metric to context.functionName when using the Middy.js middleware', async () => {
     // Prepare
     const metrics = new Metrics({
       namespace: DEFAULT_NAMESPACE,

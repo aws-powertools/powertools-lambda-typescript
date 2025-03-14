@@ -381,7 +381,7 @@ class Metrics extends Utility implements MetricsInterface {
         service: this.defaultDimensions.service,
       });
     }
-    if (this.functionName != null) {
+    if (this.functionName) {
       singleMetric.addDimension('function_name', this.functionName);
     }
     singleMetric.addMetric(COLD_START_METRIC, MetricUnits.Count, 1);
@@ -484,7 +484,7 @@ class Metrics extends Utility implements MetricsInterface {
    * The method is primarily intended for internal use, but it is exposed for advanced use cases.
    */
   public hasFunctionName(): boolean {
-    return this.functionName != null;
+    return Boolean(this.functionName);
   }
 
   /**
@@ -781,8 +781,8 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param name - The function name
    */
-  public setFunctionName(name: string): void {
-    this.functionName = name;
+  public setFunctionName(name?: string): void {
+    this.functionName = name || this.getEnvVarsService().getFunctionName();
   }
 
   /**
@@ -964,6 +964,7 @@ class Metrics extends Utility implements MetricsInterface {
       serviceName,
       singleMetric,
       defaultDimensions,
+      functionName,
     } = options;
 
     this.setEnvVarsService();
@@ -973,6 +974,7 @@ class Metrics extends Utility implements MetricsInterface {
     this.setNamespace(namespace);
     this.setService(serviceName);
     this.setDefaultDimensions(defaultDimensions);
+    this.setFunctionName(functionName);
     this.isSingleMetric = singleMetric || false;
 
     return this;

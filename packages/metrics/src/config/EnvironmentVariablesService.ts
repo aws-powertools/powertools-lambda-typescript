@@ -12,6 +12,7 @@ class EnvironmentVariablesService
   implements ConfigServiceInterface
 {
   private namespaceVariable = 'POWERTOOLS_METRICS_NAMESPACE';
+  private functionNameVariable = 'POWERTOOLS_METRICS_FUNCTION_NAME';
 
   private readonly disabledVariable = 'POWERTOOLS_METRICS_DISABLED';
 
@@ -20,6 +21,13 @@ class EnvironmentVariablesService
    */
   public getNamespace(): string {
     return this.get(this.namespaceVariable);
+  }
+
+  /**
+   * Get the value of the `POWERTOOLS_METRICS_FUNCTION_NAME` environment variable.
+   */
+  public getFunctionName(): string {
+    return this.get(this.functionNameVariable);
   }
 
   /**

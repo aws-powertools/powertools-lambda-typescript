@@ -8,7 +8,7 @@ const logger = new Logger({
 
 class Lambda implements LambdaInterface {
   @logger.injectLambdaContext({
-    ccorrelationIdPath: 'headers.my_request_id_header',
+    correlationIdPath: 'headers.my_request_id_header',
   })
   public async handler(_event: unknown, _context: unknown): Promise<void> {
     logger.info('This is an INFO log with some context');

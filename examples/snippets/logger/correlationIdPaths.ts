@@ -11,7 +11,7 @@ const logger = new Logger({
 
 class Lambda implements LambdaInterface {
   @logger.injectLambdaContext({
-    ccorrelationIdPath: correlationPaths.API_GATEWAY_REST,
+    correlationIdPath: correlationPaths.API_GATEWAY_REST,
   })
   public async handler(_event: unknown, _context: unknown): Promise<void> {
     logger.info('This is an INFO log with some context');

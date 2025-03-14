@@ -260,16 +260,40 @@ describe('Inject Lambda Context', () => {
       vi.clearAllMocks();
     });
 
-    it('should set correlation ID through middleware', async () => {
+    it.each([
+      {
+        case: 'middleware',
+        getHandler: (logger: Logger) =>
+          middy(async () => {
+            logger.info('Hello, world!');
+          }).use(
+            injectLambdaContext(logger, {
+              correlationIdPath: 'headers."x-correlation-id"',
+            })
+          ),
+      },
+      {
+        case: 'decorator',
+        getHandler: (logger: Logger) => {
+          class Lambda {
+            @logger.injectLambdaContext({
+              correlationIdPath: 'headers."x-correlation-id"',
+            })
+            public async handler(
+              _event: unknown,
+              _context: Context
+            ): Promise<void> {
+              logger.info('Hello, world!');
+            }
+          }
+          const lambda = new Lambda();
+          return lambda.handler.bind(lambda);
+        },
+      },
+    ])('should set correlation ID through $case', async ({ getHandler }) => {
       // Prepare
       const logger = new Logger({ correlationIdSearchFn: search });
-      const handler = middy(async () => {
-        logger.info('Hello, world!');
-      }).use(
-        injectLambdaContext(logger, {
-          correlationIdPath: 'headers."x-correlation-id"',
-        })
-      );
+      const handler = getHandler(logger);
 
       // Act
       await handler(testEvent, context);
@@ -284,37 +308,7 @@ describe('Inject Lambda Context', () => {
           ...getContextLogEntries(),
         })
       );
-    });
-
-    it('should set correlation ID when using class decorator', async () => {
-      // Prepare
-      const logger = new Logger({ correlationIdSearchFn: search });
-
-      class TestHandler {
-        @logger.injectLambdaContext({
-          correlationIdPath: 'headers."x-correlation-id"',
-        })
-        async handler(event: unknown, _context: Context): Promise<void> {
-          logger.info('Hello from handler');
-        }
-      }
-
-      const lambda = new TestHandler();
-      const handler = lambda.handler.bind(lambda);
-
-      // Act
-      await handler(testEvent, context);
-
-      // Assess
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Hello from handler',
-          correlation_id: '12345-test-id',
-          ...getContextLogEntries(),
-        })
-      );
+      expect(logger.getCorrelationId()).toBe('12345-test-id');
     });
 
     it('should set correlation ID manually', () => {

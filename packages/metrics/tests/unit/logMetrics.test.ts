@@ -6,6 +6,11 @@ import { COLD_START_METRIC, DEFAULT_NAMESPACE } from '../../src/constants.js';
 import { MetricUnit, Metrics } from '../../src/index.js';
 import { logMetrics } from '../../src/middleware/middy.js';
 
+const contextFunctionName = 'context-function-name';
+const contextWithFunctionName = {
+  functionName: contextFunctionName,
+} as Context;
+
 describe('LogMetrics decorator & Middy.js middleware', () => {
   const ENVIRONMENT_VARIABLES = process.env;
 
@@ -45,8 +50,8 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     const handler = lambda.handler.bind(lambda);
 
     // Act
-    await handler({}, {} as Context);
-    await handler({}, {} as Context);
+    await handler({}, contextWithFunctionName);
+    await handler({}, contextWithFunctionName);
 
     // Assess
     expect(metrics.publishStoredMetrics).toHaveBeenCalledTimes(2);
@@ -56,6 +61,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
       expect.objectContaining({
         [COLD_START_METRIC]: 1,
         service: 'hello-world',
+        function_name: contextFunctionName,
       })
     );
     expect(console.log).toHaveEmittedNthMetricWith(
@@ -82,15 +88,13 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     );
   });
 
-  it('override the function name for cold start metric when using decorator', async () => {
+  it('default function name in the cold start metric to context.functionName when using decorator', async () => {
     // Prepare
-    const decoratorFunctionName = 'decorator-function-name';
     const functionName = 'function-name';
     const metrics = new Metrics({
       singleMetric: false,
       namespace: DEFAULT_NAMESPACE,
     });
-    metrics.setFunctionName(functionName);
 
     vi.spyOn(metrics, 'publishStoredMetrics');
     class Test {
@@ -100,10 +104,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
         this.#metricName = name;
       }
 
-      @metrics.logMetrics({
-        captureColdStartMetric: true,
-        functionName: decoratorFunctionName,
-      })
+      @metrics.logMetrics({ captureColdStartMetric: true })
       async handler(_event: unknown, _context: Context) {
         this.addGreetingMetric();
       }
@@ -116,7 +117,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     const handler = lambda.handler.bind(lambda);
 
     // Act
-    await handler({}, {} as Context);
+    await handler({}, contextWithFunctionName);
 
     // Assess
     expect(metrics.publishStoredMetrics).toHaveBeenCalledTimes(1);
@@ -126,7 +127,52 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
       expect.objectContaining({
         [COLD_START_METRIC]: 1,
         service: 'hello-world',
-        function_name: decoratorFunctionName,
+        function_name: contextFunctionName,
+      })
+    );
+  });
+
+  it('does not override existing function name in the cold start metric when using decorator', async () => {
+    // Prepare
+    const functionName = 'function-name';
+    const metrics = new Metrics({
+      singleMetric: false,
+      namespace: DEFAULT_NAMESPACE,
+      functionName,
+    });
+
+    vi.spyOn(metrics, 'publishStoredMetrics');
+    class Test {
+      readonly #metricName: string;
+
+      public constructor(name: string) {
+        this.#metricName = name;
+      }
+
+      @metrics.logMetrics({ captureColdStartMetric: true })
+      async handler(_event: unknown, _context: Context) {
+        this.addGreetingMetric();
+      }
+
+      addGreetingMetric() {
+        metrics.addMetric(this.#metricName, MetricUnit.Count, 1);
+      }
+    }
+    const lambda = new Test('greetings');
+    const handler = lambda.handler.bind(lambda);
+
+    // Act
+    await handler({}, contextWithFunctionName);
+
+    // Assess
+    expect(metrics.publishStoredMetrics).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(console.log).toHaveEmittedNthEMFWith(
+      1,
+      expect.objectContaining({
+        [COLD_START_METRIC]: 1,
+        service: 'hello-world',
+        function_name: functionName,
       })
     );
   });
@@ -143,8 +189,8 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     }).use(logMetrics(metrics, { captureColdStartMetric: true }));
 
     // Act
-    await handler({}, {} as Context);
-    await handler({}, {} as Context);
+    await handler({}, contextWithFunctionName);
+    await handler({}, contextWithFunctionName);
 
     // Assess
     expect(metrics.publishStoredMetrics).toHaveBeenCalledTimes(2);
@@ -158,9 +204,8 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     );
   });
 
-  it('sets the function name in the cold start metric when using the Middy.js middleware', async () => {
+  it('set function name in the cold start metric to context.functionName when using the Middy.js middleware', async () => {
     // Prepare
-    const contextFunctionName = 'lambda-function-context-name';
     const metrics = new Metrics({
       namespace: DEFAULT_NAMESPACE,
     });
@@ -171,7 +216,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     }).use(logMetrics(metrics, { captureColdStartMetric: true }));
 
     // Act
-    await handler({}, { functionName: contextFunctionName } as Context);
+    await handler({}, contextWithFunctionName);
 
     // Assess
     expect(metrics.publishStoredMetrics).toHaveBeenCalledTimes(1);
@@ -185,48 +230,13 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     );
   });
 
-  it('override the function name in the cold start metric when using the Middy.js middleware', async () => {
-    // Prepare
-    const contextFunctionName = 'lambda-function-context-name';
-    const functionName = 'my-function';
-    const metrics = new Metrics({
-      namespace: DEFAULT_NAMESPACE,
-    });
-    metrics.setFunctionName(functionName);
-
-    vi.spyOn(metrics, 'publishStoredMetrics');
-    const overrideFunctionName = 'overwritten-function-name';
-    const handler = middy(async () => {
-      metrics.addMetric('greetings', MetricUnit.Count, 1);
-    }).use(
-      logMetrics(metrics, {
-        captureColdStartMetric: true,
-        functionName: overrideFunctionName,
-      })
-    );
-
-    // Act
-    await handler({}, { functionName: contextFunctionName } as Context);
-
-    // Assess
-    expect(metrics.publishStoredMetrics).toHaveBeenCalledTimes(1);
-    expect(console.log).toHaveEmittedNthEMFWith(
-      1,
-      expect.objectContaining({
-        [COLD_START_METRIC]: 1,
-        service: 'hello-world',
-        function_name: overrideFunctionName,
-      })
-    );
-  });
-
   it('does not override existing function name in the cold start metric when using the Middy.js middleware', async () => {
     // Prepare
     const functionName = 'my-function';
     const metrics = new Metrics({
       namespace: DEFAULT_NAMESPACE,
+      functionName,
     });
-    metrics.setFunctionName(functionName);
 
     vi.spyOn(metrics, 'publishStoredMetrics');
     const handler = middy(async () => {
@@ -234,7 +244,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     }).use(logMetrics(metrics, { captureColdStartMetric: true }));
 
     // Act
-    await handler({}, {} as Context);
+    await handler({}, contextWithFunctionName);
 
     // Assess
     expect(metrics.publishStoredMetrics).toHaveBeenCalledTimes(1);
@@ -264,7 +274,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     const handler = lambda.handler.bind(lambda);
 
     // Act
-    await handler({}, {} as Context);
+    await handler({}, contextWithFunctionName);
 
     // Assess
     expect(console.log).toHaveBeenCalledTimes(1);
@@ -296,7 +306,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     );
 
     // Act
-    await handler({}, {} as Context);
+    await handler({}, contextWithFunctionName);
 
     // Assess
     expect(console.log).toHaveBeenCalledTimes(1);
@@ -400,8 +410,8 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
       .use(myCustomMiddleware());
 
     // Act
-    await handler({ idx: 0 }, {} as Context);
-    await handler({ idx: 1 }, {} as Context);
+    await handler({ idx: 0 }, contextWithFunctionName);
+    await handler({ idx: 1 }, contextWithFunctionName);
 
     // Assess
     expect(metrics.publishStoredMetrics).toHaveBeenCalledTimes(2);

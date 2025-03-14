@@ -529,25 +529,17 @@ class Metrics extends Utility implements MetricsInterface {
    * - `captureColdStartMetric` - Whether to capture a `ColdStart` metric
    * - `defaultDimensions` - Default dimensions to add to all metrics
    * - `throwOnEmptyMetrics` - Whether to throw an error if no metrics are emitted
-   * - `functionName` - Set the function name used for cold starts
    *
    * @param options - Options to configure the behavior of the decorator, see {@link ExtraOptions}
    */
   public logMetrics(options: ExtraOptions = {}): HandlerMethodDecorator {
-    const {
-      throwOnEmptyMetrics,
-      defaultDimensions,
-      captureColdStartMetric,
-      functionName,
-    } = options;
+    const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } =
+      options;
     if (throwOnEmptyMetrics) {
       this.setThrowOnEmptyMetrics(throwOnEmptyMetrics);
     }
     if (defaultDimensions !== undefined) {
       this.setDefaultDimensions(defaultDimensions);
-    }
-    if (functionName !== undefined) {
-      this.setFunctionName(functionName);
     }
 
     return (_target, _propertyKey, descriptor) => {

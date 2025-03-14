@@ -62,14 +62,10 @@ const logMetrics = (
 
   const logMetricsBefore = async (request: MiddyLikeRequest): Promise<void> => {
     for (const metrics of metricsInstances) {
-      const {
-        throwOnEmptyMetrics,
-        defaultDimensions,
-        captureColdStartMetric,
-        functionName,
-      } = options;
-      if (!metrics.hasFunctionName() || functionName) {
-        metrics.setFunctionName(functionName ?? request.context.functionName);
+      const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } =
+        options;
+      if (!metrics.hasFunctionName()) {
+        metrics.setFunctionName(request.context.functionName);
       }
       if (throwOnEmptyMetrics) {
         metrics.setThrowOnEmptyMetrics(throwOnEmptyMetrics);

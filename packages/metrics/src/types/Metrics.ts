@@ -61,6 +61,13 @@ type MetricsOptions = {
    */
   defaultDimensions?: Dimensions;
   /**
+   * Function name to use as dimension for the `ColdStart` metric.
+   *
+   * @default undefined
+   * @see {@link MetricsInterface.setFunctionName | `setFunctionName()`}
+   */
+  functionName?: string;
+  /**
    * Logger object to be used for emitting debug, warning, and error messages.
    *
    * If not provided, debug messages will be suppressed, and warning and error messages will be sent to stdout.
@@ -112,13 +119,6 @@ type ExtraOptions = {
    * @see {@link MetricsInterface.captureColdStartMetric | `captureColdStartMetric()`}
    */
   captureColdStartMetric?: boolean;
-  /**
-   * Set the metric instances function name for `ColdStart` metric.
-   *
-   * @default request.context.functionName
-   * @see {@link MetricsInterface.setFunctionName | `setFunctionName()`}
-   */
-  functionName?: string;
 };
 
 /**

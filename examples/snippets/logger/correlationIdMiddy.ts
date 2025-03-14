@@ -7,15 +7,12 @@ const logger = new Logger({
   correlationIdSearchFn: search,
 });
 
-const lambdaHandler = async (
-  _event: unknown,
-  _context: unknown
-): Promise<void> => {
-  logger.info('This is an INFO log with some context');
-};
-
-export const handler = middy(lambdaHandler).use(
-  injectLambdaContext(logger, {
-    correlationIdPath: 'headers.my_request_id_header',
-  })
-);
+export const handler = middy()
+  .use(
+    injectLambdaContext(logger, {
+      correlationIdPath: 'headers.my_request_id_header',
+    })
+  )
+  .handler(async () => {
+    logger.info('log with correlation_id');
+  });

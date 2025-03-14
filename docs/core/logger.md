@@ -209,7 +209,7 @@ Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`tr
 
 ### Setting a Correlation ID
 
-To gest started, install `@aws-lambda-powertools/jmespath` package and configure the search function for the correlationId:
+To get started, install the `@aws-lambda-powertools/jmespath` package, and pass the search function using the `correlationIdSearchFn` constructor parameter:
 
 === "Setup the Logger to use JMESPath search"
 
@@ -224,39 +224,37 @@ You can set a correlation ID using `correlationIdPath` parameter by passing a JM
 
 === "Setting correlation ID manually"
 
-    ```typescript
+    ```typescript hl_lines="10"
     --8<-- "examples/snippets/logger/correlationIdManual.ts"
     ```
 
-=== "Middy.js Middleware"
+    1. Alternatively, if the payload is more complex you can use a JMESPath expression as second parameter when prividing a search function in the constructor.
 
-    ```typescript
+    ```typescript hl_lines="19"
     --8<-- "examples/snippets/logger/correlationIdMiddy.ts"
     ```
 
-=== "Decorator"
-
-    ```typescript
+    ```typescript hl_lines="11"
     --8<-- "examples/snippets/logger/correlationIdDecorator.ts"
     ```
 
 === "payload.json"
 
     ```typescript
-    --8<-- "examples/snippets/logger/correlationIdPayload.json"
+    --8<-- "examples/snippets/logger/samples/correlationIdPayload.json"
     ```
 
 === "log-output.json"
 
     ```json hl_lines="6"
-    --8<-- "examples/snippets/logger/correlationIdOutput.json"
+    --8<-- "examples/snippets/logger/samples/correlationIdOutput.json"
     ```
 
 To ease routine tasks like extracting correlation ID from popular event sources, we provide built-in JMESPath expressions.
 
 === "Decorator"
 
-    ```typescript
+    ```typescript hl_lines="4 14" 
     --8<-- "examples/snippets/logger/correlationIdPaths.ts"
     ```
 
@@ -270,7 +268,7 @@ To ease routine tasks like extracting correlation ID from popular event sources,
 | **APPSYNC_AUTHORIZER**        | `'requestContext.requestId'`          | AppSync resolver request ID     |
 | **APPSYNC_RESOLVER**          | `'request.headers."x-amzn-trace-id"'` | AppSync X-Ray Trace ID          |
 | **APPLICATION_LOAD_BALANCER** | `'headers."x-amzn-trace-id"'`         | ALB X-Ray Trace ID              |
-| **EVENT_BRIDGE**              | `"id"`                                | EventBridge Event ID            |
+| **EVENT_BRIDGE**              | `'id'`                                | EventBridge Event ID            |
 | **LAMBDA_FUNCTION_URL**       | `'requestContext.requestId'`          | Lambda Function URL request ID  |
 | **S3_OBJECT_LAMBDA**          | `'xAmzRequestId'`                     | S3 Object trigger request ID    |
 | **VPC_LATTICE**               | `'headers."x-amzn-trace-id'`          | VPC Lattice X-Ray Trace ID      |

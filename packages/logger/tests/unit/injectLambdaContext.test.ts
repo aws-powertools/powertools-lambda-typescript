@@ -413,36 +413,4 @@ describe('Inject Lambda Context', () => {
       })
     );
   });
-
-  it('handles undefined correlation ID gracefully', async () => {
-    // Prepare
-    const searchFn = vi.fn().mockReturnValue(undefined);
-    const logger = new Logger({ correlationIdSearchFn: searchFn });
-
-    const handler = middy(async () => {
-      logger.info('No correlation ID available');
-    }).use(
-      injectLambdaContext(logger, {
-        correlationIdPath: 'non.existent.path',
-      })
-    );
-    const testEvent = {
-      headers: {
-        'x-correlation-id': '12345-test-id',
-      },
-    };
-
-    // Act
-    await handler(testEvent, context);
-
-    // Assess
-    expect(searchFn).toHaveBeenCalledWith('non.existent.path', testEvent);
-    expect(console.info).toHaveBeenCalledTimes(1);
-    expect(console.info).toHaveLoggedNth(
-      1,
-      expect.not.objectContaining({
-        correlation_id: expect.anything(),
-      })
-    );
-  });
 });

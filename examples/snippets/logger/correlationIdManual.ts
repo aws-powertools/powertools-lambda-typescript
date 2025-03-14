@@ -1,13 +1,10 @@
 import { Logger } from '@aws-lambda-powertools/logger';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type { APIGatewayProxyEvent } from 'aws-lambda';
 
 const logger = new Logger();
 
-export const handler = async (
-  event: APIGatewayProxyEvent,
-  context: Context
-): Promise<void> => {
-  logger.setCorrelationId(event.requestContext.requestId);
+export const handler = async (event: APIGatewayProxyEvent) => {
+  logger.setCorrelationId(event.requestContext.requestId); // (1)!
 
-  logger.info('This is an INFO log with some context');
+  logger.info('log with correlation_id');
 };

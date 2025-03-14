@@ -1469,10 +1469,10 @@ class Logger extends Utility implements LoggerInterface {
    *
    * const logger = new Logger({ correlationIdSearchFn: search });
    * logger.setCorrelationId(event, 'requestContext.requestId'); // sets the correlation ID from the event using JMSPath expression
-   *
+   * ```
    *
    * @param value - The value to set as the correlation ID or the event to search for the correlation ID
-   * @param correlationIdPath - The path to search for the correlation ID in the event, if not set value is used directly
+   * @param correlationIdPath - Optional JMESPath expression to extract the correlation ID for the payload
    */
   public setCorrelationId(value: unknown, correlationIdPath?: string): void {
     if (typeof correlationIdPath === 'string') {
@@ -1496,7 +1496,6 @@ class Logger extends Utility implements LoggerInterface {
 
   /**
    * Get the correlation ID from the log attributes.
-   * @returns The correlation ID from the log attributes
    */
   public getCorrelationId(): unknown {
     return this.temporaryLogAttributes.correlation_id;

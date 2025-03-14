@@ -1,0 +1,36 @@
+{
+  "Records": [
+    {
+      "messageId": "c80e8021-a70a-42c7-a470-796e1186f753",
+      "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+      "body": "{\"userId\":\"123\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "3",
+        "SentTimestamp": "1529104986221",
+        "SenderId": "AIDAIC6K7FJUZ7Q",
+        "ApproximateFirstReceiveTimestamp": "1529104986230"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "098f6bcd4621d373cade4e832627b4f6",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-west-2:123456789012:my-queue",
+      "awsRegion": "us-west-2"
+    },
+    {
+      "messageId": "c80e8021-a70a-42c7-a470-796e1186f753",
+      "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+      "body": "{\"userId\":\"456\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "3",
+        "SentTimestamp": "1529104986221",
+        "SenderId": "AIDAIC6K7FJUZ7Q",
+        "ApproximateFirstReceiveTimestamp": "1529104986230"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "098f6bcd4621d373cade4e832627b4f6",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-west-2:123456789012:my-queue",
+      "awsRegion": "us-west-2"
+    }
+  ]
+}

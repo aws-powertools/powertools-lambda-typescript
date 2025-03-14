@@ -201,14 +201,19 @@ type LogBufferOption = {
      */
     flushOnErrorLog?: boolean;
     /**
-     * The threshold to buffer logs. Logs with a level below
-     * this threshold will be buffered
+     * The threshold to buffer logs. Logs with a level more severe than this will be logged immediately.
+     * Only 'DEBUG', 'INFO', 'WARN' or their lowercase variants are allowed.
      * @default `DEBUG`
      */
-    bufferAtVerbosity?: Omit<
-      LogLevel,
-      'ERROR' | 'error' | 'CRITICAL' | 'critical' | 'SILENT' | 'silent'
-    >;
+    bufferAtVerbosity?:
+      | Extract<
+          (typeof LogLevelList)[keyof typeof LogLevelList],
+          'DEBUG' | 'INFO' | 'WARN'
+        >
+      | Extract<
+          Lowercase<(typeof LogLevelList)[keyof typeof LogLevelList]>,
+          'debug' | 'info' | 'warn'
+        >;
   };
 };
 

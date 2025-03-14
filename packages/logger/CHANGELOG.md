@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
+
+
+### Features
+
+* **logger:** Enable log buffering feature ([#3641](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3641)) ([8203016](https://github.com/aws-powertools/powertools-lambda-typescript/commit/82030167abe3797392b919db2b4a006ae47e0ef7))
+* **logger:** flush buffer on uncaught error decorator ([#3676](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3676)) ([28db2e3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/28db2e3c34e5fe27cb894112bf5c248704b3d9ea))
+* **logger:** Flush buffer on uncaught error in Middy middleware ([#3690](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3690)) ([23eebe4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/23eebe46bd4d07315545ecefa672d53d14ac9a72))
+* **logger:** refresh sample rate calculation before each invocation ([#3672](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3672)) ([8c8d6b2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8c8d6b2ea4ccd473f56b05913169cc5995765562))
+
+
+
+
+
 # [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
 
 

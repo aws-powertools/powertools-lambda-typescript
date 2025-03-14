@@ -186,17 +186,60 @@ describe('Inject Lambda Context', () => {
     );
   });
 
-  it('refreshes sample rate calculation before each invocation using decorator for warm start only', async () => {
-    // Prepare
-    const logger = new Logger({ sampleRateValue: 0.5 });
-    const refreshSpy = vi.spyOn(logger, 'refreshSampleRateCalculation');
+  it.each([
+    {
+      case: 'middleware',
+      getHandler: (logger: Logger) =>
+        middy(async () => {
+          logger.info('Hello, world!');
+        }).use(injectLambdaContext(logger)),
+    },
+    {
+      case: 'decorator',
+      getHandler: (logger: Logger) => {
+        class Lambda {
+          @logger.injectLambdaContext()
+          public async handler(
+            _event: unknown,
+            _context: Context
+          ): Promise<void> {
+            logger.info('test');
+          }
+        }
+        const lambda = new Lambda();
+        return lambda.handler.bind(lambda);
+      },
+    },
+  ])(
+    'refreshes sample rate calculation before only during warm starts ($case)',
+    async ({ getHandler }) => {
+      // Prepare
+      const logger = new Logger({ sampleRateValue: 1 });
+      const setLogLevelSpy = vi.spyOn(logger, 'setLogLevel');
 
-    class Lambda {
-      @logger.injectLambdaContext()
-      public async handler(_event: unknown, _context: Context): Promise<void> {
-        logger.info('test');
-      }
+      const handler = getHandler(logger);
+
+      // Act
+      await handler(event, context); // cold start
+      await handler(event, context); // warm start
+
+      // Assess
+      expect(setLogLevelSpy).toHaveBeenCalledTimes(1);
+      expect(console.debug).toHaveBeenCalledTimes(2);
+      expect(console.debug).toHaveLoggedNth(
+        1,
+        expect.objectContaining({
+          message: 'Setting log level to DEBUG due to sampling rate',
+        })
+      );
+      expect(console.debug).toHaveLoggedNth(
+        2,
+        expect.objectContaining({
+          message: 'Setting log level to DEBUG due to sampling rate',
+        })
+      );
     }
+    
     const lambda = new Lambda();
     // Act
     await lambda.handler({}, {} as Context);
@@ -554,4 +597,5 @@ describe('Inject Lambda Context', () => {
       );
     });
   });
+  );
 });

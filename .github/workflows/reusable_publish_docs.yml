@@ -82,19 +82,12 @@ jobs:
         run: |
           rm -rf site
           mkdocs build
-      - name: Build API docs
-        run: |
-          rm -rf api
-          npm run docs-generateApiDoc
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
           mask-aws-account-id: true
-      - name: Copy API Docs
-        run: |
-          cp -r api site/
       - name: Create Artifact (Site)
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:

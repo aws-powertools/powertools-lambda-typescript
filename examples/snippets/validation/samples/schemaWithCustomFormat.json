@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "accountId": {
+      "type": "string",
+      "format": "awsaccountid"
+    },
+    "creditCard": {
+      "type": "string",
+      "format": "creditcard"
+    }
+  },
+  "required": [
+    "accountId"
+  ]
+}

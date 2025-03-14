@@ -51,7 +51,10 @@
  * ```
  */
 export class Utility {
-  #initializationType: 'unknown' | 'on-demand' | 'provisioned-concurrency';
+  readonly #initializationType:
+    | 'unknown'
+    | 'on-demand'
+    | 'provisioned-concurrency';
   protected coldStart = true;
   protected readonly defaultServiceName: string = 'service_undefined';
 

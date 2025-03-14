@@ -90,7 +90,6 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
 
   it('default function name in the cold start metric to context.functionName when using decorator', async () => {
     // Prepare
-    const functionName = 'function-name';
     const metrics = new Metrics({
       singleMetric: false,
       namespace: DEFAULT_NAMESPACE,

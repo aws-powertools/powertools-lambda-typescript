@@ -12,7 +12,7 @@ class EnvironmentVariablesService
   implements ConfigServiceInterface
 {
   private namespaceVariable = 'POWERTOOLS_METRICS_NAMESPACE';
-  private functionNameVariable = 'POWERTOOLS_METRICS_FUNCTION_NAME';
+  private readonly functionNameVariable = 'POWERTOOLS_METRICS_FUNCTION_NAME';
 
   private readonly disabledVariable = 'POWERTOOLS_METRICS_DISABLED';
 

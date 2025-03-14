@@ -213,7 +213,7 @@ To get started, install the `@aws-lambda-powertools/jmespath` package, and pass 
 
 === "Setup the Logger to use JMESPath search"
 
-    ```typescript
+    ```typescript hl_lines="5"
     --8<-- "examples/snippets/logger/correlationIdLogger.ts"
     ```
 
@@ -224,15 +224,19 @@ You can set a correlation ID using `correlationIdPath` parameter by passing a JM
 
 === "Setting correlation ID manually"
 
-    ```typescript hl_lines="10"
+    ```typescript hl_lines="7"
     --8<-- "examples/snippets/logger/correlationIdManual.ts"
     ```
 
     1. Alternatively, if the payload is more complex you can use a JMESPath expression as second parameter when prividing a search function in the constructor.
 
-    ```typescript hl_lines="19"
+=== "Middy.js"
+
+    ```typescript hl_lines="13"
     --8<-- "examples/snippets/logger/correlationIdMiddy.ts"
     ```
+
+=== "Decorator"
 
     ```typescript hl_lines="11"
     --8<-- "examples/snippets/logger/correlationIdDecorator.ts"

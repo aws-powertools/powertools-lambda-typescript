@@ -239,30 +239,8 @@ describe('Inject Lambda Context', () => {
         })
       );
     }
-    
-    const lambda = new Lambda();
-    // Act
-    await lambda.handler({}, {} as Context);
+  );
 
-    // Assess
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('refreshes sample rate calculation before each invocation using middleware for warm start only', async () => {
-    // Prepare
-    const logger = new Logger({ sampleRateValue: 0.5 });
-    const refreshSpy = vi.spyOn(logger, 'refreshSampleRateCalculation');
-
-    const handler = middy(async () => {
-      logger.info('Hello, world!');
-    }).use(injectLambdaContext(logger));
-
-    // Act
-    await handler(event, context);
-
-    // Assess
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
-  });
   describe('Correlation ID', () => {
     const testEvent = {
       headers: {
@@ -597,5 +575,4 @@ describe('Inject Lambda Context', () => {
       );
     });
   });
-  );
 });

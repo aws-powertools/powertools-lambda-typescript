@@ -1,6 +1,5 @@
 import { LOGGER_KEY } from '@aws-lambda-powertools/commons';
 import type {
-  JSONObject,
   MiddlewareLikeObj,
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons/types';
@@ -98,10 +97,7 @@ const injectLambdaContext = (
       );
 
       if (options?.correlationIdPath) {
-        logger.setCorrelationIdFromPath(
-          options.correlationIdPath,
-          request.event as JSONObject
-        );
+        logger.setCorrelationId(request.event, options.correlationIdPath);
       }
     }
   };

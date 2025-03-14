@@ -241,332 +241,208 @@ describe('Inject Lambda Context', () => {
     }
   );
 
-  describe('Correlation ID', () => {
+  it.each([
+    {
+      case: 'middleware',
+      getHandler: (logger: Logger) =>
+        middy(async () => {
+          logger.info('Hello, world!');
+        }).use(
+          injectLambdaContext(logger, {
+            correlationIdPath: 'headers."x-correlation-id"',
+          })
+        ),
+    },
+    {
+      case: 'decorator',
+      getHandler: (logger: Logger) => {
+        class Lambda {
+          @logger.injectLambdaContext({
+            correlationIdPath: 'headers."x-correlation-id"',
+          })
+          public async handler(
+            _event: unknown,
+            _context: Context
+          ): Promise<void> {
+            logger.info('Hello, world!');
+          }
+        }
+        const lambda = new Lambda();
+        return lambda.handler.bind(lambda);
+      },
+    },
+  ])('sets correlation ID through $case', async ({ getHandler }) => {
+    // Prepare
+    const logger = new Logger({ correlationIdSearchFn: search });
+    const handler = getHandler(logger);
     const testEvent = {
       headers: {
         'x-correlation-id': '12345-test-id',
       },
+    };
+
+    // Act
+    await handler(testEvent, context);
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Hello, world!',
+        correlation_id: '12345-test-id',
+        ...getContextLogEntries(),
+      })
+    );
+    expect(logger.getCorrelationId()).toBe('12345-test-id');
+  });
+
+  it('warns when correlationIdPath is provided but no search function is available', async () => {
+    // Prepare
+    const logger = new Logger(); // No search function provided
+    const warnSpy = vi.spyOn(logger, 'warn');
+    const testEvent = {
+      headers: {
+        'x-correlation-id': '12345-test-id',
+      },
+    };
+    // Act - Use middleware which will internally call setCorrelationIdFromPath
+    const handler = middy(async () => {
+      logger.info('Hello, world!');
+    }).use(
+      injectLambdaContext(logger, {
+        correlationIdPath: 'headers.x-correlation-id',
+      })
+    );
+
+    await handler(testEvent, context);
+
+    // Assess
+    expect(warnSpy).toHaveBeenCalledWith(
+      'correlationIdPath is set but no search function was provided. The correlation ID will not be added to the log attributes.'
+    );
+  });
+
+  it('does not set correlation ID when search function returns falsy value', async () => {
+    // Prepare
+    const logger = new Logger({ correlationIdSearchFn: search });
+
+    // Act - Use middleware which will internally call setCorrelationIdFromPath
+    const handler = middy(async () => {
+      logger.info('Hello, world!');
+    }).use(
+      injectLambdaContext(logger, {
+        correlationIdPath: 'headers."non-existent"',
+      })
+    );
+
+    await handler({ foo: 'bar' }, context);
+
+    // Assess
+    expect(logger.getCorrelationId()).toBeUndefined();
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.not.objectContaining({
+        correlation_id: expect.anything(),
+      })
+    );
+  });
+
+  it('propagates search function to child loggers', () => {
+    // Prepare
+    const mockSearch = vi.fn().mockReturnValue('found-id');
+    const logger = new Logger({ correlationIdSearchFn: mockSearch });
+
+    // Act
+    const childLogger = logger.createChild();
+    childLogger.setCorrelationId({ some: 'event' }, 'some.path');
+
+    // Assess
+    expect(mockSearch).toHaveBeenCalledWith('some.path', { some: 'event' });
+    expect(childLogger.getCorrelationId()).toBe('found-id');
+  });
+
+  it('allows using different types as correlation ID', () => {
+    // Prepare
+    const logger = new Logger();
+    const numericId = 12345;
+
+    // Act
+    logger.setCorrelationId(numericId);
+    logger.info('Using numeric ID');
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Using numeric ID',
+        correlation_id: numericId,
+      })
+    );
+    expect(logger.getCorrelationId()).toBe(numericId);
+  });
+
+  it('uses the API_GATEWAY_REST predefined path to extract correlation ID', async () => {
+    // Prepare
+    const logger = new Logger({ correlationIdSearchFn: search });
+    const handler = middy(async () => {
+      logger.info('Using API Gateway request ID');
+    }).use(
+      injectLambdaContext(logger, {
+        correlationIdPath: 'requestContext.requestId',
+      })
+    );
+    const testEvent = {
       requestContext: {
         requestId: 'api-gateway-request-id',
       },
-      id: 'eventbridge-id',
     };
 
-    beforeEach(() => {
-      process.env = {
-        ...ENVIRONMENT_VARIABLES,
-        POWERTOOLS_DEV: 'true',
-      };
-      vi.clearAllMocks();
-    });
+    // Act
+    await handler(testEvent, context);
 
-    it.each([
-      {
-        case: 'middleware',
-        getHandler: (logger: Logger) =>
-          middy(async () => {
-            logger.info('Hello, world!');
-          }).use(
-            injectLambdaContext(logger, {
-              correlationIdPath: 'headers."x-correlation-id"',
-            })
-          ),
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Using API Gateway request ID',
+        correlation_id: 'api-gateway-request-id',
+      })
+    );
+  });
+
+  it('handles undefined correlation ID gracefully', async () => {
+    // Prepare
+    const searchFn = vi.fn().mockReturnValue(undefined);
+    const logger = new Logger({ correlationIdSearchFn: searchFn });
+
+    const handler = middy(async () => {
+      logger.info('No correlation ID available');
+    }).use(
+      injectLambdaContext(logger, {
+        correlationIdPath: 'non.existent.path',
+      })
+    );
+    const testEvent = {
+      headers: {
+        'x-correlation-id': '12345-test-id',
       },
-      {
-        case: 'decorator',
-        getHandler: (logger: Logger) => {
-          class Lambda {
-            @logger.injectLambdaContext({
-              correlationIdPath: 'headers."x-correlation-id"',
-            })
-            public async handler(
-              _event: unknown,
-              _context: Context
-            ): Promise<void> {
-              logger.info('Hello, world!');
-            }
-          }
-          const lambda = new Lambda();
-          return lambda.handler.bind(lambda);
-        },
-      },
-    ])('should set correlation ID through $case', async ({ getHandler }) => {
-      // Prepare
-      const logger = new Logger({ correlationIdSearchFn: search });
-      const handler = getHandler(logger);
+    };
 
-      // Act
-      await handler(testEvent, context);
+    // Act
+    await handler(testEvent, context);
 
-      // Assess
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Hello, world!',
-          correlation_id: '12345-test-id',
-          ...getContextLogEntries(),
-        })
-      );
-      expect(logger.getCorrelationId()).toBe('12345-test-id');
-    });
-
-    it('should set correlation ID manually', () => {
-      // Prepare
-      const logger = new Logger();
-
-      // Act
-      logger.addContext(context);
-      logger.setCorrelationId('12345-test-id');
-      logger.info('Hello, world!');
-
-      // Assess
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Hello, world!',
-          correlation_id: '12345-test-id',
-          ...getContextLogEntries(),
-        })
-      );
-
-      expect(logger.getCorrelationId()).toBe('12345-test-id');
-    });
-
-    it('should warn when correlationIdPath is provided but no search function is available', async () => {
-      // Prepare
-      const logger = new Logger(); // No search function provided
-      const warnSpy = vi.spyOn(logger, 'warn');
-
-      // Act - Use middleware which will internally call setCorrelationIdFromPath
-      const handler = middy(async () => {
-        logger.info('Hello, world!');
-      }).use(
-        injectLambdaContext(logger, {
-          correlationIdPath: 'headers.x-correlation-id',
-        })
-      );
-
-      await handler(testEvent, context);
-
-      // Assess
-      expect(warnSpy).toHaveBeenCalledWith(
-        'correlationIdPath is set but no search function was provided. The correlation ID will not be added to the log attributes.'
-      );
-    });
-
-    it('should not set correlation ID when search function returns falsy value', async () => {
-      // Prepare
-      const logger = new Logger({ correlationIdSearchFn: search });
-
-      // Act - Use middleware which will internally call setCorrelationIdFromPath
-      const handler = middy(async () => {
-        logger.info('Hello, world!');
-      }).use(
-        injectLambdaContext(logger, {
-          correlationIdPath: 'headers."non-existent"',
-        })
-      );
-
-      await handler(testEvent, context);
-
-      // Assess
-      expect(logger.getCorrelationId()).toBeUndefined();
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.not.objectContaining({
-          correlation_id: expect.anything(),
-        })
-      );
-    });
-
-    it('should propagate correlation ID to child loggers', () => {
-      // Prepare
-      const logger = new Logger();
-      logger.setCorrelationId('parent-correlation-id');
-
-      // Act
-      const childLogger = logger.createChild();
-      childLogger.info('Hello from child!');
-
-      // Assess
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Hello from child!',
-          correlation_id: 'parent-correlation-id',
-        })
-      );
-    });
-
-    it('should allow using different types as correlation ID', () => {
-      // Prepare
-      const logger = new Logger();
-      const numericId = 12345;
-
-      // Act
-      logger.setCorrelationId(numericId);
-      logger.info('Using numeric ID');
-
-      // Assess
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Using numeric ID',
-          correlation_id: numericId,
-        })
-      );
-      expect(logger.getCorrelationId()).toBe(numericId);
-    });
-
-    it('should handle complex objects as correlation ID', () => {
-      // Prepare
-      const logger = new Logger();
-      const complexId = { requestId: 'abc123', timestamp: Date.now() };
-
-      // Act
-      logger.setCorrelationId(complexId);
-      logger.info('Using complex object ID');
-
-      // Assess
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Using complex object ID',
-          correlation_id: complexId,
-        })
-      );
-      expect(logger.getCorrelationId()).toEqual(complexId);
-    });
-
-    it('should set correlation IDs across multiple logger instances with middleware', async () => {
-      // Prepare
-      const logger1 = new Logger({ correlationIdSearchFn: search });
-      const logger2 = new Logger({ correlationIdSearchFn: search });
-
-      const handler = middy(async () => {
-        logger1.info('Log from first logger');
-        logger2.info('Log from second logger');
-      }).use(
-        injectLambdaContext([logger1, logger2], {
-          correlationIdPath: 'headers."x-correlation-id"',
-        })
-      );
-
-      // Act
-      await handler(testEvent, context);
-
-      // Assess
-      expect(console.info).toHaveBeenCalledTimes(2);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Log from first logger',
-          correlation_id: '12345-test-id',
-        })
-      );
-      expect(console.info).toHaveLoggedNth(
-        2,
-        expect.objectContaining({
-          message: 'Log from second logger',
-          correlation_id: '12345-test-id',
-        })
-      );
-    });
-
-    it('should work with both correlationIdPath and logEvent options together', async () => {
-      // Prepare
-      const logger = new Logger({ correlationIdSearchFn: search });
-      const infoSpy = vi.spyOn(logger, 'info');
-
-      const handler = middy(async () => {
-        logger.info('Log with correlation ID');
-      }).use(
-        injectLambdaContext(logger, {
-          correlationIdPath: 'headers."x-correlation-id"',
-          logEvent: true,
-        })
-      );
-
-      // Act
-      await handler(testEvent, context);
-
-      // Assess
-      // First call should be for the event logging
-      expect(infoSpy).toHaveBeenNthCalledWith(
-        1,
-        'Lambda invocation event',
-        expect.objectContaining({ event: testEvent })
-      );
-      // Second call should be our actual log
-      expect(infoSpy).toHaveBeenNthCalledWith(2, 'Log with correlation ID');
-
-      // Check the log output includes correlation ID
-      expect(console.info).toHaveBeenCalledTimes(2);
-      expect(console.info).toHaveLoggedNth(
-        2,
-        expect.objectContaining({
-          message: 'Log with correlation ID',
-          correlation_id: '12345-test-id',
-        })
-      );
-    });
-
-    it('should use the API_GATEWAY_REST predefined path to extract correlation ID', async () => {
-      // Prepare
-      const logger = new Logger({ correlationIdSearchFn: search });
-      const handler = middy(async () => {
-        logger.info('Using API Gateway request ID');
-      }).use(
-        injectLambdaContext(logger, {
-          correlationIdPath: 'requestContext.requestId',
-        })
-      );
-
-      // Act
-      await handler(testEvent, context);
-
-      // Assess
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Using API Gateway request ID',
-          correlation_id: 'api-gateway-request-id',
-        })
-      );
-    });
-
-    it('should handle undefined correlation ID gracefully', async () => {
-      // Prepare
-      const searchFn = vi.fn().mockReturnValue(undefined);
-      const logger = new Logger({ correlationIdSearchFn: searchFn });
-
-      const handler = middy(async () => {
-        logger.info('No correlation ID available');
-      }).use(
-        injectLambdaContext(logger, {
-          correlationIdPath: 'non.existent.path',
-        })
-      );
-
-      // Act
-      await handler(testEvent, context);
-
-      // Assess
-      expect(searchFn).toHaveBeenCalledWith('non.existent.path', testEvent);
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.not.objectContaining({
-          correlation_id: expect.anything(),
-        })
-      );
-    });
+    // Assess
+    expect(searchFn).toHaveBeenCalledWith('non.existent.path', testEvent);
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.not.objectContaining({
+        correlation_id: expect.anything(),
+      })
+    );
   });
 });

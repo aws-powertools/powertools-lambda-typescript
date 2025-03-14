@@ -50,7 +50,7 @@
     },
     "./correlationId": {
       "import": "./lib/esm/correlationId.js",
-      "require": "./lib/cjs//correlationId.js"
+      "require": "./lib/cjs/correlationId.js"
     }
   },
   "typesVersions": {

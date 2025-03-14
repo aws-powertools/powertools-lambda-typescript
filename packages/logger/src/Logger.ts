@@ -4,7 +4,6 @@ import { Utility, isNullOrUndefined } from '@aws-lambda-powertools/commons';
 import type {
   AsyncHandler,
   HandlerMethodDecorator,
-  JSONObject,
   SyncHandler,
 } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
@@ -219,7 +218,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Search function for the correlation ID.
    */
-  #correlationIdSearchFn?: (expression: string, data: JSONObject) => unknown;
+  #correlationIdSearchFn?: (expression: string, data: unknown) => unknown;
 
   /**
    * The debug sampling rate configuration.
@@ -332,6 +331,7 @@ class Logger extends Utility implements LoggerInterface {
           environment: this.powertoolsLogData.environment,
           persistentLogAttributes: this.persistentLogAttributes,
           jsonReplacerFn: this.#jsonReplacerFn,
+          correlationIdSearchFn: this.#correlationIdSearchFn,
           ...(this.#bufferConfig.enabled && {
             logBufferOptions: {
               maxBytes: this.#bufferConfig.maxBytes,
@@ -487,7 +487,7 @@ class Logger extends Utility implements LoggerInterface {
         loggerRef.addContext(context);
         loggerRef.logEventIfEnabled(event, options?.logEvent);
         if (options?.correlationIdPath) {
-          loggerRef.setCorrelationIdFromPath(options?.correlationIdPath, event);
+          loggerRef.setCorrelationId(event, options?.correlationIdPath);
         }
 
         try {
@@ -1452,32 +1452,45 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Extract the correlation ID from the event using the provided path and append it to the log attributes.
-   * @param correlationIdPath - The path to the correlation ID in the event object
-   * @param event - The event object
+   * Set the correlation ID for the log item.
+   * This method can be used to set the correlation ID for the log item or to search for the correlation ID in the event.
+   *
+   * @example
+   * ```typescript
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   *
+   * const logger = new Logger();
+   * logger.setCorrelationId('my-correlation-id'); // sets the correlation ID directly with the first argument as value
+   * ```
+   *
+   * ```typescript
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   * import { search } from '@aws-lambda-powertools/logger/correlationId';
+   *
+   * const logger = new Logger({ correlationIdSearchFn: search });
+   * logger.setCorrelationId(event, 'requestContext.requestId'); // sets the correlation ID from the event using JMSPath expression
+   *
+   *
+   * @param value - The value to set as the correlation ID or the event to search for the correlation ID
+   * @param correlationIdPath - The path to search for the correlation ID in the event, if not set value is used directly
    */
-  public setCorrelationIdFromPath(
-    correlationIdPath: string,
-    event: JSONObject
-  ): void {
-    if (!this.#correlationIdSearchFn) {
-      this.warn(
-        'correlationIdPath is set but no search function was provided. The correlation ID will not be added to the log attributes.'
-      );
-    } else {
+  public setCorrelationId(value: unknown, correlationIdPath?: string): void {
+    if (typeof correlationIdPath === 'string') {
+      if (!this.#correlationIdSearchFn) {
+        this.warn(
+          'correlationIdPath is set but no search function was provided. The correlation ID will not be added to the log attributes.'
+        );
+        return;
+      }
       const correlationId = this.#correlationIdSearchFn(
         correlationIdPath,
-        event
+        value
       );
-      if (correlationId) this.setCorrelationId(correlationId);
+      if (correlationId) this.appendKeys({ correlation_id: correlationId });
+      return;
     }
-  }
 
-  /**
-   * Set the correlation ID in the log attributes.
-   * @param value - The value to set as the correlation ID
-   */
-  public setCorrelationId(value: unknown): void {
+    // If no correlationIdPath is provided, set the correlation ID directly
     this.appendKeys({ correlation_id: value });
   }
 

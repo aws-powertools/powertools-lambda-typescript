@@ -217,7 +217,8 @@ To gest started, install `@aws-lambda-powertools/jmespath` package and configure
     --8<-- "examples/snippets/logger/correlationIdLogger.ts"
     ```
 
-    ???+ tip You can retrieve correlation IDs via `getCorrelationId` method.
+???+ tip
+    You can retrieve correlation IDs via `getCorrelationId` method.
 
 You can set a correlation ID using `correlationIdPath` parameter by passing a JMESPath expression, including our custom JMESPath functions or set it manually by calling `setCorrelationId` function.
 
@@ -266,6 +267,7 @@ To ease routine tasks like extracting correlation ID from popular event sources,
 | ----------------------------- | ------------------------------------- | ------------------------------- |
 | **API_GATEWAY_REST**          | `'requestContext.requestId'`          | API Gateway REST API request ID |
 | **API_GATEWAY_HTTP**          | `'requestContext.requestId'`          | API Gateway HTTP API request ID |
+| **APPSYNC_AUTHORIZER**        | `'requestContext.requestId'`          | AppSync resolver request ID     |
 | **APPSYNC_RESOLVER**          | `'request.headers."x-amzn-trace-id"'` | AppSync X-Ray Trace ID          |
 | **APPLICATION_LOAD_BALANCER** | `'headers."x-amzn-trace-id"'`         | ALB X-Ray Trace ID              |
 | **EVENT_BRIDGE**              | `"id"`                                | EventBridge Event ID            |

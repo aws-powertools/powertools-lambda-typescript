@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_NAMESPACE } from '../../src/constants.js';
+import { COLD_START_METRIC, DEFAULT_NAMESPACE } from '../../src/constants.js';
 import { MetricUnit, Metrics } from '../../src/index.js';
 import type { ConfigServiceInterface } from '../../src/types/index.js';
 
@@ -113,6 +113,123 @@ describe('Initialize Metrics', () => {
     );
   });
 
+  it('prioritizes the function name provided in the constructor', () => {
+    // Prepare
+    process.env.POWERTOOLS_METRICS_FUNCTION_NAME = 'another-function';
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+      functionName: 'my-function-name',
+    });
+
+    // Act
+    metrics.captureColdStartMetric();
+
+    // Assess
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        [COLD_START_METRIC]: 1,
+        function_name: 'my-function-name',
+      })
+    );
+  });
+
+  it('uses the function name provided in the environment variables', () => {
+    // Prepare
+    process.env.POWERTOOLS_METRICS_FUNCTION_NAME = 'another-function';
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+    });
+
+    // Act
+    metrics.captureColdStartMetric();
+
+    // Assess
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        [COLD_START_METRIC]: 1,
+        function_name: 'another-function',
+      })
+    );
+  });
+
+  it.each([
+    {
+      case: 'an empty string',
+      functionName: '',
+    },
+    {
+      case: 'undefined',
+      functionName: undefined,
+    },
+  ])(
+    'does not set the function name from env when is $case',
+    ({ functionName }) => {
+      // Prepare
+      process.env.POWERTOOLS_METRICS_FUNCTION_NAME = functionName;
+      const metrics = new Metrics({
+        namespace: DEFAULT_NAMESPACE,
+      });
+
+      // Act
+      metrics.captureColdStartMetric();
+
+      // Assess
+      expect(console.log).toHaveBeenCalledTimes(1);
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.objectContaining({
+          service: 'hello-world',
+          [COLD_START_METRIC]: 1,
+        })
+      );
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.not.objectContaining({
+          function_name: expect.anything(),
+        })
+      );
+    }
+  );
+
+  it.each([
+    {
+      case: 'an empty string',
+      functionName: '',
+    },
+    {
+      case: 'undefined',
+      functionName: undefined,
+    },
+  ])(
+    'does not set the function name from constructor when is $case',
+    ({ functionName }) => {
+      // Prepare
+      const metrics = new Metrics({
+        namespace: DEFAULT_NAMESPACE,
+        functionName,
+      });
+
+      // Act
+      metrics.captureColdStartMetric();
+
+      // Assess
+      expect(console.log).toHaveBeenCalledTimes(1);
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.objectContaining({
+          service: 'hello-world',
+          [COLD_START_METRIC]: 1,
+        })
+      );
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.not.objectContaining({
+          function_name: expect.anything(),
+        })
+      );
+    }
+  );
+
   it('uses the custom config service provided', () => {
     // Prepare
     const configService = {
@@ -127,6 +244,9 @@ describe('Initialize Metrics', () => {
       },
       isValueTrue(value: string): boolean {
         return value === 'true';
+      },
+      getFunctionName(): string {
+        return 'custom-function-name';
       },
     };
     const metrics = new Metrics({

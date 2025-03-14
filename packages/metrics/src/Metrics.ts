@@ -371,8 +371,10 @@ class Metrics extends Utility implements MetricsInterface {
    *   metrics.captureColdStartMetric();
    * };
    * ```
+   *
+   * @param functionName - Optional function name to override the default one set in the constructor, environment variable, or Lambda function context.
    */
-  public captureColdStartMetric(): void {
+  public captureColdStartMetric(functionName?: string): void {
     if (!this.getColdStart()) return;
     const singleMetric = this.singleMetric();
 
@@ -381,8 +383,11 @@ class Metrics extends Utility implements MetricsInterface {
         service: this.defaultDimensions.service,
       });
     }
-    if (this.functionName != null) {
-      singleMetric.addDimension('function_name', this.functionName);
+    for (const value of [this.functionName, functionName]) {
+      if (value && value.trim().length > 0) {
+        singleMetric.addDimension('function_name', value);
+        break;
+      }
     }
     singleMetric.addMetric(COLD_START_METRIC, MetricUnits.Count, 1);
   }
@@ -543,8 +548,8 @@ class Metrics extends Utility implements MetricsInterface {
         context: Context,
         callback: Callback
       ): Promise<unknown> {
-        metricsRef.functionName = context.functionName;
-        if (captureColdStartMetric) metricsRef.captureColdStartMetric();
+        if (captureColdStartMetric)
+          metricsRef.captureColdStartMetric(context.functionName);
 
         let result: unknown;
         try {
@@ -749,24 +754,10 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Set the function name to be added to each metric as a dimension.
-   *
-   * When using the {@link Metrics.logMetrics | `logMetrics()`} decorator, or the Middy.js middleware, the function
-   * name is automatically inferred from the Lambda context.
-   *
-   * @example
-   * ```typescript
-   * import { Metrics } from '@aws-lambda-powertools/metrics';
-   *
-   * const metrics = new Metrics({
-   *   namespace: 'serverlessAirline',
-   *   serviceName: 'orders'
-   * });
-   *
-   * metrics.setFunctionName('my-function-name');
-   * ```
-   *
-   * @param name - The function name
+   * @deprecated Override the function name for `ColdStart` metrics inferred from the context either via:
+   * - `functionName` constructor parameter
+   * - `POWERTOOLS_FUNCTION_NAME` environment variable
+   * - {@link Metrics.captureColdStartMetric() `captureColdStartMetric('myFunctionName')`} method
    */
   public setFunctionName(name: string): void {
     this.functionName = name;
@@ -918,6 +909,22 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * Set the function name for the cold start metric.
+   *
+   * @param functionName - The function name to be used for the cold start metric set in the constructor
+   */
+  protected setFunctionNameForColdStartMetric(functionName?: string): void {
+    const constructorFunctionName = functionName;
+    const envFunctionName = this.getEnvVarsService().getFunctionName();
+    for (const value of [constructorFunctionName, envFunctionName]) {
+      if (value && value.trim().length > 0) {
+        this.functionName = value;
+        break;
+      }
+    }
+  }
+
+  /**
    * Set the namespace to be used.
    *
    * @param namespace - The namespace to be used
@@ -951,6 +958,7 @@ class Metrics extends Utility implements MetricsInterface {
       serviceName,
       singleMetric,
       defaultDimensions,
+      functionName,
     } = options;
 
     this.setEnvVarsService();
@@ -960,6 +968,7 @@ class Metrics extends Utility implements MetricsInterface {
     this.setNamespace(namespace);
     this.setService(serviceName);
     this.setDefaultDimensions(defaultDimensions);
+    this.setFunctionNameForColdStartMetric(functionName);
     this.isSingleMetric = singleMetric || false;
 
     return this;

@@ -86,6 +86,62 @@ describe('ColdStart metric', () => {
     );
   });
 
+  it('does not override the function name from constructor in the cold start metric', () => {
+    // Prepare
+    const functionName = 'my-function';
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+      functionName: 'another-function',
+    });
+
+    // Act
+    metrics.captureColdStartMetric(functionName);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        [COLD_START_METRIC]: 1,
+        function_name: 'another-function',
+      })
+    );
+  });
+
+  it.each([
+    {
+      case: 'empty string',
+      functionName: '',
+    },
+    {
+      case: 'undefined',
+      functionName: undefined,
+    },
+  ])(
+    'does not include the function name if not set or invalid ($case)',
+    ({ functionName }) => {
+      // Prepare
+      const metrics = new Metrics({
+        namespace: DEFAULT_NAMESPACE,
+      });
+
+      // Act
+      metrics.captureColdStartMetric(functionName);
+
+      // Assess
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.objectContaining({
+          service: 'hello-world',
+          [COLD_START_METRIC]: 1,
+        })
+      );
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.not.objectContaining({
+          function_name: 'my-function',
+        })
+      );
+    }
+  );
+
   it('emits the metric only once', () => {
     // Prepare
     const metrics = new Metrics({

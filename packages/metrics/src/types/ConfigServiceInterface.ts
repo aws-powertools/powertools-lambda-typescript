@@ -12,6 +12,10 @@ interface ConfigServiceInterface extends ConfigServiceBaseInterface {
    * Get the value of the `POWERTOOLS_METRICS_NAMESPACE` environment variable.
    */
   getNamespace(): string;
+  /**
+   * Get the value of the `POWERTOOLS_METRICS_FUNCTION_NAME` environment variable.
+   */
+  getFunctionName(): string;
 }
 
 export type { ConfigServiceInterface };

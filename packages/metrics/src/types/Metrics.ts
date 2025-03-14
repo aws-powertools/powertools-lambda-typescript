@@ -286,7 +286,7 @@ interface MetricsInterface {
    * };
    * ```
    *
-   * @param functionName - Optional function name to override the default one set in the constructor, environment variable, or Lambda function context.
+   * @param functionName - Optional function name to use as `function_name` dimension in the metric. It's used only if the `functionName` constructor parameter or environment variable are not set.
    */
   captureColdStartMetric(functionName?: string): void;
   /**

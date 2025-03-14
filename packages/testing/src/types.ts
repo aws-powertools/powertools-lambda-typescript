@@ -19,6 +19,12 @@ interface ExtraTestProps {
    * @default 'CJS'
    */
   outputFormat?: 'CJS' | 'ESM';
+  /**
+   * Whether to create an alias for the function.
+   *
+   * @default false
+   */
+  createAlias?: boolean;
 }
 
 type TestDynamodbTableProps = Omit<

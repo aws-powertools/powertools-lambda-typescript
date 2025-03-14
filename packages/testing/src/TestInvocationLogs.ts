@@ -4,6 +4,7 @@ import type { FunctionLog } from './types.js';
 const CloudWatchLogKeywords = {
   END: 'END RequestId',
   INIT_START: 'INIT_START',
+  INIT_REPORT: 'INIT_REPORT',
   REPORT: 'REPORT RequestId',
   START: 'START RequestId',
   XRAY: 'XRAY TraceId',
@@ -99,13 +100,15 @@ class TestInvocationLogs {
   }
 
   /**
-   * Return the index of the log that contains `INIT_START`
-   * @param logs
-   * @returns {number} index of the log that contains `INIT_START`
+   * Return the index of the log that contains `INIT_START` or `INIT_REPORT`
+   *
+   * @param logs - Array of logs
    */
   public static getInitLogIndex(logs: string[]): number {
-    return logs.findIndex((log) =>
-      log.startsWith(CloudWatchLogKeywords.INIT_START)
+    return logs.findIndex(
+      (log) =>
+        log.startsWith(CloudWatchLogKeywords.INIT_START) ||
+        log.startsWith(CloudWatchLogKeywords.INIT_REPORT)
     );
   }
 

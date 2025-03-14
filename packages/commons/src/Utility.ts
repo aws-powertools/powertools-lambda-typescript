@@ -51,8 +51,36 @@
  * ```
  */
 export class Utility {
+  readonly #initializationType:
+    | 'unknown'
+    | 'on-demand'
+    | 'provisioned-concurrency';
   protected coldStart = true;
   protected readonly defaultServiceName: string = 'service_undefined';
+
+  public constructor() {
+    this.#initializationType = this.getInitializationType();
+    if (this.#initializationType !== 'on-demand') {
+      this.coldStart = false;
+    }
+  }
+
+  /**
+   * Get the value of the `AWS_LAMBDA_INITIALIZATION_TYPE` environment variable.
+   */
+  protected getInitializationType():
+    | 'unknown'
+    | 'on-demand'
+    | 'provisioned-concurrency' {
+    const envVarValue = process.env.AWS_LAMBDA_INITIALIZATION_TYPE?.trim();
+    if (envVarValue === 'on-demand') {
+      return 'on-demand';
+    }
+    if (envVarValue === 'provisioned-concurrency') {
+      return 'provisioned-concurrency';
+    }
+    return 'unknown';
+  }
 
   /**
    * Get the cold start status of the current execution environment.
@@ -60,6 +88,9 @@ export class Utility {
    * The method also flips the cold start status to `false` after the first invocation.
    */
   protected getColdStart(): boolean {
+    if (this.#initializationType !== 'on-demand') {
+      return false;
+    }
     if (this.coldStart) {
       this.coldStart = false;
 

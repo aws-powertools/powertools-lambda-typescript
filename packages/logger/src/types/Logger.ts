@@ -54,6 +54,11 @@ type InjectLambdaContextOptions = {
    * @default `false`
    */
   flushBufferOnUncaughtError?: boolean;
+
+  /**
+   * The path to the correlation ID in the event object, used to extract the correlation ID from the event object and add it to the log attributes.
+   */
+  correlationIdPath?: string;
 };
 
 /**
@@ -217,13 +222,21 @@ type LogBufferOption = {
   };
 };
 
+type CorrelationIdOption = {
+  /**
+   * The search function for the correlation ID.
+   */
+  correlationIdSearchFn?: (expression: string, data: unknown) => unknown;
+};
+
 /**
  * Options to configure the Logger.
  */
 type ConstructorOptions = BaseConstructorOptions &
   (PersistentKeysOption | DeprecatedPersistentKeysOption) &
   (LogFormatterOption | LogRecordOrderOption) &
-  LogBufferOption;
+  LogBufferOption &
+  CorrelationIdOption;
 
 type LogItemMessage = string | LogAttributesWithMessage;
 type LogItemExtraInput = [Error | string] | LogAttributes[];
@@ -252,6 +265,7 @@ type LoggerInterface = {
   removeKeys(keys?: string[]): void;
   removePersistentLogAttributes(keys?: string[]): void;
   resetKeys(): void;
+  setCorrelationId(value: unknown, correlationIdPath?: string): void;
   setLogLevel(logLevel: LogLevel): void;
   setPersistentLogAttributes(attributes?: LogAttributes): void;
   shouldLogEvent(overwriteValue?: boolean): boolean;
@@ -260,14 +274,14 @@ type LoggerInterface = {
 };
 
 export type {
+  ConstructorOptions,
+  CustomJsonReplacerFn,
   Environment,
+  InjectLambdaContextOptions,
   LogAttributes,
-  LogLevel,
   LogFunction,
   LoggerInterface,
-  LogItemMessage,
   LogItemExtraInput,
-  ConstructorOptions,
-  InjectLambdaContextOptions,
-  CustomJsonReplacerFn,
+  LogItemMessage,
+  LogLevel,
 };

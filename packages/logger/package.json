@@ -47,6 +47,10 @@
     "./types": {
       "import": "./lib/esm/types/index.js",
       "require": "./lib/cjs/types/index.js"
+    },
+    "./correlationId": {
+      "import": "./lib/esm/correlationId.js",
+      "require": "./lib/cjs/correlationId.js"
     }
   },
   "typesVersions": {
@@ -68,16 +72,18 @@
     "@types/lodash.merge": "^4.6.9"
   },
   "peerDependencies": {
-    "@middy/core": "4.x || 5.x || 6.x"
+    "@middy/core": "4.x || 5.x || 6.x",
+    "@aws-lambda-powertools/jmespath": "2.x"
   },
   "peerDependenciesMeta": {
     "@middy/core": {
       "optional": true
+    },
+    "@aws-lambda-powertools/jmespath": {
+      "optional": true
     }
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"

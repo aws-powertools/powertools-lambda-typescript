@@ -1,0 +1,34 @@
+[
+  {
+    "level": "ERROR",
+    "message": "This log is always emitted",
+    "sampling_rate": "0.5",
+    "service": "serverlessAirline",
+    "timestamp": "2021-12-12T22:59:06.334Z",
+    "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+  },
+  {
+    "level": "DEBUG",
+    "message": "This log has ~50% chance of being emitted",
+    "sampling_rate": "0.5",
+    "service": "serverlessAirline",
+    "timestamp": "2021-12-12T22:59:06.337Z",
+    "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+  },
+  {
+    "level": "INFO",
+    "message": "This log has ~50% chance of being emitted",
+    "sampling_rate": "0.5",
+    "service": "serverlessAirline",
+    "timestamp": "2021-12-12T22:59:06.338Z",
+    "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+  },
+  {
+    "level": "WARN",
+    "message": "This log has ~50% chance of being emitted",
+    "sampling_rate": "0.5",
+    "service": "serverlessAirline",
+    "timestamp": "2021-12-12T22:59:06.338Z",
+    "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+  }
+]

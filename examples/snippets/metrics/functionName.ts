@@ -3,9 +3,8 @@ import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
 const metrics = new Metrics({
   namespace: 'serverlessAirline',
   serviceName: 'orders',
+  functionName: 'my-function-name',
 });
-
-metrics.setFunctionName('my-function-name');
 
 export const handler = async (
   _event: unknown,

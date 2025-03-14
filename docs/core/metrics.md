@@ -66,11 +66,12 @@ The library requires two settings. You can set them as environment variables, or
 
 These settings will be used across all metrics emitted:
 
-| Setting              | Description                                                      | Environment variable           | Default             | Allowed Values | Example             | Constructor parameter |
-| -------------------- | ---------------------------------------------------------------- | ------------------------------ | ------------------- | -------------- | ------------------- | --------------------- |
-| **Service**          | Optionally, sets **service** metric dimension across all metrics | `POWERTOOLS_SERVICE_NAME`      | `service_undefined` | Any string     | `serverlessAirline` | `serviceName`         |
-| **Metric namespace** | Logical container where all metrics will be placed               | `POWERTOOLS_METRICS_NAMESPACE` | `default_namespace` | Any string     | `serverlessAirline` | `default_namespace`   |
-| **Enabled**          | Whether to emit metrics to standard output or not                | `POWERTOOLS_METRICS_ENABLED`   | `true`              | Boolean        | `false`             |                       |
+| Setting              | Description                                                      | Environment variable               | Default             | Allowed Values | Example             | Constructor parameter |
+|----------------------|------------------------------------------------------------------|------------------------------------|---------------------|----------------|---------------------|-----------------------|
+| **Service**          | Optionally, sets **service** metric dimension across all metrics | `POWERTOOLS_SERVICE_NAME`          | `service_undefined` | Any string     | `serverlessAirline` | `serviceName`         |
+| **Metric namespace** | Logical container where all metrics will be placed               | `POWERTOOLS_METRICS_NAMESPACE`     | `default_namespace` | Any string     | `serverlessAirline` | `default_namespace`   |
+| **Function Name**    | Logical Lambda function name used for `ColdStart` metrics        | `POWERTOOLS_METRICS_FUNCTION_NAME` | `undefined`         | Any string     | `my-function-name`  | `functionName`         |
+| **Enabled**          | Whether to emit metrics to standard output or not                | `POWERTOOLS_METRICS_ENABLED`       | `true`              | Boolean        | `false`             |                       |
 
 !!! tip
     Use your application name or main service as the metric namespace to easily group all metrics
@@ -87,7 +88,7 @@ The `Metrics` utility is instantiated outside of the Lambda handler. In doing th
 
 === "template.yml"
 
-    ```yaml hl_lines="9 10"
+    ```yaml hl_lines="8-10"
     Resources:
       HelloWorldFunction:
         Type: AWS::Serverless::Function
@@ -97,6 +98,7 @@ The `Metrics` utility is instantiated outside of the Lambda handler. In doing th
           Variables:
             POWERTOOLS_SERVICE_NAME: orders
             POWERTOOLS_METRICS_NAMESPACE: serverlessAirline
+            POWERTOOLS_METRICS_FUNCTION_NAME: my-function-name
     ```
 
 You can initialize Metrics anywhere in your code - It'll keep track of your aggregate metrics in memory.
@@ -232,33 +234,19 @@ If you'd like to remove them at some point, you can use the `clearDefaultDimensi
 
 ### Setting function name
 
-When emitting cold start metrics, we use the `context.functionName` as the `function_name`
- dimension. If you want to change the function name you can set the `functionName` by
- passing it as a parameter in 3 ways:
+When emitting cold start metrics, the `function_name` dimension defaults to `context.functionName`. If you want to change the value you can set the `functionName` parameter in the metrics constructor, call `setFunctionName` in the global scope, or define the environment variable `POWERTOOLS_METRICS_FUNCTION_NAME`.
 
-* in the [Middy-compatible](https://github.com/middyjs/middy){target=_blank} middleware
-* using the `setFunctionName` method
-* in the decorator
+=== "constructor"
 
-=== "Middy middleware"
-
-    ```typescript hl_lines="22"
-    --8<-- "examples/snippets/metrics/functionNameMiddy.ts"
+    ```typescript hl_lines="6"
+    --8<-- "examples/snippets/metrics/functionName.ts"
     ```
 
 === "setFunctionName method"
 
-    ```typescript hl_lines="9"
+    ```typescript hl_lines="8"
     --8<-- "examples/snippets/metrics/setFunctionName.ts"
     ```
-
-=== "with logMetrics decorator"
-
-    ```typescript hl_lines="12"
-    --8<-- "examples/snippets/metrics/functionNameDecorator.ts"
-    ```
-
-    1. Binding your handler method allows your handler to access `this` within the class methods.
 
 ### Changing default timestamp
 

@@ -4,6 +4,7 @@ import { Utility, isNullOrUndefined } from '@aws-lambda-powertools/commons';
 import type {
   AsyncHandler,
   HandlerMethodDecorator,
+  JSONObject,
   SyncHandler,
 } from '@aws-lambda-powertools/commons/types';
 import type { Context, Handler } from 'aws-lambda';
@@ -218,7 +219,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Search function for the correlation ID.
    */
-  #correlationIdSearchFn?: (expression: string, data: unknown) => unknown;
+  #correlationIdSearchFn?: (expression: string, data: JSONObject) => unknown;
 
   /**
    * The debug sampling rate configuration.
@@ -1455,9 +1456,9 @@ class Logger extends Utility implements LoggerInterface {
    * @param correlationIdPath - The path to the correlation ID in the event object
    * @param event - The event object
    */
-  protected setCorrelationIdFromPath(
+  public setCorrelationIdFromPath(
     correlationIdPath: string,
-    event: unknown
+    event: JSONObject
   ): void {
     if (!this.#correlationIdSearchFn) {
       this.warn(

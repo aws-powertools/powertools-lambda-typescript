@@ -140,7 +140,9 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Standard attributes managed by Powertools that will be logged in all log items.
    */
-  private powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{};
+  private powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{
+    sampleRateValue: 0,
+  };
   /**
    * Temporary log attributes that can be appended with `appendKeys()` method.
    */
@@ -212,6 +214,27 @@ class Logger extends Utility implements LoggerInterface {
    * Contains buffered logs, grouped by `_X_AMZN_TRACE_ID`, each group with a max size of `maxBufferBytesSize`
    */
   #buffer?: CircularMap<string>;
+
+  /**
+   * Search function for the correlation ID.
+   */
+  #correlationIdSearchFn?: (expression: string, data: unknown) => unknown;
+
+  /**
+   * The debug sampling rate configuration.
+   */
+  readonly #debugLogSampling = {
+    /**
+     * The sampling rate value used to determine if the log level should be set to DEBUG.
+     */
+    sampleRateValue: 0,
+    /**
+     * The number of times the debug sampling rate has been refreshed.
+     *
+     * We use this to determine if we should refresh it again.
+     */
+    refreshedTimes: 0,
+  };
 
   /**
    * Log level used by the current instance of Logger.
@@ -302,12 +325,13 @@ class Logger extends Utility implements LoggerInterface {
         {
           logLevel: this.getLevelName(),
           serviceName: this.powertoolsLogData.serviceName,
-          sampleRateValue: this.powertoolsLogData.sampleRateValue,
+          sampleRateValue: this.#debugLogSampling.sampleRateValue,
           logFormatter: this.getLogFormatter(),
           customConfigService: this.getCustomConfigService(),
           environment: this.powertoolsLogData.environment,
           persistentLogAttributes: this.persistentLogAttributes,
           jsonReplacerFn: this.#jsonReplacerFn,
+          correlationIdSearchFn: this.#correlationIdSearchFn,
           ...(this.#bufferConfig.enabled && {
             logBufferOptions: {
               maxBytes: this.#bufferConfig.maxBytes,
@@ -462,6 +486,9 @@ class Logger extends Utility implements LoggerInterface {
         loggerRef.refreshSampleRateCalculation();
         loggerRef.addContext(context);
         loggerRef.logEventIfEnabled(event, options?.logEvent);
+        if (options?.correlationIdPath) {
+          loggerRef.setCorrelationId(event, options?.correlationIdPath);
+        }
 
         try {
           return await originalMethod.apply(this, [event, context, callback]);
@@ -547,8 +574,18 @@ class Logger extends Utility implements LoggerInterface {
    * This only works for warm starts, because we don't to avoid double sampling.
    */
   public refreshSampleRateCalculation(): void {
-    if (!this.coldStart) {
-      this.setInitialSampleRate(this.powertoolsLogData.sampleRateValue);
+    if (this.#debugLogSampling.refreshedTimes === 0) {
+      this.#debugLogSampling.refreshedTimes++;
+      return;
+    }
+    if (
+      this.#shouldEnableDebugSampling() &&
+      this.logLevel > LogLevelThreshold.TRACE
+    ) {
+      this.setLogLevel('DEBUG');
+      this.debug('Setting log level to DEBUG due to sampling rate');
+    } else {
+      this.setLogLevel(this.getLogLevelNameFromNumber(this.#initialLogLevel));
     }
   }
 
@@ -892,6 +929,16 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
+   * Make a new debug log sampling decision based on the sample rate value.
+   */
+  #shouldEnableDebugSampling() {
+    return (
+      this.#debugLogSampling.sampleRateValue &&
+      randomInt(0, 100) / 100 <= this.#debugLogSampling.sampleRateValue
+    );
+  }
+
+  /**
    * Check if a given key is reserved and warn the user if it is.
    *
    * @param key - The key to check
@@ -1142,30 +1189,24 @@ class Logger extends Utility implements LoggerInterface {
    * @param sampleRateValue - The sample rate value
    */
   private setInitialSampleRate(sampleRateValue?: number): void {
-    this.powertoolsLogData.sampleRateValue = 0;
     const constructorValue = sampleRateValue;
     const customConfigValue =
       this.getCustomConfigService()?.getSampleRateValue();
     const envVarsValue = this.getEnvVarsService().getSampleRateValue();
     for (const value of [constructorValue, customConfigValue, envVarsValue]) {
       if (this.isValidSampleRate(value)) {
+        this.#debugLogSampling.sampleRateValue = value;
         this.powertoolsLogData.sampleRateValue = value;
 
         if (
-          this.logLevel > LogLevelThreshold.DEBUG &&
-          value &&
-          randomInt(0, 100) / 100 <= value
+          this.#shouldEnableDebugSampling() &&
+          this.logLevel > LogLevelThreshold.TRACE
         ) {
-          // only change logLevel if higher than debug, i.e. don't change from e.g. tracing to debug
           this.setLogLevel('DEBUG');
           this.debug('Setting log level to DEBUG due to sampling rate');
-        } else {
-          this.setLogLevel(
-            this.getLogLevelNameFromNumber(this.#initialLogLevel)
-          );
         }
 
-        return;
+        break;
       }
     }
   }
@@ -1229,6 +1270,7 @@ class Logger extends Utility implements LoggerInterface {
       jsonReplacerFn,
       logRecordOrder,
       logBufferOptions,
+      correlationIdSearchFn,
     } = options;
 
     if (persistentLogAttributes && persistentKeys) {
@@ -1255,6 +1297,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setLogIndentation();
     this.#jsonReplacerFn = jsonReplacerFn;
     this.#setLogBuffering(logBufferOptions);
+    this.#correlationIdSearchFn = correlationIdSearchFn;
 
     return this;
   }
@@ -1406,6 +1449,56 @@ class Logger extends Utility implements LoggerInterface {
       traceId !== undefined &&
       logLevel <= this.#bufferConfig.bufferAtVerbosity
     );
+  }
+
+  /**
+   * Set the correlation ID for the log item.
+   * This method can be used to set the correlation ID for the log item or to search for the correlation ID in the event.
+   *
+   * @example
+   * ```typescript
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   *
+   * const logger = new Logger();
+   * logger.setCorrelationId('my-correlation-id'); // sets the correlation ID directly with the first argument as value
+   * ```
+   *
+   * ```typescript
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   * import { search } from '@aws-lambda-powertools/logger/correlationId';
+   *
+   * const logger = new Logger({ correlationIdSearchFn: search });
+   * logger.setCorrelationId(event, 'requestContext.requestId'); // sets the correlation ID from the event using JMSPath expression
+   * ```
+   *
+   * @param value - The value to set as the correlation ID or the event to search for the correlation ID
+   * @param correlationIdPath - Optional JMESPath expression to extract the correlation ID for the payload
+   */
+  public setCorrelationId(value: unknown, correlationIdPath?: string): void {
+    if (typeof correlationIdPath === 'string') {
+      if (!this.#correlationIdSearchFn) {
+        this.warn(
+          'correlationIdPath is set but no search function was provided. The correlation ID will not be added to the log attributes.'
+        );
+        return;
+      }
+      const correlationId = this.#correlationIdSearchFn(
+        correlationIdPath,
+        value
+      );
+      if (correlationId) this.appendKeys({ correlation_id: correlationId });
+      return;
+    }
+
+    // If no correlationIdPath is provided, set the correlation ID directly
+    this.appendKeys({ correlation_id: value });
+  }
+
+  /**
+   * Get the correlation ID from the log attributes.
+   */
+  public getCorrelationId(): unknown {
+    return this.temporaryLogAttributes.correlation_id;
   }
 }
 

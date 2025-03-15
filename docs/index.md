@@ -352,9 +352,10 @@ Core utilities such as Tracing, Logging, and Metrics will be available across al
     Explicit parameters take precedence over environment variables
 
 | Environment variable                         | Description                                                                                                   | Utility                                 | Default             |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------- |
+| -------------------------------------------- |---------------------------------------------------------------------------------------------------------------| --------------------------------------- | ------------------- |
 | **POWERTOOLS_SERVICE_NAME**                  | Set service name used for tracing namespace, metrics dimension and structured logging                         | All                                     | `service_undefined` |
 | **POWERTOOLS_METRICS_NAMESPACE**             | Set namespace used for metrics                                                                                | [Metrics](core/metrics.md)              | `default_namespace` |
+| **POWERTOOLS_METRICS_FUNCTION_NAME**         | Logical Lambda function name used for `ColdStart` metrics                                                     | [Metrics](core/metrics.md)              | `undefined` |
 | **POWERTOOLS_METRICS_ENABLED**               | Explicitly disables emitting metrics to stdout                                                                | [Metrics](core/metrics.md)              | `true`              |
 | **POWERTOOLS_TRACE_ENABLED**                 | Explicitly disables tracing                                                                                   | [Tracer](core/tracer.md)                | `true`              |
 | **POWERTOOLS_TRACER_CAPTURE_RESPONSE**       | Capture Lambda or method return as metadata.                                                                  | [Tracer](core/tracer.md)                | `true`              |

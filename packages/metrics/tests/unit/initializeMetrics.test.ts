@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_NAMESPACE } from '../../src/constants.js';
+import { COLD_START_METRIC, DEFAULT_NAMESPACE } from '../../src/constants.js';
 import { MetricUnit, Metrics } from '../../src/index.js';
 import type { ConfigServiceInterface } from '../../src/types/index.js';
 
@@ -113,6 +113,28 @@ describe('Initialize Metrics', () => {
     );
   });
 
+  it('uses the function name provided in the environment variables', () => {
+    // Prepare
+    process.env.POWERTOOLS_METRICS_FUNCTION_NAME =
+      'hello-world-function-name-from-env';
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+    });
+
+    // Act
+    metrics.captureColdStartMetric();
+
+    // Assess
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        [COLD_START_METRIC]: 1,
+        function_name: 'hello-world-function-name-from-env',
+      })
+    );
+  });
+
   it('uses the custom config service provided', () => {
     // Prepare
     const configService = {
@@ -127,6 +149,9 @@ describe('Initialize Metrics', () => {
       },
       isValueTrue(value: string): boolean {
         return value === 'true';
+      },
+      getFunctionName(): string {
+        return 'custom-function-name';
       },
     };
     const metrics = new Metrics({

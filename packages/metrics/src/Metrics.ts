@@ -381,7 +381,7 @@ class Metrics extends Utility implements MetricsInterface {
         service: this.defaultDimensions.service,
       });
     }
-    if (this.functionName != null) {
+    if (this.functionName) {
       singleMetric.addDimension('function_name', this.functionName);
     }
     singleMetric.addMetric(COLD_START_METRIC, MetricUnits.Count, 1);
@@ -477,6 +477,17 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * Check if a function name has been defined.
+   *
+   * This is useful when you want to only set a function name if it is not already set.
+   *
+   * The method is primarily intended for internal use, but it is exposed for advanced use cases.
+   */
+  public hasFunctionName(): boolean {
+    return Boolean(this.functionName);
+  }
+
+  /**
    * Whether metrics are disabled.
    */
   protected isDisabled(): boolean {
@@ -543,7 +554,9 @@ class Metrics extends Utility implements MetricsInterface {
         context: Context,
         callback: Callback
       ): Promise<unknown> {
-        metricsRef.functionName = context.functionName;
+        if (!metricsRef.hasFunctionName()) {
+          metricsRef.functionName = context.functionName;
+        }
         if (captureColdStartMetric) metricsRef.captureColdStartMetric();
 
         let result: unknown;
@@ -768,8 +781,8 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param name - The function name
    */
-  public setFunctionName(name: string): void {
-    this.functionName = name;
+  public setFunctionName(name?: string): void {
+    this.functionName = name || this.getEnvVarsService().getFunctionName();
   }
 
   /**
@@ -951,6 +964,7 @@ class Metrics extends Utility implements MetricsInterface {
       serviceName,
       singleMetric,
       defaultDimensions,
+      functionName,
     } = options;
 
     this.setEnvVarsService();
@@ -960,6 +974,7 @@ class Metrics extends Utility implements MetricsInterface {
     this.setNamespace(namespace);
     this.setService(serviceName);
     this.setDefaultDimensions(defaultDimensions);
+    this.setFunctionName(functionName);
     this.isSingleMetric = singleMetric || false;
 
     return this;

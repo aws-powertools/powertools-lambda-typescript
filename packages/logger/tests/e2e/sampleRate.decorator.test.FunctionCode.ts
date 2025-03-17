@@ -9,23 +9,12 @@ const LOG_MSG = process.env.LOG_MSG || 'Hello World';
 const logger = new Logger({
   sampleRateValue: SAMPLE_RATE,
 });
-let firstInvocation = true;
 
 class Lambda implements LambdaInterface {
-  private readonly logMsg: string;
+  private readonly logMsg = LOG_MSG;
 
-  public constructor() {
-    this.logMsg = LOG_MSG;
-  }
-
-  // Decorate your handler class method
   @logger.injectLambdaContext()
   public async handler(_event: TestEvent, context: Context): TestOutput {
-    if (firstInvocation) {
-      firstInvocation = false;
-    } else {
-      logger.refreshSampleRateCalculation();
-    }
     this.printLogInAllLevels();
 
     return {

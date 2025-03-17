@@ -66,19 +66,63 @@ class TestStack {
           Service: 'Powertools-for-AWS-e2e-tests',
         },
       });
+    let lastCreateLog = 0;
+    let lastDestroyLog = 0;
+    const creationDeleteLogFrequency = 10000; // 10 seconds
+    const that = this;
     this.#cli = new Toolkit({
       color: false,
       ioHost: {
+        /**
+         * Log messages to the console depending on the log level.
+         *
+         * If the `RUNNER_DEBUG` environment variable is set to `1`, all messages are logged.
+         *
+         * Otherwise, we log messages that are either warnings or errors as well as periodic
+         * updates on the stack creation and destruction process.
+         *
+         * @param msg - Message to log sent by the CDK CLI
+         */
         async notify(msg) {
+          if (process.env.RUNNER_DEBUG === '1') {
+            testConsole.log(msg);
+            return;
+          }
+          if (msg.message.includes('destroyed') && msg.message.includes('✅')) {
+            testConsole.log(msg.message);
+            return;
+          }
+          if (msg.message.includes('✅') && !msg.message.includes('deployed')) {
+            testConsole.log(`${that.testName} deployed successfully`);
+            return;
+          }
+          if (msg.message.includes('CREATE_IN_PROGRESS')) {
+            if (Date.now() - lastCreateLog < creationDeleteLogFrequency) {
+              return;
+            }
+            lastCreateLog = Date.now();
+            testConsole.log(`${that.testName} stack is being created...`);
+            return;
+          }
+          if (msg.message.includes('DELETE_IN_PROGRESS')) {
+            if (Date.now() - lastDestroyLog < creationDeleteLogFrequency) {
+              return;
+            }
+            lastDestroyLog = Date.now();
+            testConsole.log(`${that.testName} stack is being destroyed...`);
+            return;
+          }
+          if (['warning', 'error'].includes(msg.level)) {
+            testConsole.log(msg);
+          }
+        },
+        async requestResponse(msg) {
           if (
             process.env.RUNNER_DEBUG === '1' ||
             ['warning', 'error'].includes(msg.level)
           ) {
             testConsole.log(msg);
           }
-        },
-        async requestResponse(msg) {
-          testConsole.log(msg);
           return msg.defaultResponse;
         },
       },

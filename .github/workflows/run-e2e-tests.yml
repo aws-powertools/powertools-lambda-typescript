@@ -68,7 +68,7 @@ jobs:
       - name: Select region
         id: select_region
         run: |
-          regions_available=(eu-west-1 us-east-1)
+          regions_available=(eu-west-1 us-east-1 eu-central-1 us-west-2)
           region=${regions_available[$((RANDOM % ${#regions[@]}))]}
           region=${regions_available[$((RANDOM % ${#regions_available[@]}))]}
           # Set the region as an output variable

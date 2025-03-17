@@ -47,6 +47,7 @@ export {
   KinesisFirehoseSqsRecordSchema,
 } from './kinesis-firehose.js';
 export { LambdaFunctionUrlSchema } from './lambda.js';
+export { PreSignupTriggerSchema } from './cognito.js';
 export {
   S3SqsEventNotificationSchema,
   S3EventNotificationEventBridgeSchema,

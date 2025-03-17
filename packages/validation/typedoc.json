@@ -1,0 +1,13 @@
+{
+  "extends": [
+    "../../typedoc.base.json"
+  ],
+  "entryPoints": [
+    "./src/types.ts",
+    "./src/validate.ts",
+    "./src/middleware.ts",
+    "./src/decorator.ts",
+    "./src/errors.ts",
+  ],
+  "readme": "README.md"
+}

@@ -9,7 +9,8 @@ Logger provides an opinionated logger with output structured as JSON.
 
 * Capturing key fields from the Lambda context, cold starts, and structure logging output as JSON.
 * Logging Lambda invocation events when instructed (disabled by default).
-* Printing all the logs only for a percentage of invocations via log sampling (disabled by default).
+* Switch log level to `DEBUG` for a percentage of invocations (sampling).
+* Buffering logs for a specific request or invocation, and flushing them automatically on error or manually as needed.
 * Appending additional keys to structured logs at any point in time.
 * Providing a custom log formatter (Bring Your Own Formatter) to output logs in a structure compatible with your organization’s Logging RFC.
 
@@ -205,6 +206,76 @@ When debugging in non-production environments, you can log the incoming event us
     ```
 
 Use `POWERTOOLS_LOGGER_LOG_EVENT` environment variable to enable or disable (`true`/`false`) this feature. When using Middy.js middleware or class method decorator, the `logEvent` option will take precedence over the environment variable.
+
+### Setting a Correlation ID
+
+To get started, install the `@aws-lambda-powertools/jmespath` package, and pass the search function using the `correlationIdSearchFn` constructor parameter:
+
+=== "Setup the Logger to use JMESPath search"
+
+    ```typescript hl_lines="5"
+    --8<-- "examples/snippets/logger/correlationIdLogger.ts"
+    ```
+
+???+ tip
+    You can retrieve correlation IDs via `getCorrelationId` method.
+
+You can set a correlation ID using `correlationIdPath` parameter by passing a JMESPath expression, including our custom JMESPath functions or set it manually by calling `setCorrelationId` function.
+
+=== "Setting correlation ID manually"
+
+    ```typescript hl_lines="7"
+    --8<-- "examples/snippets/logger/correlationIdManual.ts"
+    ```
+
+    1. Alternatively, if the payload is more complex you can use a JMESPath expression as second parameter when prividing a search function in the constructor.
+
+=== "Middy.js"
+
+    ```typescript hl_lines="13"
+    --8<-- "examples/snippets/logger/correlationIdMiddy.ts"
+    ```
+
+=== "Decorator"
+
+    ```typescript hl_lines="11"
+    --8<-- "examples/snippets/logger/correlationIdDecorator.ts"
+    ```
+
+=== "payload.json"
+
+    ```typescript
+    --8<-- "examples/snippets/logger/samples/correlationIdPayload.json"
+    ```
+
+=== "log-output.json"
+
+    ```json hl_lines="6"
+    --8<-- "examples/snippets/logger/samples/correlationIdOutput.json"
+    ```
+
+To ease routine tasks like extracting correlation ID from popular event sources, we provide built-in JMESPath expressions.
+
+=== "Decorator"
+
+    ```typescript hl_lines="4 14" 
+    --8<-- "examples/snippets/logger/correlationIdPaths.ts"
+    ```
+
+???+ note "Note: Any object key named with `-` must be escaped"
+    For example, **`request.headers."x-amzn-trace-id"`**.
+
+| Name                          | Expression                            | Description                     |
+| ----------------------------- | ------------------------------------- | ------------------------------- |
+| **API_GATEWAY_REST**          | `'requestContext.requestId'`          | API Gateway REST API request ID |
+| **API_GATEWAY_HTTP**          | `'requestContext.requestId'`          | API Gateway HTTP API request ID |
+| **APPSYNC_AUTHORIZER**        | `'requestContext.requestId'`          | AppSync resolver request ID     |
+| **APPSYNC_RESOLVER**          | `'request.headers."x-amzn-trace-id"'` | AppSync X-Ray Trace ID          |
+| **APPLICATION_LOAD_BALANCER** | `'headers."x-amzn-trace-id"'`         | ALB X-Ray Trace ID              |
+| **EVENT_BRIDGE**              | `'id'`                                | EventBridge Event ID            |
+| **LAMBDA_FUNCTION_URL**       | `'requestContext.requestId'`          | Lambda Function URL request ID  |
+| **S3_OBJECT_LAMBDA**          | `'xAmzRequestId'`                     | S3 Object trigger request ID    |
+| **VPC_LATTICE**               | `'headers."x-amzn-trace-id'`          | VPC Lattice X-Ray Trace ID      |
 
 ### Appending additional keys
 
@@ -547,6 +618,167 @@ We prioritise log level settings in this order:
 
 In the event you have set a log level in Powertools to a level that is lower than the ACL setting, we will output a warning log message informing you that your messages will be discarded by Lambda.
 
+### Buffering logs
+
+Log buffering enables you to buffer logs for a specific request or invocation. Enable log buffering by passing `logBufferOptions` when initializing a Logger instance. You can buffer logs at the `WARNING`, `INFO`,  `DEBUG`, or `TRACE` level, and flush them automatically on error or manually as needed.
+
+!!! tip "This is useful when you want to reduce the number of log messages emitted while still having detailed logs when needed, such as when troubleshooting issues."
+
+=== "logBufferingGettingStarted.ts"
+
+    ```typescript hl_lines="4-7"
+    --8<-- "examples/snippets/logger/logBufferingGettingStarted.ts"
+    ```
+
+#### Configuring the buffer
+
+When configuring the buffer, you can set the following options to fine-tune how logs are captured, stored, and emitted. You can configure the following options in the `logBufferOptions` constructor parameter:
+
+| Parameter           | Description                                      | Configuration                       | Default |
+|-------------------- |------------------------------------------------- |------------------------------------ | ------- |
+| `enabled`           | Enable or disable log buffering                  | `true`, `false`                     | `false` |
+| `maxBytes`          | Maximum size of the log buffer in bytes          | `number`                            | `20480` |
+| `bufferAtVerbosity` | Minimum log level to buffer                      | `TRACE`, `DEBUG`, `INFO`, `WARNING` | `DEBUG` |
+| `flushOnErrorLog`   | Automatically flush buffer when logging an error | `true`, `false`                     | `true`  |
+
+=== "logBufferingBufferAtVerbosity.ts"
+
+    ```typescript hl_lines="5"
+    --8<-- "examples/snippets/logger/logBufferingBufferAtVerbosity.ts"
+    ```
+
+    1. Setting `bufferAtVerbosity: 'warn'` configures log buffering for `WARNING` and all lower severity levels like `INFO`, `DEBUG`, and `TRACE`.
+    2. Calling `logger.clearBuffer()` will clear the buffer without emitting the logs.
+
+=== "logBufferingflushOnErrorLog.ts"
+
+    ```typescript hl_lines="6"
+    --8<-- "examples/snippets/logger/logBufferingflushOnErrorLog.ts"
+    ```
+
+    1. Disabling `flushOnErrorLog` will not flush the buffer when logging an error. This is useful when you want to control when the buffer is flushed by calling the `logger.flushBuffer()` method.
+
+#### Flushing on errors
+
+When using the `logger.injectLambdaContext()` class method decorator or the `injectLambdaContext()` middleware, you can configure the logger to automatically flush the buffer when an error occurs. This is done by setting the `flushBufferOnUncaughtError` option to `true` in the decorator or middleware options.
+
+=== "logBufferingFlushOnErrorDecorator.ts"
+
+    ```typescript hl_lines="6 10-12"
+    --8<-- "examples/snippets/logger/logBufferingFlushOnErrorDecorator.ts"
+    ```
+
+=== "logBufferingFlushOnErrorMiddy.ts"
+
+    ```typescript hl_lines="6 11"
+    --8<-- "examples/snippets/logger/logBufferingFlushOnErrorMiddy.ts"
+    ```
+
+#### Buffering workflows
+
+##### Manual flush
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Logger
+    participant CloudWatch
+    Client->>Lambda: Invoke Lambda
+    Lambda->>Logger: Initialize with DEBUG level buffering
+    Logger-->>Lambda: Logger buffer ready
+    Lambda->>Logger: logger.debug("First debug log")
+    Logger-->>Logger: Buffer first debug log
+    Lambda->>Logger: logger.info("Info log")
+    Logger->>CloudWatch: Directly log info message
+    Lambda->>Logger: logger.debug("Second debug log")
+    Logger-->>Logger: Buffer second debug log
+    Lambda->>Logger: logger.flush_buffer()
+    Logger->>CloudWatch: Emit buffered logs to stdout
+    Lambda->>Client: Return execution result
+```
+<i>Flushing buffer manually</i>
+</center>
+
+##### Flushing when logging an error
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Logger
+    participant CloudWatch
+    Client->>Lambda: Invoke Lambda
+    Lambda->>Logger: Initialize with DEBUG level buffering
+    Logger-->>Lambda: Logger buffer ready
+    Lambda->>Logger: logger.debug("First log")
+    Logger-->>Logger: Buffer first debug log
+    Lambda->>Logger: logger.debug("Second log")
+    Logger-->>Logger: Buffer second debug log
+    Lambda->>Logger: logger.debug("Third log")
+    Logger-->>Logger: Buffer third debug log
+    Lambda->>Lambda: Exception occurs
+    Lambda->>Logger: logger.error("Error details")
+    Logger->>CloudWatch: Emit buffered debug logs
+    Logger->>CloudWatch: Emit error log
+    Lambda->>Client: Raise exception
+```
+<i>Flushing buffer when an error happens</i>
+</center>
+
+##### Flushing on error
+
+This works only when using the `logger.injectLambdaContext()` class method decorator or the `injectLambdaContext()` middleware. You can configure the logger to automatically flush the buffer when an error occurs by setting the `flushBufferOnUncaughtError` option to `true` in the decorator or middleware options.
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Logger
+    participant CloudWatch
+    Client->>Lambda: Invoke Lambda
+    Lambda->>Logger: Using decorator
+    Logger-->>Lambda: Logger context injected
+    Lambda->>Logger: logger.debug("First log")
+    Logger-->>Logger: Buffer first debug log
+    Lambda->>Logger: logger.debug("Second log")
+    Logger-->>Logger: Buffer second debug log
+    Lambda->>Lambda: Uncaught Exception
+    Lambda->>CloudWatch: Automatically emit buffered debug logs
+    Lambda->>Client: Raise uncaught exception
+```
+<i>Flushing buffer when an uncaught exception happens</i>
+</center>
+
+#### Buffering FAQs
+
+1. **Does the buffer persist across Lambda invocations?**
+   No, each Lambda invocation has its own buffer. The buffer is initialized when the Lambda function is invoked and is cleared after the function execution completes or when flushed manually.
+
+2. **Are my logs buffered during cold starts?**
+   No, we never buffer logs during cold starts. This is because we want to ensure that logs emitted during this phase are always available for debugging and monitoring purposes. The buffer is only used during the execution of the Lambda function.
+
+3. **How can I prevent log buffering from consuming excessive memory?**
+   You can limit the size of the buffer by setting the `maxBytes` option in the `logBufferOptions` constructor parameter. This will ensure that the buffer does not grow indefinitely and consume excessive memory.
+
+4. **What happens if the log buffer reaches its maximum size?**
+   Older logs are removed from the buffer to make room for new logs. This means that if the buffer is full, you may lose some logs if they are not flushed before the buffer reaches its maximum size. When this happens, we emit a warning when flushing the buffer to indicate that some logs have been dropped.
+
+5. **What timestamp is used when I flush the logs?**
+   The timestamp preserves the original time when the log record was created. If you create a log record at 11:00:10 and flush it at 11:00:25, the log line will retain its original timestamp of 11:00:10.
+
+6. **What happens if I try to add a log line that is bigger than max buffer size?**
+   The log will be emitted directly to standard output and not buffered. When this happens, we emit a warning to indicate that the log line was too big to be buffered.
+
+7. **What happens if Lambda times out without flushing the buffer?**
+   Logs that are still in the buffer will be lost. If you are using the log buffer to log asynchronously, you should ensure that the buffer is flushed before the Lambda function times out. You can do this by calling the `logger.flushBuffer()` method at the end of your Lambda function.
+
+8. **Do child loggers inherit the buffer?**
+   No, child loggers do not inherit the buffer from their parent logger but only the buffer configuration. This means that if you create a child logger, it will have its own buffer and will not share the buffer with the parent logger.
+
 ### Reordering log keys position
 
 You can change the order of [standard Logger keys](#standard-structured-keys) or any keys that will be appended later at runtime via the `logRecordOrder` parameter.
@@ -566,7 +798,7 @@ You can change the order of [standard Logger keys](#standard-structured-keys) or
     --8<-- "examples/snippets/logger/reorderLogKeysOutput.json"
     ```
 
-### Setting timestamp to custom Timezone
+### Setting timestamp to custom timezone
 
 By default, Logger emits records with the default Lambda timestamp in **UTC**, i.e. `2016-06-20T12:08:10.000Z`
 
@@ -586,7 +818,7 @@ If you prefer to log in a specific timezone, you can configure it by setting the
     --8<-- "examples/snippets/logger/customTimezoneOutput.json"
     ```
 
-### Using multiple Logger instances across your code
+### Creating child loggers
 
 The `createChild` method allows you to create a child instance of the Logger, which inherits all of the attributes from its parent. You have the option to override any of the settings and attributes from the parent logger, including [its settings](#utility-settings), any [extra keys](#appending-additional-keys), and [the log formatter](#custom-log-formatter).
 
@@ -643,114 +875,41 @@ You can use values ranging from `0` to `1` (100%) when setting the `sampleRateVa
 
     This feature takes into account transient issues where additional debugging information can be useful.
 
-Sampling decision happens at the Logger initialization. When using the `injectLambdaContext` method either as a decorator or middleware, the sampling decision is refreshed at the beginning of each Lambda invocation for you, except for cold starts.
+Sampling decision happens at the Logger initialization. When using the `injectLambdaContext` method either as a decorator or Middy.js middleware, the sampling decision is refreshed at the beginning of each Lambda invocation for you, except for cold starts.
 
 If you're not using either of these, you'll need to manually call the `refreshSamplingRate()` function at the start of your handler to refresh the sampling decision for each invocation.
 
 === "handler.ts"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="5 9"
     --8<-- "examples/snippets/logger/logSampling.ts"
     ```
 
-=== "Example CloudWatch Logs excerpt - Invocation #1"
+    1. The log level must be set to a more verbose level than `DEBUG` for log sampling to kick in.
+    2. You need to call `logger.refreshSamplingRate()` at the start of your handler **only** if you're not using the `injectLambdaContext()` class method decorator or Middy.js middleware.
+
+=== "Example Logs Request #1 (not sampled)"
 
     ```json
-    {
-        "level": "ERROR",
-        "message": "This is an ERROR log",
-        "sampling_rate": "0.5",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.334Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "DEBUG",
-        "message": "This is a DEBUG log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.337Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "INFO",
-        "message": "This is an INFO log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.338Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "WARN",
-        "message": "This is a WARN log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.338Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
+    --8<-- "examples/snippets/logger/samples/debugLogSamplingNotSampled.json"
     ```
 
-=== "Example CloudWatch Logs excerpt - Invocation #2"
+=== "Example Logs Request #2 (sampled)"
 
     ```json
-    {
-        "level": "ERROR",
-        "message": "This is an ERROR log",
-        "sampling_rate": "0.5",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.334Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
+    --8<-- "examples/snippets/logger/samples/debugLogSamplingSampled.json"
     ```
 
-=== "Example CloudWatch Logs excerpt - Invocation #3"
+=== "Example Logs Request #3 (sampled)"
 
     ```json
-    {
-        "level": "ERROR",
-        "message": "This is an ERROR log",
-        "sampling_rate": "0.5",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.334Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "DEBUG",
-        "message": "This is a DEBUG log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.337Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "INFO",
-        "message": "This is an INFO log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.338Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
-    {
-        "level": "WARN",
-        "message": "This is a WARN log that has 50% chance of being printed",
-        "sampling_rate": "0.5", 
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.338Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
+    --8<-- "examples/snippets/logger/samples/debugLogSamplingSampled.json"
     ```
 
-=== "Example CloudWatch Logs excerpt - Invocation #4"
+=== "Example Logs Request #4 (not sampled)"
 
     ```json
-    {
-        "level": "ERROR",
-        "message": "This is an ERROR log",
-        "sampling_rate": "0.5",
-        "service": "serverlessAirline",
-        "timestamp": "2021-12-12T22:59:06.334Z",
-        "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
-    }
+    --8<-- "examples/snippets/logger/samples/debugLogSamplingNotSampled.json"
     ```
 
 ### Custom Log formatter
@@ -803,7 +962,7 @@ When working with custom log formatters, you take full control over the structur
 
 Note that when implementing this method, you should avoid mutating the `attributes` and `additionalLogAttributes` objects directly. Instead, create a new object with the desired structure and return it. If mutation is necessary, you can create a [`structuredClone`](https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone) of the object to avoid side effects.
 
-### Bring your own JSON serializer
+### Extend JSON replacer function
 
 You can extend the default JSON serializer by passing a custom serializer function to the `Logger` constructor, using the `jsonReplacerFn` option. This is useful when you want to customize the serialization of specific values.
 

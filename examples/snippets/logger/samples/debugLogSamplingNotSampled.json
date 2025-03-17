@@ -1,0 +1,8 @@
+{
+  "level": "ERROR",
+  "message": "This log is always emitted",
+  "sampling_rate": "0.5",
+  "service": "serverlessAirline",
+  "timestamp": "2021-12-12T22:59:06.334Z",
+  "xray_trace_id": "abcdef123456abcdef123456abcdef123456"
+}

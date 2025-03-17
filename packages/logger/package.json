@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/logger",
-  "version": "2.15.0",
+  "version": "2.16.0",
   "description": "The logging package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -47,6 +47,10 @@
     "./types": {
       "import": "./lib/esm/types/index.js",
       "require": "./lib/cjs/types/index.js"
+    },
+    "./correlationId": {
+      "import": "./lib/esm/correlationId.js",
+      "require": "./lib/cjs/correlationId.js"
     }
   },
   "typesVersions": {
@@ -68,16 +72,18 @@
     "@types/lodash.merge": "^4.6.9"
   },
   "peerDependencies": {
-    "@middy/core": "4.x || 5.x || 6.x"
+    "@middy/core": "4.x || 5.x || 6.x",
+    "@aws-lambda-powertools/jmespath": "2.x"
   },
   "peerDependenciesMeta": {
     "@middy/core": {
       "optional": true
+    },
+    "@aws-lambda-powertools/jmespath": {
+      "optional": true
     }
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
@@ -86,7 +92,7 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.15.0",
+    "@aws-lambda-powertools/commons": "^2.16.0",
     "lodash.merge": "^4.6.2"
   },
   "keywords": [

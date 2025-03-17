@@ -49,25 +49,46 @@ describe('Class IdempotencyHandler', () => {
   });
 
   describe('Method: determineResultFromIdempotencyRecord', () => {
-    it('throws when the record is in progress and within expiry window', async () => {
-      // Prepare
-      const stubRecord = new IdempotencyRecord({
-        idempotencyKey: 'idempotencyKey',
-        expiryTimestamp: Date.now() + 1000, // should be in the future
-        inProgressExpiryTimestamp: 0, // less than current time in milliseconds
-        responseData: { responseData: 'responseData' },
-        payloadHash: 'payloadHash',
-        status: IdempotencyRecordStatus.INPROGRESS,
-      });
+    it.each([
+      {
+        keys: {
+          idempotencyKey: 'idempotencyKey',
+          sortKey: 'sk',
+        },
+        expectedErrorMsg:
+          'There is already an execution in progress with idempotency key: idempotencyKey and sort key: sk',
+        case: 'pk & sk',
+      },
+      {
+        keys: {
+          idempotencyKey: 'idempotencyKey',
+        },
+        expectedErrorMsg:
+          'There is already an execution in progress with idempotency key: idempotencyKey',
+        case: 'pk only',
+      },
+    ])(
+      'throws when the record is in progress and within expiry window ($case)',
+      async ({ keys, expectedErrorMsg }) => {
+        // Prepare
+        const stubRecord = new IdempotencyRecord({
+          ...keys,
+          expiryTimestamp: Date.now() + 1000, // should be in the future
+          inProgressExpiryTimestamp: 0, // less than current time in milliseconds
+          responseData: { responseData: 'responseData' },
+          payloadHash: 'payloadHash',
+          status: IdempotencyRecordStatus.INPROGRESS,
+        });
 
-      // Act & Assess
-      expect(stubRecord.isExpired()).toBe(false);
-      expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
-      expect(() =>
-        idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
-      ).toThrow(IdempotencyAlreadyInProgressError);
-      expect(mockResponseHook).not.toHaveBeenCalled();
-    });
+        // Act & Assess
+        expect(stubRecord.isExpired()).toBe(false);
+        expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
+        expect(() =>
+          idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
+        ).toThrow(new IdempotencyAlreadyInProgressError(expectedErrorMsg));
+        expect(mockResponseHook).not.toHaveBeenCalled();
+      }
+    );
 
     it('throws when the record is in progress and outside expiry window', async () => {
       // Prepare

@@ -1,6 +1,9 @@
 import Ajv from 'ajv';
 import { describe, expect, it } from 'vitest';
-import { SchemaValidationError } from '../../src/errors.js';
+import {
+  SchemaCompilationError,
+  SchemaValidationError,
+} from '../../src/errors.js';
 import type { ValidateParams } from '../../src/types.js';
 import { validate } from '../../src/validate.js';
 
@@ -17,8 +20,7 @@ describe('validate function', () => {
       required: ['name', 'age'],
       additionalProperties: false,
     };
-
-    const params: ValidateParams<typeof payload> = { payload, schema };
+    const params: ValidateParams = { payload, schema };
 
     // Act
     const result = validate<typeof payload>(params);
@@ -75,22 +77,23 @@ describe('validate function', () => {
 
   it('uses provided ajv instance and custom formats', () => {
     // Prepare
-    const payload = { email: 'test@example.com' };
+    const payload = { email: 'test@example.com', region: 'us-east-1' };
     const schema = {
       type: 'object',
       properties: {
         email: { type: 'string', format: 'custom-email' },
+        region: { type: 'string', format: 'allowedRegions' },
       },
-      required: ['email'],
+      required: ['email', 'region'],
       additionalProperties: false,
     };
 
     const ajvInstance = new Ajv({ allErrors: true });
     const formats = {
       'custom-email': {
-        type: 'string',
         validate: (email: string) => email.includes('@'),
       },
+      allowedRegions: /^(us-east-1|us-west-1)$/,
     };
 
     const params: ValidateParams = {
@@ -149,7 +152,7 @@ describe('validate function', () => {
     expect(result).toEqual(payload);
   });
 
-  it('throws SchemaValidationError when schema compilation fails', () => {
+  it('throws the correct error when schema compilation fails', () => {
     // Prepare
     const payload = { name: 'John' };
     const schema = {
@@ -162,6 +165,6 @@ describe('validate function', () => {
     const params: ValidateParams = { payload, schema };
 
     // Act & Assess
-    expect(() => validate(params)).toThrow(SchemaValidationError);
+    expect(() => validate(params)).toThrow(SchemaCompilationError);
   });
 });

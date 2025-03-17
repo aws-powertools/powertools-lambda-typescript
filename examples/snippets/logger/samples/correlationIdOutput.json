@@ -1,0 +1,7 @@
+{
+  "level": "INFO",
+  "message": "This is an INFO log with some context",
+  "timestamp": "2021-05-03 11:47:12,494+0000",
+  "service": "payment",
+  "correlation_id": "correlation_id_value"
+}

@@ -20,7 +20,7 @@ const outboundSchema = {
   additionalProperties: false,
 };
 
-describe('validator decorator', () => {
+describe('Decorator: validator', () => {
   it('should validate inbound and outbound successfully', async () => {
     // Prepare
     class TestClass {
@@ -31,8 +31,10 @@ describe('validator decorator', () => {
     }
     const instance = new TestClass();
     const input = { value: 5 };
+
     // Act
     const output = await instance.multiply(input);
+
     // Assess
     expect(output).toEqual({ result: 10 });
   });
@@ -49,6 +51,7 @@ describe('validator decorator', () => {
     const invalidInput = { value: 'not a number' } as unknown as {
       value: number;
     };
+
     // Act & Assess
     await expect(instance.multiply(invalidInput)).rejects.toThrow(
       SchemaValidationError
@@ -59,14 +62,14 @@ describe('validator decorator', () => {
     // Prepare
     class TestClassInvalid {
       @validator({ inboundSchema, outboundSchema })
-      async multiply(input: { value: number }): Promise<{ result: number }> {
-        return { result: 'invalid' } as unknown as { result: number };
+      async multiply(_input: { value: number }) {
+        return { result: 'invalid' };
       }
     }
     const instance = new TestClassInvalid();
-    const input = { value: 5 };
+
     // Act & Assess
-    await expect(instance.multiply(input)).rejects.toThrow(
+    await expect(instance.multiply({ value: 5 })).rejects.toThrow(
       SchemaValidationError
     );
   });
@@ -81,23 +84,12 @@ describe('validator decorator', () => {
     }
     const instance = new TestClassNoOp();
     const data = { foo: 'bar' };
+
     // Act
     const result = await instance.echo(data);
+
     // Assess
     expect(result).toEqual(data);
-  });
-
-  it('should return descriptor unmodified if descriptor.value is undefined', () => {
-    // Prepare
-    const descriptor: PropertyDescriptor = {};
-    // Act
-    const result = validator({ inboundSchema })(
-      null as unknown as object,
-      'testMethod',
-      descriptor
-    );
-    // Assess
-    expect(result).toEqual(descriptor);
   });
 
   it('should validate inbound only', async () => {
@@ -110,8 +102,10 @@ describe('validator decorator', () => {
     }
     const instance = new TestClassInbound();
     const input = { value: 10 };
+
     // Act
     const output = await instance.process(input);
+
     // Assess
     expect(output).toEqual({ data: JSON.stringify(input) });
   });
@@ -126,8 +120,10 @@ describe('validator decorator', () => {
     }
     const instance = new TestClassOutbound();
     const input = { text: 'hello' };
+
     // Act
     const output = await instance.process(input);
+
     // Assess
     expect(output).toEqual({ result: 42 });
   });

@@ -95,6 +95,10 @@ const injectLambdaContext = (
         request.context,
         options
       );
+
+      if (options?.correlationIdPath) {
+        logger.setCorrelationId(request.event, options.correlationIdPath);
+      }
     }
   };
 

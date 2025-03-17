@@ -5,7 +5,7 @@ import {
   TestStack,
   invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
   RESOURCE_NAME_PREFIX,
@@ -14,10 +14,6 @@ import {
   TEARDOWN_TIMEOUT,
   TEST_CASE_TIMEOUT,
 } from './constants.js';
-
-vi.hoisted(() => {
-  process.env.AWS_PROFILE = 'aamorosi-Admin';
-});
 
 describe('Logger E2E tests, sample rate and injectLambdaContext()', () => {
   const testStack = new TestStack({

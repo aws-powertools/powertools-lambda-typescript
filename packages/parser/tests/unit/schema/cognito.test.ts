@@ -3,7 +3,7 @@ import { PreSignupTriggerSchema } from '../../../src/schemas/cognito.js';
 import { omit } from '../helpers/utils.js';
 
 describe('Schema: Cognito PreSignupTrigger', () => {
-  // Prepare: Define a valid Cognito pre-signup event inline
+  // Prepare
   const baseEvent = {
     version: '1',
     region: 'us-east-1',

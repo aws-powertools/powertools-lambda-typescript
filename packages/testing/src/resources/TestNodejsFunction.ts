@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { CfnOutput, type CfnResource, Duration } from 'aws-cdk-lib';
-import { Tracing } from 'aws-cdk-lib/aws-lambda';
+import { CfnOutput, Duration } from 'aws-cdk-lib';
+import { Alias, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import type { TestStack } from '../TestStack.js';
@@ -56,8 +56,18 @@ class TestNodejsFunction extends NodejsFunction {
       logGroup,
     });
 
+    let outputValue = this.functionName;
+    if (extraProps.createAlias) {
+      const dev = new Alias(this, 'dev', {
+        aliasName: 'dev',
+        version: this.currentVersion,
+        provisionedConcurrentExecutions: 1,
+      });
+      outputValue = dev.functionArn;
+    }
+
     new CfnOutput(this, extraProps.nameSuffix, {
-      value: this.functionName,
+      value: outputValue,
     });
   }
 }

@@ -65,20 +65,11 @@ jobs:
         uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
         with:
           nodeVersion: '22'
-      - name: Select region
-        id: select_region
-        run: |
-          regions_available=(eu-west-1 us-east-1 eu-central-1 us-west-2)
-          region=${regions_available[$((RANDOM % ${#regions[@]}))]}
-          region=${regions_available[$((RANDOM % ${#regions_available[@]}))]}
-          # Set the region as an output variable
-          echo "region=$region" >> $GITHUB_OUTPUT
-          echo "deployment_region=$region"
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
-          aws-region: ${{ steps.select_region.outputs.region }}
+          aws-region: eu-west-1
           mask-aws-account-id: true
       - name: Run integration tests on utils
         env:

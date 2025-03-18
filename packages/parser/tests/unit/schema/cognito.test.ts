@@ -307,7 +307,7 @@ describe('Schema: Cognito MigrateUserTrigger', () => {
   const baseMigrateUserEvent = {
     userName: 'testuser',
     request: {
-      password: 'TestPass123!',
+      password: 'dummyPass123!',
       validationData: {
         key1: 'value1',
       },

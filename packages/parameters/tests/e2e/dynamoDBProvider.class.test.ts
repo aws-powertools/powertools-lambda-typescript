@@ -8,12 +8,7 @@ import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resourc
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { TestDynamodbTableWithItems } from '../helpers/resources.js';
-import {
-  RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT,
-  TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
-} from './constants.js';
+import { RESOURCE_NAME_PREFIX } from './constants.js';
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of DynamoDB tables.
@@ -264,68 +259,52 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
     invocationLogs = await invokeFunctionOnce({
       functionName,
     });
-  }, SETUP_TIMEOUT);
+  });
 
   describe('DynamoDBProvider usage', () => {
     // Test 1 - get a single parameter with default options (keyAttr: 'id', valueAttr: 'value')
-    it(
-      'should retrieve a single parameter',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
+    it('should retrieve a single parameter', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get',
-          value: 'foo',
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get',
+        value: 'foo',
+      });
+    });
 
     // Test 2 - get multiple parameters with default options (keyAttr: 'id', sortAttr: 'sk', valueAttr: 'value')
-    it(
-      'should retrieve multiple parameters',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
+    it('should retrieve multiple parameters', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-multiple',
-          value: { config: 'bar', key: 'baz' },
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-multiple',
+        value: { config: 'bar', key: 'baz' },
+      });
+    });
 
     // Test 3 - get a single parameter with custom options (keyAttr: 'key', valueAttr: 'val')
-    it(
-      'should retrieve a single parameter',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
+    it('should retrieve a single parameter', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-custom',
-          value: 'foo',
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-custom',
+        value: 'foo',
+      });
+    });
 
     // Test 4 - get multiple parameters with custom options (keyAttr: 'key', sortAttr: 'sort', valueAttr: 'val')
-    it(
-      'should retrieve multiple parameters',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
+    it('should retrieve multiple parameters', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-multiple-custom',
-          value: { config: 'bar', key: 'baz' },
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-multiple-custom',
+        value: { config: 'bar', key: 'baz' },
+      });
+    });
 
     // Test 5 - get a single parameter with json transform
     it('should retrieve a single parameter with json transform', async () => {
@@ -390,5 +369,5 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
     if (!process.env.DISABLE_TEARDOWN) {
       await testStack.destroy();
     }
-  }, TEARDOWN_TIMEOUT);
+  });
 });

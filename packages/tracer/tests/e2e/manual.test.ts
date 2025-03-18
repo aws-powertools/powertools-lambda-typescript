@@ -8,8 +8,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { invokeAllTestCases } from '../helpers/invokeAllTests.js';
 import {
   RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT,
-  TEARDOWN_TIMEOUT,
   EXPECTED_ANNOTATION_KEY as expectedCustomAnnotationKey,
   EXPECTED_ANNOTATION_VALUE as expectedCustomAnnotationValue,
   EXPECTED_ERROR_MESSAGE as expectedCustomErrorMessage,
@@ -79,13 +77,13 @@ describe('Tracer E2E tests, manual instantiation', () => {
        */
       expectedSegmentsCount: 2,
     });
-  }, SETUP_TIMEOUT);
+  });
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
       await testStack.destroy();
     }
-  }, TEARDOWN_TIMEOUT);
+  });
 
   it('should generate all trace data correctly', async () => {
     // Assess

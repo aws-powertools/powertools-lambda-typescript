@@ -6,13 +6,7 @@ import {
 } from '@aws-lambda-powertools/testing-utils';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
-import {
-  RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT,
-  STACK_OUTPUT_LOG_GROUP,
-  TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
-} from './constants.js';
+import { RESOURCE_NAME_PREFIX, STACK_OUTPUT_LOG_GROUP } from './constants.js';
 
 /**
  * In this e2e test for Logger, we test a number of advanced use cases:
@@ -82,7 +76,7 @@ describe('Logger E2E - Advanced uses', () => {
       });
       invocationLogs.set(caseKey, logs);
     }
-  }, SETUP_TIMEOUT);
+  });
 
   it.each([
     {
@@ -94,80 +88,76 @@ describe('Logger E2E - Advanced uses', () => {
     {
       caseKey: decoratorCase,
     },
-  ])(
-    '$caseKey instrumentation',
-    ({ caseKey }) => {
-      for (let i = 0; i < invocationCount; i++) {
-        const isFirstInvocation = i === 0;
-        // Get log messages of the i-th invocation
-        const fnLogs = invocationLogs.get(caseKey)?.at(i)?.getFunctionLogs();
-        if (!fnLogs || fnLogs.length === 0) {
-          throw new Error(`Failed to get logs for ${caseKey} invocation ${i}`);
+  ])('$caseKey instrumentation', ({ caseKey }) => {
+    for (let i = 0; i < invocationCount; i++) {
+      const isFirstInvocation = i === 0;
+      // Get log messages of the i-th invocation
+      const fnLogs = invocationLogs.get(caseKey)?.at(i)?.getFunctionLogs();
+      if (!fnLogs || fnLogs.length === 0) {
+        throw new Error(`Failed to get logs for ${caseKey} invocation ${i}`);
+      }
+      // When using decorator & middleware, we are actually throwing an error
+      // which is logged by the runtime, so we need to filter out the logs that are
+      // not JSON formatted
+      const logs = fnLogs.filter((log) => {
+        try {
+          JSON.parse(log);
+          return true;
+        } catch (error) {
+          return false;
         }
-        // When using decorator & middleware, we are actually throwing an error
-        // which is logged by the runtime, so we need to filter out the logs that are
-        // not JSON formatted
-        const logs = fnLogs.filter((log) => {
-          try {
-            JSON.parse(log);
-            return true;
-          } catch (error) {
-            return false;
-          }
-        });
+      });
 
-        if (isFirstInvocation) {
-          // Logs outside of the function handler are only present on the first invocation
-          expect(TestInvocationLogs.parseFunctionLog(logs[0])).toEqual(
-            expect.objectContaining({
-              level: 'DEBUG',
-              message: 'a never buffered debug log',
-            })
-          );
-        }
-        // Since we have an extra log (above) on the first invocation, we need to
-        // adjust the index of the logs we are checking
-        const logIndexOffset = isFirstInvocation ? 1 : 0;
-        const correlationId = i + 1;
-        expect(
-          TestInvocationLogs.parseFunctionLog(logs[0 + logIndexOffset])
-        ).toEqual(
-          expect.objectContaining({
-            level: 'INFO',
-            message: 'an info log',
-            correlation_id: correlationId,
-          })
-        );
-        expect(
-          TestInvocationLogs.parseFunctionLog(logs[1 + logIndexOffset])
-        ).toEqual(
+      if (isFirstInvocation) {
+        // Logs outside of the function handler are only present on the first invocation
+        expect(TestInvocationLogs.parseFunctionLog(logs[0])).toEqual(
           expect.objectContaining({
             level: 'DEBUG',
-            message: 'a buffered debug log',
-            correlation_id: correlationId,
-          })
-        );
-        expect(
-          TestInvocationLogs.parseFunctionLog(logs.at(-1) as string)
-        ).toEqual(
-          expect.objectContaining({
-            level: 'ERROR',
-            message: 'Uncaught error detected, flushing log buffer before exit',
-            correlation_id: correlationId,
-            error: expect.objectContaining({
-              name: 'Error',
-              message: 'ops',
-            }),
+            message: 'a never buffered debug log',
           })
         );
       }
-    },
-    TEST_CASE_TIMEOUT
-  );
+      // Since we have an extra log (above) on the first invocation, we need to
+      // adjust the index of the logs we are checking
+      const logIndexOffset = isFirstInvocation ? 1 : 0;
+      const correlationId = i + 1;
+      expect(
+        TestInvocationLogs.parseFunctionLog(logs[0 + logIndexOffset])
+      ).toEqual(
+        expect.objectContaining({
+          level: 'INFO',
+          message: 'an info log',
+          correlation_id: correlationId,
+        })
+      );
+      expect(
+        TestInvocationLogs.parseFunctionLog(logs[1 + logIndexOffset])
+      ).toEqual(
+        expect.objectContaining({
+          level: 'DEBUG',
+          message: 'a buffered debug log',
+          correlation_id: correlationId,
+        })
+      );
+      expect(
+        TestInvocationLogs.parseFunctionLog(logs.at(-1) as string)
+      ).toEqual(
+        expect.objectContaining({
+          level: 'ERROR',
+          message: 'Uncaught error detected, flushing log buffer before exit',
+          correlation_id: correlationId,
+          error: expect.objectContaining({
+            name: 'Error',
+            message: 'ops',
+          }),
+        })
+      );
+    }
+  });
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
       await testStack.destroy();
     }
-  }, TEARDOWN_TIMEOUT);
+  });
 });

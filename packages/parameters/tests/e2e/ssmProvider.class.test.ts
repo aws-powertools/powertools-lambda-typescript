@@ -10,12 +10,7 @@ import {
   TestSecureStringParameter,
   TestStringParameter,
 } from '../helpers/resources.js';
-import {
-  RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT,
-  TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
-} from './constants.js';
+import { RESOURCE_NAME_PREFIX } from './constants.js';
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of SSM parameters.
@@ -189,200 +184,160 @@ describe('Parameters E2E tests, SSM provider', () => {
     invocationLogs = await invokeFunctionOnce({
       functionName,
     });
-  }, SETUP_TIMEOUT);
+  });
 
   describe('SSMProvider usage', () => {
     // Test 1 - get a single parameter by name with default options
-    it(
-      'should retrieve a single parameter',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
+    it('should retrieve a single parameter', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get',
-          value: paramAValue,
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get',
+        value: paramAValue,
+      });
+    });
 
     // Test 2 - get a single parameter by name with decrypt
-    it(
-      'should retrieve a single parameter with decryption',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
+    it('should retrieve a single parameter with decryption', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-decrypt',
-          value: paramEncryptedAValue,
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-decrypt',
+        value: paramEncryptedAValue,
+      });
+    });
 
     // Test 3 - get multiple parameters by path with default options
-    it(
-      'should retrieve multiple parameters',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
-        const expectedParameterNameA = paramA.substring(
-          paramA.lastIndexOf('/') + 1
-        );
-        const expectedParameterNameB = paramB.substring(
-          paramB.lastIndexOf('/') + 1
-        );
+    it('should retrieve multiple parameters', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
+      const expectedParameterNameA = paramA.substring(
+        paramA.lastIndexOf('/') + 1
+      );
+      const expectedParameterNameB = paramB.substring(
+        paramB.lastIndexOf('/') + 1
+      );
 
-        expect(testLog).toStrictEqual({
-          test: 'get-multiple',
-          value: {
-            [expectedParameterNameA]: paramAValue,
-            [expectedParameterNameB]: paramBValue,
-          },
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-multiple',
+        value: {
+          [expectedParameterNameA]: paramAValue,
+          [expectedParameterNameB]: paramBValue,
+        },
+      });
+    });
 
     // Test 4 - get multiple parameters by path recursively
     // (aka. get all parameters under a path recursively) i.e.
     // given /param, retrieve /param/get/a and /param/get/b (note path depth)
-    it(
-      'should retrieve multiple parameters recursively',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
-        const expectedParameterNameA = paramA.substring(
-          paramA.lastIndexOf('/') + 1
-        );
-        const expectedParameterNameB = paramB.substring(
-          paramB.lastIndexOf('/') + 1
-        );
+    it('should retrieve multiple parameters recursively', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
+      const expectedParameterNameA = paramA.substring(
+        paramA.lastIndexOf('/') + 1
+      );
+      const expectedParameterNameB = paramB.substring(
+        paramB.lastIndexOf('/') + 1
+      );
 
-        expect(testLog).toStrictEqual({
-          test: 'get-multiple-recursive',
-          value: {
-            [expectedParameterNameA]: paramAValue,
-            [expectedParameterNameB]: paramBValue,
-          },
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-multiple-recursive',
+        value: {
+          [expectedParameterNameA]: paramAValue,
+          [expectedParameterNameB]: paramBValue,
+        },
+      });
+    });
 
-    it(
-      'should retrieve multiple parameters with decryption',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
-        const expectedParameterNameA = paramEncryptedA.substring(
-          paramEncryptedA.lastIndexOf('/') + 1
-        );
-        const expectedParameterNameB = paramEncryptedB.substring(
-          paramEncryptedB.lastIndexOf('/') + 1
-        );
+    it('should retrieve multiple parameters with decryption', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
+      const expectedParameterNameA = paramEncryptedA.substring(
+        paramEncryptedA.lastIndexOf('/') + 1
+      );
+      const expectedParameterNameB = paramEncryptedB.substring(
+        paramEncryptedB.lastIndexOf('/') + 1
+      );
 
-        expect(testLog).toStrictEqual({
-          test: 'get-multiple-decrypt',
-          value: {
-            [expectedParameterNameA]: paramEncryptedAValue,
-            [expectedParameterNameB]: paramEncryptedBValue,
-          },
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-multiple-decrypt',
+        value: {
+          [expectedParameterNameA]: paramEncryptedAValue,
+          [expectedParameterNameB]: paramEncryptedBValue,
+        },
+      });
+    });
 
     // Test 6 - get multiple parameters by name with default options
-    it(
-      'should retrieve multiple parameters by name',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[5]);
+    it('should retrieve multiple parameters by name', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[5]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-multiple-by-name',
-          value: {
-            [paramA]: paramAValue,
-            [paramB]: paramBValue,
-          },
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-multiple-by-name',
+        value: {
+          [paramA]: paramAValue,
+          [paramB]: paramBValue,
+        },
+      });
+    });
 
     // Test 7 - get multiple parameters by name, some of them encrypted and some not
-    it(
-      'should retrieve multiple parameters by name with mixed decryption',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[6]);
+    it('should retrieve multiple parameters by name with mixed decryption', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[6]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-multiple-by-name-mixed-decrypt',
-          value: {
-            [paramEncryptedA]: paramEncryptedAValue,
-            [paramEncryptedB]: paramEncryptedBValue,
-            [paramA]: paramAValue,
-          },
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-multiple-by-name-mixed-decrypt',
+        value: {
+          [paramEncryptedA]: paramEncryptedAValue,
+          [paramEncryptedB]: paramEncryptedBValue,
+          [paramA]: paramAValue,
+        },
+      });
+    });
 
     // Test 8 - get parameter twice with middleware, which counts the number
     // of requests, we check later if we only called SSM API once
-    it(
-      'should retrieve single parameter cached',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[7]);
+    it('should retrieve single parameter cached', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[7]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-cached',
-          value: 1,
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-cached',
+        value: 1,
+      });
+    });
 
     // Test 9 - get parameter twice, but force fetch 2nd time,
     // we count number of SDK requests and  check that we made two API calls
-    it(
-      'should retrieve single parameter twice without caching',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[8]);
+    it('should retrieve single parameter twice without caching', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[8]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-forced',
-          value: 2,
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-forced',
+        value: 2,
+      });
+    });
 
     // Test 10 - store and overwrite single parameter
-    it(
-      'should store and overwrite single parameter',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[9]);
+    it('should store and overwrite single parameter', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[9]);
 
-        expect(testLog).toStrictEqual({
-          test: 'set',
-          value: 'overwritten',
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'set',
+        value: 'overwritten',
+      });
+    });
   });
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
       await testStack.destroy();
     }
-  }, TEARDOWN_TIMEOUT);
+  });
 });

@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   run-e2e-tests-on-utils:
-    runs-on: aws-powertools_ubuntu-latest_8-core
+    runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
       PR_NUMBER: ${{ inputs.prNumber }}

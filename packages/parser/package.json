@@ -72,6 +72,10 @@
       "require": "./lib/cjs/schemas/cloudwatch.js",
       "import": "./lib/esm/schemas/cloudwatch.js"
     },
+    "./schemas/cognito": {
+      "require": "./lib/cjs/schemas/cognito.js",
+      "import": "./lib/esm/schemas/cognito.js"
+    },
     "./schemas/dynamodb": {
       "require": "./lib/cjs/schemas/dynamodb.js",
       "import": "./lib/esm/schemas/dynamodb.js"
@@ -182,6 +186,10 @@
       "schemas/cloudwatch": [
         "./lib/cjs/schemas/cloudwatch.d.ts",
         "./lib/esm/schemas/cloudwatch.d.ts"
+      ],
+      "schemas/cognito":[
+        "./lib/cjs/schemas/cognito.d.ts",
+        "./lib/esm/schemas/cognito.d.ts"
       ],
       "schemas/dynamodb": [
         "./lib/cjs/schemas/dynamodb.d.ts",

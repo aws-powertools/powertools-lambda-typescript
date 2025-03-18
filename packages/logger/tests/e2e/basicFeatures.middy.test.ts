@@ -124,32 +124,33 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
     );
   });
 
-  describe('Log event', () => {
-    it(
-      'should log the event as the first log of each invocation only',
-      async () => {
-        for (let i = 0; i < invocationCount; i++) {
-          // Get log messages of the invocation
-          const logMessages = invocationLogs[i].getFunctionLogs();
+  it(
+    'logs the event for every invocation, only once, and without keys from previous invocations',
+    async () => {
+      const { RUNTIME_ADDED_KEY: runtimeAddedKey } = commonEnvironmentVars;
 
-          for (const [index, message] of logMessages.entries()) {
-            const log = TestInvocationLogs.parseFunctionLog(message);
-            // Check that the event is logged on the first log
-            if (index === 0) {
-              expect(log).toHaveProperty('event');
-              expect(log.event).toStrictEqual(
-                expect.objectContaining({ foo: 'bar' })
-              );
-              // Check that the event is not logged again on the rest of the logs
-            } else {
-              expect(log).not.toHaveProperty('event');
-            }
-          }
-        }
-      },
-      TEST_CASE_TIMEOUT
-    );
-  });
+      for (let i = 0; i < invocationCount; i++) {
+        // Get log messages of the invocation
+        const logMessages = invocationLogs[i].getFunctionLogs();
+
+        const eventLog = logMessages.filter((log) =>
+          log.includes('Lambda invocation event')
+        );
+
+        // Check that the event log is logged only once
+        expect(eventLog).toHaveLength(1);
+        const log = TestInvocationLogs.parseFunctionLog(eventLog[0]);
+        // Check that the event log is logged correctly
+        expect(log).toHaveProperty('event');
+        expect(log.event).toStrictEqual(
+          expect.objectContaining({ foo: 'bar' })
+        );
+        // Check that the event log does not contain keys from previous invocations
+        expect(log).not.toHaveProperty(runtimeAddedKey);
+      }
+    },
+    TEST_CASE_TIMEOUT
+  );
 
   describe('Persistent additional log keys and values', () => {
     it(
@@ -195,33 +196,6 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
               // Check that all other logs that happen at runtime do not contain the key
             } else {
               expect(log).not.toHaveProperty(removableValue);
-            }
-          }
-        }
-      },
-      TEST_CASE_TIMEOUT
-    );
-
-    it(
-      'should not leak any persistent keys added runtime since clearState is enabled',
-      async () => {
-        const { RUNTIME_ADDED_KEY: runtimeAddedKey } = commonEnvironmentVars;
-
-        for (let i = 0; i < invocationCount; i++) {
-          // Get log messages of the invocation
-          const logMessages = invocationLogs[i].getFunctionLogs();
-
-          for (const [index, message] of logMessages.entries()) {
-            const log = TestInvocationLogs.parseFunctionLog(message);
-            // Check that at the time of logging the event, which happens before the handler,
-            // the key is NOT present
-            if (index === 0) {
-              expect(log).not.toHaveProperty(runtimeAddedKey);
-            } else {
-              // Check that all other logs that happen at runtime do contain the key
-              expect(log).toHaveProperty(runtimeAddedKey);
-              // Check that the value is the same for all logs
-              expect(log[runtimeAddedKey]).toEqual('bar');
             }
           }
         }

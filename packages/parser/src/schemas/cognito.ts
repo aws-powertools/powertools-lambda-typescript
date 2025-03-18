@@ -402,7 +402,11 @@ export const CustomSMSSenderTriggerSchema = z.object({
   response: z.object({}),
 });
 
-const ChallengeResultSchema = z.object({});
+const ChallengeResultSchema = z.object({
+  challengeName: z.string(),
+  challengeResult: z.boolean(),
+  challengeMetadata: z.string().optional(),
+});
 
 /**
  * A zod schema for a Cognito Define Auth Challenge trigger event.

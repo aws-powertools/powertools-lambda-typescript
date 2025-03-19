@@ -4,8 +4,7 @@ name: Layer Deployment (GovCloud)
 # ---
 # This workflow publishes a specific layer version in an AWS account based on the environment input.
 #
-# Using a matrix, we pull each architecture and python version of the layer and store them as artifacts
-# we upload them to each of the GovCloud AWS accounts.
+# We pull each the version of the layer and store them as artifacts, the we upload them to each of the GovCloud AWS accounts.
 #
 # A number of safety checks are performed to ensure safety.
 

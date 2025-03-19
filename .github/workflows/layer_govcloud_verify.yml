@@ -25,10 +25,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    strategy:
-      matrix:
-        layer:
-          - AWSLambdaPowertoolsTypeScriptV2
     environment: Prod (Readonly)
     steps:
       - name: Configure AWS Credentials
@@ -80,4 +76,4 @@ jobs:
       - name: Verify Layer AWSLambdaPowertoolsTypeScriptV2
         id: verify-layer
         run: |
-          aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2-${{ matrix.arch }}:${{ inputs.version }}' | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes[0], "Compatible Architectures": .CompatibleArchitectures[0], "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'
+          aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.version }}' | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes[0], "Compatible Architectures": .CompatibleArchitectures[0], "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'

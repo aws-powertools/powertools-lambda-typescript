@@ -69,7 +69,9 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 
     For the latter, make sure to replace `{region}` with your AWS region, e.g., `eu-west-1`.
 
-    __arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:22__{: .copyMe}:clipboard:
+    !!! abstract ""
+        
+        __arn:aws:lambda:{region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:22__{: .copyMe}:clipboard:
 
     ???+ note "Code snippets for popular infrastructure as code frameworks"
 
@@ -263,6 +265,15 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
               },
             });
             ```
+
+=== "Layer in GovCloud"
+
+    We also provide layers in two GovCloud regions:
+
+    !!! abstract ""
+
+        * __arn:aws-us-gov:lambda:us-gov-east-1:ACCOUNT_NUMBER:layer:AWSLambdaPowertoolsTypeScriptV2:22__{: .copyMe}:clipboard:
+        * __arn:aws-us-gov:lambda:us-gov-west-1:ACCOUNT_NUMBER:layer:AWSLambdaPowertoolsTypeScriptV2:22__{: .copyMe}:clipboard:
 
 ### Lambda Layer
 

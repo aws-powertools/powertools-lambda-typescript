@@ -12,6 +12,7 @@ import { RESOURCE_NAME_PREFIX, STACK_OUTPUT_LOG_GROUP } from './constants.js';
  * In this e2e test for Logger, we test a number of advanced use cases:
  * - Log buffering enabled with flush on error (both manually on logger.error and automatically on uncaught error)
  * - Correlation ID injection (both manually and automatically)
+ * - Cold start detection for provisioned concurrency (always false)
  *
  * The test is split into three cases:
  * - Manual instrumentation
@@ -127,6 +128,7 @@ describe('Logger E2E - Advanced uses', () => {
         expect.objectContaining({
           level: 'INFO',
           message: 'an info log',
+          cold_start: false,
           correlation_id: correlationId,
         })
       );
@@ -136,6 +138,7 @@ describe('Logger E2E - Advanced uses', () => {
         expect.objectContaining({
           level: 'DEBUG',
           message: 'a buffered debug log',
+          cold_start: false,
           correlation_id: correlationId,
         })
       );
@@ -145,6 +148,7 @@ describe('Logger E2E - Advanced uses', () => {
         expect.objectContaining({
           level: 'ERROR',
           message: 'Uncaught error detected, flushing log buffer before exit',
+          cold_start: false,
           correlation_id: correlationId,
           error: expect.objectContaining({
             name: 'Error',

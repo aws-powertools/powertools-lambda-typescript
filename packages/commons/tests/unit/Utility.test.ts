@@ -15,6 +15,12 @@ describe('Class: Utility', () => {
     public validateServiceName(serviceName: string): boolean {
       return this.isValidServiceName(serviceName);
     }
+    public getInitializationType():
+      | 'unknown'
+      | 'on-demand'
+      | 'provisioned-concurrency' {
+      return super.getInitializationType();
+    }
   }
 
   it('returns the correct cold start value', () => {
@@ -24,6 +30,15 @@ describe('Class: Utility', () => {
     // Act & Assess
     expect(utility.dummyMethod()).toBe(true);
     expect(utility.dummyMethod()).toBe(false);
+    expect(utility.dummyMethod()).toBe(false);
+  });
+
+  it('returns the correct cold start value when provisioned concurrency is used', () => {
+    // Prepare
+    process.env.AWS_LAMBDA_INITIALIZATION_TYPE = 'provisioned-concurrency';
+    const utility = new TestUtility();
+
+    // Act & Assess
     expect(utility.dummyMethod()).toBe(false);
   });
 
@@ -54,4 +69,23 @@ describe('Class: Utility', () => {
     expect(utility.validateServiceName('serverlessAirline')).toBe(true);
     expect(utility.validateServiceName('')).toBe(false);
   });
+
+  it.each([
+    { value: 'on-demand', expected: 'on-demand' },
+    { value: 'provisioned-concurrency', expected: 'provisioned-concurrency' },
+    { value: '', expected: 'unknown' },
+  ])(
+    'returns the correct initialization type ($value)',
+    ({ value, expected }) => {
+      // Prepare
+      process.env.AWS_LAMBDA_INITIALIZATION_TYPE = value;
+      const utility = new TestUtility();
+
+      // Act
+      const initializationType = utility.getInitializationType();
+
+      // Assess
+      expect(initializationType).toBe(expected);
+    }
+  );
 });

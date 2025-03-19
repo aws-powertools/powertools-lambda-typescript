@@ -5,14 +5,12 @@ const metrics = new Metrics({
   serviceName: 'orders',
 });
 
-metrics.setFunctionName('my-function-name');
-
 export const handler = async (
   _event: unknown,
   _context: unknown
 ): Promise<void> => {
   // Capture cold start metric
-  metrics.captureColdStartMetric();
+  metrics.captureColdStartMetric('my-function-name');
 
   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
 

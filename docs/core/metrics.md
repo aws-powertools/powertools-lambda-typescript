@@ -66,12 +66,12 @@ The library requires two settings. You can set them as environment variables, or
 
 These settings will be used across all metrics emitted:
 
-| Setting              | Description                                                      | Environment variable               | Default             | Allowed Values | Example             | Constructor parameter |
-|----------------------|------------------------------------------------------------------|------------------------------------|---------------------|----------------|---------------------|-----------------------|
+| Setting              | Description                                                      | Environment variable               | Default           | Allowed Values | Example             | Constructor parameter |
+|----------------------|------------------------------------------------------------------|------------------------------------|-------------------|----------------|---------------------|-----------------------|
 | **Service**          | Optionally, sets **service** metric dimension across all metrics | `POWERTOOLS_SERVICE_NAME`          | `service_undefined` | Any string     | `serverlessAirline` | `serviceName`         |
 | **Metric namespace** | Logical container where all metrics will be placed               | `POWERTOOLS_METRICS_NAMESPACE`     | `default_namespace` | Any string     | `serverlessAirline` | `default_namespace`   |
-| **Function Name**    | Logical Lambda function name used for `ColdStart` metrics        | `POWERTOOLS_METRICS_FUNCTION_NAME` | `undefined`         | Any string     | `my-function-name`  | `functionName`         |
-| **Enabled**          | Whether to emit metrics to standard output or not                | `POWERTOOLS_METRICS_ENABLED`       | `true`              | Boolean        | `false`             |                       |
+| **Function Name**    | Function name used as dimension for the `ColdStart` metric       | `POWERTOOLS_METRICS_FUNCTION_NAME` | [See docs](#capturing-a-cold-start-invocation-as-metric)         | Any string     | `my-function-name`  | `functionName`         |
+| **Enabled**          | Whether to emit metrics to standard output or not                | `POWERTOOLS_METRICS_ENABLED`       | `true`            | Boolean        | `false`             |                       |
 
 !!! tip
     Use your application name or main service as the metric namespace to easily group all metrics
@@ -231,22 +231,6 @@ You can add default dimensions to your metrics by passing them as parameters in 
     1. Binding your handler method allows your handler to access `this` within the class methods.
 
 If you'd like to remove them at some point, you can use the `clearDefaultDimensions` method.
-
-### Setting function name
-
-When emitting cold start metrics, the `function_name` dimension defaults to `context.functionName`. If you want to change the value you can set the `functionName` parameter in the metrics constructor, call `setFunctionName` in the global scope, or define the environment variable `POWERTOOLS_METRICS_FUNCTION_NAME`.
-
-=== "constructor"
-
-    ```typescript hl_lines="6"
-    --8<-- "examples/snippets/metrics/functionName.ts"
-    ```
-
-=== "setFunctionName method"
-
-    ```typescript hl_lines="8"
-    --8<-- "examples/snippets/metrics/setFunctionName.ts"
-    ```
 
 ### Changing default timestamp
 
@@ -422,6 +406,22 @@ If it's a cold start invocation, this feature will:
 This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.
 
 !!! info "We do not emit 0 as a value for the ColdStart metric for cost-efficiency reasons. [Let us know](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd prefer a flag to override it."
+
+#### Setting function name
+
+When emitting cold start metrics, the `function_name` dimension defaults to `context.functionName`. If you want to change the value you can set the `functionName` parameter in the metrics constructor, define the environment variable `POWERTOOLS_METRICS_FUNCTION_NAME`, or pass a value to `captureColdStartMetric`.
+
+=== "constructor"
+
+    ```typescript hl_lines="6"
+    --8<-- "examples/snippets/metrics/functionName.ts"
+    ```
+
+=== "captureColdStartMetric method"
+
+    ```typescript hl_lines="8"
+    --8<-- "examples/snippets/metrics/captureColdStartMetric.ts"
+    ```
 
 ## Advanced
 

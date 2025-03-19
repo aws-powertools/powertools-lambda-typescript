@@ -29,6 +29,7 @@ import type {
   MetricsOptions,
   StoredMetrics,
 } from './types/index.js';
+import { getFirstDefinedValue } from './utils';
 
 /**
  * The Metrics utility creates custom metrics asynchronously by logging metrics to standard output following {@link https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html | Amazon CloudWatch Embedded Metric Format (EMF)}.
@@ -371,8 +372,10 @@ class Metrics extends Utility implements MetricsInterface {
    *   metrics.captureColdStartMetric();
    * };
    * ```
+   *
+   * @param functionName - Optional function name to use as `function_name` dimension in the metric. It's used only if the `functionName` constructor parameter or environment variable are not set.
    */
-  public captureColdStartMetric(): void {
+  public captureColdStartMetric(functionName?: string): void {
     if (!this.getColdStart()) return;
     const singleMetric = this.singleMetric();
 
@@ -381,8 +384,12 @@ class Metrics extends Utility implements MetricsInterface {
         service: this.defaultDimensions.service,
       });
     }
-    if (this.functionName) {
-      singleMetric.addDimension('function_name', this.functionName);
+    const coldStartFunctionName = getFirstDefinedValue(
+      this.functionName,
+      functionName
+    );
+    if (coldStartFunctionName) {
+      singleMetric.addDimension('function_name', coldStartFunctionName);
     }
     singleMetric.addMetric(COLD_START_METRIC, MetricUnits.Count, 1);
   }
@@ -477,17 +484,6 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Check if a function name has been defined.
-   *
-   * This is useful when you want to only set a function name if it is not already set.
-   *
-   * The method is primarily intended for internal use, but it is exposed for advanced use cases.
-   */
-  public hasFunctionName(): boolean {
-    return Boolean(this.functionName);
-  }
-
-  /**
    * Whether metrics are disabled.
    */
   protected isDisabled(): boolean {
@@ -554,10 +550,9 @@ class Metrics extends Utility implements MetricsInterface {
         context: Context,
         callback: Callback
       ): Promise<unknown> {
-        if (!metricsRef.hasFunctionName()) {
-          metricsRef.functionName = context.functionName;
+        if (captureColdStartMetric) {
+          metricsRef.captureColdStartMetric(context.functionName);
         }
-        if (captureColdStartMetric) metricsRef.captureColdStartMetric();
 
         let result: unknown;
         try {
@@ -762,27 +757,13 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Set the function name to be added to each metric as a dimension.
-   *
-   * When using the {@link Metrics.logMetrics | `logMetrics()`} decorator, or the Middy.js middleware, the function
-   * name is automatically inferred from the Lambda context.
-   *
-   * @example
-   * ```typescript
-   * import { Metrics } from '@aws-lambda-powertools/metrics';
-   *
-   * const metrics = new Metrics({
-   *   namespace: 'serverlessAirline',
-   *   serviceName: 'orders'
-   * });
-   *
-   * metrics.setFunctionName('my-function-name');
-   * ```
-   *
-   * @param name - The function name
+   * @deprecated Override the function name for `ColdStart` metrics inferred from the context either via:
+   * - `functionName` constructor parameter
+   * - `POWERTOOLS_FUNCTION_NAME` environment variable
+   * - {@link Metrics.captureColdStartMetric() | `captureColdStartMetric('myFunctionName')`} method
    */
-  public setFunctionName(name?: string): void {
-    this.functionName = name || this.getEnvVarsService().getFunctionName();
+  public setFunctionName(name: string): void {
+    this.functionName = name;
   }
 
   /**
@@ -931,6 +912,20 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * Set the function name for the cold start metric.
+   *
+   * @param functionName - The function name to be used for the cold start metric set in the constructor
+   */
+  protected setFunctionNameForColdStartMetric(functionName?: string): void {
+    const constructorFunctionName = functionName;
+    const envFunctionName = this.getEnvVarsService().getFunctionName();
+    this.functionName = getFirstDefinedValue(
+      constructorFunctionName,
+      envFunctionName
+    );
+  }
+
+  /**
    * Set the namespace to be used.
    *
    * @param namespace - The namespace to be used
@@ -974,7 +969,7 @@ class Metrics extends Utility implements MetricsInterface {
     this.setNamespace(namespace);
     this.setService(serviceName);
     this.setDefaultDimensions(defaultDimensions);
-    this.setFunctionName(functionName);
+    this.setFunctionNameForColdStartMetric(functionName);
     this.isSingleMetric = singleMetric || false;
 
     return this;

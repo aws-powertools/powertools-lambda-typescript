@@ -64,9 +64,6 @@ const logMetrics = (
     for (const metrics of metricsInstances) {
       const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } =
         options;
-      if (!metrics.hasFunctionName()) {
-        metrics.setFunctionName(request.context.functionName);
-      }
       if (throwOnEmptyMetrics) {
         metrics.setThrowOnEmptyMetrics(throwOnEmptyMetrics);
       }
@@ -74,7 +71,7 @@ const logMetrics = (
         metrics.setDefaultDimensions(defaultDimensions);
       }
       if (captureColdStartMetric) {
-        metrics.captureColdStartMetric();
+        metrics.captureColdStartMetric(request.context.functionName);
       }
     }
 

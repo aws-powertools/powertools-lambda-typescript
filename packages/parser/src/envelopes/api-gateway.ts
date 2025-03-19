@@ -1,6 +1,6 @@
 import type { ZodSchema, z } from 'zod';
 import { ParseError } from '../errors.js';
-import { APIGatewayProxyEventSchema } from '../schemas/apigw.js';
+import { APIGatewayProxyEventSchema } from '../schemas/api-gateway.js';
 import type { ParsedResult } from '../types/parser.js';
 import { envelopeDiscriminator } from './envelope.js';
 

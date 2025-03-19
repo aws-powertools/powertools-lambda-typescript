@@ -56,3 +56,103 @@ updates:
         patterns:
         - "vitest"
         - "@vitest/*"
+
+  - package-ecosystem: docker
+    directory: /.devcontainer
+    schedule:
+      interval: daily
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /docs
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /docs
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /examples/app
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /examples/snippets
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /layers
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/batch
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/commons
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/event-handler
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/idempotency
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/jmespath
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/logger
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/metrics
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/parameters
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/parser
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/testing
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/tracer
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/validation
+    schedule:
+      interval: daily

@@ -1,4 +1,5 @@
 import type { Context } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import { handler } from './decorator.js';
 import type { Order } from './schema.js';
 

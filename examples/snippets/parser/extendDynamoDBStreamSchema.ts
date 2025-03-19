@@ -1,5 +1,6 @@
 import { DynamoDBMarshalled } from '@aws-lambda-powertools/parser/helpers/dynamodb';
 import {
+  DynamoDBStreamChangeRecordBase,
   DynamoDBStreamRecord,
   DynamoDBStreamSchema,
 } from '@aws-lambda-powertools/parser/schemas/dynamodb';
@@ -13,7 +14,7 @@ const customSchema = z.object({
 const extendedSchema = DynamoDBStreamSchema.extend({
   Records: z.array(
     DynamoDBStreamRecord.extend({
-      dynamodb: z.object({
+      dynamodb: DynamoDBStreamChangeRecordBase.extend({
         NewImage: DynamoDBMarshalled(customSchema).optional(),
       }),
     })

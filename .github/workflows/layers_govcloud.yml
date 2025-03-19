@@ -34,7 +34,7 @@ on:
         type: string
         required: true
 
-run-name: Layer Deployment (GovCloud) - ${{ inputs.environment }}
+run-name: Layer Deployment (GovCloud) - ${{ inputs.environment }} - version - ${{ inputs.version }}
 
 permissions:
   contents: read
@@ -45,10 +45,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    strategy:
-      matrix:
-        layer:
-          - AWSLambdaPowertoolsTypeScriptV2
     environment: Prod (Readonly)
     steps:
       - name: Configure AWS Credentials
@@ -59,20 +55,20 @@ jobs:
           mask-aws-account-id: true
       - name: Grab Zip
         run: |
-          aws --region us-east-1 lambda get-layer-version-by-arn --arn arn:aws:lambda:us-east-1:094274105915:layer:${{ matrix.layer }}:${{ inputs.version }} --query 'Content.Location' | xargs curl -L -o ${{ matrix.layer }}.zip
-          aws --region us-east-1 lambda get-layer-version-by-arn --arn arn:aws:lambda:us-east-1:094274105915:layer:${{ matrix.layer }}:${{ inputs.version }} > ${{ matrix.layer }}.json
+          aws --region us-east-1 lambda get-layer-version-by-arn --arn arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.version }} --query 'Content.Location' | xargs curl -L -o AWSLambdaPowertoolsTypeScriptV2.zip
+          aws --region us-east-1 lambda get-layer-version-by-arn --arn arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.version }} > AWSLambdaPowertoolsTypeScriptV2.json
       - name: Store Zip
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
-          name: ${{ matrix.layer }}.zip
-          path: ${{ matrix.layer }}.zip
+          name: AWSLambdaPowertoolsTypeScriptV2.zip
+          path: AWSLambdaPowertoolsTypeScriptV2.zip
           retention-days: 1
           if-no-files-found: error
       - name: Store Metadata
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
-          name: ${{ matrix.layer }}.json
-          path: ${{ matrix.layer }}.json
+          name: AWSLambdaPowertoolsTypeScriptV2.json
+          path: AWSLambdaPowertoolsTypeScriptV2.json
           retention-days: 1
           if-no-files-found: error
 
@@ -83,24 +79,20 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    strategy:
-      matrix:
-        layer:
-          - AWSLambdaPowertoolsTypeScriptV2
     environment: GovCloud ${{ inputs.environment }} (East)
     steps:
       - name: Download Zip
         uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # v4.2.0
         with:
-          name: ${{ matrix.layer }}.zip
+          name: AWSLambdaPowertoolsTypeScriptV2.zip
       - name: Download Metadata
         uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # v4.2.0
         with:
-          name: ${{ matrix.layer }}.json
+          name: AWSLambdaPowertoolsTypeScriptV2.json
       - name: Verify Layer Signature
         run: |
-          SHA=$(jq -r '.Content.CodeSha256' '${{ matrix.layer }}.json')
-          test "$(openssl dgst -sha256 -binary ${{ matrix.layer }}.zip | openssl enc -base64)" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1
+          SHA=$(jq -r '.Content.CodeSha256' 'AWSLambdaPowertoolsTypeScriptV2.json')
+          test "$(openssl dgst -sha256 -binary AWSLambdaPowertoolsTypeScriptV2.zip | openssl enc -base64)" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
@@ -111,19 +103,19 @@ jobs:
         id: create-layer
         run: |
           LAYER_VERSION=$(aws --region us-gov-east-1 lambda publish-layer-version \
-            --layer-name ${{ matrix.layer }} \
-            --zip-file fileb://./${{ matrix.layer }}.zip \
-            --compatible-runtimes "$(jq -r '.CompatibleRuntimes[0]' '${{ matrix.layer }}.json')" \
-            --compatible-architectures "$(jq  -r '.CompatibleArchitectures[0]' '${{ matrix.layer }}.json')" \
+            --layer-name AWSLambdaPowertoolsTypeScriptV2 \
+            --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
+            --compatible-runtimes "$(jq -r '.CompatibleRuntimes[0]' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
+            --compatible-architectures "$(jq  -r '.CompatibleArchitectures[0]' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
             --license-info "MIT-0" \
-            --description "$(jq -r '.Description' '${{ matrix.layer }}.json')" \
+            --description "$(jq -r '.Description' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
             --query 'Version' \
             --output text)
 
           echo "LAYER_VERSION=$LAYER_VERSION" >> "$GITHUB_OUTPUT"
 
           aws --region us-gov-east-1 lambda add-layer-version-permission \
-            --layer-name '${{ matrix.layer }}' \
+            --layer-name 'AWSLambdaPowertoolsTypeScriptV2' \
             --statement-id 'PublicLayer' \
             --action lambda:GetLayerVersion \
             --principal '*' \
@@ -132,10 +124,10 @@ jobs:
         env:
           LAYER_VERSION: ${{ steps.create-layer.outputs.LAYER_VERSION }}
         run: |
-          REMOTE_SHA=$(aws --region us-gov-east-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:${{ matrix.layer }}:${{ env.LAYER_VERSION }}' --query 'Content.CodeSha256' --output text)
-          SHA=$(jq -r '.Content.CodeSha256' '${{ matrix.layer }}.json')
+          REMOTE_SHA=$(aws --region us-gov-east-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' --query 'Content.CodeSha256' --output text)
+          SHA=$(jq -r '.Content.CodeSha256' 'AWSLambdaPowertoolsTypeScriptV2.json')
           test "$REMOTE_SHA" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1
-          aws --region us-gov-east-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:${{ matrix.layer }}:${{ env.LAYER_VERSION }}' --output table
+          aws --region us-gov-east-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' --output table
 
   copy_west:
     name: Copy (West)
@@ -144,25 +136,21 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    strategy:
-      matrix:
-        layer:
-         - AWSLambdaPowertoolsTypeScriptV2
     environment:
       name: GovCloud ${{ inputs.environment }} (West)
     steps:
       - name: Download Zip
         uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # v4.2.0
         with:
-          name: ${{ matrix.layer }}.zip
+          name: AWSLambdaPowertoolsTypeScriptV2.zip
       - name: Download Metadata
         uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # v4.2.0
         with:
-          name: ${{ matrix.layer }}.json
+          name: AWSLambdaPowertoolsTypeScriptV2.json
       - name: Verify Layer Signature
         run: |
-          SHA=$(jq -r '.Content.CodeSha256' '${{ matrix.layer }}.json')
-          test "$(openssl dgst -sha256 -binary ${{ matrix.layer }}.zip | openssl enc -base64)" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1
+          SHA=$(jq -r '.Content.CodeSha256' 'AWSLambdaPowertoolsTypeScriptV2.json')
+          test "$(openssl dgst -sha256 -binary AWSLambdaPowertoolsTypeScriptV2.zip | openssl enc -base64)" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
@@ -173,19 +161,19 @@ jobs:
         id: create-layer
         run: |
           LAYER_VERSION=$(aws --region us-gov-west-1 lambda publish-layer-version \
-            --layer-name ${{ matrix.layer }} \
-            --zip-file fileb://./${{ matrix.layer }}.zip \
-            --compatible-runtimes "$(jq -r '.CompatibleRuntimes[0]' '${{ matrix.layer }}.json')" \
-            --compatible-architectures "$(jq  -r '.CompatibleArchitectures[0]' '${{ matrix.layer }}.json')" \
+            --layer-name AWSLambdaPowertoolsTypeScriptV2 \
+            --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
+            --compatible-runtimes "$(jq -r '.CompatibleRuntimes[0]' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
+            --compatible-architectures "$(jq  -r '.CompatibleArchitectures[0]' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
             --license-info "MIT-0" \
-            --description "$(jq -r '.Description' '${{ matrix.layer }}.json')" \
+            --description "$(jq -r '.Description' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
             --query 'Version' \
             --output text)
 
           echo "LAYER_VERSION=$LAYER_VERSION" >> "$GITHUB_OUTPUT"
 
           aws --region us-gov-west-1 lambda add-layer-version-permission \
-            --layer-name '${{ matrix.layer }}' \
+            --layer-name 'AWSLambdaPowertoolsTypeScriptV2' \
             --statement-id 'PublicLayer' \
             --action lambda:GetLayerVersion \
             --principal '*' \
@@ -194,7 +182,7 @@ jobs:
         env:
           LAYER_VERSION: ${{ steps.create-layer.outputs.LAYER_VERSION }}
         run: |
-          REMOTE_SHA=$(aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:${{ matrix.layer }}:${{ env.LAYER_VERSION }}' --query 'Content.CodeSha256' --output text)
-          SHA=$(jq -r '.Content.CodeSha256' '${{ matrix.layer }}.json')
+          REMOTE_SHA=$(aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' --query 'Content.CodeSha256' --output text)
+          SHA=$(jq -r '.Content.CodeSha256' 'AWSLambdaPowertoolsTypeScriptV2.json')
           test "$REMOTE_SHA" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1
-          aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:${{ matrix.layer }}:${{ env.LAYER_VERSION }}' --output table
+          aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' --output table

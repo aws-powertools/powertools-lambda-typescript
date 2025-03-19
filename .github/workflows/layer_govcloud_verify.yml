@@ -1,0 +1,91 @@
+# GovCloud Layer Verification
+# ---
+# This workflow queries the GovCloud layer info in production only
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Layer version to verify information
+        type: string
+        required: true
+  workflow_call:
+    inputs:
+      version:
+        description: Layer version to verify information
+        type: string
+        required: true
+
+name: Layer Verification (GovCloud)
+run-name: Layer Verification (GovCloud)
+
+jobs:
+  commercial:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        layer:
+          - AWSLambdaPowertoolsTypeScriptV2
+    environment: Prod (Readonly)
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: us-east-1
+          mask-aws-account-id: true
+      - name: Output ${{ matrix.layer }}
+        run: |
+          aws --region us-east-1 lambda get-layer-version-by-arn --arn 'arn:aws:lambda:us-east-1:094274105915:layer:${{ matrix.layer }}:${{ inputs.version }}' | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes[0], "Compatible Architectures": .CompatibleArchitectures[0], "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'
+
+  gov_east:
+    name: Verify (East)
+    needs: commercial
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        layer:
+         - AWSLambdaPowertoolsTypeScriptV2
+    environment: GovCloud Prod (East)
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: us-gov-east-1
+          mask-aws-account-id: true
+      - name: Verify Layer ${{ matrix.layer }}
+        id: verify-layer
+        run: |
+          aws --region us-gov-east-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:${{ matrix.layer }}:${{ inputs.version }}' | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes[0], "Compatible Architectures": .CompatibleArchitectures[0], "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'
+
+  gov_west:
+    name: Verify (West)
+    needs: commercial
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        layer:
+         - AWSLambdaPowertoolsTypeScriptV2
+
+    environment: GovCloud Prod (West)
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: us-gov-east-1
+          mask-aws-account-id: true
+      - name: Verify Layer ${{ matrix.layer }}
+        id: verify-layer
+        run: |
+          aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:${{ matrix.layer }}-${{ matrix.arch }}:${{ inputs.version }}' | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes[0], "Compatible Architectures": .CompatibleArchitectures[0], "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'

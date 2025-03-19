@@ -26,6 +26,21 @@ export {
   CloudWatchLogsSchema,
 } from './cloudwatch.js';
 export {
+  PreSignupTriggerSchema,
+  PostConfirmationTriggerSchema,
+  PreAuthenticationTriggerSchema,
+  PostAuthenticationTriggerSchema,
+  PreTokenGenerationTriggerSchemaV1,
+  PreTokenGenerationTriggerSchemaV2,
+  MigrateUserTriggerSchema,
+  CustomMessageTriggerSchema,
+  CustomEmailSenderTriggerSchema,
+  CustomSMSSenderTriggerSchema,
+  DefineAuthChallengeSchema,
+  CreateAuthChallengeSchema,
+  VerifyAuthChallengeSchema,
+} from './cognito.js';
+export {
   DynamoDBStreamSchema,
   DynamoDBStreamToKinesisRecord,
 } from './dynamodb.js';

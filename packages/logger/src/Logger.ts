@@ -216,6 +216,11 @@ class Logger extends Utility implements LoggerInterface {
   #buffer?: CircularMap<string>;
 
   /**
+   * Search function for the correlation ID.
+   */
+  #correlationIdSearchFn?: (expression: string, data: unknown) => unknown;
+
+  /**
    * The debug sampling rate configuration.
    */
   readonly #debugLogSampling = {
@@ -326,6 +331,7 @@ class Logger extends Utility implements LoggerInterface {
           environment: this.powertoolsLogData.environment,
           persistentLogAttributes: this.persistentLogAttributes,
           jsonReplacerFn: this.#jsonReplacerFn,
+          correlationIdSearchFn: this.#correlationIdSearchFn,
           ...(this.#bufferConfig.enabled && {
             logBufferOptions: {
               maxBytes: this.#bufferConfig.maxBytes,
@@ -480,6 +486,9 @@ class Logger extends Utility implements LoggerInterface {
         loggerRef.refreshSampleRateCalculation();
         loggerRef.addContext(context);
         loggerRef.logEventIfEnabled(event, options?.logEvent);
+        if (options?.correlationIdPath) {
+          loggerRef.setCorrelationId(event, options?.correlationIdPath);
+        }
 
         try {
           return await originalMethod.apply(this, [event, context, callback]);
@@ -1261,6 +1270,7 @@ class Logger extends Utility implements LoggerInterface {
       jsonReplacerFn,
       logRecordOrder,
       logBufferOptions,
+      correlationIdSearchFn,
     } = options;
 
     if (persistentLogAttributes && persistentKeys) {
@@ -1287,6 +1297,7 @@ class Logger extends Utility implements LoggerInterface {
     this.setLogIndentation();
     this.#jsonReplacerFn = jsonReplacerFn;
     this.#setLogBuffering(logBufferOptions);
+    this.#correlationIdSearchFn = correlationIdSearchFn;
 
     return this;
   }
@@ -1438,6 +1449,56 @@ class Logger extends Utility implements LoggerInterface {
       traceId !== undefined &&
       logLevel <= this.#bufferConfig.bufferAtVerbosity
     );
+  }
+
+  /**
+   * Set the correlation ID for the log item.
+   * This method can be used to set the correlation ID for the log item or to search for the correlation ID in the event.
+   *
+   * @example
+   * ```typescript
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   *
+   * const logger = new Logger();
+   * logger.setCorrelationId('my-correlation-id'); // sets the correlation ID directly with the first argument as value
+   * ```
+   *
+   * ```typescript
+   * import { Logger } from '@aws-lambda-powertools/logger';
+   * import { search } from '@aws-lambda-powertools/logger/correlationId';
+   *
+   * const logger = new Logger({ correlationIdSearchFn: search });
+   * logger.setCorrelationId(event, 'requestContext.requestId'); // sets the correlation ID from the event using JMSPath expression
+   * ```
+   *
+   * @param value - The value to set as the correlation ID or the event to search for the correlation ID
+   * @param correlationIdPath - Optional JMESPath expression to extract the correlation ID for the payload
+   */
+  public setCorrelationId(value: unknown, correlationIdPath?: string): void {
+    if (typeof correlationIdPath === 'string') {
+      if (!this.#correlationIdSearchFn) {
+        this.warn(
+          'correlationIdPath is set but no search function was provided. The correlation ID will not be added to the log attributes.'
+        );
+        return;
+      }
+      const correlationId = this.#correlationIdSearchFn(
+        correlationIdPath,
+        value
+      );
+      if (correlationId) this.appendKeys({ correlation_id: correlationId });
+      return;
+    }
+
+    // If no correlationIdPath is provided, set the correlation ID directly
+    this.appendKeys({ correlation_id: value });
+  }
+
+  /**
+   * Get the correlation ID from the log attributes.
+   */
+  public getCorrelationId(): unknown {
+    return this.temporaryLogAttributes.correlation_id;
   }
 }
 

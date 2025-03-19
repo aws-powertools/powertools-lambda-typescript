@@ -224,7 +224,7 @@ mergedeep==1.3.4 \
 mike==1.1.2 \
     --hash=sha256:4c307c28769834d78df10f834f57f810f04ca27d248f80a75f49c6fa2d1527ca \
     --hash=sha256:56c3f1794c2d0b5fdccfa9b9487beb013ca813de2e3ad0744724e9d34d40b77b
-    # via -r docs/requirements.in
+    # via -r requirements.in
 mkdocs==1.6.1 \
     --hash=sha256:7b432f01d928c084353ab39c57282f29f92136665bdd6abf7c1ec8d822ef86f2 \
     --hash=sha256:db91759624d1647f3f34aa0c3f327dd2601beae39a366d6e064c03468d35c20e
@@ -236,18 +236,18 @@ mkdocs==1.6.1 \
     #   mkdocs-typedoc
 mkdocs-exclude==1.0.2 \
     --hash=sha256:ba6fab3c80ddbe3fd31d3e579861fd3124513708271180a5f81846da8c7e2a51
-    # via -r docs/requirements.in
+    # via -r requirements.in
 mkdocs-get-deps==0.2.0 \
     --hash=sha256:162b3d129c7fad9b19abfdcb9c1458a651628e4b1dea628ac68790fb3061c60c \
     --hash=sha256:2bf11d0b133e77a0dd036abeeb06dec8775e46efa526dc70667d8863eefc6134
     # via mkdocs
 mkdocs-git-revision-date-plugin==0.3.2 \
     --hash=sha256:2e67956cb01823dd2418e2833f3623dee8604cdf223bddd005fe36226a56f6ef
-    # via -r docs/requirements.in
-mkdocs-material==9.6.7 \
-    --hash=sha256:3e2c1fceb9410056c2d91f334a00cdea3215c28750e00c691c1e46b2a33309b4 \
-    --hash=sha256:8a159e45e80fcaadd9fbeef62cbf928569b93df954d4dc5ba76d46820caf7b47
-    # via -r docs/requirements.in
+    # via -r requirements.in
+mkdocs-material==9.6.9 \
+    --hash=sha256:6e61b7fb623ce2aa4622056592b155a9eea56ff3487d0835075360be45a4c8d1 \
+    --hash=sha256:a4872139715a1f27b2aa3f3dc31a9794b7bbf36333c0ba4607cf04786c94f89c
+    # via -r requirements.in
 mkdocs-material-extensions==1.3.1 \
     --hash=sha256:10c9511cea88f568257f960358a467d12b970e1f7b2c0e5fb2bb48cab1928443 \
     --hash=sha256:adff8b62700b25cb77b53358dad940f3ef973dd6db797907c49e3c2ef3ab4e31
@@ -255,7 +255,7 @@ mkdocs-material-extensions==1.3.1 \
 mkdocs-typedoc==1.0.4 \
     --hash=sha256:839b54c51a64bbb77c1c253eb81baad12462ea5cf38d361e262f5cfa8a45567a \
     --hash=sha256:a9601d6b04ed4fd5658c7170c58a3a52f584357be2a3c1e39995c6eed3712b1e
-    # via -r docs/requirements.in
+    # via -r requirements.in
 packaging==24.1 \
     --hash=sha256:026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002 \
     --hash=sha256:5b8f2217dbdbd2f7f384c41c628544e6d52f2d0f53c6d0c3ea61aa5d1d7ff124

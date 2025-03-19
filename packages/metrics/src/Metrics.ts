@@ -760,7 +760,7 @@ class Metrics extends Utility implements MetricsInterface {
    * @deprecated Override the function name for `ColdStart` metrics inferred from the context either via:
    * - `functionName` constructor parameter
    * - `POWERTOOLS_FUNCTION_NAME` environment variable
-   * - {@link Metrics.captureColdStartMetric() | `captureColdStartMetric('myFunctionName')`} method
+   * - {@link Metrics.captureColdStartMetric | `captureColdStartMetric('myFunctionName')`} method
    */
   public setFunctionName(name: string): void {
     this.functionName = name;

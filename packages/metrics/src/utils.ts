@@ -1,5 +1,5 @@
 /**
- * Get the first value that is defined.
+ * Return the first non-empty string value that is defined.
  *
  * This is useful so that we can define the order of which variables to use
  * while also defining an order of fallbacks.

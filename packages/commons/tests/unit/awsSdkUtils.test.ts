@@ -6,6 +6,10 @@ import {
   PT_VERSION as version,
 } from '../../src/index.js';
 
+vi.hoisted(() => {
+  process.env.AWS_EXECUTION_ENV = '';
+});
+
 describe('Helpers: awsSdk', () => {
   describe('Function: userAgentMiddleware', () => {
     beforeAll(() => {

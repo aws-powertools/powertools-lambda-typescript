@@ -1,6 +1,6 @@
 import { Logger } from '@aws-lambda-powertools/logger';
-import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
-import { EventBridgeSchema } from '@aws-lambda-powertools/parser/schemas';
+import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes/eventbridge';
+import { EventBridgeSchema } from '@aws-lambda-powertools/parser/schemas/eventbridge';
 import type { EventBridgeEvent } from '@aws-lambda-powertools/parser/types';
 import type { Context } from 'aws-lambda';
 import { z } from 'zod';

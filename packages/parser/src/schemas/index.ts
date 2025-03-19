@@ -4,7 +4,7 @@ export {
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
   APIGatewayEventRequestContextSchema,
-} from './apigw.js';
+} from './api-gateway.js';
 export {
   AppSyncResolverSchema,
   AppSyncBatchResolverSchema,
@@ -14,7 +14,7 @@ export {
   APIGatewayRequestAuthorizerEventV2Schema,
   APIGatewayRequestAuthorizerV2Schema,
   APIGatewayRequestContextV2Schema,
-} from './apigwv2.js';
+} from './api-gatewayv2.js';
 export {
   CloudFormationCustomResourceCreateSchema,
   CloudFormationCustomResourceDeleteSchema,

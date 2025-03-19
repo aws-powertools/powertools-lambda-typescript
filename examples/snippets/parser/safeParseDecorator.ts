@@ -1,7 +1,7 @@
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { parser } from '@aws-lambda-powertools/parser';
-import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes';
+import { EventBridgeEnvelope } from '@aws-lambda-powertools/parser/envelopes/eventbridge';
 import type {
   EventBridgeEvent,
   ParsedResult,
@@ -30,20 +30,19 @@ class Lambda implements LambdaInterface {
   @parser({
     schema: orderSchema,
     envelope: EventBridgeEnvelope,
-    safeParse: true,
-  }) // (1)!
+    safeParse: true, // (1)!
+  })
   public async handler(
     event: ParsedResult<EventBridgeEvent, Order>,
     _context: Context
   ): Promise<void> {
     if (event.success) {
-      // (2)!
       for (const item of event.data.items) {
-        logger.info('Processing item', { item }); // (3)!
+        logger.info('Processing item', { item }); // (2)!
       }
     } else {
-      logger.error('Failed to parse event', event.error); // (4)!
-      logger.error('Original event is: ', event.originalEvent); // (5)!
+      logger.error('Failed to parse event', { error: event.error }); // (3)!
+      logger.error('Original event is ', { original: event.originalEvent }); // (4)!
     }
   }
 }

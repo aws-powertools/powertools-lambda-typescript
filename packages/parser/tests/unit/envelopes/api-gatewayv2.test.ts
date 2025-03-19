@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
 import { ApiGatewayV2Envelope } from '../../../src/envelopes/api-gatewayv2.js';
 import { ParseError } from '../../../src/errors.js';
-import { JSONStringified } from '../../../src/helpers.js';
+import { JSONStringified } from '../../../src/helpers/index.js';
 import type { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
 import { getTestEvent, omit } from '../helpers/utils.js';
 

@@ -1,7 +1,4 @@
 import { type ZodTypeAny, z } from 'zod';
-/**
- * @typedef {import('../schemas/alb').AlbSchema} AlbSchema
- */
 
 /**
  * A helper function to parse a JSON string and validate it against a schema.

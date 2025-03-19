@@ -17,20 +17,21 @@ jobs:
     env:
       NODE_ENV: dev
       PR_NUMBER: ${{ inputs.prNumber }}
+      GH_TOKEN: ${{ github.token }}
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
     strategy:
-      max-parallel: 30
+      max-parallel: 25
       matrix:
         package:
           [
-            layers,
+            packages/idempotency,
             packages/logger,
             packages/metrics,
-            packages/tracer,
             packages/parameters,
-            packages/idempotency,
+            packages/tracer,
+            layers,
           ]
         version: [18, 20, 22]
         arch: [x86_64, arm64]
@@ -42,11 +43,14 @@ jobs:
       - name: Extract PR details
         id: extract_PR_details
         if: ${{ inputs.prNumber != '' }}
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
-          script: |
-            const script = require('.github/scripts/get_pr_info.js');
-            await script({github, context, core});
+        run: |
+          # Get the PR number from the input
+          pr_number=${{ inputs.prNumber }}
+          # Get the headSHA of the PR
+          head_sha=$(gh pr view $pr_number --json headRefOid -q '.headRefOid')
+          # Set the headSHA as an output variable
+          echo "headSHA=$head_sha" >> $GITHUB_OUTPUT
+          echo "headSHA=$head_sha"
       # Only if a PR Number was passed and the headSHA of the PR extracted,
       # we checkout the PR at that point in time
       - name: Checkout PR code

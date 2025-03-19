@@ -1,10 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
 const RESOURCE_NAME_PREFIX = 'Logger';
-const ONE_MINUTE = 60 * 1000;
-const TEST_CASE_TIMEOUT = ONE_MINUTE;
-const SETUP_TIMEOUT = 7 * ONE_MINUTE;
-const TEARDOWN_TIMEOUT = 5 * ONE_MINUTE;
 const STACK_OUTPUT_LOG_GROUP = 'LogGroupName';
 const XRAY_TRACE_ID_REGEX = /^1-[0-9a-f]{8}-[0-9a-f]{24}$/;
 
@@ -28,10 +24,6 @@ const commonEnvironmentVars = {
 
 export {
   RESOURCE_NAME_PREFIX,
-  ONE_MINUTE,
-  TEST_CASE_TIMEOUT,
-  SETUP_TIMEOUT,
-  TEARDOWN_TIMEOUT,
   STACK_OUTPUT_LOG_GROUP,
   XRAY_TRACE_ID_REGEX,
   commonEnvironmentVars,

@@ -411,11 +411,11 @@ This has the advantage of keeping cold start metric separate from your applicati
 
 When emitting cold start metrics, the `function_name` dimension defaults to `context.functionName`. If you want to change the value you can set the `functionName` parameter in the metrics constructor, define the environment variable `POWERTOOLS_METRICS_FUNCTION_NAME`, or pass a value to `captureColdStartMetric`.
 
-The priority of the `function_name` is defined as:
+The priority of the `function_name` dimension value is defined as:
 
 1. `functionName` constructor option
 2. `POWERTOOLS_METRICS_FUNCTION_NAME` environment variable
-3. `context.functionName` if using logMetrics decorator or Middy middleware OR override function name in `captureColdStartMetric` call
+3. The value passed in the `captureColdStartMetric` call, or `context.functionName` if using logMetrics decorator or Middy middleware
 
 === "constructor"
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JSONStringified } from '../helpers.js';
+import { JSONStringified } from '../helpers/index.js';
 import { EventBridgeSchema } from './eventbridge.js';
 import { SqsRecordSchema } from './sqs.js';
 

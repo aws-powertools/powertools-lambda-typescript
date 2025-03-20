@@ -2,10 +2,6 @@ import { randomUUID } from 'node:crypto';
 import { MetricUnit } from '../../src/index.js';
 
 const RESOURCE_NAME_PREFIX = 'Metrics';
-const ONE_MINUTE = 60 * 1000;
-const TEST_CASE_TIMEOUT = 3 * ONE_MINUTE;
-const SETUP_TIMEOUT = 7 * ONE_MINUTE;
-const TEARDOWN_TIMEOUT = 5 * ONE_MINUTE;
 
 const commonEnvironmentVars = {
   EXPECTED_METRIC_NAME: 'MyMetric',
@@ -21,11 +17,4 @@ const commonEnvironmentVars = {
   POWERTOOLS_SERVICE_NAME: 'metrics-e2e-testing',
 };
 
-export {
-  RESOURCE_NAME_PREFIX,
-  ONE_MINUTE,
-  TEST_CASE_TIMEOUT,
-  SETUP_TIMEOUT,
-  TEARDOWN_TIMEOUT,
-  commonEnvironmentVars,
-};
+export { RESOURCE_NAME_PREFIX, commonEnvironmentVars };

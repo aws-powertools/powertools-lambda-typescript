@@ -3,6 +3,7 @@ import type {
   ParsedResult,
 } from '@aws-lambda-powertools/parser/types';
 import type { Context } from 'aws-lambda';
+import { describe, expect, it } from 'vitest';
 import { handler } from './safeParseDecorator.js';
 import type { Order } from './schema.js';
 

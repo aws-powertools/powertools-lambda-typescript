@@ -11,11 +11,7 @@ import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import packageJson from '../../package.json';
 import { LayerPublisherStack } from '../../src/layer-publisher-stack.js';
-import {
-  RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT,
-  TEARDOWN_TIMEOUT,
-} from './constants.js';
+import { RESOURCE_NAME_PREFIX } from './constants.js';
 
 /**
  * This test has two stacks:
@@ -121,7 +117,7 @@ describe('Layers E2E tests', () => {
         })
       );
     }
-  }, SETUP_TIMEOUT);
+  });
 
   it.each(cases)(
     'imports and instantiates all utilities (%s)',
@@ -198,5 +194,5 @@ describe('Layers E2E tests', () => {
       await testLayerStack.destroy();
       await testStack.destroy();
     }
-  }, TEARDOWN_TIMEOUT);
+  });
 });

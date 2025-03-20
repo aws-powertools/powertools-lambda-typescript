@@ -62,6 +62,10 @@
       "types": [
         "lib/cjs/types/index.d.ts",
         "lib/esm/types/index.d.ts"
+      ],
+      "correlationId": [
+        "lib/cjs/correlationId.d.ts",
+        "lib/esm/correlationId.d.ts"
       ]
     }
   },

@@ -41,208 +41,94 @@
       }
     },
     "./middleware": {
-      "require": "./lib/cjs/middleware/parser.js",
-      "import": "./lib/esm/middleware/parser.js"
+      "require": {
+        "types": "./lib/cjs/middleware/index.d.ts",
+        "default": "./lib/cjs/middleware/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/middleware/index.d.ts",
+        "default": "./lib/esm/middleware/index.js"
+      }
     },
     "./schemas": {
-      "require": "./lib/cjs/schemas/index.js",
-      "import": "./lib/esm/schemas/index.js"
+      "require": {
+        "types": "./lib/cjs/schemas/index.d.ts",
+        "default": "./lib/cjs/schemas/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/schemas/index.d.ts",
+        "default": "./lib/esm/schemas/index.js"
+      }
     },
-    "./schemas/alb": {
-      "require": "./lib/cjs/schemas/alb.js",
-      "import": "./lib/esm/schemas/alb.js"
-    },
-    "./schemas/api-gateway": {
-      "require": "./lib/cjs/schemas/apigw.js",
-      "import": "./lib/esm/schemas/apigw.js"
-    },
-    "./schemas/api-gatewayv2": {
-      "require": "./lib/cjs/schemas/apigwv2.js",
-      "import": "./lib/esm/schemas/apigwv2.js"
-    },
-    "./schemas/appsync": {
-      "require": "./lib/cjs/schemas/appsync.js",
-      "import": "./lib/esm/schemas/appsync.js"
-    },
-    "./schemas/cloudformation-custom-resources": {
-      "require": "./lib/cjs/schemas/cloudformation-custom-resources.js",
-      "import": "./lib/esm/schemas/cloudformation-custom-resources.js"
-    },
-    "./schemas/cloudwatch": {
-      "require": "./lib/cjs/schemas/cloudwatch.js",
-      "import": "./lib/esm/schemas/cloudwatch.js"
-    },
-    "./schemas/dynamodb": {
-      "require": "./lib/cjs/schemas/dynamodb.js",
-      "import": "./lib/esm/schemas/dynamodb.js"
-    },
-    "./schemas/eventbridge": {
-      "require": "./lib/cjs/schemas/eventbridge.js",
-      "import": "./lib/esm/schemas/eventbridge.js"
-    },
-    "./schemas/kafka": {
-      "require": "./lib/cjs/schemas/kafka.js",
-      "import": "./lib/esm/schemas/kafka.js"
-    },
-    "./schemas/kinesis": {
-      "require": "./lib/cjs/schemas/kinesis.js",
-      "import": "./lib/esm/schemas/kinesis.js"
-    },
-    "./schemas/kinesis-firehose": {
-      "require": "./lib/cjs/schemas/kinesis-firehose.js",
-      "import": "./lib/esm/schemas/kinesis-firehose.js"
-    },
-    "./schemas/lambda": {
-      "require": "./lib/cjs/schemas/lambda.js",
-      "import": "./lib/esm/schemas/lambda.js"
-    },
-    "./schemas/s3": {
-      "require": "./lib/cjs/schemas/s3.js",
-      "import": "./lib/esm/schemas/s3.js"
-    },
-    "./schemas/ses": {
-      "require": "./lib/cjs/schemas/ses.js",
-      "import": "./lib/esm/schemas/ses.js"
-    },
-    "./schemas/sns": {
-      "require": "./lib/cjs/schemas/sns.js",
-      "import": "./lib/esm/schemas/sns.js"
-    },
-    "./schemas/sqs": {
-      "require": "./lib/cjs/schemas/sqs.js",
-      "import": "./lib/esm/schemas/sqs.js"
-    },
-    "./schemas/transfer-family": {
-      "require": "./lib/cjs/schemas/transfer-family.js",
-      "import": "./lib/esm/schemas/transfer-family.js"
-    },
-    "./schemas/vpc-lattice": {
-      "require": "./lib/cjs/schemas/vpc-lattice.js",
-      "import": "./lib/esm/schemas/vpc-lattice.js"
-    },
-    "./schemas/vpc-latticev2": {
-      "require": "./lib/cjs/schemas/vpc-latticev2.js",
-      "import": "./lib/esm/schemas/vpc-latticev2.js"
+    "./schemas/*": {
+      "require": {
+        "types": "./lib/cjs/schemas/*.d.ts",
+        "default": "./lib/cjs/schemas/*.js"
+      },
+      "import": {
+        "types": "./lib/esm/schemas/*.d.ts",
+        "default": "./lib/esm/schemas/*.js"
+      }
     },
     "./envelopes": {
-      "require": "./lib/cjs/envelopes/index.js",
-      "import": "./lib/esm/envelopes/index.js"
+      "require": {
+        "types": "./lib/cjs/envelopes/index.d.ts",
+        "default": "./lib/cjs/envelopes/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/envelopes/index.d.ts",
+        "default": "./lib/esm/envelopes/index.js"
+      }
     },
     "./envelopes/*": {
-      "require": "./lib/cjs/envelopes/*.js",
-      "import": "./lib/esm/envelopes/*.js"
+      "require": {
+        "types": "./lib/cjs/envelopes/*.d.ts",
+        "default": "./lib/cjs/envelopes/*.js"
+      },
+      "import": {
+        "types": "./lib/esm/envelopes/*.d.ts",
+        "default": "./lib/esm/envelopes/*.js"
+      }
     },
     "./helpers": {
-      "require": "./lib/cjs/helpers.js",
-      "import": "./lib/esm/helpers.js"
+      "require": {
+        "types": "./lib/cjs/helpers/index.d.ts",
+        "default": "./lib/cjs/helpers/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/helpers/index.d.ts",
+        "default": "./lib/esm/helpers/index.js"
+      }
     },
     "./helpers/dynamodb": {
-      "require": "./lib/cjs/helpers/dynamodb.js",
-      "import": "./lib/esm/helpers/dynamodb.js"
+      "require": {
+        "types": "./lib/cjs/helpers/dynamodb.d.ts",
+        "default": "./lib/cjs/helpers/dynamodb.js"
+      },
+      "import": {
+        "types": "./lib/esm/helpers/dynamodb.d.ts",
+        "default": "./lib/esm/helpers/dynamodb.js"
+      }
     },
     "./types": {
-      "require": "./lib/cjs/types/index.js",
-      "import": "./lib/esm/types/index.js"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "types": [
-        "./lib/cjs/types/index.d.ts",
-        "./lib/esm/types/index.d.ts"
-      ],
-      "middleware": [
-        "./lib/cjs/middleware/parser.d.ts",
-        "./lib/esm/middleware/parser.d.ts"
-      ],
-      "schemas": [
-        "./lib/cjs/schemas/index.d.ts",
-        "./lib/esm/schemas/index.d.ts"
-      ],
-      "schemas/alb": [
-        "./lib/cjs/schemas/alb.d.ts",
-        "./lib/esm/schemas/alb.d.ts"
-      ],
-      "schemas/api-gateway": [
-        "./lib/cjs/schemas/apigw.d.ts",
-        "./lib/esm/schemas/apigw.d.ts"
-      ],
-      "schemas/api-gatewayv2": [
-        "./lib/cjs/schemas/apigwv2.d.ts",
-        "./lib/esm/schemas/apigwv2.d.ts"
-      ],
-      "schemas/appsync": [
-        "./lib/cjs/schemas/appsync.d.ts",
-        "./lib/esm/schemas/appsync.d.ts"
-      ],
-      "schemas/cloudformation-custom-resources": [
-        "./lib/cjs/schemas/cloudformation-custom-resources.d.ts",
-        "./lib/esm/schemas/cloudformation-custom-resources.d.ts"
-      ],
-      "schemas/cloudwatch": [
-        "./lib/cjs/schemas/cloudwatch.d.ts",
-        "./lib/esm/schemas/cloudwatch.d.ts"
-      ],
-      "schemas/dynamodb": [
-        "./lib/cjs/schemas/dynamodb.d.ts",
-        "./lib/esm/schemas/dynamodb.d.ts"
-      ],
-      "schemas/eventbridge": [
-        "./lib/cjs/schemas/eventbridge.d.ts",
-        "./lib/esm/schemas/eventbridge.d.ts"
-      ],
-      "schemas/kafka": [
-        "./lib/cjs/schemas/kafka.d.ts",
-        "./lib/esm/schemas/kafka.d.ts"
-      ],
-      "schemas/kinesis": [
-        "./lib/cjs/schemas/kinesis.d.ts",
-        "./lib/esm/schemas/kinesis.d.ts"
-      ],
-      "schemas/kinesis-firehose": [
-        "./lib/cjs/schemas/kinesis-firehose.d.ts",
-        "./lib/esm/schemas/kinesis-firehose.d.ts"
-      ],
-      "schemas/lambda": [
-        "./lib/cjs/schemas/lambda.d.ts",
-        "./lib/esm/schemas/lambda.d.ts"
-      ],
-      "schemas/s3": [
-        "./lib/cjs/schemas/s3.d.ts",
-        "./lib/esm/schemas/s3.d.ts"
-      ],
-      "schemas/ses": [
-        "./lib/cjs/schemas/ses.d.ts",
-        "./lib/esm/schemas/ses.d.ts"
-      ],
-      "schemas/sns": [
-        "./lib/cjs/schemas/sns.d.ts",
-        "./lib/esm/schemas/sns.d.ts"
-      ],
-      "schemas/sqs": [
-        "./lib/cjs/schemas/sqs.d.ts",
-        "./lib/esm/schemas/sqs.d.ts"
-      ],
-      "schemas/vpc-lattice": [
-        "./lib/cjs/schemas/vpc-lattice.d.ts",
-        "./lib/esm/schemas/vpc-lattice.d.ts"
-      ],
-      "schemas/vpc-latticev2": [
-        "./lib/cjs/schemas/vpc-latticev2.d.ts",
-        "./lib/esm/schemas/vpc-latticev2.d.ts"
-      ],
-      "envelopes": [
-        "./lib/cjs/envelopes/index.d.ts",
-        "./lib/esm/envelopes/index.d.ts"
-      ],
-      "envelopes/*": [
-        "./lib/cjs/envelopes/*.d.ts",
-        "./lib/esm/envelopes/*.d.ts"
-      ],
-      "helpers": [
-        "./lib/cjs/helpers.d.ts",
-        "./lib/esm/helpers.d.ts"
-      ]
+      "require": {
+        "types": "./lib/cjs/types/index.d.ts",
+        "default": "./lib/cjs/types/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/types/index.d.ts",
+        "default": "./lib/esm/types/index.js"
+      }
+    },
+    "./errors": {
+      "require": {
+        "types": "./lib/cjs/errors.d.ts",
+        "default": "./lib/cjs/errors.js"
+      },
+      "import": {
+        "types": "./lib/esm/errors.d.ts",
+        "default": "./lib/esm/errors.js"
+      }
     }
   },
   "main": "./lib/cjs/index.js",

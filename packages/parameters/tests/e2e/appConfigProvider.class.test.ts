@@ -8,12 +8,7 @@ import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resourc
 import { toBase64 } from '@smithy/util-base64';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { TestAppConfigWithProfiles } from '../helpers/resources.js';
-import {
-  RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT,
-  TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
-} from './constants.js';
+import { RESOURCE_NAME_PREFIX } from './constants.js';
 
 /**
  * This test suite deploys a CDK stack with a Lambda function and a number of AppConfig parameters.
@@ -172,7 +167,7 @@ describe('Parameters E2E tests, AppConfig provider', () => {
     invocationLogs = await invokeFunctionOnce({
       functionName,
     });
-  }, SETUP_TIMEOUT);
+  });
 
   describe('AppConfigProvider usage', () => {
     // Test 1 - get a single parameter as-is (no transformation - should return an Uint8Array)
@@ -222,62 +217,50 @@ describe('Parameters E2E tests, AppConfig provider', () => {
 
     // Test 5 - get parameter twice with middleware, which counts the number
     // of requests, we check later if we only called AppConfig API once
-    it(
-      'should retrieve single parameter cached',
-      () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
+    it('should retrieve single parameter cached', () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-cached',
-          value: 1,
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-cached',
+        value: 1,
+      });
+    });
 
     // Test 6 - get parameter twice, but force fetch 2nd time,
     // we count number of SDK requests and  check that we made two API calls
-    it(
-      'should retrieve single parameter twice without caching',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[5]);
+    it('should retrieve single parameter twice without caching', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[5]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-forced',
-          value: 2,
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-forced',
+        value: 2,
+      });
+    });
 
     // Test 7 - get parameter twice, using maxAge to avoid primary cache
     // we count number of SDK requests and check that we made two API calls
     // and check that the values match
-    it(
-      'should retrieve single parameter twice, with expiration between and matching values',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[6]);
-        const result = freeFormPlainTextValue;
+    it('should retrieve single parameter twice, with expiration between and matching values', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[6]);
+      const result = freeFormPlainTextValue;
 
-        expect(testLog).toStrictEqual({
-          test: 'get-expired',
-          value: {
-            counter: 2,
-            result1: result,
-            result2: result,
-          },
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-expired',
+        value: {
+          counter: 2,
+          result1: result,
+          result2: result,
+        },
+      });
+    });
   });
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
       await testStack.destroy();
     }
-  }, TEARDOWN_TIMEOUT);
+  });
 });

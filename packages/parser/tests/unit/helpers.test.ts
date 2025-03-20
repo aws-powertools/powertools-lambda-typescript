@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { JSONStringified } from '../../src/helpers.js';
 import { DynamoDBMarshalled } from '../../src/helpers/dynamodb.js';
+import { JSONStringified } from '../../src/helpers/index.js';
 import { AlbSchema } from '../../src/schemas/alb.js';
 import {
   DynamoDBStreamRecord,

@@ -10,14 +10,7 @@ import {
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { getMetrics, sortDimensions } from '../helpers/metricsUtils.js';
 import { MetricsTestNodejsFunction } from '../helpers/resources.js';
-import {
-  ONE_MINUTE,
-  RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT,
-  TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
-  commonEnvironmentVars,
-} from './constants.js';
+import { RESOURCE_NAME_PREFIX, commonEnvironmentVars } from './constants.js';
 
 describe('Metrics E2E tests, basic features decorator usage', () => {
   const testStack = new TestStack({
@@ -66,133 +59,123 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
       times: invocations,
       invocationMode: 'SEQUENTIAL',
     });
-  }, SETUP_TIMEOUT);
+  });
 
   describe('ColdStart metrics', () => {
-    it(
-      'captures the ColdStart Metric',
-      async () => {
-        const {
-          EXPECTED_NAMESPACE: expectedNamespace,
-          EXPECTED_DEFAULT_DIMENSIONS: expectedDefaultDimensions,
-        } = commonEnvironmentVars;
+    it('captures the ColdStart Metric', async () => {
+      const {
+        EXPECTED_NAMESPACE: expectedNamespace,
+        EXPECTED_DEFAULT_DIMENSIONS: expectedDefaultDimensions,
+      } = commonEnvironmentVars;
 
-        const expectedDimensions = [
-          { Name: 'service', Value: expectedServiceName },
-          { Name: 'function_name', Value: fnNameBasicFeatures },
-          {
-            Name: Object.keys(expectedDefaultDimensions)[0],
-            Value: expectedDefaultDimensions.MyDimension,
-          },
-        ];
-        // Check coldstart metric dimensions
-        const coldStartMetrics = await getMetrics(
-          cloudwatchClient,
-          expectedNamespace,
-          'ColdStart',
-          1
-        );
+      const expectedDimensions = [
+        { Name: 'service', Value: expectedServiceName },
+        { Name: 'function_name', Value: fnNameBasicFeatures },
+        {
+          Name: Object.keys(expectedDefaultDimensions)[0],
+          Value: expectedDefaultDimensions.MyDimension,
+        },
+      ];
+      // Check coldstart metric dimensions
+      const coldStartMetrics = await getMetrics(
+        cloudwatchClient,
+        expectedNamespace,
+        'ColdStart',
+        1
+      );
 
-        expect(coldStartMetrics.Metrics?.length).toBe(1);
-        const coldStartMetric = coldStartMetrics.Metrics?.[0];
-        expect(sortDimensions(coldStartMetric?.Dimensions)).toStrictEqual(
-          sortDimensions(expectedDimensions)
-        );
+      expect(coldStartMetrics.Metrics?.length).toBe(1);
+      const coldStartMetric = coldStartMetrics.Metrics?.[0];
+      expect(sortDimensions(coldStartMetric?.Dimensions)).toStrictEqual(
+        sortDimensions(expectedDimensions)
+      );
 
-        // Check coldstart metric value
-        const adjustedStartTime = new Date(startTime.getTime() - ONE_MINUTE);
-        const endTime = new Date(new Date().getTime() + ONE_MINUTE);
-        const coldStartMetricStat = await cloudwatchClient.send(
-          new GetMetricStatisticsCommand({
-            Namespace: expectedNamespace,
-            StartTime: adjustedStartTime,
-            Dimensions: expectedDimensions,
-            EndTime: endTime,
-            Period: 60,
-            MetricName: 'ColdStart',
-            Statistics: ['Sum'],
-          })
-        );
+      // Check coldstart metric value
+      const adjustedStartTime = new Date(startTime.getTime() - 60 * 1000);
+      const endTime = new Date(new Date().getTime() + 60 * 1000);
+      const coldStartMetricStat = await cloudwatchClient.send(
+        new GetMetricStatisticsCommand({
+          Namespace: expectedNamespace,
+          StartTime: adjustedStartTime,
+          Dimensions: expectedDimensions,
+          EndTime: endTime,
+          Period: 60,
+          MetricName: 'ColdStart',
+          Statistics: ['Sum'],
+        })
+      );
 
-        // Despite lambda has been called twice, coldstart metric sum should only be 1
-        const singleDataPoint = coldStartMetricStat.Datapoints
-          ? coldStartMetricStat.Datapoints[0]
-          : {};
-        expect(singleDataPoint?.Sum).toBe(1);
-      },
-      TEST_CASE_TIMEOUT
-    );
+      // Despite lambda has been called twice, coldstart metric sum should only be 1
+      const singleDataPoint = coldStartMetricStat.Datapoints
+        ? coldStartMetricStat.Datapoints[0]
+        : {};
+      expect(singleDataPoint?.Sum).toBe(1);
+    });
   });
 
   describe('Default and extra dimensions', () => {
-    it(
-      'produces a Metric with the default and extra one dimensions',
-      async () => {
-        const {
-          EXPECTED_NAMESPACE: expectedNamespace,
-          EXPECTED_METRIC_NAME: expectedMetricName,
-          EXPECTED_METRIC_VALUE: expectedMetricValue,
-          EXPECTED_DEFAULT_DIMENSIONS: expectedDefaultDimensions,
-          EXPECTED_EXTRA_DIMENSION: expectedExtraDimension,
-        } = commonEnvironmentVars;
+    it('produces a Metric with the default and extra one dimensions', async () => {
+      const {
+        EXPECTED_NAMESPACE: expectedNamespace,
+        EXPECTED_METRIC_NAME: expectedMetricName,
+        EXPECTED_METRIC_VALUE: expectedMetricValue,
+        EXPECTED_DEFAULT_DIMENSIONS: expectedDefaultDimensions,
+        EXPECTED_EXTRA_DIMENSION: expectedExtraDimension,
+      } = commonEnvironmentVars;
 
-        // Check metric dimensions
-        const metrics = await getMetrics(
-          cloudwatchClient,
-          expectedNamespace,
-          expectedMetricName,
-          1
-        );
+      // Check metric dimensions
+      const metrics = await getMetrics(
+        cloudwatchClient,
+        expectedNamespace,
+        expectedMetricName,
+        1
+      );
 
-        expect(metrics.Metrics?.length).toBe(1);
-        const metric = metrics.Metrics?.[0];
-        const expectedDimensions = [
-          { Name: 'service', Value: expectedServiceName },
-          {
-            Name: Object.keys(expectedDefaultDimensions)[0],
-            Value: expectedDefaultDimensions.MyDimension,
-          },
-          {
-            Name: Object.keys(expectedExtraDimension)[0],
-            Value: expectedExtraDimension.MyExtraDimension,
-          },
-        ];
-        expect(sortDimensions(metric?.Dimensions)).toStrictEqual(
-          sortDimensions(expectedDimensions)
-        );
+      expect(metrics.Metrics?.length).toBe(1);
+      const metric = metrics.Metrics?.[0];
+      const expectedDimensions = [
+        { Name: 'service', Value: expectedServiceName },
+        {
+          Name: Object.keys(expectedDefaultDimensions)[0],
+          Value: expectedDefaultDimensions.MyDimension,
+        },
+        {
+          Name: Object.keys(expectedExtraDimension)[0],
+          Value: expectedExtraDimension.MyExtraDimension,
+        },
+      ];
+      expect(sortDimensions(metric?.Dimensions)).toStrictEqual(
+        sortDimensions(expectedDimensions)
+      );
 
-        // Check coldstart metric value
-        const adjustedStartTime = new Date(
-          startTime.getTime() - 3 * ONE_MINUTE
-        );
-        const endTime = new Date(new Date().getTime() + ONE_MINUTE);
-        const metricStat = await cloudwatchClient.send(
-          new GetMetricStatisticsCommand({
-            Namespace: expectedNamespace,
-            StartTime: adjustedStartTime,
-            Dimensions: expectedDimensions,
-            EndTime: endTime,
-            Period: 60,
-            MetricName: expectedMetricName,
-            Statistics: ['Sum'],
-          })
-        );
+      // Check coldstart metric value
+      const adjustedStartTime = new Date(startTime.getTime() - 3 * 60 * 1000);
+      const endTime = new Date(new Date().getTime() + 60 * 1000);
+      const metricStat = await cloudwatchClient.send(
+        new GetMetricStatisticsCommand({
+          Namespace: expectedNamespace,
+          StartTime: adjustedStartTime,
+          Dimensions: expectedDimensions,
+          EndTime: endTime,
+          Period: 60,
+          MetricName: expectedMetricName,
+          Statistics: ['Sum'],
+        })
+      );
 
-        // Since lambda has been called twice in this test and potentially more in others, metric sum should be at least of expectedMetricValue * invocationCount
-        const singleDataPoint = metricStat.Datapoints
-          ? metricStat.Datapoints[0]
-          : {};
-        expect(singleDataPoint?.Sum).toBeGreaterThanOrEqual(
-          Number.parseInt(expectedMetricValue) * invocations
-        );
-      },
-      TEST_CASE_TIMEOUT
-    );
+      // Since lambda has been called twice in this test and potentially more in others, metric sum should be at least of expectedMetricValue * invocationCount
+      const singleDataPoint = metricStat.Datapoints
+        ? metricStat.Datapoints[0]
+        : {};
+      expect(singleDataPoint?.Sum).toBeGreaterThanOrEqual(
+        Number.parseInt(expectedMetricValue) * invocations
+      );
+    });
   });
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
       await testStack.destroy();
     }
-  }, TEARDOWN_TIMEOUT);
+  });
 });

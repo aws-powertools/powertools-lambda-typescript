@@ -4,7 +4,7 @@ import { ZodError, z } from 'zod';
 import { ParseError } from '../../../src';
 import { CloudWatchEnvelope } from '../../../src/envelopes/cloudwatch.js';
 import { DecompressError } from '../../../src/errors.js';
-import { JSONStringified } from '../../../src/helpers.js';
+import { JSONStringified } from '../../../src/helpers/index';
 import { getTestEvent } from '../helpers/utils.js';
 
 const decompressRecordToJSON = (

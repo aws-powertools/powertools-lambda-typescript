@@ -383,7 +383,7 @@ class Metrics extends Utility implements MetricsInterface {
         service: this.defaultDimensions.service,
       });
     }
-    const value = this.functionName?.trim() || functionName?.trim();
+    const value = this.functionName?.trim() ?? functionName?.trim();
     if (value && value.length > 0) {
       singleMetric.addDimension('function_name', value);
     }
@@ -914,7 +914,7 @@ class Metrics extends Utility implements MetricsInterface {
    */
   protected setFunctionNameForColdStartMetric(functionName?: string): void {
     const value =
-      functionName?.trim() || this.getEnvVarsService().getFunctionName().trim();
+      functionName?.trim() ?? this.getEnvVarsService().getFunctionName().trim();
     if (value && value.length > 0) {
       this.functionName = value;
     }

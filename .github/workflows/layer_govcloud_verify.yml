@@ -19,6 +19,8 @@ on:
 name: Layer Verification (GovCloud)
 run-name: Layer Verification (GovCloud) - version ${{ inputs.version }}
 
+permissions: {}
+
 jobs:
   commercial:
     runs-on: ubuntu-latest

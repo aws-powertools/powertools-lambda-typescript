@@ -230,5 +230,6 @@ export {
   DynamoDBStreamSchema,
   DynamoDBStreamRecord,
   DynamoDBStreamChangeRecord,
+  DynamoDBStreamChangeRecordBase,
   UserIdentity,
 };

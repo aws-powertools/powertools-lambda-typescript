@@ -383,11 +383,9 @@ class Metrics extends Utility implements MetricsInterface {
         service: this.defaultDimensions.service,
       });
     }
-    for (const value of [this.functionName, functionName]) {
-      if (value && value.trim().length > 0) {
-        singleMetric.addDimension('function_name', value);
-        break;
-      }
+    const value = this.functionName?.trim() || functionName?.trim();
+    if (value && value.length > 0) {
+      singleMetric.addDimension('function_name', value);
     }
     singleMetric.addMetric(COLD_START_METRIC, MetricUnits.Count, 1);
   }
@@ -915,13 +913,10 @@ class Metrics extends Utility implements MetricsInterface {
    * @param functionName - The function name to be used for the cold start metric set in the constructor
    */
   protected setFunctionNameForColdStartMetric(functionName?: string): void {
-    const constructorFunctionName = functionName;
-    const envFunctionName = this.getEnvVarsService().getFunctionName();
-    for (const value of [constructorFunctionName, envFunctionName]) {
-      if (value && value.trim().length > 0) {
-        this.functionName = value;
-        break;
-      }
+    const value =
+      functionName?.trim() || this.getEnvVarsService().getFunctionName().trim();
+    if (value && value.length > 0) {
+      this.functionName = value;
     }
   }
 

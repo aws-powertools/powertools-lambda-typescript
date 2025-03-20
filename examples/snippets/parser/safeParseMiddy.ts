@@ -1,11 +1,6 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 import { parser } from '@aws-lambda-powertools/parser/middleware';
-import type {
-  EventBridgeEvent,
-  ParsedResult,
-} from '@aws-lambda-powertools/parser/types';
 import middy from '@middy/core';
-import type { Context } from 'aws-lambda';
 import { z } from 'zod';
 
 const logger = new Logger();
@@ -23,23 +18,17 @@ const orderSchema = z.object({
   optionalField: z.string().optional(),
 });
 
-type Order = z.infer<typeof orderSchema>;
-
-const lambdaHandler = async (
-  event: ParsedResult<EventBridgeEvent, Order>,
-  _context: Context
-): Promise<void> => {
-  if (event.success) {
-    // (2)!
-    for (const item of event.data.items) {
-      logger.info('Processing item', { item }); // (3)!
+export const handler = middy()
+  .use(
+    parser({ schema: orderSchema, safeParse: true }) // (1)!
+  )
+  .handler(async (event): Promise<void> => {
+    if (event.success) {
+      for (const item of event.data.items) {
+        logger.info('Processing item', { item }); // (2)!
+      }
+    } else {
+      logger.error('Error parsing event', { event: event.error }); // (3)!
+      logger.error('Original event', { event: event.originalEvent }); // (4)!
     }
-  } else {
-    logger.error('Error parsing event', { event: event.error }); // (4)!
-    logger.error('Original event', { event: event.originalEvent }); // (5)!
-  }
-};
-
-export const handler = middy(lambdaHandler).use(
-  parser({ schema: orderSchema, safeParse: true }) // (1)!
-);
+  });

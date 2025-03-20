@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
 import { VpcLatticeV2Envelope } from '../../../src/envelopes/vpc-latticev2.js';
 import { ParseError } from '../../../src/errors.js';
-import { JSONStringified } from '../../../src/helpers.js';
+import { JSONStringified } from '../../../src/helpers/index.js';
 import type { VpcLatticeEventV2 } from '../../../src/types/index.js';
 import { getTestEvent, omit } from '../helpers/utils.js';
 

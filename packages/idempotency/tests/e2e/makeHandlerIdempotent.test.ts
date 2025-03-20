@@ -10,12 +10,7 @@ import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { Duration } from 'aws-cdk-lib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
-import {
-  RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT,
-  TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
-} from './constants.js';
+import { RESOURCE_NAME_PREFIX } from './constants.js';
 
 const ddb = new DynamoDBClient({});
 
@@ -110,255 +105,238 @@ describe('Idempotency E2E tests, middy middleware usage', () => {
     tableNameTimeout = testStack.findAndGetStackOutputValue('timeoutTable');
     functionNameExpired = testStack.findAndGetStackOutputValue('expiredFn');
     tableNameExpired = testStack.findAndGetStackOutputValue('expiredTable');
-  }, SETUP_TIMEOUT);
+  });
 
-  it(
-    'returns the same result and runs the handler once when called multiple times',
-    async () => {
-      // Prepare
-      const payload = {
-        foo: 'bar',
-      };
-      const payloadHash = createHash('md5')
-        .update(JSON.stringify(payload))
-        .digest('base64');
+  it('returns the same result and runs the handler once when called multiple times', async () => {
+    // Prepare
+    const payload = {
+      foo: 'bar',
+    };
+    const payloadHash = createHash('md5')
+      .update(JSON.stringify(payload))
+      .digest('base64');
 
-      // Act
-      const logs = await invokeFunction({
-        functionName: functionNameDefault,
-        times: 2,
-        invocationMode: 'SEQUENTIAL',
-        payload,
-      });
-      const functionLogs = logs.map((log) => log.getFunctionLogs());
+    // Act
+    const logs = await invokeFunction({
+      functionName: functionNameDefault,
+      times: 2,
+      invocationMode: 'SEQUENTIAL',
+      payload,
+    });
+    const functionLogs = logs.map((log) => log.getFunctionLogs());
 
-      // Assess
-      const idempotencyRecords = await ddb.send(
-        new ScanCommand({
-          TableName: tableNameDefault,
-        })
-      );
-      expect(idempotencyRecords.Items?.length).toEqual(1);
-      expect(idempotencyRecords.Items?.[0].id).toEqual(
-        `${functionNameDefault}#${payloadHash}`
-      );
-      expect(idempotencyRecords.Items?.[0].data).toEqual('bar');
-      expect(idempotencyRecords.Items?.[0].status).toEqual('COMPLETED');
+    // Assess
+    const idempotencyRecords = await ddb.send(
+      new ScanCommand({
+        TableName: tableNameDefault,
+      })
+    );
+    expect(idempotencyRecords.Items?.length).toEqual(1);
+    expect(idempotencyRecords.Items?.[0].id).toEqual(
+      `${functionNameDefault}#${payloadHash}`
+    );
+    expect(idempotencyRecords.Items?.[0].data).toEqual('bar');
+    expect(idempotencyRecords.Items?.[0].status).toEqual('COMPLETED');
 
+    // During the first invocation the handler should be called, so the logs should contain 1 log
+    expect(functionLogs[0]).toHaveLength(1);
+    // We test the content of the log as well as the presence of fields from the context, this
+    // ensures that the all the arguments are passed to the handler when made idempotent
+    expect(TestInvocationLogs.parseFunctionLog(functionLogs[0][0])).toEqual(
+      expect.objectContaining({
+        message: 'foo',
+        details: 'bar',
+        function_name: functionNameDefault,
+      })
+    );
+    // During the second invocation the handler should not be called, so the logs should be empty
+    expect(functionLogs[1]).toHaveLength(0);
+  });
+
+  it('handles parallel invocations correctly', async () => {
+    // Prepare
+    const payload = {
+      foo: 'bar',
+    };
+    const payloadHash = createHash('md5')
+      .update(JSON.stringify(payload))
+      .digest('base64');
+
+    // Act
+    const logs = await invokeFunction({
+      functionName: functionNameDefaultParallel,
+      times: 2,
+      invocationMode: 'PARALLEL',
+      payload,
+    });
+    const functionLogs = logs.map((log) => log.getFunctionLogs());
+
+    // Assess
+    const idempotencyRecords = await ddb.send(
+      new ScanCommand({
+        TableName: tableNameDefaultParallel,
+      })
+    );
+    expect(idempotencyRecords.Items?.length).toEqual(1);
+    expect(idempotencyRecords.Items?.[0].id).toEqual(
+      `${functionNameDefaultParallel}#${payloadHash}`
+    );
+    expect(idempotencyRecords.Items?.[0].data).toEqual('bar');
+    expect(idempotencyRecords.Items?.[0].status).toEqual('COMPLETED');
+
+    /**
+     * Since the requests are sent in parallel we don't know which one will be processed first,
+     * however we expect that only on of them will be processed by the handler, while the other
+     * one will be rejected with IdempotencyAlreadyInProgressError.
+     *
+     * We filter the logs to find which one was successful and which one failed, then we check
+     * that they contain the expected logs.
+     */
+    const successfulInvocationLogs = functionLogs.find(
+      (functionLog) =>
+        functionLog.find((log) => log.includes('Processed event')) !== undefined
+    );
+    const failedInvocationLogs = functionLogs.find(
+      (functionLog) =>
+        functionLog.find((log) =>
+          log.includes('There is already an execution in progress')
+        ) !== undefined
+    );
+    expect(successfulInvocationLogs).toHaveLength(1);
+    expect(failedInvocationLogs).toHaveLength(1);
+  });
+
+  it('recovers from a timed out request and processes the next one', async () => {
+    // Prepare
+    const payload = {
+      foo: 'bar',
+    };
+    const payloadHash = createHash('md5')
+      .update(JSON.stringify(payload.foo))
+      .digest('base64');
+
+    // Act
+    const logs = await invokeFunction({
+      functionName: functionNameTimeout,
+      times: 2,
+      invocationMode: 'SEQUENTIAL',
+      payload: Array.from({ length: 2 }, (_, index) => ({
+        ...payload,
+        invocation: index,
+      })),
+    });
+    const functionLogs = logs.map((log) => log.getFunctionLogs());
+
+    // Assess
+    const idempotencyRecords = await ddb.send(
+      new ScanCommand({
+        TableName: tableNameTimeout,
+      })
+    );
+    expect(idempotencyRecords.Items?.length).toEqual(1);
+    expect(idempotencyRecords.Items?.[0].id).toEqual(
+      `${functionNameTimeout}#${payloadHash}`
+    );
+    expect(idempotencyRecords.Items?.[0].data).toEqual({
+      ...payload,
+      invocation: 1,
+    });
+    expect(idempotencyRecords.Items?.[0].status).toEqual('COMPLETED');
+
+    try {
       // During the first invocation the handler should be called, so the logs should contain 1 log
-      expect(functionLogs[0]).toHaveLength(1);
-      // We test the content of the log as well as the presence of fields from the context, this
-      // ensures that the all the arguments are passed to the handler when made idempotent
-      expect(TestInvocationLogs.parseFunctionLog(functionLogs[0][0])).toEqual(
-        expect.objectContaining({
-          message: 'foo',
-          details: 'bar',
-          function_name: functionNameDefault,
+      expect(functionLogs[0]).toHaveLength(2);
+      expect(functionLogs[0][0]).toContain('Task timed out after');
+    } catch {
+      // During the first invocation the function should timeout so the logs should not contain any log and the report log should contain a timeout message
+      expect(functionLogs[0]).toHaveLength(0);
+      expect(logs[0].getReportLog()).toMatch(/Status: timeout$/);
+    }
+
+    // During the second invocation the handler should be called and complete, so the logs should
+    // contain 1 log
+    expect(functionLogs[1]).toHaveLength(1);
+    expect(TestInvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
+      expect.objectContaining({
+        message: 'Processed event',
+        details: 'bar',
+        function_name: functionNameTimeout,
+      })
+    );
+  });
+
+  it('recovers from an expired idempotency record and processes the next request', async () => {
+    // Prepare
+    const payload = {
+      foo: 'bar',
+    };
+    const payloadHash = createHash('md5')
+      .update(JSON.stringify(payload.foo))
+      .digest('base64');
+
+    // Act
+    const logs = [
+      (
+        await invokeFunction({
+          functionName: functionNameExpired,
+          times: 1,
+          invocationMode: 'SEQUENTIAL',
+          payload: { ...payload, invocation: 0 },
         })
-      );
-      // During the second invocation the handler should not be called, so the logs should be empty
-      expect(functionLogs[1]).toHaveLength(0);
-    },
-    TEST_CASE_TIMEOUT
-  );
-
-  it(
-    'handles parallel invocations correctly',
-    async () => {
-      // Prepare
-      const payload = {
-        foo: 'bar',
-      };
-      const payloadHash = createHash('md5')
-        .update(JSON.stringify(payload))
-        .digest('base64');
-
-      // Act
-      const logs = await invokeFunction({
-        functionName: functionNameDefaultParallel,
-        times: 2,
-        invocationMode: 'PARALLEL',
-        payload,
-      });
-      const functionLogs = logs.map((log) => log.getFunctionLogs());
-
-      // Assess
-      const idempotencyRecords = await ddb.send(
-        new ScanCommand({
-          TableName: tableNameDefaultParallel,
+      )[0],
+    ];
+    // Wait for the idempotency record to expire
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    logs.push(
+      (
+        await invokeFunction({
+          functionName: functionNameExpired,
+          times: 1,
+          invocationMode: 'SEQUENTIAL',
+          payload: { ...payload, invocation: 1 },
         })
-      );
-      expect(idempotencyRecords.Items?.length).toEqual(1);
-      expect(idempotencyRecords.Items?.[0].id).toEqual(
-        `${functionNameDefaultParallel}#${payloadHash}`
-      );
-      expect(idempotencyRecords.Items?.[0].data).toEqual('bar');
-      expect(idempotencyRecords.Items?.[0].status).toEqual('COMPLETED');
+      )[0]
+    );
+    const functionLogs = logs.map((log) => log.getFunctionLogs());
 
-      /**
-       * Since the requests are sent in parallel we don't know which one will be processed first,
-       * however we expect that only on of them will be processed by the handler, while the other
-       * one will be rejected with IdempotencyAlreadyInProgressError.
-       *
-       * We filter the logs to find which one was successful and which one failed, then we check
-       * that they contain the expected logs.
-       */
-      const successfulInvocationLogs = functionLogs.find(
-        (functionLog) =>
-          functionLog.find((log) => log.includes('Processed event')) !==
-          undefined
-      );
-      const failedInvocationLogs = functionLogs.find(
-        (functionLog) =>
-          functionLog.find((log) =>
-            log.includes('There is already an execution in progress')
-          ) !== undefined
-      );
-      expect(successfulInvocationLogs).toHaveLength(1);
-      expect(failedInvocationLogs).toHaveLength(1);
-    },
-    TEST_CASE_TIMEOUT
-  );
+    // Assess
+    const idempotencyRecords = await ddb.send(
+      new ScanCommand({
+        TableName: tableNameExpired,
+      })
+    );
+    expect(idempotencyRecords.Items?.length).toEqual(1);
+    expect(idempotencyRecords.Items?.[0].id).toEqual(
+      `${functionNameExpired}#${payloadHash}`
+    );
+    expect(idempotencyRecords.Items?.[0].data).toEqual({
+      ...payload,
+      invocation: 1,
+    });
+    expect(idempotencyRecords.Items?.[0].status).toEqual('COMPLETED');
 
-  it(
-    'recovers from a timed out request and processes the next one',
-    async () => {
-      // Prepare
-      const payload = {
-        foo: 'bar',
-      };
-      const payloadHash = createHash('md5')
-        .update(JSON.stringify(payload.foo))
-        .digest('base64');
-
-      // Act
-      const logs = await invokeFunction({
-        functionName: functionNameTimeout,
-        times: 2,
-        invocationMode: 'SEQUENTIAL',
-        payload: Array.from({ length: 2 }, (_, index) => ({
-          ...payload,
-          invocation: index,
-        })),
-      });
-      const functionLogs = logs.map((log) => log.getFunctionLogs());
-
-      // Assess
-      const idempotencyRecords = await ddb.send(
-        new ScanCommand({
-          TableName: tableNameTimeout,
-        })
-      );
-      expect(idempotencyRecords.Items?.length).toEqual(1);
-      expect(idempotencyRecords.Items?.[0].id).toEqual(
-        `${functionNameTimeout}#${payloadHash}`
-      );
-      expect(idempotencyRecords.Items?.[0].data).toEqual({
-        ...payload,
-        invocation: 1,
-      });
-      expect(idempotencyRecords.Items?.[0].status).toEqual('COMPLETED');
-
-      try {
-        // During the first invocation the handler should be called, so the logs should contain 1 log
-        expect(functionLogs[0]).toHaveLength(2);
-        expect(functionLogs[0][0]).toContain('Task timed out after');
-      } catch {
-        // During the first invocation the function should timeout so the logs should not contain any log and the report log should contain a timeout message
-        expect(functionLogs[0]).toHaveLength(0);
-        expect(logs[0].getReportLog()).toMatch(/Status: timeout$/);
-      }
-
-      // During the second invocation the handler should be called and complete, so the logs should
-      // contain 1 log
-      expect(functionLogs[1]).toHaveLength(1);
-      expect(TestInvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
-        expect.objectContaining({
-          message: 'Processed event',
-          details: 'bar',
-          function_name: functionNameTimeout,
-        })
-      );
-    },
-    TEST_CASE_TIMEOUT
-  );
-
-  it(
-    'recovers from an expired idempotency record and processes the next request',
-    async () => {
-      // Prepare
-      const payload = {
-        foo: 'bar',
-      };
-      const payloadHash = createHash('md5')
-        .update(JSON.stringify(payload.foo))
-        .digest('base64');
-
-      // Act
-      const logs = [
-        (
-          await invokeFunction({
-            functionName: functionNameExpired,
-            times: 1,
-            invocationMode: 'SEQUENTIAL',
-            payload: { ...payload, invocation: 0 },
-          })
-        )[0],
-      ];
-      // Wait for the idempotency record to expire
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      logs.push(
-        (
-          await invokeFunction({
-            functionName: functionNameExpired,
-            times: 1,
-            invocationMode: 'SEQUENTIAL',
-            payload: { ...payload, invocation: 1 },
-          })
-        )[0]
-      );
-      const functionLogs = logs.map((log) => log.getFunctionLogs());
-
-      // Assess
-      const idempotencyRecords = await ddb.send(
-        new ScanCommand({
-          TableName: tableNameExpired,
-        })
-      );
-      expect(idempotencyRecords.Items?.length).toEqual(1);
-      expect(idempotencyRecords.Items?.[0].id).toEqual(
-        `${functionNameExpired}#${payloadHash}`
-      );
-      expect(idempotencyRecords.Items?.[0].data).toEqual({
-        ...payload,
-        invocation: 1,
-      });
-      expect(idempotencyRecords.Items?.[0].status).toEqual('COMPLETED');
-
-      // Both invocations should be successful and the logs should contain 1 log each
-      expect(functionLogs[0]).toHaveLength(1);
-      expect(TestInvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
-        expect.objectContaining({
-          message: 'Processed event',
-          details: 'bar',
-          function_name: functionNameExpired,
-        })
-      );
-      // During the second invocation the handler should be called and complete, so the logs should
-      // contain 1 log
-      expect(functionLogs[1]).toHaveLength(1);
-      expect(TestInvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
-        expect.objectContaining({
-          message: 'Processed event',
-          details: 'bar',
-          function_name: functionNameExpired,
-        })
-      );
-    },
-    TEST_CASE_TIMEOUT
-  );
+    // Both invocations should be successful and the logs should contain 1 log each
+    expect(functionLogs[0]).toHaveLength(1);
+    expect(TestInvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
+      expect.objectContaining({
+        message: 'Processed event',
+        details: 'bar',
+        function_name: functionNameExpired,
+      })
+    );
+    // During the second invocation the handler should be called and complete, so the logs should
+    // contain 1 log
+    expect(functionLogs[1]).toHaveLength(1);
+    expect(TestInvocationLogs.parseFunctionLog(functionLogs[1][0])).toEqual(
+      expect.objectContaining({
+        message: 'Processed event',
+        details: 'bar',
+        function_name: functionNameExpired,
+      })
+    );
+  });
 
   afterAll(async () => {
     await testStack.destroy();
-  }, TEARDOWN_TIMEOUT);
+  });
 });

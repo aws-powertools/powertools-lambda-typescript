@@ -44,7 +44,7 @@ Both are also able to parse either an object or JSON string as an input.
     Be cautious when using multiple decorators that expect event to have a specific structure, the order of evaluation for decorators is from bottom to top.
 
 === "Middy middleware"
-    ```typescript hl_lines="34"
+    ```typescript hl_lines="22"
     --8<-- "examples/snippets/parser/middy.ts"
     ```
 
@@ -157,7 +157,7 @@ If you want to extend a schema and transform a JSON stringified payload to an ob
 If you want to parse a DynamoDB stream event with unmarshalling, you can use the helper function `DynamoDBMarshalled`:
 
 === "DynamoDBStreamSchema with DynamoDBMarshalled"
-    ```typescript hl_lines="17"
+    ```typescript hl_lines="18"
     --8<-- "examples/snippets/parser/extendDynamoDBStreamSchema.ts"
     ```
 
@@ -180,12 +180,12 @@ Envelopes can be used via envelope parameter available in middy and decorator.
 Here's an example of parsing a custom schema in an event coming from EventBridge, where all you want is what's inside the detail key.
 
 === "Middy middleware"
-    ```typescript hl_lines="5 36"
+    ```typescript hl_lines="23"
     --8<-- "examples/snippets/parser/envelopeMiddy.ts"
     ```
 
 === "Decorator"
-    ```typescript hl_lines="5 26 30"
+    ```typescript hl_lines="26"
     --8<-- "examples/snippets/parser/envelopeDecorator.ts"
     ```
 
@@ -230,26 +230,24 @@ The `ParsedResult` object will have `success`, `data`,  or `error` and `original
 If the parsing is successful, the `data` field will contain the parsed event, otherwise you can access the `error` field and the `originalEvent` to handle the error and recover the original event.
 
 === "Middy middleware"
-    ```typescript hl_lines="32 35 38 39 44"
+    ```typescript hl_lines="23 28 32-33"
     --8<-- "examples/snippets/parser/safeParseMiddy.ts"
     ```
 
     1. Use `safeParse` option to parse the event without throwing an error
-    2. Check if the result is successful or not and handle the error accordingly
-    3. Use `data` to access the parsed event
-    4. Use `error` to handle the error message
-    5. Use `originalEvent` to get the original event and recover
+    2. Use `data` to access the parsed event when successful
+    3. Use `error` to handle the error message
+    4. Use `originalEvent` to get the original event and recover
 
 === "Decorator"
-    ```typescript hl_lines="29 35 37 40 41"
+    ```typescript hl_lines="33 41 45-46"
     --8<-- "examples/snippets/parser/safeParseDecorator.ts"
     ```
 
     1. Use `safeParse` option to parse the event without throwing an error
-    2. Check if the result is successful or not and handle the error accordingly
-    3. Use `data` to access the parsed event
-    4. Use `error` to handle the error message
-    5. Use `originalEvent` to get the original event and recover
+    2. Use `data` to access the parsed event when successful
+    3. Use `error` to handle the error message
+    4. Use `originalEvent` to get the original event and recover
 
 ## Manual parsing
 
@@ -316,7 +314,7 @@ If you are you use middy middleware, you don't need to do this.
 
 === "handlerDecorator.test.ts"
 
-    ```typescript hl_lines="26"
+    ```typescript hl_lines="27"
     --8<-- "examples/snippets/parser/unitTestDecorator.ts"
     ```
     
@@ -338,7 +336,7 @@ This also works when using `safeParse` option.
 
 === "handlerSafeParse.test.ts"
 
-    ```typescript hl_lines="21-29 35 45"
+    ```typescript hl_lines="21-30 36 46"
     --8<-- "examples/snippets/parser/unitTestSafeParse.ts"
     ```
     

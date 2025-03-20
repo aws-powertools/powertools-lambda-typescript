@@ -8,12 +8,7 @@ import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resourc
 import { SecretValue } from 'aws-cdk-lib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { TestSecret } from '../helpers/resources.js';
-import {
-  RESOURCE_NAME_PREFIX,
-  SETUP_TIMEOUT,
-  TEARDOWN_TIMEOUT,
-  TEST_CASE_TIMEOUT,
-} from './constants.js';
+import { RESOURCE_NAME_PREFIX } from './constants.js';
 
 /**
  * Collection of e2e tests for SecretsProvider utility.
@@ -138,50 +133,38 @@ describe('Parameters E2E tests, Secrets Manager provider', () => {
     invocationLogs = await invokeFunctionOnce({
       functionName,
     });
-  }, SETUP_TIMEOUT);
+  });
 
   describe('SecretsProvider usage', () => {
-    it(
-      'should retrieve a secret as plain string',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
+    it('should retrieve a secret as plain string', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-plain',
-          value: 'foo',
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-plain',
+        value: 'foo',
+      });
+    });
 
-    it(
-      'should retrieve a secret using transform json option',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
+    it('should retrieve a secret using transform json option', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-transform-json',
-          value: { foo: 'bar' },
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-transform-json',
+        value: { foo: 'bar' },
+      });
+    });
 
-    it(
-      'should retrieve a secret using transform binary option',
-      async () => {
-        const logs = invocationLogs.getFunctionLogs();
-        const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
+    it('should retrieve a secret using transform binary option', async () => {
+      const logs = invocationLogs.getFunctionLogs();
+      const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
 
-        expect(testLog).toStrictEqual({
-          test: 'get-transform-binary',
-          value: 'foo',
-        });
-      },
-      TEST_CASE_TIMEOUT
-    );
+      expect(testLog).toStrictEqual({
+        test: 'get-transform-binary',
+        value: 'foo',
+      });
+    });
   });
 
   it('should retrieve a secret twice with cached value', async () => {
@@ -210,5 +193,5 @@ describe('Parameters E2E tests, Secrets Manager provider', () => {
     if (!process.env.DISABLE_TEARDOWN) {
       await testStack.destroy();
     }
-  }, TEARDOWN_TIMEOUT);
+  });
 });

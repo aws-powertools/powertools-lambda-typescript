@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
 import { KafkaEnvelope } from '../../../src/envelopes/kafka.js';
 import { ParseError } from '../../../src/errors.js';
-import { JSONStringified } from '../../../src/helpers.js';
+import { JSONStringified } from '../../../src/helpers/index.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 describe('Envelope: Kafka', () => {

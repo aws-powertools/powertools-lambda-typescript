@@ -1,4 +1,4 @@
-import { APIGatewayProxyEventV2Schema } from './apigwv2.js';
+import { APIGatewayProxyEventV2Schema } from './api-gatewayv2.js';
 
 /**
  * Zod schema for Lambda Function URL follows the API Gateway HTTP APIs Payload Format Version 2.0.

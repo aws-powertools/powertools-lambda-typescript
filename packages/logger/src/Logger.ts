@@ -1374,6 +1374,12 @@ class Logger extends Utility implements LoggerInterface {
     logLevel: number
   ): void {
     log.prepareForPrint();
+    // This is the first time we see this traceId, so we need to clear the buffer
+    // from previous requests. This is ok because in AWS Lambda, the same sandbox
+    // environment can only ever be used by one request at a time.
+    if (this.#buffer?.has(xrayTraceId) === false) {
+      this.#buffer?.clear();
+    }
     this.#buffer?.setItem(
       xrayTraceId,
       JSON.stringify(
@@ -1424,7 +1430,6 @@ class Logger extends Utility implements LoggerInterface {
 
   /**
    * Empties the buffer for the current request
-   *
    */
   public clearBuffer(): void {
     const traceId = this.envVarsService.getXrayTraceId();
@@ -1453,6 +1458,7 @@ class Logger extends Utility implements LoggerInterface {
 
   /**
    * Set the correlation ID for the log item.
+   *
    * This method can be used to set the correlation ID for the log item or to search for the correlation ID in the event.
    *
    * @example

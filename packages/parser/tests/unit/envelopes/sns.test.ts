@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
 import { SnsEnvelope } from '../../../src/envelopes/sns.js';
 import { ParseError } from '../../../src/errors.js';
-import { JSONStringified } from '../../../src/helpers.js';
+import { JSONStringified } from '../../../src/helpers/index.js';
 import type { SnsEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../helpers/utils.js';
 

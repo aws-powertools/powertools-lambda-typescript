@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
 import { SqsEnvelope } from '../../src/envelopes/sqs.js';
 import { ParseError } from '../../src/errors.js';
-import { parser } from '../../src/middleware/parser.js';
+import { parser } from '../../src/middleware/index.js';
 import type {
   EventBridgeEvent,
   ParsedResult,

@@ -66,11 +66,12 @@ The library requires two settings. You can set them as environment variables, or
 
 These settings will be used across all metrics emitted:
 
-| Setting              | Description                                                      | Environment variable           | Default             | Allowed Values | Example             | Constructor parameter |
-| -------------------- | ---------------------------------------------------------------- | ------------------------------ | ------------------- | -------------- | ------------------- | --------------------- |
-| **Service**          | Optionally, sets **service** metric dimension across all metrics | `POWERTOOLS_SERVICE_NAME`      | `service_undefined` | Any string     | `serverlessAirline` | `serviceName`         |
-| **Metric namespace** | Logical container where all metrics will be placed               | `POWERTOOLS_METRICS_NAMESPACE` | `default_namespace` | Any string     | `serverlessAirline` | `default_namespace`   |
-| **Enabled**          | Whether to emit metrics to standard output or not                | `POWERTOOLS_METRICS_ENABLED`   | `true`              | Boolean        | `false`             |                       |
+| Setting              | Description                                                      | Environment variable               | Default                                                  | Allowed Values | Example             | Constructor parameter |
+|----------------------|------------------------------------------------------------------|------------------------------------|----------------------------------------------------------|----------------|---------------------|-----------------------|
+| **Service**          | Optionally, sets **service** metric dimension across all metrics | `POWERTOOLS_SERVICE_NAME`          | `service_undefined`                                      | Any string     | `serverlessAirline` | `serviceName`         |
+| **Metric namespace** | Logical container where all metrics will be placed               | `POWERTOOLS_METRICS_NAMESPACE`     | `default_namespace`                                      | Any string     | `serverlessAirline` | `default_namespace`   |
+| **Function Name**    | Function name used as dimension for the `ColdStart` metric       | `POWERTOOLS_METRICS_FUNCTION_NAME` | [See docs](#capturing-a-cold-start-invocation-as-metric) | Any string     | `my-function-name`  | `functionName`        |
+| **Enabled**          | Whether to emit metrics to standard output or not                | `POWERTOOLS_METRICS_ENABLED`       | `true`                                                   | Boolean        | `false`             |                       |
 
 !!! tip
     Use your application name or main service as the metric namespace to easily group all metrics
@@ -87,7 +88,7 @@ The `Metrics` utility is instantiated outside of the Lambda handler. In doing th
 
 === "template.yml"
 
-    ```yaml hl_lines="9 10"
+    ```yaml hl_lines="8-10"
     Resources:
       HelloWorldFunction:
         Type: AWS::Serverless::Function
@@ -97,6 +98,7 @@ The `Metrics` utility is instantiated outside of the Lambda handler. In doing th
           Variables:
             POWERTOOLS_SERVICE_NAME: orders
             POWERTOOLS_METRICS_NAMESPACE: serverlessAirline
+            POWERTOOLS_METRICS_FUNCTION_NAME: my-function-name
     ```
 
 You can initialize Metrics anywhere in your code - It'll keep track of your aggregate metrics in memory.
@@ -184,7 +186,7 @@ You can call `addMetric()` with the same name multiple times. The values will be
 
 ### Adding default dimensions
 
-You can add default dimensions to your metrics by passing them as parameters in 4 ways:  
+You can add default dimensions to your metrics by passing them as parameters in 4 ways:
 
 * in the constructor
 * in the [Middy-compatible](https://github.com/middyjs/middy){target=_blank} middleware
@@ -404,6 +406,28 @@ If it's a cold start invocation, this feature will:
 This has the advantage of keeping cold start metric separate from your application metrics, where you might have unrelated dimensions.
 
 !!! info "We do not emit 0 as a value for the ColdStart metric for cost-efficiency reasons. [Let us know](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=) if you'd prefer a flag to override it."
+
+#### Setting function name
+
+When emitting cold start metrics, the `function_name` dimension defaults to `context.functionName`. If you want to change the value you can set the `functionName` parameter in the metrics constructor, define the environment variable `POWERTOOLS_METRICS_FUNCTION_NAME`, or pass a value to `captureColdStartMetric`.
+
+The priority of the `function_name` dimension value is defined as:
+
+1. `functionName` constructor option
+2. `POWERTOOLS_METRICS_FUNCTION_NAME` environment variable
+3. The value passed in the `captureColdStartMetric` call, or `context.functionName` if using logMetrics decorator or Middy middleware
+
+=== "constructor"
+
+    ```typescript hl_lines="6"
+    --8<-- "examples/snippets/metrics/functionName.ts"
+    ```
+
+=== "captureColdStartMetric method"
+
+    ```typescript hl_lines="12"
+    --8<-- "examples/snippets/metrics/captureColdStartMetric.ts"
+    ```
 
 ## Advanced
 

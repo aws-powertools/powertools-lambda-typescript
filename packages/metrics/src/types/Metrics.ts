@@ -61,6 +61,19 @@ type MetricsOptions = {
    */
   defaultDimensions?: Dimensions;
   /**
+   * Function name to use as dimension for the `ColdStart` metric.
+   *
+   * When not provided, the function name is inferred either via:
+   * - `POWERTOOLS_FUNCTION_NAME` environment variable
+   * - AWS Lambda function context, **only** when using the {@link MetricsInterface.logMetrics | `logMetrics()`} decorator or the Middy.js middleware
+   * - `functionName` parameter in the {@link MetricsInterface.captureColdStartMetric | `captureColdStartMetric()`} method
+   *
+   * If none of the above are available, the `ColdStart` metric will not include a function name dimension.
+   *
+   * @see {@link MetricsInterface.setFunctionName | `setFunctionName()`}
+   */
+  functionName?: string;
+  /**
    * Logger object to be used for emitting debug, warning, and error messages.
    *
    * If not provided, debug messages will be suppressed, and warning and error messages will be sent to stdout.
@@ -272,8 +285,10 @@ interface MetricsInterface {
    *   metrics.captureColdStartMetric();
    * };
    * ```
+   *
+   * @param functionName - Optional function name to use as `function_name` dimension in the metric. It's used only if the `functionName` constructor parameter or environment variable are not set.
    */
-  captureColdStartMetric(): void;
+  captureColdStartMetric(functionName?: string): void;
   /**
    * Clear all previously set default dimensions.
    *
@@ -445,24 +460,10 @@ interface MetricsInterface {
    */
   setDefaultDimensions(dimensions: Dimensions | undefined): void;
   /**
-   * Set the function name to be added to each metric as a dimension.
-   *
-   * When using the {@link MetricsInterface.logMetrics | `logMetrics()`} decorator, or the Middy.js middleware, the function
-   * name is automatically inferred from the Lambda context.
-   *
-   * @example
-   * ```typescript
-   * import { Metrics } from '@aws-lambda-powertools/metrics';
-   *
-   * const metrics = new Metrics({
-   *   namespace: 'serverlessAirline',
-   *   serviceName: 'orders'
-   * });
-   *
-   * metrics.setFunctionName('my-function-name');
-   * ```
-   *
-   * @param name - The function name
+   * @deprecated Override the function name for `ColdStart` metrics inferred from the context either via:
+   * - `functionName` constructor parameter
+   * - `POWERTOOLS_FUNCTION_NAME` environment variable
+   * - {@link MetricsInterface.captureColdStartMetric | `captureColdStartMetric()`} method
    */
   setFunctionName(name: string): void;
   /**

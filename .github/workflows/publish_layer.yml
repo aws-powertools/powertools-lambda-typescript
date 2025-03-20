@@ -45,7 +45,7 @@ jobs:
       - name: Zip output
         run: zip -r cdk.out.zip layers/cdk.out
       - name: Archive CDK artifacts
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cdk-layer-artifact
           path: cdk.out.zip
@@ -97,7 +97,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
       - name: Download CDK layer artifacts
-        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
           path: cdk-layer-stack
           pattern: cdk-layer-stack-* # merge all Layer artifacts created per region earlier (reusable_deploy_layer_stack.yml; step "Save Layer ARN artifact")

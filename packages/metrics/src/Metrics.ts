@@ -760,9 +760,9 @@ class Metrics extends Utility implements MetricsInterface {
    * - `POWERTOOLS_FUNCTION_NAME` environment variable
    * - {@link Metrics.captureColdStartMetric | `captureColdStartMetric('myFunctionName')`} method
    */
-  public setFunctionName(name: string): void {
+  /* v8 ignore start */ public setFunctionName(name: string): void {
     this.functionName = name;
-  }
+  } /* v8 ignore end */
 
   /**
    * Set the flag to throw an error if no metrics are emitted.

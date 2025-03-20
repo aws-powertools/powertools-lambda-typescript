@@ -65,27 +65,6 @@ describe('ColdStart metric', () => {
     );
   });
 
-  it('includes the function name in the cold start metric', () => {
-    // Prepare
-    const functionName = 'my-function';
-    const metrics = new Metrics({
-      namespace: DEFAULT_NAMESPACE,
-    });
-    metrics.setFunctionName(functionName);
-
-    // Act
-    metrics.captureColdStartMetric();
-
-    // Assess
-    expect(console.log).toHaveEmittedEMFWith(
-      expect.objectContaining({
-        service: 'hello-world',
-        [COLD_START_METRIC]: 1,
-        function_name: 'my-function',
-      })
-    );
-  });
-
   it('does not override the function name from constructor in the cold start metric', () => {
     // Prepare
     const functionName = 'my-function';

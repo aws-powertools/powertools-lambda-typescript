@@ -13,7 +13,6 @@ class EnvironmentVariablesService
 {
   private readonly namespaceVariable = 'POWERTOOLS_METRICS_NAMESPACE';
   private readonly functionNameVariable = 'POWERTOOLS_METRICS_FUNCTION_NAME';
-
   private readonly disabledVariable = 'POWERTOOLS_METRICS_DISABLED';
 
   /**

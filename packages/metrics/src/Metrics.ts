@@ -29,7 +29,6 @@ import type {
   MetricsOptions,
   StoredMetrics,
 } from './types/index.js';
-import { getFirstDefinedValue } from './utils';
 
 /**
  * The Metrics utility creates custom metrics asynchronously by logging metrics to standard output following {@link https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html | Amazon CloudWatch Embedded Metric Format (EMF)}.
@@ -384,12 +383,11 @@ class Metrics extends Utility implements MetricsInterface {
         service: this.defaultDimensions.service,
       });
     }
-    const coldStartFunctionName = getFirstDefinedValue(
-      this.functionName,
-      functionName
-    );
-    if (coldStartFunctionName) {
-      singleMetric.addDimension('function_name', coldStartFunctionName);
+    for (const value of [this.functionName, functionName]) {
+      if (value && value.trim().length > 0) {
+        singleMetric.addDimension('function_name', value);
+        break;
+      }
     }
     singleMetric.addMetric(COLD_START_METRIC, MetricUnits.Count, 1);
   }
@@ -919,10 +917,12 @@ class Metrics extends Utility implements MetricsInterface {
   protected setFunctionNameForColdStartMetric(functionName?: string): void {
     const constructorFunctionName = functionName;
     const envFunctionName = this.getEnvVarsService().getFunctionName();
-    this.functionName = getFirstDefinedValue(
-      constructorFunctionName,
-      envFunctionName
-    );
+    for (const value of [constructorFunctionName, envFunctionName]) {
+      if (value && value.trim().length > 0) {
+        this.functionName = value;
+        break;
+      }
+    }
   }
 
   /**

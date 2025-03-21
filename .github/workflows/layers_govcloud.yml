@@ -101,16 +101,11 @@ jobs:
       - name: Create Layer
         id: create-layer
         run: |
-          cat AWSLambdaPowertoolsTypeScriptV2.json | jq '{
-            "LayerName": "AWSLambdaPowertoolsTypeScriptV2",
-            "Description": .Description,
-            "CompatibleRuntimes": .CompatibleRuntimes,
-            "LicenseInfo": .LicenseInfo
-          }' > input.json
+          cat AWSLambdaPowertoolsTypeScriptV2.json | jq '{"LayerName": "AWSLambdaPowertoolsTypeScriptV2", "Description": .Description, "CompatibleRuntimes": .CompatibleRuntimes, "LicenseInfo": .LicenseInfo}' > input.json
         
           LAYER_VERSION=$(aws --region us-gov-west-1 lambda publish-layer-version \
             --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
-            --cli-input-json file://./input.json
+            --cli-input-json file://./input.json \
             --query 'Version' \
             --output text)
 
@@ -166,16 +161,11 @@ jobs:
       - name: Create Layer
         id: create-layer
         run: |
-          cat AWSLambdaPowertoolsTypeScriptV2.json | jq '{
-            "LayerName": "AWSLambdaPowertoolsTypeScriptV2",
-            "Description": .Description,
-            "CompatibleRuntimes": .CompatibleRuntimes,
-            "LicenseInfo": .LicenseInfo
-          }' > input.json
+          cat AWSLambdaPowertoolsTypeScriptV2.json | jq '{"LayerName": "AWSLambdaPowertoolsTypeScriptV2", "Description": .Description, "CompatibleRuntimes": .CompatibleRuntimes, "LicenseInfo": .LicenseInfo}' > input.json
         
           LAYER_VERSION=$(aws --region us-gov-west-1 lambda publish-layer-version \
             --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
-            --cli-input-json file://./input.json
+            --cli-input-json file://./input.json \
             --query 'Version' \
             --output text)
 

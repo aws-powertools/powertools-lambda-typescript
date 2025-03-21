@@ -101,12 +101,16 @@ jobs:
       - name: Create Layer
         id: create-layer
         run: |
-          LAYER_VERSION=$(aws --region us-gov-east-1 lambda publish-layer-version \
-            --layer-name AWSLambdaPowertoolsTypeScriptV2 \
+          cat AWSLambdaPowertoolsTypeScriptV2.json | jq '{
+            "LayerName": "AWSLambdaPowertoolsTypeScriptV2",
+            "Description": .Description,
+            "CompatibleRuntimes": .CompatibleRuntimes,
+            "LicenseInfo": .LicenseInfo
+          }' > input.json
+        
+          LAYER_VERSION=$(aws --region us-gov-west-1 lambda publish-layer-version \
             --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
-            --compatible-runtimes "$(echo \"$(jq -r  '.CompatibleRuntimes | join(" ")' 'AWSLambdaPowertoolsTypeScriptV2.json')\" | sed -e "s/ /\" \"/g")" \
-            --license-info "MIT-0" \
-            --description "$(jq -r '.Description' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
+            --cli-input-json file://./input.json
             --query 'Version' \
             --output text)
 
@@ -125,8 +129,12 @@ jobs:
           REMOTE_SHA=$(aws --region us-gov-east-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' --query 'Content.CodeSha256' --output text)
           SHA=$(jq -r '.Content.CodeSha256' 'AWSLambdaPowertoolsTypeScriptV2.json')
           test "$REMOTE_SHA" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1
-          aws --region us-gov-east-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' --output table
-
+          aws --region us-gov-east-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' > govcloud.json
+          echo ::notice::GovCloud Details
+          cat govcloud.json | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes, "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'
+          echo ::notice::Commercial Details
+          cat AWSLambdaPowertoolsTypeScriptV2.json | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes, "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'
+          
   copy_west:
     name: Copy (West)
     needs: download
@@ -158,12 +166,16 @@ jobs:
       - name: Create Layer
         id: create-layer
         run: |
+          cat AWSLambdaPowertoolsTypeScriptV2.json | jq '{
+            "LayerName": "AWSLambdaPowertoolsTypeScriptV2",
+            "Description": .Description,
+            "CompatibleRuntimes": .CompatibleRuntimes,
+            "LicenseInfo": .LicenseInfo
+          }' > input.json
+        
           LAYER_VERSION=$(aws --region us-gov-west-1 lambda publish-layer-version \
-            --layer-name AWSLambdaPowertoolsTypeScriptV2 \
             --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
-            --compatible-runtimes "$(echo \"$(jq -r  '.CompatibleRuntimes | join(" ")' 'AWSLambdaPowertoolsTypeScriptV2.json')\" | sed -e "s/ /\" \"/g")" \
-            --license-info "MIT-0" \
-            --description "$(jq -r '.Description' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
+            --cli-input-json file://./input.json
             --query 'Version' \
             --output text)
 
@@ -182,4 +194,8 @@ jobs:
           REMOTE_SHA=$(aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' --query 'Content.CodeSha256' --output text)
           SHA=$(jq -r '.Content.CodeSha256' 'AWSLambdaPowertoolsTypeScriptV2.json')
           test "$REMOTE_SHA" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1
-          aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' --output table
+          aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' > govcloud.json
+          echo ::notice::GovCloud Details
+          cat govcloud.json | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes, "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'
+          echo ::notice::Commercial Details
+          cat AWSLambdaPowertoolsTypeScriptV2.json | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes, "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'

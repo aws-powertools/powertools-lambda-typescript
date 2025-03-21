@@ -104,7 +104,7 @@ jobs:
           LAYER_VERSION=$(aws --region us-gov-east-1 lambda publish-layer-version \
             --layer-name AWSLambdaPowertoolsTypeScriptV2 \
             --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
-            --compatible-runtimes "$(jq -r '.CompatibleRuntimes[0]' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
+            --compatible-runtimes "$(echo \"$(jq -r  '.CompatibleRuntimes | join(" ")' 'AWSLambdaPowertoolsTypeScriptV2.json')\" | sed -e "s/ /\" \"/g")" \
             --license-info "MIT-0" \
             --description "$(jq -r '.Description' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
             --query 'Version' \
@@ -161,7 +161,7 @@ jobs:
           LAYER_VERSION=$(aws --region us-gov-west-1 lambda publish-layer-version \
             --layer-name AWSLambdaPowertoolsTypeScriptV2 \
             --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
-            --compatible-runtimes "$(jq -r '.CompatibleRuntimes[0]' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
+            --compatible-runtimes "$(echo \"$(jq -r  '.CompatibleRuntimes | join(" ")' 'AWSLambdaPowertoolsTypeScriptV2.json')\" | sed -e "s/ /\" \"/g")" \
             --license-info "MIT-0" \
             --description "$(jq -r '.Description' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
             --query 'Version' \

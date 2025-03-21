@@ -105,7 +105,6 @@ jobs:
             --layer-name AWSLambdaPowertoolsTypeScriptV2 \
             --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
             --compatible-runtimes "$(jq -r '.CompatibleRuntimes[0]' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
-            --compatible-architectures "$(jq  -r '.CompatibleArchitectures[0]' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
             --license-info "MIT-0" \
             --description "$(jq -r '.Description' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
             --query 'Version' \
@@ -163,7 +162,6 @@ jobs:
             --layer-name AWSLambdaPowertoolsTypeScriptV2 \
             --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
             --compatible-runtimes "$(jq -r '.CompatibleRuntimes[0]' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
-            --compatible-architectures "$(jq  -r '.CompatibleArchitectures[0]' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
             --license-info "MIT-0" \
             --description "$(jq -r '.Description' 'AWSLambdaPowertoolsTypeScriptV2.json')" \
             --query 'Version' \

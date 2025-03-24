@@ -298,7 +298,7 @@ All caching logic is handled by the `BaseProvider`, and provided that the return
 Here's an example of implementing a custom parameter store using an external service like HashiCorp Vault, a widely popular key-value secret storage.
 
 === "Provider usage"
-	```typescript hl_lines="5-8 12-16"
+	```typescript hl_lines="12"
 	--8<-- "examples/snippets/parameters/customProviderVaultUsage.ts"
 	```
 

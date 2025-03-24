@@ -103,7 +103,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
-          role-to-assume: ${{ secrets[format('{0}', steps.transform.outputs.CONVERTED_REGION)] }}
+          role-to-assume: ${{ secrets[format('IAM_ROLE_{0}', steps.transform.outputs.CONVERTED_REGION)] }}
           aws-region: ${{ matrix.region}}
           mask-aws-account-id: true
       - name: Create Layer
@@ -130,7 +130,7 @@ jobs:
           LAYER_VERSION: ${{ steps.create-layer.outputs.LAYER_VERSION }}
         run: |
           layer_output='AWSLambdaPowertoolsTypeScriptV2-${{matrix.region}}.json'
-          aws --region ${{ matrix.region}} lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:${{ matrix.region}}:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' > $layer_output
+          aws --region ${{ matrix.region}} lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:${{ matrix.region}}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' > $layer_output
           REMOTE_SHA=$(jq -r '.Content.CodeSha256' $layer_output)
           LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)
           test "$REMOTE_SHA" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1

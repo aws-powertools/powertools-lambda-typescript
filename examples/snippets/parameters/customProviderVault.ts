@@ -65,15 +65,18 @@ class HashiCorpVaultProvider extends BaseProvider {
     name: string,
     options?: HashiCorpVaultGetOptions
   ): Promise<Record<string, unknown>> {
-    const mount = options?.sdkOptions?.mount ?? this.#rootPath;
-    const version = options?.sdkOptions?.version;
+    const { sdkOptions } = options ?? {};
+    const mount = sdkOptions?.mount ?? this.#rootPath;
+    const version = sdkOptions?.version
+      ? `?version=${sdkOptions?.version}`
+      : '';
 
     setTimeout(() => {
       this.#abortController.abort();
     }, this.#timeout);
 
     const res = await fetch(
-      `${this.#baseUrl}/${mount}/data/${name}${version ? `?version=${version}` : ''}`,
+      `${this.#baseUrl}/${mount}/data/${name}${version}`,
       {
         headers: { 'X-Vault-Token': this.#token },
         method: 'GET',

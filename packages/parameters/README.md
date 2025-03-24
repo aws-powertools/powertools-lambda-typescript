@@ -229,6 +229,7 @@ The following companies, among others, use Powertools:
 - [Elva](https://elva-group.com)
 - [Flyweight](https://flyweight.io/)
 - [globaldatanet](https://globaldatanet.com/)
+- [Guild](https://guild.com)
 - [Hashnode](https://hashnode.com/)
 - [LocalStack](https://localstack.cloud/)
 - [Perfect Post](https://www.perfectpost.fr)

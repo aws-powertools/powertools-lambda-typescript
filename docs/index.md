@@ -459,6 +459,9 @@ Knowing which companies are using this library is important to help prioritize t
 [**globaldatanet**](https://globaldatanet.com/){target="_blank" rel="nofollow"}
 { .card }
 
+[**Guild**](https://guild.com){target="_blank" rel="nofollow"}
+{ .card }
+
 [**Hashnode**](https://hashnode.com/){target="_blank" rel="nofollow"}
 { .card }
 

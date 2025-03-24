@@ -1,41 +1,31 @@
 import { BaseProvider } from '@aws-lambda-powertools/parameters/base';
 import { GetParameterError } from '@aws-lambda-powertools/parameters/errors';
-import Vault from 'hashi-vault-js';
 import type {
   HashiCorpVaultGetOptions,
   HashiCorpVaultProviderOptions,
 } from './customProviderVaultTypes.js';
 
 class HashiCorpVaultProvider extends BaseProvider {
-  public client: Vault;
+  readonly #baseUrl: string;
   readonly #token: string;
+  readonly #rootPath?: string;
+  readonly #timeout: number;
+  readonly #abortController: AbortController;
 
   /**
    * It initializes the HashiCorpVaultProvider class.
    *
-   * @param {HashiCorpVaultProviderOptions} config - The configuration object.
+   * @param config - The configuration object.
    */
   public constructor(config: HashiCorpVaultProviderOptions) {
     super({});
 
-    const { url, token, clientConfig, vaultClient } = config;
-    if (vaultClient) {
-      if (vaultClient instanceof Vault) {
-        this.client = vaultClient;
-      } else {
-        throw Error('Not a valid Vault client provided');
-      }
-    } else {
-      const config = {
-        baseUrl: url,
-        ...(clientConfig ?? {
-          timeout: 10000,
-          rootPath: '',
-        }),
-      };
-      this.client = new Vault(config);
-    }
+    const { url, token, rootPath, timeout } = config;
+    this.#baseUrl = url;
+    this.#rootPath = rootPath ?? 'secret';
+    this.#timeout = timeout ?? 5000;
     this.#token = token;
+    this.#abortController = new AbortController();
   }
 
   /**
@@ -46,8 +36,8 @@ class HashiCorpVaultProvider extends BaseProvider {
    * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
    * * `sdkOptions` - Extra options to pass to the HashiCorp Vault SDK, e.g. `mount` or `version`
    *
-   * @param {string} name - The name of the secret
-   * @param {HashiCorpVaultGetOptions} options - Options to customize the retrieval of the secret
+   * @param name - The name of the secret
+   * @param options - Options to customize the retrieval of the secret
    */
   public async get<T extends Record<string, unknown>>(
     name: string,
@@ -68,27 +58,35 @@ class HashiCorpVaultProvider extends BaseProvider {
   /**
    * Retrieve a secret from HashiCorp Vault.
    *
-   * @param {string} name - The name of the secret
-   * @param {HashiCorpVaultGetOptions} options - Options to customize the retrieval of the secret
+   * @param name - The name of the secret
+   * @param options - Options to customize the retrieval of the secret
    */
   protected async _get(
     name: string,
     options?: HashiCorpVaultGetOptions
   ): Promise<Record<string, unknown>> {
-    const mount = options?.sdkOptions?.mount ?? 'secret';
+    const mount = options?.sdkOptions?.mount ?? this.#rootPath;
     const version = options?.sdkOptions?.version;
 
-    const response = await this.client.readKVSecret(
-      this.#token,
-      name,
-      version,
-      mount
-    );
+    setTimeout(() => {
+      this.#abortController.abort();
+    }, this.#timeout);
 
-    if (response.isVaultError) {
-      throw response;
+    const res = await fetch(
+      `${this.#baseUrl}/${mount}/data/${name}${version ? `?version=${version}` : ''}`,
+      {
+        headers: { 'X-Vault-Token': this.#token },
+        method: 'GET',
+        signal: this.#abortController.signal,
+      }
+    );
+    if (!res.ok) {
+      throw new GetParameterError(
+        `Failed to fetch secret from HashiCorp Vault: ${res.statusText}`
+      );
     }
-    return response.data;
+    const response = await res.json();
+    return response.data.data;
   }
 
   /**

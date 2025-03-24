@@ -135,7 +135,7 @@ jobs:
           LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)
           test "$REMOTE_SHA" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1
           echo ::notice::Layer Details - Commercial (Left) / GovCloud (Right)
-          jq -s -r '["Layer Arn", "Runtimes", "Version", "Description", "SHA256"], ([.[0], .[1]] | .[] | [.LayerArn, (.CompatibleRuntimes | join("/")), .Version, .Description, .Content.CodeSha256]) |@tsv' AWSLambdaPowertoolsTypeScriptV2.json $layer_output | column -t -s $'\t'
+          # jq -s -r '["Layer Arn", "Runtimes", "Version", "Description", "SHA256"], ([.[0], .[1]] | .[] | [.LayerArn, (.CompatibleRuntimes | join("/")), .Version, .Description, .Content.CodeSha256]) |@tsv' AWSLambdaPowertoolsTypeScriptV2.json $layer_output | column -t -s $'\t'
 
       - name: Store Metadata - ${{ matrix.region }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

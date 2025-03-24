@@ -103,7 +103,7 @@ jobs:
         run: |
           cat AWSLambdaPowertoolsTypeScriptV2.json | jq '{"LayerName": "AWSLambdaPowertoolsTypeScriptV2", "Description": .Description, "CompatibleRuntimes": .CompatibleRuntimes, "LicenseInfo": .LicenseInfo}' > input.json
         
-          LAYER_VERSION=$(aws --region us-gov-west-1 lambda publish-layer-version \
+          LAYER_VERSION=$(aws --region us-gov-east-1 lambda publish-layer-version \
             --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
             --cli-input-json file://./input.json \
             --query 'Version' \

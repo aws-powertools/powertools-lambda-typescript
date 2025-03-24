@@ -78,7 +78,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    environment: GovCloud
+    environment: GovCloud ${{ inputs.environment }}
     strategy:
       matrix:
         region:

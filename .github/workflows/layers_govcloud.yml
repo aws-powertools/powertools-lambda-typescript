@@ -131,6 +131,11 @@ jobs:
         run: |
           export layer_output='AWSLambdaPowertoolsTypeScriptV2-${{matrix.region}}.json'
           aws --region ${{ matrix.region}} lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:${{ matrix.region}}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' > $layer_output
+          REMOTE_SHA=$(jq -r '.Content.CodeSha256' $layer_output)
+          LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)
+          test "$REMOTE_SHA" == "$LOCAL_SHA" && echo "SHA OK: ${LOCAL_SHA}" || exit 1
+          echo ::notice::Layer Details - Commercial (Left) / GovCloud (Right)
+          jq -s -r '["Layer Arn", "Runtimes", "Version", "Description", "SHA256"], ([.[0], .[1]] | .[] | [.LayerArn, (.CompatibleRuntimes | join("/")), .Version, .Description, .Content.CodeSha256]) |@tsv' AWSLambdaPowertoolsTypeScriptV2.json $layer_output | column -t -s $'\t'
 
       - name: Store Metadata - ${{ matrix.region }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

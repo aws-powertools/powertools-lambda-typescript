@@ -13,9 +13,14 @@ on:
           - Prod
         required: true
       version:
-        description: Layer version to duplicate
+        description: Layer version to verify
         type: string
         required: true
+      govcloud_version:
+        description: GovCloud Layer version to verify, this is mostly used in Gamma where a version mismatch might exist
+        type: string
+        required: false
+
   workflow_call:
     inputs:
       environment:
@@ -23,9 +28,13 @@ on:
         type: string
         required: true
       version:
-        description: Layer version to duplicate
+        description: Layer version to verify
         type: string
         required: true
+      govcloud_version:
+        description: GovCloud Layer version to verify, this is mostly used in Gamma where a version mismatch might exist
+        type: string
+        required: false
 
 name: Layer Verification (GovCloud)
 run-name: Layer Verification (GovCloud) / Version ${{ inputs.version }}
@@ -85,10 +94,14 @@ jobs:
           role-to-assume: ${{ secrets[format('IAM_ROLE_{0}', steps.transform.outputs.CONVERTED_REGION)] }}
           aws-region: ${{ matrix.region}}
           mask-aws-account-id: true
+      - id: govcloud_version
+        name: GovCloud Layer Version
+        run: |
+          echo 'govcloud_version=$([[ -n "${{ inputs.govcloud_version}}" ]] && echo ${{ inputs.govcloud_version}} || echo ${{ inputs.version }} )' >> "$GITHUB_OUTPUT"
       - name: Verify Layer
         run: |
           export layer_output='AWSLambdaPowertoolsTypeScriptV2-${{matrix.region}}.json'
-          aws --region ${{ matrix.region}} lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:${{ matrix.region}}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' > $layer_output
+          aws --region ${{ matrix.region}} lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:${{ matrix.region}}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ steps.govcloud_version.outputs.govcloud_version }}' > $layer_output
           REMOTE_SHA=$(jq -r '.Content.CodeSha256' $layer_output)
           LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)
           test "$REMOTE_SHA" == "$LOCAL_SHA" && echo "SHA OK: ${LOCAL_SHA}" || exit 1

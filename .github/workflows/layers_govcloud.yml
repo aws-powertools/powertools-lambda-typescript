@@ -33,7 +33,7 @@ on:
         type: string
         required: true
 
-run-name: Layer Deployment (GovCloud) - ${{ inputs.environment }} - version - ${{ inputs.version }}
+run-name: Layer Deployment (GovCloud) - ${{ inputs.environment }} / Version - ${{ inputs.version }}
 
 permissions:
   contents: read

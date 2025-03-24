@@ -5,19 +5,30 @@
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: Deployment environment
+        type: choice
+        options:
+          - Gamma
+          - Prod
+        required: true
       version:
-        description: Layer version to verify information
+        description: Layer version to duplicate
         type: string
         required: true
   workflow_call:
     inputs:
+      environment:
+        description: Deployment environment
+        type: string
+        required: true
       version:
-        description: Layer version to verify information
+        description: Layer version to duplicate
         type: string
         required: true
 
 name: Layer Verification (GovCloud)
-run-name: Layer Verification (GovCloud) - version ${{ inputs.version }}
+run-name: Layer Verification (GovCloud) / Version ${{ inputs.version }}
 
 permissions: {}
 
@@ -38,44 +49,47 @@ jobs:
       - name: Output AWSLambdaPowertoolsTypeScriptV2
         # fetch the specific layer version information from the us-east-1 commercial region
         run: |
-          aws --region us-east-1 lambda get-layer-version-by-arn --arn 'arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.version }}' | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes[0], "Compatible Architectures": .CompatibleArchitectures[0], "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'
+          aws --region us-east-1 lambda get-layer-version-by-arn --arn 'arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.version }}' > AWSLambdaPowertoolsTypeScriptV2.json
+      - name: Store Metadata
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: AWSLambdaPowertoolsTypeScriptV2.json
+          path: AWSLambdaPowertoolsTypeScriptV2.json
+          retention-days: 1
+          if-no-files-found: error
 
-  gov_east:
-    name: Verify (East)
+  verify:
+    name: Verify
     needs: commercial
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
-    environment: GovCloud Prod (East)
+    environment: GovCloud ${{ inputs.environment }}
+    strategy:
+      matrix:
+        region:
+          - us-gov-east-1
+          - us-gov-west-1
     steps:
+      - name: Download Metadata
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: AWSLambdaPowertoolsTypeScriptV2.json
+      - id: transform
+        run: |
+          echo 'CONVERTED_REGION=${{ matrix.region }}' | tr 'a-z\-' 'A-Z_' >> "$GITHUB_OUTPUT"
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
         with:
-          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
-          aws-region: us-gov-east-1
+          role-to-assume: ${{ secrets[format('IAM_ROLE_{0}', steps.transform.outputs.CONVERTED_REGION)] }}
+          aws-region: ${{ matrix.region}}
           mask-aws-account-id: true
-      - name: Verify Layer AWSLambdaPowertoolsTypeScriptV2
-        id: verify-layer
+      - name: Verify Layer
         run: |
-          aws --region us-gov-east-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.version }}' | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes[0], "Compatible Architectures": .CompatibleArchitectures[0], "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'
-
-  gov_west:
-    name: Verify (West)
-    needs: commercial
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    environment: GovCloud Prod (West)
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
-        with:
-          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
-          aws-region: us-gov-east-1
-          mask-aws-account-id: true
-      - name: Verify Layer AWSLambdaPowertoolsTypeScriptV2
-        id: verify-layer
-        run: |
-          aws --region us-gov-west-1 lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:us-gov-west-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.version }}' | jq -r '{"Layer Version Arn": .LayerVersionArn, "Version": .Version, "Description": .Description, "Compatible Runtimes": .CompatibleRuntimes[0], "Compatible Architectures": .CompatibleArchitectures[0], "SHA": .Content.CodeSha256} | keys[] as $k | [$k, .[$k]] | @tsv' | column -t -s $'\t'
+          export layer_output='AWSLambdaPowertoolsTypeScriptV2-${{matrix.region}}.json'
+          aws --region ${{ matrix.region}} lambda get-layer-version-by-arn --arn 'arn:aws-us-gov:lambda:${{ matrix.region}}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' > $layer_output
+          REMOTE_SHA=$(jq -r '.Content.CodeSha256' $layer_output)
+          LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)
+          test "$REMOTE_SHA" == "$LOCAL_SHA" && echo "SHA OK: ${LOCAL_SHA}" || exit 1
+          jq -s -r '["Layer Arn", "Runtimes", "Version", "Description", "SHA256"], ([.[0], .[1]] | .[] | [.LayerArn, (.CompatibleRuntimes | join("/")), .Version, .Description, .Content.CodeSha256]) |@tsv' AWSLambdaPowertoolsTypeScriptV2.json $layer_output | column -t -s $'\t'

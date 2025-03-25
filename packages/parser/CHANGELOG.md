@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.16.0...v2.17.0) (2025-03-25)
+
+
+### Bug Fixes
+
+* **parser:** ddb base schema + other exports ([#3741](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3741)) ([51a3410](https://github.com/aws-powertools/powertools-lambda-typescript/commit/51a3410be8502496362d5ed13a64fe55691604ba))
+
+
+
+
+
 # [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
 
 

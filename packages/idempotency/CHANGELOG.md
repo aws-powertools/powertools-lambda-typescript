@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.16.0...v2.17.0) (2025-03-25)
+
+
+### Bug Fixes
+
+* **idempotency:** include sk in error msgs when using composite key ([#3709](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3709)) ([661f5ff](https://github.com/aws-powertools/powertools-lambda-typescript/commit/661f5ff7f3f3805e24f515892e98430dccebf979))
+
+
+
+
+
 # [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
 
 **Note:** Version bump only for package @aws-lambda-powertools/idempotency

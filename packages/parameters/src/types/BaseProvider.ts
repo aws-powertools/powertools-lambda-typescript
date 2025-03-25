@@ -17,7 +17,7 @@ type BaseProviderConstructorOptions = {
    *
    * If the `awsSdkV3Client` is not provided, this will be used to create a new client.
    */
-  awsSdkV3ClientPrototype: new (
+  awsSdkV3ClientPrototype?: new (
     config?: unknown
   ) => unknown;
 };

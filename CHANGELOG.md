@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.16.0...v2.17.0) (2025-03-25)
+
+
+### Bug Fixes
+
+* **ci:** Remove --compatible-architectures from workflow ([#3752](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3752)) ([dafa496](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dafa49602ea45227384b63bff4d3f39d69e982d8))
+* **idempotency:** include sk in error msgs when using composite key ([#3709](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3709)) ([661f5ff](https://github.com/aws-powertools/powertools-lambda-typescript/commit/661f5ff7f3f3805e24f515892e98430dccebf979))
+* **logger:** correctly refresh sample rate ([#3722](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3722)) ([2692ca4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2692ca4d1b15763936659b05e1830d998a4d2020))
+* **parser:** ddb base schema + other exports ([#3741](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3741)) ([51a3410](https://github.com/aws-powertools/powertools-lambda-typescript/commit/51a3410be8502496362d5ed13a64fe55691604ba))
+
+
+### Features
+
+* **commons:** make utilities aware of provisioned concurrency ([#3724](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3724)) ([c28e45e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c28e45ecba315bac8fbc7744dbe21a3461747d44))
+* **logger:** set correlation ID in logs ([#3726](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3726)) ([aa74fc8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/aa74fc8548ccb8cb313ffd1742184c66e8d6c22c))
+* **metrics:** allow setting functionName via constructor parameter and environment variable ([#3696](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3696)) ([3176fa0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3176fa08e1886d5c86e7b327134cc988b82cf8d8))
+
+
+
+
+
 # [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
 
 

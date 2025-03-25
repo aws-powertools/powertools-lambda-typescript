@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.16.0...v2.17.0) (2025-03-25)
+
+
+### Features
+
+* **metrics:** allow setting functionName via constructor parameter and environment variable ([#3696](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3696)) ([3176fa0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3176fa08e1886d5c86e7b327134cc988b82cf8d8))
+
+
+
+
+
 # [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics

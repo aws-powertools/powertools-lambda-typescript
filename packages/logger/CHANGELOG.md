@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.16.0...v2.17.0) (2025-03-25)
+
+
+### Bug Fixes
+
+* **logger:** correctly refresh sample rate ([#3722](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3722)) ([2692ca4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2692ca4d1b15763936659b05e1830d998a4d2020))
+
+
+### Features
+
+* **commons:** make utilities aware of provisioned concurrency ([#3724](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3724)) ([c28e45e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c28e45ecba315bac8fbc7744dbe21a3461747d44))
+* **logger:** set correlation ID in logs ([#3726](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3726)) ([aa74fc8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/aa74fc8548ccb8cb313ffd1742184c66e8d6c22c))
+
+
+
+
+
 # [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
 
 

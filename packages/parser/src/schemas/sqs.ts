@@ -1,11 +1,18 @@
 import { z } from 'zod';
 
+const SqsMsgAttributeDataTypeSchema = z.union([
+  z.literal('String'),
+  z.literal('Number'),
+  z.literal('Binary'),
+  z.string(),
+]);
+
 const SqsMsgAttributeSchema = z.object({
   stringValue: z.string().optional(),
   binaryValue: z.string().optional(),
   stringListValues: z.array(z.string()).optional(),
   binaryListValues: z.array(z.string()).optional(),
-  dataType: z.string(),
+  dataType: SqsMsgAttributeDataTypeSchema,
 });
 
 const SqsAttributesSchema = z.object({
@@ -96,4 +103,10 @@ const SqsSchema = z.object({
   Records: z.array(SqsRecordSchema).min(1),
 });
 
-export { SqsSchema, SqsRecordSchema };
+export {
+  SqsSchema,
+  SqsRecordSchema,
+  SqsMsgAttributeSchema,
+  SqsMsgAttributeDataTypeSchema,
+  SqsAttributesSchema,
+};

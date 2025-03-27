@@ -272,7 +272,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
    *
    * @param idempotencyKey
    */
-  private getKey(idempotencyKey: string): Record<string, AttributeValue> {
+  protected getKey(idempotencyKey: string): Record<string, AttributeValue> {
     if (this.sortKeyAttr) {
       return marshall({
         [this.keyAttr]: this.staticPkValue,

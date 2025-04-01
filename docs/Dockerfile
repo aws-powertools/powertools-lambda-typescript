@@ -1,5 +1,5 @@
 # version 9.5.35
-FROM squidfunk/mkdocs-material@sha256:3555052d6cbde1086b166ebacacc43126c6fb0a7b990f324072150725aa63b18
+FROM squidfunk/mkdocs-material@sha256:23b69789b1dd836c53ea25b32f62ef8e1a23366037acd07c90959a219fd1f285
 
 # Install Node.js
 RUN apk add --no-cache nodejs=20.15.1-r0 npm

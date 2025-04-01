@@ -31,14 +31,14 @@ export {
   PreAuthenticationTriggerSchema,
   PostAuthenticationTriggerSchema,
   PreTokenGenerationTriggerSchemaV1,
-  PreTokenGenerationTriggerSchemaV2,
+  PreTokenGenerationTriggerSchemaV2AndV3,
   MigrateUserTriggerSchema,
   CustomMessageTriggerSchema,
   CustomEmailSenderTriggerSchema,
   CustomSMSSenderTriggerSchema,
-  DefineAuthChallengeSchema,
-  CreateAuthChallengeSchema,
-  VerifyAuthChallengeSchema,
+  DefineAuthChallengeTriggerSchema,
+  CreateAuthChallengeTriggerSchema,
+  VerifyAuthChallengeTriggerSchema,
 } from './cognito.js';
 export {
   DynamoDBStreamSchema,

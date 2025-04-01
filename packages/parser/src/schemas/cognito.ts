@@ -1,12 +1,32 @@
 import { z } from 'zod';
 
 /**
+ * Base schema including the common parameters for all Cognito trigger events.
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-working-with-lambda-triggers.html#cognito-user-pools-lambda-trigger-syntax-shared | Amazon Cognito Developer Guide}
+ */
+const CognitoTriggerBaseSchema = z.object({
+  version: z.string(),
+  triggerSource: z.string(),
+  region: z.string(),
+  userPoolId: z.string(),
+  userName: z.string().optional(),
+  callerContext: z.object({
+    awsSdkVersion: z.string(),
+    clientId: z.string(),
+  }),
+  request: z.object({}),
+  response: z.object({}),
+});
+
+/**
  * A zod schema for a Cognito Pre-Signup trigger event.
  *
  * @example
  * ```json
  * {
  *   "version": "1",
+ *   "triggerSource": "PreSignUp_SignUp",
  *   "region": "us-east-1",
  *   "userPoolId": "us-east-1_ABC123",
  *   "userName": "johndoe",
@@ -14,7 +34,6 @@ import { z } from 'zod';
  *     "awsSdkVersion": "2.814.0",
  *     "clientId": "client123"
  *   },
- *   "triggerSource": "PreSignUp_SignUp",
  *   "request": {
  *     "userAttributes": {
  *       "email": "johndoe@example.com",
@@ -26,47 +45,45 @@ import { z } from 'zod';
  *     }
  *   },
  *   "response": {
- *     "autoConfirmUser": true,
+ *     "autoConfirmUser": false,
  *     "autoVerifyEmail": false,
  *     "autoVerifyPhone": false
  *   }
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-sign-up.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-sign-up.html | Amazon Cognito Developer Guide}
  */
-export const PreSignupTriggerSchema = z.object({
-  version: z.string(),
-  region: z.string(),
-  userPoolId: z.string(),
-  userName: z.string(),
-  callerContext: z.object({
-    awsSdkVersion: z.string(),
-    clientId: z.string(),
-  }),
-  triggerSource: z.string(),
+const PreSignupTriggerSchema = CognitoTriggerBaseSchema.extend({
+  triggerSource: z.literal('PreSignUp_SignUp'),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
-    validationData: z.record(z.string(), z.string()).nullable().optional(),
+    validationData: z.record(z.string(), z.string()).nullable(),
     clientMetadata: z.record(z.string(), z.string()).optional(),
     userNotFound: z.boolean().optional(),
   }),
-  response: z
-    .object({
-      autoConfirmUser: z.boolean().optional(),
-      autoVerifyEmail: z.boolean().optional(),
-      autoVerifyPhone: z.boolean().optional(),
-    })
-    .optional(),
+  response: z.object({
+    autoConfirmUser: z.literal(false),
+    autoVerifyEmail: z.literal(false),
+    autoVerifyPhone: z.literal(false),
+  }),
 });
 
 /**
  * A zod schema for a Cognito Post-Confirmation trigger event.
  *
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-post-confirmation.html}
- *
  * @example
  * ```json
  * {
+ *   "version": "1",
+ *   "triggerSource": "PostConfirmation_ConfirmSignUp",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
  *     "userAttributes": {
  *       "email": "user@example.com",
@@ -79,11 +96,14 @@ export const PreSignupTriggerSchema = z.object({
  *   "response": {}
  * }
  * ```
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-post-confirmation.html | Amazon Cognito Developer Guide}
  */
-export const PostConfirmationTriggerSchema = z.object({
+const PostConfirmationTriggerSchema = CognitoTriggerBaseSchema.extend({
+  triggerSource: z.literal('PostConfirmation_ConfirmSignUp'),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
-    clientMetadata: z.record(z.string(), z.string().optional()),
+    clientMetadata: z.record(z.string(), z.string()).optional(),
   }),
   response: z.object({}),
 });
@@ -94,6 +114,10 @@ export const PostConfirmationTriggerSchema = z.object({
  * @example
  * ```json
  * {
+ *   "version": "1",
+ *   "triggerSource": "PreAuthentication_Authentication",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
  *   "request": {
  *     "userAttributes": {
  *       "email": "user@example.com",
@@ -107,13 +131,15 @@ export const PostConfirmationTriggerSchema = z.object({
  *   "response": {}
  * }
  * ```
- *  * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-authentication.html}
+ *
+ *  * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-authentication.html | Amazon Cognito Developer Guide}
  */
-export const PreAuthenticationTriggerSchema = z.object({
+const PreAuthenticationTriggerSchema = CognitoTriggerBaseSchema.extend({
+  triggerSource: z.literal('PreAuthentication_Authentication'),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
-    validationData: z.record(z.string(), z.string()),
-    userNotFound: z.boolean(),
+    validationData: z.record(z.string(), z.string()).optional(),
+    userNotFound: z.boolean().optional(),
   }),
   response: z.object({}),
 });
@@ -124,6 +150,15 @@ export const PreAuthenticationTriggerSchema = z.object({
  * @example
  * ```json
  * {
+ *   "version": "1",
+ *   "triggerSource": "PostAuthentication_Authentication",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
  *     "userAttributes": {
  *       "email": "user@example.com",
@@ -137,15 +172,38 @@ export const PreAuthenticationTriggerSchema = z.object({
  *   "response": {}
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-post-authentication.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-post-authentication.html | Amazon Cognito Developer Guide}
  */
-export const PostAuthenticationTriggerSchema = z.object({
+const PostAuthenticationTriggerSchema = CognitoTriggerBaseSchema.extend({
+  triggerSource: z.literal('PostAuthentication_Authentication'),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
-    newDeviceUsed: z.boolean(),
+    newDeviceUsed: z.boolean().optional(),
     clientMetadata: z.record(z.string(), z.string()).optional(),
   }),
-  response: z.object({}),
+});
+
+/**
+ * A zod schema for a Cognito Pre-Token Generation trigger event group configuration.
+ *
+ * Use this schema to extend the {@link PreTokenGenerationTriggerRequestSchema} for the `groupConfiguration` property.
+ */
+const PreTokenGenerationTriggerGroupConfigurationSchema = z.object({
+  groupsToOverride: z.array(z.string()),
+  iamRolesToOverride: z.array(z.string()),
+  preferredRole: z.string().optional(),
+});
+
+/**
+ * A zod schema for a Cognito Pre-Token Generation trigger event request.
+ *
+ * Use this schema to extend the {@link PreTokenGenerationTriggerSchemaV1} and {@link PreTokenGenerationTriggerSchemaV2AndV3} for the `request` property.
+ */
+const PreTokenGenerationTriggerRequestSchema = z.object({
+  userAttributes: z.record(z.string(), z.string()),
+  groupConfiguration: PreTokenGenerationTriggerGroupConfigurationSchema,
+  clientMetadata: z.record(z.string(), z.string()).optional(),
 });
 
 /**
@@ -154,6 +212,15 @@ export const PostAuthenticationTriggerSchema = z.object({
  * @example
  * ```json
  * {
+ *   "version": "1",
+ *   "triggerSource": "TokenGeneration_Authentication",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
  *     "userAttributes": { "string": "string" },
  *     "groupConfiguration": {
@@ -163,112 +230,50 @@ export const PostAuthenticationTriggerSchema = z.object({
  *     },
  *     "clientMetadata": { "string": "string" }
  *   },
- *   "response": {
- *     "claimsOverrideDetails": {
- *       "claimsToAddOrOverride": { "string": "string" },
- *       "claimsToSuppress": [ "string", "string" ],
- *       "groupOverrideDetails": {
- *         "groupsToOverride": [ "string", "string" ],
- *         "iamRolesToOverride": [ "string", "string" ],
- *         "preferredRole": "string"
- *       }
- *     }
- *   }
+ *   "response": {}
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-token-generation.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-token-generation.html | Amazon Cognito Developer Guide}
  */
-export const PreTokenGenerationTriggerSchemaV1 = z.object({
-  request: z.object({
-    userAttributes: z.record(z.string(), z.string()),
-    groupConfiguration: z.object({
-      groupsToOverride: z.array(z.string()),
-      iamRolesToOverride: z.array(z.string()),
-      preferredRole: z.string(),
-    }),
-    clientMetadata: z.record(z.string(), z.string()),
-  }),
-  response: z.object({
-    claimsOverrideDetails: z.object({
-      claimsToAddOrOverride: z.record(z.string(), z.string()),
-      claimsToSuppress: z.array(z.string()),
-      groupOverrideDetails: z.object({
-        groupsToOverride: z.array(z.string()),
-        iamRolesToOverride: z.array(z.string()),
-        preferredRole: z.string(),
-      }),
-    }),
-  }),
+const PreTokenGenerationTriggerSchemaV1 = CognitoTriggerBaseSchema.extend({
+  request: PreTokenGenerationTriggerRequestSchema,
 });
 
 /**
- * A zod schema for a Cognito Pre-Token Generation trigger event (version 2).
+ * A zod schema for a Cognito Pre-Token Generation trigger event (version 2 and 3).
  *
  * @example
  * ```json
  * {
+ *   "version": "2",
+ *   "triggerSource": "TokenGeneration_Authentication",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
  *     "userAttributes": { "string": "string" },
- *     "scopes": [ "string", "string" ],
  *     "groupConfiguration": {
  *       "groupsToOverride": [ "string", "string" ],
  *       "iamRolesToOverride": [ "string", "string" ],
  *       "preferredRole": "string"
  *     },
+ *     "scopes": [ "string", "string" ],
  *     "clientMetadata": { "string": "string" }
- *   },
- *   "response": {
- *     "claimsAndScopeOverrideDetails": {
- *       "idTokenGeneration": {
- *         "claimsToAddOrOverride": { "string": "string" },
- *         "claimsToSuppress": [ "string", "string" ]
- *       },
- *       "accessTokenGeneration": {
- *         "claimsToAddOrOverride": { "string": "string" },
- *         "claimsToSuppress": [ "string", "string" ],
- *         "scopesToAdd": [ "string", "string" ],
- *         "scopesToSuppress": [ "string", "string" ]
- *       },
- *       "groupOverrideDetails": {
- *         "groupsToOverride": [ "string", "string" ],
- *         "iamRolesToOverride": [ "string", "string" ],
- *         "preferredRole": "string"
- *       }
- *     }
- *   }
+ *  },
+ *  "response": {}
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-token-generation.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-token-generation.html | Amazon Cognito Developer Guide}
  */
-export const PreTokenGenerationTriggerSchemaV2 = z.object({
-  request: z.object({
-    userAttributes: z.record(z.string(), z.string()),
-    scopes: z.array(z.string()),
-    groupConfiguration: z.object({
-      groupsToOverride: z.array(z.string()),
-      iamRolesToOverride: z.array(z.string()),
-      preferredRole: z.string(),
-    }),
-    clientMetadata: z.record(z.string(), z.string()),
-  }),
-  response: z.object({
-    claimsAndScopeOverrideDetails: z.object({
-      idTokenGeneration: z.object({
-        claimsToAddOrOverride: z.record(z.any()),
-        claimsToSuppress: z.array(z.string()),
-      }),
-      accessTokenGeneration: z.object({
-        claimsToAddOrOverride: z.record(z.any()),
-        claimsToSuppress: z.array(z.string()),
-        scopesToAdd: z.array(z.string()),
-        scopesToSuppress: z.array(z.string()),
-      }),
-      groupOverrideDetails: z.object({
-        groupsToOverride: z.array(z.string()),
-        iamRolesToOverride: z.array(z.string()),
-        preferredRole: z.string(),
-      }),
-    }),
+const PreTokenGenerationTriggerSchemaV2AndV3 = CognitoTriggerBaseSchema.extend({
+  request: PreTokenGenerationTriggerRequestSchema.extend({
+    scopes: z.array(z.string()).optional(),
   }),
 });
 
@@ -278,38 +283,47 @@ export const PreTokenGenerationTriggerSchemaV2 = z.object({
  * @example
  * ```json
  * {
- *   "userName": "string",
+ *   "version": "1",
+ *   "triggerSource": "UserMigration_Authentication",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
  *     "password": "string",
  *     "validationData": { "key": "value" },
  *     "clientMetadata": { "key": "value" }
  *   },
  *   "response": {
- *     "userAttributes": { "key": "value" },
- *     "finalUserStatus": "string",
- *     "messageAction": "string",
- *     "desiredDeliveryMediums": [ "string" ],
- *     "forceAliasCreation": true,
- *     "enableSMSMFA": true
+ *     "userAttributes": null,
+ *     "finalUserStatus": null,
+ *     "messageAction": null,
+ *     "desiredDeliveryMediums": null,
+ *     "forceAliasCreation": null,
+ *     "enableSMSMFA": null
  *   }
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-migrate-user.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-migrate-user.html | Amazon Cognito Developer Guide}
  */
-export const MigrateUserTriggerSchema = z.object({
+const MigrateUserTriggerSchema = CognitoTriggerBaseSchema.extend({
   userName: z.string(),
   request: z.object({
     password: z.string(),
-    validationData: z.record(z.string(), z.string()),
-    clientMetadata: z.record(z.string(), z.string()),
+    validationData: z.record(z.string(), z.string()).optional(),
+    clientMetadata: z.record(z.string(), z.string()).optional(),
   }),
   response: z.object({
-    userAttributes: z.record(z.string(), z.string()),
-    finalUserStatus: z.string(),
-    messageAction: z.string(),
-    desiredDeliveryMediums: z.array(z.string()),
-    forceAliasCreation: z.boolean(),
-    enableSMSMFA: z.boolean(),
+    userAttributes: z.record(z.string(), z.string()).nullable(),
+    finalUserStatus: z.string().nullable(),
+    messageAction: z.string().nullable(),
+    desiredDeliveryMediums: z.array(z.string()).nullable(),
+    forceAliasCreation: z.boolean().nullable(),
+    enableSMSMFA: z.boolean().nullable(),
   }),
 });
 
@@ -319,32 +333,47 @@ export const MigrateUserTriggerSchema = z.object({
  * @example
  * ```json
  * {
+ *   "version": "1",
+ *   "triggerSource": "CustomMessage_SignUp",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
- *     "userAttributes": { "string": "string", ... },
- *     "codeParameter": "####",
+ *     "userAttributes": {
+ *       "email": "user@example.com",
+ *       "name": "John Doe"
+ *     },
+ *     "codeParameter": "{####}",
  *     "usernameParameter": "string",
- *     "clientMetadata": { "string": "string", ... }
+ *     "linkParameter": "string",
+ *     "usernameParameter": null
  *   },
  *   "response": {
- *     "smsMessage": "string",
- *     "emailMessage": "string",
- *     "emailSubject": "string"
+ *     "smsMessage": null,
+ *     "emailMessage": null,
+ *     "emailSubject": null,
  *   }
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-custom-message.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-custom-message.html | Amazon Cognito Developer Guide}
  */
-export const CustomMessageTriggerSchema = z.object({
+const CustomMessageTriggerSchema = CognitoTriggerBaseSchema.extend({
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
     codeParameter: z.string(),
-    usernameParameter: z.string(),
+    linkParameter: z.string().nullable(),
+    usernameParameter: z.string().nullable(),
     clientMetadata: z.record(z.string(), z.string()).optional(),
   }),
   response: z.object({
-    smsMessage: z.string(),
-    emailMessage: z.string(),
-    emailSubject: z.string(),
+    smsMessage: z.string().nullable(),
+    emailMessage: z.string().nullable(),
+    emailSubject: z.string().nullable(),
   }),
 });
 
@@ -354,25 +383,35 @@ export const CustomMessageTriggerSchema = z.object({
  * @example
  * ```json
  * {
+ *   "version": "1",
+ *   "triggerSource": "CustomEmailSender_SignUp",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
  *     "type": "customEmailSenderRequestV1",
  *     "code": "string",
- *     "clientMetadata": { "string": "string", ... },
- *     "userAttributes": { "string": "string", ... }
+ *     "clientMetadata": { "string": "string" },
+ *     "userAttributes": { "string": "string" }
  *   },
  *   "response": {}
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-custom-email-sender.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-custom-email-sender.html | Amazon Cognito Developer Guide}
  */
-export const CustomEmailSenderTriggerSchema = z.object({
+const CustomEmailSenderTriggerSchema = CognitoTriggerBaseSchema.extend({
+  triggerSource: z.literal('CustomEmailSender_SignUp'),
   request: z.object({
     type: z.literal('customEmailSenderRequestV1'),
     code: z.string(),
     clientMetadata: z.record(z.string(), z.string()).optional(),
     userAttributes: z.record(z.string(), z.string()),
   }),
-  response: z.object({}),
 });
 
 /**
@@ -381,29 +420,54 @@ export const CustomEmailSenderTriggerSchema = z.object({
  * @example
  * ```json
  * {
+ *   "version": "1",
+ *   "triggerSource": "CustomSMSSender_SignUp",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
  *     "type": "customSMSSenderRequestV1",
  *     "code": "string",
- *     "clientMetadata": { "string": "string", ... },
- *     "userAttributes": { "string": "string", ... }
+ *     "clientMetadata": {
+ *       "string": "string"
+ *     },
+ *     "userAttributes": { "string": "string" }
  *   },
  *   "response": {}
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-custom-sms-sender.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-custom-sms-sender.html | Amazon Cognito Developer Guide}
  */
-export const CustomSMSSenderTriggerSchema = z.object({
+const CustomSMSSenderTriggerSchema = CognitoTriggerBaseSchema.extend({
+  triggerSource: z.literal('CustomSMSSender_SignUp'),
   request: z.object({
     type: z.literal('customSMSSenderRequestV1'),
     code: z.string(),
     clientMetadata: z.record(z.string(), z.string()).optional(),
     userAttributes: z.record(z.string(), z.string()),
   }),
-  response: z.object({}),
 });
 
+/**
+ * A zod schema for a Cognito Challenge Result.
+ */
 const ChallengeResultSchema = z.object({
-  challengeName: z.string(),
+  challengeName: z.union([
+    z.literal('CUSTOM_CHALLENGE'),
+    z.literal('SRP_A'),
+    z.literal('PASSWORD_VERIFIER'),
+    z.literal('SMS_MFA'),
+    z.literal('EMAIL_OTP'),
+    z.literal('SOFTWARE_TOKEN_MFA'),
+    z.literal('DEVICE_SRP_AUTH'),
+    z.literal('DEVICE_PASSWORD_VERIFIER'),
+    z.literal('ADMIN_NO_SRP_AUTH'),
+  ]),
   challengeResult: z.boolean(),
   challengeMetadata: z.string().optional(),
 });
@@ -414,6 +478,15 @@ const ChallengeResultSchema = z.object({
  * @example
  * ```json
  * {
+ *   "version": "1",
+ *   "triggerSource": "DefineAuthChallenge_Authentication",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
  *     "userAttributes": { "email": "user@example.com", "name": "John Doe" },
  *     "session": [
@@ -433,19 +506,21 @@ const ChallengeResultSchema = z.object({
  *   }
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-define-auth-challenge.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-define-auth-challenge.html | Amazon Cognito Developer Guide}
  */
-export const DefineAuthChallengeSchema = z.object({
+const DefineAuthChallengeTriggerSchema = CognitoTriggerBaseSchema.extend({
+  triggerSource: z.literal('DefineAuthChallenge_Authentication'),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
-    session: z.array(ChallengeResultSchema),
+    session: z.array(ChallengeResultSchema).min(1),
     clientMetadata: z.record(z.string(), z.string()).optional(),
-    userNotFound: z.boolean(),
+    userNotFound: z.boolean().optional(),
   }),
   response: z.object({
-    challengeName: z.string(),
-    issueTokens: z.boolean(),
-    failAuthentication: z.boolean(),
+    challengeName: z.string().nullish(),
+    issueTokens: z.boolean().nullish(),
+    failAuthentication: z.boolean().nullish(),
   }),
 });
 
@@ -455,6 +530,15 @@ export const DefineAuthChallengeSchema = z.object({
  * @example
  * ```json
  * {
+ *   "version": "1",
+ *   "triggerSource": "CreateAuthChallenge_Authentication",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
  *     "userAttributes": { "email": "user@example.com", "name": "John Doe" },
  *     "challengeName": "CUSTOM_CHALLENGE",
@@ -471,20 +555,22 @@ export const DefineAuthChallengeSchema = z.object({
  *   }
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-create-auth-challenge.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-create-auth-challenge.html | Amazon Cognito Developer Guide}
  */
-export const CreateAuthChallengeSchema = z.object({
+const CreateAuthChallengeTriggerSchema = CognitoTriggerBaseSchema.extend({
+  triggerSource: z.literal('CreateAuthChallenge_Authentication'),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
     challengeName: z.string(),
-    session: z.array(ChallengeResultSchema),
+    session: z.array(ChallengeResultSchema).min(1),
     clientMetadata: z.record(z.string(), z.string()).optional(),
-    userNotFound: z.boolean(),
+    userNotFound: z.boolean().optional(),
   }),
   response: z.object({
-    publicChallengeParameters: z.record(z.string()),
-    privateChallengeParameters: z.record(z.string()),
-    challengeMetadata: z.string(),
+    publicChallengeParameters: z.record(z.string()).nullish(),
+    privateChallengeParameters: z.record(z.string()).nullish(),
+    challengeMetadata: z.string().nullish(),
   }),
 });
 
@@ -494,6 +580,15 @@ export const CreateAuthChallengeSchema = z.object({
  * @example
  * ```json
  * {
+ *   "version": "1",
+ *   "triggerSource": "VerifyAuthChallengeResponse_Authentication",
+ *   "region": "us-east-1",
+ *   "userPoolId": "us-east-1_ABC123",
+ *   "userName": "johndoe",
+ *   "callerContext": {
+ *     "awsSdkVersion": "2.814.0",
+ *     "clientId": "client123"
+ *   },
  *   "request": {
  *     "userAttributes": { "email": "user@example.com", "name": "John Doe" },
  *     "privateChallengeParameters": { "answer": "expectedAnswer" },
@@ -506,17 +601,39 @@ export const CreateAuthChallengeSchema = z.object({
  *   }
  * }
  * ```
- * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-verify-auth-challenge-response.html}
+ *
+ * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-verify-auth-challenge-response.html | Amazon Cognito Developer Guide}
  */
-export const VerifyAuthChallengeSchema = z.object({
+const VerifyAuthChallengeTriggerSchema = CognitoTriggerBaseSchema.extend({
+  triggerSource: z.literal('VerifyAuthChallengeResponse_Authentication'),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
     privateChallengeParameters: z.record(z.string(), z.string()),
     challengeAnswer: z.string(),
     clientMetadata: z.record(z.string(), z.string()).optional(),
-    userNotFound: z.boolean(),
+    userNotFound: z.boolean().optional(),
   }),
   response: z.object({
     answerCorrect: z.boolean(),
   }),
 });
+
+export {
+  CognitoTriggerBaseSchema,
+  PreSignupTriggerSchema,
+  PostConfirmationTriggerSchema,
+  PreAuthenticationTriggerSchema,
+  PostAuthenticationTriggerSchema,
+  MigrateUserTriggerSchema,
+  CustomMessageTriggerSchema,
+  CustomEmailSenderTriggerSchema,
+  CustomSMSSenderTriggerSchema,
+  ChallengeResultSchema,
+  DefineAuthChallengeTriggerSchema,
+  CreateAuthChallengeTriggerSchema,
+  VerifyAuthChallengeTriggerSchema,
+  PreTokenGenerationTriggerSchemaV1,
+  PreTokenGenerationTriggerSchemaV2AndV3,
+  PreTokenGenerationTriggerGroupConfigurationSchema,
+  PreTokenGenerationTriggerRequestSchema,
+};

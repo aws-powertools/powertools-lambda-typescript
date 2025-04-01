@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "region": "eu-west-1",
+  "userPoolId": "eu-west-1_bbYLzC8rt",
+  "userName": "example@email.com",
+  "callerContext": {
+    "awsSdkVersion": "aws-sdk-unknown-unknown",
+    "clientId": "4ma39kqn9j6ncsimddqs13sgok"
+  },
+  "triggerSource": "",
+  "request": {},
+  "response": {}
+}

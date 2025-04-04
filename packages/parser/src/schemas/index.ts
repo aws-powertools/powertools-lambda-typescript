@@ -5,6 +5,7 @@ export {
   APIGatewayTokenAuthorizerEventSchema,
   APIGatewayEventRequestContextSchema,
 } from './api-gateway.js';
+export { APIGatewayProxyWebsocketEventSchema } from './api-gateway-websocket.js'
 export {
   AppSyncResolverSchema,
   AppSyncBatchResolverSchema,

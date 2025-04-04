@@ -3,6 +3,7 @@ import type {
   APIGatewayEventRequestContextSchema,
   APIGatewayProxyEventSchema,
   APIGatewayProxyEventV2Schema,
+  APIGatewayProxyWebsocketEventSchema,
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayRequestAuthorizerV2Schema,
   APIGatewayRequestContextV2Schema,
@@ -67,6 +68,8 @@ type APIGatewayEventRequestContext = z.infer<
 >;
 
 type APIGatewayProxyEventV2 = z.infer<typeof APIGatewayProxyEventV2Schema>;
+
+type APIGatewayProxyWebsocketEvent = z.infer<typeof APIGatewayProxyWebsocketEventSchema>;
 
 type APIGatewayRequestAuthorizerV2 = z.infer<
   typeof APIGatewayRequestAuthorizerV2Schema
@@ -166,6 +169,7 @@ export type {
   APIGatewayEventRequestContext,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
+  APIGatewayProxyWebsocketEvent,
   APIGatewayRequestAuthorizerEvent,
   APIGatewayRequestAuthorizerV2,
   APIGatewayRequestContextV2,

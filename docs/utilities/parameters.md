@@ -137,6 +137,8 @@ The following will retrieve the latest version and store it in the cache.
 --8<-- "examples/snippets/parameters/getAppConfig.ts"
 ```
 
+When using `getAppConfig`, the [underlying provider](#appconfigprovider) is cached. To fetch from different applications or environments, create separate `AppConfigProvider` instances for each application/environment combination.
+
 ## Advanced
 
 ### Adjusting cache TTL

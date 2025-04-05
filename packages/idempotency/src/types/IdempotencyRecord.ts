@@ -1,6 +1,6 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type { IdempotencyRecordStatus } from '../constants.js';
-
+import type { DynamoDBPersistenceLayer } from '../persistence/DynamoDBPersistenceLayer.js';
 /**
  * The status of an IdempotencyRecord
  */
@@ -22,7 +22,7 @@ type IdempotencyRecordOptions = {
   /**
    * The idempotency record status can be COMPLETED, IN_PROGRESS or EXPIRED.
    * We check the status during idempotency processing to make sure we don't process an expired record and handle concurrent requests.
-   * {@link constants.IdempotencyRecordStatusValue | IdempotencyRecordStatusValue}
+   * {@link IdempotencyRecordStatusValue | IdempotencyRecordStatusValue}
    */
   status: IdempotencyRecordStatusValue;
   /**

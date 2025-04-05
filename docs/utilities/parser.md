@@ -55,7 +55,7 @@ Both are also able to parse either an object or JSON string as an input.
 
 ## Built-in schemas
 
-Parser comes with the following built-in schemas:
+**Parser** comes with the following built-in schemas:
 
 | Model name                                   | Description                                                                           |
 | -------------------------------------------- | ------------------------------------------------------------------------------------- |
@@ -64,6 +64,7 @@ Parser comes with the following built-in schemas:
 | **APIGatewayRequestAuthorizerEventSchema**   | Lambda Event Source payload for Amazon API Gateway Request Authorizer                 |
 | **APIGatewayTokenAuthorizerEventSchema**     | Lambda Event Source payload for Amazon API Gateway Token Authorizer                   |
 | **APIGatewayProxyEventV2Schema**             | Lambda Event Source payload for Amazon API Gateway v2 payload                         |
+| **APIGatewayProxyWebsocketEventSchema**     | Lambda Event Source payload for Amazon API Gateway WebSocket events                    |
 | **APIGatewayRequestAuthorizerEventV2Schema** | Lambda Event Source payload for Amazon API Gateway v2 Authorizer                      |
 | **CloudFormationCustomResourceCreateSchema** | Lambda Event Source payload for AWS CloudFormation `CREATE` operation                 |
 | **CloudFormationCustomResourceUpdateSchema** | Lambda Event Source payload for AWS CloudFormation `UPDATE` operation                 |

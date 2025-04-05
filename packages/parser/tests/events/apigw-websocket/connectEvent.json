@@ -1,0 +1,43 @@
+{
+    "type": "REQUEST",
+    "methodArn": "arn:aws:execute-api:us-east-1:123456789012:abcdef123/default/$connect",
+    "headers": {
+      "Connection": "upgrade",
+      "content-length": "0",
+      "Host": "abcdef123.execute-api.us-east-1.amazonaws.com",
+      "Upgrade": "websocket"
+    },
+    "multiValueHeaders": {
+      "Connection": ["upgrade"],
+      "content-length": ["0"],
+      "Host": ["abcdef123.execute-api.us-east-1.amazonaws.com"],
+      "Upgrade": ["websocket"]
+    },
+    "queryStringParameters": {
+      "QueryString1": "queryValue1"
+    },
+    "multiValueQueryStringParameters": {
+      "QueryString1": ["queryValue1"]
+    },
+    "stageVariables": {},
+    "requestContext": {
+      "routeKey": "$connect",
+      "eventType": "CONNECT",
+      "extendedRequestId": "XYZ123=",
+      "requestTime": "10/Oct/2024:22:56:18 +0000",
+      "messageDirection": "IN",
+      "stage": "default",
+      "connectedAt": 1674162806344,
+      "requestTimeEpoch": 1674162806345,
+      "identity": {
+        "sourceIp": "192.0.2.1"
+      },
+      "requestId": "abc123",
+      "domainName": "abcdef123.execute-api.us-east-1.amazonaws.com",
+      "connectionId": "def456",
+      "apiId": "abcdef123"
+    },
+    "isBase64Encoded": false,
+    "body": null
+  }
+  

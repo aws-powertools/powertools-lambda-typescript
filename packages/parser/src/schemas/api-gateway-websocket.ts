@@ -4,6 +4,7 @@ import { z } from 'zod';
  * A zod schema for API Gateway Proxy WebSocket events.
  *
  * @example
+ * ```json
  * {
  *   "type": "REQUEST",
  *   "methodArn": "arn:aws:execute-api:us-east-1:123456789012:abcdef123/default/$connect",
@@ -56,6 +57,7 @@ import { z } from 'zod';
  *   "isBase64Encoded": false,
  *   "body": null
  * }
+ * ```
  *
  * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/websocket-api-develop-integrations.html}
  */

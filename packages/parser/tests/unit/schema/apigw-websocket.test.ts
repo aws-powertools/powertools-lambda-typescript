@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { APIGatewayProxyWebsocketEventSchema } from '../../../src/schemas/api-gateway-websocket';
-import type { APIGatewayProxyWebsocketEvent } from '../../../src/types/schema';
-import { getTestEvent } from '../helpers/utils';
+import { APIGatewayProxyWebsocketEventSchema } from '../../../src/schemas/api-gateway-websocket.js';
+import type { APIGatewayProxyWebsocketEvent } from '../../../src/types/schema.js';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: APIGatewayProxyWebsocketEvent', () => {
   const baseEvent = getTestEvent<APIGatewayProxyWebsocketEvent>({

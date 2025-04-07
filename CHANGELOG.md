@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.17.0...v2.18.0) (2025-04-07)
+
+
+### Features
+
+* **parser:** add Cognito pre-signup trigger schema ([#3729](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3729)) ([4116f65](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4116f65dda099a38b780ce26e005ccea90abdd7b))
+* **parser:** add schema support for API Gateway WebSocket events ([#3807](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3807)) ([663d328](https://github.com/aws-powertools/powertools-lambda-typescript/commit/663d32866cdbf1225260fbf1372e126c42a962e1))
+
+
+
+
+
 # [2.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.16.0...v2.17.0) (2025-03-25)
 
 

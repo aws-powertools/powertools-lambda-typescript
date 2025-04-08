@@ -272,8 +272,8 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 
     !!! abstract ""
 
-        * __arn:aws-us-gov:lambda:us-gov-east-1:165087284144:layer:AWSLambdaPowertoolsTypeScriptV2:23__{: .copyMe}:clipboard:
-        * __arn:aws-us-gov:lambda:us-gov-west-1:165093116878:layer:AWSLambdaPowertoolsTypeScriptV2:23__{: .copyMe}:clipboard:
+        * __arn:aws-us-gov:lambda:us-gov-east-1:165087284144:layer:AWSLambdaPowertoolsTypeScriptV2:24__{: .copyMe}:clipboard:
+        * __arn:aws-us-gov:lambda:us-gov-west-1:165093116878:layer:AWSLambdaPowertoolsTypeScriptV2:24__{: .copyMe}:clipboard:
 
 ### Lambda Layer
 

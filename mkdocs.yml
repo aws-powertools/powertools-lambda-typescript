@@ -50,10 +50,11 @@ nav:
           - features/jmespath.md
           - features/parser.md
           - features/validation.md
-      - Changelog: changelog.md
+      - Environment variables: environment-variables.md
       - Upgrade guide: upgrade.md
       - Community Content: we_made_this.md
       - Roadmap: roadmap.md
+      - Changelog: changelog.md
   - API reference: api/" target="_blank
   - Processes:
       - Roadmap: roadmap.md

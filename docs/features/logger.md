@@ -56,7 +56,8 @@ These settings will be used across all logs emitted:
 ???+ info
     When `POWERTOOLS_DEV` environment variable is present and set to `"true"` or `"1"`, Logger will pretty-print log messages for easier readability. We recommend to use this setting only when debugging on local environments.
 
-See all environment variables in the [Environment variables](../index.md#environment-variables) section.
+See all environment variables in the [Environment variables](../environment-variables.md) section.
+
 Check API docs to learn more about [Logger constructor options](https://docs.powertools.aws.dev/lambda/typescript/latest/api/types/_aws_lambda_powertools_logger.types.ConstructorOptions.html){target="_blank"}.
 
 #### Example using AWS Serverless Application Model (SAM)

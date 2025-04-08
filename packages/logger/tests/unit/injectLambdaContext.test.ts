@@ -297,7 +297,7 @@ describe('Inject Lambda Context', () => {
     expect(logger.getCorrelationId()).toBe('12345-test-id');
   });
 
-  it('warns when correlationIdPath is provided but no search function is available', async () => {
+  it('warns once when correlationIdPath is provided but no search function is available', async () => {
     // Prepare
     const logger = new Logger(); // No search function provided
     const warnSpy = vi.spyOn(logger, 'warn');
@@ -306,7 +306,7 @@ describe('Inject Lambda Context', () => {
         'x-correlation-id': '12345-test-id',
       },
     };
-    // Act - Use middleware which will internally call setCorrelationIdFromPath
+    // Act
     const handler = middy(async () => {
       logger.info('Hello, world!');
     }).use(
@@ -316,11 +316,13 @@ describe('Inject Lambda Context', () => {
     );
 
     await handler(testEvent, context);
+    await handler(testEvent, context);
 
     // Assess
     expect(warnSpy).toHaveBeenCalledWith(
       'correlationIdPath is set but no search function was provided. The correlation ID will not be added to the log attributes.'
     );
+    expect(warnSpy).toHaveBeenCalledTimes(1);
   });
 
   it('does not set correlation ID when search function returns falsy value', async () => {

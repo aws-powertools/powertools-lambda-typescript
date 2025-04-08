@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/validation",
-  "version": "2.17.0",
+  "version": "2.18.0",
   "description": "An utility to validate events and responses using JSON Schemas",
   "author": {
     "name": "Amazon Web Services",
@@ -80,8 +80,8 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.17.0",
-    "@aws-lambda-powertools/jmespath": "^2.17.0",
+    "@aws-lambda-powertools/commons": "^2.18.0",
+    "@aws-lambda-powertools/jmespath": "^2.18.0",
     "ajv": "^8.17.1"
   },
   "keywords": [

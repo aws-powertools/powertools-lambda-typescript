@@ -237,6 +237,11 @@ class Logger extends Utility implements LoggerInterface {
   };
 
   /**
+   * Map used to store the warning messages that have already been logged.
+   */
+  readonly #warnOnceMap = new Map<string, boolean>();
+
+  /**
    * Log level used by the current instance of Logger.
    *
    * Returns the log level as a number. The higher the number, the less verbose the logs.
@@ -715,6 +720,17 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
+   * Log a warning message once per unique message.
+   *
+   * @param message - The log message.
+   */
+  #warnOnce(message: string): void {
+    if (this.#warnOnceMap.has(message)) return;
+    this.#warnOnceMap.set(message, true);
+    this.warn(message);
+  }
+
+  /**
    * Factory method for instantiating logger instances. Used by `createChild` method.
    * Important for customization and subclassing. It allows subclasses, like `MyOwnLogger`,
    * to override its behavior while keeping the main business logic in `createChild` intact.
@@ -811,7 +827,7 @@ class Logger extends Utility implements LoggerInterface {
         this.isValidLogLevel(selectedLogLevel) &&
         this.logLevel > LogLevelThreshold[selectedLogLevel]
       ) {
-        this.warn(
+        this.#warnOnce(
           `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${awsLogLevel}). This can lead to data loss, consider adjusting them.`
         );
       }
@@ -1153,7 +1169,10 @@ class Logger extends Utility implements LoggerInterface {
   private setInitialLogLevel(logLevel?: ConstructorOptions['logLevel']): void {
     const constructorLogLevel = logLevel?.toUpperCase();
 
-    if (this.awsLogLevelShortCircuit(constructorLogLevel)) return;
+    if (this.awsLogLevelShortCircuit(constructorLogLevel)) {
+      this.#initialLogLevel = this.logLevel;
+      return;
+    }
 
     if (this.isValidLogLevel(constructorLogLevel)) {
       this.logLevel = LogLevelThreshold[constructorLogLevel];
@@ -1469,6 +1488,7 @@ class Logger extends Utility implements LoggerInterface {
    * logger.setCorrelationId('my-correlation-id'); // sets the correlation ID directly with the first argument as value
    * ```
    *
+   * @example
    * ```typescript
    * import { Logger } from '@aws-lambda-powertools/logger';
    * import { search } from '@aws-lambda-powertools/logger/correlationId';
@@ -1483,7 +1503,7 @@ class Logger extends Utility implements LoggerInterface {
   public setCorrelationId(value: unknown, correlationIdPath?: string): void {
     if (typeof correlationIdPath === 'string') {
       if (!this.#correlationIdSearchFn) {
-        this.warn(
+        this.#warnOnce(
           'correlationIdPath is set but no search function was provided. The correlation ID will not be added to the log attributes.'
         );
         return;

@@ -1488,6 +1488,7 @@ class Logger extends Utility implements LoggerInterface {
    * logger.setCorrelationId('my-correlation-id'); // sets the correlation ID directly with the first argument as value
    * ```
    *
+   * @example
    * ```typescript
    * import { Logger } from '@aws-lambda-powertools/logger';
    * import { search } from '@aws-lambda-powertools/logger/correlationId';

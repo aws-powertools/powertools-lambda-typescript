@@ -36,7 +36,7 @@ There are also a few other workspaces that are not utilities published to npm, b
 
 * `examples/snippets`: contains the documentation code snippets
 * `examples/app`: contains an example project that can be deployed via AWS CDK or AWS SAM
-* `layers`: contains the code used to build and publish the [Lambda layers](../index.md#lambda-layer)
+* `layers`: contains the code used to build and publish the [Lambda layers](../getting-started/lambda-layers.md)
 
 ## Testing definition
 

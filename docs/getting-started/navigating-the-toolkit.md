@@ -5,20 +5,99 @@ description: Getting to know the Powertools for AWS Lambda Toolkit
 
 <!-- markdownlint-disable MD043 -->
 
-## Instrumentation
+Powertools for AWS Lambda (TypeScript) is a collection of utilities designed to help you build serverless applications on AWS.
 
-Many of the utilities provided by Powertools for AWS Lambda (TypeScript) can be used with different programming paradigms:
+The toolkit is designed to be modular, so you can pick and choose the utilities you need for your application. Each utility is designed to be used independently, but they can also be used together to provide a complete solution for your serverless applications.
 
-- **Middy** middleware. It is the best choice if your existing code base relies on the [Middy.js](https://middy.js.org/docs/) middleware engine. Powertools for AWS Lambda (TypeScript) offers compatible Middy middleware to make this integration seamless.
-- **Method decorator**. Use [TypeScript method decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators) if you prefer writing your business logic using [TypeScript Classes](https://www.typescriptlang.org/docs/handbook/classes.html). If you aren’t using Classes, this requires the most significant refactoring.
-- **Manually**. It provides the most granular control. It’s the most verbose approach, with the added benefit of no additional dependency and no refactoring to TypeScript Classes.
+## Patterns
 
-The examples in this documentation will feature all the approaches described above wherever applicable.
+Many of the utilities provided can be used with different patterns, depending on your preferences and the structure of your code.
 
-## Examples
+### Class Method Decorator
 
-You can find examples of how to use Powertools for AWS Lambda (TypeScript) in the [examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples/app){target="_blank"} directory. The application is a simple REST API that can be deployed via either AWS CDK or AWS SAM.
+If you prefer writing your business logic using Object-Oriented Programming (OOP) and TypeScript Classes, the Class Method decorator pattern is a good fit. This approach lets you decorate class methods with Powertools utilities, applying their functionality with minimal code changes.
 
-If instead you want to see Powertools for AWS Lambda (TypeScript) in slightly different use cases, check the [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo) or the [AWS Lambda performance tuning](https://github.com/aws-samples/optimizations-for-lambda-functions) repository.
+This pattern works well when you want to integrate Powertools for AWS Lambda (TypeScript) into an existing codebase without significant refactoring and with no additional runtime dependencies. Note that this approach relies on TypeScript's experimental decorator feature.
 
-Both demos use Powertools for AWS Lambda (TypeScript) as well as demonstrating other common techniques for Lambda functions written in TypeScript.
+```ts
+import { Logger } from '@aws-lambda-powertools/logger';
+import { Tracer } from '@aws-lambda-powertools/tracer';
+import { Metrics } from '@aws-lambda-powertools/metrics';
+import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
+import type { Context } from 'aws-lambda';
+
+const logger = new Logger();
+const tracer = new Tracer();
+const metrics = new Metrics();
+
+class Lambda implements LambdaInterface {
+  @tracer.captureLambdaHandler()
+  @logger.injectLambdaContext()
+  @metrics.logMetrics()
+  async handler(event: unknown, context: Context) {
+    // Your business logic here
+  }
+}
+const lambda = new Lambda();
+export const handler = lambda.handler.bind(lambda);
+```
+
+### Middy.js Middleware
+
+If your existing codebase relies on the [Middy.js](https://middy.js.org/docs/) middleware engine, you can use the Powertools for AWS Lambda (TypeScript) middleware to integrate with your existing code. This approach is similar to the Class Method decorator pattern but uses the Middy.js middleware engine to apply Powertools utilities.
+
+```ts
+import { Logger } from '@aws-lambda-powertools/logger';
+import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
+import { Tracer } from '@aws-lambda-powertools/tracer';
+import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
+import { Metrics } from '@aws-lambda-powertools/metrics';
+import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
+import middy from '@middy/core';
+
+const logger = new Logger();
+const tracer = new Tracer();
+const metrics = new Metrics();
+
+export const handler = middy()
+  .use(captureLambdaHandler(tracer))
+  .use(injectLambdaContext(logger))
+  .use(logMetrics(metrics))
+  .handler(async (event: unknown) => {
+    // Your business logic here
+  });
+```
+
+### Functional Approach
+
+If you prefer a more functional programming style, you can use the Powertools for AWS Lambda (TypeScript) utilities directly in your code without decorators or middleware. This approach is more verbose but provides the most control over how the utilities are applied.
+
+```ts
+import { Logger } from '@aws-lambda-powertools/logger';
+import { Tracer } from '@aws-lambda-powertools/tracer';
+import { Metrics } from '@aws-lambda-powertools/metrics';
+import type { Context } from 'aws-lambda';
+
+const logger = new Logger();
+const tracer = new Tracer();
+const metrics = new Metrics();
+
+export const handler = async (event: unknown, context: Context) => {
+  logger.addContext(context);
+  logger.logEventIfEnabled(event);
+
+  const subsegment = tracer
+    .getSegment()
+    ?.addNewSubsegment('#### handler');
+
+  try {
+    // Your business logic here
+  } catch (error) {
+    logger.error('Error occurred', { error });
+    tracer.addErrorAsMetadata(error);
+  } finally {
+    subsegment?.close();
+    metrics.publishStoredMetrics();
+  }
+};
+```

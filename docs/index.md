@@ -52,6 +52,12 @@ Powertools for AWS Lambda (TypeScript) is built as a modular toolkit, so you can
 | [Parser](./features/parser.md)               | Utility to parse and validate AWS Lambda event payloads using Zod, a TypeScript-first schema declaration and validation library.                                  |
 | [Validation](./features/validation.md)       | JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.                                                   |
 
+## Examples
+
+You can find examples of how to use Powertools for AWS Lambda (TypeScript) in the [examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples){target="_blank"} directory, which contains both code snippets for specific use cases, as well as a full example application.
+
+If instead you want to see Powertools for AWS Lambda (TypeScript) in a more involved context, check the [Powertools for AWS workshop](https://github.com/aws-samples/powertools-for-aws-lambda-workshop/tree/main/functions/typescript) where we demonstrate how to use toolkit in a more complex application.
+
 ## Support Powertools for AWS
 
 There are many ways you can help us gain future investments to improve everyone's experience:

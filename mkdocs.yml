@@ -33,7 +33,6 @@ nav:
   - Homepage:
       - index.md
       - Getting Started:
-          - getting-started/index.md
           - Navigating the toolkit: getting-started/navigating-the-toolkit.md
           - Installation: getting-started/installation.md
           - TypeScript settings: getting-started/typescript-settings.md

@@ -32,7 +32,7 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 Before you start, we suggest making a copy of your current working project or create a new git branch.
 
 1. Upgrade Node.js to v18 or higher, Node.js v20 is recommended.
-2. Ensure that you have the latest Powertools for AWS Lambda (TypeScript) version via [Lambda Layer](./index.md#lambda-layer) or npm.
+2. Ensure that you have the latest Powertools for AWS Lambda (TypeScript) version via [Lambda Layer](./getting-started/lambda-layers.md) or npm.
 3. Review the following sections to confirm whether they apply to your codebase.
 
 ## ESM support

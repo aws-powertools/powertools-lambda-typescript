@@ -45,6 +45,10 @@
 	border-bottom: 0.1px dashed black;
 }
 
+.copyMe::after {
+    content: ' 📋';
+}
+
 p > code,
 li > code {
 	font-weight: bold

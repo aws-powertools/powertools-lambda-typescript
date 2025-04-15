@@ -45,7 +45,7 @@
     "@aws-lambda-powertools/parameters": "^2.18.0",
     "@aws-lambda-powertools/tracer": "^2.18.0",
     "@aws-sdk/client-ssm": "^3.787.0",
-    "@aws-sdk/lib-dynamodb": "^3.788.0",
+    "@aws-sdk/lib-dynamodb": "^3.789.0",
     "@middy/core": "^4.7.0",
     "@types/aws-lambda": "^8.10.149",
     "@types/node": "22.14.1",

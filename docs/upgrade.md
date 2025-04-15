@@ -22,7 +22,7 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 | **ESM support**       | Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                             | -                    |
 | **Middy.js**          | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.    | Yes                  |
 | **Types imports**     | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.             | Yes                  |
-| **Logger**            | Changed [log sampling](./core/logger.md#sampling-debug-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
+| **Logger**            | Changed [log sampling](./features/logger.md#sampling-debug-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
 | **Logger**            | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                          | Yes                  |
 | **Logger**            | Removed `ContextExamples` from `@aws-lambda-powertools/commons` package.                                                       | Yes                  |
 | **Logger and Tracer** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                        | Yes                  |
@@ -32,7 +32,7 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 Before you start, we suggest making a copy of your current working project or create a new git branch.
 
 1. Upgrade Node.js to v18 or higher, Node.js v20 is recommended.
-2. Ensure that you have the latest Powertools for AWS Lambda (TypeScript) version via [Lambda Layer](./index.md#lambda-layer) or npm.
+2. Ensure that you have the latest Powertools for AWS Lambda (TypeScript) version via [Lambda Layer](./getting-started/lambda-layers.md) or npm.
 3. Review the following sections to confirm whether they apply to your codebase.
 
 ## ESM support
@@ -198,7 +198,7 @@ Below is an example of how to configure your `.eslintrc.json` file:
 
 ### Log sampling
 
-!!! note "Disregard if you are not using the [log sampling feature](./core/logger.md#sampling-debug-logs)."
+!!! note "Disregard if you are not using the [log sampling feature](./features/logger.md#sampling-debug-logs)."
 
 In v1, log sampling implementation was inconsistent from other Powertools for AWS Lambda languages _(Python, .NET, and Java)_.
 
@@ -213,11 +213,11 @@ Logger `sampleRateValue` **continues** to determine the percentage of concurrent
 
 ### Custom log formatter
 
-!!! note "Disregard if you are not customizing log output with a [custom log formatter](./core/logger.md#custom-log-formatter)."
+!!! note "Disregard if you are not customizing log output with a [custom log formatter](./features/logger.md#custom-log-formatter)."
 
-In v1, `Logger` exposed the [standard](./core/logger.md#standard-structured-keys) as a single argument, _e.g., `formatAttributes(attributes: UnformattedAttributes)`_. It expected a plain object with keys and values you wanted in the final log output.
+In v1, `Logger` exposed the [standard](./features/logger.md#standard-structured-keys) as a single argument, _e.g., `formatAttributes(attributes: UnformattedAttributes)`_. It expected a plain object with keys and values you wanted in the final log output.
 
-In v2, you have more control over **standard** (`attributes`) and [**custom keys**](./core/logger.md#appending-additional-keys) (`additionalLogAttributes`) in the `formatAttributes` method. Also, you now return a `LogItem` object to increase type safety when defining the final log output.
+In v2, you have more control over **standard** (`attributes`) and [**custom keys**](./features/logger.md#appending-additional-keys) (`additionalLogAttributes`) in the `formatAttributes` method. Also, you now return a `LogItem` object to increase type safety when defining the final log output.
 
 === "Before"
 
@@ -305,7 +305,7 @@ In v2, you have more control over **standard** (`attributes`) and [**custom keys
     export { MyCompanyLogFormatter };
     ```
 
-    1. This new argument contains all [your custom keys](./core/logger.md#appending-additional-keys).
+    1. This new argument contains all [your custom keys](./features/logger.md#appending-additional-keys).
     2. `LogItem` is the new return object instead of a plain object.
     3. If you prefer adding at the initialization, use: <br/><br/> **`LogItem({persistentAttributes: additionalLogAttributes, attributes: baseAttributes})`**
 

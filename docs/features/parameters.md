@@ -413,7 +413,7 @@ You can use the `awsSdkV3Client` parameter via any of the available [Provider Cl
 | [DynamoDBProvider](#dynamodbprovider)   | `new DynamoDBClient();`       |
 
 ???+ question "When is this useful?"
-	Injecting a custom AWS SDK v3 client allows you to [apply tracing](../core/tracer.md#patching-aws-sdk-clients) or make unit/snapshot testing easier, including SDK customizations.
+	Injecting a custom AWS SDK v3 client allows you to [apply tracing](../features/tracer.md#patching-aws-sdk-clients) or make unit/snapshot testing easier, including SDK customizations.
 
 === "SSMProvider"
 	```typescript hl_lines="5 7"

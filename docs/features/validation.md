@@ -34,11 +34,6 @@ The `@validator` decorator is a class method decorator that you can use to valid
 
 If the validation fails, we will throw a `SchemaValidationError`.
 
-??? note "A note on class method decorators"
-    The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript. We will add support for the newer Stage 3 decorators proposal in the next major release.
-
-    All our decorators assume that the method they are decorating is an async method. This means that even when decorating a synchronous method, it will return a promise. If this is not the desired behavior, you can use one of the other patterns to validate your payloads.
-
 === "gettingStartedDecorator.ts"
 
     ```typescript hl_lines="1 11-14"

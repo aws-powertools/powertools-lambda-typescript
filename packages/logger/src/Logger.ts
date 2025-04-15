@@ -1383,7 +1383,7 @@ class Logger extends Utility implements LoggerInterface {
 
     if (LogLevelThreshold[AlcLogLevel] > this.#bufferConfig.bufferAtVerbosity) {
       this.#warnOnce(
-        'Advanced Loggging Controls (ALC) Log Level is higher than Log Buffering Log Level. Buffered logs will be filtered by ALC'
+        'Advanced Loggging Controls (ALC) Log Level is less verbose than Log Buffering Log Level. Buffered logs will be filtered by ALC'
       );
     }
   }

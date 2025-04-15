@@ -107,7 +107,7 @@ describe('Buffer logs', () => {
     expect(console.warn).toHaveLogged(
       expect.objectContaining({
         message: expect.stringContaining(
-          'Advanced Loggging Controls (ALC) Log Level is higher than Log Buffering Log Level. Buffered logs will be filtered by ALC'
+          'Advanced Loggging Controls (ALC) Log Level is less verbose than Log Buffering Log Level. Buffered logs will be filtered by ALC'
         ),
         level: LogLevel.WARN,
       })

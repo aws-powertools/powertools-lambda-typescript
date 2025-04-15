@@ -11,9 +11,9 @@ The toolkit is compatible with both TypeScript and JavaScript code bases, and su
 
 All features are available as individual packages, so you can install only the ones you need, for example:
 
-* **Logger**: `npm i @aws-lambda-powertools/logger`{.copyMe}:clipboard:
-* **Metrics**: `npm i @aws-lambda-powertools/metrics`{.copyMe}:clipboard:
-* **Tracer**: `npm i @aws-lambda-powertools/tracer`{.copyMe}:clipboard:
+* **Logger**: `npm i @aws-lambda-powertools/logger`{.copyMe}
+* **Metrics**: `npm i @aws-lambda-powertools/metrics`{.copyMe}
+* **Tracer**: `npm i @aws-lambda-powertools/tracer`{.copyMe}
 
 See the [Features](../features/index.md) page for a complete list of available utilities.
 
@@ -23,10 +23,10 @@ Some features use additional dependencies like the AWS SDK for JavaScript v3, wh
 
 | Feature                                                              | Install                                                                                                           | Default dependency  |
 | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------- |
-| **[Tracer](../features/tracer.md)**                                   | **`npm i @aws-lambda-powertools/tracer`**{.copyMe}:clipboard:                                                     | `aws-xray-sdk-core` |
-| **[Idempotency](../features/idempotency.md)**                         | **`npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb`**{.copyMe}:clipboard: |                     |
-| **[Parameters (SSM)](../features/parameters.md)**                     | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-ssm`**{.copyMe}:clipboard:                             |                     |
-| **[Parameters (Secrets Manager)](../features/parameters.md)**         | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-secrets-manager`**{.copyMe}:clipboard:                 |                     |
-| **[Parameters (AppConfig)](../features/parameters.md)**               | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-appconfigdata`**{.copyMe}:clipboard:                   |                     |
-| **[Parser](../features/parser.md)**                                   | **`npm i @aws-lambda-powertools/parser zod@~3`**{.copyMe}:clipboard:                                              |                     |
-| **[Validation](../features/validation.md)**                           | **`npm i @aws-lambda-powertools/validation`**{.copyMe}:clipboard:                                                 | `ajv`               |
+| **[Tracer](../features/tracer.md)**                                   | **`npm i @aws-lambda-powertools/tracer`**{.copyMe}                                                     | `aws-xray-sdk-core` |
+| **[Idempotency](../features/idempotency.md)**                         | **`npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb`**{.copyMe} |                     |
+| **[Parameters (SSM)](../features/parameters.md)**                     | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-ssm`**{.copyMe}                             |                     |
+| **[Parameters (Secrets Manager)](../features/parameters.md)**         | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-secrets-manager`**{.copyMe}                 |                     |
+| **[Parameters (AppConfig)](../features/parameters.md)**               | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-appconfigdata`**{.copyMe}                   |                     |
+| **[Parser](../features/parser.md)**                                   | **`npm i @aws-lambda-powertools/parser zod@~3`**{.copyMe}                                              |                     |
+| **[Validation](../features/validation.md)**                           | **`npm i @aws-lambda-powertools/validation`**{.copyMe}                                                 | `ajv`               |

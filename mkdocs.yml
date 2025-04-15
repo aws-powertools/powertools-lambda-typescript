@@ -33,8 +33,8 @@ nav:
   - Homepage:
       - index.md
       - Getting Started:
-          - Navigating the toolkit: getting-started/navigating-the-toolkit.md
           - Installation: getting-started/installation.md
+          - Usage patterns: getting-started/usage-patterns.md
           - TypeScript settings: getting-started/typescript-settings.md
           - Lambda layers: getting-started/lambda-layers.md
           - Workshop: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank

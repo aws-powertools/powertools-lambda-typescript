@@ -11,7 +11,7 @@ You can add our layer both in the [AWS Lambda Console _(under `Layers`)_](https:
 
 ### Layer ARNs
 
-We publish the Lambda Layer for Powertools for AWS Lambda (TypeScript) in all commercial regions and AWS GovCloud (US) regions.
+We publish the Lambda Layer for Powertools for AWS Lambda in all commercial regions and AWS GovCloud (US) regions.
 
 ???+ tip "Spotted a missing region?"
 
@@ -89,6 +89,30 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
 
 ```bash title="AWS CLI command to download Lambda Layer content"
 aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:24 --region {aws::region}
+
+# output
+{  
+    "Content": {,
+        "Location": "https://awslambda-eu-west-1-layers.s3.eu-west-1.amazonaws.com/...",
+        "CodeSha256": "gwGIE8w0JckdDeDCTX6FbWObb2uIDwgiaAq78gMWDyA=",
+        "CodeSize": 3548324
+    },
+    "LayerArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2",
+    "LayerVersionArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:24",
+    "Description": "Powertools for AWS Lambda (TypeScript) version 2.18.0",
+    "CreatedDate": "2025-04-08T07:38:30.424+0000",
+    "Version": 24,
+    "CompatibleRuntimes": [
+        "nodejs18.x",
+        "nodejs20.x",
+        "nodejs22.x"
+    ],
+    "LicenseInfo": "MIT-0",
+    "CompatibleArchitectures": [
+        "arm64",
+        "x86_64"
+    ]
+}
 ```
 
 ### How to use with Infrastructure as Code
@@ -112,7 +136,7 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
           `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:24`
         );
         
-        new Function(this, 'Function', {
+        new NodejsFunction(this, 'Function', {
           runtime: Runtime.NODEJS_22_X,
           // Add the Layer to a Lambda function
           layers: [powertoolsLayer],
@@ -137,9 +161,9 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
     });
     ```
 
-    Check the [documentation](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_nodejs.BundlingOptions.html#externalmodules) for more details.
+    Check the AWS CDK `NodeJsFunction` [documentation](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_nodejs.BundlingOptions.html#externalmodules) for more details.  
 
-    You can also use AWS SSM Parameter Store to dynamically add Powertools for AWS Lambda and resolve the Layer ARN from SSM Parameter Store in your code, allowing you to pin to `latest` or a specific Powertools for AWS Lambda version.
+    You can also use AWS SSM Parameter Store to dynamically resolve the Layer ARN from SSM Parameter Store and add the toolkit in your code, allowing you to pin to `latest` or a specific Powertools for AWS version.  
 
     ```typescript hl_lines="5 15-17"
     import { Stack } from 'aws-cdk-lib';
@@ -161,7 +185,7 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
           })
         );
         
-        new Function(this, 'Function', {
+        new NodejsFunction(this, 'Function', {
           runtime: Runtime.NODEJS_22_X,
           // Add the Layer to a Lambda function
           layers: [powertoolsLayer],

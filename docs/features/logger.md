@@ -115,22 +115,11 @@ This functionality will include the following keys in your structured logs:
 
 === "Middy Middleware"
 
-    !!! tip "A note about Middy"
-        We guarantee support for Middy.js `v4.x` through `v6.x` versions.
-        Check their docs to learn more about [Middy and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
-
     ```typescript hl_lines="2 14"
     --8<-- "examples/snippets/logger/middy.ts"
     ```
 
 === "Decorator"
-
-    !!! note
-        The class method decorators in this project follow the experimental implementation enabled via the [`experimentalDecorators` compiler option](https://www.typescriptlang.org/tsconfig#experimentalDecorators) in TypeScript.
-
-        Additionally, they are implemented to decorate async methods. When decorating a synchronous one, the decorator replaces its implementation with an async one causing the caller to have to `await` the now decorated method.
-
-        If this is not the desired behavior, you can call the `logger.injectLambdaContext()` method directly in your handler.
 
     ```typescript hl_lines="8"
     --8<-- "examples/snippets/logger/decorator.ts"

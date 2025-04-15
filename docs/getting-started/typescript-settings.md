@@ -1,21 +1,19 @@
 ---
 title: Typescript Settings
-description: Configuration settings for using Powertools with TypeScript
+description: Configuration settings for using with TypeScript
 ---
 
 <!-- markdownlint-disable MD043 -->
 
 While you can use the toolkit with JavaScript, using TypeScript is recommended.
 
-The toolkit is written in TypeScript, and the type definitions are included in the package. This means you can take advantage of TypeScript's static typing and other features when using it.
-
-We officially support TypeScript 5.0 and later, and our development is done using the latest version of TypeScript. We recommend using the latest version of TypeScript to take advantage of the latest features and improvements.
+The toolkit is written in TypeScript with bundled type definitions. We officially support TypeScript 5.0+ and recommend using the latest version to benefit from all features and improvements.
 
 ## TypeScript Configuration
 
-The toolkit should work with most TypeScript configurations. The only requirement is that `experimentalDecorators` is set to `true` if you are using class method decorators. This is because we only support the legacy decorator proposal for now. We will support the new decorator proposal in the next major version of Powertools for AWS Lambda (TypeScript).
+If you use class method decorators, you must set `experimentalDecorators: true` in your tsconfig.json. This is because we currently support only the legacy decorator syntax. Support for the new decorator syntax will come in our next major release.  
 
-If you are looking for a starting point, the following `tsconfig.json` file is a good place to start. It includes the recommended settings along with some modern TypeScript features.
+The following `tsconfig.json` file is a good place to start and includes the recommended settings along with some modern TypeScript features.
 
 ```json
 {

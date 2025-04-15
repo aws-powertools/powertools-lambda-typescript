@@ -18,6 +18,8 @@ You can use Powertools for AWS Lambda in both TypeScript and JavaScript code bas
 
     Adopt one, a few, or all industry practices. **Progressively**.
 
+    [:octicons-arrow-right-24: All features](./features/index.md)
+
 - :heart:{ .lg .middle } __Support this project__
 
     ---

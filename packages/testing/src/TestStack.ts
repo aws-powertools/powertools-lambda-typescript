@@ -4,7 +4,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   type ICloudAssemblySource,
-  RequireApproval,
   StackSelectionStrategy,
   Toolkit,
 } from '@aws-cdk/toolkit-lib';
@@ -148,7 +147,6 @@ class TestStack {
         strategy: StackSelectionStrategy.ALL_STACKS,
       },
       outputsFile: outputFilePath,
-      requireApproval: RequireApproval.NEVER,
     });
 
     this.outputs = JSON.parse(await readFile(outputFilePath, 'utf-8'))[

@@ -1451,6 +1451,14 @@ class Logger extends Utility implements LoggerInterface {
         )
       );
     }
+    const AlcLogLevel =
+      this.getEnvVarsService().getAwsLogLevel() as keyof typeof LogLevelThreshold;
+
+    if (LogLevelThreshold[AlcLogLevel] > this.#bufferConfig.bufferAtVerbosity) {
+      this.#warnOnce(
+        'Advanced Loggging Controls (ALC) Log Level is less verbose than Log Buffering Log Level. Some logs might be missing.'
+      );
+    }
 
     this.#buffer?.delete(traceId);
   }

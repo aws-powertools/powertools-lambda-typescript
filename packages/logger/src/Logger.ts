@@ -133,6 +133,13 @@ class Logger extends Utility implements LoggerInterface {
    * Log level used internally by the current instance of Logger.
    */
   private logLevel: number = LogLevelThreshold.INFO;
+
+  /**
+   * Advanced Logging Control Log Level
+   * If not a valid value this will be left undefined, even if the
+   * environment variable AWS_LAMBDA_LOG_LEVEL is set
+   */
+  #alcLogLevel?: Uppercase<LogLevel>;
   /**
    * Persistent log attributes that will be logged in all log items.
    */
@@ -819,16 +826,15 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   private awsLogLevelShortCircuit(selectedLogLevel?: string): boolean {
-    const awsLogLevel = this.getEnvVarsService().getAwsLogLevel();
-    if (this.isValidLogLevel(awsLogLevel)) {
-      this.logLevel = LogLevelThreshold[awsLogLevel];
+    if (this.#alcLogLevel !== undefined) {
+      this.logLevel = LogLevelThreshold[this.#alcLogLevel];
 
       if (
         this.isValidLogLevel(selectedLogLevel) &&
         this.logLevel > LogLevelThreshold[selectedLogLevel]
       ) {
         this.#warnOnce(
-          `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${awsLogLevel}). This can lead to data loss, consider adjusting them.`
+          `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${this.#alcLogLevel}). This can lead to data loss, consider adjusting them.`
         );
       }
 
@@ -1306,6 +1312,11 @@ class Logger extends Utility implements LoggerInterface {
     );
 
     // configurations that affect Logger behavior
+    const AlcLogLevel = this.getEnvVarsService().getAwsLogLevel();
+    if (this.isValidLogLevel(AlcLogLevel)) {
+      this.#alcLogLevel = AlcLogLevel;
+    }
+
     this.setLogEvent();
     this.setInitialLogLevel(logLevel);
     this.setInitialSampleRate(sampleRateValue);
@@ -1378,6 +1389,16 @@ class Logger extends Utility implements LoggerInterface {
       this.#bufferConfig.bufferAtVerbosity =
         LogLevelThreshold[bufferAtLogLevel];
     }
+
+    if (
+      this.#alcLogLevel !== undefined &&
+      LogLevelThreshold[this.#alcLogLevel] >
+        this.#bufferConfig.bufferAtVerbosity
+    ) {
+      this.#warnOnce(
+        'Advanced Loggging Controls (ALC) Log Level is less verbose than Log Buffering Log Level. Buffered logs will be filtered by ALC'
+      );
+    }
   }
 
   /**
@@ -1441,6 +1462,16 @@ class Logger extends Utility implements LoggerInterface {
           'Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer',
           []
         )
+      );
+    }
+
+    if (
+      this.#alcLogLevel !== undefined &&
+      LogLevelThreshold[this.#alcLogLevel] >
+        this.#bufferConfig.bufferAtVerbosity
+    ) {
+      this.#warnOnce(
+        'Advanced Loggging Controls (ALC) Log Level is less verbose than Log Buffering Log Level. Some logs might be missing.'
       );
     }
 

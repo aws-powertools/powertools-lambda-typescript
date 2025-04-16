@@ -92,6 +92,51 @@ describe('Buffer logs', () => {
     );
   });
 
+  it('outputs a warning when the Advanced Logging Configuration Log Level is less verbose than the Log Buffering Log Level', () => {
+    // Assemble
+    process.env.AWS_LAMBDA_LOG_LEVEL = 'INFO';
+    const logger = new Logger({
+      logLevel: LogLevel.DEBUG,
+      logBufferOptions: { enabled: true, bufferAtVerbosity: 'DEBUG' },
+    });
+
+    // Act
+    logger.debug('This is a debug');
+
+    // Assess
+    expect(console.warn).toHaveLogged(
+      expect.objectContaining({
+        message: expect.stringContaining(
+          'Advanced Loggging Controls (ALC) Log Level is less verbose than Log Buffering Log Level. Buffered logs will be filtered by ALC'
+        ),
+        level: LogLevel.WARN,
+      })
+    );
+  });
+
+  it('When the buffer is flushed it outputs a warning if the Advanced Logging Configuration Log Level is less verbose than the Log Buffering Log Level', () => {
+    // Assemble
+    process.env.AWS_LAMBDA_LOG_LEVEL = 'INFO';
+    const logger = new Logger({
+      logLevel: LogLevel.DEBUG,
+      logBufferOptions: { enabled: true, bufferAtVerbosity: 'DEBUG' },
+    });
+
+    // Act
+    logger.debug('This is a debug');
+    logger.flushBuffer();
+
+    // Assess
+    expect(console.warn).toHaveLogged(
+      expect.objectContaining({
+        message: expect.stringContaining(
+          'Advanced Loggging Controls (ALC) Log Level is less verbose than Log Buffering Log Level. Some logs might be missing.'
+        ),
+        level: LogLevel.WARN,
+      })
+    );
+  });
+
   it('outputs a warning when there is an error buffering the log', () => {
     // Prepare
     const logger = new Logger({ logBufferOptions: { maxBytes: 100 } });

@@ -104,7 +104,8 @@
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": ">=3.x",
     "@aws-sdk/lib-dynamodb": ">=3.x",
-    "@middy/core": "4.x || 5.x || 6.x"
+    "@middy/core": "4.x || 5.x || 6.x",
+    "@redis/client": "^1.6.0"
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-dynamodb": {

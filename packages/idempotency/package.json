@@ -116,6 +116,9 @@
     },
     "@middy/core": {
       "optional": true
+    },
+    "@redis/client": {
+      "optional": true
     }
   },
   "keywords": [

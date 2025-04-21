@@ -61,7 +61,7 @@
     "middy4": "npm:@middy/core@^4.7.0",
     "middy5": "npm:@middy/core@^5.4.3",
     "middy6": "npm:@middy/core@^6.0.0",
-    "typedoc": "^0.28.2",
+    "typedoc": "^0.28.3",
     "typedoc-plugin-missing-exports": "^4.0.0",
     "typedoc-plugin-zod": "^1.4.1",
     "typescript": "^5.8.3",

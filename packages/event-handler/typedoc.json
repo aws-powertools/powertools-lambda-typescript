@@ -1,0 +1,10 @@
+{
+  "extends": [
+    "../../typedoc.base.json"
+  ],
+  "entryPoints": [
+    "./src/appsync-events/index.ts",
+    "./src/types/index.ts",
+  ],
+  "readme": "README.md"
+}

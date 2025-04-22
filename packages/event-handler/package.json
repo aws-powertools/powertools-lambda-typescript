@@ -18,7 +18,7 @@
     "test:e2e": "echo \"Not implemented\"",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
-    "build": "echo \"Not implemented\"",
+    "build": "npm run build:esm & npm run build:cjs",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
@@ -27,19 +27,27 @@
   "license": "MIT-0",
   "type": "module",
   "exports": {
-    ".": {
+    "./appsync-events": {
       "require": {
-        "types": "./lib/cjs/index.d.ts",
-        "default": "./lib/cjs/index.js"
+        "types": "./lib/cjs/appsync-events/index.d.ts",
+        "default": "./lib/cjs/appsync-events/index.js"
       },
       "import": {
-        "types": "./lib/esm/index.d.ts",
-        "default": "./lib/esm/index.js"
+        "types": "./lib/esm/appsync-events/index.d.ts",
+        "default": "./lib/esm/appsync-events/index.js"
+      }
+    },
+    "./types": {
+      "require": {
+        "types": "./lib/cjs/types/index.d.ts",
+        "default": "./lib/cjs/types/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/types/index.d.ts",
+        "default": "./lib/esm/types/index.js"
       }
     }
   },
-  "types": "./lib/cjs/index.d.ts",
-  "main": "./lib/cjs/index.js",
   "files": [
     "lib"
   ],
@@ -63,6 +71,7 @@
     "event",
     "handler",
     "nodejs",
-    "serverless"
+    "serverless",
+    "appsync-events"
   ]
 }

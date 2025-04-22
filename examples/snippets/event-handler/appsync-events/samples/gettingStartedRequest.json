@@ -1,0 +1,42 @@
+{
+  "identity": "None",
+  "result": "None",
+  "request": {
+    "headers": {
+      "x-forwarded-for": "1.1.1.1, 2.2.2.2",
+      "cloudfront-viewer-country": "US"
+    },
+    "domainName": "None"
+  },
+  "info": {
+    "channel": {
+      "path": "/default/channel",
+      "segments": [
+        "default",
+        "channel"
+      ]
+    },
+    "channelNamespace": {
+      "name": "default"
+    },
+    "operation": "PUBLISH"
+  },
+  "error": "None",
+  "prev": "None",
+  "stash": {},
+  "outErrors": [],
+  "events": [
+    {
+      "payload": {
+        "data": "data_1"
+      },
+      "id": "1"
+    },
+    {
+      "payload": {
+        "data": "data_2"
+      },
+      "id": "2"
+    }
+  ]
+}

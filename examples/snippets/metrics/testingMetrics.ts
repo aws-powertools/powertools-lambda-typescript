@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.hoisted(() => {
   process.env.POWERTOOLS_DEV = 'true';
-  process.env.POWERTOOLS_METRICS_ENABLED = 'true';
+  process.env.POWERTOOLS_METRICS_DISABLED = 'false';
 });
 
 describe('Metrics tests', () => {

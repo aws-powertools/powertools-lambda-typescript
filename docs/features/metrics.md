@@ -493,7 +493,7 @@ You can customize how Metrics logs warnings and debug messages to standard outpu
 
 When unit testing your code that uses the Metrics utility, you may want to silence the logs emitted by the utility. To do so, you can set the `POWERTOOLS_DEV` environment variable to `true`. This instructs the utility to not emit any logs to standard output.
 
-If instead you want to spy on the logs emitted by the utility, you must set the `POWERTOOLS_DEV` environment variable to `true` in conjunction with the `POWERTOOLS_METRICS_ENABLED` environment variable also set to `true`.
+If instead you want to spy on the logs emitted by the utility, you must set the `POWERTOOLS_DEV` environment variable to `true` in conjunction with the `POWERTOOLS_METRICS_DISABLED` environment variable set to `false`.
 
 When `POWERTOOLS_DEV` is enabled, Metrics uses the global `console` to emit metrics to standard out. This allows you to easily spy on the logs emitted and make assertions on them.
 

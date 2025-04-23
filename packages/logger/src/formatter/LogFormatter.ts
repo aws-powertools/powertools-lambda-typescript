@@ -131,6 +131,13 @@ abstract class LogFormatter {
       }
     }
 
+    if (
+      this.envVarsService?.isDevMode() &&
+      typeof formattedError.stack === 'string'
+    ) {
+      formattedError.stack = formattedError.stack.split('\n');
+    }
+
     return formattedError;
   }
 

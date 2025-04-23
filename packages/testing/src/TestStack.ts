@@ -134,8 +134,11 @@ class TestStack {
    * It returns the outputs of the deployed stack.
    */
   public async deploy(): Promise<Record<string, string>> {
-    const outdir = join(tmpdir(), 'powertools-e2e-testing');
-    const outputFilePath = join(outdir, `${this.stack.stackName}.outputs.json`);
+    const outdir = join(
+      tmpdir(),
+      `${this.stack.stackName}-powertools-e2e-testing`
+    );
+    const outputFilePath = join(outdir, 'outputs.json');
     this.#cx = await this.#cli.fromAssemblyBuilder(
       async () => this.app.synth(),
       {

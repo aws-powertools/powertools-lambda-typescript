@@ -116,7 +116,10 @@ abstract class LogFormatter {
       name,
       location: this.getCodeLocation(error.stack),
       message,
-      stack,
+      stack:
+        this.envVarsService?.isDevMode() && typeof stack === 'string'
+          ? stack?.split('\n')
+          : stack,
       cause:
         error.cause instanceof Error
           ? this.formatError(error.cause)
@@ -129,13 +132,6 @@ abstract class LogFormatter {
       ) {
         formattedError[key] = (errorAttributes as Record<string, unknown>)[key];
       }
-    }
-
-    if (
-      this.envVarsService?.isDevMode() &&
-      typeof formattedError.stack === 'string'
-    ) {
-      formattedError.stack = formattedError.stack.split('\n');
     }
 
     return formattedError;

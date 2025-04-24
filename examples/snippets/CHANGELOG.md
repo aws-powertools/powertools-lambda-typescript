@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.19.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.18.0...v2.19.0) (2025-04-24)
+
+
+### Features
+
+* **event-handler:** AppSync Events resolver ([#3858](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3858)) ([01f8a68](https://github.com/aws-powertools/powertools-lambda-typescript/commit/01f8a687a0c033cdc5d55c50bc7e6d0566f485cb))
+
+
+
+
+
 # [2.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.17.0...v2.18.0) (2025-04-07)
 
 **Note:** Version bump only for package code-snippets

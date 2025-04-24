@@ -10,11 +10,7 @@ import type {
 } from '../types/Tools';
 
 export class BedrockAgentFunctionResolver {
-  public constructor() {
-    this.registry = new Map<string, ToolDefinition>();
-  }
-
-  protected registry: ToolRegistry;
+  protected registry: ToolRegistry = new Map<string, ToolDefinition>();
 
   public tool(fn: ToolFunction, config: ToolConfig) {
     this.registry.set(config.name, { function: fn, config });
@@ -42,7 +38,7 @@ export class BedrockAgentFunctionResolver {
       return acc;
     }, {});
 
-    console.debug(`Callin tool ${tool.config.name}`);
+    console.debug(`Calling tool ${tool.config.name}`);
     const response = tool.function(parameterObject);
 
     return this.response({

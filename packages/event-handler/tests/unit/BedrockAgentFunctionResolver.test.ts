@@ -15,8 +15,8 @@ const baseBedrockAgentFunctionRequest = {
   actionGroup: 'string',
   function: 'string',
   parameters: [],
-  sessionAttributes: undefined,
-  promptSessionAttributes: undefined,
+  sessionAttributes: {},
+  promptSessionAttributes: {},
 };
 
 describe('BedrockAgentFunctionResolver', () => {

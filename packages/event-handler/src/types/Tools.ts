@@ -1,5 +1,3 @@
-import { number } from 'zod';
-
 type ToolConfig = {
   name: string;
   definition: string;
@@ -39,7 +37,7 @@ type BedrockAgentFunctionRequest = {
   promptSessionAttributes: Attributes;
 };
 
-type Attributes = Map<string, string> | undefined;
+type Attributes = Record<string, string>;
 
 type BedrockAgentFunctionResponse = {
   messageVersion: string;

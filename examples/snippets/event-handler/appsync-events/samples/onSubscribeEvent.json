@@ -1,0 +1,28 @@
+{
+  "identity": null,
+  "result": null,
+  "request": {
+    "headers": {
+      "key": "value"
+    },
+    "domainName": null
+  },
+  "info": {
+    "channel": {
+      "path": "/default/bar",
+      "segments": [
+        "default",
+        "bar"
+      ]
+    },
+    "channelNamespace": {
+      "name": "default"
+    },
+    "operation": "SUBSCRIBE"
+  },
+  "error": null,
+  "prev": null,
+  "stash": {},
+  "outErrors": [],
+  "events": null
+}

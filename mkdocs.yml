@@ -43,6 +43,8 @@ nav:
           - features/tracer.md
           - features/logger.md
           - features/metrics.md
+          - Event Handler:
+            - features/event-handler/appsync-events.md
           - features/parameters.md
           - features/idempotency.md
           - features/batch.md

@@ -6,7 +6,6 @@
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
-  "private": true,
   "scripts": {
     "test": "vitest --run",
     "test:unit": "vitest --run",

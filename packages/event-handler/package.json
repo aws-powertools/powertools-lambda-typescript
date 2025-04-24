@@ -6,6 +6,9 @@
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "vitest --run",
     "test:unit": "vitest --run",

@@ -83,4 +83,43 @@ describe('BedrockAgentFunctionResolver', () => {
 
     expect(noop).toBeCalled();
   });
+
+  it('responds with the correct response structure when a tool is successfully invoked', () => {
+    const resolver = new WrappedResolver();
+    const uppercaser = ({ str }): string => str.toUpperCase();
+
+    resolver.tool(uppercaser, {
+      name: 'uppercaser',
+      definition: 'Converts a string to uppercase',
+      validation: { input: {}, output: {} },
+      requireConfirmation: false,
+    });
+
+    // Act
+    const response = resolver.resolve(
+      {
+        ...baseBedrockAgentFunctionRequest,
+        function: 'uppercaser',
+        parameters: [{ name: 'str', value: 'hello world', type: 'string' }],
+      },
+      context
+    );
+
+    expect(response).toEqual(
+      expect.objectContaining({
+        messageVersion: '1.0',
+        response: {
+          actionGroup: baseBedrockAgentFunctionRequest.actionGroup,
+          function: 'uppercaser',
+          functionResponse: {
+            responseBody: {
+              TEXT: {
+                body: 'HELLO WORLD',
+              },
+            },
+          },
+        },
+      })
+    );
+  });
 });

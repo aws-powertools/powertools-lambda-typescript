@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.19.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.18.0...v2.19.0) (2025-04-24)
+
+
+### Bug Fixes
+
+* **logger:** warn customers when the ALC log level is less verbose than log buffer ([#3834](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3834)) ([04f64ce](https://github.com/aws-powertools/powertools-lambda-typescript/commit/04f64ce23716037d6684fd4f6859bb8df8743911))
+* **logger:** warn only once on ALC log level mismatch ([#3816](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3816)) ([1e330b3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1e330b3f96f0ae9f18dd09e2856658b22dbfd930))
+
+
+
+
+
 # [2.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.17.0...v2.18.0) (2025-04-07)
 
 **Note:** Version bump only for package @aws-lambda-powertools/logger

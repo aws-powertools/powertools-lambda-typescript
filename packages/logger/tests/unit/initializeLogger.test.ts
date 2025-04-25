@@ -163,4 +163,27 @@ describe('Log levels', () => {
 
     vi.useRealTimers();
   });
+
+  it('splits the stack trace into an array when POWERTOOLS_DEV is set', () => {
+    // Prepare
+    const logger = new Logger();
+    const err = new Error('Hello, world!');
+
+    // Act
+    logger.error('Error occured', err);
+
+    // Assess
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        error: {
+          location: expect.any(String),
+          message: 'Hello, world!',
+          name: 'Error',
+          stack: expect.any(Array),
+        },
+      })
+    );
+  });
 });

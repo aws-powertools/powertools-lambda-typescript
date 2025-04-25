@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/idempotency",
-  "version": "2.18.0",
+  "version": "2.19.0",
   "description": "The idempotency package for the Powertools for AWS Lambda (TypeScript) library. It provides options to make your Lambda functions idempotent and safe to retry.",
   "author": {
     "name": "Amazon Web Services",
@@ -98,8 +98,8 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.18.0",
-    "@aws-lambda-powertools/jmespath": "^2.18.0"
+    "@aws-lambda-powertools/commons": "^2.19.0",
+    "@aws-lambda-powertools/jmespath": "^2.19.0"
   },
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": ">=3.x",
@@ -127,8 +127,8 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.788.0",
-    "@aws-sdk/lib-dynamodb": "^3.789.0",
+    "@aws-sdk/client-dynamodb": "^3.796.0",
+    "@aws-sdk/lib-dynamodb": "^3.796.0",
     "aws-sdk-client-mock": "^4.1.0"
   }
 }

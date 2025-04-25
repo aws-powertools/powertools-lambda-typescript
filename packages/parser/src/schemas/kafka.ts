@@ -9,9 +9,12 @@ const KafkaRecordSchema = z.object({
   offset: z.number(),
   timestamp: z.number(),
   timestampType: z.string(),
-  key: z.string().transform((key) => {
-    return Buffer.from(key, 'base64').toString();
-  }),
+  key: z
+    .string()
+    .transform((key) => {
+      return Buffer.from(key, 'base64').toString();
+    })
+    .optional(),
   value: z.string().transform((value) => {
     return Buffer.from(value, 'base64').toString();
   }),

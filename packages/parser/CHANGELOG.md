@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.19.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.18.0...v2.19.0) (2025-04-24)
+
+
+### Bug Fixes
+
+* **parser:** Make Kafka key property optional ([#3855](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3855)) ([68fa1eb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/68fa1eb66abf4ccdb2b4f3789862e2380b8340aa))
+
+
+
+
+
 # [2.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.17.0...v2.18.0) (2025-04-07)
 
 

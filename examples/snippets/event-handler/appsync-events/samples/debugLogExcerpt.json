@@ -1,0 +1,17 @@
+[
+  {
+    "level": "DEBUG",
+    "message": "Registering onPublish route handler for path '/default/foo' with aggregate 'false'",
+    "timestamp": "2025-04-22T13:24:34.762Z",
+    "service": "serverlessAirline",
+    "sampling_rate": 0
+  },
+  {
+    "level": "DEBUG",
+    "message": "Resolving handler for path '/default/foo'",
+    "timestamp": "2025-04-22T13:24:34.775Z",
+    "service": "serverlessAirline",
+    "sampling_rate": 0,
+    "xray_trace_id": "1-68079892-6a1723770bc0b1f348d9a7ad"
+  }
+]

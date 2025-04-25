@@ -31,6 +31,14 @@ description: Features of Powertools for AWS Lambda
 
     [:octicons-arrow-right-24: Read more](./metrics.md)
 
+- __Event Handler - AppSync Events__
+
+    ---
+
+    Event Handler for AWS AppSync real-time events
+
+    [:octicons-arrow-right-24: Read more](./event-handler/appsync-events.md)
+
 - __Parameters__
 
     ---

@@ -41,7 +41,7 @@ stateDiagram-v2
 * Easily handle publish and subscribe events with dedicated handler methods
 * Automatic routing based on namespace and channel patterns
 * Support for wildcard patterns to create catch-all handlers
-* Process events in parallel corontrol aggregation for batch processing
+* Process events in parallel and control aggregation for batch processing
 * Graceful error handling for individual events
 
 ## Terminology
@@ -58,6 +58,8 @@ It handles connection management, message broadcasting, authentication, and moni
 ### Required resources
 
 You must have an existing AppSync Events API with real-time capabilities enabled and IAM permissions to invoke your AWS Lambda function. That said, there are no additional permissions required to use Event Handler as routing requires no dependency.
+
+Additionally, if you want the result of your handler to be used by AppSync you must set the integration type to `REQUEST_RESPONSE`.
 
 === "template.yaml"
 
@@ -245,7 +247,7 @@ You can access to the original Lambda event or context for additional informatio
 
 === "Access event and context"
 
-    ```typescript hl_lines="6"
+    ```typescript hl_lines="10"
     --8<-- "examples/snippets/event-handler/appsync-events/accessEventAndContext.ts"
     ```
 

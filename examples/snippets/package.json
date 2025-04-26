@@ -25,6 +25,7 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
     "@aws-lambda-powertools/batch": "^2.19.0",
+    "@aws-lambda-powertools/event-handler": "^2.19.0",
     "@aws-lambda-powertools/idempotency": "^2.19.0",
     "@aws-lambda-powertools/jmespath": "^2.19.0",
     "@aws-lambda-powertools/logger": "^2.19.0",

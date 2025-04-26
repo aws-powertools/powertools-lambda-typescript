@@ -13,4 +13,4 @@ app.onPublish('/default/foo', (payload) => {
 });
 
 export const handler = async (event: unknown, context: Context) =>
-  await app.resolve(event, context);
+  app.resolve(event, context);

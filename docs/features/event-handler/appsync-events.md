@@ -41,7 +41,7 @@ stateDiagram-v2
 * Easily handle publish and subscribe events with dedicated handler methods
 * Automatic routing based on namespace and channel patterns
 * Support for wildcard patterns to create catch-all handlers
-* Process events in parallel control aggregation for batch processing
+* Process events in parallel and control aggregation for batch processing
 * Graceful error handling for individual events
 
 ## Terminology

@@ -31,7 +31,7 @@ interface RedisClientProtocol {
       PX?: number; // Expiration time in milliseconds
       NX?: boolean; // Only set the key if it does not already exist
     }
-  ): Promise<boolean | null>;
+  ): Promise<string | null>;
 
   /**
    * Deletes one or more keys.

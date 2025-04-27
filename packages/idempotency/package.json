@@ -52,6 +52,14 @@
       "import": "./lib/esm/types/DynamoDBPersistence.js",
       "require": "./lib/cjs/types/DynamoDBPersistence.js"
     },
+    "./redis": {
+      "import": "./lib/esm/persistence/RedisPersistenceLayer.js",
+      "require": "./lib/cjs/persistence/RedisPersistenceLayer.js"
+    },
+    "./redis/types": {
+      "import": "./lib/esm/types/RedisPersistence.js",
+      "require": "./lib/cjs/types/RedisPersistence.js"
+    },
     "./middleware": {
       "import": "./lib/esm/middleware/makeHandlerIdempotent.js",
       "require": "./lib/cjs/middleware/makeHandlerIdempotent.js"
@@ -74,6 +82,14 @@
       "dynamodb/types": [
         "lib/cjs/types/DynamoDBPersistence.d.ts",
         "lib/esm/types/DynamoDBPersistence.d.ts"
+      ],
+      "redis": [
+        "lib/cjs/persistence/RedisPersistenceLayer.d.ts",
+        "lib/esm/persistence/RedisPersistenceLayer.d.ts"
+      ],
+      "redis/types": [
+        "lib/cjs/types/RedisPersistence.d.ts",
+        "lib/esm/types/RedisPersistence.d.ts"
       ],
       "middleware": [
         "lib/cjs/middleware/makeHandlerIdempotent.d.ts",

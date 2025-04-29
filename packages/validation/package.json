@@ -67,6 +67,22 @@
       }
     }
   },
+  "typesVersions": {
+    "*": {
+      "middleware": [
+        "lib/cjs/middleware.d.ts",
+        "lib/esm/middleware.d.ts"
+      ],
+      "errors": [
+        "lib/cjs/errors.d.ts",
+        "lib/esm/errors.d.ts"
+      ],
+      "decorator": [
+        "lib/cjs/decorator.d.ts",
+        "lib/esm/decorator.d.ts"
+      ]
+    }
+  },
   "types": "./lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
   "files": [

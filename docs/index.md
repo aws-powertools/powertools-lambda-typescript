@@ -135,6 +135,9 @@ Knowing which companies are using this library is important to help prioritize t
 [**LocalStack**](https://localstack.cloud/){target="_blank" rel="nofollow"}
 { .card }
 
+[**Ours Privacy**](https://oursprivacy.com){target="_blank" rel="nofollow"}
+{ .card }
+
 [**Perfect Post**](https://www.perfectpost.fr){target="_blank" rel="nofollow"}
 { .card }
 

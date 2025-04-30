@@ -50,6 +50,18 @@
       }
     }
   },
+  "typesVersions": {
+    "*": {
+      "appsync-events": [
+        "./lib/cjs/appsync-events/index.d.ts",
+        "./lib/esm/appsync-events/index.d.ts"
+      ],
+      "types": [
+        "./lib/cjs/types/index.d.ts",
+        "./lib/esm/types/index.d.ts"
+      ]
+    }
+  },
   "files": [
     "lib"
   ],

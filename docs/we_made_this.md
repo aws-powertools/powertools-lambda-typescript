@@ -5,7 +5,7 @@ description: Blog posts, tutorials, and videos about Powertools for AWS Lambda (
 
 <!-- markdownlint-disable MD043 MD013 -->
 
-This space is dedicated to highlight our awesome community content featuring Powertools 🙏!
+This space is dedicated to highlight our awesome community content featuring Powertools for AWS 🙏!
 
 !!! info "[Get your content featured here](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=community-content&template=share_your_work.yml&title=%5BI+Made+This%5D%3A+%3CTITLE%3E){target="_blank"}!"
 
@@ -14,6 +14,20 @@ This space is dedicated to highlight our awesome community content featuring Pow
 [![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET){target="_blank"}
 
 Join us on [Discord](https://discord.gg/B8zZKbbyET){target="_blank"} to connect with the Powertools community 👋. Ask questions, learn from each other, contribute, hang out with key contributors, and more!
+
+## Tools
+
+### Powertools for AWS Lambda - MCP Server
+
+> **Author: [Michael Walmsley](https://www.linkedin.com/in/walmsles/){target="_blank"} :material-linkedin:**
+
+This project implements an MCP server that enables Large Language Models (LLMs) to search through Powertools for AWS Lambda documentation.
+
+The server accesses the live documentation `search_index.json` data and re-constructs a local search index using lunr.js. This provides an identical search experience for AI Agents and returns the exact same results as a person would get on the website.
+
+With the index being local searches are super fast and the index is cached for the life of the server to save rebuilding used indexes. Since the MCP Server uses real search data it is capable of working for any Powertools for AWS document site so naturally supports all the runtimes.
+
+* [https://github.com/serverless-dna/powertools-mcp](https://github.com/serverless-dna/powertools-mcp){target="_blank"}
 
 ## Blog posts
 

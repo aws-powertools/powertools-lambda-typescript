@@ -14,7 +14,7 @@
     "examples/**",
     "packages/testing"
   ],
-  "plugin": ["typedoc-plugin-zod", "typedoc-plugin-missing-exports"],
+  "plugin": ["typedoc-plugin-missing-exports"],
   "skipErrorChecking": true,
   "excludePrivate": true,
   "visibilityFilters": {

@@ -5,7 +5,6 @@ import type { JSONValue } from '@aws-lambda-powertools/commons/types';
  * This ensures standardization among different Redis client implementations.
  */
 interface RedisClientProtocol {
-
   /**
    * Indicates whether the connection to the Redis server is currently open and ready for commands.
    * This can be used to check the connection status before sending commands.
@@ -93,7 +92,7 @@ interface RedisPersistenceOptions extends RedisConnectionConfig {
    * A Redis client that implements the RedisClientProtocol interface.
    * If provided, all other connection configuration options will be ignored.
    */
-  client: RedisClientProtocol;
+  client?: RedisClientProtocol;
 
   /**
    * Redis JSON attribute name for expiry timestamp (default: 'expiration')

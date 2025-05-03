@@ -2,6 +2,7 @@ import { vi } from 'vitest';
 import { BasePersistenceLayer } from '../../src/persistence/BasePersistenceLayer.js';
 import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
 import type { IdempotencyRecord } from '../../src/persistence/IdempotencyRecord.js';
+import { RedisPersistenceLayer } from '../../src/persistence/RedisPersistenceLayer.js';
 
 /**
  * Dummy class to test the abstract class BasePersistenceLayer.
@@ -37,5 +38,31 @@ class DynamoDBPersistenceLayerTestClass extends DynamoDBPersistenceLayer {
     return super._updateRecord(record);
   }
 }
+/**
+ * Dummy class to test the abstract class RedisPersistenceLayer.
+ *
+ * This class is used in the unit tests.
+ */
+class RedisPersistenceLayerTestClass extends RedisPersistenceLayer {
+  public _deleteRecord(record: IdempotencyRecord): Promise<void> {
+    return super._deleteRecord(record);
+  }
 
-export { PersistenceLayerTestClass, DynamoDBPersistenceLayerTestClass };
+  public _getRecord(idempotencyKey: string): Promise<IdempotencyRecord> {
+    return super._getRecord(idempotencyKey);
+  }
+
+  public _putRecord(_record: IdempotencyRecord): Promise<void> {
+    return super._putRecord(_record);
+  }
+
+  public _updateRecord(record: IdempotencyRecord): Promise<void> {
+    return super._updateRecord(record);
+  }
+}
+
+export {
+  PersistenceLayerTestClass,
+  DynamoDBPersistenceLayerTestClass,
+  RedisPersistenceLayerTestClass,
+};

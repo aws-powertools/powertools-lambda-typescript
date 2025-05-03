@@ -6,11 +6,6 @@ import type { JSONValue } from '@aws-lambda-powertools/commons/types';
  */
 interface RedisClientProtocol {
   /**
-   * Indicates whether the connection to the Redis server is currently open and ready for commands.
-   * This can be used to check the connection status before sending commands.
-   */
-  isOpen: boolean;
-  /**
    * Retrieves the value associated with the given key.
    * @param name The key to get the value for
    */

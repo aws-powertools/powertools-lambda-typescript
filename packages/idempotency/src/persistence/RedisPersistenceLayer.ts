@@ -1,20 +1,20 @@
+import type { JSONObject } from '@aws-lambda-powertools/commons/types';
+import type { RedisClientType, RedisClusterType } from '@redis/client';
+import { IdempotencyRecordStatus } from '../constants.js';
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
   IdempotencyPersistenceConnectionError,
   IdempotencyPersistenceConsistencyError,
 } from '../errors.js';
+import type { IdempotencyRecordStatusValue } from '../types/IdempotencyRecord.js';
 import type {
   RedisClientProtocol,
   RedisPersistenceOptions,
 } from '../types/RedisPersistence.js';
-import type { RedisClientType, RedisClusterType } from '@redis/client';
-import type { JSONObject } from '@aws-lambda-powertools/commons/types';
 import { BasePersistenceLayer } from './BasePersistenceLayer.js';
 import { IdempotencyRecord } from './IdempotencyRecord.js';
-import { IdempotencyRecordStatus } from '../constants.js';
 import RedisConnection from './RedisConnection.js';
-import type { IdempotencyRecordStatusValue } from '../types/IdempotencyRecord.js';
 
 class RedisPersistenceLayer extends BasePersistenceLayer {
   readonly #client: RedisClientProtocol | RedisClientType | RedisClusterType;
@@ -43,15 +43,18 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
   }
 
   /**
-   * Initializes the Redis client connection.
-   * This method is called when the persistence layer is created.
-   * It checks if the client is already open, and if not, it attempts to connect.
-   * If the connection fails, it throws an IdempotencyPersistenceConnectionError.
+   * Initialize Redis client connection if default client is being used.
+   *
+   * This method establishes a connection to the Redis server when using the default Redis client.
+   * For custom clients, this method performs no connection initialization as that's expected to be
+   * handled externally.
+   *
+   * @throws {IdempotencyPersistenceConnectionError} When connection to Redis fails
    */
   public async init() {
-    if (!this.#client.isOpen) {
+    if (this.#isDefaultRedisClient(this.#client)) {
       try {
-        await (this.#client as RedisClusterType | RedisClientType).connect();
+        await this.#client.connect();
       } catch (error) {
         console.error('Failed to connect to Redis:', error);
         throw new IdempotencyPersistenceConnectionError(
@@ -300,6 +303,21 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
     throw new IdempotencyItemAlreadyExistsError(
       'Lock acquisition failed, raise to retry'
     );
+  }
+
+  /**
+   * Determines if the provided Redis client is a default Redis client.
+   *
+   * This method checks if the provided client is an instance of the default Redis client
+   * by verifying the presence of the 'isOpen' property, which is specific to
+   * RedisClientType or RedisClusterType from the @redis/client package.
+   *
+   * @param client - The Redis client to check
+   */
+  #isDefaultRedisClient(
+    client: RedisClientProtocol | RedisClientType | RedisClusterType
+  ): client is RedisClientType | RedisClusterType {
+    return 'isOpen' in client;
   }
 }
 

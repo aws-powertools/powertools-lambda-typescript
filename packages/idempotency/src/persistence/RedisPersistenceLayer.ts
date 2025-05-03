@@ -43,16 +43,18 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
   }
 
   /**
-   * Initialize Redis client connection if default client is being used.
+   * Initializes the Redis connection if it's the default Redis client and not already open.
    *
-   * This method establishes a connection to the Redis server when using the default Redis client.
-   * For custom clients, this method performs no connection initialization as that's expected to be
-   * handled externally.
+   * This method attempts to connect to Redis if necessary. If using a custom Redis client,
+   * it assumes the client is already initialized.
    *
-   * @throws {IdempotencyPersistenceConnectionError} When connection to Redis fails
+   * @throws {IdempotencyPersistenceConnectionError} When the connection to Redis fails
    */
   public async init() {
-    if (this.#isDefaultRedisClient(this.#client)) {
+    if (
+      this.#isDefaultRedisClient(this.#client) &&
+      this.#client.isOpen === false
+    ) {
       try {
         await this.#client.connect();
       } catch (error) {

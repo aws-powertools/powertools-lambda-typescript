@@ -149,7 +149,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
             status: IdempotencyRecordStatus.INPROGRESS,
             expiration: record.expiryTimestamp,
           }),
-          expect.objectContaining({ EX: expect.any(Number), NX: true })
+          { EX: 10, NX: true }
         );
       });
 
@@ -180,6 +180,37 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
           }),
           { EX: 10, NX: true }
         );
+      });
+
+      it('puts record in Redis when using payload validation', async () => {
+        // Prepare
+        const layer = new RedisPersistenceLayerTestClass({});
+        await layer.init();
+        const persistenceLayerSpy = vi
+          .spyOn(layer, 'isPayloadValidationEnabled')
+          .mockReturnValue(true);
+        const expiryTimestamp = getFutureTimestamp(10);
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.INPROGRESS,
+          expiryTimestamp,
+          payloadHash: 'someHash',
+        });
+
+        // Act
+        await layer._putRecord(record);
+
+        // Assess
+        expect(mockDefaultClient.set).toHaveBeenCalledWith(
+          dummyKey,
+          JSON.stringify({
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiration: expiryTimestamp,
+            validation: 'someHash',
+          }),
+          { EX: 10, NX: true }
+        );
+        persistenceLayerSpy.mockRestore();
       });
 
       it('throws error when trying to put a non-INPROGRESS record', async () => {

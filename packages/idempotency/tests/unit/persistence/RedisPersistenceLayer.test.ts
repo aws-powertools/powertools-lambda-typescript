@@ -135,21 +135,19 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
     });
   });
 
-  describe('Method: _putRecord', () => {
-    const testScenarios = [
-      {
-        name: 'when default Redis client is used',
-        client: mockDefaultClient,
-        getLayerConfig: () => ({}),
-      },
-      {
-        name: 'when a user-provided client is used',
-        client: mockUserProvidedClient,
-        getLayerConfig: () => ({ client: mockUserProvidedClient }),
-      },
-    ];
-
-    describe.each(testScenarios)('$name', ({ client, getLayerConfig }) => {
+  describe.each([
+    {
+      name: 'when default Redis client is used',
+      client: mockDefaultClient,
+      getLayerConfig: () => ({}),
+    },
+    {
+      name: 'when a user-provided client is used',
+      client: mockUserProvidedClient,
+      getLayerConfig: () => ({ client: mockUserProvidedClient }),
+    },
+  ])('$name', ({ client, getLayerConfig }) => {
+    describe('Method: _putRecord', () => {
       it('puts a record with INPROGRESS status into Redis', async () => {
         // Prepare
         const layer = new RedisPersistenceLayerTestClass(getLayerConfig());

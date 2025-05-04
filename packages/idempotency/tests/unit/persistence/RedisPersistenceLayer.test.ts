@@ -1,6 +1,8 @@
 import {
   type Mock,
+  afterAll,
   afterEach,
+  beforeAll,
   beforeEach,
   describe,
   expect,
@@ -17,7 +19,7 @@ import { RedisPersistenceLayerTestClass } from '../../helpers/idempotencyUtils.j
 vi.mock('../../../src/persistence/RedisConnection.js');
 
 const getFutureTimestamp = (seconds: number): number =>
-  Math.floor(Date.now() / 1000) + seconds;
+  new Date().getTime() + seconds * 1000;
 
 describe('Class: RedisPersistenceLayerTestClass', () => {
   const mockDefaultClientConnect = vi.fn().mockResolvedValue(true);
@@ -36,6 +38,10 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
     del: vi.fn(),
   };
 
+  beforeAll(() => {
+    vi.useFakeTimers().setSystemTime(new Date());
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -46,6 +52,10 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    vi.useRealTimers();
   });
 
   describe('Method: init', () => {
@@ -233,6 +243,125 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
             status,
           }),
           { EX: 60 * 60, NX: true }
+        );
+      });
+
+      it('handles orphaned records by acquiring a lock and updating', async () => {
+        // Prepare
+        const layer = new RedisPersistenceLayerTestClass({});
+        await layer.init();
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.INPROGRESS,
+          expiryTimestamp: getFutureTimestamp(10),
+        });
+
+        mockDefaultClient.set
+          .mockResolvedValueOnce(null)
+          .mockResolvedValueOnce('OK');
+        mockDefaultClient.get.mockResolvedValueOnce(
+          JSON.stringify({
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiration: getFutureTimestamp(-10),
+          })
+        );
+        const consoleDebugSpy = vi.spyOn(console, 'debug');
+
+        // Act
+        await layer._putRecord(record);
+
+        // Assess
+        expect(consoleDebugSpy).toHaveBeenCalledWith(
+          'Acquiring lock to overwrite orphan record'
+        );
+        expect(mockDefaultClient.set).toHaveBeenCalledWith(
+          `${dummyKey}:lock`,
+          'true',
+          expect.objectContaining({ EX: 10, NX: true })
+        );
+        expect(consoleDebugSpy).toHaveBeenCalledWith(
+          'Lock acquired, updating record'
+        );
+        expect(mockDefaultClient.set).toHaveBeenCalledWith(
+          dummyKey,
+          JSON.stringify({
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiration: record.expiryTimestamp,
+          }),
+          { EX: 10 }
+        );
+      });
+
+      it('handles orphaned records by acquiring a lock but it fails and throw error', async () => {
+        // Prepare
+        const layer = new RedisPersistenceLayerTestClass({});
+        await layer.init();
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.INPROGRESS,
+          expiryTimestamp: getFutureTimestamp(10),
+        });
+
+        mockDefaultClient.set
+          .mockResolvedValueOnce(null) // First attempt to set fails
+          .mockResolvedValueOnce(null); // Lock acquisition fails
+        mockDefaultClient.get.mockResolvedValueOnce(
+          JSON.stringify({
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiration: getFutureTimestamp(-10),
+          })
+        );
+
+        // Act
+        await expect(layer._putRecord(record)).rejects.toThrow(
+          'Lock acquisition failed, raise to retry'
+        );
+      });
+
+      it('throws error when item already exists and not expired', async () => {
+        // Prepare
+        const layer = new RedisPersistenceLayerTestClass({});
+        await layer.init();
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.INPROGRESS,
+          expiryTimestamp: getFutureTimestamp(10),
+        });
+        mockDefaultClient.set.mockResolvedValue(null);
+        mockDefaultClient.get.mockResolvedValueOnce(
+          JSON.stringify({
+            status: IdempotencyRecordStatus.COMPLETED,
+            expiration: getFutureTimestamp(10),
+          })
+        );
+
+        // Act & Assess
+        await expect(layer._putRecord(record)).rejects.toThrow(
+          `Failed to put record for already existing idempotency key: ${dummyKey}`
+        );
+      });
+
+      it('throws error when item is in progress', async () => {
+        // Prepare
+        const layer = new RedisPersistenceLayerTestClass({});
+        await layer.init();
+        const inProgressExpiryTimestamp = getFutureTimestamp(10);
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.INPROGRESS,
+          expiryTimestamp: getFutureTimestamp(10),
+        });
+        mockDefaultClient.set.mockResolvedValue(null);
+        mockDefaultClient.get.mockResolvedValueOnce(
+          JSON.stringify({
+            status: IdempotencyRecordStatus.INPROGRESS,
+            in_progress_expiration: inProgressExpiryTimestamp,
+          })
+        );
+
+        // Act & Assess
+        await expect(layer._putRecord(record)).rejects.toThrow(
+          `Failed to put record for in-progress idempotency key: ${dummyKey}`
         );
       });
 

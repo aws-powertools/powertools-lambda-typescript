@@ -1,5 +1,3 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
-
 /**
  * Protocol defining the interface for a Redis client.
  * This ensures standardization among different Redis client implementations.
@@ -22,7 +20,6 @@ interface RedisClientProtocol {
     value: string,
     options?: {
       EX?: number; // Expiration time in seconds
-      PX?: number; // Expiration time in milliseconds
       NX?: boolean; // Only set the key if it does not already exist
     }
   ): Promise<string | null>;
@@ -114,16 +111,6 @@ interface RedisPersistenceOptions extends RedisConnectionConfig {
    * (default: 'validation')
    */
   validationKeyAttr?: string;
-
-  /**
-   * Function used to serialize JSON data (default: JSON.stringify)
-   */
-  jsonSerializer?: (value: JSONValue) => string;
-
-  /**
-   * Function used to deserialize JSON data (default: JSON.parse)
-   */
-  jsonDeserializer?: (text: string) => JSONValue;
 }
 
 export type {

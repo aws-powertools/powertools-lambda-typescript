@@ -88,7 +88,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
 
   protected async _putRecord(record: IdempotencyRecord): Promise<void> {
     if (record.getStatus() === IdempotencyRecordStatus.INPROGRESS) {
-      await this.#_putInProgressRecord(record);
+      await this.#putInProgressRecord(record);
     } else {
       throw new Error(
         'Only INPROGRESS records can be inserted with _putRecord'
@@ -135,7 +135,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
     };
 
     const encodedItem = JSON.stringify(item);
-    const ttl = this.#_getExpirySeconds(record.expiryTimestamp);
+    const ttl = this.#getExpirySeconds(record.expiryTimestamp);
     // Need to set ttl again, if we don't set `EX` here the record will not have a ttl
     await this.#client.set(record.idempotencyKey, encodedItem, {
       EX: ttl,
@@ -143,10 +143,25 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
   }
 
   /**
+   * Determines if the provided Redis client is a default Redis client.
+   *
+   * This method checks if the provided client is an instance of the default Redis client
+   * by verifying the presence of the 'isOpen' property, which is specific to
+   * RedisClientType or RedisClusterType from the @redis/client package.
+   *
+   * @param client - The Redis client to check
+   */
+  #isDefaultRedisClient(
+    client: RedisClientProtocol | RedisClientType | RedisClusterType
+  ): client is RedisClientType | RedisClusterType {
+    return 'isOpen' in client;
+  }
+
+  /**
    * Put a record in the persistence store with a status of "INPROGRESS".
    * The method guards against concurrent execution by using Redis' conditional write operations.
    */
-  async #_putInProgressRecord(record: IdempotencyRecord): Promise<void> {
+  async #putInProgressRecord(record: IdempotencyRecord): Promise<void> {
     const item: Record<string, unknown> = {
       [this.#statusAttr]: record.getStatus(),
       [this.#expiryAttr]: record.expiryTimestamp,
@@ -161,7 +176,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
     }
 
     const encodedItem = JSON.stringify(item);
-    const ttl = this.#_getExpirySeconds(record.expiryTimestamp);
+    const ttl = this.#getExpirySeconds(record.expiryTimestamp);
     const now = Date.now();
 
     try {
@@ -257,7 +272,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
          * also be trying to handle the same orphan record. Once the lock is acquired, we set a new value
          * for the idempotency record in Redis with the appropriate time-to-live (TTL).
          */
-        await this.#_acquireLock(record.idempotencyKey);
+        await this.#acquireLock(record.idempotencyKey);
 
         console.debug('Lock acquired, updating record');
         await this.#client.set(record.idempotencyKey, encodedItem, {
@@ -272,7 +287,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
   /**
    * Calculates the number of seconds remaining until a specified expiry timestamp
    */
-  #_getExpirySeconds(expiryTimestamp?: number): number {
+  #getExpirySeconds(expiryTimestamp?: number): number {
     if (expiryTimestamp) {
       return expiryTimestamp - Math.floor(Date.now() / 1000);
     }
@@ -287,7 +302,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
    *
    * @param idempotencyKey - The key to create a lock for
    */
-  async #_acquireLock(idempotencyKey: string): Promise<void> {
+  async #acquireLock(idempotencyKey: string): Promise<void> {
     const lockKey = `${idempotencyKey}:lock`;
     const lockValue = 'true';
 
@@ -305,21 +320,6 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
     throw new IdempotencyItemAlreadyExistsError(
       'Lock acquisition failed, raise to retry'
     );
-  }
-
-  /**
-   * Determines if the provided Redis client is a default Redis client.
-   *
-   * This method checks if the provided client is an instance of the default Redis client
-   * by verifying the presence of the 'isOpen' property, which is specific to
-   * RedisClientType or RedisClusterType from the @redis/client package.
-   *
-   * @param client - The Redis client to check
-   */
-  #isDefaultRedisClient(
-    client: RedisClientProtocol | RedisClientType | RedisClusterType
-  ): client is RedisClientType | RedisClusterType {
-    return 'isOpen' in client;
   }
 }
 

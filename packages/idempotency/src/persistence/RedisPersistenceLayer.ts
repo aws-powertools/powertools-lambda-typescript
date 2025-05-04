@@ -16,6 +16,46 @@ import { BasePersistenceLayer } from './BasePersistenceLayer.js';
 import { IdempotencyRecord } from './IdempotencyRecord.js';
 import RedisConnection from './RedisConnection.js';
 
+/**
+ * Redis persistence layer for idempotency records.
+ *
+ * This class uses Redis to write and read idempotency records. It supports both the default Redis client
+ * from @redis/client package as well as custom Redis clients.
+ *
+ * There are various options to configure the persistence layer, such as attribute names for storing
+ * status, expiry, data, and validation keys in Redis.
+ *
+ * With default configuration, you don't need to create the Redis client beforehand, the persistence layer
+ * will create it for you using the provided options. You can also bring your own Redis client by passing
+ * it through the `client` option.
+ *
+ * See the {@link https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/ Idempotency documentation}
+ * for more details on the Redis configuration and usage patterns.
+ *
+ * @example
+ * ```ts
+ * import { RedisPersistenceLayer } from '@aws-lambda-powertools/idempotency/redis';
+ *
+ * const persistence = await new RedisPersistenceLayer({ url: 'redis://localhost:6379' }).init();
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Using your own Redis client
+ * import { createClient } from '@redis/client';
+ * import { RedisPersistenceLayer } from '@aws-lambda-powertools/idempotency/redis';
+ *
+ * const redisClient = createClient({ url: 'redis://localhost:6379' });
+ * await redisClient.connect();
+ *
+ * const persistence = new RedisPersistenceLayer({
+ *   client: redisClient,
+ * });
+ * ```
+ *
+ * @see https://github.com/redis/node-redis/tree/master/packages/client
+ * @category Persistence Layer
+ */
 class RedisPersistenceLayer extends BasePersistenceLayer {
   readonly #client: RedisClientProtocol | RedisClientType | RedisClusterType;
   readonly #dataAttr: string;

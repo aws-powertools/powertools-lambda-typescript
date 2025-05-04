@@ -147,11 +147,16 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
       getLayerConfig: () => ({ client: mockUserProvidedClient }),
     },
   ])('$name', ({ client, getLayerConfig }) => {
+    let layer: RedisPersistenceLayerTestClass;
+
+    beforeEach(async () => {
+      layer = new RedisPersistenceLayerTestClass(getLayerConfig());
+      await layer.init();
+    });
+
     describe('Method: _putRecord', () => {
       it('puts a record with INPROGRESS status into Redis', async () => {
         // Prepare
-        const layer = new RedisPersistenceLayerTestClass(getLayerConfig());
-        await layer.init();
         const record = new IdempotencyRecord({
           idempotencyKey: dummyKey,
           status: IdempotencyRecordStatus.INPROGRESS,
@@ -175,8 +180,6 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
 
       it('puts the record in Redis when using an in progress expiry timestamp', async () => {
         // Prepare
-        const layer = new RedisPersistenceLayerTestClass(getLayerConfig());
-        await layer.init();
         const status = IdempotencyRecordStatus.INPROGRESS;
         const expiryTimestamp = getFutureTimestamp(10);
         const inProgressExpiryTimestamp = getFutureTimestamp(5);
@@ -204,8 +207,6 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
 
       it('puts record in Redis when using payload validation', async () => {
         // Prepare
-        const layer = new RedisPersistenceLayerTestClass(getLayerConfig());
-        await layer.init();
         const persistenceLayerSpy = vi
           .spyOn(layer, 'isPayloadValidationEnabled')
           .mockReturnValue(true);
@@ -235,8 +236,6 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
 
       it('puts record in Redis with default expiry timestamp', async () => {
         // Prepare
-        const layer = new RedisPersistenceLayerTestClass(getLayerConfig());
-        await layer.init();
         const status = IdempotencyRecordStatus.INPROGRESS;
         const record = new IdempotencyRecord({
           idempotencyKey: dummyKey,
@@ -258,8 +257,6 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
 
       it('handles orphaned records by acquiring a lock and updating', async () => {
         // Prepare
-        const layer = new RedisPersistenceLayerTestClass(getLayerConfig());
-        await layer.init();
         const record = new IdempotencyRecord({
           idempotencyKey: dummyKey,
           status: IdempotencyRecordStatus.INPROGRESS,
@@ -302,8 +299,6 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
 
       it('handles orphaned records by acquiring a lock but it fails and throw error', async () => {
         // Prepare
-        const layer = new RedisPersistenceLayerTestClass(getLayerConfig());
-        await layer.init();
         const record = new IdempotencyRecord({
           idempotencyKey: dummyKey,
           status: IdempotencyRecordStatus.INPROGRESS,
@@ -320,7 +315,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
           })
         );
 
-        // Act
+        // Act & Assess
         await expect(layer._putRecord(record)).rejects.toThrow(
           'Lock acquisition failed, raise to retry'
         );
@@ -328,8 +323,6 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
 
       it('throws error when item already exists and not expired', async () => {
         // Prepare
-        const layer = new RedisPersistenceLayerTestClass(getLayerConfig());
-        await layer.init();
         const record = new IdempotencyRecord({
           idempotencyKey: dummyKey,
           status: IdempotencyRecordStatus.INPROGRESS,
@@ -351,8 +344,6 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
 
       it('throws error when item is in progress', async () => {
         // Prepare
-        const layer = new RedisPersistenceLayerTestClass(getLayerConfig());
-        await layer.init();
         const inProgressExpiryTimestamp = getFutureTimestamp(10);
         const record = new IdempotencyRecord({
           idempotencyKey: dummyKey,
@@ -375,8 +366,6 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
 
       it('throws error when trying to put a non-INPROGRESS record', async () => {
         // Prepare
-        const layer = new RedisPersistenceLayerTestClass(getLayerConfig());
-        await layer.init();
         const record = new IdempotencyRecord({
           idempotencyKey: dummyKey,
           status: IdempotencyRecordStatus.COMPLETED,
@@ -386,6 +375,27 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
         // Act & Assess
         await expect(layer._putRecord(record)).rejects.toThrow(
           'Only INPROGRESS records can be inserted with _putRecord'
+        );
+      });
+    });
+
+    describe('Method: _deleteRecord', () => {
+      it('deletes a record from Redis', async () => {
+        // Prepare
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.COMPLETED,
+          expiryTimestamp: getFutureTimestamp(15),
+        });
+        const consoleDebugSpy = vi.spyOn(console, 'debug');
+
+        // Act
+        await layer._deleteRecord(record);
+
+        // Assess
+        expect(client.del).toHaveBeenCalledWith(dummyKey);
+        expect(consoleDebugSpy).toHaveBeenCalledWith(
+          `Deleting record for idempotency key: ${record.idempotencyKey}`
         );
       });
     });

@@ -213,6 +213,29 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
         persistenceLayerSpy.mockRestore();
       });
 
+      it('puts record in Redis with default expiry timestamp', async () => {
+        // Prepare
+        const layer = new RedisPersistenceLayerTestClass({});
+        await layer.init();
+        const status = IdempotencyRecordStatus.INPROGRESS;
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status,
+        });
+
+        // Act
+        await layer._putRecord(record);
+
+        // Assess
+        expect(mockDefaultClient.set).toHaveBeenCalledWith(
+          dummyKey,
+          JSON.stringify({
+            status,
+          }),
+          { EX: 60 * 60, NX: true }
+        );
+      });
+
       it('throws error when trying to put a non-INPROGRESS record', async () => {
         // Prepare
         const layer = new RedisPersistenceLayerTestClass({});

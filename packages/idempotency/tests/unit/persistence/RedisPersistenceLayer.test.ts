@@ -10,7 +10,11 @@ import {
   vi,
 } from 'vitest';
 import { IdempotencyRecordStatus } from '../../../src/constants.js';
-import { IdempotencyPersistenceConnectionError } from '../../../src/errors.js';
+import {
+  IdempotencyItemNotFoundError,
+  IdempotencyPersistenceConnectionError,
+  IdempotencyPersistenceConsistencyError,
+} from '../../../src/errors.js';
 import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord.js';
 import RedisConnection from '../../../src/persistence/RedisConnection.js';
 import { RedisPersistenceLayerTestClass } from '../../helpers/idempotencyUtils.js';
@@ -396,6 +400,54 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
         expect(client.del).toHaveBeenCalledWith(dummyKey);
         expect(consoleDebugSpy).toHaveBeenCalledWith(
           `Deleting record for idempotency key: ${record.idempotencyKey}`
+        );
+      });
+    });
+
+    describe('Method: _getRecord', () => {
+      it('gets a record from Redis', async () => {
+        // Prepare
+        const status = IdempotencyRecordStatus.INPROGRESS;
+        const expiryTimestamp = getFutureTimestamp(15);
+        client.get.mockResolvedValue(
+          JSON.stringify({
+            status,
+            expiration: expiryTimestamp,
+            in_progress_expiration: expiryTimestamp,
+            validation: 'someHash',
+            data: { some: 'data' },
+          })
+        );
+
+        // Act
+        const record = await layer._getRecord(dummyKey);
+
+        // Assess
+        expect(client.get).toHaveBeenCalledWith(dummyKey);
+        expect(record.getStatus()).toEqual(status);
+        expect(record.expiryTimestamp).toEqual(expiryTimestamp);
+        expect(record.inProgressExpiryTimestamp).toEqual(expiryTimestamp);
+        expect(record.payloadHash).toEqual('someHash');
+        expect(record.getResponse()).toEqual({ some: 'data' });
+      });
+
+      it('throws IdempotencyItemNotFoundError when record does not exist', async () => {
+        // Prepare
+        client.get.mockResolvedValue(null);
+
+        // Act & Assess
+        await expect(layer._getRecord(dummyKey)).rejects.toThrow(
+          IdempotencyItemNotFoundError
+        );
+      });
+
+      it('throws IdempotencyPersistenceConsistencyError when record is invalid JSON', async () => {
+        // Prepare
+        client.get.mockResolvedValue('invalid-json');
+
+        // Act & Assess
+        await expect(layer._getRecord(dummyKey)).rejects.toThrow(
+          IdempotencyPersistenceConsistencyError
         );
       });
     });

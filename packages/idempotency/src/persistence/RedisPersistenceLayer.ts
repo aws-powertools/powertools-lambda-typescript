@@ -274,7 +274,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
    */
   #_getExpirySeconds(expiryTimestamp?: number): number {
     if (expiryTimestamp) {
-      return expiryTimestamp - Math.floor(Date.now() / 1000);
+      return Math.floor((expiryTimestamp - Date.now()) / 1000);
     }
     return this.getExpiresAfterSeconds();
   }

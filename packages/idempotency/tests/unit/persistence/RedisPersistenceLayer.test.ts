@@ -451,5 +451,79 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
         );
       });
     });
+
+    describe('Method: _updateRecord', () => {
+      it('updates a record in Redis', async () => {
+        // Prepare
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.COMPLETED,
+          expiryTimestamp: getFutureTimestamp(15),
+        });
+        client.set.mockResolvedValue('OK');
+
+        // Act
+        await layer._updateRecord(record);
+
+        // Assess
+        expect(client.set).toHaveBeenCalledWith(
+          dummyKey,
+          JSON.stringify({
+            status: 'COMPLETED',
+            expiration: record.expiryTimestamp,
+          }),
+          expect.objectContaining({ EX: expect.any(Number) })
+        );
+      });
+
+      it('updates a record with null responseData', async () => {
+        // Prepare
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.COMPLETED,
+          expiryTimestamp: getFutureTimestamp(15),
+          responseData: undefined,
+        });
+        client.set.mockResolvedValue('OK');
+
+        // Act
+        await layer._updateRecord(record);
+
+        // Assess
+        expect(client.set).toHaveBeenCalledWith(
+          dummyKey,
+          JSON.stringify({
+            status: 'COMPLETED',
+            expiration: record.expiryTimestamp,
+          }),
+          expect.objectContaining({ EX: expect.any(Number) })
+        );
+      });
+
+      it('updates a record with valid responseData', async () => {
+        // Prepare
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.COMPLETED,
+          expiryTimestamp: getFutureTimestamp(15),
+          responseData: { key: 'value' },
+        });
+        client.set.mockResolvedValue('OK');
+
+        // Act
+        await layer._updateRecord(record);
+
+        // Assess
+        expect(client.set).toHaveBeenCalledWith(
+          dummyKey,
+          JSON.stringify({
+            status: 'COMPLETED',
+            expiration: record.expiryTimestamp,
+            data: record.responseData,
+          }),
+          expect.objectContaining({ EX: expect.any(Number) })
+        );
+      });
+    });
   });
 });

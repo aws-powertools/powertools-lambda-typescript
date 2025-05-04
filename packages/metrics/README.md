@@ -167,6 +167,7 @@ The following companies, among others, use Powertools:
 - [Guild](https://guild.com)
 - [Hashnode](https://hashnode.com/)
 - [LocalStack](https://localstack.cloud/)
+- [Ours Privacy](https://oursprivacy.com/)
 - [Perfect Post](https://www.perfectpost.fr)
 - [Sennder](https://sennder.com/)
 - [tecRacer GmbH & Co. KG](https://www.tecracer.com/)

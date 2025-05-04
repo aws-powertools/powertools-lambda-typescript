@@ -71,7 +71,7 @@ These settings will be used across all metrics emitted:
 | **Service**          | Optionally, sets **service** metric dimension across all metrics | `POWERTOOLS_SERVICE_NAME`          | `service_undefined`                                      | Any string     | `serverlessAirline` | `serviceName`         |
 | **Metric namespace** | Logical container where all metrics will be placed               | `POWERTOOLS_METRICS_NAMESPACE`     | `default_namespace`                                      | Any string     | `serverlessAirline` | `default_namespace`   |
 | **Function Name**    | Function name used as dimension for the `ColdStart` metric       | `POWERTOOLS_METRICS_FUNCTION_NAME` | [See docs](#capturing-a-cold-start-invocation-as-metric) | Any string     | `my-function-name`  | `functionName`        |
-| **Enabled**          | Whether to emit metrics to standard output or not                | `POWERTOOLS_METRICS_ENABLED`       | `true`                                                   | Boolean        | `false`             |                       |
+| **Disabled**          | Whether to disable the log of metrics to standard output or not | `POWERTOOLS_METRICS_DISABLED`       | `false`                                                   | Boolean        | `true`             |                       |
 
 !!! tip
     Use your application name or main service as the metric namespace to easily group all metrics
@@ -493,7 +493,7 @@ You can customize how Metrics logs warnings and debug messages to standard outpu
 
 When unit testing your code that uses the Metrics utility, you may want to silence the logs emitted by the utility. To do so, you can set the `POWERTOOLS_DEV` environment variable to `true`. This instructs the utility to not emit any logs to standard output.
 
-If instead you want to spy on the logs emitted by the utility, you must set the `POWERTOOLS_DEV` environment variable to `true` in conjunction with the `POWERTOOLS_METRICS_ENABLED` environment variable also set to `true`.
+If instead you want to spy on the logs emitted by the utility, you must set the `POWERTOOLS_DEV` environment variable to `true` in conjunction with the `POWERTOOLS_METRICS_DISABLED` environment variable set to `false`.
 
 When `POWERTOOLS_DEV` is enabled, Metrics uses the global `console` to emit metrics to standard out. This allows you to easily spy on the logs emitted and make assertions on them.
 

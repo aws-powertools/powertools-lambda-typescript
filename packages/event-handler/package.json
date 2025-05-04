@@ -1,12 +1,14 @@
 {
   "name": "@aws-lambda-powertools/event-handler",
-  "version": "2.18.0",
+  "version": "2.19.0",
   "description": "Lightweight routing to reduce boilerplate for API Gateway REST/HTTP API, ALB and Lambda Function URLs",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "vitest --run",
     "test:unit": "vitest --run",
@@ -18,7 +20,7 @@
     "test:e2e": "echo \"Not implemented\"",
     "build:cjs": "tsc --build tsconfig.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.esm.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
-    "build": "echo \"Not implemented\"",
+    "build": "npm run build:esm & npm run build:cjs",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
@@ -27,19 +29,39 @@
   "license": "MIT-0",
   "type": "module",
   "exports": {
-    ".": {
+    "./appsync-events": {
       "require": {
-        "types": "./lib/cjs/index.d.ts",
-        "default": "./lib/cjs/index.js"
+        "types": "./lib/cjs/appsync-events/index.d.ts",
+        "default": "./lib/cjs/appsync-events/index.js"
       },
       "import": {
-        "types": "./lib/esm/index.d.ts",
-        "default": "./lib/esm/index.js"
+        "types": "./lib/esm/appsync-events/index.d.ts",
+        "default": "./lib/esm/appsync-events/index.js"
+      }
+    },
+    "./types": {
+      "require": {
+        "types": "./lib/cjs/types/index.d.ts",
+        "default": "./lib/cjs/types/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/types/index.d.ts",
+        "default": "./lib/esm/types/index.js"
       }
     }
   },
-  "types": "./lib/cjs/index.d.ts",
-  "main": "./lib/cjs/index.js",
+  "typesVersions": {
+    "*": {
+      "appsync-events": [
+        "./lib/cjs/appsync-events/index.d.ts",
+        "./lib/esm/appsync-events/index.d.ts"
+      ],
+      "types": [
+        "./lib/cjs/types/index.d.ts",
+        "./lib/esm/types/index.d.ts"
+      ]
+    }
+  },
   "files": [
     "lib"
   ],
@@ -51,7 +73,7 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.18.0"
+    "@aws-lambda-powertools/commons": "2.19.0"
   },
   "keywords": [
     "aws",
@@ -63,6 +85,7 @@
     "event",
     "handler",
     "nodejs",
-    "serverless"
+    "serverless",
+    "appsync-events"
   ]
 }

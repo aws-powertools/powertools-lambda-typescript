@@ -42,17 +42,18 @@ You can use Powertools for AWS Lambda in both TypeScript and JavaScript code bas
 
 Powertools for AWS Lambda (TypeScript) is built as a modular toolkit, so you can pick and choose the utilities you want to use. The following table lists the available utilities, and links to their documentation.
 
-| Utility                                      | Description                                                                                                                                                       |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- ------------------------------- |
-| [Tracer](./features/tracer.md)               | Decorators and utilities to trace Lambda function handlers, and both synchronous and asynchronous functions                                                       |
-| [Logger](./features/logger.md)               | Structured logging made easier, and a middleware to enrich structured logging with key Lambda context details                                                     |
-| [Metrics](./features/metrics.md)             | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)                                                                                 |
-| [Parameters](./features/parameters.md)       | High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB                     |
-| [Idempotency](./features/idempotency.md)     | Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content. |
-| [Batch Processing](./features/batch.md)      | Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.                             |
-| [JMESPath Functions](./features/jmespath.md) | Built-in JMESPath functions to easily deserialize common encoded JSON payloads in Lambda functions.                                                               |
-| [Parser](./features/parser.md)               | Utility to parse and validate AWS Lambda event payloads using Zod, a TypeScript-first schema declaration and validation library.                                  |
-| [Validation](./features/validation.md)       | JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.                                                   |
+| Utility                                                                      | Description                                                                                                                                                       |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Tracer](./features/tracer.md)                                               | Decorators and utilities to trace Lambda function handlers, and both synchronous and asynchronous functions                                                       |
+| [Logger](./features/logger.md)                                               | Structured logging made easier, and a middleware to enrich structured logging with key Lambda context details                                                     |
+| [Metrics](./features/metrics.md)                                             | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)                                                                                 |
+| [Event Handler - AppSync Events](./features/event-handler/appsync-events.md) | Event Handler for AWS AppSync real-time events                                                                                                                    |
+| [Parameters](./features/parameters.md)                                       | High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB                     |
+| [Idempotency](./features/idempotency.md)                                     | Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content. |
+| [Batch Processing](./features/batch.md)                                      | Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.                             |
+| [JMESPath Functions](./features/jmespath.md)                                 | Built-in JMESPath functions to easily deserialize common encoded JSON payloads in Lambda functions.                                                               |
+| [Parser](./features/parser.md)                                               | Utility to parse and validate AWS Lambda event payloads using Zod, a TypeScript-first schema declaration and validation library.                                  |
+| [Validation](./features/validation.md)                                       | JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.                                                   |
 
 ## Examples
 
@@ -132,6 +133,9 @@ Knowing which companies are using this library is important to help prioritize t
 { .card }
 
 [**LocalStack**](https://localstack.cloud/){target="_blank" rel="nofollow"}
+{ .card }
+
+[**Ours Privacy**](https://oursprivacy.com){target="_blank" rel="nofollow"}
 { .card }
 
 [**Perfect Post**](https://www.perfectpost.fr){target="_blank" rel="nofollow"}

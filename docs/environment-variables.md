@@ -15,7 +15,7 @@ You can configure Powertools for AWS Lambda using environment variables. This is
 | **POWERTOOLS_SERVICE_NAME**                  | Set service name used for tracing namespace, metrics dimension and structured logging    | All                                    | `service_undefined`                             |
 | **POWERTOOLS_METRICS_NAMESPACE**             | Set namespace used for metrics                                                           | [Metrics](features/metrics.md)         | `default_namespace`                             |
 | **POWERTOOLS_METRICS_FUNCTION_NAME**         | Function name used as dimension for the `ColdStart` metric                               | [Metrics](features/metrics.md)         | [See docs](features/metrics.md#setting-function-name) |
-| **POWERTOOLS_METRICS_ENABLED**               | Explicitly disables emitting metrics to stdout                                           | [Metrics](features/metrics.md)         | `true`                                          |
+| **POWERTOOLS_METRICS_DISABLED**              | Explicitly disables emitting metrics to stdout                                           | [Metrics](features/metrics.md)         | `false`                                          |
 | **POWERTOOLS_TRACE_ENABLED**                 | Explicitly disables tracing                                                              | [Tracer](features/tracer.md)           | `true`                                          |
 | **POWERTOOLS_TRACER_CAPTURE_RESPONSE**       | Capture Lambda or method return as metadata.                                             | [Tracer](features/tracer.md)           | `true`                                          |
 | **POWERTOOLS_TRACER_CAPTURE_ERROR**          | Capture Lambda or method exception as metadata.                                          | [Tracer](features/tracer.md)           | `true`                                          |
@@ -32,12 +32,12 @@ Each Utility page provides information on example values and allowed values.
 
 ## Dev Mode
 
-Whether you're prototyping locally or against a non-production environment, you can use `POWERTOOLS_DEV` to increase verbosity across multiple utilities.
+Whether you're prototyping locally or against a non-production environment, you can use `POWERTOOLS_DEV` to increase verbosity across multiple utilities or disable certain features.
 
-When `POWERTOOLS_DEV` is set to a truthy value (`1`, `true`), it'll have the following effects:
+When `POWERTOOLS_DEV` is set to a truthy value (`1`, `true`, `on`), it'll have the following effects:
 
-| Utility           | Effect                                                                                                                                                                                                                                   |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Logger**        | Increase JSON indentation to 4 and uses global `console` to emit logs to ease testing and local debugging when running functions locally. However, Amazon CloudWatch Logs view will degrade as each new line is treated as a new message |
-| **Tracer**        | Disables tracing operations in non-Lambda environments. This already happens automatically in the Tracer utility                                                                                                                         |
-| **Metrics**       | Disables emitting metrics to stdout. Can be overridden by setting `POWERTOOLS_METRICS_ENABLED` to `true`                                                                                                                                 |
+| Utility           | Effect                                                                                                                |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Logger**        | Increase JSON indentation to 4, uses global `console` to emit logs, and format stack traces                           |
+| **Tracer**        | Disable tracing operations. This already happens automatically when running in non-Lambda environments                |
+| **Metrics**       | Disable emitting metrics to stdout. Can be overridden by explicitly setting `POWERTOOLS_METRICS_DISABLED` to `false`  |

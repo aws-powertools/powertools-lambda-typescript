@@ -116,7 +116,10 @@ abstract class LogFormatter {
       name,
       location: this.getCodeLocation(error.stack),
       message,
-      stack,
+      stack:
+        this.envVarsService?.isDevMode() && typeof stack === 'string'
+          ? stack?.split('\n')
+          : stack,
       cause:
         error.cause instanceof Error
           ? this.formatError(error.cause)

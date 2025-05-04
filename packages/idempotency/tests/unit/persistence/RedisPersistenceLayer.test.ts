@@ -22,7 +22,9 @@ import { RedisPersistenceLayerTestClass } from '../../helpers/idempotencyUtils.j
 vi.mock('../../../src/persistence/RedisConnection.js');
 
 const getFutureTimestamp = (seconds: number): number =>
-  new Date().getTime() + seconds * 1000;
+  Math.floor(Date.now() / 1000) + seconds;
+const getFutureTimestampInMillis = (seconds: number): number =>
+  getFutureTimestamp(seconds) * 1000;
 
 const dummyKey = 'someKey';
 
@@ -186,7 +188,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
         // Prepare
         const status = IdempotencyRecordStatus.INPROGRESS;
         const expiryTimestamp = getFutureTimestamp(10);
-        const inProgressExpiryTimestamp = getFutureTimestamp(5);
+        const inProgressExpiryTimestamp = getFutureTimestampInMillis(5);
         const record = new IdempotencyRecord({
           idempotencyKey: dummyKey,
           status,
@@ -348,7 +350,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
 
       it('throws error when item is in progress', async () => {
         // Prepare
-        const inProgressExpiryTimestamp = getFutureTimestamp(10);
+        const inProgressExpiryTimestamp = getFutureTimestampInMillis(10);
         const record = new IdempotencyRecord({
           idempotencyKey: dummyKey,
           status: IdempotencyRecordStatus.INPROGRESS,
@@ -409,11 +411,12 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
         // Prepare
         const status = IdempotencyRecordStatus.INPROGRESS;
         const expiryTimestamp = getFutureTimestamp(15);
+        const inProgressExpiryTimestamp = getFutureTimestampInMillis(15);
         client.get.mockResolvedValue(
           JSON.stringify({
             status,
             expiration: expiryTimestamp,
-            in_progress_expiration: expiryTimestamp,
+            in_progress_expiration: inProgressExpiryTimestamp,
             validation: 'someHash',
             data: { some: 'data' },
           })
@@ -426,7 +429,9 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
         expect(client.get).toHaveBeenCalledWith(dummyKey);
         expect(record.getStatus()).toEqual(status);
         expect(record.expiryTimestamp).toEqual(expiryTimestamp);
-        expect(record.inProgressExpiryTimestamp).toEqual(expiryTimestamp);
+        expect(record.inProgressExpiryTimestamp).toEqual(
+          inProgressExpiryTimestamp
+        );
         expect(record.payloadHash).toEqual('someHash');
         expect(record.getResponse()).toEqual({ some: 'data' });
       });

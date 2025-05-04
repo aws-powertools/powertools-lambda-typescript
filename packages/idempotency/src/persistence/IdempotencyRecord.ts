@@ -13,7 +13,7 @@ import type { DynamoDBPersistenceLayer } from './DynamoDBPersistenceLayer.js';
  */
 class IdempotencyRecord {
   /**
-   * The expiry timestamp of the record in milliseconds UTC.
+   * The expiry timestamp of the record in seconds UTC.
    */
   public expiryTimestamp?: number;
   /**

@@ -163,17 +163,21 @@ Some examples using our initial and new RFC templates: [#447](https://github.com
 
 ### Releasing a new version
 
-Firstly, make sure all the PRs that you want to include in the release are merged into the `main` branch.
+Releasing a new version is a multi-step process that requires up to 3 hours to complete. Below a checklist of the main steps to follow:
 
-Next, run the integration tests one last time to make sure everything is working as expected. See [Run end to end tests](#run-end-to-end-tests) for more details.
-
-**Looks good, what's next?**
-
-Kickoff the `Make Release` workflow with the intended version - this might take around 20m-25m to complete.
+1. **End to end tests**: Run the [e2e tests](#run-end-to-end-tests) and make sure they pass.
+2. **Version bump**: Run the `Make Version` workflow to bump the version. This will create a PR with the new version and a changelog. Visually inspect the diff and make sure the changelog and version are correct, then merge the PR.
+3. **Make Release**: Run the `Make Release` workflow. This will: 1/ run the unit tests again, 2/ build and publish to npmjs.com, 3/ build and deploy the Lambda layers to beta and prod, 4/ run canary tests, 5/ update the documentation with the new version.
+4. **Review and approve docs PR**: Once the `Make Release` workflow is complete, a PR will be created to update the documentation with the new version. Review and approve this PR **but do not merge it yet**. Take note of the Lambda layer version that was deployed, as this will be used in the next step.
+5. **Publish GovCloud Layers (Gamma)**: Run the `Layer Deployment (GovCloud)` workflow with the `main` branch, targeting the `gamma` account, and using the Lambda layer version from the previous step. This will publish the Lambda layers to GovCloud. Visually inspect the output JSON files and make sure the Lambda layer version and package version are correct.
+6. **Publish GovCloud Layers (Prod)**: Run the `Layer Deployment (GovCloud)` workflow with the `main` branch, targeting the `prod` account, and using the Lambda layer version from the previous step. This will publish the Lambda layers to GovCloud. Visually inspect the output JSON files and make sure the Lambda layer version and package version are correct.
+7. **Merge docs PR**: Once the `Layer Deployment (GovCloud)` workflow is complete, merge the PR to update the documentation with the new version.
+8. **Update SSM Parameters (Beta)**: Run the `SSM Parameters` workflow with the `main` branch, targeting the `beta` account, and using the package version from npm (i.e. `2.20.0`) and Lambda layer version from the previous steps. This will update the SSM parameters with the new version.
+9. **Verify SSM Parameters (Beta)**: Use the AWS CLI to verify that the SSM parameters were updated correctly. Run the following command: `aws ssm get-parameter --name=/aws/service/powertools/typescript/generic/all/latest` and `aws ssm get-parameter --name=/aws/service/powertools/typescript/generic/all/<version>` to verify that the SSM parameters were updated correctly.
+10. **Update SSM Parameters (Prod)**: Run the `SSM Parameters` workflow with the `main` branch, targeting the `prod` account, and using the package version from npm (i.e. `2.20.0`) and Lambda layer version from the previous steps. This will update the SSM parameters with the new version.
+11. **Update Docs**: Run the `Rebuild latest docs` workflow with the `main` branch using the package version from npm (i.e. `2.20.0`). This will update the documentation with the new version.
 
 Once complete, you can start drafting the release notes to let customers know **what changed and what's in it for them (a.k.a why they should care)**. We have guidelines in the release notes section so you know what good looks like.
-
-> **NOTE**: Documentation might take a few minutes to reflect the latest version due to caching and CDN invalidations.
 
 #### Release process visualized
 
@@ -228,13 +232,25 @@ section Docs
     Create commit (Layer ARN)         : active, 10:18, 8s
     Open docs PR                      : active, 8s
 
-Review andmerge docs PR : milestone, m5
+Review and merge docs PR : milestone, m5
 
     Publish updated docs              : active, 2m
 
-Documentation release : milestone, m6
+section GovCloud
+    Publish GovCloud layers (Beta)    : active, 8s
+    Publish GovCloud layers (Prod)    : active, 8s
+GovCloud layers published : milestone, m6
 
-Release complete : milestone, m7
+
+section Documentation
+Update SSM parameters (Beta)      : active, 8s
+Update SSM parameters (Prod)      : active, 8s
+
+SSM Parameters updated: milestone, m7
+
+Documentation release : milestone, m8
+
+Release complete : milestone, m9
 ```
 
 #### Drafting release notes

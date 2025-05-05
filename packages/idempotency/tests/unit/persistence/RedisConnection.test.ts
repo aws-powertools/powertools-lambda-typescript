@@ -76,7 +76,6 @@ describe('Class: RedisConnection', () => {
         username: 'user',
         password: 'pass',
         dbIndex: 2,
-        ssl: true,
       });
 
       // Act
@@ -90,6 +89,33 @@ describe('Class: RedisConnection', () => {
           host: 'localhost',
           port: 6380,
           tls: true,
+        },
+        database: 2,
+      });
+      expect(createCluster).not.toHaveBeenCalled();
+    });
+
+    it('creates a standalone client without `tls` when `ssl` is false', () => {
+      // Prepare
+      const connection = new RedisConnection({
+        host: 'localhost',
+        port: 6380,
+        username: 'user',
+        password: 'pass',
+        dbIndex: 2,
+        ssl: false,
+      });
+
+      // Act
+      connection.getClient();
+
+      // Assess
+      expect(createClient).toHaveBeenCalledWith({
+        username: 'user',
+        password: 'pass',
+        socket: {
+          host: 'localhost',
+          port: 6380,
         },
         database: 2,
       });

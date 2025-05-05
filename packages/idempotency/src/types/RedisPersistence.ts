@@ -1,6 +1,11 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+
 /**
  * Protocol defining the interface for a Redis client.
- * This ensures standardization among different Redis client implementations.
+ *
+ * This protocol outlines the expected behavior of a Redis client, allowing for
+ * standardization among different implementations and allowing customers to extend it
+ * in their own implementation.
  */
 interface RedisClientProtocol {
   /**
@@ -17,7 +22,7 @@ interface RedisClientProtocol {
    */
   set(
     name: string,
-    value: string,
+    value: JSONValue,
     options?: {
       EX?: number; // Expiration time in seconds
       NX?: boolean; // Only set the key if it does not already exist
@@ -25,10 +30,10 @@ interface RedisClientProtocol {
   ): Promise<string | null>;
 
   /**
-   * Deletes one or more keys.
-   * @param keys The key(s) to delete
+   * Deletes the specified keys from Redis.
+   * @param keys The keys to delete
    */
-  del(keys: string): Promise<number>;
+  del(keys: string[]): Promise<number>;
 }
 
 /**

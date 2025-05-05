@@ -86,7 +86,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
    * Initializes the Redis connection if it's the default Redis client and not already open.
    *
    * This method attempts to connect to Redis if necessary. If using a custom Redis client,
-   * it assumes the client is already initialized.
+   * it assumes the client is already connected.
    *
    * @throws {IdempotencyPersistenceConnectionError} When the connection to Redis fails
    */
@@ -123,7 +123,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
     console.debug(
       `Deleting record for idempotency key: ${record.idempotencyKey}`
     );
-    await this.#client.del(record.idempotencyKey);
+    await this.#client.del([record.idempotencyKey]);
   }
 
   protected async _putRecord(record: IdempotencyRecord): Promise<void> {

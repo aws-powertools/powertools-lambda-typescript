@@ -399,7 +399,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
         await layer._deleteRecord(record);
 
         // Assess
-        expect(client.del).toHaveBeenCalledWith(dummyKey);
+        expect(client.del).toHaveBeenCalledWith([dummyKey]);
         expect(consoleDebugSpy).toHaveBeenCalledWith(
           `Deleting record for idempotency key: ${record.idempotencyKey}`
         );

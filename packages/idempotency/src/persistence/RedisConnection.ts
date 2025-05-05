@@ -25,7 +25,7 @@ class RedisConnection {
     this.#password = options.password ?? '';
     this.#url = options.url ?? '';
     this.#dbIndex = options.dbIndex ?? 0;
-    this.#ssl = options.ssl || true;
+    this.#ssl = options.ssl ?? true;
   }
 
   /**
@@ -65,7 +65,7 @@ class RedisConnection {
       socket: {
         host: this.#host,
         port: this.#port,
-        tls: this.#ssl,
+        ...(this.#ssl ? { tls: true } : {}),
       },
       database: this.#dbIndex,
     });

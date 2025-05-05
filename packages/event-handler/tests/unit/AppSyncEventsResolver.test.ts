@@ -75,7 +75,7 @@ describe('Class: AppSyncEventsResolver', () => {
     expect(result).toEqual(null);
   });
 
-  it('returns the response of the onSubscribe handler', async () => {
+  it('ignores the response of the onSubscribe handler', async () => {
     // Prepare
     const app = new AppSyncEventsResolver({ logger: console });
     app.onSubscribe('/foo', async () => true);
@@ -87,7 +87,7 @@ describe('Class: AppSyncEventsResolver', () => {
     );
 
     // Assess
-    expect(result).toBe(true);
+    expect(result).toBe(undefined);
   });
 
   it.each([

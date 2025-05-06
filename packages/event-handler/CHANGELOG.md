@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.19.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.0...v2.19.1) (2025-05-05)
+
+
+### Bug Fixes
+
+* **event-handler:** ignore return type from onSubscribe handler ([#3888](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3888)) ([02b3cda](https://github.com/aws-powertools/powertools-lambda-typescript/commit/02b3cda9fd10c4e757dee321749d484c9ac542ee))
+
+
+
+
+
 # [2.19.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.18.0...v2.19.0) (2025-04-24)
 
 

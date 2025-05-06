@@ -45,12 +45,13 @@ import RedisConnection from './RedisConnection.js';
  * // Using your own Redis client
  * import { createClient } from '@redis/client';
  * import { RedisPersistenceLayer } from '@aws-lambda-powertools/idempotency/redis';
+ * import { RedisClientProtocol } from '@aws-lambda-powertools/idempotency/redis/types';
  *
  * const redisClient = createClient({ url: 'redis://localhost:6379' });
  * await redisClient.connect();
  *
  * const persistence = new RedisPersistenceLayer({
- *   client: redisClient,
+ *   client: redisClient as RedisClientProtocol,
  * });
  * ```
  *

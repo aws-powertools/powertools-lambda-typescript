@@ -110,7 +110,7 @@ jobs:
         id: create-pr
         uses: ./.github/actions/create-pr
         with: 
-          files: 'docs/index.md'
+          files: 'docs/getting-started/lambda-layers.md'
           temp_branch_prefix: 'ci-layer-docs'
           pull_request_title: 'chore(ci): update layer ARN on documentation'
           github_token: ${{ secrets.GITHUB_TOKEN }}

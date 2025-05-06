@@ -173,10 +173,7 @@ class AppSyncEventsResolver extends Router {
     }
     const { handler } = routeHandlerOptions;
     try {
-      return await (handler as OnSubscribeHandler).apply(this, [
-        event,
-        context,
-      ]);
+      await (handler as OnSubscribeHandler).apply(this, [event, context]);
     } catch (error) {
       this.logger.error(`An error occurred in handler ${path}`, error);
       if (error instanceof UnauthorizedException) throw error;

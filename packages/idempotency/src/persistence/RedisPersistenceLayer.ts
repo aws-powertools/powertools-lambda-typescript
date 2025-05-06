@@ -218,7 +218,6 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
 
     const encodedItem = JSON.stringify(item);
     const ttl = this.#getExpirySeconds(record.expiryTimestamp);
-    const now = Date.now();
 
     try {
       /**
@@ -229,14 +228,15 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
        * |       (in_progress_expiry)                                          (expiry)
        *
        * Conditions to successfully save a record:
-       * * The idempotency key does not exist:
+       *
+       * The idempotency key does not exist:
        *   - first time that this invocation key is used
        *   - previous invocation with the same key was deleted due to TTL
        *   - SET see https://redis.io/commands/set/
        */
 
       console.debug(
-        `Putting record for idempotency key: ${record.idempotencyKey}`
+        `Putting record on redis for idempotency key: ${record.idempotencyKey}`
       );
       const response = await this.#client.set(
         record.idempotencyKey,
@@ -268,9 +268,8 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
       const existingRecord = await this._getRecord(record.idempotencyKey);
 
       /** If the status of the idempotency record is `COMPLETED` and the record has not expired
-       * (i.e., the expiry timestamp is greater than the current timestamp), then a valid completed
-       * record exists. We raise an error to prevent duplicate processing of a request that has already
-       * been completed successfully.
+       *  then a valid completed record exists. We raise an error to prevent duplicate processing
+       *  of a request that has already been completed successfully.
        */
       if (
         existingRecord.getStatus() === IdempotencyRecordStatus.COMPLETED &&
@@ -283,14 +282,14 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
       }
 
       /** If the idempotency record has a status of 'INPROGRESS' and has a valid `inProgressExpiryTimestamp`
-       * (meaning the timestamp is greater than the current timestamp in milliseconds), then we have encountered
-       * a valid in-progress record. This indicates that another process is currently handling the request, and
-       * to maintain idempotency, we raise an error to prevent concurrent processing of the same request.
+       *  (meaning the timestamp is greater than the current timestamp in milliseconds), then we have encountered
+       *  a valid in-progress record. This indicates that another process is currently handling the request, and
+       *  to maintain idempotency, we raise an error to prevent concurrent processing of the same request.
        */
       if (
         existingRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS &&
         existingRecord.inProgressExpiryTimestamp &&
-        existingRecord.inProgressExpiryTimestamp > now
+        existingRecord.inProgressExpiryTimestamp > Date.now()
       ) {
         throw new IdempotencyItemAlreadyExistsError(
           `Failed to put record for in-progress idempotency key: ${record.idempotencyKey}`,
@@ -299,9 +298,9 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
       }
 
       /** Reaching this point indicates that the idempotency record found is an orphan record. An orphan record is
-       * one that is neither completed nor in-progress within its expected time frame. It may result from a
-       * previous invocation that has timed out or an expired record that has yet to be cleaned up by Redis.
-       * We raise an error to handle this exceptional scenario appropriately.
+       *  one that is neither completed nor in-progress within its expected time frame. It may result from a
+       *  previous invocation that has timed out or an expired record that has yet to be cleaned up by Redis.
+       *  We raise an error to handle this exceptional scenario appropriately.
        */
       throw new IdempotencyPersistenceConsistencyError(
         'Orphaned record detected'
@@ -309,9 +308,9 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
     } catch (error) {
       if (error instanceof IdempotencyPersistenceConsistencyError) {
         /** Handle an orphan record by attempting to acquire a lock, which by default lasts for 10 seconds.
-         * The purpose of acquiring the lock is to prevent race conditions with other processes that might
-         * also be trying to handle the same orphan record. Once the lock is acquired, we set a new value
-         * for the idempotency record in Redis with the appropriate time-to-live (TTL).
+         *  The purpose of acquiring the lock is to prevent race conditions with other processes that might
+         *  also be trying to handle the same orphan record. Once the lock is acquired, we set a new value
+         *  for the idempotency record in Redis with the appropriate time-to-live (TTL).
          */
         await this.#acquireLock(record.idempotencyKey);
 
@@ -337,9 +336,9 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
 
   /**
    * Attempt to acquire a lock for a specified resource name, with a default timeout.
-   * This method attempts to set a lock using Redis to prevent concurrent
-   * access to a resource identified by 'idempotencyKey'. It uses the 'NX' flag to ensure that
-   * the lock is only set if it does not already exist, thereby enforcing mutual exclusion.
+   * This method attempts to set a lock using Redis to prevent concurrent access to a resource
+   * identified by 'idempotencyKey'. It uses the 'NX' flag to ensure that the lock is only
+   * set if it does not already exist, thereby enforcing mutual exclusion.
    *
    * @param idempotencyKey - The key to create a lock for
    */
@@ -354,9 +353,10 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
     });
 
     if (acquired) return;
-    // If the lock acquisition fails, it suggests a race condition has occurred. In this case, instead of
-    // proceeding, we log the event and raise an error to indicate that the current operation should be
-    // retried after the lock is released by the process that currently holds it.
+    /** If the lock acquisition fails, it suggests a race condition has occurred. In this case, instead of
+     *  proceeding, we log the event and raise an error to indicate that the current operation should be
+     *  retried after the lock is released by the process that currently holds it.
+     */
     console.debug('Lock acquisition failed, raise to retry');
     throw new IdempotencyItemAlreadyExistsError(
       'Lock acquisition failed, raise to retry'

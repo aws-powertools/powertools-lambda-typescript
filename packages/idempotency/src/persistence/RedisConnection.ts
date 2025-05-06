@@ -3,9 +3,10 @@ import type { RedisClientType, RedisClusterType } from '@redis/client';
 import type { RedisConnectionConfig } from '../types/RedisPersistence.js';
 
 /**
- * RedisConnection class is responsible for creating a Redis client based on the provided configuration.
- * It supports both standalone and cluster modes.
- * The class takes a configuration object as a parameter and initializes the Redis client accordingly.
+ * A class for creating and managing Redis client connections.
+ *
+ * This class handles both standalone and cluster connection modes to Redis,
+ * providing an abstraction layer over the Redis client creation process.
  */
 class RedisConnection {
   readonly #mode: 'standalone' | 'cluster';

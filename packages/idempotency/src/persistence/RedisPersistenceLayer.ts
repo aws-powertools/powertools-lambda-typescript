@@ -6,6 +6,7 @@ import {
   IdempotencyItemNotFoundError,
   IdempotencyPersistenceConnectionError,
   IdempotencyPersistenceConsistencyError,
+  IdempotencyUnknownError,
 } from '../errors.js';
 import type { IdempotencyRecordStatusValue } from '../types/IdempotencyRecord.js';
 import type {
@@ -130,7 +131,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
     if (record.getStatus() === IdempotencyRecordStatus.INPROGRESS) {
       await this.#putInProgressRecord(record);
     } else {
-      throw new Error(
+      throw new IdempotencyUnknownError(
         'Only INPROGRESS records can be inserted with _putRecord'
       );
     }

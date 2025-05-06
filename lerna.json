@@ -16,7 +16,7 @@
     "layers",
     "examples/snippets"
   ],
-  "version": "2.19.0",
+  "version": "2.19.1",
   "npmClient": "npm",
   "message": "chore(release): %s [skip ci]"
 }

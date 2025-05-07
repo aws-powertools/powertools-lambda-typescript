@@ -161,22 +161,15 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
           expiration: getFutureTimestamp(-10),
         })
       );
-      const consoleDebugSpy = vi.spyOn(console, 'debug');
 
       // Act
       await persistenceLayer._putRecord(record);
 
       // Assess
-      expect(consoleDebugSpy).toHaveBeenCalledWith(
-        'Acquiring lock to overwrite orphan record'
-      );
       expect(client.set).toHaveBeenCalledWith(
         `${dummyKey}:lock`,
         'true',
         expect.objectContaining({ EX: 10, NX: true })
-      );
-      expect(consoleDebugSpy).toHaveBeenCalledWith(
-        'Lock acquired, updating record'
       );
       expect(client.set).toHaveBeenCalledWith(
         dummyKey,
@@ -278,16 +271,12 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
         status: IdempotencyRecordStatus.COMPLETED,
         expiryTimestamp: getFutureTimestamp(15),
       });
-      const consoleDebugSpy = vi.spyOn(console, 'debug');
 
       // Act
       await persistenceLayer._deleteRecord(record);
 
       // Assess
       expect(client.del).toHaveBeenCalledWith([dummyKey]);
-      expect(consoleDebugSpy).toHaveBeenCalledWith(
-        `Deleting record for idempotency key: ${record.idempotencyKey}`
-      );
     });
   });
 

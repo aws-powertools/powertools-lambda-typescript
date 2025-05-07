@@ -89,9 +89,6 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
    * @param record
    */
   protected async _deleteRecord(record: IdempotencyRecord): Promise<void> {
-    console.debug(
-      `Deleting record for idempotency key: ${record.idempotencyKey}`
-    );
     await this.#client.del([record.idempotencyKey]);
   }
 
@@ -188,9 +185,6 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
        *   - SET see https://redis.io/commands/set/
        */
 
-      console.debug(
-        `Putting record on redis for idempotency key: ${record.idempotencyKey}`
-      );
       const response = await this.#client.set(
         record.idempotencyKey,
         encodedItem,
@@ -267,7 +261,6 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
          */
         await this.#acquireLock(record.idempotencyKey);
 
-        console.debug('Lock acquired, updating record');
         await this.#client.set(record.idempotencyKey, encodedItem, {
           EX: ttl,
         });
@@ -299,7 +292,6 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
     const lockKey = `${idempotencyKey}:lock`;
     const lockValue = 'true';
 
-    console.debug('Acquiring lock to overwrite orphan record');
     const acquired = await this.#client.set(lockKey, lockValue, {
       EX: this.#orphanLockTimeout,
       NX: true,
@@ -310,7 +302,6 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
      *  proceeding, we log the event and raise an error to indicate that the current operation should be
      *  retried after the lock is released by the process that currently holds it.
      */
-    console.debug('Lock acquisition failed, raise to retry');
     throw new IdempotencyItemAlreadyExistsError(
       'Lock acquisition failed, raise to retry'
     );

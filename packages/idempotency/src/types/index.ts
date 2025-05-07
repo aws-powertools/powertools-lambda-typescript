@@ -5,6 +5,7 @@ export type {
 export type {
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
+  BasePersistenceOptions,
 } from './BasePersistenceLayer.js';
 export type {
   IdempotencyConfigOptions,

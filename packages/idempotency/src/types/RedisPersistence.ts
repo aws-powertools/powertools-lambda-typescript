@@ -1,4 +1,5 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type { BasePersistenceOptions } from './BasePersistenceLayer.js';
 
 /**
  * Interface for clients compatible with Redis operations.
@@ -39,9 +40,14 @@ interface RedisCompatibleClient {
 }
 
 /**
- * Options for configuring the Redis persistence layer
+ * Options for the {@link persistence/RedisPersistenceLayer.RedisPersistenceLayer | RedisPersistenceLayer} class constructor.
+ *
+ * @see {@link BasePersistenceOptions} for full list of properties.
+ *
+ * @interface
+ * @property {RedisCompatibleClient} client - The Redis client instance that implements the RedisCompatibleClient interface.
  */
-interface RedisPersistenceOptions {
+interface RedisPersistenceOptions extends BasePersistenceOptions {
   /**
    * Redis client instance that implements the RedisCompatibleClient interface.
    *
@@ -49,32 +55,6 @@ interface RedisPersistenceOptions {
    * before being passed to the `RedisPersistenceLayer`.
    */
   client: RedisCompatibleClient;
-
-  /**
-   * Redis JSON attribute name for expiry timestamp (default: 'expiration')
-   */
-  expiryAttr?: string;
-
-  /**
-   * Redis JSON attribute name for in-progress expiry timestamp (default: 'in_progress_expiration')
-   */
-  inProgressExpiryAttr?: string;
-
-  /**
-   * Redis JSON attribute name for status (default: 'status')
-   */
-  statusAttr?: string;
-
-  /**
-   * Redis JSON attribute name for response data (default: 'data')
-   */
-  dataAttr?: string;
-
-  /**
-   * Redis JSON attribute name for hashed representation of the parts of the event used for validation
-   * (default: 'validation')
-   */
-  validationKeyAttr?: string;
 }
 
 export type { RedisCompatibleClient, RedisPersistenceOptions };

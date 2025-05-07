@@ -114,23 +114,10 @@ class IdempotencyKeyError extends IdempotencyUnknownError {
 }
 
 /**
- * Error connecting to the persistence layer
- */
-class IdempotencyPersistenceConnectionError extends IdempotencyUnknownError {
-  public constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-    this.name = 'IdempotencyPersistenceConnectionError';
-  }
-}
-
-/**
  * Error with the persistence layer's consistency, needs to be removed
  */
 class IdempotencyPersistenceConsistencyError extends IdempotencyUnknownError {
-  public constructor(
-    message: string,
-    options?: ErrorOptions
-  ) {
+  public constructor(message: string, options?: ErrorOptions) {
     super(message, options);
     this.name = 'IdempotencyPersistenceConsistencyError';
   }
@@ -145,7 +132,6 @@ export {
   IdempotencyValidationError,
   IdempotencyInconsistentStateError,
   IdempotencyPersistenceLayerError,
-  IdempotencyPersistenceConnectionError,
   IdempotencyPersistenceConsistencyError,
   IdempotencyKeyError,
 };

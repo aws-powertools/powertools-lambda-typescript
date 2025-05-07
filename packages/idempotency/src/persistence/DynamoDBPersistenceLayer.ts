@@ -7,7 +7,6 @@ import {
   ConditionalCheckFailedException,
   DeleteItemCommand,
   DynamoDBClient,
-  type DynamoDBClientConfig,
   GetItemCommand,
   PutItemCommand,
   UpdateItemCommand,
@@ -52,7 +51,6 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
  */
 class DynamoDBPersistenceLayer extends BasePersistenceLayer {
   private client: DynamoDBClient;
-  private clientConfig: DynamoDBClientConfig = {};
   private dataAttr: string;
   private expiryAttr: string;
   private inProgressExpiryAttr: string;

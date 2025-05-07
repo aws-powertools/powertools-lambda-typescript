@@ -1,3 +1,4 @@
+import type { BasePersistenceAttributes } from './types/BasePersistenceLayer.js';
 /**
  * Number of times to retry a request in case of `IdempotencyInconsistentStateError`
  *
@@ -20,4 +21,22 @@ const IdempotencyRecordStatus = {
   EXPIRED: 'EXPIRED',
 } as const;
 
-export { IdempotencyRecordStatus, MAX_RETRIES };
+/**
+ * Default persistence attribute key names for persistence layers
+ */
+const DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES: Record<
+  keyof Required<BasePersistenceAttributes>,
+  string
+> = {
+  statusAttr: 'status',
+  expiryAttr: 'expiration',
+  inProgressExpiryAttr: 'in_progress_expiration',
+  dataAttr: 'data',
+  validationKeyAttr: 'validation',
+} as const;
+
+export {
+  IdempotencyRecordStatus,
+  MAX_RETRIES,
+  DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES,
+};

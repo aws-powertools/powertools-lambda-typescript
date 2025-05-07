@@ -17,7 +17,7 @@ interface BasePersistenceLayerInterface {
 }
 
 /**
- * Base interface for persistence options i.e. DynamoDB, Redis, etc.
+ * Base attributes used by the persistence layer i.e. DynamoDB, Redis, etc.
  *
  * @interface
  * @property {string} [expiryAttr] - The attribute name for expiry timestamp. Defaults to 'expiration'.

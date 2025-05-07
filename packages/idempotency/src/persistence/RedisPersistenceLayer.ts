@@ -32,14 +32,6 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
  *
  * @example
  * ```ts
- * import { RedisPersistenceLayer } from '@aws-lambda-powertools/idempotency/redis';
- *
- * const persistence = await new RedisPersistenceLayer({ url: 'redis://localhost:6379' }).init();
- * ```
- *
- * @example
- * ```ts
- * // Using your own Redis client
  * import { createClient } from '@redis/client';
  * import { RedisPersistenceLayer } from '@aws-lambda-powertools/idempotency/redis';
  * import { RedisCompatibleClient } from '@aws-lambda-powertools/idempotency/redis/types';

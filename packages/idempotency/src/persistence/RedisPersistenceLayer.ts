@@ -42,7 +42,6 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
  * });
  * ```
  *
- * @see https://github.com/redis/node-redis/tree/master/packages/client
  * @category Persistence Layer
  */
 class RedisPersistenceLayer extends BasePersistenceLayer {

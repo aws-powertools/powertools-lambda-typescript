@@ -26,7 +26,7 @@ interface BasePersistenceLayerInterface {
  * @property {string} [dataAttr] - The attribute name for response data. Defaults to 'data'.
  * @property {string} [validationKeyAttr] - The attribute name for hashed representation of the parts of the event used for validation. Defaults to 'validation'.
  */
-interface BasePersistenceOptions {
+interface BasePersistenceAttributes {
   expiryAttr?: string;
   inProgressExpiryAttr?: string;
   statusAttr?: string;
@@ -37,5 +37,5 @@ interface BasePersistenceOptions {
 export type {
   BasePersistenceLayerOptions,
   BasePersistenceLayerInterface,
-  BasePersistenceOptions,
+  BasePersistenceAttributes,
 };

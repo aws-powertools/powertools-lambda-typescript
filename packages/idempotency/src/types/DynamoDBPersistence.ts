@@ -2,12 +2,12 @@ import type {
   DynamoDBClient,
   DynamoDBClientConfig,
 } from '@aws-sdk/client-dynamodb';
-import type { BasePersistenceOptions } from './BasePersistenceLayer.js';
+import type { BasePersistenceAttributes } from './BasePersistenceLayer.js';
 
 /**
  * Base interface for DynamoPersistenceOptions.
  *
- * @see {@link BasePersistenceOptions} for full list of properties.
+ * @see {@link BasePersistenceAttributes} for full list of properties.
  *
  * @interface
  * @property {string} tableName - The DynamoDB table name.
@@ -15,7 +15,7 @@ import type { BasePersistenceOptions } from './BasePersistenceLayer.js';
  * @property {string} [sortKeyAttr] - The DynamoDB table sort key attribute name, use only when table has one. Defaults to undefined.
  * @property {string} [staticPkValue] - The DynamoDB table static partition key value, use only with sortKeyAttr. Defaults to `idempotency#{LAMBDA_FUNCTION_NAME}`.
  */
-interface DynamoDBPersistenceOptionsBase extends BasePersistenceOptions {
+interface DynamoDBPersistenceOptionsBase extends BasePersistenceAttributes {
   tableName: string;
   keyAttr?: string;
   sortKeyAttr?: string;
@@ -57,7 +57,7 @@ interface DynamoDBPersistenceOptionsWithClientInstance
 /**
  * Options for the {@link persistence/DynamoDBPersistenceLayer.DynamoDBPersistenceLayer | DynamoDBPersistenceLayer} class constructor.
  *
- * @see {@link BasePersistenceOptions}, {@link DynamoDBPersistenceOptionsBase}, {@link DynamoDBPersistenceOptionsWithClientConfig},
+ * @see {@link BasePersistenceAttributes}, {@link DynamoDBPersistenceOptionsBase}, {@link DynamoDBPersistenceOptionsWithClientConfig},
  * {@link DynamoDBPersistenceOptionsWithClientInstance} for full list of properties.
  *
  * @type DynamoDBPersistenceOptions

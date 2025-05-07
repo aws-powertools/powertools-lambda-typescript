@@ -1,5 +1,5 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
-import type { BasePersistenceOptions } from './BasePersistenceLayer.js';
+import type { BasePersistenceAttributes } from './BasePersistenceLayer.js';
 
 /**
  * Interface for clients compatible with Redis operations.
@@ -42,12 +42,12 @@ interface RedisCompatibleClient {
 /**
  * Options for the {@link persistence/RedisPersistenceLayer.RedisPersistenceLayer | RedisPersistenceLayer} class constructor.
  *
- * @see {@link BasePersistenceOptions} for full list of properties.
+ * @see {@link BasePersistenceAttributes} for full list of properties.
  *
  * @interface
  * @property {RedisCompatibleClient} client - The client must be properly initialized and connected to a Redis server
  */
-interface RedisPersistenceOptions extends BasePersistenceOptions {
+interface RedisPersistenceOptions extends BasePersistenceAttributes {
   client: RedisCompatibleClient;
 }
 

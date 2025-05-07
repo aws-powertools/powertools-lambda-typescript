@@ -44,6 +44,9 @@ interface RedisCompatibleClient {
 interface RedisPersistenceOptions {
   /**
    * Redis client instance that implements the RedisCompatibleClient interface.
+   *
+   * The client must be properly initialized and connected to a Redis server
+   * before being passed to the `RedisPersistenceLayer`.
    */
   client: RedisCompatibleClient;
 

@@ -17,15 +17,13 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
 /**
  * Redis persistence layer for idempotency records.
  *
- * This class uses Redis to write and read idempotency records. It supports both the default Redis client
- * from @redis/client package as well as custom Redis clients.
+ * This class uses Redis to write and read idempotency records. It supports any Redis client that
+ * implements the RedisCompatibleClient interface.
  *
  * There are various options to configure the persistence layer, such as attribute names for storing
  * status, expiry, data, and validation keys in Redis.
  *
- * With default configuration, you don't need to create the Redis client beforehand, the persistence layer
- * will create it for you using the provided options. You can also bring your own Redis client by passing
- * it through the `client` option.
+ * You must provide your own connected Redis client instance by passing it through the `client` option.
  *
  * See the {@link https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/ Idempotency documentation}
  * for more details on the Redis configuration and usage patterns.

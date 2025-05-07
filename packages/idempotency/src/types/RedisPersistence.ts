@@ -1,13 +1,13 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 
 /**
- * Protocol defining the interface for a Redis client.
+ * Interface for clients compatible with Redis operations.
  *
- * This protocol outlines the expected behavior of a Redis client, allowing for
- * standardization among different implementations and allowing customers to extend it
- * in their own implementation.
+ * This interface defines the minimum set of Redis operations that must be implemented
+ * by a client to be used with the Redis persistence layer. It supports basic key-value
+ * operations like get, set, and delete.
  */
-interface RedisClientProtocol {
+interface RedisCompatibleClient {
   /**
    * Retrieves the value associated with the given key.
    * @param name The key to get the value for
@@ -19,13 +19,15 @@ interface RedisClientProtocol {
    * @param name The key to set
    * @param value The value to set
    * @param options Optional parameters for setting the value
+   * @param options.EX Set the specified expire time, in seconds (a positive integer)
+   * @param options.NX Only set the key if it does not already exist
    */
   set(
     name: string,
     value: JSONValue,
     options?: {
-      EX?: number; // Expiration time in seconds
-      NX?: boolean; // Only set the key if it does not already exist
+      EX?: number;
+      NX?: boolean;
     }
   ): Promise<string | null>;
 
@@ -86,10 +88,10 @@ interface RedisConnectionConfig {
  */
 interface RedisPersistenceOptions extends RedisConnectionConfig {
   /**
-   * A Redis client that implements the RedisClientProtocol interface.
+   * A Redis client that implements the RedisCompatibleClient interface.
    * If provided, all other connection configuration options will be ignored.
    */
-  client?: RedisClientProtocol;
+  client?: RedisCompatibleClient;
 
   /**
    * Redis JSON attribute name for expiry timestamp (default: 'expiration')
@@ -119,7 +121,7 @@ interface RedisPersistenceOptions extends RedisConnectionConfig {
 }
 
 export type {
-  RedisClientProtocol,
+  RedisCompatibleClient,
   RedisConnectionConfig,
   RedisPersistenceOptions,
 };

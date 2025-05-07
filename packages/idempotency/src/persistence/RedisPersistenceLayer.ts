@@ -10,7 +10,7 @@ import {
 } from '../errors.js';
 import type { IdempotencyRecordStatusValue } from '../types/IdempotencyRecord.js';
 import type {
-  RedisClientProtocol,
+  RedisCompatibleClient,
   RedisPersistenceOptions,
 } from '../types/RedisPersistence.js';
 import { BasePersistenceLayer } from './BasePersistenceLayer.js';
@@ -45,13 +45,13 @@ import RedisConnection from './RedisConnection.js';
  * // Using your own Redis client
  * import { createClient } from '@redis/client';
  * import { RedisPersistenceLayer } from '@aws-lambda-powertools/idempotency/redis';
- * import { RedisClientProtocol } from '@aws-lambda-powertools/idempotency/redis/types';
+ * import { RedisCompatibleClient } from '@aws-lambda-powertools/idempotency/redis/types';
  *
  * const redisClient = createClient({ url: 'redis://localhost:6379' });
  * await redisClient.connect();
  *
  * const persistence = new RedisPersistenceLayer({
- *   client: redisClient as RedisClientProtocol,
+ *   client: redisClient as RedisCompatibleClient,
  * });
  * ```
  *
@@ -59,7 +59,7 @@ import RedisConnection from './RedisConnection.js';
  * @category Persistence Layer
  */
 class RedisPersistenceLayer extends BasePersistenceLayer {
-  readonly #client: RedisClientProtocol | RedisClientType | RedisClusterType;
+  readonly #client: RedisCompatibleClient | RedisClientType | RedisClusterType;
   readonly #dataAttr: string;
   readonly #expiryAttr: string;
   readonly #inProgressExpiryAttr: string;
@@ -194,7 +194,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
    * @param client - The Redis client to check
    */
   #isDefaultRedisClient(
-    client: RedisClientProtocol | RedisClientType | RedisClusterType
+    client: RedisCompatibleClient | RedisClientType | RedisClusterType
   ): client is RedisClientType | RedisClusterType {
     return 'isOpen' in client;
   }

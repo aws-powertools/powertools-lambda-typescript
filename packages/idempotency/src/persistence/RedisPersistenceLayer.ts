@@ -1,7 +1,7 @@
 import type { JSONObject } from '@aws-lambda-powertools/commons/types';
 import {
-  DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES,
   IdempotencyRecordStatus,
+  PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS,
 } from '../constants.js';
 import {
   IdempotencyItemAlreadyExistsError,
@@ -60,17 +60,17 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
     super();
 
     this.#statusAttr =
-      options.statusAttr ?? DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES.statusAttr;
+      options.statusAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.statusAttr;
     this.#expiryAttr =
-      options.expiryAttr ?? DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES.expiryAttr;
+      options.expiryAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.expiryAttr;
     this.#inProgressExpiryAttr =
       options.inProgressExpiryAttr ??
-      DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES.inProgressExpiryAttr;
+      PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.inProgressExpiryAttr;
     this.#dataAttr =
-      options.dataAttr ?? DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES.dataAttr;
+      options.dataAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.dataAttr;
     this.#validationKeyAttr =
       options.validationKeyAttr ??
-      DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES.validationKeyAttr;
+      PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.validationKeyAttr;
     this.#orphanLockTimeout = Math.min(10, this.expiresAfterSeconds);
     this.#client = options.client;
   }

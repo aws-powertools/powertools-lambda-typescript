@@ -22,9 +22,9 @@ const IdempotencyRecordStatus = {
 } as const;
 
 /**
- * Default persistence attribute key names for persistence layers
+ * Base persistence attribute key names for persistence layers
  */
-const DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES: Record<
+const PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS: Record<
   keyof Required<BasePersistenceAttributes>,
   string
 > = {
@@ -38,5 +38,5 @@ const DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES: Record<
 export {
   IdempotencyRecordStatus,
   MAX_RETRIES,
-  DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES,
+  PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS,
 };

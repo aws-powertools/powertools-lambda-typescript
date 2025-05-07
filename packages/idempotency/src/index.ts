@@ -14,5 +14,5 @@ export { makeIdempotent } from './makeIdempotent.js';
 export { idempotent } from './idempotencyDecorator.js';
 export {
   IdempotencyRecordStatus,
-  DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES,
+  PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS,
 } from './constants.js';

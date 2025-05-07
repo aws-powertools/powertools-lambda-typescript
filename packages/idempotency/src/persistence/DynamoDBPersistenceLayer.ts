@@ -14,8 +14,8 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import {
-  DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES,
   IdempotencyRecordStatus,
+  PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS,
 } from '../constants.js';
 import {
   IdempotencyItemAlreadyExistsError,
@@ -69,17 +69,17 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
     this.tableName = config.tableName;
     this.keyAttr = config.keyAttr ?? 'id';
     this.statusAttr =
-      config.statusAttr ?? DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES.statusAttr;
+      config.statusAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.statusAttr;
     this.expiryAttr =
-      config.expiryAttr ?? DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES.expiryAttr;
+      config.expiryAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.expiryAttr;
     this.inProgressExpiryAttr =
       config.inProgressExpiryAttr ??
-      DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES.inProgressExpiryAttr;
+      PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.inProgressExpiryAttr;
     this.dataAttr =
-      config.dataAttr ?? DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES.dataAttr;
+      config.dataAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.dataAttr;
     this.validationKeyAttr =
       config.validationKeyAttr ??
-      DEFAULT_PERSISTENCE_LAYER_ATTRIBUTES.validationKeyAttr;
+      PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.validationKeyAttr;
     if (config.sortKeyAttr === this.keyAttr) {
       throw new Error(
         `keyAttr [${this.keyAttr}] and sortKeyAttr [${config.sortKeyAttr}] cannot be the same!`

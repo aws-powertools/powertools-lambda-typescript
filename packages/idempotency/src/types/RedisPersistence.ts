@@ -45,15 +45,9 @@ interface RedisCompatibleClient {
  * @see {@link BasePersistenceOptions} for full list of properties.
  *
  * @interface
- * @property {RedisCompatibleClient} client - The Redis client instance that implements the RedisCompatibleClient interface.
+ * @property {RedisCompatibleClient} client - The client must be properly initialized and connected to a Redis server
  */
 interface RedisPersistenceOptions extends BasePersistenceOptions {
-  /**
-   * Redis client instance that implements the RedisCompatibleClient interface.
-   *
-   * The client must be properly initialized and connected to a Redis server
-   * before being passed to the `RedisPersistenceLayer`.
-   */
   client: RedisCompatibleClient;
 }
 

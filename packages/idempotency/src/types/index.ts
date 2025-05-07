@@ -22,6 +22,5 @@ export type {
 } from './DynamoDBPersistence.js';
 export type {
   RedisCompatibleClient,
-  RedisConnectionConfig,
   RedisPersistenceOptions,
 } from './RedisPersistence.js';

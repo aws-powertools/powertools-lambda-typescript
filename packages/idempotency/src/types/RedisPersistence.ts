@@ -39,59 +39,13 @@ interface RedisCompatibleClient {
 }
 
 /**
- * Redis client connection configuration parameters
- */
-interface RedisConnectionConfig {
-  /**
-   * Redis host
-   */
-  host?: string;
-
-  /**
-   * Redis port (default: 6379)
-   */
-  port?: number;
-
-  /**
-   * Redis username
-   */
-  username?: string;
-
-  /**
-   * Redis password
-   */
-  password?: string;
-
-  /**
-   * Redis connection string URL, overrides host/port if provided
-   */
-  url?: string;
-
-  /**
-   * Redis database index (default: 0)
-   */
-  dbIndex?: number;
-
-  /**
-   * Redis client mode (default: 'standalone')
-   */
-  mode?: 'standalone' | 'cluster';
-
-  /**
-   * Whether to use SSL for Redis connection (default: true)
-   */
-  ssl?: boolean;
-}
-
-/**
  * Options for configuring the Redis persistence layer
  */
-interface RedisPersistenceOptions extends RedisConnectionConfig {
+interface RedisPersistenceOptions {
   /**
-   * A Redis client that implements the RedisCompatibleClient interface.
-   * If provided, all other connection configuration options will be ignored.
+   * Redis client instance that implements the RedisCompatibleClient interface.
    */
-  client?: RedisCompatibleClient;
+  client: RedisCompatibleClient;
 
   /**
    * Redis JSON attribute name for expiry timestamp (default: 'expiration')
@@ -120,8 +74,4 @@ interface RedisPersistenceOptions extends RedisConnectionConfig {
   validationKeyAttr?: string;
 }
 
-export type {
-  RedisCompatibleClient,
-  RedisConnectionConfig,
-  RedisPersistenceOptions,
-};
+export type { RedisCompatibleClient, RedisPersistenceOptions };

@@ -64,24 +64,28 @@ Both are also able to parse either an object or JSON string as an input.
 | **APIGatewayRequestAuthorizerEventSchema**   | Lambda Event Source payload for Amazon API Gateway Request Authorizer                 |
 | **APIGatewayTokenAuthorizerEventSchema**     | Lambda Event Source payload for Amazon API Gateway Token Authorizer                   |
 | **APIGatewayProxyEventV2Schema**             | Lambda Event Source payload for Amazon API Gateway v2 payload                         |
-| **APIGatewayProxyWebsocketEventSchema**     | Lambda Event Source payload for Amazon API Gateway WebSocket events                    |
+| **APIGatewayProxyWebsocketEventSchema**      | Lambda Event Source payload for Amazon API Gateway WebSocket events                   |
 | **APIGatewayRequestAuthorizerEventV2Schema** | Lambda Event Source payload for Amazon API Gateway v2 Authorizer                      |
+| **AppSyncResolverSchema**                    | Lambda Event Source payload for AWS AppSync GraphQL API resolver                      |
+| **AppSyncBatchResolverSchema**               | Lambda Event Source payload for AWS AppSync GraphQL API batch resolver                |
+| **AppSyncEventsPublishSchema**               | Lambda Event Source payload for AWS AppSync Events API `PUBLISH` operation            |
+| **AppSyncEventsSubscribeSchema**             | Lambda Event Source payload for AWS AppSync Events API `SUBSCRIBE` operation          |
 | **CloudFormationCustomResourceCreateSchema** | Lambda Event Source payload for AWS CloudFormation `CREATE` operation                 |
 | **CloudFormationCustomResourceUpdateSchema** | Lambda Event Source payload for AWS CloudFormation `UPDATE` operation                 |
 | **CloudFormationCustomResourceDeleteSchema** | Lambda Event Source payload for AWS CloudFormation `DELETE` operation                 |
 | **CloudwatchLogsSchema**                     | Lambda Event Source payload for Amazon CloudWatch Logs                                |
-| **PreSignupTriggerSchema**                   | Lambda Event Source payload for Amazon Cognito Pre Sign-up trigger                      |
-| **PostConfirmationTriggerSchema**            | Lambda Event Source payload for Amazon Cognito Post Confirmation trigger               |
-| **PreTokenGenerationTriggerSchema**          | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger            |
-| **CustomMessageTriggerSchema**               | Lambda Event Source payload for Amazon Cognito Custom Message trigger                  |
-| **MigrateUserTriggerSchema**                 | Lambda Event Source payload for Amazon Cognito User Migration trigger                  |
-| **CustomSMSTriggerSchema**                   | Lambda Event Source payload for Amazon Cognito Custom SMS trigger                      |
-| **CustomEmailTriggerSchema**                 | Lambda Event Source payload for Amazon Cognito Custom Email trigger                    |
-| **DefineAuthChallengeTriggerSchema**         | Lambda Event Source payload for Amazon Cognito Define Auth Challenge trigger           |
-| **CreateAuthChallengeTriggerSchema**         | Lambda Event Source payload for Amazon Cognito Create Auth Challenge trigger           |
-| **VerifyAuthChallengeResponseTriggerSchema** | Lambda Event Source payload for Amazon Cognito Verify Auth Challenge Response trigger   |
-| **PreTokenGenerationTriggerSchemaV1**        | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v1          |
-| **PreTokenGenerationTriggerSchemaV2AndV3**   | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v2 and v3       |
+| **PreSignupTriggerSchema**                   | Lambda Event Source payload for Amazon Cognito Pre Sign-up trigger                    |
+| **PostConfirmationTriggerSchema**            | Lambda Event Source payload for Amazon Cognito Post Confirmation trigger              |
+| **PreTokenGenerationTriggerSchema**          | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger           |
+| **CustomMessageTriggerSchema**               | Lambda Event Source payload for Amazon Cognito Custom Message trigger                 |
+| **MigrateUserTriggerSchema**                 | Lambda Event Source payload for Amazon Cognito User Migration trigger                 |
+| **CustomSMSTriggerSchema**                   | Lambda Event Source payload for Amazon Cognito Custom SMS trigger                     |
+| **CustomEmailTriggerSchema**                 | Lambda Event Source payload for Amazon Cognito Custom Email trigger                   |
+| **DefineAuthChallengeTriggerSchema**         | Lambda Event Source payload for Amazon Cognito Define Auth Challenge trigger          |
+| **CreateAuthChallengeTriggerSchema**         | Lambda Event Source payload for Amazon Cognito Create Auth Challenge trigger          |
+| **VerifyAuthChallengeResponseTriggerSchema** | Lambda Event Source payload for Amazon Cognito Verify Auth Challenge Response trigger |
+| **PreTokenGenerationTriggerSchemaV1**        | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v1        |
+| **PreTokenGenerationTriggerSchemaV2AndV3**   | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v2 and v3 |
 | **DynamoDBStreamSchema**                     | Lambda Event Source payload for Amazon DynamoDB Streams                               |
 | **EventBridgeSchema**                        | Lambda Event Source payload for Amazon EventBridge                                    |
 | **KafkaMskEventSchema**                      | Lambda Event Source payload for AWS MSK payload                                       |

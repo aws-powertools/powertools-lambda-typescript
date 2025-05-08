@@ -1,0 +1,28 @@
+{
+  "identity": null,
+  "result": null,
+  "request": {
+    "headers": {
+      "key": "value"
+    },
+    "domainName": null
+  },
+  "info": {
+    "channel": {
+      "path": "/request/channel",
+      "segments": [
+        "request",
+        "channel"
+      ]
+    },
+    "channelNamespace": {
+      "name": "request"
+    },
+    "operation": "PUBLISH"
+  },
+  "error": null,
+  "prev": null,
+  "stash": {},
+  "outErrors": [],
+  "events": null
+}

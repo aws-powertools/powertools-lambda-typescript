@@ -5,11 +5,18 @@ export {
   APIGatewayTokenAuthorizerEventSchema,
   APIGatewayEventRequestContextSchema,
 } from './api-gateway.js';
-export { APIGatewayProxyWebsocketEventSchema } from './api-gateway-websocket.js'
+export { APIGatewayProxyWebsocketEventSchema } from './api-gateway-websocket.js';
 export {
   AppSyncResolverSchema,
   AppSyncBatchResolverSchema,
 } from './appsync.js';
+export {
+  AppSyncEventsBaseSchema,
+  AppSyncEventsRequestSchema,
+  AppSyncEventsInfoSchema,
+  AppSyncEventsPublishSchema,
+  AppSyncEventsSubscribeSchema,
+} from './appsync-events.js';
 export {
   APIGatewayProxyEventV2Schema,
   APIGatewayRequestAuthorizerEventV2Schema,

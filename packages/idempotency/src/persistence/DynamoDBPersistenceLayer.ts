@@ -7,13 +7,15 @@ import {
   ConditionalCheckFailedException,
   DeleteItemCommand,
   DynamoDBClient,
-  type DynamoDBClientConfig,
   GetItemCommand,
   PutItemCommand,
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import { IdempotencyRecordStatus } from '../constants.js';
+import {
+  IdempotencyRecordStatus,
+  PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS,
+} from '../constants.js';
 import {
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
@@ -49,7 +51,6 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
  */
 class DynamoDBPersistenceLayer extends BasePersistenceLayer {
   private client: DynamoDBClient;
-  private clientConfig: DynamoDBClientConfig = {};
   private dataAttr: string;
   private expiryAttr: string;
   private inProgressExpiryAttr: string;
@@ -65,12 +66,18 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
 
     this.tableName = config.tableName;
     this.keyAttr = config.keyAttr ?? 'id';
-    this.statusAttr = config.statusAttr ?? 'status';
-    this.expiryAttr = config.expiryAttr ?? 'expiration';
+    this.statusAttr =
+      config.statusAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.statusAttr;
+    this.expiryAttr =
+      config.expiryAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.expiryAttr;
     this.inProgressExpiryAttr =
-      config.inProgressExpiryAttr ?? 'in_progress_expiration';
-    this.dataAttr = config.dataAttr ?? 'data';
-    this.validationKeyAttr = config.validationKeyAttr ?? 'validation';
+      config.inProgressExpiryAttr ??
+      PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.inProgressExpiryAttr;
+    this.dataAttr =
+      config.dataAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.dataAttr;
+    this.validationKeyAttr =
+      config.validationKeyAttr ??
+      PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.validationKeyAttr;
     if (config.sortKeyAttr === this.keyAttr) {
       throw new Error(
         `keyAttr [${this.keyAttr}] and sortKeyAttr [${config.sortKeyAttr}] cannot be the same!`

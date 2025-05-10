@@ -113,6 +113,16 @@ class IdempotencyKeyError extends IdempotencyUnknownError {
   }
 }
 
+/**
+ * Error with the persistence layer's consistency, needs to be removed
+ */
+class IdempotencyPersistenceConsistencyError extends IdempotencyUnknownError {
+  public constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'IdempotencyPersistenceConsistencyError';
+  }
+}
+
 export {
   IdempotencyUnknownError,
   IdempotencyItemAlreadyExistsError,
@@ -122,5 +132,6 @@ export {
   IdempotencyValidationError,
   IdempotencyInconsistentStateError,
   IdempotencyPersistenceLayerError,
+  IdempotencyPersistenceConsistencyError,
   IdempotencyKeyError,
 };

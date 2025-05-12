@@ -17,7 +17,7 @@ import { BasePersistenceLayer } from './BasePersistenceLayer.js';
 import { IdempotencyRecord } from './IdempotencyRecord.js';
 
 /**
- * Valey- and Redis OOS-compatible persistence layer for idempotency records.
+ * Valkey and Redis OOS-compatible persistence layer for idempotency records.
  *
  * This class uses a cache client to write and read idempotency records. It supports any client that
  * implements the {@link CacheClient | `CacheClient`} interface.

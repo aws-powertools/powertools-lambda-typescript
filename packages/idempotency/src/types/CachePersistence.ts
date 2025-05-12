@@ -25,16 +25,11 @@ interface CacheClient {
    * @param name - The key to set
    * @param value - The value to set
    * @param options - Optional parameters for setting the value
-   * @param options.EX - Set the specified expire time, in seconds (a positive integer)
-   * @param options.NX - Only set the key if it does not already exist
    */
   set(
     name: CacheValue,
     value: unknown,
-    options?: {
-      EX?: number;
-      NX?: boolean;
-    }
+    options?: unknown
   ): Promise<CacheValue | null>;
 
   /**

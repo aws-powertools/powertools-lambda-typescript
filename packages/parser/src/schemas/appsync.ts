@@ -229,4 +229,11 @@ const AppSyncResolverSchema = z.object({
 
 const AppSyncBatchResolverSchema = z.array(AppSyncResolverSchema);
 
-export { AppSyncResolverSchema, AppSyncBatchResolverSchema };
+export {
+  AppSyncResolverSchema,
+  AppSyncBatchResolverSchema,
+  AppSyncCognitoIdentity,
+  AppSyncIamIdentity,
+  AppSyncOidcIdentity,
+  AppSyncLambdaIdentity,
+};

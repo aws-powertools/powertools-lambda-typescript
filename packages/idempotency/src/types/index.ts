@@ -5,6 +5,7 @@ export type {
 export type {
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
+  BasePersistenceAttributes,
 } from './BasePersistenceLayer.js';
 export type {
   IdempotencyConfigOptions,
@@ -20,3 +21,7 @@ export type {
   DynamoDBPersistenceOptionsWithClientConfig,
   DynamoDBPersistenceOptionsWithClientInstance,
 } from './DynamoDBPersistence.js';
+export type {
+  CacheClient,
+  CachePersistenceOptions,
+} from './CachePersistence.js';

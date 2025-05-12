@@ -30,7 +30,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   // envVarsService is always initialized in the constructor
   private envVarsService!: EnvironmentVariablesService;
   private eventKeyJmesPath?: string;
-  private expiresAfterSeconds: number = 60 * 60; // 1 hour default
+  protected expiresAfterSeconds: number = 60 * 60; // 1 hour default
   private hashFunction = 'md5';
   private payloadValidationEnabled = false;
   private throwOnNoIdempotencyKey = false;

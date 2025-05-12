@@ -26,7 +26,7 @@ type IdempotencyRecordOptions = {
    */
   status: IdempotencyRecordStatusValue;
   /**
-   * The expiry timestamp of the record in milliseconds UTC.
+   * The expiry timestamp of the record in seconds UTC.
    */
   expiryTimestamp?: number;
   /**

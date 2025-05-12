@@ -5,7 +5,9 @@
     "./src/types/index.ts",
     "./src/middleware/makeHandlerIdempotent.ts",
     "./src/persistence/index.ts",
-    "./src/persistence/DynamoDBPersistenceLayer.ts"
+    "./src/persistence/DynamoDBPersistenceLayer.ts",
+    "./src/persistence/CachePersistenceLayer.ts",
+    "./src/types/CachePersistence.ts",
   ],
   "readme": "README.md"
 }

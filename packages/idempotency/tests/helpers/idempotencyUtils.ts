@@ -1,5 +1,6 @@
 import { vi } from 'vitest';
 import { BasePersistenceLayer } from '../../src/persistence/BasePersistenceLayer.js';
+import { CachePersistenceLayer } from '../../src/persistence/CachePersistenceLayer.js';
 import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
 import type { IdempotencyRecord } from '../../src/persistence/IdempotencyRecord.js';
 
@@ -38,4 +39,31 @@ class DynamoDBPersistenceLayerTestClass extends DynamoDBPersistenceLayer {
   }
 }
 
-export { PersistenceLayerTestClass, DynamoDBPersistenceLayerTestClass };
+/**
+ * Dummy class to test the abstract class `CachePersistenceLayer`.
+ *
+ * This class is used in the unit tests.
+ */
+class CachePersistenceLayerTestClass extends CachePersistenceLayer {
+  public _deleteRecord(record: IdempotencyRecord): Promise<void> {
+    return super._deleteRecord(record);
+  }
+
+  public _getRecord(idempotencyKey: string): Promise<IdempotencyRecord> {
+    return super._getRecord(idempotencyKey);
+  }
+
+  public _putRecord(_record: IdempotencyRecord): Promise<void> {
+    return super._putRecord(_record);
+  }
+
+  public _updateRecord(record: IdempotencyRecord): Promise<void> {
+    return super._updateRecord(record);
+  }
+}
+
+export {
+  PersistenceLayerTestClass,
+  DynamoDBPersistenceLayerTestClass,
+  CachePersistenceLayerTestClass,
+};

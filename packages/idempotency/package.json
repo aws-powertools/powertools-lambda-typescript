@@ -52,6 +52,14 @@
       "import": "./lib/esm/types/DynamoDBPersistence.js",
       "require": "./lib/cjs/types/DynamoDBPersistence.js"
     },
+    "./cache": {
+      "import": "./lib/esm/persistence/CachePersistenceLayer.js",
+      "require": "./lib/cjs/persistence/CachePersistenceLayer.js"
+    },
+    "./cache/types": {
+      "import": "./lib/esm/types/CachePersistence.js",
+      "require": "./lib/cjs/types/CachePersistence.js"
+    },
     "./middleware": {
       "import": "./lib/esm/middleware/makeHandlerIdempotent.js",
       "require": "./lib/cjs/middleware/makeHandlerIdempotent.js"
@@ -74,6 +82,14 @@
       "dynamodb/types": [
         "lib/cjs/types/DynamoDBPersistence.d.ts",
         "lib/esm/types/DynamoDBPersistence.d.ts"
+      ],
+      "cache": [
+        "lib/cjs/persistence/CachePersistenceLayer.d.ts",
+        "lib/esm/persistence/CachePersistenceLayer.d.ts"
+      ],
+      "cache/types": [
+        "lib/cjs/types/CachePersistence.d.ts",
+        "lib/esm/types/CachePersistence.d.ts"
       ],
       "middleware": [
         "lib/cjs/middleware/makeHandlerIdempotent.d.ts",
@@ -104,7 +120,9 @@
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": ">=3.x",
     "@aws-sdk/lib-dynamodb": ">=3.x",
-    "@middy/core": "4.x || 5.x || 6.x"
+    "@middy/core": "4.x || 5.x || 6.x",
+    "@redis/client": "^5.0.1",
+    "@valkey/valkey-glide": "^1.3.4"
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-dynamodb": {
@@ -114,6 +132,12 @@
       "optional": true
     },
     "@middy/core": {
+      "optional": true
+    },
+    "@redis/client": {
+      "optional": true
+    },
+    "@valkey/valkey-glide": {
       "optional": true
     }
   },

@@ -2,29 +2,22 @@ import type {
   DynamoDBClient,
   DynamoDBClientConfig,
 } from '@aws-sdk/client-dynamodb';
+import type { BasePersistenceAttributes } from './BasePersistenceLayer.js';
 
 /**
  * Base interface for DynamoPersistenceOptions.
  *
+ * @see {@link BasePersistenceAttributes} for full list of properties.
+ *
  * @interface
  * @property {string} tableName - The DynamoDB table name.
  * @property {string} [keyAttr] - The DynamoDB table key attribute name. Defaults to 'id'.
- * @property {string} [expiryAttr] - The DynamoDB table expiry attribute name. Defaults to 'expiration'.
- * @property {string} [inProgressExpiryAttr] - The DynamoDB table in progress expiry attribute name. Defaults to 'in_progress_expiry_attr'.
- * @property {string} [statusAttr] - The DynamoDB table status attribute name. Defaults to 'status'.
- * @property {string} [dataAttr] - The DynamoDB table data attribute name. Defaults to 'data'.
- * @property {string} [validationKeyAttr] - The DynamoDB table validation key attribute name. Defaults to 'validation'.
  * @property {string} [sortKeyAttr] - The DynamoDB table sort key attribute name, use only when table has one. Defaults to undefined.
  * @property {string} [staticPkValue] - The DynamoDB table static partition key value, use only with sortKeyAttr. Defaults to `idempotency#{LAMBDA_FUNCTION_NAME}`.
  */
-interface DynamoDBPersistenceOptionsBase {
+interface DynamoDBPersistenceOptionsBase extends BasePersistenceAttributes {
   tableName: string;
   keyAttr?: string;
-  expiryAttr?: string;
-  inProgressExpiryAttr?: string;
-  statusAttr?: string;
-  dataAttr?: string;
-  validationKeyAttr?: string;
   sortKeyAttr?: string;
   staticPkValue?: string;
 }
@@ -64,16 +57,12 @@ interface DynamoDBPersistenceOptionsWithClientInstance
 /**
  * Options for the {@link persistence/DynamoDBPersistenceLayer.DynamoDBPersistenceLayer | DynamoDBPersistenceLayer} class constructor.
  *
- * @see {@link DynamoDBPersistenceOptionsBase}, {@link DynamoDBPersistenceOptionsWithClientConfig}, and {@link DynamoDBPersistenceOptionsWithClientInstance} for full list of properties.
+ * @see {@link BasePersistenceAttributes}, {@link DynamoDBPersistenceOptionsBase}, {@link DynamoDBPersistenceOptionsWithClientConfig},
+ * {@link DynamoDBPersistenceOptionsWithClientInstance} for full list of properties.
  *
  * @type DynamoDBPersistenceOptions
  * @property {string} tableName - The DynamoDB table name.
  * @property {string} [keyAttr] - The DynamoDB table key attribute name. Defaults to 'id'.
- * @property {string} [expiryAttr] - The DynamoDB table expiry attribute name. Defaults to 'expiration'.
- * @property {string} [inProgressExpiryAttr] - The DynamoDB table in progress expiry attribute name. Defaults to 'in_progress_expiry_attr'.
- * @property {string} [statusAttr] - The DynamoDB table status attribute name. Defaults to 'status'.
- * @property {string} [dataAttr] - The DynamoDB table data attribute name. Defaults to 'data'.
- * @property {string} [validationKeyAttr] - The DynamoDB table validation key attribute name. Defaults to 'validation'.
  * @property {string} [sortKeyAttr] - The DynamoDB table sort key attribute name, use only when table has one. Defaults to undefined.
  * @property {string} [staticPkValue] - The DynamoDB table static partition key value, use only with sortKeyAttr. Defaults to `idempotency#{LAMBDA_FUNCTION_NAME}`.
  * @property {DynamoDBClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.

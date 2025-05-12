@@ -19,6 +19,8 @@ export type {
   APIGatewayTokenAuthorizerEvent,
   AppSyncBatchResolverEvent,
   AppSyncResolverEvent,
+  AppSyncEventsPublishEvent,
+  AppSyncEventsSubscribeEvent,
   CloudFormationCustomResourceCreateEvent,
   CloudFormationCustomResourceDeleteEvent,
   CloudFormationCustomResourceUpdateEvent,

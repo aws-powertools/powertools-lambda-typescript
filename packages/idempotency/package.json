@@ -52,13 +52,13 @@
       "import": "./lib/esm/types/DynamoDBPersistence.js",
       "require": "./lib/cjs/types/DynamoDBPersistence.js"
     },
-    "./redis": {
-      "import": "./lib/esm/persistence/RedisPersistenceLayer.js",
-      "require": "./lib/cjs/persistence/RedisPersistenceLayer.js"
+    "./cache": {
+      "import": "./lib/esm/persistence/CachePersistenceLayer.js",
+      "require": "./lib/cjs/persistence/CachePersistenceLayer.js"
     },
-    "./redis/types": {
-      "import": "./lib/esm/types/RedisPersistence.js",
-      "require": "./lib/cjs/types/RedisPersistence.js"
+    "./cache/types": {
+      "import": "./lib/esm/types/CachePersistence.js",
+      "require": "./lib/cjs/types/CachePersistence.js"
     },
     "./middleware": {
       "import": "./lib/esm/middleware/makeHandlerIdempotent.js",
@@ -83,13 +83,13 @@
         "lib/cjs/types/DynamoDBPersistence.d.ts",
         "lib/esm/types/DynamoDBPersistence.d.ts"
       ],
-      "redis": [
-        "lib/cjs/persistence/RedisPersistenceLayer.d.ts",
-        "lib/esm/persistence/RedisPersistenceLayer.d.ts"
+      "cache": [
+        "lib/cjs/persistence/CachePersistenceLayer.d.ts",
+        "lib/esm/persistence/CachePersistenceLayer.d.ts"
       ],
-      "redis/types": [
-        "lib/cjs/types/RedisPersistence.d.ts",
-        "lib/esm/types/RedisPersistence.d.ts"
+      "cache/types": [
+        "lib/cjs/types/CachePersistence.d.ts",
+        "lib/esm/types/CachePersistence.d.ts"
       ],
       "middleware": [
         "lib/cjs/middleware/makeHandlerIdempotent.d.ts",

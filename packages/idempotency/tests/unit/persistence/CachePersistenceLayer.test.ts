@@ -13,9 +13,7 @@ import {
   IdempotencyPersistenceConsistencyError,
 } from '../../../src/errors.js';
 import { IdempotencyRecord } from '../../../src/persistence/IdempotencyRecord.js';
-import { RedisPersistenceLayerTestClass } from '../../helpers/idempotencyUtils.js';
-
-vi.mock('../../../src/persistence/RedisConnection.js');
+import { CachePersistenceLayerTestClass } from '../../helpers/idempotencyUtils.js';
 
 const getFutureTimestamp = (seconds: number): number =>
   Math.floor(Date.now() / 1000) + seconds;
@@ -28,11 +26,11 @@ const client = {
   set: vi.fn(),
   del: vi.fn(),
 };
-const persistenceLayer = new RedisPersistenceLayerTestClass({
+const persistenceLayer = new CachePersistenceLayerTestClass({
   client,
 });
 
-describe('Class: RedisPersistenceLayerTestClass', () => {
+describe('Class: CachePersistenceLayerTestClass', () => {
   beforeAll(() => {
     vi.useFakeTimers().setSystemTime(new Date());
   });
@@ -46,7 +44,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
   });
 
   describe('Method: _putRecord', () => {
-    it('puts a record with INPROGRESS status into Redis', async () => {
+    it('puts a record with INPROGRESS status into the cache', async () => {
       // Prepare
       const record = new IdempotencyRecord({
         idempotencyKey: dummyKey,
@@ -69,7 +67,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
       );
     });
 
-    it('puts the record in Redis when using an in progress expiry timestamp', async () => {
+    it('puts the record in the cache when using an in progress expiry timestamp', async () => {
       // Prepare
       const status = IdempotencyRecordStatus.INPROGRESS;
       const expiryTimestamp = getFutureTimestamp(10);
@@ -96,7 +94,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
       );
     });
 
-    it('puts record in Redis when using payload validation', async () => {
+    it('puts record in the cache when using payload validation', async () => {
       // Prepare
       const persistenceLayerSpy = vi
         .spyOn(persistenceLayer, 'isPayloadValidationEnabled')
@@ -125,7 +123,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
       persistenceLayerSpy.mockRestore();
     });
 
-    it('puts record in Redis with default expiry timestamp', async () => {
+    it('puts record in the cache with default expiry timestamp', async () => {
       // Prepare
       const status = IdempotencyRecordStatus.INPROGRESS;
       const record = new IdempotencyRecord({
@@ -264,7 +262,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
   });
 
   describe('Method: _deleteRecord', () => {
-    it('deletes a record from Redis', async () => {
+    it('deletes a record from the cache', async () => {
       // Prepare
       const record = new IdempotencyRecord({
         idempotencyKey: dummyKey,
@@ -281,7 +279,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
   });
 
   describe('Method: _getRecord', () => {
-    it('gets a record from Redis', async () => {
+    it('gets a record from the cache', async () => {
       // Prepare
       const status = IdempotencyRecordStatus.INPROGRESS;
       const expiryTimestamp = getFutureTimestamp(15);
@@ -332,7 +330,7 @@ describe('Class: RedisPersistenceLayerTestClass', () => {
   });
 
   describe('Method: _updateRecord', () => {
-    it('updates a record in Redis', async () => {
+    it('updates a record in the cache', async () => {
       // Prepare
       const record = new IdempotencyRecord({
         idempotencyKey: dummyKey,

@@ -1,4 +1,3 @@
-import type { JSONObject } from '@aws-lambda-powertools/commons/types';
 import {
   IdempotencyRecordStatus,
   PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS,
@@ -9,46 +8,73 @@ import {
   IdempotencyPersistenceConsistencyError,
   IdempotencyUnknownError,
 } from '../errors.js';
-import type { IdempotencyRecordStatusValue } from '../types/IdempotencyRecord.js';
 import type {
-  RedisCompatibleClient,
-  RedisPersistenceOptions,
-} from '../types/RedisPersistence.js';
+  CacheClient,
+  CachePersistenceOptions,
+} from '../types/CachePersistence.js';
+import type { IdempotencyRecordStatusValue } from '../types/IdempotencyRecord.js';
 import { BasePersistenceLayer } from './BasePersistenceLayer.js';
 import { IdempotencyRecord } from './IdempotencyRecord.js';
 
 /**
- * Redis persistence layer for idempotency records.
+ * Valey- and Redis OOS-compatible persistence layer for idempotency records.
  *
- * This class uses Redis to write and read idempotency records. It supports any Redis client that
- * implements the RedisCompatibleClient interface.
+ * This class uses a cache client to write and read idempotency records. It supports any client that
+ * implements the {@link CacheClient | `CacheClient`} interface.
  *
  * There are various options to configure the persistence layer, such as attribute names for storing
- * status, expiry, data, and validation keys in Redis.
+ * status, expiry, data, and validation keys in the cache.
  *
- * You must provide your own connected Redis client instance by passing it through the `client` option.
+ * You must provide your own connected client instance by passing it through the `client` option.
  *
  * See the {@link https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/ Idempotency documentation}
- * for more details on the Redis configuration and usage patterns.
+ * for more details on the configuration and usage patterns.
+ *
+ * **Using Valkey Glide Client**
+ *
+ * @example
+ * ```ts
+ * import { GlideClient } from '@valkey/valkey-glide';
+ * import { CachePersistenceLayer } from '@aws-lambda-powertools/idempotency/cache';
+ *
+ * const client = await GlideClient.createClient({
+ *   addresses: [{
+ *     host: process.env.CACHE_ENDPOINT,
+ *     port: Number(process.env.CACHE_PORT),
+ *   }],
+ *   useTLS: true,
+ * });
+ *
+ * const persistence = new CachePersistenceLayer({
+ *   client,
+ * });
+ *
+ * // ... your function handler here
+ * ```
+ *
+ * **Using Redis Client**
  *
  * @example
  * ```ts
  * import { createClient } from '@redis/client';
- * import { RedisPersistenceLayer } from '@aws-lambda-powertools/idempotency/redis';
- * import { RedisCompatibleClient } from '@aws-lambda-powertools/idempotency/redis/types';
+ * import { CachePersistenceLayer } from '@aws-lambda-powertools/idempotency/cache';
  *
- * const redisClient = createClient({ url: 'redis://localhost:6379' });
- * await redisClient.connect();
+ * const client = await createClient({
+ *   url: `rediss://${process.env.CACHE_ENDPOINT}:${process.env.CACHE_PORT}`,
+ *   username: 'default',
+ * }).connect();
  *
- * const persistence = new RedisPersistenceLayer({
- *   client: redisClient as RedisCompatibleClient,
+ * const persistence = new CachePersistenceLayer({
+ *   client,
  * });
+ *
+ * // ... your function handler here
  * ```
  *
  * @category Persistence Layer
  */
-class RedisPersistenceLayer extends BasePersistenceLayer {
-  readonly #client: RedisCompatibleClient;
+class CachePersistenceLayer extends BasePersistenceLayer {
+  readonly #client: CacheClient;
   readonly #dataAttr: string;
   readonly #expiryAttr: string;
   readonly #inProgressExpiryAttr: string;
@@ -56,7 +82,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
   readonly #validationKeyAttr: string;
   readonly #orphanLockTimeout: number;
 
-  public constructor(options: RedisPersistenceOptions) {
+  public constructor(options: CachePersistenceOptions) {
     super();
 
     this.#statusAttr =
@@ -76,9 +102,10 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
   }
 
   /**
-   * Deletes the idempotency record associated with a given record from Redis.
+   * Deletes the idempotency record associated with a given record from the persistence store.
+   *
    * This function is designed to be called after a Lambda handler invocation has completed processing.
-   * It ensures that the idempotency key associated with the record is removed from Redis to
+   * It ensures that the idempotency key associated with the record is removed from the cache to
    * prevent future conflicts and to maintain the idempotency integrity.
    *
    * Note: it is essential that the idempotency key is not empty, as that would indicate the Lambda
@@ -110,25 +137,24 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
         'Item does not exist in persistence store'
       );
     }
-    let item: JSONObject;
     try {
-      item = JSON.parse(response);
+      const item = JSON.parse(response as string);
+      return new IdempotencyRecord({
+        idempotencyKey: idempotencyKey,
+        status: item[this.#statusAttr] as IdempotencyRecordStatusValue,
+        expiryTimestamp: item[this.#expiryAttr] as number | undefined,
+        inProgressExpiryTimestamp: item[this.#inProgressExpiryAttr] as
+          | number
+          | undefined,
+        responseData: item[this.#dataAttr],
+        payloadHash: item[this.#validationKeyAttr] as string | undefined,
+      });
     } catch (error) {
       throw new IdempotencyPersistenceConsistencyError(
         'Idempotency persistency consistency error, needs to be removed',
         error as Error
       );
     }
-    return new IdempotencyRecord({
-      idempotencyKey: idempotencyKey,
-      status: item[this.#statusAttr] as IdempotencyRecordStatusValue,
-      expiryTimestamp: item[this.#expiryAttr] as number | undefined,
-      inProgressExpiryTimestamp: item[this.#inProgressExpiryAttr] as
-        | number
-        | undefined,
-      responseData: item[this.#dataAttr],
-      payloadHash: item[this.#validationKeyAttr] as string | undefined,
-    });
   }
 
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {
@@ -148,7 +174,8 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
 
   /**
    * Put a record in the persistence store with a status of "INPROGRESS".
-   * The method guards against concurrent execution by using Redis' conditional write operations.
+   *
+   * The method guards against concurrent execution by using conditional write operations.
    */
   async #putInProgressRecord(record: IdempotencyRecord): Promise<void> {
     const item: Record<string, unknown> = {
@@ -180,9 +207,8 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
        * The idempotency key does not exist:
        *   - first time that this invocation key is used
        *   - previous invocation with the same key was deleted due to TTL
-       *   - SET see https://redis.io/commands/set/
+       *   - SET see {@link https://valkey.io/commands/set/ | Valkey SET command}
        */
-
       const response = await this.#client.set(
         record.idempotencyKey,
         encodedItem,
@@ -193,7 +219,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
       );
 
       /**
-       * If response is not `null`, the redis SET operation was successful and the idempotency key was not
+       * If response is not `null`, the SET operation was successful and the idempotency key was not
        * previously set. This indicates that we can safely proceed to the handler execution phase.
        * Most invocations should successfully proceed past this point.
        */
@@ -202,19 +228,21 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
       }
 
       /**
-       * If response is `null`, it indicates an existing record in Redis for the given idempotency key.
+       * If response is `null`, it indicates an existing record in the cache for the given idempotency key.
+       *
        * This could be due to:
        *   - An active idempotency record from a previous invocation that has not yet expired.
        *   - An orphan record where a previous invocation has timed out.
-       *   - An expired idempotency record that has not been deleted by Redis.
+       *   - An expired idempotency record that has not been deleted yet.
        *
        * In any case, we proceed to retrieve the record for further inspection.
        */
       const existingRecord = await this._getRecord(record.idempotencyKey);
 
-      /** If the status of the idempotency record is `COMPLETED` and the record has not expired
-       *  then a valid completed record exists. We raise an error to prevent duplicate processing
-       *  of a request that has already been completed successfully.
+      /**
+       * If the status of the idempotency record is `COMPLETED` and the record has not expired
+       * then a valid completed record exists. We raise an error to prevent duplicate processing
+       * of a request that has already been completed successfully.
        */
       if (
         existingRecord.getStatus() === IdempotencyRecordStatus.COMPLETED &&
@@ -226,10 +254,11 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
         );
       }
 
-      /** If the idempotency record has a status of 'INPROGRESS' and has a valid `inProgressExpiryTimestamp`
-       *  (meaning the timestamp is greater than the current timestamp in milliseconds), then we have encountered
-       *  a valid in-progress record. This indicates that another process is currently handling the request, and
-       *  to maintain idempotency, we raise an error to prevent concurrent processing of the same request.
+      /**
+       * If the idempotency record has a status of 'INPROGRESS' and has a valid `inProgressExpiryTimestamp`
+       * (meaning the timestamp is greater than the current timestamp in milliseconds), then we have encountered
+       * a valid in-progress record. This indicates that another process is currently handling the request, and
+       * to maintain idempotency, we raise an error to prevent concurrent processing of the same request.
        */
       if (
         existingRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS &&
@@ -242,20 +271,22 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
         );
       }
 
-      /** Reaching this point indicates that the idempotency record found is an orphan record. An orphan record is
-       *  one that is neither completed nor in-progress within its expected time frame. It may result from a
-       *  previous invocation that has timed out or an expired record that has yet to be cleaned up by Redis.
-       *  We raise an error to handle this exceptional scenario appropriately.
+      /**
+       * Reaching this point indicates that the idempotency record found is an orphan record. An orphan record is
+       * one that is neither completed nor in-progress within its expected time frame. It may result from a
+       * previous invocation that has timed out or an expired record that has yet to be cleaned up from the cache.
+       * We raise an error to handle this exceptional scenario appropriately.
        */
       throw new IdempotencyPersistenceConsistencyError(
         'Orphaned record detected'
       );
     } catch (error) {
       if (error instanceof IdempotencyPersistenceConsistencyError) {
-        /** Handle an orphan record by attempting to acquire a lock, which by default lasts for 10 seconds.
-         *  The purpose of acquiring the lock is to prevent race conditions with other processes that might
-         *  also be trying to handle the same orphan record. Once the lock is acquired, we set a new value
-         *  for the idempotency record in Redis with the appropriate time-to-live (TTL).
+        /**
+         * Handle an orphan record by attempting to acquire a lock, which by default lasts for 10 seconds.
+         * The purpose of acquiring the lock is to prevent race conditions with other processes that might
+         * also be trying to handle the same orphan record. Once the lock is acquired, we set a new value
+         * for the idempotency record in the cache with the appropriate time-to-live (TTL).
          */
         await this.#acquireLock(record.idempotencyKey);
 
@@ -280,7 +311,7 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
 
   /**
    * Attempt to acquire a lock for a specified resource name, with a default timeout.
-   * This method attempts to set a lock using Redis to prevent concurrent access to a resource
+   * This method attempts to set a lock to prevent concurrent access to a resource
    * identified by 'idempotencyKey'. It uses the 'NX' flag to ensure that the lock is only
    * set if it does not already exist, thereby enforcing mutual exclusion.
    *
@@ -306,4 +337,4 @@ class RedisPersistenceLayer extends BasePersistenceLayer {
   }
 }
 
-export { RedisPersistenceLayer };
+export { CachePersistenceLayer };

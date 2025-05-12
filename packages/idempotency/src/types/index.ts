@@ -22,6 +22,6 @@ export type {
   DynamoDBPersistenceOptionsWithClientInstance,
 } from './DynamoDBPersistence.js';
 export type {
-  RedisCompatibleClient,
-  RedisPersistenceOptions,
-} from './RedisPersistence.js';
+  CacheClient,
+  CachePersistenceOptions,
+} from './CachePersistence.js';

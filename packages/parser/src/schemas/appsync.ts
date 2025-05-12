@@ -1,31 +1,9 @@
 import { z } from 'zod';
-
-const AppSyncIamIdentity = z.object({
-  accountId: z.string(),
-  cognitoIdentityPoolId: z.string().nullable(),
-  cognitoIdentityId: z.string().nullable(),
-  sourceIp: z.array(z.string()),
-  username: z.string(),
-  userArn: z.string(),
-  cognitoIdentityAuthType: z.string().nullable(),
-  cognitoIdentityAuthProvider: z.string().nullable(),
-});
-
-const AppSyncCognitoIdentity = z.object({
-  sub: z.string(),
-  issuer: z.string(),
-  username: z.string(),
-  claims: z.any(),
-  sourceIp: z.array(z.string()),
-  defaultAuthStrategy: z.string(),
-  groups: z.array(z.string()).nullable(),
-});
-
-const AppSyncOidcIdentity = z.object({
-  claims: z.any(),
-  issuer: z.string(),
-  sub: z.string(),
-});
+import {
+  AppSyncCognitoIdentity,
+  AppSyncIamIdentity,
+  AppSyncOidcIdentity,
+} from './appsync-shared.js';
 
 const AppSyncLambdaIdentity = z.object({
   resolverContext: z.any(),

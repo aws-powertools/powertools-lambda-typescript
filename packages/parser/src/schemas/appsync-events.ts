@@ -1,4 +1,16 @@
 import { z } from 'zod';
+import {
+  AppSyncCognitoIdentity,
+  AppSyncIamIdentity,
+  AppSyncOidcIdentity,
+} from './appsync-shared.js';
+
+/**
+ * A zod schema for the AppSync Events `identity` object when using an AWS Lambda Authorizer.
+ */
+const AppSyncLambdaAuthIdentity = z.object({
+  handlerContext: z.record(z.string(), z.unknown()),
+});
 
 /**
  * A zod schema for AppSync Events request object.
@@ -32,7 +44,13 @@ const AppSyncEventsInfoSchema = z.object({
  * This schema is used as a base for both publish and subscribe events.
  */
 const AppSyncEventsBaseSchema = z.object({
-  identity: z.null(),
+  identity: z.union([
+    z.null(),
+    AppSyncCognitoIdentity,
+    AppSyncIamIdentity,
+    AppSyncLambdaAuthIdentity,
+    AppSyncOidcIdentity,
+  ]),
   result: z.null(),
   request: AppSyncEventsRequestSchema,
   info: AppSyncEventsInfoSchema,
@@ -143,6 +161,10 @@ const AppSyncEventsSubscribeSchema = AppSyncEventsBaseSchema.extend({
 
 export {
   AppSyncEventsBaseSchema,
+  AppSyncCognitoIdentity,
+  AppSyncIamIdentity,
+  AppSyncLambdaAuthIdentity,
+  AppSyncOidcIdentity,
   AppSyncEventsRequestSchema,
   AppSyncEventsInfoSchema,
   AppSyncEventsPublishSchema,

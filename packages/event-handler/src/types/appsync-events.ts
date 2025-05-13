@@ -162,6 +162,12 @@ type RouteOptions<T extends boolean | undefined = false> = {
 // #region Events
 
 type AppSyncEventsEvent = {
+  /**
+   * The `identity` field is marked as `unknown` because it varies based on the authentication type used in AppSync.
+   * When using an API key, it will be `null`. When using IAM, it will contain the AWS credentials of the user. When using Cognito,
+   * it will contain the Cognito user pool information. When using a Lambda authorizer, it will contain the information returned
+   * by the authorizer.
+   */
   identity: unknown;
   result: null;
   request: {
@@ -187,11 +193,6 @@ type AppSyncEventsEvent = {
 
 /**
  * Event type for AppSync Events publish events.
- *
- * The `identity` field is marked as `unknown` because it varies based on the authentication type used in AppSync.
- * When using an API key, it will be `null`. When using IAM, it will contain the AWS credentials of the user. When using Cognito,
- * it will contain the Cognito user pool information. When using a Lambda authorizer, it will contain the information returned
- * by the authorizer.
  *
  * @example
  * ```json
@@ -247,11 +248,6 @@ type AppSyncEventsPublishEvent = AppSyncEventsEvent & {
 
 /**
  * Event type for AppSync Events subscribe events.
- *
- * The `identity` field is marked as `unknown` because it varies based on the authentication type used in AppSync.
- * When using an API key, it will be `null`. When using IAM, it will contain the AWS credentials of the user. When using Cognito,
- * it will contain the Cognito user pool information. When using a Lambda authorizer, it will contain the information returned
- * by the authorizer.
  *
  * @example
  * ```json

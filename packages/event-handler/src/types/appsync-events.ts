@@ -168,12 +168,12 @@ type RouteOptions<T extends boolean | undefined = false> = {
  */
 type AppSyncEventsEvent = {
   /**
-   * The `identity` field is marked as `unknown` because it varies based on the authentication type used in AppSync.
+   * The `identity` field varies based on the authentication type used for the AppSync API.
    * When using an API key, it will be `null`. When using IAM, it will contain the AWS credentials of the user. When using Cognito,
    * it will contain the Cognito user pool information. When using a Lambda authorizer, it will contain the information returned
    * by the authorizer.
    */
-  identity: unknown;
+  identity: null | Record<string, unknown>;
   result: null;
   request: {
     headers: Record<string, string>;

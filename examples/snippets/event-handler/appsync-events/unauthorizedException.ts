@@ -22,7 +22,7 @@ app.onSubscribe('/private/*', async (info) => {
   const channelGroup = 'premium-users';
 
   if (!userGroups.includes(channelGroup)) {
-    new UnauthorizedException(
+    throw new UnauthorizedException(
       `Subscription requires ${channelGroup} group membership`
     );
   }

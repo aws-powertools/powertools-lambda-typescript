@@ -232,7 +232,7 @@ import type {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript DynamoDB client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/dynamodbclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
  */
 class DynamoDBProvider extends BaseProvider {
   public declare client: DynamoDBClient;
@@ -288,7 +288,7 @@ class DynamoDBProvider extends BaseProvider {
    *
    * @param {string} name - The name of the value to retrieve (i.e. the partition key)
    * @param {DynamoDBGetOptionsInterface} options - Options to configure the provider
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    */
   public async get<
     ExplicitUserProvidedType = undefined,
@@ -336,7 +336,7 @@ class DynamoDBProvider extends BaseProvider {
    *
    * @param {string} path - The path of the values to retrieve (i.e. the partition key)
    * @param {DynamoDBGetMultipleOptions} options - Options to configure the provider
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    */
   public async getMultiple<
     ExplicitUserProvidedType = undefined,

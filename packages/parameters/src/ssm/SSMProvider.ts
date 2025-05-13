@@ -264,7 +264,7 @@ import type {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript SSM client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/ssmclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
  */
 class SSMProvider extends BaseProvider {
   public declare client: SSMClient;
@@ -309,7 +309,7 @@ class SSMProvider extends BaseProvider {
    *
    * @param {string} name - The name of the value to retrieve (i.e. the partition key)
    * @param {SSMGetOptions} options - Options to configure the provider
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    */
   public async get<
     ExplicitUserProvidedType = undefined,
@@ -354,7 +354,7 @@ class SSMProvider extends BaseProvider {
    * @param {string} name - The name of the parameter
    * @param {SSMSetOptions} options - Options to configure the parameter
    * @returns {Promise<number>} The version of the parameter
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    */
   public async set<
     InferredFromOptionsType extends SSMSetOptions | undefined = SSMSetOptions,
@@ -412,7 +412,7 @@ class SSMProvider extends BaseProvider {
    *
    * @param {string} path - The path of the parameters to retrieve
    * @param {SSMGetMultipleOptions} options - Options to configure the retrieval
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    */
   public async getMultiple<
     ExplicitUserProvidedType = undefined,
@@ -480,7 +480,7 @@ class SSMProvider extends BaseProvider {
    *
    * @param {Record<string, SSMGetParametersByNameOptions>} parameters - Object containing parameter names and any optional overrides
    * @param {SSMGetParametersByNameOptions} options - Options to configure the retrieval
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    */
   public async getParametersByName<ExplicitUserProvidedType = undefined>(
     parameters: Record<string, SSMGetParametersByNameOptions>,

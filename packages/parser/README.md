@@ -19,7 +19,6 @@ You can use the package in both TypeScript and JavaScript code bases.
     - [Becoming a reference customer](#becoming-a-reference-customer)
     - [Sharing your work](#sharing-your-work)
     - [Using Lambda Layer](#using-lambda-layer)
-- [Credits](#credits)
 - [License](#license)
 
 ## Intro
@@ -238,7 +237,7 @@ export const handler = middy(lambdaHandler).use(
 );
 ```
 
-See the [safe parsing](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parser#safe-parsing) section in the documentation for more details.
+See the [safe parsing](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser#safe-parsing) section in the documentation for more details.
 
 ### Built-in schemas and envelopes
 
@@ -283,7 +282,7 @@ const myFunction = new Lambda();
 export const handler = myFunction.handler.bind(myFunction);
 ```
 
-Check the utility documentation for a complete list of built-in [schemas](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parser/#built-in-schemas) and [envelopes](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parser/#built-in-envelopes).
+Check the utility documentation for a complete list of built-in [schemas](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser/#built-in-schemas) and [envelopes](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser/#built-in-envelopes).
 
 ## Contribute
 
@@ -303,7 +302,10 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ### Becoming a reference customer
 
-Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (TypeScript), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (TypeScript) (become a reference)](https://s12d.com/become-a-reference-ts) issue.
+Knowing which companies are using this library is important to help prioritize the project internally. If your company
+is using Powertools for AWS Lambda (TypeScript), you can request to have your name and logo added to the README file by
+raising a [Support Powertools for AWS Lambda (TypeScript) (become a reference)](https://s12d.com/become-reference-pt-ts)
+issue.
 
 The following companies, among others, use Powertools:
 
@@ -328,16 +330,12 @@ The following companies, among others, use Powertools:
 
 ### Sharing your work
 
-Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has already shared about Powertools for AWS Lambda (TypeScript) [here](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this).
+Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has [already shared](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this) about Powertools for AWS Lambda (TypeScript).
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer), you can add Powertools as a dev dependency (or as part of your virtual env) to not impact the development process.
-
-## Credits
-
-Credits for the Lambda Powertools for AWS Lambda (TypeScript) idea go to [DAZN](https://github.com/getndazn) and their [DAZN Lambda Powertools](https://github.com/getndazn/dazn-lambda-powertools/).
+This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/getting-started/lambda-layers/), you can add Powertools as a dev dependency to not impact the development process.
 
 ## License
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+This library is licensed under the MIT-0 License. See the LICENSE file.This library is licensed under the MIT-0 License. See the LICENSE file.

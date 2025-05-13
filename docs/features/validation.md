@@ -1,7 +1,6 @@
 ---
 title: Validation
 descrition: Utility
-status: new
 ---
 
 <!-- markdownlint-disable MD043 --->
@@ -145,7 +144,7 @@ Here is an example of how you can use the built-in envelope for SQS events:
     --8<-- "examples/snippets/validation/samples/gettingStartedSQSEnvelopeEvent.json"
     ```
 
-For a complete list of built-in envelopes, check the built-in envelopes section [here](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/#built-in-envelopes).
+For a complete list of built-in envelopes, check the [built-in envelopes section](https://docs.powertools.aws.dev/lambda/typescript/latest/features/jmespath/#built-in-envelopes).
 
 ## Advanced
 
@@ -179,9 +178,9 @@ In some cases, your payloads might require some transformation before validation
 
 For this, you can use our buil-in JMESPath functions within your expressions. We have a few built-in functions that you can use:
 
-- [`powertools_json()`](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/#powertools_json-function): Parses a JSON string
-- [`powertools_base64()`](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/#powertools_base64-function): Decodes a base64 string
-- [`powertools_base64_gzip()`](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/#powertools_base64_gzip-function): Decodes a base64 string and unzips it
+- [`powertools_json()`](https://docs.powertools.aws.dev/lambda/typescript/latest/features/jmespath/#powertools_json-function): Parses a JSON string
+- [`powertools_base64()`](https://docs.powertools.aws.dev/lambda/typescript/latest/features/jmespath/#powertools_base64-function): Decodes a base64 string
+- [`powertools_base64_gzip()`](https://docs.powertools.aws.dev/lambda/typescript/latest/features/jmespath/#powertools_base64_gzip-function): Decodes a base64 string and unzips it
 
 We use these functions for [built-in envelopes](#built-in-envelopes) to easily decode and unwrap events from sources like Kinesis, SQS, S3, and more.
 

@@ -10,3 +10,4 @@ layers/*/CHANGELOG.md
 LICENSE
 .github/**
 **node_modules/** */
+.venv

@@ -34,7 +34,7 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
  * With default configuration you don't need to create the client beforehand, the persistence layer will create it for you.
  * You can also bring your own AWS SDK V3 client, or configure the client with the `clientConfig` option.
  *
- * See the {@link https://docs.powertools.aws.dev/lambda/python/latest/utilities/idempotency/ Idempotency documentation} for more details
+ * See the {@link https://docs.powertools.aws.dev/lambda/python/latest/features/idempotency/ Idempotency documentation} for more details
  * on the IAM permissions and DynamoDB table configuration.
  *
  * @example

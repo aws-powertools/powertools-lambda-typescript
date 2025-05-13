@@ -27,7 +27,7 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
  *
  * You must provide your own connected client instance by passing it through the `client` option.
  *
- * See the {@link https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/ Idempotency documentation}
+ * See the {@link https://docs.powertools.aws.dev/lambda/typescript/latest/features/idempotency/ Idempotency documentation}
  * for more details on the configuration and usage patterns.
  *
  * **Using Valkey Glide Client**

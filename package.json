@@ -33,7 +33,7 @@
     "docs:local:run": ".venv/bin/mkdocs serve",
     "docs:local:api": "typedoc .",
     "postpublish": "git restore .",
-    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#**/*/CHANGELOG.md' '#examples/app/README.md'"
+    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#CHANGELOG.md' '#**/*/CHANGELOG.md' '#examples/app/README.md' '#.venv' '#site'"
   },
   "repository": {
     "type": "git",
@@ -57,7 +57,7 @@
     "husky": "^9.1.7",
     "lerna": "8.1.2",
     "lint-staged": "^16.0.0",
-    "markdownlint-cli2": "^0.17.2",
+    "markdownlint-cli2": "^0.18.0",
     "middy4": "npm:@middy/core@^4.7.0",
     "middy5": "npm:@middy/core@^5.4.3",
     "middy6": "npm:@middy/core@^6.0.0",

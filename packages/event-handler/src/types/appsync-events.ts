@@ -161,8 +161,19 @@ type RouteOptions<T extends boolean | undefined = false> = {
 
 // #region Events
 
+/**
+ * Event type for AppSync Events.
+ *
+ * For strongly typed validation and parsing at runtime, check out the `@aws-lambda-powertools/parser` package.
+ */
 type AppSyncEventsEvent = {
-  identity: null;
+  /**
+   * The `identity` field is marked as `unknown` because it varies based on the authentication type used in AppSync.
+   * When using an API key, it will be `null`. When using IAM, it will contain the AWS credentials of the user. When using Cognito,
+   * it will contain the Cognito user pool information. When using a Lambda authorizer, it will contain the information returned
+   * by the authorizer.
+   */
+  identity: unknown;
   result: null;
   request: {
     headers: Record<string, string>;
@@ -228,6 +239,9 @@ type AppSyncEventsEvent = {
  *     }
  *   ]
  * }
+ *
+ * For strongly typed validation and parsing at runtime, check out the `@aws-lambda-powertools/parser` package.
+ *
  * ```
  */
 type AppSyncEventsPublishEvent = AppSyncEventsEvent & {
@@ -271,6 +285,8 @@ type AppSyncEventsPublishEvent = AppSyncEventsEvent & {
  *   "events": null
  * }
  * ```
+ *
+ * For strongly typed validation and parsing at runtime, check out the `@aws-lambda-powertools/parser` package.
  */
 type AppSyncEventsSubscribeEvent = AppSyncEventsEvent & {
   info: {

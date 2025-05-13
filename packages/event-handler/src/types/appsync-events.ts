@@ -161,6 +161,11 @@ type RouteOptions<T extends boolean | undefined = false> = {
 
 // #region Events
 
+/**
+ * Event type for AppSync Events.
+ *
+ * For strongly typed validation and parsing at runtime, check out the `@aws-lambda-powertools/parser` package.
+ */
 type AppSyncEventsEvent = {
   /**
    * The `identity` field is marked as `unknown` because it varies based on the authentication type used in AppSync.
@@ -234,6 +239,9 @@ type AppSyncEventsEvent = {
  *     }
  *   ]
  * }
+ *
+ * For strongly typed validation and parsing at runtime, check out the `@aws-lambda-powertools/parser` package.
+ *
  * ```
  */
 type AppSyncEventsPublishEvent = AppSyncEventsEvent & {
@@ -277,6 +285,8 @@ type AppSyncEventsPublishEvent = AppSyncEventsEvent & {
  *   "events": null
  * }
  * ```
+ *
+ * For strongly typed validation and parsing at runtime, check out the `@aws-lambda-powertools/parser` package.
  */
 type AppSyncEventsSubscribeEvent = AppSyncEventsEvent & {
   info: {

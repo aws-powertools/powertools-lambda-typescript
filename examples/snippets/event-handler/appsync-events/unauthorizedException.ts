@@ -14,10 +14,18 @@ app.onPublish('/*', () => {
   throw new UnauthorizedException('You can only publish to /default/foo');
 });
 
-app.onSubscribe('/default/foo', () => true);
+app.onSubscribe('/private/*', async (info) => {
+  const userGroups =
+    info.identity?.groups && Array.isArray(info.identity?.groups)
+      ? info.identity?.groups
+      : [];
+  const channelGroup = 'premium-users';
 
-app.onSubscribe('/*', () => {
-  throw new UnauthorizedException('You can only subscribe to /default/foo');
+  if (!userGroups.includes(channelGroup)) {
+    new UnauthorizedException(
+      `Subscription requires ${channelGroup} group membership`
+    );
+  }
 });
 
 export const handler = async (event: unknown, context: Context) =>

@@ -156,11 +156,11 @@ import { SSMProvider } from './SSMProvider.js';
  *                                                                     └────────────────────┘
  * ```
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
  *
  * @param {Record<string, SSMGetParametersByNameOptions>} parameters - The path of the parameters to retrieve
  * @param {SSMGetParametersByNameOptions} options - Options to configure the provider
- * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+ * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
  */
 const getParametersByName = async <ExplicitUserProvidedType = undefined>(
   parameters: Record<string, SSMGetParametersByNameOptions>,

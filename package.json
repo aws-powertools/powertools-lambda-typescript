@@ -33,7 +33,7 @@
     "docs:local:run": ".venv/bin/mkdocs serve",
     "docs:local:api": "typedoc .",
     "postpublish": "git restore .",
-    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#**/*/CHANGELOG.md' '#examples/app/README.md'"
+    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#CHANGELOG.md' '#**/*/CHANGELOG.md' '#examples/app/README.md' '#.venv' '#site'"
   },
   "repository": {
     "type": "git",

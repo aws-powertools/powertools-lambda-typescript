@@ -224,3 +224,6 @@ MD052: true
 
 # MD053/link-image-reference-definitions - Link and image reference definitions should be needed
 MD053: true
+
+# MD059/descriptive-link-text - Link text should be descriptive
+MD059: true

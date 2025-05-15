@@ -22,6 +22,23 @@ const KinesisDataStreamRecordPayload = z.object({
   }),
 });
 
+interface KinesisStreamWindow {
+  start: string;
+  end: string;
+}
+
+type KinesisStreamState = Record<string, unknown>;
+
+interface KinesisStreamEvent {
+  Records: Array<z.infer<typeof KinesisDataStreamRecord>>;
+  window?: KinesisStreamWindow;
+  state?: KinesisStreamState;
+  shardId?: string;
+  eventSourceARN?: string;
+  isFinalInvokeForWindow?: boolean;
+  isWindowTerminatedEarly?: boolean;
+}
+
 const decompress = (data: string): string => {
   try {
     return JSON.parse(gunzipSync(fromBase64(data, 'base64')).toString('utf8'));

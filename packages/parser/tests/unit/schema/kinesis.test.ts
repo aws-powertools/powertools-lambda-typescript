@@ -51,6 +51,13 @@ describe('Schema: Kinesis', () => {
     }
   );
 
+  const kinesisStreamTumblingWindowEvent = getTestEvent<KinesisDataStreamEvent>(
+    {
+      eventsPath,
+      filename: 'stream-tumbling-window',
+    }
+  );
+
   it('parses kinesis event', () => {
     // Prepare
     const testEvent = structuredClone(kinesisStreamEvent);
@@ -158,6 +165,30 @@ describe('Schema: Kinesis', () => {
                 'utf8'
               )
             ),
+          },
+        };
+      }),
+    };
+
+    // Assess
+    expect(parsed).toStrictEqual(transformedInput);
+  });
+
+  it('parses Kinesis event with tumbling window', () => {
+    // Prepare
+    const testEvent = structuredClone(kinesisStreamTumblingWindowEvent);
+
+
+    // Act
+    const parsed = KinesisDataStreamSchema.parse(testEvent);
+
+    const transformedInput = {
+      Records: testEvent.Records.map((record, index) => {
+        return {
+          ...record,
+          kinesis: {
+            ...record.kinesis,
+            data: Buffer.from(record.kinesis.data, 'base64').toString(),
           },
         };
       }),

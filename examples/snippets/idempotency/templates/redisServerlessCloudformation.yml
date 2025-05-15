@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  RedisServerlessIdempotency:
+    Type: AWS::ElastiCache::ServerlessCache
+    Properties:
+      Engine: redis
+      ServerlessCacheName: redis-cache
+      SecurityGroupIds: # (1)!
+        - security-{your_sg_id}
+      SubnetIds:
+        - subnet-{your_subnet_id_1}
+        - subnet-{your_subnet_id_2}
+
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs22.x
+      Handler: index.js
+      VpcConfig: # (1)!
+        SecurityGroupIds:
+          - security-{your_sg_id}
+        SubnetIds:
+          - subnet-{your_subnet_id_1}
+          - subnet-{your_subnet_id_2}
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: sample
+          REDIS_HOST: !GetAtt RedisServerlessIdempotency.Endpoint.Address
+          REDIS_PORT: !GetAtt RedisServerlessIdempotency.Endpoint.Port

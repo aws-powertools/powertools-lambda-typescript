@@ -12,6 +12,7 @@ The idempotency utility provides a simple solution to convert your Lambda functi
 * Select a subset of the event as the idempotency key using JMESPath expressions
 * Set a time window in which records with the same payload should be considered duplicates
 * Expires in-progress executions if the Lambda function times out halfway through
+* Support for Amazon DynamoDB, Valkey, Redis OSS, or any Redis-compatible cache as the persistence layer
 
 ## Terminology
 
@@ -49,6 +50,8 @@ classDiagram
 
 ## Getting started
 
+We use Amazon DynamoDB as the default persistence layer in the documentation. If you prefer Cache, you can learn more from [this section](#cache-database).
+
 ### Installation
 
 Install the library in your project
@@ -68,7 +71,28 @@ Your Lambda function IAM Role must have `dynamodb:GetItem`, `dynamodb:PutItem`, 
 
 ### Required resources
 
+To start, you'll need:
+
+<!-- markdownlint-disable MD030 -->
+
+<div class="grid cards" markdown>
+*   :octicons-database-16:{ .lg .middle } __Persistent storage__
+
+    ---
+
+    [Amazon DynamoDB](#dynamodb-table) or [Redis](#redis-database)
+
+*   :simple-awslambda:{ .lg .middle } **AWS Lambda function**
+
+    ---
+
+    With permissions to use your persistent storage
+
+</div>
+
 Before getting started, you need to create a persistent storage layer where the idempotency utility can store its state - your lambda functions will need read and write access to it.
+
+#### DynamoDB table
 
 As of now, Amazon DynamoDB is the only supported persistent storage layer, so you'll need to create a table first.
 
@@ -113,6 +137,36 @@ If you're not [changing the default configuration for the DynamoDB persistence l
     See [AWS Blog post on handling conditional write errors](https://aws.amazon.com/blogs/database/handle-conditional-write-errors-in-high-concurrency-scenarios-with-amazon-dynamodb/) for more details.
     For retried invocations, you will see 1WCU and 1RCU.
     Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/){target="_blank"} to estimate the cost.
+
+#### Cache database
+
+We recommend you start with a Redis compatible management services such as [Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/){target="_blank"} or [Amazon MemoryDB for Redis](https://aws.amazon.com/memorydb/){target="_blank"}.
+
+In both services, you'll need to configure [VPC access](https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html){target="_blank"} to your AWS Lambda.
+
+##### Cache IaC examples
+
+!!! tip inline end "Prefer AWS Console/CLI?"
+
+    Follow the official tutorials for [Amazon ElastiCache for Redis](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/LambdaRedis.html){target="_blank"} or [Amazon MemoryDB for Redis](https://aws.amazon.com/blogs/database/access-amazon-memorydb-for-redis-from-aws-lambda/){target="_blank"}
+
+=== "Valkey AWS CloudFormation example"
+
+    ```yaml hl_lines="5 21"
+    --8<-- "examples/snippets/idempotency/templates/valkeyServerlessCloudformation.yml"
+    ```
+
+    1. Replace the Security Group ID and Subnet ID to match your VPC settings.
+
+=== "Redis AWS CloudFormation example"
+
+    ```yaml hl_lines="5 21"
+    --8<-- "examples/snippets/idempotency/templates/redisServerlessCloudformation.yml"
+    ```
+
+    1. Replace the Security Group ID and Subnet ID to match your VPC settings.
+
+Once setup, you can find a quick start example for Cache in [the persistent layers section](#cachepersistencelayer).
 
 ### MakeIdempotent function wrapper
 
@@ -523,8 +577,6 @@ sequenceDiagram
 <i>Optional idempotency key</i>
 </center>
 
-## Advanced
-
 ### Persistence layers
 
 #### DynamoDBPersistenceLayer
@@ -550,6 +602,35 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 | **validationKeyAttr**    |                    | `validation`                         | Hashed representation of the parts of the event used for validation                                      |
 | **sortKeyAttr**          |                    |                                      | Sort key of the table (if table is configured with a sort key).                                          |
 | **staticPkValue**        |                    | `idempotency#{LAMBDA_FUNCTION_NAME}` | Static value to use as the partition key. Only used when **sort_key_attr** is set.                       |
+
+#### CachePersistenceLayer
+
+The `CachePersistenceLayer` enables you to use Valkey, Redis OSS, or any Redis-compatible cache as the persistence layer for idempotency state. To use it, initialize `CachePersistenceLayer` with a connected Redis-compatible client.
+
+=== "Using Valkey Client"
+    ```typescript hl_lines="9-18 21"
+    --8<-- "examples/snippets/idempotency/cachePersistenceLayerValkey.ts"
+    ```
+
+=== "Using Redis Client"
+    ```typescript hl_lines="9-12 15"
+    --8<-- "examples/snippets/idempotency/cachePersistenceLayerRedis.ts"
+    ```
+
+##### Cache attributes
+
+When using Cache as a persistence layer, you can alter the attribute names by passing these parameters when initializing the persistence layer:
+
+| Parameter                | Required           | Default                              | Description                                                                                              |
+| ------------------------ | ------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| **client**               |  :heavy_check_mark: |                                      | A connected Redis-compatible client instance                                                              |
+| **expiryAttr**           |                    | `expiration`                         | Unix timestamp of when record expires                                                                    |
+| **inProgressExpiryAttr** |                    | `in_progress_expiration`             | Unix timestamp of when record expires while in progress (in case of the invocation times out)            |
+| **statusAttr**           |                    | `status`                             | Stores status of the lambda execution during and after invocation                                        |
+| **dataAttr**             |                    | `data`                               | Stores results of successfully executed Lambda handlers                                                  |
+| **validationKeyAttr**    |                    | `validation`                         | Hashed representation of the parts of the event used for validation                                      |
+
+## Advanced
 
 ### Customizing the default behavior
 

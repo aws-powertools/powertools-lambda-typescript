@@ -22,23 +22,6 @@ const KinesisDataStreamRecordPayload = z.object({
   }),
 });
 
-interface KinesisStreamWindow {
-  start: string;
-  end: string;
-}
-
-type KinesisStreamState = Record<string, unknown>;
-
-interface KinesisStreamEvent {
-  Records: Array<z.infer<typeof KinesisDataStreamRecord>>;
-  window?: KinesisStreamWindow;
-  state?: KinesisStreamState;
-  shardId?: string;
-  eventSourceARN?: string;
-  isFinalInvokeForWindow?: boolean;
-  isWindowTerminatedEarly?: boolean;
-}
-
 const decompress = (data: string): string => {
   try {
     return JSON.parse(gunzipSync(fromBase64(data, 'base64')).toString('utf8'));
@@ -118,6 +101,17 @@ const KinesisDynamoDBStreamSchema = z.object({
  */
 const KinesisDataStreamSchema = z.object({
   Records: z.array(KinesisDataStreamRecord).min(1),
+  window: z
+    .object({
+      start: z.string().datetime(),
+      end: z.string().datetime(),
+    })
+    .optional(),
+  state: z.record(z.string(), z.unknown()).optional(),
+  shardId: z.string().optional(),
+  eventSourceARN: z.string().optional(),
+  isFinalInvokeForWindow: z.boolean().optional(),
+  isWindowTerminatedEarly: z.boolean().optional(),
 });
 
 export {

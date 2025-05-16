@@ -51,13 +51,6 @@ describe('Schema: Kinesis', () => {
     }
   );
 
-  const kinesisStreamTumblingWindowEvent = getTestEvent<KinesisDataStreamEvent>(
-    {
-      eventsPath,
-      filename: 'stream-tumbling-window',
-    }
-  );
-
   it('parses kinesis event', () => {
     // Prepare
     const testEvent = structuredClone(kinesisStreamEvent);
@@ -176,13 +169,24 @@ describe('Schema: Kinesis', () => {
 
   it('parses Kinesis event with tumbling window', () => {
     // Prepare
-    const testEvent = structuredClone(kinesisStreamTumblingWindowEvent);
-
+    const testEvent = structuredClone(kinesisStreamEvent);
+    testEvent.window = {
+      start: '2020-07-30T17:00:00Z',
+      end: '2020-07-30T17:05:00Z',
+    };
+    testEvent.state = {
+      '1': 'state1',
+    };
+    testEvent.shardId = 'shard123456789';
+    testEvent.eventSourceARN = 'stream-ARN';
+    testEvent.isFinalInvokeForWindow = false;
+    testEvent.isWindowTerminatedEarly = false;
 
     // Act
     const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
+      ...testEvent,
       Records: testEvent.Records.map((record, index) => {
         return {
           ...record,

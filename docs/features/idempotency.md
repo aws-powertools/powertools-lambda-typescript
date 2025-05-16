@@ -50,7 +50,7 @@ classDiagram
 
 ## Getting started
 
-We use Amazon DynamoDB as the default persistence layer in the documentation. If you prefer Cache, you can learn more from [this section](#cache-database).
+We use Amazon DynamoDB as the default persistence layer in the documentation. If you prefer to use a cache based persistence layer, you can learn more from [this section](#cache-database).
 
 ### Installation
 
@@ -94,11 +94,7 @@ Before getting started, you need to create a persistent storage layer where the 
 
 #### DynamoDB table
 
-As of now, Amazon DynamoDB is the only supported persistent storage layer, so you'll need to create a table first.
-
-**Default table configuration**
-
-If you're not [changing the default configuration for the DynamoDB persistence layer](#dynamodbpersistencelayer), this is the expected default configuration:
+Unless you're looking to use an [existing table or customize each attribute](#dynamodbpersistencelayer), you only need the following:
 
 | Configuration      | Default value | Notes                                                                                  |
 | ------------------ | :------------ | -------------------------------------------------------------------------------------- |

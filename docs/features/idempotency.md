@@ -94,11 +94,7 @@ Before getting started, you need to create a persistent storage layer where the 
 
 #### DynamoDB table
 
-You'll need to create a table first.
-
-**Default table configuration**
-
-If you're not [changing the default configuration for the DynamoDB persistence layer](#dynamodbpersistencelayer), this is the expected default configuration:
+Unless you're looking to use an [existing table or customize each attribute](#dynamodbpersistencelayer), you only need the following:
 
 | Configuration      | Default value | Notes                                                                                  |
 | ------------------ | :------------ | -------------------------------------------------------------------------------------- |

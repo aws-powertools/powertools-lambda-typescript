@@ -1,6 +1,5 @@
 import { makeIdempotent } from '@aws-lambda-powertools/idempotency';
 import { CachePersistenceLayer } from '@aws-lambda-powertools/idempotency/cache';
-import type { CacheClient } from '@aws-lambda-powertools/idempotency/cache/types';
 import { createClient } from '@redis/client';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
@@ -16,9 +15,9 @@ const context = {
 } as Context;
 
 // Initialize the Redis client with local Redis server
-const client = (await createClient({
+const client = await createClient({
   url: 'redis://localhost:6379',
-}).connect()) as CacheClient;
+}).connect();
 
 const mockPersistenceStore = new CachePersistenceLayer({
   client,

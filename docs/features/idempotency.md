@@ -961,7 +961,7 @@ When testing your Lambda function locally, you can use a local redis instance to
 
 === "handler.test.ts"
 
-    ```typescript hl_lines="20"
+    ```typescript hl_lines="19"
     --8<-- "examples/snippets/idempotency/workingWithLocalCacheRedis.test.ts"
     ```
 

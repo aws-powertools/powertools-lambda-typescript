@@ -165,7 +165,7 @@ In both services, you'll need to configure [VPC access](https://docs.aws.amazon.
     2. Replace the Security Group ID and Subnet ID to match your VPC settings.
     
 
-Once setup, you can find a quick start example for Cache in [the persistent layers section](#cachepersistencelayer).
+Once setup, you can find a quick start example for using a cache in [the persistent layers section](#cachepersistencelayer).
 
 ### MakeIdempotent function wrapper
 
@@ -628,12 +628,12 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 
 #### CachePersistenceLayer
 
-The `CachePersistenceLayer` enables you to use Valkey, Redis OSS, or any Redis-compatible cache as the persistence layer for idempotency state. You need to bring your own cache client.
+The `CachePersistenceLayer` enables you to use Valkey, Redis OSS, or any Redis-compatible cache as the persistence layer for idempotency state. You need to provide your own cache client.
 
-We recommend using [valkey-glide](https://valkey.io/valkey-glide/#__tabbed_2_2){target="_blank"} or [redis-client](https://www.npmjs.com/package/@redis/client){target="_blank"}. But you can use any Redis-compatible client.
+We recommend using [valkey-glide](https://valkey.io/valkey-glide/#__tabbed_2_2){target="_blank"} for Valkey or [redis-client](https://www.npmjs.com/package/@redis/client){target="_blank"} for Redis. However, any redis compatible client can be used.
 
 ???+ info
-    Ensure that your cache client is properly configured and connected to your cache instance before using it with `CachePersistenceLayer`.
+    Make sure your cache client is configured and connected before using it with `CachePersistenceLayer`.
 
 === "Using Valkey Client"
     ```typescript hl_lines="9-18 21"

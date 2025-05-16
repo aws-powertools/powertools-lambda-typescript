@@ -633,6 +633,16 @@ When using Cache as a persistence layer, you can alter the attribute names by pa
 | **dataAttr**             |                    | `data`                               | Stores results of successfully executed Lambda handlers                                                  |
 | **validationKeyAttr**    |                    | `validation`                         | Hashed representation of the parts of the event used for validation                                      |
 
+=== "Using Valkey"
+    ```typescript hl_lines="22-26"
+    --8<-- "examples/snippets/idempotency/customizeCachePersistenceLayerValkey.ts"
+    ```
+
+=== "Using Redis"
+    ```typescript hl_lines="16-20"
+    --8<-- "examples/snippets/idempotency/customizeCachePersistenceLayerRedis.ts"
+    ```
+
 ## Advanced
 
 ### Customizing the default behavior

@@ -50,7 +50,7 @@ classDiagram
 
 ## Getting started
 
-We use Amazon DynamoDB as the default persistence layer in the documentation. If you prefer to use a cache based persistence layer, you can learn more from [this section](#cache-database).
+We use Amazon DynamoDB as the default persistence layer in the documentation. If you prefer to use a cache based persistence layer, you can learn more from [this section](#cache-service).
 
 ### Installation
 
@@ -134,7 +134,7 @@ Unless you're looking to use an [existing table or customize each attribute](#dy
     For retried invocations, you will see 1WCU and 1RCU.
     Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/){target="_blank"} to estimate the cost.
 
-#### Cache database
+#### Cache service
 
 We recommend you start with a Redis compatible management services such as [Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/){target="_blank"} or [Amazon MemoryDB for Redis](https://aws.amazon.com/memorydb/){target="_blank"}.
 

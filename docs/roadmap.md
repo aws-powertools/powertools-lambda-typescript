@@ -46,7 +46,7 @@ To close the gap between Powertools for AWS Lambda (Python) and Powertools for A
 ##### Logger
 
 - [x] [Ability to add a correlation ID to logs via decorator/middleware](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2863){target="_blank"}
-- [ ] [Ability to pretty print stack traces](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1362){target="_blank"}
+- [x] [Ability to pretty print stack traces](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1362){target="_blank"}
 - [x] [Ability to buffer logs](https://github.com/aws-powertools/powertools-lambda-typescript/releases/tag/v2.16.0){target="_blank"}
 - [x] [Ability to refresh debug log sampling rate via decorator/middleware](https://github.com/aws-powertools/powertools-lambda-typescript/releases/tag/v2.16.0){target="_blank"}
 
@@ -55,8 +55,9 @@ To close the gap between Powertools for AWS Lambda (Python) and Powertools for A
 In addition to the Event Handler REST feature mentioned above, we will also be working on the following:
 
 - [ ] [Implement resolver for Amazon Bedrock Agents Functions](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3710){target="_blank"}
+- [x] [Implement resolver for AWS AppSync Events API](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3857){target="_blank"}
 - [ ] Implement resolver for Amazon Bedrock Agents OpenAPI
-- [ ] Create RFC for AppSync GraphQL resolver
+- [x] [Create RFC for AppSync GraphQL resolver](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3885){target="_blank"}
 
 ##### Validation
 
@@ -67,12 +68,16 @@ For the Validation utility, we'll experiment with a community-driven approach to
 - [x] [Middy.js middleware validation](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3609){target="_blank"}
 - [x] [Documentation](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3716){target="_blank"}
 
+##### Other utilities
+
+- [x] [Support for Valkey- and Redis OSS-compatible cache backends for Idempotency](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3183){target="_blank"}
+
 #### Governance & Advanced Use Cases (p2)
 
 To streghten our offering for more advanced customers as well as enterprises, we will be working on a set of activities that will help us better support their needs and practices. These include:
 
 - [x] [Publish Lambda layers to GovCloud](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3423){target="_blank"}
-- [ ] Publish Lambda layers to China regions
+- [ ] [Publish Lambda layers to China regions](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3920){target="_blank"}
 - [ ] Improve OSS supply chain posture (Q2) by making sure we're auditing our dependencies for compatible licenses and include NOTICE files in our Lambda layers
 - [ ] Create a new "Advanced Use Cases" section in the docs - to help customers with more complex use cases, such as running Powertools for AWS Lambda in container environments
 - [ ] Set up CI/CD for performance testing
@@ -84,7 +89,7 @@ To streghten our offering for more advanced customers as well as enterprises, we
 
 To ensure we are attracting tomorrow's customers as well as new contributors to the project, we will be working on a set of activities that will help us better engage with the community and new customers. These include:
 
-- [ ] [Create a new "Getting Started" guide in the docs](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2948){target="_blank"}
+- [x] [Create a new "Getting Started" guide in the docs](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2948){target="_blank"}
 - [ ] Further improve the "Contributing" & "How to find contributions" pages
 - [ ] Surface contribution opportunities in Discord & other community channels
 - [ ] Improve release notes announcements in Discord & other community channels

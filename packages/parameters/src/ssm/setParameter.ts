@@ -69,11 +69,11 @@ import { SSMProvider } from './SSMProvider.js';
  * * `kmsKeyId` - The KMS key id to use to encrypt the parameter
  * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
  *
- *  For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
+ *  For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
  *
  *  @param name - Name of the parameter
  *  @param options - Options to configure the parameter
- *  @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+ *  @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
  */
 const setParameter = async <
   InferredFromOptionsType extends SSMSetOptions | undefined = SSMSetOptions,

@@ -179,7 +179,7 @@ import type {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript AppConfig Data client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/appconfigdataclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
  */
 class AppConfigProvider extends BaseProvider {
   public declare client: AppConfigDataClient;
@@ -244,7 +244,7 @@ class AppConfigProvider extends BaseProvider {
    *
    * @param {string} name - The name of the configuration profile or its ID
    * @param {AppConfigGetOptions} options - Options to configure the provider
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    */
   public async get<
     ExplicitUserProvidedType = undefined,

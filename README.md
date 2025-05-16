@@ -20,26 +20,28 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 Find the complete project's [documentation here](https://docs.powertools.aws.dev/lambda/typescript/latest).
 
-- **[Tracer](https://docs.powertools.aws.dev/lambda/typescript/latest/core/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
-- **[Logger](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
-- **[Metrics](https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
-- **[Parameters](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB
-- **[Idempotency](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/)** - Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
-- **[Batch Processing](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/)** - Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
-- **[JMESPath Functions](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/jmespath/)** - Built-in JMESPath functions to easily deserialize common encoded JSON payloads in Lambda functions.
-- **[Parser (Zod)](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parser/)** - Utility that provides data validation and parsing using Zod, a TypeScript-first schema declaration and validation library.
-- **[Validation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/validation/)** - JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.
+- **[Tracer](https://docs.powertools.aws.dev/lambda/typescript/latest/features/tracer/)** - Utilities to trace Lambda function handlers, and both synchronous and asynchronous functions
+- **[Logger](https://docs.powertools.aws.dev/lambda/typescript/latest/features/logger/)** - Structured logging made easier, and a middleware to enrich log items with key details of the Lambda context
+- **[Metrics](https://docs.powertools.aws.dev/lambda/typescript/latest/features/metrics/)** - Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)
+- **[Event Handler](https://docs.powertools.aws.dev/lambda/typescript/latest/features/event-handler/)** - Lightweight routing to reduce boilerplate for API Gateway REST/HTTP API, ALB and Lambda Function URLs
+- **[Parameters](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/)** - High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB
+- **[Idempotency](https://docs.powertools.aws.dev/lambda/typescript/latest/features/idempotency/)** - Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content
+- **[Batch Processing](https://docs.powertools.aws.dev/lambda/typescript/latest/features/batch/)** - Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.
+- **[JMESPath Functions](https://docs.powertools.aws.dev/lambda/typescript/latest/features/jmespath/)** - Built-in JMESPath functions to easily deserialize common encoded JSON payloads in Lambda functions.
+- **[Parser (Zod)](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser/)** - Utility that provides data validation and parsing using Zod, a TypeScript-first schema declaration and validation library.
+- **[Validation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/validation/)** - JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.
 
 ## Install
 
-You can use Powertools for AWS Lambda (TypeScript) by installing it with your favorite dependency management, or [via Lambda Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer_1). All features are available as individual packages, so you can install only the ones you need, for example:
+You can use Powertools for AWS Lambda (TypeScript) by installing it with your favorite dependency management, or [via Lambda Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/getting-started/lambda-layers/). All features are available as individual packages, so you can install only the ones you need, for example:
 
 - **Logger**: `npm install @aws-lambda-powertools/logger`
 - **Metrics**: `npm install @aws-lambda-powertools/metrics`
 - **Tracer**: `npm install @aws-lambda-powertools/tracer`
-- **Parameters**: `npm install @aws-lambda-powertools/parameters @aws-sdk/client-ssm` see [documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/#installation) for other providers
-- **Idempotency**: `npm install @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb`
-- **Batch**: `npm install @aws-lambda-powertools/batch`
+- **Event Handler**: `npm install @aws-lambda-powertools/event-handler`
+- **Parameters**: `npm install @aws-lambda-powertools/parameters @aws-sdk/client-ssm` see [documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/#installation) for other providers
+- **Idempotency**: `npm install @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb` see [documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/idempotency/#installation) for other providers
+- **Batch Processing**: `npm install @aws-lambda-powertools/batch`
 - **JMESPath Functions**: `npm install @aws-lambda-powertools/jmespath`
 - **Parser**: `npm install @aws-lambda-powertools/parser zod@~3`
 - **Validation**: `npm install @aws-lambda-powertools/validation`
@@ -47,11 +49,6 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 ### Examples
 
 You can find examples of how to use Powertools for AWS Lambda (TypeScript) in the [examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples) directory. The directory contains code snippets around certain features as well as an is a simple REST API application that can be deployed via either AWS CDK or AWS SAM.
-
-Community-contributed examples:
-
-- [Serverless TypeScript Demo](https://github.com/aws-samples/serverless-typescript-demo)
-- [AWS Lambda performance tuning](https://github.com/aws-samples/optimizations-for-lambda-functions)
 
 ## How to support Powertools for AWS Lambda (TypeScript)?
 
@@ -82,11 +79,11 @@ The following companies, among others, use Powertools:
 
 ### Sharing your work
 
-Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has already shared about Powertools for AWS Lambda (TypeScript) [here](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this).
+Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has [already shared](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this) about Powertools for AWS Lambda (TypeScript).
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (Typescript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer), you can add Powertools for AWS Lambda as a dev dependency to not impact the development process.
+This helps us understand who uses Powertools for AWS Lambda (Typescript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/getting-started/lambda-layers/), you can add Powertools for AWS Lambda as a dev dependency to not impact the development process.
 
 ## Credits
 
@@ -100,7 +97,7 @@ This helps us understand who uses Powertools for AWS Lambda (Typescript) in a no
 
 ## Security disclosures
 
-If you think you’ve found a potential security issue, please do not post it in the Issues.  Instead, please follow the instructions [here](https://aws.amazon.com/security/vulnerability-reporting/) or [email AWS security directly](mailto:aws-security@amazon.com).
+If you think you’ve found a potential security issue, please do not post it in the Issues. Instead, please follow the [vulnerability reporting instructions](https://aws.amazon.com/security/vulnerability-reporting/) or [email AWS security directly](mailto:aws-security@amazon.com).
 
 ## License
 

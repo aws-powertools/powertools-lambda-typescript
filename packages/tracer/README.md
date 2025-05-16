@@ -118,16 +118,12 @@ export const handler = async (
 
 ## Contribute
 
-If you are interested in contributing to this project, please refer to
-our [Contributing Guidelines](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md).
+If you are interested in contributing to this project, please refer to our [Contributing Guidelines](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md).
 
 ## Roadmap
 
 The roadmap of Powertools for AWS Lambda (TypeScript) is driven by customers’ demand.  
-Help us prioritize upcoming functionalities or utilities
-by [upvoting existing RFCs and feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues),
-or [creating new ones](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose), in this GitHub
-repository.
+Help us prioritize upcoming functionalities or utilities by [upvoting existing RFCs and feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues), or [creating new ones](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose), in this GitHub repository.
 
 ## Connect
 
@@ -166,16 +162,11 @@ The following companies, among others, use Powertools:
 
 ### Sharing your work
 
-Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and
-others. Check out what the community has already shared about Powertools for AWS Lambda (
-TypeScript) [here](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this).
+Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has [already shared](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this) about Powertools for AWS Lambda (TypeScript).
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain
-future investments for other Powertools for AWS Lambda languages.
-When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/#lambda-layer), you can add Powertools as a
-dev dependency to not impact the development process.
+This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/getting-started/lambda-layers/), you can add Powertools as a dev dependency to not impact the development process.
 
 ## License
 

@@ -131,11 +131,11 @@ import { SSMProvider } from './SSMProvider.js';
  * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
  * * `decrypt` - Whether to decrypt the value before returning it.
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/).
+ * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
  *
  * @param {string} name - The name of the parameter to retrieve
  * @param {SSMGetOptions} options - Options to configure the provider
- * @see https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/parameters/
+ * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
  */
 const getParameter = async <
   ExplicitUserProvidedType = undefined,

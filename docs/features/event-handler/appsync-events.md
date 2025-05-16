@@ -167,14 +167,23 @@ This is useful when you want to for example:
 
 You can enable this with the `aggregate` parameter:
 
-!!! note "Aggregate Processing"
-    When enabling `aggregate`, your handler receives a list of all events, requiring you to manage the response format. Ensure your response includes results for each event in the expected [AppSync Request and Response Format](#appsync-request-and-response-format).
-
 === "Aggregated processing"
 
     ```typescript hl_lines="17 32 34"
     --8<-- "examples/snippets/event-handler/appsync-events/aggregatedProcessing.ts"
     ```
+
+When enabling `aggregate`, your handler receives a list of all the events, requiring you to manage the response format. Ensure your response includes results for each event in the expected [AppSync Request and Response Format](#appsync-request-and-response-format).
+
+If you want to omit one or more events from the response, you can do so by excluding them from the returned array. Likewise, if you want to discard the entire batch and prevent subscribers from receiving it, you can return an empty array.
+
+=== "Aggregated processing with partial results"
+
+    ```typescript hl_lines="17 19"
+    --8<-- "examples/snippets/event-handler/appsync-events/aggregatedProcessingWithPartialResults.ts"
+    ```
+
+    1. You can also return an empty array `[]` to discard the entire batch and prevent subscribers from receiving it.
 
 ### Handling errors
 
@@ -237,7 +246,7 @@ You can also do content-based authorization for channel by throwing an `Unauthor
 
 === "UnauthorizedException"
 
-    ```typescript hl_lines="3 14 20"
+    ```typescript hl_lines="3 14 25-27"
     --8<-- "examples/snippets/event-handler/appsync-events/unauthorizedException.ts"
     ```
 

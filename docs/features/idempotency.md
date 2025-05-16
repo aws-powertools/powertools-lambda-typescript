@@ -94,7 +94,7 @@ Before getting started, you need to create a persistent storage layer where the 
 
 #### DynamoDB table
 
-As of now, Amazon DynamoDB is the only supported persistent storage layer, so you'll need to create a table first.
+You'll need to create a table first.
 
 **Default table configuration**
 

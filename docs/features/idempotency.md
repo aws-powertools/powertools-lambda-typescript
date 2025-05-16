@@ -580,6 +580,30 @@ sequenceDiagram
 <i>Optional idempotency key</i>
 </center>
 
+#### Race condition with Cache
+
+<center>
+```mermaid
+graph TD;
+    A(Existing orphan record in cache)-->A1;
+    A1[Two Lambda invoke at same time]-->B1[Lambda handler1];
+    B1-->B2[Fetch from Cache];
+    B2-->B3[Handler1 got orphan record];
+    B3-->B4[Handler1 acquired lock];
+    B4-->B5[Handler1 overwrite orphan record]
+    B5-->B6[Handler1 continue to execution];
+    A1-->C1[Lambda handler2];
+    C1-->C2[Fetch from Cache];
+    C2-->C3[Handler2 got orphan record];
+    C3-->C4[Handler2 failed to acquire lock];
+    C4-->C5[Handler2 wait and fetch from Cache];
+    C5-->C6[Handler2 return without executing];
+    B6-->D(Lambda handler executed only once);
+    C6-->D;
+```
+<i>Race condition with Cache</i>
+</center>
+
 ### Persistence layers
 
 #### DynamoDBPersistenceLayer

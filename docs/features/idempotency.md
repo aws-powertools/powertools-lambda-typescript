@@ -80,7 +80,7 @@ To start, you'll need:
 
     ---
 
-    [Amazon DynamoDB](#dynamodb-table) or [Cache](#cache-database)
+    [Amazon DynamoDB](#dynamodb-table) or [Redis](#redis-database)
 
 *   :simple-awslambda:{ .lg .middle } **AWS Lambda function**
 
@@ -94,7 +94,11 @@ Before getting started, you need to create a persistent storage layer where the 
 
 #### DynamoDB table
 
-Unless you're looking to use an [existing table or customize each attribute](#dynamodbpersistencelayer), you only need the following:
+As of now, Amazon DynamoDB is the only supported persistent storage layer, so you'll need to create a table first.
+
+**Default table configuration**
+
+If you're not [changing the default configuration for the DynamoDB persistence layer](#dynamodbpersistencelayer), this is the expected default configuration:
 
 | Configuration      | Default value | Notes                                                                                  |
 | ------------------ | :------------ | -------------------------------------------------------------------------------------- |
@@ -628,7 +632,12 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 
 #### CachePersistenceLayer
 
-The `CachePersistenceLayer` enables you to use Valkey, Redis OSS, or any Redis-compatible cache as the persistence layer for idempotency state. To use it, initialize `CachePersistenceLayer` with a connected Redis-compatible client.
+The `CachePersistenceLayer` enables you to use Valkey, Redis OSS, or any Redis-compatible cache as the persistence layer for idempotency state. You need to bring your own cache client.
+
+We recommend using [valkey-glide](https://valkey.io/valkey-glide/#__tabbed_2_2){target="_blank"} or [redis-client](https://www.npmjs.com/package/@redis/client){target="_blank"}. But you can use any Redis-compatible client.
+
+???+ info
+    Ensure that your cache client is properly configured and connected to your cache instance before using it with `CachePersistenceLayer`.
 
 === "Using Valkey Client"
     ```typescript hl_lines="9-18 21"

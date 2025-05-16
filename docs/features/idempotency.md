@@ -955,6 +955,22 @@ When testing your Lambda function locally, you can use a local DynamoDB instance
     --8<-- "examples/snippets/idempotency/workingWithLocalDynamoDB.ts"
     ```
 
+### Testing with local Cache
+
+When testing your Lambda function locally, you can use a local redis instance to test the idempotency feature. You can use [Redis OSS](https://redis.io/docs/latest/get-started/){target="_blank"} or [Valkey](https://valkey.io/topics/installation/){target="_blank"} as a local server.
+
+=== "handler.test.ts"
+
+    ```typescript hl_lines="20"
+    --8<-- "examples/snippets/idempotency/workingWithLocalCacheRedis.test.ts"
+    ```
+
+=== "handler.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/idempotency/workingWithLocalCacheRedis.ts"
+    ```
+
 ## Extra resources
 
 If you're interested in a deep dive on how Amazon uses idempotency when building our APIs, check out

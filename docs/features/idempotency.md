@@ -80,7 +80,7 @@ To start, you'll need:
 
     ---
 
-    [Amazon DynamoDB](#dynamodb-table) or [Redis](#redis-database)
+    [Amazon DynamoDB](#dynamodb-table) or [Cache](#cache-database)
 
 *   :simple-awslambda:{ .lg .middle } **AWS Lambda function**
 

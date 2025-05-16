@@ -18,7 +18,7 @@ Resources:
     Properties:
       Runtime: nodejs22.x
       Handler: index.js
-      VpcConfig: # (1)!
+      VpcConfig: # (2)!
         SecurityGroupIds:
           - security-{your_sg_id}
         SubnetIds:

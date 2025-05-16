@@ -157,6 +157,7 @@ In both services, you'll need to configure [VPC access](https://docs.aws.amazon.
     ```
 
     1. Replace the Security Group ID and Subnet ID to match your VPC settings.
+    2. Replace the Security Group ID and Subnet ID to match your VPC settings.
 
 === "Redis AWS CloudFormation example"
 
@@ -165,6 +166,7 @@ In both services, you'll need to configure [VPC access](https://docs.aws.amazon.
     ```
 
     1. Replace the Security Group ID and Subnet ID to match your VPC settings.
+    2. Replace the Security Group ID and Subnet ID to match your VPC settings.
     
 
 Once setup, you can find a quick start example for Cache in [the persistent layers section](#cachepersistencelayer).

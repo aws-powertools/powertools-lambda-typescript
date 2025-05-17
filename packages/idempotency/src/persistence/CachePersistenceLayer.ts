@@ -43,6 +43,7 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
  *     port: Number(process.env.CACHE_PORT),
  *   }],
  *   useTLS: true,
+ *   requestTimeout: 5000
  * });
  *
  * const persistence = new CachePersistenceLayer({

@@ -12,6 +12,7 @@ The idempotency utility provides a simple solution to convert your Lambda functi
 * Select a subset of the event as the idempotency key using JMESPath expressions
 * Set a time window in which records with the same payload should be considered duplicates
 * Expires in-progress executions if the Lambda function times out halfway through
+* Support for Amazon DynamoDB, Valkey, Redis OSS, or any Redis-compatible cache as the persistence layer
 
 ## Terminology
 
@@ -49,6 +50,8 @@ classDiagram
 
 ## Getting started
 
+We use Amazon DynamoDB as the default persistence layer in the documentation. If you prefer to use a cache based persistence layer, you can learn more from [this section](#cache-service).
+
 ### Installation
 
 Install the library in your project
@@ -68,13 +71,30 @@ Your Lambda function IAM Role must have `dynamodb:GetItem`, `dynamodb:PutItem`, 
 
 ### Required resources
 
+To start, you'll need:
+
+<!-- markdownlint-disable MD030 -->
+
+<div class="grid cards" markdown>
+*   :octicons-database-16:{ .lg .middle } __Persistent storage__
+
+    ---
+
+    [Amazon DynamoDB](#dynamodb-table) or [Cache](#cache-service)
+
+*   :simple-awslambda:{ .lg .middle } **AWS Lambda function**
+
+    ---
+
+    With permissions to use your persistent storage
+
+</div>
+
 Before getting started, you need to create a persistent storage layer where the idempotency utility can store its state - your lambda functions will need read and write access to it.
 
-As of now, Amazon DynamoDB is the only supported persistent storage layer, so you'll need to create a table first.
+#### DynamoDB table
 
-**Default table configuration**
-
-If you're not [changing the default configuration for the DynamoDB persistence layer](#dynamodbpersistencelayer), this is the expected default configuration:
+Unless you're looking to use an [existing table or customize each attribute](#dynamodbpersistencelayer), you only need the following:
 
 | Configuration      | Default value | Notes                                                                                  |
 | ------------------ | :------------ | -------------------------------------------------------------------------------------- |
@@ -113,6 +133,39 @@ If you're not [changing the default configuration for the DynamoDB persistence l
     See [AWS Blog post on handling conditional write errors](https://aws.amazon.com/blogs/database/handle-conditional-write-errors-in-high-concurrency-scenarios-with-amazon-dynamodb/) for more details.
     For retried invocations, you will see 1WCU and 1RCU.
     Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/){target="_blank"} to estimate the cost.
+
+#### Cache service
+
+We recommend starting with a managed cache service, such as [Amazon ElastiCache for Valkey and for Redis OSS](https://aws.amazon.com/elasticache/redis/){target="_blank"} or [Amazon MemoryDB](https://aws.amazon.com/memorydb/){target="_blank"}.
+
+In both services, you'll need to configure [VPC access](https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html){target="_blank"} to your AWS Lambda.
+
+##### Cache IaC examples
+
+!!! tip inline end "Prefer AWS Console/CLI?"
+
+    Follow the official tutorials for [Amazon ElastiCache for Redis](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/LambdaRedis.html){target="_blank"} or [Amazon MemoryDB for Redis](https://aws.amazon.com/blogs/database/access-amazon-memorydb-for-redis-from-aws-lambda/){target="_blank"}
+
+=== "Valkey AWS CloudFormation example"
+
+    ```yaml hl_lines="5 21"
+    --8<-- "examples/snippets/idempotency/templates/valkeyServerlessCloudformation.yml"
+    ```
+
+    1. Replace the Security Group ID and Subnet ID to match your VPC settings.
+    2. Replace the Security Group ID and Subnet ID to match your VPC settings.
+
+=== "Redis AWS CloudFormation example"
+
+    ```yaml hl_lines="5 21"
+    --8<-- "examples/snippets/idempotency/templates/redisServerlessCloudformation.yml"
+    ```
+
+    1. Replace the Security Group ID and Subnet ID to match your VPC settings.
+    2. Replace the Security Group ID and Subnet ID to match your VPC settings.
+    
+
+Once setup, you can find a quick start example for using a cache in [the persistent layers section](#cachepersistencelayer).
 
 ### MakeIdempotent function wrapper
 
@@ -523,7 +576,29 @@ sequenceDiagram
 <i>Optional idempotency key</i>
 </center>
 
-## Advanced
+#### Race condition with Cache
+
+<center>
+```mermaid
+graph TD;
+    A(Existing orphan record in cache)-->A1;
+    A1[Two Lambda invoke at same time]-->B1[Lambda handler1];
+    B1-->B2[Fetch from Cache];
+    B2-->B3[Handler1 got orphan record];
+    B3-->B4[Handler1 acquired lock];
+    B4-->B5[Handler1 overwrite orphan record]
+    B5-->B6[Handler1 continue to execution];
+    A1-->C1[Lambda handler2];
+    C1-->C2[Fetch from Cache];
+    C2-->C3[Handler2 got orphan record];
+    C3-->C4[Handler2 failed to acquire lock];
+    C4-->C5[Handler2 wait and fetch from Cache];
+    C5-->C6[Handler2 return without executing];
+    B6-->D(Lambda handler executed only once);
+    C6-->D;
+```
+<i>Race condition with Cache</i>
+</center>
 
 ### Persistence layers
 
@@ -550,6 +625,50 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 | **validationKeyAttr**    |                    | `validation`                         | Hashed representation of the parts of the event used for validation                                      |
 | **sortKeyAttr**          |                    |                                      | Sort key of the table (if table is configured with a sort key).                                          |
 | **staticPkValue**        |                    | `idempotency#{LAMBDA_FUNCTION_NAME}` | Static value to use as the partition key. Only used when **sort_key_attr** is set.                       |
+
+#### CachePersistenceLayer
+
+The `CachePersistenceLayer` enables you to use Valkey, Redis OSS, or any Redis-compatible cache as the persistence layer for idempotency state. You need to provide your own cache client.
+
+We recommend using [valkey-glide](https://valkey.io/valkey-glide/#__tabbed_2_2){target="_blank"} for Valkey or [redis-client](https://www.npmjs.com/package/@redis/client){target="_blank"} for Redis. However, any Redis-compatible client can be used.
+
+???+ info
+    Make sure your cache client is configured and connected before using it with `CachePersistenceLayer`.
+
+=== "Using Valkey Client"
+    ```typescript hl_lines="9-18 21"
+    --8<-- "examples/snippets/idempotency/cachePersistenceLayerValkey.ts"
+    ```
+
+=== "Using Redis Client"
+    ```typescript hl_lines="9-12 15"
+    --8<-- "examples/snippets/idempotency/cachePersistenceLayerRedis.ts"
+    ```
+
+##### Cache attributes
+
+When using Cache as a persistence layer, you can alter the attribute names by passing these parameters when initializing the persistence layer:
+
+| Parameter                | Required           | Default                              | Description                                                                                              |
+| ------------------------ | ------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| **client**               |  :heavy_check_mark: |                                      | A connected Redis-compatible client instance                                                              |
+| **expiryAttr**           |                    | `expiration`                         | Unix timestamp of when record expires                                                                    |
+| **inProgressExpiryAttr** |                    | `in_progress_expiration`             | Unix timestamp of when record expires while in progress (in case of the invocation times out)            |
+| **statusAttr**           |                    | `status`                             | Stores status of the lambda execution during and after invocation                                        |
+| **dataAttr**             |                    | `data`                               | Stores results of successfully executed Lambda handlers                                                  |
+| **validationKeyAttr**    |                    | `validation`                         | Hashed representation of the parts of the event used for validation                                      |
+
+=== "Using Valkey"
+    ```typescript hl_lines="22-26"
+    --8<-- "examples/snippets/idempotency/customizeCachePersistenceLayerValkey.ts"
+    ```
+
+=== "Using Redis"
+    ```typescript hl_lines="16-20"
+    --8<-- "examples/snippets/idempotency/customizeCachePersistenceLayerRedis.ts"
+    ```
+
+## Advanced
 
 ### Customizing the default behavior
 
@@ -859,6 +978,34 @@ When testing your Lambda function locally, you can use a local DynamoDB instance
 
     ```typescript
     --8<-- "examples/snippets/idempotency/workingWithLocalDynamoDB.ts"
+    ```
+
+### Testing with local Cache
+
+When testing your Lambda function locally, you can use a local Valkey or Redis instance to test the idempotency feature. You can use [Valkey](https://valkey.io/topics/installation/){target="_blank"} or [Redis OSS](https://redis.io/docs/latest/get-started/){target="_blank"} as a local server.
+
+=== "valkeyHandler.test.ts"
+
+    ```typescript hl_lines="19-24"
+    --8<-- "examples/snippets/idempotency/workingWithLocalCacheValkey.test.ts"
+    ```
+
+=== "valkeyHandler.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/idempotency/workingWithLocalCacheValkey.ts"
+    ```
+
+=== "redisHandler.test.ts"
+
+    ```typescript hl_lines="19"
+    --8<-- "examples/snippets/idempotency/workingWithLocalCacheRedis.test.ts"
+    ```
+
+=== "redisHandler.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/idempotency/workingWithLocalCacheRedis.ts"
     ```
 
 ## Extra resources

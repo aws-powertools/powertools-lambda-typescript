@@ -630,7 +630,7 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 
 The `CachePersistenceLayer` enables you to use Valkey, Redis OSS, or any Redis-compatible cache as the persistence layer for idempotency state. You need to provide your own cache client.
 
-We recommend using [valkey-glide](https://valkey.io/valkey-glide/#__tabbed_2_2){target="_blank"} for Valkey or [redis-client](https://www.npmjs.com/package/@redis/client){target="_blank"} for Redis. However, any redis compatible client can be used.
+We recommend using [valkey-glide](https://valkey.io/valkey-glide/#__tabbed_2_2){target="_blank"} for Valkey or [redis-client](https://www.npmjs.com/package/@redis/client){target="_blank"} for Redis. However, any Redis-compatible client can be used.
 
 ???+ info
     Make sure your cache client is configured and connected before using it with `CachePersistenceLayer`.

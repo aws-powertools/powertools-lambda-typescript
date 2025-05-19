@@ -1,9 +1,11 @@
-import { makeIdempotent } from '@aws-lambda-powertools/idempotency';
-import { CachePersistenceLayer } from '@aws-lambda-powertools/idempotency/cache';
-import { GlideClient } from '@valkey/valkey-glide';
 import type { Context } from 'aws-lambda';
-import { describe, expect, it } from 'vitest';
-import { handler } from './workingWithLocalDynamoDB.js';
+import { describe, expect, it, vi } from 'vitest';
+import { handler } from './cachePersistenceLayerValkey.js';
+
+vi.hoisted(() => {
+  process.env.CACHE_ENDPOINT = 'localhost';
+  process.env.CACHE_PORT = '6379';
+});
 
 const context = {
   functionName: 'foo-bar-function',
@@ -14,30 +16,10 @@ const context = {
   getRemainingTimeInMillis: () => 1234,
 } as Context;
 
-// Initialize the Glide client with local Glide server
-const client = await GlideClient.createClient({
-  addresses: [
-    {
-      host: 'localhost',
-      port: 6379,
-    },
-  ],
-  requestTimeout: 5000,
-});
-
-const mockPersistenceStore = new CachePersistenceLayer({
-  client,
-});
-
 describe('Idempotent handler', () => {
   it('returns the same response', async () => {
-    // Prepare
-    const idempotentHandler = makeIdempotent(handler, {
-      persistenceStore: mockPersistenceStore,
-    });
-
     // Act
-    const response = await idempotentHandler(
+    const response = await handler(
       {
         foo: 'bar',
       },
@@ -46,11 +28,9 @@ describe('Idempotent handler', () => {
 
     // Assess
     expect(response).toEqual({
+      paymentId: expect.any(String),
+      message: 'success',
       statusCode: 200,
-      body: JSON.stringify({
-        paymentId: '123',
-        message: 'Payment created',
-      }),
     });
   });
 });

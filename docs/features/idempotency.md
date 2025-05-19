@@ -50,49 +50,20 @@ classDiagram
 
 ## Getting started
 
-We use Amazon DynamoDB as the default persistence layer in the documentation. If you prefer to use a cache based persistence layer, you can learn more from [this section](#cache-service).
+!!! tip
+    Throughout the documentation we use Amazon DynamoDB as the default persistence layer. If you prefer to use a cache based persistence layer, you can learn more in the [cache database](#cache-database) and [`CachePersistenceLayer`](#cachepersistencelayer) sections.
 
-### Installation
-
-Install the library in your project
+### Amazon DynamoDB
 
 ```shell
 npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb
 ```
 
-While we support Amazon DynamoDB as a persistence layer out of the box, you need to bring your own AWS SDK for JavaScript v3 DynamoDB client.
+#### IAM Permissions
 
-???+ note
-    This utility supports **[AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/){target="_blank"} only**. If you are using the `nodejs18.x` runtime or newer, the AWS SDK for JavaScript v3 is already installed and you can install only the utility.
+Your Lambda function IAM Role must have `dynamodb:GetItem`, `dynamodb:PutItem`, `dynamodb:UpdateItem` and `dynamodb:DeleteItem` IAM permissions before using this feature. If you're using one of our examples below the required permissions are already included.
 
-### IAM Permissions
-
-Your Lambda function IAM Role must have `dynamodb:GetItem`, `dynamodb:PutItem`, `dynamodb:UpdateItem` and `dynamodb:DeleteItem` IAM permissions before using this feature. If you're using one of our examples: [AWS Serverless Application Model (SAM)](#required-resources) or [Terraform](#required-resources) the required permissions are already included.
-
-### Required resources
-
-To start, you'll need:
-
-<!-- markdownlint-disable MD030 -->
-
-<div class="grid cards" markdown>
-*   :octicons-database-16:{ .lg .middle } __Persistent storage__
-
-    ---
-
-    [Amazon DynamoDB](#dynamodb-table) or [Cache](#cache-service)
-
-*   :simple-awslambda:{ .lg .middle } **AWS Lambda function**
-
-    ---
-
-    With permissions to use your persistent storage
-
-</div>
-
-Before getting started, you need to create a persistent storage layer where the idempotency utility can store its state - your lambda functions will need read and write access to it.
-
-#### DynamoDB table
+#### Table configuration
 
 Unless you're looking to use an [existing table or customize each attribute](#dynamodbpersistencelayer), you only need the following:
 
@@ -101,8 +72,7 @@ Unless you're looking to use an [existing table or customize each attribute](#dy
 | Partition key      | `id`          | The id of each idempotency record which a combination of `functionName#hashOfPayload`. |
 | TTL attribute name | `expiration`  | This can only be configured after your table is created if you're using AWS Console.   |
 
-???+ tip "Tip: You can share a single state table for all functions"
-    You can reuse the same DynamoDB table to store idempotency state. We add the Lambda function name in addition to the idempotency key as a hash key.
+You **can** use a single DynamoDB table for all functions using this utility. We use the function name in addition to the idempotency key as a hash key.
 
 === "AWS Cloud Development Kit (CDK) example"
 
@@ -122,50 +92,51 @@ Unless you're looking to use an [existing table or customize each attribute](#dy
     --8<-- "examples/snippets/idempotency/templates/tableTerraform.tf"
     ```
 
-???+ warning "Warning: Large responses with DynamoDB persistence layer"
-    When using this utility with DynamoDB, your function's responses must be [smaller than 400KB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html#limits-items){target="_blank"}.
+##### Limitations
 
-    Larger items cannot be written to DynamoDB and will cause exceptions.
+* **DynamoDB restricts [item sizes to 400KB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html#limits-items)**. This means that your idempotent function's response must be smaller than 400KB, otherwise your function will fail. Consider using the [cache persistence layer](#cache-database) if you need to store larger responses.
+* **Expect 2 WCUs per non-idempotent call**. During the first invocation, we use `PutItem` for locking and `UpdateItem` for completion. Consider reviewing [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/) to estimate cost.
+* **Expect 1 RCU per idempotent calls**. On subsequent invocations, we use `PutItem` to optimistically attempt to lock the record using `ConditionExpression` and `ReturnValuesOnConditionCheckFailure` to return the record if it exists. This is a single read operation.
 
-???+ info "Info: DynamoDB"
-    Each function invocation will make only 1 request to DynamoDB by using DynamoDB's [conditional expressions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html){target="_blank"} to ensure that we don't overwrite existing records,
-    and [ReturnValuesOnConditionCheckFailure](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html#DDB-PutItem-request-ReturnValuesOnConditionCheckFailure){target="_blank"} to return the record if it exists.
-    See [AWS Blog post on handling conditional write errors](https://aws.amazon.com/blogs/database/handle-conditional-write-errors-in-high-concurrency-scenarios-with-amazon-dynamodb/) for more details.
-    For retried invocations, you will see 1WCU and 1RCU.
-    Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/){target="_blank"} to estimate the cost.
+### Cache database
 
-#### Cache service
+Depending on the persistence layer you want to use, install the library and the corresponding peer dependencies.
+
+=== "Valkey"
+    ```shell
+    npm i @aws-lambda-powertools/idempotency @valkey/valkey-glide
+    ```
+
+=== "Redis OSS"
+    ```shell
+    npm i @aws-lambda-powertools/idempotency @redis/client
+    ```
 
 We recommend starting with a managed cache service, such as [Amazon ElastiCache for Valkey and for Redis OSS](https://aws.amazon.com/elasticache/redis/){target="_blank"} or [Amazon MemoryDB](https://aws.amazon.com/memorydb/){target="_blank"}.
 
-In both services, you'll need to configure [VPC access](https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html){target="_blank"} to your AWS Lambda.
+In both services, you'll need to configure [VPC access](https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html){target="_blank"} to your AWS Lambda and permissions for writing and reading from the cache.
 
-##### Cache IaC examples
+#### Cache configuration
 
-!!! tip inline end "Prefer AWS Console/CLI?"
+=== "AWS Cloud Development Kit (CDK) example"
 
-    Follow the official tutorials for [Amazon ElastiCache for Redis](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/LambdaRedis.html){target="_blank"} or [Amazon MemoryDB for Redis](https://aws.amazon.com/blogs/database/access-amazon-memorydb-for-redis-from-aws-lambda/){target="_blank"}
-
-=== "Valkey AWS CloudFormation example"
-
-    ```yaml hl_lines="5 21"
-    --8<-- "examples/snippets/idempotency/templates/valkeyServerlessCloudformation.yml"
+    ```typescript title="template.ts" hl_lines="43"
+    --8<-- "examples/snippets/idempotency/templates/cacheCdk.ts"
     ```
 
-    1. Replace the Security Group ID and Subnet ID to match your VPC settings.
-    2. Replace the Security Group ID and Subnet ID to match your VPC settings.
+    1. Replace the VPC ID to match your VPC settings.
+    2. Replace the Security Group ID to match your VPC settings.
+    3. You can use the same template for Redis OSS, just replace the engine to `redis`.
 
-=== "Redis AWS CloudFormation example"
+=== "AWS Serverless Application Model (SAM) example"
 
-    ```yaml hl_lines="5 21"
-    --8<-- "examples/snippets/idempotency/templates/redisServerlessCloudformation.yml"
+    ```yaml hl_lines="6"
+    --8<-- "examples/snippets/idempotency/templates/cacheSam.yml"
     ```
 
-    1. Replace the Security Group ID and Subnet ID to match your VPC settings.
+    1. You can use the same template for Redis OSS, just replace the engine to `redis`.
     2. Replace the Security Group ID and Subnet ID to match your VPC settings.
-    
-
-Once setup, you can find a quick start example for using a cache in [the persistent layers section](#cachepersistencelayer).
+    3. Replace the Security Group ID and Subnet ID to match your VPC settings.
 
 ### MakeIdempotent function wrapper
 
@@ -630,42 +601,36 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 
 The `CachePersistenceLayer` enables you to use Valkey, Redis OSS, or any Redis-compatible cache as the persistence layer for idempotency state. You need to provide your own cache client.
 
-We recommend using [valkey-glide](https://valkey.io/valkey-glide/#__tabbed_2_2){target="_blank"} for Valkey or [redis-client](https://www.npmjs.com/package/@redis/client){target="_blank"} for Redis. However, any Redis-compatible client can be used.
+We recommend using [`@valkey/valkey-glide`](https://www.npmjs.com/package/@valkey/valkey-glide){target="_blank"} for Valkey or [`@redis/client`](https://www.npmjs.com/package/@redis/client){target="_blank"} for Redis. However, any Redis OSS-compatible client should work.
 
 ???+ info
     Make sure your cache client is configured and connected before using it with `CachePersistenceLayer`.
 
 === "Using Valkey Client"
-    ```typescript hl_lines="9-18 21"
-    --8<-- "examples/snippets/idempotency/cachePersistenceLayerValkey.ts"
+    ```typescript hl_lines="4 7-16 19"
+    --8<-- "examples/snippets/idempotency/cachePersistenceLayerValkey.ts:5:"
     ```
 
 === "Using Redis Client"
-    ```typescript hl_lines="9-12 15"
-    --8<-- "examples/snippets/idempotency/cachePersistenceLayerRedis.ts"
+    ```typescript hl_lines="4 7-10 13"
+    --8<-- "examples/snippets/idempotency/cachePersistenceLayerRedis.ts:5:"
     ```
-
-##### Cache attributes
 
 When using Cache as a persistence layer, you can alter the attribute names by passing these parameters when initializing the persistence layer:
 
 | Parameter                | Required           | Default                              | Description                                                                                              |
 | ------------------------ | ------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| **client**               |  :heavy_check_mark: |                                      | A connected Redis-compatible client instance                                                              |
+| **client**               | :heavy_check_mark: |                                      | A connected Redis-compatible client instance                                                             |
 | **expiryAttr**           |                    | `expiration`                         | Unix timestamp of when record expires                                                                    |
 | **inProgressExpiryAttr** |                    | `in_progress_expiration`             | Unix timestamp of when record expires while in progress (in case of the invocation times out)            |
 | **statusAttr**           |                    | `status`                             | Stores status of the lambda execution during and after invocation                                        |
 | **dataAttr**             |                    | `data`                               | Stores results of successfully executed Lambda handlers                                                  |
 | **validationKeyAttr**    |                    | `validation`                         | Hashed representation of the parts of the event used for validation                                      |
 
-=== "Using Valkey"
-    ```typescript hl_lines="22-26"
-    --8<-- "examples/snippets/idempotency/customizeCachePersistenceLayerValkey.ts"
-    ```
+=== "Customizing CachePersistenceLayer"
 
-=== "Using Redis"
-    ```typescript hl_lines="16-20"
-    --8<-- "examples/snippets/idempotency/customizeCachePersistenceLayerRedis.ts"
+    ```typescript hl_lines="20-24"
+    --8<-- "examples/snippets/idempotency/customizeCachePersistenceLayer.ts:5:"
     ```
 
 ## Advanced

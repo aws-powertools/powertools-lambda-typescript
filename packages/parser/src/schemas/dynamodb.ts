@@ -151,69 +151,103 @@ const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
  * @example
  * ```json
  * {
- *   "Records": [
- *     {
- *       "eventID": "1",
- *       "eventVersion": "1.0",
- *       "dynamodb": {
- *         "ApproximateCreationDateTime": 1693997155.0,
- *         "Keys": {
- *           "Id": {
- *             "N": "101"
- *           }
- *         },
- *         "NewImage": {
- *           "Message": {
- *             "S": "New item!"
- *           },
- *           "Id": {
- *             "N": "101"
- *           }
- *         },
- *         "StreamViewType": "NEW_AND_OLD_IMAGES",
- *         "SequenceNumber": "111",
- *         "SizeBytes": 26
+ *   "Records":[{
+ *     "eventID":"1",
+ *     "eventName":"INSERT",
+ *     "eventVersion":"1.0",
+ *     "eventSource":"aws:dynamodb",
+ *     "awsRegion":"us-east-1",
+ *     "dynamodb":{
+ *       "Keys":{
+ *         "Id":{
+ *           "N":"101"
+ *         }
  *       },
- *       "awsRegion": "us-west-2",
- *       "eventName": "INSERT",
- *       "eventSourceARN": "eventsource_arn",
- *       "eventSource": "aws:dynamodb"
+ *       "NewImage":{
+ *         "Message":{
+ *           "S":"New item!"
+ *         },
+ *         "Id":{
+ *           "N":"101"
+ *         }
+ *       },
+ *       "SequenceNumber":"111",
+ *       "SizeBytes":26,
+ *       "StreamViewType":"NEW_AND_OLD_IMAGES"
  *     },
- *     {
- *       "eventID": "2",
- *       "eventVersion": "1.0",
- *       "dynamodb": {
- *         "OldImage": {
- *           "Message": {
- *             "S": "New item!"
- *           },
- *           "Id": {
- *             "N": "101"
- *           }
- *         },
- *         "SequenceNumber": "222",
- *         "Keys": {
- *           "Id": {
- *             "N": "101"
- *           }
- *         },
- *         "SizeBytes": 59,
- *         "NewImage": {
- *           "Message": {
- *             "S": "This item has changed"
- *           },
- *           "Id": {
- *             "N": "101"
- *           }
- *         },
- *         "StreamViewType": "NEW_AND_OLD_IMAGES"
+ *     "eventSourceARN":"stream-ARN"
+ *   },
+ *   {
+ *     "eventID":"2",
+ *     "eventName":"MODIFY",
+ *     "eventVersion":"1.0",
+ *     "eventSource":"aws:dynamodb",
+ *     "awsRegion":"us-east-1",
+ *     "dynamodb":{
+ *       "Keys":{
+ *         "Id":{
+ *           "N":"101"
+ *         }
  *       },
- *       "awsRegion": "us-west-2",
- *       "eventName": "MODIFY",
- *       "eventSourceARN": "source_arn",
- *       "eventSource": "aws:dynamodb"
- *     }
- *   ]
+ *       "NewImage":{
+ *         "Message":{
+ *           "S":"This item has changed"
+ *         },
+ *         "Id":{
+ *           "N":"101"
+ *         }
+ *       },
+ *       "OldImage":{
+ *         "Message":{
+ *           "S":"New item!"
+ *         },
+ *         "Id":{
+ *           "N":"101"
+ *         }
+ *       },
+ *       "SequenceNumber":"222",
+ *       "SizeBytes":59,
+ *       "StreamViewType":"NEW_AND_OLD_IMAGES"
+ *     },
+ *     "eventSourceARN":"stream-ARN"
+ *   },
+ *   {
+ *     "eventID":"3",
+ *     "eventName":"REMOVE",
+ *     "eventVersion":"1.0",
+ *     "eventSource":"aws:dynamodb",
+ *     "awsRegion":"us-east-1",
+ *     "dynamodb":{
+ *       "Keys":{
+ *         "Id":{
+ *           "N":"101"
+ *         }
+ *       },
+ *       "OldImage":{
+ *         "Message":{
+ *           "S":"This item has changed"
+ *         },
+ *         "Id":{
+ *           "N":"101"
+ *         }
+ *       },
+ *       "SequenceNumber":"333",
+ *       "SizeBytes":38,
+ *       "StreamViewType":"NEW_AND_OLD_IMAGES"
+ *     },
+ *     "eventSourceARN":"stream-ARN"
+ *   }],
+ *   "window": {
+ *     "start": "2020-07-30T17:00:00Z",
+ *     "end": "2020-07-30T17:05:00Z"
+ *   },
+ *   "state": {
+ *     "1": "state1"
+ *   },
+ *   "shardId": "shard123456789",
+ *   "eventSourceARN": "stream-ARN",
+ *   "isFinalInvokeForWindow": false,
+ *   "isWindowTerminatedEarly": false
  * }
  * ```
  *
@@ -222,6 +256,17 @@ const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
  */
 const DynamoDBStreamSchema = z.object({
   Records: z.array(DynamoDBStreamRecord).min(1),
+  window: z
+    .object({
+      start: z.string().datetime(),
+      end: z.string().datetime(),
+    })
+    .optional(),
+  state: z.record(z.string(), z.string()).optional(),
+  shardId: z.string().optional(),
+  eventSourceARN: z.string().optional(),
+  isFinalInvokeForWindow: z.boolean().optional(),
+  isWindowTerminatedEarly: z.boolean().optional(),
 });
 
 export {

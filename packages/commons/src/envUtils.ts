@@ -1,10 +1,4 @@
-import { isNumber } from './typeUtils.js';
-
-type GetFromEnvOptions = {
-  key: string;
-  defaultValue?: unknown;
-  required?: boolean;
-};
+import type { GetFromEnvOptions } from './types/index.js';
 
 /**
  * Get a string from the environment variables.
@@ -26,7 +20,7 @@ const getStringFromEnv = ({
       throw new Error(`Environment variable ${key} is required`);
     }
 
-    return String(defaultValue) ?? '';
+    return defaultValue ? String(defaultValue) : '';
   }
 
   return value.trim();
@@ -51,11 +45,13 @@ const getNumberFromEnv = ({
     required,
   }) as unknown;
 
-  if (!isNumber(value)) {
+  const parsedValue = Number(value);
+
+  if (Number.isNaN(parsedValue)) {
     throw new Error(`Environment variable ${key} must be a number`);
   }
 
-  return value;
+  return parsedValue;
 };
 
 /**
@@ -83,7 +79,7 @@ const getBooleanFromEnv = ({
     throw new Error(`Environment variable ${key} must be a boolean`);
   }
 
-  return Boolean(parsedValue);
+  return parsedValue === 'true';
 };
 
 const truthyValues = ['1', 'y', 'yes', 't', 'true', 'on'];

@@ -6,7 +6,10 @@ import {
   getServiceName,
   getStringFromEnv,
   getTruthyBooleanFromEnv,
+  getXRayTraceIdFromEnv,
+  getXrayTraceDataFromEnv,
   isDevMode,
+  isRequestXRaySampled,
 } from '../../src/envUtils.js';
 
 describe('Functions: envUtils', () => {
@@ -335,6 +338,68 @@ describe('Functions: envUtils', () => {
 
       // Assess
       expect(result).toBe('');
+    });
+  });
+
+  describe('Function: getXrayTraceIdFromEnv', () => {
+    it('returns the value of the environment variable _X_AMZN_TRACE_ID', () => {
+      // Prepare
+      process.env._X_AMZN_TRACE_ID = 'abcd123456789';
+
+      // Act
+      const value = getXRayTraceIdFromEnv();
+
+      // Assess
+      expect(value).toEqual('abcd123456789');
+    });
+
+    it('returns the value of the Root X-Ray segment ID properly formatted', () => {
+      // Prepare
+      process.env._X_AMZN_TRACE_ID =
+        'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
+
+      // Act
+      const value = getXRayTraceIdFromEnv();
+
+      // Assess
+      expect(value).toEqual('1-5759e988-bd862e3fe1be46a994272793');
+    });
+  });
+
+  describe('Function: isRequestXRaySampled', () => {
+    it('returns true if the Sampled flag is set in the _X_AMZN_TRACE_ID environment variable', () => {
+      // Prepare
+      process.env._X_AMZN_TRACE_ID =
+        'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1';
+
+      // Act
+      const value = isRequestXRaySampled();
+
+      // Assess
+      expect(value).toEqual(true);
+    });
+
+    it('returns false if the Sampled flag is not set in the _X_AMZN_TRACE_ID environment variable', () => {
+      // Prepare
+      process.env._X_AMZN_TRACE_ID =
+        'Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047';
+
+      // Act
+      const value = isRequestXRaySampled();
+
+      // Assess
+      expect(value).toEqual(false);
+    });
+
+    it('returns false when no _X_AMZN_TRACE_ID environment variable is present', () => {
+      // Prepare
+      process.env._X_AMZN_TRACE_ID = undefined;
+
+      // Act
+      const value = isRequestXRaySampled();
+
+      // Assess
+      expect(value).toEqual(false);
     });
   });
 });

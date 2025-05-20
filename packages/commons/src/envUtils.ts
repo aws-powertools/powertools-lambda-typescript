@@ -1,3 +1,8 @@
+import {
+  POWERTOOLS_DEV_ENV_VAR,
+  POWERTOOLS_SERVICE_NAME_ENV_VAR,
+  XRAY_TRACE_ID_ENV_VAR,
+} from './constants.js';
 import type {
   GetBooleanFromEnvOptions,
   GetNumberFromEnvOptions,
@@ -273,7 +278,7 @@ const getFalsyBooleanFromEnv = ({
  */
 const isDevMode = (): boolean => {
   return getTruthyBooleanFromEnv({
-    key: 'POWERTOOLS_DEV',
+    key: POWERTOOLS_DEV_ENV_VAR,
     defaultValue: false,
   });
 };
@@ -292,9 +297,62 @@ const isDevMode = (): boolean => {
  */
 const getServiceName = (): string => {
   return getStringFromEnv({
-    key: 'POWERTOOLS_SERVICE_NAME',
+    key: POWERTOOLS_SERVICE_NAME_ENV_VAR,
     defaultValue: '',
   });
+};
+
+/**
+ * Get the AWS X-Ray Trace data from the environment variable.
+ *
+ * The method parses the environment variable `_X_AMZN_TRACE_ID` and returns an object with the key-value pairs.
+ */
+const getXrayTraceDataFromEnv = (): Record<string, string> | undefined => {
+  const xRayTraceEnv = getStringFromEnv({
+    key: XRAY_TRACE_ID_ENV_VAR,
+    defaultValue: '',
+  });
+  if (xRayTraceEnv === '') {
+    return undefined;
+  }
+  if (!xRayTraceEnv.includes('=')) {
+    return {
+      Root: xRayTraceEnv,
+    };
+  }
+  const xRayTraceData: Record<string, string> = {};
+
+  for (const field of xRayTraceEnv.split(';')) {
+    const [key, value] = field.split('=');
+
+    xRayTraceData[key] = value;
+  }
+
+  return xRayTraceData;
+};
+
+/**
+ * Determine if the current invocation is part of a sampled X-Ray trace.
+ *
+ * The AWS X-Ray Trace data available in the environment variable has this format:
+ * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
+ */
+const isRequestXRaySampled = (): boolean => {
+  const xRayTraceData = getXrayTraceDataFromEnv();
+  return xRayTraceData?.Sampled === '1';
+};
+
+/**
+ * Get the value of the `_X_AMZN_TRACE_ID` environment variable.
+ *
+ * The AWS X-Ray Trace data available in the environment variable has this format:
+ * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
+ *
+ * The actual Trace ID is: `1-5759e988-bd862e3fe1be46a994272793`.
+ */
+const getXRayTraceIdFromEnv = (): string | undefined => {
+  const xRayTraceData = getXrayTraceDataFromEnv();
+  return xRayTraceData?.Root;
 };
 
 export {
@@ -305,4 +363,7 @@ export {
   getFalsyBooleanFromEnv,
   isDevMode,
   getServiceName,
+  getXrayTraceDataFromEnv,
+  isRequestXRaySampled,
+  getXRayTraceIdFromEnv,
 };

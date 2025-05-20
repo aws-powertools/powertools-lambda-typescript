@@ -1,10 +1,6 @@
 import {
-  getFalsyBooleanFromEnv,
   getServiceName,
-  getStringFromEnv,
-  getTruthyBooleanFromEnv,
   getXRayTraceIdFromEnv,
-  getXrayTraceDataFromEnv,
   isDevMode,
   isRequestXRaySampled,
 } from '../envUtils.js';

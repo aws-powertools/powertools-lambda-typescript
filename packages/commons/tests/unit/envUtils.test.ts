@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getBooleanFromEnv,
   getFalsyBooleanFromEnv,
@@ -7,7 +7,6 @@ import {
   getStringFromEnv,
   getTruthyBooleanFromEnv,
   getXRayTraceIdFromEnv,
-  getXrayTraceDataFromEnv,
   isDevMode,
   isRequestXRaySampled,
 } from '../../src/envUtils.js';

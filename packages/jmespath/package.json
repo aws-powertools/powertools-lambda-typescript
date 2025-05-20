@@ -71,7 +71,7 @@
     "lib"
   ],
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.20.0"
+    "@aws-lambda-powertools/commons": "2.20.0"
   },
   "repository": {
     "type": "git",

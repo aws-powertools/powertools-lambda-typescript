@@ -20,10 +20,8 @@ export type {
   HandlerMethodDecorator,
 } from './LambdaInterface.js';
 export type { ConfigServiceInterface } from './ConfigServiceInterface.js';
-
-type GetFromEnvOptions = {
-  key: string;
-  defaultValue?: unknown;
-  required?: boolean;
-};
-export type { GetFromEnvOptions };
+export type {
+  GetStringFromEnvOptions,
+  GetBooleanFromEnvOptions,
+  GetNumberFromEnvOptions,
+} from './envUtils.js';

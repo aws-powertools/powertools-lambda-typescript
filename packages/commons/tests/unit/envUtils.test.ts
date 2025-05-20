@@ -42,25 +42,14 @@ describe('Functions: envUtils', () => {
       expect(result).toBe('defaultValue');
     });
 
-    it('returns an empty string if the environment variable is not set and no default value is provided', () => {
-      // Prepare
-      process.env.TEST_ENV = undefined;
-
-      // Act
-      const result = getStringFromEnv({ key: 'TEST_ENV' });
-
-      // Assess
-      expect(result).toBe('');
-    });
-
-    it('throws an error if the environment variable is not set and required is true', () => {
+    it('throws an error if the environment variable is not set', () => {
       // Prepare
       process.env.TEST_ENV = undefined;
 
       // Act & Assess
-      expect(() =>
-        getStringFromEnv({ key: 'TEST_ENV', required: true })
-      ).toThrowError('Environment variable TEST_ENV is required');
+      expect(() => getStringFromEnv({ key: 'TEST_ENV' })).toThrowError(
+        'Environment variable TEST_ENV is required'
+      );
     });
 
     it('returns the trimmed value of the environment variable', () => {
@@ -72,6 +61,19 @@ describe('Functions: envUtils', () => {
 
       // Assess
       expect(result).toBe('testValue');
+    });
+
+    it('uses the provided error message if the environment variable is not set', () => {
+      // Prepare
+      process.env.TEST_ENV = undefined;
+
+      // Act & Assess
+      expect(() =>
+        getStringFromEnv({
+          key: 'TEST_ENV',
+          errorMessage: 'Custom error message',
+        })
+      ).toThrowError('Custom error message');
     });
   });
 

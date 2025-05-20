@@ -39,10 +39,11 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
  *
  * const client = await GlideClient.createClient({
  *   addresses: [{
- *     host: process.env.CACHE_ENDPOINT,
+ *     host: String(process.env.CACHE_ENDPOINT),
  *     port: Number(process.env.CACHE_PORT),
  *   }],
  *   useTLS: true,
+ *   requestTimeout: 2000
  * });
  *
  * const persistence = new CachePersistenceLayer({

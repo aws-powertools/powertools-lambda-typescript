@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.20.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.1...v2.20.0) (2025-05-20)
+
+
+### Features
+
+* **parser:** add schemas for AppSync Events ([#3907](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3907)) ([2554800](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2554800b6905811e1fb9ca254196a67138e765bc))
+* **parser:** add support for tumbling windows in Kinesis and DynamoDB events ([#3931](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3931)) ([0205a87](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0205a87f6f4c8d597e27684b224c3b3a37887987))
+
+
+
+
+
 ## [2.19.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.0...v2.19.1) (2025-05-05)
 
 **Note:** Version bump only for package @aws-lambda-powertools/parser

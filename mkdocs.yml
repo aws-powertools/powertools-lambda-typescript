@@ -56,6 +56,9 @@ nav:
       - Community Content: we_made_this.md
       - Roadmap: roadmap.md
       - Changelog: changelog.md
+      - Resources:
+          - "llms.txt": ./llms.txt
+          - "llms.txt (full version)": ./llms-full.txt
   - API reference: api/" target="_blank
   - Processes:
       - Roadmap: roadmap.md
@@ -152,6 +155,40 @@ plugins:
       tsconfig: 'tsconfig.json'
       options: 'typedoc.json'
       name: 'API Reference'
+      
+  - llmstxt:
+      markdown_description: Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless best practices and increase developer velocity. It provides a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
+      full_output: llms-full.txt
+      sections:
+        Getting Started:
+          - getting-started/installation.md
+          - getting-started/usage-patterns.md
+          - getting-started/typescript-settings.md
+          - getting-started/lambda-layers.md
+        Features:
+          - features/index.md
+          - features/tracer.md
+          - features/logger.md
+          - features/metrics.md
+          - features/event-handler/appsync-events.md
+          - features/parameters.md
+          - features/idempotency.md
+          - features/batch.md
+          - features/jmespath.md
+          - features/parser.md
+          - features/validation.md
+        Environment variables: 
+          - environment-variables.md
+        Upgrade guide: 
+          - upgrade.md
+        Processes:
+          - roadmap.md
+          - versioning.md
+          - maintainers.md
+          - contributing/setup.md
+          - contributing/getting_started.md
+          - contributing/conventions.md
+          - contributing/testing.md
 
 extra_css:
   - stylesheets/extra.css

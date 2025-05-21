@@ -19,6 +19,7 @@
     "packages/event-handler",
     "packages/validation"
   ],
+  "type": "module",
   "scripts": {
     "test": "npm t -ws",
     "test:parallel": "lerna exec --no-bail --no-sort --stream --concurrency 8 -- npm run test",

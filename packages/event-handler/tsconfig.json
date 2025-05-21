@@ -1,9 +1,14 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./lib/cjs/",
+    "baseUrl": ".",
+    "outDir": "./lib/esm",
     "rootDir": "./src",
-    "tsBuildInfoFile": ".tsbuildinfo/cjs.json"
+    "tsBuildInfoFile": ".tsbuildinfo/esm.json",
+    "composite": true,
+    "declaration": true
   },
-  "include": ["./src/**/*"]
+  "include": [
+    "./src/**/*"
+  ]
 }

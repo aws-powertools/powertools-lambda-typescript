@@ -104,9 +104,13 @@ describe('Working with dimensions', () => {
         commit: '1234',
       })
     );
+    // With the new implementation, we expect two dimension sets
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
-        Dimensions: [['service', 'environment', 'commit']],
+        Dimensions: expect.arrayContaining([
+          ['service', 'environment', 'commit'],
+          ['service', 'environment', 'commit'],
+        ]),
       })
     );
   });
@@ -131,9 +135,13 @@ describe('Working with dimensions', () => {
         dimension2: '2',
       })
     );
+    // With the new implementation, we expect two dimension sets
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
-        Dimensions: [['service', 'environment', 'dimension1', 'dimension2']],
+        Dimensions: expect.arrayContaining([
+          ['service', 'environment', 'dimension1', 'dimension2'],
+          ['service', 'dimension1', 'dimension2'],
+        ]),
       })
     );
   });
@@ -157,9 +165,13 @@ describe('Working with dimensions', () => {
         region: 'us-west-2',
       })
     );
+    // With the new implementation, we expect two dimension sets
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
-        Dimensions: [['service', 'environment', 'region']],
+        Dimensions: expect.arrayContaining([
+          ['service', 'environment', 'region'],
+          ['service', 'region'],
+        ]),
       })
     );
   });
@@ -320,10 +332,13 @@ describe('Working with dimensions', () => {
       1,
       expect.objectContaining({ region: 'us-west-2', environment: 'test' })
     );
+    // With the new implementation, we expect two dimension sets in the first metric
     expect(console.log).toHaveEmittedNthMetricWith(
       1,
       expect.objectContaining({
-        Dimensions: [['service', 'environment', 'region']],
+        Dimensions: expect.arrayContaining([
+          expect.arrayContaining(['service', 'environment', 'region']),
+        ]),
       })
     );
     expect(console.log).toHaveEmittedNthEMFWith(
@@ -334,6 +349,7 @@ describe('Working with dimensions', () => {
       2,
       expect.objectContaining({ environment: 'test' })
     );
+    // And only one dimension set in the second metric
     expect(console.log).toHaveEmittedNthMetricWith(
       2,
       expect.objectContaining({

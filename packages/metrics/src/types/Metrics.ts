@@ -14,6 +14,11 @@ import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
 type Dimensions = Record<string, string>;
 
 /**
+ * A dimension set is an array of dimension names
+ */
+type DimensionSet = string[];
+
+/**
  * Options to configure the Metrics class.
  *
  * @example
@@ -541,6 +546,7 @@ interface MetricsInterface {
 export type {
   MetricsOptions,
   Dimensions,
+  DimensionSet,
   EmfOutput,
   ExtraOptions,
   StoredMetrics,

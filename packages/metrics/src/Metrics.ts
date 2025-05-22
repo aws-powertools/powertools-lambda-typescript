@@ -195,10 +195,10 @@ class Metrics extends Utility implements MetricsInterface {
   private shouldThrowOnEmptyMetrics = false;
 
   /**
-   * Storage for metrics before they are published
-   * @default {}
+   * Storage for dimension sets
+   * @default []
    */
-  private storedMetrics: StoredMetrics = {};
+  private dimensionSets: DimensionSet[] = [];
 
   /**
    * Whether to disable metrics
@@ -291,8 +291,40 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - An object with key-value pairs of dimensions
    */
   public addDimensions(dimensions: Dimensions): void {
+    const dimensionSet: string[] = [];
+
+    // Add default dimensions to the set
+    for (const name of Object.keys(this.defaultDimensions)) {
+      dimensionSet.push(name);
+    }
+
+    // Add new dimensions to both the dimension set and the dimensions object
     for (const [name, value] of Object.entries(dimensions)) {
-      this.addDimension(name, value);
+      if (!value) {
+        this.#logger.warn(
+          `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+        );
+        continue;
+      }
+
+      if (MAX_DIMENSION_COUNT <= this.getCurrentDimensionsCount() + 1) {
+        throw new RangeError(
+          `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+        );
+      }
+
+      // Add to dimensions object for value storage
+      this.dimensions[name] = value;
+
+      // Add to dimension set if not already included
+      if (!dimensionSet.includes(name)) {
+        dimensionSet.push(name);
+      }
+    }
+
+    // Only add the dimension set if it has dimensions beyond the defaults
+    if (dimensionSet.length > Object.keys(this.defaultDimensions).length) {
+      this.dimensionSets.push(dimensionSet);
     }
   }
 
@@ -482,6 +514,7 @@ class Metrics extends Utility implements MetricsInterface {
    */
   public clearDimensions(): void {
     this.dimensions = {};
+    this.dimensionSets = [];
   }
 
   /**
@@ -511,6 +544,10 @@ class Metrics extends Utility implements MetricsInterface {
    * Check if there are stored metrics in the buffer.
    */
   public hasStoredMetrics(): boolean {
+    if (!this.storedMetrics) {
+      this.storedMetrics = {};
+      return false;
+    }
     return Object.keys(this.storedMetrics).length > 0;
   }
 
@@ -735,13 +772,21 @@ class Metrics extends Utility implements MetricsInterface {
       ]),
     ];
 
+    // Prepare all dimension sets for the EMF output
+    const allDimensionSets: DimensionSet[] = [defaultDimensionNames];
+
+    // Add any additional dimension sets created via addDimensions()
+    if (this.dimensionSets.length > 0) {
+      allDimensionSets.push(...this.dimensionSets);
+    }
+
     return {
       _aws: {
         Timestamp: this.#timestamp ?? new Date().getTime(),
         CloudWatchMetrics: [
           {
             Namespace: this.namespace || DEFAULT_NAMESPACE,
-            Dimensions: [defaultDimensionNames],
+            Dimensions: allDimensionSets,
             Metrics: metricDefinitions,
           },
         ],
@@ -1039,6 +1084,11 @@ class Metrics extends Utility implements MetricsInterface {
     value: number,
     resolution: MetricResolution
   ): void {
+    // Initialize storedMetrics if it's undefined
+    if (!this.storedMetrics) {
+      this.storedMetrics = {};
+    }
+
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.publishStoredMetrics();
     }

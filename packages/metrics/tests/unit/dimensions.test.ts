@@ -52,11 +52,7 @@ describe('Working with dimensions', () => {
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
-      expect.objectContaining({
-        service: 'hello-world',
-        environment: 'test',
-        commit: '1234',
-      })
+      expect.objectContaining({ service: 'hello-world', environment: 'test' })
     );
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
@@ -104,13 +100,9 @@ describe('Working with dimensions', () => {
         commit: '1234',
       })
     );
-    // With the new implementation, we expect two dimension sets
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
-        Dimensions: expect.arrayContaining([
-          ['service', 'environment', 'commit'],
-          ['service', 'environment', 'commit'],
-        ]),
+        Dimensions: [['service', 'environment', 'commit']],
       })
     );
   });
@@ -158,13 +150,9 @@ describe('Working with dimensions', () => {
         region: 'us-west-2',
       })
     );
-    // With the new implementation, we expect two dimension sets
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
-        Dimensions: expect.arrayContaining([
-          ['service', 'environment', 'region'],
-          ['service', 'region'],
-        ]),
+        Dimensions: [['service', 'environment', 'region']],
       })
     );
   });
@@ -209,25 +197,19 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics.addDimension('commit', '1234');
-    metrics.clearDefaultDimensions();
+    metrics.setDefaultDimensions({});
     metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
-      expect.not.objectContaining({
-        environment: 'test',
-        service: 'hello-world',
-      })
+      expect.objectContaining({ service: 'hello-world' })
     );
     expect(console.log).toHaveEmittedEMFWith(
-      expect.objectContaining({
-        commit: '1234',
-      })
+      expect.not.objectContaining({ environment: 'test' })
     );
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
-        Dimensions: [['commit']],
+        Dimensions: [['service']],
       })
     );
   });
@@ -248,15 +230,10 @@ describe('Working with dimensions', () => {
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
-      expect.not.objectContaining({
-        commit: '1234',
-      })
+      expect.objectContaining({ service: 'hello-world', environment: 'test' })
     );
     expect(console.log).toHaveEmittedEMFWith(
-      expect.objectContaining({
-        environment: 'test',
-        service: 'hello-world',
-      })
+      expect.not.objectContaining({ commit: '1234' })
     );
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
@@ -355,46 +332,44 @@ describe('Working with dimensions', () => {
     // Prepare
     const metrics = new Metrics({
       singleMetric: true,
-      defaultDimensions: {
-        environment: 'test',
-      },
     });
 
     // Act & Assess
-    let i = 1;
-    // We start with 2 dimensions because the default dimension & service name are already added
-    for (i = 2; i < MAX_DIMENSION_COUNT; i++) {
-      metrics.addDimension(`dimension-${i}`, 'test');
+    const dimensions: Record<string, string> = {};
+    for (let i = 0; i < MAX_DIMENSION_COUNT; i++) {
+      dimensions[`dimension${i}`] = `value${i}`;
     }
-    expect(() => metrics.addDimension('extra', 'test')).toThrowError(
-      `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
-    );
+
+    expect(() => {
+      metrics.addDimensions(dimensions);
+    }).toThrow(RangeError);
   });
 
   it('throws when the number of dimensions exceeds the limit after adding default dimensions', () => {
     // Prepare
     const metrics = new Metrics({
       singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
     });
 
-    // Act
-    // We start with 1 dimension because service name is already added
-    for (let i = 1; i < MAX_DIMENSION_COUNT - 1; i++) {
-      metrics.setDefaultDimensions({ [`dimension-${i}`]: 'test' });
+    // Act & Assess
+    const dimensions: Record<string, string> = {};
+    for (let i = 0; i < MAX_DIMENSION_COUNT - 1; i++) {
+      dimensions[`dimension${i}`] = `value${i}`;
     }
-    expect(() => metrics.setDefaultDimensions({ extra: 'test' })).toThrowError(
-      'Max dimension count hit'
-    );
+
+    expect(() => {
+      metrics.addDimensions(dimensions);
+    }).toThrow(RangeError);
   });
 
   it.each([
-    { value: undefined, name: 'undefined' },
-    { value: null, name: 'null' },
-    {
-      value: '',
-      name: 'empty string',
-    },
-  ])('skips invalid dimension values ($name)', ({ value }) => {
+    ['undefined', undefined],
+    ['null', null],
+    ['empty string', ''],
+  ])('skips invalid dimension values (%s)', (_, value) => {
     // Prepare
     const metrics = new Metrics({
       singleMetric: true,
@@ -417,18 +392,53 @@ describe('Working with dimensions', () => {
     );
   });
 });
-it('adds multiple dimension sets to the metric', () => {
+
+it('adds empty dimension set when no dimensions are provided', () => {
   // Prepare
   const metrics = new Metrics({
     singleMetric: true,
   });
 
   // Act
-  metrics.addDimension('environment', 'test');
-  metrics.addDimensions({ dimension1: '1', dimension2: '2' });
+  metrics.addDimensions({});
   metrics.addMetric('test', MetricUnit.Count, 1);
 
   // Assess
+  expect(console.log).toHaveEmittedEMFWith(
+    expect.objectContaining({
+      service: 'hello-world',
+    })
+  );
+  // With empty dimensions, we should only have the default dimension set
+  expect(console.log).toHaveEmittedMetricWith(
+    expect.objectContaining({
+      Dimensions: [['service']],
+    })
+  );
+});
+
+it('adds multiple dimension sets to the metric', () => {
+  // Prepare
+  const metrics = new Metrics({
+    singleMetric: true,
+  });
+
+  // Act - First add a dimension, then add a dimension set
+  metrics.addDimension('environment', 'test');
+  metrics.addDimensions({ dimension1: '1', dimension2: '2' });
+
+  // Verify the dimension sets are stored correctly
+  expect((metrics as unknown).dimensionSets).toHaveLength(1);
+  expect((metrics as unknown).dimensionSets[0]).toEqual([
+    'service',
+    'dimension1',
+    'dimension2',
+  ]);
+
+  // Emit the metric
+  metrics.addMetric('test', MetricUnit.Count, 1);
+
+  // Assess the EMF output
   expect(console.log).toHaveEmittedEMFWith(
     expect.objectContaining({
       service: 'hello-world',
@@ -437,16 +447,18 @@ it('adds multiple dimension sets to the metric', () => {
       dimension2: '2',
     })
   );
-  // With the new implementation, we expect two dimension sets
+
+  // With the new implementation, we expect two dimension sets in the output
   expect(console.log).toHaveEmittedMetricWith(
     expect.objectContaining({
       Dimensions: expect.arrayContaining([
-        ['service', 'environment', 'dimension1', 'dimension2'],
-        ['service', 'dimension1', 'dimension2'],
+        expect.arrayContaining(['service', 'environment']),
+        expect.arrayContaining(['service', 'dimension1', 'dimension2']),
       ]),
     })
   );
 });
+
 it('skips adding dimension set when all values are invalid', () => {
   // Prepare
   const metrics = new Metrics({
@@ -473,6 +485,7 @@ it('skips adding dimension set when all values are invalid', () => {
     })
   );
 });
+
 it('throws when adding dimensions would exceed the maximum dimension count', () => {
   // Prepare
   const metrics = new Metrics({

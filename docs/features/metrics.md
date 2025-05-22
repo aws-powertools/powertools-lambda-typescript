@@ -502,3 +502,73 @@ When `POWERTOOLS_DEV` is enabled, Metrics uses the global `console` to emit metr
     ```typescript hl_lines="4-5 12"
     --8<-- "examples/snippets/metrics/testingMetrics.ts"
     ```
+
+## Multiple dimension sets
+
+You can create multiple dimension sets for your metrics using the `addDimensions` or `addDimensionSet` methods. This allows you to aggregate metrics across various dimensions, providing more granular insights into your application.
+
+=== "Creating multiple dimension sets"
+
+    ```typescript
+    import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+    
+    const metrics = new Metrics({
+      namespace: 'serverlessAirline',
+      serviceName: 'orders',
+      defaultDimensions: { environment: 'prod' }
+    });
+    
+    export const handler = async () => {
+      // Add a single dimension to the default dimension set
+      metrics.addDimension('region', 'us-west-2');
+      
+      // Add a new dimension set
+      metrics.addDimensions({
+        dimension1: "1",
+        dimension2: "2"
+      });
+      
+      // Add another dimension set (addDimensionSet is an alias for addDimensions)
+      metrics.addDimensionSet({
+        feature: "booking",
+        version: "v1"
+      });
+      
+      // This will create three dimension sets in the EMF output:
+      // [["service", "environment", "region"]], 
+      // [["service", "dimension1", "dimension2"]], and
+      // [["service", "feature", "version"]]
+      metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+      metrics.publishStoredMetrics();
+    };
+    ```
+
+=== "Example CloudWatch Logs excerpt"
+
+    ```json
+    {
+      "successfulBooking": 1.0,
+      "_aws": {
+        "Timestamp": 1592234975665,
+        "CloudWatchMetrics": [{
+          "Namespace": "serverlessAirline",
+          "Dimensions": [
+            ["service", "environment", "region"],
+            ["service", "dimension1", "dimension2"],
+            ["service", "feature", "version"]
+          ],
+          "Metrics": [{
+            "Name": "successfulBooking",
+            "Unit": "Count"
+          }]
+        }]
+      },
+      "service": "orders",
+      "environment": "prod",
+      "region": "us-west-2",
+      "dimension1": "1",
+      "dimension2": "2",
+      "feature": "booking",
+      "version": "v1"
+    }
+    ```

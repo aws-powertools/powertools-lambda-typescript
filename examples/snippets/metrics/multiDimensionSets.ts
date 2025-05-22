@@ -22,10 +22,7 @@ export const handler = async () => {
     version: 'v1',
   });
 
-  // This will create three dimension sets in the EMF output:
-  // [["service", "environment", "region"]],
-  // [["service", "dimension1", "dimension2"]], and
-  // [["service", "feature", "version"]]
+  // This will create three dimension sets in the EMF output
   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
   metrics.publishStoredMetrics();
 };

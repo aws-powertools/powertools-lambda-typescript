@@ -106,7 +106,7 @@ describe('Working with dimensions', () => {
     );
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
-        Dimensions: [['service'], ['service', 'environment', 'commit']],
+        Dimensions: [['service', 'environment', 'commit']],
       })
     );
   });
@@ -133,10 +133,7 @@ describe('Working with dimensions', () => {
     );
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
-        Dimensions: [
-          ['service', 'environment', 'dimension1', 'dimension2'],
-          ['service', 'dimension1', 'dimension2'],
-        ],
+        Dimensions: [['service', 'environment', 'dimension1', 'dimension2']],
       })
     );
   });
@@ -162,10 +159,7 @@ describe('Working with dimensions', () => {
     );
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
-        Dimensions: [
-          ['service', 'environment', 'region'],
-          ['service', 'region'],
-        ],
+        Dimensions: [['service', 'environment', 'region']],
       })
     );
   });
@@ -329,10 +323,7 @@ describe('Working with dimensions', () => {
     expect(console.log).toHaveEmittedNthMetricWith(
       1,
       expect.objectContaining({
-        Dimensions: [
-          ['service', 'environment'],
-          ['service', 'region'],
-        ],
+        Dimensions: [['service', 'environment', 'region']],
       })
     );
     expect(console.log).toHaveEmittedNthEMFWith(

@@ -181,14 +181,6 @@ plugins:
           - environment-variables.md
         Upgrade guide: 
           - upgrade.md
-        Processes:
-          - roadmap.md
-          - versioning.md
-          - maintainers.md
-          - contributing/setup.md
-          - contributing/getting_started.md
-          - contributing/conventions.md
-          - contributing/testing.md
 
 extra_css:
   - stylesheets/extra.css

@@ -165,7 +165,7 @@ const getBooleanFromEnv = ({
   return parsedValue === 'true';
 };
 
-const truthyValues = ['1', 'y', 'yes', 't', 'true', 'on'];
+const truthyValues = new Set(['1', 'y', 'yes', 't', 'true', 'on']);
 
 /**
  * Get a truthy boolean from the environment variables.
@@ -212,10 +212,10 @@ const getTruthyBooleanFromEnv = ({
     errorMessage,
   });
 
-  return truthyValues.includes(value.toLowerCase());
+  return truthyValues.has(value.toLowerCase());
 };
 
-const falsyValues = ['0', 'n', 'no', 'f', 'false', 'off'];
+const falsyValues = new Set(['0', 'n', 'no', 'f', 'false', 'off']);
 
 /**
  * Get a falsy boolean from the environment variables.
@@ -261,7 +261,7 @@ const getFalsyBooleanFromEnv = ({
     defaultValue: String(defaultValue),
     errorMessage,
   });
-  return falsyValues.includes(value.toLowerCase());
+  return falsyValues.has(value.toLowerCase());
 };
 
 /**

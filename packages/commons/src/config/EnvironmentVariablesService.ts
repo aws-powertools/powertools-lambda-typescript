@@ -1,3 +1,9 @@
+import {
+  getServiceName,
+  getXRayTraceIdFromEnv,
+  isDevMode,
+  isRequestXRaySampled,
+} from '../envUtils.js';
 import type { ConfigServiceInterface } from '../types/ConfigServiceInterface.js';
 
 /**
@@ -46,7 +52,7 @@ class EnvironmentVariablesService implements ConfigServiceInterface {
    * Get the value of the `POWERTOOLS_SERVICE_NAME` environment variable.
    */
   public getServiceName(): string {
-    return this.get(this.serviceNameVariable);
+    return getServiceName();
   }
 
   /**
@@ -58,9 +64,7 @@ class EnvironmentVariablesService implements ConfigServiceInterface {
    * The actual Trace ID is: `1-5759e988-bd862e3fe1be46a994272793`.
    */
   public getXrayTraceId(): string | undefined {
-    const xRayTraceData = this.getXrayTraceData();
-
-    return xRayTraceData?.Root;
+    return getXRayTraceIdFromEnv();
   }
 
   /**
@@ -70,16 +74,14 @@ class EnvironmentVariablesService implements ConfigServiceInterface {
    * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
    */
   public getXrayTraceSampled(): boolean {
-    const xRayTraceData = this.getXrayTraceData();
-
-    return xRayTraceData?.Sampled === '1';
+    return isRequestXRaySampled();
   }
 
   /**
    * Determine if the current invocation is running in a development environment.
    */
   public isDevMode(): boolean {
-    return this.isValueTrue(this.get(this.devModeVariable));
+    return isDevMode();
   }
 
   /**
@@ -102,29 +104,6 @@ class EnvironmentVariablesService implements ConfigServiceInterface {
     const falsyValues: string[] = ['0', 'n', 'no', 'f', 'false', 'off'];
 
     return falsyValues.includes(value.toLowerCase());
-  }
-
-  /**
-   * Get the AWS X-Ray Trace data from the environment variable.
-   *
-   * The method parses the environment variable `_X_AMZN_TRACE_ID` and returns an object with the key-value pairs.
-   */
-  private getXrayTraceData(): Record<string, string> | undefined {
-    const xRayTraceEnv = this.get(this.xRayTraceIdVariable);
-
-    if (xRayTraceEnv === '') return undefined;
-
-    if (!xRayTraceEnv.includes('=')) return { Root: xRayTraceEnv };
-
-    const xRayTraceData: Record<string, string> = {};
-
-    for (const field of xRayTraceEnv.split(';')) {
-      const [key, value] = field.split('=');
-
-      xRayTraceData[key] = value;
-    }
-
-    return xRayTraceData;
   }
 }
 

@@ -53,6 +53,10 @@
       "import": "./lib/esm/unmarshallDynamoDB.js",
       "require": "./lib/cjs/unmarshallDynamoDB.js"
     },
+    "./utils/env": {
+      "import": "./lib/esm/envUtils.js",
+      "require": "./lib/cjs/envUtils.js"
+    },
     "./types": {
       "import": "./lib/esm/types/index.js",
       "require": "./lib/cjs/types/index.js"
@@ -75,6 +79,10 @@
       "utils/unmarshallDynamoDB": [
         "lib/cjs/unmarshallDynamoDB.d.ts",
         "lib/esm/unmarshallDynamoDB.d.ts"
+      ],
+      "utils/env": [
+        "lib/cjs/envUtils.d.ts",
+        "lib/esm/envUtils.d.ts"
       ],
       "types": [
         "lib/cjs/types/index.d.ts",

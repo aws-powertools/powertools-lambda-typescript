@@ -106,7 +106,66 @@ describe('Working with dimensions', () => {
     );
     expect(console.log).toHaveEmittedMetricWith(
       expect.objectContaining({
-        Dimensions: [['service', 'environment', 'commit']],
+        Dimensions: [['service'], ['service', 'environment', 'commit']],
+      })
+    );
+  });
+
+  it('adds multiple dimension sets to the metric', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    metrics.addDimension('environment', 'test');
+    metrics.addDimensions({ dimension1: '1', dimension2: '2' });
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        environment: 'test',
+        dimension1: '1',
+        dimension2: '2',
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [
+          ['service', 'environment', 'dimension1', 'dimension2'],
+          ['service', 'dimension1', 'dimension2'],
+        ],
+      })
+    );
+  });
+
+  it('supports addDimensionSet as an alias for addDimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    metrics.addDimension('environment', 'test');
+    metrics.addDimensionSet({ region: 'us-west-2' });
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        environment: 'test',
+        region: 'us-west-2',
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [
+          ['service', 'environment', 'region'],
+          ['service', 'region'],
+        ],
       })
     );
   });
@@ -235,6 +294,50 @@ describe('Working with dimensions', () => {
     expect(console.log).toHaveEmittedNthEMFWith(
       2,
       expect.not.objectContaining({ commit: '1234' })
+    );
+    expect(console.log).toHaveEmittedNthEMFWith(
+      2,
+      expect.objectContaining({ environment: 'test' })
+    );
+    expect(console.log).toHaveEmittedNthMetricWith(
+      2,
+      expect.objectContaining({
+        Dimensions: [['service', 'environment']],
+      })
+    );
+  });
+
+  it('clears dimension sets after publishing the metric', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
+    });
+
+    // Act
+    metrics.addDimensions({ region: 'us-west-2' });
+    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedNthEMFWith(
+      1,
+      expect.objectContaining({ region: 'us-west-2', environment: 'test' })
+    );
+    expect(console.log).toHaveEmittedNthMetricWith(
+      1,
+      expect.objectContaining({
+        Dimensions: [
+          ['service', 'environment'],
+          ['service', 'region'],
+        ],
+      })
+    );
+    expect(console.log).toHaveEmittedNthEMFWith(
+      2,
+      expect.not.objectContaining({ region: 'us-west-2' })
     );
     expect(console.log).toHaveEmittedNthEMFWith(
       2,

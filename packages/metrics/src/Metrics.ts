@@ -19,6 +19,7 @@ import {
 } from './constants.js';
 import type {
   ConfigServiceInterface,
+  DimensionSet,
   Dimensions,
   EmfOutput,
   ExtraOptions,
@@ -193,6 +194,12 @@ class Metrics extends Utility implements MetricsInterface {
    * @default false
    */
   private shouldThrowOnEmptyMetrics = false;
+
+  /**
+   * Storage for metrics before they are published
+   * @default {}
+   */
+  private storedMetrics: StoredMetrics = {};
 
   /**
    * Storage for dimension sets
@@ -544,10 +551,6 @@ class Metrics extends Utility implements MetricsInterface {
    * Check if there are stored metrics in the buffer.
    */
   public hasStoredMetrics(): boolean {
-    if (!this.storedMetrics) {
-      this.storedMetrics = {};
-      return false;
-    }
     return Object.keys(this.storedMetrics).length > 0;
   }
 
@@ -786,7 +789,7 @@ class Metrics extends Utility implements MetricsInterface {
         CloudWatchMetrics: [
           {
             Namespace: this.namespace || DEFAULT_NAMESPACE,
-            Dimensions: allDimensionSets,
+            Dimensions: allDimensionSets as [string[]],
             Metrics: metricDefinitions,
           },
         ],
@@ -1084,11 +1087,6 @@ class Metrics extends Utility implements MetricsInterface {
     value: number,
     resolution: MetricResolution
   ): void {
-    // Initialize storedMetrics if it's undefined
-    if (!this.storedMetrics) {
-      this.storedMetrics = {};
-    }
-
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.publishStoredMetrics();
     }

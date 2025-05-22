@@ -20,3 +20,8 @@ export type {
   HandlerMethodDecorator,
 } from './LambdaInterface.js';
 export type { ConfigServiceInterface } from './ConfigServiceInterface.js';
+export type {
+  GetStringFromEnvOptions,
+  GetBooleanFromEnvOptions,
+  GetNumberFromEnvOptions,
+} from './envUtils.js';

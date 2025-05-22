@@ -21,7 +21,9 @@ This utility provides data validation and parsing using [Zod](https://zod.dev){t
 npm install @aws-lambda-powertools/parser zod@~3
 ```
 
-This utility supports Zod v3.x and above.
+!!! warning "Zod version"
+    The package is compatible with Zod v3 only.<br/>
+    We're considering Zod v4 support and we'd love to hear your feedback. Please [leave a comment here](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3951) to let us know your thoughts.
 
 ## Define schema
 

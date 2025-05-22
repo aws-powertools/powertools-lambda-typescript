@@ -7,6 +7,7 @@
     "./src/types/index.ts",
     "./src/middleware/cleanupMiddlewares.ts",
     "./src/typeUtils.ts",
+    "./src/envUtils.ts",
     "./src/fromBase64.ts",
     "./src/LRUCache.ts"
   ],

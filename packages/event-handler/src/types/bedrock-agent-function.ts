@@ -3,7 +3,7 @@ import type { GenericLogger } from '../types/common.js';
 
 type Configuration = {
   name: string;
-  definition: string;
+  description: string;
 };
 
 type Parameter = {
@@ -12,9 +12,9 @@ type Parameter = {
   value: string;
 };
 
-type ParameterPrimitives = string | number | boolean
+type ParameterPrimitives = string | number | boolean;
 
-type ParameterValue = ParameterPrimitives | Array<ParameterValue>
+type ParameterValue = ParameterPrimitives | Array<ParameterValue>;
 
 type Tool<TParams = Record<string, ParameterValue>> = {
   // biome-ignore lint/suspicious/noConfusingVoidType: we need to support async functions that don't have an explicit return value

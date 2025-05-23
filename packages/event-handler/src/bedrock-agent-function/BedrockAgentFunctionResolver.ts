@@ -4,12 +4,12 @@ import type {
   BedrockAgentFunctionEvent,
   BedrockAgentFunctionResponse,
   Configuration,
-  GenericLogger,
   ResolverOptions,
   ResponseOptions,
   Tool,
   ToolFunction,
-} from '../types/index.js';
+} from '../types/bedrock-agent-function.js';
+import type { GenericLogger } from '../types/common.js';
 import { isPrimitive } from './utils.js';
 
 export class BedrockAgentFunctionResolver {
@@ -43,7 +43,7 @@ export class BedrockAgentFunctionResolver {
    *   return `Hello, ${name}!`;
    * }, {
    *   name: 'greeting',
-   *   definition: 'Greets a person by name',
+   *   description: 'Greets a person by name',
    * });
    *
    * export const handler = async (event, context) =>
@@ -59,7 +59,7 @@ export class BedrockAgentFunctionResolver {
    * const app = new BedrockAgentFunctionResolver();
    *
    * class Lambda {
-   *   @app.tool({ name: 'greeting', definition: 'Greets a person by name' })
+   *   @app.tool({ name: 'greeting', description: 'Greets a person by name' })
    *   async greeting(params) {
    *     const { name } = params;
    *     return `Hello, ${name}!`;
@@ -77,15 +77,16 @@ export class BedrockAgentFunctionResolver {
    * @param fn - The tool function
    * @param config - The configuration object for the tool
    */
-  public tool(fn: ToolFunction, config: Configuration): void;
+  public tool(fn: ToolFunction, config: Configuration): undefined;
   public tool(config: Configuration): MethodDecorator;
   public tool(
     fnOrConfig: ToolFunction | Configuration,
     config?: Configuration
-  ): MethodDecorator | void {
+  ): MethodDecorator | undefined {
     // When used as a method (not a decorator)
     if (typeof fnOrConfig === 'function') {
-      return this.#registerTool(fnOrConfig, config as Configuration);
+      this.#registerTool(fnOrConfig, config as Configuration);
+      return;
     }
 
     // When used as a decorator

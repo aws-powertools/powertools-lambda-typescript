@@ -4,8 +4,8 @@
     "composite": true,
     "target": "ES2022", // Node.js 18
     "experimentalDecorators": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "baseUrl": ".",
     // "traceResolution": true, // Enable this to debug module resolution issues
     "declaration": true,
@@ -46,6 +46,12 @@
     },
     {
       "path": "./packages/parser"
+    },
+    {
+      "path": "./packages/event-handler"
+    },
+    {
+      "path": "./packages/validation"
     }
   ]
 }

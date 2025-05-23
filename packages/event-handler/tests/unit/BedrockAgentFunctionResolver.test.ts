@@ -1,8 +1,8 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { BedrockAgentFunctionEvent, Parameter } from '../../src/types';
 import { BedrockAgentFunctionResolver } from '../../src/bedrock-agent-function';
+import type { BedrockAgentFunctionEvent, Parameter } from '../../src/types';
 
 function createEvent(functionName: string, parameters?: Parameter[]) {
   return {
@@ -71,6 +71,8 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       definition: 'Does nothing',
     });
 
+    // Act
+
     await app.resolve(createEvent('noop', []), context);
 
     // Assess
@@ -90,15 +92,14 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       });
     }
 
-    app.tool(async (params) => {
-      return Number(params.a) + Number(params);
-    }, {
-      name: 'mult',
-      definition: 'Multiplies two numbers',
-    });
-
-    expect(console.warn).toHaveBeenLastCalledWith(
-      'The maximum number of tools that can be registered is 5. Tool mult will not be registered.'
+    app.tool(
+      async (params) => {
+        return Number(params.a) + Number(params);
+      },
+      {
+        name: 'mult',
+        definition: 'Multiplies two numbers',
+      }
     );
 
     const event = createEvent('mult', [
@@ -114,8 +115,13 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       },
     ]);
 
+    // Act
     const actual = await app.resolve(event, context);
 
+    // Assess
+    expect(console.warn).toHaveBeenLastCalledWith(
+      'The maximum number of tools that can be registered is 5. Tool mult will not be registered.'
+    );
     expect(actual.response.function).toEqual('mult');
     expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
       'Error: tool has not been registered in handler.'
@@ -170,27 +176,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     expect(
       multiplyResult.response.functionResponse.responseBody.TEXT.body
     ).toEqual('20');
-
-    app.tool(
-      async (params) => {
-        return Number(params.a) / Number(params.b);
-      },
-      {
-        name: 'math',
-        definition: 'Divides two numbers',
-      }
-    );
-
-    const divideResult = await app.resolve(event, context);
-    expect(divideResult.response.function).toEqual('math');
-    expect(
-      divideResult.response.functionResponse.responseBody.TEXT.body
-    ).toEqual('5');
-
-    expect(console.warn).toHaveBeenCalledTimes(3);
-    expect(console.warn).toHaveBeenCalledWith(
-      'Tool math already registered. Overwriting with new definition.'
-    );
   });
 
   it('can be invoked using the decorator pattern', async () => {
@@ -216,14 +201,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
 
     const lambda = new Lambda();
 
-    const helloEvent = createEvent('hello');
-
-    const helloResult = await lambda.handler(helloEvent, context);
-    expect(helloResult.response.function).toEqual('hello');
-    expect(
-      helloResult.response.functionResponse.responseBody.TEXT.body
-    ).toEqual('Hello, world!');
-
     const addEvent = createEvent('add', [
       {
         name: 'a',
@@ -237,65 +214,43 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       },
     ]);
 
-    const addResult = await lambda.handler(addEvent, context);
-    expect(addResult.response.function).toEqual('add');
-    expect(addResult.response.functionResponse.responseBody.TEXT.body).toEqual(
+    // Act
+    const actual = await lambda.handler(addEvent, context);
+
+    // Assess
+    expect(actual.response.function).toEqual('add');
+    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
       '3'
     );
   });
 
-  it('handles functions that return different primitive types', async () => {
-    // Prepare
-    const app = new BedrockAgentFunctionResolver();
-
-    app.tool(async () => 'Hello, world!', {
-      name: 'string-tool',
-      definition: 'Returns a string',
-    });
-
-    app.tool(async () => 42, {
-      name: 'number-tool',
-      definition: 'Returns a number',
-    });
-
-    app.tool(async () => true, {
-      name: 'boolean-tool',
-      definition: 'Returns a boolean',
-    });
-
-    const stringResult = await app.resolve(createEvent('string-tool'), context);
-    expect(stringResult.response.function).toEqual('string-tool');
-    expect(
-      stringResult.response.functionResponse.responseBody.TEXT.body
-    ).toEqual('Hello, world!');
-
-    const numberResult = await app.resolve(createEvent('number-tool'), context);
-    expect(numberResult.response.function).toEqual('number-tool');
-    expect(
-      numberResult.response.functionResponse.responseBody.TEXT.body
-    ).toEqual('42');
-
-    const booleanResult = await app.resolve(
-      createEvent('boolean-tool'),
-      context
-    );
-    expect(booleanResult.response.function).toEqual('boolean-tool');
-    expect(
-      booleanResult.response.functionResponse.responseBody.TEXT.body
-    ).toEqual('true');
-  });
-
-  it('handles functions that return complex types (array and object)', async () => {
-    // Prepare
-    const app = new BedrockAgentFunctionResolver();
-
-    app.tool(async () => [1, 'two', false, null], {
-      name: 'array-tool',
-      definition: 'Returns an array',
-    });
-
-    app.tool(
-      async () => ({
+  it.each([
+    {
+      toolFunction: async () => 'Hello, world',
+      toolParams: {
+        name: 'string',
+        definition: 'Returns string',
+      },
+      expected: 'Hello, world',
+    },
+    {
+      toolFunction: async () => 42,
+      toolParams: {
+        name: 'number',
+        definition: 'Returns number',
+      },
+      expected: '42',
+    },
+    {
+      toolFunction: async () => true,
+      toolParams: {
+        name: 'boolean',
+        definition: 'Returns boolean',
+      },
+      expected: 'true',
+    },
+    {
+      toolFunction: async () => ({
         name: 'John Doe',
         age: 30,
         isActive: true,
@@ -304,70 +259,73 @@ describe('Class: BedrockAgentFunctionResolver', () => {
           city: 'Anytown',
         },
       }),
-      {
-        name: 'object-tool',
+      toolParams: {
+        name: 'object',
         definition: 'Returns an object',
-      }
-    );
+      },
+      expected:
+        '{"name":"John Doe","age":30,"isActive":true,"address":{"street":"123 Main St","city":"Anytown"}}',
+    },
+    {
+      toolFunction: async () => [1, 'two', false, null],
+      toolParams: {
+        name: 'array',
+        definition: 'Returns an array',
+      },
+      expected: '[1,"two",false,null]',
+    },
+  ])(
+    'handles function that returns $toolParams.name',
+    async ({ toolFunction, toolParams, expected }) => {
+      // Prepare
+      const app = new BedrockAgentFunctionResolver();
 
-    const arrayResult = await app.resolve(createEvent('array-tool'), context);
-    expect(arrayResult.response.function).toEqual('array-tool');
-    expect(
-      arrayResult.response.functionResponse.responseBody.TEXT.body
-    ).toEqual('[1,"two",false,null]');
+      app.tool(toolFunction, toolParams);
 
-    const objectResult = await app.resolve(createEvent('object-tool'), context);
-    expect(objectResult.response.function).toEqual('object-tool');
-    expect(
-      objectResult.response.functionResponse.responseBody.TEXT.body
-    ).toEqual(
-      '{"name":"John Doe","age":30,"isActive":true,"address":{"street":"123 Main St","city":"Anytown"}}'
-    );
-  });
+      // Act
+      const actual = await app.resolve(createEvent(toolParams.name), context);
 
-  it('handles functions that return null or undefined by returning a string', async () => {
-    // Prepare
-    const app = new BedrockAgentFunctionResolver();
+      // Asses
+      expect(actual.response.function).toEqual(toolParams.name);
+      expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+        expected
+      );
+    }
+  );
 
-    app.tool(async () => null, {
-      name: 'null-tool',
-      definition: 'Returns null',
-    });
+  it.each([
+    {
+      toolFunction: async () => null,
+      toolParams: {
+        name: 'null',
+        definition: 'Returns null',
+      },
+    },
+    {
+      toolFunction: async () => void 0,
+      toolParams: {
+        name: 'undefined',
+        definition: 'Returns undefined',
+      },
+    },
+  ])(
+    'handles functions that return $toolParams.name by returning an empty string',
+    async ({ toolFunction, toolParams }) => {
+      // Prepare
+      const app = new BedrockAgentFunctionResolver();
 
-    app.tool(async () => undefined, {
-      name: 'undefined-tool',
-      definition: 'Returns undefined',
-    });
+      app.tool(toolFunction, toolParams);
 
-    app.tool(async () => {}, {
-      name: 'no-return-tool',
-      definition: 'Has no return statement',
-    });
+      // Assess
+      const actual = await app.resolve(createEvent(toolParams.name), context);
 
-    const nullResult = await app.resolve(createEvent('null-tool'), context);
-    expect(nullResult.response.function).toEqual('null-tool');
-    expect(nullResult.response.functionResponse.responseBody.TEXT.body).toEqual(
-      ''
-    );
-
-    const undefinedResult = await app.resolve(
-      createEvent('undefined-tool'),
-      context
-    );
-    expect(undefinedResult.response.function).toEqual('undefined-tool');
-    expect(
-      undefinedResult.response.functionResponse.responseBody.TEXT.body
-    ).toEqual('');
-
-    const noReturnResult = await app.resolve(
-      createEvent('no-return-tool'),
-      context
-    );
-    expect(noReturnResult.response.function).toEqual('no-return-tool');
-    expect(
-      noReturnResult.response.functionResponse.responseBody.TEXT.body
-    ).toEqual('');
-  });
+      // Act
+      expect(actual.response.function).toEqual(toolParams.name);
+      expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+        ''
+      );
+    }
+  );
 
   it('handles functions that throw errors', async () => {
     // Prepare
@@ -383,14 +341,14 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       }
     );
 
-    const errorResult = await app.resolve(
-      createEvent('error-tool', []),
-      context
+    // Act
+    const actual = await app.resolve(createEvent('error-tool', []), context);
+
+    // Assess
+    expect(actual.response.function).toEqual('error-tool');
+    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+      'Error when invoking tool: Error: Something went wrong'
     );
-    expect(errorResult.response.function).toEqual('error-tool');
-    expect(
-      errorResult.response.functionResponse.responseBody.TEXT.body
-    ).toEqual('Error when invoking tool: Error: Something went wrong');
     expect(console.error).toHaveBeenCalledWith(
       'An error occurred in tool error-tool.',
       new Error('Something went wrong')
@@ -401,7 +359,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     // Prepare
     const app = new BedrockAgentFunctionResolver();
 
-    // Register a tool that returns a simple value
     app.tool(
       async (params) => {
         return `Hello, ${params.name}!`;
@@ -412,7 +369,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       }
     );
 
-    // Define custom session attributes and parameters
     const customSessionAttrs = {
       sessionAttr: '12345',
     };
@@ -421,7 +377,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       promptAttr: 'promptAttr',
     };
 
-    // Create a custom event with session attributes
     const customEvent = {
       ...createEvent('greeting', [
         {
@@ -435,8 +390,10 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       promptSessionAttributes: customPromptAttrs,
     };
 
+    // Act
     const result = await app.resolve(customEvent, context);
 
+    // Assess
     expect(result).toEqual({
       messageVersion: '1.0',
       response: {

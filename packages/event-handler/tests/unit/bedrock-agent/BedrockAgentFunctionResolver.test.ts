@@ -1,8 +1,8 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BedrockAgentFunctionResolver } from '../../src/bedrock-agent-function';
-import type { BedrockAgentFunctionEvent, Parameter } from '../../src/types';
+import { BedrockAgentFunctionResolver } from '../../../src/bedrock-agent-function/index.js';
+import type { BedrockAgentFunctionEvent, Parameter } from '../../../src/types';
 
 function createEvent(functionName: string, parameters?: Parameter[]) {
   return {

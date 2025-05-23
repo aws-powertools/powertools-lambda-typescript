@@ -9,7 +9,7 @@ import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resourc
 import { App } from 'aws-cdk-lib';
 import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import packageJson from '../../package.json';
+import packageJson from '../../package.json' with { type: 'json' };
 import { LayerPublisherStack } from '../../src/layer-publisher-stack.js';
 import { RESOURCE_NAME_PREFIX } from './constants.js';
 

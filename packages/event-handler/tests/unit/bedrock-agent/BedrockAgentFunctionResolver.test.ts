@@ -2,7 +2,13 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BedrockAgentFunctionResolver } from '../../../src/bedrock-agent-function/index.js';
-import type { BedrockAgentFunctionEvent, Parameter } from '../../../src/types';
+import type {
+  BedrockAgentFunctionEvent,
+  Configuration,
+  Parameter,
+  ParameterValue,
+  ToolFunction,
+} from '../../../src/types/bedrock-agent-function.js';
 
 function createEvent(functionName: string, parameters?: Parameter[]) {
   return {
@@ -93,8 +99,8 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     }
 
     app.tool(
-      async (params) => {
-        return Number(params.a) + Number(params);
+      async (params: { a: number; b: number }) => {
+        return params.a + params.b;
       },
       {
         name: 'mult',
@@ -146,8 +152,8 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     ]);
 
     app.tool(
-      async (params) => {
-        return Number(params.a) + Number(params.b);
+      async (params: { a: number; b: number }) => {
+        return params.a + params.b;
       },
       {
         name: 'math',
@@ -162,8 +168,8 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     );
 
     app.tool(
-      async (params) => {
-        return Number(params.a) * Number(params.b);
+      async (params: { a: number; b: number }) => {
+        return params.a * params.b;
       },
       {
         name: 'math',
@@ -178,6 +184,32 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     ).toEqual('20');
   });
 
+  it('tool function has access to the event variable', async () => {
+    // Prepare
+    const app = new BedrockAgentFunctionResolver();
+
+    app.tool(
+      async (_params, event) => {
+        return event;
+      },
+      {
+        name: 'event-accessor',
+        description: 'Accesses the event object',
+      }
+    );
+
+    const event = createEvent('event-accessor');
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.response.function).toEqual('event-accessor');
+    expect(result.response.functionResponse.responseBody.TEXT.body).toEqual(
+      JSON.stringify(event)
+    );
+  });
+
   it('can be invoked using the decorator pattern', async () => {
     // Prepare
     const app = new BedrockAgentFunctionResolver();
@@ -189,9 +221,9 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       }
 
       @app.tool({ name: 'add', description: 'Adds two numbers' })
-      async add(params: { a: string; b: string }) {
+      async add(params: { a: number; b: number }) {
         const { a, b } = params;
-        return Number.parseInt(a) + Number.parseInt(b);
+        return a + b;
       }
 
       public async handler(event: BedrockAgentFunctionEvent, context: Context) {
@@ -225,30 +257,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
   });
 
   it.each([
-    {
-      toolFunction: async () => 'Hello, world',
-      toolParams: {
-        name: 'string',
-        description: 'Returns string',
-      },
-      expected: 'Hello, world',
-    },
-    {
-      toolFunction: async () => 42,
-      toolParams: {
-        name: 'number',
-        description: 'Returns number',
-      },
-      expected: '42',
-    },
-    {
-      toolFunction: async () => true,
-      toolParams: {
-        name: 'boolean',
-        description: 'Returns boolean',
-      },
-      expected: 'true',
-    },
     {
       toolFunction: async () => ({
         name: 'John Doe',
@@ -326,6 +334,156 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       );
     }
   );
+
+  it('correctly parses boolean parameters', async () => {
+    // Prepare
+    const toolFunction: ToolFunction<{ arg: boolean }> = async (params) =>
+      params.arg;
+
+    const toolParams: Configuration = {
+      name: 'boolean',
+      description: 'Handles boolean parameters',
+    };
+
+    const parameters: Parameter[] = [
+      { name: 'arg', type: 'boolean', value: 'true' },
+    ];
+
+    const app = new BedrockAgentFunctionResolver();
+    app.tool(toolFunction, toolParams);
+
+    //Act
+    const actual = await app.resolve(
+      createEvent(toolParams.name, parameters),
+      context
+    );
+
+    // Assess
+    expect(actual.response.function).toEqual(toolParams.name);
+    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+      'true'
+    );
+  });
+
+  it('correctly parses number parameters', async () => {
+    // Prepare
+    const toolFunction: ToolFunction<{ arg: number }> = async (params) =>
+      params.arg + 10;
+
+    const toolParams: Configuration = {
+      name: 'number',
+      description: 'Handles number parameters',
+    };
+
+    const parameters: Parameter[] = [
+      { name: 'arg', type: 'number', value: '42' },
+    ];
+
+    const app = new BedrockAgentFunctionResolver();
+    app.tool(toolFunction, toolParams);
+
+    // Act
+    const actual = await app.resolve(
+      createEvent(toolParams.name, parameters),
+      context
+    );
+
+    // Assess
+    expect(actual.response.function).toEqual(toolParams.name);
+    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+      '52'
+    );
+  });
+
+  it('correctly parses integer parameters', async () => {
+    // Prepare
+    const toolFunction: ToolFunction<{ arg: number }> = async (params) =>
+      params.arg + 10;
+
+    const toolParams: Configuration = {
+      name: 'integer',
+      description: 'Handles integer parameters',
+    };
+
+    const parameters: Parameter[] = [
+      { name: 'arg', type: 'integer', value: '37' },
+    ];
+
+    const app = new BedrockAgentFunctionResolver();
+    app.tool(toolFunction, toolParams);
+
+    // Act
+    const actual = await app.resolve(
+      createEvent(toolParams.name, parameters),
+      context
+    );
+
+    // Assess
+    expect(actual.response.function).toEqual(toolParams.name);
+    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+      '47'
+    );
+  });
+
+  it('correctly parses string parameters', async () => {
+    // Prepare
+    const toolFunction: ToolFunction<{ arg: string }> = async (params) =>
+      `String: ${params.arg}`;
+
+    const toolParams: Configuration = {
+      name: 'string',
+      description: 'Handles string parameters',
+    };
+
+    const parameters: Parameter[] = [
+      { name: 'arg', type: 'string', value: 'hello world' },
+    ];
+
+    const app = new BedrockAgentFunctionResolver();
+    app.tool(toolFunction, toolParams);
+
+    // Act
+    const actual = await app.resolve(
+      createEvent(toolParams.name, parameters),
+      context
+    );
+
+    // Assess
+    expect(actual.response.function).toEqual(toolParams.name);
+    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+      'String: hello world'
+    );
+  });
+
+  it('correctly parses array parameters', async () => {
+    // Prepare
+    const toolFunction: ToolFunction<{ arg: string }> = async (params) =>
+      `Array as string: ${params.arg}`;
+
+    const toolParams: Configuration = {
+      name: 'array',
+      description: 'Handles array parameters (as string)',
+    };
+
+    const parameters: Parameter[] = [
+      { name: 'arg', type: 'array', value: '[1,2,3]' },
+    ];
+
+    const app = new BedrockAgentFunctionResolver();
+    app.tool(toolFunction, toolParams);
+
+    // Act
+    const actual = await app.resolve(
+      createEvent(toolParams.name, parameters),
+      context
+    );
+
+    // Assess
+    expect(actual.response.function).toEqual(toolParams.name);
+    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+      'Array as string: [1,2,3]'
+    );
+  });
 
   it('handles functions that throw errors', async () => {
     // Prepare

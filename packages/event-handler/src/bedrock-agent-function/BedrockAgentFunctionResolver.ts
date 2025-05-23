@@ -4,6 +4,7 @@ import type {
   BedrockAgentFunctionEvent,
   BedrockAgentFunctionResponse,
   Configuration,
+  ParameterValue,
   ResolverOptions,
   ResponseOptions,
   Tool,
@@ -13,7 +14,8 @@ import type { GenericLogger } from '../types/common.js';
 import { isPrimitive } from './utils.js';
 
 export class BedrockAgentFunctionResolver {
-  readonly #tools: Map<string, Tool> = new Map<string, Tool>();
+  readonly #tools: Map<string, Tool<Record<string, ParameterValue>>> =
+    new Map();
   readonly #envService: EnvironmentVariablesService;
   readonly #logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 
@@ -77,10 +79,15 @@ export class BedrockAgentFunctionResolver {
    * @param fn - The tool function
    * @param config - The configuration object for the tool
    */
-  public tool(fn: ToolFunction, config: Configuration): undefined;
-  public tool(config: Configuration): MethodDecorator;
-  public tool(
-    fnOrConfig: ToolFunction | Configuration,
+  public tool<TParams extends Record<string, ParameterValue>>(
+    fn: ToolFunction<TParams>,
+    config: Configuration
+  ): undefined;
+  public tool<TParams extends Record<string, ParameterValue>>(
+    config: Configuration
+  ): MethodDecorator;
+  public tool<TParams extends Record<string, ParameterValue>>(
+    fnOrConfig: ToolFunction<TParams> | Configuration,
     config?: Configuration
   ): MethodDecorator | undefined {
     // When used as a method (not a decorator)
@@ -97,7 +104,10 @@ export class BedrockAgentFunctionResolver {
     };
   }
 
-  #registerTool(fn: ToolFunction, config: Configuration): void {
+  #registerTool<TParams extends Record<string, ParameterValue>>(
+    handler: ToolFunction<TParams>,
+    config: Configuration
+  ): void {
     const { name } = config;
 
     if (this.#tools.size >= 5) {
@@ -113,7 +123,10 @@ export class BedrockAgentFunctionResolver {
       );
     }
 
-    this.#tools.set(name, { function: fn, config });
+    this.#tools.set(name, {
+      handler: handler as ToolFunction<Record<string, ParameterValue>>,
+      config,
+    });
     this.#logger.debug(`Tool ${name} has been registered.`);
   }
 
@@ -169,12 +182,29 @@ export class BedrockAgentFunctionResolver {
       });
     }
 
-    const parameterObject: Record<string, string> = Object.fromEntries(
-      parameters.map((param) => [param.name, param.value])
-    );
+    const toolParams: Record<string, ParameterValue> = {};
+    for (const param of parameters) {
+      switch (param.type) {
+        case 'boolean': {
+          toolParams[param.name] = param.value === 'true';
+          break;
+        }
+        case 'number':
+        case 'integer': {
+          toolParams[param.name] = Number(param.value);
+          break;
+        }
+        // this default will also catch array types but we leave them as strings
+        // because we cannot reliably parse them
+        default: {
+          toolParams[param.name] = param.value;
+          break;
+        }
+      }
+    }
 
     try {
-      const res = (await tool.function(parameterObject)) ?? '';
+      const res = (await tool.handler(toolParams, event, context)) ?? '';
       const body = isPrimitive(res) ? String(res) : JSON.stringify(res);
       return this.#buildResponse({
         actionGroup,

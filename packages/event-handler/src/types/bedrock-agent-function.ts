@@ -1,4 +1,5 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type { Context } from 'aws-lambda';
 import type { GenericLogger } from '../types/common.js';
 
 type Configuration = {
@@ -16,13 +17,17 @@ type ParameterPrimitives = string | number | boolean;
 
 type ParameterValue = ParameterPrimitives | Array<ParameterValue>;
 
-type Tool<TParams = Record<string, ParameterValue>> = {
+type ToolFunction<TParams = Record<string, ParameterValue>> = (
+  params: TParams,
+  event: BedrockAgentFunctionEvent,
+  context: Context
   // biome-ignore lint/suspicious/noConfusingVoidType: we need to support async functions that don't have an explicit return value
-  function: (params: TParams) => Promise<JSONValue | void>;
+) => Promise<JSONValue | void>;
+
+type Tool<TParams = Record<string, ParameterValue>> = {
+  handler: ToolFunction<TParams>;
   config: Configuration;
 };
-
-type ToolFunction = Tool['function'];
 
 type Attributes = Record<string, string>;
 
@@ -96,6 +101,7 @@ export type {
   ToolFunction,
   Parameter,
   Attributes,
+  ParameterValue,
   FunctionIdentifier,
   FunctionInvocation,
   BedrockAgentFunctionEvent,

@@ -47,6 +47,26 @@ type GetBooleanFromEnvOptions = {
    * @default "Environment variable <key> is required"
    */
   errorMessage?: string;
+  /**
+   * Whether to extend the parsing of the boolean value to include common string representations.
+   *
+   * The following values are considered `true`:
+   * - `"true"`
+   * - `"1"`
+   * - `"yes"`
+   * - `"on"`
+   * - `"y"`
+   *
+   * The following values are considered `false`:
+   * - `"false"`
+   * - `"0"`
+   * - `"no"`
+   * - `"off"`
+   * - `"n"`
+   *
+   * @default false
+   */
+  extendedParsing?: boolean;
 };
 
 export type {

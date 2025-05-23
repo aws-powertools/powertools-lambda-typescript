@@ -34,7 +34,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
 
     app.tool(async (_params) => {}, {
       name: 'noop',
-      definition: 'Does nothing',
+      description: 'Does nothing',
     });
 
     // Assess
@@ -48,7 +48,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
 
     app.tool(async (_params) => {}, {
       name: 'noop',
-      definition: 'Does nothing',
+      description: 'Does nothing',
     });
 
     // Assess
@@ -68,7 +68,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
 
     app.tool(async (_params) => {}, {
       name: 'noop',
-      definition: 'Does nothing',
+      description: 'Does nothing',
     });
 
     // Act
@@ -88,7 +88,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     for (const num of [1, 2, 3, 4, 5]) {
       app.tool(async (_params) => {}, {
         name: `noop${num}`,
-        definition: 'Does nothing',
+        description: 'Does nothing',
       });
     }
 
@@ -98,7 +98,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       },
       {
         name: 'mult',
-        definition: 'Multiplies two numbers',
+        description: 'Multiplies two numbers',
       }
     );
 
@@ -151,7 +151,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       },
       {
         name: 'math',
-        definition: 'Adds two numbers',
+        description: 'Adds two numbers',
       }
     );
 
@@ -167,7 +167,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       },
       {
         name: 'math',
-        definition: 'Multiplies two numbers',
+        description: 'Multiplies two numbers',
       }
     );
 
@@ -183,12 +183,12 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver();
 
     class Lambda {
-      @app.tool({ name: 'hello', definition: 'Says hello' })
+      @app.tool({ name: 'hello', description: 'Says hello' })
       async helloWorld() {
         return 'Hello, world!';
       }
 
-      @app.tool({ name: 'add', definition: 'Adds two numbers' })
+      @app.tool({ name: 'add', description: 'Adds two numbers' })
       async add(params: { a: string; b: string }) {
         const { a, b } = params;
         return Number.parseInt(a) + Number.parseInt(b);
@@ -229,7 +229,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       toolFunction: async () => 'Hello, world',
       toolParams: {
         name: 'string',
-        definition: 'Returns string',
+        description: 'Returns string',
       },
       expected: 'Hello, world',
     },
@@ -237,7 +237,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       toolFunction: async () => 42,
       toolParams: {
         name: 'number',
-        definition: 'Returns number',
+        description: 'Returns number',
       },
       expected: '42',
     },
@@ -245,7 +245,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       toolFunction: async () => true,
       toolParams: {
         name: 'boolean',
-        definition: 'Returns boolean',
+        description: 'Returns boolean',
       },
       expected: 'true',
     },
@@ -261,7 +261,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       }),
       toolParams: {
         name: 'object',
-        definition: 'Returns an object',
+        description: 'Returns an object',
       },
       expected:
         '{"name":"John Doe","age":30,"isActive":true,"address":{"street":"123 Main St","city":"Anytown"}}',
@@ -270,7 +270,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       toolFunction: async () => [1, 'two', false, null],
       toolParams: {
         name: 'array',
-        definition: 'Returns an array',
+        description: 'Returns an array',
       },
       expected: '[1,"two",false,null]',
     },
@@ -298,14 +298,14 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       toolFunction: async () => null,
       toolParams: {
         name: 'null',
-        definition: 'Returns null',
+        description: 'Returns null',
       },
     },
     {
       toolFunction: async () => void 0,
       toolParams: {
         name: 'undefined',
-        definition: 'Returns undefined',
+        description: 'Returns undefined',
       },
     },
   ])(
@@ -337,7 +337,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       },
       {
         name: 'error-tool',
-        definition: 'Throws an error',
+        description: 'Throws an error',
       }
     );
 
@@ -365,7 +365,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       },
       {
         name: 'greeting',
-        definition: 'Greets a person by name',
+        description: 'Greets a person by name',
       }
     );
 

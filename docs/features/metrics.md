@@ -502,3 +502,43 @@ When `POWERTOOLS_DEV` is enabled, Metrics uses the global `console` to emit metr
     ```typescript hl_lines="4-5 12"
     --8<-- "examples/snippets/metrics/testingMetrics.ts"
     ```
+
+## Multiple dimension sets
+
+You can create multiple dimension sets for your metrics using the `addDimensions` or `addDimensionSet` methods. This allows you to aggregate metrics across various dimensions, providing more granular insights into your application.
+
+=== "Creating multiple dimension sets"
+
+    ```typescript hl_lines="10-25"
+    --8<-- "examples/snippets/metrics/multiDimensionSets.ts"
+    ```
+
+=== "Example CloudWatch Logs excerpt"
+
+    ```json
+    {
+      "successfulBooking": 1.0,
+      "_aws": {
+        "Timestamp": 1592234975665,
+        "CloudWatchMetrics": [{
+          "Namespace": "serverlessAirline",
+          "Dimensions": [
+            ["service", "environment", "region"],
+            ["service", "dimension1", "dimension2"],
+            ["service", "feature", "version"]
+          ],
+          "Metrics": [{
+            "Name": "successfulBooking",
+            "Unit": "Count"
+          }]
+        }]
+      },
+      "service": "orders",
+      "environment": "prod",
+      "region": "us-west-2",
+      "dimension1": "1",
+      "dimension2": "2",
+      "feature": "booking",
+      "version": "v1"
+    }
+    ```

@@ -1,6 +1,7 @@
 export type {
   MetricsOptions,
   Dimensions,
+  DimensionSet,
   EmfOutput,
   ExtraOptions,
   StoredMetrics,

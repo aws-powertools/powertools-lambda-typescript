@@ -19,6 +19,7 @@ import {
 } from './constants.js';
 import type {
   ConfigServiceInterface,
+  DimensionSet,
   Dimensions,
   EmfOutput,
   ExtraOptions,
@@ -201,6 +202,12 @@ class Metrics extends Utility implements MetricsInterface {
   private storedMetrics: StoredMetrics = {};
 
   /**
+   * Storage for dimension sets
+   * @default []
+   */
+  private dimensionSets: DimensionSet[] = [];
+
+  /**
    * Whether to disable metrics
    */
   private disabled = false;
@@ -255,21 +262,88 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Add multiple dimensions to the metrics.
+   * Add multiple dimensions to the metrics as a new dimension set.
    *
-   * This method is useful when you want to add multiple dimensions to the metrics at once.
+   * This method creates a new dimension set that will be included in the EMF output.
    * Invalid dimension values are skipped and a warning is logged.
    *
    * When calling the {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`} method, the dimensions are cleared. This type of
    * dimension is useful when you want to add request-specific dimensions to your metrics. If you want to add dimensions that are
    * included in all metrics, use the {@link Metrics.setDefaultDimensions | `setDefaultDimensions()`} method.
    *
+   * @example
+   * ```typescript
+   * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+   *
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders',
+   * });
+   *
+   * // Add a single dimension
+   * metrics.addDimension('environment', 'prod');
+   *
+   * // Add a new dimension set
+   * metrics.addDimensions({
+   *   dimension1: "1",
+   *   dimension2: "2"
+   * });
+   *
+   * // This will create two dimension sets in the EMF output:
+   * // [["service", "environment"]] and [["service", "dimension1", "dimension2"]]
+   * metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+   * metrics.publishStoredMetrics();
+   * ```
+   *
    * @param dimensions - An object with key-value pairs of dimensions
    */
   public addDimensions(dimensions: Dimensions): void {
-    for (const [name, value] of Object.entries(dimensions)) {
-      this.addDimension(name, value);
+    const dimensionSet: string[] = [];
+
+    // Add default dimensions to the set
+    for (const name of Object.keys(this.defaultDimensions)) {
+      dimensionSet.push(name);
     }
+
+    // Add new dimensions to both the dimension set and the dimensions object
+    for (const [name, value] of Object.entries(dimensions)) {
+      if (!value) {
+        this.#logger.warn(
+          `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+        );
+        continue;
+      }
+
+      if (MAX_DIMENSION_COUNT <= this.getCurrentDimensionsCount() + 1) {
+        throw new RangeError(
+          `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+        );
+      }
+
+      // Add to dimensions object for value storage
+      this.dimensions[name] = value;
+
+      // Add to dimension set if not already included
+      if (!dimensionSet.includes(name)) {
+        dimensionSet.push(name);
+      }
+    }
+
+    // Only add the dimension set if it has dimensions beyond the defaults
+    if (dimensionSet.length > Object.keys(this.defaultDimensions).length) {
+      this.dimensionSets.push(dimensionSet);
+    }
+  }
+
+  /**
+   * Add a dimension set to metrics.
+   *
+   * This is an alias for {@link Metrics.addDimensions | `addDimensions()`} for consistency with other Powertools for AWS Lambda implementations.
+   *
+   * @param dimensions - An object with key-value pairs of dimensions
+   */
+  public addDimensionSet(dimensions: Dimensions): void {
+    this.addDimensions(dimensions);
   }
 
   /**
@@ -447,6 +521,7 @@ class Metrics extends Utility implements MetricsInterface {
    */
   public clearDimensions(): void {
     this.dimensions = {};
+    this.dimensionSets = [];
   }
 
   /**
@@ -692,12 +767,21 @@ class Metrics extends Utility implements MetricsInterface {
       {}
     );
 
-    const dimensionNames = [
+    // Create the default dimension set from default dimensions and current dimensions
+    const defaultDimensionNames = [
       ...new Set([
         ...Object.keys(this.defaultDimensions),
         ...Object.keys(this.dimensions),
       ]),
     ];
+
+    // Prepare all dimension sets for the EMF output
+    const allDimensionSets: DimensionSet[] = [defaultDimensionNames];
+
+    // Add any additional dimension sets created via addDimensions()
+    if (this.dimensionSets.length > 0) {
+      allDimensionSets.push(...this.dimensionSets);
+    }
 
     return {
       _aws: {
@@ -705,7 +789,7 @@ class Metrics extends Utility implements MetricsInterface {
         CloudWatchMetrics: [
           {
             Namespace: this.namespace || DEFAULT_NAMESPACE,
-            Dimensions: [dimensionNames],
+            Dimensions: allDimensionSets as [string[]],
             Metrics: metricDefinitions,
           },
         ],

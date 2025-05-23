@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getBooleanFromEnv,
-  getFalsyBooleanFromEnv,
   getNumberFromEnv,
   getServiceName,
   getStringFromEnv,
-  getTruthyBooleanFromEnv,
   getXRayTraceIdFromEnv,
   isDevMode,
   isRequestXRaySampled,
@@ -162,9 +160,7 @@ describe('Functions: envUtils', () => {
         'Environment variable TEST_ENV must be a boolean'
       );
     });
-  });
 
-  describe('Function: getTruthyBooleanFromEnv', () => {
     it.each([
       ['1', true],
       ['y', true],
@@ -179,7 +175,10 @@ describe('Functions: envUtils', () => {
         process.env.TEST_ENV = value;
 
         // Act
-        const result = getTruthyBooleanFromEnv({ key: 'TEST_ENV' });
+        const result = getBooleanFromEnv({
+          key: 'TEST_ENV',
+          extendedParsing: true,
+        });
 
         // Assess
         expect(result).toBe(expected);
@@ -187,11 +186,12 @@ describe('Functions: envUtils', () => {
     );
 
     it.each([
-      ['', false],
-      ['false', false],
-      ['fasle', false],
-      ['somethingsilly', false],
       ['0', false],
+      ['n', false],
+      ['no', false],
+      ['f', false],
+      ['FALSE', false],
+      ['off', false],
     ])(
       'returns false if the environment variable is set to a falsy value: %s',
       (value, expected) => {
@@ -199,86 +199,15 @@ describe('Functions: envUtils', () => {
         process.env.TEST_ENV = value;
 
         // Act
-        const result = getTruthyBooleanFromEnv({ key: 'TEST_ENV' });
+        const result = getBooleanFromEnv({
+          key: 'TEST_ENV',
+          extendedParsing: true,
+        });
 
         // Assess
         expect(result).toBe(expected);
       }
     );
-
-    it('returns the default value if the environment variable is not set', () => {
-      // Prepare
-      process.env.TEST_ENV = undefined;
-
-      // Act
-      const result = getTruthyBooleanFromEnv({
-        key: 'TEST_ENV',
-        defaultValue: true,
-      });
-
-      // Assess
-      expect(result).toBe(true);
-    });
-  });
-
-  describe('Function: getFalsyBooleanFromEnv', () => {
-    it.each([
-      ['0', true],
-      ['n', true],
-      ['no', true],
-      ['f', true],
-      ['FALSE', true],
-      ['off', true],
-    ])(
-      'returns true if the environment variable is set to a truthy value: %s',
-      (value, expected) => {
-        // Prepare
-        process.env.TEST_ENV = value;
-
-        // Act
-        const result = getFalsyBooleanFromEnv({ key: 'TEST_ENV' });
-
-        // Assess
-        expect(result).toBe(expected);
-      }
-    );
-
-    it.each([
-      ['1', false],
-      ['y', false],
-      ['yes', false],
-      ['t', false],
-      ['TRUE', false],
-      ['on', false],
-      ['', false],
-      ['somethingsilly', false],
-    ])(
-      'returns false if the environment variable is set to a falsy value: %s',
-      (value, expected) => {
-        // Prepare
-        process.env.TEST_ENV = value;
-
-        // Act
-        const result = getFalsyBooleanFromEnv({ key: 'TEST_ENV' });
-
-        // Assess
-        expect(result).toBe(expected);
-      }
-    );
-
-    it('returns the default value if the environment variable is not set', () => {
-      // Prepare
-      process.env.TEST_ENV = undefined;
-
-      // Act
-      const result = getFalsyBooleanFromEnv({
-        key: 'TEST_ENV',
-        defaultValue: false,
-      });
-
-      // Assess
-      expect(result).toBe(true);
-    });
   });
 
   describe('Function: isDevMode', () => {

@@ -113,6 +113,9 @@ const getNumberFromEnv = ({
   return parsedValue;
 };
 
+const truthyValues = new Set(['1', 'y', 'yes', 't', 'true', 'on']);
+const falsyValues = new Set(['0', 'n', 'no', 'f', 'false', 'off']);
+
 /**
  * Get a boolean from the environment variables.
  *
@@ -140,15 +143,44 @@ const getNumberFromEnv = ({
  * });
  * ```
  *
+ * By default, the value is parsed as a boolean. You can also provide an option to extend the parsing of the boolean value to include common string representations.
+ *
+ * @example
+ * ```ts
+ * import { getBooleanFromEnv } from '@aws-lambda-powertools/commons/utils/env';
+ *
+ * const myEnvVar = getBooleanFromEnv({
+ *   key: 'MY_ENV_VAR',
+ *   defaultValue: true,
+ *   extendedParsing: true,
+ * });
+ * ```
+ *
+ * The following values are considered `true`:
+ * - `"true"`
+ * - `"1"`
+ * - `"yes"`
+ * - `"on"`
+ * - `"y"`
+ *
+ * The following values are considered `false`:
+ * - `"false"`
+ * - `"0"`
+ * - `"no"`
+ * - `"off"`
+ * - `"n"`
+ *
  * @param options - The options for getting the boolean.
  * @param options.key - The key of the environment variable.
  * @param options.defaultValue - The default value to return if the environment variable is not set.
  * @param options.errorMessage - Optional error message to throw if the environment variable is not set and no default value is provided. Defaults to `"Environment variable <key> is required"`.
+ * @param options.extendedParsing - Whether to extend the parsing of the boolean value to include common string representations like `'1'`, `'y'`, `'yes'`, `'t'`, `'true'`, `'on'` for `true` and `'0'`, `'n'`, `'no'`, `'f'`, `'false'`, `'off'` for `false`.
  */
 const getBooleanFromEnv = ({
   key,
   defaultValue,
   errorMessage,
+  extendedParsing,
 }: GetBooleanFromEnvOptions): boolean => {
   const value = getStringFromEnv({
     key,
@@ -158,110 +190,20 @@ const getBooleanFromEnv = ({
 
   const parsedValue = value.toLowerCase();
 
+  if (extendedParsing) {
+    if (truthyValues.has(parsedValue)) {
+      return true;
+    }
+    if (falsyValues.has(parsedValue)) {
+      return false;
+    }
+  }
+
   if (parsedValue !== 'true' && parsedValue !== 'false') {
     throw new Error(`Environment variable ${key} must be a boolean`);
   }
 
   return parsedValue === 'true';
-};
-
-const truthyValues = new Set(['1', 'y', 'yes', 't', 'true', 'on']);
-
-/**
- * Get a truthy boolean from the environment variables.
- *
- * Truthy values are: `1`, `y`, `yes`, `t`, `true`, `on`.
- *
- * @example
- * ```ts
- * import { getTruthyBooleanFromEnv } from '@aws-lambda-powertools/commons/utils/env';
- *
- * const myEnvVar = getTruthyBooleanFromEnv({
- *   key: 'MY_ENV_VAR',
- *   errorMessage: 'MY_ENV_VAR is required for this function',
- * });
- * ```
- *
- * By default, the value is trimmed before being converted to a boolean and always required.
- *
- * You can also provide a default value, which will be returned if the environment variable is not set instead of throwing an error.
- *
- * @example
- * ```ts
- * import { getTruthyBooleanFromEnv } from '@aws-lambda-powertools/commons/utils/env';
- *
- * const myEnvVar = getTruthyBooleanFromEnv({
- *   key: 'MY_ENV_VAR',
- *   defaultValue: true,
- * });
- * ```
- *
- * @param options - The options for getting the truthy boolean.
- * @param options.key - The key of the environment variable.
- * @param options.defaultValue - The default value to return if the environment variable is not set.
- * @param options.errorMessage - Optional error message to throw if the environment variable is not set and no default value is provided. Defaults to `"Environment variable <key> is required"`.
- */
-const getTruthyBooleanFromEnv = ({
-  key,
-  defaultValue,
-  errorMessage,
-}: GetBooleanFromEnvOptions): boolean => {
-  const value = getStringFromEnv({
-    key,
-    defaultValue: String(defaultValue),
-    errorMessage,
-  });
-
-  return truthyValues.has(value.toLowerCase());
-};
-
-const falsyValues = new Set(['0', 'n', 'no', 'f', 'false', 'off']);
-
-/**
- * Get a falsy boolean from the environment variables.
- *
- * Falsy values are: `0`, `n`, `no`, `f`, `false`, `off`.
- *
- * @example
- * ```ts
- * import { getFalsyBooleanFromEnv } from '@aws-lambda-powertools/commons/utils/env';
- *
- * const myEnvVar = getFalsyBooleanFromEnv({
- *   key: 'MY_ENV_VAR',
- *   errorMessage: 'MY_ENV_VAR is required for this function',
- * });
- * ```
- *
- * By default, the value is trimmed before being converted to a boolean and always required.
- *
- * You can also provide a default value, which will be returned if the environment variable is not set instead of throwing an error.
- *
- * @example
- * ```ts
- * import { getFalsyBooleanFromEnv } from '@aws-lambda-powertools/commons/utils/env';
- *
- * const myEnvVar = getFalsyBooleanFromEnv({
- *   key: 'MY_ENV_VAR',
- *   defaultValue: false,
- * });
- * ```
- *
- * @param options - The options for getting the falsy boolean.
- * @param options.key - The key of the environment variable.
- * @param options.defaultValue - The default value to return if the environment variable is not set.
- * @param options.errorMessage - Optional error message to throw if the environment variable is not set and no default value is provided. Defaults to `"Environment variable <key> is required"`.
- */
-const getFalsyBooleanFromEnv = ({
-  key,
-  defaultValue,
-  errorMessage,
-}: GetBooleanFromEnvOptions): boolean => {
-  const value = getStringFromEnv({
-    key,
-    defaultValue: String(defaultValue),
-    errorMessage,
-  });
-  return falsyValues.has(value.toLowerCase());
 };
 
 /**
@@ -277,10 +219,14 @@ const getFalsyBooleanFromEnv = ({
  * ```
  */
 const isDevMode = (): boolean => {
-  return getTruthyBooleanFromEnv({
-    key: POWERTOOLS_DEV_ENV_VAR,
-    defaultValue: false,
-  });
+  try {
+    return getBooleanFromEnv({
+      key: POWERTOOLS_DEV_ENV_VAR,
+      extendedParsing: true,
+    });
+  } catch (error) {
+    return false;
+  }
 };
 
 /**
@@ -359,8 +305,6 @@ export {
   getStringFromEnv,
   getNumberFromEnv,
   getBooleanFromEnv,
-  getTruthyBooleanFromEnv,
-  getFalsyBooleanFromEnv,
   isDevMode,
   getServiceName,
   getXrayTraceDataFromEnv,

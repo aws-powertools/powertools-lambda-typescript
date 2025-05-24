@@ -83,10 +83,15 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     // Prepare
     const app = new BedrockAgentFunctionResolver();
 
-    app.tool(async (_params) => {}, {
-      name: 'noop',
-      description: 'Does nothing',
-    });
+    app.tool(
+      async (params: { arg: string }) => {
+        return params.arg;
+      },
+      {
+        name: 'identity',
+        description: 'Returns its arg',
+      }
+    );
 
     // Assess
     expect(console.debug).not.toHaveBeenCalled();
@@ -97,10 +102,15 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
     const app = new BedrockAgentFunctionResolver();
 
-    app.tool(async (_params) => {}, {
-      name: 'noop',
-      description: 'Does nothing',
-    });
+    app.tool(
+      async (params: { arg: string }) => {
+        return params.arg;
+      },
+      {
+        name: 'identity',
+        description: 'Returns its arg',
+      }
+    );
 
     // Assess
     expect(console.debug).toHaveBeenCalled();
@@ -111,10 +121,15 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver();
 
     for (const num of [1, 2, 3, 4, 5]) {
-      app.tool(async (_params) => {}, {
-        name: `noop${num}`,
-        description: 'Does nothing',
-      });
+      app.tool(
+        async (params: { arg: string }) => {
+          return params.arg;
+        },
+        {
+          name: `identity${num}`,
+          description: 'Returns its arg',
+        }
+      );
     }
 
     app.tool(
@@ -214,15 +229,25 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     };
     const app = new BedrockAgentFunctionResolver({ logger });
 
-    app.tool(async (_params) => {}, {
-      name: 'noop',
-      description: 'Does nothing',
-    });
+    app.tool(
+      async (params: { arg: string }) => {
+        return params.arg;
+      },
+      {
+        name: 'identity',
+        description: 'Returns its arg',
+      }
+    );
 
-    app.tool(async (_params) => {}, {
-      name: 'noop',
-      description: 'Does nothing',
-    });
+    app.tool(
+      async (params: { arg: string }) => {
+        return params.arg;
+      },
+      {
+        name: 'identity',
+        description: 'Returns its arg',
+      }
+    );
 
     app.tool(
       async (_params) => {

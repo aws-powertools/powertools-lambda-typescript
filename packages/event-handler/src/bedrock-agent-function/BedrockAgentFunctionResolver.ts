@@ -97,9 +97,15 @@ export class BedrockAgentFunctionResolver {
     }
 
     // When used as a decorator
-    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-      const toolFn = descriptor.value as ToolFunction;
-      this.#registerTool(toolFn, fnOrConfig);
+    return (target, propertyKey, descriptor: PropertyDescriptor) => {
+      const originalMethod = descriptor.value;
+
+      // Store a wrapper function that will call the original method with the correct 'this'
+      this.#registerTool(async (params, event, context) => {
+        // This wrapper will receive the instance through closure when called
+        return originalMethod.apply(target, [params, event, context]);
+      }, fnOrConfig);
+
       return descriptor;
     };
   }
@@ -207,8 +213,9 @@ export class BedrockAgentFunctionResolver {
 
     try {
       // TODO: use apply to ensure that `this` is bound properly when used as decorator
-      const res = await tool.handler(toolParams, event, context);
-      const body = res == null ? '' : JSON.stringify(res); //TODO just use JSON.stringify
+      const res = await tool.handler.apply(this, [toolParams, event, context]);
+      // const res = await tool.handler(toolParams, event, context);
+      const body = res == null ? '' : JSON.stringify(res);
       return this.#buildResponse({
         actionGroup,
         function: toolName,

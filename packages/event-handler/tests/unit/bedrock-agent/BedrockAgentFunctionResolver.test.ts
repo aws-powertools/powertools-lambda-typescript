@@ -6,7 +6,6 @@ import type {
   BedrockAgentFunctionEvent,
   Configuration,
   Parameter,
-  ParameterValue,
   ToolFunction,
 } from '../../../src/types/bedrock-agent';
 

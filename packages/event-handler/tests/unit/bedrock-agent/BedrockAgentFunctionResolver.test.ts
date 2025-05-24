@@ -34,6 +34,51 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     vi.unstubAllEnvs();
   });
 
+  it.each([
+    {
+      name: 'null event',
+      invalidEvent: null,
+    },
+    {
+      name: 'missing required fields',
+      invalidEvent: {
+        function: 'test-tool',
+      },
+    },
+    {
+      name: 'invalid parameters structure',
+      invalidEvent: {
+        function: 'test-tool',
+        actionGroup: 'testGroup',
+        messageVersion: '1.0',
+        agent: {
+          name: 'agentName',
+          id: 'agentId',
+          alias: 'agentAlias',
+          version: '1',
+        },
+        inputText: 'test input',
+        sessionId: 'session123',
+        parameters: 'not an array',
+        sessionAttributes: {},
+        promptSessionAttributes: {},
+      },
+    },
+  ])('throws when given an invalid event: $name', async ({ invalidEvent }) => {
+    // Prepare
+    const app = new BedrockAgentFunctionResolver();
+
+    app.tool(async () => 'test', {
+      name: 'test-tool',
+      description: 'Test tool',
+    });
+
+    // Act & Assert
+    await expect(app.resolve(invalidEvent, context)).rejects.toThrow(
+      'Event is not a valid BedrockAgentFunctionEvent'
+    );
+  });
+
   it('uses a default logger with only warnings if none is provided', () => {
     // Prepare
     const app = new BedrockAgentFunctionResolver();

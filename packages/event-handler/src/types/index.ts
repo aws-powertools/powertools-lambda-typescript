@@ -13,7 +13,7 @@ export type {
   BedrockAgentFunctionEvent,
   BedrockAgentFunctionResponse,
   ResolverOptions,
-} from './bedrock-agent-function.js';
+} from './bedrock-agent.js';
 
 export type {
   GenericLogger,

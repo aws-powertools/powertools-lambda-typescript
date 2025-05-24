@@ -1,5 +1,5 @@
 import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
-import type { BedrockAgentFunctionEvent } from '../types/bedrock-agent-function.js';
+import type { BedrockAgentFunctionEvent } from '../types/bedrock-agent.js';
 
 /**
  * Asserts that the provided event is a BedrockAgentFunctionEvent.

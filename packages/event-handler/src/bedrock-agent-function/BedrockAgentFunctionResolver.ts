@@ -1,7 +1,8 @@
+// TODO: rename folder to just bedrock-agent
+
 import { EnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 import type { Context } from 'aws-lambda';
 import type {
-  BedrockAgentFunctionEvent,
   BedrockAgentFunctionResponse,
   Configuration,
   ParameterValue,
@@ -11,11 +12,10 @@ import type {
   ToolFunction,
 } from '../types/bedrock-agent-function.js';
 import type { GenericLogger } from '../types/common.js';
-import { isPrimitive } from './utils.js';
+import { assertBedrockAgentFunctionEvent, isPrimitive } from './utils.js';
 
 export class BedrockAgentFunctionResolver {
-  readonly #tools: Map<string, Tool<Record<string, ParameterValue>>> =
-    new Map();
+  readonly #tools: Map<string, Tool> = new Map();
   readonly #envService: EnvironmentVariablesService;
   readonly #logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 
@@ -124,7 +124,7 @@ export class BedrockAgentFunctionResolver {
     }
 
     this.#tools.set(name, {
-      handler: handler as ToolFunction<Record<string, ParameterValue>>,
+      handler: handler as ToolFunction,
       config,
     });
     this.#logger.debug(`Tool ${name} has been registered.`);
@@ -160,9 +160,11 @@ export class BedrockAgentFunctionResolver {
   }
 
   async resolve(
-    event: BedrockAgentFunctionEvent,
+    event: unknown,
     context: Context
   ): Promise<BedrockAgentFunctionResponse> {
+    assertBedrockAgentFunctionEvent(event);
+
     const {
       function: toolName,
       parameters = [],
@@ -205,7 +207,7 @@ export class BedrockAgentFunctionResolver {
 
     try {
       const res = (await tool.handler(toolParams, event, context)) ?? '';
-      const body = isPrimitive(res) ? String(res) : JSON.stringify(res);
+      const body = isPrimitive(res) ? String(res) : JSON.stringify(res); //TODO just use JSON.stringify
       return this.#buildResponse({
         actionGroup,
         function: toolName,

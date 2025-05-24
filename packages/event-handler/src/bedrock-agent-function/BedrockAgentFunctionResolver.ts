@@ -12,7 +12,7 @@ import type {
   ToolFunction,
 } from '../types/bedrock-agent-function.js';
 import type { GenericLogger } from '../types/common.js';
-import { assertBedrockAgentFunctionEvent, isPrimitive } from './utils.js';
+import { assertBedrockAgentFunctionEvent } from './utils.js';
 
 export class BedrockAgentFunctionResolver {
   readonly #tools: Map<string, Tool> = new Map();
@@ -206,8 +206,9 @@ export class BedrockAgentFunctionResolver {
     }
 
     try {
-      const res = (await tool.handler(toolParams, event, context)) ?? '';
-      const body = isPrimitive(res) ? String(res) : JSON.stringify(res); //TODO just use JSON.stringify
+      // TODO: use apply to ensure that `this` is bound properly when used as decorator
+      const res = await tool.handler(toolParams, event, context);
+      const body = res == null ? '' : JSON.stringify(res); //TODO just use JSON.stringify
       return this.#buildResponse({
         actionGroup,
         function: toolName,

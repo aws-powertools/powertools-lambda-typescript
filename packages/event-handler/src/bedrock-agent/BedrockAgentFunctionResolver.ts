@@ -1,5 +1,3 @@
-// TODO: rename folder to just bedrock-agent
-
 import { EnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 import type { Context } from 'aws-lambda';
 import type {
@@ -10,7 +8,7 @@ import type {
   ResponseOptions,
   Tool,
   ToolFunction,
-} from '../types/bedrock-agent-function.js';
+} from '../types/bedrock-agent.js';
 import type { GenericLogger } from '../types/common.js';
 import { assertBedrockAgentFunctionEvent } from './utils.js';
 
@@ -212,7 +210,6 @@ export class BedrockAgentFunctionResolver {
     }
 
     try {
-      // TODO: use apply to ensure that `this` is bound properly when used as decorator
       const res = await tool.handler(toolParams, event, context);
       const body = res == null ? '' : JSON.stringify(res);
       return this.#buildResponse({

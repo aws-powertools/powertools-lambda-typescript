@@ -235,7 +235,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     );
 
     // Act
-
     await app.resolve(createEvent('noop'), context);
     await app.resolve(createEvent('error'), context).catch(() => {});
 
@@ -512,7 +511,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     // Assess
     expect(actual.response.function).toEqual(toolParams.name);
     expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
-      'String: hello world'
+      '"String: hello world"'
     );
   });
 
@@ -542,7 +541,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     // Assess
     expect(actual.response.function).toEqual(toolParams.name);
     expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
-      'Array as string: [1,2,3]'
+      '"Array as string: [1,2,3]"'
     );
   });
 
@@ -621,7 +620,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
         functionResponse: {
           responseBody: {
             TEXT: {
-              body: 'Hello, John!',
+              body: '"Hello, John!"',
             },
           },
         },

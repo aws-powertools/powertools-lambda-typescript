@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { RouteHandlerRegistry } from '../../src/appsync-events/RouteHandlerRegistry.js';
-import type { RouteHandlerOptions } from '../../src/types/appsync-events.js';
+import { RouteHandlerRegistry } from '../../../src/appsync-events/RouteHandlerRegistry.js';
+import type { RouteHandlerOptions } from '../../../src/types/appsync-events.js';
 
 describe('Class: RouteHandlerRegistry', () => {
   class MockRouteHandlerRegistry extends RouteHandlerRegistry {

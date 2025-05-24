@@ -22,7 +22,7 @@ function createEvent(functionName: string, parameters?: Parameter[]) {
     sessionId: 'sessionId',
     inputText: 'inputText',
     function: functionName,
-    parameters,
+    ...(parameters == null ? {} : { parameters }),
     actionGroup: 'myActionGroup',
     sessionAttributes: {},
     promptSessionAttributes: {},

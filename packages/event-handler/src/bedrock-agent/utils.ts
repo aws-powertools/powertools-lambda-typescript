@@ -17,7 +17,6 @@ export function assertBedrockAgentFunctionEvent(
     'function' in event &&
     isString(event.function) &&
     (!('parameters' in event) ||
-      event.parameters == null ||
       (Array.isArray(event.parameters) &&
         event.parameters.every(
           (param) =>

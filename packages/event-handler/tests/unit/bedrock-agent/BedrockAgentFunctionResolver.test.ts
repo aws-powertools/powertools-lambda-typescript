@@ -106,32 +106,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     expect(console.debug).toHaveBeenCalled();
   });
 
-  it('accepts custom logger', async () => {
-    // Prepare
-    vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
-
-    const logger = {
-      debug: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-    };
-    const app = new BedrockAgentFunctionResolver({ logger });
-
-    app.tool(async (_params) => {}, {
-      name: 'noop',
-      description: 'Does nothing',
-    });
-
-    // Act
-
-    await app.resolve(createEvent('noop', []), context);
-
-    // Assess
-    expect(logger.debug).toHaveBeenCalled();
-    expect(logger.debug).toHaveBeenCalled();
-    expect(logger.debug).toHaveBeenCalled();
-  });
-
   it('only allows five tools to be registered', async () => {
     // Prepare
     const app = new BedrockAgentFunctionResolver();
@@ -227,6 +201,48 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     expect(
       multiplyResult.response.functionResponse.responseBody.TEXT.body
     ).toEqual('20');
+  });
+
+  it('accepts custom logger', async () => {
+    // Prepare
+    vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
+
+    const logger = {
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+    const app = new BedrockAgentFunctionResolver({ logger });
+
+    app.tool(async (_params) => {}, {
+      name: 'noop',
+      description: 'Does nothing',
+    });
+
+    app.tool(async (_params) => {}, {
+      name: 'noop',
+      description: 'Does nothing',
+    });
+
+    app.tool(
+      async (_params) => {
+        throw new Error();
+      },
+      {
+        name: 'error',
+        description: 'errors',
+      }
+    );
+
+    // Act
+
+    await app.resolve(createEvent('noop'), context);
+    await app.resolve(createEvent('error'), context).catch(() => {});
+
+    // Assess
+    expect(logger.warn).toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalled();
+    expect(logger.debug).toHaveBeenCalled();
   });
 
   it('tool function has access to the event variable', async () => {

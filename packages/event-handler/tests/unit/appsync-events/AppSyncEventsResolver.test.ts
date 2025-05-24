@@ -1,9 +1,11 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
+import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AppSyncEventsResolver,
   UnauthorizedException,
 } from '../../../src/appsync-events/index.js';
+import type { AppSyncEventsSubscribeEvent } from '../../../src/types/appsync-events.js';
 import {
   onPublishEventFactory,
   onSubscribeEventFactory,
@@ -61,6 +63,93 @@ describe('Class: AppSyncEventsResolver', () => {
         },
       ],
     });
+  });
+
+  it('preserves the scope when decorating methods', async () => {
+    // Prepare
+    const app = new AppSyncEventsResolver({ logger: console });
+
+    class Lambda {
+      public scope = 'scoped';
+
+      @app.onPublish('/foo')
+      public async handleFoo(payload: string) {
+        return `${this.scope} ${payload}`;
+      }
+
+      public async handler(event: unknown, context: Context) {
+        return this.stuff(event, context);
+      }
+
+      async stuff(event: unknown, context: Context) {
+        return app.resolve(event, context);
+      }
+    }
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
+
+    // Act
+    const result = await handler(
+      onPublishEventFactory(
+        [
+          {
+            id: '1',
+            payload: 'foo',
+          },
+        ],
+        {
+          path: '/foo',
+          segments: ['foo'],
+        }
+      ),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      events: [
+        {
+          id: '1',
+          payload: 'scoped foo',
+        },
+      ],
+    });
+  });
+
+  it('preserves the scope when decorating methods', async () => {
+    // Prepare
+    const app = new AppSyncEventsResolver({ logger: console });
+
+    class Lambda {
+      public scope = 'scoped';
+
+      @app.onSubscribe('/foo')
+      public async handleFoo(payload: AppSyncEventsSubscribeEvent) {
+        console.debug(`${this.scope} ${payload.info.channel.path}`);
+      }
+
+      public async handler(event: unknown, context: Context) {
+        return this.stuff(event, context);
+      }
+
+      async stuff(event: unknown, context: Context) {
+        return app.resolve(event, context);
+      }
+    }
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
+
+    // Act
+    await handler(
+      onSubscribeEventFactory({
+        path: '/foo',
+        segments: ['foo'],
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.debug).toHaveBeenCalledWith('scoped /foo');
   });
 
   it('returns null if there are no onSubscribe handlers', async () => {

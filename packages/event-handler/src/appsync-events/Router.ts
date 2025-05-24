@@ -9,6 +9,9 @@ import type {
 } from '../types/appsync-events.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 
+// Simple global approach - store the last instance per router
+const routerInstanceMap = new WeakMap<Router, unknown>();
+
 /**
  * Class for registering routes for the `onPublish` and `onSubscribe` events in AWS AppSync Events APIs.
  */
@@ -194,11 +197,22 @@ class Router {
       return;
     }
 
-    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+    return (target, _propertyKey, descriptor: PropertyDescriptor) => {
       const routeOptions = isRecord(handler) ? handler : options;
+      const originalMethod = descriptor?.value;
+      const routerInstance = this;
+
+      this.#bindResolveMethodScope(target);
+
+      // Create a handler that uses the captured instance
+      const boundHandler = (...args: unknown[]) => {
+        const instance = routerInstanceMap.get(routerInstance);
+        return originalMethod?.apply(instance, args);
+      };
+
       this.onPublishRegistry.register({
         path,
-        handler: descriptor.value,
+        handler: boundHandler,
         aggregate: (routeOptions?.aggregate ?? false) as T,
       });
       return descriptor;
@@ -273,13 +287,88 @@ class Router {
       return;
     }
 
-    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+    return (target, propertyKey, descriptor: PropertyDescriptor) => {
+      const originalMethod = descriptor?.value;
+      const routerInstance = this;
+
+      // Patch any method that might call resolve() to capture instance
+      this.#bindResolveMethodScope(target);
+
+      // Create a handler that uses the captured instance
+      const boundHandler = (...args: unknown[]) => {
+        const instance = routerInstanceMap.get(routerInstance);
+        return originalMethod?.apply(instance, args);
+      };
+
       this.onSubscribeRegistry.register({
         path,
-        handler: descriptor.value,
+        handler: boundHandler,
       });
       return descriptor;
     };
+  }
+
+  /**
+   * Binds the resolve method scope to the target object.
+   *
+   * We patch any method that might call `resolve()` to ensure that
+   * the class instance is captured correctly when the method is resolved. We need
+   * to do this because when a method is decorated, it loses its context and
+   * the `this` keyword inside the method no longer refers to the class instance of the decorated method.
+   *
+   * We need to apply this two-step process because the decorator is applied to the method
+   * before the class instance is created, so we cannot capture the instance directly.
+   *
+   * @param target - The target object whose methods will be patched to capture the instance scope
+   */
+  #bindResolveMethodScope(target: object) {
+    const routerInstance = this;
+
+    // Patch any method that might call resolve() to capture instance
+    if (!target.constructor.prototype._powertoolsPatched) {
+      target.constructor.prototype._powertoolsPatched = true;
+
+      // Get all method names from the prototype
+      const proto = target.constructor.prototype;
+      const methodNames = Object.getOwnPropertyNames(proto);
+
+      for (const methodName of methodNames) {
+        if (methodName === 'constructor') continue;
+
+        const methodDescriptor = Object.getOwnPropertyDescriptor(
+          proto,
+          methodName
+        );
+        if (
+          methodDescriptor?.value &&
+          typeof methodDescriptor.value === 'function'
+        ) {
+          const originalMethodRef = methodDescriptor.value;
+          const methodSource = originalMethodRef.toString();
+
+          // Check if this method calls .resolve() on our router instance
+          if (
+            methodSource.includes('.resolve(') ||
+            methodSource.includes('.resolve ')
+          ) {
+            const patchedMethod = function (this: unknown, ...args: unknown[]) {
+              // Capture instance when any method that calls resolve is called
+              if (this && typeof this === 'object') {
+                routerInstanceMap.set(routerInstance, this);
+              }
+              return originalMethodRef.apply(this, args);
+            };
+
+            Object.defineProperty(proto, methodName, {
+              value: patchedMethod,
+              writable: true,
+              configurable: true,
+              enumerable: true,
+            });
+          }
+        }
+      }
+    }
   }
 }
 

@@ -213,8 +213,7 @@ export class BedrockAgentFunctionResolver {
 
     try {
       // TODO: use apply to ensure that `this` is bound properly when used as decorator
-      const res = await tool.handler.apply(this, [toolParams, event, context]);
-      // const res = await tool.handler(toolParams, event, context);
+      const res = await tool.handler(toolParams, event, context);
       const body = res == null ? '' : JSON.stringify(res);
       return this.#buildResponse({
         actionGroup,

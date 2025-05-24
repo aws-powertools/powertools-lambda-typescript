@@ -21,15 +21,12 @@ type ToolFunction<TParams = Record<string, ParameterValue>> = (
   params: TParams,
   event: BedrockAgentFunctionEvent,
   context: Context
-  // biome-ignore lint/suspicious/noConfusingVoidType: we need to support async functions that don't have an explicit return value
-) => Promise<JSONValue | void>;
+) => Promise<JSONValue>;
 
 type Tool<TParams = Record<string, ParameterValue>> = {
   handler: ToolFunction<TParams>;
   config: Configuration;
 };
-
-type Attributes = Record<string, string>;
 
 type FunctionIdentifier = {
   actionGroup: string;
@@ -50,8 +47,8 @@ type BedrockAgentFunctionEvent = FunctionInvocation & {
   };
   inputText: string;
   sessionId: string;
-  sessionAttributes: Attributes;
-  promptSessionAttributes: Attributes;
+  sessionAttributes: Record<string, string>;
+  promptSessionAttributes: Record<string, string>;
 };
 
 type ResponseState = 'ERROR' | 'REPROMPT';
@@ -63,8 +60,8 @@ type TextResponseBody = {
 };
 
 type SessionData = {
-  sessionAttributes?: Attributes;
-  promptSessionAttributes?: Attributes;
+  sessionAttributes?: Record<string, string>;
+  promptSessionAttributes?: Record<string, string>;
 };
 
 type BedrockAgentFunctionResponse = SessionData & {
@@ -100,7 +97,6 @@ export type {
   Tool,
   ToolFunction,
   Parameter,
-  Attributes,
   ParameterValue,
   FunctionIdentifier,
   FunctionInvocation,

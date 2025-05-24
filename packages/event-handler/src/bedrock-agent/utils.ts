@@ -11,8 +11,6 @@ export function assertBedrockAgentFunctionEvent(
   event: unknown
 ): asserts event is BedrockAgentFunctionEvent {
   const isValid =
-    typeof event === 'object' &&
-    event !== null &&
     isRecord(event) &&
     'actionGroup' in event &&
     isString(event.actionGroup) &&

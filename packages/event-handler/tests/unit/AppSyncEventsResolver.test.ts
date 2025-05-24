@@ -4,12 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AppSyncEventsResolver,
   UnauthorizedException,
-} from '../../../src/appsync-events/index.js';
-import type { AppSyncEventsSubscribeEvent } from '../../../src/types/appsync-events.js';
+} from '../../src/appsync-events/index.js';
+import type { AppSyncEventsSubscribeEvent } from '../../src/types/appsync-events.js';
 import {
   onPublishEventFactory,
   onSubscribeEventFactory,
-} from '../../helpers/factories.js';
+} from '../helpers/factories.js';
 
 describe('Class: AppSyncEventsResolver', () => {
   beforeEach(() => {

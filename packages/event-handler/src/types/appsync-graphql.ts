@@ -1,4 +1,3 @@
-import type { Context } from 'aws-lambda';
 import type { RouteHandlerRegistry } from '../appsync-graphql/RouteHandlerRegistry.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: We intentionally use `any` here to represent any type of data and keep the logger is as flexible as possible.
@@ -17,29 +16,17 @@ type GenericLogger = {
 
 // #region OnQuery fn
 
-type OnQuerySyncHandlerFn = (
-  event: AppSyncGraphQLEvent,
-  context: Context
-) => unknown;
+type OnQuerySyncHandlerFn = ({ ...args }: Anything) => unknown;
 
-type OnQueryHandlerFn = (
-  event: AppSyncGraphQLEvent,
-  context: Context
-) => Promise<unknown>;
+type OnQueryHandlerFn = ({ ...args }: Anything) => Promise<unknown>;
 
 type OnQueryHandler = OnQuerySyncHandlerFn | OnQueryHandlerFn;
 
 // #region OnMutation fn
 
-type OnMutationSyncHandlerFn = (
-  event: AppSyncGraphQLEvent,
-  context: Context
-) => unknown;
+type OnMutationSyncHandlerFn = ({ ...args }: Anything) => unknown;
 
-type OnMutationHandlerFn = (
-  event: AppSyncGraphQLEvent,
-  context: Context
-) => Promise<unknown>;
+type OnMutationHandlerFn = ({ ...args }: Anything) => Promise<unknown>;
 
 type OnMutationHandler = OnMutationSyncHandlerFn | OnMutationHandlerFn;
 
@@ -89,7 +76,7 @@ type RouteHandlerOptions = {
 /**
  * Options for the {@link Router} class
  */
-type RouterOptions = {
+type GraphQlRouterOptions = {
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
    *
@@ -101,7 +88,7 @@ type RouterOptions = {
 /**
  * Options for registering a route
  */
-type RouteOptions = {
+type GraphQlRouteOptions = {
   /**
    * The type name of the event to be registered
    */
@@ -127,7 +114,6 @@ type AppSyncGraphQLEvent = {
    */
   identity: null | Record<string, unknown>;
   source: null | Record<string, unknown>;
-  result: null;
   request: {
     headers: Record<string, string>;
     domainName: null;
@@ -145,8 +131,8 @@ export type {
   GenericLogger,
   RouteHandlerRegistryOptions,
   RouteHandlerOptions,
-  RouterOptions,
-  RouteOptions,
+  GraphQlRouterOptions,
+  GraphQlRouteOptions,
   AppSyncGraphQLEvent,
   OnQueryHandler,
   OnMutationHandler,

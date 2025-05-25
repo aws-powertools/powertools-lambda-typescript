@@ -20,7 +20,6 @@ const isAppSyncGraphQLEvent = (
     isRecord(event.arguments) &&
     'identity' in event &&
     'source' in event &&
-    'result' in event &&
     isRecord(event.request) &&
     isRecord(event.request.headers) &&
     'domainName' in event.request &&

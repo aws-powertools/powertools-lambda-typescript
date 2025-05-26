@@ -273,8 +273,8 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver();
 
     app.tool(
-      async (_params, event) => {
-        return event;
+      async (_params, options) => {
+        return options?.event;
       },
       {
         name: 'event-accessor',
@@ -421,8 +421,10 @@ describe('Class: BedrockAgentFunctionResolver', () => {
 
   it('correctly parses boolean parameters', async () => {
     // Prepare
-    const toolFunction: ToolFunction<{ arg: boolean }> = async (params) =>
-      params.arg;
+    const toolFunction: ToolFunction<{ arg: boolean }> = async (
+      params,
+      _options
+    ) => params.arg;
 
     const toolParams: Configuration = {
       name: 'boolean',
@@ -451,8 +453,10 @@ describe('Class: BedrockAgentFunctionResolver', () => {
 
   it('correctly parses number parameters', async () => {
     // Prepare
-    const toolFunction: ToolFunction<{ arg: number }> = async (params) =>
-      params.arg + 10;
+    const toolFunction: ToolFunction<{ arg: number }> = async (
+      params,
+      _options
+    ) => params.arg + 10;
 
     const toolParams: Configuration = {
       name: 'number',
@@ -481,8 +485,10 @@ describe('Class: BedrockAgentFunctionResolver', () => {
 
   it('correctly parses integer parameters', async () => {
     // Prepare
-    const toolFunction: ToolFunction<{ arg: number }> = async (params) =>
-      params.arg + 10;
+    const toolFunction: ToolFunction<{ arg: number }> = async (
+      params,
+      _options
+    ) => params.arg + 10;
 
     const toolParams: Configuration = {
       name: 'integer',
@@ -511,8 +517,10 @@ describe('Class: BedrockAgentFunctionResolver', () => {
 
   it('correctly parses string parameters', async () => {
     // Prepare
-    const toolFunction: ToolFunction<{ arg: string }> = async (params) =>
-      `String: ${params.arg}`;
+    const toolFunction: ToolFunction<{ arg: string }> = async (
+      params,
+      _options
+    ) => `String: ${params.arg}`;
 
     const toolParams: Configuration = {
       name: 'string',
@@ -541,8 +549,10 @@ describe('Class: BedrockAgentFunctionResolver', () => {
 
   it('correctly parses array parameters', async () => {
     // Prepare
-    const toolFunction: ToolFunction<{ arg: string }> = async (params) =>
-      `Array as string: ${params.arg}`;
+    const toolFunction: ToolFunction<{ arg: string }> = async (
+      params,
+      _options
+    ) => `Array as string: ${params.arg}`;
 
     const toolParams: Configuration = {
       name: 'array',
@@ -574,7 +584,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver();
 
     app.tool(
-      async () => {
+      async (_params, _options) => {
         throw new Error('Something went wrong');
       },
       {
@@ -602,7 +612,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver();
 
     app.tool(
-      async (params) => {
+      async (params, _options) => {
         return `Hello, ${params.name}!`;
       },
       {

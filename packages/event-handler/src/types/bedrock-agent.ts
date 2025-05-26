@@ -19,8 +19,10 @@ type ParameterValue = ParameterPrimitives | Array<ParameterValue>;
 
 type ToolFunction<TParams = Record<string, ParameterValue>> = (
   params: TParams,
-  event: BedrockAgentFunctionEvent,
-  context: Context
+  options?: {
+    event?: BedrockAgentFunctionEvent;
+    context?: Context;
+  }
 ) => Promise<JSONValue>;
 
 type Tool<TParams = Record<string, ParameterValue>> = {

@@ -39,7 +39,7 @@
         "default": "./lib/esm/appsync-events/index.js"
       }
     },
-    "./bedrock-agent-function": {
+    "./bedrock-agent": {
       "require": {
         "types": "./lib/cjs/bedrock-agent/index.d.ts",
         "default": "./lib/cjs/bedrock-agent/index.js"

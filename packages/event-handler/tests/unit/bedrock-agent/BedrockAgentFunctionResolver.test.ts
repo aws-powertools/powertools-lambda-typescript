@@ -1,13 +1,14 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { BedrockFunctionResponse } from '../../../src/bedrock-agent/BedrockFunctionResponse.js';
 import { BedrockAgentFunctionResolver } from '../../../src/bedrock-agent/index.js';
 import type {
   BedrockAgentFunctionEvent,
   Configuration,
   Parameter,
   ToolFunction,
-} from '../../../src/types/bedrock-agent';
+} from '../../../src/types/bedrock-agent.js';
 
 function createEvent(functionName: string, parameters?: Parameter[]) {
   return {
@@ -113,58 +114,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
 
     // Assess
     expect(console.debug).toHaveBeenCalled();
-  });
-
-  it('only allows five tools to be registered', async () => {
-    // Prepare
-    const app = new BedrockAgentFunctionResolver();
-
-    for (const num of [1, 2, 3, 4, 5]) {
-      app.tool(
-        async (params: { arg: string }) => {
-          return params.arg;
-        },
-        {
-          name: `identity${num}`,
-          description: 'Returns its arg',
-        }
-      );
-    }
-
-    app.tool(
-      async (params: { a: number; b: number }) => {
-        return params.a + params.b;
-      },
-      {
-        name: 'mult',
-        description: 'Multiplies two numbers',
-      }
-    );
-
-    const event = createEvent('mult', [
-      {
-        name: 'a',
-        type: 'number',
-        value: '1',
-      },
-      {
-        name: 'b',
-        type: 'number',
-        value: '2',
-      },
-    ]);
-
-    // Act
-    const actual = await app.resolve(event, context);
-
-    // Assess
-    expect(console.warn).toHaveBeenLastCalledWith(
-      'The maximum number of tools that can be registered is 5. Tool mult will not be registered.'
-    );
-    expect(actual.response.function).toEqual('mult');
-    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
-      'Error: tool has not been registered in handler.'
-    );
   });
 
   it('overwrites tools with the same name and uses the latest definition', async () => {
@@ -400,6 +349,13 @@ describe('Class: BedrockAgentFunctionResolver', () => {
         description: 'Returns undefined',
       },
     },
+    {
+      toolFunction: async () => '',
+      toolParams: {
+        name: 'empty-string',
+        description: 'Returns empty string',
+      },
+    },
   ])(
     'handles functions that return $toolParams.name by returning an empty string',
     async ({ toolFunction, toolParams }) => {
@@ -418,6 +374,37 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       );
     }
   );
+
+  it('handles functions that return a BedrockAgentFunctionResponse', async () => {
+    // Prepare
+    const app = new BedrockAgentFunctionResolver();
+
+    app.tool(
+      async () => {
+        return new BedrockFunctionResponse({
+          actionGroup: 'customActionGroup',
+          func: 'custom-response',
+          body: 'I am not sure',
+          responseState: 'REPROMPT',
+          sessionAttributes: { customAttr: 'value' },
+          promptSessionAttributes: { customPromptAttr: 'promptValue' },
+        });
+      },
+      {
+        name: 'custom-response',
+        description: 'Returns a custom BedrockAgentFunctionResponse',
+      }
+    );
+
+    // Act
+    const result = await app.resolve(createEvent('custom-response'), context);
+
+    // Assess
+    expect(result.response.function).toEqual('custom-response');
+    expect(result.response.functionResponse.responseBody.TEXT.body).toEqual(
+      'I am not sure'
+    );
+  });
 
   it('correctly parses boolean parameters', async () => {
     // Prepare
@@ -579,33 +566,48 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     );
   });
 
-  it('handles functions that throw errors', async () => {
-    // Prepare
-    const app = new BedrockAgentFunctionResolver();
+  it.each([
+    {
+      label: 'actual error',
+      toThrow: new Error('Something went wrong'),
+      expected:
+        'Unable to complete tool execution due to Error - Something went wrong',
+    },
+    {
+      label: 'string',
+      toThrow: 'Something went wrong',
+      expected: 'Unable to complete tool execution due to Something went wrong',
+    },
+  ])(
+    'handles functions that throw errors $label',
+    async ({ toThrow, expected }) => {
+      // Prepare
+      const app = new BedrockAgentFunctionResolver();
 
-    app.tool(
-      async (_params, _options) => {
-        throw new Error('Something went wrong');
-      },
-      {
-        name: 'error-tool',
-        description: 'Throws an error',
-      }
-    );
+      app.tool(
+        async (_params, _options) => {
+          throw toThrow;
+        },
+        {
+          name: 'error-tool',
+          description: 'Throws an error',
+        }
+      );
 
-    // Act
-    const actual = await app.resolve(createEvent('error-tool', []), context);
+      // Act
+      const actual = await app.resolve(createEvent('error-tool', []), context);
 
-    // Assess
-    expect(actual.response.function).toEqual('error-tool');
-    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
-      'Error when invoking tool: Error: Something went wrong'
-    );
-    expect(console.error).toHaveBeenCalledWith(
-      'An error occurred in tool error-tool.',
-      new Error('Something went wrong')
-    );
-  });
+      // Assess
+      expect(actual.response.function).toEqual('error-tool');
+      expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+        expected
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        'An error occurred in tool error-tool.',
+        new Error('Something went wrong')
+      );
+    }
+  );
 
   it('returns a fully structured BedrockAgentFunctionResponse', async () => {
     // Prepare

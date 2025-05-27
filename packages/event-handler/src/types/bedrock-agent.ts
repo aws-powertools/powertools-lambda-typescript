@@ -1,5 +1,7 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
+import type { BedrockAgentFunctionResolver } from '../bedrock-agent/BedrockAgentFunctionResolver.js';
+import type { BedrockFunctionResponse } from '../bedrock-agent/BedrockFunctionResponse.js';
 import type { GenericLogger } from '../types/common.js';
 
 type Configuration = {
@@ -23,23 +25,30 @@ type ToolFunction<TParams = Record<string, ParameterValue>> = (
     event?: BedrockAgentFunctionEvent;
     context?: Context;
   }
-) => Promise<JSONValue>;
+) => Promise<JSONValue | BedrockFunctionResponse>;
 
 type Tool<TParams = Record<string, ParameterValue>> = {
   handler: ToolFunction<TParams>;
   config: Configuration;
 };
 
-type FunctionIdentifier = {
+type FunctionInvocation = {
   actionGroup: string;
   function: string;
-};
-
-type FunctionInvocation = FunctionIdentifier & {
   parameters?: Array<Parameter>;
 };
 
-type BedrockAgentFunctionEvent = FunctionInvocation & {
+/**
+ * Event structure for Bedrock Agent Function invocations.
+ *
+ * @example
+ * ```json
+ *
+ * ```
+ */
+type BedrockAgentFunctionEvent = {
+  actionGroup: string;
+  function: string;
   messageVersion: string;
   agent: {
     name: string;
@@ -47,40 +56,32 @@ type BedrockAgentFunctionEvent = FunctionInvocation & {
     alias: string;
     version: string;
   };
+  parameters?: Array<Parameter>;
   inputText: string;
   sessionId: string;
   sessionAttributes: Record<string, string>;
   promptSessionAttributes: Record<string, string>;
 };
 
-type ResponseState = 'ERROR' | 'REPROMPT';
+type ResponseState = 'FAILURE' | 'REPROMPT';
 
-type TextResponseBody = {
-  TEXT: {
-    body: string;
+type BedrockAgentFunctionResponse = {
+  messageVersion: string;
+  response: {
+    actionGroup: string;
+    function: string;
+    functionResponse: {
+      responseState?: ResponseState;
+      responseBody: {
+        TEXT: {
+          body: string;
+        };
+      };
+    };
   };
-};
-
-type SessionData = {
   sessionAttributes?: Record<string, string>;
   promptSessionAttributes?: Record<string, string>;
 };
-
-type BedrockAgentFunctionResponse = SessionData & {
-  messageVersion: string;
-  response: FunctionIdentifier & {
-    functionResponse: {
-      responseState?: ResponseState;
-      responseBody: TextResponseBody;
-    };
-  };
-};
-
-type ResponseOptions = FunctionIdentifier &
-  SessionData & {
-    body: string;
-    errorType?: ResponseState;
-  };
 
 /**
  * Options for the {@link BedrockAgentFunctionResolver} class
@@ -100,10 +101,8 @@ export type {
   ToolFunction,
   Parameter,
   ParameterValue,
-  FunctionIdentifier,
   FunctionInvocation,
   BedrockAgentFunctionEvent,
   BedrockAgentFunctionResponse,
-  ResponseOptions,
   ResolverOptions,
 };

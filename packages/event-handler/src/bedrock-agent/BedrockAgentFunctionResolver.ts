@@ -1,25 +1,34 @@
-import { EnvironmentVariablesService } from '@aws-lambda-powertools/commons';
+import { isNullOrUndefined } from '@aws-lambda-powertools/commons/typeutils';
+import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import type { Context } from 'aws-lambda';
 import type {
   BedrockAgentFunctionResponse,
   Configuration,
   ParameterValue,
   ResolverOptions,
-  ResponseOptions,
   Tool,
   ToolFunction,
 } from '../types/bedrock-agent.js';
 import type { GenericLogger } from '../types/common.js';
+import { BedrockFunctionResponse } from './BedrockFunctionResponse.js';
 import { assertBedrockAgentFunctionEvent } from './utils.js';
 
+/**
+ * Resolver for AWS Bedrock Agent Function invocations.
+ *
+ * This resolver is designed to handle function invocations from Bedrock Agents.
+ *
+ *
+ */
 export class BedrockAgentFunctionResolver {
   readonly #tools: Map<string, Tool> = new Map();
-  readonly #envService: EnvironmentVariablesService;
   readonly #logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 
   constructor(options?: ResolverOptions) {
-    this.#envService = new EnvironmentVariablesService();
-    const alcLogLevel = this.#envService.get('AWS_LAMBDA_LOG_LEVEL');
+    const alcLogLevel = getStringFromEnv({
+      key: 'AWS_LAMBDA_LOG_LEVEL',
+      defaultValue: '',
+    });
     this.#logger = options?.logger ?? {
       debug: alcLogLevel === 'DEBUG' ? console.debug : () => {},
       error: console.error,
@@ -34,7 +43,9 @@ export class BedrockAgentFunctionResolver {
    *
    * @example
    * ```ts
-   * import { BedrockAgentFunctionResolver } from '@aws-lambda-powertools/event-handler/bedrock-agent-function';
+   * import {
+   *   BedrockAgentFunctionResolver
+   * } from '@aws-lambda-powertools/event-handler/bedrock-agent';
    *
    * const app = new BedrockAgentFunctionResolver();
    *
@@ -50,11 +61,36 @@ export class BedrockAgentFunctionResolver {
    *   app.resolve(event, context);
    * ```
    *
+   * If you know the function signature, you can also use a type parameter to specify the parameters of the tool function:
+   *
+   * @example
+   * ```ts
+   * import {
+   *   BedrockAgentFunctionResolver,
+   * } from '@aws-lambda-powertools/event-handler/bedrock-agent';
+   *
+   * const app = new BedrockAgentFunctionResolver();
+   *
+   * app.tool<{ name: string }>(async (params) => {
+   *   const { name } = params;
+   *   //      ^ name: string
+   *   return `Hello, ${name}!`;
+   * }, {
+   *   name: 'greeting',
+   *   description: 'Greets a person by name',
+   * });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
    * The method also works as a class method decorator:
    *
    * @example
    * ```ts
-   * import { BedrockAgentFunctionResolver } from '@aws-lambda-powertools/event-handler/bedrock-agent-function';
+   * import {
+   *   BedrockAgentFunctionResolver
+   * } from '@aws-lambda-powertools/event-handler/bedrock-agent';
    *
    * const app = new BedrockAgentFunctionResolver();
    *
@@ -74,8 +110,38 @@ export class BedrockAgentFunctionResolver {
    * export const handler = lambda.handler.bind(lambda);
    * ```
    *
+   * When defining a tool, you can also access the original `event` and `context` objects from the Bedrock Agent function invocation.
+   * This is useful if you need to access the session attributes or other context-specific information.
+   *
+   * @example
+   * ```ts
+   * import {
+   *   BedrockAgentFunctionResolver
+   * } from '@aws-lambda-powertools/event-handler/bedrock-agent';
+   *
+   * const app = new BedrockAgentFunctionResolver();
+   *
+   * app.tool(async (params, { event, context }) => {
+   *   const { name } = params;
+   *   // Access session attributes from the event
+   *   const sessionAttributes = event.sessionAttributes || {};
+   *   // You can also access the context if needed
+   *   sessionAttributes.requestId = context.awsRequestId;
+   *
+   *   return `Hello, ${name}!`;
+   * }, {
+   *   name: 'greetingWithContext',
+   *   description: 'Greets a person by name',
+   * });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
    * @param fn - The tool function
    * @param config - The configuration object for the tool
+   * @param config.name - The name of the tool, which must be unique across all registered tools.
+   * @param config.description - A description of the tool, which is optional but highly recommended.
    */
   public tool<TParams extends Record<string, ParameterValue>>(
     fn: ToolFunction<TParams>,
@@ -107,17 +173,9 @@ export class BedrockAgentFunctionResolver {
     config: Configuration
   ): void {
     const { name } = config;
-
-    if (this.#tools.size >= 5) {
-      this.#logger.warn(
-        `The maximum number of tools that can be registered is 5. Tool ${name} will not be registered.`
-      );
-      return;
-    }
-
     if (this.#tools.has(name)) {
       this.#logger.warn(
-        `Tool ${name} already registered. Overwriting with new definition.`
+        `Tool "${name}" already registered. Overwriting with new definition.`
       );
     }
 
@@ -125,36 +183,7 @@ export class BedrockAgentFunctionResolver {
       handler: handler as ToolFunction,
       config,
     });
-    this.#logger.debug(`Tool ${name} has been registered.`);
-  }
-
-  #buildResponse(options: ResponseOptions): BedrockAgentFunctionResponse {
-    const {
-      actionGroup,
-      function: func,
-      body,
-      errorType,
-      sessionAttributes,
-      promptSessionAttributes,
-    } = options;
-
-    return {
-      messageVersion: '1.0',
-      response: {
-        actionGroup,
-        function: func,
-        functionResponse: {
-          responseState: errorType,
-          responseBody: {
-            TEXT: {
-              body,
-            },
-          },
-        },
-      },
-      sessionAttributes,
-      promptSessionAttributes,
-    };
+    this.#logger.debug(`Tool "${name}" has been registered.`);
   }
 
   async resolve(
@@ -175,11 +204,13 @@ export class BedrockAgentFunctionResolver {
 
     if (tool == null) {
       this.#logger.error(`Tool ${toolName} has not been registered.`);
-      return this.#buildResponse({
+      return new BedrockFunctionResponse({
         actionGroup,
-        function: toolName,
-        body: 'Error: tool has not been registered in handler.',
-      });
+        func: toolName,
+        body: `Error: tool ${toolName} has not been registered.`,
+        sessionAttributes,
+        promptSessionAttributes,
+      }).build();
     }
 
     const toolParams: Record<string, ParameterValue> = {};
@@ -204,24 +235,30 @@ export class BedrockAgentFunctionResolver {
     }
 
     try {
-      const res = await tool.handler(toolParams, { event, context });
-      const body = res == null ? '' : JSON.stringify(res);
-      return this.#buildResponse({
+      const response = await tool.handler(toolParams, { event, context });
+      if (response instanceof BedrockFunctionResponse) {
+        return response.build();
+      }
+      const body =
+        isNullOrUndefined(response) || response === ''
+          ? ''
+          : JSON.stringify(response);
+      return new BedrockFunctionResponse({
         actionGroup,
-        function: toolName,
+        func: toolName,
         body,
         sessionAttributes,
         promptSessionAttributes,
-      });
+      }).build();
     } catch (error) {
       this.#logger.error(`An error occurred in tool ${toolName}.`, error);
-      return this.#buildResponse({
+      return new BedrockFunctionResponse({
         actionGroup,
-        function: toolName,
-        body: `Error when invoking tool: ${error}`,
+        func: toolName,
+        body: `Unable to complete tool execution due to ${error instanceof Error ? `${error.name} - ${error.message}` : String(error)}`,
         sessionAttributes,
         promptSessionAttributes,
-      });
+      }).build();
     }
   }
 }

@@ -1,10 +1,8 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BedrockFunctionResponse } from '../../../src/bedrock-agent/BedrockFunctionResponse.js';
 import { BedrockAgentFunctionResolver } from '../../../src/bedrock-agent/index.js';
 import type {
-  BedrockAgentFunctionEvent,
   Configuration,
   Parameter,
   ToolFunction,
@@ -575,14 +573,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       }
     );
 
-    const customSessionAttrs = {
-      sessionAttr: '12345',
-    };
-
-    const customPromptAttrs = {
-      promptAttr: 'promptAttr',
-    };
-
     const customEvent = {
       ...createEvent('greeting', [
         {
@@ -592,8 +582,16 @@ describe('Class: BedrockAgentFunctionResolver', () => {
         },
       ]),
       actionGroup: 'actionGroup',
-      sessionAttributes: customSessionAttrs,
-      promptSessionAttributes: customPromptAttrs,
+      sessionAttributes: {
+        sessionAttr: '12345',
+      },
+      promptSessionAttributes: {
+        promptAttr: 'promptAttr',
+      },
+      knowledgeBasesConfiguration: {
+        knowledgeBase1: { enabled: true },
+        knowledgeBase2: { enabled: false },
+      },
     };
 
     // Act
@@ -613,8 +611,9 @@ describe('Class: BedrockAgentFunctionResolver', () => {
           },
         },
       },
-      sessionAttributes: customSessionAttrs,
-      promptSessionAttributes: customPromptAttrs,
+      sessionAttributes: customEvent.sessionAttributes,
+      promptSessionAttributes: customEvent.promptSessionAttributes,
+      knowledgeBasesConfiguration: customEvent.knowledgeBasesConfiguration,
     });
   });
 });

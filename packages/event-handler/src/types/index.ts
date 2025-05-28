@@ -14,6 +14,7 @@ export type {
   BedrockAgentFunctionResponse,
   ResolverOptions,
   Parameter,
+  ResponseState,
 } from './bedrock-agent.js';
 
 export type {

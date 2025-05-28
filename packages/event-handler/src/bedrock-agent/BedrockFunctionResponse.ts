@@ -1,5 +1,8 @@
+import type {
+  BedrockAgentFunctionEvent,
+  ResponseState,
+} from '../types/bedrock-agent.js';
 import type { BedrockAgentFunctionResolver } from './BedrockAgentFunctionResolver.js';
-
 /**
  * Class representing a response from a Bedrock agent function.
  *
@@ -23,35 +26,35 @@ class BedrockFunctionResponse {
    * - `FAILURE`: The agent throws a `DependencyFailedException` for the current session.
    * - `REPROMPT`: The agent passes a response string to the model to reprompt it.
    */
-  readonly responseState?: 'FAILURE' | 'REPROMPT';
+  readonly responseState?: ResponseState;
   /**
    * Optional field to store session attributes and their values.
    * @see {@link https://docs.aws.amazon.com/bedrock/latest/userguide/agents-session-state.html#session-state-attributes | Bedrock Agent Session State Attributes} for more details.
    */
-  readonly sessionAttributes: Record<string, string>;
+  readonly sessionAttributes: BedrockAgentFunctionEvent['sessionAttributes'];
   /**
    * Optional field to instruct the agent to prompt attributes and their values.
    * @see {@link https://docs.aws.amazon.com/bedrock/latest/userguide/agents-session-state.html#session-state-attributes | Bedrock Agent Session State Attributes} for more details.
    */
-  readonly promptSessionAttributes: Record<string, string>;
+  readonly promptSessionAttributes: BedrockAgentFunctionEvent['promptSessionAttributes'];
   /**
    * Optional field to configure knowledge bases for the agent.
    * @see {@link https://docs.aws.amazon.com/bedrock/latest/userguide/agents-session-state.html#session-state-kb | Bedrock Agent Knowledge Bases} for more details.
    */
-  readonly knowledgeBasesConfiguration?: Record<string, unknown>;
+  readonly knowledgeBasesConfiguration?: BedrockAgentFunctionEvent['knowledgeBasesConfiguration'];
 
   constructor({
     body,
     responseState = undefined,
     sessionAttributes = {},
     promptSessionAttributes = {},
-    knowledgeBasesConfiguration = {},
+    knowledgeBasesConfiguration = undefined,
   }: {
     body: string;
-    responseState?: 'FAILURE' | 'REPROMPT';
-    sessionAttributes?: Record<string, string>;
-    promptSessionAttributes?: Record<string, string>;
-    knowledgeBasesConfiguration?: Record<string, unknown>;
+    responseState?: ResponseState;
+    sessionAttributes?: BedrockAgentFunctionEvent['sessionAttributes'];
+    promptSessionAttributes?: BedrockAgentFunctionEvent['promptSessionAttributes'];
+    knowledgeBasesConfiguration?: BedrockAgentFunctionEvent['knowledgeBasesConfiguration'];
   }) {
     this.body = body;
     this.responseState = responseState;

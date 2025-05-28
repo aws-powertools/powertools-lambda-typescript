@@ -114,9 +114,9 @@ type BedrockAgentFunctionEvent = {
   parameters?: Array<Parameter>;
   inputText: string;
   sessionId: string;
-  sessionAttributes: Record<string, string>;
-  promptSessionAttributes: Record<string, string>;
-  knowledgeBasesConfiguration?: Record<string, unknown>;
+  sessionAttributes: Record<string, JSONValue>;
+  promptSessionAttributes: Record<string, JSONValue>;
+  knowledgeBasesConfiguration?: Record<string, JSONValue>;
 };
 
 /**
@@ -143,8 +143,9 @@ type BedrockAgentFunctionResponse = {
       };
     };
   };
-  sessionAttributes?: Record<string, string>;
-  promptSessionAttributes?: Record<string, string>;
+  sessionAttributes?: BedrockAgentFunctionEvent['sessionAttributes'];
+  promptSessionAttributes?: BedrockAgentFunctionEvent['promptSessionAttributes'];
+  knowledgeBasesConfiguration?: BedrockAgentFunctionEvent['knowledgeBasesConfiguration'];
 };
 
 /**
@@ -169,4 +170,5 @@ export type {
   BedrockAgentFunctionEvent,
   BedrockAgentFunctionResponse,
   ResolverOptions,
+  ResponseState,
 };

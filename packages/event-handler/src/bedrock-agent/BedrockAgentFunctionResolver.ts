@@ -147,14 +147,6 @@ class BedrockAgentFunctionResolver {
     fn: ToolFunction<TParams>,
     config: Configuration
   ): undefined {
-    this.#registerTool(fn, config);
-    return;
-  }
-
-  #registerTool<TParams extends Record<string, ParameterValue>>(
-    handler: ToolFunction<TParams>,
-    config: Configuration
-  ): void {
     const { name } = config;
     if (this.#tools.has(name)) {
       this.#logger.warn(
@@ -163,7 +155,7 @@ class BedrockAgentFunctionResolver {
     }
 
     this.#tools.set(name, {
-      handler: handler as ToolFunction,
+      handler: fn as ToolFunction,
       config,
     });
     this.#logger.debug(`Tool "${name}" has been registered.`);
@@ -213,9 +205,9 @@ class BedrockAgentFunctionResolver {
     const tool = this.#tools.get(toolName);
 
     if (tool == null) {
-      this.#logger.error(`Tool ${toolName} has not been registered.`);
+      this.#logger.error(`Tool "${toolName}" has not been registered.`);
       return new BedrockFunctionResponse({
-        body: `Error: tool ${toolName} has not been registered.`,
+        body: `Error: tool "${toolName}" has not been registered.`,
         sessionAttributes,
         promptSessionAttributes,
         knowledgeBasesConfiguration,
@@ -238,7 +230,7 @@ class BedrockAgentFunctionResolver {
           break;
         }
         // this default will also catch array types but we leave them as strings
-        // because we cannot reliably parse them
+        // because we cannot reliably parse them - see discussion in #3710
         default: {
           toolParams[param.name] = param.value;
           break;
@@ -269,8 +261,12 @@ class BedrockAgentFunctionResolver {
       });
     } catch (error) {
       this.#logger.error(`An error occurred in tool ${toolName}.`, error);
+      const errorMessage =
+        error instanceof Error
+          ? `${error.name} - ${error.message}`
+          : String(error);
       return new BedrockFunctionResponse({
-        body: `Unable to complete tool execution due to ${error instanceof Error ? `${error.name} - ${error.message}` : String(error)}`,
+        body: `Unable to complete tool execution due to ${errorMessage}`,
         sessionAttributes,
         promptSessionAttributes,
         knowledgeBasesConfiguration,

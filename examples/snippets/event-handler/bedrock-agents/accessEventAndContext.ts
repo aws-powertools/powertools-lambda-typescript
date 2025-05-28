@@ -10,13 +10,12 @@ app.tool<{ city: string }>(
 
     return {
       city,
-      temperature: '20°C',
-      condition: 'Sunny',
+      airportCode: 'XYZ', // Simulated airport code for the city
     };
   },
   {
-    name: 'getWeatherForCity',
-    description: 'Get weather for a specific city',
+    name: 'getAirportCodeForCity',
+    description: 'Get the airport code for a given city',
   }
 );
 

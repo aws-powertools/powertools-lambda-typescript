@@ -14,25 +14,24 @@ app.tool<{ city: string }>(
       knowledgeBasesConfiguration,
     } = event;
 
-    // your logic to fetch weather data for the city
+    // your logic to fetch airport code for the city
 
     return new BedrockFunctionResponse({
       body: JSON.stringify({
         city,
-        temperature: '20°C',
-        condition: 'Sunny',
+        airportCode: 'XYZ',
       }),
       sessionAttributes: {
         ...sessionAttributes,
-        isGoodWeather: true,
+        isCommercialAirport: true,
       },
       promptSessionAttributes,
       knowledgeBasesConfiguration,
     });
   },
   {
-    name: 'getWeatherForCity',
-    description: 'Get weather for a specific city',
+    name: 'getAirportCodeForCity',
+    description: 'Get the airport code for a given city',
   }
 );
 

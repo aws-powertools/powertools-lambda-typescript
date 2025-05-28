@@ -16,12 +16,12 @@ export class BedrockAgentsStack extends Stack {
     super(scope, id, props);
 
     const fnName = 'BedrockAgentsFn';
-    const logGroup = new LogGroup(this, 'WeatherAgentLogGroup', {
+    const logGroup = new LogGroup(this, 'AirlineAgentLogGroup', {
       logGroupName: `/aws/lambda/${fnName}`,
       removalPolicy: RemovalPolicy.DESTROY,
       retention: RetentionDays.ONE_DAY,
     });
-    const fn = new NodejsFunction(this, 'WeatherAgentFunction', {
+    const fn = new NodejsFunction(this, 'AirlineAgentFunction', {
       functionName: fnName,
       logGroup,
       runtime: Runtime.NODEJS_22_X,
@@ -35,9 +35,9 @@ export class BedrockAgentsStack extends Stack {
       },
     });
 
-    const agentRole = new Role(this, 'WeatherAgentRole', {
+    const agentRole = new Role(this, 'AirlineAgentRole', {
       assumedBy: new ServicePrincipal('bedrock.amazonaws.com'),
-      description: 'Role for Bedrock weather agent',
+      description: 'Role for Bedrock Airline agent',
       inlinePolicies: {
         bedrock: new PolicyDocument({
           statements: [
@@ -69,23 +69,24 @@ export class BedrockAgentsStack extends Stack {
       },
     });
 
-    const agent = new CfnAgent(this, 'WeatherAgent', {
-      agentName: 'weatherAgent',
+    const agent = new CfnAgent(this, 'AirlineAgent', {
+      agentName: 'AirlineAgent',
       actionGroups: [
         {
-          actionGroupName: 'weatherActionGroup',
+          actionGroupName: 'AirlineActionGroup',
           actionGroupExecutor: {
             lambda: fn.functionArn,
           },
           functionSchema: {
             functions: [
               {
-                name: 'getWeatherForCity',
-                description: 'Get weather for a specific city',
+                name: 'getAirportCodeForCity',
+                description: 'Get the airport code for a given city',
                 parameters: {
                   city: {
                     type: 'string',
-                    description: 'The name of the city to get the weather for',
+                    description:
+                      'The name of the city to get the airport code for',
                     required: true,
                   },
                 },
@@ -96,10 +97,10 @@ export class BedrockAgentsStack extends Stack {
       ],
       agentResourceRoleArn: agentRole.roleArn,
       autoPrepare: true,
-      description: 'A simple weather agent',
+      description: 'A simple Airline agent',
       foundationModel: `arn:aws:bedrock:us-west-2:${Stack.of(this).account}:inference-profile/us.amazon.nova-pro-v1:0`,
       instruction:
-        'You are a weather forecast news anchor. You will be asked to provide a weather forecast for one or more cities. You will provide a weather forecast for each city as if you were a TV news anchor. While doing so, include the region or country of the city received from the tool. You will provide the forecast in a conversational tone, as if you were speaking to a viewer on a TV news program.',
+        'You are an airport traffic control agent. You will be given a city name and you will return the airport code for that city.',
     });
     fn.addPermission('BedrockAgentInvokePermission', {
       principal: new ServicePrincipal('bedrock.amazonaws.com'),

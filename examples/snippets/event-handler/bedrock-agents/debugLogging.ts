@@ -3,23 +3,21 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
 
 const logger = new Logger({
-  serviceName: 'WeatherServiceAgent',
+  serviceName: 'serverlessAirline',
   logLevel: 'DEBUG',
 });
 const app = new BedrockAgentFunctionResolver({ logger });
 
 app.tool<{ city: string }>(
   async ({ city }) => {
-    // Simulate fetching weather data for the city
     return {
       city,
-      temperature: '20°C',
-      condition: 'Sunny',
+      airportCode: 'XYZ', // Simulated airport code for the city
     };
   },
   {
-    name: 'getWeatherForCity',
-    description: 'Get weather for a specific city',
+    name: 'getAirportCodeForCity',
+    description: 'Get the airport code for a given city',
   }
 );
 

@@ -80,7 +80,7 @@ Currently, we don't support parsing `array` types, so you will receive them as s
 
 === "Define a tool"
 
-  ```typescript hl_lines="4 6 22"
+  ```typescript hl_lines="4 6 20"
   --8<-- "examples/snippets/event-handler/bedrock-agents/gettingStartedFunctionsTool.ts"
   ```
   
@@ -121,7 +121,7 @@ When Bedrock Agents invoke your Lambda function, it can pass session attributes 
 
 === "Working with session attributes"
 
-    ```typescript hl_lines="25-28"
+    ```typescript hl_lines="24-27"
     --8<-- "examples/snippets/event-handler/bedrock-agents/sessionAttributes.ts"
     ```
 

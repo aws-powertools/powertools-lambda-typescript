@@ -5,16 +5,14 @@ const app = new BedrockAgentFunctionResolver();
 
 app.tool<{ city: string }>(
   async ({ city }) => {
-    // Simulate fetching weather data for the city
     return {
       city,
-      temperature: '20°C',
-      condition: 'Sunny',
+      airportCode: 'XYZ',
     };
   },
   {
-    name: 'getWeatherForCity',
-    description: 'Get weather for a specific city', // (1)!
+    name: 'getAirportCodeForCity',
+    description: 'Get the airport code for a given city', // (1)!
   }
 );
 

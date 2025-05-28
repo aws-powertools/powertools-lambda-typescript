@@ -14,12 +14,11 @@ Resources:
       Handler: index.handler
       CodeUri: hello_world
 
-  # IAM Role for Bedrock Agent
-  WeatherAgentRole:
+  AirlineAgentRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${AWS::StackName}-WeatherAgentRole'
-      Description: 'Role for Bedrock weather agent'
+      RoleName: !Sub '${AWS::StackName}-AirlineAgentRole'
+      Description: 'Role for Bedrock Airline agent'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -38,7 +37,6 @@ Resources:
                   - !Sub 'arn:aws:bedrock:us-*::foundation-model/*'
                   - !Sub 'arn:aws:bedrock:us-*:*:inference-profile/*'
 
-  # Lambda Permission for Bedrock Agent
   BedrockAgentInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -46,29 +44,29 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: bedrock.amazonaws.com
       SourceAccount: !Ref 'AWS::AccountId'
-      SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/${WeatherAgent}'
+      SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/${AirlineAgent}'
 
   # Bedrock Agent
-  WeatherAgent:
+  AirlineAgent:
     Type: AWS::Bedrock::Agent
     Properties:
-      AgentName: weatherAgent
-      Description: 'A simple weather agent'
+      AgentName: AirlineAgent
+      Description: 'A simple Airline agent'
       FoundationModel: !Sub 'arn:aws:bedrock:us-west-2:${AWS::AccountId}:inference-profile/us.amazon.nova-pro-v1:0'
       Instruction: |
-        You are a weather forecast news anchor. You will be asked to provide a weather forecast for one or more cities. You will provide a weather forecast for each city as if you were a TV news anchor. While doing so, include the region or country of the city received from the tool. You will provide the forecast in a conversational tone, as if you were speaking to a viewer on a TV news program.
-      AgentResourceRoleArn: !GetAtt WeatherAgentRole.Arn
+        You are an airport traffic control agent. You will be given a city name and you will return the airport code for that city.
+      AgentResourceRoleArn: !GetAtt AirlineAgentRole.Arn
       AutoPrepare: true
       ActionGroups:
-        - ActionGroupName: weatherActionGroup
+        - ActionGroupName: AirlineActionGroup
           ActionGroupExecutor:
-            Lambda: !GetAtt WeatherAgentFunction.Arn
+            Lambda: !GetAtt AirlineAgentFunction.Arn
           FunctionSchema:
             Functions:
-              - Name: getWeatherForCity
-                Description: 'Get weather for a specific city'
+              - Name: getAirportCodeForCity
+                Description: 'Get the airport code for a given city'
                 Parameters:
                   city:
                     Type: string
-                    Description: 'The name of the city to get the weather for'
+                    Description: 'The name of the city to get the airport code for'
                     Required: true

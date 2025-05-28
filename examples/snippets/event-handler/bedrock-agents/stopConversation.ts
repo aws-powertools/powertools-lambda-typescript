@@ -17,7 +17,7 @@ app.tool<{ city: string }>(
         knowledgeBasesConfiguration,
       } = event;
       return new BedrockFunctionResponse({
-        body: `An error occurred while fetching the weather data for ${city}`,
+        body: `An error occurred while fetching the airport code for ${city}`,
         responseState: 'FAILURE',
         sessionAttributes,
         promptSessionAttributes,
@@ -26,8 +26,8 @@ app.tool<{ city: string }>(
     }
   },
   {
-    name: 'getWeatherForCity',
-    description: 'Get weather for a specific city',
+    name: 'getAirportCodeForCity',
+    description: 'Get the airport code for a given city',
   }
 );
 

@@ -110,32 +110,6 @@ export class BedrockAgentFunctionResolver {
    *   app.resolve(event, context);
    * ```
    *
-   * The method also works as a class method decorator:
-   *
-   * @example
-   * ```ts
-   * import {
-   *   BedrockAgentFunctionResolver
-   * } from '@aws-lambda-powertools/event-handler/bedrock-agent';
-   *
-   * const app = new BedrockAgentFunctionResolver();
-   *
-   * class Lambda {
-   *   @app.tool({ name: 'greeting', description: 'Greets a person by name' })
-   *   async greeting(params) {
-   *     const { name } = params;
-   *     return `Hello, ${name}!`;
-   *   }
-   *
-   *   async handler(event, context) {
-   *     return app.resolve(event, context);
-   *   }
-   * }
-   *
-   * const lambda = new Lambda();
-   * export const handler = lambda.handler.bind(lambda);
-   * ```
-   *
    * When defining a tool, you can also access the original `event` and `context` objects from the Bedrock Agent function invocation.
    * This is useful if you need to access the session attributes or other context-specific information.
    *
@@ -172,26 +146,9 @@ export class BedrockAgentFunctionResolver {
   public tool<TParams extends Record<string, ParameterValue>>(
     fn: ToolFunction<TParams>,
     config: Configuration
-  ): undefined;
-  public tool<TParams extends Record<string, ParameterValue>>(
-    config: Configuration
-  ): MethodDecorator;
-  public tool<TParams extends Record<string, ParameterValue>>(
-    fnOrConfig: ToolFunction<TParams> | Configuration,
-    config?: Configuration
-  ): MethodDecorator | undefined {
-    // When used as a method (not a decorator)
-    if (typeof fnOrConfig === 'function') {
-      this.#registerTool(fnOrConfig, config as Configuration);
-      return;
-    }
-
-    // When used as a decorator
-    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-      const toolFn = descriptor.value as ToolFunction;
-      this.#registerTool(toolFn, fnOrConfig);
-      return descriptor;
-    };
+  ): undefined {
+    this.#registerTool(fn, config);
+    return;
   }
 
   #registerTool<TParams extends Record<string, ParameterValue>>(
@@ -267,7 +224,7 @@ export class BedrockAgentFunctionResolver {
     try {
       const response = await tool.handler(toolParams, { event, context });
       if (response instanceof BedrockFunctionResponse) {
-        const res = response.build({
+        return response.build({
           actionGroup,
           func: toolName,
         });

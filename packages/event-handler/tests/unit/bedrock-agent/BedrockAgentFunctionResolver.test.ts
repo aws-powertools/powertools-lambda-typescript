@@ -243,52 +243,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     );
   });
 
-  it('can be invoked using the decorator pattern', async () => {
-    // Prepare
-    const app = new BedrockAgentFunctionResolver();
-
-    class Lambda {
-      @app.tool({ name: 'hello', description: 'Says hello' })
-      async helloWorld() {
-        return 'Hello, world!';
-      }
-
-      @app.tool({ name: 'add', description: 'Adds two numbers' })
-      async add(params: { a: number; b: number }) {
-        const { a, b } = params;
-        return a + b;
-      }
-
-      public async handler(event: BedrockAgentFunctionEvent, context: Context) {
-        return app.resolve(event, context);
-      }
-    }
-
-    const lambda = new Lambda();
-
-    const addEvent = createEvent('add', [
-      {
-        name: 'a',
-        type: 'number',
-        value: '1',
-      },
-      {
-        name: 'b',
-        type: 'number',
-        value: '2',
-      },
-    ]);
-
-    // Act
-    const actual = await lambda.handler(addEvent, context);
-
-    // Assess
-    expect(actual.response.function).toEqual('add');
-    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
-      '3'
-    );
-  });
-
   it.each([
     {
       toolFunction: async () => ({

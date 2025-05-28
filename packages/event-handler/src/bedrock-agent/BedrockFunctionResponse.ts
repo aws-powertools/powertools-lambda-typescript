@@ -13,16 +13,6 @@ import type { BedrockAgentFunctionResolver } from './BedrockAgentFunctionResolve
  */
 class BedrockFunctionResponse {
   /**
-   * The name of the action group, this comes from the `event.actionGroup` field
-   * in the Bedrock agent function event.
-   */
-  readonly actionGroup: string;
-  /**
-   * The name of the function returning the response, this comes from the `event.function` field
-   * in the Bedrock agent function event.
-   */
-  readonly func: string;
-  /**
    * The response object that defines the response from execution of the function.
    */
   readonly body: string;
@@ -60,8 +50,6 @@ class BedrockFunctionResponse {
     sessionAttributes?: Record<string, string>;
     promptSessionAttributes?: Record<string, string>;
   }) {
-    this.actionGroup = actionGroup;
-    this.func = func;
     this.body = body;
     this.responseState = responseState;
     this.sessionAttributes = sessionAttributes;
@@ -70,13 +58,20 @@ class BedrockFunctionResponse {
 
   /**
    * Builds the Bedrock function response object according to the Bedrock agent function {@link https://docs.aws.amazon.com/bedrock/latest/userguide/agents-lambda.html#agents-lambda-response | response format}.
+   *
+   * @param options - The options for building the response.
+   * @param options.actionGroup - The action group of the function, this comes from the `event.actionGroup` field in the Bedrock agent function event.
+   * @param options.func - The name of the function being invoked by the agent, this comes from the `event.function` field in the Bedrock agent function event.
    */
-  build() {
+  build(options: {
+    actionGroup: string;
+    func: string;
+  }) {
     return {
       messageVersion: '1.0',
       response: {
-        actionGroup: this.actionGroup,
-        function: this.func,
+        actionGroup: options.actionGroup,
+        function: options.func,
         functionResponse: {
           ...(this.responseState && { responseState: this.responseState }),
           responseBody: {

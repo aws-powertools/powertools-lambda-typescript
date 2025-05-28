@@ -18,10 +18,36 @@ import { assertBedrockAgentFunctionEvent } from './utils.js';
  *
  * This resolver is designed to handle function invocations from Bedrock Agents.
  *
+ * @example
+ * ```ts
+ * import {
+ *   BedrockAgentFunctionResolver
+ * } from '@aws-lambda-powertools/event-handler/bedrock-agent';
  *
+ * const app = new BedrockAgentFunctionResolver();
+ *
+ * app.tool(async (params) => {
+ *   const { name } = params;
+ *   return `Hello, ${name}!`;
+ * }, {
+ *   name: 'greeting',
+ *   description: 'Greets a person by name',
+ * });
+ *
+ * export const handler = async (event, context) =>
+ *   app.resolve(event, context);
+ * ```
  */
 export class BedrockAgentFunctionResolver {
+  /**
+   * Registry of tools added to the Bedrock Agent Function Resolver.
+   */
   readonly #tools: Map<string, Tool> = new Map();
+  /**
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
+   */
   readonly #logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 
   constructor(options?: ResolverOptions) {
@@ -198,6 +224,7 @@ export class BedrockAgentFunctionResolver {
       actionGroup,
       sessionAttributes,
       promptSessionAttributes,
+      // TODO: add knowledge bases
     } = event;
 
     const tool = this.#tools.get(toolName);
@@ -210,7 +237,10 @@ export class BedrockAgentFunctionResolver {
         body: `Error: tool ${toolName} has not been registered.`,
         sessionAttributes,
         promptSessionAttributes,
-      }).build();
+      }).build({
+        actionGroup,
+        func: toolName,
+      });
     }
 
     const toolParams: Record<string, ParameterValue> = {};
@@ -237,7 +267,10 @@ export class BedrockAgentFunctionResolver {
     try {
       const response = await tool.handler(toolParams, { event, context });
       if (response instanceof BedrockFunctionResponse) {
-        return response.build();
+        const res = response.build({
+          actionGroup,
+          func: toolName,
+        });
       }
       const body =
         isNullOrUndefined(response) || response === ''
@@ -249,7 +282,10 @@ export class BedrockAgentFunctionResolver {
         body,
         sessionAttributes,
         promptSessionAttributes,
-      }).build();
+      }).build({
+        actionGroup,
+        func: toolName,
+      });
     } catch (error) {
       this.#logger.error(`An error occurred in tool ${toolName}.`, error);
       return new BedrockFunctionResponse({
@@ -258,7 +294,10 @@ export class BedrockAgentFunctionResolver {
         body: `Unable to complete tool execution due to ${error instanceof Error ? `${error.name} - ${error.message}` : String(error)}`,
         sessionAttributes,
         promptSessionAttributes,
-      }).build();
+      }).build({
+        actionGroup,
+        func: toolName,
+      });
     }
   }
 }

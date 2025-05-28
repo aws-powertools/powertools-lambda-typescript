@@ -17,7 +17,8 @@
     "layers",
     "examples/app",
     "packages/event-handler",
-    "packages/validation"
+    "packages/validation",
+    "packages/kafka"
   ],
   "type": "module",
   "scripts": {

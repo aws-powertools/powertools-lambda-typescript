@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: nodejs22.x
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: hello_world
+
+  # IAM Role for Bedrock Agent
+  WeatherAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-WeatherAgentRole'
+      Description: 'Role for Bedrock weather agent'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: bedrock
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'bedrock:*'
+                Resource:
+                  - !Sub 'arn:aws:bedrock:us-*::foundation-model/*'
+                  - !Sub 'arn:aws:bedrock:us-*:*:inference-profile/*'
+
+  # Lambda Permission for Bedrock Agent
+  BedrockAgentInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HelloWorldFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/${WeatherAgent}'
+
+  # Bedrock Agent
+  WeatherAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: weatherAgent
+      Description: 'A simple weather agent'
+      FoundationModel: !Sub 'arn:aws:bedrock:us-west-2:${AWS::AccountId}:inference-profile/us.amazon.nova-pro-v1:0'
+      Instruction: |
+        You are a weather forecast news anchor. You will be asked to provide a weather forecast for one or more cities. You will provide a weather forecast for each city as if you were a TV news anchor. While doing so, include the region or country of the city received from the tool. You will provide the forecast in a conversational tone, as if you were speaking to a viewer on a TV news program.
+      AgentResourceRoleArn: !GetAtt WeatherAgentRole.Arn
+      AutoPrepare: true
+      ActionGroups:
+        - ActionGroupName: weatherActionGroup
+          ActionGroupExecutor:
+            Lambda: !GetAtt WeatherAgentFunction.Arn
+          FunctionSchema:
+            Functions:
+              - Name: getWeatherForCity
+                Description: 'Get weather for a specific city'
+                Parameters:
+                  city:
+                    Type: string
+                    Description: 'The name of the city to get the weather for'
+                    Required: true

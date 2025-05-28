@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: nodejs22.x
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: hello_world
+
+  AirlineAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-AirlineAgentRole'
+      Description: 'Role for Bedrock Airline agent'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: bedrock
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'bedrock:*'
+                Resource:
+                  - !Sub 'arn:aws:bedrock:us-*::foundation-model/*'
+                  - !Sub 'arn:aws:bedrock:us-*:*:inference-profile/*'
+
+  BedrockAgentInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HelloWorldFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/${AirlineAgent}'
+
+  # Bedrock Agent
+  AirlineAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: AirlineAgent
+      Description: 'A simple Airline agent'
+      FoundationModel: !Sub 'arn:aws:bedrock:us-west-2:${AWS::AccountId}:inference-profile/us.amazon.nova-pro-v1:0'
+      Instruction: |
+        You are an airport traffic control agent. You will be given a city name and you will return the airport code for that city.
+      AgentResourceRoleArn: !GetAtt AirlineAgentRole.Arn
+      AutoPrepare: true
+      ActionGroups:
+        - ActionGroupName: AirlineActionGroup
+          ActionGroupExecutor:
+            Lambda: !GetAtt AirlineAgentFunction.Arn
+          FunctionSchema:
+            Functions:
+              - Name: getAirportCodeForCity
+                Description: 'Get the airport code for a given city'
+                Parameters:
+                  city:
+                    Type: string
+                    Description: 'The name of the city to get the airport code for'
+                    Required: true

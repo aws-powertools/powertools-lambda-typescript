@@ -32,19 +32,18 @@ import { isAppSyncGraphQLEvent } from './utils.js';
  */
 export class AppSyncGraphQLResolver extends Router {
   public async resolve(event: unknown, context: Context): Promise<unknown> {
+    if (Array.isArray(event)) {
+      this.logger.warn('Batch resolvers are not implemented yet');
+      return;
+    }
     if (!isAppSyncGraphQLEvent(event)) {
       this.logger.warn(
         'Received an event that is not compatible with this resolver'
       );
       return;
     }
-
     try {
-      if (Array.isArray(event)) {
-        this.logger.warn('Batch resolvers not implemented yet');
-      } else {
-        return await this.#executeSingleResolver(event);
-      }
+      return await this.#executeSingleResolver(event);
     } catch (error) {
       this.logger.error(
         `An error occurred in handler ${event.info.fieldName}`,

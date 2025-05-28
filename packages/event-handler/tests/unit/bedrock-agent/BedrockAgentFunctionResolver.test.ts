@@ -336,8 +336,6 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     app.tool(
       async () => {
         return new BedrockFunctionResponse({
-          actionGroup: 'customActionGroup',
-          func: 'custom-response',
           body: 'I am not sure',
           responseState: 'REPROMPT',
           sessionAttributes: { customAttr: 'value' },

@@ -34,26 +34,30 @@ class BedrockFunctionResponse {
    * @see {@link https://docs.aws.amazon.com/bedrock/latest/userguide/agents-session-state.html#session-state-attributes | Bedrock Agent Session State Attributes} for more details.
    */
   readonly promptSessionAttributes: Record<string, string>;
+  /**
+   * Optional field to configure knowledge bases for the agent.
+   * @see {@link https://docs.aws.amazon.com/bedrock/latest/userguide/agents-session-state.html#session-state-kb | Bedrock Agent Knowledge Bases} for more details.
+   */
+  readonly knowledgeBasesConfiguration?: Record<string, unknown>;
 
   constructor({
-    actionGroup,
-    func,
     body,
     responseState = undefined,
     sessionAttributes = {},
     promptSessionAttributes = {},
+    knowledgeBasesConfiguration = {},
   }: {
-    actionGroup: string;
-    func: string;
     body: string;
     responseState?: 'FAILURE' | 'REPROMPT';
     sessionAttributes?: Record<string, string>;
     promptSessionAttributes?: Record<string, string>;
+    knowledgeBasesConfiguration?: Record<string, unknown>;
   }) {
     this.body = body;
     this.responseState = responseState;
     this.sessionAttributes = sessionAttributes;
     this.promptSessionAttributes = promptSessionAttributes;
+    this.knowledgeBasesConfiguration = knowledgeBasesConfiguration;
   }
 
   /**
@@ -86,6 +90,9 @@ class BedrockFunctionResponse {
       }),
       ...(this.promptSessionAttributes && {
         promptSessionAttributes: this.promptSessionAttributes,
+      }),
+      ...(this.knowledgeBasesConfiguration && {
+        knowledgeBasesConfiguration: this.knowledgeBasesConfiguration,
       }),
     };
   }

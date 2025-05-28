@@ -13,6 +13,7 @@ export type {
   BedrockAgentFunctionEvent,
   BedrockAgentFunctionResponse,
   ResolverOptions,
+  Parameter,
 } from './bedrock-agent.js';
 
 export type {

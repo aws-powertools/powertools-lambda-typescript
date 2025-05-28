@@ -169,6 +169,32 @@ export class BedrockAgentFunctionResolver {
     this.#logger.debug(`Tool "${name}" has been registered.`);
   }
 
+  /**
+   * Resolve an incoming Bedrock Agent function invocation event.
+   *
+   * @example
+   * ```ts
+   * import {
+   *   BedrockAgentFunctionResolver
+   * } from '@aws-lambda-powertools/event-handler/bedrock-agent';
+   *
+   * const app = new BedrockAgentFunctionResolver();
+   *
+   * app.tool(async (params) => {
+   *   const { name } = params;
+   *   return `Hello, ${name}!`;
+   * }, {
+   *   name: 'greeting',
+   *   description: 'Greets a person by name',
+   * });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * @param event - The incoming payload of the AWS Lambda function.
+   * @param context - The context object provided by AWS Lambda, which contains information about the invocation, function, and execution environment.
+   */
   async resolve(
     event: unknown,
     context: Context
@@ -181,7 +207,7 @@ export class BedrockAgentFunctionResolver {
       actionGroup,
       sessionAttributes,
       promptSessionAttributes,
-      // TODO: add knowledge bases
+      knowledgeBasesConfiguration,
     } = event;
 
     const tool = this.#tools.get(toolName);
@@ -189,11 +215,10 @@ export class BedrockAgentFunctionResolver {
     if (tool == null) {
       this.#logger.error(`Tool ${toolName} has not been registered.`);
       return new BedrockFunctionResponse({
-        actionGroup,
-        func: toolName,
         body: `Error: tool ${toolName} has not been registered.`,
         sessionAttributes,
         promptSessionAttributes,
+        knowledgeBasesConfiguration,
       }).build({
         actionGroup,
         func: toolName,
@@ -234,11 +259,10 @@ export class BedrockAgentFunctionResolver {
           ? ''
           : JSON.stringify(response);
       return new BedrockFunctionResponse({
-        actionGroup,
-        func: toolName,
         body,
         sessionAttributes,
         promptSessionAttributes,
+        knowledgeBasesConfiguration,
       }).build({
         actionGroup,
         func: toolName,
@@ -246,11 +270,10 @@ export class BedrockAgentFunctionResolver {
     } catch (error) {
       this.#logger.error(`An error occurred in tool ${toolName}.`, error);
       return new BedrockFunctionResponse({
-        actionGroup,
-        func: toolName,
         body: `Unable to complete tool execution due to ${error instanceof Error ? `${error.name} - ${error.message}` : String(error)}`,
         sessionAttributes,
         promptSessionAttributes,
+        knowledgeBasesConfiguration,
       }).build({
         actionGroup,
         func: toolName,

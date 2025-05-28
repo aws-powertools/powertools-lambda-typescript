@@ -171,7 +171,7 @@ abstract class BaseProvider implements BaseProviderInterface {
             if (error instanceof TransformParameterError) {
               throw error;
             }
-    
+
             // Otherwise wrap—but preserve the original stack
             const wrapped = new TransformParameterError(
               configs.transform,

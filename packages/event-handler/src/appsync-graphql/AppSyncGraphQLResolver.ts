@@ -55,6 +55,17 @@ export class AppSyncGraphQLResolver extends Router {
     }
   }
 
+  /**
+   * Executes the appropriate resolver (query or mutation) for a given AppSync GraphQL event.
+   *
+   * This method attempts to resolve the handler for the specified field and type name
+   * from the query and mutation registries. If a matching handler is found, it invokes
+   * the handler with the event arguments. If no handler is found, it throws a
+   * `ResolverNotFoundException`.
+   *
+   * @param event - The AppSync GraphQL event containing resolver information.
+   * @throws {ResolverNotFoundException} If no resolver is registered for the given field and type.
+   */
   async #executeSingleResolver(event: AppSyncGraphQLEvent): Promise<unknown> {
     const { fieldName, parentTypeName: typeName } = event.info;
     const queryHandlerOptions = this.onQueryRegistry.resolve(

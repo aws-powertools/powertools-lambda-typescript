@@ -38,7 +38,7 @@ import { assertBedrockAgentFunctionEvent } from './utils.js';
  *   app.resolve(event, context);
  * ```
  */
-export class BedrockAgentFunctionResolver {
+class BedrockAgentFunctionResolver {
   /**
    * Registry of tools added to the Bedrock Agent Function Resolver.
    */
@@ -281,3 +281,5 @@ export class BedrockAgentFunctionResolver {
     }
   }
 }
+
+export { BedrockAgentFunctionResolver };

@@ -1,0 +1,112 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Router } from '../../../src/appsync-graphql/index.js';
+
+describe('Class: Router', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('registers resolvers using the functional approach', () => {
+    // Prepare
+    const router = new Router({ logger: console });
+    const getPost = vi.fn(() => [true]);
+    const addPost = vi.fn(async () => true);
+
+    // Act
+    router.onQuery('getPost', getPost, { typeName: 'Query' });
+    router.onMutation('addPost', addPost, { typeName: 'Mutation' });
+
+    // Assess
+    expect(console.debug).toHaveBeenNthCalledWith(
+      1,
+      `Registering onQuery route handler for field 'getPost' with type 'Query'`
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      2,
+      `Registering onMutation route handler for field 'addPost' with type 'Mutation'`
+    );
+  });
+
+  it('registers resolvers using the decorator pattern', () => {
+    // Prepare
+    const router = new Router({ logger: console });
+
+    // Act
+    class Lambda {
+      readonly prop = 'value';
+
+      @router.onQuery('getPost')
+      public getPost() {
+        return `${this.prop} foo`;
+      }
+
+      @router.onQuery('getAuthor', { typeName: 'Query' })
+      public getAuthor() {
+        return `${this.prop} bar`;
+      }
+
+      @router.onMutation('addPost')
+      public addPost() {
+        return `${this.prop} bar`;
+      }
+
+      @router.onMutation('updatePost', { typeName: 'Mutation' })
+      public updatePost() {
+        return `${this.prop} baz`;
+      }
+    }
+    const lambda = new Lambda();
+    const res1 = lambda.getPost();
+    const res2 = lambda.getAuthor();
+    const res3 = lambda.addPost();
+    const res4 = lambda.updatePost();
+
+    // Assess
+    expect(console.debug).toHaveBeenNthCalledWith(
+      1,
+      `Registering onQuery route handler for field 'getPost' with type 'Query'`
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      2,
+      `Registering onQuery route handler for field 'getAuthor' with type 'Query'`
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      3,
+      `Registering onMutation route handler for field 'addPost' with type 'Mutation'`
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      4,
+      `Registering onMutation route handler for field 'updatePost' with type 'Mutation'`
+    );
+
+    // verify that class scope is preserved after decorating
+    expect(res1).toBe('value foo');
+    expect(res2).toBe('value bar');
+    expect(res3).toBe('value bar');
+    expect(res4).toBe('value baz');
+  });
+
+  it('uses a default logger with only warnings if none is provided', () => {
+    // Prepare
+    const router = new Router();
+
+    // Act
+    router.onQuery('getPost', vi.fn());
+
+    // Assess
+    expect(console.debug).not.toHaveBeenCalled();
+  });
+
+  it('emits debug messages when ALC_LOG_LEVEL is set to DEBUG', () => {
+    // Prepare
+    process.env.AWS_LAMBDA_LOG_LEVEL = 'DEBUG';
+    const router = new Router();
+
+    // Act
+    router.onQuery('getPost', vi.fn());
+
+    // Assess
+    expect(console.debug).toHaveBeenCalled();
+    process.env.AWS_LAMBDA_LOG_LEVEL = undefined;
+  });
+});

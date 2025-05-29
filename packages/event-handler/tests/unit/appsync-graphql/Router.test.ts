@@ -86,6 +86,38 @@ describe('Class: Router', () => {
     expect(res4).toBe('value baz');
   });
 
+  it('registers nested resolvers using the decorator pattern', () => {
+    // Prepare
+    const router = new Router({ logger: console });
+
+    // Act
+    class Lambda {
+      readonly prop = 'value';
+
+      @router.onQuery('listLocations')
+      @router.onQuery('locations')
+      public getLocations() {
+        return [{ name: 'Location 1', description: 'Description 1' }];
+      }
+    }
+    const lambda = new Lambda();
+    const response = lambda.getLocations();
+
+    // Assess
+    expect(console.debug).toHaveBeenNthCalledWith(
+      1,
+      `Registering onQuery route handler for field 'locations' with type 'Query'`
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      2,
+      `Registering onQuery route handler for field 'listLocations' with type 'Query'`
+    );
+
+    expect(response).toEqual([
+      { name: 'Location 1', description: 'Description 1' },
+    ]);
+  });
+
   it('uses a default logger with only warnings if none is provided', () => {
     // Prepare
     const router = new Router();

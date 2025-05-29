@@ -46,16 +46,23 @@ class RouteHandlerRegistry {
    * Registers a new GraphQL route handler for a specific type and field.
    *
    * @param options - The options for registering the route handler, including the GraphQL type name, field name, and the handler function.
+   * @param options.fieldName - The field name of the GraphQL type to be registered
+   * @param options.handler - The handler function to be called when the event is received
+   * @param options.typeName - The name of the GraphQL type to be registered
    *
-   * @remarks
-   * This method logs the registration and stores the handler in the internal resolver map.
    */
   public register(options: RouteHandlerOptions): void {
     const { fieldName, handler, typeName } = options;
     this.#logger.debug(
-      `Registering ${typeName} api handler for field '${fieldName}'`
+      `Registering ${this.#eventType} route handler for field '${fieldName}' with type '${typeName}'`
     );
-    this.resolvers.set(this.#makeKey(typeName, fieldName), {
+    const cacheKey = this.#makeKey(typeName, fieldName);
+    if (this.resolvers.has(cacheKey)) {
+      this.#logger.warn(
+        `A route handler for field '${fieldName}' is already registered for '${typeName}'. The previous handler will be replaced.`
+      );
+    }
+    this.resolvers.set(cacheKey, {
       fieldName,
       handler,
       typeName,
@@ -80,6 +87,9 @@ class RouteHandlerRegistry {
     if (this.#resolverCache.has(cacheKey)) {
       return this.#resolverCache.get(cacheKey);
     }
+    this.#logger.debug(
+      `Resolving handler '${fieldName}' for type '${typeName}'`
+    );
     const handler = this.resolvers.get(cacheKey);
     if (handler === undefined) {
       if (!this.#warningSet.has(cacheKey)) {

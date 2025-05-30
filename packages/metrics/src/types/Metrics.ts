@@ -190,8 +190,8 @@ interface MetricsInterface {
    * included in all metrics, use the {@link MetricsInterface.setDefaultDimensions | `setDefaultDimensions()`} method.
    *
    * @param dimensions - An object with key-value pairs of dimensions
+   * @returns The dimensions object that was passed in
    */
-  addDimensions(dimensions: Dimensions): void;
   /**
    * A metadata key-value pair to be included with metrics.
    *

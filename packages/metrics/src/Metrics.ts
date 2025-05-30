@@ -155,6 +155,12 @@ class Metrics extends Utility implements MetricsInterface {
   private dimensions: Dimensions = {};
 
   /**
+   * Additional dimension sets for the current metrics context
+   * @default []
+   */
+  private dimensionSets: Dimensions[] = [];
+
+  /**
    * Service for accessing environment variables
    */
   private envVarsService?: EnvironmentVariablesService;
@@ -267,9 +273,15 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - An object with key-value pairs of dimensions
    */
   public addDimensions(dimensions: Dimensions): void {
-    for (const [name, value] of Object.entries(dimensions)) {
-      this.addDimension(name, value);
+    if (
+      Object.keys(dimensions).length + this.getCurrentDimensionsCount() >=
+      MAX_DIMENSION_COUNT
+    ) {
+      throw new RangeError(
+        `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+      );
     }
+    this.dimensionSets.push(dimensions);
   }
 
   /**
@@ -447,6 +459,7 @@ class Metrics extends Utility implements MetricsInterface {
    */
   public clearDimensions(): void {
     this.dimensions = {};
+    this.dimensionSets = [];
   }
 
   /**
@@ -692,12 +705,34 @@ class Metrics extends Utility implements MetricsInterface {
       {}
     );
 
-    const dimensionNames = [
-      ...new Set([
-        ...Object.keys(this.defaultDimensions),
-        ...Object.keys(this.dimensions),
-      ]),
-    ];
+    const dimensionNames = [];
+
+    if (Object.keys(this.dimensions).length > 0) {
+      dimensionNames.push([
+        ...new Set([
+          ...Object.keys(this.defaultDimensions),
+          ...Object.keys(this.dimensions),
+        ]),
+      ]);
+    }
+
+    for (const dimensionSet of this.dimensionSets) {
+      dimensionNames.push([
+        ...new Set([
+          ...Object.keys(this.defaultDimensions),
+          ...Object.keys(dimensionSet),
+        ]),
+      ]);
+    }
+
+    if (
+      dimensionNames.length === 0 &&
+      Object.keys(this.defaultDimensions).length > 0
+    ) {
+      dimensionNames.push([
+        ...new Set([...Object.keys(this.defaultDimensions)]),
+      ]);
+    }
 
     return {
       _aws: {
@@ -705,13 +740,14 @@ class Metrics extends Utility implements MetricsInterface {
         CloudWatchMetrics: [
           {
             Namespace: this.namespace || DEFAULT_NAMESPACE,
-            Dimensions: [dimensionNames],
+            Dimensions: dimensionNames as [string[]],
             Metrics: metricDefinitions,
           },
         ],
       },
       ...this.defaultDimensions,
       ...this.dimensions,
+      ...this.dimensionSets.reduce((acc, dims) => Object.assign(acc, dims), {}),
       ...metricValues,
       ...this.metadata,
     };

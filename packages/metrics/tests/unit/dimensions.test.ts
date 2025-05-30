@@ -14,6 +14,42 @@ describe('Working with dimensions', () => {
     vi.clearAllMocks();
   });
 
+  it('creates a new dimension set', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+    });
+
+    // Act
+    metrics.addDimension('environment', 'prod');
+
+    metrics.addDimensions({
+      dimension1: '1',
+      dimension2: '2',
+    });
+
+    metrics.addMetric('foo', MetricUnit.Count, 1);
+    metrics.publishStoredMetrics();
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        environment: 'prod',
+        dimension1: '1',
+        dimension2: '2',
+        foo: 1,
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [
+          ['service', 'environment'],
+          ['service', 'dimension1', 'dimension2'],
+        ],
+      })
+    );
+  });
+
   it('adds default dimensions to the metric via constructor', () => {
     // Prepare
     const metrics = new Metrics({
@@ -281,6 +317,88 @@ describe('Working with dimensions', () => {
     }
     expect(() => metrics.setDefaultDimensions({ extra: 'test' })).toThrowError(
       'Max dimension count hit'
+    );
+  });
+
+  it('throws when adding dimension sets would exceed the limit', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
+    });
+
+    // Act & Assess
+    let i = 1;
+    // We start with 2 dimensions because the default dimension & service name are already added
+    for (i = 2; i < MAX_DIMENSION_COUNT - 2; i++) {
+      metrics.addDimension(`dimension-${i}`, 'test');
+    }
+
+    // Adding a dimension set with 3 dimensions would exceed the limit
+    expect(() =>
+      metrics.addDimensions({
+        'dimension-extra-1': 'test',
+        'dimension-extra-2': 'test',
+        'dimension-extra-3': 'test',
+      })
+    ).toThrowError(
+      `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+    );
+  });
+
+  it('handles dimension overrides across multiple dimension sets', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+    });
+
+    // Act
+    // First add a single dimension
+    metrics.addDimension('d', '3');
+
+    // First dimension set
+    metrics.addDimensions({
+      a: '1',
+      b: '2',
+    });
+
+    // Second dimension set with some overlapping keys
+    metrics.addDimensions({
+      a: '3',
+      c: '5',
+      d: '8',
+    });
+
+    // Third dimension set with more overlapping keys
+    metrics.addDimensions({
+      b: '5',
+      d: '1',
+    });
+
+    metrics.addMetric('foo', MetricUnit.Count, 1);
+    metrics.publishStoredMetrics();
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        a: '3', // Last value from second set
+        b: '5', // Last value from third set
+        c: '5', // Only value from second set
+        d: '1', // Last value from third set (overriding both the initial d:3 and second set's d:8)
+        foo: 1,
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [
+          ['service', 'd'],
+          ['service', 'a', 'b'],
+          ['service', 'a', 'c', 'd'],
+          ['service', 'b', 'd'],
+        ],
+      })
     );
   });
 

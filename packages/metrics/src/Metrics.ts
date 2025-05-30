@@ -273,8 +273,12 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - An object with key-value pairs of dimensions
    */
   public addDimensions(dimensions: Dimensions): void {
+    const newDimensionKeys = Object.keys(dimensions).filter(
+      (key) => !this.defaultDimensions[key] && !this.dimensions[key]
+    );
+
     if (
-      Object.keys(dimensions).length + this.getCurrentDimensionsCount() >=
+      newDimensionKeys.length + this.getCurrentDimensionsCount() >=
       MAX_DIMENSION_COUNT
     ) {
       throw new RangeError(
@@ -707,31 +711,28 @@ class Metrics extends Utility implements MetricsInterface {
 
     const dimensionNames = [];
 
+    const allDimensionKeys = new Set([
+      ...Object.keys(this.defaultDimensions),
+      ...Object.keys(this.dimensions),
+    ]);
+
     if (Object.keys(this.dimensions).length > 0) {
-      dimensionNames.push([
-        ...new Set([
-          ...Object.keys(this.defaultDimensions),
-          ...Object.keys(this.dimensions),
-        ]),
-      ]);
+      dimensionNames.push([...allDimensionKeys]);
     }
 
     for (const dimensionSet of this.dimensionSets) {
-      dimensionNames.push([
-        ...new Set([
-          ...Object.keys(this.defaultDimensions),
-          ...Object.keys(dimensionSet),
-        ]),
+      const dimensionSetKeys = new Set([
+        ...Object.keys(this.defaultDimensions),
+        ...Object.keys(dimensionSet),
       ]);
+      dimensionNames.push([...dimensionSetKeys]);
     }
 
     if (
       dimensionNames.length === 0 &&
       Object.keys(this.defaultDimensions).length > 0
     ) {
-      dimensionNames.push([
-        ...new Set([...Object.keys(this.defaultDimensions)]),
-      ]);
+      dimensionNames.push([...Object.keys(this.defaultDimensions)]);
     }
 
     return {
@@ -745,11 +746,14 @@ class Metrics extends Utility implements MetricsInterface {
           },
         ],
       },
-      ...this.defaultDimensions,
-      ...this.dimensions,
-      ...this.dimensionSets.reduce((acc, dims) => Object.assign(acc, dims), {}),
-      ...metricValues,
-      ...this.metadata,
+      ...Object.assign(
+        {},
+        this.defaultDimensions,
+        this.dimensions,
+        this.dimensionSets.reduce((acc, dims) => Object.assign(acc, dims), {}),
+        metricValues,
+        this.metadata
+      ),
     };
   }
 

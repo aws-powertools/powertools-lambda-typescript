@@ -101,6 +101,45 @@ describe('Working with dimensions', () => {
     );
   });
 
+  it('handles dimension sets with default dimensions and overrides', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+      defaultDimensions: {
+        environment: 'prod',
+        region: 'us-east-1',
+      },
+    });
+
+    // Act
+    // Add a dimension set that overrides one of the default dimensions
+    metrics.addDimensions({
+      environment: 'staging', // This should override the default 'prod' value
+      feature: 'search',
+    });
+
+    metrics.addMetric('api_calls', MetricUnit.Count, 1);
+    metrics.publishStoredMetrics();
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        environment: 'staging', // Should use the overridden value
+        region: 'us-east-1', // Should keep the default value
+        feature: 'search', // Should add the new dimension
+        api_calls: 1,
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [
+          ['service', 'environment', 'region', 'feature'], // Should include all dimensions
+        ],
+      })
+    );
+  });
+
   it('adds one dimension to the metric', () => {
     // Prepare
     const metrics = new Metrics({

@@ -24,7 +24,7 @@ vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
 class TestProvider extends BaseProvider {
   public constructor() {
     super({
-      proto: class {
+      awsSdkV3ClientPrototype: class {
         #name = 'TestProvider';
 
         public hello(): string {
@@ -389,7 +389,7 @@ describe('Class: BaseProvider', () => {
       });
     });
 
-    it('throws when called with a binary transform and throwOnTransformError equal to TRUE, and at least ONE the values is NOT a valid string representation of a binary', async () => {
+    it('throws a TransformParameterError when trying to transform an invalid binary and throwOnTransformError is enabled', async () => {
       // Prepare
       const mockData = { A: 'qw' };
       const provider = new TestProvider();
@@ -399,6 +399,22 @@ describe('Class: BaseProvider', () => {
       await expect(
         provider.getMultiple('my-path', {
           transform: 'binary',
+          throwOnTransformError: true,
+        })
+      ).rejects.toThrowError(TransformParameterError);
+    });
+
+    it('throws a TransformParameterError when a runtime error occurs during the transformation and throwOnTransformError is enabled', async () => {
+      // Prepare
+      const mockData = { A: 'foo' };
+      const provider = new TestProvider();
+      vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
+
+      // Act & Assess
+      await expect(
+        provider.getMultiple('my-path', {
+          // @ts-ignore - we want to test an unexpected runtime error
+          transform: 1,
           throwOnTransformError: true,
         })
       ).rejects.toThrowError(TransformParameterError);

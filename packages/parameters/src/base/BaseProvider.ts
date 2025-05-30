@@ -167,11 +167,19 @@ abstract class BaseProvider implements BaseProviderInterface {
             entryKey
           );
         } catch (error) {
-          if (configs.throwOnTransformError)
-            throw new TransformParameterError(
+          if (configs.throwOnTransformError) {
+            if (error instanceof TransformParameterError) {
+              throw error;
+            }
+
+            // Otherwise wrap—but preserve the original stack
+            const wrapped = new TransformParameterError(
               configs.transform,
               (error as Error).message
             );
+            wrapped.stack = (error as Error).stack;
+            throw wrapped;
+          }
         }
       }
     }

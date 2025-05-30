@@ -6,7 +6,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 ## Intro
 
-Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), Lambda Function URLs, and VPC Lattice.
+Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), Lambda Function URLs, VPC Lattice, AWS AppSync Events APIs, and Amazon Bedrock Agent Functions.
 
 ## Usage
 
@@ -101,6 +101,8 @@ app.onSubscribe('/default/foo', async (event) => {
 export const handler = async (event, context) =>
   app.resolve(event, context);
 ```
+
+## Bedrock Agent Functions
 
 See the [documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/event-handler/appsync-events) for more details on how to use the AppSync event handler.
 

@@ -31,6 +31,59 @@ import { isAppSyncGraphQLEvent } from './utils.js';
  * ```
  */
 export class AppSyncGraphQLResolver extends Router {
+  /**
+   * Resolve the response based on the provided event and route handlers configured.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * app.onQuery('getPost', async ({ id }) => {
+   *   // your business logic here
+   *   return {
+   *     id,
+   *     title: 'Post Title',
+   *     content: 'Post Content',
+   *   };
+   * });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * The method works also as class method decorator, so you can use it like this:
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * class Lambda {
+   *   ⁣@app.onQuery('getPost')
+   *   async handleGetPost({ id }) {
+   *     // your business logic here
+   *     return {
+   *       id,
+   *       title: 'Post Title',
+   *       content: 'Post Content',
+   *     };
+   *   }
+   *
+   *   async handler(event, context) {
+   *     return app.resolve(event, context);
+   *   }
+   * }
+   *
+   * const lambda = new Lambda();
+   * export const handler = lambda.handler.bind(lambda);
+   * ```
+   *
+   * @param event - The incoming event, which may be an AppSync GraphQL event or an array of events.
+   * @param context - The Lambda execution context.
+   */
   public async resolve(event: unknown, context: Context): Promise<unknown> {
     if (Array.isArray(event)) {
       this.logger.warn('Batch resolvers are not implemented yet');

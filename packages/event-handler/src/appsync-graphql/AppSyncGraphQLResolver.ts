@@ -139,7 +139,7 @@ export class AppSyncGraphQLResolver extends Router {
     }
 
     throw new ResolverNotFoundException(
-      `No resolver found for the event ${fieldName}-${typeName}.`
+      `No resolver found for ${typeName}-${fieldName}`
     );
   }
 

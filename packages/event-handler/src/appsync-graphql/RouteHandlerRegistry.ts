@@ -47,14 +47,14 @@ class RouteHandlerRegistry {
    *
    * @param options - The options for registering the route handler, including the GraphQL type name, field name, and the handler function.
    * @param options.fieldName - The field name of the GraphQL type to be registered
-   * @param options.handler - The handler function to be called when the event is received
+   * @param options.handler - The handler function to be called when the GraphQL event is received
    * @param options.typeName - The name of the GraphQL type to be registered
    *
    */
   public register(options: RouteHandlerOptions): void {
     const { fieldName, handler, typeName } = options;
     this.#logger.debug(
-      `Registering ${this.#eventType} route handler for field '${fieldName}' with type '${typeName}'`
+      `Adding resolver ${handler.name} for field ${typeName}.${fieldName}`
     );
     const cacheKey = this.#makeKey(typeName, fieldName);
     if (this.resolvers.has(cacheKey)) {

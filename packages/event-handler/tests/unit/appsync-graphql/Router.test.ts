@@ -19,11 +19,11 @@ describe('Class: Router', () => {
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
       1,
-      `Registering onQuery route handler for field 'getPost' with type 'Query'`
+      `Adding resolver ${getPost.name} for field Query.getPost`
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       2,
-      `Registering onMutation route handler for field 'addPost' with type 'Mutation'`
+      `Adding resolver ${addPost.name} for field Mutation.addPost`
     );
   });
 
@@ -64,19 +64,19 @@ describe('Class: Router', () => {
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
       1,
-      `Registering onQuery route handler for field 'getPost' with type 'Query'`
+      'Adding resolver getPost for field Query.getPost'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       2,
-      `Registering onQuery route handler for field 'getAuthor' with type 'Query'`
+      'Adding resolver getAuthor for field Query.getAuthor'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       3,
-      `Registering onMutation route handler for field 'addPost' with type 'Mutation'`
+      'Adding resolver addPost for field Mutation.addPost'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       4,
-      `Registering onMutation route handler for field 'updatePost' with type 'Mutation'`
+      'Adding resolver updatePost for field Mutation.updatePost'
     );
 
     // verify that class scope is preserved after decorating
@@ -106,11 +106,11 @@ describe('Class: Router', () => {
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
       1,
-      `Registering onQuery route handler for field 'locations' with type 'Query'`
+      'Adding resolver getLocations for field Query.locations'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       2,
-      `Registering onQuery route handler for field 'listLocations' with type 'Query'`
+      'Adding resolver getLocations for field Query.listLocations'
     );
 
     expect(response).toEqual([

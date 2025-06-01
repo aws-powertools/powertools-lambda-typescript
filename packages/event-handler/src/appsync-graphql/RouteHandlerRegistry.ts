@@ -59,12 +59,8 @@ class RouteHandlerRegistry {
   /**
    * Resolves the handler for a specific GraphQL API event.
    *
-   * This method first checks an internal cache for the handler. If not found, it attempts to retrieve
-   * the handler from the registered resolvers. If the handler is still not found, a warning is logged
-   * (only once per missing handler), and `undefined` is returned.
-   *
-   * @param typeName - The name of the GraphQL type.
-   * @param fieldName - The name of the field within the GraphQL type.
+   * @param typeName - The name of the GraphQL type (e.g., "Query", "Mutation", or a custom type).
+   * @param fieldName - The name of the field within the specified type.
    */
   public resolve(
     typeName: string,

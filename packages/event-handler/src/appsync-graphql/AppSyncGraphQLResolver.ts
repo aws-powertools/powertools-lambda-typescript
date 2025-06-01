@@ -124,14 +124,14 @@ export class AppSyncGraphQLResolver extends Router {
       typeName,
       fieldName
     );
+    if (queryHandlerOptions) {
+      return await queryHandlerOptions.handler.apply(this, [event.arguments]);
+    }
+
     const mutationHandlerOptions = this.onMutationRegistry.resolve(
       typeName,
       fieldName
     );
-
-    if (queryHandlerOptions) {
-      return await queryHandlerOptions.handler.apply(this, [event.arguments]);
-    }
     if (mutationHandlerOptions) {
       return await mutationHandlerOptions.handler.apply(this, [
         event.arguments,

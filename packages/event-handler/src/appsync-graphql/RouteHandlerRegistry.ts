@@ -30,7 +30,7 @@ class RouteHandlerRegistry {
   }
 
   /**
-   * Registers a new GraphQL route handler for a specific type and field.
+   * Registers a new GraphQL route resolver for a specific type and field.
    *
    * @param options - The options for registering the route handler, including the GraphQL type name, field name, and the handler function.
    * @param options.fieldName - The field name of the GraphQL type to be registered
@@ -46,7 +46,7 @@ class RouteHandlerRegistry {
     const cacheKey = this.#makeKey(typeName, fieldName);
     if (this.resolvers.has(cacheKey)) {
       this.#logger.warn(
-        `A route handler for field '${fieldName}' is already registered for '${typeName}'. The previous handler will be replaced.`
+        `A resolver for field '${fieldName}' is already registered for '${typeName}'. The previous resolver will be replaced.`
       );
     }
     this.resolvers.set(cacheKey, {

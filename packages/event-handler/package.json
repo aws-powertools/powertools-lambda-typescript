@@ -39,6 +39,16 @@
         "default": "./lib/esm/appsync-events/index.js"
       }
     },
+    "./bedrock-agent": {
+      "require": {
+        "types": "./lib/cjs/bedrock-agent/index.d.ts",
+        "default": "./lib/cjs/bedrock-agent/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/bedrock-agent/index.d.ts",
+        "default": "./lib/esm/bedrock-agent/index.js"
+      }
+    },
     "./types": {
       "require": {
         "types": "./lib/cjs/types/index.d.ts",
@@ -55,6 +65,10 @@
       "appsync-events": [
         "./lib/cjs/appsync-events/index.d.ts",
         "./lib/esm/appsync-events/index.d.ts"
+      ],
+      "bedrock-agent": [
+        "./lib/cjs/bedrock-agent/index.d.ts",
+        "./lib/esm/bedrock-agent/index.d.ts"
       ],
       "types": [
         "./lib/cjs/types/index.d.ts",

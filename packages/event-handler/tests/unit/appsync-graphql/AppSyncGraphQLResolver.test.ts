@@ -21,7 +21,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Assess
     expect(console.warn).toHaveBeenCalledWith(
-      'Batch resolvers are not implemented yet'
+      'Batch resolver is not implemented yet'
     );
     expect(result).toBeUndefined();
   });

@@ -86,7 +86,7 @@ export class AppSyncGraphQLResolver extends Router {
    */
   public async resolve(event: unknown, context: Context): Promise<unknown> {
     if (Array.isArray(event)) {
-      this.logger.warn('Batch resolvers are not implemented yet');
+      this.logger.warn('Batch resolver is not implemented yet');
       return;
     }
     if (!isAppSyncGraphQLEvent(event)) {

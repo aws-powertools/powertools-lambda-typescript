@@ -99,9 +99,10 @@ describe('Class: RouteHandlerRegistry', () => {
   it('returns the cached route handler if already evaluated', () => {
     // Prepare
     const registry = getRegistry();
+    const handler = vi.fn();
     registry.register({
       fieldName: 'getPost',
-      handler: vi.fn(),
+      handler,
       typeName: 'Query',
     });
 
@@ -110,8 +111,16 @@ describe('Class: RouteHandlerRegistry', () => {
     registry.resolve('Query', 'getPost');
 
     // Assess
-    expect(console.debug).toHaveBeenCalledTimes(2); // once for registration, once for resolution
-    expect(console.debug).toHaveBeenLastCalledWith(
+    expect(console.debug).toHaveBeenNthCalledWith(
+      1,
+      `Adding resolver ${handler.name} for field Query.getPost`
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      2,
+      'Looking for resolver for type=Query, field=getPost'
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      3,
       'Looking for resolver for type=Query, field=getPost'
     );
   });

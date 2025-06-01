@@ -1,4 +1,3 @@
-import { LRUCache } from '@aws-lambda-powertools/commons/utils/lru-cache';
 import type {
   GenericLogger,
   RouteHandlerOptions,
@@ -24,18 +23,6 @@ class RouteHandlerRegistry {
    * The event type stored in the registry.
    */
   readonly #eventType: 'onQuery' | 'onMutation';
-  /**
-   * A cache for storing the resolved route handlers.
-   */
-  readonly #resolverCache: LRUCache<string, RouteHandlerOptions> = new LRUCache(
-    {
-      maxSize: 100,
-    }
-  );
-  /**
-   * A set of warning messages to avoid duplicate warnings.
-   */
-  readonly #warningSet: Set<string> = new Set();
 
   public constructor(options: RouteHandlerRegistryOptions) {
     this.#logger = options.logger;
@@ -83,22 +70,10 @@ class RouteHandlerRegistry {
     typeName: string,
     fieldName: string
   ): RouteHandlerOptions | undefined {
-    const cacheKey = this.#makeKey(typeName, fieldName);
-    if (this.#resolverCache.has(cacheKey))
-      return this.#resolverCache.get(cacheKey);
     this.#logger.debug(
       `Looking for resolver for type=${typeName}, field=${fieldName}`
     );
-    const handler = this.resolvers.get(cacheKey);
-    if (handler === undefined) {
-      if (!this.#warningSet.has(cacheKey)) {
-        this.#logger.warn(`No resolver found for ${typeName}-${fieldName}`);
-        this.#warningSet.add(cacheKey);
-      }
-      return undefined;
-    }
-    this.#resolverCache.add(cacheKey, handler);
-    return handler;
+    return this.resolvers.get(this.#makeKey(typeName, fieldName));
   }
 
   /**

@@ -19,11 +19,11 @@ describe('Class: Router', () => {
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
       1,
-      `Adding resolver ${getPost.name} for field Query.getPost`
+      'Adding onQuery resolver for field Query.getPost'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       2,
-      `Adding resolver ${addPost.name} for field Mutation.addPost`
+      'Adding onMutation resolver for field Mutation.addPost'
     );
   });
 
@@ -64,19 +64,19 @@ describe('Class: Router', () => {
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
       1,
-      'Adding resolver getPost for field Query.getPost'
+      'Adding onQuery resolver for field Query.getPost'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       2,
-      'Adding resolver getAuthor for field Query.getAuthor'
+      'Adding onQuery resolver for field Query.getAuthor'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       3,
-      'Adding resolver addPost for field Mutation.addPost'
+      'Adding onMutation resolver for field Mutation.addPost'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       4,
-      'Adding resolver updatePost for field Mutation.updatePost'
+      'Adding onMutation resolver for field Mutation.updatePost'
     );
 
     // verify that class scope is preserved after decorating
@@ -106,11 +106,11 @@ describe('Class: Router', () => {
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
       1,
-      'Adding resolver getLocations for field Query.locations'
+      'Adding onQuery resolver for field Query.locations'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       2,
-      'Adding resolver getLocations for field Query.listLocations'
+      'Adding onQuery resolver for field Query.listLocations'
     );
 
     expect(response).toEqual([

@@ -41,7 +41,7 @@ class RouteHandlerRegistry {
   public register(options: RouteHandlerOptions): void {
     const { fieldName, handler, typeName } = options;
     this.#logger.debug(
-      `Adding resolver ${handler.name} for field ${typeName}.${fieldName}`
+      `Adding ${this.#eventType} resolver for field ${typeName}.${fieldName}`
     );
     const cacheKey = this.#makeKey(typeName, fieldName);
     if (this.resolvers.has(cacheKey)) {
@@ -67,7 +67,7 @@ class RouteHandlerRegistry {
     fieldName: string
   ): RouteHandlerOptions | undefined {
     this.#logger.debug(
-      `Looking for resolver for type=${typeName}, field=${fieldName}`
+      `Looking for ${this.#eventType} resolver for type=${typeName}, field=${fieldName}`
     );
     return this.resolvers.get(this.#makeKey(typeName, fieldName));
   }

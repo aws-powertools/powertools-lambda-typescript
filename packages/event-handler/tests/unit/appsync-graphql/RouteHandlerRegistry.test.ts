@@ -112,7 +112,7 @@ describe('Class: RouteHandlerRegistry', () => {
     // Assess
     expect(console.debug).toHaveBeenCalledTimes(2); // once for registration, once for resolution
     expect(console.debug).toHaveBeenLastCalledWith(
-      "Resolving handler 'getPost' for type 'Query'"
+      'Looking for resolver for type=Query, field=getPost'
     );
   });
 });

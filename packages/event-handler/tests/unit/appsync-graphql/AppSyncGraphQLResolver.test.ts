@@ -48,9 +48,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     await expect(
       app.resolve(onQueryEventFactory('getPost'), context)
     ).rejects.toThrow(
-      new ResolverNotFoundException(
-        'No resolver found for the event getPost-Query.'
-      )
+      new ResolverNotFoundException('No resolver found for Query-getPost')
     );
     expect(console.error).toHaveBeenCalled();
   });
@@ -63,9 +61,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     await expect(
       app.resolve(onMutationEventFactory('addPost'), context)
     ).rejects.toThrow(
-      new ResolverNotFoundException(
-        'No resolver found for the event addPost-Mutation.'
-      )
+      new ResolverNotFoundException('No resolver found for Mutation-addPost')
     );
     expect(console.error).toHaveBeenCalled();
   });

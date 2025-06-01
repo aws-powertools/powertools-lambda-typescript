@@ -84,18 +84,15 @@ class RouteHandlerRegistry {
     fieldName: string
   ): RouteHandlerOptions | undefined {
     const cacheKey = this.#makeKey(typeName, fieldName);
-    if (this.#resolverCache.has(cacheKey)) {
+    if (this.#resolverCache.has(cacheKey))
       return this.#resolverCache.get(cacheKey);
-    }
     this.#logger.debug(
-      `Resolving handler '${fieldName}' for type '${typeName}'`
+      `Looking for resolver for type=${typeName}, field=${fieldName}`
     );
     const handler = this.resolvers.get(cacheKey);
     if (handler === undefined) {
       if (!this.#warningSet.has(cacheKey)) {
-        this.#logger.warn(
-          `No route handler found for field '${fieldName}' registered for ${this.#eventType}.`
-        );
+        this.#logger.warn(`No resolver found for ${typeName}-${fieldName}`);
         this.#warningSet.add(cacheKey);
       }
       return undefined;

@@ -12,15 +12,15 @@ import type {
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 
 /**
- * Class for registering routes for the `onQuery` and `onMutation` events in AWS AppSync Events APIs.
+ * Class for registering routes for the `query` and `mutation` events in AWS AppSync GraphQL APIs.
  */
 class Router {
   /**
-   * A map of registered routes for the `onQuery` event, keyed by their fieldNames.
+   * A map of registered routes for the `query` event, keyed by their fieldNames.
    */
   protected readonly onQueryRegistry: RouteHandlerRegistry;
   /**
-   * A map of registered routes for the `onMutation` event, keyed by their fieldNames.
+   * A map of registered routes for the `mutation` event, keyed by their fieldNames.
    */
   protected readonly onMutationRegistry: RouteHandlerRegistry;
   /**
@@ -58,7 +58,7 @@ class Router {
   }
 
   /**
-   * Register a handler function for the `onQuery` event.
+   * Register a handler function for the `query` event.
    
    * Registers a handler for a specific GraphQL Query field. The handler will be invoked when a request is made
    * for the specified field in the Query type.
@@ -142,7 +142,7 @@ class Router {
   }
 
   /**
-   * Register a handler function for the `onMutation` event.
+   * Register a handler function for the `mutation` event.
    *
    * Registers a handler for a specific GraphQL Mutation field. The handler will be invoked when a request is made
    * for the specified field in the Mutation type.

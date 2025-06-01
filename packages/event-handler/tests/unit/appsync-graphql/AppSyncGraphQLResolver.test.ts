@@ -112,6 +112,18 @@ describe('Class: AppSyncGraphQLResolver', () => {
     );
 
     // Assess
+    expect(console.debug).toHaveBeenNthCalledWith(
+      1,
+      'Adding onMutation resolver for field Mutation.addPost'
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      2,
+      'Looking for onQuery resolver for type=Mutation, field=addPost'
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      3,
+      'Looking for onMutation resolver for type=Mutation, field=addPost'
+    );
     expect(result).toEqual({
       id: '123',
       title: 'Post Title',

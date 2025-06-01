@@ -34,7 +34,7 @@ describe('Class: RouteHandlerRegistry', () => {
     }
   );
 
-  it('logs a warning and replaces the previous handler if the field & type is already registered', () => {
+  it('logs a warning and replaces the previous resolver if the field & type is already registered', () => {
     // Prepare
     const registry = getRegistry();
     const originalHandler = vi.fn();
@@ -60,11 +60,11 @@ describe('Class: RouteHandlerRegistry', () => {
       handler: otherHandler,
     });
     expect(console.warn).toHaveBeenCalledWith(
-      "A route handler for field 'getPost' is already registered for 'Query'. The previous handler will be replaced."
+      "A resolver for field 'getPost' is already registered for 'Query'. The previous resolver will be replaced."
     );
   });
 
-  it('will not replace the handler if the event type is different', () => {
+  it('will not replace the resolver if the event type is different', () => {
     // Prepare
     const registry = getRegistry();
     const originalHandler = vi.fn();

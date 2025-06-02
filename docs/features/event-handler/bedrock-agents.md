@@ -72,7 +72,7 @@ You must create an Amazon Bedrock Agent with at least one action group. Each act
 
 ### Usage
 
-To create an agent, use the `BedrockAgentFunctionResolver` to register your tools and handle the requests. The resolver will automatically parse the request, route it to the appropriate function, and return a well-formed response that includes the tool's output and any existing session attributes.
+Use the `BedrockAgentFunctionResolver` to register your tools and handle the requests to your Lambda function. The resolver will automatically parse the request, route it to the appropriate function, and return a well-formed response that includes the tool's output and any existing session attributes.
 
 When passing the tool parameters to your handler, we will automatically cast them to the appropriate type based on the `type` field defined in the action group. This means you can use native JavaScript types like `string`, `number`, `boolean` without worrying about parsing them yourself.
 

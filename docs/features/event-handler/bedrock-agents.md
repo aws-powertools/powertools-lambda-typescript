@@ -38,7 +38,7 @@ flowchart LR
 
 **Event handler** is a Powertools for AWS feature that processes an event, runs data parsing and validation, routes the request to a specific function, and returns a response to the caller in the proper format.
 
-**Function details** consist of a list of parameters, defined by their name, data type, and whether they are required. The agent uses these configurations to determine what information it needs to elicit from the user.
+**Function details** consist of a list of parameters, defined by their name, data type, and whether or not they are required. The agent uses these configurations to determine what information it needs to elicit from the user.
 
 **Action group** is a collection of two resources where you define the actions that the agent should carry out: an OpenAPI schema to define the APIs that the agent can invoke to carry out its tasks, and a Lambda function to execute those actions.
 

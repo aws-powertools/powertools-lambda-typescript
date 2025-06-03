@@ -172,6 +172,7 @@ plugins:
           - features/logger.md
           - features/metrics.md
           - features/event-handler/appsync-events.md
+          - features/event-handler/bedrock-agents.md
           - features/parameters.md
           - features/idempotency.md
           - features/batch.md

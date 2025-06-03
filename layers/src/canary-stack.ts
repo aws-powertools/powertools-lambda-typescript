@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import path from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { CustomResource, Duration, Stack, type StackProps } from 'aws-cdk-lib';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LayerVersion, Runtime, Tracing } from 'aws-cdk-lib/aws-lambda';
@@ -14,6 +15,9 @@ export interface CanaryStackProps extends StackProps {
   readonly powertoolsPackageVersion: string;
   readonly ssmParameterLayerArn: string;
 }
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export class CanaryStack extends Stack {
   public constructor(scope: Construct, id: string, props: CanaryStackProps) {
@@ -36,7 +40,7 @@ export class CanaryStack extends Stack {
     ];
 
     const canaryFunction = new NodejsFunction(this, 'CanaryFunction', {
-      entry: path.join(
+      entry: join(
         __dirname,
         '../tests/e2e/layerPublisher.class.test.functionCode.ts'
       ),

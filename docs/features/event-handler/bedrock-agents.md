@@ -84,7 +84,7 @@ Currently, we don't support parsing `array` types, so you will receive them as s
   --8<-- "examples/snippets/event-handler/bedrock-agents/gettingStartedFunctionsTool.ts"
   ```
   
-  1. The `description` field is optional, but highly recommended in the action group definition.
+  1. The `description` field is optional, but highly recommended in the action group definition so that the LLM can understand what the tool does and how to use it.
 
 ## Advanced
 

@@ -1,10 +1,4 @@
-import type z from 'zod';
 import type { ZodTypeAny } from 'zod';
-import type {
-  KafkaMskEventSchema,
-  KafkaRecordSchema,
-  KafkaSelfManagedEventSchema,
-} from './schema.js';
 
 type SchemaType = 'json' | 'avro' | 'protobuf';
 
@@ -60,17 +54,9 @@ type SchemaConfig = {
 // biome-ignore lint/suspicious/noExplicitAny: This is a generic type that is intentionally open
 type AnyFunction = (...args: Array<any>) => any;
 
-type KafkaRecord = z.infer<typeof KafkaRecordSchema>;
-
-type KafkaEvent =
-  | z.infer<typeof KafkaSelfManagedEventSchema>
-  | z.infer<typeof KafkaMskEventSchema>;
-
 export type {
   AnyFunction,
-  KafkaEvent,
   ConsumerRecords,
-  KafkaRecord,
   SchemaConfig,
   SchemaConfigValue,
   SchemaType,

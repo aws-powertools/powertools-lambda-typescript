@@ -133,4 +133,13 @@ const KafkaMskEventSchema = KafkaBaseEventSchema.extend({
   eventSourceArn: z.string(),
 });
 
-export { KafkaMskEventSchema, KafkaRecordSchema, KafkaSelfManagedEventSchema };
+type KafkaEvent =
+  | z.infer<typeof KafkaMskEventSchema>
+  | z.infer<typeof KafkaSelfManagedEventSchema>;
+
+export {
+  KafkaMskEventSchema,
+  KafkaRecordSchema,
+  KafkaSelfManagedEventSchema,
+  type KafkaEvent,
+};

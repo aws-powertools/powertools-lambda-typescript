@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { SchemaConfig } from './types.js';
 
 /**
  * Zod schema for a Kafka record from an Kafka event.
@@ -134,4 +133,4 @@ const KafkaMskEventSchema = KafkaBaseEventSchema.extend({
   eventSourceArn: z.string(),
 });
 
-export { KafkaSelfManagedEventSchema, KafkaMskEventSchema, KafkaRecordSchema };
+export { KafkaMskEventSchema, KafkaRecordSchema, KafkaSelfManagedEventSchema };

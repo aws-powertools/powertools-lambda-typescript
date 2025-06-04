@@ -23,7 +23,7 @@ const deserialise = (value: string, config: SchemaConfigValue) => {
   }
   if (config.type === 'avro') {
     const type = avro.parse(config.schemaStr);
-    const decoded = fromBase64(value);
+    const decoded = Buffer.from(value, 'base64');
     return type.fromBuffer(decoded);
   }
   if (config.type === 'protobuf') {
@@ -61,6 +61,6 @@ export function kafkaConsumer<K, V>(
     }
 
     // Call the original function with the validated event and context
-    return fn.call(this, consumerRecords, context, ...args);
+    return await fn.call(this, consumerRecords, context, ...args);
   };
 }

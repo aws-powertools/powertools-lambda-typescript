@@ -20,7 +20,8 @@
     "build": "npm run build:esm & npm run build:cjs",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
-    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js .",
+    "proto:gen": "npx protoc --ts_out tests/protos --proto_path tests/protos tests/protos/product.proto"
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "license": "MIT-0",
@@ -48,6 +49,7 @@
     "@aws-lambda-powertools/commons": "^2.20.0"
   },
   "devDependencies": {
+    "@protobuf-ts/plugin": "^2.11.0",
     "avro-js": "^1.12.0",
     "protobufjs": "^7.5.3",
     "zod": "^3.25.49"

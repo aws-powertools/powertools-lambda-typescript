@@ -1,4 +1,5 @@
 import type { Context, Handler } from 'aws-lambda';
+import { parse } from 'protobufjs';
 import type { KafkaEvent } from './schema.js';
 import type {
   AnyFunction,
@@ -9,8 +10,9 @@ import type {
 const avro = require('avro-js');
 
 const deserialise = (value: string, config: SchemaConfigValue) => {
+  const { type, schemaStr, outputObject } = config;
   const decoded = Buffer.from(value, 'base64');
-  if (config.type === 'json') {
+  if (type === 'json') {
     try {
       // we assume it's a JSON but it can also be a string, we don't know
       return JSON.parse(decoded.toString());
@@ -19,14 +21,37 @@ const deserialise = (value: string, config: SchemaConfigValue) => {
       return decoded.toString();
     }
   }
-  if (config.type === 'avro') {
+  if (type === 'avro') {
     const type = avro.parse(config.schemaStr);
     return type.fromBuffer(decoded);
   }
   // TODO: Add support for protobuf.
-  // if (config.type === 'protobuf') {
-  // }
+  if (type === 'protobuf') {
+    if (schemaStr) {
+      return decodeProtobufBase64(schemaStr, outputObject as string, value);
+    }
+  }
 };
+
+export function decodeProtobufBase64(
+  schemaStr: string,
+  messageName: string,
+  base64Data: string
+): Record<string, unknown> {
+  const root = parse(schemaStr).root;
+  const Message = root.lookupType(messageName);
+
+  const buffer = Buffer.from(base64Data, 'base64');
+  const decodedMessage = Message.decode(buffer);
+
+  return Message.toObject(decodedMessage, {
+    longs: Number,
+    enums: String,
+    defaults: true,
+    arrays: true,
+    objects: true,
+  });
+}
 
 export function kafkaConsumer<K, V>(
   fn: AnyFunction,

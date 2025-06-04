@@ -30,7 +30,7 @@ type SchemaConfigValue = {
    *   - ajv schema
    *   - custom serializer function
    */
-  outputObject: ZodTypeAny; // object, but not clear what exact shape
+  outputObject: ZodTypeAny | string | unknown; // object, but not clear what exact shape
 };
 
 type SchemaConfig = {

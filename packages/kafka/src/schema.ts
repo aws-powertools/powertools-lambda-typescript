@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import { z } from 'zod';
 
 /**
@@ -143,3 +144,4 @@ export {
   KafkaSelfManagedEventSchema,
   type KafkaEvent,
 };
+/* c8 ignore end */

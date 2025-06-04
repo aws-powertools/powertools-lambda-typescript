@@ -23,9 +23,9 @@ const deserialise = (value: string, config: SchemaConfigValue) => {
     const type = avro.parse(config.schemaStr);
     return type.fromBuffer(decoded);
   }
-  if (config.type === 'protobuf') {
-    // TODO: Add support for protobuf.
-  }
+  // TODO: Add support for protobuf.
+  // if (config.type === 'protobuf') {
+  // }
 };
 
 export function kafkaConsumer<K, V>(

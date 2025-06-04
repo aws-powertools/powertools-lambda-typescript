@@ -34,11 +34,11 @@ describe('Kafka consumer: ', () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'json',
-        outputObject: keyObj,
+        outputObject: valueObj,
       },
       key: {
         type: 'json',
-        outputObject: valueObj,
+        outputObject: keyObj,
       },
     });
 
@@ -52,6 +52,7 @@ describe('Kafka consumer: ', () => {
     };
     expect(records[0]).toEqual(expected);
   });
+
   it('should deserialise avro message', async () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
@@ -65,7 +66,7 @@ describe('Kafka consumer: ', () => {
             { "name": "price", "type": "double" }
           ]
         }`,
-        outputObject: keyObj,
+        outputObject: valueObj,
       },
       key: {
         type: 'json',

@@ -1,29 +1,26 @@
-import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
 import type { Context, Handler } from 'aws-lambda';
+import type { KafkaEvent } from './schema.js';
 import type {
   AnyFunction,
   ConsumerRecords,
-  KafkaEvent,
   SchemaConfig,
   SchemaConfigValue,
 } from './types.js';
 const avro = require('avro-js');
 
 const deserialise = (value: string, config: SchemaConfigValue) => {
+  const decoded = Buffer.from(value, 'base64');
   if (config.type === 'json') {
-    const decoded = Buffer.from(value, 'base64').toString();
     try {
-      return JSON.parse(decoded);
+      // we assume it's a JSON but it can also be a string, we don't know
+      return JSON.parse(decoded.toString());
     } catch (error) {
-      if (error instanceof SyntaxError) {
-        return decoded;
-      }
-      throw new Error(`Failed to parse JSON: ${error}`);
+      // in case we could not parse it we return the base64 decoded value
+      return decoded.toString();
     }
   }
   if (config.type === 'avro') {
     const type = avro.parse(config.schemaStr);
-    const decoded = Buffer.from(value, 'base64');
     return type.fromBuffer(decoded);
   }
   if (config.type === 'protobuf') {

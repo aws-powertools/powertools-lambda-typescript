@@ -1,8 +1,11 @@
 import type { Context } from 'aws-lambda';
-import { describe, it } from 'vitest';
-import { expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import z from 'zod';
 import { kafkaConsumer } from '../../src/consumer.js';
+import {
+  KafkaConsumerAvroMissingSchemaError,
+  KafkaConsumerProtobufMissingSchemaError,
+} from '../../src/errors.js';
 import type { ConsumerRecords } from '../../src/types.js';
 import * as avroEvent from '../events/avro.json' with { type: 'json' };
 import * as jsonEvent from '../events/default.json' with { type: 'json' };
@@ -91,6 +94,32 @@ describe('Kafka consumer: ', () => {
       ],
     };
     expect(records[0]).toEqual(expected);
+  });
+
+  it('throws when schemaStr not passed for avro event', async () => {
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'avro',
+        outputObject: valueObj,
+      },
+    });
+
+    await expect(consumer(avroEvent, {})).rejects.toThrow(
+      KafkaConsumerAvroMissingSchemaError
+    );
+  });
+
+  it('throws when schemaStr not passed for protobuf event', async () => {
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'protobuf',
+        outputObject: valueObj,
+      },
+    });
+
+    await expect(consumer(protobufEvent, {})).rejects.toThrow(
+      KafkaConsumerProtobufMissingSchemaError
+    );
   });
 
   it('should deserialise protobuf message', async () => {

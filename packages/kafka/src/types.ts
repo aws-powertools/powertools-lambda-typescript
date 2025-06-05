@@ -10,8 +10,8 @@ type ConsumerRecords<K, V> = {
   value: V;
   originalKey: string | undefined;
   originalValue: string | undefined;
-  headers?: Array<[string, Uint8Array]> | null; // TODO: add headers
-  originalHeaders?: Array<[string, Uint8Array]> | null; //TODO: add headers
+  headers?: { [k: string]: string }[] | undefined;
+  originalHeaders?: RecordHeader[] | undefined;
 };
 
 type SchemaConfigValue = {
@@ -54,10 +54,38 @@ type SchemaConfig = {
 // biome-ignore lint/suspicious/noExplicitAny: This is a generic type that is intentionally open
 type AnyFunction = (...args: Array<any>) => any;
 
+interface RecordHeader {
+  [headerKey: string]: number[];
+}
+
+interface Record {
+  topic: string;
+  partition: number;
+  offset: number;
+  timestamp: number;
+  timestampType: 'CREATE_TIME' | 'LOG_APPEND_TIME';
+  key: string;
+  value: string;
+  headers: RecordHeader[];
+}
+
+// https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html
+interface MSKEvent {
+  eventSource: 'aws:kafka';
+  eventSourceArn: string;
+  bootstrapServers: string;
+  records: {
+    [topic: string]: Record[];
+  };
+}
+
 export type {
   AnyFunction,
   ConsumerRecords,
   SchemaConfig,
   SchemaConfigValue,
   SchemaType,
+  MSKEvent,
+  Record,
+  RecordHeader,
 };

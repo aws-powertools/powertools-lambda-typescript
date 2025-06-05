@@ -47,9 +47,13 @@ describe('Kafka consumer: ', () => {
     const expected = {
       key: 'recordKey',
       value: { id: 12345, name: 'product5', price: 45 },
+      headers: [{ headerKey: 'headerValue' }],
       originalKey: 'cmVjb3JkS2V5',
       originalValue:
         'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
+      originalHeaders: [
+        { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
+      ],
     };
     expect(records[0]).toEqual(expected);
   });
@@ -79,8 +83,12 @@ describe('Kafka consumer: ', () => {
     const expected = {
       key: 42,
       value: { id: 1001, name: 'Laptop', price: 999.99 },
+      headers: [{ headerKey: 'headerValue' }],
       originalKey: 'NDI=',
       originalValue: '0g8MTGFwdG9wUrgehes/j0A=',
+      originalHeaders: [
+        { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
+      ],
     };
     expect(records[0]).toEqual(expected);
   });
@@ -107,8 +115,12 @@ describe('Kafka consumer: ', () => {
     const expected = {
       key: 42,
       value: { id: 1001, name: 'Laptop', price: 999.99 },
+      headers: [{ headerKey: 'headerValue' }],
       originalKey: 'NDI=',
       originalValue: 'COkHEgZMYXB0b3AZUrgehes/j0A=',
+      originalHeaders: [
+        { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
+      ],
     };
     expect(records[0]).toEqual(expected);
   });

@@ -1,5 +1,13 @@
 import type { Context, Handler } from 'aws-lambda';
-import { parse } from 'protobufjs';
+import {
+  deserialiseAvro,
+  deserialiseHeaders,
+  deserialiseProtobuf,
+} from './deserialiser.js';
+import {
+  KafkaConsumerAvroMissingSchemaError,
+  KafkaConsumerProtobufMissingSchemaError,
+} from './errors.js';
 import type {
   AnyFunction,
   ConsumerRecords,
@@ -7,12 +15,11 @@ import type {
   SchemaConfig,
   SchemaConfigValue,
 } from './types.js';
-const avro = require('avro-js');
 
 const deserialise = (value: string, config: SchemaConfigValue) => {
   const { type, schemaStr, outputObject } = config;
-  const decoded = Buffer.from(value, 'base64');
   if (type === 'json') {
+    const decoded = Buffer.from(value, 'base64');
     try {
       // we assume it's a JSON but it can also be a string, we don't know
       return JSON.parse(decoded.toString());
@@ -22,46 +29,21 @@ const deserialise = (value: string, config: SchemaConfigValue) => {
     }
   }
   if (type === 'avro') {
-    const type = avro.parse(config.schemaStr);
-    return type.fromBuffer(decoded);
-  }
-  // TODO: Add support for protobuf.
-  if (type === 'protobuf') {
-    if (schemaStr) {
-      return deserialiseProtobuf(schemaStr, outputObject as string, value);
+    if (!schemaStr) {
+      throw new KafkaConsumerAvroMissingSchemaError(
+        'Schema string is required for Avro deserialization'
+      );
     }
+    return deserialiseAvro(value, schemaStr);
   }
-};
-
-const deserialiseProtobuf = (
-  schemaStr: string,
-  messageName: string,
-  base64Data: string
-): Record<string, unknown> => {
-  const root = parse(schemaStr).root;
-  const Message = root.lookupType(messageName);
-
-  const buffer = Buffer.from(base64Data, 'base64');
-  const decodedMessage = Message.decode(buffer);
-
-  return Message.toObject(decodedMessage, {
-    longs: Number,
-    enums: String,
-    defaults: true,
-    arrays: true,
-    objects: true,
-  });
-};
-
-const deserialiseHeaders = (headers: Record<string, number[]>[]) => {
-  return headers.map((header) =>
-    Object.fromEntries(
-      Object.entries(header).map(([headerKey, headerValue]) => [
-        headerKey,
-        Buffer.from(headerValue).toString('utf-8'),
-      ])
-    )
-  );
+  if (type === 'protobuf') {
+    if (!schemaStr) {
+      throw new KafkaConsumerProtobufMissingSchemaError(
+        'Schema string is required for Protobuf deserialization'
+      );
+    }
+    return deserialiseProtobuf(schemaStr, outputObject as string, value);
+  }
 };
 
 export function kafkaConsumer<K, V>(

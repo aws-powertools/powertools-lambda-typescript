@@ -38,11 +38,9 @@ describe('Kafka consumer: ', () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'json',
-        outputObject: valueObj,
       },
       key: {
         type: 'json',
-        outputObject: keyObj,
       },
     });
 
@@ -78,7 +76,6 @@ describe('Kafka consumer: ', () => {
       },
       key: {
         type: 'json',
-        outputObject: keyObj,
       },
     });
 
@@ -98,6 +95,7 @@ describe('Kafka consumer: ', () => {
 
   it('throws when schemaStr not passed for avro event', async () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
+      // @ts-expect-error - testing missing schemaStr
       value: {
         type: 'avro',
         outputObject: valueObj,
@@ -111,9 +109,9 @@ describe('Kafka consumer: ', () => {
 
   it('throws when schemaStr not passed for protobuf event', async () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
+      // @ts-expect-error - testing missing schemaStr
       value: {
         type: 'protobuf',
-        outputObject: valueObj,
       },
     });
 
@@ -136,7 +134,6 @@ describe('Kafka consumer: ', () => {
       },
       key: {
         type: 'json',
-        outputObject: keyObj,
       },
     });
 
@@ -159,9 +156,8 @@ describe('Kafka consumer: ', () => {
       value: {
         // @ts-expect-error - testing unsupported type
         type: 'xml', // unsupported type
-        outputObject: valueObj,
       },
     });
-    await expect(consumer({}, {})).rejects.toThrow();
+    await expect(consumer(jsonEvent, {})).rejects.toThrow();
   });
 });

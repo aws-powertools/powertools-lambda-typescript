@@ -1,9 +1,9 @@
 import type { Context, Handler } from 'aws-lambda';
 import { parse } from 'protobufjs';
-import type { KafkaEvent } from './schema.js';
 import type {
   AnyFunction,
   ConsumerRecords,
+  MSKEvent,
   SchemaConfig,
   SchemaConfigValue,
 } from './types.js';
@@ -28,16 +28,16 @@ const deserialise = (value: string, config: SchemaConfigValue) => {
   // TODO: Add support for protobuf.
   if (type === 'protobuf') {
     if (schemaStr) {
-      return decodeProtobufBase64(schemaStr, outputObject as string, value);
+      return deserialiseProtobuf(schemaStr, outputObject as string, value);
     }
   }
 };
 
-export function decodeProtobufBase64(
+const deserialiseProtobuf = (
   schemaStr: string,
   messageName: string,
   base64Data: string
-): Record<string, unknown> {
+): Record<string, unknown> => {
   const root = parse(schemaStr).root;
   const Message = root.lookupType(messageName);
 
@@ -51,7 +51,18 @@ export function decodeProtobufBase64(
     arrays: true,
     objects: true,
   });
-}
+};
+
+const deserialiseHeaders = (headers: Record<string, number[]>[]) => {
+  return headers.map((header) =>
+    Object.fromEntries(
+      Object.entries(header).map(([headerKey, headerValue]) => [
+        headerKey,
+        Buffer.from(headerValue).toString('utf-8'),
+      ])
+    )
+  );
+};
 
 export function kafkaConsumer<K, V>(
   fn: AnyFunction,
@@ -61,7 +72,7 @@ export function kafkaConsumer<K, V>(
     this: Handler,
     ...args: Parameters<AnyFunction>
   ): Promise<ReturnType<AnyFunction>> {
-    const event = args[0] as KafkaEvent;
+    const event = args[0] as MSKEvent;
 
     const context = args[1] as Context;
     const consumerRecords: ConsumerRecords<K, V>[] = [];
@@ -69,7 +80,6 @@ export function kafkaConsumer<K, V>(
       event.records
     )) {
       for (const record of recordsArray) {
-        // TODO: add headers
         consumerRecords.push({
           key:
             record.key && config.key
@@ -78,6 +88,8 @@ export function kafkaConsumer<K, V>(
           value: deserialise(record.value, config.value),
           originalKey: record.key,
           originalValue: record.value,
+          headers: deserialiseHeaders(record.headers),
+          originalHeaders: record.headers,
         });
       }
     }

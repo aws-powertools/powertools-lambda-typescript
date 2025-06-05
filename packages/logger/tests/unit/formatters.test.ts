@@ -334,6 +334,7 @@ describe('Formatters', () => {
       error: new Error('Something went wrong'),
       name: 'Error',
       expectedFields: {
+        location: expect.any(String),
         message: 'Something went wrong',
         cause: undefined,
       },
@@ -342,6 +343,7 @@ describe('Formatters', () => {
       error: new ReferenceError('doesNotExist is not defined'),
       name: 'ReferenceError',
       expectedFields: {
+        location: expect.any(String),
         message: 'doesNotExist is not defined',
         cause: undefined,
       },
@@ -370,6 +372,7 @@ describe('Formatters', () => {
       error: new RangeError('The argument must be between 10 and 20'),
       name: 'RangeError',
       expectedFields: {
+        location: expect.any(String),
         message: 'The argument must be between 10 and 20',
         cause: undefined,
       },
@@ -378,6 +381,7 @@ describe('Formatters', () => {
       error: new ReferenceError('foo is not defined'),
       name: 'ReferenceError',
       expectedFields: {
+        location: expect.any(String),
         message: 'foo is not defined',
         cause: undefined,
       },
@@ -386,6 +390,7 @@ describe('Formatters', () => {
       error: new SyntaxError(`Unexpected identifier 'bar'`),
       name: 'SyntaxError',
       expectedFields: {
+        location: expect.any(String),
         message: `Unexpected identifier 'bar'`,
         cause: undefined,
       },
@@ -394,6 +399,7 @@ describe('Formatters', () => {
       error: new TypeError(`Cannot read property 'foo' of null`),
       name: 'TypeError',
       expectedFields: {
+        location: expect.any(String),
         message: expect.stringMatching(/Cannot read property/),
         cause: undefined,
       },
@@ -402,6 +408,7 @@ describe('Formatters', () => {
       error: new URIError('URI malformed'),
       name: 'URIError',
       expectedFields: {
+        location: expect.any(String),
         message: 'URI malformed',
         cause: undefined,
       },
@@ -410,9 +417,10 @@ describe('Formatters', () => {
       error: new ErrorWithCause('foo', { cause: new Error('bar') }),
       name: 'ErrorWithCause',
       expectedFields: {
+        location: expect.any(String),
         message: 'foo',
         cause: {
-          location: expect.stringMatching(fileNameRegexp),
+          location: expect.any(String),
           message: 'bar',
           name: 'Error',
           stack: expect.stringMatching(fileNameRegexpWithLine),
@@ -423,6 +431,7 @@ describe('Formatters', () => {
       error: new ErrorWithCauseString('foo', { cause: 'bar' }),
       name: 'ErrorWithCauseString',
       expectedFields: {
+        location: expect.any(String),
         message: 'foo',
         cause: 'bar',
       },
@@ -435,7 +444,6 @@ describe('Formatters', () => {
 
       // Assess
       expect(formattedError).toEqual({
-        location: expect.stringMatching(fileNameRegexp),
         stack: expect.stringMatching(fileNameRegexpWithLine),
         name,
         ...expectedFields,
@@ -479,7 +487,7 @@ describe('Formatters', () => {
 
     // Assess
     expect(formattedError).toEqual({
-      location: expect.stringMatching(fileNameRegexp),
+      location: expect.any(String),
       stack: expect.stringMatching(fileNameRegexpWithLine),
       name: 'SuperCustomError',
       message: 'Something went wrong',

@@ -13,12 +13,11 @@ import type {
   ConsumerRecords,
   MSKEvent,
   SchemaConfig,
-  SchemaConfigValue,
+  SchemaType,
 } from './types.js';
 
-const deserialise = (value: string, config: SchemaConfigValue) => {
-  const { type, schemaStr, outputObject } = config;
-  if (type === 'json') {
+const deserialise = (value: string, config: SchemaType) => {
+  if (config.type === 'json') {
     const decoded = Buffer.from(value, 'base64');
     try {
       // we assume it's a JSON but it can also be a string, we don't know
@@ -28,24 +27,28 @@ const deserialise = (value: string, config: SchemaConfigValue) => {
       return decoded.toString();
     }
   }
-  if (type === 'avro') {
-    if (!schemaStr) {
+  if (config.type === 'avro') {
+    if (!config.schemaStr) {
       throw new KafkaConsumerAvroMissingSchemaError(
         'Schema string is required for Avro deserialization'
       );
     }
-    return deserialiseAvro(value, schemaStr);
+    return deserialiseAvro(value, config.schemaStr);
   }
-  if (type === 'protobuf') {
-    if (!schemaStr) {
+  if (config.type === 'protobuf') {
+    if (!config.schemaStr) {
       throw new KafkaConsumerProtobufMissingSchemaError(
         'Schema string is required for Protobuf deserialization'
       );
     }
-    return deserialiseProtobuf(schemaStr, outputObject as string, value);
+    return deserialiseProtobuf(
+      config.schemaStr,
+      config.outputObject as string,
+      value
+    );
   }
 
-  throw new Error(`Unsupported deserialization type: ${type}`);
+  throw new Error(`Unsupported deserialization type: ${config}`);
 };
 
 export function kafkaConsumer<K, V>(

@@ -14,8 +14,12 @@ type ConsumerRecords<K, V> = {
 
 type SchemaType =
   | { type: 'json' }
-  | { type: 'avro'; schemaStr: string; outputObject: ZodTypeAny | string }
-  | { type: 'protobuf'; schemaStr: string; outputObject: string };
+  | {
+      type: 'avro';
+      schemaStr: string;
+      outputObject: ZodTypeAny | string | undefined;
+    }
+  | { type: 'protobuf'; schemaStr: string; outputObject: string | undefined };
 
 type SchemaConfig = {
   /**

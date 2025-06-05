@@ -44,6 +44,8 @@ const deserialise = (value: string, config: SchemaConfigValue) => {
     }
     return deserialiseProtobuf(schemaStr, outputObject as string, value);
   }
+
+  throw new Error(`Unsupported deserialization type: ${type}`);
 };
 
 export function kafkaConsumer<K, V>(

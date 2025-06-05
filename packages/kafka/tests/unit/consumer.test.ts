@@ -153,4 +153,15 @@ describe('Kafka consumer: ', () => {
     };
     expect(records[0]).toEqual(expected);
   });
+
+  it('throws if schema type is not json, avro or protobuf', async () => {
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        // @ts-expect-error - testing unsupported type
+        type: 'xml', // unsupported type
+        outputObject: valueObj,
+      },
+    });
+    await expect(consumer({}, {})).rejects.toThrow();
+  });
 });

@@ -1,7 +1,5 @@
 import type { ZodTypeAny } from 'zod';
 
-type SchemaType = 'json' | 'avro' | 'protobuf';
-
 /**
  * Represents a Kafka consumer record.
  */
@@ -14,36 +12,22 @@ type ConsumerRecords<K, V> = {
   originalHeaders?: RecordHeader[] | undefined;
 };
 
-type SchemaConfigValue = {
-  /**
-   * Type of the provided schema
-   */
-  type: SchemaType;
-  /**
-   * Schema definition as string.
-   * Required only when type set to AVRO or PROTOBUF
-   */
-  schemaStr?: string;
-  /**
-   * Custom serializer for message values. Can be:
-   *   - zod schema
-   *   - ajv schema
-   *   - custom serializer function
-   */
-  outputObject: ZodTypeAny | string | unknown; // object, but not clear what exact shape
-};
+type SchemaType =
+  | { type: 'json' }
+  | { type: 'avro'; schemaStr: string; outputObject: ZodTypeAny | string }
+  | { type: 'protobuf'; schemaStr: string; outputObject: string };
 
 type SchemaConfig = {
   /**
    * Schema type for the key.
    * If not provided, the key will not be validated.
    */
-  value: SchemaConfigValue;
+  value: SchemaType;
   /**
    * Schema type for the value.
    * If not provided, the value will not be validated.
    */
-  key?: SchemaConfigValue;
+  key?: SchemaType;
 };
 
 /**
@@ -83,7 +67,6 @@ export type {
   AnyFunction,
   ConsumerRecords,
   SchemaConfig,
-  SchemaConfigValue,
   SchemaType,
   MSKEvent,
   Record,

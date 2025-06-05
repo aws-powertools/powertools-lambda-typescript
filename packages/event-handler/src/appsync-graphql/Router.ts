@@ -2,8 +2,9 @@ import {
   EnvironmentVariablesService,
   isRecord,
 } from '@aws-lambda-powertools/commons';
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
+import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import type {
-  GenericLogger,
   GraphQlRouteOptions,
   GraphQlRouterOptions,
   OnMutationHandler,
@@ -40,7 +41,10 @@ class Router {
 
   public constructor(options?: GraphQlRouterOptions) {
     this.envService = new EnvironmentVariablesService();
-    const alcLogLevel = this.envService.get('AWS_LAMBDA_LOG_LEVEL');
+    const alcLogLevel = getStringFromEnv({
+      key: 'AWS_LAMBDA_LOG_LEVEL',
+      defaultValue: '',
+    });
     this.logger = options?.logger ?? {
       debug: alcLogLevel === 'DEBUG' ? console.debug : () => undefined,
       error: console.error,

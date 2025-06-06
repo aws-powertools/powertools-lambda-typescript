@@ -114,11 +114,11 @@ class AppSyncEventsResolver extends Router {
     if (aggregate) {
       try {
         return {
-          events: await (handler as OnPublishHandlerAggregateFn).apply(this, [
+          events: await (handler as OnPublishHandlerAggregateFn)(
             event.events,
             event,
-            context,
-          ]),
+            context
+          ),
         };
       } catch (error) {
         this.logger.error(`An error occurred in handler ${path}`, error);
@@ -131,11 +131,11 @@ class AppSyncEventsResolver extends Router {
         event.events.map(async (message) => {
           const { id, payload } = message;
           try {
-            const result = await (handler as OnPublishHandlerFn).apply(this, [
+            const result = await (handler as OnPublishHandlerFn)(
               payload,
               event,
-              context,
-            ]);
+              context
+            );
             return {
               id,
               payload: result,
@@ -173,7 +173,7 @@ class AppSyncEventsResolver extends Router {
     }
     const { handler } = routeHandlerOptions;
     try {
-      await (handler as OnSubscribeHandler).apply(this, [event, context]);
+      await (handler as OnSubscribeHandler)(event, context);
     } catch (error) {
       this.logger.error(`An error occurred in handler ${path}`, error);
       if (error instanceof UnauthorizedException) throw error;

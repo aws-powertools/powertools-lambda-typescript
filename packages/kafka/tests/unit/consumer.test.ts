@@ -160,4 +160,26 @@ describe('Kafka consumer: ', () => {
     });
     await expect(consumer(jsonEvent, {})).rejects.toThrow();
   });
+
+  it('deserialises to base64 string if no configuration provided', async () => {
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
+      },
+    });
+
+    const records = await consumer(jsonEvent, {});
+    const expected = {
+      key: 'recordKey',
+      value: { id: 12345, name: 'product5', price: 45 },
+      headers: [{ headerKey: 'headerValue' }],
+      originalKey: 'cmVjb3JkS2V5',
+      originalValue:
+        'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
+      originalHeaders: [
+        { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
+      ],
+    };
+    expect(records[0]).toEqual(expected);
+  });
 });

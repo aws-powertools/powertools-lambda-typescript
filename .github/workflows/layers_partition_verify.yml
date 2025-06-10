@@ -42,7 +42,7 @@ on:
         required: false
 
 name: Layer Verification (Partition)
-run-name: Layer Verification (${{ inputs.partition }}) / Version ${{ inputs.version }}
+run-name: Layer Verification (${{ inputs.partition }}) - ${{ inputs.environment }} / Version - ${{ inputs.version }}
 
 permissions: {}
 

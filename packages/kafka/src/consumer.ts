@@ -16,7 +16,11 @@ import type {
   SchemaType,
 } from './types.js';
 
-const deserialise = (value: string, config: SchemaType) => {
+const deserialise = (value: string, config?: SchemaType) => {
+  // no config -> default to base64 decoding
+  if (config === undefined) {
+    return Buffer.from(value, 'base64').toString();
+  }
   if (config.type === 'json') {
     const decoded = Buffer.from(value, 'base64');
     try {
@@ -68,10 +72,7 @@ export function kafkaConsumer<K, V>(
     )) {
       for (const record of recordsArray) {
         consumerRecords.push({
-          key:
-            record.key && config.key
-              ? deserialise(record.key, config.key)
-              : undefined,
+          key: record.key ? deserialise(record.key, config.key) : undefined,
           value: deserialise(record.value, config.value),
           originalKey: record.key,
           originalValue: record.value,

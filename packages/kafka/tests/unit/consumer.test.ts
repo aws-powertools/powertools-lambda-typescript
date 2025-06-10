@@ -182,4 +182,39 @@ describe('Kafka consumer: ', () => {
     };
     expect(records[0]).toEqual(expected);
   });
+
+  it('deserialises with no headers provided', () => {
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
+      },
+    });
+
+    const jsonEventWithoutHeaders = {
+      ...jsonEvent,
+      records: {
+        'test-topic': [
+          {
+            key: 'cmVjb3JkS2V5',
+            value:
+              'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
+            headers: null, // No headers
+          },
+        ],
+      },
+    };
+
+    const records = consumer(jsonEventWithoutHeaders, {});
+    expect(records).resolves.toEqual([
+      {
+        key: 'recordKey',
+        value: { id: 12345, name: 'product5', price: 45 },
+        headers: null,
+        originalKey: 'cmVjb3JkS2V5',
+        originalValue:
+          'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
+        originalHeaders: null,
+      },
+    ]);
+  });
 });

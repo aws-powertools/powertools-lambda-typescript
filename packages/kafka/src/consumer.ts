@@ -76,7 +76,8 @@ export function kafkaConsumer<K, V>(
           value: deserialise(record.value, config.value),
           originalKey: record.key,
           originalValue: record.value,
-          headers: deserialiseHeaders(record.headers),
+          headers:
+            record.headers !== null ? deserialiseHeaders(record.headers) : null,
           originalHeaders: record.headers,
         });
       }

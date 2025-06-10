@@ -8,7 +8,7 @@ type ConsumerRecords<K, V> = {
   value: V;
   originalKey: string | undefined;
   originalValue: string | undefined;
-  headers?: { [k: string]: string }[] | undefined;
+  headers?: { [k: string]: string }[] | undefined | null;
   originalHeaders?: RecordHeader[] | undefined;
 };
 

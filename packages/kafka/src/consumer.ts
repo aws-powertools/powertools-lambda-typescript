@@ -10,7 +10,7 @@ import {
 } from './errors.js';
 import type {
   AnyFunction,
-  ConsumerRecords,
+  ConsumerRecord,
   MSKEvent,
   SchemaConfig,
   SchemaType,
@@ -32,24 +32,20 @@ const deserialise = (value: string, config?: SchemaType) => {
     }
   }
   if (config.type === 'avro') {
-    if (!config.schemaStr) {
+    if (!config.schema) {
       throw new KafkaConsumerAvroMissingSchemaError(
         'Schema string is required for Avro deserialization'
       );
     }
-    return deserialiseAvro(value, config.schemaStr);
+    return deserialiseAvro(value, config.schema);
   }
   if (config.type === 'protobuf') {
-    if (!config.schemaStr) {
+    if (!config.schema) {
       throw new KafkaConsumerProtobufMissingSchemaError(
         'Schema string is required for Protobuf deserialization'
       );
     }
-    return deserialiseProtobuf(
-      config.schemaStr,
-      config.outputObject as string,
-      value
-    );
+    return deserialiseProtobuf(config.schema, value);
   }
 
   throw new Error(`Unsupported deserialization type: ${config}`);
@@ -66,7 +62,7 @@ export function kafkaConsumer<K, V>(
     const event = args[0] as MSKEvent;
 
     const context = args[1] as Context;
-    const consumerRecords: ConsumerRecords<K, V>[] = [];
+    const consumerRecords: ConsumerRecord<K, V>[] = [];
     for (const [_topicPartition, recordsArray] of Object.entries(
       event.records
     )) {
@@ -82,6 +78,11 @@ export function kafkaConsumer<K, V>(
         });
       }
     }
+
+    const deserialisedRecords = {
+      ...event,
+      records: consumerRecords,
+    };
 
     // Call the original function with the validated event and context
     return await fn.call(this, consumerRecords, context, ...args);

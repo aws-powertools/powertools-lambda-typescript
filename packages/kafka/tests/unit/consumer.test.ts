@@ -10,6 +10,7 @@ import type { ConsumerRecords } from '../../src/types.js';
 import * as avroEvent from '../events/avro.json' with { type: 'json' };
 import * as jsonEvent from '../events/default.json' with { type: 'json' };
 import * as protobufEvent from '../events/protobuf.json' with { type: 'json' };
+import { Product } from '../protos/product.generated.js';
 
 describe('Kafka consumer: ', () => {
   //{   "id": 12345,   "name": "product5",   "price": 45 }
@@ -29,7 +30,7 @@ describe('Kafka consumer: ', () => {
   type Product = z.infer<typeof valueObj>;
 
   const handler = async (
-    records: ConsumerRecords<Key, Product>[],
+    records: ConsumerRecords<Key, Product>,
     _context: Context
   ) => {
     return records;
@@ -63,7 +64,7 @@ describe('Kafka consumer: ', () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'avro',
-        schemaStr: `{
+        schema: `{
           "type": "record",
           "name": "Product",
           "fields": [
@@ -72,7 +73,7 @@ describe('Kafka consumer: ', () => {
             { "name": "price", "type": "double" }
           ]
         }`,
-        outputObject: valueObj,
+        outputSerializer: valueObj,
       },
       key: {
         type: 'json',
@@ -98,7 +99,7 @@ describe('Kafka consumer: ', () => {
       // @ts-expect-error - testing missing schemaStr
       value: {
         type: 'avro',
-        outputObject: valueObj,
+        outputSerializer: valueObj,
       },
     });
 
@@ -124,13 +125,7 @@ describe('Kafka consumer: ', () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'protobuf',
-        schemaStr: `syntax = "proto3";
-          message Product {
-            int32 id = 1;
-            string name = 2;
-            double price = 3;
-          }`,
-        outputObject: 'Product',
+        schema: Product,
       },
       key: {
         type: 'json',

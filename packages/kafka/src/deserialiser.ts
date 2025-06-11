@@ -1,4 +1,8 @@
-import { parse } from 'protobufjs';
+import {
+  BinaryReader,
+  type MessageType,
+  binaryReadOptions,
+} from '@protobuf-ts/runtime';
 import { KafkaConsumerDeserializationError } from './errors.js';
 
 const avro = require('avro-js');
@@ -14,28 +18,21 @@ const deserialiseHeaders = (headers: Record<string, number[]>[]) => {
   );
 };
 
-const deserialiseProtobuf = (
-  schemaStr: string,
-  messageName: string,
+const deserialiseProtobuf = <T extends object>(
+  messageType: MessageType<T>,
   data: string
-): Record<string, unknown> => {
+): T => {
   try {
-    const root = parse(schemaStr).root;
-    const Message = root.lookupType(messageName);
-
     const buffer = Buffer.from(data, 'base64');
-    const decodedMessage = Message.decode(buffer);
 
-    return Message.toObject(decodedMessage, {
-      longs: Number,
-      enums: String,
-      defaults: true,
-      arrays: true,
-      objects: true,
-    });
+    return messageType.internalBinaryRead(
+      new BinaryReader(buffer),
+      buffer.length,
+      binaryReadOptions()
+    );
   } catch (error) {
     throw new KafkaConsumerDeserializationError(
-      `Failed to deserialize Protobuf message: ${error}, message: ${data}, schema: ${schemaStr}`
+      `Failed to deserialize Protobuf message: ${error}, message: ${data}, messageType: ${messageType.typeName}`
     );
   }
 };

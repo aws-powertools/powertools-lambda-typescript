@@ -26,6 +26,44 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "license": "MIT-0",
   "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./lib/cjs/consumer.d.ts",
+        "default": "./lib/cjs/consumer.js"
+      },
+      "import": {
+        "types": "./lib/esm/consumer.d.ts",
+        "default": "./lib/esm/consumer.js"
+      }
+    },
+    "./errors": {
+      "require": {
+        "types": "./lib/cjs/errors.d.ts",
+        "default": "./lib/cjs/errors.js"
+      },
+      "import": {
+        "types": "./lib/esm/errors.d.ts",
+        "default": "./lib/esm/errors.js"
+      }
+    },
+    "./types": {
+      "require": {
+        "types": "./lib/cjs/types.d.ts",
+        "default": "./lib/cjs/types.js"
+      },
+      "import": {
+        "types": "./lib/esm/types.d.ts",
+        "default": "./lib/esm/types.js"
+      }
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "errors": ["lib/cjs/errors.d.ts", "lib/esm/errors.d.ts"],
+      "types": ["lib/cjs/types.d.ts", "lib/esm/types.d.ts"]
+    }
+  },
   "files": [
     "lib"
   ],

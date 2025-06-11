@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  kafka
+
+  Sample SAM Template for kafka
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 15
+    MemorySize: 512
+    Tracing: Active
+    
+Resources:
+  JsonDeserializationFunction: 
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: app/
+      Handler: app.lambdaHandler
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      Tracing: Active
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: kafka-json-deserialization 
+          POWERTOOLS_METRICS_NAMESPACE: kafka
+          LOG_LEVEL: INFO
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+        - app.ts
+        
+  AvroDeserializationFunction: 
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: app/
+      Handler: app.lambdaHandler
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      Tracing: Active
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: kafka-avro-deserialization
+          POWERTOOLS_METRICS_NAMESPACE: kafka
+          LOG_LEVEL: INFO
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+        - app.ts
+
+  ProtobufDeserializationFunction: 
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: app/
+      Handler: app.lambdaHandler
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      Tracing: Active
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: kafka-protobuf-deserialization
+          POWERTOOLS_METRICS_NAMESPACE: kafka
+          LOG_LEVEL: INFO
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+        - app.ts

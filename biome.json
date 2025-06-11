@@ -31,7 +31,8 @@
       "lib",
       "cdk.out",
       "site",
-      ".aws-sam"
+      ".aws-sam",
+      "**/*.generated.ts"
     ]
   }
 }

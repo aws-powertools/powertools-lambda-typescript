@@ -1,9 +1,10 @@
+import type { MessageType } from '@protobuf-ts/runtime';
 import type { ZodTypeAny } from 'zod';
 
 /**
  * Represents a Kafka consumer record.
  */
-type ConsumerRecords<K, V> = {
+type ConsumerRecord<K, V> = {
   key: K;
   value: V;
   originalKey: string | undefined;
@@ -12,14 +13,23 @@ type ConsumerRecords<K, V> = {
   originalHeaders?: RecordHeader[] | undefined;
 };
 
-type SchemaType =
-  | { type: 'json' }
-  | {
-      type: 'avro';
-      schemaStr: string;
-      outputObject: ZodTypeAny | string | undefined;
-    }
-  | { type: 'protobuf'; schemaStr: string; outputObject: string | undefined };
+type ConsumerRecords<K, V> = {
+  records: Array<ConsumerRecord<K, V>>;
+} & Omit<MSKEvent, 'records'>;
+
+type SchemaType = JsonConfig | AvroConfig | ProtobufConfig<object>;
+
+type JsonConfig = { type: 'json' };
+type AvroConfig = {
+  type: 'avro';
+  schema: string;
+  outputSerializer?: ZodTypeAny;
+};
+type ProtobufConfig<T extends object> = {
+  type: 'protobuf';
+  schema: MessageType<T>;
+  outputSerializer?: ZodTypeAny;
+};
 
 type SchemaConfig = {
   /**
@@ -70,6 +80,7 @@ interface MSKEvent {
 export type {
   AnyFunction,
   ConsumerRecords,
+  ConsumerRecord,
   SchemaConfig,
   SchemaType,
   MSKEvent,

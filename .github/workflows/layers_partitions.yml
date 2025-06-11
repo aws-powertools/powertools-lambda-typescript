@@ -55,7 +55,7 @@ jobs:
         name: Parition (China)
         if: ${{ inputs.partition == 'China' }}
         run: |
-          echo regions='["cn-north-1", "cn-northwest-1"]'>> "$GITHUB_OUTPUT"
+          echo regions='["cn-north-1"]'>> "$GITHUB_OUTPUT"
           echo partition='aws-cn'>> "$GITHUB_OUTPUT"
           echo aud='sts.amazonaws.com.cn'>> "$GITHUB_OUTPUT"
       - id: regions_govcloud

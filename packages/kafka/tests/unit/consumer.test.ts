@@ -1,6 +1,6 @@
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import z from 'zod';
+import z, { ZodError } from 'zod';
 import { kafkaConsumer } from '../../src/consumer.js';
 import {
   KafkaConsumerAvroMissingSchemaError,
@@ -13,21 +13,19 @@ import * as protobufEvent from '../events/protobuf.json' with { type: 'json' };
 import { Product as ProductProto } from '../protos/product.generated.js';
 
 describe('Kafka consumer: ', () => {
-  //{   "id": 12345,   "name": "product5",   "price": 45 }
-  const keyObj = z.object({
-    key: z.string(),
-  });
+  const keyZodSchema = z.string();
 
-  const valueObj = z.object({
-    value: z.object({
-      id: z.number(),
-      name: z.string(),
-      price: z.number(),
+  //{   "id": 12345,   "name": "product5",   "price": 45 }
+  const valueZodSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    price: z.number().positive({
+      message: "Price can't be negative",
     }),
   });
 
-  type Key = z.infer<typeof keyObj>;
-  type Product = z.infer<typeof valueObj>;
+  type Key = z.infer<typeof keyZodSchema>;
+  type Product = z.infer<typeof valueZodSchema>;
 
   const handler = async (
     event: ConsumerRecords<Key, Product>,
@@ -35,7 +33,7 @@ describe('Kafka consumer: ', () => {
   ) => {
     return event;
   };
-  it('should deserialise json message', async () => {
+  it('deserializes json message', async () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'json',
@@ -44,7 +42,6 @@ describe('Kafka consumer: ', () => {
         type: 'json',
       },
     });
-
     const event = await consumer(jsonEvent, {});
     const expected = {
       key: 'recordKey',
@@ -60,7 +57,7 @@ describe('Kafka consumer: ', () => {
     expect(event.records[0]).toEqual(expected);
   });
 
-  it('should deserialise avro message', async () => {
+  it('deserializes avro message', async () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'avro',
@@ -73,7 +70,6 @@ describe('Kafka consumer: ', () => {
             { "name": "price", "type": "double" }
           ]
         }`,
-        outputSerializer: valueObj,
       },
       key: {
         type: 'json',
@@ -99,7 +95,6 @@ describe('Kafka consumer: ', () => {
       // @ts-expect-error - testing missing schemaStr
       value: {
         type: 'avro',
-        outputSerializer: valueObj,
       },
     });
 
@@ -121,7 +116,7 @@ describe('Kafka consumer: ', () => {
     );
   });
 
-  it('should deserialise protobuf message', async () => {
+  it('deserializes protobuf message', async () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'protobuf',
@@ -156,7 +151,7 @@ describe('Kafka consumer: ', () => {
     await expect(consumer(jsonEvent, {})).rejects.toThrow();
   });
 
-  it('deserialises to base64 string if no configuration provided', async () => {
+  it('deserializes to base64 string if no configuration provided', async () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'json',
@@ -178,7 +173,7 @@ describe('Kafka consumer: ', () => {
     expect(event.records[0]).toEqual(expected);
   });
 
-  it('deserialises with no headers provided', async () => {
+  it('deserializes with no headers provided', async () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'json',
@@ -209,5 +204,68 @@ describe('Kafka consumer: ', () => {
         'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
       originalHeaders: null,
     });
+  });
+
+  it('validates key and value using Zod schemas for json', async () => {
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
+        zodSchema: valueZodSchema,
+      },
+      key: {
+        type: 'json',
+        zodSchema: keyZodSchema,
+      },
+    });
+
+    const event = await consumer(jsonEvent, {});
+    expect(event.records[0].key).toEqual('recordKey');
+    expect(event.records[0].value).toEqual({
+      id: 12345,
+      name: 'product5',
+      price: 45,
+    });
+  });
+
+  it('throws when zod schema validation fails', async () => {
+    const invalidJsonEvent = {
+      ...jsonEvent,
+      records: {
+        'test-topic': [
+          {
+            key: 'cmVjb3JkS2V5',
+            value:
+              'eyJpZCI6NDIsIm5hbWUiOiJpbnZhbGlkUHJvZHVjdCIsInByaWNlIjotMTAwfQ==', // Invalid JSON: negative price
+            headers: null,
+          },
+        ],
+      },
+    };
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
+        zodSchema: valueZodSchema,
+      },
+      key: {
+        type: 'json',
+        zodSchema: keyZodSchema,
+      },
+    });
+
+    await expect(consumer(invalidJsonEvent, {})).rejects.toThrow(
+      expect.objectContaining({
+        issues: [
+          {
+            code: 'too_small',
+            minimum: 0,
+            type: 'number',
+            inclusive: false,
+            exact: false,
+            message: "Price can't be negative",
+            path: ['price'],
+          },
+        ],
+      })
+    );
   });
 });

@@ -85,6 +85,6 @@ export function kafkaConsumer<K, V>(
     };
 
     // Call the original function with the validated event and context
-    return await fn.call(this, consumerRecords, context, ...args);
+    return await fn.call(this, deserialisedRecords, context, ...args);
   };
 }

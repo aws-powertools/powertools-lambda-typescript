@@ -166,6 +166,7 @@ The following companies, among others, use Powertools:
 - [globaldatanet](https://globaldatanet.com/)
 - [Guild](https://guild.com)
 - [Hashnode](https://hashnode.com/)
+- [Instil](https://instil.co/)
 - [LocalStack](https://localstack.cloud/)
 - [Ours Privacy](https://oursprivacy.com/)
 - [Perfect Post](https://www.perfectpost.fr)

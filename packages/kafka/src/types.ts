@@ -19,16 +19,17 @@ type ConsumerRecords<K, V> = {
 
 type SchemaType = JsonConfig | AvroConfig | ProtobufConfig<object>;
 
-type JsonConfig = { type: 'json' };
+type JsonConfig = { type: 'json'; zodSchema?: ZodTypeAny };
+
 type AvroConfig = {
   type: 'avro';
   schema: string;
-  outputSerializer?: ZodTypeAny;
+  zodSchema?: ZodTypeAny;
 };
 type ProtobufConfig<T extends object> = {
   type: 'protobuf';
   schema: MessageType<T>;
-  outputSerializer?: ZodTypeAny;
+  zodSchema?: ZodTypeAny;
 };
 
 type SchemaConfig = {

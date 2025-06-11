@@ -28,6 +28,7 @@ const deserialise = (value: string, config?: SchemaType) => {
       return JSON.parse(decoded.toString());
     } catch (error) {
       // in case we could not parse it we return the base64 decoded value
+      console.error(`Failed to parse JSON from base64 value: ${value}`, error);
       return decoded.toString();
     }
   }
@@ -67,7 +68,7 @@ export function kafkaConsumer<K, V>(
       event.records
     )) {
       for (const record of recordsArray) {
-        consumerRecords.push({
+        const newRecord = {
           key: record.key ? deserialise(record.key, config.key) : undefined,
           value: deserialise(record.value, config.value),
           originalKey: record.key,
@@ -75,7 +76,17 @@ export function kafkaConsumer<K, V>(
           headers:
             record.headers !== null ? deserialiseHeaders(record.headers) : null,
           originalHeaders: record.headers,
-        });
+        };
+
+        if (config.key?.zodSchema && newRecord.key !== undefined) {
+          config.key.zodSchema.parse(newRecord.key);
+        }
+
+        if (config.value.zodSchema) {
+          config.value.zodSchema.parse(newRecord.value);
+        }
+
+        consumerRecords.push(newRecord);
       }
     }
 

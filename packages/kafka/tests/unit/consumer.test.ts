@@ -10,7 +10,7 @@ import type { ConsumerRecords } from '../../src/types.js';
 import * as avroEvent from '../events/avro.json' with { type: 'json' };
 import * as jsonEvent from '../events/default.json' with { type: 'json' };
 import * as protobufEvent from '../events/protobuf.json' with { type: 'json' };
-import { Product } from '../protos/product.generated.js';
+import { Product as ProductProto } from '../protos/product.generated.js';
 
 describe('Kafka consumer: ', () => {
   //{   "id": 12345,   "name": "product5",   "price": 45 }
@@ -30,10 +30,10 @@ describe('Kafka consumer: ', () => {
   type Product = z.infer<typeof valueObj>;
 
   const handler = async (
-    records: ConsumerRecords<Key, Product>,
+    event: ConsumerRecords<Key, Product>,
     _context: Context
   ) => {
-    return records;
+    return event;
   };
   it('should deserialise json message', async () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
@@ -45,7 +45,7 @@ describe('Kafka consumer: ', () => {
       },
     });
 
-    const records = await consumer(jsonEvent, {});
+    const event = await consumer(jsonEvent, {});
     const expected = {
       key: 'recordKey',
       value: { id: 12345, name: 'product5', price: 45 },
@@ -57,7 +57,7 @@ describe('Kafka consumer: ', () => {
         { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
       ],
     };
-    expect(records[0]).toEqual(expected);
+    expect(event.records[0]).toEqual(expected);
   });
 
   it('should deserialise avro message', async () => {
@@ -80,7 +80,7 @@ describe('Kafka consumer: ', () => {
       },
     });
 
-    const records = await consumer(avroEvent, {});
+    const event = await consumer(avroEvent, {});
     const expected = {
       key: 42,
       value: { id: 1001, name: 'Laptop', price: 999.99 },
@@ -91,7 +91,7 @@ describe('Kafka consumer: ', () => {
         { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
       ],
     };
-    expect(records[0]).toEqual(expected);
+    expect(event.records[0]).toEqual(expected);
   });
 
   it('throws when schemaStr not passed for avro event', async () => {
@@ -125,14 +125,14 @@ describe('Kafka consumer: ', () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'protobuf',
-        schema: Product,
+        schema: ProductProto,
       },
       key: {
         type: 'json',
       },
     });
 
-    const records = await consumer(protobufEvent, {});
+    const event = await consumer(protobufEvent, {});
     const expected = {
       key: 42,
       value: { id: 1001, name: 'Laptop', price: 999.99 },
@@ -143,7 +143,7 @@ describe('Kafka consumer: ', () => {
         { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
       ],
     };
-    expect(records[0]).toEqual(expected);
+    expect(event.records[0]).toEqual(expected);
   });
 
   it('throws if schema type is not json, avro or protobuf', async () => {
@@ -163,7 +163,7 @@ describe('Kafka consumer: ', () => {
       },
     });
 
-    const records = await consumer(jsonEvent, {});
+    const event = await consumer(jsonEvent, {});
     const expected = {
       key: 'recordKey',
       value: { id: 12345, name: 'product5', price: 45 },
@@ -175,10 +175,10 @@ describe('Kafka consumer: ', () => {
         { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
       ],
     };
-    expect(records[0]).toEqual(expected);
+    expect(event.records[0]).toEqual(expected);
   });
 
-  it('deserialises with no headers provided', () => {
+  it('deserialises with no headers provided', async () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'json',
@@ -199,17 +199,15 @@ describe('Kafka consumer: ', () => {
       },
     };
 
-    const records = consumer(jsonEventWithoutHeaders, {});
-    expect(records).resolves.toEqual([
-      {
-        key: 'recordKey',
-        value: { id: 12345, name: 'product5', price: 45 },
-        headers: null,
-        originalKey: 'cmVjb3JkS2V5',
-        originalValue:
-          'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
-        originalHeaders: null,
-      },
-    ]);
+    const event = await consumer(jsonEventWithoutHeaders, {});
+    expect(event.records[0]).toEqual({
+      key: 'recordKey',
+      value: { id: 12345, name: 'product5', price: 45 },
+      headers: null,
+      originalKey: 'cmVjb3JkS2V5',
+      originalValue:
+        'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
+      originalHeaders: null,
+    });
   });
 });

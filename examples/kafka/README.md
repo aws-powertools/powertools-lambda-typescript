@@ -17,11 +17,10 @@ Each function uses the `@aws-lambda-powertools/kafka` library to easily deserial
 ```bash
 examples/kafka/
 ├── app/
-│   ├── app.avro.ts         # Lambda handler for Avro deserialization
-│   ├── app.json.ts         # Lambda handler for JSON deserialization
-│   ├── app.proto.ts        # Lambda handler for Protocol Buffers deserialization
+│   ├── avro.ts         # Lambda handler for Avro deserialization
+│   ├── json.ts         # Lambda handler for JSON deserialization
+│   ├── proto.ts        # Lambda handler for Protocol Buffers deserialization
 │   ├── product.generated.ts # Generated Protocol Buffers TypeScript code
-│   └── product.proto       # Protocol Buffers schema file (not included)
 └── template.yaml           # AWS SAM template for deploying the functions
 ```
 

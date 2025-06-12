@@ -3,10 +3,12 @@ export type {
   AppSyncEventsPublishEvent,
   AppSyncEventsSubscribeEvent,
   OnPublishAggregateOutput,
+  OnPublishAggregatePayload,
   OnPublishEventPayload,
   OnPublishOutput,
   RouteOptions,
   RouterOptions,
+  ResolveOptions,
 } from './appsync-events.js';
 
 export type {

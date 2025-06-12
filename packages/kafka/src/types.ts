@@ -4,43 +4,112 @@ import type { ZodTypeAny } from 'zod';
 /**
  * Represents a Kafka consumer record.
  */
+/**
+ * Represents a single Kafka consumer record with generic key and value types.
+ */
 type ConsumerRecord<K, V> = {
+  /**
+   * The deserialized key of the record
+   */
   key: K;
+  /**
+   * The deserialized value of the record
+   */
   value: V;
+  /**
+   * The original (raw, encoded) key as received from Kafka, or undefined if not present
+   */
   originalKey: string | undefined;
+  /**
+   * The original (raw, encoded) value as received from Kafka, or undefined if not present
+   */
   originalValue: string | undefined;
+  /**
+   * Optional array of headers as key-value string pairs, or null/undefined if not present
+   */
   headers?: { [k: string]: string }[] | undefined | null;
+  /**
+   * Optional array of original record headers
+   */
   originalHeaders?: RecordHeader[] | undefined;
 };
 
+/**
+ * Represents a collection of Kafka consumer records, along with MSK event metadata.
+ */
 type ConsumerRecords<K, V> = {
+  /**
+   * Array of consumer records
+   */
   records: Array<ConsumerRecord<K, V>>;
 } & Omit<MSKEvent, 'records'>;
 
+/**
+ * Union type for supported schema configurations (JSON, Avro, Protobuf).
+ */
 type SchemaType = JsonConfig | AvroConfig | ProtobufConfig<object>;
 
-type JsonConfig = { type: 'json'; zodSchema?: ZodTypeAny };
-
-type AvroConfig = {
-  type: 'avro';
-  schema: string;
-  zodSchema?: ZodTypeAny;
-};
-type ProtobufConfig<T extends object> = {
-  type: 'protobuf';
-  schema: MessageType<T>;
-  zodSchema?: ZodTypeAny;
-};
-
-type SchemaConfig = {
+/**
+ * Configuration for JSON schema validation.
+ */
+type JsonConfig = {
   /**
-   * Schema type for the key.
-   * If not provided, the key will not be validated.
+   * Indicates the schema type is JSON
    */
-  value: SchemaType;
+  type: 'json';
+  /**
+   * Optional Zod schema for runtime validation
+   */
+  zodSchema?: ZodTypeAny;
+};
+
+/**
+ * Configuration for Avro schema validation.
+ */
+type AvroConfig = {
+  /**
+   * Indicates the schema type is Avro
+   */
+  type: 'avro';
+  /**
+   * Avro schema definition as a string
+   */
+  schema: string;
+  /**
+   * Optional Zod schema for runtime validation
+   */
+  zodSchema?: ZodTypeAny;
+};
+/**
+ * Configuration for Protobuf schema validation.
+ */
+type ProtobufConfig<T extends object> = {
+  /**
+   * Indicates the schema type is Protobuf
+   */
+  type: 'protobuf';
+  /**
+   * Protobuf message type for decoding
+   */
+  schema: MessageType<T>;
+  /**
+   * Optional Zod schema for runtime validation
+   */
+  zodSchema?: ZodTypeAny;
+};
+
+/**
+ * Configuration for key and value schema validation.
+ */
+type SchemaConfig = {
   /**
    * Schema type for the value.
    * If not provided, the value will not be validated.
+   */
+  value: SchemaType;
+  /**
+   * Schema type for the key.
+   * If not provided, the key will not be validated.
    */
   key?: SchemaType;
 };
@@ -53,26 +122,75 @@ type SchemaConfig = {
 // biome-ignore lint/suspicious/noExplicitAny: This is a generic type that is intentionally open
 type AnyFunction = (...args: Array<any>) => any;
 
+/**
+ * Represents a Kafka record header as a mapping of header key to byte array.
+ */
 interface RecordHeader {
+  /**
+   * Header key mapped to its value as an array of bytes
+   */
   [headerKey: string]: number[];
 }
 
+/**
+ * Represents a single Kafka record as received from MSK.
+ */
 interface Record {
+  /**
+   * Kafka topic name
+   */
   topic: string;
+  /**
+   * Partition number within the topic
+   */
   partition: number;
+  /**
+   * Offset of the record within the partition
+   */
   offset: number;
+  /**
+   * Timestamp of the record
+   */
   timestamp: number;
+  /**
+   * Type of timestamp (creation or log append time)
+   */
   timestampType: 'CREATE_TIME' | 'LOG_APPEND_TIME';
+  /**
+   * Base64-encoded key of the record
+   */
   key: string;
+  /**
+   * Base64-encoded value of the record
+   */
   value: string;
+  /**
+   * Array of record headers
+   */
   headers: RecordHeader[];
 }
 
 // https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html
+/**
+ * AWS Lambda event structure for MSK (Managed Streaming for Kafka).
+ * See: https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html
+ */
 interface MSKEvent {
+  /**
+   * Event source identifier (always 'aws:kafka')
+   */
   eventSource: 'aws:kafka';
+  /**
+   * ARN of the Kafka event source
+   */
   eventSourceArn: string;
+  /**
+   * Comma-separated list of Kafka bootstrap servers
+   */
   bootstrapServers: string;
+  /**
+   * Mapping of topic names to arrays of records
+   */
   records: {
     [topic: string]: Record[];
   };

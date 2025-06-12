@@ -5,6 +5,7 @@ import type {
   OnPublishHandlerAggregateFn,
   OnPublishHandlerFn,
   OnSubscribeHandler,
+  ResolveOptions,
 } from '../types/appsync-events.js';
 import { Router } from './Router.js';
 import { UnauthorizedException } from './errors.js';
@@ -67,7 +68,9 @@ class AppSyncEventsResolver extends Router {
    *   }
    *
    *   async handler(event, context) {
-   *     return app.resolve(event, context);
+   *     return app.resolve(event, context, {
+   *       scope: this, // bind decorated methods to the class instance
+   *     });
    *   }
    * }
    *
@@ -78,7 +81,11 @@ class AppSyncEventsResolver extends Router {
    * @param event - The incoming event from AppSync Events
    * @param context - The context object provided by AWS Lambda
    */
-  public async resolve(event: unknown, context: Context) {
+  public async resolve(
+    event: unknown,
+    context: Context,
+    options?: ResolveOptions
+  ) {
     if (!isAppSyncEventsEvent(event)) {
       this.logger.warn(
         'Received an event that is not compatible with this resolver'
@@ -87,11 +94,12 @@ class AppSyncEventsResolver extends Router {
     }
 
     if (isAppSyncEventsPublishEvent(event)) {
-      return await this.handleOnPublish(event, context);
+      return await this.handleOnPublish(event, context, options);
     }
     return await this.handleOnSubscribe(
       event as AppSyncEventsSubscribeEvent,
-      context
+      context,
+      options
     );
   }
 
@@ -100,10 +108,12 @@ class AppSyncEventsResolver extends Router {
    *
    * @param event - The incoming event from AppSync Events
    * @param context - The context object provided by AWS Lambda
+   * @param options - Optional resolve options
    */
   protected async handleOnPublish(
     event: AppSyncEventsPublishEvent,
-    context: Context
+    context: Context,
+    options?: ResolveOptions
   ) {
     const { path } = event.info.channel;
     const routeHandlerOptions = this.onPublishRegistry.resolve(path);
@@ -114,11 +124,10 @@ class AppSyncEventsResolver extends Router {
     if (aggregate) {
       try {
         return {
-          events: await (handler as OnPublishHandlerAggregateFn).apply(this, [
-            event.events,
-            event,
-            context,
-          ]),
+          events: await (handler as OnPublishHandlerAggregateFn).apply(
+            options?.scope ?? this,
+            [event.events, event, context]
+          ),
         };
       } catch (error) {
         this.logger.error(`An error occurred in handler ${path}`, error);
@@ -131,11 +140,10 @@ class AppSyncEventsResolver extends Router {
         event.events.map(async (message) => {
           const { id, payload } = message;
           try {
-            const result = await (handler as OnPublishHandlerFn).apply(this, [
-              payload,
-              event,
-              context,
-            ]);
+            const result = await (handler as OnPublishHandlerFn).apply(
+              options?.scope ?? this,
+              [payload, event, context]
+            );
             return {
               id,
               payload: result,
@@ -161,10 +169,12 @@ class AppSyncEventsResolver extends Router {
    *
    * @param event - The incoming event from AppSync Events
    * @param context - The context object provided by AWS Lambda
+   * @param options - Optional resolve options
    */
   protected async handleOnSubscribe(
     event: AppSyncEventsSubscribeEvent,
-    context: Context
+    context: Context,
+    options?: ResolveOptions
   ) {
     const { path } = event.info.channel;
     const routeHandlerOptions = this.onSubscribeRegistry.resolve(path);
@@ -173,7 +183,10 @@ class AppSyncEventsResolver extends Router {
     }
     const { handler } = routeHandlerOptions;
     try {
-      await (handler as OnSubscribeHandler).apply(this, [event, context]);
+      await (handler as OnSubscribeHandler).apply(options?.scope ?? this, [
+        event,
+        context,
+      ]);
     } catch (error) {
       this.logger.error(`An error occurred in handler ${path}`, error);
       if (error instanceof UnauthorizedException) throw error;

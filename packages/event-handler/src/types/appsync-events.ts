@@ -1,21 +1,45 @@
 import type { Context } from 'aws-lambda';
+import type { AppSyncEventsResolver } from '../appsync-events/AppSyncEventsResolver.js';
 import type { RouteHandlerRegistry } from '../appsync-events/RouteHandlerRegistry.js';
 import type { Router } from '../appsync-events/Router.js';
+import type { Anything, GenericLogger } from './common.js';
 
-// #region Shared
-
-// biome-ignore lint/suspicious/noExplicitAny: We intentionally use `any` here to represent any type of data and keep the logger is as flexible as possible.
-type Anything = any;
+// #region resolve options
 
 /**
- * Interface for a generic logger object.
+ * Optional object to pass to the {@link AppSyncEventsResolver.resolve | `AppSyncEventsResolver.resolve()`} method.
  */
-type GenericLogger = {
-  trace?: (...content: Anything[]) => void;
-  debug: (...content: Anything[]) => void;
-  info?: (...content: Anything[]) => void;
-  warn: (...content: Anything[]) => void;
-  error: (...content: Anything[]) => void;
+type ResolveOptions = {
+  /**
+   * Reference to `this` instance of the class that is calling the `resolve` method.
+   *
+   * This parameter should be used only when using {@link AppSyncEventsResolver.onPublish | `AppSyncEventsResolver.onPublish()`}
+   * and {@link AppSyncEventsResolver.onSubscribe | `AppSyncEventsResolver.onSubscribe()`} as class method decorators, and
+   * it's used to bind the decorated methods to your class instance.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncEventsResolver } from '@aws-lambda-powertools/event-handler/appsync-events';
+   *
+   * const app = new AppSyncEventsResolver();
+   *
+   * class Lambda {
+   *   public scope = 'scoped';
+   *
+   *   ⁣@app.onPublish('/foo')
+   *   public async handleFoo(payload: string) {
+   *     return `${this.scope} ${payload}`;
+   *   }
+   *
+   *   public async handler(event: unknown, context: Context) {
+   *     return app.resolve(event, context, { scope: this });
+   *   }
+   * }
+   * const lambda = new Lambda();
+   * const handler = lambda.handler.bind(lambda);
+   * ```
+   */
+  scope?: unknown;
 };
 
 // #region OnPublish fn
@@ -32,11 +56,13 @@ type OnPublishHandlerSyncFn = (
   context: Context
 ) => unknown;
 
+type OnPublishAggregatePayload = Array<{
+  payload: Anything;
+  id: string;
+}>;
+
 type OnPublishHandlerAggregateFn = (
-  events: Array<{
-    payload: Anything;
-    id: string;
-  }>,
+  events: OnPublishAggregatePayload,
   event: AppSyncEventsPublishEvent,
   context: Context
 ) => Promise<unknown[]>;
@@ -309,8 +335,10 @@ export type {
   OnPublishHandlerSyncFn,
   OnPublishHandlerSyncAggregateFn,
   OnPublishHandlerAggregateFn,
+  OnPublishAggregatePayload,
   OnSubscribeHandler,
   OnPublishAggregateOutput,
   OnPublishEventPayload,
   OnPublishOutput,
+  ResolveOptions,
 };

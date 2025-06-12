@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.21.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.20.0...v2.21.0) (2025-06-03)
+
+
+### Bug Fixes
+
+* **parameters:** preserve original stack trace on transform failures … ([#3982](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3982)) ([583e3ae](https://github.com/aws-powertools/powertools-lambda-typescript/commit/583e3ae9a5095a1185b2bd9dff31e6f3f50ff577))
+
+
+### Features
+
+* **commons:** environment variable helpers ([#3945](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3945)) ([7cfcd85](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7cfcd8517a0578e248ead1e2e0261fe7ba405e14))
+* **event-handler:** add Amazon Bedrock Agents Functions Resolver ([#3957](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3957)) ([720ddcb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/720ddcb974bd044fccd54d4cf5e46a1576f487a7))
+
+
+
+
+
 # [2.20.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.1...v2.20.0) (2025-05-20)
 
 

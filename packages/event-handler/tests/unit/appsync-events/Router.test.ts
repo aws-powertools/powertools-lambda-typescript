@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Router } from '../../src/appsync-events/index.js';
+import { Router } from '../../../src/appsync-events/index.js';
 
 describe('Class: Router', () => {
   beforeEach(() => {

@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { join, resolve, sep } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { CfnOutput, RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib';
 import {
   Architecture,
@@ -11,6 +12,9 @@ import {
 } from 'aws-cdk-lib/aws-lambda';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import type { Construct } from 'constructs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export interface LayerPublisherStackProps extends StackProps {
   readonly layerName?: string;

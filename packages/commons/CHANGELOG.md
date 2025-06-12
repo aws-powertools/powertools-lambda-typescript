@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.21.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.20.0...v2.21.0) (2025-06-03)
+
+
+### Features
+
+* **commons:** environment variable helpers ([#3945](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3945)) ([7cfcd85](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7cfcd8517a0578e248ead1e2e0261fe7ba405e14))
+
+
+
+
+
 # [2.20.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.1...v2.20.0) (2025-05-20)
 
 **Note:** Version bump only for package @aws-lambda-powertools/commons

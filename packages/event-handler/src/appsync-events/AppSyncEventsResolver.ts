@@ -125,7 +125,7 @@ class AppSyncEventsResolver extends Router {
       try {
         return {
           events: await (handler as OnPublishHandlerAggregateFn).apply(
-            options?.scope || this,
+            options?.scope ?? this,
             [event.events, event, context]
           ),
         };
@@ -141,7 +141,7 @@ class AppSyncEventsResolver extends Router {
           const { id, payload } = message;
           try {
             const result = await (handler as OnPublishHandlerFn).apply(
-              options?.scope || this,
+              options?.scope ?? this,
               [payload, event, context]
             );
             return {
@@ -183,7 +183,7 @@ class AppSyncEventsResolver extends Router {
     }
     const { handler } = routeHandlerOptions;
     try {
-      await (handler as OnSubscribeHandler).apply(options?.scope || this, [
+      await (handler as OnSubscribeHandler).apply(options?.scope ?? this, [
         event,
         context,
       ]);

@@ -8,7 +8,6 @@ import {
 import type {
   AppSyncEventsSubscribeEvent,
   OnPublishAggregatePayload,
-  OnPublishHandlerAggregateFn,
 } from '../../../src/types/appsync-events.js';
 import {
   onPublishEventFactory,

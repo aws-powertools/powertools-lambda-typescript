@@ -3,7 +3,7 @@ import {
   deserialiseAvro,
   deserialiseHeaders,
   deserialiseProtobuf,
-} from './deserialiser.js';
+} from './deserializer.js';
 import {
   KafkaConsumerAvroMissingSchemaError,
   KafkaConsumerProtobufMissingSchemaError,
@@ -16,7 +16,15 @@ import type {
   SchemaType,
 } from './types.js';
 
-const deserialise = (value: string, config?: SchemaType) => {
+/**
+ * Deserializes a base64-encoded value using the provided schema configuration.
+ *
+ * @param value - The base64-encoded string to deserialize.
+ * @param config - The schema configuration to use for deserialization. See {@link SchemaType}.
+ *   If not provided, the value is decoded as a UTF-8 string.
+ * @returns The deserialized value, which may be a string, object, or other type depending on the schema.
+ */
+const deserialize = (value: string, config?: SchemaType) => {
   // no config -> default to base64 decoding
   if (config === undefined) {
     return Buffer.from(value, 'base64').toString();
@@ -52,6 +60,39 @@ const deserialise = (value: string, config?: SchemaType) => {
   throw new Error(`Unsupported deserialization type: ${config}`);
 };
 
+/**
+ * Wraps a handler function to automatically deserialize and validate Kafka records from an MSK event.
+ *
+ * The returned function will:
+ * - Deserialize the key and value of each record using the provided schema config.
+ * - Validate the deserialized key and value using Zod schemas if provided.
+ * - Replace the `records` property in the event with an array of deserialized and validated records.
+ * - Call the original handler with the modified event and original context/arguments.
+ *
+ * @typeParam K - The type of the deserialized key.
+ * @typeParam V - The type of the deserialized value.
+ * @param fn - The original handler function to wrap. It should accept the deserialized event as its first argument.
+ * @param config - The schema configuration for deserializing and validating record keys and values.
+ * @returns A new handler function that performs deserialization and validation before invoking the original handler.
+ *
+ * @example
+ * ```ts
+ * import { kafkaConsumer } from './consumer';
+ * import { z } from 'zod';
+ *
+ * const config = {
+ *   key: { type: 'json', zodSchema: z.string() },
+ *   value: { type: 'json', zodSchema: z.object({ id: z.number() }) }
+ * };
+ *
+ * const handler = kafkaConsumer<string, { id: number }>(async (event, context) => {
+ *   // event.records is now an array of deserialized and validated records
+ *   for (const record of event.records) {
+ *     console.log(record.key, record.value);
+ *   }
+ * }, config);
+ * ```
+ */
 export function kafkaConsumer<K, V>(
   fn: AnyFunction,
   config: SchemaConfig
@@ -69,8 +110,8 @@ export function kafkaConsumer<K, V>(
     )) {
       for (const record of recordsArray) {
         const newRecord = {
-          key: record.key ? deserialise(record.key, config.key) : undefined,
-          value: deserialise(record.value, config.value),
+          key: record.key ? deserialize(record.key, config.key) : undefined,
+          value: deserialize(record.value, config.value),
           originalKey: record.key,
           originalValue: record.value,
           headers:

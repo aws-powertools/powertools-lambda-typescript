@@ -74,4 +74,45 @@ const onSubscribeEventFactory = (
   events: null,
 });
 
-export { onPublishEventFactory, onSubscribeEventFactory };
+const createEventFactory = (
+  fieldName: string,
+  args: Record<string, unknown>,
+  parentTypeName: string
+) => ({
+  arguments: { ...args },
+  identity: null,
+  source: null,
+  request: {
+    headers: {
+      key: 'value',
+    },
+    domainName: null,
+  },
+  info: {
+    fieldName,
+    parentTypeName,
+    selectionSetList: [],
+    variables: {},
+  },
+  prev: null,
+  stash: {},
+});
+
+const onQueryEventFactory = (
+  fieldName = 'getPost',
+  args = {},
+  typeName = 'Query'
+) => createEventFactory(fieldName, args, typeName);
+
+const onMutationEventFactory = (
+  fieldName = 'addPost',
+  args = {},
+  typeName = 'Mutation'
+) => createEventFactory(fieldName, args, typeName);
+
+export {
+  onPublishEventFactory,
+  onSubscribeEventFactory,
+  onQueryEventFactory,
+  onMutationEventFactory,
+};

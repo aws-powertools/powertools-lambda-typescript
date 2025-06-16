@@ -3,7 +3,7 @@ import type { ConsumerRecords } from '@aws-lambda-powertools/kafka/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
 import type z from 'zod';
-import { Product as ProductProto } from './product.generated.js';
+import { Product as ProductProto } from './product.es6.generated.js';
 import { productSchema } from './schema.js';
 
 const logger = new Logger();
@@ -21,7 +21,7 @@ export const handler = kafkaConsumer<string, Product>(
     value: {
       type: 'protobuf',
       schema: ProductProto,
-      zodSchema: productSchema,
+      parserSchema: productSchema,
     },
   }
 );

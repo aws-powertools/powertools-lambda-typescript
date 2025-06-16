@@ -19,7 +19,7 @@ export const handler = kafkaConsumer<string, Product>(
   {
     value: {
       type: 'json',
-      zodSchema: productSchema,
+      parserSchema: productSchema,
     },
   }
 );

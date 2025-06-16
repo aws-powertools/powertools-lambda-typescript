@@ -31,7 +31,7 @@ export const handler = kafkaConsumer<string, Product>(
     value: {
       type: 'avro',
       schema: schema,
-      zodSchema: productSchema,
+      parserSchema: productSchema,
     },
   }
 );

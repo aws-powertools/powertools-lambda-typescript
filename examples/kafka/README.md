@@ -47,7 +47,7 @@ examples/kafka/
 
 3. Install dependencies:
 
-   ```bas
+   ```bash
    npm install
    ```
 

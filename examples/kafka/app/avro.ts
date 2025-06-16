@@ -2,7 +2,7 @@ import { kafkaConsumer } from '@aws-lambda-powertools/kafka';
 import type { ConsumerRecords } from '@aws-lambda-powertools/kafka/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
-import type { z } from 'zod';
+import type z from 'zod';
 import { productSchema } from './schema';
 
 const logger = new Logger();

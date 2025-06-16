@@ -28,8 +28,16 @@ class KafkaConsumerAvroMissingSchemaError extends Error {
   }
 }
 
+class KafkaConsumerParserError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'KafkaConsumerParserError';
+  }
+}
+
 export {
   KafkaConsumerAvroMissingSchemaError,
   KafkaConsumerDeserializationError,
   KafkaConsumerProtobufMissingSchemaError,
+  KafkaConsumerParserError,
 };

@@ -32,7 +32,8 @@
       "cdk.out",
       "site",
       ".aws-sam",
-      "**/*.generated.ts"
+      "**/*.generated.js",
+      "**/*.generated.d.ts"
     ]
   }
 }

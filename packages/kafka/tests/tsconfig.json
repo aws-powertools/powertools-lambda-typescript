@@ -5,5 +5,5 @@
     "noEmit": true,
     "resolveJsonModule": true
   },
-  "include": ["../../testing/src/setupEnv.ts", "../src/**/*", "./**/*", "./**/*.json"]
+  "include": ["../../testing/src/setupEnv.ts", "../src/**/*", "./**/*", "./**/*.json", "./**/*.js"]
 }

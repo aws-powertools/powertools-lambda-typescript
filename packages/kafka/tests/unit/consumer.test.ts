@@ -1,16 +1,17 @@
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import z, { ZodError } from 'zod';
+import z from 'zod';
 import { kafkaConsumer } from '../../src/consumer.js';
 import {
   KafkaConsumerAvroMissingSchemaError,
+  KafkaConsumerParserError,
   KafkaConsumerProtobufMissingSchemaError,
 } from '../../src/errors.js';
 import type { ConsumerRecords } from '../../src/types.js';
 import * as avroEvent from '../events/avro.json' with { type: 'json' };
 import * as jsonEvent from '../events/default.json' with { type: 'json' };
 import * as protobufEvent from '../events/protobuf.json' with { type: 'json' };
-import { Product as ProductProto } from '../protos/product.generated.js';
+import { Product as ProductProto } from '../protos/product.es6.generated.js';
 
 describe('Kafka consumer: ', () => {
   const keyZodSchema = z.string();
@@ -210,11 +211,11 @@ describe('Kafka consumer: ', () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'json',
-        zodSchema: valueZodSchema,
+        parserSchema: valueZodSchema,
       },
       key: {
         type: 'json',
-        zodSchema: keyZodSchema,
+        parserSchema: keyZodSchema,
       },
     });
 
@@ -244,28 +245,16 @@ describe('Kafka consumer: ', () => {
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'json',
-        zodSchema: valueZodSchema,
+        parserSchema: valueZodSchema,
       },
       key: {
         type: 'json',
-        zodSchema: keyZodSchema,
+        parserSchema: keyZodSchema,
       },
     });
 
     await expect(consumer(invalidJsonEvent, {})).rejects.toThrow(
-      expect.objectContaining({
-        issues: [
-          {
-            code: 'too_small',
-            minimum: 0,
-            type: 'number',
-            inclusive: false,
-            exact: false,
-            message: "Price can't be negative",
-            path: ['price'],
-          },
-        ],
-      })
+      KafkaConsumerParserError
     );
   });
 });

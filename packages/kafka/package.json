@@ -20,7 +20,7 @@
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js .",
-    "proto:gen": "npx protoc --ts_out tests/protos --proto_path tests/protos tests/protos/product.proto"
+    "proto:gen": "npx pbjs -t static-module -w es6 -o $(pwd)/tests/protos/product.es6.generated.js $(pwd)/tests/protos/product.proto && npx pbts -o $(pwd)/tests/protos/product.es6.generated.d.ts $(pwd)/tests/protos/product.es6.generated.js && npx pbjs -t static-module -w commonjs -o $(pwd)/tests/protos/product.cjs.generated.js $(pwd)/tests/protos/product.proto && npx pbts -o $(pwd)/tests/protos/product.cjs.generated.d.ts $(pwd)/tests/protos/product.cjs.generated.js"
   },
   "license": "MIT-0",
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
@@ -91,5 +91,10 @@
       ]
     }
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "avro-js": "^1.12.0",
+    "protobufjs": "^7.5.3",
+    "protobufjs-cli": "^1.1.3"
+  }
 }

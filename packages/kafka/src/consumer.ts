@@ -1,11 +1,7 @@
 import type { Context, Handler } from 'aws-lambda';
 import {
-  deserialiseAvro,
-  deserialiseHeaders,
-  deserialiseProtobuf,
-} from './deserializer.js';
-import {
   KafkaConsumerAvroMissingSchemaError,
+  KafkaConsumerParserError,
   KafkaConsumerProtobufMissingSchemaError,
 } from './errors.js';
 import type {
@@ -17,6 +13,26 @@ import type {
 } from './types.js';
 
 /**
+ * Deserialises Kafka message headers from an array of header objects.
+ *
+ * @param headers - An array of header objects, where each object maps header keys (string)
+ *   to header values (number[]), representing the raw bytes of each header value.
+ *   Example: [{ "headerKey": [104, 101, 108, 108, 111] }]
+ * @returns An array of header objects, where each header value is decoded as a UTF-8 string.
+ *   Example: [{ "headerKey": "hello" }]
+ */
+const deserialiseHeaders = (headers: Record<string, number[]>[]) => {
+  return headers.map((header) =>
+    Object.fromEntries(
+      Object.entries(header).map(([headerKey, headerValue]) => [
+        headerKey,
+        Buffer.from(headerValue).toString('utf-8'),
+      ])
+    )
+  );
+};
+
+/**
  * Deserializes a base64-encoded value using the provided schema configuration.
  *
  * @param value - The base64-encoded string to deserialize.
@@ -24,29 +40,32 @@ import type {
  *   If not provided, the value is decoded as a UTF-8 string.
  * @returns The deserialized value, which may be a string, object, or other type depending on the schema.
  */
-const deserialize = (value: string, config?: SchemaType) => {
+const deserialize = async (value: string, config?: SchemaType) => {
   // no config -> default to base64 decoding
   if (config === undefined) {
     return Buffer.from(value, 'base64').toString();
   }
-  if (config.type === 'json') {
-    const decoded = Buffer.from(value, 'base64');
-    try {
-      // we assume it's a JSON but it can also be a string, we don't know
-      return JSON.parse(decoded.toString());
-    } catch (error) {
-      // in case we could not parse it we return the base64 decoded value
-      console.error(`Failed to parse JSON from base64 value: ${value}`, error);
-      return decoded.toString();
-    }
+
+  // if config is provided, we expect it to have a specific type
+  if (!['json', 'avro', 'protobuf'].includes(config.type)) {
+    throw new Error(
+      `Unsupported deserialization type: ${config.type}. Supported types are: json, avro, protobuf.`
+    );
   }
+
+  if (config.type === 'json') {
+    const deserializer = await import('./deserializer/json.js');
+    return deserializer.deserialize(value);
+  }
+
   if (config.type === 'avro') {
     if (!config.schema) {
       throw new KafkaConsumerAvroMissingSchemaError(
         'Schema string is required for Avro deserialization'
       );
     }
-    return deserialiseAvro(value, config.schema);
+    const deserializer = await import('./deserializer/avro.js');
+    return deserializer.deserialize(value, config.schema);
   }
   if (config.type === 'protobuf') {
     if (!config.schema) {
@@ -54,10 +73,9 @@ const deserialize = (value: string, config?: SchemaType) => {
         'Schema string is required for Protobuf deserialization'
       );
     }
-    return deserialiseProtobuf(config.schema, value);
+    const deserializer = await import('./deserializer/protobuf.js');
+    return deserializer.deserialize(value, config.schema);
   }
-
-  throw new Error(`Unsupported deserialization type: ${config}`);
 };
 
 /**
@@ -101,6 +119,7 @@ export function kafkaConsumer<K, V>(
     this: Handler,
     ...args: Parameters<AnyFunction>
   ): Promise<ReturnType<AnyFunction>> {
+    // propagate protobuf or avrojs
     const event = args[0] as MSKEvent;
 
     const context = args[1] as Context;
@@ -110,8 +129,10 @@ export function kafkaConsumer<K, V>(
     )) {
       for (const record of recordsArray) {
         const newRecord = {
-          key: record.key ? deserialize(record.key, config.key) : undefined,
-          value: deserialize(record.value, config.value),
+          key: record.key
+            ? await deserialize(record.key, config.key)
+            : undefined,
+          value: await deserialize(record.value, config.value),
           originalKey: record.key,
           originalValue: record.value,
           headers:
@@ -119,12 +140,20 @@ export function kafkaConsumer<K, V>(
           originalHeaders: record.headers,
         };
 
-        if (config.key?.zodSchema && newRecord.key !== undefined) {
-          config.key.zodSchema.parse(newRecord.key);
-        }
+        try {
+          if (config.key?.parserSchema && newRecord.key !== undefined) {
+            config.key.parserSchema.parse(newRecord.key);
+          }
 
-        if (config.value.zodSchema) {
-          config.value.zodSchema.parse(newRecord.value);
+          if (config.value.parserSchema) {
+            config.value.parserSchema.parse(newRecord.value);
+          }
+        } catch (error) {
+          if (error instanceof Error) {
+            throw new KafkaConsumerParserError(
+              `Schema validation failed: ${error.message}, with provided config: ${config}`
+            );
+          }
         }
 
         consumerRecords.push(newRecord);

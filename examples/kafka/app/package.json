@@ -1,29 +1,30 @@
 {
-    "name": "kafka-examples",
-    "version": "1.0.0",
-    "description": "kafka examples for AWS Lambda Powertools for TypeScript",
-    "author": "SAM CLI",
-    "license": "MIT",
-    "dependencies": {
-        "@aws-lambda-powertools/logger": "^2.21.0",
-        "@aws-lambda-powertools/metrics": "^2.21.0",
-        "@aws-lambda-powertools/tracer": "^2.21.0",
-        "@aws-lambda-powertools/kafka": "file:../../packages/kafka",
-        "esbuild": "^0.25.5"
-    },
-    "scripts": {
-        "unit": "jest",
-        "lint": "eslint '*.ts' --quiet --fix",
-        "compile": "tsc",
-        "test": "npm run compile && npm run unit"
-    },
-    "devDependencies": {
-        "@types/aws-lambda": "^8.10.149",
-        "@types/node": "^22.15.23",
-        "typescript": "^5.8.3",
-        "vitest": "^3.0.5",
-        "tsx": "^4.19.4",
-        "@biomejs/biome": "^1.9.4",
-        "zod": "^3.25.32"
-    }
+  "name": "kafka-examples",
+  "version": "1.0.0",
+  "description": "kafka examples for AWS Lambda Powertools for TypeScript",
+  "author": "SAM CLI",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-lambda-powertools/kafka": "file:aws-lambda-powertools-kafka-2.20.0.tgz",
+    "@aws-lambda-powertools/logger": "^2.21.0",
+    "@aws-lambda-powertools/metrics": "^2.21.0",
+    "@aws-lambda-powertools/tracer": "^2.21.0",
+    "protobufjs": "^7.5.3",
+    "esbuild": "^0.25.5"
+  },
+  "scripts": {
+    "unit": "jest",
+    "lint": "eslint '*.ts' --quiet --fix",
+    "compile": "tsc",
+    "test": "npm run compile && npm run unit"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/aws-lambda": "^8.10.149",
+    "@types/node": "^22.15.23",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.0.5",
+    "zod": "^3.25.32"
+  }
 }

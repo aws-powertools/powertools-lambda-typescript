@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   kafka
@@ -11,20 +11,20 @@ Globals:
     Timeout: 15
     MemorySize: 512
     Tracing: Active
-    
+
 Resources:
-  JsonDeserializationFunction: 
-    Type: AWS::Serverless::Function 
+  JsonDeserializationFunction:
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: app/
-      Handler: app.lambdaHandler
+      Handler: json.handler
       Runtime: nodejs22.x
       Architectures:
-      - x86_64
+        - x86_64
       Tracing: Active
       Environment:
         Variables:
-          POWERTOOLS_SERVICE_NAME: kafka-json-deserialization 
+          POWERTOOLS_SERVICE_NAME: kafka-json-deserialization
           POWERTOOLS_METRICS_NAMESPACE: kafka
           LOG_LEVEL: INFO
     Metadata: # Manage esbuild properties
@@ -33,16 +33,16 @@ Resources:
         Minify: true
         Target: es2020
         EntryPoints:
-        - app.ts
-        
-  AvroDeserializationFunction: 
-    Type: AWS::Serverless::Function 
+          - json.ts
+
+  AvroDeserializationFunction:
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: app/
-      Handler: app.lambdaHandler
+      Handler: avro.handler
       Runtime: nodejs22.x
       Architectures:
-      - x86_64
+        - x86_64
       Tracing: Active
       Environment:
         Variables:
@@ -55,16 +55,16 @@ Resources:
         Minify: true
         Target: es2020
         EntryPoints:
-        - app.ts
+          - avro.ts
 
-  ProtobufDeserializationFunction: 
-    Type: AWS::Serverless::Function 
+  ProtobufDeserializationFunction:
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: app/
-      Handler: app.lambdaHandler
+      Handler: proto.handler
       Runtime: nodejs22.x
       Architectures:
-      - x86_64
+        - x86_64
       Tracing: Active
       Environment:
         Variables:
@@ -77,4 +77,4 @@ Resources:
         Minify: true
         Target: es2020
         EntryPoints:
-        - app.ts
+          - proto.ts

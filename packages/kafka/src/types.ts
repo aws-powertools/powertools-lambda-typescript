@@ -1,4 +1,4 @@
-import type { MessageType } from '@protobuf-ts/runtime';
+import type { Message, Reader } from 'protobufjs';
 import type { ZodTypeAny } from 'zod';
 
 /**
@@ -60,7 +60,7 @@ type JsonConfig = {
   /**
    * Optional Zod schema for runtime validation
    */
-  zodSchema?: ZodTypeAny;
+  parserSchema?: ZodTypeAny;
 };
 
 /**
@@ -78,7 +78,7 @@ type AvroConfig = {
   /**
    * Optional Zod schema for runtime validation
    */
-  zodSchema?: ZodTypeAny;
+  parserSchema?: ZodTypeAny;
 };
 /**
  * Configuration for Protobuf schema validation.
@@ -91,11 +91,11 @@ type ProtobufConfig<T extends object> = {
   /**
    * Protobuf message type for decoding
    */
-  schema: MessageType<T>;
+  schema: ProtobufMessage<T>;
   /**
    * Optional Zod schema for runtime validation
    */
-  zodSchema?: ZodTypeAny;
+  parserSchema?: ZodTypeAny;
 };
 
 /**
@@ -196,13 +196,26 @@ interface MSKEvent {
   };
 }
 
+interface ProtobufMessage<T> {
+  decode(reader: Reader | Uint8Array, length?: number): T;
+}
+
+interface Deserializer {
+  deserialize(
+    input: string,
+    schema: string | ProtobufMessage<unknown>
+  ): unknown;
+}
+
 export type {
   AnyFunction,
-  ConsumerRecords,
   ConsumerRecord,
-  SchemaConfig,
-  SchemaType,
+  ConsumerRecords,
   MSKEvent,
   Record,
   RecordHeader,
+  SchemaConfig,
+  SchemaType,
+  ProtobufMessage,
+  Deserializer,
 };

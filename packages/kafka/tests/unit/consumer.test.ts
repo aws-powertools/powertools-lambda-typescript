@@ -257,4 +257,19 @@ describe('Kafka consumer: ', () => {
       KafkaConsumerParserError
     );
   });
+
+  it('throws when non MSK event passed kafka consumer', async () => {
+    const nonMskEvent = {
+      foo: 'bar',
+    };
+
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
+      },
+    });
+    await expect(consumer(nonMskEvent, {})).rejects.toThrow(
+      'No records found in the event'
+    );
+  });
 });

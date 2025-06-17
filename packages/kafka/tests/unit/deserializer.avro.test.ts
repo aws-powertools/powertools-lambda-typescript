@@ -34,4 +34,20 @@ describe('Avro Deserializer: ', () => {
       KafkaConsumerDeserializationError
     );
   });
+
+  it('throws when avro deserialiser has not matching schema', async () => {
+    const message = '0g8MTGFwdG9wUrgehes/j0A=';
+    const schema = `{
+      "type": "record",
+      "name": "Product",
+      "fields": [
+        { "name": "productId", "type": "int" },
+        { "name": "productName", "type": "string" },
+        { "name": "productPrice", "type": "double" },
+      ]
+    }`; // Valid schema, but does not match the message content
+    await expect(deserialize(message, schema)).rejects.toThrow(
+      KafkaConsumerDeserializationError
+    );
+  });
 });

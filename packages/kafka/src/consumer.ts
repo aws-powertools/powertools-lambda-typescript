@@ -121,6 +121,9 @@ export function kafkaConsumer<K, V>(
     context: Context
   ): Promise<ReturnType<LambdaHandler>> {
     const consumerRecords: ConsumerRecord<K, V>[] = [];
+    if (!event.records) {
+      throw new Error('No records found in the event');
+    }
     for (const recordsArray of Object.values(event.records)) {
       for (const record of recordsArray) {
         const newRecord = {

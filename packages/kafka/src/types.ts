@@ -1,4 +1,5 @@
-import type { Message, Reader } from 'protobufjs';
+import type { Context } from 'aws-lambda';
+import type { Reader } from 'protobufjs';
 import type { ZodTypeAny } from 'zod';
 
 /**
@@ -119,8 +120,10 @@ type SchemaConfig = {
  *
  * It's left intentionally open to allow for any function to be wrapped.
  */
-// biome-ignore lint/suspicious/noExplicitAny: This is a generic type that is intentionally open
-type AnyFunction = (...args: Array<any>) => any;
+type LambdaHandler = (
+  event: ConsumerRecords<unknown, unknown>,
+  context: Context
+) => Promise<unknown>;
 
 /**
  * Represents a Kafka record header as a mapping of header key to byte array.
@@ -195,7 +198,6 @@ interface MSKEvent {
     [topic: string]: Record[];
   };
 }
-
 interface ProtobufMessage<T> {
   decode(reader: Reader | Uint8Array, length?: number): T;
 }
@@ -208,14 +210,14 @@ interface Deserializer {
 }
 
 export type {
-  AnyFunction,
+  LambdaHandler,
   ConsumerRecord,
   ConsumerRecords,
+  Deserializer,
   MSKEvent,
+  ProtobufMessage,
   Record,
   RecordHeader,
   SchemaConfig,
   SchemaType,
-  ProtobufMessage,
-  Deserializer,
 };

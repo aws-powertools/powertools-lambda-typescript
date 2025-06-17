@@ -5,8 +5,8 @@ import {
   KafkaConsumerProtobufMissingSchemaError,
 } from './errors.js';
 import type {
-  AnyFunction,
   ConsumerRecord,
+  LambdaHandler,
   MSKEvent,
   SchemaConfig,
   SchemaType,
@@ -89,7 +89,7 @@ const deserialize = async (value: string, config?: SchemaType) => {
  *
  * @typeParam K - The type of the deserialized key.
  * @typeParam V - The type of the deserialized value.
- * @param fn - The original handler function to wrap. It should accept the deserialized event as its first argument.
+ * @param handler - The original handler function to wrap. It should accept the deserialized event as its first argument.
  * @param config - The schema configuration for deserializing and validating record keys and values.
  * @returns A new handler function that performs deserialization and validation before invoking the original handler.
  *
@@ -112,21 +112,16 @@ const deserialize = async (value: string, config?: SchemaType) => {
  * ```
  */
 export function kafkaConsumer<K, V>(
-  fn: AnyFunction,
+  handler: LambdaHandler,
   config: SchemaConfig
-): (...args: Parameters<AnyFunction>) => ReturnType<AnyFunction> {
+): (event: MSKEvent, context: Context) => ReturnType<LambdaHandler> {
   return async function (
     this: Handler,
-    ...args: Parameters<AnyFunction>
-  ): Promise<ReturnType<AnyFunction>> {
-    // propagate protobuf or avrojs
-    const event = args[0] as MSKEvent;
-
-    const context = args[1] as Context;
+    event: MSKEvent,
+    context: Context
+  ): Promise<ReturnType<LambdaHandler>> {
     const consumerRecords: ConsumerRecord<K, V>[] = [];
-    for (const [_topicPartition, recordsArray] of Object.entries(
-      event.records
-    )) {
+    for (const recordsArray of Object.values(event.records)) {
       for (const record of recordsArray) {
         const newRecord = {
           key: record.key
@@ -166,6 +161,6 @@ export function kafkaConsumer<K, V>(
     };
 
     // Call the original function with the validated event and context
-    return await fn.call(this, deserialisedRecords, context, ...args);
+    return await handler.call(this, deserialisedRecords, context);
   };
 }

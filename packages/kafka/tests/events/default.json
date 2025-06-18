@@ -21,8 +21,8 @@
       {
         "topic": "mytopic",
         "partition": 0,
-        "offset": 15,
-        "timestamp": 1545084650987,
+        "offset": 16,
+        "timestamp": 1545084650988,
         "timestampType": "CREATE_TIME",
         "value": "ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9",
         "headers": [
@@ -34,8 +34,8 @@
       {
         "topic": "mytopic",
         "partition": 0,
-        "offset": 15,
-        "timestamp": 1545084650987,
+        "offset": 17,
+        "timestamp": 1545084650989,
         "timestampType": "CREATE_TIME",
         "key": null,
         "value": "ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9",

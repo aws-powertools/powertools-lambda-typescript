@@ -89,31 +89,36 @@ describe('Kafka consumer', () => {
         originalHeaders: null,
       },
     },
+    otherFields: {
+      topic: 'mytopic',
+      partition: 0,
+      offset: 15,
+      timestamp: 1545084650987,
+      timestampType: 'CREATE_TIME',
+    },
   } as const;
 
   it('deserializes json message', async () => {
     // Prepare
-    const handler = kafkaConsumer<Key, Product>(baseHandler, {
+    const handler = kafkaConsumer(baseHandler, {
       value: { type: 'json' },
       key: { type: 'json' },
     });
 
     // Act
-    const result = (await handler(jsonTestEvent, context)) as ConsumerRecords<
-      Key,
-      Product
-    >;
+    const result = (await handler(jsonTestEvent, context)) as ConsumerRecords;
 
     // Assess
     expect(result.records[0]).toEqual({
       ...TEST_DATA.json,
       ...TEST_DATA.headers.withHeaders,
+      ...TEST_DATA.otherFields,
     });
   });
 
   it('deserializes avro message', async () => {
     // Prepare
-    const handler = kafkaConsumer<Key, Product>(baseHandler, {
+    const handler = kafkaConsumer(baseHandler, {
       value: {
         type: 'avro',
         schema: TEST_DATA.avro.schema,
@@ -123,7 +128,7 @@ describe('Kafka consumer', () => {
 
     // Act
     const result = (await handler(avroTestEvent, context)) as ConsumerRecords<
-      Key,
+      unknown,
       Product
     >;
 
@@ -131,12 +136,13 @@ describe('Kafka consumer', () => {
     expect(result.records[0]).toEqual({
       ...TEST_DATA.avro.data,
       ...TEST_DATA.headers.withHeaders,
+      ...TEST_DATA.otherFields,
     });
   });
 
   it('deserializes protobuf message', async () => {
     // Prepare
-    const handler = kafkaConsumer<Key, Product>(baseHandler, {
+    const handler = kafkaConsumer(baseHandler, {
       value: {
         type: 'protobuf',
         schema: TEST_DATA.protobuf.schema,
@@ -148,12 +154,13 @@ describe('Kafka consumer', () => {
     const event = (await handler(
       protobufTestEvent,
       context
-    )) as ConsumerRecords<Key, Product>;
+    )) as ConsumerRecords<unknown, Product>;
 
     // Assess
     expect(event.records[0]).toEqual({
       ...TEST_DATA.protobuf.data,
       ...TEST_DATA.headers.withHeaders,
+      ...TEST_DATA.otherFields,
     });
   });
 
@@ -172,7 +179,7 @@ describe('Kafka consumer', () => {
     'throws when schemaStr not passed for $type event',
     async ({ type, error, event }) => {
       // Prepare
-      const handler = kafkaConsumer<Key, Product>(baseHandler, {
+      const handler = kafkaConsumer(baseHandler, {
         // @ts-expect-error - testing missing schemaStr
         value: { type },
       });
@@ -184,7 +191,7 @@ describe('Kafka consumer', () => {
 
   it('throws if schema type is not json, avro or protobuf', async () => {
     // Prepare
-    const handler = kafkaConsumer<Key, Product>(baseHandler, {
+    const handler = kafkaConsumer(baseHandler, {
       value: {
         // @ts-expect-error - testing unsupported type
         type: 'xml',
@@ -197,7 +204,7 @@ describe('Kafka consumer', () => {
 
   it('deserializes with no headers provided', async () => {
     // Prepare
-    const handler = kafkaConsumer<Key, Product>(baseHandler, {
+    const handler = kafkaConsumer(baseHandler, {
       value: { type: 'json' },
     });
     const jsonTestEventWithoutHeaders = {
@@ -217,7 +224,7 @@ describe('Kafka consumer', () => {
     const result = (await handler(
       jsonTestEventWithoutHeaders,
       context
-    )) as ConsumerRecords<Key, Product>;
+    )) as ConsumerRecords;
 
     // Assess
     expect(result.records[0]).toEqual({
@@ -260,7 +267,7 @@ describe('Kafka consumer', () => {
     },
   ])('throws when zod schema validation fails for $type', async ({ event }) => {
     // Prepare
-    const handler = kafkaConsumer<Key, Product>(baseHandler, {
+    const handler = kafkaConsumer(baseHandler, {
       value: {
         type: SchemaType.JSON,
         parserSchema: valueZodSchema,
@@ -279,7 +286,7 @@ describe('Kafka consumer', () => {
 
   it('throws when non MSK event passed kafka consumer', async () => {
     // Prepare
-    const handler = kafkaConsumer<Key, Product>(baseHandler, {
+    const handler = kafkaConsumer(baseHandler, {
       value: { type: 'json' },
     });
 
@@ -312,7 +319,7 @@ describe('Kafka consumer', () => {
     },
   ])('deserializes with $type', async ({ config }) => {
     // Prepare
-    const handler = kafkaConsumer<Key, Product>(baseHandler, config);
+    const handler = kafkaConsumer(baseHandler, config);
     const customEvent = {
       ...jsonTestEvent,
       records: {
@@ -327,10 +334,7 @@ describe('Kafka consumer', () => {
     } as unknown as MSKEvent;
 
     // Act
-    const result = (await handler(customEvent, context)) as ConsumerRecords<
-      Key,
-      Product
-    >;
+    const result = (await handler(customEvent, context)) as ConsumerRecords;
 
     // Assess
     expect(result.records[0]).toEqual({

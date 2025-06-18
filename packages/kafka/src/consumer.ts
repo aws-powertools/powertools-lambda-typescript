@@ -145,13 +145,14 @@ const parseSchema = async (value: unknown, schema: StandardSchemaV1) => {
  * @param config - The schema configuration for deserializing the record's key and value.
  */
 const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
-  const { key, value, headers } = record;
+  const { key, value, headers, ...rest } = record;
   const { key: keyConfig, value: valueConfig } = config;
 
   const deserializedKey = await deserializeKey(key, keyConfig);
   const deserializedValue = await deserialize(value, valueConfig);
 
   return {
+    ...rest,
     key: keyConfig?.parserSchema
       ? await parseSchema(deserializedKey, keyConfig.parserSchema)
       : deserializedKey,

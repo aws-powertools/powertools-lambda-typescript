@@ -35,7 +35,7 @@ type ConsumerRecord<K, V> = {
 /**
  * Represents a collection of Kafka consumer records, along with MSK event metadata.
  */
-type ConsumerRecords<K, V> = {
+type ConsumerRecords<K = unknown, V = unknown> = {
   /**
    * Array of consumer records
    */

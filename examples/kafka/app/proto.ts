@@ -1,27 +1,34 @@
-import { kafkaConsumer } from '@aws-lambda-powertools/kafka';
-import type { ConsumerRecords } from '@aws-lambda-powertools/kafka/types';
-import { Logger } from '@aws-lambda-powertools/logger';
+import { deserialize } from '@aws-lambda-powertools/kafka/deserializer/protobuf';
+import type { MSKEvent } from '@aws-lambda-powertools/kafka/types';
+import { MetricResolution, Metrics } from '@aws-lambda-powertools/metrics';
+import { Tracer } from '@aws-lambda-powertools/tracer';
 import type { Context } from 'aws-lambda';
-import type z from 'zod';
-import { Product as ProductProto } from './product.es6.generated.js';
-import { productSchema } from './schema.js';
+import * as proto from './schema.generated.js';
 
-const logger = new Logger();
+const tracer = new Tracer();
+const metrics = new Metrics();
 
-type Product = z.infer<typeof productSchema>;
+export const handler = async (event: MSKEvent, context: Context) => {
+  const segment = tracer.getSegment();
+  const subsegment = segment?.addNewSubsegment('ProcessRecords');
 
-export const handler = kafkaConsumer<string, Product>(
-  (event: ConsumerRecords<string, Product>, _context: Context) => {
-    for (const record of event.records) {
-      logger.info('Processing record with key: ', record.key);
-      logger.info('Record value: ', record.value);
+  const startTime = performance.now();
+  for (const recordsArray of Object.values(event.records)) {
+    for (const record of recordsArray) {
+      const deserialized = deserialize(
+        record.value,
+        proto.com.example.CustomerProfile
+      );
     }
-  },
-  {
-    value: {
-      type: 'protobuf',
-      schema: ProductProto,
-      parserSchema: productSchema,
-    },
   }
-);
+  const executionTime = performance.now() - startTime;
+  metrics.addMetric(
+    `PROTOBUF_VALUE_ACCESS_${context.memoryLimitInMB}`,
+    'Milliseconds',
+    executionTime,
+    MetricResolution.High
+  );
+
+  subsegment?.close();
+  metrics.publishStoredMetrics();
+};

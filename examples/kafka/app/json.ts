@@ -1,25 +1,30 @@
-import { kafkaConsumer } from '@aws-lambda-powertools/kafka';
-import type { ConsumerRecords } from '@aws-lambda-powertools/kafka/types';
-import { Logger } from '@aws-lambda-powertools/logger';
+import { deserialize } from '@aws-lambda-powertools/kafka/deserializer/json';
+import type { MSKEvent } from '@aws-lambda-powertools/kafka/types';
+import { MetricResolution, Metrics } from '@aws-lambda-powertools/metrics';
+import { Tracer } from '@aws-lambda-powertools/tracer';
 import type { Context } from 'aws-lambda';
-import type z from 'zod';
-import { productSchema } from './schema';
 
-const logger = new Logger();
-type Product = z.infer<typeof productSchema>;
+const metrics = new Metrics();
+const tracer = new Tracer();
 
-export const handler = kafkaConsumer<string, Product>(
-  (event: ConsumerRecords<string, Product>, _context: Context) => {
-    for (const record of event.records) {
-      logger.info(`Processing record with key: ${record.key}`);
-      logger.info(`Record value: ${JSON.stringify(record.value)}`);
-      // You can add more processing logic here
+export const handler = async (event: MSKEvent, context: Context) => {
+  const segment = tracer.getSegment();
+  const subsegment = segment?.addNewSubsegment('ProcessRecords');
+
+  const startTime = performance.now();
+  for (const recordsArray of Object.values(event.records)) {
+    for (const record of recordsArray) {
+      const deserialized = await deserialize(record.value);
     }
-  },
-  {
-    value: {
-      type: 'json',
-      parserSchema: productSchema,
-    },
   }
-);
+  const executionTime = performance.now() - startTime;
+  metrics.addMetric(
+    `JSON_VALUE_ACCESS_${context.memoryLimitInMB}`,
+    'Milliseconds',
+    executionTime,
+    MetricResolution.High
+  );
+
+  subsegment?.close();
+  metrics.publishStoredMetrics();
+};

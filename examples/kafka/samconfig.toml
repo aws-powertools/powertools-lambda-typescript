@@ -15,7 +15,7 @@ lint = true
 
 [default.deploy.parameters]
 capabilities = "CAPABILITY_IAM"
-confirm_changeset = true
+confirm_changeset = false
 resolve_s3 = true
 
 [default.package.parameters]

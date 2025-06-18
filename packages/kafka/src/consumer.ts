@@ -15,7 +15,7 @@ import type {
   Record as KafkaRecord,
   MSKEvent,
   SchemaConfig,
-  SchemaType,
+  SchemaConfigValue,
 } from './types/types.js';
 
 /**
@@ -68,10 +68,10 @@ const deserializeHeaders = (headers: Record<string, number[]>[] | null) => {
  * It returns the deserialized value, which may be a string, object, or other type depending on the schema type.
  *
  * @param value - The base64-encoded string to deserialize.
- * @param config - The schema configuration to use for deserialization. See {@link SchemaType | `SchemaType`}.
+ * @param config - The schema configuration to use for deserialization. See {@link SchemaConfigValue | `SchemaConfigValue`}.
  *   If not provided, the value is decoded as a UTF-8 string.
  */
-const deserialize = async (value: string, config?: SchemaType) => {
+const deserialize = async (value: string, config?: SchemaConfigValue) => {
   // no config -> default to base64 decoding
   if (config === undefined) {
     return Buffer.from(value, 'base64').toString();
@@ -115,9 +115,9 @@ const deserialize = async (value: string, config?: SchemaType) => {
  * If the key is `undefined`, it returns `undefined`.
  *
  * @param key - The base64-encoded key to deserialize.
- * @param config - The schema configuration for deserializing the key. See {@link SchemaType | `SchemaType`}.
+ * @param config - The schema configuration for deserializing the key. See {@link SchemaConfigValue | `SchemaConfigValue`}.
  */
-const deserializeKey = async (key?: string, config?: SchemaType) => {
+const deserializeKey = async (key?: string, config?: SchemaConfigValue) => {
   if (isNullOrUndefined(key)) {
     return undefined;
   }
@@ -168,12 +168,6 @@ const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
  * - Replace the `records` property in the event with an array of deserialized and validated records.
  * - Call the original handler with the modified event and original context/arguments.
  *
- * @typeParam K - The type of the deserialized key.
- * @typeParam V - The type of the deserialized value.
- *
- * @param handler - The original handler function to wrap. It should accept the deserialized event as its first argument.
- * @param config - The schema configuration for deserializing and validating record keys and values.
- *
  * @example
  * ```ts
  * import { kafkaConsumer } from '@aws-lambda-powertools/kafka';
@@ -197,6 +191,12 @@ const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
  *   }
  * }, config);
  * ```
+ *
+ * @typeParam K - The type of the deserialized key.
+ * @typeParam V - The type of the deserialized value.
+ *
+ * @param handler - The original handler function to wrap. It should accept the deserialized event as its first argument.
+ * @param config - The schema configuration for deserializing and validating record keys and values.
  */
 const kafkaConsumer = <K, V>(
   handler: AsyncHandler<Handler<ConsumerRecords<K, V>>>,

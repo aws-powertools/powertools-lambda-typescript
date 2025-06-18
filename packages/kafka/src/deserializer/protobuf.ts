@@ -11,7 +11,7 @@ import type { ProtobufMessage } from '../types/types.js';
  * @returns The deserialised message object of type T.
  * @throws {KafkaConsumerDeserializationError} If deserialization fails.
  */
-export const deserialize = <T extends object>(
+export const deserialize = <T>(
   data: string,
   messageType: ProtobufMessage<T>
 ): T => {

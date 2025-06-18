@@ -1,6 +1,6 @@
-import type { Context } from 'aws-lambda';
 import type { Reader } from 'protobufjs';
 import type { ZodTypeAny } from 'zod';
+import type { SchemaType as SchemaTypeMap } from '../constants.js';
 
 /**
  * Represents a Kafka consumer record.
@@ -45,10 +45,12 @@ type ConsumerRecords<K, V> = {
   records: Array<ConsumerRecord<K, V>>;
 } & Omit<MSKEvent, 'records'>;
 
+type SchemaType = (typeof SchemaTypeMap)[keyof typeof SchemaTypeMap];
+
 /**
  * Union type for supported schema configurations (JSON, Avro, Protobuf).
  */
-type SchemaType = JsonConfig | AvroConfig | ProtobufConfig<object>;
+type SchemaConfigValue = JsonConfig | AvroConfig | ProtobufConfig<unknown>;
 
 /**
  * Configuration for JSON schema validation.
@@ -57,7 +59,7 @@ type JsonConfig = {
   /**
    * Indicates the schema type is JSON
    */
-  type: 'json';
+  type: typeof SchemaTypeMap.JSON;
   /**
    * Optional Zod schema for runtime validation
    */
@@ -71,7 +73,7 @@ type AvroConfig = {
   /**
    * Indicates the schema type is Avro
    */
-  type: 'avro';
+  type: typeof SchemaTypeMap.AVRO;
   /**
    * Avro schema definition as a string
    */
@@ -88,7 +90,7 @@ type ProtobufConfig<T> = {
   /**
    * Indicates the schema type is Protobuf
    */
-  type: 'protobuf';
+  type: typeof SchemaTypeMap.PROTOBUF;
   /**
    * Protobuf message type for decoding
    */
@@ -107,12 +109,12 @@ type SchemaConfig = {
    * Schema type for the value.
    * If not provided, the value will not be validated.
    */
-  value: SchemaType;
+  value: SchemaConfigValue;
   /**
    * Schema type for the key.
    * If not provided, the key will not be validated.
    */
-  key?: SchemaType;
+  key?: SchemaConfigValue;
 };
 
 /**
@@ -209,5 +211,5 @@ export type {
   Record,
   RecordHeader,
   SchemaConfig,
-  SchemaType,
+  SchemaConfigValue,
 };

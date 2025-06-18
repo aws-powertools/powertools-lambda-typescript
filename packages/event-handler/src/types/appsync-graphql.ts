@@ -3,15 +3,15 @@ import type { GenericLogger } from './common.js';
 
 // #region Resolver fn
 
-type ResolverSyncHandlerFn<TParams extends Record<string, unknown>> = (
+type ResolverSyncHandlerFn<TParams = Record<string, unknown>> = (
   args: TParams
 ) => unknown;
 
-type ResolverHandlerFn<TParams extends Record<string, unknown>> = (
+type ResolverHandlerFn<TParams = Record<string, unknown>> = (
   args: TParams
 ) => Promise<unknown>;
 
-type ResolverHandler<TParams extends Record<string, unknown>> =
+type ResolverHandler<TParams = Record<string, unknown>> =
   | ResolverSyncHandlerFn<TParams>
   | ResolverHandlerFn<TParams>;
 
@@ -36,11 +36,11 @@ type RouteHandlerRegistryOptions = {
  * @property fieldName - The name of the field to be registered
  * @property typeName - The name of the type to be registered
  */
-type RouteHandlerOptions = {
+type RouteHandlerOptions<TParams = Record<string, unknown>> = {
   /**
    * The handler function to be called when the event is received
    */
-  handler: ResolverHandler<Record<string, unknown>>;
+  handler: ResolverHandler<TParams>;
   /**
    * The field name of the event to be registered
    */

@@ -140,11 +140,11 @@ class Router {
   ): MethodDecorator | undefined {
     if (typeof handler === 'function') {
       const resolverOptions = options as GraphQlRouteOptions;
-      const typeName = resolverOptions.typeName ?? 'Query';
+      const { typeName = 'Query', fieldName } = resolverOptions;
 
       this.resolverRegistry.register({
-        fieldName: resolverOptions.fieldName,
-        handler: handler as ResolverHandler<Record<string, unknown>>,
+        fieldName,
+        handler: handler as ResolverHandler,
         typeName,
       });
 
@@ -153,10 +153,10 @@ class Router {
 
     const resolverOptions = handler;
     return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-      const typeName = resolverOptions.typeName ?? 'Query';
+      const { typeName = 'Query', fieldName } = resolverOptions;
 
       this.resolverRegistry.register({
-        fieldName: resolverOptions.fieldName,
+        fieldName,
         handler: descriptor.value,
         typeName,
       });

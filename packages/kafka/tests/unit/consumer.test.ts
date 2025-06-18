@@ -7,19 +7,16 @@ import {
   KafkaConsumerParserError,
   KafkaConsumerProtobufMissingSchemaError,
 } from '../../src/errors.js';
-import type {
-  ConsumerConfig,
-  ConsumerRecords,
-  MSKEvent,
-} from '../../src/types.js';
+import type { ConsumerRecords, MSKEvent } from '../../src/types.js';
 import * as avroEvent from '../events/avro.json' with { type: 'json' };
 import * as jsonEvent from '../events/default.json' with { type: 'json' };
 import * as protobufEvent from '../events/protobuf.json' with { type: 'json' };
 import { Product as ProductProto } from '../protos/product.es6.generated.js';
 
 describe('Kafka consumer: ', () => {
-  // Common test setup
   const keyZodSchema = z.string();
+
+  //{   "id": 12345,   "name": "product5",   "price": 45 }
   const valueZodSchema = z.object({
     id: z.number(),
     name: z.string(),
@@ -28,233 +25,285 @@ describe('Kafka consumer: ', () => {
     }),
   });
 
-  type Key = z.infer<typeof keyZodSchema>;
-  type Product = z.infer<typeof valueZodSchema>;
-  type SerializationType = 'json' | 'avro' | 'protobuf';
-
   const jsonTestEvent = jsonEvent as unknown as MSKEvent;
   const avroTestEvent = avroEvent as unknown as MSKEvent;
   const protobufTestEvent = protobufEvent as unknown as MSKEvent;
   const context = {} as Context;
+
+  type Key = z.infer<typeof keyZodSchema>;
+  type Product = z.infer<typeof valueZodSchema>;
+
   const handler = async (
     event: ConsumerRecords<Key, Product>,
     _context: Context
-  ): Promise<ConsumerRecords<Key, Product>> => event;
-
-  // Helper function to create expected result
-  type ExpectedResult = {
-    key: string | number;
-    value: Product;
-    headers: Array<{ headerKey: string }> | null;
-    originalKey: string;
-    originalValue: string;
-    originalHeaders: Array<{ headerKey: number[] }> | null;
+  ): Promise<ConsumerRecords<Key, Product>> => {
+    return event;
   };
-
-  const createExpectedResult = (
-    key: string | number,
-    value: Product,
-    originalKey: string,
-    originalValue: string,
-    headers = true
-  ): ExpectedResult => ({
-    key,
-    value,
-    headers: headers ? [{ headerKey: 'headerValue' }] : null,
-    originalKey,
-    originalValue,
-    originalHeaders: headers
-      ? [{ headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] }]
-      : null,
-  });
-
-  // Helper function for common deserialization test pattern
-  const testDeserialization = async (
-    consumerConfig: ConsumerConfig<Key, Product>,
-    testEvent: MSKEvent,
-    expectedKey: string | number,
-    expectedValue: Product,
-    expectedOriginalKey: string,
-    expectedOriginalValue: string
-  ): Promise<void> => {
-    const consumer = kafkaConsumer<Key, Product>(handler, consumerConfig);
-    const event = await consumer(testEvent, context);
-    const expected = createExpectedResult(
-      expectedKey,
-      expectedValue,
-      expectedOriginalKey,
-      expectedOriginalValue
-    );
-    expect(event.records[0]).toEqual(expected);
-  };
-
   it('deserializes json message', async () => {
-    await testDeserialization(
-      {
-        value: { type: 'json' },
-        key: { type: 'json' },
+    // Prepare
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
       },
-      jsonTestEvent,
-      'recordKey',
-      { id: 12345, name: 'product5', price: 45 },
-      'cmVjb3JkS2V5',
-      'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9'
-    );
+      key: {
+        type: 'json',
+      },
+    });
+    // Act
+    const event = await consumer(jsonTestEvent, context);
+    // Assess
+    const expected = {
+      key: 'recordKey',
+      value: { id: 12345, name: 'product5', price: 45 },
+      headers: [{ headerKey: 'headerValue' }],
+      originalKey: 'cmVjb3JkS2V5',
+      originalValue:
+        'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
+      originalHeaders: [
+        { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
+      ],
+    };
+    expect(event.records[0]).toEqual(expected);
   });
 
   it('deserializes avro message', async () => {
-    await testDeserialization(
-      {
-        value: {
-          type: 'avro',
-          schema: `{
-            "type": "record",
-            "name": "Product",
-            "fields": [
-              { "name": "id", "type": "int" },
-              { "name": "name", "type": "string" },
-              { "name": "price", "type": "double" }
-            ]
-          }`,
-        },
-        key: { type: 'json' },
-      },
-      avroTestEvent,
-      42,
-      { id: 1001, name: 'Laptop', price: 999.99 },
-      'NDI=',
-      '0g8MTGFwdG9wUrgehes/j0A='
-    );
-  });
-
-  it('deserializes protobuf message', async () => {
-    await testDeserialization(
-      {
-        value: {
-          type: 'protobuf',
-          schema: ProductProto,
-        },
-        key: { type: 'json' },
-      },
-      protobufTestEvent,
-      42,
-      { id: 1001, name: 'Laptop', price: 999.99 },
-      'NDI=',
-      'COkHEgZMYXB0b3AZUrgehes/j0A='
-    );
-  });
-
-  // Helper function for testing missing schema errors
-  const testMissingSchema = async (
-    type: Extract<SerializationType, 'avro' | 'protobuf'>,
-    ErrorClass:
-      | typeof KafkaConsumerAvroMissingSchemaError
-      | typeof KafkaConsumerProtobufMissingSchemaError,
-    testEvent: MSKEvent
-  ): Promise<void> => {
+    // Prepare
     const consumer = kafkaConsumer<Key, Product>(handler, {
-      // @ts-expect-error - testing missing schemaStr
-      value: { type },
+      value: {
+        type: 'avro',
+        schema: `{
+          "type": "record",
+          "name": "Product",
+          "fields": [
+            { "name": "id", "type": "int" },
+            { "name": "name", "type": "string" },
+            { "name": "price", "type": "double" }
+          ]
+        }`,
+      },
+      key: {
+        type: 'json',
+      },
     });
-    await expect(consumer(testEvent, context)).rejects.toThrow(ErrorClass);
-  };
+
+    // Act
+    const event = await consumer(avroTestEvent, context);
+    // Assess
+    const expected = {
+      key: 42,
+      value: { id: 1001, name: 'Laptop', price: 999.99 },
+      headers: [{ headerKey: 'headerValue' }],
+      originalKey: 'NDI=',
+      originalValue: '0g8MTGFwdG9wUrgehes/j0A=',
+      originalHeaders: [
+        { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
+      ],
+    };
+    expect(event.records[0]).toEqual(expected);
+  });
 
   it('throws when schemaStr not passed for avro event', async () => {
-    await testMissingSchema(
-      'avro',
-      KafkaConsumerAvroMissingSchemaError,
-      avroTestEvent
+    // Prepare
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      // @ts-expect-error - testing missing schemaStr
+      value: {
+        type: 'avro',
+      },
+    });
+
+    // Act & Assess
+    await expect(consumer(avroTestEvent, context)).rejects.toThrow(
+      KafkaConsumerAvroMissingSchemaError
     );
   });
 
   it('throws when schemaStr not passed for protobuf event', async () => {
-    await testMissingSchema(
-      'protobuf',
-      KafkaConsumerProtobufMissingSchemaError,
-      protobufTestEvent
+    // Prepare
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      // @ts-expect-error - testing missing schemaStr
+      value: {
+        type: 'protobuf',
+      },
+    });
+
+    // Act & Assess
+    await expect(consumer(protobufTestEvent, context)).rejects.toThrow(
+      KafkaConsumerProtobufMissingSchemaError
     );
   });
 
+  it('deserializes protobuf message', async () => {
+    // Prepare
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'protobuf',
+        schema: ProductProto,
+      },
+      key: {
+        type: 'json',
+      },
+    });
+
+    // Act
+    const event = await consumer(protobufTestEvent, context);
+    // Assess
+    const expected = {
+      key: 42,
+      value: { id: 1001, name: 'Laptop', price: 999.99 },
+      headers: [{ headerKey: 'headerValue' }],
+      originalKey: 'NDI=',
+      originalValue: 'COkHEgZMYXB0b3AZUrgehes/j0A=',
+      originalHeaders: [
+        { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
+      ],
+    };
+    expect(event.records[0]).toEqual(expected);
+  });
+
   it('throws if schema type is not json, avro or protobuf', async () => {
+    // Prepare
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         // @ts-expect-error - testing unsupported type
-        type: 'xml',
+        type: 'xml', // unsupported type
       },
     });
+    // Act & Assess
     await expect(consumer(jsonTestEvent, context)).rejects.toThrow();
   });
 
-  describe('edge cases', () => {
-    it('deserializes with no headers provided', async () => {
-      const consumer = kafkaConsumer<Key, Product>(handler, {
-        value: { type: 'json' },
-      });
-
-      const jsonTestEventWithoutHeaders = {
-        ...jsonTestEvent,
-        records: {
-          'test-topic': [
-            {
-              key: 'cmVjb3JkS2V5',
-              value:
-                'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
-              headers: null,
-            },
-          ],
-        },
-      } as unknown as MSKEvent;
-
-      const event = await consumer(jsonTestEventWithoutHeaders, context);
-      expect(event.records[0]).toEqual(
-        createExpectedResult(
-          'recordKey',
-          { id: 12345, name: 'product5', price: 45 },
-          'cmVjb3JkS2V5',
-          'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
-          false
-        )
-      );
+  it('deserializes to base64 string if no configuration provided', async () => {
+    // Prepare
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
+      },
     });
 
-    it('throws when zod schema validation fails', async () => {
-      const invalidJsonEvent = {
-        ...jsonTestEvent,
-        records: {
-          'test-topic': [
-            {
-              key: 'cmVjb3JkS2V5',
-              value:
-                'eyJpZCI6NDIsIm5hbWUiOiJpbnZhbGlkUHJvZHVjdCIsInByaWNlIjotMTAwfQ==',
-              headers: null,
-            },
-          ],
-        },
-      } as unknown as MSKEvent;
+    // Act
+    const event = await consumer(jsonTestEvent, context);
+    // Assess
+    const expected = {
+      key: 'recordKey',
+      value: { id: 12345, name: 'product5', price: 45 },
+      headers: [{ headerKey: 'headerValue' }],
+      originalKey: 'cmVjb3JkS2V5',
+      originalValue:
+        'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
+      originalHeaders: [
+        { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
+      ],
+    };
+    expect(event.records[0]).toEqual(expected);
+  });
 
-      const consumer = kafkaConsumer<Key, Product>(handler, {
-        value: {
-          type: 'json',
-          parserSchema: valueZodSchema,
-        },
-        key: {
-          type: 'json',
-          parserSchema: keyZodSchema,
-        },
-      });
-
-      await expect(consumer(invalidJsonEvent, context)).rejects.toThrow(
-        KafkaConsumerParserError
-      );
+  it('deserializes with no headers provided', async () => {
+    // Prepare
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
+      },
     });
 
-    it('throws when non MSK event passed kafka consumer', async () => {
-      const consumer = kafkaConsumer<Key, Product>(handler, {
-        value: { type: 'json' },
-      });
-      await expect(consumer({} as MSKEvent, context)).rejects.toThrow(
-        'No records found in the event'
-      );
+    const jsonTestEventWithoutHeaders = {
+      ...jsonTestEvent,
+      records: {
+        'test-topic': [
+          {
+            key: 'cmVjb3JkS2V5',
+            value:
+              'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
+            headers: null, // No headers
+          },
+        ],
+      },
+    } as unknown as MSKEvent;
+
+    // Act
+    const event = await consumer(jsonTestEventWithoutHeaders, context);
+    // Assess
+    expect(event.records[0]).toEqual({
+      key: 'recordKey',
+      value: { id: 12345, name: 'product5', price: 45 },
+      headers: null,
+      originalKey: 'cmVjb3JkS2V5',
+      originalValue:
+        'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
+      originalHeaders: null,
     });
+  });
+
+  it('validates key and value using Zod schemas for json', async () => {
+    // Prepare
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
+        parserSchema: valueZodSchema,
+      },
+      key: {
+        type: 'json',
+        parserSchema: keyZodSchema,
+      },
+    });
+
+    // Act
+    const event = await consumer(jsonTestEvent, context);
+    // Assess
+    expect(event.records[0].key).toEqual('recordKey');
+    expect(event.records[0].value).toEqual({
+      id: 12345,
+      name: 'product5',
+      price: 45,
+    });
+  });
+
+  it('throws when zod schema validation fails', async () => {
+    // Prepare
+    const invalidJsonEvent = {
+      ...jsonTestEvent,
+      records: {
+        'test-topic': [
+          {
+            key: 'cmVjb3JkS2V5',
+            value:
+              'eyJpZCI6NDIsIm5hbWUiOiJpbnZhbGlkUHJvZHVjdCIsInByaWNlIjotMTAwfQ==', // Invalid JSON: negative price
+            headers: null,
+          },
+        ],
+      },
+    } as unknown as MSKEvent;
+
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
+        parserSchema: valueZodSchema,
+      },
+      key: {
+        type: 'json',
+        parserSchema: keyZodSchema,
+      },
+    });
+
+    // Act & Assess
+    await expect(consumer(invalidJsonEvent, context)).rejects.toThrow(
+      KafkaConsumerParserError
+    );
+  });
+
+  it('throws when non MSK event passed kafka consumer', async () => {
+    // Prepare
+    const nonMskEvent = {
+      foo: 'bar',
+    } as unknown as MSKEvent;
+
+    const consumer = kafkaConsumer<Key, Product>(handler, {
+      value: {
+        type: 'json',
+      },
+    });
+    // Act & Assess
+    await expect(consumer(nonMskEvent, context)).rejects.toThrow(
+      'No records found in the event'
+    );
   });
 });

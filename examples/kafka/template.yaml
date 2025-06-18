@@ -11,22 +11,39 @@ Globals:
     Timeout: 15
     MemorySize: 512
     Tracing: Active
+    Runtime: nodejs22.x
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        POWERTOOLS_SERVICE_NAME: kafka-deserialization
+        POWERTOOLS_METRICS_NAMESPACE: kafka-nodejs
+        LOG_LEVEL: INFO
+    VpcConfig:
+      SubnetIds:
+        - subnet-057857442d9af0852 # Replace this with your VPC's default security group ID.
+        - subnet-0ec1c3a2883a36bf9
+      SecurityGroupIds:
+        - sg-0ec0be541d70ca3ed # Replace this with your public subnet's ID.
 
 Resources:
-  JsonDeserializationFunction:
+  NodeJsJsonDeserializationFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: app/
       Handler: json.handler
       Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      Tracing: Active
-      Environment:
-        Variables:
-          POWERTOOLS_SERVICE_NAME: kafka-json-deserialization
-          POWERTOOLS_METRICS_NAMESPACE: kafka
-          LOG_LEVEL: INFO
+      Policies:
+        - AdministratorAccess # For demo purposes only! Remove this for production.
+      Events:
+        MSKEvent:
+          Type: MSK
+          Properties:
+            Stream: arn:aws:kafka:eu-west-3:992382490249:cluster/powertools-kafka-esm/f138df86-9253-4d2a-b682-19e132396d4f-s3
+            StartingPosition: LATEST
+            MaximumBatchingWindowInSeconds: 5
+            Topics:
+              - powertools-json-load-ts
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -35,20 +52,23 @@ Resources:
         EntryPoints:
           - json.ts
 
-  AvroDeserializationFunction:
+  NodeJsAvroDeserializationFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: app/
       Handler: avro.handler
       Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      Tracing: Active
-      Environment:
-        Variables:
-          POWERTOOLS_SERVICE_NAME: kafka-avro-deserialization
-          POWERTOOLS_METRICS_NAMESPACE: kafka
-          LOG_LEVEL: INFO
+      Policies:
+        - AdministratorAccess # For demo purposes only! Remove this for production.
+      Events:
+        MSKEvent:
+          Type: MSK
+          Properties:
+            Stream: arn:aws:kafka:eu-west-3:992382490249:cluster/powertools-kafka-esm/f138df86-9253-4d2a-b682-19e132396d4f-s3
+            StartingPosition: LATEST
+            MaximumBatchingWindowInSeconds: 5
+            Topics:
+              - powertools-avro-load-ts
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
@@ -57,20 +77,23 @@ Resources:
         EntryPoints:
           - avro.ts
 
-  ProtobufDeserializationFunction:
+  NodeJsProtobufDeserializationFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: app/
       Handler: proto.handler
       Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      Tracing: Active
-      Environment:
-        Variables:
-          POWERTOOLS_SERVICE_NAME: kafka-protobuf-deserialization
-          POWERTOOLS_METRICS_NAMESPACE: kafka
-          LOG_LEVEL: INFO
+      Policies:
+        - AdministratorAccess # For demo purposes only! Remove this for production.
+      Events:
+        MSKEvent:
+          Type: MSK
+          Properties:
+            Stream: arn:aws:kafka:eu-west-3:992382490249:cluster/powertools-kafka-esm/f138df86-9253-4d2a-b682-19e132396d4f-s3
+            StartingPosition: LATEST
+            MaximumBatchingWindowInSeconds: 5
+            Topics:
+              - powertools-proto-load-ts
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:

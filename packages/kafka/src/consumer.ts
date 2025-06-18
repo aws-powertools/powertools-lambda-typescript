@@ -10,11 +10,12 @@ import {
 } from './errors.js';
 import type {
   ConsumerRecord,
+  Record as KafkaRecord,
   LambdaHandler,
   MSKEvent,
   SchemaConfig,
   SchemaType,
-} from './types.js';
+} from './types/types.js';
 
 /**
  * Type guard to assert that the event is a valid {@link MSKEvent | `MSKEvent`}.
@@ -36,13 +37,14 @@ const assertIsMSKEvent = (event: unknown): event is MSKEvent => {
 };
 
 /**
- * Deserializes Kafka message headers from an array of header objects.
+ * Deserialize Kafka message headers from an array of header objects.
+ *
+ * It returns `null` if the headers are `null`, or an array of header objects
+ * where each header value is decoded as a UTF-8 string.
  *
  * @param headers - An array of header objects, where each object maps header keys (string)
- *   to header values (number[]), representing the raw bytes of each header value.
- *   Example: [{ "headerKey": [104, 101, 108, 108, 111] }]
- * @returns An array of header objects, where each header value is decoded as a UTF-8 string.
- *   Example: [{ "headerKey": "hello" }]
+ *   to header values (`number[]`), representing the raw bytes of each header value -
+ *   i.e. `[{ "headerKey": [104, 101, 108, 108, 111] }]`
  */
 const deserializeHeaders = (headers: Record<string, number[]>[] | null) => {
   if (headers === null) {
@@ -60,12 +62,13 @@ const deserializeHeaders = (headers: Record<string, number[]>[] | null) => {
 };
 
 /**
- * Deserializes a base64-encoded value using the provided schema configuration.
+ * Deserialize a base64-encoded value using the provided schema configuration.
+ *
+ * It returns the deserialized value, which may be a string, object, or other type depending on the schema type.
  *
  * @param value - The base64-encoded string to deserialize.
- * @param config - The schema configuration to use for deserialization. See {@link SchemaType}.
+ * @param config - The schema configuration to use for deserialization. See {@link SchemaType | `SchemaType`}.
  *   If not provided, the value is decoded as a UTF-8 string.
- * @returns The deserialized value, which may be a string, object, or other type depending on the schema.
  */
 const deserialize = async (value: string, config?: SchemaType) => {
   // no config -> default to base64 decoding
@@ -121,15 +124,12 @@ const deserializeKey = async (key?: string, config?: SchemaType) => {
 };
 
 /**
- * Deserializes a single record from an MSK event.
+ * Deserialize a single record from an MSK event.
  *
  * @param record - A single record from the MSK event.
  * @param config - The schema configuration for deserializing the record's key and value.
  */
-const deserializeRecord = async (
-  record: MSKEvent['records'][number][number],
-  config: SchemaConfig
-) => {
+const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
   const deserializedRecord = {
     key: await deserializeKey(record.key, config.key),
     value: await deserialize(record.value, config.value),
@@ -159,7 +159,7 @@ const deserializeRecord = async (
 };
 
 /**
- * Wraps a handler function to automatically deserialize and validate Kafka records from an MSK event.
+ * Wrap a handler function to automatically deserialize and validate Kafka records from an MSK event.
  *
  * The returned function will:
  * - Deserialize the key and value of each record using the provided schema config.
@@ -169,20 +169,26 @@ const deserializeRecord = async (
  *
  * @typeParam K - The type of the deserialized key.
  * @typeParam V - The type of the deserialized value.
+ *
  * @param handler - The original handler function to wrap. It should accept the deserialized event as its first argument.
  * @param config - The schema configuration for deserializing and validating record keys and values.
  *
  * @example
  * ```ts
- * import { kafkaConsumer } from './consumer';
+ * import { kafkaConsumer } from '@aws-lambda-powertools/kafka';
  * import { z } from 'zod';
  *
+ * const keySchema = z.string();
+ * const valueSchema = z.object({
+ *   id: z.number(),
+ * });
+ *
  * const config = {
- *   key: { type: 'json', zodSchema: z.string() },
- *   value: { type: 'json', zodSchema: z.object({ id: z.number() }) }
+ *   key: { type: 'json', parserSchema: keySchema },
+ *   value: { type: 'json', parserSchema: valueSchema },
  * };
  *
- * const handler = kafkaConsumer<string, { id: number }>(async (event, context) => {
+ * export const handler = kafkaConsumer<z.infer<keySchema>, z.infer<valueSchema>>(async (event, context) => {
  *   // event.records is now an array of deserialized and validated records
  *   for (const record of event.records) {
  *     console.log(record.key, record.value);

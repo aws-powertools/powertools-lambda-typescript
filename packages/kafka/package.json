@@ -70,12 +70,12 @@
     },
     "./types": {
       "require": {
-        "types": "./lib/cjs/types.d.ts",
-        "default": "./lib/cjs/types.js"
+        "types": "./lib/cjs/types/types.d.ts",
+        "default": "./lib/cjs/types/types.js"
       },
       "import": {
-        "types": "./lib/esm/types.d.ts",
-        "default": "./lib/esm/types.js"
+        "types": "./lib/esm/types/types.d.ts",
+        "default": "./lib/esm/types/types.js"
       }
     },
     "./deserializer/avro": {
@@ -116,8 +116,8 @@
         "lib/esm/errors.d.ts"
       ],
       "types": [
-        "lib/cjs/types.d.ts",
-        "lib/esm/types.d.ts"
+        "lib/cjs/types/types.d.ts",
+        "lib/esm/types/types.d.ts"
       ],
       "deserializer/avro": [
         "lib/cjs/deserializer/avro.d.ts",

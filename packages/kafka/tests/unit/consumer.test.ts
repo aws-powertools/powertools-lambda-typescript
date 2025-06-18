@@ -9,7 +9,7 @@ import {
   KafkaConsumerParserError,
   KafkaConsumerProtobufMissingSchemaError,
 } from '../../src/errors.js';
-import type { ConsumerRecords, MSKEvent } from '../../src/types.js';
+import type { ConsumerRecords, MSKEvent } from '../../src/types/types.js';
 import { Product as ProductProto } from '../protos/product.es6.generated.js';
 
 describe('Kafka consumer: ', () => {

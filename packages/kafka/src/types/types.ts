@@ -198,6 +198,7 @@ interface MSKEvent {
     [topic: string]: Record[];
   };
 }
+
 interface ProtobufMessage<T> {
   decode(reader: Reader | Uint8Array, length?: number): T;
 }

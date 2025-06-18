@@ -1,5 +1,5 @@
 import { KafkaConsumerDeserializationError } from '../errors.js';
-import type { ProtobufMessage } from '../types.js';
+import type { ProtobufMessage } from '../types/types.js';
 
 /**
  * Deserialises a Protobuf message from a base64-encoded string.

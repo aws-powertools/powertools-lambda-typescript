@@ -171,7 +171,6 @@ const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
  * @example
  * ```ts
  * import { kafkaConsumer } from '@aws-lambda-powertools/kafka';
- * import { SchemaConfig } from '@aws-lambda-powertools/kafka/types';
  * import { z } from 'zod';
  *
  * const keySchema = z.string();
@@ -179,21 +178,19 @@ const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
  *   id: z.number(),
  * });
  *
- * const config = {
- *   key: { type: 'json', parserSchema: keySchema },
- *   value: { type: 'json', parserSchema: valueSchema },
- * } satisfies SchemaConfig;
- *
  * export const handler = kafkaConsumer<z.infer<keySchema>, z.infer<valueSchema>>(async (event, context) => {
  *   // event.records is now an array of deserialized and validated records
  *   for (const record of event.records) {
  *     console.log(record.key, record.value);
  *   }
- * }, config);
+ * }, {
+ *   key: { type: 'json', parserSchema: keySchema },
+ *   value: { type: 'json', parserSchema: valueSchema },
+ * });
  * ```
  *
- * @typeParam K - The type of the deserialized key.
- * @typeParam V - The type of the deserialized value.
+ * @typeParam K - Optional type of the deserialized key - defaults to `unknown`.
+ * @typeParam V - Optional type of the deserialized value - defaults to `unknown`.
  *
  * @param handler - The original handler function to wrap. It should accept the deserialized event as its first argument.
  * @param config - The schema configuration for deserializing and validating record keys and values.

@@ -1,3 +1,7 @@
+/**
+ * Base error class for Kafka consumer-related errors.
+ * All Kafka consumer errors should extend this class.
+ */
 class KafkaConsumerError extends Error {
   constructor(message: string) {
     super(message);

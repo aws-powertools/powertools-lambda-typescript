@@ -3,9 +3,6 @@ import type { ZodTypeAny } from 'zod';
 import type { SchemaType as SchemaTypeMap } from '../constants.js';
 
 /**
- * Represents a Kafka consumer record.
- */
-/**
  * Represents a single Kafka consumer record with generic key and value types.
  */
 type ConsumerRecord<K, V> = {
@@ -45,6 +42,9 @@ type ConsumerRecords<K, V> = {
   records: Array<ConsumerRecord<K, V>>;
 } & Omit<MSKEvent, 'records'>;
 
+/**
+ * Union type for supported schema types (JSON, Avro, Protobuf).
+ */
 type SchemaType = (typeof SchemaTypeMap)[keyof typeof SchemaTypeMap];
 
 /**
@@ -210,6 +210,7 @@ export type {
   ProtobufMessage,
   Record,
   RecordHeader,
+  SchemaType,
   SchemaConfig,
   SchemaConfigValue,
 };

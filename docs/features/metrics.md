@@ -119,6 +119,18 @@ You can create metrics using the `addMetric` method, and you can create dimensio
     --8<-- "examples/snippets/metrics/customDimensions.ts"
     ```
 
+### Creating dimension sets
+
+You can create separate dimension sets for your metrics using the `addDimensions` method. This allows you to group metrics by different dimension combinations.
+
+When you call `addDimensions()`, it creates a new dimension set rather than adding to the existing dimensions. This is useful when you want to track the same metric across different dimension combinations.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="9 12-15 18-21"
+    --8<-- "examples/snippets/metrics/dimensionSets.ts"
+    ```
+
 !!! tip "Autocomplete Metric Units"
     Use the `MetricUnit` enum to easily find a supported metric unit by CloudWatch. Alternatively, you can pass the value as a string if you already know them e.g. "Count".
 

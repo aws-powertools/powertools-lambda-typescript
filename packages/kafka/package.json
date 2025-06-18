@@ -120,18 +120,23 @@
         "lib/esm/types.d.ts"
       ],
       "deserializer/avro": [
-           "lib/cjs/deserializer/avro.d.ts",
-           "lib/esm/deserializer/avro.d.ts"
-         ],
-         "deserializer/json": [
-           "lib/cjs/deserializer/json.d.ts",
-           "lib/esm/deserializer/json.d.ts"
-         ],
-         "deserializer/protobuf": [
-           "lib/cjs/deserializer/protobuf.d.ts",
-           "lib/esm/deserializer/protobuf.d.ts"
-         ]
+        "lib/cjs/deserializer/avro.d.ts",
+        "lib/esm/deserializer/avro.d.ts"
+      ],
+      "deserializer/json": [
+        "lib/cjs/deserializer/json.d.ts",
+        "lib/esm/deserializer/json.d.ts"
+      ],
+      "deserializer/protobuf": [
+        "lib/cjs/deserializer/protobuf.d.ts",
+        "lib/esm/deserializer/protobuf.d.ts"
+      ]
     }
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "avro-js": "^1.12.0",
+    "protobufjs": "^7.5.3",
+    "zod": "^3.25.32"
+  }
 }

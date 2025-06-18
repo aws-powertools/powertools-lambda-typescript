@@ -104,6 +104,86 @@ export const handler = async (event, context) =>
 
 ## Bedrock Agent Functions
 
+Event Handler for Amazon Bedrock Agent Functions.
+
+* Easily expose tools for your Large Language Model (LLM) agents
+* Automatic routing based on tool name and function details
+* Graceful error handling and response formatting
+
+### Handle tool use
+
+When using the Bedrock Agent Functions event handler, you can register a handler for a specific tool name. The handler will be called when the agent uses that tool.
+
+```typescript
+import { BedrockAgentFunctionResolver } from '@aws-lambda-powertools/event-handler/bedrock-agent';
+import type { Context } from 'aws-lambda';
+
+const app = new BedrockAgentFunctionResolver();
+
+app.tool<{ city: string }>(
+  async ({ city }) => {
+    // Simulate fetching weather data for the city
+    return {
+      city,
+      temperature: '20°C',
+      condition: 'Sunny',
+    };
+  },
+  {
+    name: 'getWeatherForCity',
+    description: 'Get weather for a specific city', // (1)!
+  }
+);
+
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);
+```
+
+You can also work with session attributes, which are key-value pairs that can be used to store information about the current session. The session attributes are automatically passed to the handler and can be used to store information that needs to be persisted across multiple tool invocations.
+
+```typescript
+import {
+  BedrockAgentFunctionResolver,
+  BedrockFunctionResponse,
+} from '@aws-lambda-powertools/event-handler/bedrock-agent';
+import type { Context } from 'aws-lambda';
+
+const app = new BedrockAgentFunctionResolver();
+
+app.tool<{ city: string }>(
+  async ({ city }, { event }) => {
+    const {
+      sessionAttributes,
+      promptSessionAttributes,
+      knowledgeBasesConfiguration,
+    } = event;
+
+    // your logic to fetch weather data for the city
+
+    return new BedrockFunctionResponse({
+      body: JSON.stringify({
+        city,
+        temperature: '20°C',
+        condition: 'Sunny',
+      }),
+      sessionAttributes: {
+        ...sessionAttributes,
+        isGoodWeather: true,
+      },
+      promptSessionAttributes,
+      knowledgeBasesConfiguration,
+    });
+  },
+  {
+    name: 'getWeatherForCity',
+    description: 'Get weather for a specific city',
+  }
+);
+
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);
+```
+
 See the [documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/event-handler/appsync-events) for more details on how to use the AppSync event handler.
 
 ## Contribute

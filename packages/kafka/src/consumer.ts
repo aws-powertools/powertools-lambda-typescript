@@ -22,14 +22,15 @@ import type {
  *   Example: [{ "headerKey": "hello" }]
  */
 const deserialiseHeaders = (headers: Record<string, number[]>[]) => {
-  return headers.map((header) =>
-    Object.fromEntries(
-      Object.entries(header).map(([headerKey, headerValue]) => [
-        headerKey,
-        Buffer.from(headerValue).toString('utf-8'),
-      ])
-    )
-  );
+  const result = [];
+  for (const header of headers) {
+    const entries = [];
+    for (const [headerKey, headerValue] of Object.entries(header)) {
+      entries.push([headerKey, Buffer.from(headerValue).toString('utf-8')]);
+    }
+    result.push(Object.fromEntries(entries));
+  }
+  return result;
 };
 
 /**

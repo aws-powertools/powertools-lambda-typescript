@@ -33,13 +33,22 @@
   },
   "keywords": [],
   "dependencies": {
-    "@aws-lambda-powertools/commons": "^2.20.0"
+    "@aws-lambda-powertools/commons": "2.20.0",
+    "@standard-schema/spec": "^1.0.0"
   },
   "peerDependencies": {
-    "zod": "3.x"
+    "zod": ">=3.24.0",
+    "valibot": ">=1.0.0",
+    "arktype": ">=2.0.0"
   },
   "peerDependenciesMeta": {
     "zod": {
+      "optional": true
+    },
+    "valibot": {
+      "optional": true
+    },
+    "arkt": {
       "optional": true
     }
   },

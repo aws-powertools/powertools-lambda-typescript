@@ -3,6 +3,7 @@ import {
   isNullOrUndefined,
   isRecord,
 } from '@aws-lambda-powertools/commons/typeutils';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { Context, Handler } from 'aws-lambda';
 import {
   KafkaConsumerAvroMissingSchemaError,
@@ -124,6 +125,19 @@ const deserializeKey = async (key?: string, config?: SchemaConfigValue) => {
   return await deserialize(key, config);
 };
 
+const parseSchema = async (value: unknown, schema: StandardSchemaV1) => {
+  let result = schema['~standard'].validate(value);
+  /* v8 ignore start */
+  if (result instanceof Promise) result = await result;
+  /* v8 ignore stop */
+  if (result.issues) {
+    throw new KafkaConsumerParserError(
+      `Schema validation failed ${result.issues}`
+    );
+  }
+  return result.value;
+};
+
 /**
  * Deserialize a single record from an MSK event.
  *
@@ -131,32 +145,24 @@ const deserializeKey = async (key?: string, config?: SchemaConfigValue) => {
  * @param config - The schema configuration for deserializing the record's key and value.
  */
 const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
-  const deserializedRecord = {
-    key: await deserializeKey(record.key, config.key),
-    value: await deserialize(record.value, config.value),
-    originalKey: record.key,
-    originalValue: record.value,
-    headers: deserializeHeaders(record.headers),
-    originalHeaders: record.headers,
+  const { key, value, headers } = record;
+  const { key: keyConfig, value: valueConfig } = config;
+
+  const deserializedKey = await deserializeKey(key, keyConfig);
+  const deserializedValue = await deserialize(value, valueConfig);
+
+  return {
+    key: keyConfig?.parserSchema
+      ? await parseSchema(deserializedKey, keyConfig.parserSchema)
+      : deserializedKey,
+    value: valueConfig?.parserSchema
+      ? await parseSchema(deserializedValue, valueConfig.parserSchema)
+      : deserializedValue,
+    originalKey: key,
+    originalValue: value,
+    headers: deserializeHeaders(headers),
+    originalHeaders: headers,
   };
-
-  try {
-    if (config.key?.parserSchema && deserializedRecord.key !== undefined) {
-      config.key.parserSchema.parse(deserializedRecord.key);
-    }
-
-    if (config.value.parserSchema) {
-      config.value.parserSchema.parse(deserializedRecord.value);
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new KafkaConsumerParserError(
-        `Schema validation failed: ${error.message}, with provided config: ${config}`
-      );
-    }
-  }
-
-  return deserializedRecord;
 };
 
 /**

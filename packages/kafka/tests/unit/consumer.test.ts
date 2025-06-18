@@ -3,12 +3,12 @@ import { join } from 'node:path';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { kafkaConsumer } from '../../src/consumer.js';
 import {
   KafkaConsumerAvroMissingSchemaError,
   KafkaConsumerParserError,
   KafkaConsumerProtobufMissingSchemaError,
 } from '../../src/errors.js';
+import { SchemaType, kafkaConsumer } from '../../src/index.js';
 import type { ConsumerRecords, MSKEvent } from '../../src/types/types.js';
 import { Product as ProductProto } from '../protos/product.es6.generated.js';
 
@@ -226,35 +226,53 @@ describe('Kafka consumer', () => {
     });
   });
 
-  it('throws when zod schema validation fails', async () => {
+  it.each([
+    {
+      type: 'key',
+      event: {
+        ...jsonTestEvent,
+        records: {
+          'test-topic': [
+            {
+              key: 'eyJpZCI6NDIsIm5hbWUiOiJpbnZhbGlkUHJvZHVjdCIsInByaWNlIjotMTAwfQ==',
+              value: TEST_DATA.json.originalValue,
+              headers: null,
+            },
+          ],
+        },
+      } as unknown as MSKEvent,
+    },
+    {
+      type: 'value',
+      event: {
+        ...jsonTestEvent,
+        records: {
+          'test-topic': [
+            {
+              key: TEST_DATA.json.originalKey,
+              value:
+                'eyJpZCI6NDIsIm5hbWUiOiJpbnZhbGlkUHJvZHVjdCIsInByaWNlIjotMTAwfQ==',
+              headers: null,
+            },
+          ],
+        },
+      } as unknown as MSKEvent,
+    },
+  ])('throws when zod schema validation fails for $type', async ({ event }) => {
     // Prepare
-    const invalidValue =
-      'eyJpZCI6NDIsIm5hbWUiOiJpbnZhbGlkUHJvZHVjdCIsInByaWNlIjotMTAwfQ==';
-    const invalidJsonEvent = {
-      ...jsonTestEvent,
-      records: {
-        'test-topic': [
-          {
-            key: TEST_DATA.json.originalKey,
-            value: invalidValue,
-            headers: null,
-          },
-        ],
-      },
-    } as unknown as MSKEvent;
     const handler = kafkaConsumer<Key, Product>(baseHandler, {
       value: {
-        type: 'json',
+        type: SchemaType.JSON,
         parserSchema: valueZodSchema,
       },
       key: {
-        type: 'json',
+        type: SchemaType.JSON,
         parserSchema: keyZodSchema,
       },
     });
 
     // Act & Assess
-    await expect(handler(invalidJsonEvent, context)).rejects.toThrow(
+    await expect(handler(event, context)).rejects.toThrow(
       KafkaConsumerParserError
     );
   });
@@ -269,5 +287,55 @@ describe('Kafka consumer', () => {
     await expect(handler({} as MSKEvent, context)).rejects.toThrow(
       'Event is not a valid MSKEvent. Expected an object with a "records" property.'
     );
+  });
+
+  it.each([
+    {
+      type: 'key parserSchema but no value parserSchema',
+      config: {
+        key: {
+          type: SchemaType.JSON,
+          parserSchema: keyZodSchema,
+        },
+        value: { type: SchemaType.JSON },
+      },
+    },
+    {
+      type: 'value parserSchema but no key parserSchema',
+      config: {
+        key: { type: SchemaType.JSON },
+        value: {
+          type: SchemaType.JSON,
+          parserSchema: valueZodSchema,
+        },
+      },
+    },
+  ])('deserializes with $type', async ({ config }) => {
+    // Prepare
+    const handler = kafkaConsumer<Key, Product>(baseHandler, config);
+    const customEvent = {
+      ...jsonTestEvent,
+      records: {
+        'test-topic': [
+          {
+            key: TEST_DATA.json.originalKey,
+            value: TEST_DATA.json.originalValue,
+            headers: null,
+          },
+        ],
+      },
+    } as unknown as MSKEvent;
+
+    // Act
+    const result = (await handler(customEvent, context)) as ConsumerRecords<
+      Key,
+      Product
+    >;
+
+    // Assess
+    expect(result.records[0]).toEqual({
+      ...TEST_DATA.json,
+      ...TEST_DATA.headers.withoutHeaders,
+    });
   });
 });

@@ -1,5 +1,5 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { Reader } from 'protobufjs';
-import type { ZodTypeAny } from 'zod';
 import type { SchemaType as SchemaTypeMap } from '../constants.js';
 
 /**
@@ -63,7 +63,7 @@ type JsonConfig = {
   /**
    * Optional Zod schema for runtime validation
    */
-  parserSchema?: ZodTypeAny;
+  parserSchema?: StandardSchemaV1;
 };
 
 /**
@@ -81,7 +81,7 @@ type AvroConfig = {
   /**
    * Optional Zod schema for runtime validation
    */
-  parserSchema?: ZodTypeAny;
+  parserSchema?: StandardSchemaV1;
 };
 /**
  * Configuration for Protobuf schema validation.
@@ -98,7 +98,7 @@ type ProtobufConfig<T> = {
   /**
    * Optional Zod schema for runtime validation
    */
-  parserSchema?: ZodTypeAny;
+  parserSchema?: StandardSchemaV1;
 };
 
 /**

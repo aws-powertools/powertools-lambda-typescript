@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package com.example;
+
+enum PhoneType {
+  HOME = 0;
+  WORK = 1;
+  MOBILE = 2;
+}
+
+enum AccountStatus {
+  ACTIVE = 0;
+  INACTIVE = 1;
+  SUSPENDED = 2;
+}
+
+// EmailAddress message
+message EmailAddress {
+  string address = 1;
+  bool verified = 2;
+  bool primary = 3;
+}
+
+// Address message
+message Address {
+  string street = 1;
+  string city = 2;
+  string state = 3;
+  string country = 4;
+  string zip_code = 5;
+}
+
+// PhoneNumber message
+message PhoneNumber {
+  string number = 1;
+  PhoneType type = 2;
+}
+
+// CustomerProfile message
+message CustomerProfile {
+  string user_id = 1;
+  string full_name = 2;
+  EmailAddress email = 3;
+  int32 age = 4;
+  Address address = 5;
+  repeated PhoneNumber phone_numbers = 6;
+  map<string, string> preferences = 7;
+  AccountStatus account_status = 8;
+}

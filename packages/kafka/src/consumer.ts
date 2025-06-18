@@ -176,6 +176,7 @@ const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
  * @example
  * ```ts
  * import { kafkaConsumer } from '@aws-lambda-powertools/kafka';
+ * import { SchemaConfig } from '@aws-lambda-powertools/kafka/types';
  * import { z } from 'zod';
  *
  * const keySchema = z.string();
@@ -186,7 +187,7 @@ const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
  * const config = {
  *   key: { type: 'json', parserSchema: keySchema },
  *   value: { type: 'json', parserSchema: valueSchema },
- * };
+ * } satisfies SchemaConfig;
  *
  * export const handler = kafkaConsumer<z.infer<keySchema>, z.infer<valueSchema>>(async (event, context) => {
  *   // event.records is now an array of deserialized and validated records
@@ -199,15 +200,12 @@ const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
 function kafkaConsumer<K, V>(
   handler: LambdaHandler<K, V>,
   config: SchemaConfig
-): (
-  event: MSKEvent,
-  context: Context
-) => Promise<ReturnType<LambdaHandler<K, V>>> {
+): (event: MSKEvent, context: Context) => Promise<unknown> {
   return async function (
     this: Handler,
     event: MSKEvent,
     context: Context
-  ): Promise<ReturnType<LambdaHandler<K, V>>> {
+  ): Promise<unknown> {
     assertIsMSKEvent(event);
 
     const consumerRecords: ConsumerRecord<K, V>[] = [];

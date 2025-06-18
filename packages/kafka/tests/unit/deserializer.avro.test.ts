@@ -15,10 +15,9 @@ describe('Avro Deserializer: ', () => {
         { "name": "price", "type": "double" }
       ]
     }`;
-
-    // Act & Assess
     const expected = { id: 1001, name: 'Laptop', price: 999.99 };
 
+    // Act & Assess
     expect(await deserialize(message, schema)).toEqual(expected);
   });
 
@@ -33,6 +32,8 @@ describe('Avro Deserializer: ', () => {
         { "name": "name", "type": "string" },
       ]
     }`; // Invalid schema, missing "price" field
+
+    // Act & Assess
     await expect(deserialize(message, schema)).rejects.toThrow(
       KafkaConsumerDeserializationError
     );
@@ -50,6 +51,8 @@ describe('Avro Deserializer: ', () => {
         { "name": "productPrice", "type": "double" },
       ]
     }`; // Valid schema, but does not match the message content
+
+    // Act & Assess
     await expect(deserialize(message, schema)).rejects.toThrow(
       KafkaConsumerDeserializationError
     );

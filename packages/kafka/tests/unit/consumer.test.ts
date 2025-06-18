@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import z from 'zod';
+import { z } from 'zod';
 import { kafkaConsumer } from '../../src/consumer.js';
 import {
   KafkaConsumerAvroMissingSchemaError,
@@ -8,15 +10,11 @@ import {
   KafkaConsumerProtobufMissingSchemaError,
 } from '../../src/errors.js';
 import type { ConsumerRecords, MSKEvent } from '../../src/types.js';
-import * as avroEvent from '../events/avro.json' with { type: 'json' };
-import * as jsonEvent from '../events/default.json' with { type: 'json' };
-import * as protobufEvent from '../events/protobuf.json' with { type: 'json' };
 import { Product as ProductProto } from '../protos/product.es6.generated.js';
 
 describe('Kafka consumer: ', () => {
   const keyZodSchema = z.string();
 
-  //{   "id": 12345,   "name": "product5",   "price": 45 }
   const valueZodSchema = z.object({
     id: z.number(),
     name: z.string(),
@@ -25,9 +23,15 @@ describe('Kafka consumer: ', () => {
     }),
   });
 
-  const jsonTestEvent = jsonEvent as unknown as MSKEvent;
-  const avroTestEvent = avroEvent as unknown as MSKEvent;
-  const protobufTestEvent = protobufEvent as unknown as MSKEvent;
+  const jsonTestEvent = JSON.parse(
+    readFileSync(join(__dirname, '..', 'events', 'default.json'), 'utf-8')
+  ) as unknown as MSKEvent;
+  const avroTestEvent = JSON.parse(
+    readFileSync(join(__dirname, '..', 'events', 'avro.json'), 'utf-8')
+  ) as unknown as MSKEvent;
+  const protobufTestEvent = JSON.parse(
+    readFileSync(join(__dirname, '..', 'events', 'protobuf.json'), 'utf-8')
+  ) as unknown as MSKEvent;
   const context = {} as Context;
 
   type Key = z.infer<typeof keyZodSchema>;
@@ -303,7 +307,7 @@ describe('Kafka consumer: ', () => {
     });
     // Act & Assess
     await expect(consumer(nonMskEvent, context)).rejects.toThrow(
-      'No records found in the event'
+      'Event is not a valid MSKEvent. Expected an object with a "records" property.'
     );
   });
 });

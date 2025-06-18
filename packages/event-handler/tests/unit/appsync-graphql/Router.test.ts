@@ -13,17 +13,17 @@ describe('Class: Router', () => {
     const addPost = vi.fn(async () => true);
 
     // Act
-    router.onQuery('getPost', getPost, { typeName: 'Query' });
-    router.onMutation('addPost', addPost, { typeName: 'Mutation' });
+    router.resolver(getPost, { typeName: 'Query', fieldName: 'getPost' });
+    router.resolver(addPost, { typeName: 'Mutation', fieldName: 'addPost' });
 
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
       1,
-      'Adding onQuery resolver for field Query.getPost'
+      'Adding resolver for field Query.getPost'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       2,
-      'Adding onMutation resolver for field Mutation.addPost'
+      'Adding resolver for field Mutation.addPost'
     );
   });
 
@@ -35,22 +35,22 @@ describe('Class: Router', () => {
     class Lambda {
       readonly prop = 'value';
 
-      @router.onQuery('getPost')
+      @router.resolver({ fieldName: 'getPost' })
       public getPost() {
         return `${this.prop} foo`;
       }
 
-      @router.onQuery('getAuthor', { typeName: 'Query' })
+      @router.resolver({ fieldName: 'getAuthor', typeName: 'Query' })
       public getAuthor() {
         return `${this.prop} bar`;
       }
 
-      @router.onMutation('addPost')
+      @router.resolver({ fieldName: 'addPost', typeName: 'Mutation' })
       public addPost() {
         return `${this.prop} bar`;
       }
 
-      @router.onMutation('updatePost', { typeName: 'Mutation' })
+      @router.resolver({ fieldName: 'updatePost', typeName: 'Mutation' })
       public updatePost() {
         return `${this.prop} baz`;
       }
@@ -64,19 +64,19 @@ describe('Class: Router', () => {
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
       1,
-      'Adding onQuery resolver for field Query.getPost'
+      'Adding resolver for field Query.getPost'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       2,
-      'Adding onQuery resolver for field Query.getAuthor'
+      'Adding resolver for field Query.getAuthor'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       3,
-      'Adding onMutation resolver for field Mutation.addPost'
+      'Adding resolver for field Mutation.addPost'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       4,
-      'Adding onMutation resolver for field Mutation.updatePost'
+      'Adding resolver for field Mutation.updatePost'
     );
 
     // verify that class scope is preserved after decorating
@@ -94,8 +94,8 @@ describe('Class: Router', () => {
     class Lambda {
       readonly prop = 'value';
 
-      @router.onQuery('listLocations')
-      @router.onQuery('locations')
+      @router.resolver({ fieldName: 'listLocations' })
+      @router.resolver({ fieldName: 'locations' })
       public getLocations() {
         return [{ name: 'Location 1', description: 'Description 1' }];
       }
@@ -106,11 +106,11 @@ describe('Class: Router', () => {
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
       1,
-      'Adding onQuery resolver for field Query.locations'
+      'Adding resolver for field Query.locations'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       2,
-      'Adding onQuery resolver for field Query.listLocations'
+      'Adding resolver for field Query.listLocations'
     );
 
     expect(response).toEqual([
@@ -123,7 +123,7 @@ describe('Class: Router', () => {
     const router = new Router();
 
     // Act
-    router.onQuery('getPost', vi.fn());
+    router.resolver(vi.fn(), { fieldName: 'getPost' });
 
     // Assess
     expect(console.debug).not.toHaveBeenCalled();
@@ -135,7 +135,7 @@ describe('Class: Router', () => {
     const router = new Router();
 
     // Act
-    router.onQuery('getPost', vi.fn());
+    router.resolver(vi.fn(), { fieldName: 'getPost' });
 
     // Assess
     expect(console.debug).toHaveBeenCalled();

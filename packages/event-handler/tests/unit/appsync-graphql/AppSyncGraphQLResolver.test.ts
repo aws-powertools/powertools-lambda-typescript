@@ -69,13 +69,18 @@ describe('Class: AppSyncGraphQLResolver', () => {
   it('returns the response of the onQuery handler', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
-    app.onQuery('getPost', async ({ id }) => {
-      return {
-        id,
-        title: 'Post Title',
-        content: 'Post Content',
-      };
-    });
+    app.resolver<{ id: string }>(
+      async ({ id }) => {
+        return {
+          id,
+          title: 'Post Title',
+          content: 'Post Content',
+        };
+      },
+      {
+        fieldName: 'getPost',
+      }
+    );
 
     // Act
     const result = await app.resolve(
@@ -94,13 +99,19 @@ describe('Class: AppSyncGraphQLResolver', () => {
   it('returns the response of the onMutation handler', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
-    app.onMutation('addPost', async ({ title, content }) => {
-      return {
-        id: '123',
-        title,
-        content,
-      };
-    });
+    app.resolver<{ title: string; content: string }>(
+      async ({ title, content }) => {
+        return {
+          id: '123',
+          title,
+          content,
+        };
+      },
+      {
+        fieldName: 'addPost',
+        typeName: 'Mutation',
+      }
+    );
 
     // Act
     const result = await app.resolve(
@@ -114,15 +125,11 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
       1,
-      'Adding onMutation resolver for field Mutation.addPost'
+      'Adding resolver for field Mutation.addPost'
     );
     expect(console.debug).toHaveBeenNthCalledWith(
       2,
-      'Looking for onQuery resolver for type=Mutation, field=addPost'
-    );
-    expect(console.debug).toHaveBeenNthCalledWith(
-      3,
-      'Looking for onMutation resolver for type=Mutation, field=addPost'
+      'Looking for resolver for type=Mutation, field=addPost'
     );
     expect(result).toEqual({
       id: '123',
@@ -152,9 +159,15 @@ describe('Class: AppSyncGraphQLResolver', () => {
     async ({ error, message }) => {
       // Prepare
       const app = new AppSyncGraphQLResolver({ logger: console });
-      app.onMutation('addPost', async () => {
-        throw error;
-      });
+      app.resolver(
+        async () => {
+          throw error;
+        },
+        {
+          fieldName: 'addPost',
+          typeName: 'Mutation',
+        }
+      );
 
       // Act
       const result = await app.resolve(

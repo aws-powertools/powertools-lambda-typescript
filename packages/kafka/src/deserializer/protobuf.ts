@@ -17,7 +17,7 @@ export const deserialize = <T extends object>(
 ): T => {
   try {
     const buffer = Buffer.from(data, 'base64');
-    return messageType.decode(buffer, buffer.length) as T;
+    return messageType.decode(buffer, buffer.length);
   } catch (error) {
     throw new KafkaConsumerDeserializationError(
       `Failed to deserialize Protobuf message: ${error}, message: ${data}, messageType: ${messageType}`

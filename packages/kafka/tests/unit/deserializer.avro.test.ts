@@ -4,6 +4,7 @@ import { KafkaConsumerDeserializationError } from '../../src/errors.js';
 
 describe('Avro Deserializer: ', () => {
   it('returns avro deserialised value', async () => {
+    // Prepare
     const message = '0g8MTGFwdG9wUrgehes/j0A=';
     const schema = `{
       "type": "record",
@@ -15,12 +16,14 @@ describe('Avro Deserializer: ', () => {
       ]
     }`;
 
+    // Act & Assess
     const expected = { id: 1001, name: 'Laptop', price: 999.99 };
 
     expect(await deserialize(message, schema)).toEqual(expected);
   });
 
   it('throws when avro deserialiser fails', async () => {
+    // Prepare
     const message = '0g8MTGFwdG9wUrgehes/j0A=';
     const schema = `{
       "type": "record",
@@ -36,6 +39,7 @@ describe('Avro Deserializer: ', () => {
   });
 
   it('throws when avro deserialiser has not matching schema', async () => {
+    // Prepare
     const message = '0g8MTGFwdG9wUrgehes/j0A=';
     const schema = `{
       "type": "record",

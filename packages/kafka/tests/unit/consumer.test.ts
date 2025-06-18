@@ -7,7 +7,7 @@ import {
   KafkaConsumerParserError,
   KafkaConsumerProtobufMissingSchemaError,
 } from '../../src/errors.js';
-import type { ConsumerRecords } from '../../src/types.js';
+import type { ConsumerRecords, MSKEvent } from '../../src/types.js';
 import * as avroEvent from '../events/avro.json' with { type: 'json' };
 import * as jsonEvent from '../events/default.json' with { type: 'json' };
 import * as protobufEvent from '../events/protobuf.json' with { type: 'json' };
@@ -25,13 +25,18 @@ describe('Kafka consumer: ', () => {
     }),
   });
 
+  const jsonTestEvent = jsonEvent as unknown as MSKEvent;
+  const avroTestEvent = avroEvent as unknown as MSKEvent;
+  const protobufTestEvent = protobufEvent as unknown as MSKEvent;
+  const context = {} as Context;
+
   type Key = z.infer<typeof keyZodSchema>;
   type Product = z.infer<typeof valueZodSchema>;
 
   const handler = async (
     event: ConsumerRecords<Key, Product>,
     _context: Context
-  ) => {
+  ): Promise<ConsumerRecords<Key, Product>> => {
     return event;
   };
   it('deserializes json message', async () => {
@@ -45,7 +50,7 @@ describe('Kafka consumer: ', () => {
       },
     });
     // Act
-    const event = await consumer(jsonEvent, {});
+    const event = await consumer(jsonTestEvent, context);
     // Assess
     const expected = {
       key: 'recordKey',
@@ -82,7 +87,7 @@ describe('Kafka consumer: ', () => {
     });
 
     // Act
-    const event = await consumer(avroEvent, {});
+    const event = await consumer(avroTestEvent, context);
     // Assess
     const expected = {
       key: 42,
@@ -107,7 +112,7 @@ describe('Kafka consumer: ', () => {
     });
 
     // Act & Assess
-    await expect(consumer(avroEvent, {})).rejects.toThrow(
+    await expect(consumer(avroTestEvent, context)).rejects.toThrow(
       KafkaConsumerAvroMissingSchemaError
     );
   });
@@ -122,7 +127,7 @@ describe('Kafka consumer: ', () => {
     });
 
     // Act & Assess
-    await expect(consumer(protobufEvent, {})).rejects.toThrow(
+    await expect(consumer(protobufTestEvent, context)).rejects.toThrow(
       KafkaConsumerProtobufMissingSchemaError
     );
   });
@@ -140,7 +145,7 @@ describe('Kafka consumer: ', () => {
     });
 
     // Act
-    const event = await consumer(protobufEvent, {});
+    const event = await consumer(protobufTestEvent, context);
     // Assess
     const expected = {
       key: 42,
@@ -164,7 +169,7 @@ describe('Kafka consumer: ', () => {
       },
     });
     // Act & Assess
-    await expect(consumer(jsonEvent, {})).rejects.toThrow();
+    await expect(consumer(jsonTestEvent, context)).rejects.toThrow();
   });
 
   it('deserializes to base64 string if no configuration provided', async () => {
@@ -176,7 +181,7 @@ describe('Kafka consumer: ', () => {
     });
 
     // Act
-    const event = await consumer(jsonEvent, {});
+    const event = await consumer(jsonTestEvent, context);
     // Assess
     const expected = {
       key: 'recordKey',
@@ -200,8 +205,8 @@ describe('Kafka consumer: ', () => {
       },
     });
 
-    const jsonEventWithoutHeaders = {
-      ...jsonEvent,
+    const jsonTestEventWithoutHeaders = {
+      ...jsonTestEvent,
       records: {
         'test-topic': [
           {
@@ -212,10 +217,10 @@ describe('Kafka consumer: ', () => {
           },
         ],
       },
-    };
+    } as unknown as MSKEvent;
 
     // Act
-    const event = await consumer(jsonEventWithoutHeaders, {});
+    const event = await consumer(jsonTestEventWithoutHeaders, context);
     // Assess
     expect(event.records[0]).toEqual({
       key: 'recordKey',
@@ -242,7 +247,7 @@ describe('Kafka consumer: ', () => {
     });
 
     // Act
-    const event = await consumer(jsonEvent, {});
+    const event = await consumer(jsonTestEvent, context);
     // Assess
     expect(event.records[0].key).toEqual('recordKey');
     expect(event.records[0].value).toEqual({
@@ -255,7 +260,7 @@ describe('Kafka consumer: ', () => {
   it('throws when zod schema validation fails', async () => {
     // Prepare
     const invalidJsonEvent = {
-      ...jsonEvent,
+      ...jsonTestEvent,
       records: {
         'test-topic': [
           {
@@ -266,7 +271,8 @@ describe('Kafka consumer: ', () => {
           },
         ],
       },
-    };
+    } as unknown as MSKEvent;
+
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
         type: 'json',
@@ -279,7 +285,7 @@ describe('Kafka consumer: ', () => {
     });
 
     // Act & Assess
-    await expect(consumer(invalidJsonEvent, {})).rejects.toThrow(
+    await expect(consumer(invalidJsonEvent, context)).rejects.toThrow(
       KafkaConsumerParserError
     );
   });
@@ -288,7 +294,7 @@ describe('Kafka consumer: ', () => {
     // Prepare
     const nonMskEvent = {
       foo: 'bar',
-    };
+    } as unknown as MSKEvent;
 
     const consumer = kafkaConsumer<Key, Product>(handler, {
       value: {
@@ -296,7 +302,7 @@ describe('Kafka consumer: ', () => {
       },
     });
     // Act & Assess
-    await expect(consumer(nonMskEvent, {})).rejects.toThrow(
+    await expect(consumer(nonMskEvent, context)).rejects.toThrow(
       'No records found in the event'
     );
   });

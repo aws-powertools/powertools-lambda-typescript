@@ -1,8 +1,5 @@
 import type { AsyncHandler } from '@aws-lambda-powertools/commons/types';
-import {
-  isNullOrUndefined,
-  isRecord,
-} from '@aws-lambda-powertools/commons/typeutils';
+import { isNull, isRecord } from '@aws-lambda-powertools/commons/typeutils';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { Context, Handler } from 'aws-lambda';
 import {
@@ -119,9 +116,10 @@ const deserialize = async (value: string, config?: SchemaConfigValue) => {
  * @param config - The schema configuration for deserializing the key. See {@link SchemaConfigValue | `SchemaConfigValue`}.
  */
 const deserializeKey = async (key?: string, config?: SchemaConfigValue) => {
-  if (isNullOrUndefined(key)) {
+  if (key === undefined || key === '') {
     return undefined;
   }
+  if (isNull(key)) return null;
   return await deserialize(key, config);
 };
 

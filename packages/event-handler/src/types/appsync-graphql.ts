@@ -1,33 +1,19 @@
 import type { RouteHandlerRegistry } from '../appsync-graphql/RouteHandlerRegistry.js';
 import type { GenericLogger } from './common.js';
 
-// #region OnQuery fn
+// #region Resolver fn
 
-type OnQuerySyncHandlerFn<TParams extends Record<string, unknown>> = (
+type ResolverSyncHandlerFn<TParams extends Record<string, unknown>> = (
   args: TParams
 ) => unknown;
 
-type OnQueryHandlerFn<TParams extends Record<string, unknown>> = (
+type ResolverHandlerFn<TParams extends Record<string, unknown>> = (
   args: TParams
 ) => Promise<unknown>;
 
-type OnQueryHandler<TParams extends Record<string, unknown>> =
-  | OnQuerySyncHandlerFn<TParams>
-  | OnQueryHandlerFn<TParams>;
-
-// #region OnMutation fn
-
-type OnMutationSyncHandlerFn<TParams extends Record<string, unknown>> = (
-  args: TParams
-) => unknown;
-
-type OnMutationHandlerFn<TParams extends Record<string, unknown>> = (
-  args: TParams
-) => Promise<unknown>;
-
-type OnMutationHandler<TParams extends Record<string, unknown>> =
-  | OnMutationSyncHandlerFn<TParams>
-  | OnMutationHandlerFn<TParams>;
+type ResolverHandler<TParams extends Record<string, unknown>> =
+  | ResolverSyncHandlerFn<TParams>
+  | ResolverHandlerFn<TParams>;
 
 // #region Resolver registry
 
@@ -41,11 +27,6 @@ type RouteHandlerRegistryOptions = {
    * When no logger is provided, we'll only log warnings and errors using the global `console` object.
    */
   logger: GenericLogger;
-  /**
-   * Event type stored in the registry
-   * @default 'onQuery'
-   */
-  eventType?: 'onQuery' | 'onMutation';
 };
 
 /**
@@ -59,9 +40,7 @@ type RouteHandlerOptions = {
   /**
    * The handler function to be called when the event is received
    */
-  handler:
-    | OnQueryHandler<Record<string, unknown>>
-    | OnMutationHandler<Record<string, unknown>>;
+  handler: ResolverHandler<Record<string, unknown>>;
   /**
    * The field name of the event to be registered
    */
@@ -90,6 +69,10 @@ type GraphQlRouterOptions = {
  * Options for registering a route
  */
 type GraphQlRouteOptions = {
+  /**
+   * The name of the field to be registered
+   */
+  fieldName: string;
   /**
    * The type name of the event to be registered
    */
@@ -135,6 +118,5 @@ export type {
   GraphQlRouterOptions,
   GraphQlRouteOptions,
   AppSyncGraphQLEvent,
-  OnQueryHandler,
-  OnMutationHandler,
+  ResolverHandler,
 };

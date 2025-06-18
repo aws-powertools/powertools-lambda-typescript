@@ -1,29 +1,21 @@
-import {
-  EnvironmentVariablesService,
-  isRecord,
-} from '@aws-lambda-powertools/commons';
+import { EnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import type {
   GraphQlRouteOptions,
   GraphQlRouterOptions,
-  OnMutationHandler,
-  OnQueryHandler,
+  ResolverHandler,
 } from '../types/appsync-graphql.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 
 /**
- * Class for registering routes for the `query` and `mutation` events in AWS AppSync GraphQL APIs.
+ * Class for registering resolvers for GraphQL events in AWS AppSync GraphQL APIs.
  */
 class Router {
   /**
-   * A map of registered routes for the `query` event, keyed by their fieldNames.
+   * A map of registered routes for all GraphQL events, keyed by their fieldNames.
    */
-  protected readonly onQueryRegistry: RouteHandlerRegistry;
-  /**
-   * A map of registered routes for the `mutation` event, keyed by their fieldNames.
-   */
-  protected readonly onMutationRegistry: RouteHandlerRegistry;
+  protected readonly resolverRegistry: RouteHandlerRegistry;
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
    *
@@ -50,51 +42,60 @@ class Router {
       error: console.error,
       warn: console.warn,
     };
-    this.onQueryRegistry = new RouteHandlerRegistry({
+    this.resolverRegistry = new RouteHandlerRegistry({
       logger: this.logger,
-      eventType: 'onQuery',
-    });
-    this.onMutationRegistry = new RouteHandlerRegistry({
-      logger: this.logger,
-      eventType: 'onMutation',
     });
     this.isDev = this.envService.isDevMode();
   }
 
   /**
-   * Register a handler function for the `query` event.
-   
-   * Registers a handler for a specific GraphQL Query field. The handler will be invoked when a request is made
-   * for the specified field in the Query type.
-   *   
+   * Register a resolver function for any GraphQL event.
+   *
+   * Registers a handler for a specific GraphQL field. The handler will be invoked when a request is made
+   * for the specified field.
+   *
    * @example
    * ```ts
    * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
    *
    * const app = new AppSyncGraphQLResolver();
    *
-   * app.onQuery('getPost', async (payload) => {
+   * // Register a Query resolver
+   * app.resolver(async (payload) => {
    *   // your business logic here
    *   return payload;
+   * }, {
+   *   fieldName: 'getPost'
    * });
-   
+   *
+   * // Register a Mutation resolver
+   * app.resolver(async (payload) => {
+   *   // your business logic here
+   *   return payload;
+   * }, {
+   *   fieldName: 'createPost',
+   *   typeName: 'Mutation'
+   * });
+   *
    * export const handler = async (event, context) =>
    *   app.resolve(event, context);
    * ```
    *
    * You can also specify the type of the arguments using a generic type parameter:
-   * 
+   *
    * @example
    * ```ts
    * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
    *
    * const app = new AppSyncGraphQLResolver();
    *
-   * app.onQuery<{ postId: string }>('getPost', async ({ postId }) => {
+   * app.resolver<{ postId: string }>(async ({ postId }) => {
    *   // postId is now typed as string
    *   return { id: postId };
+   * }, {
+   *   fieldName: 'getPost'
    * });
-   
+   *
    * export const handler = async (event, context) =>
    *   app.resolve(event, context);
    * ```
@@ -108,7 +109,7 @@ class Router {
    * const app = new AppSyncGraphQLResolver();
    *
    * class Lambda {
-   *   @app.onQuery('getPost')
+   *   @app.resolver({ fieldName: 'getPost' })
    *   async handleGetPost(payload) {
    *     // your business logic here
    *     return payload;
@@ -123,142 +124,43 @@ class Router {
    * export const handler = lambda.handler.bind(lambda);
    * ```
    *
-   * @param fieldName - The name of the Query field to register the handler for.
    * @param handler - The handler function to be called when the event is received.
-   * @param options - Optional route options.
+   * @param options - Route options including the required fieldName and optional typeName.
+   * @param options.fieldName - The name of the field to register the handler for.
    * @param options.typeName - The name of the GraphQL type to use for the resolver (defaults to 'Query').
    */
-  public onQuery<TParams extends Record<string, unknown>>(
-    fieldName: string,
-    handler: OnQueryHandler<TParams>,
-    options?: GraphQlRouteOptions
+  public resolver<TParams extends Record<string, unknown>>(
+    handler: ResolverHandler<TParams>,
+    options: GraphQlRouteOptions
   ): void;
-  public onQuery(
-    fieldName: string,
-    options?: GraphQlRouteOptions
-  ): MethodDecorator;
-  public onQuery<TParams extends Record<string, unknown>>(
-    fieldName: string,
-    handler?: OnQueryHandler<TParams> | GraphQlRouteOptions,
+  public resolver(options: GraphQlRouteOptions): MethodDecorator;
+  public resolver<TParams extends Record<string, unknown>>(
+    handler: ResolverHandler<TParams> | GraphQlRouteOptions,
     options?: GraphQlRouteOptions
   ): MethodDecorator | undefined {
-    if (handler && typeof handler === 'function') {
-      this.onQueryRegistry.register({
-        fieldName,
-        handler: handler as OnQueryHandler<Record<string, unknown>>,
-        typeName: options?.typeName ?? 'Query',
+    if (typeof handler === 'function') {
+      const resolverOptions = options as GraphQlRouteOptions;
+      const typeName = resolverOptions.typeName ?? 'Query';
+
+      this.resolverRegistry.register({
+        fieldName: resolverOptions.fieldName,
+        handler: handler as ResolverHandler<Record<string, unknown>>,
+        typeName,
       });
+
       return;
     }
 
+    const resolverOptions = handler;
     return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-      const routeOptions = isRecord(handler) ? handler : options;
-      this.onQueryRegistry.register({
-        fieldName,
-        handler: descriptor.value as OnQueryHandler<Record<string, unknown>>,
-        typeName: routeOptions?.typeName ?? 'Query',
-      });
-      return descriptor;
-    };
-  }
+      const typeName = resolverOptions.typeName ?? 'Query';
 
-  /**
-   * Register a handler function for the `mutation` event.
-   *
-   * Registers a handler for a specific GraphQL Mutation field. The handler will be invoked when a request is made
-   * for the specified field in the Mutation type.
-   *
-   * @example
-   * ```ts
-   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
-   *
-   * const app = new AppSyncGraphQLResolver();
-   *
-   * app.onMutation('createPost', async (payload) => {
-   *   // your business logic here
-   *   return payload;
-   * });
-   *
-   * export const handler = async (event, context) =>
-   *   app.resolve(event, context);
-   * ```
-   *
-   * You can also specify the type of the arguments using a generic type parameter:
-   *
-   * @example
-   * ```ts
-   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
-   *
-   * const app = new AppSyncGraphQLResolver();
-   *
-   * app.onMutation<{ title: string; content: string }>('createPost', async ({ title, content }) => {
-   *   // title and content are now typed as string
-   *   return { id: '123', title, content };
-   * });
-   *
-   * export const handler = async (event, context) =>
-   *   app.resolve(event, context);
-   * ```
-   *
-   * As a decorator:
-   *
-   * @example
-   * ```ts
-   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
-   *
-   * const app = new AppSyncGraphQLResolver();
-   *
-   * class Lambda {
-   *   @app.onMutation('createPost')
-   *   async handleCreatePost(payload) {
-   *     // your business logic here
-   *     return payload;
-   *   }
-   *
-   *   async handler(event, context) {
-   *     return app.resolve(event, context);
-   *   }
-   * }
-   *
-   * const lambda = new Lambda();
-   * export const handler = lambda.handler.bind(lambda);
-   * ```
-   *
-   * @param fieldName - The name of the Mutation field to register the handler for.
-   * @param handler - The handler function to be called when the event is received.
-   * @param options - Optional route options.
-   * @param options.typeName - The name of the GraphQL type to use for the resolver (defaults to 'Mutation').
-   */
-  public onMutation<TParams extends Record<string, unknown>>(
-    fieldName: string,
-    handler: OnMutationHandler<TParams>,
-    options?: GraphQlRouteOptions
-  ): void;
-  public onMutation(
-    fieldName: string,
-    options?: GraphQlRouteOptions
-  ): MethodDecorator;
-  public onMutation<TParams extends Record<string, unknown>>(
-    fieldName: string,
-    handler?: OnMutationHandler<TParams> | GraphQlRouteOptions,
-    options?: GraphQlRouteOptions
-  ): MethodDecorator | undefined {
-    if (handler && typeof handler === 'function') {
-      this.onMutationRegistry.register({
-        fieldName,
-        handler: handler as OnMutationHandler<Record<string, unknown>>,
-        typeName: options?.typeName ?? 'Mutation',
+      this.resolverRegistry.register({
+        fieldName: resolverOptions.fieldName,
+        handler: descriptor.value,
+        typeName,
       });
-      return;
-    }
 
-    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-      const routeOptions = isRecord(handler) ? handler : options;
-      this.onMutationRegistry.register({
-        fieldName,
-        handler: descriptor.value as OnMutationHandler<Record<string, unknown>>,
-        typeName: routeOptions?.typeName ?? 'Mutation',
-      });
       return descriptor;
     };
   }

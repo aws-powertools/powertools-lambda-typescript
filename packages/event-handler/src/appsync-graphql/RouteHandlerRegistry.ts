@@ -5,7 +5,7 @@ import type {
 } from '../types/appsync-graphql.js';
 
 /**
- * Registry for storing route handlers for the `query` and `mutation` events in AWS AppSync GraphQL API's.
+ * Registry for storing route handlers for GraphQL resolvers in AWS AppSync GraphQL API's.
  *
  * This class should not be used directly unless you are implementing a custom router.
  * Instead, use the {@link Router} class, which is the recommended way to register routes.
@@ -19,14 +19,9 @@ class RouteHandlerRegistry {
    * A logger instance to be used for logging debug and warning messages.
    */
   readonly #logger: GenericLogger;
-  /**
-   * The event type stored in the registry.
-   */
-  readonly #eventType: 'onQuery' | 'onMutation';
 
   public constructor(options: RouteHandlerRegistryOptions) {
     this.#logger = options.logger;
-    this.#eventType = options.eventType ?? 'onQuery';
   }
 
   /**
@@ -40,9 +35,7 @@ class RouteHandlerRegistry {
    */
   public register(options: RouteHandlerOptions): void {
     const { fieldName, handler, typeName } = options;
-    this.#logger.debug(
-      `Adding ${this.#eventType} resolver for field ${typeName}.${fieldName}`
-    );
+    this.#logger.debug(`Adding resolver for field ${typeName}.${fieldName}`);
     const cacheKey = this.#makeKey(typeName, fieldName);
     if (this.resolvers.has(cacheKey)) {
       this.#logger.warn(
@@ -67,7 +60,7 @@ class RouteHandlerRegistry {
     fieldName: string
   ): RouteHandlerOptions | undefined {
     this.#logger.debug(
-      `Looking for ${this.#eventType} resolver for type=${typeName}, field=${fieldName}`
+      `Looking for resolver for type=${typeName}, field=${fieldName}`
     );
     return this.resolvers.get(this.#makeKey(typeName, fieldName));
   }

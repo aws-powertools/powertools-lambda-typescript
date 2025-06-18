@@ -1,9 +1,12 @@
 {
   "name": "@aws-lambda-powertools/kafka",
-  "version": "2.20.0",
+  "version": "2.21.0",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "test": "vitest --run",
@@ -33,7 +36,7 @@
   },
   "keywords": [],
   "dependencies": {
-    "@aws-lambda-powertools/commons": "2.20.0",
+    "@aws-lambda-powertools/commons": "2.21.0",
     "@standard-schema/spec": "^1.0.0"
   },
   "peerDependencies": {
@@ -48,7 +51,7 @@
     "valibot": {
       "optional": true
     },
-    "arkt": {
+    "arktype": {
       "optional": true
     }
   },

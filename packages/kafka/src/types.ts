@@ -12,7 +12,7 @@ type ConsumerRecord<K, V> = {
   /**
    * The deserialized key of the record
    */
-  key: K;
+  key: K | undefined;
   /**
    * The deserialized value of the record
    */
@@ -24,15 +24,15 @@ type ConsumerRecord<K, V> = {
   /**
    * The original (raw, encoded) value as received from Kafka, or undefined if not present
    */
-  originalValue: string | undefined;
+  originalValue: string;
   /**
    * Optional array of headers as key-value string pairs, or null/undefined if not present
    */
-  headers?: { [k: string]: string }[] | undefined | null;
+  headers?: { [k: string]: string }[] | null;
   /**
    * Optional array of original record headers
    */
-  originalHeaders?: RecordHeader[] | undefined;
+  originalHeaders?: RecordHeader[] | null;
 };
 
 /**
@@ -84,7 +84,7 @@ type AvroConfig = {
 /**
  * Configuration for Protobuf schema validation.
  */
-type ProtobufConfig<T extends object> = {
+type ProtobufConfig<T> = {
   /**
    * Indicates the schema type is Protobuf
    */
@@ -120,10 +120,10 @@ type SchemaConfig = {
  *
  * It's left intentionally open to allow for any function to be wrapped.
  */
-type LambdaHandler = (
-  event: ConsumerRecords<unknown, unknown>,
+type LambdaHandler<K = unknown, V = unknown> = (
+  event: ConsumerRecords<K, V>,
   context: Context
-) => Promise<unknown>;
+) => Promise<ConsumerRecords<K, V>>;
 
 /**
  * Represents a Kafka record header as a mapping of header key to byte array.

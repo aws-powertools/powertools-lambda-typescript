@@ -113,14 +113,17 @@ const deserialize = async (value: string, config?: SchemaType) => {
  * ```
  */
 export function kafkaConsumer<K, V>(
-  handler: LambdaHandler,
+  handler: LambdaHandler<K, V>,
   config: SchemaConfig
-): (event: MSKEvent, context: Context) => ReturnType<LambdaHandler> {
+): (
+  event: MSKEvent,
+  context: Context
+) => Promise<ReturnType<LambdaHandler<K, V>>> {
   return async function (
     this: Handler,
     event: MSKEvent,
     context: Context
-  ): Promise<ReturnType<LambdaHandler>> {
+  ): Promise<ReturnType<LambdaHandler<K, V>>> {
     const consumerRecords: ConsumerRecord<K, V>[] = [];
     if (!event.records) {
       throw new Error('No records found in the event');

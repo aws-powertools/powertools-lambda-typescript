@@ -1,3 +1,4 @@
+import type { AsyncHandler } from '@aws-lambda-powertools/commons/types';
 import {
   isNullOrUndefined,
   isRecord,
@@ -10,8 +11,8 @@ import {
 } from './errors.js';
 import type {
   ConsumerRecord,
+  ConsumerRecords,
   Record as KafkaRecord,
-  LambdaHandler,
   MSKEvent,
   SchemaConfig,
   SchemaType,
@@ -197,15 +198,11 @@ const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
  * }, config);
  * ```
  */
-function kafkaConsumer<K, V>(
-  handler: LambdaHandler<K, V>,
+const kafkaConsumer = <K, V>(
+  handler: AsyncHandler<Handler<ConsumerRecords<K, V>>>,
   config: SchemaConfig
-): (event: MSKEvent, context: Context) => Promise<unknown> {
-  return async function (
-    this: Handler,
-    event: MSKEvent,
-    context: Context
-  ): Promise<unknown> {
+): ((event: MSKEvent, context: Context) => Promise<unknown>) => {
+  return async (event: MSKEvent, context: Context): Promise<unknown> => {
     assertIsMSKEvent(event);
 
     const consumerRecords: ConsumerRecord<K, V>[] = [];
@@ -215,9 +212,7 @@ function kafkaConsumer<K, V>(
       }
     }
 
-    // Call the original function with the validated event and context
-    return await handler.call(
-      this,
+    return handler(
       {
         ...event,
         records: consumerRecords,
@@ -225,6 +220,6 @@ function kafkaConsumer<K, V>(
       context
     );
   };
-}
+};
 
 export { kafkaConsumer };

@@ -116,16 +116,6 @@ type SchemaConfig = {
 };
 
 /**
- * This generic type is used to represent any function with any number of arguments and any return type.
- *
- * It's left intentionally open to allow for any function to be wrapped.
- */
-type LambdaHandler<K = unknown, V = unknown> = (
-  event: ConsumerRecords<K, V>,
-  context: Context
-) => Promise<ConsumerRecords<K, V>>;
-
-/**
  * Represents a Kafka record header as a mapping of header key to byte array.
  */
 interface RecordHeader {
@@ -211,7 +201,6 @@ interface Deserializer {
 }
 
 export type {
-  LambdaHandler,
   ConsumerRecord,
   ConsumerRecords,
   Deserializer,

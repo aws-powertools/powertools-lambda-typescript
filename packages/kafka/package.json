@@ -77,36 +77,6 @@
         "types": "./lib/esm/types/types.d.ts",
         "default": "./lib/esm/types/types.js"
       }
-    },
-    "./deserializer/avro": {
-      "require": {
-        "types": "./lib/cjs/deserializer/avro.d.ts",
-        "default": "./lib/cjs/deserializer/avro.js"
-      },
-      "import": {
-        "types": "./lib/esm/deserializer/avro.d.ts",
-        "default": "./lib/esm/deserializer/avro.js"
-      }
-    },
-    "./deserializer/json": {
-      "require": {
-        "types": "./lib/cjs/deserializer/json.d.ts",
-        "default": "./lib/cjs/deserializer/json.js"
-      },
-      "import": {
-        "types": "./lib/esm/deserializer/json.d.ts",
-        "default": "./lib/esm/deserializer/json.js"
-      }
-    },
-    "./deserializer/protobuf": {
-      "require": {
-        "types": "./lib/cjs/deserializer/protobuf.d.ts",
-        "default": "./lib/cjs/deserializer/protobuf.js"
-      },
-      "import": {
-        "types": "./lib/esm/deserializer/protobuf.d.ts",
-        "default": "./lib/esm/deserializer/protobuf.js"
-      }
     }
   },
   "typesVersions": {
@@ -118,18 +88,6 @@
       "types": [
         "lib/cjs/types/types.d.ts",
         "lib/esm/types/types.d.ts"
-      ],
-      "deserializer/avro": [
-        "lib/cjs/deserializer/avro.d.ts",
-        "lib/esm/deserializer/avro.d.ts"
-      ],
-      "deserializer/json": [
-        "lib/cjs/deserializer/json.d.ts",
-        "lib/esm/deserializer/json.d.ts"
-      ],
-      "deserializer/protobuf": [
-        "lib/cjs/deserializer/protobuf.d.ts",
-        "lib/esm/deserializer/protobuf.d.ts"
       ]
     }
   },

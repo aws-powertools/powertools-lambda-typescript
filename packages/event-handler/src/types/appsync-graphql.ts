@@ -1,21 +1,33 @@
 import type { RouteHandlerRegistry } from '../appsync-graphql/RouteHandlerRegistry.js';
-import type { Anything, GenericLogger } from './common.js';
+import type { GenericLogger } from './common.js';
 
 // #region OnQuery fn
 
-type OnQuerySyncHandlerFn = ({ ...args }: Anything) => unknown;
+type OnQuerySyncHandlerFn<TParams extends Record<string, unknown>> = (
+  args: TParams
+) => unknown;
 
-type OnQueryHandlerFn = ({ ...args }: Anything) => Promise<unknown>;
+type OnQueryHandlerFn<TParams extends Record<string, unknown>> = (
+  args: TParams
+) => Promise<unknown>;
 
-type OnQueryHandler = OnQuerySyncHandlerFn | OnQueryHandlerFn;
+type OnQueryHandler<TParams extends Record<string, unknown>> =
+  | OnQuerySyncHandlerFn<TParams>
+  | OnQueryHandlerFn<TParams>;
 
 // #region OnMutation fn
 
-type OnMutationSyncHandlerFn = ({ ...args }: Anything) => unknown;
+type OnMutationSyncHandlerFn<TParams extends Record<string, unknown>> = (
+  args: TParams
+) => unknown;
 
-type OnMutationHandlerFn = ({ ...args }: Anything) => Promise<unknown>;
+type OnMutationHandlerFn<TParams extends Record<string, unknown>> = (
+  args: TParams
+) => Promise<unknown>;
 
-type OnMutationHandler = OnMutationSyncHandlerFn | OnMutationHandlerFn;
+type OnMutationHandler<TParams extends Record<string, unknown>> =
+  | OnMutationSyncHandlerFn<TParams>
+  | OnMutationHandlerFn<TParams>;
 
 // #region Resolver registry
 
@@ -47,7 +59,9 @@ type RouteHandlerOptions = {
   /**
    * The handler function to be called when the event is received
    */
-  handler: OnQueryHandler | OnMutationHandler;
+  handler:
+    | OnQueryHandler<Record<string, unknown>>
+    | OnMutationHandler<Record<string, unknown>>;
   /**
    * The field name of the event to be registered
    */

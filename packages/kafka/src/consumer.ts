@@ -14,11 +14,13 @@ import {
 import type {
   ConsumerRecord,
   ConsumerRecords,
+  DeserializeOptions,
   Deserializer,
   Record as KafkaRecord,
   MSKEvent,
   SchemaConfig,
   SchemaConfigValue,
+  SchemaMetadata,
 } from './types/types.js';
 
 /**
@@ -74,11 +76,12 @@ const deserializeHeaders = (headers: Record<string, number[]>[] | null) => {
  * @param config - The schema configuration to use for deserialization. See {@link SchemaConfigValue | `SchemaConfigValue`}.
  *   If not provided, the value is decoded as a UTF-8 string.
  */
-const deserialize = (
-  value: string,
-  deserializer: Deserializer,
-  config?: SchemaConfigValue
-) => {
+const deserialize = ({
+  value,
+  deserializer,
+  config,
+  schemaMetadata,
+}: DeserializeOptions) => {
   if (config === undefined) {
     return deserializer(value);
   }
@@ -100,7 +103,7 @@ const deserialize = (
         'Schema string is required for protobuf deserialization'
       );
     }
-    return deserializer(value, config.schema);
+    return deserializer(value, config.schema, schemaMetadata);
   }
 };
 
@@ -162,7 +165,14 @@ const deserializeRecord = async (
   record: KafkaRecord,
   config?: SchemaConfig
 ) => {
-  const { key, value, headers, ...rest } = record;
+  const {
+    key,
+    value,
+    headers,
+    valueSchemaMetadata,
+    keySchemaMetadata,
+    ...rest
+  } = record;
   const { key: keyConfig, value: valueConfig } = config || {};
 
   const deserializerKey = await getDeserializer(keyConfig?.type);
@@ -175,7 +185,12 @@ const deserializeRecord = async (
         return undefined;
       }
       if (isNull(key)) return null;
-      const deserializedKey = deserialize(key, deserializerKey, keyConfig);
+      const deserializedKey = deserialize({
+        value: key,
+        deserializer: deserializerKey,
+        config: keyConfig,
+        schemaMetadata: keySchemaMetadata,
+      });
 
       return keyConfig?.parserSchema
         ? parseSchema(deserializedKey, keyConfig.parserSchema)
@@ -183,11 +198,12 @@ const deserializeRecord = async (
     },
     originalKey: key,
     get value() {
-      const deserializedValue = deserialize(
-        value,
-        deserializerValue,
-        valueConfig
-      );
+      const deserializedValue = deserialize({
+        value: value,
+        deserializer: deserializerValue,
+        config: valueConfig,
+        schemaMetadata: valueSchemaMetadata,
+      });
 
       return valueConfig?.parserSchema
         ? parseSchema(deserializedValue, valueConfig.parserSchema)

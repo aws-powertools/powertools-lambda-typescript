@@ -16,7 +16,10 @@
           {
             "headerKey": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]
           }
-        ]
+        ],
+        "valueSchemaMetadata": {
+            "dataFormat": "PROTOBUF"
+        }
       },
       {
         "topic": "mytopic",
@@ -30,7 +33,11 @@
           {
             "headerKey": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]
           }
-        ]
+        ],
+        "valueSchemaMetadata": {
+            "dataFormat": "PROTOBUF",
+            "schemaId": "7d55d475-2244-4485-8341-f74468c1e058"
+        }
       },
       {
         "topic": "mytopic",
@@ -44,7 +51,11 @@
           {
             "headerKey": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]
           }
-        ]
+        ],
+        "valueSchemaMetadata": {
+            "dataFormat": "PROTOBUF",
+            "schemaId": "2"
+        }
       }
     ]
   }

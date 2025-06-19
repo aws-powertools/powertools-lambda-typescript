@@ -10,9 +10,12 @@ describe('Protobuf deserialiser: ', () => {
     // Prepare
     const data = 'COkHEgZMYXB0b3AZUrgehes/j0A=';
     const invalidType = {} as ProtobufMessage<Message>;
+    const schemaMetadata = {
+      dataFormat: 'PROTOBUF',
+    };
 
     // Act & Assess
-    expect(() => deserialize(data, invalidType)).toThrow(
+    expect(() => deserialize(data, invalidType, schemaMetadata)).toThrow(
       KafkaConsumerDeserializationError
     );
   });
@@ -21,8 +24,11 @@ describe('Protobuf deserialiser: ', () => {
     // Prepare
     const data = 'COkHEgZMYXB0b3AZUrgehes/j0A=';
     const expected = { id: 1001, name: 'Laptop', price: 999.99 };
+    const schemaMetadata = {
+      dataFormat: 'PROTOBUF',
+    };
 
     // Act & Assess
-    expect(deserialize(data, Product)).toEqual(expected);
+    expect(deserialize(data, Product, schemaMetadata)).toEqual(expected);
   });
 });

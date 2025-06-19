@@ -7,7 +7,7 @@ import { KafkaConsumerDeserializationError } from '../errors.js';
  * @param data - The base64-encoded string representing the Avro binary data.
  * @param schema - The Avro schema as a JSON string.
  */
-export const deserialize = async (data: string, schema: string) => {
+const deserialize = (data: string, schema: string) => {
   try {
     const type = avro.parse(schema);
     const buffer = Buffer.from(data, 'base64');
@@ -18,3 +18,5 @@ export const deserialize = async (data: string, schema: string) => {
     );
   }
 };
+
+export { deserialize };

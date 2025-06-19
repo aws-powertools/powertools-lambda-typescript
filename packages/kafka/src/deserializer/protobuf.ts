@@ -1,20 +1,16 @@
+import type { Message } from 'protobufjs';
 import { KafkaConsumerDeserializationError } from '../errors.js';
 import type { ProtobufMessage } from '../types/types.js';
 
 /**
- * Deserialises a Protobuf message from a base64-encoded string.
+ * Deserialize a Protobuf message from a base64-encoded string.
  *
- * @template T - The type of the deserialised message object.
- * @param MessageClass - The Protobuf message type definition.
- *   See {@link MessageType} from '@protobuf-ts/runtime'.
+ * @template T - The type of the deserialized message object.
+ *
  * @param data - The base64-encoded string representing the Protobuf binary data.
- * @returns The deserialised message object of type T.
- * @throws {KafkaConsumerDeserializationError} If deserialization fails.
+ * @param messageType - The Protobuf message type definition - see {@link Message | `Message`} from {@link https://www.npmjs.com/package/protobufjs | `protobufjs`}.
  */
-export const deserialize = <T>(
-  data: string,
-  messageType: ProtobufMessage<T>
-): T => {
+const deserialize = <T>(data: string, messageType: ProtobufMessage<T>): T => {
   try {
     const buffer = Buffer.from(data, 'base64');
     return messageType.decode(buffer, buffer.length);
@@ -24,3 +20,5 @@ export const deserialize = <T>(
     );
   }
 };
+
+export { deserialize };

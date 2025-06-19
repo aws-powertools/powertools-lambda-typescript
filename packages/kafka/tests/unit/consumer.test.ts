@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
   KafkaConsumerAvroMissingSchemaError,
-  KafkaConsumerParserError,
   KafkaConsumerProtobufMissingSchemaError,
 } from '../../src/errors.js';
 import { SchemaType, kafkaConsumer } from '../../src/index.js';
@@ -25,7 +24,6 @@ describe('Kafka consumer', () => {
 
   type Key = z.infer<typeof keyZodSchema>;
   type Product = z.infer<typeof valueZodSchema>;
-  type SerializationType = 'json' | 'avro' | 'protobuf';
 
   const jsonTestEvent = JSON.parse(
     readFileSync(join(__dirname, '..', 'events', 'default.json'), 'utf-8')
@@ -166,30 +164,51 @@ describe('Kafka consumer', () => {
 
   it.each([
     {
-      type: 'avro' as Extract<SerializationType, 'avro' | 'protobuf'>,
-      event: avroTestEvent,
-      error: KafkaConsumerAvroMissingSchemaError,
-    },
-    {
-      type: 'protobuf' as Extract<SerializationType, 'avro' | 'protobuf'>,
+      type: SchemaType.PROTOBUF,
       event: protobufTestEvent,
       error: KafkaConsumerProtobufMissingSchemaError,
+    },
+    {
+      type: SchemaType.AVRO,
+      event: avroTestEvent,
+      error: KafkaConsumerAvroMissingSchemaError,
     },
   ])(
     'throws when schemaStr not passed for $type event',
     async ({ type, error, event }) => {
       // Prepare
-      const handler = kafkaConsumer(baseHandler, {
-        // @ts-expect-error - testing missing schemaStr
-        value: { type },
-      });
+      const handler = kafkaConsumer(
+        async (event) => {
+          for (const record of event.records) {
+            try {
+              return record.value;
+            } catch (error) {
+              return error;
+            }
+          }
+        },
+        {
+          // @ts-expect-error - testing missing schemaStr
+          value: { type },
+        }
+      );
 
-      // Act & Assess
-      await expect(handler(event, context)).rejects.toThrow(error);
+      // Act
+      const result = await handler(event, context);
+
+      // Assess
+      expect(result).toEqual(
+        expect.objectContaining({
+          message: expect.stringContaining(
+            `Schema string is required for ${type} deserialization`
+          ),
+          name: error.name,
+        })
+      );
     }
   );
 
-  it('throws if schema type is not json, avro or protobuf', async () => {
+  it('throws if using an unsupported schema type', async () => {
     // Prepare
     const handler = kafkaConsumer(baseHandler, {
       value: {
@@ -199,7 +218,14 @@ describe('Kafka consumer', () => {
     });
 
     // Act & Assess
-    await expect(handler(jsonTestEvent, context)).rejects.toThrow();
+    await expect(handler(jsonTestEvent, context)).rejects.toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining(
+          'Unsupported deserialization type: xml. Supported types are: json, avro, protobuf.'
+        ),
+        name: 'KafkaConsumerDeserializationError',
+      })
+    );
   });
 
   it('deserializes with no headers provided', async () => {
@@ -265,24 +291,50 @@ describe('Kafka consumer', () => {
         },
       } as unknown as MSKEvent,
     },
-  ])('throws when zod schema validation fails for $type', async ({ event }) => {
-    // Prepare
-    const handler = kafkaConsumer(baseHandler, {
-      value: {
-        type: SchemaType.JSON,
-        parserSchema: valueZodSchema,
-      },
-      key: {
-        type: SchemaType.JSON,
-        parserSchema: keyZodSchema,
-      },
-    });
+  ])(
+    'throws when parser schema validation fails for $type',
+    async ({ event }) => {
+      // Prepare
+      const handler = kafkaConsumer(
+        async (event) => {
+          for (const record of event.records) {
+            try {
+              const { value, key } = record;
+              return [value, key];
+            } catch (error) {
+              return error;
+            }
+          }
+        },
+        {
+          value: {
+            type: SchemaType.JSON,
+            parserSchema: valueZodSchema,
+          },
+          key: {
+            type: SchemaType.JSON,
+            parserSchema: keyZodSchema,
+          },
+        }
+      );
 
-    // Act & Assess
-    await expect(handler(event, context)).rejects.toThrow(
-      KafkaConsumerParserError
-    );
-  });
+      // Act & Assess
+      const result = await handler(event, context);
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          message: expect.stringContaining('Schema validation failed'),
+          name: 'KafkaConsumerParserError',
+          cause: expect.arrayContaining([
+            expect.objectContaining({
+              code: expect.any(String),
+              message: expect.any(String),
+            }),
+          ]),
+        })
+      );
+    }
+  );
 
   it('throws when non MSK event passed kafka consumer', async () => {
     // Prepare
@@ -340,6 +392,106 @@ describe('Kafka consumer', () => {
     expect(result.records[0]).toEqual({
       ...TEST_DATA.json,
       ...TEST_DATA.headers.withoutHeaders,
+    });
+  });
+
+  it.each([
+    {
+      type: 'undefined',
+      keyValue: undefined,
+    },
+    {
+      type: 'empty string',
+      keyValue: '',
+    },
+  ])('handles empty keys gracefully $type', async ({ keyValue }) => {
+    // Prepare
+    const handler = kafkaConsumer(baseHandler, {
+      value: { type: 'json' },
+      key: { type: 'json' },
+    });
+
+    const customEvent = {
+      ...jsonTestEvent,
+      records: {
+        'test-topic': [
+          {
+            key: keyValue,
+            value: TEST_DATA.json.originalValue,
+            headers: null,
+          },
+        ],
+      },
+    } as unknown as MSKEvent;
+
+    // Act
+    const result = (await handler(customEvent, context)) as ConsumerRecords;
+
+    // Assess
+    expect(result.records[0].key).toBeUndefined();
+  });
+
+  it('handles null keys gracefully', async () => {
+    // Prepare
+    const handler = kafkaConsumer(baseHandler, {
+      value: { type: 'json' },
+      key: { type: 'json' },
+    });
+
+    const customEvent = {
+      ...jsonTestEvent,
+      records: {
+        'test-topic': [
+          {
+            key: null,
+            value: TEST_DATA.json.originalValue,
+            headers: null,
+          },
+        ],
+      },
+    } as unknown as MSKEvent;
+
+    // Act
+    const result = (await handler(customEvent, context)) as ConsumerRecords;
+
+    // Assess
+    expect(result.records[0].key).toBeNull();
+  });
+
+  it('defaults to primitive types when no SchemaConfig is provided', async () => {
+    // Prepare
+    const handler = kafkaConsumer(baseHandler);
+
+    // Act
+    const result = (await handler(jsonTestEvent, context)) as ConsumerRecords<
+      unknown,
+      unknown
+    >;
+
+    // Assess
+    expect(result.records[0]).toEqual({
+      key: 'recordKey',
+      value: JSON.stringify(
+        { id: 12345, name: 'product5', price: 45 },
+        null,
+        2
+      ),
+      originalKey: 'cmVjb3JkS2V5',
+      originalValue:
+        'ewogICJpZCI6IDEyMzQ1LAogICJuYW1lIjogInByb2R1Y3Q1IiwKICAicHJpY2UiOiA0NQp9',
+      headers: [
+        {
+          headerKey: 'headerValue',
+        },
+      ],
+      originalHeaders: [
+        { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
+      ],
+      topic: 'mytopic',
+      partition: 0,
+      offset: 15,
+      timestamp: 1545084650987,
+      timestampType: 'CREATE_TIME',
     });
   });
 });

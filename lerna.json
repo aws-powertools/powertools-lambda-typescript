@@ -12,6 +12,7 @@
     "packages/parser",
     "packages/event-handler",
     "packages/validation",
+    "packages/kafka",
     "examples/app",
     "layers",
     "examples/snippets"

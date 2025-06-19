@@ -1,4 +1,4 @@
-import { util, BufferReader, type Message, Reader } from 'protobufjs';
+import { BufferReader, type Message } from 'protobufjs';
 import { KafkaConsumerDeserializationError } from '../errors.js';
 import type { ProtobufMessage, SchemaMetadata } from '../types/types.js';
 
@@ -37,20 +37,21 @@ const deserialize = <T>(
      * If schemaId is numeric, inferred from its length, we know it's coming from Confluent Schema Registry,
      * so we need to remove the MessageIndex bytes.
      */
-    let position = 0;
-    // Read the first varint byte to get the index count or 0
     const reader = new BufferReader(buffer);
-    const indexCount = reader.uint32();
+    /**
+     * Read the first varint byte to get the index count or 0.
+     * Doing so, also advances the reader position to the next byte after the index count.
+     */
+    let indexCount = reader.uint32();
     // Skip the index bytes
-    position += reader.pos;
-    if (indexCount > 0) {
-      // Read the next varint byte to get the message length
-      const messageLength = reader.uint32();
-      position += messageLength;
+    while (indexCount > 0) {
+      // Keep reading the next varint bytes until we reach the end of the index count
+      reader.uint32();
+      indexCount--;
     }
     // Create a new buffer without the index bytes
-    const newBuffer = Buffer.alloc(buffer.length - position);
-    buffer.copy(newBuffer, 0, position);
+    const newBuffer = Buffer.alloc(buffer.length - reader.pos);
+    buffer.copy(newBuffer, 0, reader.pos);
     return messageType.decode(newBuffer, newBuffer.length);
   } catch (error) {
     throw new KafkaConsumerDeserializationError(

@@ -422,7 +422,7 @@ describe('Kafka consumer', () => {
     );
   });
 
-  it.fails('handles protobuf messages with delimiters', async () => {
+  it('handles protobuf messages with delimiters', async () => {
     // Prepare
     const event = structuredClone(protobufTestEvent);
     event.records['mytopic-0'][0].value = 'COkHEgZMYXB0b3AZUrgehes/j0A=';

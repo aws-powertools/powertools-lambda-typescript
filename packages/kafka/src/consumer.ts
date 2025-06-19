@@ -8,6 +8,7 @@ import { deserialize as deserializeProtobuf } from './deserializer/protobuf.js';
 import {
   KafkaConsumerAvroMissingSchemaError,
   KafkaConsumerDeserializationError,
+  KafkaConsumerError,
   KafkaConsumerParserError,
   KafkaConsumerProtobufMissingSchemaError,
 } from './errors.js';
@@ -32,7 +33,7 @@ const assertIsMSKEvent = (event: unknown): event is MSKEvent => {
     !isRecord(event.records) ||
     !Object.values(event.records).every((arr) => Array.isArray(arr))
   ) {
-    throw new Error(
+    throw new KafkaConsumerError(
       'Event is not a valid MSKEvent. Expected an object with a "records" property.'
     );
   }

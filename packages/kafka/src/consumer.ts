@@ -4,7 +4,6 @@ import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { Context, Handler } from 'aws-lambda';
 import { deserialize as deserializeJson } from './deserializer/json.js';
 import { deserialize as deserializePrimitive } from './deserializer/primitive.js';
-import { deserialize as deserializeProtobuf } from './deserializer/protobuf.js';
 import {
   KafkaConsumerAvroMissingSchemaError,
   KafkaConsumerDeserializationError,
@@ -119,7 +118,8 @@ const getDeserializer = async (type?: string) => {
     return deserializeJson as Deserializer;
   }
   if (type === 'protobuf') {
-    return deserializeProtobuf as Deserializer;
+    const deserializer = await import('./deserializer/protobuf.js');
+    return deserializer.deserialize as Deserializer;
   }
   if (type === 'avro') {
     const deserializer = await import('./deserializer/avro.js');

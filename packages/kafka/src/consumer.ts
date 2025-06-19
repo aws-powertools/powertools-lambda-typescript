@@ -2,14 +2,19 @@ import type { AsyncHandler } from '@aws-lambda-powertools/commons/types';
 import { isNull, isRecord } from '@aws-lambda-powertools/commons/typeutils';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { Context, Handler } from 'aws-lambda';
+import { deserialize as deserializeJson } from './deserializer/json.js';
+import { deserialize as deserializePrimitive } from './deserializer/primitive.js';
 import {
   KafkaConsumerAvroMissingSchemaError,
+  KafkaConsumerDeserializationError,
+  KafkaConsumerError,
   KafkaConsumerParserError,
   KafkaConsumerProtobufMissingSchemaError,
 } from './errors.js';
 import type {
   ConsumerRecord,
   ConsumerRecords,
+  Deserializer,
   Record as KafkaRecord,
   MSKEvent,
   SchemaConfig,
@@ -27,7 +32,7 @@ const assertIsMSKEvent = (event: unknown): event is MSKEvent => {
     !isRecord(event.records) ||
     !Object.values(event.records).every((arr) => Array.isArray(arr))
   ) {
-    throw new Error(
+    throw new KafkaConsumerError(
       'Event is not a valid MSKEvent. Expected an object with a "records" property.'
     );
   }
@@ -69,69 +74,80 @@ const deserializeHeaders = (headers: Record<string, number[]>[] | null) => {
  * @param config - The schema configuration to use for deserialization. See {@link SchemaConfigValue | `SchemaConfigValue`}.
  *   If not provided, the value is decoded as a UTF-8 string.
  */
-const deserialize = async (value: string, config?: SchemaConfigValue) => {
-  // no config -> default to base64 decoding
+const deserialize = (
+  value: string,
+  deserializer: Deserializer,
+  config?: SchemaConfigValue
+) => {
   if (config === undefined) {
-    return Buffer.from(value, 'base64').toString();
+    return deserializer(value);
   }
-
-  // if config is provided, we expect it to have a specific type
-  if (!['json', 'avro', 'protobuf'].includes(config.type)) {
-    throw new Error(
-      `Unsupported deserialization type: ${config.type}. Supported types are: json, avro, protobuf.`
-    );
-  }
-
   if (config.type === 'json') {
-    const deserializer = await import('./deserializer/json.js');
-    return deserializer.deserialize(value);
+    return deserializer(value);
   }
 
   if (config.type === 'avro') {
     if (!config.schema) {
       throw new KafkaConsumerAvroMissingSchemaError(
-        'Schema string is required for Avro deserialization'
+        'Schema string is required for avro deserialization'
       );
     }
-    const deserializer = await import('./deserializer/avro.js');
-    return deserializer.deserialize(value, config.schema);
+    return deserializer(value, config.schema);
   }
   if (config.type === 'protobuf') {
     if (!config.schema) {
       throw new KafkaConsumerProtobufMissingSchemaError(
-        'Schema string is required for Protobuf deserialization'
+        'Schema string is required for protobuf deserialization'
       );
     }
-    const deserializer = await import('./deserializer/protobuf.js');
-    return deserializer.deserialize(value, config.schema);
+    return deserializer(value, config.schema);
   }
 };
 
 /**
- * Deserialize the key of a Kafka record.
+ * Get the deserializer function based on the provided type.
  *
- * If the key is `undefined`, it returns `undefined`.
- *
- * @param key - The base64-encoded key to deserialize.
- * @param config - The schema configuration for deserializing the key. See {@link SchemaConfigValue | `SchemaConfigValue`}.
+ * @param type - The type of deserializer to use. Supported types are: `json`, `avro`, `protobuf`, or `undefined`.
+ *   If `undefined`, it defaults to deserializing as a primitive string.
  */
-const deserializeKey = async (key?: string, config?: SchemaConfigValue) => {
-  if (key === undefined || key === '') {
-    return undefined;
+const getDeserializer = async (type?: string) => {
+  if (!type) {
+    return deserializePrimitive as Deserializer;
   }
-  if (isNull(key)) return null;
-  return await deserialize(key, config);
+  if (type === 'json') {
+    return deserializeJson as Deserializer;
+  }
+  if (type === 'protobuf') {
+    const deserializer = await import('./deserializer/protobuf.js');
+    return deserializer.deserialize as Deserializer;
+  }
+  if (type === 'avro') {
+    const deserializer = await import('./deserializer/avro.js');
+    return deserializer.deserialize as Deserializer;
+  }
+  throw new KafkaConsumerDeserializationError(
+    `Unsupported deserialization type: ${type}. Supported types are: json, avro, protobuf.`
+  );
 };
 
-const parseSchema = async (value: unknown, schema: StandardSchemaV1) => {
-  let result = schema['~standard'].validate(value);
+/**
+ * Parse a value against a provided schema using the `~standard` property for validation.
+ *
+ * @param value - The value to parse against the schema.
+ * @param schema - The schema to validate against, which should be a {@link StandardSchemaV1 | `Standard Schema V1`} object.
+ */
+const parseSchema = (value: unknown, schema: StandardSchemaV1) => {
+  const result = schema['~standard'].validate(value);
   /* v8 ignore start */
-  if (result instanceof Promise) result = await result;
+  if (result instanceof Promise)
+    throw new KafkaConsumerParserError(
+      'Schema parsing supports only synchronous validation'
+    );
   /* v8 ignore stop */
   if (result.issues) {
-    throw new KafkaConsumerParserError(
-      `Schema validation failed ${result.issues}`
-    );
+    throw new KafkaConsumerParserError('Schema validation failed', {
+      cause: result.issues,
+    });
   }
   return result.value;
 };
@@ -142,24 +158,45 @@ const parseSchema = async (value: unknown, schema: StandardSchemaV1) => {
  * @param record - A single record from the MSK event.
  * @param config - The schema configuration for deserializing the record's key and value.
  */
-const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
+const deserializeRecord = async (
+  record: KafkaRecord,
+  config?: SchemaConfig
+) => {
   const { key, value, headers, ...rest } = record;
-  const { key: keyConfig, value: valueConfig } = config;
+  const { key: keyConfig, value: valueConfig } = config || {};
 
-  const deserializedKey = await deserializeKey(key, keyConfig);
-  const deserializedValue = await deserialize(value, valueConfig);
+  const deserializerKey = await getDeserializer(keyConfig?.type);
+  const deserializerValue = await getDeserializer(valueConfig?.type);
 
   return {
     ...rest,
-    key: keyConfig?.parserSchema
-      ? await parseSchema(deserializedKey, keyConfig.parserSchema)
-      : deserializedKey,
-    value: valueConfig?.parserSchema
-      ? await parseSchema(deserializedValue, valueConfig.parserSchema)
-      : deserializedValue,
+    get key() {
+      if (key === undefined || key === '') {
+        return undefined;
+      }
+      if (isNull(key)) return null;
+      const deserializedKey = deserialize(key, deserializerKey, keyConfig);
+
+      return keyConfig?.parserSchema
+        ? parseSchema(deserializedKey, keyConfig.parserSchema)
+        : deserializedKey;
+    },
     originalKey: key,
+    get value() {
+      const deserializedValue = deserialize(
+        value,
+        deserializerValue,
+        valueConfig
+      );
+
+      return valueConfig?.parserSchema
+        ? parseSchema(deserializedValue, valueConfig.parserSchema)
+        : deserializedValue;
+    },
     originalValue: value,
-    headers: deserializeHeaders(headers),
+    get headers() {
+      return deserializeHeaders(headers);
+    },
     originalHeaders: headers,
   };
 };
@@ -202,7 +239,7 @@ const deserializeRecord = async (record: KafkaRecord, config: SchemaConfig) => {
  */
 const kafkaConsumer = <K, V>(
   handler: AsyncHandler<Handler<ConsumerRecords<K, V>>>,
-  config: SchemaConfig
+  config?: SchemaConfig
 ): ((event: MSKEvent, context: Context) => Promise<unknown>) => {
   return async (event: MSKEvent, context: Context): Promise<unknown> => {
     assertIsMSKEvent(event);
@@ -210,7 +247,12 @@ const kafkaConsumer = <K, V>(
     const consumerRecords: ConsumerRecord<K, V>[] = [];
     for (const recordsArray of Object.values(event.records)) {
       for (const record of recordsArray) {
-        consumerRecords.push(await deserializeRecord(record, config));
+        consumerRecords.push(
+          (await deserializeRecord(
+            record,
+            config
+          )) as unknown as ConsumerRecord<K, V>
+        );
       }
     }
 

@@ -3,8 +3,8 @@
  * All Kafka consumer errors should extend this class.
  */
 class KafkaConsumerError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'KafkaConsumerError';
   }
 }
@@ -13,8 +13,8 @@ class KafkaConsumerError extends Error {
  * Error thrown when a required Protobuf schema is missing during Kafka message consumption.
  */
 class KafkaConsumerProtobufMissingSchemaError extends KafkaConsumerError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'KafkaConsumerProtobufMissingSchemaError';
   }
 }
@@ -23,8 +23,8 @@ class KafkaConsumerProtobufMissingSchemaError extends KafkaConsumerError {
  * Error thrown when deserialization of a Kafka message fails.
  */
 class KafkaConsumerDeserializationError extends KafkaConsumerError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'KafkaConsumerDeserializationError';
   }
 }
@@ -33,15 +33,18 @@ class KafkaConsumerDeserializationError extends KafkaConsumerError {
  * Error thrown when a required Avro schema is missing during Kafka message consumption.
  */
 class KafkaConsumerAvroMissingSchemaError extends KafkaConsumerError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'KafkaConsumerAvroMissingSchemaError';
   }
 }
 
+/**
+ * Error thrown when parsing a Kafka message fails.
+ */
 class KafkaConsumerParserError extends KafkaConsumerError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'KafkaConsumerParserError';
   }
 }

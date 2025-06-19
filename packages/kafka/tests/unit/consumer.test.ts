@@ -494,4 +494,94 @@ describe('Kafka consumer', () => {
       timestampType: 'CREATE_TIME',
     });
   });
+
+  it('hanldes protobuf messages with delimiters', async () => {
+    // Prepare
+    const event = {
+      eventSource: 'aws:kafka',
+      eventSourceArn:
+        'arn:aws:kafka:us-east-1:0123456789019:cluster/SalesCluster/abcd1234',
+      bootstrapServers:
+        'b-2.demo-cluster-1.a1bcde.c1.kafka.us-east-1.amazonaws.com:9092',
+      records: {
+        'mytopic-0': [
+          {
+            topic: 'mytopic',
+            partition: 0,
+            offset: 15,
+            timestamp: 1545084650987,
+            timestampType: 'CREATE_TIME',
+            key: 'NDI=',
+            value: 'COkHEgZMYXB0b3AZUrgehes/j0A=',
+            headers: [
+              {
+                headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101],
+              },
+            ],
+          },
+          {
+            topic: 'mytopic',
+            partition: 0,
+            offset: 16,
+            timestamp: 1545084650988,
+            timestampType: 'CREATE_TIME',
+            key: 'NDI=',
+            value: 'AAjpBxIGTGFwdG9wGVK4HoXrP49A',
+            headers: [
+              {
+                headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101],
+              },
+            ],
+          },
+          {
+            topic: 'mytopic',
+            partition: 0,
+            offset: 17,
+            timestamp: 1545084650989,
+            timestampType: 'CREATE_TIME',
+            key: 'NDI=',
+            value: 'AgEACOkHEgZMYXB0b3AZUrgehes/j0A=',
+            headers: [
+              {
+                headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101],
+              },
+            ],
+          },
+        ],
+      },
+    } as MSKEvent;
+
+    const handler = kafkaConsumer(
+      async (event) => {
+        const results = [];
+        for (const record of event.records) {
+          try {
+            const { value } = record;
+            results.push(value);
+          } catch (error) {
+            results.push(error);
+          }
+        }
+        return results;
+      },
+      {
+        value: {
+          type: SchemaType.PROTOBUF,
+          schema: ProductProto,
+          parserSchema: valueZodSchema,
+        },
+      }
+    );
+
+    // Act
+    const result = (await handler(event, context)) as
+      | (typeof ProductProto)[]
+      | Error[];
+
+    // Assess
+    expect(result).toHaveLength(3);
+    expect(result[0]).toEqual({ id: 1001, name: 'Laptop', price: 999.99 });
+    expect(result[1]).toEqual({ id: 0, name: '', price: 999.99 });
+    expect(result[2]).toEqual({ id: 1001, name: 'Laptop', price: 999.99 });
+  });
 });

@@ -211,7 +211,7 @@ interface MSKEvent {
   };
 }
 
-interface ProtobufMessage<T> {
+interface ProtobufMessage<T = unknown> {
   decode(reader: Reader | Uint8Array, length?: number): T;
 }
 

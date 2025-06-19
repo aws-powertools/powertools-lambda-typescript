@@ -6,7 +6,7 @@ import { deserialize as deserializePrimitive } from './primitive.js';
  * @param data - The base64 encoded string to deserialize
  * @returns The deserialized data as either a JSON object or string
  */
-export const deserialize = (data: string) => {
+const deserialize = (data: string) => {
   const plainText = deserializePrimitive(data);
   try {
     // Attempt to parse the decoded data as JSON
@@ -19,3 +19,5 @@ export const deserialize = (data: string) => {
     return plainText;
   }
 };
+
+export { deserialize };

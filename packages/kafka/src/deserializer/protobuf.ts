@@ -10,10 +10,7 @@ import type { ProtobufMessage } from '../types/types.js';
  * @param data - The base64-encoded string representing the Protobuf binary data.
  * @param messageType - The Protobuf message type definition - see {@link Message | `Message`} from {@link https://www.npmjs.com/package/protobufjs | `protobufjs`}.
  */
-export const deserialize = <T>(
-  data: string,
-  messageType: ProtobufMessage<T>
-): T => {
+const deserialize = <T>(data: string, messageType: ProtobufMessage<T>): T => {
   try {
     const buffer = Buffer.from(data, 'base64');
     return messageType.decode(buffer, buffer.length);
@@ -23,3 +20,5 @@ export const deserialize = <T>(
     );
   }
 };
+
+export { deserialize };

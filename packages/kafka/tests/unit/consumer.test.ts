@@ -568,7 +568,10 @@ describe('Kafka consumer', () => {
         value: {
           type: SchemaType.PROTOBUF,
           schema: ProductProto,
-          parserSchema: valueZodSchema,
+        },
+        key: {
+          type: SchemaType.PROTOBUF,
+          schema: ProductProto,
         },
       }
     );
@@ -581,7 +584,7 @@ describe('Kafka consumer', () => {
     // Assess
     expect(result).toHaveLength(3);
     expect(result[0]).toEqual({ id: 1001, name: 'Laptop', price: 999.99 });
-    expect(result[1]).toEqual({ id: 0, name: '', price: 999.99 });
+    expect(result[1]).toEqual({ id: 1001, name: 'Laptop', price: 999.99 });
     expect(result[2]).toEqual({ id: 1001, name: 'Laptop', price: 999.99 });
   });
 });

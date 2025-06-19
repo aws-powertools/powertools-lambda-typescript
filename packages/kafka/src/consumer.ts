@@ -180,6 +180,7 @@ const deserializeRecord = async (
         ? parseSchema(deserializedKey, keyConfig.parserSchema)
         : deserializedKey;
     },
+    originalKey: key,
     get value() {
       const deserializedValue = deserialize(
         value,
@@ -191,7 +192,6 @@ const deserializeRecord = async (
         ? parseSchema(deserializedValue, valueConfig.parserSchema)
         : deserializedValue;
     },
-    originalKey: key,
     originalValue: value,
     get headers() {
       return deserializeHeaders(headers);

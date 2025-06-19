@@ -325,6 +325,12 @@ describe('Kafka consumer', () => {
         expect.objectContaining({
           message: expect.stringContaining('Schema validation failed'),
           name: 'KafkaConsumerParserError',
+          cause: expect.arrayContaining([
+            expect.objectContaining({
+              code: expect.any(String),
+              message: expect.any(String),
+            }),
+          ]),
         })
       );
     }

@@ -144,9 +144,9 @@ const parseSchema = (value: unknown, schema: StandardSchemaV1) => {
     );
   /* v8 ignore stop */
   if (result.issues) {
-    throw new KafkaConsumerParserError(
-      `Schema validation failed ${result.issues}`
-    );
+    throw new KafkaConsumerParserError('Schema validation failed', {
+      cause: result.issues,
+    });
   }
   return result.value;
 };

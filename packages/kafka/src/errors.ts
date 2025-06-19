@@ -39,6 +39,9 @@ class KafkaConsumerAvroMissingSchemaError extends KafkaConsumerError {
   }
 }
 
+/**
+ * Error thrown when parsing a Kafka message fails.
+ */
 class KafkaConsumerParserError extends KafkaConsumerError {
   constructor(message: string) {
     super(message);

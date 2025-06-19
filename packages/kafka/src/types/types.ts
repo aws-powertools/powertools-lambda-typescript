@@ -9,27 +9,47 @@ type ConsumerRecord<K, V> = {
   /**
    * The deserialized key of the record
    */
-  key: K | undefined;
+  key: K;
   /**
    * The deserialized value of the record
    */
   value: V;
   /**
-   * The original (raw, encoded) key as received from Kafka, or undefined if not present
+   * The original (raw, encoded) key as received from Kafka, or `undefined` if not present
    */
-  originalKey: string | undefined;
+  originalKey?: string;
   /**
-   * The original (raw, encoded) value as received from Kafka, or undefined if not present
+   * The original (raw, encoded) value as received from Kafka
    */
   originalValue: string;
   /**
-   * Optional array of headers as key-value string pairs, or null/undefined if not present
+   * Optional array of headers as key-value string pairs, or `null/`undefined` if not present
    */
   headers?: { [k: string]: string }[] | null;
   /**
    * Optional array of original record headers
    */
   originalHeaders?: RecordHeader[] | null;
+  /**
+   * The topic from which the record was consumed
+   */
+  topic: string;
+  /**
+   * The partition from which the record was consumed
+   */
+  partition: number;
+  /**
+   * The offset of the record within the partition
+   */
+  offset: number;
+  /**
+   * The timestamp of the record
+   */
+  timestamp: number;
+  /**
+   * The type of timestamp (CREATE_TIME or LOG_APPEND_TIME)
+   */
+  timestampType: 'CREATE_TIME' | 'LOG_APPEND_TIME';
 };
 
 /**
@@ -61,7 +81,7 @@ type JsonConfig = {
    */
   type: typeof SchemaTypeMap.JSON;
   /**
-   * Optional Zod schema for runtime validation
+   * Optional {@link https://github.com/standard-schema/standard-schema | Standard Schema} for runtime validation
    */
   parserSchema?: StandardSchemaV1;
 };
@@ -79,10 +99,11 @@ type AvroConfig = {
    */
   schema: string;
   /**
-   * Optional Zod schema for runtime validation
+   * Optional {@link https://github.com/standard-schema/standard-schema | Standard Schema} for runtime validation
    */
   parserSchema?: StandardSchemaV1;
 };
+
 /**
  * Configuration for Protobuf schema validation.
  */
@@ -96,7 +117,7 @@ type ProtobufConfig<T> = {
    */
   schema: ProtobufMessage<T>;
   /**
-   * Optional Zod schema for runtime validation
+   * Optional {@link https://github.com/standard-schema/standard-schema | Standard Schema} for runtime validation
    */
   parserSchema?: StandardSchemaV1;
 };
@@ -165,10 +186,9 @@ interface Record {
   headers: RecordHeader[];
 }
 
-// https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html
 /**
  * AWS Lambda event structure for MSK (Managed Streaming for Kafka).
- * See: https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html
+ * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html | AWS Lambda with MSK}
  */
 interface MSKEvent {
   /**
@@ -195,12 +215,7 @@ interface ProtobufMessage<T> {
   decode(reader: Reader | Uint8Array, length?: number): T;
 }
 
-interface Deserializer {
-  deserialize(
-    input: string,
-    schema: string | ProtobufMessage<unknown>
-  ): unknown;
-}
+type Deserializer = (input: string, schema?: unknown) => unknown;
 
 export type {
   ConsumerRecord,

@@ -34,7 +34,7 @@ describe('Avro Deserializer: ', () => {
     }`; // Invalid schema, missing "price" field
 
     // Act & Assess
-    await expect(deserialize(message, schema)).rejects.toThrow(
+    expect(() => deserialize(message, schema)).toThrow(
       KafkaConsumerDeserializationError
     );
   });
@@ -53,7 +53,7 @@ describe('Avro Deserializer: ', () => {
     }`; // Valid schema, but does not match the message content
 
     // Act & Assess
-    await expect(deserialize(message, schema)).rejects.toThrow(
+    expect(() => deserialize(message, schema)).toThrow(
       KafkaConsumerDeserializationError
     );
   });

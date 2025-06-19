@@ -44,5 +44,9 @@
     "aws-sdk": "^2.1692.0",
     "aws-sdk-client-mock": "^4.1.0",
     "zod": "^3.25.67"
+  },
+  "dependencies": {
+    "arktype": "^2.1.20",
+    "valibot": "^1.1.0"
   }
 }

@@ -1,0 +1,11 @@
+flowchart LR
+  KafkaTopic["Kafka Topic"] --> MSK["Amazon MSK"]
+  KafkaTopic --> MSKServerless["Amazon MSK Serverless"]
+  KafkaTopic --> SelfHosted["Self-hosted Kafka"]
+  MSK --> EventSourceMapping["Event Source Mapping"]
+  MSKServerless --> EventSourceMapping
+  SelfHosted --> EventSourceMapping
+  EventSourceMapping --> Lambda["Lambda Function"]
+  Lambda --> KafkaConsumer["Kafka Consumer Utility"]
+  KafkaConsumer --> Deserialization["Deserialization"]
+  Deserialization --> YourLogic["Your Business Logic"]

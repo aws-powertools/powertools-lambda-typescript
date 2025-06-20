@@ -299,7 +299,6 @@ export const com = $root.com = (() => {
                  * @property {boolean|null} [isActive] UserProfile isActive
                  * @property {string|null} [signupDate] UserProfile signupDate
                  * @property {Array.<string>|null} [tags] UserProfile tags
-                 * @property {number|null} [score] UserProfile score
                  * @property {Object.<string,string>|null} [preferences] UserProfile preferences
                  * @property {com.example.protobuf.IAddress|null} [address] UserProfile address
                  */
@@ -378,14 +377,6 @@ export const com = $root.com = (() => {
                 UserProfile.prototype.tags = $util.emptyArray;
 
                 /**
-                 * UserProfile score.
-                 * @member {number} score
-                 * @memberof com.example.protobuf.UserProfile
-                 * @instance
-                 */
-                UserProfile.prototype.score = 0;
-
-                /**
                  * UserProfile preferences.
                  * @member {Object.<string,string>} preferences
                  * @memberof com.example.protobuf.UserProfile
@@ -440,8 +431,6 @@ export const com = $root.com = (() => {
                     if (message.tags != null && message.tags.length)
                         for (let i = 0; i < message.tags.length; ++i)
                             writer.uint32(/* id 7, wireType 2 =*/58).string(message.tags[i]);
-                    if (message.score != null && Object.hasOwnProperty.call(message, "score"))
-                        writer.uint32(/* id 8, wireType 1 =*/65).double(message.score);
                     if (message.preferences != null && Object.hasOwnProperty.call(message, "preferences"))
                         for (let keys = Object.keys(message.preferences), i = 0; i < keys.length; ++i)
                             writer.uint32(/* id 9, wireType 2 =*/74).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.preferences[keys[i]]).ldelim();
@@ -511,10 +500,6 @@ export const com = $root.com = (() => {
                                 if (!(message.tags && message.tags.length))
                                     message.tags = [];
                                 message.tags.push(reader.string());
-                                break;
-                            }
-                        case 8: {
-                                message.score = reader.double();
                                 break;
                             }
                         case 9: {
@@ -604,9 +589,6 @@ export const com = $root.com = (() => {
                             if (!$util.isString(message.tags[i]))
                                 return "tags: string[] expected";
                     }
-                    if (message.score != null && message.hasOwnProperty("score"))
-                        if (typeof message.score !== "number")
-                            return "score: number expected";
                     if (message.preferences != null && message.hasOwnProperty("preferences")) {
                         if (!$util.isObject(message.preferences))
                             return "preferences: object expected";
@@ -654,8 +636,6 @@ export const com = $root.com = (() => {
                         for (let i = 0; i < object.tags.length; ++i)
                             message.tags[i] = String(object.tags[i]);
                     }
-                    if (object.score != null)
-                        message.score = Number(object.score);
                     if (object.preferences) {
                         if (typeof object.preferences !== "object")
                             throw TypeError(".com.example.protobuf.UserProfile.preferences: object expected");
@@ -695,7 +675,6 @@ export const com = $root.com = (() => {
                         object.age = 0;
                         object.isActive = false;
                         object.signupDate = "";
-                        object.score = 0;
                         object.address = null;
                     }
                     if (message.userId != null && message.hasOwnProperty("userId"))
@@ -715,8 +694,6 @@ export const com = $root.com = (() => {
                         for (let j = 0; j < message.tags.length; ++j)
                             object.tags[j] = message.tags[j];
                     }
-                    if (message.score != null && message.hasOwnProperty("score"))
-                        object.score = options.json && !isFinite(message.score) ? String(message.score) : message.score;
                     let keys2;
                     if (message.preferences && (keys2 = Object.keys(message.preferences)).length) {
                         object.preferences = {};

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { deserialize } from '../../src/deserializer/protobuf.js';
 import { KafkaConsumerDeserializationError } from '../../src/errors.js';
 import type { ProtobufMessage } from '../../src/types/types.js';
-import { Product } from '../protos/product.es6.generated.js';
+import { Product } from '../protos/product.generated.js';
 
 describe('Protobuf deserialiser: ', () => {
   it('throws when protobuf serialise fails', () => {

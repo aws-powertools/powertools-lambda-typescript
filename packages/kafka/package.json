@@ -51,9 +51,9 @@
     "@standard-schema/spec": "^1.0.0"
   },
   "peerDependencies": {
-    "zod": ">=3.24.0",
+    "arktype": ">=2.0.0",
     "valibot": ">=1.0.0",
-    "arktype": ">=2.0.0"
+    "zod": ">=3.24.0"
   },
   "peerDependenciesMeta": {
     "zod": {

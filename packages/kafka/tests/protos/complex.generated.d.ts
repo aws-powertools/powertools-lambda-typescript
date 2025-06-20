@@ -142,9 +142,6 @@ export namespace com {
                 /** UserProfile tags */
                 tags?: (string[]|null);
 
-                /** UserProfile score */
-                score?: (number|null);
-
                 /** UserProfile preferences */
                 preferences?: ({ [k: string]: string }|null);
 
@@ -181,9 +178,6 @@ export namespace com {
 
                 /** UserProfile tags. */
                 public tags: string[];
-
-                /** UserProfile score. */
-                public score: number;
 
                 /** UserProfile preferences. */
                 public preferences: { [k: string]: string };

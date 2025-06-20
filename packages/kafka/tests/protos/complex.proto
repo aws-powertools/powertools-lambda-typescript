@@ -15,7 +15,6 @@ message UserProfile {
   bool isActive = 5;
   string signupDate = 6;
   repeated string tags = 7;
-  double score = 8;
   map<string, string> preferences = 9;
   Address address = 10;
 }

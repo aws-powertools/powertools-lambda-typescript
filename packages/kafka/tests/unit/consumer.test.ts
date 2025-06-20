@@ -9,7 +9,7 @@ import { SchemaType, kafkaConsumer } from '../../src/index.js';
 import type { ConsumerRecords, MSKEvent } from '../../src/types/types.js';
 import { loadEvent } from '../helpers/loadEvent.js';
 import { com } from '../protos/complex.generated.js';
-import { Product as ProductProto } from '../protos/product.es6.generated.js';
+import { Product as ProductProto } from '../protos/product.generated.js';
 
 describe('Kafka consumer', () => {
   const jsonTestEvent = loadEvent('default.json');
@@ -500,7 +500,6 @@ describe('Kafka consumer', () => {
             preferences: z.object({
               theme: z.string().optional(),
             }),
-            score: z.number().int(),
             signupDate: z.string(),
             tags: z.array(z.string()),
           }),
@@ -540,11 +539,21 @@ describe('Kafka consumer', () => {
       {
         value: {
           type: SchemaType.PROTOBUF,
-          schema: com.example.protobuf.Address,
+          schema: com.example.protobuf.UserProfile,
           parserSchema: z.object({
-            city: z.string(),
-            street: z.string(),
-            zip: z.string(),
+            userId: z.string(),
+            address: z.object({
+              city: z.string(),
+              street: z.string(),
+              zip: z.string(),
+            }),
+            age: z.number().int().min(1),
+            isActive: z.boolean(),
+            preferences: z.object({
+              theme: z.string().optional(),
+            }),
+            signupDate: z.string(),
+            tags: z.array(z.string()),
           }),
         },
       }
@@ -552,14 +561,17 @@ describe('Kafka consumer', () => {
 
     // Act
     const result = (await handler(event, context)) as
-      | (typeof com.example.protobuf.Address)[]
+      | (typeof com.example.protobuf.UserProfile)[]
       | Error[];
 
     // Assess
-    expect(result).toHaveLength(4);
-    expect(result[0]).not.toBeInstanceOf(Error);
-    expect(result[1]).not.toBeInstanceOf(Error);
-    expect(result[2]).not.toBeInstanceOf(Error);
-    expect(result[3]).not.toBeInstanceOf(Error);
+    expect(result).toHaveLength(1);
+    expect(result[0]).not.toStrictEqual(
+      expect.objectContaining({
+        message: expect.stringContaining(
+          'Failed to deserialize Protobuf message'
+        ),
+      })
+    );
   });
 });

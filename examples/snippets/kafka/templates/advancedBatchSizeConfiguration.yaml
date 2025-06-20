@@ -1,0 +1,21 @@
+Resources:
+OrderProcessingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+    Handler: app.lambda_handler
+    Runtime: python3.9
+    Events:
+        KafkaEvent:
+        Type: MSK
+        Properties:
+            Stream: !GetAtt OrdersMSKCluster.Arn
+            Topics:
+            - order-events
+            - payment-events
+            # Configuration for optimal throughput/latency balance
+            BatchSize: 100
+            MaximumBatchingWindowInSeconds: 5
+            StartingPosition: LATEST
+            # Enable partial batch success reporting
+            FunctionResponseTypes:
+            - ReportBatchItemFailures

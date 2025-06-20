@@ -31,9 +31,10 @@ const schemaConfig = {
 
 export const handler = kafkaConsumer<unknown, v.InferInput<typeof OrderSchema>>(
   async (event, _context) => {
-    for (const {
-      value: { id, items },
-    } of event.records) {
+    for (const record of event.records) {
+      const {
+        value: { id, items },
+      } = record;
       logger.setCorrelationId(id);
       logger.debug(`order includes ${items.length} items`);
     }

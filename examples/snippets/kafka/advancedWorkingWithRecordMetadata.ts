@@ -6,14 +6,8 @@ const logger = new Logger({ serviceName: 'kafka-consumer' });
 
 export const handler = kafkaConsumer<unknown, IUser>(
   async (event, _context) => {
-    for (const {
-      value,
-      topic,
-      partition,
-      offset,
-      timestamp,
-      headers,
-    } of event.records) {
+    for (const record of event.records) {
+      const { value, topic, partition, offset, timestamp, headers } = record;
       logger.info(`processing message from topic ${topic}`, {
         partition,
         offset,

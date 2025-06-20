@@ -5,11 +5,10 @@ import type { Context, Handler } from 'aws-lambda';
 import { deserialize as deserializeJson } from './deserializer/json.js';
 import { deserialize as deserializePrimitive } from './deserializer/primitive.js';
 import {
-  KafkaConsumerAvroMissingSchemaError,
   KafkaConsumerDeserializationError,
   KafkaConsumerError,
+  KafkaConsumerMissingSchemaError,
   KafkaConsumerParserError,
-  KafkaConsumerProtobufMissingSchemaError,
 } from './errors.js';
 import type {
   ConsumerRecord,
@@ -90,7 +89,7 @@ const deserialize = ({
 
   if (config.type === 'avro') {
     if (!config.schema) {
-      throw new KafkaConsumerAvroMissingSchemaError(
+      throw new KafkaConsumerMissingSchemaError(
         'Schema string is required for avro deserialization'
       );
     }
@@ -98,7 +97,7 @@ const deserialize = ({
   }
   if (config.type === 'protobuf') {
     if (!config.schema) {
-      throw new KafkaConsumerProtobufMissingSchemaError(
+      throw new KafkaConsumerMissingSchemaError(
         'Schema string is required for protobuf deserialization'
       );
     }
@@ -213,6 +212,8 @@ const deserializeRecord = async (
       return deserializeHeaders(headers);
     },
     originalHeaders: headers,
+    valueSchemaMetadata,
+    keySchemaMetadata,
   };
 };
 

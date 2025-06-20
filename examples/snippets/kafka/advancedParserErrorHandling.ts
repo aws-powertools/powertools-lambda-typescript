@@ -3,8 +3,10 @@ declare function processRecord(record: unknown): Promise<void>;
 import { readFileSync } from 'node:fs';
 import { SchemaType, kafkaConsumer } from '@aws-lambda-powertools/kafka';
 import { KafkaConsumerParserError } from '@aws-lambda-powertools/kafka/errors';
-import type { ConsumerRecord } from '@aws-lambda-powertools/kafka/types';
-import type { SchemaConfig } from '@aws-lambda-powertools/kafka/types';
+import type {
+  ConsumerRecord,
+  SchemaConfig,
+} from '@aws-lambda-powertools/kafka/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { z } from 'zod/v4';
 

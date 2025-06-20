@@ -4,9 +4,6 @@ description: Utility
 status: new
 ---
 
-???+ info "Work in progress"
-    This documentation page is a work in progress for an upcoming feature in Powertools for AWS Lambda. If you're seeing this page, it means the release process is underway, but the feature is not yet available on npm. Please check back soon for the final version.
-
 The Kafka Consumer utility transparently handles message deserialization, provides an intuitive developer experience, and integrates seamlessly with the rest of the Powertools for AWS Lambda ecosystem.
 
 ```mermaid
@@ -221,7 +218,7 @@ For debugging purposes, you can also access the original key, value, and headers
 | `valueSchemaMetadata` | Metadata about the value schema like `schemaId` and `dataFormat` | Used by `kafkaConsumer` to process Protobuf, data format validation |
 | `keySchemaMetadata`   | Metadata about the key schema like `schemaId` and `dataFormat`   | Used by `kafkaConsumer` to process Protobuf, data format validation |
 
-### Custom output serializers
+### Additional Parsing
 
 You can parse deserialized data using your preferred parsing library. This can help you integrate Kafka data with your domain schemas and application architecture, providing type hints, runtime parsing and validation, and advanced data transformations.
 

@@ -1,10 +1,7 @@
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
-import {
-  KafkaConsumerAvroMissingSchemaError,
-  KafkaConsumerProtobufMissingSchemaError,
-} from '../../src/errors.js';
+import { z } from 'zod/v4';
+import { KafkaConsumerMissingSchemaError } from '../../src/errors.js';
 import { SchemaType, kafkaConsumer } from '../../src/index.js';
 import type { ConsumerRecords, MSKEvent } from '../../src/types/types.js';
 import { loadEvent } from '../helpers/loadEvent.js';
@@ -131,12 +128,12 @@ describe('Kafka consumer', () => {
     {
       type: SchemaType.PROTOBUF,
       event: structuredClone(protobufTestEvent),
-      error: KafkaConsumerProtobufMissingSchemaError,
+      error: KafkaConsumerMissingSchemaError,
     },
     {
       type: SchemaType.AVRO,
       event: structuredClone(avroTestEvent),
-      error: KafkaConsumerAvroMissingSchemaError,
+      error: KafkaConsumerMissingSchemaError,
     },
   ])(
     'throws when schemaStr not passed for $type event',

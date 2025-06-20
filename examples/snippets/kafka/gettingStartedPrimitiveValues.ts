@@ -1,4 +1,4 @@
-import { SchemaType, kafkaConsumer } from '@aws-lambda-powertools/kafka';
+import { kafkaConsumer } from '@aws-lambda-powertools/kafka';
 import { Logger } from '@aws-lambda-powertools/logger';
 
 const logger = new Logger({ serviceName: 'kafka-consumer' });

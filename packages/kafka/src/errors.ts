@@ -10,16 +10,6 @@ class KafkaConsumerError extends Error {
 }
 
 /**
- * Error thrown when a required Protobuf schema is missing during Kafka message consumption.
- */
-class KafkaConsumerProtobufMissingSchemaError extends KafkaConsumerError {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-    this.name = 'KafkaConsumerProtobufMissingSchemaError';
-  }
-}
-
-/**
  * Error thrown when deserialization of a Kafka message fails.
  */
 class KafkaConsumerDeserializationError extends KafkaConsumerError {
@@ -32,10 +22,10 @@ class KafkaConsumerDeserializationError extends KafkaConsumerError {
 /**
  * Error thrown when a required Avro schema is missing during Kafka message consumption.
  */
-class KafkaConsumerAvroMissingSchemaError extends KafkaConsumerError {
+class KafkaConsumerMissingSchemaError extends KafkaConsumerError {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
-    this.name = 'KafkaConsumerAvroMissingSchemaError';
+    this.name = 'KafkaConsumerMissingSchemaError';
   }
 }
 
@@ -51,8 +41,7 @@ class KafkaConsumerParserError extends KafkaConsumerError {
 
 export {
   KafkaConsumerError,
-  KafkaConsumerAvroMissingSchemaError,
+  KafkaConsumerMissingSchemaError,
   KafkaConsumerDeserializationError,
-  KafkaConsumerProtobufMissingSchemaError,
   KafkaConsumerParserError,
 };

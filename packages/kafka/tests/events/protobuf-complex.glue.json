@@ -1,0 +1,39 @@
+{
+  "bootstrapServers": "boot-u18.abcdefg.kdhspn.c25.kafka.us-east-1.amazonaws.com:9098,boot-3xz.abcdefg.kdhspn.c25.kafka.us-east-1.amazonaws.com:9098,boot-vvi.abcdefg.kdhspn.c25.kafka.us-east-1.amazonaws.com:9098",
+  "eventSource": "aws:kafka",
+  "eventSourceArn": "arn:aws:kafka:us-east-1:123456789012:cluster/abcdefg/717bd2d1-e34b-4a86-9ae8-f7a16158c0f6-25",
+  "records": {
+    "gsr_proto-0": [
+      {
+        "topic": "gsr_proto",
+        "partition": 0,
+        "offset": 18,
+        "timestamp": 1545084650990,
+        "timestampType": "CREATE_TIME",
+        "key": "NDI=",
+        "value": "AQoDMTIzEgRUZXN0Ggx0ZXN0QGdteC5jb20gCjIKMjAyNS0wNi0yMDoEdGFnMToEdGFnMkoOCgV0aGVtZRIFbGlnaHRSGgoKTXl0aGVucXVhaRIGWnVyaWNoGgQ4MDAy",
+        "headers": [
+          {
+            "headerKey": [
+              104,
+              101,
+              97,
+              100,
+              101,
+              114,
+              86,
+              97,
+              108,
+              117,
+              101
+            ]
+          }
+        ],
+        "valueSchemaMetadata": {
+          "schemaId": "12345678-1234-1234-1234-123456789012",
+          "dataFormat": "PROTOBUF"
+        }
+      }
+    ]
+  }
+}

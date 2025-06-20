@@ -51,9 +51,9 @@
     "@standard-schema/spec": "^1.0.0"
   },
   "peerDependencies": {
-    "zod": ">=3.24.0",
+    "arktype": ">=2.0.0",
     "valibot": ">=1.0.0",
-    "arktype": ">=2.0.0"
+    "zod": ">=3.24.0"
   },
   "peerDependenciesMeta": {
     "zod": {
@@ -93,12 +93,12 @@
     },
     "./types": {
       "require": {
-        "types": "./lib/cjs/types/types.d.ts",
-        "default": "./lib/cjs/types/types.js"
+        "types": "./lib/cjs/types/index.d.ts",
+        "default": "./lib/cjs/types/index.js"
       },
       "import": {
-        "types": "./lib/esm/types/types.d.ts",
-        "default": "./lib/esm/types/types.js"
+        "types": "./lib/esm/types/index.d.ts",
+        "default": "./lib/esm/types/index.js"
       }
     }
   },
@@ -109,8 +109,8 @@
         "lib/esm/errors.d.ts"
       ],
       "types": [
-        "lib/cjs/types/types.d.ts",
-        "lib/esm/types/types.d.ts"
+        "lib/cjs/types/index.d.ts",
+        "lib/esm/types/index.d.ts"
       ]
     }
   },

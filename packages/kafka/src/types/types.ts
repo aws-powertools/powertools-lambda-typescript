@@ -3,6 +3,25 @@ import type { Reader } from 'protobufjs';
 import type { SchemaType as SchemaTypeMap } from '../constants.js';
 
 /**
+ * Union type for supported schema types (JSON, Avro, Protobuf).
+ */
+type SchemaType = (typeof SchemaTypeMap)[keyof typeof SchemaTypeMap];
+
+/**
+ * Metadata about the schema used for the field.
+ */
+type SchemaMetadata = {
+  /**
+   * The schema type of the value (JSON, AVRO, PROTOBUF)
+   */
+  dataFormat: string;
+  /**
+   * The schema identifier
+   */
+  schemaId?: string;
+};
+
+/**
  * Represents a single Kafka consumer record with generic key and value types.
  */
 type ConsumerRecord<K, V> = {
@@ -50,6 +69,14 @@ type ConsumerRecord<K, V> = {
    * The type of timestamp (CREATE_TIME or LOG_APPEND_TIME)
    */
   timestampType: 'CREATE_TIME' | 'LOG_APPEND_TIME';
+  /**
+   * Metadata about the value schema
+   */
+  valueSchemaMetadata: SchemaMetadata;
+  /**
+   * Metadata about the key schema
+   */
+  keySchemaMetadata: SchemaMetadata;
 };
 
 /**
@@ -61,11 +88,6 @@ type ConsumerRecords<K = unknown, V = unknown> = {
    */
   records: Array<ConsumerRecord<K, V>>;
 } & Omit<MSKEvent, 'records'>;
-
-/**
- * Union type for supported schema types (JSON, Avro, Protobuf).
- */
-type SchemaType = (typeof SchemaTypeMap)[keyof typeof SchemaTypeMap];
 
 /**
  * Union type for supported schema configurations (JSON, Avro, Protobuf).
@@ -141,17 +163,17 @@ type SchemaConfig = {
 /**
  * Represents a Kafka record header as a mapping of header key to byte array.
  */
-interface RecordHeader {
+type RecordHeader = {
   /**
    * Header key mapped to its value as an array of bytes
    */
   [headerKey: string]: number[];
-}
+};
 
 /**
  * Represents a single Kafka record as received from MSK.
  */
-interface Record {
+type Record = {
   /**
    * Kafka topic name
    */
@@ -175,7 +197,7 @@ interface Record {
   /**
    * Base64-encoded key of the record
    */
-  key: string;
+  key?: string | null;
   /**
    * Base64-encoded value of the record
    */
@@ -183,14 +205,22 @@ interface Record {
   /**
    * Array of record headers
    */
-  headers: RecordHeader[];
-}
+  headers: RecordHeader[] | null;
+  /**
+   * Metadata about the value schema
+   */
+  valueSchemaMetadata: SchemaMetadata;
+  /**
+   * Metadata about the key schema
+   */
+  keySchemaMetadata: SchemaMetadata;
+};
 
 /**
  * AWS Lambda event structure for MSK (Managed Streaming for Kafka).
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html | AWS Lambda with MSK}
  */
-interface MSKEvent {
+type MSKEvent = {
   /**
    * Event source identifier (always 'aws:kafka')
    */
@@ -209,13 +239,24 @@ interface MSKEvent {
   records: {
     [topic: string]: Record[];
   };
-}
+};
 
-interface ProtobufMessage<T> {
+type ProtobufMessage<T = unknown> = {
   decode(reader: Reader | Uint8Array, length?: number): T;
-}
+};
 
-type Deserializer = (input: string, schema?: unknown) => unknown;
+type Deserializer = (
+  input: string,
+  schema?: unknown,
+  schemaMetadata?: SchemaMetadata
+) => unknown;
+
+type DeserializeOptions = {
+  value: string;
+  deserializer: Deserializer;
+  config?: SchemaConfigValue;
+  schemaMetadata: SchemaMetadata;
+};
 
 export type {
   ConsumerRecord,
@@ -228,4 +269,6 @@ export type {
   SchemaType,
   SchemaConfig,
   SchemaConfigValue,
+  SchemaMetadata,
+  DeserializeOptions,
 };

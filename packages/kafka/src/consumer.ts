@@ -20,7 +20,6 @@ import type {
   MSKEvent,
   SchemaConfig,
   SchemaConfigValue,
-  SchemaMetadata,
 } from './types/types.js';
 
 /**

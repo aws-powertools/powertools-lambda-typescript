@@ -70,6 +70,12 @@ const deserialize = <T>(
   }
 };
 
+/**
+ * Clip the Confluent Schema Registry buffer to remove the index bytes.
+ *
+ * @param buffer - The buffer to clip.
+ * @param intType - The type of the integer to read from the buffer, either 'int32' or 'sint32'.
+ */
 const clipConfluentSchemaRegistryBuffer = (
   buffer: Buffer,
   intType: 'int32' | 'sint32'

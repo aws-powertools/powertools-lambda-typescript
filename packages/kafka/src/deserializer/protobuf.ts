@@ -3,6 +3,11 @@ import { KafkaConsumerDeserializationError } from '../errors.js';
 import type { ProtobufMessage, SchemaMetadata } from '../types/types.js';
 
 /**
+ * Default order of varint types used in Protobuf to attempt deserializing Confluent Schema Registry messages.
+ */
+const varintOrder: Array<'int32' | 'sint32'> = ['int32', 'sint32'];
+
+/**
  * Deserialize a Protobuf message from a base64-encoded string.
  *
  * @template T - The type of the deserialized message object.
@@ -15,8 +20,8 @@ const deserialize = <T>(
   messageType: ProtobufMessage<T>,
   schemaMetadata: SchemaMetadata
 ): T => {
+  const buffer = Buffer.from(data, 'base64');
   try {
-    const buffer = Buffer.from(data, 'base64');
     if (schemaMetadata.schemaId === undefined) {
       return messageType.decode(buffer, buffer.length);
     }
@@ -29,35 +34,55 @@ const deserialize = <T>(
      */
     if (schemaMetadata.schemaId.length > 10) {
       // remove the first byte from the buffer
-      const newBuffer = Buffer.alloc(buffer.length - 1);
-      buffer.copy(newBuffer, 0, 1);
-      return messageType.decode(newBuffer, newBuffer.length);
-    }
-    /**
-     * If schemaId is numeric, inferred from its length, we know it's coming from Confluent Schema Registry,
-     * so we need to remove the MessageIndex bytes.
-     */
-    const reader = new BufferReader(buffer);
-    /**
-     * Read the first varint byte to get the index count or 0.
-     * Doing so, also advances the reader position to the next byte after the index count.
-     */
-    let indexCount = reader.uint32();
-    // Skip the index bytes
-    while (indexCount > 0) {
-      // Keep reading the next varint bytes until we reach the end of the index count
+      const reader = new BufferReader(buffer);
       reader.uint32();
-      indexCount--;
+      return messageType.decode(reader);
     }
-    // Create a new buffer without the index bytes
-    const newBuffer = Buffer.alloc(buffer.length - reader.pos);
-    buffer.copy(newBuffer, 0, reader.pos);
-    return messageType.decode(newBuffer, newBuffer.length);
   } catch (error) {
     throw new KafkaConsumerDeserializationError(
       `Failed to deserialize Protobuf message: ${error}, message: ${data}, messageType: ${messageType}`
     );
   }
+
+  /**
+   * If schemaId is numeric, inferred from its length, we know it's coming from Confluent Schema Registry,
+   * so we need to remove the MessageIndex bytes.
+   * We don't know the type of the index, so we try both `int32` and `sint32`. If both fail, we throw an error.
+   */
+  try {
+    const newBuffer = clipConfluentSchemaRegistryBuffer(buffer, varintOrder[0]);
+    return messageType.decode(newBuffer);
+  } catch (error) {
+    try {
+      const newBuffer = clipConfluentSchemaRegistryBuffer(
+        buffer,
+        varintOrder[1]
+      );
+      const decoded = messageType.decode(newBuffer);
+      // swap varint order if the first attempt failed so we can use the correct one for subsequent messages
+      varintOrder.reverse();
+      return decoded;
+    } catch {
+      throw new KafkaConsumerDeserializationError(
+        `Failed to deserialize Protobuf message: ${error}, message: ${data}, messageType: ${messageType}`
+      );
+    }
+  }
+};
+
+const clipConfluentSchemaRegistryBuffer = (
+  buffer: Buffer,
+  intType: 'int32' | 'sint32'
+) => {
+  const reader = new BufferReader(buffer);
+  /**
+   * Read the first varint byte to get the index count or 0.
+   * Doing so, also advances the reader position to the next byte after the index count.
+   */
+  const indexCount = intType === 'int32' ? reader.int32() : reader.sint32();
+  // Skip the index bytes
+  reader.skip(indexCount);
+  return reader;
 };
 
 export { deserialize };

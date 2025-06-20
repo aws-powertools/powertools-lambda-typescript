@@ -1,3 +1,4 @@
+import { Console } from 'node:console';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
@@ -8,12 +9,15 @@ import {
 import { SchemaType, kafkaConsumer } from '../../src/index.js';
 import type { ConsumerRecords, MSKEvent } from '../../src/types/types.js';
 import { loadEvent } from '../helpers/loadEvent.js';
+import { com } from '../protos/complex.generated.js';
 import { Product as ProductProto } from '../protos/product.es6.generated.js';
 
 describe('Kafka consumer', () => {
   const jsonTestEvent = loadEvent('default.json');
   const avroTestEvent = loadEvent('avro.json');
   const protobufTestEvent = loadEvent('protobuf.json');
+  const protobufComplexConfluent = loadEvent('protobuf-complex.confluent.json');
+  const protobufComplexGlue = loadEvent('protobuf-complex.glue.json');
   const context = {} as Context;
 
   it('deserializes json message', async () => {
@@ -426,8 +430,12 @@ describe('Kafka consumer', () => {
     // Prepare
     const event = structuredClone(protobufTestEvent);
     event.records['mytopic-0'][0].value = 'COkHEgZMYXB0b3AZUrgehes/j0A=';
+    event.records['mytopic-0'][0].valueSchemaMetadata.schemaId = undefined;
     event.records['mytopic-0'][1].value = 'AAjpBxIGTGFwdG9wGVK4HoXrP49A';
+    event.records['mytopic-0'][1].valueSchemaMetadata.schemaId =
+      '1111111111111111';
     event.records['mytopic-0'][2].value = 'AgEACOkHEgZMYXB0b3AZUrgehes/j0A=';
+    event.records['mytopic-0'][2].valueSchemaMetadata.schemaId = '1';
 
     const handler = kafkaConsumer(
       async (event) => {
@@ -460,5 +468,99 @@ describe('Kafka consumer', () => {
     expect(result[0]).toEqual({ id: 1001, name: 'Laptop', price: 999.99 });
     expect(result[1]).toEqual({ id: 1001, name: 'Laptop', price: 999.99 });
     expect(result[2]).toEqual({ id: 1001, name: 'Laptop', price: 999.99 });
+  });
+
+  it('handles complex protobuf messages from Confluent Schema Registry', async () => {
+    // Prepare
+    const event = structuredClone(protobufComplexConfluent);
+    const handler = kafkaConsumer(
+      async (event) => {
+        const results = [];
+        for (const record of event.records) {
+          try {
+            const { value } = record;
+            results.push(value);
+          } catch (error) {
+            results.push(error);
+          }
+        }
+        return results;
+      },
+      {
+        value: {
+          type: SchemaType.PROTOBUF,
+          schema: com.example.protobuf.UserProfile,
+          parserSchema: z.object({
+            address: z.object({
+              city: z.string(),
+              street: z.string(),
+              zip: z.string(),
+            }),
+            age: z.number().int().min(1),
+            isActive: z.boolean(),
+            preferences: z.object({
+              theme: z.string().optional(),
+            }),
+            score: z.number().int(),
+            signupDate: z.string(),
+            tags: z.array(z.string()),
+          }),
+        },
+      }
+    );
+
+    // Act
+    const result = (await handler(event, context)) as
+      | (typeof com.example.protobuf.UserProfile)[]
+      | Error[];
+
+    // Assess
+    expect(result).toHaveLength(4);
+    expect(result[0]).not.toBeInstanceOf(Error);
+    expect(result[1]).not.toBeInstanceOf(Error);
+    expect(result[2]).not.toBeInstanceOf(Error);
+    expect(result[3]).not.toBeInstanceOf(Error);
+  });
+
+  it('handles complex protobuf messages from Glue Schema Registry', async () => {
+    // Prepare
+    const event = structuredClone(protobufComplexGlue);
+    const handler = kafkaConsumer(
+      async (event) => {
+        const results = [];
+        for (const record of event.records) {
+          try {
+            const { value } = record;
+            results.push(value);
+          } catch (error) {
+            results.push(error);
+          }
+        }
+        return results;
+      },
+      {
+        value: {
+          type: SchemaType.PROTOBUF,
+          schema: com.example.protobuf.Address,
+          parserSchema: z.object({
+            city: z.string(),
+            street: z.string(),
+            zip: z.string(),
+          }),
+        },
+      }
+    );
+
+    // Act
+    const result = (await handler(event, context)) as
+      | (typeof com.example.protobuf.Address)[]
+      | Error[];
+
+    // Assess
+    expect(result).toHaveLength(4);
+    expect(result[0]).not.toBeInstanceOf(Error);
+    expect(result[1]).not.toBeInstanceOf(Error);
+    expect(result[2]).not.toBeInstanceOf(Error);
+    expect(result[3]).not.toBeInstanceOf(Error);
   });
 });

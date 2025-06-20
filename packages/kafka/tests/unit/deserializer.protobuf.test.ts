@@ -28,7 +28,24 @@ describe('Protobuf deserialiser: ', () => {
       dataFormat: 'PROTOBUF',
     };
 
+    // Act
+    const result = deserialize(data, Product, schemaMetadata);
+
+    // Assess
+    expect(result).toEqual(expected);
+  });
+
+  it('throws if unable to parse a Confluent Schema Registry protobuf', () => {
+    // Prepare
+    const data = 'COkHEgZMYXB0b3AZUrgehes/j0A=';
+    const schemaMetadata = {
+      dataFormat: 'PROTOBUF',
+      schemaId: '1',
+    };
+
     // Act & Assess
-    expect(deserialize(data, Product, schemaMetadata)).toEqual(expected);
+    expect(() => deserialize(data, Product, schemaMetadata)).toThrow(
+      KafkaConsumerDeserializationError
+    );
   });
 });

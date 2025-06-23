@@ -80,6 +80,7 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
  * ```
  *
  * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
+ * @deprecated Use {@link BasePartialBatchProcessor} instead, this class is deprecated and will be removed in the next major version.
  */
 class BatchProcessorSync extends BasePartialBatchProcessor {
   /**

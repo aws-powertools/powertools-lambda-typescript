@@ -1,6 +1,6 @@
 import {
-  SqsFifoPartialProcessor,
-  processPartialResponseSync,
+  SqsFifoPartialProcessorAsync,
+  processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {
@@ -10,7 +10,7 @@ import type {
   SQSRecord,
 } from 'aws-lambda';
 
-const processor = new SqsFifoPartialProcessor();
+const processor = new SqsFifoPartialProcessorAsync();
 const logger = new Logger();
 
 const recordHandler = (record: SQSRecord): void => {
@@ -25,7 +25,7 @@ export const handler = async (
   event: SQSEvent,
   context: Context
 ): Promise<SQSBatchResponse> => {
-  return processPartialResponseSync(event, recordHandler, processor, {
+  return processPartialResponse(event, recordHandler, processor, {
     context,
     skipGroupOnError: true,
   });

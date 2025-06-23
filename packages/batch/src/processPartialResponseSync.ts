@@ -7,6 +7,8 @@ import type {
 } from './types.js';
 
 /**
+ * @deprecated Use {@link processPartialResponse} instead, this function is deprecated and will be removed in the next major version.
+ *
  * Higher level function to process a batch of records synchronously
  * and handle partial failure cases.
  *

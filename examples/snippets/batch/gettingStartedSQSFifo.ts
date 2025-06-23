@@ -1,14 +1,14 @@
 import {
-  SqsFifoPartialProcessor,
-  processPartialResponseSync,
+  SqsFifoPartialProcessorAsync,
+  processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { SQSHandler, SQSRecord } from 'aws-lambda';
 
-const processor = new SqsFifoPartialProcessor(); // (1)!
+const processor = new SqsFifoPartialProcessorAsync();
 const logger = new Logger();
 
-const recordHandler = (record: SQSRecord): void => {
+const recordHandler = async (record: SQSRecord): Promise<void> => {
   const payload = record.body;
   if (payload) {
     const item = JSON.parse(payload);
@@ -17,6 +17,6 @@ const recordHandler = (record: SQSRecord): void => {
 };
 
 export const handler: SQSHandler = async (event, context) =>
-  processPartialResponseSync(event, recordHandler, processor, {
+  processPartialResponse(event, recordHandler, processor, {
     context,
   });

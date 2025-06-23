@@ -7,8 +7,7 @@ import { isAppSyncGraphQLEvent } from './utils.js';
 /**
  * Resolver for AWS AppSync GraphQL APIs.
  *
- * This resolver is designed to handle the `onQuery` and `onMutation` events
- * from AWS AppSync GraphQL APIs. It allows you to register handlers for these events
+ * This resolver is designed to handle GraphQL events from AWS AppSync GraphQL APIs. It allows you to register handlers for these events
  * and route them to the appropriate functions based on the event's field & type.
  *
  * @example
@@ -17,13 +16,16 @@ import { isAppSyncGraphQLEvent } from './utils.js';
  *
  * const app = new AppSyncGraphQLResolver();
  *
- * app.onQuery('getPost', async ({ id }) => {
+ * app.resolver(async ({ id }) => {
  *   // your business logic here
  *   return {
  *     id,
  *     title: 'Post Title',
  *     content: 'Post Content',
  *   };
+ * }, {
+ *   fieldName: 'getPost',
+ *   typeName: 'Query'
  * });
  *
  * export const handler = async (event, context) =>
@@ -40,13 +42,16 @@ export class AppSyncGraphQLResolver extends Router {
    *
    * const app = new AppSyncGraphQLResolver();
    *
-   * app.onQuery('getPost', async ({ id }) => {
+   * app.resolver(async ({ id }) => {
    *   // your business logic here
    *   return {
    *     id,
    *     title: 'Post Title',
    *     content: 'Post Content',
    *   };
+   * }, {
+   *   fieldName: 'getPost',
+   *   typeName: 'Query'
    * });
    *
    * export const handler = async (event, context) =>
@@ -62,7 +67,7 @@ export class AppSyncGraphQLResolver extends Router {
    * const app = new AppSyncGraphQLResolver();
    *
    * class Lambda {
-   *   ⁣@app.onQuery('getPost')
+   *   ⁣@app.resolver({ fieldName: 'getPost', typeName: 'Query' })
    *   async handleGetPost({ id }) {
    *     // your business logic here
    *     return {

@@ -1,8 +1,5 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import {
-  onMutationEventFactory,
-  onQueryEventFactory,
-} from 'tests/helpers/factories.js';
+import { onGraphqlEventFactory } from 'tests/helpers/factories.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';
 import { ResolverNotFoundException } from '../../../src/appsync-graphql/errors.js';
@@ -17,7 +14,10 @@ describe('Class: AppSyncGraphQLResolver', () => {
     const app = new AppSyncGraphQLResolver({ logger: console });
 
     // Act
-    const result = await app.resolve([onQueryEventFactory()], context);
+    const result = await app.resolve(
+      [onGraphqlEventFactory('getPost', 'Query')],
+      context
+    );
 
     // Assess
     expect(console.warn).toHaveBeenCalledWith(
@@ -40,26 +40,26 @@ describe('Class: AppSyncGraphQLResolver', () => {
     expect(result).toBeUndefined();
   });
 
-  it('throw error if there are no onQuery handlers', async () => {
+  it('throws error if there are no onQuery handlers', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
 
     // Act && Assess
     await expect(
-      app.resolve(onQueryEventFactory('getPost'), context)
+      app.resolve(onGraphqlEventFactory('getPost', 'Query'), context)
     ).rejects.toThrow(
       new ResolverNotFoundException('No resolver found for Query-getPost')
     );
     expect(console.error).toHaveBeenCalled();
   });
 
-  it('throw error if there are no onMutation handlers', async () => {
+  it('throws error if there are no onMutation handlers', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
 
     // Act && Assess
     await expect(
-      app.resolve(onMutationEventFactory('addPost'), context)
+      app.resolve(onGraphqlEventFactory('addPost', 'Mutation'), context)
     ).rejects.toThrow(
       new ResolverNotFoundException('No resolver found for Mutation-addPost')
     );
@@ -84,7 +84,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Act
     const result = await app.resolve(
-      onQueryEventFactory('getPost', { id: '123' }),
+      onGraphqlEventFactory('getPost', 'Query', { id: '123' }),
       context
     );
 
@@ -115,7 +115,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Act
     const result = await app.resolve(
-      onMutationEventFactory('addPost', {
+      onGraphqlEventFactory('addPost', 'Mutation', {
         title: 'Post Title',
         content: 'Post Content',
       }),
@@ -136,6 +136,74 @@ describe('Class: AppSyncGraphQLResolver', () => {
       title: 'Post Title',
       content: 'Post Content',
     });
+  });
+
+  it('logs only warnings and errors using global console object if no logger supplied', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+    app.resolver<{ title: string; content: string }>(
+      async ({ title, content }) => {
+        return {
+          id: '123',
+          title,
+          content,
+        };
+      },
+      {
+        fieldName: 'addPost',
+        typeName: 'Mutation',
+      }
+    );
+
+    // Act
+    const result = await app.resolve(
+      onGraphqlEventFactory('addPost', 'Mutation', {
+        title: 'Post Title',
+        content: 'Post Content',
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.debug).not.toHaveBeenCalledWith();
+    expect(console.debug).not.toHaveBeenCalledWith();
+    expect(result).toEqual({
+      id: '123',
+      title: 'Post Title',
+      content: 'Post Content',
+    });
+  });
+
+  it('emits debug message when AWS_LAMBDA_LOG_LEVEL is set to DEBUG', async () => {
+    // Prepare
+    vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
+    const app = new AppSyncGraphQLResolver();
+
+    app.resolver<{ title: string; content: string }>(
+      async ({ title, content }) => {
+        return {
+          id: '123',
+          title,
+          content,
+        };
+      },
+      {
+        fieldName: 'addPost',
+        typeName: 'Mutation',
+      }
+    );
+
+    // Act
+    await app.resolve(
+      onGraphqlEventFactory('addPost', 'Mutation', {
+        title: 'Post Title',
+        content: 'Post Content',
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.debug).toHaveBeenCalled();
   });
 
   it.each([
@@ -171,7 +239,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
       // Act
       const result = await app.resolve(
-        onMutationEventFactory('addPost', {
+        onGraphqlEventFactory('addPost', 'Mutation', {
           title: 'Post Title',
           content: 'Post Content',
         }),

@@ -125,9 +125,7 @@ export class AppSyncGraphQLResolver extends Router {
       fieldName
     );
     if (resolverHandlerOptions) {
-      return await resolverHandlerOptions.handler.apply(this, [
-        event.arguments,
-      ]);
+      return resolverHandlerOptions.handler.apply(this, [event.arguments]);
     }
 
     throw new ResolverNotFoundException(

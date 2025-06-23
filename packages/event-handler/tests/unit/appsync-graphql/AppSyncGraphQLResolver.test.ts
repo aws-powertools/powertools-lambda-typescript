@@ -1,4 +1,6 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
+import { Context } from 'aws-lambda';
+import { AppSyncGraphQLEvent } from 'src/types/appsync-graphql.js';
 import { onGraphqlEventFactory } from 'tests/helpers/factories.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';
@@ -171,6 +173,34 @@ describe('Class: AppSyncGraphQLResolver', () => {
       id: '123',
       title: 'Post Title',
       content: 'Post Content',
+    });
+  });
+
+  it('resolver function has access to event and context', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    app.resolver<{ id: string }>(
+      async ({ id }, event, context) => {
+        return {
+          id,
+          event,
+          context,
+        };
+      },
+      {
+        fieldName: 'getPost',
+      }
+    );
+
+    // Act
+    const event = onGraphqlEventFactory('getPost', 'Query', { id: '123' });
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result).toStrictEqual({
+      id: '123',
+      event,
+      context,
     });
   });
 

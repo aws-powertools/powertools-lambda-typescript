@@ -1,14 +1,19 @@
+import type { Context } from 'aws-lambda';
 import type { RouteHandlerRegistry } from '../appsync-graphql/RouteHandlerRegistry.js';
 import type { GenericLogger } from './common.js';
 
 // #region Resolver fn
 
 type ResolverSyncHandlerFn<TParams = Record<string, unknown>> = (
-  args: TParams
+  args: TParams,
+  event: AppSyncGraphQLEvent,
+  context: Context
 ) => unknown;
 
 type ResolverHandlerFn<TParams = Record<string, unknown>> = (
-  args: TParams
+  args: TParams,
+  event: AppSyncGraphQLEvent,
+  context: Context
 ) => Promise<unknown>;
 
 type ResolverHandler<TParams = Record<string, unknown>> =

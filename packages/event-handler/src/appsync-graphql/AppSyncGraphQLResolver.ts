@@ -101,7 +101,7 @@ export class AppSyncGraphQLResolver extends Router {
       return;
     }
     try {
-      return await this.#executeSingleResolver(event);
+      return await this.#executeSingleResolver(event, context);
     } catch (error) {
       this.logger.error(
         `An error occurred in handler ${event.info.fieldName}`,
@@ -120,9 +120,13 @@ export class AppSyncGraphQLResolver extends Router {
    * with the event arguments. If no handler is found, it throws a `ResolverNotFoundException`.
    *
    * @param event - The AppSync GraphQL event containing resolver information.
+   * @param context - The Lambda execution context.
    * @throws {ResolverNotFoundException} If no resolver is registered for the given field and type.
    */
-  async #executeSingleResolver(event: AppSyncGraphQLEvent): Promise<unknown> {
+  async #executeSingleResolver(
+    event: AppSyncGraphQLEvent,
+    context: Context
+  ): Promise<unknown> {
     const { fieldName, parentTypeName: typeName } = event.info;
 
     const resolverHandlerOptions = this.resolverRegistry.resolve(
@@ -130,7 +134,11 @@ export class AppSyncGraphQLResolver extends Router {
       fieldName
     );
     if (resolverHandlerOptions) {
-      return resolverHandlerOptions.handler.apply(this, [event.arguments]);
+      return resolverHandlerOptions.handler.apply(this, [
+        event.arguments,
+        event,
+        context,
+      ]);
     }
 
     throw new ResolverNotFoundException(

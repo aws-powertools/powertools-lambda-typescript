@@ -40,7 +40,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     expect(result).toBeUndefined();
   });
 
-  it('throws error if there are no onQuery handlers', async () => {
+  it('throws error if there are no handlers for `Query`', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
 
@@ -53,7 +53,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     expect(console.error).toHaveBeenCalled();
   });
 
-  it('throws error if there are no onMutation handlers', async () => {
+  it('throws error if there are no handlers for `Mutation`', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
 
@@ -66,7 +66,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     expect(console.error).toHaveBeenCalled();
   });
 
-  it('returns the response of the onQuery handler', async () => {
+  it('returns the response of the `Query` handler', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
     app.resolver<{ id: string }>(
@@ -96,7 +96,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('returns the response of the onMutation handler', async () => {
+  it('returns the response of the `Mutation` handler', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
     app.resolver<{ title: string; content: string }>(

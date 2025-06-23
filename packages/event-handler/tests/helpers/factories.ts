@@ -98,21 +98,14 @@ const createEventFactory = (
   stash: {},
 });
 
-const onQueryEventFactory = (
-  fieldName = 'getPost',
-  args = {},
-  typeName = 'Query'
-) => createEventFactory(fieldName, args, typeName);
-
-const onMutationEventFactory = (
-  fieldName = 'addPost',
-  args = {},
-  typeName = 'Mutation'
+const onGraphqlEventFactory = (
+  fieldName: string,
+  typeName: 'Query' | 'Mutation',
+  args: Record<string, unknown> = {}
 ) => createEventFactory(fieldName, args, typeName);
 
 export {
   onPublishEventFactory,
   onSubscribeEventFactory,
-  onQueryEventFactory,
-  onMutationEventFactory,
+  onGraphqlEventFactory,
 };

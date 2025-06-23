@@ -16,7 +16,6 @@ const isAppSyncGraphQLEvent = (
     return false;
   }
   return (
-    'arguments' in event &&
     isRecord(event.arguments) &&
     'identity' in event &&
     'source' in event &&
@@ -25,18 +24,12 @@ const isAppSyncGraphQLEvent = (
     'domainName' in event.request &&
     'prev' in event &&
     isRecord(event.info) &&
-    'fieldName' in event.info &&
     isString(event.info.fieldName) &&
-    'parentTypeName' in event.info &&
     isString(event.info.parentTypeName) &&
-    'variables' in event.info &&
     isRecord(event.info.variables) &&
-    'selectionSetList' in event.info &&
     Array.isArray(event.info.selectionSetList) &&
     event.info.selectionSetList.every((item) => isString(item)) &&
-    'parentTypeName' in event.info &&
     isString(event.info.parentTypeName) &&
-    'stash' in event &&
     isRecord(event.stash)
   );
 };

@@ -1,6 +1,4 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { Context } from 'aws-lambda';
-import { AppSyncGraphQLEvent } from 'src/types/appsync-graphql.js';
 import { onGraphqlEventFactory } from 'tests/helpers/factories.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';

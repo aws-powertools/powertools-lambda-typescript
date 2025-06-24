@@ -52,19 +52,22 @@ jobs:
     outputs:
       regions: ${{ format('{0}{1}', steps.regions_china.outputs.regions, steps.regions_govcloud.outputs.regions) }}
       parition: ${{ format('{0}{1}', steps.regions_china.outputs.partition, steps.regions_govcloud.outputs.parition) }}
+      aud: ${{ format('{0}{1}', steps.regions_china.outputs.aud, steps.regions_govcloud.outputs.aud) }}
     steps:
       - id: regions_china
         name: Parition (China)
         if: ${{ inputs.partition == 'China' }}
         run: |
-          echo regions='["cn-north-1", "cn-northwest-1"]'>> "$GITHUB_OUTPUT"
+          echo regions='["cn-north-1"]'>> "$GITHUB_OUTPUT"
           echo partition='aws-cn'>> "$GITHUB_OUTPUT"
+          echo aud='sts.amazonaws.com.cn'>> "$GITHUB_OUTPUT"
       - id: regions_govcloud
         name: Partition (GovCloud)
         if: ${{ inputs.partition == 'GovCloud' }}
         run: |
           echo regions='["us-gov-east-1", "us-gov-west-1"]'>> "$GITHUB_OUTPUT"
           echo partition='aws-us-gov'>> "$GITHUB_OUTPUT"
+          echo aud='sts.amazonaws.com'>> "$GITHUB_OUTPUT"
   commercial:
     runs-on: ubuntu-latest
     permissions:
@@ -118,6 +121,7 @@ jobs:
           role-to-assume: ${{ secrets[format('IAM_ROLE_{0}', steps.transform.outputs.CONVERTED_REGION)] }}
           aws-region: ${{ matrix.region}}
           mask-aws-account-id: true
+          audience: ${{ needs.setup.outputs.aud }}
       - id: partition_version
         name: Partition Layer Version
         run: |

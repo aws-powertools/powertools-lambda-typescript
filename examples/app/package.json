@@ -1,6 +1,6 @@
 {
   "name": "powertools-sample-app",
-  "version": "2.21.0",
+  "version": "2.22.0",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -28,28 +28,28 @@
     "#errors": "./functions/commons/errors.js"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.149",
-    "@types/node": "24.0.0",
-    "aws-cdk-lib": "^2.200.1",
+    "@types/aws-lambda": "^8.10.150",
+    "@types/node": "24.0.3",
+    "aws-cdk-lib": "^2.202.0",
     "constructs": "^10.4.2",
     "source-map-support": "^0.5.21",
-    "tsx": "^4.19.4",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vitest": "^3.0.5"
   },
   "dependencies": {
-    "@aws-lambda-powertools/batch": "^2.21.0",
-    "@aws-lambda-powertools/idempotency": "^2.21.0",
-    "@aws-lambda-powertools/logger": "^2.21.0",
-    "@aws-lambda-powertools/metrics": "^2.21.0",
-    "@aws-lambda-powertools/parameters": "^2.21.0",
-    "@aws-lambda-powertools/tracer": "^2.21.0",
-    "@aws-sdk/client-ssm": "^3.826.0",
-    "@aws-sdk/lib-dynamodb": "^3.826.0",
+    "@aws-lambda-powertools/batch": "^2.22.0",
+    "@aws-lambda-powertools/idempotency": "^2.22.0",
+    "@aws-lambda-powertools/logger": "^2.22.0",
+    "@aws-lambda-powertools/metrics": "^2.22.0",
+    "@aws-lambda-powertools/parameters": "^2.22.0",
+    "@aws-lambda-powertools/tracer": "^2.22.0",
+    "@aws-sdk/client-ssm": "^3.830.0",
+    "@aws-sdk/lib-dynamodb": "^3.830.0",
     "@middy/core": "^4.7.0",
-    "@types/aws-lambda": "^8.10.149",
-    "@types/node": "24.0.0",
-    "aws-cdk": "^2.1018.0",
+    "@types/aws-lambda": "^8.10.150",
+    "@types/node": "24.0.3",
+    "aws-cdk": "^2.1019.1",
     "constructs": "^10.4.2",
     "esbuild": "^0.25.5",
     "typescript": "^5.8.3"

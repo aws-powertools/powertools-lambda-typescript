@@ -17,7 +17,8 @@
     "layers",
     "examples/app",
     "packages/event-handler",
-    "packages/validation"
+    "packages/validation",
+    "packages/kafka"
   ],
   "type": "module",
   "scripts": {
@@ -52,12 +53,12 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@types/aws-lambda": "^8.10.149",
-    "@types/node": "^24.0.0",
-    "@vitest/coverage-v8": "^3.2.3",
+    "@types/aws-lambda": "^8.10.150",
+    "@types/node": "^24.0.3",
+    "@vitest/coverage-v8": "^3.2.4",
     "husky": "^9.1.7",
     "lerna": "8.1.2",
-    "lint-staged": "^16.1.0",
+    "lint-staged": "^16.1.2",
     "markdownlint-cli2": "^0.18.1",
     "middy4": "npm:@middy/core@^4.7.0",
     "middy5": "npm:@middy/core@^5.4.3",

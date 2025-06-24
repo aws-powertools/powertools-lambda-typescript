@@ -54,6 +54,7 @@ Powertools for AWS Lambda (TypeScript) is built as a modular toolkit, so you can
 | [JMESPath Functions](./features/jmespath.md)                                 | Built-in JMESPath functions to easily deserialize common encoded JSON payloads in Lambda functions.                                                               |
 | [Parser](./features/parser.md)                                               | Utility to parse and validate AWS Lambda event payloads using Zod, a TypeScript-first schema declaration and validation library.                                  |
 | [Validation](./features/validation.md)                                       | JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.                                                   |
+| [Kafka](./features/kafka.md)                                                 | Utility to easily handle message deserialization and parsing of Kafka events in AWS Lambda functions.                                                             |
 
 ## Examples
 

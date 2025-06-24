@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.22.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.21.0...v2.22.0) (2025-06-20)
+
+
+### Bug Fixes
+
+* **event-handler:** fix decorated scope in appsync events ([#3974](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3974)) ([e539719](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e5397199133da265f593c5feed0178c0ebe1e7c2))
+
+
+
+
+
 # [2.21.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.20.0...v2.21.0) (2025-06-03)
 
 

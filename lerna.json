@@ -12,11 +12,12 @@
     "packages/parser",
     "packages/event-handler",
     "packages/validation",
+    "packages/kafka",
     "examples/app",
     "layers",
     "examples/snippets"
   ],
-  "version": "2.21.0",
+  "version": "2.22.0",
   "npmClient": "npm",
   "message": "chore(release): %s [skip ci]"
 }

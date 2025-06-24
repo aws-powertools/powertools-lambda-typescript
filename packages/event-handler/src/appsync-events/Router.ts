@@ -9,6 +9,9 @@ import type {
 } from '../types/appsync-events.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 
+// Simple global approach - store the last instance per router
+const routerInstanceMap = new WeakMap<Router, unknown>();
+
 /**
  * Class for registering routes for the `onPublish` and `onSubscribe` events in AWS AppSync Events APIs.
  */
@@ -194,11 +197,11 @@ class Router {
       return;
     }
 
-    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+    return (target, _propertyKey, descriptor: PropertyDescriptor) => {
       const routeOptions = isRecord(handler) ? handler : options;
       this.onPublishRegistry.register({
         path,
-        handler: descriptor.value,
+        handler: descriptor?.value,
         aggregate: (routeOptions?.aggregate ?? false) as T,
       });
       return descriptor;
@@ -276,7 +279,7 @@ class Router {
     return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
       this.onSubscribeRegistry.register({
         path,
-        handler: descriptor.value,
+        handler: descriptor?.value,
       });
       return descriptor;
     };

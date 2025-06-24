@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../../",
+    "noEmit": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "../../testing/src/setupEnv.ts",
+    "../src/**/*",
+    "./**/*"
+  ]
+}

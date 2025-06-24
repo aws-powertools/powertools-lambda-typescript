@@ -71,7 +71,7 @@ Parameter:
   LastModifiedDate: '2025-02-11T11:08:45.070000+01:00'
   Name: /aws/service/powertools/typescript/generic/all/2.14.0
   Type: String
-  Value: arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:28
+  Value: arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29
   Version: 1
 ```
 
@@ -89,7 +89,7 @@ The pre-signed URL to download this Lambda Layer will be within `Location` key i
 Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the following command:
 
 ```bash title="AWS CLI command to download Lambda Layer content"
-aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:28 --region {aws::region}
+aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29 --region {aws::region}
 
 # output
 {  
@@ -99,7 +99,7 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
         "CodeSize": 3548324
     },
     "LayerArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2",
-    "LayerVersionArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:28",
+    "LayerVersionArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29",
     "Description": "Powertools for AWS Lambda (TypeScript) version 2.18.0",
     "CreatedDate": "2025-04-08T07:38:30.424+0000",
     "Version": 24,
@@ -134,7 +134,7 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
         const powertoolsLayer = LayerVersion.fromLayerVersionArn(
           this,
           'PowertoolsLayer',
-          `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:28`
+          `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29`
         );
         
         new NodejsFunction(this, 'Function', {
@@ -204,7 +204,7 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
       Type: AWS::Serverless::Function
         Properties:
           Layers:
-            - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:28
+            - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29
     ```
 
     You can also use AWS SSM Parameter Store to dynamically add Powertools for AWS Lambda and resolve the Layer ARN from SSM Parameter Store in your code, allowing you to pin to `latest` or a specific Powertools for AWS Lambda version.
@@ -243,7 +243,7 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
       hello:
         handler: lambda_function.lambda_handler
         layers:
-          - arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:28
+          - arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29
     ```
 
     If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
@@ -278,7 +278,7 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
       role          = ...
       handler       = "index.handler"
       runtime 		= "nodejs22.x"
-      layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:28"]
+      layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29"]
       source_code_hash = filebase64sha256("lambda_function_payload.zip")
     }
     ```
@@ -313,7 +313,7 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
 
     const lambdaFunction = new aws.lambda.Function('function', {
         layers: [
-            pulumi.interpolate`arn:aws:lambda:${aws.getRegionOutput().name}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:28`
+            pulumi.interpolate`arn:aws:lambda:${aws.getRegionOutput().name}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29`
         ],
         code: new pulumi.asset.FileArchive('lambda_function_payload.zip'),
         tracingConfig: {
@@ -337,7 +337,7 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
       name: "my-function",
       layers: {
         "@aws-lambda-powertools/*":
-          "arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:28",
+          "arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29",
       },
     });
     ```

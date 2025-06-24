@@ -1,0 +1,26 @@
+sequenceDiagram
+  participant Kafka
+  participant ESM as Event Source Mapping
+  participant SchemaRegistry as Schema Registry
+  participant Lambda
+  participant KafkaConsumer
+  participant YourCode
+  Kafka->>+ESM: Send batch of records
+  ESM->>+SchemaRegistry: Validate schema
+  SchemaRegistry-->>-ESM: Confirm schema is valid
+  ESM->>+Lambda: Invoke with validated records (still encoded)
+  Lambda->>+KafkaConsumer: Pass Kafka event
+  KafkaConsumer->>KafkaConsumer: Parse event structure
+  loop For each record
+      KafkaConsumer->>KafkaConsumer: Decode base64 data
+      KafkaConsumer->>KafkaConsumer: Deserialize based on schema_type
+      alt Output serializer provided
+          KafkaConsumer->>KafkaConsumer: Apply output serializer
+      end
+  end
+  KafkaConsumer->>+YourCode: Provide ConsumerRecords
+  YourCode->>YourCode: Process records
+  YourCode-->>-KafkaConsumer: Return result
+  KafkaConsumer-->>-Lambda: Pass result back
+  Lambda-->>-ESM: Return response
+  ESM-->>-Kafka: Acknowledge processed batch

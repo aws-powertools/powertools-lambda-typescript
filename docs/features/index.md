@@ -87,4 +87,12 @@ description: Features of Powertools for AWS Lambda
 
     [:octicons-arrow-right-24: Read more](./validation.md)
 
+- __Kafka__
+
+    ---
+
+    Utility to easily handle message deserialization and parsing of Kafka events in AWS Lambda functions.
+
+    [:octicons-arrow-right-24: Read more](./kafka.md)
+
 </div>

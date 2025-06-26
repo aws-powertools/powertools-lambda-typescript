@@ -6,13 +6,13 @@ import type { GenericLogger } from './common.js';
 
 type ResolverSyncHandlerFn<TParams = Record<string, unknown>> = (
   args: TParams,
-  event: AppSyncResolverEvent<Record<string, unknown>>,
+  event: AppSyncResolverEvent<TParams>,
   context: Context
 ) => unknown;
 
 type ResolverHandlerFn<TParams = Record<string, unknown>> = (
   args: TParams,
-  event: AppSyncResolverEvent<Record<string, unknown>>,
+  event: AppSyncResolverEvent<TParams>,
   context: Context
 ) => Promise<unknown>;
 

@@ -1,4 +1,5 @@
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
+import type { ResolveOptions } from '../types/appsync-graphql.js';
 import { Router } from './Router.js';
 import { ResolverNotFoundException } from './errors.js';
 import { isAppSyncGraphQLEvent } from './utils.js';
@@ -87,8 +88,13 @@ export class AppSyncGraphQLResolver extends Router {
    *
    * @param event - The incoming event, which may be an AppSync GraphQL event or an array of events.
    * @param context - The Lambda execution context.
+   * @param options - Optional parameters for the resolver, such as the scope of the handler.
    */
-  public async resolve(event: unknown, context: Context): Promise<unknown> {
+  public async resolve(
+    event: unknown,
+    context: Context,
+    options?: ResolveOptions
+  ): Promise<unknown> {
     if (Array.isArray(event)) {
       this.logger.warn('Batch resolver is not implemented yet');
       return;
@@ -100,7 +106,7 @@ export class AppSyncGraphQLResolver extends Router {
       return;
     }
     try {
-      return await this.#executeSingleResolver(event, context);
+      return await this.#executeSingleResolver(event, context, options);
     } catch (error) {
       this.logger.error(
         `An error occurred in handler ${event.info.fieldName}`,
@@ -120,11 +126,13 @@ export class AppSyncGraphQLResolver extends Router {
    *
    * @param event - The AppSync resolver event containing the necessary information.
    * @param context - The Lambda execution context.
+   * @param options - Optional parameters for the resolver, such as the scope of the handler.
    * @throws {ResolverNotFoundException} If no resolver is registered for the given field and type.
    */
   async #executeSingleResolver(
     event: AppSyncResolverEvent<Record<string, unknown>>,
-    context: Context
+    context: Context,
+    options?: ResolveOptions
   ): Promise<unknown> {
     const { fieldName, parentTypeName: typeName } = event.info;
 
@@ -133,7 +141,7 @@ export class AppSyncGraphQLResolver extends Router {
       fieldName
     );
     if (resolverHandlerOptions) {
-      return resolverHandlerOptions.handler.apply(this, [
+      return resolverHandlerOptions.handler.apply(options?.scope ?? this, [
         event.arguments,
         event,
         context,

@@ -1,6 +1,48 @@
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
+import type { AppSyncGraphQLResolver } from '../appsync-graphql/AppSyncGraphQLResolver.js';
 import type { RouteHandlerRegistry } from '../appsync-graphql/RouteHandlerRegistry.js';
 import type { GenericLogger } from './common.js';
+
+// #region resolve options
+
+/**
+ * Optional object to pass to the {@link AppSyncGraphQLResolver.resolve | `AppSyncGraphQLResolver.resolve()`} method.
+ */
+type ResolveOptions = {
+  /**
+   * Reference to `this` instance of the class that is calling the `resolve` method.
+   *
+   * This parameter should be used when using {@link AppSyncGraphQLResolver.resolver | `AppSyncGraphQLResolver.resolver()`}
+   * as class method decorators, and it's used to bind the decorated methods to your class instance.
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * class Lambda {
+   *   public scope = 'scoped';
+   *
+   *   @app.resolver({ fieldName: 'getPost', typeName: 'Query' })
+   *   public async handleGetPost({ id }) {
+   *     // your business logic here
+   *     return {
+   *       id,
+   *       title: `${this.scope} Post Title`,
+   *     };
+   *   }
+   *
+   *   public async handler(event, context) {
+   *     return app.resolve(event, context, { scope: this });
+   *   }
+   * }
+   *
+   * const lambda = new Lambda();
+   * export const handler = lambda.handler.bind(lambda);
+   * ```
+   */
+  scope?: unknown;
+};
 
 // #region Resolver fn
 
@@ -91,4 +133,5 @@ export type {
   GraphQlRouterOptions,
   GraphQlRouteOptions,
   ResolverHandler,
+  ResolveOptions,
 };

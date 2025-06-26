@@ -166,7 +166,6 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Assess
     expect(console.debug).not.toHaveBeenCalledWith();
-    expect(console.debug).not.toHaveBeenCalledWith();
     expect(result).toEqual({
       id: '123',
       title: 'Post Title',

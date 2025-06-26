@@ -1,5 +1,5 @@
 import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
-import type { AppSyncGraphQLEvent } from '../types/appsync-graphql.js';
+import type { AppSyncResolverEvent } from 'aws-lambda';
 
 /**
  * Type guard to check if the provided event is an AppSync GraphQL event.
@@ -11,7 +11,7 @@ import type { AppSyncGraphQLEvent } from '../types/appsync-graphql.js';
  */
 const isAppSyncGraphQLEvent = (
   event: unknown
-): event is AppSyncGraphQLEvent => {
+): event is AppSyncResolverEvent<Record<string, unknown>> => {
   if (typeof event !== 'object' || event === null || !isRecord(event)) {
     return false;
   }

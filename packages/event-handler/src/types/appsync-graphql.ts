@@ -1,4 +1,4 @@
-import type { Context } from 'aws-lambda';
+import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import type { RouteHandlerRegistry } from '../appsync-graphql/RouteHandlerRegistry.js';
 import type { GenericLogger } from './common.js';
 
@@ -6,13 +6,13 @@ import type { GenericLogger } from './common.js';
 
 type ResolverSyncHandlerFn<TParams = Record<string, unknown>> = (
   args: TParams,
-  event: AppSyncGraphQLEvent,
+  event: AppSyncResolverEvent<Record<string, unknown>>,
   context: Context
 ) => unknown;
 
 type ResolverHandlerFn<TParams = Record<string, unknown>> = (
   args: TParams,
-  event: AppSyncGraphQLEvent,
+  event: AppSyncResolverEvent<Record<string, unknown>>,
   context: Context
 ) => Promise<unknown>;
 
@@ -84,44 +84,11 @@ type GraphQlRouteOptions = {
   typeName?: string;
 };
 
-// #region Events
-
-/**
- * Event type for AppSync GraphQL.
- *
- * https://docs.aws.amazon.com/appsync/latest/devguide/resolver-context-reference.html
- *
- * For strongly typed validation and parsing at runtime, check out the `@aws-lambda-powertools/parser` package.
- */
-type AppSyncGraphQLEvent = {
-  arguments: Record<string, unknown>;
-  /**
-   * The `identity` field varies based on the authentication type used for the AppSync API.
-   * When using an API key, it will be `null`. When using IAM, it will contain the AWS credentials of the user. When using Cognito,
-   * it will contain the Cognito user pool information. When using a Lambda authorizer, it will contain the information returned
-   * by the authorizer.
-   */
-  identity: null | Record<string, unknown>;
-  source: null | Record<string, unknown>;
-  request: {
-    headers: Record<string, string>;
-    domainName: null;
-  };
-  prev: null;
-  info: {
-    fieldName: string;
-    selectionSetList: string[];
-    parentTypeName: string;
-  };
-  stash: Record<string, unknown>;
-};
-
 export type {
   GenericLogger,
   RouteHandlerRegistryOptions,
   RouteHandlerOptions,
   GraphQlRouterOptions,
   GraphQlRouteOptions,
-  AppSyncGraphQLEvent,
   ResolverHandler,
 };

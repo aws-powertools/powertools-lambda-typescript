@@ -1,5 +1,4 @@
-import type { Context } from 'aws-lambda';
-import type { AppSyncGraphQLEvent } from '../types/appsync-graphql.js';
+import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import { Router } from './Router.js';
 import { ResolverNotFoundException } from './errors.js';
 import { isAppSyncGraphQLEvent } from './utils.js';
@@ -119,12 +118,12 @@ export class AppSyncGraphQLResolver extends Router {
    * from the resolver registry. If a matching handler is found, it invokes the handler
    * with the event arguments. If no handler is found, it throws a `ResolverNotFoundException`.
    *
-   * @param event - The AppSync GraphQL event containing resolver information.
+   * @param event - The AppSync resolver event containing the necessary information.
    * @param context - The Lambda execution context.
    * @throws {ResolverNotFoundException} If no resolver is registered for the given field and type.
    */
   async #executeSingleResolver(
-    event: AppSyncGraphQLEvent,
+    event: AppSyncResolverEvent<Record<string, unknown>>,
     context: Context
   ): Promise<unknown> {
     const { fieldName, parentTypeName: typeName } = event.info;

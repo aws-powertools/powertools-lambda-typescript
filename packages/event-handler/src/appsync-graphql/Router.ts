@@ -151,12 +151,12 @@ class Router {
     }
 
     const resolverOptions = handler;
-    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+    return (target, _propertyKey, descriptor: PropertyDescriptor) => {
       const { typeName = 'Query', fieldName } = resolverOptions;
 
       this.resolverRegistry.register({
         fieldName,
-        handler: descriptor.value,
+        handler: descriptor?.value,
         typeName,
       });
 

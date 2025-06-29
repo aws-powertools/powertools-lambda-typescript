@@ -113,7 +113,9 @@ class Router {
    *   }
    *
    *   async handler(event, context) {
-   *     return app.resolve(event, context);
+   *     return app.resolve(event, context, {
+   *       scope: this, // bind decorated methods to the class instance
+   *     });
    *   }
    * }
    *

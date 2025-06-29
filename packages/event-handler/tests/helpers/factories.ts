@@ -74,4 +74,38 @@ const onSubscribeEventFactory = (
   events: null,
 });
 
-export { onPublishEventFactory, onSubscribeEventFactory };
+const createEventFactory = (
+  fieldName: string,
+  args: Record<string, unknown>,
+  parentTypeName: string
+) => ({
+  arguments: { ...args },
+  identity: null,
+  source: null,
+  request: {
+    headers: {
+      key: 'value',
+    },
+    domainName: null,
+  },
+  info: {
+    fieldName,
+    parentTypeName,
+    selectionSetList: [],
+    variables: {},
+  },
+  prev: null,
+  stash: {},
+});
+
+const onGraphqlEventFactory = (
+  fieldName: string,
+  typeName: 'Query' | 'Mutation',
+  args: Record<string, unknown> = {}
+) => createEventFactory(fieldName, args, typeName);
+
+export {
+  onPublishEventFactory,
+  onSubscribeEventFactory,
+  onGraphqlEventFactory,
+};

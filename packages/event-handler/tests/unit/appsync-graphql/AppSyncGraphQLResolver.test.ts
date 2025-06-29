@@ -1,4 +1,5 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
+import type { Context } from 'aws-lambda';
 import { onGraphqlEventFactory } from 'tests/helpers/factories.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';
@@ -198,6 +199,45 @@ describe('Class: AppSyncGraphQLResolver', () => {
       id: '123',
       event,
       context,
+    });
+  });
+
+  it('preserves the scope when decorating with `resolver`', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+
+    class Lambda {
+      public scope = 'scoped';
+
+      @app.resolver({ fieldName: 'getPost', typeName: 'Query' })
+      public async handleGetPost({ id }: { id: string }) {
+        return {
+          id,
+          scope: `${this.scope} id=${id}`,
+        };
+      }
+
+      public async handler(event: unknown, context: Context) {
+        return this.stuff(event, context);
+      }
+
+      async stuff(event: unknown, context: Context) {
+        return app.resolve(event, context, { scope: this });
+      }
+    }
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
+
+    // Act
+    const result = await handler(
+      onGraphqlEventFactory('getPost', 'Query', { id: '123' }),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      id: '123',
+      scope: 'scoped id=123',
     });
   });
 

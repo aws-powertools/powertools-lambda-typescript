@@ -18,7 +18,12 @@ name: Make Release
 # 5. Update draft release notes with the latest changes and publish the release on GitHub
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      layer_documentation_version:
+        description: "Lambda layer version to be updated in our documentation. e.g. if the current layer number is 3, this value must be 4."
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -101,3 +106,4 @@ jobs:
     uses: ./.github/workflows/publish_layer.yml
     with:
       latest_published_version: ${{ needs.publish-npm.outputs.RELEASE_VERSION }}
+      layer_documentation_version: ${{ inputs.layer_documentation_version }}

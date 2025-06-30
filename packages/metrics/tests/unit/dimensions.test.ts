@@ -470,4 +470,70 @@ describe('Working with dimensions', () => {
       expect.not.objectContaining({ Dimensions: [['test']] })
     );
   });
+
+  it.each([
+    { value: undefined, name: 'undefined' },
+    { value: null, name: 'null' },
+    {
+      value: '',
+      name: 'empty string',
+    },
+  ])('skips invalid dimension values in addDimensions ($name)', ({ value }) => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      namespace: DEFAULT_NAMESPACE,
+    });
+
+    // Act & Assess
+    metrics.addDimensions({
+      validDimension: 'valid',
+      invalidDimension: value as string,
+    });
+    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics.publishStoredMetrics();
+
+    expect(console.warn).toHaveBeenCalledWith(
+      `The dimension invalidDimension doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({ validDimension: 'valid' })
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({ invalidDimension: value })
+    );
+  });
+
+  it('warns when addDimensions overwrites existing dimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+      defaultDimensions: { environment: 'prod' },
+    });
+
+    // Act
+    metrics.addDimension('region', 'us-east-1');
+    metrics.addDimensions({
+      environment: 'staging', // overwrites default dimension
+      region: 'us-west-2', // overwrites regular dimension
+      newDim: 'value',
+    });
+    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics.publishStoredMetrics();
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'Dimension "environment" has already been added. The previous value will be overwritten.'
+    );
+    expect(console.warn).toHaveBeenCalledWith(
+      'Dimension "region" has already been added. The previous value will be overwritten.'
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        environment: 'staging',
+        region: 'us-west-2',
+        newDim: 'value',
+      })
+    );
+  });
 });

@@ -11,6 +11,9 @@ on:
         description: "Latest npm published version to rebuild corresponding layer for, e.g. 1.0.2"
         default: "1.0.2"
         required: true
+      layer_documentation_version:
+        description: "Version to be updated in our documentation. e.g. if the current layer number is 3, this value must be 4."
+        required: true
 
   workflow_call:
     inputs:
@@ -23,6 +26,10 @@ on:
         default: false
         type: boolean
         required: false
+      layer_documentation_version:
+        description: "Version to be updated in our documentation. e.g. if the current layer number is 3, this value must be 4."
+        required: true
+        type: string
 
 jobs:
   # Build layer by running cdk synth in layer-publisher directory and uploading cdk.out for deployment
@@ -96,16 +103,9 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           ref: ${{ github.sha }}
-      - name: Download CDK layer artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          path: cdk-layer-stack
-          pattern: cdk-layer-stack-* # merge all Layer artifacts created per region earlier (reusable_deploy_layer_stack.yml; step "Save Layer ARN artifact")
-          merge-multiple: true
       - name: Replace layer versions in documentation
         run: |
-          ls -la cdk-layer-stack/
-          ./.github/scripts/update_layer_arn.sh cdk-layer-stack
+          ./.github/scripts/update_layer_arn.sh ${{ inputs.layer_documentation_version }}
       - name: Create PR
         id: create-pr
         uses: ./.github/actions/create-pr

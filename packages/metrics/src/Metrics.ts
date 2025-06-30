@@ -273,19 +273,35 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - An object with key-value pairs of dimensions
    */
   public addDimensions(dimensions: Dimensions): void {
-    const newDimensionKeys = Object.keys(dimensions).filter(
-      (key) => !this.defaultDimensions[key] && !this.dimensions[key]
-    );
+    const newDimensionSet: Dimensions = {};
+    for (const [key, value] of Object.entries(dimensions)) {
+      if (!value) {
+        this.#logger.warn(
+          `The dimension ${key} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+        );
+        continue;
+      }
+      if (
+        Object.hasOwn(this.dimensions, key) ||
+        Object.hasOwn(this.defaultDimensions, key) ||
+        Object.hasOwn(newDimensionSet, key)
+      ) {
+        this.#logger.warn(
+          `Dimension "${key}" has already been added. The previous value will be overwritten.`
+        );
+      }
+      newDimensionSet[key] = value;
+    }
 
-    if (
-      newDimensionKeys.length + this.getCurrentDimensionsCount() >=
-      MAX_DIMENSION_COUNT
-    ) {
+    const currentCount = this.getCurrentDimensionsCount();
+    const newSetCount = Object.keys(newDimensionSet).length;
+    if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
     }
-    this.dimensionSets.push(dimensions);
+
+    this.dimensionSets.push(newDimensionSet);
   }
 
   /**
@@ -746,14 +762,11 @@ class Metrics extends Utility implements MetricsInterface {
           },
         ],
       },
-      ...Object.assign(
-        {},
-        this.defaultDimensions,
-        this.dimensions,
-        this.dimensionSets.reduce((acc, dims) => Object.assign(acc, dims), {}),
-        metricValues,
-        this.metadata
-      ),
+      ...this.defaultDimensions,
+      ...this.dimensions,
+      ...this.dimensionSets.reduce((acc, dims) => Object.assign(acc, dims), {}),
+      ...metricValues,
+      ...this.metadata,
     };
   }
 
@@ -864,9 +877,14 @@ class Metrics extends Utility implements MetricsInterface {
    * Gets the current number of dimensions count.
    */
   private getCurrentDimensionsCount(): number {
+    const dimensionSetsCount = this.dimensionSets.reduce(
+      (total, dimensionSet) => total + Object.keys(dimensionSet).length,
+      0
+    );
     return (
       Object.keys(this.dimensions).length +
-      Object.keys(this.defaultDimensions).length
+      Object.keys(this.defaultDimensions).length +
+      dimensionSetsCount
     );
   }
 

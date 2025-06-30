@@ -1,14 +1,14 @@
 import { SchemaType, kafkaConsumer } from '@aws-lambda-powertools/kafka';
 import type { SchemaConfig } from '@aws-lambda-powertools/kafka/types';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { User } from './samples/user.es6.generated.js'; // protobuf generated class
+import { com } from './samples/user.generated.js'; // protobuf generated class
 
 const logger = new Logger({ serviceName: 'kafka-consumer' });
 
 const schemaConfig = {
   value: {
     type: SchemaType.PROTOBUF,
-    schema: User,
+    schema: com.example.User,
   },
 } satisfies SchemaConfig;
 

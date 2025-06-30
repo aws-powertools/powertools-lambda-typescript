@@ -96,3 +96,18 @@ sed -i -e "s/$prefix_us_gov_west_1:[[:digit:]][[:digit:]]*/$arn_us_gov_west_1/g"
 sed -i -e "s/$prefix_us_gov_east_1:[[:digit:]][[:digit:]]*/$arn_us_gov_east_1/g" $DOCS_FILE
 echo "[+] Finished processing all GovCloud regions"
 echo "[+] Finished processing all regions"
+
+# Process China regions
+#
+# China layers are not available in the CDK output files, but we know the ARN format and that the version is the same
+# as the one in eu-central-1. So we can optimistically update the version of the China layers in the documentation.
+# The China ARNs are (note that the account IDs are different in both):
+# arn:aws-aws-cn:lambda:cn-north-1:498634801083:layer:AWSLambdaPowertoolsTypeScriptV2:28
+
+version=$(echo "$line" | cut -d ':' -f 8) # version = 28
+arn_cn_north_1="arn:aws-aws-cn:lambda:cn-north-1:498634801083:layer:AWSLambdaPowertoolsTypeScriptV2:$version"
+prefix_cn_north_1=$(echo "$arn_cn_north_1" | cut -d ':' -f 1-7)
+echo -e "\t[*] ARN China CN North 1: $arn_cn_north_1"
+# Replace all the "arn_cn_north_1"'s in the file
+sed -i -e "s/$prefix_cn_north_1:[[:digit:]][[:digit:]]*/$arn_cn_north_1/g" $DOCS_FILE
+echo "[+] Finished processing all China regions"

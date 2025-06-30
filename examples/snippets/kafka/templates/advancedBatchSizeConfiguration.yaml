@@ -2,8 +2,8 @@ Resources:
 OrderProcessingFunction:
     Type: AWS::Serverless::Function
     Properties:
-    Handler: app.lambda_handler
-    Runtime: python3.9
+    Runtime: nodejs22.x
+    Handler: index.js
     Events:
         KafkaEvent:
         Type: MSK

@@ -1,10 +1,10 @@
 import { SchemaType, kafkaConsumer } from '@aws-lambda-powertools/kafka';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { type IUser, User } from './samples/user.es6.generated.js'; // protobuf generated class
+import { com } from './samples/user.generated.js'; // protobuf generated class
 
 const logger = new Logger({ serviceName: 'kafka-consumer' });
 
-export const handler = kafkaConsumer<unknown, IUser>(
+export const handler = kafkaConsumer<unknown, com.example.IUser>(
   async (event, _context) => {
     for (const record of event.records) {
       const { value, topic, partition, offset, timestamp, headers } = record;
@@ -24,15 +24,15 @@ export const handler = kafkaConsumer<unknown, IUser>(
 
       // Process the deserialized value
       logger.info('User data', {
-        userId: value.id,
         userName: value.name,
+        userAge: value.age,
       });
     }
   },
   {
     value: {
       type: SchemaType.PROTOBUF,
-      schema: User,
+      schema: com.example.User,
     },
   }
 );

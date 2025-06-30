@@ -69,7 +69,7 @@ Depending on the schema types you want to use, install the library and the corre
 
 Additionally, if you want to use output parsing with [Standard Schema](https://github.com/standard-schema/standard-schema), you can install [any of the supported libraries](https://standardschema.dev/#what-schema-libraries-implement-the-spec), for example: Zod, Valibot, or ArkType.
 
-<!-- ### Required resources
+### Required resources
 
 To use the Kafka consumer utility, you need an AWS Lambda function configured with a Kafka event source. This can be Amazon MSK, MSK Serverless, or a self-hosted Kafka cluster.
 
@@ -77,13 +77,51 @@ To use the Kafka consumer utility, you need an AWS Lambda function configured wi
 
     ```yaml
     --8<-- "examples/snippets/kafka/templates/gettingStartedWithMsk.yaml"
-    ``` -->
+    ```
 
 ### Using ESM with Schema Registry
 
 The Event Source Mapping configuration determines which mode is used. With `JSON`, Lambda converts all messages to JSON before invoking your function. With `SOURCE` mode, Lambda preserves the original format, requiring you function to handle the appropriate deserialization.
 
 Powertools for AWS supports both Schema Registry integration modes in your Event Source Mapping configuration.
+
+For simplicity, we will use a simple schema containing `name` and `age` in most of our examples. You can also copy the payload example with the expected Kafka event to test your code.
+
+=== "JSON"
+
+    ```json
+    --8<-- "examples/snippets/kafka/samples/user.json"
+    ```
+
+=== "Payload JSON"
+
+    ```json
+    --8<-- "examples/snippets/kafka/samples/kafkaEventJson.json"
+    ```
+
+=== "Avro Schema"
+
+    ```json
+    --8<-- "examples/snippets/kafka/samples/user.avsc"
+    ```
+
+=== "Payload Avro"
+
+    ```json
+    --8<-- "examples/snippets/kafka/samples/kafkaEventAvro.json"
+    ```
+
+=== "Protobuf Schema"
+
+    ```typescript
+    --8<-- "examples/snippets/kafka/samples/user.proto"
+    ```
+
+=== "Payload Protobuf"
+
+    ```json
+    --8<-- "examples/snippets/kafka/samples/kafkaEventProtobuf.json"
+    ```
 
 ### Processing Kafka events
 
@@ -110,9 +148,9 @@ The Kafka consumer utility transforms raw Kafka events into an intuitive format 
     --8<-- "examples/snippets/kafka/gettingStartedJson.ts"
     ```
 
-### Deserializing keys and values
+### Deserializing key and value
 
-The `kafkaConsumer` function can deserialize both keys and values independently based on your schema configuration. This flexibility allows you to work with different data formats in the same message.
+The `kafkaConsumer` function can deserialize both key and value independently based on your schema configuration. This flexibility allows you to work with different data formats in the same message.
 
 === "index.ts"
 

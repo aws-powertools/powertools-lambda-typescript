@@ -28,7 +28,7 @@ find ./docs ./examples -type f \( -name "*.md" -o -name "*.ts" -o -name "*.yaml"
     # -E: use extended regular expressions
     # IF TESTING IN MAC, replace `-i` with `-i ''`
     # The regex matches the layer name and replaces only the version number at the end
-    sed -i '' -E "s/AWSLambdaPowertoolsTypeScriptV2:[0-9]+/AWSLambdaPowertoolsTypeScriptV2:$new_version/g" "$file"
+    sed -i -E "s/AWSLambdaPowertoolsTypeScriptV2:[0-9]+/AWSLambdaPowertoolsTypeScriptV2:$new_version/g" "$file"
     if [ $? -eq 0 ]; then
         echo "Updated $file successfully"
         grep "arn:aws:lambda:" "$file"

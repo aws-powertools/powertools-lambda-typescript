@@ -332,12 +332,13 @@ describe('Working with dimensions', () => {
       },
     });
 
-    // Act & Assess
-    let i = 1;
+    // Act
     // We start with 2 dimensions because the default dimension & service name are already added
-    for (i = 2; i < MAX_DIMENSION_COUNT; i++) {
+    for (let i = 2; i < MAX_DIMENSION_COUNT; i++) {
       metrics.addDimension(`dimension-${i}`, 'test');
     }
+
+    // Assess
     expect(() => metrics.addDimension('extra', 'test')).toThrowError(
       `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
     );
@@ -354,6 +355,8 @@ describe('Working with dimensions', () => {
     for (let i = 1; i < MAX_DIMENSION_COUNT - 1; i++) {
       metrics.setDefaultDimensions({ [`dimension-${i}`]: 'test' });
     }
+
+    // Assess
     expect(() => metrics.setDefaultDimensions({ extra: 'test' })).toThrowError(
       'Max dimension count hit'
     );
@@ -368,13 +371,13 @@ describe('Working with dimensions', () => {
       },
     });
 
-    // Act & Assess
-    let i = 1;
+    // Act
     // We start with 2 dimensions because the default dimension & service name are already added
-    for (i = 2; i < MAX_DIMENSION_COUNT - 2; i++) {
+    for (let i = 2; i < MAX_DIMENSION_COUNT; i++) {
       metrics.addDimension(`dimension-${i}`, 'test');
     }
 
+    // Assess
     // Adding a dimension set with 3 dimensions would exceed the limit
     expect(() =>
       metrics.addDimensions({

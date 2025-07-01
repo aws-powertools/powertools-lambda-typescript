@@ -200,13 +200,13 @@ abstract class LogFormatter {
       : 'UTC';
 
     return new Intl.DateTimeFormat('en', {
+      hourCycle: 'h23',
       year: 'numeric',
       month: twoDigitFormatOption,
       day: twoDigitFormatOption,
       hour: twoDigitFormatOption,
       minute: twoDigitFormatOption,
       second: twoDigitFormatOption,
-      hour12: false,
       timeZone: validTimeZone,
     });
   };

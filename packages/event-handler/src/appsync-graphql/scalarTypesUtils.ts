@@ -52,19 +52,24 @@ const formattedTime = (
 };
 
 /**
- * `ID` - A unique identifier for an object. This scalar is serialized like a String
+ * Generate a unique identifier of type `ID` for use in GraphQL.
+ *
+ * This scalar is serialized like a String
  * but isn't meant to be human-readable.
  */
 const makeId = () => randomUUID();
 
 /**
- * `AWSTimestamp` - An integer value representing the number of seconds
- * before or after 1970-01-01-T00:00Z.
+ * Generate an `AWSTimestamp` value for use in GraphQL.
+ *
+ * An integer value representing the number of seconds before or after `1970-01-01-T00:00Z`.
  */
 const awsTimestamp = () => Math.floor(Date.now() / 1000);
 
 /**
- * `AWSDate` - An extended ISO 8601 date string in the format YYYY-MM-DD.
+ * Generate an `AWSDate` value for use in GraphQL.
+ *
+ * An extended ISO 8601 date string in the format `YYYY-MM-DD`.
  *
  * @param timezoneOffset - Timezone offset in hours, defaults to 0
  */
@@ -72,7 +77,9 @@ const awsDate = (timezoneOffset = 0) =>
   formattedTime(new Date(), '%Y-%m-%d', timezoneOffset);
 
 /**
- * `AWSTime` - An extended ISO 8601 time string in the format hh:mm:ss.sss.
+ * Generate an `AWSTime` value for use in GraphQL.
+ *
+ * An extended ISO 8601 time string in the format `hh:mm:ss.sss`.
  *
  * @param timezoneOffset - Timezone offset in hours, defaults to 0
  */
@@ -80,7 +87,9 @@ const awsTime = (timezoneOffset = 0) =>
   formattedTime(new Date(), '%H:%M:%S.%f', timezoneOffset);
 
 /**
- * `AWSDateTime` - An extended ISO 8601 date and time string in the format
+ * Generate an `AWSDateTime` value for use in GraphQL.
+ *
+ * An extended ISO 8601 date and time string in the format
  * `YYYY-MM-DDThh:mm:ss.sssZ`.
  *
  * @param timezoneOffset - Timezone offset in hours, defaults to `0`

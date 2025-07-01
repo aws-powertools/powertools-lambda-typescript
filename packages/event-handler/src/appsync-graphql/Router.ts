@@ -106,7 +106,7 @@ class Router {
    * const app = new AppSyncGraphQLResolver();
    *
    * class Lambda {
-   *   @app.resolver({ fieldName: 'getPost' })
+   *   ⁣@app.resolver({ fieldName: 'getPost' })
    *   async handleGetPost(payload) {
    *     // your business logic here
    *     return payload;
@@ -126,7 +126,7 @@ class Router {
    * @param handler - The handler function to be called when the event is received.
    * @param options - Route options including the required fieldName and optional typeName.
    * @param options.fieldName - The name of the field to register the handler for.
-   * @param options.typeName - The name of the GraphQL type to use for the resolver (defaults to 'Query').
+   * @param options.typeName - The name of the GraphQL type to use for the resolver, defaults to `Query`.
    */
   public resolver<TParams extends Record<string, unknown>>(
     handler: ResolverHandler<TParams>,
@@ -191,7 +191,7 @@ class Router {
     * const app = new AppSyncGraphQLResolver();
     *
     * class Lambda {
-    *   @app.onQuery('getPost')
+    *   ⁣@app.onQuery('getPost')
     *   async handleGetPost(payload) {
     *     // your business logic here
     *     return payload;
@@ -208,27 +208,22 @@ class Router {
     *
     * @param fieldName - The name of the Query field to register the handler for.
     * @param handler - The handler function to be called when the event is received.
-    * @param options - Optional route options.
-    * @param options.typeName - The name of the GraphQL type to use for the resolver (defaults to 'Query').
     */
   public onQuery<TParams extends Record<string, unknown>>(
-    handler: ResolverHandler<TParams>,
-    options: Pick<GraphQlRouteOptions, 'fieldName'>
+    fieldName: string,
+    handler: ResolverHandler<TParams>
   ): void;
-  public onQuery(
-    options: Pick<GraphQlRouteOptions, 'fieldName'>
-  ): MethodDecorator;
+  public onQuery(fieldName: string): MethodDecorator;
   public onQuery<TParams extends Record<string, unknown>>(
-    handlerOrOptions:
+    fieldName: string,
+    handlerOrFieldName?:
       | ResolverHandler<TParams>
-      | Pick<GraphQlRouteOptions, 'fieldName'>,
-    options?: Pick<GraphQlRouteOptions, 'fieldName'>
+      | Pick<GraphQlRouteOptions, 'fieldName'>
   ): MethodDecorator | undefined {
-    if (typeof handlerOrOptions === 'function') {
-      const resolverOptions = options as Pick<GraphQlRouteOptions, 'fieldName'>;
+    if (typeof handlerOrFieldName === 'function') {
       this.resolverRegistry.register({
-        fieldName: resolverOptions.fieldName,
-        handler: handlerOrOptions as ResolverHandler,
+        fieldName: fieldName,
+        handler: handlerOrFieldName as ResolverHandler,
         typeName: 'Query',
       });
 
@@ -236,9 +231,8 @@ class Router {
     }
 
     return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-      const resolverOptions = handlerOrOptions;
       this.resolverRegistry.register({
-        fieldName: resolverOptions.fieldName,
+        fieldName: fieldName,
         handler: descriptor?.value,
         typeName: 'Query',
       });
@@ -277,7 +271,7 @@ class Router {
    * const app = new AppSyncGraphQLResolver();
    *
    * class Lambda {
-   *   @app.onMutation('createPost')
+   *   ⁣@app.onMutation('createPost')
    *   async handleCreatePost(payload) {
    *     // your business logic here
    *     return payload;
@@ -294,27 +288,20 @@ class Router {
    *
    * @param fieldName - The name of the Mutation field to register the handler for.
    * @param handler - The handler function to be called when the event is received.
-   * @param options - Optional route options.
-   * @param options.typeName - The name of the GraphQL type to use for the resolver (defaults to 'Mutation').
    */
   public onMutation<TParams extends Record<string, unknown>>(
-    handler: ResolverHandler<TParams>,
-    options: Pick<GraphQlRouteOptions, 'fieldName'>
+    fieldName: string,
+    handler: ResolverHandler<TParams>
   ): void;
-  public onMutation(
-    options: Pick<GraphQlRouteOptions, 'fieldName'>
-  ): MethodDecorator;
+  public onMutation(fieldName: string): MethodDecorator;
   public onMutation<TParams extends Record<string, unknown>>(
-    handlerOrOptions:
-      | ResolverHandler<TParams>
-      | Pick<GraphQlRouteOptions, 'fieldName'>,
-    options?: Pick<GraphQlRouteOptions, 'fieldName'>
+    fieldName: string,
+    handlerOrFieldName?: ResolverHandler<TParams> | string
   ): MethodDecorator | undefined {
-    if (typeof handlerOrOptions === 'function') {
-      const resolverOptions = options as Pick<GraphQlRouteOptions, 'fieldName'>;
+    if (typeof handlerOrFieldName === 'function') {
       this.resolverRegistry.register({
-        fieldName: resolverOptions.fieldName,
-        handler: handlerOrOptions as ResolverHandler,
+        fieldName,
+        handler: handlerOrFieldName as ResolverHandler,
         typeName: 'Mutation',
       });
 
@@ -322,9 +309,8 @@ class Router {
     }
 
     return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-      const resolverOptions = handlerOrOptions;
       this.resolverRegistry.register({
-        fieldName: resolverOptions.fieldName,
+        fieldName,
         handler: descriptor?.value,
         typeName: 'Mutation',
       });

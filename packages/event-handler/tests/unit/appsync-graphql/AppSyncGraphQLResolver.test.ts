@@ -1,9 +1,9 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
-import { onGraphqlEventFactory } from 'tests/helpers/factories.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';
-import { ResolverNotFoundException } from '../../../src/appsync-graphql/errors.js';
+import { ResolverNotFoundException } from '../../../src/appsync-graphql/index.js';
+import { onGraphqlEventFactory } from '../../helpers/factories.js';
 
 describe('Class: AppSyncGraphQLResolver', () => {
   beforeEach(() => {

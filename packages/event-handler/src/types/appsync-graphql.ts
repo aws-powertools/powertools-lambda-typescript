@@ -1,6 +1,7 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import type { RouteHandlerRegistry } from '../appsync-graphql/RouteHandlerRegistry.js';
+import type { Router } from '../appsync-graphql/Router.js';
 
 // #region Resolver fn
 
@@ -23,7 +24,7 @@ type ResolverHandler<TParams = Record<string, unknown>> =
 // #region Resolver registry
 
 /**
- * Options for the {@link RouteHandlerRegistry} class
+ * Options for the {@link RouteHandlerRegistry | `RouteHandlerRegistry`} class
  */
 type RouteHandlerRegistryOptions = {
   /**
@@ -59,7 +60,7 @@ type RouteHandlerOptions<TParams = Record<string, unknown>> = {
 // #region Router
 
 /**
- * Options for the {@link Router} class
+ * Options for the {@link Router | `Router`} class
  */
 type GraphQlRouterOptions = {
   /**

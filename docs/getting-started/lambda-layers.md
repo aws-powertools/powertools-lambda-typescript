@@ -88,33 +88,38 @@ The pre-signed URL to download this Lambda Layer will be within `Location` key i
 
 Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the following command:
 
-```bash title="AWS CLI command to download Lambda Layer content"
-aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29 --region {aws::region}
+=== "AWS CLI command to download Lambda Layer content"
 
-# output
-{  
-    "Content": {,
-        "Location": "https://awslambda-eu-west-1-layers.s3.eu-west-1.amazonaws.com/...",
-        "CodeSha256": "gwGIE8w0JckdDeDCTX6FbWObb2uIDwgiaAq78gMWDyA=",
-        "CodeSize": 3548324
-    },
-    "LayerArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2",
-    "LayerVersionArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29",
-    "Description": "Powertools for AWS Lambda (TypeScript) version 2.18.0",
-    "CreatedDate": "2025-04-08T07:38:30.424+0000",
-    "Version": 24,
-    "CompatibleRuntimes": [
-        "nodejs18.x",
-        "nodejs20.x",
-        "nodejs22.x"
-    ],
-    "LicenseInfo": "MIT-0",
-    "CompatibleArchitectures": [
-        "arm64",
-        "x86_64"
-    ]
-}
-```
+    ```bash
+    aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29 --region {aws::region}
+    ```
+
+=== "AWS CLI output"
+
+    ```json
+    {  
+        "Content": {
+            "Location": "https://awslambda-eu-west-1-layers.s3.eu-west-1.amazonaws.com/...",
+            "CodeSha256": "gwGIE8w0JckdDeDCTX6FbWObb2uIDwgiaAq78gMWDyA=",
+            "CodeSize": 3548324
+        },
+        "LayerArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2",
+        "LayerVersionArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:29",
+        "Description": "Powertools for AWS Lambda (TypeScript) version 2.18.0",
+        "CreatedDate": "2025-04-08T07:38:30.424+0000",
+        "Version": 24,
+        "CompatibleRuntimes": [
+            "nodejs18.x",
+            "nodejs20.x",
+            "nodejs22.x"
+        ],
+        "LicenseInfo": "MIT-0",
+        "CompatibleArchitectures": [
+            "arm64",
+            "x86_64"
+        ]
+    }
+    ```
 
 ### How to use with Infrastructure as Code
 
@@ -341,3 +346,20 @@ aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105
       },
     });
     ```
+
+### Dependency management
+
+When using the Lambda Layer, the Powertools for AWS Lambda packages are already included in your Lambda runtime environment. However, you still need to [install these packages](./installation.md) locally for development, testing, and IDE support.
+
+Since the packages are provided by the Lambda Layer at runtime, install them as `devDependencies` in your `package.json` file:
+
+```bash title="Install Powertools for AWS Lambda packages"
+npm i -D @aws-lambda-powertools/logger
+```
+
+**Important considerations:**
+
+- **Exclude from bundling**: Ensure your build process excludes these packages from your deployment bundle since they're provided by the layer
+- **Version synchronization**: Keep your local development dependencies in sync with the Lambda Layer version to maintain consistency
+
+Following these practices prevents version conflicts that can cause unexpected behavior, such as failed `instanceof` checks or inconsistent behavior between your local development environment and the Lambda execution environment.

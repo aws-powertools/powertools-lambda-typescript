@@ -142,17 +142,14 @@ describe('Class: AppSyncGraphQLResolver', () => {
   it('logs only warnings and errors using global console object if no logger supplied', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
-    app.resolver<{ title: string; content: string }>(
+    app.onMutation<{ title: string; content: string }>(
+      'addPost',
       async ({ title, content }) => {
         return {
           id: '123',
           title,
           content,
         };
-      },
-      {
-        fieldName: 'addPost',
-        typeName: 'Mutation',
       }
     );
 
@@ -177,18 +174,13 @@ describe('Class: AppSyncGraphQLResolver', () => {
   it('resolver function has access to event and context', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
-    app.resolver<{ id: string }>(
-      async ({ id }, event, context) => {
-        return {
-          id,
-          event,
-          context,
-        };
-      },
-      {
-        fieldName: 'getPost',
-      }
-    );
+    app.onQuery<{ id: string }>('getPost', async ({ id }, event, context) => {
+      return {
+        id,
+        event,
+        context,
+      };
+    });
 
     // Act
     const event = onGraphqlEventFactory('getPost', 'Query', { id: '123' });
@@ -209,7 +201,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     class Lambda {
       public scope = 'scoped';
 
-      @app.resolver({ fieldName: 'getPost', typeName: 'Query' })
+      @app.onQuery('getPost')
       public async handleGetPost({ id }: { id: string }) {
         return {
           id,

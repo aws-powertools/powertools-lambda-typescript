@@ -1,6 +1,6 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { LRUCache } from '@aws-lambda-powertools/commons/utils/lru-cache';
 import type {
-  GenericLogger,
   RouteHandlerOptions,
   RouteHandlerRegistryOptions,
 } from '../types/appsync-events.js';
@@ -21,7 +21,7 @@ class RouteHandlerRegistry {
   /**
    * A logger instance to be used for logging debug and warning messages.
    */
-  readonly #logger: GenericLogger;
+  readonly #logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
   /**
    * The event type stored in the registry.
    */

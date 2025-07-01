@@ -3,6 +3,7 @@ import type {
   ResponseState,
 } from '../types/bedrock-agent.js';
 import type { BedrockAgentFunctionResolver } from './BedrockAgentFunctionResolver.js';
+
 /**
  * Class representing a response from a Bedrock agent function.
  *
@@ -11,7 +12,7 @@ import type { BedrockAgentFunctionResolver } from './BedrockAgentFunctionResolve
  * - prompt session attributes
  * - response state (`FAILURE` or `REPROMPT`)
  *
- * When working with the {@link BedrockAgentFunctionResolver} class, this is built automatically
+ * When working with the {@link BedrockAgentFunctionResolver | `BedrockAgentFunctionResolver`} class, this is built automatically
  * when you return anything from your function handler other than an instance of this class.
  */
 class BedrockFunctionResponse {

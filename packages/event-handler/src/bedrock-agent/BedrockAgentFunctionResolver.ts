@@ -1,3 +1,4 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { isNullOrUndefined } from '@aws-lambda-powertools/commons/typeutils';
 import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import type { Context } from 'aws-lambda';
@@ -9,7 +10,6 @@ import type {
   Tool,
   ToolFunction,
 } from '../types/bedrock-agent.js';
-import type { GenericLogger } from '../types/common.js';
 import { BedrockFunctionResponse } from './BedrockFunctionResponse.js';
 import { assertBedrockAgentFunctionEvent } from './utils.js';
 

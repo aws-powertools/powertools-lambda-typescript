@@ -40,7 +40,7 @@ describe('Class: Router', () => {
         return `${this.prop} foo`;
       }
 
-      @app.resolver({ fieldName: 'getAuthor', typeName: 'Query' })
+      @app.resolver({ fieldName: 'getAuthor' })
       public getAuthor() {
         return `${this.prop} bar`;
       }

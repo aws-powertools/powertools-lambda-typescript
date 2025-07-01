@@ -79,7 +79,7 @@ type GraphQlRouteOptions = {
    */
   fieldName: string;
   /**
-   * The type name of the event to be registered
+   * The type name of the event to be registered, i.e. `Query`, `Mutation`, or a custom type
    */
   typeName?: string;
 };

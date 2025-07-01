@@ -49,7 +49,7 @@
     "@middy/core": "^4.7.0",
     "@types/aws-lambda": "^8.10.150",
     "@types/node": "24.0.7",
-    "aws-cdk": "^2.1019.2",
+    "aws-cdk": "^2.1020.0",
     "constructs": "^10.4.2",
     "esbuild": "^0.25.5",
     "typescript": "^5.8.3"

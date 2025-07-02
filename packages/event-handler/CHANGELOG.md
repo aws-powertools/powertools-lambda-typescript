@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
+
+
+### Features
+
+* **event-handler:** add single resolver functionality for AppSync GraphQL API ([#3999](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3999)) ([b91383f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b91383f6ec82cff9196ccc4e0c9e88d285eb567d))
+* **event-handler:** expose event & context as object ([#4113](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4113)) ([7e74c9e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7e74c9e356d97372c4f1ee5ca83d16dfefea42f4))
+* **event-handler:** support `onQuery` and `onMutation` handlers ([#4111](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4111)) ([263db2d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/263db2d74e558adb9b088174a5500de6c29488d0))
+
+
+
+
+
 # [2.22.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.21.0...v2.22.0) (2025-06-20)
 
 

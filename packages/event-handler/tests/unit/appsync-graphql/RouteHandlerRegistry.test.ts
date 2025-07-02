@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RouteHandlerRegistry } from '../../../src/appsync-graphql/RouteHandlerRegistry.js';
 import type { RouteHandlerOptions } from '../../../src/types/appsync-graphql.js';
+
 describe('Class: RouteHandlerRegistry', () => {
   class MockRouteHandlerRegistry extends RouteHandlerRegistry {
     public declare resolvers: Map<string, RouteHandlerOptions>;

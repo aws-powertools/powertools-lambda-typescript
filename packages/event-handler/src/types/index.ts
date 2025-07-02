@@ -8,8 +8,14 @@ export type {
   OnPublishOutput,
   RouteOptions,
   RouterOptions,
-  ResolveOptions,
 } from './appsync-events.js';
+
+export type {
+  ResolverHandler,
+  RouteHandlerOptions,
+  GraphQlRouterOptions,
+  GraphQlRouteOptions,
+} from './appsync-graphql.js';
 
 export type {
   BedrockAgentFunctionEvent,
@@ -20,6 +26,6 @@ export type {
 } from './bedrock-agent.js';
 
 export type {
-  GenericLogger,
+  ResolveOptions,
   Anything,
 } from './common.js';

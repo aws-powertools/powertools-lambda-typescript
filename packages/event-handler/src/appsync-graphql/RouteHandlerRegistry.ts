@@ -1,14 +1,15 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type {
-  GenericLogger,
   RouteHandlerOptions,
   RouteHandlerRegistryOptions,
 } from '../types/appsync-graphql.js';
+import type { AppSyncGraphQLResolver } from './AppSyncGraphQLResolver.js';
 
 /**
  * Registry for storing route handlers for GraphQL resolvers in AWS AppSync GraphQL API's.
  *
  * This class should not be used directly unless you are implementing a custom router.
- * Instead, use the {@link Router} class, which is the recommended way to register routes.
+ * Instead, use the {@link AppSyncGraphQLResolver | `AppSyncGraphQLResolver`} class, which is the recommended way to register routes.
  */
 class RouteHandlerRegistry {
   /**
@@ -18,7 +19,7 @@ class RouteHandlerRegistry {
   /**
    * A logger instance to be used for logging debug and warning messages.
    */
-  readonly #logger: GenericLogger;
+  readonly #logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 
   public constructor(options: RouteHandlerRegistryOptions) {
     this.#logger = options.logger;

@@ -1,5 +1,5 @@
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
-import type { ResolveOptions } from '../types/appsync-graphql.js';
+import type { ResolveOptions } from '../types/common.js';
 import { Router } from './Router.js';
 import { ResolverNotFoundException } from './errors.js';
 import { isAppSyncGraphQLEvent } from './utils.js';
@@ -32,7 +32,7 @@ import { isAppSyncGraphQLEvent } from './utils.js';
  *   app.resolve(event, context);
  * ```
  */
-export class AppSyncGraphQLResolver extends Router {
+class AppSyncGraphQLResolver extends Router {
   /**
    * Resolve the response based on the provided event and route handlers configured.
    *
@@ -89,7 +89,7 @@ export class AppSyncGraphQLResolver extends Router {
    * ```
    *
    * @param event - The incoming event, which may be an AppSync GraphQL event or an array of events.
-   * @param context - The Lambda execution context.
+   * @param context - The AWS Lambda context object.
    * @param options - Optional parameters for the resolver, such as the scope of the handler.
    */
   public async resolve(
@@ -171,3 +171,5 @@ export class AppSyncGraphQLResolver extends Router {
     };
   }
 }
+
+export { AppSyncGraphQLResolver };

@@ -4,6 +4,7 @@
   ],
   "entryPoints": [
     "./src/appsync-events/index.ts",
+    "./src/appsync-graphql/index.ts",
     "./src/bedrock-agent/index.ts",
     "./src/types/index.ts",
   ],

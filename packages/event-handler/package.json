@@ -39,6 +39,16 @@
         "default": "./lib/esm/appsync-events/index.js"
       }
     },
+    "./appsync-graphql": {
+      "require": {
+        "types": "./lib/cjs/appsync-graphql/index.d.ts",
+        "default": "./lib/cjs/appsync-graphql/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/appsync-graphql/index.d.ts",
+        "default": "./lib/esm/appsync-graphql/index.js"
+      }
+    },
     "./bedrock-agent": {
       "require": {
         "types": "./lib/cjs/bedrock-agent/index.d.ts",
@@ -65,6 +75,10 @@
       "appsync-events": [
         "./lib/cjs/appsync-events/index.d.ts",
         "./lib/esm/appsync-events/index.d.ts"
+      ],
+      "appsync-graphql": [
+        "./lib/cjs/appsync-graphql/index.d.ts",
+        "./lib/esm/appsync-graphql/index.d.ts"
       ],
       "bedrock-agent": [
         "./lib/cjs/bedrock-agent/index.d.ts",

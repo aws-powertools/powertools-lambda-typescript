@@ -5,9 +5,10 @@ import {
   awsTime,
   awsTimestamp,
   makeId,
-} from '../../../src/appsync-graphql/scalarTypesUtils.js';
+} from '../../../src/appsync-graphql/index.js';
 
 const mockDate = new Date('2025-06-15T10:30:45.123Z');
+
 describe('Scalar Types Utils', () => {
   beforeAll(() => {
     vi.useFakeTimers().setSystemTime(mockDate);
@@ -33,111 +34,164 @@ describe('Scalar Types Utils', () => {
   });
 
   describe('awsDate', () => {
-    it('should return a date in YYYY-MM-DD format with Z timezone', () => {
+    it('returns a date in YYYY-MM-DD format with Z timezone', () => {
+      // Act
       const result = awsDate();
+
+      // Assess
       expect(result).toBe('2025-06-15Z');
     });
 
-    it('should handle positive timezone offset', () => {
+    it('handles a positive timezone offset', () => {
+      // Act
       const result = awsDate(5);
+
+      // Assess
       expect(result).toBe('2025-06-15+05:00:00');
     });
 
-    it('should handle negative timezone offset', () => {
+    it('handles a negative timezone offset', () => {
+      // Act
       const result = awsDate(-8);
+
+      // Assess
       expect(result).toBe('2025-06-15-08:00:00');
     });
 
-    it('should handle date change with timezone offset', () => {
+    it('handle a date change with timezone offset', () => {
+      // Act
       const result = awsDate(-11);
+
+      // Assess
       expect(result).toBe('2025-06-14-11:00:00');
     });
 
-    it('should handle fractional timezone offset', () => {
+    it('handles a fractional timezone offset', () => {
+      // Act
       const result = awsDate(5.5);
+
+      // Assess
       expect(result).toBe('2025-06-15+05:30:00');
     });
 
-    it('should handle negative fractional timezone offset', () => {
+    it('handles a negative fractional timezone offset', () => {
+      // Act
       const result = awsDate(-9.5);
+
+      // Assess
       expect(result).toBe('2025-06-15-09:30:00');
     });
 
-    it('should throw RangeError for invalid timezone offset', () => {
+    it('throws a RangeError for invalid timezone offset', () => {
+      // Act & Assess
       expect(() => awsDate(15)).toThrow(RangeError);
       expect(() => awsDate(-13)).toThrow(RangeError);
     });
   });
 
   describe('awsTime', () => {
-    it('should return a time in HH:MM:SS.sss format with Z timezone', () => {
+    it('returns a time in HH:MM:SS.sss format with Z timezone', () => {
+      // Act
       const result = awsTime();
+
+      // Assess
       expect(result).toBe('10:30:45.123Z');
     });
 
-    it('should handle positive timezone offset', () => {
+    it('handles a positive timezone offset', () => {
+      // Act
       const result = awsTime(3);
+
+      // Assess
       expect(result).toBe('13:30:45.123+03:00:00');
     });
 
-    it('should handle negative timezone offset', () => {
+    it('handles a negative timezone offset', () => {
+      // Act
       const result = awsTime(-5);
+
+      // Assess
       expect(result).toBe('05:30:45.123-05:00:00');
     });
 
-    it('should handle fractional timezone offset', () => {
+    it('handles a fractional timezone offset', () => {
+      // Act
       const result = awsTime(5.5);
+
+      // Assess
       expect(result).toBe('16:00:45.123+05:30:00');
     });
 
-    it('should throw RangeError for invalid timezone offset', () => {
+    it('throws a RangeError for invalid timezone offset', () => {
+      // Act & Assess
       expect(() => awsTime(15)).toThrow(RangeError);
       expect(() => awsTime(-13)).toThrow(RangeError);
     });
   });
 
   describe('awsDateTime', () => {
-    it('should return a datetime in ISO 8601 format with Z timezone', () => {
+    it('return a datetime in ISO 8601 format with Z timezone', () => {
+      // Act
       const result = awsDateTime();
+
+      // Assess
       expect(result).toBe('2025-06-15T10:30:45.123Z');
     });
 
-    it('should handle positive timezone offset', () => {
+    it('handles a positive timezone offset', () => {
+      // Act
       const result = awsDateTime(2);
+
+      // Assess
       expect(result).toBe('2025-06-15T12:30:45.123+02:00:00');
     });
 
-    it('should handle negative timezone offset', () => {
+    it('handles a negative timezone offset', () => {
+      // Act
       const result = awsDateTime(-7);
+
+      // Assess
       expect(result).toBe('2025-06-15T03:30:45.123-07:00:00');
     });
 
-    it('should handle date/time change with timezone offset', () => {
+    it('handles date/time change with timezone offset', () => {
+      // Act
       const result = awsDateTime(-11);
+
+      // Assess
       expect(result).toBe('2025-06-14T23:30:45.123-11:00:00');
     });
 
-    it('should handle fractional timezone offset', () => {
+    it('handles a fractional timezone offset', () => {
+      // Act
       const result = awsDateTime(5.5);
+
+      // Assess
       expect(result).toBe('2025-06-15T16:00:45.123+05:30:00');
     });
 
-    it('should handle negative fractional timezone offset', () => {
+    it('handles a negative fractional timezone offset', () => {
+      // Act
       const result = awsDateTime(-9.5);
+
+      // Assess
       expect(result).toBe('2025-06-15T01:00:45.123-09:30:00');
     });
 
-    it('should throw RangeError for invalid timezone offset', () => {
+    it('throws a RangeError for invalid timezone offset', () => {
+      // Act & Assess
       expect(() => awsDateTime(15)).toThrow(RangeError);
       expect(() => awsDateTime(-13)).toThrow(RangeError);
     });
   });
 
   describe('awsTimestamp', () => {
-    it('should return current time as Unix timestamp in seconds', () => {
+    it('returns the current time as Unix timestamp in seconds', () => {
+      // Act
       const result = awsTimestamp();
-      const expected = Math.floor(mockDate.getTime() / 1000);
-      expect(result).toBe(expected);
+
+      // Assess
+      expect(result).toBe(Math.floor(mockDate.getTime() / 1000));
     });
   });
 });

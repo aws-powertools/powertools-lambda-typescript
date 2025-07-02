@@ -1,46 +1,8 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
-import type { AppSyncEventsResolver } from '../appsync-events/AppSyncEventsResolver.js';
 import type { RouteHandlerRegistry } from '../appsync-events/RouteHandlerRegistry.js';
 import type { Router } from '../appsync-events/Router.js';
-import type { Anything, GenericLogger } from './common.js';
-
-// #region resolve options
-
-/**
- * Optional object to pass to the {@link AppSyncEventsResolver.resolve | `AppSyncEventsResolver.resolve()`} method.
- */
-type ResolveOptions = {
-  /**
-   * Reference to `this` instance of the class that is calling the `resolve` method.
-   *
-   * This parameter should be used only when using {@link AppSyncEventsResolver.onPublish | `AppSyncEventsResolver.onPublish()`}
-   * and {@link AppSyncEventsResolver.onSubscribe | `AppSyncEventsResolver.onSubscribe()`} as class method decorators, and
-   * it's used to bind the decorated methods to your class instance.
-   *
-   * @example
-   * ```ts
-   * import { AppSyncEventsResolver } from '@aws-lambda-powertools/event-handler/appsync-events';
-   *
-   * const app = new AppSyncEventsResolver();
-   *
-   * class Lambda {
-   *   public scope = 'scoped';
-   *
-   *   ⁣@app.onPublish('/foo')
-   *   public async handleFoo(payload: string) {
-   *     return `${this.scope} ${payload}`;
-   *   }
-   *
-   *   public async handler(event: unknown, context: Context) {
-   *     return app.resolve(event, context, { scope: this });
-   *   }
-   * }
-   * const lambda = new Lambda();
-   * const handler = lambda.handler.bind(lambda);
-   * ```
-   */
-  scope?: unknown;
-};
+import type { Anything } from './common.js';
 
 // #region OnPublish fn
 
@@ -129,7 +91,7 @@ type RouteHandlerRegistryOptions = {
    *
    * When no logger is provided, we'll only log warnings and errors using the global `console` object.
    */
-  logger: GenericLogger;
+  logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
   /**
    * Event type stored in the registry
    * @default 'onPublish'
@@ -322,7 +284,6 @@ type AppSyncEventsSubscribeEvent = AppSyncEventsEvent & {
 };
 
 export type {
-  GenericLogger,
   RouteHandlerRegistryOptions,
   RouteHandlerOptions,
   RouterOptions,
@@ -340,5 +301,4 @@ export type {
   OnPublishAggregateOutput,
   OnPublishEventPayload,
   OnPublishOutput,
-  ResolveOptions,
 };

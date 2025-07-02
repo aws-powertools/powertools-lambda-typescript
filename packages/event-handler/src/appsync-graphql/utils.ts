@@ -27,8 +27,6 @@ const isAppSyncGraphQLEvent = (
     isString(event.info.fieldName) &&
     isString(event.info.parentTypeName) &&
     isRecord(event.info.variables) &&
-    Array.isArray(event.info.selectionSetList) &&
-    event.info.selectionSetList.every((item) => isString(item)) &&
     isString(event.info.parentTypeName) &&
     isRecord(event.stash)
   );

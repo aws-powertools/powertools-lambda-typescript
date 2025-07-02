@@ -8,13 +8,13 @@ describe('Class: Router', () => {
 
   it('registers resolvers using the functional approach', () => {
     // Prepare
-    const router = new Router({ logger: console });
+    const app = new Router({ logger: console });
     const getPost = vi.fn(() => [true]);
     const addPost = vi.fn(async () => true);
 
     // Act
-    router.resolver(getPost, { typeName: 'Query', fieldName: 'getPost' });
-    router.resolver(addPost, { typeName: 'Mutation', fieldName: 'addPost' });
+    app.onQuery('getPost', getPost);
+    app.onMutation('addPost', addPost);
 
     // Assess
     expect(console.debug).toHaveBeenNthCalledWith(
@@ -29,28 +29,28 @@ describe('Class: Router', () => {
 
   it('registers resolvers using the decorator pattern', () => {
     // Prepare
-    const router = new Router({ logger: console });
+    const app = new Router({ logger: console });
 
     // Act
     class Lambda {
       readonly prop = 'value';
 
-      @router.resolver({ fieldName: 'getPost' })
+      @app.resolver({ fieldName: 'getPost' })
       public getPost() {
         return `${this.prop} foo`;
       }
 
-      @router.resolver({ fieldName: 'getAuthor', typeName: 'Query' })
+      @app.resolver({ fieldName: 'getAuthor' })
       public getAuthor() {
         return `${this.prop} bar`;
       }
 
-      @router.resolver({ fieldName: 'addPost', typeName: 'Mutation' })
+      @app.onMutation('addPost')
       public addPost() {
         return `${this.prop} bar`;
       }
 
-      @router.resolver({ fieldName: 'updatePost', typeName: 'Mutation' })
+      @app.resolver({ fieldName: 'updatePost', typeName: 'Mutation' })
       public updatePost() {
         return `${this.prop} baz`;
       }
@@ -88,18 +88,22 @@ describe('Class: Router', () => {
 
   it('registers nested resolvers using the decorator pattern', () => {
     // Prepare
-    const router = new Router({ logger: console });
+    const app = new Router({ logger: console });
 
     // Act
     class Lambda {
-      readonly prop = 'value';
-
-      @router.resolver({ fieldName: 'listLocations' })
-      @router.resolver({ fieldName: 'locations' })
+      @app.onQuery('listLocations')
+      @app.onQuery('locations')
       public getLocations() {
-        return [{ name: 'Location 1', description: 'Description 1' }];
+        return [
+          {
+            name: 'Location 1',
+            description: 'Description 1',
+          },
+        ];
       }
     }
+
     const lambda = new Lambda();
     const response = lambda.getLocations();
 
@@ -120,10 +124,10 @@ describe('Class: Router', () => {
 
   it('uses a default logger with only warnings if none is provided', () => {
     // Prepare
-    const router = new Router();
+    const app = new Router();
 
     // Act
-    router.resolver(vi.fn(), { fieldName: 'getPost' });
+    app.resolver(vi.fn(), { fieldName: 'getPost' });
 
     // Assess
     expect(console.debug).not.toHaveBeenCalled();

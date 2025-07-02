@@ -1,8 +1,10 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type {
+  GenericLogger,
+  JSONValue,
+} from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
 import type { BedrockAgentFunctionResolver } from '../bedrock-agent/BedrockAgentFunctionResolver.js';
 import type { BedrockFunctionResponse } from '../bedrock-agent/BedrockFunctionResponse.js';
-import type { GenericLogger } from '../types/common.js';
 
 /**
  * Configuration for a tool in the Bedrock Agent Function Resolver.

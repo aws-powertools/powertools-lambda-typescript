@@ -1,9 +1,9 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
-import { onGraphqlEventFactory } from 'tests/helpers/factories.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';
-import { ResolverNotFoundException } from '../../../src/appsync-graphql/errors.js';
+import { ResolverNotFoundException } from '../../../src/appsync-graphql/index.js';
+import { onGraphqlEventFactory } from '../../helpers/factories.js';
 
 describe('Class: AppSyncGraphQLResolver', () => {
   beforeEach(() => {
@@ -142,17 +142,14 @@ describe('Class: AppSyncGraphQLResolver', () => {
   it('logs only warnings and errors using global console object if no logger supplied', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
-    app.resolver<{ title: string; content: string }>(
+    app.onMutation<{ title: string; content: string }>(
+      'addPost',
       async ({ title, content }) => {
         return {
           id: '123',
           title,
           content,
         };
-      },
-      {
-        fieldName: 'addPost',
-        typeName: 'Mutation',
       }
     );
 
@@ -177,18 +174,13 @@ describe('Class: AppSyncGraphQLResolver', () => {
   it('resolver function has access to event and context', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
-    app.resolver<{ id: string }>(
-      async ({ id }, event, context) => {
-        return {
-          id,
-          event,
-          context,
-        };
-      },
-      {
-        fieldName: 'getPost',
-      }
-    );
+    app.onQuery<{ id: string }>('getPost', async ({ id }, event, context) => {
+      return {
+        id,
+        event,
+        context,
+      };
+    });
 
     // Act
     const event = onGraphqlEventFactory('getPost', 'Query', { id: '123' });
@@ -209,11 +201,24 @@ describe('Class: AppSyncGraphQLResolver', () => {
     class Lambda {
       public scope = 'scoped';
 
-      @app.resolver({ fieldName: 'getPost', typeName: 'Query' })
+      @app.onQuery('getPost')
       public async handleGetPost({ id }: { id: string }) {
         return {
           id,
           scope: `${this.scope} id=${id}`,
+        };
+      }
+
+      @app.onMutation('addPost')
+      public async handleAddPost({
+        title,
+        content,
+      }: { title: string; content: string }) {
+        return {
+          id: '123',
+          title,
+          content,
+          scope: this.scope,
         };
       }
 
@@ -229,15 +234,28 @@ describe('Class: AppSyncGraphQLResolver', () => {
     const handler = lambda.handler.bind(lambda);
 
     // Act
-    const result = await handler(
+    const resultQuery = await handler(
       onGraphqlEventFactory('getPost', 'Query', { id: '123' }),
+      context
+    );
+    const resultMutation = await handler(
+      onGraphqlEventFactory('addPost', 'Mutation', {
+        title: 'Post Title',
+        content: 'Post Content',
+      }),
       context
     );
 
     // Assess
-    expect(result).toEqual({
+    expect(resultQuery).toEqual({
       id: '123',
       scope: 'scoped id=123',
+    });
+    expect(resultMutation).toEqual({
+      id: '123',
+      title: 'Post Title',
+      content: 'Post Content',
+      scope: 'scoped',
     });
   });
 
@@ -246,23 +264,26 @@ describe('Class: AppSyncGraphQLResolver', () => {
     vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
     const app = new AppSyncGraphQLResolver();
 
-    app.resolver<{ title: string; content: string }>(
-      async ({ title, content }) => {
+    class Lambda {
+      @app.resolver({ fieldName: 'getPost' })
+      public async handleGetPost({ id }: { id: string }) {
         return {
-          id: '123',
-          title,
-          content,
+          id,
+          title: 'Post Title',
+          content: 'Post Content',
         };
-      },
-      {
-        fieldName: 'addPost',
-        typeName: 'Mutation',
       }
-    );
+
+      public async handler(event: unknown, context: Context) {
+        return app.resolve(event, context, { scope: this });
+      }
+    }
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
 
     // Act
-    await app.resolve(
-      onGraphqlEventFactory('addPost', 'Mutation', {
+    await handler(
+      onGraphqlEventFactory('getPost', 'Query', {
         title: 'Post Title',
         content: 'Post Content',
       }),

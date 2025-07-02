@@ -1,16 +1,13 @@
 import { EnvironmentVariablesService } from '@aws-lambda-powertools/commons';
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { isRecord } from '@aws-lambda-powertools/commons/typeutils';
 import type {
-  GenericLogger,
   OnPublishHandler,
   OnSubscribeHandler,
   RouteOptions,
   RouterOptions,
 } from '../types/appsync-events.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
-
-// Simple global approach - store the last instance per router
-const routerInstanceMap = new WeakMap<Router, unknown>();
 
 /**
  * Class for registering routes for the `onPublish` and `onSubscribe` events in AWS AppSync Events APIs.

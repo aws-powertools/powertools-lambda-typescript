@@ -7,14 +7,18 @@ import type { Router } from '../appsync-graphql/Router.js';
 
 type ResolverSyncHandlerFn<TParams = Record<string, unknown>> = (
   args: TParams,
-  event: AppSyncResolverEvent<TParams>,
-  context: Context
+  options: {
+    event: AppSyncResolverEvent<TParams>;
+    context: Context;
+  }
 ) => unknown;
 
 type ResolverHandlerFn<TParams = Record<string, unknown>> = (
   args: TParams,
-  event: AppSyncResolverEvent<TParams>,
-  context: Context
+  options: {
+    event: AppSyncResolverEvent<TParams>;
+    context: Context;
+  }
 ) => Promise<unknown>;
 
 type ResolverHandler<TParams = Record<string, unknown>> =

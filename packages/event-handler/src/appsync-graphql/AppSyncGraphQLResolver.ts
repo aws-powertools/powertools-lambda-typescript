@@ -145,8 +145,7 @@ class AppSyncGraphQLResolver extends Router {
     if (resolverHandlerOptions) {
       return resolverHandlerOptions.handler.apply(options?.scope ?? this, [
         event.arguments,
-        event,
-        context,
+        { event, context },
       ]);
     }
 

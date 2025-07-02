@@ -31,7 +31,7 @@ Event Handler for AWS AppSync GraphQL APIs simplifies routing and processing of 
 
 You must have an existing AppSync GraphQL API and IAM permissions to invoke your Lambda function. That said, there is no additional permissions to use Event Handler as routing requires no dependency (_standard library_).
 
-This is the sample infrastructure we are using for the initial examples with a AppSync Direct Lambda Resolver.
+This is the sample infrastructure we will be using for the initial examples with an AppSync Direct Lambda Resolver.
 
 === "gettingStartedSchema.graphql"
 
@@ -56,7 +56,7 @@ You can register functions to match GraphQL types and fields with one of three m
 !!! question "What is a type and field?"
     A type would be a top-level **GraphQL Type** like `Query`, `Mutation`, `Todo`. A **GraphQL Field** would be `listTodos` under `Query`, `createTodo` under `Mutation`, etc.
 
-The function receives the parsed arguments from the GraphQL request as its first parameter. We will also take care of parsing the response or catching errors and returning them in the expected format.
+The function receives the parsed arguments from the GraphQL request as its first parameter. We also take care of parsing the response or catching errors and returning them in the expected format.
 
 #### Query resolver
 
@@ -118,7 +118,7 @@ Here's a table with their related scalar as a quick reference:
 
 !!! note
 
-    The following examples use a more advanced schema. These schemas differ from [initial sample infrastructure we used earlier](#required-resources).
+    The following examples use a more advanced schema. These schemas differ from the [initial sample infrastructure we used earlier](#required-resources).
 
 You can register the same route handler multiple times to resolve fields with the same return value.
 
@@ -138,7 +138,7 @@ You can register the same route handler multiple times to resolve fields with th
 
 ### Accessing Lambda context and event
 
-You can access to the original Lambda event or context for additional information. These are passed to the handler function as optional arguments.
+You can access the original Lambda event or context for additional information. These are passed to the handler function as optional arguments.
 
 === "Access event and context"
 

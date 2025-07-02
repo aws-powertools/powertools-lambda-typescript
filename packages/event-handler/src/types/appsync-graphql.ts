@@ -145,17 +145,17 @@ type GraphQlRouteOptions = {
 };
 
 type GraphQlBatchRouteOptions<
-  T extends boolean = false,
-  R extends boolean = true,
+  T extends boolean = true,
+  R extends boolean = false,
 > = GraphQlRouteOptions & {
   /**
    * Whether the route handler will send all the events to the route handler at once or one by one
-   * @default false
+   * @default true
    */
   aggregate?: T;
   /**
    * Whether to raise an error if the handler fails
-   * @default true
+   * @default false
    */
   raiseOnError?: R;
 };

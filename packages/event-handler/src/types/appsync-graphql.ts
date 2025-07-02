@@ -3,6 +3,47 @@ import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import type { RouteHandlerRegistry } from '../appsync-graphql/RouteHandlerRegistry.js';
 import type { Router } from '../appsync-graphql/Router.js';
 
+// #region BatchResolver fn
+
+type BatchResolverSyncHandlerFn<TParams = Record<string, unknown>> = (
+  args: TParams,
+  options: {
+    event: AppSyncResolverEvent<TParams>;
+    context: Context;
+  }
+) => unknown;
+
+type BatchResolverHandlerFn<TParams = Record<string, unknown>> = (
+  args: TParams,
+  options: {
+    event: AppSyncResolverEvent<TParams>;
+    context: Context;
+  }
+) => Promise<unknown>;
+
+type BatchResolverAggregateHandlerFn<TParams = Record<string, unknown>> = (
+  events: AppSyncResolverEvent<TParams>[],
+  options: {
+    context: Context;
+  }
+) => Promise<unknown>;
+
+type BatchResolverSyncAggregateHandlerFn<TParams = Record<string, unknown>> = (
+  event: AppSyncResolverEvent<TParams>[],
+  options: {
+    context: Context;
+  }
+) => unknown;
+
+type BatchResolverHandler<
+  TParams = Record<string, unknown>,
+  T extends boolean | undefined = undefined,
+> = T extends true
+  ?
+      | BatchResolverAggregateHandlerFn<TParams>
+      | BatchResolverSyncAggregateHandlerFn<TParams>
+  : BatchResolverHandlerFn<TParams> | BatchResolverSyncHandlerFn<TParams>;
+
 // #region Resolver fn
 
 type ResolverSyncHandlerFn<TParams = Record<string, unknown>> = (
@@ -46,11 +87,15 @@ type RouteHandlerRegistryOptions = {
  * @property fieldName - The name of the field to be registered
  * @property typeName - The name of the type to be registered
  */
-type RouteHandlerOptions<TParams = Record<string, unknown>> = {
+type RouteHandlerOptions<
+  TParams = Record<string, unknown>,
+  T extends boolean = true,
+  R extends boolean = false,
+> = {
   /**
    * The handler function to be called when the event is received
    */
-  handler: ResolverHandler<TParams>;
+  handler: BatchResolverHandler<TParams, T> | ResolverHandler<TParams>;
   /**
    * The field name of the event to be registered
    */
@@ -59,6 +104,16 @@ type RouteHandlerOptions<TParams = Record<string, unknown>> = {
    * The type name of the event to be registered
    */
   typeName: string;
+  /**
+   * Whether the route handler will send all the events to the route handler at once or one by one
+   * @default true
+   */
+  aggregate?: T;
+  /**
+   * Whether to raise an error if the handler fails
+   * @default false
+   */
+  raiseOnError?: R;
 };
 
 // #region Router
@@ -89,10 +144,29 @@ type GraphQlRouteOptions = {
   typeName?: string;
 };
 
+type GraphQlBatchRouteOptions<
+  T extends boolean = false,
+  R extends boolean = true,
+> = GraphQlRouteOptions & {
+  /**
+   * Whether the route handler will send all the events to the route handler at once or one by one
+   * @default false
+   */
+  aggregate?: T;
+  /**
+   * Whether to raise an error if the handler fails
+   * @default true
+   */
+  raiseOnError?: R;
+};
+
 export type {
   RouteHandlerRegistryOptions,
   RouteHandlerOptions,
   GraphQlRouterOptions,
   GraphQlRouteOptions,
+  GraphQlBatchRouteOptions,
   ResolverHandler,
+  BatchResolverHandler,
+  BatchResolverAggregateHandlerFn,
 };

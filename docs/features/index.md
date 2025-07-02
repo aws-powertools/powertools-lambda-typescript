@@ -31,11 +31,11 @@ description: Features of Powertools for AWS Lambda
 
     [:octicons-arrow-right-24: Read more](./metrics.md)
 
-- __Event Handler - AppSync Events__
+- __Event Handler__
 
     ---
 
-    Event Handler for AWS AppSync real-time events
+    Event Handler for AWS AppSync real-time events, AppSync GraphQL APIs, Bedrock Agents, and more. It simplifies routing and processing of events in AWS Lambda functions.
 
     [:octicons-arrow-right-24: Read more](./event-handler/appsync-events.md)
 

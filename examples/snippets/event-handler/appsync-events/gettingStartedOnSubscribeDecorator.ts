@@ -18,7 +18,7 @@ class Lambda {
   }
 
   async handler(event: unknown, context: Context) {
-    return app.resolve(event, context);
+    return app.resolve(event, context, { scope: this });
   }
 }
 

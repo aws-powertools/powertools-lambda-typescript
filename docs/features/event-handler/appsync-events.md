@@ -1,7 +1,6 @@
 ---
 title: AppSync Events
 description: Event Handler for AWS AppSync real-time events
-status: new
 ---
 
 Event Handler for AWS AppSync real-time events.

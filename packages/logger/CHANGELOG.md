@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
+
+
+### Bug Fixes
+
+* **logger:** reset keys on error in middleware ([#4122](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4122)) ([e310c50](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e310c50fe12463a5e3759ee1ecd61e0467fbc6a4))
+* **logger:** set `hourCycle` to h23 when tz is not UTC ([#4102](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4102)) ([54b0863](https://github.com/aws-powertools/powertools-lambda-typescript/commit/54b08636474f11fefcb295cd04511d3f46be4382))
+
+
+
+
+
 # [2.22.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.21.0...v2.22.0) (2025-06-20)
 
 **Note:** Version bump only for package @aws-lambda-powertools/logger

@@ -174,13 +174,16 @@ describe('Class: AppSyncGraphQLResolver', () => {
   it('resolver function has access to event and context', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
-    app.onQuery<{ id: string }>('getPost', async ({ id }, event, context) => {
-      return {
-        id,
-        event,
-        context,
-      };
-    });
+    app.onQuery<{ id: string }>(
+      'getPost',
+      async ({ id }, { event, context }) => {
+        return {
+          id,
+          event,
+          context,
+        };
+      }
+    );
 
     // Act
     const event = onGraphqlEventFactory('getPost', 'Query', { id: '123' });

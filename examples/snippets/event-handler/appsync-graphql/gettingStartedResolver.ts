@@ -3,7 +3,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
 
 const logger = new Logger({
-  serviceName: 'serverlessAirline',
+  serviceName: 'TodoManager',
 });
 const app = new AppSyncGraphQLResolver({ logger });
 

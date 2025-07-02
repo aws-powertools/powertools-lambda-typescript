@@ -90,6 +90,8 @@ If you prefer to use the decorator syntax, you can instead use the same methods 
 --8<-- "examples/snippets/event-handler/appsync-graphql/gettingStartedDecorators.ts"
 ```
 
+1. It's recommended to pass a refernce of `this` to ensure the correct class scope is propageted to the route handler functions.
+
 ### Scalar functions
 
 When working with [AWS AppSync Scalar types](https://docs.aws.amazon.com/appsync/latest/devguide/scalars.html){target="_blank"}, you might want to generate the same values for data validation purposes.

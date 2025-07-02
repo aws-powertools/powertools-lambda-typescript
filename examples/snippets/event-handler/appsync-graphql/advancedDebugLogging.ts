@@ -7,7 +7,7 @@ import {
 import type { Context } from 'aws-lambda';
 
 const logger = new Logger({
-  serviceName: 'serverlessAirline',
+  serviceName: 'TodoManager',
   logLevel: 'DEBUG',
   correlationIdSearchFn: search,
 });

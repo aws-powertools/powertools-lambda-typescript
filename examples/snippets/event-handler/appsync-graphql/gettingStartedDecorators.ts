@@ -7,7 +7,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
 
 const logger = new Logger({
-  serviceName: 'serverlessAirline',
+  serviceName: 'TodoManager',
 });
 const app = new AppSyncGraphQLResolver({ logger });
 
@@ -57,7 +57,7 @@ class Lambda implements LambdaInterface {
   }
 
   async handler(event: unknown, context: Context) {
-    return app.resolve(event, context, { scope: this });
+    return app.resolve(event, context, { scope: this }); // (1)!
   }
 }
 

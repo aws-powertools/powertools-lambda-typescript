@@ -123,6 +123,10 @@ const injectLambdaContext = (
       } else {
         logger.clearBuffer();
       }
+
+      if (isResetStateEnabled) {
+        logger.resetKeys();
+      }
     }
   };
 

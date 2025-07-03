@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.150",
     "@types/node": "24.0.8",
-    "aws-cdk-lib": "^2.202.0",
+    "aws-cdk-lib": "^2.203.1",
     "constructs": "^10.4.2",
     "source-map-support": "^0.5.21",
     "tsx": "^4.20.3",
@@ -49,7 +49,7 @@
     "@middy/core": "^4.7.0",
     "@types/aws-lambda": "^8.10.150",
     "@types/node": "24.0.8",
-    "aws-cdk": "^2.1020.0",
+    "aws-cdk": "^2.1020.1",
     "constructs": "^10.4.2",
     "esbuild": "^0.25.5",
     "typescript": "^5.8.3"

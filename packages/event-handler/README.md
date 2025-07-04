@@ -6,7 +6,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 ## Intro
 
-Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), Lambda Function URLs, VPC Lattice, AWS AppSync Events APIs, and Amazon Bedrock Agent Functions.
+Event handler for AWS AppSync GraphQL APIs, AWS AppSync Events APIs, and Amazon Bedrock Agent Functions.
 
 ## Usage
 
@@ -101,6 +101,117 @@ app.onSubscribe('/default/foo', async (event) => {
 export const handler = async (event, context) =>
   app.resolve(event, context);
 ```
+
+## AppSync GraphQL
+
+The Event Handler for AWS AppSync GraphQL APIs allows you to easily handle GraphQL requests in your Lambda functions. It enables you to define resolvers for GraphQL types and fields, making it easier to handle GraphQL requests without the need for complex VTL or JavaScript templates.
+
+* Route events based on GraphQL type and field keys
+* Automatically parse API arguments to function parameters
+* Handle GraphQL responses and errors in the expected format
+
+### Handle query requests
+
+When registering a resolver for a Query type, you can use the `onQuery()` method. This method allows you to define a function that will be invoked when a GraphQL Query is made.
+
+```typescript
+import { Logger } from '@aws-lambda-powertools/logger';
+import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+import type { Context } from 'aws-lambda';
+
+const logger = new Logger({
+  serviceName: 'TodoManager',
+});
+const app = new AppSyncGraphQLResolver({ logger });
+
+app.onQuery<{ id: string }>('getTodo', async ({ id }) => {
+  logger.debug('Resolving todo', { id });
+  // Simulate fetching a todo from a database or external service
+  return {
+    id,
+    title: 'Todo Title',
+    completed: false,
+  };
+});
+
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);
+```
+
+### Handle mutation requests
+
+Similarly, you can register a resolver for a Mutation type using the `onMutation()` method. This method allows you to define a function that will be invoked when a GraphQL Mutation is made.
+
+```typescript
+import { Logger } from '@aws-lambda-powertools/logger';
+import {
+  AppSyncGraphQLResolver,
+  makeId,
+} from '@aws-lambda-powertools/event-handler/appsync-graphql';
+import type { Context } from 'aws-lambda';
+
+const logger = new Logger({
+  serviceName: 'TodoManager',
+});
+const app = new AppSyncGraphQLResolver({ logger });
+
+app.onMutation<{ title: string }>('createTodo', async ({ title }) => {
+  logger.debug('Creating todo', { title });
+  const todoId = makeId();
+  // Simulate creating a todo in a database or external service
+  return {
+    id: todoId,
+    title,
+    completed: false,
+  };
+});
+
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);
+```
+
+### Generic resolver
+
+When you want to have more control over the type and field, you can use the `resolver()` method. This method allows you to register a function for a specific GraphQL type and field including custom types.
+
+```typescript
+import { Logger } from '@aws-lambda-powertools/logger';
+import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+import type { Context } from 'aws-lambda';
+
+const logger = new Logger({
+  serviceName: 'TodoManager',
+});
+const app = new AppSyncGraphQLResolver({ logger });
+
+app.resolver(
+  async () => {
+    logger.debug('Resolving todos');
+    // Simulate fetching a todo from a database or external service
+    return [
+      {
+        id: 'todo-id',
+        title: 'Todo Title',
+        completed: false,
+      },
+      {
+        id: 'todo-id-2',
+        title: 'Todo Title 2',
+        completed: true,
+      },
+    ];
+  },
+  {
+    fieldName: 'listTodos',
+    typeName: 'Query',
+  }
+);
+
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);
+```
+
+See the [documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/event-handler/appsync-events) for more details on how to use the AppSync event handler.
 
 ## Bedrock Agent Functions
 

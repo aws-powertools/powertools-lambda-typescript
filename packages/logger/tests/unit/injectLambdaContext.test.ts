@@ -415,4 +415,121 @@ describe('Inject Lambda Context', () => {
       })
     );
   });
+
+  it.each([
+    {
+      case: 'middleware',
+      getHandler: (logger: Logger) =>
+        middy(async (event: { id: number }) => {
+          logger.info('Processing event');
+          logger.appendKeys({ id: event.id });
+          throw new Error('Test error');
+        }).use(
+          injectLambdaContext(logger, {
+            resetKeys: true,
+          })
+        ),
+    },
+    {
+      case: 'decorator',
+      getHandler: (logger: Logger) => {
+        class Lambda {
+          @logger.injectLambdaContext({
+            resetKeys: true,
+          })
+          public async handler(
+            event: { id: number },
+            _context: Context
+          ): Promise<void> {
+            logger.info('Processing event');
+            logger.appendKeys({ id: event.id });
+            throw new Error('Test error');
+          }
+        }
+        const lambda = new Lambda();
+        return lambda.handler.bind(lambda);
+      },
+    },
+  ])(
+    'resets keys when the handler throws an error $case',
+    async ({ getHandler }) => {
+      // Prepare
+      const logger = new Logger();
+      const handler = getHandler(logger);
+
+      // Act & Assess
+      await expect(handler({ id: 1 }, context)).rejects.toThrow('Test error');
+      await expect(handler({ id: 2 }, context)).rejects.toThrow('Test error');
+      expect(console.info).toHaveBeenCalledTimes(2);
+      expect(console.info).toHaveLoggedNth(
+        1,
+        expect.objectContaining({
+          message: 'Processing event',
+        })
+      );
+      expect(console.info).toHaveLoggedNth(
+        2,
+        expect.not.objectContaining({
+          message: 'Processing event',
+          id: 1,
+        })
+      );
+    }
+  );
+
+  it.each([
+    {
+      case: 'middleware',
+      getHandler: (logger: Logger) =>
+        middy(async (event: { id: number }) => {
+          logger.info('Processing event');
+          logger.appendKeys({ id: event.id });
+          return true;
+        }).use(
+          injectLambdaContext(logger, {
+            resetKeys: true,
+          })
+        ),
+    },
+    {
+      case: 'decorator',
+      getHandler: (logger: Logger) => {
+        class Lambda {
+          @logger.injectLambdaContext({
+            resetKeys: true,
+          })
+          public async handler(event: { id: number }, _context: Context) {
+            logger.info('Processing event');
+            logger.appendKeys({ id: event.id });
+            return true;
+          }
+        }
+        const lambda = new Lambda();
+        return lambda.handler.bind(lambda);
+      },
+    },
+  ])('resets keys when the handler returns $case', async ({ getHandler }) => {
+    // Prepare
+    const logger = new Logger();
+    const handler = getHandler(logger);
+    // Act
+    await handler({ id: 1 }, context);
+    await handler({ id: 2 }, context);
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Processing event',
+      })
+    );
+    expect(console.info).toHaveLoggedNth(
+      2,
+      expect.not.objectContaining({
+        message: 'Processing event',
+        id: 1,
+      })
+    );
+  });
 });

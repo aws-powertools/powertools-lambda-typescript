@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
+
+
+### Bug Fixes
+
+* **ci:** Partition workflows ([#4084](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4084)) ([40195dd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/40195ddc36f343c3b7905b51f2b82842d05fce58))
+* **logger:** reset keys on error in middleware ([#4122](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4122)) ([e310c50](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e310c50fe12463a5e3759ee1ecd61e0467fbc6a4))
+* **logger:** set `hourCycle` to h23 when tz is not UTC ([#4102](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4102)) ([54b0863](https://github.com/aws-powertools/powertools-lambda-typescript/commit/54b08636474f11fefcb295cd04511d3f46be4382))
+
+
+### Features
+
+* **event-handler:** add single resolver functionality for AppSync GraphQL API ([#3999](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3999)) ([b91383f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b91383f6ec82cff9196ccc4e0c9e88d285eb567d))
+* **event-handler:** expose event & context as object ([#4113](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4113)) ([7e74c9e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7e74c9e356d97372c4f1ee5ca83d16dfefea42f4))
+* **event-handler:** support `onQuery` and `onMutation` handlers ([#4111](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4111)) ([263db2d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/263db2d74e558adb9b088174a5500de6c29488d0))
+
+
+
+
+
 # [2.22.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.21.0...v2.22.0) (2025-06-20)
 
 

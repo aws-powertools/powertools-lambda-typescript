@@ -54,10 +54,11 @@ To close the gap between Powertools for AWS Lambda (Python) and Powertools for A
 
 In addition to the Event Handler REST feature mentioned above, we will also be working on the following:
 
-- [ ] [Implement resolver for Amazon Bedrock Agents Functions](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3710){target="_blank"}
+- [x] [Implement resolver for Amazon Bedrock Agents Functions](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3710){target="_blank"}
 - [x] [Implement resolver for AWS AppSync Events API](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3857){target="_blank"}
 - [ ] Implement resolver for Amazon Bedrock Agents OpenAPI
 - [x] [Create RFC for AppSync GraphQL resolver](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3885){target="_blank"}
+- [x] [Implement resolver for AWS AppSync GraphQL API](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1166){target="_blank"}
 
 ##### Validation
 
@@ -77,7 +78,7 @@ For the Validation utility, we'll experiment with a community-driven approach to
 To streghten our offering for more advanced customers as well as enterprises, we will be working on a set of activities that will help us better support their needs and practices. These include:
 
 - [x] [Publish Lambda layers to GovCloud](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3423){target="_blank"}
-- [ ] [Publish Lambda layers to China regions](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3920){target="_blank"}
+- [x] [Publish Lambda layers to China regions](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3920){target="_blank"}
 - [ ] Improve OSS supply chain posture (Q2) by making sure we're auditing our dependencies for compatible licenses and include NOTICE files in our Lambda layers
 - [ ] Create a new "Advanced Use Cases" section in the docs - to help customers with more complex use cases, such as running Powertools for AWS Lambda in container environments
 - [ ] Set up CI/CD for performance testing
@@ -99,7 +100,7 @@ To ensure we are attracting tomorrow's customers as well as new contributors to 
 
 You can help us prioritize by [upvoting existing feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc++label%3Atype%2Ffeature-request+), leaving a comment on what use cases it could unblock for you, and by joining our discussions on Discord.
 
-[![Join our Discord](https://dcbadge.vercel.app/api/server/B8zZKbbyET)](https://discord.gg/B8zZKbbyET){target="_blank"}
+[![Discord](./media/join-discord.svg)](https://discord.gg/B8zZKbbyET)
 
 ### Roadmap status definition
 

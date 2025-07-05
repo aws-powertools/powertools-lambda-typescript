@@ -22,8 +22,9 @@ type BatchResolverHandlerFn<TParams = Record<string, unknown>> = (
 ) => Promise<unknown>;
 
 type BatchResolverAggregateHandlerFn<TParams = Record<string, unknown>> = (
-  events: AppSyncResolverEvent<TParams>[],
+  event: AppSyncResolverEvent<TParams>[],
   options: {
+    event: AppSyncResolverEvent<TParams>[];
     context: Context;
   }
 ) => Promise<unknown>;

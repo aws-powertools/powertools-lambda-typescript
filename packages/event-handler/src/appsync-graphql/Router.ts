@@ -356,8 +356,8 @@ class Router {
         fieldName,
         handler: handler as BatchResolverHandler,
         typeName,
-        aggregate: (batchResolverOptions?.aggregate ?? true) as T,
-        raiseOnError: (batchResolverOptions?.raiseOnError ?? false) as R,
+        aggregate: batchResolverOptions?.aggregate ?? true,
+        raiseOnError: batchResolverOptions?.raiseOnError ?? false,
       });
       return;
     }
@@ -369,8 +369,8 @@ class Router {
         fieldName,
         handler: descriptor?.value,
         typeName,
-        aggregate: (batchResolverOptions?.aggregate ?? true) as T,
-        raiseOnError: (batchResolverOptions?.raiseOnError ?? false) as R,
+        aggregate: batchResolverOptions?.aggregate ?? true,
+        raiseOnError: batchResolverOptions?.raiseOnError ?? false,
       });
       return descriptor;
     };

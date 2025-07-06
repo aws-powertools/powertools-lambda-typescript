@@ -1,4 +1,9 @@
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
+import type {
+  BatchResolverAggregateHandlerFn,
+  ResolverHandler,
+  RouteHandlerOptions,
+} from '../types/appsync-graphql.js';
 import type { ResolveOptions } from '../types/common.js';
 import { ResolverNotFoundException } from './errors.js';
 import { Router } from './Router.js';
@@ -98,8 +103,13 @@ class AppSyncGraphQLResolver extends Router {
     options?: ResolveOptions
   ): Promise<unknown> {
     if (Array.isArray(event)) {
-      this.logger.warn('Batch resolver is not implemented yet');
-      return;
+      if (event.some((singleEvent) => !isAppSyncGraphQLEvent(singleEvent))) {
+        this.logger.warn(
+          'Received an event that is not compatible with this resolver'
+        );
+        return;
+      }
+      return await this.#executeBatchResolvers(event, context, options);
     }
     if (!isAppSyncGraphQLEvent(event)) {
       this.logger.warn(
@@ -117,6 +127,110 @@ class AppSyncGraphQLResolver extends Router {
       if (error instanceof ResolverNotFoundException) throw error;
       return this.#formatErrorResponse(error);
     }
+  }
+
+  async #executeBatchResolvers(
+    events: AppSyncResolverEvent<Record<string, unknown>>[],
+    context: Context,
+    options?: ResolveOptions
+  ): Promise<unknown[]> {
+    const results: unknown[] = [];
+    const { fieldName, parentTypeName: typeName } = events[0].info;
+    const batchHandlerOptions = this.batchResolverRegistry.resolve(
+      typeName,
+      fieldName
+    );
+
+    if (batchHandlerOptions) {
+      try {
+        const result = await this.#callBatchResolver(
+          events,
+          context,
+          batchHandlerOptions,
+          options
+        );
+        results.push(...result);
+      } catch (error) {
+        this.logger.error(
+          `An error occurred in batch handler ${fieldName}`,
+          error
+        );
+        throw error;
+      }
+    }
+
+    return results;
+  }
+
+  async #callBatchResolver(
+    events: AppSyncResolverEvent<Record<string, unknown>>[],
+    context: Context,
+    options: RouteHandlerOptions,
+    resolveOptions?: ResolveOptions
+  ): Promise<unknown[]> {
+    const { aggregate, raiseOnError } = options;
+    this.logger.debug(
+      `Graceful error handling flag raiseOnError=${raiseOnError}`
+    );
+
+    // Checks whether the entire batch should be processed at once
+    if (aggregate) {
+      const response = await (
+        options.handler as BatchResolverAggregateHandlerFn
+      ).apply(resolveOptions?.scope ?? this, [
+        events,
+        { event: events, context },
+      ]);
+
+      if (!Array.isArray(response)) {
+        throw new Error(
+          'The response must be a List when using batch resolvers'
+        );
+      }
+
+      return response;
+    }
+
+    const handler = options.handler as ResolverHandler;
+
+    /**
+     * Non aggregated events, so we call this event list x times and
+     * process each event individually.
+     */
+
+    // If `raiseOnError` is true, stop on first exception we encounter
+    if (raiseOnError) {
+      const results: unknown[] = [];
+      for (const event of events) {
+        const result = await handler.apply(resolveOptions?.scope ?? this, [
+          event.arguments,
+          { event, context },
+        ]);
+        results.push(result);
+      }
+      return results;
+    }
+
+    // By default, we gracefully append `null` for any records that failed processing
+    const results: unknown[] = [];
+    for (let idx = 0; idx < events.length; idx++) {
+      const event = events[idx];
+      try {
+        const result = await handler.apply(resolveOptions?.scope ?? this, [
+          event.arguments,
+          { event, context },
+        ]);
+        results.push(result);
+      } catch (error) {
+        this.logger.error(error);
+        this.logger.debug(
+          `Failed to process event number ${idx} from field '${event.info.fieldName}'`
+        );
+        results.push(null);
+      }
+    }
+
+    return results;
   }
 
   /**
@@ -143,10 +257,10 @@ class AppSyncGraphQLResolver extends Router {
       fieldName
     );
     if (resolverHandlerOptions) {
-      return resolverHandlerOptions.handler.apply(options?.scope ?? this, [
-        event.arguments,
-        { event, context },
-      ]);
+      return (resolverHandlerOptions.handler as ResolverHandler).apply(
+        options?.scope ?? this,
+        [event.arguments, { event, context }]
+      );
     }
 
     throw new ResolverNotFoundException(

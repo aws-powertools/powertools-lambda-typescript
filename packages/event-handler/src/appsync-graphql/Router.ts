@@ -4,6 +4,8 @@ import {
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
 import type {
+  BatchResolverHandler,
+  GraphQlBatchRouteOptions,
   GraphQlRouteOptions,
   GraphQlRouterOptions,
   ResolverHandler,
@@ -18,6 +20,10 @@ class Router {
    * A map of registered routes for all GraphQL events, keyed by their fieldNames.
    */
   protected readonly resolverRegistry: RouteHandlerRegistry;
+  /**
+   * A map of registered routes for GraphQL batch events, keyed by their fieldNames.
+   */
+  protected readonly batchResolverRegistry: RouteHandlerRegistry;
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
    *
@@ -40,6 +46,9 @@ class Router {
       warn: console.warn,
     };
     this.resolverRegistry = new RouteHandlerRegistry({
+      logger: this.logger,
+    });
+    this.batchResolverRegistry = new RouteHandlerRegistry({
       logger: this.logger,
     });
     this.isDev = isDevMode();
@@ -315,6 +324,61 @@ class Router {
         typeName: 'Mutation',
       });
 
+      return descriptor;
+    };
+  }
+
+  public batchResolver<
+    TParams extends Record<string, unknown>,
+    T extends boolean = false,
+  >(
+    handler: BatchResolverHandler<TParams, T>,
+    options: GraphQlBatchRouteOptions
+  ): void;
+  public batchResolver<
+    TParams extends Record<string, unknown>,
+    T extends boolean = false,
+  >(options: GraphQlBatchRouteOptions): MethodDecorator;
+  public batchResolver<
+    TParams extends Record<string, unknown>,
+    T extends boolean = false,
+  >(
+    handler: BatchResolverHandler<TParams, T> | GraphQlBatchRouteOptions,
+    options?: GraphQlBatchRouteOptions
+  ): MethodDecorator | undefined {
+    if (typeof handler === 'function') {
+      const batchResolverOptions = options as GraphQlBatchRouteOptions;
+      const {
+        typeName = 'Query',
+        fieldName,
+        aggregate = true,
+        raiseOnError = false,
+      } = batchResolverOptions;
+      this.batchResolverRegistry.register({
+        fieldName,
+        handler: handler as BatchResolverHandler,
+        typeName,
+        aggregate,
+        raiseOnError,
+      });
+      return;
+    }
+
+    const batchResolverOptions = handler;
+    return (target, _propertyKey, descriptor: PropertyDescriptor) => {
+      const {
+        typeName = 'Query',
+        fieldName,
+        aggregate = true,
+        raiseOnError = false,
+      } = batchResolverOptions;
+      this.batchResolverRegistry.register({
+        fieldName,
+        handler: descriptor?.value,
+        typeName,
+        aggregate,
+        raiseOnError,
+      });
       return descriptor;
     };
   }

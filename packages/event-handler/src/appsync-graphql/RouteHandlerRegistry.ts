@@ -35,7 +35,7 @@ class RouteHandlerRegistry {
    *
    */
   public register(options: RouteHandlerOptions): void {
-    const { fieldName, handler, typeName } = options;
+    const { fieldName, handler, typeName, raiseOnError, aggregate } = options;
     this.#logger.debug(`Adding resolver for field ${typeName}.${fieldName}`);
     const cacheKey = this.#makeKey(typeName, fieldName);
     if (this.resolvers.has(cacheKey)) {
@@ -47,6 +47,8 @@ class RouteHandlerRegistry {
       fieldName,
       handler,
       typeName,
+      raiseOnError,
+      aggregate,
     });
   }
 

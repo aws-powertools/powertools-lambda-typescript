@@ -330,54 +330,47 @@ class Router {
 
   public batchResolver<
     TParams extends Record<string, unknown>,
-    T extends boolean = false,
+    T extends boolean = true,
+    R extends boolean = false,
   >(
     handler: BatchResolverHandler<TParams, T>,
-    options: GraphQlBatchRouteOptions
+    options: GraphQlBatchRouteOptions<T, R>
   ): void;
   public batchResolver<
     TParams extends Record<string, unknown>,
-    T extends boolean = false,
-  >(options: GraphQlBatchRouteOptions): MethodDecorator;
+    T extends boolean = true,
+    R extends boolean = false,
+  >(options: GraphQlBatchRouteOptions<T, R>): MethodDecorator;
   public batchResolver<
     TParams extends Record<string, unknown>,
-    T extends boolean = false,
+    T extends boolean = true,
+    R extends boolean = false,
   >(
-    handler: BatchResolverHandler<TParams, T> | GraphQlBatchRouteOptions,
-    options?: GraphQlBatchRouteOptions
+    handler: BatchResolverHandler<TParams, T> | GraphQlBatchRouteOptions<T, R>,
+    options?: GraphQlBatchRouteOptions<T, R>
   ): MethodDecorator | undefined {
     if (typeof handler === 'function') {
       const batchResolverOptions = options as GraphQlBatchRouteOptions;
-      const {
-        typeName = 'Query',
-        fieldName,
-        aggregate = true,
-        raiseOnError = false,
-      } = batchResolverOptions;
+      const { typeName = 'Query', fieldName } = batchResolverOptions;
       this.batchResolverRegistry.register({
         fieldName,
         handler: handler as BatchResolverHandler,
         typeName,
-        aggregate,
-        raiseOnError,
+        aggregate: (batchResolverOptions?.aggregate ?? true) as T,
+        raiseOnError: (batchResolverOptions?.raiseOnError ?? false) as R,
       });
       return;
     }
 
     const batchResolverOptions = handler;
     return (target, _propertyKey, descriptor: PropertyDescriptor) => {
-      const {
-        typeName = 'Query',
-        fieldName,
-        aggregate = true,
-        raiseOnError = false,
-      } = batchResolverOptions;
+      const { typeName = 'Query', fieldName } = batchResolverOptions;
       this.batchResolverRegistry.register({
         fieldName,
         handler: descriptor?.value,
         typeName,
-        aggregate,
-        raiseOnError,
+        aggregate: (batchResolverOptions?.aggregate ?? true) as T,
+        raiseOnError: (batchResolverOptions?.raiseOnError ?? false) as R,
       });
       return descriptor;
     };

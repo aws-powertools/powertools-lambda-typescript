@@ -88,11 +88,7 @@ type RouteHandlerRegistryOptions = {
  * @property fieldName - The name of the field to be registered
  * @property typeName - The name of the type to be registered
  */
-type RouteHandlerOptions<
-  TParams = Record<string, unknown>,
-  T extends boolean = true,
-  R extends boolean = false,
-> = {
+type RouteHandlerOptions<TParams, T extends boolean, R extends boolean> = {
   /**
    * The handler function to be called when the event is received
    */
@@ -146,8 +142,8 @@ type GraphQlRouteOptions = {
 };
 
 type GraphQlBatchRouteOptions<
-  T extends boolean = true,
-  R extends boolean = false,
+  T extends boolean | undefined = true,
+  R extends boolean | undefined = false,
 > = GraphQlRouteOptions & {
   /**
    * Whether the route handler will send all the events to the route handler at once or one by one

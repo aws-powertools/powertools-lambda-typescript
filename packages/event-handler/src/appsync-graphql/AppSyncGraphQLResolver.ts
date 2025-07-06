@@ -165,7 +165,7 @@ class AppSyncGraphQLResolver extends Router {
   async #callBatchResolver(
     events: AppSyncResolverEvent<Record<string, unknown>>[],
     context: Context,
-    options: RouteHandlerOptions,
+    options: RouteHandlerOptions<Record<string, unknown>, boolean, boolean>,
     resolveOptions?: ResolveOptions
   ): Promise<unknown[]> {
     const { aggregate, raiseOnError } = options;

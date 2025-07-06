@@ -15,7 +15,10 @@ class RouteHandlerRegistry {
   /**
    * A map of registered route handlers, keyed by their type & field name.
    */
-  protected readonly resolvers: Map<string, RouteHandlerOptions> = new Map();
+  protected readonly resolvers: Map<
+    string,
+    RouteHandlerOptions<Record<string, unknown>, boolean, boolean>
+  > = new Map();
   /**
    * A logger instance to be used for logging debug and warning messages.
    */
@@ -34,7 +37,9 @@ class RouteHandlerRegistry {
    * @param options.typeName - The name of the GraphQL type to be registered
    *
    */
-  public register(options: RouteHandlerOptions): void {
+  public register(
+    options: RouteHandlerOptions<Record<string, unknown>, boolean, boolean>
+  ): void {
     const { fieldName, handler, typeName, raiseOnError, aggregate } = options;
     this.#logger.debug(`Adding resolver for field ${typeName}.${fieldName}`);
     const cacheKey = this.#makeKey(typeName, fieldName);
@@ -61,7 +66,9 @@ class RouteHandlerRegistry {
   public resolve(
     typeName: string,
     fieldName: string
-  ): RouteHandlerOptions | undefined {
+  ):
+    | RouteHandlerOptions<Record<string, unknown>, boolean, boolean>
+    | undefined {
     this.#logger.debug(
       `Looking for resolver for type=${typeName}, field=${fieldName}`
     );

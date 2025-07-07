@@ -20,9 +20,11 @@ import type { Handler } from 'aws-lambda';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 import xraySdk from 'aws-xray-sdk-core';
 import {
-  type EnvironmentVariablesService,
-  environmentVariablesService,
-} from './config/EnvironmentVariablesService.js';
+  getStringFromEnv,
+  getServiceName,
+  getXRayTraceIdFromEnv,
+  isRequestXRaySampled,
+} from '@aws-lambda-powertools/commons/utils/env';
 import { ProviderService } from './provider/ProviderService.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type { ProviderServiceInterface } from './types/ProviderService.js';
@@ -171,11 +173,6 @@ class Tracer extends Utility implements TracerInterface {
    */
   private customConfigService?: ConfigServiceInterface;
 
-  /**
-   * The environment variables service used by the Tracer, is always initialized in the constructor in setOptions().
-   */
-  private envVarsService!: EnvironmentVariablesService;
-
   // serviceName is always initialized in the constructor in setOptions()
   /**
    * The name of the service, is always initialized in the constructor in setOptions().
@@ -187,9 +184,31 @@ class Tracer extends Utility implements TracerInterface {
    */
   private tracingEnabled = true;
 
+  // Cache environment variables once for performance and clarity
+  readonly #envConfig: {
+    awsExecutionEnv: string;
+    samLocal: string;
+    captureError: string;
+    captureHTTPsRequests: string;
+    captureResponse: string;
+    tracingEnabled: string;
+    serviceName: string;
+    xrayTraceId: string;
+  } = {
+    awsExecutionEnv: '',
+    samLocal: '',
+    captureError: '',
+    captureHTTPsRequests: '',
+    captureResponse: '',
+    tracingEnabled: '',
+    serviceName: '',
+    xrayTraceId: '',
+  };
+
   public constructor(options: TracerOptions = {}) {
     super();
 
+    this.#setEnvConfig();
     this.setOptions(options);
     this.provider = new ProviderService();
     if (this.isTracingEnabled() && this.captureHTTPsRequests) {
@@ -576,10 +595,9 @@ class Tracer extends Utility implements TracerInterface {
    *     };
    *   }
    * }
-   * ```
    */
   public getRootXrayTraceId(): string | undefined {
-    return this.envVarsService.getXrayTraceId();
+    return this.#envConfig.xrayTraceId;
   }
 
   /**
@@ -600,7 +618,6 @@ class Tracer extends Utility implements TracerInterface {
    *   const currentSegment = tracer.getSegment();
    *   ... // Do something with segment
    * }
-   * ```
    */
   public getSegment(): Segment | Subsegment | undefined {
     if (!this.isTracingEnabled()) {
@@ -626,7 +643,7 @@ class Tracer extends Utility implements TracerInterface {
   public isTraceSampled(): boolean {
     if (!this.isTracingEnabled()) return false;
 
-    return this.envVarsService.getXrayTraceSampled();
+    return isRequestXRaySampled();
   }
 
   /**
@@ -732,22 +749,11 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
-   * Get for `envVarsService`.
-   * Used internally during initialization.
-   */
-  private getEnvVarsService(): EnvironmentVariablesService {
-    return this.envVarsService;
-  }
-
-  /**
    * Determine if we are running inside an Amplify CLI process.
    * Used internally during initialization.
    */
   private isAmplifyCli(): boolean {
-    return (
-      this.getEnvVarsService().getAwsExecutionEnv() ===
-      'AWS_Lambda_amplify-mock'
-    );
+    return this.#envConfig.awsExecutionEnv === 'AWS_Lambda_amplify-mock';
   }
 
   /**
@@ -755,7 +761,7 @@ class Tracer extends Utility implements TracerInterface {
    * Used internally during initialization.
    */
   private isLambdaExecutionEnv(): boolean {
-    return this.getEnvVarsService().getAwsExecutionEnv() !== '';
+    return this.#envConfig.awsExecutionEnv !== '';
   }
 
   /**
@@ -763,7 +769,7 @@ class Tracer extends Utility implements TracerInterface {
    * Used internally during initialization.
    */
   private isLambdaSamCli(): boolean {
-    return this.getEnvVarsService().getSamLocal() !== '';
+    return this.#envConfig.samLocal !== '';
   }
 
   /**
@@ -778,14 +784,11 @@ class Tracer extends Utility implements TracerInterface {
       customConfigValue.toLowerCase() === 'false'
     ) {
       this.captureError = false;
-
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService().getTracingCaptureError();
-    if (envVarsValue.toLowerCase() === 'false') {
+    if (this.#envConfig.captureError.toLowerCase() === 'false') {
       this.captureError = false;
-
       return;
     }
   }
@@ -803,7 +806,6 @@ class Tracer extends Utility implements TracerInterface {
   private setCaptureHTTPsRequests(enabled?: boolean): void {
     if (enabled !== undefined && !enabled) {
       this.captureHTTPsRequests = false;
-
       return;
     }
 
@@ -814,14 +816,11 @@ class Tracer extends Utility implements TracerInterface {
       customConfigValue.toLowerCase() === 'false'
     ) {
       this.captureHTTPsRequests = false;
-
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService().getCaptureHTTPsRequests();
-    if (envVarsValue.toLowerCase() === 'false') {
+    if (this.#envConfig.captureHTTPsRequests.toLowerCase() === 'false') {
       this.captureHTTPsRequests = false;
-
       return;
     }
   }
@@ -838,14 +837,11 @@ class Tracer extends Utility implements TracerInterface {
       customConfigValue.toLowerCase() === 'false'
     ) {
       this.captureResponse = false;
-
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService().getTracingCaptureResponse();
-    if (envVarsValue.toLowerCase() === 'false') {
+    if (this.#envConfig.captureResponse.toLowerCase() === 'false') {
       this.captureResponse = false;
-
       return;
     }
   }
@@ -874,7 +870,6 @@ class Tracer extends Utility implements TracerInterface {
     const { enabled, serviceName, captureHTTPsRequests, customConfigService } =
       options;
 
-    this.envVarsService = environmentVariablesService;
     this.setCustomConfigService(customConfigService);
     this.setTracingEnabled(enabled);
     this.setCaptureResponse();
@@ -894,7 +889,6 @@ class Tracer extends Utility implements TracerInterface {
   private setServiceName(serviceName?: string): void {
     if (serviceName !== undefined && this.isValidServiceName(serviceName)) {
       this.serviceName = serviceName;
-
       return;
     }
 
@@ -904,14 +898,11 @@ class Tracer extends Utility implements TracerInterface {
       this.isValidServiceName(customConfigValue)
     ) {
       this.serviceName = customConfigValue;
-
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService().getServiceName();
-    if (envVarsValue !== undefined && this.isValidServiceName(envVarsValue)) {
-      this.serviceName = envVarsValue;
-
+    if (this.#envConfig.serviceName !== undefined && this.isValidServiceName(this.#envConfig.serviceName)) {
+      this.serviceName = this.#envConfig.serviceName;
       return;
     }
     this.serviceName = this.defaultServiceName;
@@ -926,7 +917,6 @@ class Tracer extends Utility implements TracerInterface {
   private setTracingEnabled(enabled?: boolean): void {
     if (enabled !== undefined && !enabled) {
       this.tracingEnabled = enabled;
-
       return;
     }
 
@@ -937,17 +927,13 @@ class Tracer extends Utility implements TracerInterface {
       customConfigValue.toLowerCase() === 'false'
     ) {
       this.tracingEnabled = false;
-
       return;
     }
 
-    const envVarsValue = this.getEnvVarsService().getTracingEnabled();
-    if (envVarsValue.toLowerCase() === 'false') {
+    if (this.#envConfig.tracingEnabled.toLowerCase() === 'false') {
       this.tracingEnabled = false;
-
       return;
     }
-
     if (
       this.isAmplifyCli() ||
       this.isLambdaSamCli() ||
@@ -955,6 +941,18 @@ class Tracer extends Utility implements TracerInterface {
     ) {
       this.tracingEnabled = false;
     }
+  }
+
+  // Populate #envConfig with all relevant environment variables
+  #setEnvConfig(): void {
+    this.#envConfig.awsExecutionEnv = getStringFromEnv({ key: 'AWS_EXECUTION_ENV', defaultValue: '' });
+    this.#envConfig.samLocal = getStringFromEnv({ key: 'AWS_SAM_LOCAL', defaultValue: '' });
+    this.#envConfig.captureError = getStringFromEnv({ key: 'POWERTOOLS_TRACER_CAPTURE_ERROR', defaultValue: '' });
+    this.#envConfig.captureHTTPsRequests = getStringFromEnv({ key: 'POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS', defaultValue: '' });
+    this.#envConfig.captureResponse = getStringFromEnv({ key: 'POWERTOOLS_TRACER_CAPTURE_RESPONSE', defaultValue: '' });
+    this.#envConfig.tracingEnabled = getStringFromEnv({ key: 'POWERTOOLS_TRACE_ENABLED', defaultValue: '' });
+    this.#envConfig.serviceName = getServiceName();
+    this.#envConfig.xrayTraceId = getXRayTraceIdFromEnv() || '';
   }
 }
 

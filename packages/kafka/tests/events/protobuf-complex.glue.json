@@ -14,19 +14,7 @@
         "value": "AQoDMTIzEgRUZXN0Ggx0ZXN0QGdteC5jb20gCjIKMjAyNS0wNi0yMDoEdGFnMToEdGFnMkoOCgV0aGVtZRIFbGlnaHRSGgoKTXl0aGVucXVhaRIGWnVyaWNoGgQ4MDAy",
         "headers": [
           {
-            "headerKey": [
-              104,
-              101,
-              97,
-              100,
-              101,
-              114,
-              86,
-              97,
-              108,
-              117,
-              101
-            ]
+            "headerKey": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]
           }
         ],
         "valueSchemaMetadata": {

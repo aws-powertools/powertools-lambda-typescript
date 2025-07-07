@@ -1,4 +1,5 @@
 import type { BasePersistenceAttributes } from './types/BasePersistenceLayer.js';
+
 /**
  * Number of times to retry a request in case of `IdempotencyInconsistentStateError`
  *

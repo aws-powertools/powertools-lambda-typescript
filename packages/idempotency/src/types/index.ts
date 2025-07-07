@@ -1,20 +1,12 @@
 export type {
-  IdempotencyRecordOptions,
-  IdempotencyRecordStatusValue,
-} from './IdempotencyRecord.js';
-export type {
+  BasePersistenceAttributes,
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
-  BasePersistenceAttributes,
 } from './BasePersistenceLayer.js';
 export type {
-  IdempotencyConfigOptions,
-  IdempotencyLambdaHandlerOptions,
-  IdempotencyHandlerOptions,
-  ItempotentFunctionOptions,
-  AnyFunction,
-  ResponseHook,
-} from './IdempotencyOptions.js';
+  CacheClient,
+  CachePersistenceOptions,
+} from './CachePersistence.js';
 export type {
   DynamoDBPersistenceOptions,
   DynamoDBPersistenceOptionsBase,
@@ -22,6 +14,14 @@ export type {
   DynamoDBPersistenceOptionsWithClientInstance,
 } from './DynamoDBPersistence.js';
 export type {
-  CacheClient,
-  CachePersistenceOptions,
-} from './CachePersistence.js';
+  AnyFunction,
+  IdempotencyConfigOptions,
+  IdempotencyHandlerOptions,
+  IdempotencyLambdaHandlerOptions,
+  ItempotentFunctionOptions,
+  ResponseHook,
+} from './IdempotencyOptions.js';
+export type {
+  IdempotencyRecordOptions,
+  IdempotencyRecordStatusValue,
+} from './IdempotencyRecord.js';

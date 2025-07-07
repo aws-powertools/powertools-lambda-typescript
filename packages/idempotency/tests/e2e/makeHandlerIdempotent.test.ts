@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import {
+  invokeFunction,
   TestInvocationLogs,
   TestStack,
-  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';

@@ -1,16 +1,16 @@
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import {
+  invokeFunction,
   TestInvocationLogs,
   TestStack,
-  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
-import { RESOURCE_NAME_PREFIX } from './constants';
+import { RESOURCE_NAME_PREFIX } from './constants.js';
 
 describe('Idempotency E2E tests, wrapper function usage', () => {
   const testStack = new TestStack({

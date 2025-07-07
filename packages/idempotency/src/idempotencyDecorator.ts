@@ -55,13 +55,13 @@ import type {
  * @see {@link persistence/DynamoDBPersistenceLayer.DynamoDBPersistenceLayer | DynamoDBPersistenceLayer}
  * @see https://www.typescriptlang.org/docs/handbook/decorators.html
  */
-const idempotent = function (
+const idempotent = (
   options: ItempotentFunctionOptions<Parameters<AnyFunction>>
-): (
+): ((
   target: unknown,
   propertyKey: string,
   descriptor: PropertyDescriptor
-) => PropertyDescriptor {
+) => PropertyDescriptor) => {
   // biome-ignore lint/complexity/useArrowFunction: this is a decorator function and we need to maintain the `this` context
   return function (
     _target: unknown,

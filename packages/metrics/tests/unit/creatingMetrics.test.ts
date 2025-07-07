@@ -4,7 +4,7 @@ import {
   MAX_METRICS_SIZE,
   MetricResolution,
 } from '../../src/constants.js';
-import { MetricUnit, Metrics } from '../../src/index.js';
+import { Metrics, MetricUnit } from '../../src/index.js';
 
 describe('Creating metrics', () => {
   const ENVIRONMENT_VARIABLES = process.env;

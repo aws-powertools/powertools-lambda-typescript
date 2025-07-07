@@ -4,7 +4,7 @@ import {
   EMF_MAX_TIMESTAMP_FUTURE_AGE,
   EMF_MAX_TIMESTAMP_PAST_AGE,
 } from '../../src/constants.js';
-import { MetricUnit, Metrics } from '../../src/index.js';
+import { Metrics, MetricUnit } from '../../src/index.js';
 
 describe('Setting custom timestamp', () => {
   const ENVIRONMENT_VARIABLES = process.env;

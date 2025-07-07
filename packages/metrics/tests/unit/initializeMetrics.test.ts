@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { COLD_START_METRIC, DEFAULT_NAMESPACE } from '../../src/constants.js';
-import { MetricUnit, Metrics } from '../../src/index.js';
+import { Metrics, MetricUnit } from '../../src/index.js';
 import type { ConfigServiceInterface } from '../../src/types/index.js';
 
 describe('Initialize Metrics', () => {

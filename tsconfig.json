@@ -16,7 +16,7 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "pretty": true, // Enable pretty formatting for output messages.
+    "pretty": true // Enable pretty formatting for output messages.
   },
   "files": [],
   "references": [

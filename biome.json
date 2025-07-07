@@ -1,6 +1,12 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.0.6/schema.json",
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -37,7 +43,15 @@
   "files": {
     "includes": [
       "**",
+      "!**/.cache",
+      "!**/.claude",
+      "!**/.vscode",
+      "!**/.amazonq",
+      "!**/api",
+      "!**/site",
+      "!**/.devcontainer",
       "!**/node_modules",
+      "!**/.tsbuildinfo",
       "!**/coverage",
       "!**/lib",
       "!**/cdk.out",

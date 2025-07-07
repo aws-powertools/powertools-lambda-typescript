@@ -86,7 +86,7 @@ describe('Log event', () => {
     const logger = new Logger();
     class Test {
       @logger.injectLambdaContext({ logEvent: true })
-      async handler(event: unknown, context: Context) {
+      async handler(event: unknown, _context: Context) {
         return event;
       }
     }

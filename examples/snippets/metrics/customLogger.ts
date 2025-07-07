@@ -1,5 +1,5 @@
-import { LogLevel, Logger } from '@aws-lambda-powertools/logger';
-import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
+import { Logger, LogLevel } from '@aws-lambda-powertools/logger';
+import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 
 const logger = new Logger({ logLevel: LogLevel.CRITICAL });
 const metrics = new Metrics({

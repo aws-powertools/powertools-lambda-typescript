@@ -1,7 +1,10 @@
 declare function processRecordFromS3({
   key,
   bucket,
-}: { key: string; bucket: string }): Promise<void>;
+}: {
+  key: string;
+  bucket: string;
+}): Promise<void>;
 
 import { kafkaConsumer } from '@aws-lambda-powertools/kafka';
 import { Logger } from '@aws-lambda-powertools/logger';

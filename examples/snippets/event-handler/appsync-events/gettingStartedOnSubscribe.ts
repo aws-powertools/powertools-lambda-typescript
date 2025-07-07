@@ -1,5 +1,5 @@
 import { AppSyncEventsResolver } from '@aws-lambda-powertools/event-handler/appsync-events';
-import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
+import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 import type { Context } from 'aws-lambda';
 
 const metrics = new Metrics({

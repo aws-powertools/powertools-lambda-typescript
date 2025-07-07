@@ -5,9 +5,5 @@
   "service": "serverlessAirline",
   "sampling_rate": 0,
   "xray_trace_id": "1-668a654d-396c646b760ee7d067f32f18",
-  "serializedValue": [
-    1,
-    2,
-    3
-  ]
+  "serializedValue": [1, 2, 3]
 }

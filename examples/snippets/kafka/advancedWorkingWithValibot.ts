@@ -1,4 +1,4 @@
-import { SchemaType, kafkaConsumer } from '@aws-lambda-powertools/kafka';
+import { kafkaConsumer, SchemaType } from '@aws-lambda-powertools/kafka';
 import type { SchemaConfig } from '@aws-lambda-powertools/kafka/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import * as v from 'valibot';

@@ -10,7 +10,5 @@
       "format": "creditcard"
     }
   },
-  "required": [
-    "accountId"
-  ]
+  "required": ["accountId"]
 }

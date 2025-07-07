@@ -1,6 +1,3 @@
-import { scanItemsDynamoDB } from '#helpers/scan-items';
-import { assertIsError } from '#helpers/utils';
-import { logger, metrics, tracer } from '#powertools';
 import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
 import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
 import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
@@ -10,6 +7,9 @@ import type {
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
+import { scanItemsDynamoDB } from '#helpers/scan-items';
+import { assertIsError } from '#helpers/utils';
+import { logger, metrics, tracer } from '#powertools';
 
 /*
  *

@@ -1,6 +1,4 @@
-import { assertIsError } from '#helpers/utils';
-import { logger } from '#powertools/logger';
-import { tracer } from '#powertools/tracer';
+import { equal } from 'node:assert/strict';
 import {
   BatchProcessor,
   EventType,
@@ -14,7 +12,9 @@ import type {
   DynamoDBRecord,
   DynamoDBStreamEvent,
 } from 'aws-lambda';
-import { equal } from 'node:assert/strict';
+import { assertIsError } from '#helpers/utils';
+import { logger } from '#powertools/logger';
+import { tracer } from '#powertools/tracer';
 
 const processor = new BatchProcessor(EventType.DynamoDBStreams);
 

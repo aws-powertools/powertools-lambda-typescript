@@ -28,7 +28,7 @@ const fetchIssues = async ({
     });
 
     return issues.filter(
-      (issue) => Object(issue).hasOwnProperty('pull_request') === false
+      (issue) => Object.hasOwn(Object(issue), 'pull_request') === false
     );
   } catch (error) {
     core.setFailed(error);
@@ -84,7 +84,7 @@ const notifyRelease = async ({
 
     // Remove staged label; keep existing ones
     const labels = issue.labels
-      .filter((label) => label.name != LABEL_PENDING_RELEASE)
+      .filter((label) => label.name !== LABEL_PENDING_RELEASE)
       .map((label) => label.name);
 
     // Update labels including the released one

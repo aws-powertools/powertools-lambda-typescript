@@ -40,7 +40,7 @@ const KinesisFirehoseSqsRecordSchema = KinesisFireHoseRecordBase.extend({
       return SqsRecordSchema.parse(
         JSON.parse(Buffer.from(data, 'base64').toString('utf8'))
       );
-    } catch (e) {
+    } catch {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Failed to parse SQS record',

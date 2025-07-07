@@ -40,7 +40,7 @@ const unmarshallDynamoDBTransform = (
     try {
       // @ts-expect-error
       return unmarshallDynamoDB(image) as Record<string, unknown>;
-    } catch (err) {
+    } catch {
       ctx.addIssue({
         code: 'custom',
         message: `Could not unmarshall ${imageName} in DynamoDB stream record`,

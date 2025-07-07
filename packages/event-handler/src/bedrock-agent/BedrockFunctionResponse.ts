@@ -71,10 +71,7 @@ class BedrockFunctionResponse {
    * @param options.actionGroup - The action group of the function, this comes from the `event.actionGroup` field in the Bedrock agent function event.
    * @param options.func - The name of the function being invoked by the agent, this comes from the `event.function` field in the Bedrock agent function event.
    */
-  build(options: {
-    actionGroup: string;
-    func: string;
-  }) {
+  build(options: { actionGroup: string; func: string }) {
     return {
       messageVersion: '1.0',
       response: {

@@ -11,21 +11,21 @@ export type {
 } from './appsync-events.js';
 
 export type {
+  GraphQlRouteOptions,
+  GraphQlRouterOptions,
   ResolverHandler,
   RouteHandlerOptions,
-  GraphQlRouterOptions,
-  GraphQlRouteOptions,
 } from './appsync-graphql.js';
 
 export type {
   BedrockAgentFunctionEvent,
   BedrockAgentFunctionResponse,
-  ResolverOptions,
   Parameter,
+  ResolverOptions,
   ResponseState,
 } from './bedrock-agent.js';
 
 export type {
-  ResolveOptions,
   Anything,
+  ResolveOptions,
 } from './common.js';

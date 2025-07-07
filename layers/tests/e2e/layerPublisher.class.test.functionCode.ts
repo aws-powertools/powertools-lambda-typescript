@@ -79,7 +79,7 @@ const getVersionFromModule = async (moduleName: string): Promise<string> => {
   return moduleVersion;
 };
 
-export const handler = async (event: unknown): Promise<void> => {
+export const handler = async (_event: unknown): Promise<void> => {
   // Check that the packages version matches the expected one
   for (const moduleName of [
     'commons',

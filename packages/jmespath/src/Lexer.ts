@@ -285,7 +285,7 @@ class Lexer {
         start,
         end: this.#position - start,
       };
-    } catch (error) {
+    } catch {
       throw new LexerError(start, lexeme);
     }
   }

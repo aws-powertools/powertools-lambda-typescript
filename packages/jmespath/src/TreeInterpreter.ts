@@ -4,7 +4,6 @@ import {
   isStrictEqual,
 } from '@aws-lambda-powertools/commons/typeutils';
 import { Expression } from './Expression.js';
-import { Functions } from './Functions.js';
 import {
   ArityError,
   JMESPathError,
@@ -12,6 +11,7 @@ import {
   UnknownFunctionError,
   VariadicArityError,
 } from './errors.js';
+import { Functions } from './Functions.js';
 import type { JMESPathParsingOptions, JSONObject, Node } from './types.js';
 import { isTruthy, sliceArray } from './utils.js';
 

@@ -7,10 +7,10 @@ import {
   setContextMissingStrategy,
 } from 'aws-xray-sdk-core';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
-import type { ProviderServiceInterface } from '../../src/types/ProviderService.js';
 import { Tracer } from './../../src/index.js';
+import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
 import type { CaptureLambdaHandlerOptions } from './../../src/types/index.js';
+import type { ProviderServiceInterface } from '../../src/types/ProviderService.js';
 
 const createCaptureAsyncFuncMock = (
   provider: ProviderServiceInterface,
@@ -1028,7 +1028,7 @@ describe('Class: Tracer', () => {
       );
       setContextMissingStrategy(() => null);
       vi.spyOn(tracer.provider, 'captureAsyncFunc').mockImplementation(
-        async (methodName, callBackFn) => {
+        async (_methodName, callBackFn) => {
           await callBackFn(handlerSubsegment);
         }
       );
@@ -1419,7 +1419,7 @@ describe('Class: Tracer', () => {
       );
       setContextMissingStrategy(() => null);
       vi.spyOn(tracer.provider, 'captureAsyncFunc').mockImplementation(
-        async (methodName, callBackFn) => {
+        async (_methodName, callBackFn) => {
           await callBackFn(handlerSubsegment);
         }
       );

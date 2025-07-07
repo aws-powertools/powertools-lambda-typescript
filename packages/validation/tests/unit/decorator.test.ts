@@ -114,7 +114,7 @@ describe('Decorator: validator', () => {
     // Prepare
     class TestClassOutbound {
       @validator({ outboundSchema })
-      async process(input: { text: string }): Promise<{ result: number }> {
+      async process(_input: { text: string }): Promise<{ result: number }> {
         return { result: 42 };
       }
     }

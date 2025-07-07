@@ -2,8 +2,8 @@ import { PutParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
-import { SSMProvider } from '../../src/ssm/SSMProvider.js';
 import { setParameter } from '../../src/ssm/index.js';
+import { SSMProvider } from '../../src/ssm/SSMProvider.js';
 import type { SSMSetOptions } from '../../src/types/SSMProvider.js';
 
 describe('Function: setParameter', () => {

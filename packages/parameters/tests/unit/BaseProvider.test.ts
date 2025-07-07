@@ -10,9 +10,9 @@ import {
 import type { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { DEFAULT_MAX_AGE_SECS } from '../../src/constants.js';
 import {
+  clearCaches,
   GetParameterError,
   TransformParameterError,
-  clearCaches,
 } from '../../src/index.js';
 
 const encoder = new TextEncoder();

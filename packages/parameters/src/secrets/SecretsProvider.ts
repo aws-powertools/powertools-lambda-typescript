@@ -1,8 +1,8 @@
+import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
-import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import { BaseProvider } from '../base/BaseProvider.js';
 import type {
   SecretsGetOptions,

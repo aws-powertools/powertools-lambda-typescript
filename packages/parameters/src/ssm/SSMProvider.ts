@@ -1,11 +1,4 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
-import {
-  GetParameterCommand,
-  GetParametersCommand,
-  PutParameterCommand,
-  SSMClient,
-  paginateGetParametersByPath,
-} from '@aws-sdk/client-ssm';
 import type {
   GetParameterCommandInput,
   GetParametersByPathCommandInput,
@@ -14,6 +7,13 @@ import type {
   PutParameterCommandInput,
   PutParameterCommandOutput,
   SSMPaginationConfiguration,
+} from '@aws-sdk/client-ssm';
+import {
+  GetParameterCommand,
+  GetParametersCommand,
+  PutParameterCommand,
+  paginateGetParametersByPath,
+  SSMClient,
 } from '@aws-sdk/client-ssm';
 import { BaseProvider } from '../base/BaseProvider.js';
 import { transformValue } from '../base/transformValue.js';

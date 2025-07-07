@@ -1,13 +1,13 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type {
+  GetItemCommandInput,
+  QueryCommandInput,
+} from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBClient,
   type DynamoDBPaginationConfiguration,
   GetItemCommand,
   paginateQuery,
-} from '@aws-sdk/client-dynamodb';
-import type {
-  GetItemCommandInput,
-  QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { BaseProvider } from '../base/BaseProvider.js';

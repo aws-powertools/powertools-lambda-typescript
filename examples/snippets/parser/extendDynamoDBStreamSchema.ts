@@ -21,4 +21,4 @@ const extendedSchema = DynamoDBStreamSchema.extend({
   ),
 });
 
-type ExtendedDynamoDBStreamEvent = z.infer<typeof extendedSchema>;
+type _ExtendedDynamoDBStreamEvent = z.infer<typeof extendedSchema>;

@@ -106,20 +106,6 @@ abstract class BasePartialProcessor {
    * Before and after processing, the processor will call the prepare and clean methods respectively.
    */
   public async process(): Promise<(SuccessResponse | FailureResponse)[]> {
-    /**
-     * If this is a sync processor, user should have called processSync instead,
-     * so we call the method early to throw the error early thus failing fast.
-     *
-     * The type casting is necessary to ensure that we have test coverage for the
-     * block of code that throws the error, without having to change the return type
-     * of the method. This is because this call will always throw an error.
-     */
-    if (this.constructor.name === 'BatchProcessorSync') {
-      return (await this.processRecord(this.records[0])) as (
-        | SuccessResponse
-        | FailureResponse
-      )[];
-    }
     this.prepare();
 
     // Default to `true` if `processInParallel` is not specified.

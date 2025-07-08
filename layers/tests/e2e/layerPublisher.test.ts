@@ -1,14 +1,14 @@
 import { join } from 'node:path';
 import {
-  TestInvocationLogs,
-  TestStack,
   generateTestUniqueName,
   invokeFunctionOnce,
+  TestInvocationLogs,
+  TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { App } from 'aws-cdk-lib';
 import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import packageJson from '../../package.json' with { type: 'json' };
 import { LayerPublisherStack } from '../../src/layer-publisher-stack.js';
 import { RESOURCE_NAME_PREFIX } from './constants.js';

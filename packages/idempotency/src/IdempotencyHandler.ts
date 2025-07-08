@@ -4,7 +4,6 @@ import type {
 } from '@aws-lambda-powertools/commons/types';
 import { search } from '@aws-lambda-powertools/jmespath';
 import type { Handler } from 'aws-lambda';
-import type { IdempotencyConfig } from './IdempotencyConfig.js';
 import { IdempotencyRecordStatus, MAX_RETRIES } from './constants.js';
 import {
   IdempotencyAlreadyInProgressError,
@@ -13,6 +12,7 @@ import {
   IdempotencyPersistenceLayerError,
   IdempotencyUnknownError,
 } from './errors.js';
+import type { IdempotencyConfig } from './IdempotencyConfig.js';
 import type { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
 import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 import type {

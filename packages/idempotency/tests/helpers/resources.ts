@@ -1,16 +1,16 @@
+import { randomUUID } from 'node:crypto';
 import {
-  type TestStack,
   concatenateResourceName,
+  type TestStack,
 } from '@aws-lambda-powertools/testing-utils';
-import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
+import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import type {
   ExtraTestProps,
   TestDynamodbTableProps,
   TestNodejsFunctionProps,
 } from '@aws-lambda-powertools/testing-utils/types';
 import { Construct } from 'constructs';
-import { randomUUID } from 'node:crypto';
 
 class IdempotencyTestNodejsFunctionAndDynamoTable extends Construct {
   public constructor(

@@ -9,7 +9,7 @@ const logger = new Logger({
 
 export const handler = middy()
   .use(injectLambdaContext(logger, { flushBufferOnUncaughtError: true }))
-  .handler(async (event: unknown) => {
+  .handler(async (_event: unknown) => {
     // Both logs below are buffered
     logger.debug('a debug log');
     logger.debug('another debug log');

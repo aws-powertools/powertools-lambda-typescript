@@ -3,7 +3,7 @@ import {
   makeIdempotent,
 } from '@aws-lambda-powertools/idempotency';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
-import { SchemaType, kafkaConsumer } from '@aws-lambda-powertools/kafka';
+import { kafkaConsumer, SchemaType } from '@aws-lambda-powertools/kafka';
 import type { SchemaConfig } from '@aws-lambda-powertools/kafka/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { com } from './samples/user.generated.js'; // protobuf generated class

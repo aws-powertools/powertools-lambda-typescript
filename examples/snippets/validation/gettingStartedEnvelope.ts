@@ -7,7 +7,7 @@ class Lambda {
     inboundSchema,
     envelope: 'detail',
   })
-  async handler(event: InboundSchema, context: Context) {
+  async handler(event: InboundSchema, _context: Context) {
     return {
       message: `processed ${event.userId}`,
       success: true,

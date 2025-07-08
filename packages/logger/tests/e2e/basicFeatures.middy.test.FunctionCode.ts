@@ -26,7 +26,10 @@ const logger = new Logger({
   },
 });
 
-const testFunction = async (event: TestEvent, context: Context): TestOutput => {
+const testFunction = async (
+  _event: TestEvent,
+  context: Context
+): TestOutput => {
   // Test feature 1: Context data injection (all logs should have the same context data)
   // Test feature 2: Event log (this log should have the event data)
   // Test feature 3: Log level filtering (log level is set to INFO)

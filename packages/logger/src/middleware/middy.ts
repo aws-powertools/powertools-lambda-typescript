@@ -3,8 +3,8 @@ import type {
   MiddlewareLikeObj,
   MiddyLikeRequest,
 } from '@aws-lambda-powertools/commons/types';
-import { Logger } from '../Logger.js';
 import { UncaughtErrorLogMessage } from '../constants.js';
+import { Logger } from '../Logger.js';
 import type { InjectLambdaContextOptions } from '../types/Logger.js';
 
 /**

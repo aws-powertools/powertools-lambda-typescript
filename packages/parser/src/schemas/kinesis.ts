@@ -16,7 +16,7 @@ const KinesisDataStreamRecordPayload = z.object({
     try {
       // If data was not compressed, try to parse it as JSON otherwise it must be string
       return decompressed === data ? JSON.parse(decoded) : decompressed;
-    } catch (e) {
+    } catch {
       return decoded;
     }
   }),
@@ -25,7 +25,7 @@ const KinesisDataStreamRecordPayload = z.object({
 const decompress = (data: string): string => {
   try {
     return JSON.parse(gunzipSync(fromBase64(data, 'base64')).toString('utf8'));
-  } catch (e) {
+  } catch {
     return data;
   }
 };

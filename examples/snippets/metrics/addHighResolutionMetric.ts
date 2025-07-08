@@ -1,7 +1,7 @@
 import {
   MetricResolution,
-  MetricUnit,
   Metrics,
+  MetricUnit,
 } from '@aws-lambda-powertools/metrics';
 
 const metrics = new Metrics({

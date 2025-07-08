@@ -1,6 +1,6 @@
 import {
-  SqsFifoPartialProcessorAsync,
   processPartialResponse,
+  SqsFifoPartialProcessorAsync,
 } from '@aws-lambda-powertools/batch';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type {

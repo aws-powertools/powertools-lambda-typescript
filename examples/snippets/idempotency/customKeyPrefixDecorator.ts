@@ -12,7 +12,7 @@ class Lambda {
     persistenceStore,
     keyPrefix: 'createSubscriptionPayment',
   })
-  async handler(event: unknown, context: Context) {
+  async handler(_event: unknown, _context: Context) {
     try {
       // ... create payment
 
@@ -21,7 +21,7 @@ class Lambda {
         message: 'success',
         statusCode: 200,
       };
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Error creating payment');
     }
   }

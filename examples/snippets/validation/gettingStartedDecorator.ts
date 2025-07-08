@@ -2,8 +2,8 @@ import { validator } from '@aws-lambda-powertools/validation/decorator';
 import type { Context } from 'aws-lambda';
 import {
   type InboundSchema,
-  type OutboundSchema,
   inboundSchema,
+  type OutboundSchema,
   outboundSchema,
 } from './schemas.js';
 

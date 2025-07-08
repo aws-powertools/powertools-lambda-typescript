@@ -1,7 +1,7 @@
 declare function processRecord(record: unknown): Promise<void>;
 
 import { readFileSync } from 'node:fs';
-import { SchemaType, kafkaConsumer } from '@aws-lambda-powertools/kafka';
+import { kafkaConsumer, SchemaType } from '@aws-lambda-powertools/kafka';
 import { KafkaConsumerParserError } from '@aws-lambda-powertools/kafka/errors';
 import type {
   ConsumerRecord,

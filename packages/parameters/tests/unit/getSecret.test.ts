@@ -5,7 +5,7 @@ import {
 import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
-import { SecretsProvider, getSecret } from '../../src/secrets/index.js';
+import { getSecret, SecretsProvider } from '../../src/secrets/index.js';
 
 const encoder = new TextEncoder();
 

@@ -6,6 +6,7 @@ import type {
   HttpSubsegment,
   ProviderServiceInterface,
 } from '../types/ProviderService.js';
+
 const {
   captureAWS,
   captureAWSClient,
@@ -21,6 +22,7 @@ const {
   setDaemonAddress,
   setLogger,
 } = xraySdk;
+
 import { subscribe } from 'node:diagnostics_channel';
 import http from 'node:http';
 import https from 'node:https';

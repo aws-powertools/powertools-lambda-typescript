@@ -18,7 +18,7 @@
           }
         ],
         "valueSchemaMetadata": {
-            "dataFormat": "PROTOBUF"
+          "dataFormat": "PROTOBUF"
         }
       },
       {
@@ -35,8 +35,8 @@
           }
         ],
         "valueSchemaMetadata": {
-            "dataFormat": "PROTOBUF",
-            "schemaId": "7d55d475-2244-4485-8341-f74468c1e058"
+          "dataFormat": "PROTOBUF",
+          "schemaId": "7d55d475-2244-4485-8341-f74468c1e058"
         }
       },
       {
@@ -53,8 +53,8 @@
           }
         ],
         "valueSchemaMetadata": {
-            "dataFormat": "PROTOBUF",
-            "schemaId": "2"
+          "dataFormat": "PROTOBUF",
+          "schemaId": "2"
         }
       }
     ]

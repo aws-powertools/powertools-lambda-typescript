@@ -2,18 +2,18 @@ import { join } from 'node:path';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
+import type { EnrichedXRayTraceDocumentParsed } from '@aws-lambda-powertools/testing-utils/types';
 import { getTraces } from '@aws-lambda-powertools/testing-utils/utils/xray-traces';
-import type { EnrichedXRayTraceDocumentParsed } from 'packages/testing/lib/cjs/types.js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { invokeAllTestCases } from '../helpers/invokeAllTests.js';
 import {
-  RESOURCE_NAME_PREFIX,
   EXPECTED_ANNOTATION_KEY as expectedCustomAnnotationKey,
   EXPECTED_ANNOTATION_VALUE as expectedCustomAnnotationValue,
   EXPECTED_ERROR_MESSAGE as expectedCustomErrorMessage,
   EXPECTED_METADATA_KEY as expectedCustomMetadataKey,
   EXPECTED_METADATA_VALUE as expectedCustomMetadataValue,
   EXPECTED_RESPONSE_VALUE as expectedCustomResponseValue,
+  RESOURCE_NAME_PREFIX,
 } from './constants.js';
 
 describe('Tracer E2E tests, manual instantiation', () => {

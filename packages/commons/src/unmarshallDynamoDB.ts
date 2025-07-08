@@ -58,7 +58,7 @@ const convertNumber = (numString: string) => {
   if (isLargeFiniteNumber) {
     try {
       return BigInt(numString);
-    } catch (error) {
+    } catch {
       throw new UnmarshallDynamoDBAttributeError(
         `${numString} can't be converted to BigInt`
       );

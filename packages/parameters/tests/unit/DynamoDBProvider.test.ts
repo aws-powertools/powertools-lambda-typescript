@@ -1,12 +1,12 @@
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import type {
+  GetItemCommandInput,
+  QueryCommandInput,
+} from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBClient,
   GetItemCommand,
   QueryCommand,
-} from '@aws-sdk/client-dynamodb';
-import type {
-  GetItemCommandInput,
-  QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';

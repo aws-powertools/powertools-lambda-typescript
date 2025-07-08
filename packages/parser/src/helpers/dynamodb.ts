@@ -70,7 +70,7 @@ const DynamoDBMarshalled = <T extends ZodTypeAny>(schema: T) =>
     .transform((str, ctx) => {
       try {
         return unmarshallDynamoDB(str);
-      } catch (err) {
+      } catch {
         ctx.addIssue({
           code: 'custom',
           message: 'Could not unmarshall DynamoDB stream record',

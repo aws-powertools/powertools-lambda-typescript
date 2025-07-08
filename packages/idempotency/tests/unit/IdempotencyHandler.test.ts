@@ -1,7 +1,7 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { IdempotencyHandler } from '../../src/IdempotencyHandler.js';
 import { IdempotencyRecordStatus, MAX_RETRIES } from '../../src/constants.js';
+import { IdempotencyHandler } from '../../src/IdempotencyHandler.js';
 import {
   IdempotencyAlreadyInProgressError,
   IdempotencyConfig,
@@ -15,7 +15,7 @@ import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 const mockFunctionToMakeIdempotent = vi.fn();
 const mockResponseHook = vi
   .fn()
-  .mockImplementation((response, record) => response);
+  .mockImplementation((response, _record) => response);
 const mockFunctionPayloadToBeHashed = {};
 const persistenceStore = new PersistenceLayerTestClass();
 const mockIdempotencyOptions = {

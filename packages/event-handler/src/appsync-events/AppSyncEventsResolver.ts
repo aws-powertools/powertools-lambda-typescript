@@ -7,8 +7,8 @@ import type {
   OnSubscribeHandler,
 } from '../types/appsync-events.js';
 import type { ResolveOptions } from '../types/common.js';
-import { Router } from './Router.js';
 import { UnauthorizedException } from './errors.js';
+import { Router } from './Router.js';
 import { isAppSyncEventsEvent, isAppSyncEventsPublishEvent } from './utils.js';
 
 /**

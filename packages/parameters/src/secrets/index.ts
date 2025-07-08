@@ -1,2 +1,2 @@
-export { SecretsProvider } from './SecretsProvider.js';
 export { getSecret } from './getSecret.js';
+export { SecretsProvider } from './SecretsProvider.js';

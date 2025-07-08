@@ -1,19 +1,19 @@
 import { brotliDecompressSync } from 'node:zlib';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
 import { describe, expect, it } from 'vitest';
+import { extractDataFromEnvelope, SQS } from '../../src/envelopes.js';
 import { Functions } from '../../src/Functions.js';
-import { Parser } from '../../src/Parser.js';
-import { PowertoolsFunctions } from '../../src/PowertoolsFunctions.js';
-import { TreeInterpreter } from '../../src/TreeInterpreter.js';
-import { SQS, extractDataFromEnvelope } from '../../src/envelopes.js';
 import {
   ArityError,
   EmptyExpressionError,
   JMESPathError,
   LexerError,
-  VariadicArityError,
   search,
+  VariadicArityError,
 } from '../../src/index.js';
+import { Parser } from '../../src/Parser.js';
+import { PowertoolsFunctions } from '../../src/PowertoolsFunctions.js';
+import { TreeInterpreter } from '../../src/TreeInterpreter.js';
 
 describe('Coverage tests', () => {
   // These expressions tests are not part of the compliance suite, but are added to ensure coverage

@@ -1,12 +1,12 @@
 import type { SQSRecord } from 'aws-lambda';
 import { BatchProcessor } from './BatchProcessor.js';
-import { SqsFifoProcessor } from './SqsFifoProcessor.js';
 import { EventType } from './constants.js';
 import {
   type BatchProcessingError,
   SqsFifoMessageGroupShortCircuitError,
   SqsFifoShortCircuitError,
 } from './errors.js';
+import { SqsFifoProcessor } from './SqsFifoProcessor.js';
 import type {
   BaseRecord,
   EventSourceDataClassTypes,

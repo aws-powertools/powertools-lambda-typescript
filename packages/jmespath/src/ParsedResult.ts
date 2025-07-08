@@ -1,10 +1,10 @@
-import { TreeInterpreter } from './TreeInterpreter.js';
 import {
   ArityError,
   JMESPathTypeError,
   UnknownFunctionError,
   VariadicArityError,
 } from './errors.js';
+import { TreeInterpreter } from './TreeInterpreter.js';
 import type { JMESPathParsingOptions, JSONObject, Node } from './types.js';
 
 class ParsedResult {

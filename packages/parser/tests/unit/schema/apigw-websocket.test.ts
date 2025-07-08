@@ -24,7 +24,8 @@ describe('Schema: APIGatewayProxyWebsocketEvent', () => {
     // Prepare
     const invalidEvent = {
       type: 'REQUEST',
-      methodArn: 'arn:aws:execute-api:us-east-1:123456789012:abcdef123/default/$connect',
+      methodArn:
+        'arn:aws:execute-api:us-east-1:123456789012:abcdef123/default/$connect',
       headers: {},
       requestContext: {
         routeKey: '$connect',
@@ -33,6 +34,8 @@ describe('Schema: APIGatewayProxyWebsocketEvent', () => {
     };
 
     // Act & Assess
-    expect(() => APIGatewayProxyWebsocketEventSchema.parse(invalidEvent)).toThrow();
+    expect(() =>
+      APIGatewayProxyWebsocketEventSchema.parse(invalidEvent)
+    ).toThrow();
   });
 });

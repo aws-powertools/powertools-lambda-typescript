@@ -18,4 +18,4 @@ const extendedSchema = SqsSchema.extend({
   ),
 });
 
-type ExtendedSqsEvent = z.infer<typeof extendedSchema>;
+type _ExtendedSqsEvent = z.infer<typeof extendedSchema>;

@@ -1,8 +1,8 @@
-import type { Context } from 'aws-lambda';
-import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
-import { makeIdempotent } from '../../src/makeIdempotent.js';
 import { Logger } from '@aws-lambda-powertools/logger';
+import type { Context } from 'aws-lambda';
 import { IdempotencyConfig } from '../../src/IdempotencyConfig.js';
+import { makeIdempotent } from '../../src/makeIdempotent.js';
+import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
 
 const IDEMPOTENCY_TABLE_NAME =
   process.env.IDEMPOTENCY_TABLE_NAME || 'table_name';

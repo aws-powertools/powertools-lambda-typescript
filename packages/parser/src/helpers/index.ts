@@ -44,7 +44,7 @@ const JSONStringified = <T extends ZodTypeAny>(schema: T) =>
     .transform((str, ctx) => {
       try {
         return JSON.parse(str);
-      } catch (err) {
+      } catch {
         ctx.addIssue({
           code: 'custom',
           message: 'Invalid JSON',

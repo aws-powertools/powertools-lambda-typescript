@@ -4,9 +4,9 @@ import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariabl
 import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
 import {
   LogFormatter,
+  Logger,
   LogItem,
   LogLevelThreshold,
-  Logger,
 } from '../../src/index.js';
 import type {
   CustomJsonReplacerFn,
@@ -15,7 +15,6 @@ import type {
 } from '../../src/types/Logger.js';
 import type { LogKey, UnformattedAttributes } from '../../src/types/logKeys.js';
 
-const fileNameRegexp = new RegExp(/index.js:\d+$/);
 const fileNameRegexpWithLine = new RegExp(/formatters.test.ts:\d+:\d+/);
 const formatter = new PowertoolsLogFormatter();
 const formatterWithEnv = new PowertoolsLogFormatter({

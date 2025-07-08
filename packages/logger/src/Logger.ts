@@ -1,6 +1,6 @@
 import { Console } from 'node:console';
 import { randomInt } from 'node:crypto';
-import { Utility, isNullOrUndefined } from '@aws-lambda-powertools/commons';
+import { isNullOrUndefined, Utility } from '@aws-lambda-powertools/commons';
 import type {
   AsyncHandler,
   HandlerMethodDecorator,
@@ -26,10 +26,10 @@ import type {
   InjectLambdaContextOptions,
   LogAttributes,
   LogFunction,
+  LoggerInterface,
   LogItemExtraInput,
   LogItemMessage,
   LogLevel,
-  LoggerInterface,
 } from './types/Logger.js';
 import type {
   LogKeys,
@@ -545,12 +545,7 @@ class Logger extends Utility implements LoggerInterface {
     options?: InjectLambdaContextOptions
   ): void {
     logger.addContext(context);
-
-    let shouldLogEvent = undefined;
-    if (options && Object.hasOwn(options, 'logEvent')) {
-      shouldLogEvent = options.logEvent;
-    }
-    logger.logEventIfEnabled(event, shouldLogEvent);
+    logger.logEventIfEnabled(event, options?.logEvent);
   } /* v8 ignore stop */
 
   /**

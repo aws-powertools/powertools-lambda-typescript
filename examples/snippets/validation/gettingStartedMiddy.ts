@@ -2,8 +2,8 @@ import { validator } from '@aws-lambda-powertools/validation/middleware';
 import middy from '@middy/core';
 import {
   type InboundSchema,
-  type OutboundSchema,
   inboundSchema,
+  type OutboundSchema,
   outboundSchema,
 } from './schemas.js';
 

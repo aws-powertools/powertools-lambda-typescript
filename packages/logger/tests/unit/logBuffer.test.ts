@@ -1,9 +1,9 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import middy from 'middy5';
-import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Logger } from '../../src/Logger.js';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { LogLevel, UncaughtErrorLogMessage } from '../../src/constants.js';
+import { Logger } from '../../src/Logger.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
 
 describe('Buffer logs', () => {

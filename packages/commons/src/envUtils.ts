@@ -224,7 +224,7 @@ const isDevMode = (): boolean => {
       key: POWERTOOLS_DEV_ENV_VAR,
       extendedParsing: true,
     });
-  } catch (error) {
+  } catch {
     return false;
   }
 };

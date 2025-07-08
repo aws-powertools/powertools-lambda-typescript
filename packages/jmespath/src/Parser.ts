@@ -1,6 +1,4 @@
 import { randomInt } from 'node:crypto';
-import { Lexer } from './Lexer.js';
-import { ParsedResult } from './ParsedResult.js';
 import {
   andExpression,
   comparator,
@@ -27,6 +25,8 @@ import {
 } from './ast.js';
 import { BINDING_POWER } from './constants.js';
 import { IncompleteExpressionError, LexerError, ParseError } from './errors.js';
+import { Lexer } from './Lexer.js';
+import { ParsedResult } from './ParsedResult.js';
 import type { Node, Token } from './types.js';
 
 /**

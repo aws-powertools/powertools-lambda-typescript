@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
-import { LogLevel, LogLevelThreshold, Logger } from '../../src/index.js';
+import { Logger, LogLevel, LogLevelThreshold } from '../../src/index.js';
 
 class CustomConfigService extends EnvironmentVariablesService {
   #sampleRateValue = 1;

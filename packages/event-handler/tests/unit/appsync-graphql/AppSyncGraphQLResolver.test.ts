@@ -216,7 +216,10 @@ describe('Class: AppSyncGraphQLResolver', () => {
       public async handleAddPost({
         title,
         content,
-      }: { title: string; content: string }) {
+      }: {
+        title: string;
+        content: string;
+      }) {
         return {
           id: '123',
           title,

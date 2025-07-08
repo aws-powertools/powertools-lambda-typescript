@@ -3,13 +3,13 @@ import { CfnOutput, Duration } from 'aws-cdk-lib';
 import { Alias, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import type { TestStack } from '../TestStack.js';
 import { TEST_ARCHITECTURES, TEST_RUNTIMES } from '../constants.js';
 import {
   concatenateResourceName,
   getArchitectureKey,
   getRuntimeKey,
 } from '../helpers.js';
+import type { TestStack } from '../TestStack.js';
 import type { ExtraTestProps, TestNodejsFunctionProps } from '../types.js';
 
 /**

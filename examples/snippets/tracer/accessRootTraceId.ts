@@ -5,7 +5,7 @@ const tracer = new Tracer({ serviceName: 'serverlessAirline' });
 export const handler = async (): Promise<unknown> => {
   try {
     throw new Error('Something went wrong');
-  } catch (err) {
+  } catch (_error) {
     const rootTraceId = tracer.getRootXrayTraceId();
 
     // Example of returning an error response

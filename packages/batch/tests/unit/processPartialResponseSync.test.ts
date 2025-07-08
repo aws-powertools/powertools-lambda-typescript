@@ -10,8 +10,8 @@ import {
   BatchProcessorSync,
   EventType,
   FullBatchFailureError,
-  UnexpectedBatchTypeError,
   processPartialResponseSync,
+  UnexpectedBatchTypeError,
 } from '../../src/index.js';
 import type {
   BatchProcessingOptions,

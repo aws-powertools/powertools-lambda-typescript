@@ -1,8 +1,3 @@
-import { ddbClient } from '#clients/dynamodb';
-import { getSSMStringParameter } from '#helpers/get-string-param';
-import { putItemInDynamoDB } from '#helpers/put-item';
-import { assertIsError, getStringFromEnv } from '#helpers/utils';
-import { logger, metrics, tracer } from '#powertools';
 import {
   IdempotencyConfig,
   makeIdempotent,
@@ -15,6 +10,11 @@ import type {
   Context,
 } from 'aws-lambda';
 import type { Subsegment } from 'aws-xray-sdk-core';
+import { ddbClient } from '#clients/dynamodb';
+import { getSSMStringParameter } from '#helpers/get-string-param';
+import { putItemInDynamoDB } from '#helpers/put-item';
+import { assertIsError, getStringFromEnv } from '#helpers/utils';
+import { logger, metrics, tracer } from '#powertools';
 
 // Initialize the persistence store for idempotency
 const ssmParameterName = getStringFromEnv('SSM_PARAMETER_NAME');

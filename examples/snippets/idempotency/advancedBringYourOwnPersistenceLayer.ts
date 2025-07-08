@@ -44,7 +44,7 @@ class CustomPersistenceLayer extends BasePersistenceLayer {
       return new IdempotencyRecord({
         ...(item as unknown as IdempotencyRecordOptions),
       });
-    } catch (error) {
+    } catch (_error) {
       throw new IdempotencyItemNotFoundError();
     }
   }
@@ -64,7 +64,7 @@ class CustomPersistenceLayer extends BasePersistenceLayer {
 
     const ttl = record.expiryTimestamp
       ? Math.floor(new Date(record.expiryTimestamp * 1000).getTime() / 1000) -
-        Math.floor(new Date().getTime() / 1000)
+        Math.floor(Date.now() / 1000)
       : this.getExpiresAfterSeconds();
 
     let existingItem: ProviderItem | undefined;

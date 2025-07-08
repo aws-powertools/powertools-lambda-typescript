@@ -1,11 +1,11 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  cleanupMiddlewares,
   IDEMPOTENCY_KEY,
   LOGGER_KEY,
   METRICS_KEY,
   TRACER_KEY,
-  cleanupMiddlewares,
 } from '../../src/index.js';
 
 describe('Function: cleanupMiddlewares', () => {

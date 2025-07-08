@@ -1,6 +1,6 @@
-import { Logger } from '@aws-lambda-powertools/logger';
 import { PT_VERSION as version } from '@aws-lambda-powertools/commons';
-import { serviceName, defaultValues } from './constants.js';
+import { Logger } from '@aws-lambda-powertools/logger';
+import { defaultValues, serviceName } from './constants.js';
 
 /**
  * Create logger instance with centralized configuration so that

@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import {
-  TEST_ARCHITECTURES,
-  TEST_RUNTIMES,
   defaultArchitecture,
   defaultRuntime,
+  TEST_ARCHITECTURES,
+  TEST_RUNTIMES,
 } from './constants.js';
 
 const isValidRuntimeKey = (

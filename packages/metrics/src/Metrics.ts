@@ -1,5 +1,5 @@
 import { Console } from 'node:console';
-import { Utility, isIntegerNumber } from '@aws-lambda-powertools/commons';
+import { isIntegerNumber, Utility } from '@aws-lambda-powertools/commons';
 import type {
   GenericLogger,
   HandlerMethodDecorator,
@@ -12,8 +12,8 @@ import {
   EMF_MAX_TIMESTAMP_FUTURE_AGE,
   EMF_MAX_TIMESTAMP_PAST_AGE,
   MAX_DIMENSION_COUNT,
-  MAX_METRICS_SIZE,
   MAX_METRIC_VALUES_SIZE,
+  MAX_METRICS_SIZE,
   MetricResolution as MetricResolutions,
   MetricUnit as MetricUnits,
 } from './constants.js';
@@ -24,9 +24,9 @@ import type {
   ExtraOptions,
   MetricDefinition,
   MetricResolution,
-  MetricUnit,
   MetricsInterface,
   MetricsOptions,
+  MetricUnit,
   StoredMetrics,
 } from './types/index.js';
 
@@ -753,7 +753,7 @@ class Metrics extends Utility implements MetricsInterface {
 
     return {
       _aws: {
-        Timestamp: this.#timestamp ?? new Date().getTime(),
+        Timestamp: this.#timestamp ?? Date.now(),
         CloudWatchMetrics: [
           {
             Namespace: this.namespace || DEFAULT_NAMESPACE,
@@ -764,6 +764,7 @@ class Metrics extends Utility implements MetricsInterface {
       },
       ...this.defaultDimensions,
       ...this.dimensions,
+      // biome-ignore lint/performance/noAccumulatingSpread: need to merge all dimension sets
       ...this.dimensionSets.reduce((acc, dims) => Object.assign(acc, dims), {}),
       ...metricValues,
       ...this.metadata,
@@ -1101,7 +1102,7 @@ class Metrics extends Utility implements MetricsInterface {
     }
 
     const timestampMs = isDate ? timestamp.getTime() : timestamp;
-    const currentTime = new Date().getTime();
+    const currentTime = Date.now();
 
     const minValidTimestamp = currentTime - EMF_MAX_TIMESTAMP_PAST_AGE;
     const maxValidTimestamp = currentTime + EMF_MAX_TIMESTAMP_FUTURE_AGE;

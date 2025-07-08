@@ -1,15 +1,15 @@
 import { join } from 'node:path';
 import {
+  invokeFunction,
   TestInvocationLogs,
   TestStack,
-  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
+  commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
   STACK_OUTPUT_LOG_GROUP,
-  commonEnvironmentVars,
 } from './constants.js';
 
 describe('Logger E2E tests, child logger', () => {

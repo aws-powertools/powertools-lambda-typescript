@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { SchemaType, kafkaConsumer } from '@aws-lambda-powertools/kafka';
+import { kafkaConsumer, SchemaType } from '@aws-lambda-powertools/kafka';
 import type { SchemaConfig } from '@aws-lambda-powertools/kafka/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 

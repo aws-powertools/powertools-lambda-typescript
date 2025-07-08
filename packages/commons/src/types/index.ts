@@ -1,27 +1,27 @@
-export type {
-  Request,
-  MiddlewareLikeObj,
-  MiddyLikeRequest,
-  MiddlewareFn,
-  CleanupFunction,
-} from './middy.js';
-export type { GenericLogger } from './GenericLogger.js';
-export type { SdkClient, MiddlewareArgsLike } from './awsSdk.js';
-export type {
-  JSONPrimitive,
-  JSONValue,
-  JSONObject,
-  JSONArray,
-} from './json.js';
-export type {
-  SyncHandler,
-  AsyncHandler,
-  LambdaInterface,
-  HandlerMethodDecorator,
-} from './LambdaInterface.js';
+export type { MiddlewareArgsLike, SdkClient } from './awsSdk.js';
 export type { ConfigServiceInterface } from './ConfigServiceInterface.js';
 export type {
-  GetStringFromEnvOptions,
   GetBooleanFromEnvOptions,
   GetNumberFromEnvOptions,
+  GetStringFromEnvOptions,
 } from './envUtils.js';
+export type { GenericLogger } from './GenericLogger.js';
+export type {
+  JSONArray,
+  JSONObject,
+  JSONPrimitive,
+  JSONValue,
+} from './json.js';
+export type {
+  AsyncHandler,
+  HandlerMethodDecorator,
+  LambdaInterface,
+  SyncHandler,
+} from './LambdaInterface.js';
+export type {
+  CleanupFunction,
+  MiddlewareFn,
+  MiddlewareLikeObj,
+  MiddyLikeRequest,
+  Request,
+} from './middy.js';

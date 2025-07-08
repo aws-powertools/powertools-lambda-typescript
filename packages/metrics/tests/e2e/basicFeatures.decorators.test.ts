@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import {
-  TestStack,
   invokeFunction,
+  TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import {
   CloudWatchClient,
@@ -10,7 +10,7 @@ import {
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { getMetrics, sortDimensions } from '../helpers/metricsUtils.js';
 import { MetricsTestNodejsFunction } from '../helpers/resources.js';
-import { RESOURCE_NAME_PREFIX, commonEnvironmentVars } from './constants.js';
+import { commonEnvironmentVars, RESOURCE_NAME_PREFIX } from './constants.js';
 
 describe('Metrics E2E tests, basic features decorator usage', () => {
   const testStack = new TestStack({
@@ -92,7 +92,7 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
 
       // Check coldstart metric value
       const adjustedStartTime = new Date(startTime.getTime() - 60 * 1000);
-      const endTime = new Date(new Date().getTime() + 60 * 1000);
+      const endTime = new Date(Date.now() + 60 * 1000);
       const coldStartMetricStat = await cloudwatchClient.send(
         new GetMetricStatisticsCommand({
           Namespace: expectedNamespace,
@@ -150,7 +150,7 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
 
       // Check coldstart metric value
       const adjustedStartTime = new Date(startTime.getTime() - 3 * 60 * 1000);
-      const endTime = new Date(new Date().getTime() + 60 * 1000);
+      const endTime = new Date(Date.now() + 60 * 1000);
       const metricStat = await cloudwatchClient.send(
         new GetMetricStatisticsCommand({
           Namespace: expectedNamespace,

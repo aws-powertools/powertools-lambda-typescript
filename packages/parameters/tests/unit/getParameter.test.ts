@@ -2,7 +2,7 @@ import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
-import { SSMProvider, getParameter } from '../../src/ssm/index.js';
+import { getParameter, SSMProvider } from '../../src/ssm/index.js';
 
 describe('Function: getParameter', () => {
   const client = mockClient(SSMClient);

@@ -6,7 +6,5 @@
     "rootDir": "./src",
     "tsBuildInfoFile": ".tsbuildinfo/esm.json"
   },
-  "include": [
-    "./src/**/*"
-  ]
+  "include": ["./src/**/*"]
 }

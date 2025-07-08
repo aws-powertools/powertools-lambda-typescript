@@ -26,7 +26,7 @@ const decompressRecordToJSON = (
     );
 
     return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
-  } catch (error) {
+  } catch {
     throw new DecompressError('Failed to decompress CloudWatch log data');
   }
 };

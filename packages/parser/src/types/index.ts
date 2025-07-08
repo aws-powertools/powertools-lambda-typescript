@@ -9,7 +9,6 @@ export type { Envelope } from './envelope.js';
 
 export type {
   ALBEvent,
-  ALBMultiValueHeadersEvent,
   APIGatewayEventRequestContext,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,

@@ -1,6 +1,5 @@
 import type { z } from 'zod';
 import type {
-  AlbMultiValueHeadersSchema,
   AlbSchema,
   APIGatewayEventRequestContextSchema,
   APIGatewayProxyEventSchema,
@@ -52,8 +51,6 @@ import type {
 } from '../schemas/index.js';
 
 type ALBEvent = z.infer<typeof AlbSchema>;
-
-type ALBMultiValueHeadersEvent = z.infer<typeof AlbMultiValueHeadersSchema>;
 
 type APIGatewayProxyEvent = z.infer<typeof APIGatewayProxyEventSchema>;
 
@@ -173,7 +170,6 @@ type VpcLatticeEventV2 = z.infer<typeof VpcLatticeV2Schema>;
 
 export type {
   ALBEvent,
-  ALBMultiValueHeadersEvent,
   APIGatewayEventRequestContext,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,

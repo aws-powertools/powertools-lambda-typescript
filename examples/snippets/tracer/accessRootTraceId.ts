@@ -1,11 +1,15 @@
+import { Logger } from '@aws-lambda-powertools/logger';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 
 const tracer = new Tracer({ serviceName: 'serverlessAirline' });
+const logger = new Logger({ serviceName: 'serverlessAirline' });
 
 export const handler = async (): Promise<unknown> => {
   try {
     throw new Error('Something went wrong');
-  } catch (_error) {
+  } catch (error) {
+    logger.error('An error occurred', { error });
+
     const rootTraceId = tracer.getRootXrayTraceId();
 
     // Example of returning an error response

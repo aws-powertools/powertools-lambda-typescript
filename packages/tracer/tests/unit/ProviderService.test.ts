@@ -47,34 +47,6 @@ describe('Class: ProviderService', () => {
     vi.clearAllMocks();
   });
 
-  describe('Method: captureAWS', () => {
-    it('calls the correct underlying function with proper arguments', () => {
-      // Prepare
-      const provider: ProviderService = new ProviderService();
-
-      // Act
-      provider.captureAWS({});
-
-      // Assess
-      expect(mocks.captureAWS).toHaveBeenCalledTimes(1);
-      expect(mocks.captureAWS).toHaveBeenCalledWith({});
-    });
-  });
-
-  describe('Method: captureAWSClient', () => {
-    it('calls the correct underlying function with proper arguments', () => {
-      // Prepare
-      const provider: ProviderService = new ProviderService();
-
-      // Act
-      provider.captureAWSClient({});
-
-      // Assess
-      expect(mocks.captureAWSClient).toHaveBeenCalledTimes(1);
-      expect(mocks.captureAWSClient).toHaveBeenCalledWith({});
-    });
-  });
-
   describe('Method: captureAWSv3Client', () => {
     it('calls the correct underlying function with proper arguments', () => {
       // Prepare
@@ -656,5 +628,23 @@ describe('Class: ProviderService', () => {
         /Root=1-abcdef12-3456abcdef123456abcdef12;Parent=\S{16};Sampled=0/
       )
     );
+  });
+
+  it('skips requests with CONNECT method', () => {
+    // Prepare
+    const provider: ProviderService = new ProviderService();
+    const segment = new Subsegment('## dummySegment');
+    vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+    vi.spyOn(segment, 'addNewSubsegment');
+
+    // Act
+    provider.instrumentFetch();
+    mockFetch({
+      origin: 'https://aws.amazon.com',
+      method: 'CONNECT',
+    });
+
+    // Assess
+    expect(segment.addNewSubsegment).toHaveBeenCalledTimes(0);
   });
 });

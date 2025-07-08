@@ -277,6 +277,8 @@ class Tracer extends Utility implements TracerInterface {
   }
 
   /**
+   * @deprecated Use {@link captureAWSv3Client | `captureAWSv3Client()`} instead.
+   *
    * Patch all AWS SDK v2 clients and create traces when your application makes calls to AWS services.
    *
    * If you want to patch a specific client use {@link captureAWSClient} and if you are using AWS SDK v3 use {@link captureAWSv3Client} instead.
@@ -295,16 +297,17 @@ class Tracer extends Utility implements TracerInterface {
    * }
    * ```
    *
-   * @deprecated Use {@link captureAWSv3Client} instead.
    * @param aws - AWS SDK v2 import
    */
-  public captureAWS<T>(aws: T): T {
+  /* v8 ignore start */ public captureAWS<T>(aws: T): T {
     if (!this.isTracingEnabled()) return aws;
 
     return this.provider.captureAWS(aws);
-  }
+  } /* v8 ignore stop */
 
   /**
+   * @deprecated Use {@link captureAWSv3Client | `captureAWSv3Client()`} instead.
+   *
    * Patch a specific AWS SDK v2 client and create traces when your application makes calls to that AWS service.
    *
    * If you want to patch all clients use {@link captureAWS} and if you are using AWS SDK v3 use {@link captureAWSv3Client} instead.
@@ -323,7 +326,7 @@ class Tracer extends Utility implements TracerInterface {
    *   ...
    * }
    * ```
-   * @deprecated Use {@link captureAWSv3Client} instead.
+   *
    * @param service - AWS SDK v2 client
    */
   /* v8 ignore start */ public captureAWSClient<T>(service: T): T {

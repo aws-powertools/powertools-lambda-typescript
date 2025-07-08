@@ -104,7 +104,7 @@ describe('Logger E2E - Advanced uses', () => {
         try {
           JSON.parse(log);
           return true;
-        } catch (_error) {
+        } catch {
           return false;
         }
       });

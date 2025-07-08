@@ -187,7 +187,7 @@ describe('Schema: Kinesis', () => {
 
     const transformedInput = {
       ...testEvent,
-      Records: testEvent.Records.map((record, _index) => {
+      Records: testEvent.Records.map((record) => {
         return {
           ...record,
           kinesis: {

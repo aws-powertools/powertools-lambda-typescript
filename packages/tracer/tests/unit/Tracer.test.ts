@@ -1457,35 +1457,33 @@ describe('Class: Tracer', () => {
       );
     });
 
-    describe('Method: captureAWSv3Client', () => {
-      it('does nothing when tracing is disabled', () => {
-        // Prepare
-        const tracer: Tracer = new Tracer({ enabled: false });
-        const captureAWSv3ClientSpy = vi
-          .spyOn(tracer.provider, 'captureAWSv3Client')
-          .mockImplementation(() => null);
+    it('skips tracing AWS SDK clients when tracing is disabled', () => {
+      // Prepare
+      const tracer: Tracer = new Tracer({ enabled: false });
+      const captureAWSv3ClientSpy = vi
+        .spyOn(tracer.provider, 'captureAWSv3Client')
+        .mockImplementation(() => null);
 
-        // Act
-        tracer.captureAWSv3Client({});
+      // Act
+      tracer.captureAWSv3Client({});
 
-        // Assess
-        expect(captureAWSv3ClientSpy).toBeCalledTimes(0);
-      });
+      // Assess
+      expect(captureAWSv3ClientSpy).toBeCalledTimes(0);
+    });
 
-      it('returns the decorated object that was passed to it', () => {
-        // Prepare
-        const tracer: Tracer = new Tracer();
-        const captureAWSv3ClientSpy = vi
-          .spyOn(tracer.provider, 'captureAWSv3Client')
-          .mockImplementation(() => null);
+    it('returns the instrumented AWS SDK client when called', () => {
+      // Prepare
+      const tracer: Tracer = new Tracer();
+      const captureAWSv3ClientSpy = vi
+        .spyOn(tracer.provider, 'captureAWSv3Client')
+        .mockImplementation(() => null);
 
-        // Act
-        tracer.captureAWSv3Client({});
+      // Act
+      tracer.captureAWSv3Client({});
 
-        // Assess
-        expect(captureAWSv3ClientSpy).toBeCalledTimes(1);
-        expect(captureAWSv3ClientSpy).toBeCalledWith({});
-      });
+      // Assess
+      expect(captureAWSv3ClientSpy).toBeCalledTimes(1);
+      expect(captureAWSv3ClientSpy).toBeCalledWith({});
     });
   });
 });

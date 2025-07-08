@@ -5,8 +5,8 @@ export type {
   ProtobufMessage,
   Record,
   RecordHeader,
-  SchemaType,
   SchemaConfig,
   SchemaConfigValue,
   SchemaMetadata,
+  SchemaType,
 } from './types.js';

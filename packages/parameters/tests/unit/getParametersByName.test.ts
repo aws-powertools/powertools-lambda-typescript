@@ -2,7 +2,7 @@ import { GetParametersCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
-import { SSMProvider, getParametersByName } from '../../src/ssm/index.js';
+import { getParametersByName, SSMProvider } from '../../src/ssm/index.js';
 import type { SSMGetParametersByNameOptions } from '../../src/types/SSMProvider.js';
 
 describe('Function: getParametersByName', () => {

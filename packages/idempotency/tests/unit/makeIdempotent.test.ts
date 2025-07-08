@@ -420,7 +420,7 @@ describe('Function: makeIdempotent', () => {
         mockIdempotencyOptions.persistenceStore,
         'configure'
       );
-    
+
       // Act
       const result = await handler(event, context);
 

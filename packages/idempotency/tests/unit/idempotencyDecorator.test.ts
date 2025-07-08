@@ -2,9 +2,9 @@ import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
-import { idempotent, IdempotencyConfig } from '../../src/index.js';
-import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
+import { IdempotencyConfig, idempotent } from '../../src/index.js';
 import { BasePersistenceLayer } from '../../src/persistence/BasePersistenceLayer.js';
+import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 
 describe('Given a class with a function to decorate', () => {
   it('maintains the scope of the decorated function', async () => {

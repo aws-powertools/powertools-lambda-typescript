@@ -4,8 +4,5 @@
     "rootDir": "../",
     "noEmit": true
   },
-  "include": [
-    "../src/**/*",
-    "./**/*",
-  ]
+  "include": ["../src/**/*", "./**/*"]
 }

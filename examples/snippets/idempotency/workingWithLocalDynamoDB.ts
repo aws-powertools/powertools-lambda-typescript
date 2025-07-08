@@ -6,7 +6,7 @@ const ddbPersistenceStore = new DynamoDBPersistenceLayer({
   tableName: 'IdempotencyTable',
 });
 
-const handler = async (event: unknown, context: Context) => {
+const handler = async (_event: unknown, _context: Context) => {
   return {
     statusCode: 200,
     body: JSON.stringify({

@@ -1,6 +1,6 @@
 import {
-  SQS,
   extractDataFromEnvelope,
+  SQS,
 } from '@aws-lambda-powertools/jmespath/envelopes';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { SQSEvent } from 'aws-lambda';

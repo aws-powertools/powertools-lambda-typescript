@@ -1,6 +1,7 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type { IdempotencyRecordStatus } from '../constants.js';
 import type { DynamoDBPersistenceLayer } from '../persistence/DynamoDBPersistenceLayer.js';
+
 /**
  * The status of an IdempotencyRecord
  */

@@ -30,13 +30,12 @@ module.exports = async ({ github, context, core }) => {
         });
 
         return;
-      } else {
-        core.debug(`'${PR_TITLE}' didn't match '${label}' semantic.`);
-        miss += 1;
       }
+      core.debug(`'${PR_TITLE}' didn't match '${label}' semantic.`);
+      miss += 1;
     }
   } finally {
-    if (miss == Object.keys(labels).length) {
+    if (miss === Object.keys(labels).length) {
       core.notice(
         `PR ${PR_NUMBER} title '${PR_TITLE}' contain any of the release-related types; skipping...`
       );

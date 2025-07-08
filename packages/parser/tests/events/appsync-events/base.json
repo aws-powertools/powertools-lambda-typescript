@@ -10,10 +10,7 @@
   "info": {
     "channel": {
       "path": "/request/channel",
-      "segments": [
-        "request",
-        "channel"
-      ]
+      "segments": ["request", "channel"]
     },
     "channelNamespace": {
       "name": "request"

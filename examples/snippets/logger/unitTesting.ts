@@ -1,5 +1,6 @@
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
+
 declare const handler: (event: unknown, context: Context) => Promise<true>;
 
 const context = {

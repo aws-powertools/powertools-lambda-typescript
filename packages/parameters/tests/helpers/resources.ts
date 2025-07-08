@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import {
-  type TestStack,
   concatenateResourceName,
   getArchitectureKey,
   getRuntimeKey,
+  type TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resources/dynamodb';
 import type { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';

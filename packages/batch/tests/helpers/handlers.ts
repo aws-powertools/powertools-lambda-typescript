@@ -68,7 +68,7 @@ const handlerWithContext = (record: SQSRecord, context: Context): string => {
     if (context.getRemainingTimeInMillis() === 0) {
       throw Error('No time remaining.');
     }
-  } catch (e) {
+  } catch {
     throw Error(`Context possibly malformed. Displaying context:\n${context}`);
   }
 
@@ -83,7 +83,7 @@ const asyncHandlerWithContext = async (
     if (context.getRemainingTimeInMillis() === 0) {
       throw Error('No time remaining.');
     }
-  } catch (e) {
+  } catch {
     throw Error(`Context possibly malformed. Displaying context:\n${context}`);
   }
 

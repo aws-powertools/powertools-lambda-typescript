@@ -101,7 +101,8 @@ class RouteHandlerRegistry {
       return this.#resolverCache.get(path);
     }
     this.#logger.debug(`Resolving handler for path '${path}'`);
-    let mostSpecificHandler = undefined;
+    let mostSpecificHandler: RouteHandlerOptions<boolean> | undefined;
+    // Find the most specific handler by checking the regex patterns
     let mostSpecificRouteLength = 0;
     for (const [key, value] of this.resolvers.entries()) {
       if (new RegExp(key).test(path)) {
@@ -137,7 +138,7 @@ class RouteHandlerRegistry {
    */
   static isValidPath(path: string): boolean {
     if (path === '/*') return true;
-    const pathRegex = /^\/([^\/\*]+)(\/[^\/\*]+)*(\/\*)?$/;
+    const pathRegex = /^\/([^/*]+)(\/[^/*]+)*(\/\*)?$/;
     return pathRegex.test(path);
   }
 
@@ -149,7 +150,7 @@ class RouteHandlerRegistry {
    * @param path - The path to be converted to a regex string
    */
   static pathToRegexString(path: string): string {
-    const escapedPath = path.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+    const escapedPath = path.replace(/([.*+?^=!:${}()|[\]/\\])/g, '\\$1');
     return `^${escapedPath.replace(/\\\*/g, '.*')}$`;
   }
 }

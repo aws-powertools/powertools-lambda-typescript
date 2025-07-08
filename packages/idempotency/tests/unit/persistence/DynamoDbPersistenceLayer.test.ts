@@ -28,7 +28,7 @@ import type { DynamoDBPersistenceOptions } from '../../../src/types/DynamoDBPers
 import { DynamoDBPersistenceLayerTestClass } from '../../helpers/idempotencyUtils.js';
 
 const getFutureTimestamp = (seconds: number): number =>
-  new Date().getTime() + seconds * 1000;
+  Date.now() + seconds * 1000;
 
 vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@aws-lambda-powertools/commons')>()),

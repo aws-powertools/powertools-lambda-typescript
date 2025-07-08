@@ -1,9 +1,9 @@
 export { AppSyncGraphQLResolver } from './AppSyncGraphQLResolver.js';
 export { ResolverNotFoundException } from './errors.js';
 export {
-  makeId,
-  awsTimestamp,
   awsDate,
-  awsTime,
   awsDateTime,
+  awsTime,
+  awsTimestamp,
+  makeId,
 } from './scalarTypesUtils.js';

@@ -194,7 +194,7 @@ class Router {
       return;
     }
 
-    return (target, _propertyKey, descriptor: PropertyDescriptor) => {
+    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
       const routeOptions = isRecord(handler) ? handler : options;
       this.onPublishRegistry.register({
         path,

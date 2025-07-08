@@ -3,7 +3,7 @@ import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { COLD_START_METRIC, DEFAULT_NAMESPACE } from '../../src/constants.js';
-import { MetricUnit, Metrics } from '../../src/index.js';
+import { Metrics, MetricUnit } from '../../src/index.js';
 import { logMetrics } from '../../src/middleware/middy.js';
 
 const contextFunctionName = 'context-function-name';

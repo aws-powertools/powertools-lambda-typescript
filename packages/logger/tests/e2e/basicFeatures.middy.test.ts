@@ -1,17 +1,17 @@
 import { join } from 'node:path';
 import {
+  invokeFunction,
   TestInvocationLogs,
   TestStack,
-  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import type { APIGatewayAuthorizerResult } from 'aws-lambda';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
 import {
+  commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
   STACK_OUTPUT_LOG_GROUP,
   XRAY_TRACE_ID_REGEX,
-  commonEnvironmentVars,
 } from './constants.js';
 
 describe('Logger E2E tests, basic functionalities middy usage', () => {

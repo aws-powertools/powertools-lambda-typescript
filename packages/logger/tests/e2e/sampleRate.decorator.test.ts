@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import {
+  invokeFunction,
   TestInvocationLogs,
   TestStack,
-  invokeFunction,
 } from '@aws-lambda-powertools/testing-utils';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';

@@ -1,5 +1,4 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { Context } from 'aws-lambda';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   BatchProcessingError,

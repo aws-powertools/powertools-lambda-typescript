@@ -1,4 +1,4 @@
-import { SchemaType, kafkaConsumer } from '@aws-lambda-powertools/kafka';
+import { kafkaConsumer, SchemaType } from '@aws-lambda-powertools/kafka';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { com } from './samples/user.generated.js'; // protobuf generated class
 

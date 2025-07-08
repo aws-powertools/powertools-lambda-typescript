@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_NAMESPACE, MAX_DIMENSION_COUNT } from '../../src/constants.js';
-import { MetricUnit, Metrics } from '../../src/index.js';
+import { Metrics, MetricUnit } from '../../src/index.js';
 
 describe('Working with dimensions', () => {
   const ENVIRONMENT_VARIABLES = process.env;

@@ -478,7 +478,7 @@ describe('Working with keys', () => {
     });
     class Test {
       @logger.injectLambdaContext({ resetKeys: true })
-      async handler(addKey: boolean, context: Context) {
+      async handler(addKey: boolean, _context: Context) {
         if (addKey) {
           logger.appendKeys({
             foo: 'baz',

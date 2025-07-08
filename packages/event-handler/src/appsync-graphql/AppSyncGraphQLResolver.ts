@@ -1,7 +1,7 @@
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import type { ResolveOptions } from '../types/common.js';
-import { Router } from './Router.js';
 import { ResolverNotFoundException } from './errors.js';
+import { Router } from './Router.js';
 import { isAppSyncGraphQLEvent } from './utils.js';
 
 /**

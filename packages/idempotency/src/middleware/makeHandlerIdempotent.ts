@@ -1,6 +1,6 @@
 import {
-  IDEMPOTENCY_KEY,
   cleanupMiddlewares,
+  IDEMPOTENCY_KEY,
 } from '@aws-lambda-powertools/commons';
 import type {
   JSONValue,

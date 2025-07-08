@@ -1,16 +1,16 @@
 import { gunzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import {
+  KinesisDataStreamRecord,
+  KinesisDataStreamSchema,
+  KinesisDynamoDBStreamSchema,
+} from '../../../src/schemas/kinesis.js';
+import {
   KinesisFirehoseRecordSchema,
   KinesisFirehoseSchema,
   KinesisFirehoseSqsRecordSchema,
   KinesisFirehoseSqsSchema,
 } from '../../../src/schemas/kinesis-firehose.js';
-import {
-  KinesisDataStreamRecord,
-  KinesisDataStreamSchema,
-  KinesisDynamoDBStreamSchema,
-} from '../../../src/schemas/kinesis.js';
 import type {
   KinesisDataStreamEvent,
   KinesisDynamoDBStreamEvent,
@@ -59,7 +59,7 @@ describe('Schema: Kinesis', () => {
     const parsed = KinesisDataStreamSchema.parse(testEvent);
 
     const transformedInput = {
-      Records: testEvent.Records.map((record, index) => {
+      Records: testEvent.Records.map((record, _index) => {
         return {
           ...record,
           kinesis: {
@@ -187,7 +187,7 @@ describe('Schema: Kinesis', () => {
 
     const transformedInput = {
       ...testEvent,
-      Records: testEvent.Records.map((record, index) => {
+      Records: testEvent.Records.map((record) => {
         return {
           ...record,
           kinesis: {

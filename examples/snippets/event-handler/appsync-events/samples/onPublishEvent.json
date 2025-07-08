@@ -10,10 +10,7 @@
   "info": {
     "channel": {
       "path": "/default/foo",
-      "segments": [
-        "default",
-        "foo"
-      ]
+      "segments": ["default", "foo"]
     },
     "channelNamespace": {
       "name": "default"

@@ -1,9 +1,9 @@
+import type { StartConfigurationSessionCommandInput } from '@aws-sdk/client-appconfigdata';
 import {
   AppConfigDataClient,
   GetLatestConfigurationCommand,
   StartConfigurationSessionCommand,
 } from '@aws-sdk/client-appconfigdata';
-import type { StartConfigurationSessionCommandInput } from '@aws-sdk/client-appconfigdata';
 import { BaseProvider } from '../base/BaseProvider.js';
 import { APPCONFIG_TOKEN_EXPIRATION } from '../constants.js';
 import type {

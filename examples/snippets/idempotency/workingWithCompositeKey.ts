@@ -19,7 +19,7 @@ export const handler = middy(
         message: 'success',
         statusCode: 200,
       };
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Error creating payment');
     }
   }

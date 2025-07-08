@@ -2,7 +2,7 @@ import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod/v4';
 import { KafkaConsumerMissingSchemaError } from '../../src/errors.js';
-import { SchemaType, kafkaConsumer } from '../../src/index.js';
+import { kafkaConsumer, SchemaType } from '../../src/index.js';
 import type { ConsumerRecords, MSKEvent } from '../../src/types/types.js';
 import { loadEvent } from '../helpers/loadEvent.js';
 import { com } from '../protos/complex.generated.js';

@@ -333,8 +333,8 @@ When processing large Kafka messages in Lambda, be mindful of memory limitations
 
 === "Handling Large Messages"
 
-    ```typescript hl_lines="18-20"
-    --8<-- "examples/snippets/kafka/advancedHandlingLargeMessages.ts:6"
+    ```typescript hl_lines="22-23"
+    --8<-- "examples/snippets/kafka/advancedHandlingLargeMessages.ts:9"
     ```
 
 For large messages, consider these proven approaches:

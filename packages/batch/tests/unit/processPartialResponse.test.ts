@@ -11,8 +11,8 @@ import {
   BatchProcessor,
   EventType,
   FullBatchFailureError,
-  UnexpectedBatchTypeError,
   processPartialResponse,
+  UnexpectedBatchTypeError,
 } from '../../src/index.js';
 import type {
   BatchProcessingOptions,

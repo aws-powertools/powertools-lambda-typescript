@@ -230,7 +230,6 @@ const checkIfArgumentTypeIsValid = (
   }
   if (['string', 'number', 'boolean'].includes(type)) {
     typeCheckType(arg, type, argumentSpec, hasMoreTypesToCheck);
-    // biome-ignore lint/suspicious/useValidTypeof: we know that `type` is one of 'string', 'number', or 'boolean' because we checked for that above
     if (typeof arg === type) return true;
   } else if (type === 'object') {
     checkObjectType(arg, argumentSpec, hasMoreTypesToCheck);
@@ -255,7 +254,6 @@ const typeCheckType = (
   argumentSpec: string[],
   hasMoreTypesToCheck: boolean
 ): void => {
-  // biome-ignore lint/suspicious/useValidTypeof: we know that `type` is one of 'string', 'number', or 'boolean' because we checked before calling this function
   if (typeof arg !== type && !hasMoreTypesToCheck) {
     throw new JMESPathTypeError({
       currentValue: arg,

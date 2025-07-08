@@ -103,9 +103,7 @@ describe('Class: BasePersistenceLayer', () => {
       persistenceLayer.configure({ config, keyPrefix: 'my-custom-prefix' });
 
       // Assess
-      expect(persistenceLayer.idempotencyKeyPrefix).toBe(
-        'my-custom-prefix'
-      );
+      expect(persistenceLayer.idempotencyKeyPrefix).toBe('my-custom-prefix');
     });
 
     it('uses default config when no option is provided', () => {

@@ -1,7 +1,5 @@
 {
-  "entryPoints": [
-    "packages/*"
-  ],
+  "entryPoints": ["packages/*"],
   "entryPointStrategy": "packages",
   "name": "Powertools for AWS Lambda (Typescript) API Reference",
   "readme": "README.md",

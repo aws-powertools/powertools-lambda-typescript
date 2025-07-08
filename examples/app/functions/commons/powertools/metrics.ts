@@ -1,5 +1,5 @@
 import { Metrics } from '@aws-lambda-powertools/metrics';
-import { serviceName, metricsNamespace, defaultValues } from './constants.js';
+import { defaultValues, metricsNamespace, serviceName } from './constants.js';
 
 /**
  * Create metrics instance with centralized configuration so that

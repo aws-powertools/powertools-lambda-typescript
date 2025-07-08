@@ -1,9 +1,5 @@
 import type { Ajv, AnySchema, Format } from 'ajv';
 
-type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
-
 /**
  * Options to customize the JSON Schema validation.
  *

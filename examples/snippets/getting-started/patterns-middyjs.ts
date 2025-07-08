@@ -14,6 +14,6 @@ export const handler = middy()
   .use(captureLambdaHandler(tracer))
   .use(injectLambdaContext(logger))
   .use(logMetrics(metrics))
-  .handler(async (event: unknown) => {
+  .handler(async (_event: unknown) => {
     // Your business logic here
   });

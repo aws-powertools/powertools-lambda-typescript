@@ -1,4 +1,5 @@
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import type { GetParametersCommandOutput } from '@aws-sdk/client-ssm';
 import {
   GetParameterCommand,
   GetParametersByPathCommand,
@@ -6,7 +7,6 @@ import {
   PutParameterCommand,
   SSMClient,
 } from '@aws-sdk/client-ssm';
-import type { GetParametersCommandOutput } from '@aws-sdk/client-ssm';
 import { toBase64 } from '@smithy/util-base64';
 import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

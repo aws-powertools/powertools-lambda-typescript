@@ -11,4 +11,4 @@ const extendedSchema = APIGatewayProxyEventV2Schema.extend({ // (1)!
     })
   ),
 });
-type ExtendedAPIGatewayEvent = z.infer<typeof extendedSchema>;
+type _ExtendedAPIGatewayEvent = z.infer<typeof extendedSchema>;

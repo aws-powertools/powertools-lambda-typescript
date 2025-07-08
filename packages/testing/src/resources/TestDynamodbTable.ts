@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import type { TestStack } from '../TestStack.js';
 import { concatenateResourceName } from '../helpers.js';
+import type { TestStack } from '../TestStack.js';
 import type { ExtraTestProps, TestDynamodbTableProps } from '../types.js';
 
 /**

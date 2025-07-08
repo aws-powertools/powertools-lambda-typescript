@@ -10,6 +10,7 @@ if (
 ) {
   process.env.AWS_XRAY_CONTEXT_MISSING = 'IGNORE_ERROR';
 }
+
 import { Utility } from '@aws-lambda-powertools/commons';
 import type {
   AsyncHandler,
@@ -34,6 +35,7 @@ import type {
   TracerInterface,
   TracerOptions,
 } from './types/Tracer.js';
+
 const { Subsegment: XraySubsegment } = xraySdk;
 
 /**

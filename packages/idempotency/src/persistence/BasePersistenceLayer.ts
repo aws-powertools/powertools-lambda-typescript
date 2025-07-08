@@ -1,4 +1,4 @@
-import { type Hash, createHash } from 'node:crypto';
+import { createHash, type Hash } from 'node:crypto';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { LRUCache } from '@aws-lambda-powertools/commons/utils/lru-cache';
 import { search } from '@aws-lambda-powertools/jmespath';
@@ -174,7 +174,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
 
     if (remainingTimeInMillis) {
       idempotencyRecord.inProgressExpiryTimestamp =
-        new Date().getTime() + remainingTimeInMillis;
+        Date.now() + remainingTimeInMillis;
     } else {
       console.warn(
         'Could not determine remaining time left. Did you call registerLambdaContext on IdempotencyConfig?'

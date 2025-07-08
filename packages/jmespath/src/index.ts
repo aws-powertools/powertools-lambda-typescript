@@ -1,12 +1,12 @@
-export { search } from './search.js';
 export {
+  ArityError,
+  EmptyExpressionError,
+  IncompleteExpressionError,
   JMESPathError,
+  JMESPathTypeError,
   LexerError,
   ParseError,
-  IncompleteExpressionError,
-  ArityError,
-  VariadicArityError,
-  JMESPathTypeError,
-  EmptyExpressionError,
   UnknownFunctionError,
+  VariadicArityError,
 } from './errors.js';
+export { search } from './search.js';

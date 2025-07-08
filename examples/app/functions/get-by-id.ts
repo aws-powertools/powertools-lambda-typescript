@@ -1,13 +1,13 @@
-import { ItemNotFound } from '#errors';
-import { getItemDynamoDB } from '#helpers/get-item';
-import { assertIsError } from '#helpers/utils';
-import { logger, metrics, tracer } from '#powertools';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import type {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
+import { ItemNotFound } from '#errors';
+import { getItemDynamoDB } from '#helpers/get-item';
+import { assertIsError } from '#helpers/utils';
+import { logger, metrics, tracer } from '#powertools';
 
 /*
  *

@@ -8,7 +8,7 @@ import type {
   FailureResponse,
 } from '@aws-lambda-powertools/batch/types';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { MetricUnit, Metrics } from '@aws-lambda-powertools/metrics';
+import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 import type { SQSHandler, SQSRecord } from 'aws-lambda';
 
 class MyProcessor extends BatchProcessor {

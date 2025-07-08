@@ -10,7 +10,7 @@ app.tool<{ city: string }>(
   async ({ city }, { event }) => {
     try {
       throw new Error('Simulated error for demonstration purposes');
-    } catch (error) {
+    } catch {
       const {
         sessionAttributes,
         promptSessionAttributes,

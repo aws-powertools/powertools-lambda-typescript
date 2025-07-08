@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Logger } from '../../src/Logger.js';
 import { LogLevel, LogLevelThreshold } from '../../src/constants.js';
+import { Logger } from '../../src/Logger.js';
 import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
 import type {
   LogFunction,

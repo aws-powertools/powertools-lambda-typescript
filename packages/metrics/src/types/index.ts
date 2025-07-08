@@ -1,13 +1,13 @@
+export type { ConfigServiceInterface } from './ConfigServiceInterface.js';
 export type {
-  MetricsOptions,
   Dimensions,
   EmfOutput,
   ExtraOptions,
-  StoredMetrics,
-  StoredMetric,
   MetricDefinition,
   MetricResolution,
-  MetricUnit,
   MetricsInterface,
+  MetricsOptions,
+  MetricUnit,
+  StoredMetric,
+  StoredMetrics,
 } from './Metrics.js';
-export type { ConfigServiceInterface } from './ConfigServiceInterface.js';

@@ -1,9 +1,7 @@
 {
   "app": "tsx cdk/example-app.ts",
   "watch": {
-    "include": [
-      "**"
-    ],
+    "include": ["**"],
     "exclude": [
       "README.md",
       "cdk*.json",

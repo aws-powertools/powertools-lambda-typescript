@@ -1,11 +1,11 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  processPartialResponse,
+  processPartialResponseSync,
   SqsFifoMessageGroupShortCircuitError,
   SqsFifoPartialProcessor,
   SqsFifoPartialProcessorAsync,
   SqsFifoShortCircuitError,
-  processPartialResponse,
-  processPartialResponseSync,
 } from '../../src/index.js';
 import type { PartialItemFailureResponse } from '../../src/types.js';
 import { sqsRecordFactory } from '../helpers/factories.js';

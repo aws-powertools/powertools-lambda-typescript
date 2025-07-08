@@ -1,6 +1,6 @@
 import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
-import type { LogAttributes } from '../types/Logger.js';
 import type { LogFormatterOptions } from '../types/formatters.js';
+import type { LogAttributes } from '../types/Logger.js';
 import type { UnformattedAttributes } from '../types/logKeys.js';
 import type { LogItem } from './LogItem.js';
 
@@ -120,10 +120,7 @@ abstract class LogFormatter {
         this.envVarsService?.isDevMode() && typeof stack === 'string'
           ? stack?.split('\n')
           : stack,
-      cause:
-        error.cause instanceof Error
-          ? this.formatError(error.cause)
-          : error.cause,
+      cause: cause instanceof Error ? this.formatError(cause) : cause,
     };
     for (const key in error) {
       if (

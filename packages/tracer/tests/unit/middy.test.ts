@@ -8,8 +8,8 @@ import {
   setContextMissingStrategy,
 } from 'aws-xray-sdk-core';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { captureLambdaHandler } from '../../src/middleware/middy.js';
 import { Tracer } from './../../src/index.js';
+import { captureLambdaHandler } from '../../src/middleware/middy.js';
 
 describe('Middy middleware', () => {
   const ENVIRONMENT_VARIABLES = process.env;

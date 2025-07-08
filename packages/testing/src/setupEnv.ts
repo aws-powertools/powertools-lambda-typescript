@@ -21,7 +21,7 @@ expect.extend({
       const [rawMessage] = call;
       try {
         messages[idx] = JSON.parse(rawMessage);
-      } catch (error) {
+      } catch {
         messages[idx] = rawMessage;
       }
       if (this.equals(messages[idx], expected)) {
@@ -55,7 +55,7 @@ expect.extend({
       const [rawMessage] = call;
       try {
         messages[idx] = JSON.parse(rawMessage);
-      } catch (error) {
+      } catch {
         messages[idx] = rawMessage;
       }
       if (this.equals(messages[idx], expected)) {
@@ -119,7 +119,7 @@ expect.extend({
       const [rawMessage] = call;
       try {
         emfs[idx] = JSON.parse(rawMessage);
-      } catch (error) {
+      } catch {
         emfs[idx] = rawMessage;
       }
       const metrics = emfs[idx]._aws.CloudWatchMetrics;

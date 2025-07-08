@@ -11,4 +11,4 @@ const extendedSchema = AlbSchema.extend({
   body: JSONStringified(customSchema),
 });
 
-type ExtendedAlbEvent = z.infer<typeof extendedSchema>;
+type _ExtendedAlbEvent = z.infer<typeof extendedSchema>;

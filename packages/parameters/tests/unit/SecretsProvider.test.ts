@@ -1,9 +1,9 @@
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
-import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SecretsProvider } from '../../src/secrets/index.js';

@@ -1,6 +1,6 @@
-import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Logger } from '../../src/Logger.js';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { LogJsonIndent, LogLevel } from '../../src/constants.js';
+import { Logger } from '../../src/Logger.js';
 
 describe('Log levels', () => {
   const ENVIRONMENT_VARIABLES = process.env;

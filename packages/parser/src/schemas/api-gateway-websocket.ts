@@ -67,14 +67,17 @@ export const APIGatewayProxyWebsocketEventSchema = z.object({
   headers: z.record(z.string()),
   multiValueHeaders: z.record(z.array(z.string())),
   queryStringParameters: z.record(z.string()).nullable().optional(),
-  multiValueQueryStringParameters: z.record(z.array(z.string())).nullable().optional(),
+  multiValueQueryStringParameters: z
+    .record(z.array(z.string()))
+    .nullable()
+    .optional(),
   stageVariables: z.record(z.string()).nullable().optional(),
   requestContext: z.object({
     routeKey: z.string(),
-    eventType: z.enum(["CONNECT", "DISCONNECT", "MESSAGE"]),
+    eventType: z.enum(['CONNECT', 'DISCONNECT', 'MESSAGE']),
     extendedRequestId: z.string(),
     requestTime: z.string(),
-    messageDirection: z.enum(["IN", "OUT"]),
+    messageDirection: z.enum(['IN', 'OUT']),
     stage: z.string(),
     connectedAt: z.number(),
     requestTimeEpoch: z.number(),

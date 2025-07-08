@@ -16,17 +16,13 @@ const config = new IdempotencyConfig({
 
 export const handler = makeIdempotent(
   async (_event: Request, _context: Context): Promise<Response> => {
-    try {
-      // ... create payment
+    // ... create payment
 
-      return {
-        paymentId: '12345',
-        message: 'success',
-        statusCode: 200,
-      };
-    } catch (_error) {
-      throw new Error('Error creating payment');
-    }
+    return {
+      paymentId: '12345',
+      message: 'success',
+      statusCode: 200,
+    };
   },
   {
     persistenceStore,

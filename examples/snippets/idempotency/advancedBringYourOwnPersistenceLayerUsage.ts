@@ -38,16 +38,12 @@ export const handler = async (
 ): Promise<Response> => {
   config.registerLambdaContext(context);
 
-  try {
-    const transactionId = randomUUID();
-    const payment = await createSubscriptionPayment(transactionId, event);
+  const transactionId = randomUUID();
+  const payment = await createSubscriptionPayment(transactionId, event);
 
-    return {
-      paymentId: payment.id,
-      message: 'success',
-      statusCode: 200,
-    };
-  } catch (_error) {
-    throw new Error('Error creating payment');
-  }
+  return {
+    paymentId: payment.id,
+    message: 'success',
+    statusCode: 200,
+  };
 };

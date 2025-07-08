@@ -53,7 +53,7 @@ export const handler = async (
       message: 'success',
       statusCode: 200,
     };
-  } catch (_error) {
-    throw new Error('Error creating payment');
+  } catch (error) {
+    throw new Error('Error creating payment', { cause: error });
   }
 };

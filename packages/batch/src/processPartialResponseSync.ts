@@ -99,7 +99,9 @@ import type {
  * @param processor Batch processor instance to handle the batch processing
  * @param options Batch processing options, which can vary with chosen batch processor implementation
  */
-const processPartialResponseSync = <T extends BasePartialBatchProcessor>(
+/* v8 ignore start */ const processPartialResponseSync = <
+  T extends BasePartialBatchProcessor,
+>(
   event: { Records: BaseRecord[] },
   recordHandler: CallableFunction,
   processor: T,
@@ -114,6 +116,6 @@ const processPartialResponseSync = <T extends BasePartialBatchProcessor>(
   processor.processSync();
 
   return processor.response();
-};
+}; /* v8 ignore stop */
 
 export { processPartialResponseSync };

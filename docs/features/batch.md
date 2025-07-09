@@ -108,7 +108,7 @@ Processing batches from SQS works in three stages:
 3. Use **`processPartialResponse`** to kick off processing
 
 !!! note
-    By default, the batch processor will process messages in parallel, which does not guarantee the order of processing. If you need to process messages in order, set the [`processInParallel` option to `false`](#sequential-async-processing), or use [`SqsFifoPartialProcessor` for SQS FIFO queues](#fifo-queues).
+    By default, the batch processor will process messages in parallel, which does not guarantee the order of processing. If you need to process messages in order, set the [`processInParallel` option to `false`](#sequential-processing), or use [`SqsFifoPartialProcessor` for SQS FIFO queues](#fifo-queues).
 
 === "index.ts"
 
@@ -235,7 +235,7 @@ By default, we catch any exception raised by your record handler function. This 
     --8<--
     ```
 
-    1. Any exception works here. See [extending BatchProcessorSync section, if you want to override this behavior.](#extending-batchprocessor)
+    1. Any exception works here. See [extending `BatchProcessor` section, if you want to override this behavior.](#extending-batchprocessor)
 
     2. Exceptions raised in `recordHandler` will propagate to `process_partial_response`. <br/><br/> We catch them and include each failed batch item identifier in the response dictionary (see `Sample response` tab).
 
@@ -411,7 +411,7 @@ Use the `BatchProcessor` directly in your function to access a list of all retur
 
 Within your `recordHandler` function, you might need access to the Lambda context to determine how much time you have left before your function times out.
 
-We can automatically inject the [Lambda context](https://docs.aws.amazon.com/lambda/latest/dg/typescript-context.html){target="_blank"} into your `recordHandler` as optional second argument if you register it when using `BatchProcessorSync` or the `processPartialResponseSync` function.
+We can automatically inject the [Lambda context](https://docs.aws.amazon.com/lambda/latest/dg/typescript-context.html){target="_blank"} into your `recordHandler` as optional second argument if you pass it to the `processPartialResponse` function.
 
 ```typescript hl_lines="12 27"
 --8<-- "examples/snippets/batch/accessLambdaContext.ts"
@@ -444,7 +444,7 @@ Let's suppose you'd like to add a metric named `BatchRecordFailures` for each ba
 --8<-- "examples/snippets/batch/extendingFailure.ts"
 ```
 
-### Sequential async processing
+### Sequential processing
 
 By default, the `BatchProcessor` processes records in parallel using `Promise.all()`. However, if you need to preserve the order of records, you can set the `processInParallel` option to `false` to process records sequentially.
 
@@ -452,7 +452,7 @@ By default, the `BatchProcessor` processes records in parallel using `Promise.al
 
 When processing records from SQS FIFO queues, we recommend using the [`SqsFifoPartialProcessor`](#fifo-queues) class, which guarantees ordering of records and implements a short-circuit mechanism to skip processing records from a different message group ID.
 
-```typescript hl_lines="8 17" title="Sequential async processing"
+```typescript hl_lines="8 17" title="Sequential processing"
 --8<-- "examples/snippets/batch/sequentialAsyncProcessing.ts"
 ```
 
@@ -487,7 +487,7 @@ classDiagram
 * **`processRecord()`** – If you need to implement asynchronous logic, use this method, otherwise define it in your class with empty logic
 * **`processRecordSync()`** – handles all processing logic for each individual message of a batch, including calling the `recordHandler` (`this.handler`)
 
-You can then use this class as a context manager, or pass it to `processPartialResponseSync` to process the records in your Lambda handler function.
+You can then pass this class to `processPartialResponse` to process the records in your Lambda handler function.
 
 ```typescript hl_lines="21 35 55 60 72 85" title="Creating a custom batch processor"
 --8<-- "examples/snippets/batch/customPartialProcessor.ts"
@@ -507,7 +507,7 @@ You can use Tracer to create subsegments for each batch record processed. To do 
 
 ## Testing your code
 
-As there is no external calls, you can unit test your code with `BatchProcessorSync` quite easily.
+As there is no external calls, you can unit test your code with `BatchProcessor` quite easily.
 
 **Example**:
 

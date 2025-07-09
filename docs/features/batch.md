@@ -487,7 +487,7 @@ classDiagram
 * **`processRecord()`** – If you need to implement asynchronous logic, use this method, otherwise define it in your class with empty logic
 * **`processRecordSync()`** – handles all processing logic for each individual message of a batch, including calling the `recordHandler` (`this.handler`)
 
-You can then use this class as a context manager, or pass it to `processPartialResponse` to process the records in your Lambda handler function.
+You can then pass this class to `processPartialResponse` to process the records in your Lambda handler function.
 
 ```typescript hl_lines="21 35 55 60 72 85" title="Creating a custom batch processor"
 --8<-- "examples/snippets/batch/customPartialProcessor.ts"

@@ -28,7 +28,7 @@ import http from 'node:http';
 import https from 'node:https';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import type { DiagnosticsChannel } from 'undici-types';
-import { environmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import { getXRayTraceIdFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import {
   findHeaderAndDecode,
   getRequestURL,
@@ -134,7 +134,7 @@ class ProviderService implements ProviderServiceInterface {
         // @ts-expect-error
         request.addHeader(
           'X-Amzn-Trace-Id',
-          `Root=${environmentVariablesService.getXrayTraceId()};Parent=${subsegment.id};Sampled=${subsegment.notTraced ? '0' : '1'}`
+          `Root=${getXRayTraceIdFromEnv()};Parent=${subsegment.id};Sampled=${subsegment.notTraced ? '0' : '1'}`
         );
 
         (subsegment as HttpSubsegment).http = {

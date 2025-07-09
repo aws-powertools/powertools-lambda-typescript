@@ -764,8 +764,13 @@ class Metrics extends Utility implements MetricsInterface {
       },
       ...this.defaultDimensions,
       ...this.dimensions,
-      // biome-ignore lint/performance/noAccumulatingSpread: need to merge all dimension sets
-      ...this.dimensionSets.reduce((acc, dims) => Object.assign(acc, dims), {}),
+      // Merge all dimension sets efficiently by mutating the accumulator
+      ...this.dimensionSets.reduce((acc, dims) => {
+        for (const [key, value] of Object.entries(dims)) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Dimensions),
       ...metricValues,
       ...this.metadata,
     };

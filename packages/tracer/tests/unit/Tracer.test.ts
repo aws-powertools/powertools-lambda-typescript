@@ -1456,41 +1456,8 @@ describe('Class: Tracer', () => {
         new Error('dummy error')
       );
     });
-  });
 
-  describe('Method: captureAWS', () => {
-    it('does nothing when called while tracing is disabled', () => {
-      // Prepare
-      const tracer: Tracer = new Tracer({ enabled: false });
-      const captureAWSSpy = vi
-        .spyOn(tracer.provider, 'captureAWS')
-        .mockImplementation(() => null);
-
-      // Act
-      tracer.captureAWS({});
-
-      // Assess
-      expect(captureAWSSpy).toBeCalledTimes(0);
-    });
-
-    it('returns the decorated object that was passed to it', () => {
-      // Prepare
-      const tracer: Tracer = new Tracer();
-      const captureAWSSpy = vi
-        .spyOn(tracer.provider, 'captureAWS')
-        .mockImplementation(() => null);
-
-      // Act
-      tracer.captureAWS({});
-
-      // Assess
-      expect(captureAWSSpy).toBeCalledTimes(1);
-      expect(captureAWSSpy).toBeCalledWith({});
-    });
-  });
-
-  describe('Method: captureAWSv3Client', () => {
-    it('does nothing when tracing is disabled', () => {
+    it('skips tracing AWS SDK clients when tracing is disabled', () => {
       // Prepare
       const tracer: Tracer = new Tracer({ enabled: false });
       const captureAWSv3ClientSpy = vi
@@ -1504,7 +1471,7 @@ describe('Class: Tracer', () => {
       expect(captureAWSv3ClientSpy).toBeCalledTimes(0);
     });
 
-    it('returns the decorated object that was passed to it', () => {
+    it('returns the instrumented AWS SDK client when called', () => {
       // Prepare
       const tracer: Tracer = new Tracer();
       const captureAWSv3ClientSpy = vi

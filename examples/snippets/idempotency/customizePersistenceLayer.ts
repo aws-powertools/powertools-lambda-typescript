@@ -16,17 +16,13 @@ const persistenceStore = new DynamoDBPersistenceLayer({
 
 export const handler = middy(
   async (_event: Request, _context: Context): Promise<Response> => {
-    try {
-      // ... create payment
+    // ... create payment
 
-      return {
-        paymentId: '1234567890',
-        message: 'success',
-        statusCode: 200,
-      };
-    } catch (_error) {
-      throw new Error('Error creating payment');
-    }
+    return {
+      paymentId: '1234567890',
+      message: 'success',
+      statusCode: 200,
+    };
   }
 ).use(
   makeHandlerIdempotent({

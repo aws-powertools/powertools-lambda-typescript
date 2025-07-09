@@ -21,17 +21,13 @@ const createSubscriptionPayment = async (
 
 export const handler = middy(
   async (event: Request, _context: Context): Promise<Response> => {
-    try {
-      const payment = await createSubscriptionPayment(event);
+    const payment = await createSubscriptionPayment(event);
 
-      return {
-        paymentId: payment.id,
-        message: 'success',
-        statusCode: 200,
-      };
-    } catch (_error) {
-      throw new Error('Error creating payment');
-    }
+    return {
+      paymentId: payment.id,
+      message: 'success',
+      statusCode: 200,
+    };
   }
 ).use(
   makeHandlerIdempotent({

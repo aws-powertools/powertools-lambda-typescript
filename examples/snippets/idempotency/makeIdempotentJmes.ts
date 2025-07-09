@@ -29,20 +29,16 @@ const config = new IdempotencyConfig({
 
 export const handler = makeIdempotent(
   async (event: Request, _context: Context): Promise<Response> => {
-    try {
-      const payment = await createSubscriptionPayment(
-        event.user,
-        event.productId
-      );
+    const payment = await createSubscriptionPayment(
+      event.user,
+      event.productId
+    );
 
-      return {
-        paymentId: payment.id,
-        message: 'success',
-        statusCode: 200,
-      };
-    } catch (_error) {
-      throw new Error('Error creating payment');
-    }
+    return {
+      paymentId: payment.id,
+      message: 'success',
+      statusCode: 200,
+    };
   },
   {
     persistenceStore,

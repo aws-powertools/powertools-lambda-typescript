@@ -175,17 +175,6 @@ class Tracer extends Utility implements TracerInterface {
    */
   private customConfigService?: ConfigServiceInterface;
 
-  // serviceName is always initialized in the constructor in setOptions()
-  /**
-   * The name of the service, is always initialized in the constructor in setOptions().
-   */
-  private serviceName!: string;
-  /**
-   * Flag indicating whether tracing is enabled.
-   * @default true
-   */
-  private tracingEnabled = true;
-
   // Cache environment variables once for performance and clarity
   readonly #envConfig: {
     awsExecutionEnv: string;
@@ -206,6 +195,16 @@ class Tracer extends Utility implements TracerInterface {
     serviceName: '',
     xrayTraceId: '',
   };
+  // serviceName is always initialized in the constructor in setOptions()
+  /**
+   * The name of the service, is always initialized in the constructor in setOptions().
+   */
+  private serviceName!: string;
+  /**
+   * Flag indicating whether tracing is enabled.
+   * @default true
+   */
+  private tracingEnabled = true;
 
   public constructor(options: TracerOptions = {}) {
     super();
@@ -597,6 +596,7 @@ class Tracer extends Utility implements TracerInterface {
    *     };
    *   }
    * }
+   * ```
    */
   public getRootXrayTraceId(): string | undefined {
     return this.#envConfig.xrayTraceId;
@@ -620,6 +620,7 @@ class Tracer extends Utility implements TracerInterface {
    *   const currentSegment = tracer.getSegment();
    *   ... // Do something with segment
    * }
+   * ```
    */
   public getSegment(): Segment | Subsegment | undefined {
     if (!this.isTracingEnabled()) {
@@ -786,6 +787,7 @@ class Tracer extends Utility implements TracerInterface {
       customConfigValue.toLowerCase() === 'false'
     ) {
       this.captureError = false;
+
       return;
     }
 
@@ -808,6 +810,7 @@ class Tracer extends Utility implements TracerInterface {
   private setCaptureHTTPsRequests(enabled?: boolean): void {
     if (enabled !== undefined && !enabled) {
       this.captureHTTPsRequests = false;
+
       return;
     }
 
@@ -818,6 +821,7 @@ class Tracer extends Utility implements TracerInterface {
       customConfigValue.toLowerCase() === 'false'
     ) {
       this.captureHTTPsRequests = false;
+
       return;
     }
 
@@ -839,6 +843,7 @@ class Tracer extends Utility implements TracerInterface {
       customConfigValue.toLowerCase() === 'false'
     ) {
       this.captureResponse = false;
+
       return;
     }
 
@@ -891,6 +896,7 @@ class Tracer extends Utility implements TracerInterface {
   private setServiceName(serviceName?: string): void {
     if (serviceName !== undefined && this.isValidServiceName(serviceName)) {
       this.serviceName = serviceName;
+
       return;
     }
 
@@ -900,6 +906,7 @@ class Tracer extends Utility implements TracerInterface {
       this.isValidServiceName(customConfigValue)
     ) {
       this.serviceName = customConfigValue;
+
       return;
     }
 
@@ -919,6 +926,7 @@ class Tracer extends Utility implements TracerInterface {
   private setTracingEnabled(enabled?: boolean): void {
     if (enabled !== undefined && !enabled) {
       this.tracingEnabled = enabled;
+
       return;
     }
 
@@ -929,6 +937,7 @@ class Tracer extends Utility implements TracerInterface {
       customConfigValue.toLowerCase() === 'false'
     ) {
       this.tracingEnabled = false;
+
       return;
     }
 
@@ -936,6 +945,7 @@ class Tracer extends Utility implements TracerInterface {
       this.tracingEnabled = false;
       return;
     }
+
     if (
       this.isAmplifyCli() ||
       this.isLambdaSamCli() ||
@@ -945,7 +955,10 @@ class Tracer extends Utility implements TracerInterface {
     }
   }
 
-  // Populate #envConfig with all relevant environment variables
+  /**
+   * Set environment variables for the tracer.
+   * This method is called during initialization to ensure environment variables are available.
+   */
   #setEnvConfig(): void {
     this.#envConfig.awsExecutionEnv = getStringFromEnv({ key: 'AWS_EXECUTION_ENV', defaultValue: '' });
     this.#envConfig.samLocal = getStringFromEnv({ key: 'AWS_SAM_LOCAL', defaultValue: '' });

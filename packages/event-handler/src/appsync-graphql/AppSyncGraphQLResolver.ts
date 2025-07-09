@@ -106,7 +106,7 @@ class AppSyncGraphQLResolver extends Router {
     options?: ResolveOptions
   ): Promise<unknown> {
     if (Array.isArray(event)) {
-      if (!event.every((e) => isAppSyncGraphQLEvent(e))) {
+      if (event.some((e) => !isAppSyncGraphQLEvent(e))) {
         this.logger.warn(
           'Received a batch event that is not compatible with this resolver'
         );

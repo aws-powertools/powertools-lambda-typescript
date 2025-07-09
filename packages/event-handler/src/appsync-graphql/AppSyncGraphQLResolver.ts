@@ -106,23 +106,16 @@ class AppSyncGraphQLResolver extends Router {
     options?: ResolveOptions
   ): Promise<unknown> {
     if (Array.isArray(event)) {
-      if (event.some((singleEvent) => !isAppSyncGraphQLEvent(singleEvent))) {
+      if (!event.every((e) => isAppSyncGraphQLEvent(e))) {
         this.logger.warn(
-          'Received an event that is not compatible with this resolver'
+          'Received a batch event that is not compatible with this resolver'
         );
         return;
       }
-      try {
-        return await this.#executeBatchResolvers(event, context, options);
-      } catch (error) {
-        this.logger.error(
-          `An error occurred in batch handler ${event[0].info.fieldName}`,
-          error
-        );
-        if (error instanceof InvalidBatchResponseException) throw error;
-        if (error instanceof ResolverNotFoundException) throw error;
-        return this.#formatErrorResponse(error);
-      }
+      return this.#withErrorHandling(
+        () => this.#executeBatchResolvers(event, context, options),
+        `An error occurred in handler ${event[0].info.fieldName}`
+      );
     }
     if (!isAppSyncGraphQLEvent(event)) {
       this.logger.warn(
@@ -130,16 +123,49 @@ class AppSyncGraphQLResolver extends Router {
       );
       return;
     }
+
+    return this.#withErrorHandling(
+      () => this.#executeSingleResolver(event, context, options),
+      `An error occurred in handler ${event.info.fieldName}`
+    );
+  }
+
+  /**
+   * Executes the provided asynchronous function with error handling.
+   * If the function throws an error, it delegates error processing to `#handleError`
+   * and returns its result cast to the expected type.
+   *
+   * @typeParam T - The return type of the asynchronous function.
+   * @param fn - A function returning a Promise of type `T` to be executed.
+   * @param errorMessage - A custom error message to be used if an error occurs.
+   */
+  async #withErrorHandling<T>(
+    fn: () => Promise<T>,
+    errorMessage: string
+  ): Promise<T> {
     try {
-      return await this.#executeSingleResolver(event, context, options);
+      return await fn();
     } catch (error) {
-      this.logger.error(
-        `An error occurred in handler ${event.info.fieldName}`,
-        error
-      );
-      if (error instanceof ResolverNotFoundException) throw error;
-      return this.#formatErrorResponse(error);
+      return this.#handleError(error, errorMessage) as T;
     }
+  }
+
+  /**
+   * Handles errors encountered during resolver execution.
+   *
+   * Logs the provided error message and error object. If the error is an instance of
+   * `InvalidBatchResponseException` or `ResolverNotFoundException`, it is re-thrown.
+   * Otherwise, the error is formatted into a response using `#formatErrorResponse`.
+   *
+   * @param error - The error object to handle.
+   * @param errorMessage - A descriptive message to log alongside the error.
+   * @throws InvalidBatchResponseException | ResolverNotFoundException
+   */
+  #handleError(error: unknown, errorMessage: string) {
+    this.logger.error(errorMessage, error);
+    if (error instanceof InvalidBatchResponseException) throw error;
+    if (error instanceof ResolverNotFoundException) throw error;
+    return this.#formatErrorResponse(error);
   }
 
   async #executeBatchResolvers(

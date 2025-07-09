@@ -496,7 +496,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Assess
     expect(console.warn).toHaveBeenCalledWith(
-      'Received an event that is not compatible with this resolver'
+      'Received a batch event that is not compatible with this resolver'
     );
     expect(result).toBeUndefined();
   });

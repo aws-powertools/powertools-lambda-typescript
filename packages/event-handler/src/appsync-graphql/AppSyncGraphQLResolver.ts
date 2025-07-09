@@ -163,7 +163,7 @@ class AppSyncGraphQLResolver extends Router {
     }
 
     throw new ResolverNotFoundException(
-      `No resolver found for ${typeName}-${fieldName}`
+      `No batch resolver found for ${typeName}-${fieldName}`
     );
   }
 

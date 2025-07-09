@@ -82,7 +82,7 @@ const AlbSchema = z.object({
 });
 
 /**
- * @deprecated Use `AlbSchema` instead, which handles both types of headers & querystring parameters.
+ * @deprecated Use {@link AlbSchema | `AlbSchema`} instead, which handles both types of headers & querystring parameters.
  *
  * This schema will be removed in a future major release.
  */

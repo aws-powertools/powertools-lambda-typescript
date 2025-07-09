@@ -186,7 +186,6 @@ class Tracer extends Utility implements TracerInterface {
     captureResponse: '',
     tracingEnabled: '',
     serviceName: '',
-    xrayTraceId: '',
   };
 
   /**
@@ -592,7 +591,7 @@ class Tracer extends Utility implements TracerInterface {
    * ```
    */
   public getRootXrayTraceId(): string | undefined {
-    return this.#envConfig.xrayTraceId;
+    return getXRayTraceIdFromEnv();
   }
 
   /**
@@ -981,7 +980,6 @@ class Tracer extends Utility implements TracerInterface {
       defaultValue: '',
     });
     this.#envConfig.serviceName = getServiceName();
-    this.#envConfig.xrayTraceId = getXRayTraceIdFromEnv() || '';
   }
 }
 

@@ -153,19 +153,10 @@ type GraphQlRouteOptions = {
 type GraphQlBatchRouteOptions<
   T extends boolean | undefined = true,
   R extends boolean | undefined = false,
-> = T extends true
-  ? GraphQlRouteOptions & {
-      aggregate?: true;
-      raiseOnError?: never;
-    }
-  : GraphQlRouteOptions & {
-      aggregate?: T;
-      /**
-       * Whether to raise an error if the handler fails
-       * @default false
-       */
-      raiseOnError?: R;
-    };
+> = GraphQlRouteOptions &
+  (T extends true
+    ? { aggregate?: true; raiseOnError?: never }
+    : { aggregate?: T; raiseOnError?: R });
 
 export type {
   RouteHandlerRegistryOptions,

@@ -17,15 +17,15 @@ import type {
   HandlerMethodDecorator,
   SyncHandler,
 } from '@aws-lambda-powertools/commons/types';
-import type { Handler } from 'aws-lambda';
-import type { Segment, Subsegment } from 'aws-xray-sdk-core';
-import xraySdk from 'aws-xray-sdk-core';
 import {
-  getStringFromEnv,
   getServiceName,
+  getStringFromEnv,
   getXRayTraceIdFromEnv,
   isRequestXRaySampled,
 } from '@aws-lambda-powertools/commons/utils/env';
+import type { Handler } from 'aws-lambda';
+import type { Segment, Subsegment } from 'aws-xray-sdk-core';
+import xraySdk from 'aws-xray-sdk-core';
 import { ProviderService } from './provider/ProviderService.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type { ProviderServiceInterface } from './types/ProviderService.js';
@@ -175,17 +175,10 @@ class Tracer extends Utility implements TracerInterface {
    */
   private customConfigService?: ConfigServiceInterface;
 
-  // Cache environment variables once for performance and clarity
-  readonly #envConfig: {
-    awsExecutionEnv: string;
-    samLocal: string;
-    captureError: string;
-    captureHTTPsRequests: string;
-    captureResponse: string;
-    tracingEnabled: string;
-    serviceName: string;
-    xrayTraceId: string;
-  } = {
+  /**
+   * Cache environment variables once at init time.
+   */
+  readonly #envConfig = {
     awsExecutionEnv: '',
     samLocal: '',
     captureError: '',
@@ -195,7 +188,7 @@ class Tracer extends Utility implements TracerInterface {
     serviceName: '',
     xrayTraceId: '',
   };
-  // serviceName is always initialized in the constructor in setOptions()
+
   /**
    * The name of the service, is always initialized in the constructor in setOptions().
    */
@@ -910,7 +903,10 @@ class Tracer extends Utility implements TracerInterface {
       return;
     }
 
-    if (this.#envConfig.serviceName !== undefined && this.isValidServiceName(this.#envConfig.serviceName)) {
+    if (
+      this.#envConfig.serviceName !== undefined &&
+      this.isValidServiceName(this.#envConfig.serviceName)
+    ) {
       this.serviceName = this.#envConfig.serviceName;
       return;
     }
@@ -960,12 +956,30 @@ class Tracer extends Utility implements TracerInterface {
    * This method is called during initialization to ensure environment variables are available.
    */
   #setEnvConfig(): void {
-    this.#envConfig.awsExecutionEnv = getStringFromEnv({ key: 'AWS_EXECUTION_ENV', defaultValue: '' });
-    this.#envConfig.samLocal = getStringFromEnv({ key: 'AWS_SAM_LOCAL', defaultValue: '' });
-    this.#envConfig.captureError = getStringFromEnv({ key: 'POWERTOOLS_TRACER_CAPTURE_ERROR', defaultValue: '' });
-    this.#envConfig.captureHTTPsRequests = getStringFromEnv({ key: 'POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS', defaultValue: '' });
-    this.#envConfig.captureResponse = getStringFromEnv({ key: 'POWERTOOLS_TRACER_CAPTURE_RESPONSE', defaultValue: '' });
-    this.#envConfig.tracingEnabled = getStringFromEnv({ key: 'POWERTOOLS_TRACE_ENABLED', defaultValue: '' });
+    this.#envConfig.awsExecutionEnv = getStringFromEnv({
+      key: 'AWS_EXECUTION_ENV',
+      defaultValue: '',
+    });
+    this.#envConfig.samLocal = getStringFromEnv({
+      key: 'AWS_SAM_LOCAL',
+      defaultValue: '',
+    });
+    this.#envConfig.captureError = getStringFromEnv({
+      key: 'POWERTOOLS_TRACER_CAPTURE_ERROR',
+      defaultValue: '',
+    });
+    this.#envConfig.captureHTTPsRequests = getStringFromEnv({
+      key: 'POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS',
+      defaultValue: '',
+    });
+    this.#envConfig.captureResponse = getStringFromEnv({
+      key: 'POWERTOOLS_TRACER_CAPTURE_RESPONSE',
+      defaultValue: '',
+    });
+    this.#envConfig.tracingEnabled = getStringFromEnv({
+      key: 'POWERTOOLS_TRACE_ENABLED',
+      defaultValue: '',
+    });
     this.#envConfig.serviceName = getServiceName();
     this.#envConfig.xrayTraceId = getXRayTraceIdFromEnv() || '';
   }

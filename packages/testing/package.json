@@ -100,7 +100,7 @@
     "@aws-cdk/toolkit-lib": "^1.2.4",
     "@aws-sdk/client-lambda": "^3.840.0",
     "@smithy/util-utf8": "^4.0.0",
-    "aws-cdk-lib": "^2.203.1",
+    "aws-cdk-lib": "^2.204.0",
     "esbuild": "^0.25.5",
     "promise-retry": "^2.0.1"
   },

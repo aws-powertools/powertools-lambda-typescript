@@ -144,7 +144,7 @@ You can quickly start by initializing the `DynamoDBPersistenceLayer` class and u
 
 === "index.ts"
 
-    ```typescript hl_lines="2-3 21 35-38"
+    ```typescript hl_lines="2-3 21 31-33"
     --8<-- "examples/snippets/idempotency/makeIdempotentBase.ts"
     ```
 
@@ -206,7 +206,7 @@ Similar to the `makeIdempotent` function wrapper, you can quickly make your Lamb
 
 === "index.ts"
 
-    ```typescript hl_lines="22 36-40"
+    ```typescript hl_lines="22 33-35"
     --8<-- "examples/snippets/idempotency/makeHandlerIdempotent.ts"
     ```
 
@@ -237,7 +237,7 @@ Imagine the function executes successfully, but the client never receives the re
 
 === "index.ts"
 
-    ```typescript hl_lines="4 27 49"
+    ```typescript hl_lines="4 27"
     --8<-- "examples/snippets/idempotency/makeIdempotentJmes.ts"
     ```
 
@@ -304,7 +304,7 @@ If an error is thrown _outside_ the scope of the decorated function and after yo
 
 === "Handling exceptions"
 
-    ```typescript hl_lines="39-40 47-48"
+    ```typescript
     --8<-- "examples/snippets/idempotency/workingWithExceptions.ts"
     ```
 
@@ -774,7 +774,7 @@ You can use the `keyPrefix` parameter in any of the idempotency configurations t
 
 === "Using a custom prefix with function wrapper"
 
-    ```typescript hl_lines="25"
+    ```typescript hl_lines="21"
     --8<-- "examples/snippets/idempotency/customKeyPrefixFnWrapper.ts"
     ```
 
@@ -864,7 +864,7 @@ Below an example implementation of a custom persistence layer backed by a generi
 
 === "CustomPersistenceLayer"
 
-    ```typescript hl_lines="9 19 28 35 52 95"
+    ```typescript hl_lines="9 19 28 35 54 97"
     --8<-- "examples/snippets/idempotency/advancedBringYourOwnPersistenceLayer.ts"
     ```
 
@@ -891,7 +891,7 @@ You can set up a `responseHook` in the `IdempotentConfig` class to manipulate th
 
 === "Using an Idempotent Response Hook"
 
-    ```typescript hl_lines="16 19 27 56"
+    ```typescript hl_lines="16 19 27"
     --8<-- "examples/snippets/idempotency/workingWithResponseHook.ts"
     ```
 

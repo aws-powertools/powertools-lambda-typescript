@@ -40,19 +40,16 @@ export const handler = async (
   context: Context
 ): Promise<Response> => {
   config.registerLambdaContext(context);
-  try {
-    const productAmount = await fetchProductAmount(event.productId);
-    const payment = await createSubscriptionPayment({
-      ...event,
-      amount: productAmount,
-    });
 
-    return {
-      paymentId: payment.id,
-      message: 'success',
-      statusCode: 200,
-    };
-  } catch (_error) {
-    throw new Error('Error creating payment');
-  }
+  const productAmount = await fetchProductAmount(event.productId);
+  const payment = await createSubscriptionPayment({
+    ...event,
+    amount: productAmount,
+  });
+
+  return {
+    paymentId: payment.id,
+    message: 'success',
+    statusCode: 200,
+  };
 };

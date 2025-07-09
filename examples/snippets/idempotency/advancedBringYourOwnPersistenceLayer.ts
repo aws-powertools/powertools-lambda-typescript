@@ -44,8 +44,10 @@ class CustomPersistenceLayer extends BasePersistenceLayer {
       return new IdempotencyRecord({
         ...(item as unknown as IdempotencyRecordOptions),
       });
-    } catch (_error) {
-      throw new IdempotencyItemNotFoundError();
+    } catch (error) {
+      throw new IdempotencyItemNotFoundError('Item not found in store', {
+        cause: error,
+      });
     }
   }
 

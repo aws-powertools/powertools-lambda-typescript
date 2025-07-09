@@ -13,17 +13,13 @@ class Lambda {
     keyPrefix: 'createSubscriptionPayment',
   })
   async handler(_event: unknown, _context: Context) {
-    try {
-      // ... create payment
+    // ... create payment
 
-      return {
-        paymentId: randomUUID(),
-        message: 'success',
-        statusCode: 200,
-      };
-    } catch (_error) {
-      throw new Error('Error creating payment');
-    }
+    return {
+      paymentId: randomUUID(),
+      message: 'success',
+      statusCode: 200,
+    };
   }
 }
 

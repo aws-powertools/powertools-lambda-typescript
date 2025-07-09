@@ -36,16 +36,13 @@ export const handler = async (
 ): Promise<Response> => {
   // Register the Lambda context to the IdempotencyConfig instance
   config.registerLambdaContext(context);
-  try {
-    const transactionId = randomUUID();
-    const payment = await createSubscriptionPayment(transactionId, event);
 
-    return {
-      paymentId: payment.id,
-      message: 'success',
-      statusCode: 200,
-    };
-  } catch (_error) {
-    throw new Error('Error creating payment');
-  }
+  const transactionId = randomUUID();
+  const payment = await createSubscriptionPayment(transactionId, event);
+
+  return {
+    paymentId: payment.id,
+    message: 'success',
+    statusCode: 200,
+  };
 };

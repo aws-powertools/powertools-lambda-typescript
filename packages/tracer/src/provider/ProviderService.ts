@@ -28,7 +28,7 @@ import http from 'node:http';
 import https from 'node:https';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import type { DiagnosticsChannel } from 'undici-types';
-import { environmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import { getXRayTraceIdFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import {
   findHeaderAndDecode,
   getRequestURL,
@@ -48,18 +48,18 @@ import {
  */
 class ProviderService implements ProviderServiceInterface {
   /**
-   * @deprecated
+   * @deprecated Use {@link captureAWSv3Client} instead.
    */
-  public captureAWS<T>(awssdk: T): T {
+  /* v8 ignore start */ public captureAWS<T>(awssdk: T): T {
     return captureAWS(awssdk);
-  }
+  } /* v8 ignore stop */
 
   /**
-   * @deprecated
+   * @deprecated Use {@link captureAWSv3Client} instead.
    */
-  public captureAWSClient<T>(service: T): T {
+  /* v8 ignore start */ public captureAWSClient<T>(service: T): T {
     return captureAWSClient(service);
-  }
+  } /* v8 ignore stop */
 
   public captureAWSv3Client<T>(service: T): T {
     addUserAgentMiddleware(service, 'tracer');
@@ -119,12 +119,12 @@ class ProviderService implements ProviderServiceInterface {
      */
     const onRequestStart = (message: unknown): void => {
       const { request } = message as DiagnosticsChannel.RequestCreateMessage;
+      const method = request.method;
+      if (method === 'CONNECT') return;
 
       const parentSubsegment = this.getSegment();
       const requestURL = getRequestURL(request);
       if (parentSubsegment && requestURL) {
-        const method = request.method;
-
         const subsegment = parentSubsegment.addNewSubsegment(
           requestURL.hostname
         );
@@ -134,7 +134,7 @@ class ProviderService implements ProviderServiceInterface {
         // @ts-expect-error
         request.addHeader(
           'X-Amzn-Trace-Id',
-          `Root=${environmentVariablesService.getXrayTraceId()};Parent=${subsegment.id};Sampled=${subsegment.notTraced ? '0' : '1'}`
+          `Root=${getXRayTraceIdFromEnv()};Parent=${subsegment.id};Sampled=${subsegment.notTraced ? '0' : '1'}`
         );
 
         (subsegment as HttpSubsegment).http = {

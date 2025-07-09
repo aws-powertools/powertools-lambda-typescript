@@ -363,7 +363,7 @@ Tracer exposes a `getRootXrayTraceId()` method that allows you to retrieve the [
 
 === "index.ts"
 
-    ```typescript hl_lines="9"
+    ```typescript hl_lines="13"
     --8<-- "examples/snippets/tracer/accessRootTraceId.ts"
     ```
 

@@ -1,6 +1,6 @@
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { Context, Handler } from 'aws-lambda';
-import type { ZodSchema } from 'zod';
 import { parse } from './parser.js';
 import type { Envelope, ParserOptions } from './types/index.js';
 import type { ParserOutput } from './types/parser.js';
@@ -69,7 +69,7 @@ import type { ParserOutput } from './types/parser.js';
  * @param options Configure the parser with the `schema`, `envelope` and whether to `safeParse` or not
  */
 export const parser = <
-  TSchema extends ZodSchema,
+  TSchema extends StandardSchemaV1,
   TEnvelope extends Envelope = undefined,
   TSafeParse extends boolean = false,
 >(

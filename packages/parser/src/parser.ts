@@ -1,10 +1,14 @@
-import type { ZodSchema, z } from 'zod';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { ParseError } from './errors.js';
 import type { Envelope } from './types/index.js';
-import type { ParseFunction } from './types/parser.js';
+import type {
+  InferOutput,
+  ParsedResult,
+  ParseFunction,
+} from './types/parser.js';
 
 /**
- * Parse the data using the provided schema, envelope and safeParse flag
+ * Parse the data using the provided schema and optional envelope.
  *
  * @example
  * ```typescript
@@ -23,13 +27,15 @@ import type { ParseFunction } from './types/parser.js';
  *
  *   const parsedSafe: ParsedResult<SqsEnvelope> = parse(event, SqsEnvelope, Order, true)
  * }
- * @param data the data to parse
- * @param envelope the envelope to use, can be undefined
- * @param schema the schema to use
- * @param safeParse whether to use safeParse or not, if true it will return a ParsedResult with the original event if the parsing fails
+ * ```
+ *
+ * @param data - the data to parse
+ * @param envelope - optional envelope to use when parsing the data
+ * @param schema - the schema to use
+ * @param safeParse - whether to throw on error, if `true` it will return a `ParsedResult` with the original event if the parsing fails
  */
-const parse: ParseFunction = <T extends ZodSchema, E extends Envelope>(
-  data: z.infer<T>,
+const parse: ParseFunction = <T extends StandardSchemaV1, E extends Envelope>(
+  data: InferOutput<T>,
   envelope: E | undefined,
   schema: T,
   safeParse?: boolean
@@ -40,35 +46,32 @@ const parse: ParseFunction = <T extends ZodSchema, E extends Envelope>(
   if (envelope) {
     return envelope.parse(data, schema);
   }
-  if (safeParse) {
-    return safeParseSchema(data, schema);
+  const result = schema['~standard'].validate(data);
+  /* v8 ignore start */
+  if (result instanceof Promise) {
+    throw new ParseError('Schema parsing supports only synchronous validation');
   }
-  try {
-    return schema.parse(data);
-  } catch (error) {
-    throw new ParseError('Failed to parse schema', { cause: error as Error });
-  }
-};
-
-/**
- * Parse the data safely using the provided schema.
- * This function will not throw an error if the parsing fails, instead it will return a ParsedResultError with the original event.
- * Otherwise, it will return ParsedResultSuccess with the parsed data.
- * @param data the data to parse
- * @param schema the zod schema to use
- */
-const safeParseSchema = <T extends ZodSchema>(data: z.infer<T>, schema: T) => {
-  const result = schema.safeParse(data);
-
-  return result.success
-    ? result
-    : {
+  /* v8 ignore stop */
+  if (result.issues) {
+    const error = new ParseError('Failed to parse schema', {
+      cause: result.issues,
+    });
+    if (safeParse) {
+      return {
         success: false,
-        error: new ParseError('Failed to parse schema safely', {
-          cause: result.error,
-        }),
+        error,
         originalEvent: data,
-      };
+      } as ParsedResult<unknown, InferOutput<T>>;
+    }
+    throw error;
+  }
+  if (safeParse) {
+    return {
+      success: true,
+      data: result.value,
+    } as ParsedResult<unknown, InferOutput<T>>;
+  }
+  return result.value;
 };
 
 export { parse };

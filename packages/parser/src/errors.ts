@@ -3,10 +3,11 @@
  * The cause of the error is included in the message, if possible.
  */
 class ParseError extends Error {
-  public constructor(message: string, options?: { cause?: Error }) {
-    const errorMessage = options?.cause
-      ? `${message}. This error was caused by: ${options?.cause.message}.`
-      : message;
+  public constructor(message: string, options?: ErrorOptions) {
+    const errorMessage =
+      options?.cause && options.cause instanceof Error
+        ? `${message}. This error was caused by: ${options?.cause.message}.`
+        : message;
     super(errorMessage, options);
     this.name = 'ParseError';
   }
@@ -16,7 +17,7 @@ class ParseError extends Error {
  * Custom error thrown when decompression fails.
  */
 class DecompressError extends ParseError {
-  constructor(message: string, options?: { cause?: Error }) {
+  constructor(message: string, options?: ErrorOptions) {
     super(message, options);
     this.name = 'DecompressError';
   }

@@ -1,12 +1,12 @@
 import type { MiddyLikeRequest } from '@aws-lambda-powertools/commons/types';
 import type { MiddlewareObj } from '@middy/core';
-import type { ZodType } from 'zod';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { parse } from '../parser.js';
 import type { Envelope } from '../types/envelope.js';
 import type { ParserOptions, ParserOutput } from '../types/parser.js';
 
 /**
- * A middiy middleware to parse your event.
+ * A Middy.js middleware to parse incoming events using a specified schema and optional envelope.
  *
  * @example
  * ```typescript
@@ -31,10 +31,10 @@ import type { ParserOptions, ParserOutput } from '../types/parser.js';
  * ).use(parser({ schema: oderSchema, envelope: sqsEnvelope }));
  * ```
  *
- * @param options
+ * @param options - options for the parser
  */
 const parser = <
-  TSchema extends ZodType,
+  TSchema extends StandardSchemaV1,
   TEnvelope extends Envelope,
   TSafeParse extends boolean = false,
 >(

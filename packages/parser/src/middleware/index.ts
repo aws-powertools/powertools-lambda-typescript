@@ -22,13 +22,11 @@ import type { ParserOptions, ParserOutput } from '../types/parser.js';
  *
  * type Order = z.infer<typeof oderSchema>;
  *
- * export const handler = middy(
- *   async (event: Order, _context: unknown): Promise<void> => {
- *     // event is validated as sqs message envelope
- *     // the body is unwrapped and parsed into object ready to use
- *     // you can now use event as Order in your code
- *   }
- * ).use(parser({ schema: oderSchema, envelope: sqsEnvelope }));
+ * export const handler = middy()
+ *   .use(parser({ schema: oderSchema, envelope: sqsEnvelope }))
+ *   .handler(async (event) => {
+ *            // ^ event is inferred as Order[]
+ *   })
  * ```
  *
  * @param options - options for the parser

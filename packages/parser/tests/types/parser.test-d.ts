@@ -1,12 +1,11 @@
-import { describe } from 'node:test';
-import { expectTypeOf, it } from 'vitest';
+import middy from '@middy/core';
+import { describe, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
 import { SqsEnvelope } from '../../src/envelopes/sqs.js';
 import { JSONStringified } from '../../src/helpers/index.js';
+import { parser } from '../../src/middleware/index.js';
 import { parse } from '../../src/parser.js';
-import type { EventBridgeEvent, SqsEvent } from '../../src/types/schema.js';
-import { getTestEvent } from '../unit/helpers/utils.js';
 
 describe('Parser types', () => {
   const userSchema = z.object({
@@ -14,28 +13,10 @@ describe('Parser types', () => {
     age: z.number(),
   });
   type User = z.infer<typeof userSchema>;
-  const input = { name: 'John', age: 30 };
-  const eventBridgeBaseEvent = getTestEvent<EventBridgeEvent>({
-    eventsPath: 'eventbridge',
-    filename: 'base',
-  });
-  const sqsBaseEvent = getTestEvent<SqsEvent>({
-    eventsPath: 'sqs',
-    filename: 'base',
-  });
 
-  it.each([
-    {
-      input,
-      case: 'when parsing successfully',
-    },
-    {
-      input: { name: 'John', age: '30' }, // Invalid input for User schema
-      case: 'when parsing fails',
-    },
-  ])('infers return type for schema and safeParse $case', ({ input }) => {
+  it('infers return type for schema and safeParse', () => {
     // Act
-    const result = parse(input, undefined, userSchema, true);
+    const result = parse({}, undefined, userSchema, true);
 
     // Assess
     if (result.success) {
@@ -48,64 +29,52 @@ describe('Parser types', () => {
 
   it('infers return type for schema', () => {
     // Act
-    const result = parse(input, undefined, userSchema);
+    const result = parse({}, undefined, userSchema);
 
     // Assess
     expectTypeOf(result).toEqualTypeOf<User>();
   });
 
   it('infers return type for schema and object envelope', () => {
-    // Prepare
-    const event = structuredClone(eventBridgeBaseEvent);
-    event.detail = input;
-
     // Act
-    const result = parse(event, EventBridgeEnvelope, userSchema);
+    const result = parse({}, EventBridgeEnvelope, userSchema);
 
     // Assess
     expectTypeOf(result).toEqualTypeOf<User>();
   });
 
   it('infers return type for schema and array envelope', () => {
-    // Prepare
-    const event = structuredClone(sqsBaseEvent);
-    event.Records[0].body = JSON.stringify(input);
-    event.Records[1].body = JSON.stringify(input);
-
     // Act
-    const result = parse(event, SqsEnvelope, JSONStringified(userSchema));
+    const result = parse({}, SqsEnvelope, JSONStringified(userSchema));
 
     // Assess
     expectTypeOf(result).toEqualTypeOf<User[]>();
   });
 
-  it.each([
-    {
-      input,
-      case: 'when parsing successfully',
-    },
-    {
-      input: { name: 'John', age: '30' }, // Invalid input for User schema
-      case: 'when parsing fails',
-    },
-  ])(
-    'infers return type for schema, object envelope and safeParse $case',
-    ({ input }) => {
-      // Prepare
-      const event = structuredClone(eventBridgeBaseEvent);
-      event.detail = input;
+  it('infers return type for schema, object envelope and safeParse $case', () => {
+    // Act
+    const result = parse({}, EventBridgeEnvelope, userSchema, true);
 
-      // Act
-      const result = parse(event, EventBridgeEnvelope, userSchema, true);
-
-      // Assess
-      expectTypeOf(result.success).toEqualTypeOf<boolean>();
-      if (result.success) {
-        expectTypeOf(result.data).toEqualTypeOf<User>();
-      } else {
-        expectTypeOf(result.error).toEqualTypeOf<Error>();
-        expectTypeOf(result.originalEvent).toEqualTypeOf<unknown>();
-      }
+    // Assess
+    expectTypeOf(result.success).toEqualTypeOf<boolean>();
+    if (result.success) {
+      expectTypeOf(result.data).toEqualTypeOf<User>();
+    } else {
+      expectTypeOf(result.error).toEqualTypeOf<Error>();
+      expectTypeOf(result.originalEvent).toEqualTypeOf<unknown>();
     }
-  );
+  });
+
+  it('infers the return type when using parse middleware', () => {
+    middy()
+      .use(
+        parser({
+          schema: JSONStringified(userSchema),
+          envelope: SqsEnvelope,
+        })
+      )
+      .handler(async (event) => {
+        expectTypeOf(event).toEqualTypeOf<User[]>();
+      });
+  });
 });

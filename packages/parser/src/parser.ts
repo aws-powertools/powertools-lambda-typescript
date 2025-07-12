@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { ParseError } from './errors.js';
-import type { Envelope } from './types/index.js';
+import type { ArrayEnvelope, Envelope } from './types/index.js';
 import type { InferOutput, ParsedResult } from './types/parser.js';
 
 /**
@@ -57,7 +57,7 @@ function parse<T extends StandardSchemaV1, E extends Envelope>(
   envelope: E,
   schema: T,
   safeParse?: false
-): InferOutput<T>;
+): E extends ArrayEnvelope ? InferOutput<T>[] : InferOutput<T>;
 
 // With envelope, with safeParse
 function parse<T extends StandardSchemaV1, E extends Envelope>(
@@ -65,7 +65,9 @@ function parse<T extends StandardSchemaV1, E extends Envelope>(
   envelope: E,
   schema: T,
   safeParse: true
-): ParsedResult<unknown, InferOutput<T>>;
+): E extends ArrayEnvelope
+  ? ParsedResult<unknown, InferOutput<T>[]>
+  : ParsedResult<unknown, InferOutput<T>>;
 
 // No envelope, with boolean | undefined safeParse
 function parse<T extends StandardSchemaV1>(
@@ -81,7 +83,9 @@ function parse<T extends StandardSchemaV1, E extends Envelope>(
   envelope: E,
   schema: T,
   safeParse?: boolean
-): InferOutput<T> | ParsedResult<unknown, InferOutput<T>>;
+): E extends ArrayEnvelope
+  ? InferOutput<T>[] | ParsedResult<unknown, InferOutput<T>[]>
+  : InferOutput<T> | ParsedResult<unknown, InferOutput<T>>;
 
 // Implementation
 function parse<T extends StandardSchemaV1, E extends Envelope>(

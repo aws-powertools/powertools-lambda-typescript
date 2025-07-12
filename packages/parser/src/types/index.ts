@@ -5,7 +5,7 @@ export type {
   ParseFunction,
   ParserOptions,
 } from '../types/parser.js';
-export type { Envelope } from './envelope.js';
+export type { ArrayEnvelope, Envelope, ObjectEnvelope } from './envelope.js';
 
 export type {
   ALBEvent,

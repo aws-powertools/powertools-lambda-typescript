@@ -1,10 +1,9 @@
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { ParseError } from '../../../src';
 import { CloudWatchEnvelope } from '../../../src/envelopes/cloudwatch.js';
-import { DecompressError } from '../../../src/errors.js';
-import { JSONStringified } from '../../../src/helpers/index';
+import { DecompressError, ParseError } from '../../../src/errors.js';
+import { JSONStringified } from '../../../src/helpers/index.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 const decompressRecordToJSON = (

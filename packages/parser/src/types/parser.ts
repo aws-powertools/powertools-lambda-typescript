@@ -27,7 +27,7 @@ type ParsedResultSuccess<Output> = {
  */
 type ParsedResultError<Input> = {
   success: false;
-  error: unknown | Error;
+  error: Error;
   originalEvent?: Input;
 };
 
@@ -75,22 +75,23 @@ type ParserOutput<
  * we use function overloads to provide the correct return type based on the provided envelope
  **/
 type ParseFunction = {
-  // No envelope cases
+  // No envelope, no safeParse
   <T extends StandardSchemaV1>(
-    data: InferOutput<T>,
+    data: unknown,
     envelope: undefined,
     schema: T,
     safeParse?: false
   ): InferOutput<T>;
 
+  // No envelope, with safeParse
   <T extends StandardSchemaV1>(
-    data: InferOutput<T>,
+    data: unknown,
     envelope: undefined,
     schema: T,
     safeParse: true
-  ): ParsedResult<InferOutput<T>>;
+  ): ParsedResult<unknown, InferOutput<T>>;
 
-  // Generic envelope case
+  // With envelope, no safeParse
   <T extends StandardSchemaV1, E extends Envelope>(
     data: unknown,
     envelope: E,
@@ -98,6 +99,7 @@ type ParseFunction = {
     safeParse?: false
   ): E extends ArrayEnvelope ? InferOutput<T>[] : InferOutput<T>;
 
+  // With envelope, with safeParse
   <T extends StandardSchemaV1, E extends Envelope>(
     data: unknown,
     envelope: E,
@@ -106,20 +108,6 @@ type ParseFunction = {
   ): E extends ArrayEnvelope
     ? ParsedResult<unknown, InferOutput<T>[]>
     : ParsedResult<unknown, InferOutput<T>>;
-
-  // Generic envelope case with safeParse
-  <T extends StandardSchemaV1, E extends Envelope, S extends boolean = false>(
-    data: unknown,
-    envelope: E,
-    schema: T,
-    safeParse?: S
-  ): S extends true
-    ? E extends ArrayEnvelope
-      ? ParsedResult<unknown, InferOutput<T>[]>
-      : ParsedResult<unknown, InferOutput<T>>
-    : E extends ArrayEnvelope
-      ? InferOutput<T>[]
-      : InferOutput<T>;
 };
 
 type InferOutput<Schema extends StandardSchemaV1> = NonNullable<

@@ -1,11 +1,7 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { ParseError } from './errors.js';
 import type { Envelope } from './types/index.js';
-import type {
-  InferOutput,
-  ParsedResult,
-  ParseFunction,
-} from './types/parser.js';
+import type { InferOutput, ParsedResult } from './types/parser.js';
 
 /**
  * Parse the data using the provided schema and optional envelope.
@@ -24,8 +20,6 @@ import type {
  *
  * const handler = async (event: SqsEvent, context: unknown): Promise<unknown> => {
  *   const parsedEvent = parse(event, SqsEnvelope, Order);
- *
- *   const parsedSafe: ParsedResult<SqsEnvelope> = parse(event, SqsEnvelope, Order, true)
  * }
  * ```
  *
@@ -34,24 +28,84 @@ import type {
  * @param schema - the schema to use
  * @param safeParse - whether to throw on error, if `true` it will return a `ParsedResult` with the original event if the parsing fails
  */
-const parse: ParseFunction = <T extends StandardSchemaV1, E extends Envelope>(
-  data: InferOutput<T>,
+function parse<T extends StandardSchemaV1>(
+  data: unknown,
+  envelope: undefined,
+  schema: T,
+  safeParse?: false
+): InferOutput<T>;
+
+// No envelope, with safeParse
+function parse<T extends StandardSchemaV1>(
+  data: unknown,
+  envelope: undefined,
+  schema: T,
+  safeParse: true
+): ParsedResult<unknown, InferOutput<T>>;
+
+// No envelope, with boolean safeParse
+function parse<T extends StandardSchemaV1>(
+  data: unknown,
+  envelope: undefined,
+  schema: T,
+  safeParse: boolean
+): InferOutput<T> | ParsedResult<unknown, InferOutput<T>>;
+
+// With envelope, no safeParse
+function parse<T extends StandardSchemaV1, E extends Envelope>(
+  data: unknown,
+  envelope: E,
+  schema: T,
+  safeParse?: false
+): InferOutput<T>;
+
+// With envelope, with safeParse
+function parse<T extends StandardSchemaV1, E extends Envelope>(
+  data: unknown,
+  envelope: E,
+  schema: T,
+  safeParse: true
+): ParsedResult<unknown, InferOutput<T>>;
+
+// No envelope, with boolean | undefined safeParse
+function parse<T extends StandardSchemaV1>(
+  data: unknown,
+  envelope: undefined,
+  schema: T,
+  safeParse?: boolean
+): InferOutput<T> | ParsedResult<unknown, InferOutput<T>>;
+
+// With envelope, with boolean | undefined safeParse
+function parse<T extends StandardSchemaV1, E extends Envelope>(
+  data: unknown,
+  envelope: E,
+  schema: T,
+  safeParse?: boolean
+): InferOutput<T> | ParsedResult<unknown, InferOutput<T>>;
+
+// Implementation
+function parse<T extends StandardSchemaV1, E extends Envelope>(
+  data: unknown,
   envelope: E | undefined,
   schema: T,
   safeParse?: boolean
-) => {
+): InferOutput<T> | ParsedResult<unknown, InferOutput<T>> {
   if (envelope && safeParse) {
-    return envelope.safeParse(data, schema);
+    // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the envelope's parse and safeParse methods are not typed with StandardSchemaV1 but with ZodSchema
+    return envelope.safeParse(data, schema as any);
   }
   if (envelope) {
-    return envelope.parse(data, schema);
+    // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the envelope's parse and safeParse methods are not typed with StandardSchemaV1 but with ZodSchema
+    return envelope.parse(data, schema as any);
   }
+
   const result = schema['~standard'].validate(data);
   /* v8 ignore start */
   if (result instanceof Promise) {
     throw new ParseError('Schema parsing supports only synchronous validation');
   }
   /* v8 ignore stop */
+
   if (result.issues) {
     const error = new ParseError('Failed to parse schema', {
       cause: result.issues,
@@ -61,17 +115,19 @@ const parse: ParseFunction = <T extends StandardSchemaV1, E extends Envelope>(
         success: false,
         error,
         originalEvent: data,
-      } as ParsedResult<unknown, InferOutput<T>>;
+      };
     }
     throw error;
   }
+
   if (safeParse) {
     return {
       success: true,
       data: result.value,
-    } as ParsedResult<unknown, InferOutput<T>>;
+    };
   }
+
   return result.value;
-};
+}
 
 export { parse };

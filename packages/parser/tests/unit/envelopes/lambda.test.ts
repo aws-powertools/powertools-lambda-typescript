@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { ZodError, z } from 'zod';
-import { ParseError } from '../../../src';
 import { LambdaFunctionUrlEnvelope } from '../../../src/envelopes/lambda.js';
-import { JSONStringified } from '../../../src/helpers';
-import type { LambdaFunctionUrlEvent } from '../../../src/types';
+import { ParseError } from '../../../src/errors.js';
+import { JSONStringified } from '../../../src/helpers/index.js';
+import type { LambdaFunctionUrlEvent } from '../../../src/types/schema.js';
 import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Envelope: Lambda function URL', () => {

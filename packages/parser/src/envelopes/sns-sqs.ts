@@ -85,7 +85,7 @@ export const SnsSqsEnvelope = {
                     {
                       code: 'custom',
                       input: record.body,
-                      message: `Invalid JSON - ${error instanceof Error ? error.message : 'Unknown error'}`,
+                      message: `Invalid JSON - ${(error as Error).message}`,
                       path: ['Records', recordIndex, 'body'],
                     },
                   ]
@@ -132,7 +132,7 @@ export const SnsSqsEnvelope = {
           error: createError(index, [
             {
               code: 'custom',
-              message: `Invalid JSON - ${error instanceof Error ? error.message : 'Unknown error'}`,
+              message: `Invalid JSON - ${(error as Error).message}`,
               input: record.body,
               path: [],
             },

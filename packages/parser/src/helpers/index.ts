@@ -47,7 +47,7 @@ const JSONStringified = <T extends ZodType>(schema: T) =>
       } catch (error) {
         ctx.addIssue({
           code: 'custom',
-          message: `Invalid JSON - ${error instanceof Error ? error.message : 'Unknown error'}`,
+          message: `Invalid JSON - ${(error as Error).message}`,
           fatal: true,
         });
       }

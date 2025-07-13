@@ -1,4 +1,4 @@
-import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
+import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { SnsSchema } from '../schemas/sns.js';
 import type { ParsedResult } from '../types/index.js';
@@ -19,7 +19,7 @@ export const SnsEnvelope = {
    * @hidden
    */
   [envelopeDiscriminator]: 'array' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
+  parse<T>(data: unknown, schema: ZodType<T>): T[] {
     const parsedEnvelope = SnsSchema.parse(data);
 
     return parsedEnvelope.Records.map((record, index) => {
@@ -38,10 +38,7 @@ export const SnsEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>[]> {
+  safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T[]> {
     const parsedEnvelope = SnsSchema.safeParse(data);
 
     if (!parsedEnvelope.success) {
@@ -56,8 +53,8 @@ export const SnsEnvelope = {
 
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
-      messages: z.infer<T>[];
-      errors: { index?: number; issues?: ZodIssue[] };
+      messages: T[];
+      errors: { [key: number]: { issues: z.core.$ZodIssue[] } };
     }>(
       (acc, message, index) => {
         const parsedMessage = schema.safeParse(message.Sns.Message);
@@ -67,7 +64,6 @@ export const SnsEnvelope = {
             ...issue,
             path: ['Records', index, 'Sns', 'Message', ...issue.path],
           }));
-          // @ts-expect-error - index is assigned
           acc.errors[index] = { issues };
           return acc;
         }
@@ -87,7 +83,6 @@ export const SnsEnvelope = {
         ? `Failed to parse SNS messages at indexes ${Object.keys(result.errors).join(', ')}`
         : `Failed to parse SNS message at index ${Object.keys(result.errors)[0]}`;
     const errorCause = new ZodError(
-      // @ts-expect-error - issues are assigned because success is false
       Object.values(result.errors).flatMap((error) => error.issues)
     );
 

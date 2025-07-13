@@ -1,8 +1,7 @@
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { DynamoDBStreamEnvelope } from '../../../src/envelopes/dynamodb.js';
-import { ParseError } from '../../../src/errors.js';
 import type { DynamoDBStreamEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../helpers/utils.js';
 
@@ -43,7 +42,7 @@ describe('Envelope: DynamoDB Stream', () => {
               {
                 code: 'unrecognized_keys',
                 keys: ['Id'],
-                message: "Unrecognized key(s) in object: 'Id'",
+                message: 'Unrecognized key: "Id"',
                 path: ['Records', 0, 'dynamodb', 'NewImage'],
               },
             ],
@@ -121,18 +120,23 @@ describe('Envelope: DynamoDB Stream', () => {
       const result = DynamoDBStreamEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse DynamoDB Stream envelope', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'object',
-              received: 'undefined',
-              path: ['Records', 0, 'dynamodb'],
-              message: 'Required',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse DynamoDB Stream envelope'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                path: ['Records', 0, 'dynamodb'],
+                message: 'Invalid input: expected object, received undefined',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -150,18 +154,21 @@ describe('Envelope: DynamoDB Stream', () => {
       const result = DynamoDBStreamEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse record at index 1', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'number',
-              path: ['Records', 1, 'dynamodb', 'NewImage', 'Message'],
-              message: 'Expected string, received number',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining('Failed to parse record at index 1'),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 1, 'dynamodb', 'NewImage', 'Message'],
+                message: 'Invalid input: expected string, received number',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -180,25 +187,29 @@ describe('Envelope: DynamoDB Stream', () => {
       const result = DynamoDBStreamEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse records at indexes 0, 1', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['Records', 0, 'dynamodb', 'NewImage', 'Message'],
-              message: 'Required',
-            },
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'number',
-              path: ['Records', 1, 'dynamodb', 'NewImage', 'Message'],
-              message: 'Expected string, received number',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse records at indexes 0, 1'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 0, 'dynamodb', 'NewImage', 'Message'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 1, 'dynamodb', 'NewImage', 'Message'],
+                message: 'Invalid input: expected string, received number',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });

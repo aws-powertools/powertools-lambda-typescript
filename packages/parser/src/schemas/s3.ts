@@ -1,5 +1,11 @@
 import { z } from 'zod';
 import { JSONStringified } from '../helpers/index.js';
+import type {
+  S3Event,
+  S3EventNotificationEventBridge,
+  S3ObjectLambdaEvent,
+  S3SqsEventNotification,
+} from '../types/schema.js';
 import { EventBridgeSchema } from './eventbridge.js';
 import { SqsRecordSchema } from './sqs.js';
 
@@ -8,7 +14,7 @@ const S3Identity = z.object({
 });
 
 const S3RequestParameters = z.object({
-  sourceIPAddress: z.union([z.string().ip(), z.literal('s3.amazonaws.com')]),
+  sourceIPAddress: z.union([z.ipv4(), z.literal('s3.amazonaws.com')]),
 });
 
 const S3ResponseElements = z.object({
@@ -45,7 +51,7 @@ const S3RecordSchema = z.object({
   eventVersion: z.string(),
   eventSource: z.literal('aws:s3'),
   awsRegion: z.string(),
-  eventTime: z.string().datetime(),
+  eventTime: z.iso.datetime(),
   eventName: z.string(),
   userIdentity: S3Identity,
   requestParameters: S3RequestParameters,
@@ -68,7 +74,7 @@ const S3EventNotificationEventBridgeDetailSchema = z.object({
   }),
   'request-id': z.string(),
   requester: z.string(),
-  'source-ip-address': z.string().ip().optional(),
+  'source-ip-address': z.ipv4().optional(),
   reason: z.string().optional(),
   'deletion-type': z.string().optional(),
   'restore-expiry-time': z.string().optional(),
@@ -112,7 +118,7 @@ const S3EventNotificationEventBridgeDetailSchema = z.object({
  * }
  * ```
  *
- * @see {@link types.S3EventNotificationEventBridge | S3EventNotificationEventBridge }
+ * @see {@link S3EventNotificationEventBridge | `S3EventNotificationEventBridge` }
  * @see {@link https://docs.aws.amazon.com/AmazonS3/latest/userguide/ev-events.html#ev-events-list}
  */
 const S3EventNotificationEventBridgeSchema = EventBridgeSchema.extend({
@@ -163,7 +169,7 @@ const S3EventNotificationEventBridgeSchema = EventBridgeSchema.extend({
  *   ]
  * }
  * ```
- * @see {@link types.S3Event | S3Event }
+ * @see {@link S3Event | `S3Event` }
  * @see {@link https://docs.aws.amazon.com/AmazonS3/latest/userguide/notification-content-structure.html}
  */
 const S3Schema = z.object({
@@ -205,14 +211,14 @@ const S3SqsEventNotificationRecordSchema = SqsRecordSchema.extend({
  * }
  * ```
  *
- * @see {@link types.S3SqsEventNotification | S3SqsEventNotification }
+ * @see {@link S3SqsEventNotification | `S3SqsEventNotification` }
  */
 const S3SqsEventNotificationSchema = z.object({
-  Records: z.array(S3SqsEventNotificationRecordSchema).min(1),
+  Records: z.array(S3SqsEventNotificationRecordSchema).nonempty(),
 });
 
 const S3ObjectContext = z.object({
-  inputS3Url: z.string().url(),
+  inputS3Url: z.string(),
   outputRoute: z.string(),
   outputToken: z.string(),
 });
@@ -291,8 +297,8 @@ const S3ObjectUserIdentity = z.object({
  * }
  * ```
  *
+ * @see {@link S3ObjectLambdaEvent | `S3ObjectLambdaEvent` }
  * @see {@link https://docs.aws.amazon.com/AmazonS3/latest/userguide/olap-event-context.html}
- * @see {@link types.S3ObjectLambdaEvent | S3ObjectLambdaEvent }
  */
 const S3ObjectLambdaEventSchema = z.object({
   xAmzRequestId: z.string(),

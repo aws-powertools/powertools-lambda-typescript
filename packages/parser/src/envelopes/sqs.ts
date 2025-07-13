@@ -1,6 +1,6 @@
-import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
+import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
-import { type SqsRecordSchema, SqsSchema } from '../schemas/sqs.js';
+import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult } from '../types/index.js';
 import { envelopeDiscriminator } from './envelope.js';
 
@@ -29,7 +29,7 @@ const SqsEnvelope = {
    * @hidden
    */
   [envelopeDiscriminator]: 'array' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
+  parse<T>(data: unknown, schema: ZodType<T>): T[] {
     let parsedEnvelope: z.infer<typeof SqsSchema>;
     try {
       parsedEnvelope = SqsSchema.parse(data);
@@ -40,7 +40,7 @@ const SqsEnvelope = {
     }
 
     return parsedEnvelope.Records.map((record, recordIndex) => {
-      let parsedRecord: z.infer<typeof SqsRecordSchema>;
+      let parsedRecord: T;
       try {
         parsedRecord = schema.parse(record.body);
       } catch (error) {
@@ -60,10 +60,7 @@ const SqsEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>[]> {
+  safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T[]> {
     const parsedEnvelope = SqsSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {
@@ -77,8 +74,8 @@ const SqsEnvelope = {
 
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
-      records: z.infer<T>[];
-      errors: { index?: number; issues?: ZodIssue[] };
+      records: T[];
+      errors: { index?: number; issues?: z.core.$ZodIssue[] };
     }>(
       (acc, record, index) => {
         const parsedRecord = schema.safeParse(record.body);

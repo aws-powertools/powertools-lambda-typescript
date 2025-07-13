@@ -214,5 +214,8 @@
     "@middy/core": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "zod": "^4.0.5"
   }
 }

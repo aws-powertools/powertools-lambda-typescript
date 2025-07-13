@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { KinesisFirehoseEnvelope } from '../../../src/envelopes/kinesis-firehose.js';
-import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers/index.js';
 import type {
   KinesisFireHoseEvent,
@@ -38,9 +37,8 @@ describe('Envelope: Kinesis Firehose', () => {
               {
                 code: 'invalid_type',
                 expected: 'number',
-                received: 'string',
                 path: ['records', 0, 'data'],
-                message: 'Expected number, received string',
+                message: 'Invalid input: expected number, received string',
               },
             ],
           }),
@@ -82,18 +80,24 @@ describe('Envelope: Kinesis Firehose', () => {
 
       // Act & Assess
       expect(() => KinesisFirehoseEnvelope.parse(event, z.string())).toThrow(
-        new ParseError('Failed to parse Kinesis Firehose envelope', {
-          cause: new ZodError([
-            {
-              code: 'too_small',
-              minimum: 1,
-              type: 'array',
-              inclusive: true,
-              exact: false,
-              message: 'Array must contain at least 1 element(s)',
-              path: ['records'],
-            },
-          ]),
+        expect.objectContaining({
+          name: 'ParseError',
+
+          message: expect.stringContaining(
+            'Failed to parse Kinesis Firehose envelope'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                origin: 'array',
+                code: 'too_small',
+                minimum: 1,
+                inclusive: true,
+                path: ['records'],
+                message: 'Too small: expected array to have >=1 items',
+              },
+            ],
+          }),
         })
       );
     });
@@ -136,18 +140,23 @@ describe('Envelope: Kinesis Firehose', () => {
       const result = KinesisFirehoseEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse Kinesis Firehose envelope', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['invocationId'],
-              message: 'Required',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse Kinesis Firehose envelope'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                expected: 'string',
+                code: 'invalid_type',
+                path: ['invocationId'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -169,22 +178,24 @@ describe('Envelope: Kinesis Firehose', () => {
       );
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError(
-          'Failed to parse Kinesis Firehose record at index 1',
-          {
-            cause: new ZodError([
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse Kinesis Firehose record at index 1'
+          ),
+          cause: expect.objectContaining({
+            issues: [
               {
                 code: 'invalid_type',
                 expected: 'string',
-                received: 'undefined',
                 path: ['records', 1, 'data', 'foo'],
-                message: 'Required',
+                message: 'Invalid input: expected string, received undefined',
               },
-            ]),
-          }
-        ),
+            ],
+          }),
+        }),
         originalEvent: event,
       });
     });
@@ -202,29 +213,30 @@ describe('Envelope: Kinesis Firehose', () => {
       );
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError(
-          'Failed to parse Kinesis Firehose records at indexes 0, 1',
-          {
-            cause: new ZodError([
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse Kinesis Firehose records at indexes 0, 1'
+          ),
+          cause: expect.objectContaining({
+            issues: [
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['records', 0, 'data'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['records', 1, 'data'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
-            ]),
-          }
-        ),
+            ],
+          }),
+        }),
         originalEvent: event,
       });
     });

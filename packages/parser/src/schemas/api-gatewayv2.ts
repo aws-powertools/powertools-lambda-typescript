@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import {
+  APIGatewayProxyEventV2,
+  APIGatewayRequestAuthorizerEventV2,
+} from '../types/schema.js';
+import {
   APIGatewayCert,
   APIGatewayHttpMethod,
   APIGatewayRecord,
@@ -106,7 +110,7 @@ const APIGatewayRequestContextV2Schema = z.object({
     method: APIGatewayHttpMethod,
     path: z.string(),
     protocol: z.string(),
-    sourceIp: z.string().ip(),
+    sourceIp: z.ipv4(),
     userAgent: z.string(),
   }),
   requestId: z.string(),
@@ -161,6 +165,7 @@ const APIGatewayRequestContextV2Schema = z.object({
  * }
  * ```
  *
+ * @see {@link APIGatewayProxyEventV2 | `APIGatewayProxyEventV2`}
  * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html}
  */
 const APIGatewayProxyEventV2Schema = z.object({
@@ -224,6 +229,7 @@ const APIGatewayProxyEventV2Schema = z.object({
  * }
  * ```
  *
+ * @see {@link APIGatewayRequestAuthorizerEventV2 | `APIGatewayRequestAuthorizerEventV2`}
  * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html}
  */
 const APIGatewayRequestAuthorizerEventV2Schema = z.object({

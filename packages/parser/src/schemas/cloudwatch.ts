@@ -1,6 +1,6 @@
 import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
-import { DecompressError } from '../errors.js';
+import type { CloudWatchLogsEvent } from '../types/schema.js';
 
 const CloudWatchLogEventSchema = z.object({
   id: z.string(),
@@ -14,22 +14,8 @@ const CloudWatchLogsDecodeSchema = z.object({
   logGroup: z.string(),
   logStream: z.string(),
   subscriptionFilters: z.array(z.string()),
-  logEvents: z.array(CloudWatchLogEventSchema).min(1),
+  logEvents: z.array(CloudWatchLogEventSchema).nonempty(),
 });
-
-const decompressRecordToJSON = (
-  data: string
-): z.infer<typeof CloudWatchLogsDecodeSchema> => {
-  try {
-    const uncompressed = gunzipSync(Buffer.from(data, 'base64')).toString(
-      'utf8'
-    );
-
-    return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
-  } catch {
-    throw new DecompressError('Failed to decompress CloudWatch log data');
-  }
-};
 
 /**
  * Zod schema for CloudWatch Logs.
@@ -74,18 +60,33 @@ const decompressRecordToJSON = (
  * }
  * ```
  *
- * @see {@link types.CloudWatchLogsEvent | CloudWatchLogsEvent}
+ * @see {@link CloudWatchLogsEvent | `CloudWatchLogsEvent`}
  * @see {@link https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SubscriptionFilters.html#LambdaFunctionExample}
  */
 const CloudWatchLogsSchema = z.object({
   awslogs: z.object({
-    data: z.string().transform((data) => decompressRecordToJSON(data)),
+    data: z.base64().transform((data, ctx) => {
+      try {
+        const uncompressed = gunzipSync(Buffer.from(data, 'base64')).toString(
+          'utf8'
+        );
+
+        return CloudWatchLogsDecodeSchema.parse(JSON.parse(uncompressed));
+      } catch {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Failed to decompress CloudWatch log data',
+          fatal: true,
+        });
+
+        return z.NEVER;
+      }
+    }),
   }),
 });
 
 export {
   CloudWatchLogsSchema,
   CloudWatchLogsDecodeSchema,
-  decompressRecordToJSON,
   CloudWatchLogEventSchema,
 };

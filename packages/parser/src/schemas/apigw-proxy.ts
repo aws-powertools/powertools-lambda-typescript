@@ -17,7 +17,7 @@ const APIGatewayCert = z.object({
 /**
  * A zod schema for an object with string keys and string values
  */
-const APIGatewayRecord = z.record(z.string());
+const APIGatewayRecord = z.record(z.string(), z.string());
 
 /**
  * A zod schema for an array of strings

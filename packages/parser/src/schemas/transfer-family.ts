@@ -1,7 +1,7 @@
 import { z } from 'zod';
+import type { TransferFamilyEvent } from '../types/schema.js';
 
 /**
- *
  * Zod schema for AWS Transfer Family events.
  *
  * @example
@@ -15,15 +15,15 @@ import { z } from 'zod';
  * }
  * ```
  *
- * TransferFamilySchema validates events coming from AWS Transfer Family.
- *
+ * @see {@link TransferFamilyEvent | `TransferFamilyEvent`}
+ * @see {@link https://docs.aws.amazon.com/transfer/latest/userguide/custom-lambda-idp.html}
  */
 const TransferFamilySchema = z.object({
   username: z.string(),
   password: z.string(),
   protocol: z.string(),
   serverId: z.string(),
-  sourceIp: z.string().ip(),
+  sourceIp: z.ipv4(),
 });
 
 export { TransferFamilySchema };

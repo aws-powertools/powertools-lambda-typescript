@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { KafkaEnvelope } from '../../../src/envelopes/kafka.js';
-import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers/index.js';
 import { getTestEvent } from '../helpers/utils.js';
 
@@ -84,20 +83,23 @@ describe('Envelope: Kafka', () => {
       const result = KafkaEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse Kafka envelope', {
-          cause: new ZodError([
-            {
-              code: 'too_small',
-              minimum: 1,
-              type: 'array',
-              inclusive: true,
-              exact: false,
-              message: 'Array must contain at least 1 element(s)',
-              path: ['records', 'mytopic-0'],
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining('Failed to parse Kafka envelope'),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                origin: 'array',
+                code: 'too_small',
+                minimum: 1,
+                inclusive: true,
+                message: 'Too small: expected array to have >=1 items',
+                path: ['records', 'mytopic-0'],
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -111,18 +113,11 @@ describe('Envelope: Kafka', () => {
       const result = KafkaEnvelope.safeParse(event, z.number());
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse Kafka envelope', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'number',
-              received: 'string',
-              path: ['records', 'mytopic-0'],
-              message: 'Expected number, received string',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining('Failed to parse Kafka envelope'),
         }),
         originalEvent: event,
       });

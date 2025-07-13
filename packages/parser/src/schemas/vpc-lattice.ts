@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { VpcLatticeEvent } from '../types/schema.js';
 
 /**
  * Zod schema for VPC Lattice event
@@ -22,7 +23,7 @@ import { z } from 'zod';
  *}
  * ```
  *
- * @see {@link types.VpcLatticeEvent | VpcLatticeEvent}
+ * @see {@link VpcLatticeEvent | `VpcLatticeEvent`}
  * @see {@link https://docs.aws.amazon.com/vpc-lattice/latest/ug/lambda-functions.html#receive-event-from-service}
  */
 const VpcLatticeSchema = z.object({

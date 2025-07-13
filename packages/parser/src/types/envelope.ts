@@ -1,28 +1,22 @@
-import type { ZodSchema, z } from 'zod';
+import type { ZodType, z } from 'zod';
 import type { envelopeDiscriminator } from '../envelopes/envelope.js';
 import type { ParsedResult } from './parser.js';
 
-type DynamoDBStreamEnvelopeResponse<Schema extends ZodSchema> = {
-  NewImage?: z.infer<Schema>;
-  OldImage?: z.infer<Schema>;
+type DynamoDBStreamEnvelopeResponse<T> = {
+  NewImage?: z.infer<T>;
+  OldImage?: z.infer<T>;
 };
 
 interface ArrayEnvelope {
   [envelopeDiscriminator]: 'array';
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[];
-  safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>[]>;
+  parse<T>(data: unknown, schema: ZodType<T>): T[];
+  safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T[]>;
 }
 
 interface ObjectEnvelope {
   [envelopeDiscriminator]: 'object';
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>;
-  safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>>;
+  parse<T>(data: unknown, schema: ZodType<T>): T;
+  safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T>;
 }
 
 type Envelope = ArrayEnvelope | ObjectEnvelope | undefined;

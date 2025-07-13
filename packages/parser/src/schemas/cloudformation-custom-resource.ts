@@ -1,13 +1,18 @@
 import { z } from 'zod';
+import type {
+  CloudFormationCustomResourceCreateEvent,
+  CloudFormationCustomResourceDeleteEvent,
+  CloudFormationCustomResourceUpdateEvent,
+} from '../types/schema.js';
 
 const CloudFormationCustomResourceBaseSchema = z.object({
   ServiceToken: z.string(),
-  ResponseURL: z.string().url(),
+  ResponseURL: z.url(),
   StackId: z.string(),
   RequestId: z.string(),
   LogicalResourceId: z.string(),
   ResourceType: z.string(),
-  ResourceProperties: z.record(z.any()),
+  ResourceProperties: z.record(z.string(), z.any()),
 });
 
 /**
@@ -29,15 +34,13 @@ const CloudFormationCustomResourceBaseSchema = z.object({
  *   }
  * }
  * ```
- * @see {@link types.CloudFormationCustomResourceCreateEvent | CloudFormationCustomResourceCreateEvent}
+ * @see {@link CloudFormationCustomResourceCreateEvent | `CloudFormationCustomResourceCreateEvent`}
  * @see {@link https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requesttypes-create.html}
  */
-const CloudFormationCustomResourceCreateSchema =
-  CloudFormationCustomResourceBaseSchema.merge(
-    z.object({
-      RequestType: z.literal('Create'),
-    })
-  );
+const CloudFormationCustomResourceCreateSchema = z.object({
+  ...CloudFormationCustomResourceBaseSchema.shape,
+  RequestType: z.literal('Create'),
+});
 
 /**
  * Zod schema for CloudFormation Custom Resource event with RequestType = 'Delete'
@@ -58,15 +61,13 @@ const CloudFormationCustomResourceCreateSchema =
  *   }
  * }
  * ```
- * @see {@link types.CloudFormationCustomResourceDeleteEvent | CloudFormationCustomResourceDeleteEvent}
+ * @see {@link CloudFormationCustomResourceDeleteEvent | `CloudFormationCustomResourceDeleteEvent`}
  * @see {@link https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requesttypes-delete.html}
  */
-const CloudFormationCustomResourceDeleteSchema =
-  CloudFormationCustomResourceBaseSchema.merge(
-    z.object({
-      RequestType: z.literal('Delete'),
-    })
-  );
+const CloudFormationCustomResourceDeleteSchema = z.object({
+  ...CloudFormationCustomResourceBaseSchema.shape,
+  RequestType: z.literal('Delete'),
+});
 
 /**
  * Zod schema for CloudFormation Custom Resource event with RequestType = 'Update'
@@ -91,16 +92,14 @@ const CloudFormationCustomResourceDeleteSchema =
  *   }
  * }
  * ```
- * @see {@link types.CloudFormationCustomResourceUpdateEvent | CloudFormationCustomResourceUpdateEvent}
+ * @see {@link CloudFormationCustomResourceUpdateEvent | `CloudFormationCustomResourceUpdateEvent`}
  * @see {@link https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requesttypes-update.html}
  */
-const CloudFormationCustomResourceUpdateSchema =
-  CloudFormationCustomResourceBaseSchema.merge(
-    z.object({
-      RequestType: z.literal('Update'),
-      OldResourceProperties: z.record(z.any()),
-    })
-  );
+const CloudFormationCustomResourceUpdateSchema = z.object({
+  ...CloudFormationCustomResourceBaseSchema.shape,
+  RequestType: z.literal('Update'),
+  OldResourceProperties: z.record(z.string(), z.any()),
+});
 
 export {
   CloudFormationCustomResourceCreateSchema,

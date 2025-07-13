@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { KafkaMskEvent, KafkaSelfManagedEvent } from '../types/schema.js';
 
 /**
  * Zod schema for a Kafka record from an Kafka event.
@@ -33,7 +34,7 @@ const KafkaBaseEventSchema = z.object({
     .string()
     .transform((bootstrapServers) => bootstrapServers.split(','))
     .nullish(),
-  records: z.record(z.string(), z.array(KafkaRecordSchema).min(1)),
+  records: z.record(z.string(), z.array(KafkaRecordSchema).nonempty()),
 });
 
 /** Zod schema for Kafka event from Self Managed Kafka
@@ -76,7 +77,7 @@ const KafkaBaseEventSchema = z.object({
  * }
  * ```
  *
- * @see {@link types.KafkaSelfManagedEvent | KafkaSelfManagedEvent}
+ * @see {@link KafkaSelfManagedEvent | `KafkaSelfManagedEvent`}
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-kafka.html}
  */
 const KafkaSelfManagedEventSchema = KafkaBaseEventSchema.extend({
@@ -125,7 +126,7 @@ const KafkaSelfManagedEventSchema = KafkaBaseEventSchema.extend({
  * }
  * ```
  *
- * @see {@link types.KafkaMskEvent | KafkaMskEvent}
+ * @see {@link KafkaMskEvent | `KafkaMskEvent`}
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html}
  */
 const KafkaMskEventSchema = KafkaBaseEventSchema.extend({

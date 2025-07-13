@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { SnsEvent, SnsSqsNotification } from '../types/schema.js';
 
 const SnsMsgAttribute = z.object({
   Type: z.string(),
@@ -11,17 +12,17 @@ const SnsMsgAttribute = z.object({
 const SnsNotificationSchema = z.object({
   Subject: z.string().nullish(),
   TopicArn: z.string(),
-  UnsubscribeUrl: z.string().url(),
-  UnsubscribeURL: z.string().url().optional(),
-  SigningCertUrl: z.string().url().optional(),
-  SigningCertURL: z.string().url().optional(),
+  UnsubscribeUrl: z.url(),
+  UnsubscribeURL: z.url().optional(),
+  SigningCertUrl: z.url().optional(),
+  SigningCertURL: z.url().optional(),
   Type: z.literal('Notification'),
   MessageAttributes: z.record(z.string(), SnsMsgAttribute).optional(),
   Message: z.string(),
   MessageId: z.string(),
   Signature: z.string().optional(),
   SignatureVersion: z.string().optional(),
-  Timestamp: z.string().datetime(),
+  Timestamp: z.iso.datetime(),
 });
 
 /**
@@ -51,11 +52,11 @@ const SnsNotificationSchema = z.object({
  * }
  * ```
  *
- * @see {@link types.SnsSqsNotification | SnsSqsNotification}
+ * @see {@link SnsSqsNotification | `SnsSqsNotification`}
  */
 const SnsSqsNotificationSchema = SnsNotificationSchema.extend({
   UnsubscribeURL: z.string().optional(),
-  SigningCertURL: z.string().url().optional(),
+  SigningCertURL: z.url().optional(),
 }).omit({
   UnsubscribeUrl: true,
   SigningCertUrl: true,
@@ -109,11 +110,11 @@ const SnsRecordSchema = z.object({
  * }
  * ```
  *
- * @see {@link types.SnsEvent | SnsEvent}
+ * @see {@link SnsEvent | `SnsEvent`}
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-sns.html#sns-sample-event}
  */
 const SnsSchema = z.object({
-  Records: z.array(SnsRecordSchema).min(1),
+  Records: z.array(SnsRecordSchema).nonempty(),
 });
 
 export {

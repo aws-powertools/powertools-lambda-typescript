@@ -13,7 +13,7 @@ const customSchema = z.object({
 const extendedSchema = SqsSchema.extend({
   Records: z.array(
     SqsRecordSchema.extend({
-      body: JSONStringified(customSchema), // (1)!
+      body: JSONStringified(customSchema),
     })
   ),
 });

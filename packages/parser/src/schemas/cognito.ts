@@ -568,8 +568,8 @@ const CreateAuthChallengeTriggerSchema = CognitoTriggerBaseSchema.extend({
     userNotFound: z.boolean().optional(),
   }),
   response: z.object({
-    publicChallengeParameters: z.record(z.string()).nullish(),
-    privateChallengeParameters: z.record(z.string()).nullish(),
+    publicChallengeParameters: z.record(z.string(), z.string()).nullish(),
+    privateChallengeParameters: z.record(z.string(), z.string()).nullish(),
     challengeMetadata: z.string().nullish(),
   }),
 });

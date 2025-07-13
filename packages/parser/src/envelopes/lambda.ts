@@ -1,4 +1,4 @@
-import type { ZodSchema, z } from 'zod';
+import type { ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { LambdaFunctionUrlSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
@@ -13,22 +13,19 @@ export const LambdaFunctionUrlEnvelope = {
    * @hidden
    */
   [envelopeDiscriminator]: 'object' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
+  parse<T>(data: unknown, schema: ZodType<T>): T {
     try {
       return LambdaFunctionUrlSchema.extend({
         body: schema,
       }).parse(data).body;
     } catch (error) {
       throw new ParseError('Failed to parse Lambda function URL body', {
-        cause: error as Error,
+        cause: error,
       });
     }
   },
 
-  safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>> {
+  safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T> {
     const results = LambdaFunctionUrlSchema.extend({
       body: schema,
     }).safeParse(data);

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { KinesisEnvelope } from '../../../src/envelopes/kinesis.js';
-import { ParseError } from '../../../src/errors.js';
 import type { KinesisDataStreamEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../helpers/utils.js';
 
@@ -30,9 +29,8 @@ describe('Envelope: Kinesis', () => {
               {
                 code: 'invalid_type',
                 expected: 'number',
-                received: 'string',
                 path: ['Records', 0, 'kinesis', 'data'],
-                message: 'Expected number, received string',
+                message: 'Invalid input: expected number, received string',
               },
             ],
           }),
@@ -62,18 +60,23 @@ describe('Envelope: Kinesis', () => {
 
       // Act & Assess
       expect(() => KinesisEnvelope.parse(event, z.string())).toThrow(
-        new ParseError('Failed to parse Kinesis Data Stream envelope', {
-          cause: new ZodError([
-            {
-              code: 'too_small',
-              minimum: 1,
-              type: 'array',
-              inclusive: true,
-              exact: false,
-              message: 'Array must contain at least 1 element(s)',
-              path: ['Records'],
-            },
-          ]),
+        expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse Kinesis Data Stream envelope'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                origin: 'array',
+                code: 'too_small',
+                minimum: 1,
+                inclusive: true,
+                path: ['Records'],
+                message: 'Too small: expected array to have >=1 items',
+              },
+            ],
+          }),
         })
       );
     });
@@ -104,20 +107,25 @@ describe('Envelope: Kinesis', () => {
       const result = KinesisEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse Kinesis Data Stream envelope', {
-          cause: new ZodError([
-            {
-              code: 'too_small',
-              minimum: 1,
-              type: 'array',
-              inclusive: true,
-              exact: false,
-              message: 'Array must contain at least 1 element(s)',
-              path: ['Records'],
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse Kinesis Data Stream envelope'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                origin: 'array',
+                code: 'too_small',
+                minimum: 1,
+                inclusive: true,
+                path: ['Records'],
+                message: 'Too small: expected array to have >=1 items',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -137,22 +145,24 @@ describe('Envelope: Kinesis', () => {
       );
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError(
-          'Failed to parse Kinesis Data Stream record at index 1',
-          {
-            cause: new ZodError([
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse Kinesis Data Stream record at index 1'
+          ),
+          cause: expect.objectContaining({
+            issues: [
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['Records', 1, 'kinesis', 'data'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
-            ]),
-          }
-        ),
+            ],
+          }),
+        }),
         originalEvent: event,
       });
     });
@@ -170,29 +180,30 @@ describe('Envelope: Kinesis', () => {
       );
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError(
-          'Failed to parse Kinesis Data Stream records at indexes 0, 1',
-          {
-            cause: new ZodError([
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse Kinesis Data Stream records at indexes 0, 1'
+          ),
+          cause: expect.objectContaining({
+            issues: [
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['Records', 0, 'kinesis', 'data'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['Records', 1, 'kinesis', 'data'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
-            ]),
-          }
-        ),
+            ],
+          }),
+        }),
         originalEvent: event,
       });
     });

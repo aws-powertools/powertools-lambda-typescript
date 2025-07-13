@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import type { SesEvent } from '../types/schema.js';
 
 const SesReceiptVerdict = z.object({
   status: z.enum(['PASS', 'FAIL', 'GRAY', 'PROCESSING_FAILED']),
 });
 
 const SesReceipt = z.object({
-  timestamp: z.string().datetime(),
+  timestamp: z.iso.datetime(),
   processingTimeMillis: z.number().int().positive(),
   recipients: z.array(z.string()),
   spamVerdict: SesReceiptVerdict,
@@ -22,7 +23,7 @@ const SesReceipt = z.object({
 });
 
 const SesMail = z.object({
-  timestamp: z.string().datetime(),
+  timestamp: z.iso.datetime(),
   source: z.string(),
   messageId: z.string(),
   destination: z.array(z.string()),
@@ -169,11 +170,11 @@ const SesRecordSchema = z.object({
  * }
  * ```
  *
- * @see {@link types.SesEvent | SesEvent}
+ * @see {@link SesEvent | SesEvent}
  * @see {@link https://docs.aws.amazon.com/ses/latest/dg/receiving-email-notifications-examples.html}
  */
 const SesSchema = z.object({
-  Records: z.array(SesRecordSchema).min(1),
+  Records: z.array(SesRecordSchema).nonempty(),
 });
 
 export { SesSchema, SesRecordSchema };

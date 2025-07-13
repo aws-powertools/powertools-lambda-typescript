@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { APIGatewayProxyEvent } from '../types/schema.js';
 import {
   APIGatewayCert,
   APIGatewayHttpMethod,
@@ -29,9 +30,7 @@ const APIGatewayEventIdentity = z.object({
    *
    * See aws-powertools/powertools-lambda-python#1562 for more information.
    */
-  sourceIp: z
-    .union([z.string().ip(), z.literal('test-invoke-source-ip')])
-    .optional(),
+  sourceIp: z.union([z.ipv4(), z.literal('test-invoke-source-ip')]).optional(),
   user: z.string().nullish(),
   userAgent: z.string().nullish(),
   userArn: z.string().nullish(),
@@ -147,8 +146,7 @@ const APIGatewayEventRequestContextSchema = z
  *   "apiId": "abcdef123"
  * }
  * ```
- * @see {@link types.APIGatewayProxyEvent | APIGatewayProxyEvent}
- *
+ * @see {@link APIGatewayProxyEvent | `APIGatewayProxyEvent`}
  * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html}
  */
 const APIGatewayProxyEventSchema = z.object({
@@ -156,9 +154,11 @@ const APIGatewayProxyEventSchema = z.object({
   path: z.string(),
   httpMethod: APIGatewayHttpMethod,
   headers: APIGatewayRecord.nullish(),
-  multiValueHeaders: z.record(APIGatewayStringArray).nullish(),
+  multiValueHeaders: z.record(z.string(), APIGatewayStringArray).nullish(),
   queryStringParameters: APIGatewayRecord.nullable(),
-  multiValueQueryStringParameters: z.record(APIGatewayStringArray).nullable(),
+  multiValueQueryStringParameters: z
+    .record(z.string(), APIGatewayStringArray)
+    .nullable(),
   pathParameters: APIGatewayRecord.nullish(),
   stageVariables: APIGatewayRecord.nullish(),
   requestContext: APIGatewayEventRequestContextSchema,
@@ -227,9 +227,9 @@ const APIGatewayRequestAuthorizerEventSchema = z.object({
   path: z.string(),
   httpMethod: APIGatewayHttpMethod,
   headers: APIGatewayRecord,
-  multiValueHeaders: z.record(APIGatewayStringArray),
+  multiValueHeaders: z.record(z.string(), APIGatewayStringArray),
   queryStringParameters: APIGatewayRecord,
-  multiValueQueryStringParameters: z.record(APIGatewayStringArray),
+  multiValueQueryStringParameters: z.record(z.string(), APIGatewayStringArray),
   pathParameters: APIGatewayRecord,
   stageVariables: APIGatewayRecord,
   requestContext: APIGatewayEventRequestContextSchema,

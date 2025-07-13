@@ -1,10 +1,8 @@
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
-import { ParseError } from '../../../src';
+import { z } from 'zod';
 import { CloudWatchEnvelope } from '../../../src/envelopes/cloudwatch.js';
-import { DecompressError } from '../../../src/errors.js';
-import { JSONStringified } from '../../../src/helpers/index';
+import { JSONStringified } from '../../../src/helpers/index.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 const decompressRecordToJSON = (
@@ -92,9 +90,8 @@ describe('Envelope: CloudWatch', () => {
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['awslogs', 'data', 'logEvents', 0, 'message'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
             ],
           }),
@@ -159,12 +156,29 @@ describe('Envelope: CloudWatch', () => {
       const result = CloudWatchEnvelope.safeParse(event, z.object({}));
 
       // Assess
-      expect(result).toStrictEqual({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse CloudWatch Log envelope', {
-          cause: new DecompressError(
-            'Failed to decompress CloudWatch log data'
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse CloudWatch Log envelope'
           ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_format',
+                format: 'base64',
+                path: ['awslogs', 'data'],
+                message: 'Invalid base64-encoded string',
+              },
+              {
+                code: 'custom',
+                message: 'Failed to decompress CloudWatch log data',
+                fatal: true,
+                path: ['awslogs', 'data'],
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -203,20 +217,24 @@ describe('Envelope: CloudWatch', () => {
       );
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError(
-          'Failed to parse CloudWatch Log message at index 0',
-          {
-            cause: new ZodError([
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse CloudWatch Log message at index 0'
+          ),
+          cause: expect.objectContaining({
+            issues: [
               {
                 code: 'custom',
-                message: 'Invalid JSON',
+                fatal: true,
+                message: expect.stringMatching(/^Invalid JSON - /),
                 path: ['awslogs', 'data', 'logEvents', 0, 'message'],
               },
-            ]),
-          }
-        ),
+            ],
+          }),
+        }),
         originalEvent: event,
       });
     });
@@ -234,36 +252,36 @@ describe('Envelope: CloudWatch', () => {
       );
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError(
-          'Failed to parse CloudWatch Log messages at indexes 0, 1, 2',
-          {
-            cause: new ZodError([
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse CloudWatch Log messages at indexes 0, 1, 2'
+          ),
+          cause: expect.objectContaining({
+            issues: [
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['awslogs', 'data', 'logEvents', 0, 'message'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['awslogs', 'data', 'logEvents', 1, 'message'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['awslogs', 'data', 'logEvents', 2, 'message'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
-            ]),
-          }
-        ),
+            ],
+          }),
+        }),
         originalEvent: event,
       });
     });

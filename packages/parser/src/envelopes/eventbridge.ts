@@ -1,4 +1,4 @@
-import type { ZodError, ZodSchema, z } from 'zod';
+import type { ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { EventBridgeSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
@@ -13,29 +13,22 @@ export const EventBridgeEnvelope = {
    * @hidden
    */
   [envelopeDiscriminator]: 'object' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
-    const extendedSchema = EventBridgeSchema.extend({
-      detail: schema,
-    });
+  parse<T>(data: unknown, schema: ZodType<T>): T {
     try {
-      const parsed = extendedSchema.parse(data);
-      return parsed.detail;
+      return EventBridgeSchema.extend({
+        detail: schema,
+      }).parse(data).detail;
     } catch (error) {
       throw new ParseError('Failed to parse EventBridge envelope', {
-        cause: error as ZodError,
+        cause: error,
       });
     }
   },
 
-  safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>> {
-    const extendedSchema = EventBridgeSchema.extend({
+  safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T> {
+    const parsedResult = EventBridgeSchema.extend({
       detail: schema,
-    });
-
-    const parsedResult = extendedSchema.safeParse(data);
+    }).safeParse(data);
     if (!parsedResult.success) {
       return {
         success: false,

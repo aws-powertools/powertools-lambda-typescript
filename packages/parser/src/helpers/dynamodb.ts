@@ -1,6 +1,6 @@
 import { unmarshallDynamoDB } from '@aws-lambda-powertools/commons/utils/unmarshallDynamoDB';
 import type { AttributeValue } from '@aws-sdk/client-dynamodb';
-import { type ZodTypeAny, z } from 'zod';
+import { type ZodType, z } from 'zod';
 
 /**
  * A helper function to unmarshall DynamoDB stream events and validate them against a schema.
@@ -61,7 +61,7 @@ import { type ZodTypeAny, z } from 'zod';
  *
  * @param schema - The schema to validate the JSON string against
  */
-const DynamoDBMarshalled = <T extends ZodTypeAny>(schema: T) =>
+const DynamoDBMarshalled = <T>(schema: ZodType<T>) =>
   z
     .union([
       z.custom<AttributeValue>(),

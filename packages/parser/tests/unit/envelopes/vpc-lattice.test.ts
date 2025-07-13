@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { VpcLatticeEnvelope } from '../../../src/envelopes/vpc-lattice.js';
-import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers/index.js';
 import type { VpcLatticeEvent } from '../../../src/types/index.js';
 import { getTestEvent, omit } from '../helpers/utils.js';
@@ -25,15 +24,15 @@ describe('Envelope: VPC Lattice', () => {
       // Act & Assess
       expect(() => VpcLatticeEnvelope.parse(event, schema)).toThrow(
         expect.objectContaining({
+          name: 'ParseError',
           message: expect.stringContaining('Failed to parse VPC Lattice body'),
           cause: expect.objectContaining({
             issues: [
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['body'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
             ],
           }),
@@ -104,18 +103,21 @@ describe('Envelope: VPC Lattice', () => {
       const result = VpcLatticeEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse VPC Lattice body', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'boolean',
-              received: 'undefined',
-              path: ['is_base64_encoded'],
-              message: 'Required',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining('Failed to parse VPC Lattice body'),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'boolean',
+                path: ['is_base64_encoded'],
+                message: 'Invalid input: expected boolean, received undefined',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });

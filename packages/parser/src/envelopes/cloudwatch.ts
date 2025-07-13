@@ -1,4 +1,4 @@
-import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
+import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { CloudWatchLogsSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
@@ -13,7 +13,7 @@ export const CloudWatchEnvelope = {
    * @hidden
    */
   [envelopeDiscriminator]: 'array' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
+  parse<T>(data: unknown, schema: ZodType<T>): T[] {
     const parsedEnvelope = CloudWatchLogsSchema.parse(data);
 
     return parsedEnvelope.awslogs.data.logEvents.map((record, index) => {
@@ -42,19 +42,8 @@ export const CloudWatchEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>[]> {
-    let parsedEnvelope: ParsedResult<unknown, z.infer<T>>;
-    try {
-      parsedEnvelope = CloudWatchLogsSchema.safeParse(data);
-    } catch (error) {
-      parsedEnvelope = {
-        success: false,
-        error: error as Error,
-      };
-    }
+  safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T[]> {
+    const parsedEnvelope = CloudWatchLogsSchema.safeParse(data);
 
     if (!parsedEnvelope.success) {
       return {
@@ -70,8 +59,8 @@ export const CloudWatchEnvelope = {
       (
         acc: {
           success: boolean;
-          messages: z.infer<T>;
-          errors: { [key: number]: { issues: ZodIssue[] } };
+          messages: T[];
+          errors: { [key: number]: { issues: z.core.$ZodIssue[] } };
         },
         record: { message: string },
         index: number
@@ -114,7 +103,6 @@ export const CloudWatchEnvelope = {
         ? `Failed to parse CloudWatch Log messages at indexes ${Object.keys(result.errors).join(', ')}`
         : `Failed to parse CloudWatch Log message at index ${Object.keys(result.errors)[0]}`;
     const errorCause = new ZodError(
-      // @ts-expect-error - issues are assigned because success is false
       Object.values(result.errors).flatMap((error) => error.issues)
     );
 

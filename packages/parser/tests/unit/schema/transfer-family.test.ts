@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { TransferFamilySchema } from '../../../src/schemas/transfer-family';
+import { TransferFamilySchema } from '../../../src/schemas/transfer-family.js';
 import type { TransferFamilyEvent } from '../../../src/types/schema.js';
-import { getTestEvent } from '../helpers/utils';
+import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: TransferFamily', () => {
   const baseEvent = getTestEvent<TransferFamilyEvent>({

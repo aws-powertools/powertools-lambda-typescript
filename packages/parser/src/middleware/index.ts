@@ -1,12 +1,12 @@
 import type { MiddyLikeRequest } from '@aws-lambda-powertools/commons/types';
 import type { MiddlewareObj } from '@middy/core';
-import type { ZodType } from 'zod';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { parse } from '../parser.js';
 import type { Envelope } from '../types/envelope.js';
 import type { ParserOptions, ParserOutput } from '../types/parser.js';
 
 /**
- * A middiy middleware to parse your event.
+ * A Middy.js middleware to parse incoming events using a specified schema and optional envelope.
  *
  * @example
  * ```typescript
@@ -22,19 +22,17 @@ import type { ParserOptions, ParserOutput } from '../types/parser.js';
  *
  * type Order = z.infer<typeof oderSchema>;
  *
- * export const handler = middy(
- *   async (event: Order, _context: unknown): Promise<void> => {
- *     // event is validated as sqs message envelope
- *     // the body is unwrapped and parsed into object ready to use
- *     // you can now use event as Order in your code
- *   }
- * ).use(parser({ schema: oderSchema, envelope: sqsEnvelope }));
+ * export const handler = middy()
+ *   .use(parser({ schema: oderSchema, envelope: sqsEnvelope }))
+ *   .handler(async (event) => {
+ *            // ^ event is inferred as Order[]
+ *   })
  * ```
  *
- * @param options
+ * @param options - options for the parser
  */
 const parser = <
-  TSchema extends ZodType,
+  TSchema extends StandardSchemaV1,
   TEnvelope extends Envelope,
   TSafeParse extends boolean = false,
 >(

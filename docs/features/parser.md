@@ -1,63 +1,57 @@
 ---
-title: Parser (Zod)
+title: Parser (Standard Schema)
 descrition: Utility
 ---
 
 <!-- markdownlint-disable MD043 --->
 
-This utility provides data validation and parsing using [Zod](https://zod.dev){target="_blank"}, a TypeScript-first schema declaration and validation library.  
+This utility provides data validation and parsing for [Standard Schema](https://github.com/standard-schema/standard-schema){target="_blank"}, together with a collection of built-in [Zod](https://zod.dev){target="_blank"} schemas and envelopes to parse and unwrap popular AWS event sources payloads.
 
 ## Key features
 
-* Define data schema as Zod schema, then parse, validate and extract only what you want
-* Built-in envelopes to unwrap and validate popular AWS event sources payloads
-* Extend and customize envelopes to fit your needs
-* Safe parsing option to avoid throwing errors and custom error handling
-* Available for Middy.js middleware and TypeScript method decorators
+* Accept a [Standard Schema](https://github.com/standard-schema/standard-schema) and parse incoming payloads
+* Built-in Zod schemas and envelopes to unwrap and validate popular AWS event sources payloads
+* Extend and customize built-in Zod schemas to fit your needs
+* Safe parsing option to avoid throwing errors and allow custom error handling
+* Available as Middy.js middleware and TypeScript class method decorator
 
 ## Getting started
 
 ```bash
-npm install @aws-lambda-powertools/parser zod@~3
+npm install @aws-lambda-powertools/parser zod
 ```
-
-!!! warning "Zod version"
-    The package is compatible with Zod v3 only.<br/>
-    We're considering Zod v4 support and we'd love to hear your feedback. Please [leave a comment here](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3951) to let us know your thoughts.
-
-## Define schema
-
-You can define your schema using Zod:
-
-```typescript title="schema.ts"
---8<-- "examples/snippets/parser/schema.ts"
-```
-
-This is a schema for `Order` object using Zod.
-You can create complex schemas by using nested objects, arrays, unions, and other types, see [Zod documentation](https://zod.dev) for more details.
 
 ## Parse events
 
 You can parse inbound events using `parser` decorator, Middy.js middleware, or [manually](#manual-parsing) using built-in envelopes and schemas.
-Both are also able to parse either an object or JSON string as an input.
 
-???+ warning
-    The decorator and middleware will replace the event object with the parsed schema if successful.
-    Be cautious when using multiple decorators that expect event to have a specific structure, the order of evaluation for decorators is from bottom to top.
+When using the decorator or middleware, you can specify a schema to parse the event, this can be a [built-in Zod schema](#built-in-schemas) or a custom schema you defined. Custom schemas can be defined using Zod or any other [Standard Schema compatible library](https://standardschema.dev/#what-schema-libraries-implement-the-spec){target="_blank"}.
 
-=== "Middy middleware"
+=== "Middy.js middleware with Zod schema"
     ```typescript hl_lines="22"
     --8<-- "examples/snippets/parser/middy.ts"
     ```
 
+=== "Middy.js middleware with Valibot schema"
+    ```typescript hl_lines="30"
+    --8<-- "examples/snippets/parser/middyValibot.ts"
+    ```
+
 === "Decorator"
+    !!! warning
+        The decorator and middleware will replace the event object with the parsed schema if successful.
+        Be cautious when using multiple decorators that expect an event to have a specific structure, the order of evaluation for decorators is from the inner to the outermost decorator.
+
     ```typescript hl_lines="25"
     --8<-- "examples/snippets/parser/decorator.ts"
     ```
 
 ## Built-in schemas
 
-**Parser** comes with the following built-in schemas:
+**Parser** comes with the following built-in Zod schemas:
+
+!!! note "Looking for other libraries?"
+    The built-in schemas are defined using Zod, if you would like us to support other libraries like [valibot](https://valibot.dev){target="_blank"} please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=feature_request.yml){target="_blank"} and we will consider it based on the community's feedback.
 
 | Model name                                   | Description                                                                           |
 | -------------------------------------------- | ------------------------------------------------------------------------------------- |
@@ -198,7 +192,7 @@ This can become difficult quite quickly. Parser simplifies the development throu
 Envelopes can be used via envelope parameter available in middy and decorator.
 Here's an example of parsing a custom schema in an event coming from EventBridge, where all you want is what's inside the detail key.
 
-=== "Middy middleware"
+=== "Middy.js middleware"
     ```typescript hl_lines="23"
     --8<-- "examples/snippets/parser/envelopeMiddy.ts"
     ```
@@ -221,24 +215,27 @@ We have also complex envelopes that parse the payload from a string, decode base
 
 ### Built-in envelopes
 
-Parser comes with the following built-in envelopes:
+Parser comes with the following built-in Zod envelopes:
+
+!!! note "Looking for other libraries?"
+    The built-in schemas are defined using Zod, if you would like us to support other libraries like [valibot](https://valibot.dev){target="_blank"} please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=feature_request.yml){target="_blank"} and we will consider it based on the community's feedback.
 
 | Envelope name                 | Behaviour                                                                                                                                                                                                     |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **apiGatewayEnvelope**        | 1. Parses data using `APIGatewayProxyEventSchema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                               |
-| **apiGatewayV2Envelope**      | 1. Parses data using `APIGatewayProxyEventV2Schema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                             |
-| **cloudWatchEnvelope**        | 1. Parses data using `CloudwatchLogsSchema` which will base64 decode and decompress it. <br/> 2. Parses records in `message` key using your schema and return them in a list.                                 |
-| **dynamoDBStreamEnvelope**    | 1. Parses data using `DynamoDBStreamSchema`. <br/> 2. Parses records in `NewImage` and `OldImage` keys using your schema. <br/> 3. Returns a list with a dictionary containing `NewImage` and `OldImage` keys |
-| **eventBridgeEnvelope**       | 1. Parses data using `EventBridgeSchema`. <br/> 2. Parses `detail` key using your schema and returns it.                                                                                                      |
-| **kafkaEnvelope**             | 1. Parses data using `KafkaRecordSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                       |
-| **kinesisEnvelope**           | 1. Parses data using `KinesisDataStreamSchema` which will base64 decode it. <br/> 2. Parses records in `Records` key using your schema and returns them in a list.                                            |
-| **kinesisFirehoseEnvelope**   | 1. Parses data using `KinesisFirehoseSchema` which will base64 decode it. <br/> 2. Parses records in `Records` key using your schema and returns them in a list.                                              |
-| **lambdaFunctionUrlEnvelope** | 1. Parses data using `LambdaFunctionUrlSchema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                                  |
-| **snsEnvelope**               | 1. Parses data using `SnsSchema`. <br/> 2. Parses records in `body` key using your schema and return them in a list.                                                                                          |
-| **snsSqsEnvelope**            | 1. Parses data using `SqsSchema`. <br/> 2. Parses SNS records in `body` key using `SnsNotificationSchema`. <br/> 3. Parses data in `Message` key using your schema and return them in a list.                 |
-| **sqsEnvelope**               | 1. Parses data using `SqsSchema`. <br/> 2. Parses records in `body` key using your schema and return them in a list.                                                                                          |
-| **vpcLatticeEnvelope**        | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
-| **vpcLatticeV2Envelope**      | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
+| **ApiGatewayEnvelope**        | 1. Parses data using `APIGatewayProxyEventSchema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                               |
+| **ApiGatewayV2Envelope**      | 1. Parses data using `APIGatewayProxyEventV2Schema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                             |
+| **CloudWatchEnvelope**        | 1. Parses data using `CloudwatchLogsSchema` which will base64 decode and decompress it. <br/> 2. Parses records in `message` key using your schema and return them in a list.                                 |
+| **DynamoDBStreamEnvelope**    | 1. Parses data using `DynamoDBStreamSchema`. <br/> 2. Parses records in `NewImage` and `OldImage` keys using your schema. <br/> 3. Returns a list with a dictionary containing `NewImage` and `OldImage` keys |
+| **EventBridgeEnvelope**       | 1. Parses data using `EventBridgeSchema`. <br/> 2. Parses `detail` key using your schema and returns it.                                                                                                      |
+| **KafkaEnvelope**             | 1. Parses data using `KafkaRecordSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                       |
+| **KinesisEnvelope**           | 1. Parses data using `KinesisDataStreamSchema` which will base64 decode it. <br/> 2. Parses records in `Records` key using your schema and returns them in a list.                                            |
+| **KinesisFirehoseEnvelope**   | 1. Parses data using `KinesisFirehoseSchema` which will base64 decode it. <br/> 2. Parses records in `Records` key using your schema and returns them in a list.                                              |
+| **LambdaFunctionUrlEnvelope** | 1. Parses data using `LambdaFunctionUrlSchema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                                  |
+| **SnsEnvelope**               | 1. Parses data using `SnsSchema`. <br/> 2. Parses records in `body` key using your schema and return them in a list.                                                                                          |
+| **SnsSqsEnvelope**            | 1. Parses data using `SqsSchema`. <br/> 2. Parses SNS records in `body` key using `SnsNotificationSchema`. <br/> 3. Parses data in `Message` key using your schema and return them in a list.                 |
+| **SnsEnvelope**               | 1. Parses data using `SqsSchema`. <br/> 2. Parses records in `body` key using your schema and return them in a list.                                                                                          |
+| **VpcLatticeEnvelope**        | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
+| **VpcLatticeV2Envelope**      | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
 
 ## Safe parsing
 
@@ -248,7 +245,7 @@ The handler `event` object will be replaced with `ParsedResult<Input?, Oputput?>
 The `ParsedResult` object will have `success`, `data`,  or `error` and `originalEvent` fields, depending on the outcome.
 If the parsing is successful, the `data` field will contain the parsed event, otherwise you can access the `error` field and the `originalEvent` to handle the error and recover the original event.
 
-=== "Middy middleware"
+=== "Middy.js middleware"
     ```typescript hl_lines="23 28 32-33"
     --8<-- "examples/snippets/parser/safeParseMiddy.ts"
     ```
@@ -320,10 +317,11 @@ Use `z.infer` to extract the type of the schema, so you can use types during dev
 
 ### Compatibility with `@types/aws-lambda`
 
-The package `@types/aws-lambda` is a popular project that contains type definitions for many AWS service event invocations.
-Powertools parser utility also bring AWS Lambda event types based on the built-in schema definitions.
+The package `@types/aws-lambda` is a popular project that contains type definitions for many AWS service event invocations, support for these types is provided on a best effort basis.
 
-We recommend to use the types provided by the parser utility. If you encounter any issues or have any feedback, please [submit an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose).
+We recommend using the types provided by the Parser utility under `@aws-powertools/parser/types` when using the built-in schemas and envelopes, as they are inferred directly from the Zod schemas and are more accurate.
+
+If you encounter any type compatibility issues with `@types/aws-lambda`, please [submit an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose).
 
 ## Testing your code
 

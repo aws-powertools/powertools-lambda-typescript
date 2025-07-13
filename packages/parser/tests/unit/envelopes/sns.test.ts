@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { SnsEnvelope } from '../../../src/envelopes/sns.js';
-import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers/index.js';
 import type { SnsEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../helpers/utils.js';
@@ -29,6 +28,7 @@ describe('Envelope: SnsEnvelope', () => {
         )
       ).toThrow(
         expect.objectContaining({
+          name: 'ParseError',
           message: expect.stringContaining(
             'Failed to parse SNS record at index 0'
           ),
@@ -37,9 +37,8 @@ describe('Envelope: SnsEnvelope', () => {
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['Records', 0, 'Sns', 'Message'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
             ],
           }),
@@ -84,18 +83,21 @@ describe('Envelope: SnsEnvelope', () => {
       const result = SnsEnvelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse SNS envelope', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'object',
-              received: 'undefined',
-              path: ['Records', 0, 'Sns'],
-              message: 'Required',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining('Failed to parse SNS envelope'),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                path: ['Records', 0, 'Sns'],
+                message: 'Invalid input: expected object, received undefined',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -119,18 +121,23 @@ describe('Envelope: SnsEnvelope', () => {
       );
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse SNS message at index 1', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'number',
-              path: ['Records', 1, 'Sns', 'Message', 'foo'],
-              message: 'Expected string, received number',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse SNS message at index 1'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 1, 'Sns', 'Message', 'foo'],
+                message: 'Invalid input: expected string, received number',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -152,21 +159,29 @@ describe('Envelope: SnsEnvelope', () => {
       );
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse SNS messages at indexes 0, 1', {
-          cause: new ZodError([
-            {
-              code: 'custom',
-              message: 'Invalid JSON',
-              path: ['Records', 0, 'Sns', 'Message'],
-            },
-            {
-              code: 'custom',
-              message: 'Invalid JSON',
-              path: ['Records', 1, 'Sns', 'Message'],
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse SNS messages at indexes 0, 1'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'custom',
+                message: expect.stringMatching(/^Invalid JSON - /),
+                fatal: true,
+                path: ['Records', 0, 'Sns', 'Message'],
+              },
+              {
+                code: 'custom',
+                message: expect.stringMatching(/^Invalid JSON - /),
+                fatal: true,
+                path: ['Records', 1, 'Sns', 'Message'],
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });

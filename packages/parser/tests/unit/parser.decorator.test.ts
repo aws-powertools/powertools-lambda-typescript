@@ -1,7 +1,7 @@
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import { type ZodSchema, z } from 'zod';
+import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
 import { ParseError } from '../../src/errors.js';
 import { parser } from '../../src/index.js';
@@ -64,9 +64,7 @@ describe('Decorator: parser', () => {
       return event;
     }
 
-    private async anotherMethod<T extends ZodSchema>(
-      event: z.infer<T>
-    ): Promise<z.infer<T>> {
+    private async anotherMethod(event: unknown): Promise<unknown> {
       return event;
     }
   }

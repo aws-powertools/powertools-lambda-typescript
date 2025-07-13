@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { SqsEvent } from '../types/schema.js';
 
 const SqsMsgAttributeDataTypeSchema = z.union([
   z.literal('String'),
@@ -96,11 +97,11 @@ const SqsRecordSchema = z.object({
  * }
  * ```
  *
- * @see {@link types.SqsEvent | SqsEvent}
+ * @see {@link SqsEvent | `SqsEvent`}
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#example-standard-queue-message-event}
  */
 const SqsSchema = z.object({
-  Records: z.array(SqsRecordSchema).min(1),
+  Records: z.array(SqsRecordSchema).nonempty(),
 });
 
 export {

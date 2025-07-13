@@ -5,16 +5,22 @@ export type {
   ParseFunction,
   ParserOptions,
 } from '../types/parser.js';
-export type { Envelope } from './envelope.js';
+export type {
+  ArrayEnvelope,
+  DynamoDBArrayEnvelope,
+  DynamoDBStreamEnvelopeResponse,
+  Envelope,
+  ObjectEnvelope,
+} from './envelope.js';
 
 export type {
   ALBEvent,
   APIGatewayEventRequestContext,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
+  APIGatewayProxyWebsocketEvent,
   APIGatewayRequestAuthorizerEvent,
-  APIGatewayRequestAuthorizerV2,
-  APIGatewayRequestContextV2,
+  APIGatewayRequestAuthorizerEventV2,
   APIGatewayTokenAuthorizerEvent,
   AppSyncBatchResolverEvent,
   AppSyncEventsPublishEvent,

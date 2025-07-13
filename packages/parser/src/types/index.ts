@@ -12,6 +12,7 @@ export type {
   APIGatewayEventRequestContext,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
+  APIGatewayProxyWebsocketEvent,
   APIGatewayRequestAuthorizerEvent,
   APIGatewayRequestAuthorizerEventV2,
   APIGatewayTokenAuthorizerEvent,

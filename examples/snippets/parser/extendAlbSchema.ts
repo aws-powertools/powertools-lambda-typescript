@@ -8,7 +8,7 @@ const customSchema = z.object({
 });
 
 const extendedSchema = AlbSchema.extend({
-  body: JSONStringified(customSchema),
+  body: JSONStringified(customSchema), // (1)!
 });
 
 type _ExtendedAlbEvent = z.infer<typeof extendedSchema>;

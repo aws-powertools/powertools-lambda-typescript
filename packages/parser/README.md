@@ -23,7 +23,7 @@ You can use the package in both TypeScript and JavaScript code bases.
 
 ## Intro
 
-This utility provides data validation and parsing for [Standard Schema](https://github.com/standard-schema/standard-schema), together with a collection of built-in [Zod](https://zod.dev) schemas and envelopes to parse and unwrap popular AWS event sources payloads.
+This utility provides data validation and parsing for [Standard Schema](https://github.com/standard-schema/standard-schema), together with a collection of built-in [Zod](https://zod.dev) schemas and envelopes to parse and unwrap popular AWS event source payloads.
 
 ## Key features
 

@@ -5,7 +5,13 @@ export type {
   ParseFunction,
   ParserOptions,
 } from '../types/parser.js';
-export type { ArrayEnvelope, Envelope, ObjectEnvelope } from './envelope.js';
+export type {
+  ArrayEnvelope,
+  DynamoDBArrayEnvelope,
+  DynamoDBStreamEnvelopeResponse,
+  Envelope,
+  ObjectEnvelope,
+} from './envelope.js';
 
 export type {
   ALBEvent,

@@ -1,6 +1,11 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { ParseError } from './errors.js';
-import type { ArrayEnvelope, Envelope } from './types/index.js';
+import type {
+  ArrayEnvelope,
+  DynamoDBArrayEnvelope,
+  DynamoDBStreamEnvelopeResponse,
+  Envelope,
+} from './types/index.js';
 import type { InferOutput, ParsedResult } from './types/parser.js';
 
 /**
@@ -57,7 +62,11 @@ function parse<T extends StandardSchemaV1, E extends Envelope>(
   envelope: E,
   schema: T,
   safeParse?: false
-): E extends ArrayEnvelope ? InferOutput<T>[] : InferOutput<T>;
+): E extends DynamoDBArrayEnvelope
+  ? DynamoDBStreamEnvelopeResponse<InferOutput<T>>[]
+  : E extends ArrayEnvelope
+    ? InferOutput<T>[]
+    : InferOutput<T>;
 
 // With envelope, with safeParse
 function parse<T extends StandardSchemaV1, E extends Envelope>(
@@ -65,9 +74,11 @@ function parse<T extends StandardSchemaV1, E extends Envelope>(
   envelope: E,
   schema: T,
   safeParse: true
-): E extends ArrayEnvelope
-  ? ParsedResult<unknown, InferOutput<T>[]>
-  : ParsedResult<unknown, InferOutput<T>>;
+): E extends DynamoDBArrayEnvelope
+  ? ParsedResult<unknown, DynamoDBStreamEnvelopeResponse<InferOutput<T>>[]>
+  : E extends ArrayEnvelope
+    ? ParsedResult<unknown, InferOutput<T>[]>
+    : ParsedResult<unknown, InferOutput<T>>;
 
 // No envelope, with boolean | undefined safeParse
 function parse<T extends StandardSchemaV1>(
@@ -83,9 +94,13 @@ function parse<T extends StandardSchemaV1, E extends Envelope>(
   envelope: E,
   schema: T,
   safeParse?: boolean
-): E extends ArrayEnvelope
-  ? InferOutput<T>[] | ParsedResult<unknown, InferOutput<T>[]>
-  : InferOutput<T> | ParsedResult<unknown, InferOutput<T>>;
+): E extends DynamoDBArrayEnvelope
+  ?
+      | DynamoDBStreamEnvelopeResponse<InferOutput<T>>[]
+      | ParsedResult<unknown, DynamoDBStreamEnvelopeResponse<InferOutput<T>>[]>
+  : E extends ArrayEnvelope
+    ? InferOutput<T>[] | ParsedResult<unknown, InferOutput<T>[]>
+    : InferOutput<T> | ParsedResult<unknown, InferOutput<T>>;
 
 // Implementation
 function parse<T extends StandardSchemaV1, E extends Envelope>(

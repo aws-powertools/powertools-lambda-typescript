@@ -20,7 +20,7 @@ export const DynamoDBStreamEnvelope = {
   parse<T>(
     data: unknown,
     schema: ZodType<T>
-  ): DynamoDBStreamEnvelopeResponse<ZodType<T>>[] {
+  ): DynamoDBStreamEnvelopeResponse<T>[] {
     const parsedEnvelope = DynamoDBStreamSchema.parse(data);
 
     const processImage = (
@@ -60,7 +60,7 @@ export const DynamoDBStreamEnvelope = {
   safeParse<T>(
     data: unknown,
     schema: ZodType<T>
-  ): ParsedResult<unknown, DynamoDBStreamEnvelopeResponse<ZodType<T>>[]> {
+  ): ParsedResult<unknown, DynamoDBStreamEnvelopeResponse<T>[]> {
     const parsedEnvelope = DynamoDBStreamSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {
@@ -77,7 +77,7 @@ export const DynamoDBStreamEnvelope = {
 
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
-      records: DynamoDBStreamEnvelopeResponse<ZodType<T>>[];
+      records: DynamoDBStreamEnvelopeResponse<T>[];
       errors: { [key: number]: { issues: z.core.$ZodIssue[] } };
     }>(
       (acc, record, index) => {

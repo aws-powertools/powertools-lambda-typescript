@@ -1,14 +1,26 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { isRecord } from '@aws-lambda-powertools/commons/typeutils';
 import {
   getStringFromEnv,
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
-import type { GenericLogger } from '../types/appsync-events.js';
+import type { Context } from 'aws-lambda';
+import type { ResolveOptions } from '../types/index.js';
 import type {
   RouteHandler,
   RouteOptions,
   RouterOptions,
 } from '../types/rest.js';
+
+const HttpVerbs = [
+  'GET',
+  'POST',
+  'PUT',
+  'PATCH',
+  'DELETE',
+  'HEAD',
+  'OPTIONS',
+] as const;
 
 abstract class BaseRouter {
   protected context: Record<string, unknown>; // TODO: should this be a map instead?
@@ -37,7 +49,31 @@ abstract class BaseRouter {
     this.isDev = isDevMode();
   }
 
+  public abstract resolve(
+    event: unknown,
+    context: Context,
+    options?: ResolveOptions
+  ): Promise<unknown>;
+
   public abstract route(handler: RouteHandler, options: RouteOptions): void;
+
+  #handleHttpMethod(
+    method: (typeof HttpVerbs)[number],
+    path: string,
+    handler?: RouteHandler | RouteOptions,
+    options?: RouteOptions
+  ): MethodDecorator | undefined {
+    if (handler && typeof handler === 'function') {
+      this.route(handler, { ...(options || {}), method, path });
+      return;
+    }
+
+    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+      const routeOptions = isRecord(handler) ? handler : options;
+      this.route(descriptor.value, { ...(routeOptions || {}), method, path });
+      return descriptor;
+    };
+  }
 
   public get(path: string, handler: RouteHandler, options?: RouteOptions): void;
   public get(path: string, options?: RouteOptions): MethodDecorator;
@@ -46,24 +82,73 @@ abstract class BaseRouter {
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
-    if (handler && typeof handler === 'function') {
-      this.route(handler, {
-        ...(options || {}),
-        method: 'GET',
-        path,
-      });
-      return;
-    }
+    return this.#handleHttpMethod('GET', path, handler, options);
+  }
 
-    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-      const routeOptions = isRecord(handler) ? handler : options;
-      this.route(descriptor.value, {
-        ...(routeOptions || {}),
-        method: 'GET',
-        path,
-      });
-      return descriptor;
-    };
+  public post(
+    path: string,
+    handler: RouteHandler,
+    options?: RouteOptions
+  ): void;
+  public post(path: string, options?: RouteOptions): MethodDecorator;
+  public post(
+    path: string,
+    handler?: RouteHandler | RouteOptions,
+    options?: RouteOptions
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod('POST', path, handler, options);
+  }
+
+  public put(path: string, handler: RouteHandler, options?: RouteOptions): void;
+  public put(path: string, options?: RouteOptions): MethodDecorator;
+  public put(
+    path: string,
+    handler?: RouteHandler | RouteOptions,
+    options?: RouteOptions
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod('PUT', path, handler, options);
+  }
+
+  public patch(
+    path: string,
+    handler: RouteHandler,
+    options?: RouteOptions
+  ): void;
+  public patch(path: string, options?: RouteOptions): MethodDecorator;
+  public patch(
+    path: string,
+    handler?: RouteHandler | RouteOptions,
+    options?: RouteOptions
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod('PATCH', path, handler, options);
+  }
+
+  public delete(
+    path: string,
+    handler: RouteHandler,
+    options?: RouteOptions
+  ): void;
+  public delete(path: string, options?: RouteOptions): MethodDecorator;
+  public delete(
+    path: string,
+    handler?: RouteHandler | RouteOptions,
+    options?: RouteOptions
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod('DELETE', path, handler, options);
+  }
+
+  public head(
+    path: string,
+    handler: RouteHandler,
+    options?: RouteOptions
+  ): void;
+  public head(path: string, options?: RouteOptions): MethodDecorator;
+  public head(
+    path: string,
+    handler?: RouteHandler | RouteOptions,
+    options?: RouteOptions
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod('HEAD', path, handler, options);
   }
 }
 

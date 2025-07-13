@@ -1,5 +1,5 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { BaseRouter } from '../rest/BaseRouter.js';
-import type { GenericLogger } from './appsync-events.js';
 
 /**
  * Options for the {@link BaseRouter} class

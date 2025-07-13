@@ -43,7 +43,7 @@ npm install @aws-lambda-powertools/parser zod
 
 You can parse inbound events using the `parser` decorator, Middy.js middleware, or [manually](#manual-parsing) using built-in envelopes and schemas.
 
-When using the decorator or middleware, you can specify a schema to parse the event, this can be a [built-in Zod schema](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser/#built-in-schemas) or a custom schema you defined. Custom schemas can be defined using Zod or any other [Standard Schema compatible library](https://standardschema.dev/#what-schema-libraries-implement-the-spec).
+When using the decorator or middleware, you can specify a schema to parse the event: this can be a [built-in Zod schema](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser/#built-in-schemas) or a custom schema you defined. Custom schemas can be defined using Zod or any other [Standard Schema compatible library](https://standardschema.dev/#what-schema-libraries-implement-the-spec).
 
 ### Middy.js Middleware
 

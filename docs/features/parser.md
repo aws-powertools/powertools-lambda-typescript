@@ -40,7 +40,7 @@ When using the decorator or middleware, you can specify a schema to parse the ev
 === "Decorator"
     !!! warning
         The decorator and middleware will replace the event object with the parsed schema if successful.
-        Be cautious when using multiple decorators that expect event to have a specific structure, the order of evaluation for decorators is from the inner to the outermost decorator.
+        Be cautious when using multiple decorators that expect an event to have a specific structure, the order of evaluation for decorators is from the inner to the outermost decorator.
 
     ```typescript hl_lines="25"
     --8<-- "examples/snippets/parser/decorator.ts"

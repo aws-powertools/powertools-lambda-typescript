@@ -321,7 +321,7 @@ The package `@types/aws-lambda` is a popular project that contains type definiti
 
 We recommend using the types provided by the Parser utility under `@aws-powertools/parser/types` when using the built-in schemas and envelopes, as they are inferred directly from the Zod schemas and are more accurate.
 
-If you encounter any issues with the types of compatibility issues with `@types/aws-lambda`, please [submit an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose).
+If you encounter any type compatibility issues with `@types/aws-lambda`, please [submit an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose).
 
 ## Testing your code
 

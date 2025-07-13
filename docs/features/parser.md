@@ -317,7 +317,7 @@ Use `z.infer` to extract the type of the schema, so you can use types during dev
 
 ### Compatibility with `@types/aws-lambda`
 
-The package `@types/aws-lambda` is a popular project that contains type definitions for many AWS service event invocations, support for these types is provided as best effort.
+The package `@types/aws-lambda` is a popular project that contains type definitions for many AWS service event invocations, support for these types is provided on a best effort basis.
 
 We recommend to use the types provided by the Parser utility under `@aws-powertools/parser/types` when using the built-in schemas and envelopes, as they are more inferred directly from the Zod schemas and are more accurate.
 

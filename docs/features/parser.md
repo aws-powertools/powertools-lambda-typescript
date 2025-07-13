@@ -218,7 +218,7 @@ We have also complex envelopes that parse the payload from a string, decode base
 Parser comes with the following built-in Zod envelopes:
 
 !!! note "Looking for other libraries?"
-    The built-in schemas are built using Zod, if you would like us to support other libraries like [valibot](https://valibot.dev){target="_blank"} please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=feature_request.yml){target="_blank"} and we will consider it based on the community feedback.
+    The built-in schemas are defined using Zod, if you would like us to support other libraries like [valibot](https://valibot.dev){target="_blank"} please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=feature_request.yml){target="_blank"} and we will consider it based on the community's feedback.
 
 | Envelope name                 | Behaviour                                                                                                                                                                                                     |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

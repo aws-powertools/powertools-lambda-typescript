@@ -51,7 +51,7 @@ When using the decorator or middleware, you can specify a schema to parse the ev
 **Parser** comes with the following built-in Zod schemas:
 
 !!! note "Looking for other libraries?"
-    The built-in schemas are built using Zod, if you would like us to support other libraries like [valibot](https://valibot.dev){target="_blank"} please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=feature_request.yml){target="_blank"} and we will consider it based on the community feedback.
+    The built-in schemas are defined using Zod, if you would like us to support other libraries like [valibot](https://valibot.dev){target="_blank"} please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=feature_request.yml){target="_blank"} and we will consider it based on the community's feedback.
 
 | Model name                                   | Description                                                                           |
 | -------------------------------------------- | ------------------------------------------------------------------------------------- |

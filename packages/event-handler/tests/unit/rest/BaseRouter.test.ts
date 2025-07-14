@@ -67,8 +67,8 @@ describe('Class: BaseRouter', () => {
       app[
         verb as 'get' | 'post' | 'put' | 'patch' | 'delete' | 'head'
       ] as Function
-    )('test', () => `${verb}-test`);
-    const actual = await app.resolve({ path: 'test', method }, context);
+    )('/test', () => `${verb}-test`);
+    const actual = await app.resolve({ path: '/test', method }, context);
     expect(actual).toEqual(`${verb}-test`);
   });
 
@@ -107,32 +107,32 @@ describe('Class: BaseRouter', () => {
     const app = new TestResolver();
 
     class Lambda {
-      @app.get('test', {})
+      @app.get('/test', {})
       public async getTest() {
         return 'get-test';
       }
 
-      @app.post('test')
+      @app.post('/test')
       public async postTest() {
         return 'post-test';
       }
 
-      @app.put('test')
+      @app.put('/test')
       public async putTest() {
         return 'put-test';
       }
 
-      @app.patch('test')
+      @app.patch('/test')
       public async patchTest() {
         return 'patch-test';
       }
 
-      @app.delete('test')
+      @app.delete('/test')
       public async deleteTest() {
         return 'delete-test';
       }
 
-      @app.head('test')
+      @app.head('/test')
       public async headTest() {
         return 'head-test';
       }
@@ -151,7 +151,7 @@ describe('Class: BaseRouter', () => {
       ['HEAD', 'head-test'],
     ])('should route %s requests with decorators', async (method, expected) => {
       const lambda = new Lambda();
-      const actual = await lambda.handler({ path: 'test', method }, context);
+      const actual = await lambda.handler({ path: '/test', method }, context);
       expect(actual).toEqual(expected);
     });
   });

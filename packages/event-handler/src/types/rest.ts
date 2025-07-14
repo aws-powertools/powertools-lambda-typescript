@@ -19,9 +19,11 @@ type RouteHandler<T = any, R = any> = (...args: T[]) => R;
 
 type HttpMethod = (typeof HttpVerbs)[number];
 
+type Path = `/${string}`;
+
 type RouteOptions = {
   method?: HttpMethod;
-  path?: `/${string}`;
+  path?: Path;
 };
 
-export type { HttpMethod, RouterOptions, RouteHandler, RouteOptions };
+export type { HttpMethod, Path, RouterOptions, RouteHandler, RouteOptions };

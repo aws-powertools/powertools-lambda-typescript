@@ -8,6 +8,7 @@ import type { Context } from 'aws-lambda';
 import type { ResolveOptions } from '../types/index.js';
 import type {
   HttpMethod,
+  Path,
   RouteHandler,
   RouteOptions,
   RouterOptions,
@@ -50,7 +51,7 @@ abstract class BaseRouter {
 
   #handleHttpMethod(
     method: HttpMethod,
-    path: string,
+    path: Path,
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
@@ -69,45 +70,37 @@ abstract class BaseRouter {
   public get(path: string, handler: RouteHandler, options?: RouteOptions): void;
   public get(path: string, options?: RouteOptions): MethodDecorator;
   public get(
-    path: string,
+    path: Path,
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod('GET', path, handler, options);
   }
 
+  public post(path: Path, handler: RouteHandler, options?: RouteOptions): void;
+  public post(path: Path, options?: RouteOptions): MethodDecorator;
   public post(
-    path: string,
-    handler: RouteHandler,
-    options?: RouteOptions
-  ): void;
-  public post(path: string, options?: RouteOptions): MethodDecorator;
-  public post(
-    path: string,
+    path: Path,
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod('POST', path, handler, options);
   }
 
-  public put(path: string, handler: RouteHandler, options?: RouteOptions): void;
-  public put(path: string, options?: RouteOptions): MethodDecorator;
+  public put(path: Path, handler: RouteHandler, options?: RouteOptions): void;
+  public put(path: Path, options?: RouteOptions): MethodDecorator;
   public put(
-    path: string,
+    path: Path,
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod('PUT', path, handler, options);
   }
 
+  public patch(path: Path, handler: RouteHandler, options?: RouteOptions): void;
+  public patch(path: Path, options?: RouteOptions): MethodDecorator;
   public patch(
-    path: string,
-    handler: RouteHandler,
-    options?: RouteOptions
-  ): void;
-  public patch(path: string, options?: RouteOptions): MethodDecorator;
-  public patch(
-    path: string,
+    path: Path,
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
@@ -115,27 +108,23 @@ abstract class BaseRouter {
   }
 
   public delete(
-    path: string,
+    path: Path,
     handler: RouteHandler,
     options?: RouteOptions
   ): void;
-  public delete(path: string, options?: RouteOptions): MethodDecorator;
+  public delete(path: Path, options?: RouteOptions): MethodDecorator;
   public delete(
-    path: string,
+    path: Path,
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod('DELETE', path, handler, options);
   }
 
+  public head(path: Path, handler: RouteHandler, options?: RouteOptions): void;
+  public head(path: Path, options?: RouteOptions): MethodDecorator;
   public head(
-    path: string,
-    handler: RouteHandler,
-    options?: RouteOptions
-  ): void;
-  public head(path: string, options?: RouteOptions): MethodDecorator;
-  public head(
-    path: string,
+    path: Path,
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {

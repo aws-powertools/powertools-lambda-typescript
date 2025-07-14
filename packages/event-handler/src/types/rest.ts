@@ -17,7 +17,7 @@ type RouterOptions = {
 // biome-ignore lint/suspicious/noExplicitAny: we want to keep arguments and return types as any to accept any type of function
 type RouteHandler<T = any, R = any> = (...args: T[]) => R;
 
-type HttpMethod = (typeof HttpVerbs)[number];
+type HttpMethod = keyof typeof HttpVerbs;
 
 type Path = `/${string}`;
 

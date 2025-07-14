@@ -13,6 +13,7 @@ import type {
   RouteOptions,
   RouterOptions,
 } from '../types/rest.js';
+import { HttpVerbs } from './constatnts.js';
 
 abstract class BaseRouter {
   protected context: Record<string, unknown>;
@@ -74,7 +75,7 @@ abstract class BaseRouter {
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod('GET', path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.GET, path, handler, options);
   }
 
   public post(path: Path, handler: RouteHandler, options?: RouteOptions): void;
@@ -84,7 +85,7 @@ abstract class BaseRouter {
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod('POST', path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.POST, path, handler, options);
   }
 
   public put(path: Path, handler: RouteHandler, options?: RouteOptions): void;
@@ -94,7 +95,7 @@ abstract class BaseRouter {
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod('PUT', path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.PUT, path, handler, options);
   }
 
   public patch(path: Path, handler: RouteHandler, options?: RouteOptions): void;
@@ -104,7 +105,7 @@ abstract class BaseRouter {
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod('PATCH', path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.PATCH, path, handler, options);
   }
 
   public delete(
@@ -118,7 +119,7 @@ abstract class BaseRouter {
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod('DELETE', path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.DELETE, path, handler, options);
   }
 
   public head(path: Path, handler: RouteHandler, options?: RouteOptions): void;
@@ -128,7 +129,7 @@ abstract class BaseRouter {
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod('HEAD', path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.HEAD, path, handler, options);
   }
 }
 

@@ -89,7 +89,7 @@ describe('Class: BaseRouter', () => {
     expect(console.warn).toHaveBeenCalledWith('test warn');
   });
 
-  it('should use console.debug in DEBUG mode when logger is not provided', () => {
+  it('emits debug logs using global console when the log level is set to `DEBUG` and a logger is not provided', () => {
     // Prepare
     vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
     

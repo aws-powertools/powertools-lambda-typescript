@@ -7,6 +7,7 @@ import {
   getXRayTraceIdFromEnv,
   isDevMode,
   isRequestXRaySampled,
+  isValueTrue,
 } from '../../src/envUtils.js';
 
 describe('Functions: envUtils', () => {
@@ -329,5 +330,32 @@ describe('Functions: envUtils', () => {
       // Assess
       expect(value).toEqual(false);
     });
+  });
+
+  describe('Function: isValueTrue', () => {
+    const valuesToTest: Array<Array<string | boolean>> = [
+      ['1', true],
+      ['y', true],
+      ['yes', true],
+      ['t', true],
+      ['TRUE', true],
+      ['on', true],
+      ['', false],
+      ['false', false],
+      ['fasle', false],
+      ['somethingsilly', false],
+      ['0', false],
+    ];
+
+    it.each(valuesToTest)(
+      'takes string "%s" and returns %s',
+      (input, output) => {
+        // Prepare
+        // Act
+        const value = isValueTrue(input as string);
+        // Assess
+        expect(value).toBe(output);
+      }
+    );
   });
 });

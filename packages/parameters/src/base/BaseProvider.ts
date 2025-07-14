@@ -5,7 +5,6 @@ import {
   isSdkClient,
   isString,
 } from '@aws-lambda-powertools/commons';
-import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import { GetParameterError, TransformParameterError } from '../errors.js';
 import type {
   BaseProviderConstructorOptions,
@@ -38,7 +37,6 @@ import { transformValue } from './transformValue.js';
  * this should be an acceptable tradeoff.
  */
 abstract class BaseProvider implements BaseProviderInterface {
-  public envVarsService: EnvironmentVariablesService;
   protected client: unknown;
   protected store: Map<string, ExpirableValue>;
 
@@ -48,7 +46,6 @@ abstract class BaseProvider implements BaseProviderInterface {
     awsSdkV3ClientPrototype,
   }: BaseProviderConstructorOptions) {
     this.store = new Map();
-    this.envVarsService = new EnvironmentVariablesService();
     if (awsSdkV3Client) {
       if (!isSdkClient(awsSdkV3Client) && awsSdkV3ClientPrototype) {
         console.warn(
@@ -96,7 +93,7 @@ abstract class BaseProvider implements BaseProviderInterface {
     name: string,
     options?: GetOptionsInterface
   ): Promise<unknown | undefined> {
-    const configs = new GetOptions(this.envVarsService, options);
+    const configs = new GetOptions(options);
     const key = [name, configs.transform].toString();
 
     if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
@@ -135,7 +132,7 @@ abstract class BaseProvider implements BaseProviderInterface {
     path: string,
     options?: GetMultipleOptionsInterface
   ): Promise<unknown> {
-    const configs = new GetMultipleOptions(this.envVarsService, options);
+    const configs = new GetMultipleOptions(options);
     const key = [path, configs.transform].toString();
 
     if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {

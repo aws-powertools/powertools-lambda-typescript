@@ -90,8 +90,14 @@ describe('Class: BaseRouter', () => {
   });
 
   it('should use console.debug in DEBUG mode when logger is not provided', () => {
+    // Prepare
     vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
-    new TestResolver();
+    
+    // Act
+    const app = new TestResolver();
+    app.route(() => true, { path: '/', method: 'get' });
+    
+    // Assess
     expect(console.debug).toHaveBeenCalledWith('test debug');
     expect(console.error).toHaveBeenCalledWith('test error');
     expect(console.warn).toHaveBeenCalledWith('test warn');

@@ -61,7 +61,7 @@ describe('Class: BaseRouter', () => {
     ['PATCH', 'patch'],
     ['DELETE', 'delete'],
     ['HEAD', 'head'],
-  ])('should route %s requests', async (method, verb) => {
+  ])('routes %s requests', async (method, verb) => {
     const app = new TestResolver();
     (
       app[

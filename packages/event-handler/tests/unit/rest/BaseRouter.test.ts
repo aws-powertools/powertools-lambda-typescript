@@ -79,7 +79,11 @@ describe('Class: BaseRouter', () => {
   });
 
   it('uses the global console when no logger is not provided', () => {
-    new TestResolver();
+    // Act
+    const app = new TestResolver();
+    app.route(() => true, { path: '/', method: 'get' });
+    
+    // Assess
     expect(console.debug).not.toHaveBeenCalled();
     expect(console.error).toHaveBeenCalledWith('test error');
     expect(console.warn).toHaveBeenCalledWith('test warn');

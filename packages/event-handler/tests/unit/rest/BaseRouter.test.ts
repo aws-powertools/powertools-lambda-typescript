@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
 import type { ResolveOptions } from '../../../src/types/index.js';
 import type {
+  HttpMethod,
   RouteHandler,
   RouteOptions,
   RouterOptions,
@@ -62,13 +63,16 @@ describe('Class: BaseRouter', () => {
     ['DELETE', 'delete'],
     ['HEAD', 'head'],
   ])('routes %s requests', async (method, verb) => {
+    // Prepare
     const app = new TestResolver();
     (
       app[
         verb as 'get' | 'post' | 'put' | 'patch' | 'delete' | 'head'
       ] as Function
     )('/test', () => `${verb}-test`);
+    // Act
     const actual = await app.resolve({ path: '/test', method }, context);
+    // Assess
     expect(actual).toEqual(`${verb}-test`);
   });
 
@@ -149,9 +153,12 @@ describe('Class: BaseRouter', () => {
       ['PATCH', 'patch-test'],
       ['DELETE', 'delete-test'],
       ['HEAD', 'head-test'],
-    ])('should route %s requests with decorators', async (method, expected) => {
+    ])('routes %s requests with decorators', async (method, expected) => {
+      // Prepare
       const lambda = new Lambda();
+      // Act
       const actual = await lambda.handler({ path: '/test', method }, context);
+      // Assess
       expect(actual).toEqual(expected);
     });
   });

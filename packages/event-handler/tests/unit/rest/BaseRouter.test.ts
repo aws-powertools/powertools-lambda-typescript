@@ -9,7 +9,7 @@ import type {
   RouterOptions,
 } from '../../../src/types/rest.js';
 
-describe('BaseRouter', () => {
+describe('Class: BaseRouter', () => {
   class TestResolver extends BaseRouter {
     public readonly handlers: Map<string, RouteHandler> = new Map();
 
@@ -73,7 +73,7 @@ describe('BaseRouter', () => {
   });
 
   it('should use console.warn and console,error when logger is not provided', () => {
-    const app = new TestResolver();
+    new TestResolver();
     expect(console.debug).not.toHaveBeenCalled();
     expect(console.error).toHaveBeenCalledWith('test error');
     expect(console.warn).toHaveBeenCalledWith('test warn');
@@ -81,7 +81,7 @@ describe('BaseRouter', () => {
 
   it('should use console.debug in DEBUG mode when logger is not provided', () => {
     vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
-    const app = new TestResolver();
+    new TestResolver();
     expect(console.debug).toHaveBeenCalledWith('test debug');
     expect(console.error).toHaveBeenCalledWith('test error');
     expect(console.warn).toHaveBeenCalledWith('test warn');
@@ -97,7 +97,7 @@ describe('BaseRouter', () => {
       error: vi.fn(),
     };
 
-    const app = new TestResolver({ logger });
+    new TestResolver({ logger });
     expect(logger.error).toHaveBeenCalledWith('test error');
     expect(logger.warn).toHaveBeenCalledWith('test warn');
     expect(logger.debug).toHaveBeenCalledWith('test debug');

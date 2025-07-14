@@ -7,23 +7,14 @@ import {
 import type { Context } from 'aws-lambda';
 import type { ResolveOptions } from '../types/index.js';
 import type {
+  HttpMethod,
   RouteHandler,
   RouteOptions,
   RouterOptions,
 } from '../types/rest.js';
 
-const HttpVerbs = [
-  'GET',
-  'POST',
-  'PUT',
-  'PATCH',
-  'DELETE',
-  'HEAD',
-  'OPTIONS',
-] as const;
-
 abstract class BaseRouter {
-  protected context: Record<string, unknown>; // TODO: should this be a map instead?
+  protected context: Record<string, unknown>;
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
    *
@@ -58,7 +49,7 @@ abstract class BaseRouter {
   public abstract route(handler: RouteHandler, options: RouteOptions): void;
 
   #handleHttpMethod(
-    method: (typeof HttpVerbs)[number],
+    method: HttpMethod,
     path: string,
     handler?: RouteHandler | RouteOptions,
     options?: RouteOptions

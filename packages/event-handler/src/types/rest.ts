@@ -1,5 +1,6 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { BaseRouter } from '../rest/BaseRouter.js';
+import type { HttpVerbs } from '../rest/constatnts.js';
 
 /**
  * Options for the {@link BaseRouter} class
@@ -16,9 +17,11 @@ type RouterOptions = {
 // biome-ignore lint/suspicious/noExplicitAny: we want to keep arguments and return types as any to accept any type of function
 type RouteHandler<T = any, R = any> = (...args: T[]) => R;
 
+type HttpMethod = (typeof HttpVerbs)[number];
+
 type RouteOptions = {
-  method?: string;
-  path?: string;
+  method?: HttpMethod;
+  path?: `/${string}`;
 };
 
-export type { RouterOptions, RouteHandler, RouteOptions };
+export type { HttpMethod, RouterOptions, RouteHandler, RouteOptions };

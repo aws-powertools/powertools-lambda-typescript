@@ -103,7 +103,7 @@ describe('Class: BaseRouter', () => {
     expect(console.warn).toHaveBeenCalledWith('test warn');
   });
 
-  it('should use custom logger when provided', () => {
+  it('uses a custom logger when provided', () => {
     vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
 
     const logger = {

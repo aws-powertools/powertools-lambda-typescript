@@ -104,8 +104,8 @@ describe('Class: BaseRouter', () => {
   });
 
   it('uses a custom logger when provided', () => {
+    // Prepare
     vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
-
     const logger = {
       debug: vi.fn(),
       info: vi.fn(),
@@ -113,7 +113,11 @@ describe('Class: BaseRouter', () => {
       error: vi.fn(),
     };
 
-    new TestResolver({ logger });
+    // Act
+    const app = new TestResolver({ logger });
+    app.route(() => true, { path: '/', method: 'get' });
+    
+    // Assess
     expect(logger.error).toHaveBeenCalledWith('test error');
     expect(logger.warn).toHaveBeenCalledWith('test warn');
     expect(logger.debug).toHaveBeenCalledWith('test debug');

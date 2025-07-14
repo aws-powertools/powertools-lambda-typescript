@@ -78,7 +78,7 @@ describe('Class: BaseRouter', () => {
     expect(actual).toEqual(`${verb}-test`);
   });
 
-  it('should use console.warn and console,error when logger is not provided', () => {
+  it('uses the global console when no logger is not provided', () => {
     new TestResolver();
     expect(console.debug).not.toHaveBeenCalled();
     expect(console.error).toHaveBeenCalledWith('test error');

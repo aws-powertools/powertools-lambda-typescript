@@ -131,6 +131,44 @@ abstract class BaseRouter {
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(HttpVerbs.HEAD, path, handler, options);
   }
+
+  public options(
+    path: Path,
+    handler: RouteHandler,
+    options?: RouteOptions
+  ): void;
+  public options(path: Path, options?: RouteOptions): MethodDecorator;
+  public options(
+    path: Path,
+    handler?: RouteHandler | RouteOptions,
+    options?: RouteOptions
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod(HttpVerbs.OPTIONS, path, handler, options);
+  }
+
+  public connect(
+    path: Path,
+    handler: RouteHandler,
+    options?: RouteOptions
+  ): void;
+  public connect(path: Path, options?: RouteOptions): MethodDecorator;
+  public connect(
+    path: Path,
+    handler?: RouteHandler | RouteOptions,
+    options?: RouteOptions
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod(HttpVerbs.CONNECT, path, handler, options);
+  }
+
+  public trace(path: Path, handler: RouteHandler, options?: RouteOptions): void;
+  public trace(path: Path, options?: RouteOptions): MethodDecorator;
+  public trace(
+    path: Path,
+    handler?: RouteHandler | RouteOptions,
+    options?: RouteOptions
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod(HttpVerbs.TRACE, path, handler, options);
+  }
 }
 
 export { BaseRouter };

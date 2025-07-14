@@ -62,14 +62,16 @@ describe('Class: BaseRouter', () => {
     ['PATCH', 'patch'],
     ['DELETE', 'delete'],
     ['HEAD', 'head'],
+    ['OPTIONS', 'options'],
+    ['TRACE', 'trace'],
+    ['CONNECT', 'connect'],
   ])('routes %s requests', async (method, verb) => {
     // Prepare
     const app = new TestResolver();
-    (
-      app[
-        verb as 'get' | 'post' | 'put' | 'patch' | 'delete' | 'head'
-      ] as Function
-    )('/test', () => `${verb}-test`);
+    (app[verb as Lowercase<HttpMethod>] as Function)(
+      '/test',
+      () => `${verb}-test`
+    );
     // Act
     const actual = await app.resolve({ path: '/test', method }, context);
     // Assess
@@ -141,6 +143,21 @@ describe('Class: BaseRouter', () => {
         return 'head-test';
       }
 
+      @app.options('/test')
+      public async optionsTest() {
+        return 'options-test';
+      }
+
+      @app.trace('/test')
+      public async traceTest() {
+        return 'trace-test';
+      }
+
+      @app.connect('/test')
+      public async connectTest() {
+        return 'connect-test';
+      }
+
       public async handler(event: unknown, context: Context) {
         return app.resolve(event, context, {});
       }
@@ -153,6 +170,9 @@ describe('Class: BaseRouter', () => {
       ['PATCH', 'patch-test'],
       ['DELETE', 'delete-test'],
       ['HEAD', 'head-test'],
+      ['OPTIONS', 'options-test'],
+      ['TRACE', 'trace-test'],
+      ['CONNECT', 'connect-test'],
     ])('routes %s requests with decorators', async (method, expected) => {
       // Prepare
       const lambda = new Lambda();

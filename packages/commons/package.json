@@ -1,115 +1,115 @@
 {
-  "name": "@aws-lambda-powertools/commons",
-  "version": "2.23.0",
-  "description": "A shared utility package for Powertools for AWS Lambda (TypeScript) libraries",
-  "author": {
-    "name": "Amazon Web Services",
-    "url": "https://aws.amazon.com"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "test": "vitest --run",
-    "test:unit": "vitest --run",
-    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
-    "test:unit:types": "vitest --run tests/types --typecheck",
-    "test:e2e": "echo 'Not Applicable'",
-    "generateVersionFile": "echo \"// this file is auto generated, do not modify\nexport const PT_VERSION = '$(jq -r '.version' package.json)';\" > src/version.ts",
-    "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
-    "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
-    "build": "npm run build:esm & npm run build:cjs",
-    "lint": "biome lint .",
-    "lint:fix": "biome check --write .",
-    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
-  },
-  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/commons#readme",
-  "license": "MIT-0",
-  "type": "module",
-  "exports": {
-    ".": {
-      "require": {
-        "types": "./lib/cjs/index.d.ts",
-        "default": "./lib/cjs/index.js"
-      },
-      "import": {
-        "types": "./lib/esm/index.d.ts",
-        "default": "./lib/esm/index.js"
-      }
-    },
-    "./typeutils": {
-      "import": "./lib/esm/typeUtils.js",
-      "require": "./lib/cjs/typeUtils.js"
-    },
-    "./utils/base64": {
-      "import": "./lib/esm/fromBase64.js",
-      "require": "./lib/cjs/fromBase64.js"
-    },
-    "./utils/lru-cache": {
-      "import": "./lib/esm/LRUCache.js",
-      "require": "./lib/cjs/LRUCache.js"
-    },
-    "./utils/unmarshallDynamoDB": {
-      "import": "./lib/esm/unmarshallDynamoDB.js",
-      "require": "./lib/cjs/unmarshallDynamoDB.js"
-    },
-    "./utils/env": {
-      "import": "./lib/esm/envUtils.js",
-      "require": "./lib/cjs/envUtils.js"
-    },
-    "./types": {
-      "import": "./lib/esm/types/index.js",
-      "require": "./lib/cjs/types/index.js"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "typeutils": [
-        "lib/cjs/typeUtils.d.ts",
-        "lib/esm/typeUtils.d.ts"
-      ],
-      "utils/base64": [
-        "lib/cjs/fromBase64.d.ts",
-        "lib/esm/fromBase64.d.ts"
-      ],
-      "utils/lru-cache": [
-        "lib/cjs/LRUCache.d.ts",
-        "lib/esm/LRUCache.d.ts"
-      ],
-      "utils/unmarshallDynamoDB": [
-        "lib/cjs/unmarshallDynamoDB.d.ts",
-        "lib/esm/unmarshallDynamoDB.d.ts"
-      ],
-      "utils/env": [
-        "lib/cjs/envUtils.d.ts",
-        "lib/esm/envUtils.d.ts"
-      ],
-      "types": [
-        "lib/cjs/types/index.d.ts",
-        "lib/esm/types/index.d.ts"
-      ]
-    }
-  },
-  "types": "./lib/cjs/index.d.ts",
-  "main": "./lib/cjs/index.js",
-  "files": [
-    "lib"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
-  },
-  "bugs": {
-    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
-  },
-  "keywords": [
-    "aws",
-    "lambda",
-    "powertools",
-    "serverless",
-    "nodejs"
-  ],
-  "devDependencies": {
-    "@aws-lambda-powertools/testing-utils": "file:../testing"
-  }
+	"name": "@aws-lambda-powertools/commons",
+	"version": "2.24.0",
+	"description": "A shared utility package for Powertools for AWS Lambda (TypeScript) libraries",
+	"author": {
+		"name": "Amazon Web Services",
+		"url": "https://aws.amazon.com"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"test": "vitest --run",
+		"test:unit": "vitest --run",
+		"test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+		"test:unit:types": "vitest --run tests/types --typecheck",
+		"test:e2e": "echo 'Not Applicable'",
+		"generateVersionFile": "echo \"// this file is auto generated, do not modify\nexport const PT_VERSION = '$(jq -r '.version' package.json)';\" > src/version.ts",
+		"build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+		"build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+		"build": "npm run build:esm & npm run build:cjs",
+		"lint": "biome lint .",
+		"lint:fix": "biome check --write .",
+		"prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+	},
+	"homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/commons#readme",
+	"license": "MIT-0",
+	"type": "module",
+	"exports": {
+		".": {
+			"require": {
+				"types": "./lib/cjs/index.d.ts",
+				"default": "./lib/cjs/index.js"
+			},
+			"import": {
+				"types": "./lib/esm/index.d.ts",
+				"default": "./lib/esm/index.js"
+			}
+		},
+		"./typeutils": {
+			"import": "./lib/esm/typeUtils.js",
+			"require": "./lib/cjs/typeUtils.js"
+		},
+		"./utils/base64": {
+			"import": "./lib/esm/fromBase64.js",
+			"require": "./lib/cjs/fromBase64.js"
+		},
+		"./utils/lru-cache": {
+			"import": "./lib/esm/LRUCache.js",
+			"require": "./lib/cjs/LRUCache.js"
+		},
+		"./utils/unmarshallDynamoDB": {
+			"import": "./lib/esm/unmarshallDynamoDB.js",
+			"require": "./lib/cjs/unmarshallDynamoDB.js"
+		},
+		"./utils/env": {
+			"import": "./lib/esm/envUtils.js",
+			"require": "./lib/cjs/envUtils.js"
+		},
+		"./types": {
+			"import": "./lib/esm/types/index.js",
+			"require": "./lib/cjs/types/index.js"
+		}
+	},
+	"typesVersions": {
+		"*": {
+			"typeutils": [
+				"lib/cjs/typeUtils.d.ts",
+				"lib/esm/typeUtils.d.ts"
+			],
+			"utils/base64": [
+				"lib/cjs/fromBase64.d.ts",
+				"lib/esm/fromBase64.d.ts"
+			],
+			"utils/lru-cache": [
+				"lib/cjs/LRUCache.d.ts",
+				"lib/esm/LRUCache.d.ts"
+			],
+			"utils/unmarshallDynamoDB": [
+				"lib/cjs/unmarshallDynamoDB.d.ts",
+				"lib/esm/unmarshallDynamoDB.d.ts"
+			],
+			"utils/env": [
+				"lib/cjs/envUtils.d.ts",
+				"lib/esm/envUtils.d.ts"
+			],
+			"types": [
+				"lib/cjs/types/index.d.ts",
+				"lib/esm/types/index.d.ts"
+			]
+		}
+	},
+	"types": "./lib/cjs/index.d.ts",
+	"main": "./lib/cjs/index.js",
+	"files": [
+		"lib"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+	},
+	"bugs": {
+		"url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+	},
+	"keywords": [
+		"aws",
+		"lambda",
+		"powertools",
+		"serverless",
+		"nodejs"
+	],
+	"devDependencies": {
+		"@aws-lambda-powertools/testing-utils": "file:../testing"
+	}
 }

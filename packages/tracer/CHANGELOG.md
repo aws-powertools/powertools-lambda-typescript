@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
+
+### Bug Fixes
+
+- skip tracing CONNECT requests ([#4148](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4148)) ([a147c3b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a147c3b46ff975ed3e94722e21e79e65ae2bbc78))
+
+### Improvements
+
+- replace class-based env access with functional helpers ([#4146](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4146)) ([51d9b98](https://github.com/aws-powertools/powertools-lambda-typescript/commit/51d9b988488aee01de337669dbfc68d0ab7af9dd))
 # [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
 
 **Note:** Version bump only for package @aws-lambda-powertools/tracer

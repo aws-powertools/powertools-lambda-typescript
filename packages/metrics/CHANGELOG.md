@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
+
+### Improvements
+
+- optimize `addDimensions` method to avoid O(n²) complexity ([#4156](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4156)) ([3982b4a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3982b4a6b25e82fa1b5001c73d238cf62eda1137))
+
+### Bug Fixes
+
+- addDimensions() documentation and tests ([#3964](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3964)) ([a801636](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a80163614e4a0ef7106beaa5cf91161d50a09fea))
 # [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
 
 **Note:** Version bump only for package @aws-lambda-powertools/metrics

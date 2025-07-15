@@ -1,57 +1,57 @@
 {
-  "name": "powertools-sample-app",
-  "version": "2.23.0",
-  "author": {
-    "name": "Amazon Web Services",
-    "url": "https://aws.amazon.com"
-  },
-  "private": true,
-  "description": "This project contains source code and supporting files for a serverless application that you can deploy with CDK.",
-  "license": "MIT-0",
-  "scripts": {
-    "build": "echo 'Not applicable, run `npx cdk synth` instead to build the stack'",
-    "test": "npm run test:unit",
-    "lint": "biome lint .",
-    "lint:fix": "biome check --write .",
-    "test:unit": "export POWERTOOLS_DEV=true && vitest --run --silent",
-    "test:e2e": "echo 'To be implemented ...'",
-    "cdk": "cdk"
-  },
-  "type": "module",
-  "imports": {
-    "#types": "./functions/commons/types.js",
-    "#constants": "./functions/commons/constants.js",
-    "#powertools": "./functions/commons/powertools/index.js",
-    "#powertools/*": "./functions/commons/powertools/*.js",
-    "#clients/*": "./functions/commons/clients/*.js",
-    "#helpers/*": "./functions/commons/helpers/*.js",
-    "#errors": "./functions/commons/errors.js"
-  },
-  "devDependencies": {
-    "@types/aws-lambda": "^8.10.150",
-    "@types/node": "24.0.13",
-    "aws-cdk-lib": "^2.204.0",
-    "constructs": "^10.4.2",
-    "source-map-support": "^0.5.21",
-    "tsx": "^4.20.3",
-    "typescript": "^5.8.3",
-    "vitest": "^3.0.5"
-  },
-  "dependencies": {
-    "@aws-lambda-powertools/batch": "^2.23.0",
-    "@aws-lambda-powertools/idempotency": "^2.23.0",
-    "@aws-lambda-powertools/logger": "^2.23.0",
-    "@aws-lambda-powertools/metrics": "^2.23.0",
-    "@aws-lambda-powertools/parameters": "^2.23.0",
-    "@aws-lambda-powertools/tracer": "^2.23.0",
-    "@aws-sdk/client-ssm": "^3.844.0",
-    "@aws-sdk/lib-dynamodb": "^3.844.0",
-    "@middy/core": "^4.7.0",
-    "@types/aws-lambda": "^8.10.150",
-    "@types/node": "24.0.13",
-    "aws-cdk": "^2.1020.2",
-    "constructs": "^10.4.2",
-    "esbuild": "^0.25.6",
-    "typescript": "^5.8.3"
-  }
+	"name": "powertools-sample-app",
+	"version": "2.24.0",
+	"author": {
+		"name": "Amazon Web Services",
+		"url": "https://aws.amazon.com"
+	},
+	"private": true,
+	"description": "This project contains source code and supporting files for a serverless application that you can deploy with CDK.",
+	"license": "MIT-0",
+	"scripts": {
+		"build": "echo 'Not applicable, run `npx cdk synth` instead to build the stack'",
+		"test": "npm run test:unit",
+		"lint": "biome lint .",
+		"lint:fix": "biome check --write .",
+		"test:unit": "export POWERTOOLS_DEV=true && vitest --run --silent",
+		"test:e2e": "echo 'To be implemented ...'",
+		"cdk": "cdk"
+	},
+	"type": "module",
+	"imports": {
+		"#types": "./functions/commons/types.js",
+		"#constants": "./functions/commons/constants.js",
+		"#powertools": "./functions/commons/powertools/index.js",
+		"#powertools/*": "./functions/commons/powertools/*.js",
+		"#clients/*": "./functions/commons/clients/*.js",
+		"#helpers/*": "./functions/commons/helpers/*.js",
+		"#errors": "./functions/commons/errors.js"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "^8.10.150",
+		"@types/node": "24.0.13",
+		"aws-cdk-lib": "^2.204.0",
+		"constructs": "^10.4.2",
+		"source-map-support": "^0.5.21",
+		"tsx": "^4.20.3",
+		"typescript": "^5.8.3",
+		"vitest": "^3.0.5"
+	},
+	"dependencies": {
+		"@aws-lambda-powertools/batch": "^2.24.0",
+		"@aws-lambda-powertools/idempotency": "^2.24.0",
+		"@aws-lambda-powertools/logger": "^2.24.0",
+		"@aws-lambda-powertools/metrics": "^2.24.0",
+		"@aws-lambda-powertools/parameters": "^2.24.0",
+		"@aws-lambda-powertools/tracer": "^2.24.0",
+		"@aws-sdk/client-ssm": "^3.844.0",
+		"@aws-sdk/lib-dynamodb": "^3.844.0",
+		"@middy/core": "^4.7.0",
+		"@types/aws-lambda": "^8.10.150",
+		"@types/node": "24.0.13",
+		"aws-cdk": "^2.1020.2",
+		"constructs": "^10.4.2",
+		"esbuild": "^0.25.6",
+		"typescript": "^5.8.3"
+	}
 }

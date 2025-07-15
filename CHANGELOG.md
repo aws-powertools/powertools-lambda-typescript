@@ -1,5 +1,28 @@
 # Change Log
 
+## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
+
+### Improvements
+
+- **metrics** optimize `addDimensions` method to avoid O(n²) complexity ([#4156](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4156)) ([3982b4a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3982b4a6b25e82fa1b5001c73d238cf62eda1137))
+- **tracer** replace class-based env access with functional helpers ([#4146](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4146)) ([51d9b98](https://github.com/aws-powertools/powertools-lambda-typescript/commit/51d9b988488aee01de337669dbfc68d0ab7af9dd))
+
+### Bug Fixes
+
+- **metrics** addDimensions() documentation and tests ([#3964](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3964)) ([a801636](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a80163614e4a0ef7106beaa5cf91161d50a09fea))
+- **tracer** skip tracing CONNECT requests ([#4148](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4148)) ([a147c3b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a147c3b46ff975ed3e94722e21e79e65ae2bbc78))
+- **parser** remove nullable from md5OfMessageAttributes in SqsRecordSchema ([#4165](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4165)) ([d6cbde0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d6cbde0fe977bb1ce011a80f31369e5f7161df08))
+
+### Maintenance
+
+- **batch** exclude deprecated code from coverage ([#4152](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4152)) ([30bbf5a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/30bbf5af3ae78fdb4b837ad9b4322a9e90f15f57))
+- **parser** remove deprecated parser type ([#4154](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4154)) ([a59db36](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a59db36e7816d8587b91acf282582204ccc78845))
+
+### Features
+
+- **parser** support Standard Schema and upgrade to Zod v4 ([#4164](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4164)) ([67549f6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/67549f61cd77e23a66e3338576efc96839833329))
+
+
 # [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
 
 ### Bug Fixes

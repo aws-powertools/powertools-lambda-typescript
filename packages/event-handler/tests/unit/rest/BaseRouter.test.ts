@@ -2,6 +2,7 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
+import { HttpVerbs } from '../../../src/rest/constatnts.js';
 import type { ResolveOptions } from '../../../src/types/index.js';
 import type {
   HttpMethod,
@@ -81,8 +82,8 @@ describe('Class: BaseRouter', () => {
   it('uses the global console when no logger is not provided', () => {
     // Act
     const app = new TestResolver();
-    app.route(() => true, { path: '/', method: 'get' });
-    
+    app.route(() => true, { path: '/', method: HttpVerbs.GET });
+
     // Assess
     expect(console.debug).not.toHaveBeenCalled();
     expect(console.error).toHaveBeenCalledWith('test error');
@@ -92,11 +93,11 @@ describe('Class: BaseRouter', () => {
   it('emits debug logs using global console when the log level is set to `DEBUG` and a logger is not provided', () => {
     // Prepare
     vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
-    
+
     // Act
     const app = new TestResolver();
-    app.route(() => true, { path: '/', method: 'get' });
-    
+    app.route(() => true, { path: '/', method: HttpVerbs.GET });
+
     // Assess
     expect(console.debug).toHaveBeenCalledWith('test debug');
     expect(console.error).toHaveBeenCalledWith('test error');
@@ -115,8 +116,8 @@ describe('Class: BaseRouter', () => {
 
     // Act
     const app = new TestResolver({ logger });
-    app.route(() => true, { path: '/', method: 'get' });
-    
+    app.route(() => true, { path: '/', method: HttpVerbs.GET });
+
     // Assess
     expect(logger.error).toHaveBeenCalledWith('test error');
     expect(logger.warn).toHaveBeenCalledWith('test warn');

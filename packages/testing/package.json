@@ -1,111 +1,111 @@
 {
-	"name": "@aws-lambda-powertools/testing-utils",
-	"version": "2.24.0",
-	"description": "A package containing utilities to test your serverless workloads",
-	"author": {
-		"name": "Amazon Web Services",
-		"url": "https://aws.amazon.com"
-	},
-	"private": true,
-	"scripts": {
-		"test": "vitest --run",
-		"test:unit": "vitest --run",
-		"test:e2e": "echo 'Not implemented'",
-		"build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
-		"build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
-		"build": "npm run build:esm & npm run build:cjs",
-		"lint": "biome lint .",
-		"lint:fix": "biome check --write .",
-		"prepack": "node ../../.github/scripts/release_patch_package_json.js ."
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
-	},
-	"files": [
-		"lib"
-	],
-	"type": "module",
-	"exports": {
-		".": {
-			"require": {
-				"types": "./lib/cjs/index.d.ts",
-				"default": "./lib/cjs/index.js"
-			},
-			"import": {
-				"types": "./lib/esm/index.d.ts",
-				"default": "./lib/esm/index.js"
-			}
-		},
-		"./resources/lambda": {
-			"import": "./lib/esm/resources/TestNodejsFunction.js",
-			"require": "./lib/cjs/resources/TestNodejsFunction.js"
-		},
-		"./resources/dynamodb": {
-			"import": "./lib/esm/resources/TestDynamodbTable.js",
-			"require": "./lib/cjs/resources/TestDynamodbTable.js"
-		},
-		"./context": {
-			"import": "./lib/esm/context.js",
-			"require": "./lib/cjs/context.js"
-		},
-		"./types": {
-			"import": "./lib/esm/types.js",
-			"require": "./lib/cjs/types.js"
-		},
-		"./utils/xray-traces": {
-			"import": "./lib/esm/xray-traces-utils.js",
-			"require": "./lib/cjs/xray-traces-utils.js"
-		}
-	},
-	"typesVersions": {
-		"*": {
-			"resources/lambda": [
-				"lib/cjs/resources/TestNodejsFunction.d.ts",
-				"lib/esm/resources/TestNodejsFunction.d.ts"
-			],
-			"resources/dynamodb": [
-				"lib/cjs/resources/TestDynamodbTable.d.ts",
-				"lib/esm/resources/TestDynamodbTable.d.ts"
-			],
-			"types": [
-				"lib/cjs/types.d.ts",
-				"lib/esm/types.d.ts"
-			],
-			"context": [
-				"lib/cjs/context.d.ts",
-				"lib/esm/context.d.ts"
-			],
-			"utils/xray-traces": [
-				"lib/cjs/xray-traces-utils.d.ts",
-				"lib/esm/xray-traces-utils.d.ts"
-			]
-		}
-	},
-	"types": "./lib/cjs/index.d.ts",
-	"main": "./lib/cjs/index.js",
-	"keywords": [
-		"aws",
-		"lambda",
-		"powertools",
-		"testing",
-		"serverless"
-	],
-	"license": "MIT-0",
-	"bugs": {
-		"url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
-	},
-	"homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
-	"dependencies": {
-		"@aws-cdk/toolkit-lib": "^1.2.4",
-		"@aws-sdk/client-lambda": "^3.844.0",
-		"@smithy/util-utf8": "^4.0.0",
-		"aws-cdk-lib": "^2.204.0",
-		"esbuild": "^0.25.6",
-		"promise-retry": "^2.0.1"
-	},
-	"devDependencies": {
-		"@types/promise-retry": "^1.1.6",
-		"aws-sdk-client-mock-vitest": "^6.1.1"
-	}
+  "name": "@aws-lambda-powertools/testing-utils",
+  "version": "2.24.0",
+  "description": "A package containing utilities to test your serverless workloads",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "private": true,
+  "scripts": {
+    "test": "vitest --run",
+    "test:unit": "vitest --run",
+    "test:e2e": "echo 'Not implemented'",
+    "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
+    },
+    "./resources/lambda": {
+      "import": "./lib/esm/resources/TestNodejsFunction.js",
+      "require": "./lib/cjs/resources/TestNodejsFunction.js"
+    },
+    "./resources/dynamodb": {
+      "import": "./lib/esm/resources/TestDynamodbTable.js",
+      "require": "./lib/cjs/resources/TestDynamodbTable.js"
+    },
+    "./context": {
+      "import": "./lib/esm/context.js",
+      "require": "./lib/cjs/context.js"
+    },
+    "./types": {
+      "import": "./lib/esm/types.js",
+      "require": "./lib/cjs/types.js"
+    },
+    "./utils/xray-traces": {
+      "import": "./lib/esm/xray-traces-utils.js",
+      "require": "./lib/cjs/xray-traces-utils.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "resources/lambda": [
+        "lib/cjs/resources/TestNodejsFunction.d.ts",
+        "lib/esm/resources/TestNodejsFunction.d.ts"
+      ],
+      "resources/dynamodb": [
+        "lib/cjs/resources/TestDynamodbTable.d.ts",
+        "lib/esm/resources/TestDynamodbTable.d.ts"
+      ],
+      "types": [
+        "lib/cjs/types.d.ts",
+        "lib/esm/types.d.ts"
+      ],
+      "context": [
+        "lib/cjs/context.d.ts",
+        "lib/esm/context.d.ts"
+      ],
+      "utils/xray-traces": [
+        "lib/cjs/xray-traces-utils.d.ts",
+        "lib/esm/xray-traces-utils.d.ts"
+      ]
+    }
+  },
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "testing",
+    "serverless"
+  ],
+  "license": "MIT-0",
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
+  "dependencies": {
+    "@aws-cdk/toolkit-lib": "^1.2.4",
+    "@aws-sdk/client-lambda": "^3.844.0",
+    "@smithy/util-utf8": "^4.0.0",
+    "aws-cdk-lib": "^2.204.0",
+    "esbuild": "^0.25.6",
+    "promise-retry": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/promise-retry": "^1.1.6",
+    "aws-sdk-client-mock-vitest": "^6.1.1"
+  }
 }

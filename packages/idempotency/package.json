@@ -1,158 +1,158 @@
 {
-	"name": "@aws-lambda-powertools/idempotency",
-	"version": "2.24.0",
-	"description": "The idempotency package for the Powertools for AWS Lambda (TypeScript) library. It provides options to make your Lambda functions idempotent and safe to retry.",
-	"author": {
-		"name": "Amazon Web Services",
-		"url": "https://aws.amazon.com"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"test": "vitest --run tests/unit",
-		"test:unit": "vitest --run tests/unit",
-		"test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
-		"test:unit:types": "echo 'Not Implemented'",
-		"test:unit:watch": "vitest tests/unit",
-		"test:e2e:nodejs18x": "RUNTIME=nodejs18x vitest --run tests/e2e",
-		"test:e2e:nodejs20x": "RUNTIME=nodejs20x vitest --run tests/e2e",
-		"test:e2e:nodejs22x": "RUNTIME=nodejs22x vitest --run tests/e2e",
-		"test:e2e": "vitest --run tests/e2e",
-		"build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
-		"build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
-		"build": "npm run build:esm & npm run build:cjs",
-		"lint": "biome lint .",
-		"lint:fix": "biome check --write .",
-		"prepack": "node ../../.github/scripts/release_patch_package_json.js ."
-	},
-	"homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/idempotency#readme",
-	"license": "MIT-0",
-	"type": "module",
-	"exports": {
-		".": {
-			"require": {
-				"types": "./lib/cjs/index.d.ts",
-				"default": "./lib/cjs/index.js"
-			},
-			"import": {
-				"types": "./lib/esm/index.d.ts",
-				"default": "./lib/esm/index.js"
-			}
-		},
-		"./persistence": {
-			"import": "./lib/esm/persistence/index.js",
-			"require": "./lib/cjs/persistence/index.js"
-		},
-		"./dynamodb": {
-			"import": "./lib/esm/persistence/DynamoDBPersistenceLayer.js",
-			"require": "./lib/cjs/persistence/DynamoDBPersistenceLayer.js"
-		},
-		"./dynamodb/types": {
-			"import": "./lib/esm/types/DynamoDBPersistence.js",
-			"require": "./lib/cjs/types/DynamoDBPersistence.js"
-		},
-		"./cache": {
-			"import": "./lib/esm/persistence/CachePersistenceLayer.js",
-			"require": "./lib/cjs/persistence/CachePersistenceLayer.js"
-		},
-		"./cache/types": {
-			"import": "./lib/esm/types/CachePersistence.js",
-			"require": "./lib/cjs/types/CachePersistence.js"
-		},
-		"./middleware": {
-			"import": "./lib/esm/middleware/makeHandlerIdempotent.js",
-			"require": "./lib/cjs/middleware/makeHandlerIdempotent.js"
-		},
-		"./types": {
-			"import": "./lib/esm/types/index.js",
-			"require": "./lib/cjs/types/index.js"
-		}
-	},
-	"typesVersions": {
-		"*": {
-			"persistence": [
-				"lib/cjs/persistence/index.d.ts",
-				"lib/esm/persistence/index.d.ts"
-			],
-			"dynamodb": [
-				"lib/cjs/persistence/DynamoDBPersistenceLayer.d.ts",
-				"lib/esm/persistence/DynamoDBPersistenceLayer.d.ts"
-			],
-			"dynamodb/types": [
-				"lib/cjs/types/DynamoDBPersistence.d.ts",
-				"lib/esm/types/DynamoDBPersistence.d.ts"
-			],
-			"cache": [
-				"lib/cjs/persistence/CachePersistenceLayer.d.ts",
-				"lib/esm/persistence/CachePersistenceLayer.d.ts"
-			],
-			"cache/types": [
-				"lib/cjs/types/CachePersistence.d.ts",
-				"lib/esm/types/CachePersistence.d.ts"
-			],
-			"middleware": [
-				"lib/cjs/middleware/makeHandlerIdempotent.d.ts",
-				"lib/esm/middleware/makeHandlerIdempotent.d.ts"
-			],
-			"types": [
-				"lib/cjs/types/index.d.ts",
-				"lib/esm/types/index.d.ts"
-			]
-		}
-	},
-	"types": "./lib/cjs/index.d.ts",
-	"main": "./lib/cjs/index.js",
-	"files": [
-		"lib"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
-	},
-	"bugs": {
-		"url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
-	},
-	"dependencies": {
-		"@aws-lambda-powertools/commons": "2.24.0",
-		"@aws-lambda-powertools/jmespath": "2.24.0"
-	},
-	"peerDependencies": {
-		"@aws-sdk/client-dynamodb": ">=3.x",
-		"@aws-sdk/lib-dynamodb": ">=3.x",
-		"@middy/core": "4.x || 5.x || 6.x",
-		"@redis/client": "^5.0.1",
-		"@valkey/valkey-glide": "^1.3.4"
-	},
-	"peerDependenciesMeta": {
-		"@aws-sdk/client-dynamodb": {
-			"optional": true
-		},
-		"@aws-sdk/lib-dynamodb": {
-			"optional": true
-		},
-		"@middy/core": {
-			"optional": true
-		},
-		"@redis/client": {
-			"optional": true
-		},
-		"@valkey/valkey-glide": {
-			"optional": true
-		}
-	},
-	"keywords": [
-		"aws",
-		"lambda",
-		"powertools",
-		"idempotency",
-		"serverless",
-		"nodejs"
-	],
-	"devDependencies": {
-		"@aws-lambda-powertools/testing-utils": "file:../testing",
-		"@aws-sdk/client-dynamodb": "^3.844.0",
-		"@aws-sdk/lib-dynamodb": "^3.844.0",
-		"aws-sdk-client-mock": "^4.1.0"
-	}
+  "name": "@aws-lambda-powertools/idempotency",
+  "version": "2.24.0",
+  "description": "The idempotency package for the Powertools for AWS Lambda (TypeScript) library. It provides options to make your Lambda functions idempotent and safe to retry.",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest --run tests/unit",
+    "test:unit": "vitest --run tests/unit",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "echo 'Not Implemented'",
+    "test:unit:watch": "vitest tests/unit",
+    "test:e2e:nodejs18x": "RUNTIME=nodejs18x vitest --run tests/e2e",
+    "test:e2e:nodejs20x": "RUNTIME=nodejs20x vitest --run tests/e2e",
+    "test:e2e:nodejs22x": "RUNTIME=nodejs22x vitest --run tests/e2e",
+    "test:e2e": "vitest --run tests/e2e",
+    "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build": "npm run build:esm & npm run build:cjs",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+  },
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/idempotency#readme",
+  "license": "MIT-0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
+    },
+    "./persistence": {
+      "import": "./lib/esm/persistence/index.js",
+      "require": "./lib/cjs/persistence/index.js"
+    },
+    "./dynamodb": {
+      "import": "./lib/esm/persistence/DynamoDBPersistenceLayer.js",
+      "require": "./lib/cjs/persistence/DynamoDBPersistenceLayer.js"
+    },
+    "./dynamodb/types": {
+      "import": "./lib/esm/types/DynamoDBPersistence.js",
+      "require": "./lib/cjs/types/DynamoDBPersistence.js"
+    },
+    "./cache": {
+      "import": "./lib/esm/persistence/CachePersistenceLayer.js",
+      "require": "./lib/cjs/persistence/CachePersistenceLayer.js"
+    },
+    "./cache/types": {
+      "import": "./lib/esm/types/CachePersistence.js",
+      "require": "./lib/cjs/types/CachePersistence.js"
+    },
+    "./middleware": {
+      "import": "./lib/esm/middleware/makeHandlerIdempotent.js",
+      "require": "./lib/cjs/middleware/makeHandlerIdempotent.js"
+    },
+    "./types": {
+      "import": "./lib/esm/types/index.js",
+      "require": "./lib/cjs/types/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "persistence": [
+        "lib/cjs/persistence/index.d.ts",
+        "lib/esm/persistence/index.d.ts"
+      ],
+      "dynamodb": [
+        "lib/cjs/persistence/DynamoDBPersistenceLayer.d.ts",
+        "lib/esm/persistence/DynamoDBPersistenceLayer.d.ts"
+      ],
+      "dynamodb/types": [
+        "lib/cjs/types/DynamoDBPersistence.d.ts",
+        "lib/esm/types/DynamoDBPersistence.d.ts"
+      ],
+      "cache": [
+        "lib/cjs/persistence/CachePersistenceLayer.d.ts",
+        "lib/esm/persistence/CachePersistenceLayer.d.ts"
+      ],
+      "cache/types": [
+        "lib/cjs/types/CachePersistence.d.ts",
+        "lib/esm/types/CachePersistence.d.ts"
+      ],
+      "middleware": [
+        "lib/cjs/middleware/makeHandlerIdempotent.d.ts",
+        "lib/esm/middleware/makeHandlerIdempotent.d.ts"
+      ],
+      "types": [
+        "lib/cjs/types/index.d.ts",
+        "lib/esm/types/index.d.ts"
+      ]
+    }
+  },
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/commons": "2.24.0",
+    "@aws-lambda-powertools/jmespath": "2.24.0"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-dynamodb": ">=3.x",
+    "@aws-sdk/lib-dynamodb": ">=3.x",
+    "@middy/core": "4.x || 5.x || 6.x",
+    "@redis/client": "^5.0.1",
+    "@valkey/valkey-glide": "^1.3.4"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-dynamodb": {
+      "optional": true
+    },
+    "@aws-sdk/lib-dynamodb": {
+      "optional": true
+    },
+    "@middy/core": {
+      "optional": true
+    },
+    "@redis/client": {
+      "optional": true
+    },
+    "@valkey/valkey-glide": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "idempotency",
+    "serverless",
+    "nodejs"
+  ],
+  "devDependencies": {
+    "@aws-lambda-powertools/testing-utils": "file:../testing",
+    "@aws-sdk/client-dynamodb": "^3.844.0",
+    "@aws-sdk/lib-dynamodb": "^3.844.0",
+    "aws-sdk-client-mock": "^4.1.0"
+  }
 }

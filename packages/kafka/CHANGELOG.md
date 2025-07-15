@@ -1,18 +1,14 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
+
+**Note:** Version bump only for this package
 
 # [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
 
 **Note:** Version bump only for package @aws-lambda-powertools/kafka
 
-
-
-
-
 # [2.22.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.21.0...v2.22.0) (2025-06-20)
-
 
 ### Features
 

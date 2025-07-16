@@ -1,5 +1,5 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
-import { isValueTrue } from '@aws-lambda-powertools/commons/utils/env';
+import { getBooleanFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import type {
   GetParameterCommandInput,
   GetParametersByPathCommandInput,
@@ -33,7 +33,6 @@ import type {
   SSMSetOptions,
   SSMSplitBatchAndDecryptParametersOutputType,
 } from '../types/SSMProvider.js';
-import { getSSMDecrypt } from '../utils/env.js';
 
 /**
  * ## Intro
@@ -845,11 +844,12 @@ class SSMProvider extends BaseProvider {
     if (options?.decrypt !== undefined) return options.decrypt;
     if (sdkOptions?.WithDecryption !== undefined)
       return sdkOptions.WithDecryption;
-    if (getSSMDecrypt() !== '') {
-      return isValueTrue(getSSMDecrypt());
-    }
 
-    return undefined;
+    return getBooleanFromEnv({
+      key: 'POWERTOOLS_PARAMETERS_SSM_DECRYPT',
+      defaultValue: false,
+      extendedParsing: true,
+    });
   }
 
   /**

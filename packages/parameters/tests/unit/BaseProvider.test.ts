@@ -7,7 +7,6 @@ import {
   GetMultipleOptions,
   GetOptions,
 } from '../../src/base/index.js';
-import type { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { DEFAULT_MAX_AGE_SECS } from '../../src/constants.js';
 import {
   clearCaches,
@@ -550,9 +549,7 @@ describe('Class: GetOptions', () => {
     const envVarsService = {
       getParametersMaxAge: vi.fn(),
     };
-    const options = new GetOptions(
-      envVarsService as unknown as EnvironmentVariablesService
-    );
+    const options = new GetOptions();
 
     // Assess
     expect(options.maxAge).toBe(DEFAULT_MAX_AGE_SECS);
@@ -565,9 +562,7 @@ describe('Class: GetMultipleOptions', () => {
     const envVarsService = {
       getParametersMaxAge: vi.fn(),
     };
-    const options = new GetMultipleOptions(
-      envVarsService as unknown as EnvironmentVariablesService
-    );
+    const options = new GetMultipleOptions();
 
     // Assess
     expect(options.throwOnTransformError).toBe(false);

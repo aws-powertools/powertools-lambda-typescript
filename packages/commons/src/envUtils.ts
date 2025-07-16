@@ -301,15 +301,6 @@ const getXRayTraceIdFromEnv = (): string | undefined => {
   return xRayTraceData?.Root;
 };
 
-/**
- * Helper function to determine if a value is considered thruthy.
- *
- * @param value The value to check for truthiness.
- */
-const isValueTrue = (value: string): boolean => {
-  return truthyValues.has(value.toLowerCase());
-};
-
 export {
   getStringFromEnv,
   getNumberFromEnv,
@@ -319,5 +310,4 @@ export {
   getXrayTraceDataFromEnv,
   isRequestXRaySampled,
   getXRayTraceIdFromEnv,
-  isValueTrue,
 };

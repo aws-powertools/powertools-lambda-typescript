@@ -1,4 +1,4 @@
-import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
+import { getNumberFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import type {
   GetOptionsInterface,
@@ -16,15 +16,14 @@ class GetOptions implements GetOptionsInterface {
   public sdkOptions?: unknown;
   public transform?: TransformOptions;
 
-  public constructor(
-    envVarsService: EnvironmentVariablesService,
-    options: GetOptionsInterface = {}
-  ) {
+  public constructor(options: GetOptionsInterface = {}) {
     Object.assign(this, options);
 
     if (options.maxAge === undefined) {
-      this.maxAge =
-        envVarsService.getParametersMaxAge() ?? DEFAULT_MAX_AGE_SECS;
+      this.maxAge = getNumberFromEnv({
+        key: 'POWERTOOLS_PARAMETERS_MAX_AGE',
+        defaultValue: DEFAULT_MAX_AGE_SECS,
+      });
     }
   }
 }

@@ -1,4 +1,3 @@
-import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import type { GetMultipleOptionsInterface } from '../types/BaseProvider.js';
 import { GetOptions } from './GetOptions.js';
 
@@ -13,11 +12,8 @@ class GetMultipleOptions
 {
   public throwOnTransformError = false;
 
-  public constructor(
-    envVarsService: EnvironmentVariablesService,
-    options: GetMultipleOptionsInterface = {}
-  ) {
-    super(envVarsService, options);
+  public constructor(options: GetMultipleOptionsInterface = {}) {
+    super(options);
 
     if (options.throwOnTransformError !== undefined) {
       this.throwOnTransformError = options.throwOnTransformError;

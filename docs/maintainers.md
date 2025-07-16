@@ -165,17 +165,63 @@ Some examples using our initial and new RFC templates: [#447](https://github.com
 
 Releasing a new version is a multi-step process that requires up to 3 hours to complete. Below a checklist of the main steps to follow:
 
-1. **End to end tests**: Run the [e2e tests](#run-end-to-end-tests) and make sure they pass.
-2. **Version bump**: Run the `Make Version` workflow to bump the version. This will create a PR with the new version and a changelog. Visually inspect the diff and make sure the changelog and version are correct, then merge the PR.
-3. **Make Release**: Run the `Make Release` workflow. This will: 1/ run the unit tests again, 2/ build and publish to npmjs.com, 3/ build and deploy the Lambda layers to beta and prod, 4/ run canary tests, 5/ update the documentation with the new version.
-4. **Review and approve docs PR**: Once the `Make Release` workflow is complete, a PR will be created to update the documentation with the new version. Review and approve this PR **but do not merge it yet**. Take note of the Lambda layer version that was deployed, as this will be used in the next step.
-5. **Publish GovCloud Layers (Gamma)**: Run the `Layer Deployment (GovCloud)` workflow with the `main` branch, targeting the `gamma` account, and using the Lambda layer version from the previous step. This will publish the Lambda layers to GovCloud. Visually inspect the output JSON files and make sure the Lambda layer version and package version are correct.
-6. **Publish GovCloud Layers (Prod)**: Run the `Layer Deployment (GovCloud)` workflow with the `main` branch, targeting the `prod` account, and using the Lambda layer version from the previous step. This will publish the Lambda layers to GovCloud. Visually inspect the output JSON files and make sure the Lambda layer version and package version are correct.
-7. **Merge docs PR**: Once the `Layer Deployment (GovCloud)` workflow is complete, merge the PR to update the documentation with the new version.
-8. **Update SSM Parameters (Beta)**: Run the `SSM Parameters` workflow with the `main` branch, targeting the `beta` account, and using the package version from npm (i.e. `2.20.0`) and Lambda layer version from the previous steps. This will update the SSM parameters with the new version.
-9. **Verify SSM Parameters (Beta)**: Use the AWS CLI to verify that the SSM parameters were updated correctly. Run the following command: `aws ssm get-parameter --name=/aws/service/powertools/typescript/generic/all/latest` and `aws ssm get-parameter --name=/aws/service/powertools/typescript/generic/all/<version>` to verify that the SSM parameters were updated correctly.
-10. **Update SSM Parameters (Prod)**: Run the `SSM Parameters` workflow with the `main` branch, targeting the `prod` account, and using the package version from npm (i.e. `2.20.0`) and Lambda layer version from the previous steps. This will update the SSM parameters with the new version.
-11. **Update Docs**: Run the `Rebuild latest docs` workflow with the `main` branch using the package version from npm (i.e. `2.20.0`). This will update the documentation with the new version.
+1. **End to end tests**: Run the [e2e tests](#run-end-to-end-tests) and ensure they pass.
+2. **Version bump**: Run the `Make Version` workflow to bump the version. This will create a PR with the new version and
+a changelog. Visually inspect the diff and make sure the changelog and version are correct, then merge the PR.
+3. **Make Release**: Run the `Make Release` workflow. This will: 1/ run the unit tests again, 2/ build and publish to npmjs.com,
+3/ build and deploy the Lambda layers to the `Beta` and `Prod` environments in all commercial Regions, 4/ run canary
+tests, 5/ update the documentation with the new version.
+4. **Review and approve docs PR**: Once the `Make Release` workflow is complete, a PR will be created to update the
+documentation with the new version. Review and approve this PR **but do not merge it yet**. Take note of the Lambda
+layer version that was deployed, as this will be used in the next steps.
+5. **Publish GovCloud Layers (Gamma)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch,
+targeting the `Gamma` deployment environment and the GovCloud partition, using the Lambda layer version from the
+step 4. This will publish the Lambda layers to the AWS GovCloud (US-East) and AWS GovCloud (US-West) Regions.
+6. **Verify GovCloud Layers (Gamma)**: Download the `AWSLambdaPowertoolsTypeScriptV2-us-gov-east-1.json` and
+`AWSLambdaPowertoolsTypeScriptV2-us-gov-west-1.json` ZIP files. Unzip the files, inspect the JSON files therein and
+ensure the version number in the `Description` field (i.e., `Powertools for AWS Lambda (TypeScript) version 2.20.0`)
+and the layer version in the `LayerVersionArn` field (i.e., `arn:aws-us-gov:lambda:us-gov-east-1:164754790254:layer:AWSLambdaPowertoolsTypeScriptV2:31`)
+are correct.
+7. **Publish GovCloud Layers (Prod)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch,
+targeting the `Prod` deployment environment and the GovCloud partition, using the Lambda layer version from step 4.
+This will publish the Lambda layers to the AWS GovCloud (US-East) and AWS GovCloud (US-West) Regions.
+8. **Verify GovCloud Layers (Prod)**: Download the `AWSLambdaPowertoolsTypeScriptV2-us-gov-east-1.json` and
+`AWSLambdaPowertoolsTypeScriptV2-us-gov-west-1.json` ZIP files. Unzip the files, inspect the JSON files therein and
+ensure the version number in the `Description` field (i.e., `Powertools for AWS Lambda (TypeScript) version 2.20.0`)
+and the layer version in the `LayerVersionArn` field (i.e., `arn:aws-us-gov:lambda:us-gov-west-1:165093116878:layer:AWSLambdaPowertoolsTypeScriptV2:31`)
+are correct.
+9. **Publish China Layer (Gamma)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting
+the `Gamma` deployment environment and the China partition, using the Lambda layer version from step 4. This will
+publish the Lambda layer to the AWS China (Beijing) Region.
+10. **Verify China Layer (Gamma)**: Download the `AWSLambdaPowertoolsTypeScriptV2-cn-north-1.json` ZIP file. Unzip
+the file, inspect the JSON file therein and ensure the version number in the `Description` field
+(i.e., `Powertools for AWS Lambda (TypeScript) version 2.20.0`) and the layer version in the `LayerVersionArn` field
+(i.e., `arn:aws-cn:lambda:cn-north-1:498595349401:layer:AWSLambdaPowertoolsTypeScriptV2:31`) are correct.
+11. **Publish China Layer (Prod)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch,
+targeting the `Prod` deployment environment and the China partition, and using the Lambda layer version from step 4.
+This will publish the Lambda layer to the AWS China (Beijing) Region.
+12. **Verify China Layer (Prod)**: Download the `AWSLambdaPowertoolsTypeScriptV2-cn-north-1.json` ZIP file. Unzip the
+file, inspect the JSON file therein and ensure the version number in the `Description` field
+(i.e., `Powertools for AWS Lambda (TypeScript) version 2.20.0`) and the layer version in the `LayerVersionArn`
+field (i.e., `arn:aws-cn:lambda:cn-north-1:498634801083:layer:AWSLambdaPowertoolsTypeScriptV2:31`) are correct.
+13. **Merge docs PR**: Once the `Layer Deployment (Partition)` workflow for the production China partition is complete,
+merge the PR from step 4 to update the documentation with the new version.
+14. **Update SSM Parameters (Beta)**: Run the `SSM Parameters` workflow with the `main` branch, targeting the `beta`
+deployment environment, and using the package version from npm (i.e., `2.20.0`) and Lambda layer version from step 4.
+This will update the SSM parameters with the new version.
+15. **Verify SSM Parameters (Beta)**: Use the AWS CLI to verify that the SSM parameters were updated correctly. Run
+the following command: `aws ssm get-parameter --name=/aws/service/powertools/beta/typescript/generic/all/latest`
+and `aws ssm get-parameter --name=/aws/service/powertools/beta/typescript/generic/all/<version>` to verify that the
+SSM parameters were updated correctly.
+16. **Update SSM Parameters (Prod)**: Run the `SSM Parameters` workflow with the `main` branch, targeting the `prod`
+deployment environment, and using the package version from npm (i.e., `2.20.0`) and Lambda layer version from step 4.
+This will update the SSM parameters with the new version.
+17. **Verify SSM Parameters (Prod)**: Use the AWS CLI to verify that the SSM parameters were updated correctly. Run
+the following command: `aws ssm get-parameter --name=/aws/service/powertools/typescript/generic/all/latest`
+and `aws ssm get-parameter --name=/aws/service/powertools/typescript/generic/all/<version>` to verify that the
+SSM parameters were updated correctly.
+18. **Update Docs**: Run the `Rebuild latest docs` workflow with the `main` branch using the package version from
+npm (i.e. `2.20.0`). This will update the documentation with the new version.
 
 Once complete, you can start drafting the release notes to let customers know **what changed and what's in it for them (a.k.a why they should care)**. We have guidelines in the release notes section so you know what good looks like.
 
@@ -237,20 +283,27 @@ Review and merge docs PR : milestone, m5
     Publish updated docs              : active, 2m
 
 section GovCloud
-    Publish GovCloud layers (Beta)    : active, 8s
+    Publish GovCloud layers (Gamma)    : active, 8s
     Publish GovCloud layers (Prod)    : active, 8s
 GovCloud layers published : milestone, m6
 
 
-section Documentation
+section China
+    Publish China layers (Gamma)    : active, 8s
+    Publish China layers (Prod)    : active, 8s
+China layers published : milestone, m7
+
+
+section SSM
 Update SSM parameters (Beta)      : active, 8s
 Update SSM parameters (Prod)      : active, 8s
 
-SSM Parameters updated: milestone, m7
+SSM Parameters updated: milestone, m8
 
-Documentation release : milestone, m8
+section Documentation
+Documentation release : milestone, m9
 
-Release complete : milestone, m9
+Release complete : milestone, m10
 ```
 
 #### Drafting release notes

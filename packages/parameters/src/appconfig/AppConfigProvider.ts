@@ -1,3 +1,4 @@
+import { getServiceName } from '@aws-lambda-powertools/commons/utils/env';
 import type { StartConfigurationSessionCommandInput } from '@aws-sdk/client-appconfigdata';
 import {
   AppConfigDataClient,
@@ -206,7 +207,7 @@ class AppConfigProvider extends BaseProvider {
     });
 
     const { application, environment } = options;
-    this.application = application ?? this.envVarsService.getServiceName();
+    this.application = application ?? getServiceName();
     if (!this.application || this.application.trim().length === 0) {
       throw new Error(
         'Application name is not defined or POWERTOOLS_SERVICE_NAME is not set'

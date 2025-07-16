@@ -8,6 +8,7 @@ import {
   isRecord,
   isStrictEqual,
   isString,
+  isStringUndefinedNullEmpty,
   isTruthy,
 } from '../../src/index.js';
 
@@ -116,6 +117,38 @@ describe('Functions: typeUtils', () => {
 
       // Assess
       expect(result).toBe(false);
+    });
+  });
+
+  describe('Function: isStringUndefinedNullEmpty', () => {
+    it('returns true if input is undefined', () => {
+      // Act & Assess
+      expect(isStringUndefinedNullEmpty(undefined)).toBe(true);
+    });
+
+    it('returns true if input is null', () => {
+      // Act & Assess
+      expect(isStringUndefinedNullEmpty(null)).toBe(true);
+    });
+
+    it('returns true if input is an empty string', () => {
+      // Act & Assess
+      expect(isStringUndefinedNullEmpty('')).toBe(true);
+    });
+
+    it('returns true if input is a whitespace', () => {
+      // Act & Assess
+      expect(isStringUndefinedNullEmpty(' ')).toBe(true);
+    });
+
+    it('returns true if input is not a string', () => {
+      // Act & Assess
+      expect(isStringUndefinedNullEmpty(1)).toBe(true);
+    });
+
+    it('returns false if input is not undefined, null, or an empty string', () => {
+      // Act & Assess
+      expect(isStringUndefinedNullEmpty('test')).toBe(false);
     });
   });
 

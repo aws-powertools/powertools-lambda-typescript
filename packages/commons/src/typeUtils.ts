@@ -11,7 +11,7 @@
  * }
  * ```
  *
- * @param value The value to check
+ * @param value - The value to check
  */
 const isRecord = (
   value: unknown
@@ -35,7 +35,7 @@ const isRecord = (
  * }
  * ```
  *
- * @param value The value to check
+ * @param value - The value to check
  */
 const isString = (value: unknown): value is string => {
   return typeof value === 'string';
@@ -54,7 +54,7 @@ const isString = (value: unknown): value is string => {
  * }
  * ```
  *
- * @param value The value to check
+ * @param value - The value to check
  */
 const isNumber = (value: unknown): value is number => {
   return typeof value === 'number';
@@ -73,7 +73,7 @@ const isNumber = (value: unknown): value is number => {
  * }
  * ```
  *
- * @param value The value to check
+ * @param value - The value to check
  */
 const isIntegerNumber = (value: unknown): value is number => {
   return isNumber(value) && Number.isInteger(value);
@@ -94,7 +94,7 @@ const isIntegerNumber = (value: unknown): value is number => {
  *
  * @see https://github.com/getify/You-Dont-Know-JS/blob/2nd-ed/types-grammar/ch4.md#toboolean
  *
- * @param value The value to check
+ * @param value - The value to check
  */
 const isTruthy = (value: unknown): boolean => {
   if (isString(value)) {
@@ -129,7 +129,7 @@ const isTruthy = (value: unknown): boolean => {
  * }
  * ```
  *
- * @param value The value to check
+ * @param value - The value to check
  */
 const isNull = (value: unknown): value is null => {
   return Object.is(value, null);
@@ -148,10 +148,32 @@ const isNull = (value: unknown): value is null => {
  * }
  * ```
  *
- * @param value The value to check
+ * @param value - The value to check
  */
 const isNullOrUndefined = (value: unknown): value is null | undefined => {
   return isNull(value) || Object.is(value, undefined);
+};
+
+/**
+ * Check if string is undefined, null, empty.
+ *
+ * @example
+ * ```typescript
+ * import { isStringUndefinedNullEmpty } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const value = 'foo';
+ * if (isStringUndefinedNullEmpty(value)) {
+ *   // value is either undefined, null, or an empty string
+ * }
+ * ```
+ *
+ * @param value - The value to check
+ */
+const isStringUndefinedNullEmpty = (value: unknown) => {
+  if (isNullOrUndefined(value)) return true;
+  if (!isString(value)) return true;
+  if (value.trim().length === 0) return true;
+  return false;
 };
 
 /**
@@ -167,7 +189,7 @@ const isNullOrUndefined = (value: unknown): value is null | undefined => {
  * const unknownType = getType(Symbol('foo')); // 'unknown'
  * ```
  *
- * @param value The value to check
+ * @param value - The value to check
  */
 const getType = (value: unknown): string => {
   if (Array.isArray(value)) {
@@ -210,8 +232,8 @@ const getType = (value: unknown): string => {
  * const otherEqual = areArraysEqual(otherLeft, otherRight); // false
  * ```
  *
- * @param left The left array to compare
- * @param right The right array to compare
+ * @param left - The left array to compare
+ * @param right - The right array to compare
  */
 const areArraysEqual = (left: unknown[], right: unknown[]): boolean => {
   if (left.length !== right.length) {
@@ -237,8 +259,8 @@ const areArraysEqual = (left: unknown[], right: unknown[]): boolean => {
  * const otherEqual = areRecordsEqual(otherLeft, otherRight); // false
  * ```
  *
- * @param left The left record to compare
- * @param right The right record to compare
+ * @param left - The left record to compare
+ * @param right - The right record to compare
  */
 const areRecordsEqual = (
   left: Record<string, unknown>,
@@ -283,8 +305,8 @@ const areRecordsEqual = (
  * const yetAnotherEqual = isStrictEqual(yetAnotherLeft, yetAnotherRight); // true
  * ```
  *
- * @param left Left side of strict equality comparison
- * @param right Right side of strict equality comparison
+ * @param left - Left side of strict equality comparison
+ * @param right - Right side of strict equality comparison
  */
 const isStrictEqual = (left: unknown, right: unknown): boolean => {
   if (left === right) {
@@ -314,6 +336,7 @@ export {
   isTruthy,
   isNull,
   isNullOrUndefined,
+  isStringUndefinedNullEmpty,
   getType,
   isStrictEqual,
 };

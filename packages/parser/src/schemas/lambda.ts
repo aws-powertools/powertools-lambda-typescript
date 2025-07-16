@@ -1,3 +1,4 @@
+import type { LambdaFunctionUrlEvent } from '../types/schema.js';
 import { APIGatewayProxyEventV2Schema } from './api-gatewayv2.js';
 
 /**
@@ -56,7 +57,7 @@ import { APIGatewayProxyEventV2Schema } from './api-gatewayv2.js';
  * }
  * ```
  *
- * @see {@link types.LambdaFunctionUrlEvent | LambdaFunctionUrlEvent}
+ * @see {@link LambdaFunctionUrlEvent | `LambdaFunctionUrlEvent`}
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/urls-invocation.html#urls-payloads}
  */
 const LambdaFunctionUrlSchema = APIGatewayProxyEventV2Schema.extend({});

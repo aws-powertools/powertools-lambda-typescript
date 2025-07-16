@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
-import { ParseError } from '../../../src';
+import { z } from 'zod';
 import { LambdaFunctionUrlEnvelope } from '../../../src/envelopes/lambda.js';
-import { JSONStringified } from '../../../src/helpers';
-import type { LambdaFunctionUrlEvent } from '../../../src/types';
+import { JSONStringified } from '../../../src/helpers/index.js';
+import type { LambdaFunctionUrlEvent } from '../../../src/types/schema.js';
 import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Envelope: Lambda function URL', () => {
@@ -26,6 +25,7 @@ describe('Envelope: Lambda function URL', () => {
       // Act & Assess
       expect(() => LambdaFunctionUrlEnvelope.parse(event, schema)).toThrow(
         expect.objectContaining({
+          name: 'ParseError',
           message: expect.stringContaining(
             'Failed to parse Lambda function URL body'
           ),
@@ -34,9 +34,8 @@ describe('Envelope: Lambda function URL', () => {
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'null',
                 path: ['body'],
-                message: 'Expected object, received null',
+                message: 'Invalid input: expected object, received null',
               },
             ],
           }),
@@ -85,6 +84,7 @@ describe('Envelope: Lambda function URL', () => {
       expect(result).toEqual('aGVsbG8gd29ybGQ=');
     });
   });
+
   describe('Method: safeParse', () => {
     it('parses Lambda function URL event', () => {
       // Prepare
@@ -112,25 +112,29 @@ describe('Envelope: Lambda function URL', () => {
       const result = LambdaFunctionUrlEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse Lambda function URL body', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['rawPath'],
-              message: 'Required',
-            },
-            {
-              code: 'invalid_type',
-              expected: 'object',
-              received: 'null',
-              path: ['body'],
-              message: 'Expected object, received null',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse Lambda function URL body'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['rawPath'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                path: ['body'],
+                message: 'Invalid input: expected object, received null',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });

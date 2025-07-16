@@ -1,4 +1,4 @@
-import type { ZodSchema, z } from 'zod';
+import type { ZodType, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { VpcLatticeSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
@@ -7,14 +7,13 @@ import { envelopeDiscriminator } from './envelope.js';
 /**
  * Amazon VPC Lattice envelope to extract data within body key
  */
-
 export const VpcLatticeEnvelope = {
   /**
    * This is a discriminator to differentiate whether an envelope returns an array or an object
    * @hidden
    */
   [envelopeDiscriminator]: 'object' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T> {
+  parse<T>(data: unknown, schema: ZodType<T>): z.infer<ZodType<T>> {
     try {
       return VpcLatticeSchema.extend({
         body: schema,
@@ -26,10 +25,10 @@ export const VpcLatticeEnvelope = {
     }
   },
 
-  safeParse<T extends ZodSchema>(
+  safeParse<T>(
     data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>> {
+    schema: ZodType<T>
+  ): ParsedResult<unknown, z.infer<ZodType<T>>> {
     const result = VpcLatticeSchema.extend({
       body: schema,
     }).safeParse(data);

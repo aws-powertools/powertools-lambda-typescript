@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import type {
+  AppSyncEventsPublishEvent,
+  AppSyncEventsSubscribeEvent,
+} from '../types/schema.js';
 import {
   AppSyncCognitoIdentity,
   AppSyncIamIdentity,
@@ -105,6 +109,8 @@ const AppSyncEventsBaseSchema = z.object({
  *   ]
  * }
  * ```
+ *
+ * @see {@link AppSyncEventsPublishEvent | `AppSyncEventsPublishEvent`}
  */
 const AppSyncEventsPublishSchema = AppSyncEventsBaseSchema.extend({
   info: AppSyncEventsInfoSchema.extend({
@@ -151,6 +157,8 @@ const AppSyncEventsPublishSchema = AppSyncEventsBaseSchema.extend({
  *   "events": null,
  * }
  * ```
+ *
+ * @see {@link AppSyncEventsSubscribeEvent | `AppSyncEventsSubscribeEvent`}
  */
 const AppSyncEventsSubscribeSchema = AppSyncEventsBaseSchema.extend({
   info: AppSyncEventsInfoSchema.extend({

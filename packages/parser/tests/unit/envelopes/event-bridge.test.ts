@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../../src/envelopes/eventbridge.js';
-import { ParseError } from '../../../src/errors.js';
 import type { EventBridgeEvent } from '../../../src/types/schema.js';
 import { getTestEvent, omit } from '../helpers/utils.js';
 
@@ -39,9 +38,8 @@ describe('Envelope: EventBridgeEnvelope', () => {
               {
                 code: 'invalid_type',
                 expected: 'string',
-                received: 'undefined',
                 path: ['detail', 'owner'],
-                message: 'Required',
+                message: 'Invalid input: expected string, received undefined',
               },
             ],
           }),
@@ -90,18 +88,23 @@ describe('Envelope: EventBridgeEnvelope', () => {
       const result = EventBridgeEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse EventBridge envelope', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'object',
-              received: 'undefined',
-              path: ['detail'],
-              message: 'Required',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse EventBridge envelope'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                path: ['detail'],
+                message: 'Invalid input: expected object, received undefined',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });

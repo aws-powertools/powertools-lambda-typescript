@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { VpcLatticeEventV2 } from '../types/schema.js';
 
 const VpcLatticeV2RequestContextIdentity = z.object({
   sourceVpcArn: z.string().optional(),
@@ -58,7 +59,7 @@ const VpcLatticeV2RequestContext = z.object({
  *   }
  * }
  * ```
- * @see {@link types.VpcLatticeEventV2 | VpcLatticeEventV2}
+ * @see {@link VpcLatticeEventV2 | `VpcLatticeEventV2`}
  * @see {@link https://docs.aws.amazon.com/vpc-lattice/latest/ug/lambda-functions.html#receive-event-from-service}
  */
 const VpcLatticeV2Schema = z.object({

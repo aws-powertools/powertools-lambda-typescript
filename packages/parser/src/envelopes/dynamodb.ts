@@ -1,4 +1,4 @@
-import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
+import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { DynamoDBStreamSchema } from '../schemas/index.js';
 import type { DynamoDBStreamEnvelopeResponse } from '../types/envelope.js';
@@ -17,10 +17,10 @@ export const DynamoDBStreamEnvelope = {
    * @hidden
    */
   [envelopeDiscriminator]: 'array' as const,
-  parse<T extends ZodSchema>(
+  parse<T>(
     data: unknown,
-    schema: T
-  ): DynamoDBStreamEnvelopeResponse<z.infer<T>>[] {
+    schema: ZodType<T>
+  ): DynamoDBStreamEnvelopeResponse<T>[] {
     const parsedEnvelope = DynamoDBStreamSchema.parse(data);
 
     const processImage = (
@@ -57,10 +57,10 @@ export const DynamoDBStreamEnvelope = {
     }));
   },
 
-  safeParse<T extends ZodSchema>(
+  safeParse<T>(
     data: unknown,
-    schema: T
-  ): ParsedResult<unknown, DynamoDBStreamEnvelopeResponse<z.infer<T>>[]> {
+    schema: ZodType<T>
+  ): ParsedResult<unknown, DynamoDBStreamEnvelopeResponse<T>[]> {
     const parsedEnvelope = DynamoDBStreamSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {
@@ -77,15 +77,15 @@ export const DynamoDBStreamEnvelope = {
 
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
-      records: DynamoDBStreamEnvelopeResponse<z.infer<T>>[];
-      errors: { index?: number; issues?: ZodIssue[] };
+      records: DynamoDBStreamEnvelopeResponse<T>[];
+      errors: { [key: number]: { issues: z.core.$ZodIssue[] } };
     }>(
       (acc, record, index) => {
         const newImage = processImage(record.dynamodb.NewImage);
         const oldImage = processImage(record.dynamodb.OldImage);
 
         if (newImage?.success === false || oldImage?.success === false) {
-          const issues: ZodIssue[] = [];
+          const issues: z.core.$ZodIssue[] = [];
           for (const key of ['NewImage', 'OldImage']) {
             const image = key === 'NewImage' ? newImage : oldImage;
             if (image?.success === false) {
@@ -98,7 +98,6 @@ export const DynamoDBStreamEnvelope = {
             }
           }
           acc.success = false;
-          // @ts-expect-error - index is assigned
           acc.errors[index] = { issues };
           return acc;
         }
@@ -121,7 +120,6 @@ export const DynamoDBStreamEnvelope = {
         ? `Failed to parse records at indexes ${Object.keys(result.errors).join(', ')}`
         : `Failed to parse record at index ${Object.keys(result.errors)[0]}`;
     const errorCause = new ZodError(
-      // @ts-expect-error - issues are assigned because success is false
       Object.values(result.errors).flatMap((error) => error.issues)
     );
 

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { VpcLatticeV2Envelope } from '../../../src/envelopes/vpc-latticev2.js';
-import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers/index.js';
 import type { VpcLatticeEventV2 } from '../../../src/types/index.js';
 import { getTestEvent, omit } from '../helpers/utils.js';
@@ -25,6 +24,7 @@ describe('Envelope: VPC Lattice v2', () => {
       // Act & Assess
       expect(() => VpcLatticeV2Envelope.parse(event, schema)).toThrow(
         expect.objectContaining({
+          name: 'ParseError',
           message: expect.stringContaining(
             'Failed to parse VPC Lattice v2 body'
           ),
@@ -33,9 +33,8 @@ describe('Envelope: VPC Lattice v2', () => {
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'string',
                 path: ['body'],
-                message: 'Expected object, received string',
+                message: 'Invalid input: expected object, received string',
               },
             ],
           }),
@@ -106,18 +105,23 @@ describe('Envelope: VPC Lattice v2', () => {
       const result = VpcLatticeV2Envelope.safeParse(event, z.string());
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse VPC Lattice v2 body', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['path'],
-              message: 'Required',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse VPC Lattice v2 body'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                message: 'Invalid input: expected string, received undefined',
+                path: ['path'],
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });

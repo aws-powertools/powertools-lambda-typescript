@@ -1,4 +1,4 @@
-import { type ZodTypeAny, z } from 'zod';
+import { type ZodType, z } from 'zod';
 
 /**
  * A helper function to parse a JSON string and validate it against a schema.
@@ -38,16 +38,17 @@ import { type ZodTypeAny, z } from 'zod';
  *
  * @param schema - The schema to validate the JSON string against
  */
-const JSONStringified = <T extends ZodTypeAny>(schema: T) =>
+const JSONStringified = <T extends ZodType>(schema: T) =>
   z
     .string()
     .transform((str, ctx) => {
       try {
         return JSON.parse(str);
-      } catch {
+      } catch (error) {
         ctx.addIssue({
           code: 'custom',
-          message: 'Invalid JSON',
+          message: `Invalid JSON - ${(error as Error).message}`,
+          fatal: true,
         });
       }
     })

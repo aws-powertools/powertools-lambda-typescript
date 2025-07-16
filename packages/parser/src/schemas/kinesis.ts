@@ -1,6 +1,7 @@
 import { gunzipSync } from 'node:zlib';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
 import { z } from 'zod';
+import type { KinesisDataStreamEvent } from '../types/schema.js';
 import { DynamoDBStreamToKinesisRecord } from './dynamodb.js';
 
 const decoder = new TextDecoder();
@@ -95,7 +96,7 @@ const KinesisDynamoDBStreamSchema = z.object({
  *   "isWindowTerminatedEarly": false
  * }
  *```
- * @see {@link types.KinesisDataStreamEvent | KinesisDataStreamEvent}
+ * @see {@link KinesisDataStreamEvent | `KinesisDataStreamEvent`}
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/services-kinesis-windows.html#streams-tumbling-processing}
  *
  */
@@ -103,8 +104,8 @@ const KinesisDataStreamSchema = z.object({
   Records: z.array(KinesisDataStreamRecord).min(1),
   window: z
     .object({
-      start: z.string().datetime(),
-      end: z.string().datetime(),
+      start: z.iso.datetime(),
+      end: z.iso.datetime(),
     })
     .optional(),
   state: z.record(z.string(), z.unknown()).optional(),

@@ -6,8 +6,7 @@ import type {
   APIGatewayProxyEventV2Schema,
   APIGatewayProxyWebsocketEventSchema,
   APIGatewayRequestAuthorizerEventSchema,
-  APIGatewayRequestAuthorizerV2Schema,
-  APIGatewayRequestContextV2Schema,
+  APIGatewayRequestAuthorizerEventV2Schema,
   APIGatewayTokenAuthorizerEventSchema,
   AppSyncBatchResolverSchema,
   AppSyncEventsPublishSchema,
@@ -72,12 +71,8 @@ type APIGatewayProxyWebsocketEvent = z.infer<
   typeof APIGatewayProxyWebsocketEventSchema
 >;
 
-type APIGatewayRequestAuthorizerV2 = z.infer<
-  typeof APIGatewayRequestAuthorizerV2Schema
->;
-
-type APIGatewayRequestContextV2 = z.infer<
-  typeof APIGatewayRequestContextV2Schema
+type APIGatewayRequestAuthorizerEventV2 = z.infer<
+  typeof APIGatewayRequestAuthorizerEventV2Schema
 >;
 
 type AppSyncResolverEvent = z.infer<typeof AppSyncResolverSchema>;
@@ -175,8 +170,7 @@ export type {
   APIGatewayProxyEventV2,
   APIGatewayProxyWebsocketEvent,
   APIGatewayRequestAuthorizerEvent,
-  APIGatewayRequestAuthorizerV2,
-  APIGatewayRequestContextV2,
+  APIGatewayRequestAuthorizerEventV2,
   APIGatewayTokenAuthorizerEvent,
   AppSyncBatchResolverEvent,
   AppSyncResolverEvent,

@@ -1,11 +1,16 @@
-import type { ZodError, ZodSchema, z } from 'zod';
-import type { ArrayEnvelope, Envelope } from './envelope.js';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
+import type {
+  ArrayEnvelope,
+  DynamoDBArrayEnvelope,
+  DynamoDBStreamEnvelopeResponse,
+  Envelope,
+} from './envelope.js';
 
 /**
  * Options for the parser used in middy middleware and decorator
  */
 type ParserOptions<
-  TSchema extends ZodSchema,
+  TSchema extends StandardSchemaV1,
   TEnvelope extends Envelope,
   TSafeParse extends boolean,
 > = {
@@ -27,7 +32,7 @@ type ParsedResultSuccess<Output> = {
  */
 type ParsedResultError<Input> = {
   success: false;
-  error: ZodError | Error;
+  error: Error;
   originalEvent?: Input;
 };
 
@@ -42,28 +47,35 @@ type ParsedResult<Input = unknown, Output = Input> =
  * The inferred result of the schema, can be either an array or a single object depending on the envelope
  */
 type ZodInferredResult<
-  TSchema extends ZodSchema,
+  TSchema extends StandardSchemaV1,
   TEnvelope extends Envelope,
 > = undefined extends TEnvelope
-  ? z.infer<TSchema>
-  : TEnvelope extends ArrayEnvelope
-    ? z.infer<TSchema>[]
-    : z.infer<TSchema>;
+  ? InferOutput<TSchema>
+  : TEnvelope extends DynamoDBArrayEnvelope
+    ? DynamoDBStreamEnvelopeResponse<InferOutput<TSchema>>[]
+    : TEnvelope extends ArrayEnvelope
+      ? InferOutput<TSchema>[]
+      : InferOutput<TSchema>;
 
 type ZodInferredSafeParseResult<
-  TSchema extends ZodSchema,
+  TSchema extends StandardSchemaV1,
   TEnvelope extends Envelope,
 > = undefined extends TEnvelope
-  ? ParsedResult<z.infer<TSchema>, z.infer<TSchema>>
-  : TEnvelope extends ArrayEnvelope
-    ? ParsedResult<unknown, z.infer<TSchema>[]>
-    : ParsedResult<unknown, z.infer<TSchema>>;
+  ? ParsedResult<InferOutput<TSchema>, InferOutput<TSchema>>
+  : TEnvelope extends DynamoDBArrayEnvelope
+    ? ParsedResult<
+        unknown,
+        DynamoDBStreamEnvelopeResponse<InferOutput<TSchema>>[]
+      >
+    : TEnvelope extends ArrayEnvelope
+      ? ParsedResult<unknown, InferOutput<TSchema>[]>
+      : ParsedResult<unknown, InferOutput<TSchema>>;
 
 /**
  * The output of the parser function, can be either schema inferred type or a ParsedResult
  */
 type ParserOutput<
-  TSchema extends ZodSchema,
+  TSchema extends StandardSchemaV1,
   TEnvelope extends Envelope,
   TSafeParse = false,
 > = TSafeParse extends true
@@ -75,55 +87,54 @@ type ParserOutput<
  * we use function overloads to provide the correct return type based on the provided envelope
  **/
 type ParseFunction = {
-  // No envelope cases
-  <T extends ZodSchema>(
-    data: z.infer<T>,
+  // No envelope, no safeParse
+  <T extends StandardSchemaV1>(
+    data: unknown,
     envelope: undefined,
     schema: T,
     safeParse?: false
-  ): z.infer<T>;
+  ): InferOutput<T>;
 
-  <T extends ZodSchema>(
-    data: z.infer<T>,
+  // No envelope, with safeParse
+  <T extends StandardSchemaV1>(
+    data: unknown,
     envelope: undefined,
     schema: T,
     safeParse: true
-  ): ParsedResult<z.infer<T>>;
+  ): ParsedResult<unknown, InferOutput<T>>;
 
-  // Generic envelope case
-  <T extends ZodSchema, E extends Envelope>(
+  // With envelope, no safeParse
+  <T extends StandardSchemaV1, E extends Envelope>(
     data: unknown,
     envelope: E,
     schema: T,
     safeParse?: false
-  ): E extends ArrayEnvelope ? z.infer<T>[] : z.infer<T>;
-
-  <T extends ZodSchema, E extends Envelope>(
-    data: unknown,
-    envelope: E,
-    schema: T,
-    safeParse: true
-  ): E extends ArrayEnvelope
-    ? ParsedResult<unknown, z.infer<T>[]>
-    : ParsedResult<unknown, z.infer<T>>;
-
-  // Generic envelope case with safeParse
-  <T extends ZodSchema, E extends Envelope, S extends boolean = false>(
-    data: unknown,
-    envelope: E,
-    schema: T,
-    safeParse?: S
-  ): S extends true
-    ? E extends ArrayEnvelope
-      ? ParsedResult<unknown, z.infer<T>[]>
-      : ParsedResult<unknown, z.infer<T>>
+  ): E extends DynamoDBArrayEnvelope
+    ? DynamoDBStreamEnvelopeResponse<InferOutput<T>>[]
     : E extends ArrayEnvelope
-      ? z.infer<T>[]
-      : z.infer<T>;
+      ? InferOutput<T>[]
+      : InferOutput<T>;
+
+  // With envelope, with safeParse
+  <T extends StandardSchemaV1, E extends Envelope>(
+    data: unknown,
+    envelope: E,
+    schema: T,
+    safeParse: true
+  ): E extends DynamoDBArrayEnvelope
+    ? ParsedResult<unknown, DynamoDBStreamEnvelopeResponse<InferOutput<T>>[]>
+    : E extends ArrayEnvelope
+      ? ParsedResult<unknown, InferOutput<T>[]>
+      : ParsedResult<unknown, InferOutput<T>>;
 };
+
+type InferOutput<Schema extends StandardSchemaV1> = NonNullable<
+  Schema['~standard']['types']
+>['output'];
 
 export type {
   ParseFunction,
+  InferOutput,
   ParsedResult,
   ParsedResultError,
   ParsedResultSuccess,

@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import type {
+  AppSyncBatchResolverEvent,
+  AppSyncResolverEvent,
+} from '../types/schema.js';
 import {
   AppSyncCognitoIdentity,
   AppSyncIamIdentity,
@@ -80,30 +84,30 @@ const AppSyncIdentity = z.union([
  * }
  * ```
  *
+ * @see {@link AppSyncResolverEvent | `AppSyncResolverEvent`}
  * @see {@link https://docs.aws.amazon.com/appsync/latest/devguide/resolver-context-reference-js.html}
  */
-
 const AppSyncResolverSchema = z.object({
-  arguments: z.record(z.any()),
+  arguments: z.record(z.string(), z.any()),
   identity: z.optional(AppSyncIdentity),
-  source: z.record(z.any()).nullable(),
+  source: z.record(z.string(), z.any()).nullable(),
   request: z.object({
     domainName: z.string().nullable(),
-    headers: z.record(z.string()),
+    headers: z.record(z.string(), z.string()),
   }),
   info: z.object({
     selectionSetList: z.array(z.string()),
     selectionSetGraphQL: z.string(),
     parentTypeName: z.string(),
     fieldName: z.string(),
-    variables: z.record(z.any()),
+    variables: z.record(z.string(), z.any()),
   }),
   prev: z
     .object({
-      result: z.record(z.any()),
+      result: z.record(z.string(), z.any()),
     })
     .nullable(),
-  stash: z.record(z.any()),
+  stash: z.record(z.string(), z.any()),
 });
 
 /**
@@ -224,9 +228,9 @@ const AppSyncResolverSchema = z.object({
  * }]
  * ```
  *
+ * @see {@link AppSyncBatchResolverEvent | `AppSyncBatchResolverEvent`}
  * @see {@link https://docs.aws.amazon.com/appsync/latest/devguide/tutorial-lambda-resolvers.html#advanced-use-case-batching}
  */
-
 const AppSyncBatchResolverSchema = z.array(AppSyncResolverSchema);
 
 export {

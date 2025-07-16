@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ALBEvent } from '../types/schema.js';
 
 /**
  * Zod schema for Application Load Balancer events.
@@ -59,7 +60,7 @@ import { z } from 'zod';
  * }
  * ```
  *
- * @see {@link types.ALBEvent | ALBEvent}
+ * @see {@link ALBEvent | `ALBEvent`}
  * @see {@link https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html}
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/services-alb.html}
  */

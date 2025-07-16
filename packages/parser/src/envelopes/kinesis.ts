@@ -1,9 +1,6 @@
-import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
+import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
-import {
-  type KinesisDataStreamRecord,
-  KinesisDataStreamSchema,
-} from '../schemas/kinesis.js';
+import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
 import type { ParsedResult } from '../types/index.js';
 import { envelopeDiscriminator } from './envelope.js';
 
@@ -23,7 +20,7 @@ export const KinesisEnvelope = {
    * @hidden
    */
   [envelopeDiscriminator]: 'array' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
+  parse<T>(data: unknown, schema: ZodType<T>): T[] {
     let parsedEnvelope: z.infer<typeof KinesisDataStreamSchema>;
     try {
       parsedEnvelope = KinesisDataStreamSchema.parse(data);
@@ -34,7 +31,7 @@ export const KinesisEnvelope = {
     }
 
     return parsedEnvelope.Records.map((record, recordIndex) => {
-      let parsedRecord: z.infer<typeof KinesisDataStreamRecord>;
+      let parsedRecord: T;
       try {
         parsedRecord = schema.parse(record.kinesis.data);
       } catch (error) {
@@ -60,10 +57,7 @@ export const KinesisEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>[]> {
+  safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T[]> {
     const parsedEnvelope = KinesisDataStreamSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {
@@ -77,8 +71,8 @@ export const KinesisEnvelope = {
 
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
-      records: z.infer<T>[];
-      errors: { index?: number; issues?: ZodIssue[] };
+      records: T[];
+      errors: { [key: number]: { issues: z.core.$ZodIssue[] } };
     }>(
       (acc, record, index) => {
         const parsedRecord = schema.safeParse(record.kinesis.data);
@@ -89,7 +83,6 @@ export const KinesisEnvelope = {
             path: ['Records', index, 'kinesis', 'data', ...issue.path],
           }));
           acc.success = false;
-          // @ts-expect-error - index is assigned
           acc.errors[index] = { issues };
           return acc;
         }
@@ -112,7 +105,6 @@ export const KinesisEnvelope = {
       success: false,
       error: new ParseError(errorMessage, {
         cause: new ZodError(
-          // @ts-expect-error - issues are assigned because success is false
           Object.values(result.errors).flatMap((error) => error.issues)
         ),
       }),

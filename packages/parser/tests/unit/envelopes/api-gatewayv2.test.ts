@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { ApiGatewayV2Envelope } from '../../../src/envelopes/api-gatewayv2.js';
-import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers/index.js';
 import type { APIGatewayProxyEventV2 } from '../../../src/types/schema.js';
 import { getTestEvent, omit } from '../helpers/utils.js';
@@ -33,9 +32,8 @@ describe('Envelope: API Gateway HTTP', () => {
               {
                 code: 'invalid_type',
                 expected: 'object',
-                received: 'undefined',
                 path: ['body'],
-                message: 'Required',
+                message: 'Invalid input: expected object, received undefined',
               },
             ],
           }),
@@ -109,25 +107,29 @@ describe('Envelope: API Gateway HTTP', () => {
       const result = ApiGatewayV2Envelope.safeParse(event, schema);
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse API Gateway HTTP body', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['rawPath'],
-              message: 'Required',
-            },
-            {
-              code: 'invalid_type',
-              expected: 'object',
-              received: 'undefined',
-              path: ['body'],
-              message: 'Required',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse API Gateway HTTP body'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                expected: 'string',
+                code: 'invalid_type',
+                path: ['rawPath'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+              {
+                expected: 'object',
+                code: 'invalid_type',
+                path: ['body'],
+                message: 'Invalid input: expected object, received undefined',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });

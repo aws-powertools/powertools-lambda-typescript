@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError, z } from 'zod';
+import { z } from 'zod';
 import { SnsSqsEnvelope } from '../../../src/envelopes/sns-sqs.js';
-import { ParseError } from '../../../src/errors.js';
 import { JSONStringified } from '../../../src/helpers/index.js';
 import type { SqsEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../helpers/utils.js';
@@ -28,15 +27,16 @@ describe('Envelope: SnsSqsEnvelope', () => {
           message: expect.stringContaining(
             'Failed to parse SQS Record at index 0'
           ),
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'number',
-              received: 'string',
-              path: ['Records', 0, 'body'],
-              message: 'Expected number, received string',
-            },
-          ]),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'number',
+                path: ['Records', 0, 'body'],
+                message: 'Invalid input: expected number, received string',
+              },
+            ],
+          }),
         })
       );
     });
@@ -60,18 +60,21 @@ describe('Envelope: SnsSqsEnvelope', () => {
 
       // Act & Assess
       expect(() => SnsSqsEnvelope.parse(event, schema)).toThrow(
-        new ParseError('Failed to parse SQS Envelope', {
-          cause: new ZodError([
-            {
-              code: 'too_small',
-              minimum: 1,
-              type: 'array',
-              inclusive: true,
-              exact: false,
-              message: 'Array must contain at least 1 element(s)',
-              path: ['Records'],
-            },
-          ]),
+        expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining('Failed to parse SQS Envelope'),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                origin: 'array',
+                code: 'too_small',
+                minimum: 1,
+                inclusive: true,
+                path: ['Records'],
+                message: 'Too small: expected array to have >=1 items',
+              },
+            ],
+          }),
         })
       );
     });
@@ -83,14 +86,21 @@ describe('Envelope: SnsSqsEnvelope', () => {
 
       // Act & Assess
       expect(() => SnsSqsEnvelope.parse(event, schema)).toThrow(
-        new ParseError('Failed to parse SQS Record at index 0', {
-          cause: new ZodError([
-            {
-              code: 'custom',
-              message: 'Invalid JSON',
-              path: ['Records', 0, 'body'],
-            },
-          ]),
+        expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse SQS Record at index 0'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'custom',
+                input: 'invalid',
+                message: expect.stringMatching(/^Invalid JSON - /),
+                path: ['Records', 0, 'body'],
+              },
+            ],
+          }),
         })
       );
     });
@@ -102,44 +112,45 @@ describe('Envelope: SnsSqsEnvelope', () => {
 
       // Act & Assess
       expect(() => SnsSqsEnvelope.parse(event, schema)).toThrow(
-        new ParseError('Failed to parse SQS Record at index 0', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['Records', 0, 'body', 'TopicArn'],
-              message: 'Required',
-            },
-            {
-              code: 'invalid_literal',
-              expected: 'Notification',
-              path: ['Records', 0, 'body', 'Type'],
-              message: 'Invalid literal value, expected "Notification"',
-              received: undefined,
-            },
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['Records', 0, 'body', 'Message'],
-              message: 'Required',
-            },
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['Records', 0, 'body', 'MessageId'],
-              message: 'Required',
-            },
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['Records', 0, 'body', 'Timestamp'],
-              message: 'Required',
-            },
-          ]),
+        expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse SQS Record at index 0'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 0, 'body', 'TopicArn'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+              {
+                code: 'invalid_value',
+                values: ['Notification'],
+                path: ['Records', 0, 'body', 'Type'],
+                message: 'Invalid input: expected "Notification"',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 0, 'body', 'Message'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 0, 'body', 'MessageId'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 0, 'body', 'Timestamp'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+            ],
+          }),
         })
       );
     });
@@ -170,20 +181,23 @@ describe('Envelope: SnsSqsEnvelope', () => {
       const result = SnsSqsEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse SQS envelope', {
-          cause: new ZodError([
-            {
-              code: 'too_small',
-              minimum: 1,
-              type: 'array',
-              inclusive: true,
-              exact: false,
-              message: 'Array must contain at least 1 element(s)',
-              path: ['Records'],
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining('Failed to parse SQS envelope'),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                origin: 'array',
+                code: 'too_small',
+                minimum: 1,
+                inclusive: true,
+                path: ['Records'],
+                message: 'Too small: expected array to have >=1 items',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -198,16 +212,23 @@ describe('Envelope: SnsSqsEnvelope', () => {
       const result = SnsSqsEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse SQS Record at index 0', {
-          cause: new ZodError([
-            {
-              code: 'custom',
-              message: 'Invalid JSON',
-              path: ['Records', 0, 'body'],
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse SQS Record at index 0'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'custom',
+                input: 'invalid',
+                message: expect.stringMatching(/^Invalid JSON - /),
+                path: ['Records', 0, 'body'],
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -222,46 +243,48 @@ describe('Envelope: SnsSqsEnvelope', () => {
       const result = SnsSqsEnvelope.safeParse(event, schema);
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse SQS Record at index 0', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['Records', 0, 'body', 'TopicArn'],
-              message: 'Required',
-            },
-            {
-              code: 'invalid_literal',
-              expected: 'Notification',
-              path: ['Records', 0, 'body', 'Type'],
-              message: 'Invalid literal value, expected "Notification"',
-              received: undefined,
-            },
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['Records', 0, 'body', 'Message'],
-              message: 'Required',
-            },
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['Records', 0, 'body', 'MessageId'],
-              message: 'Required',
-            },
-            {
-              code: 'invalid_type',
-              expected: 'string',
-              received: 'undefined',
-              path: ['Records', 0, 'body', 'Timestamp'],
-              message: 'Required',
-            },
-          ]),
+
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse SQS Record at index 0'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 0, 'body', 'TopicArn'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+              {
+                code: 'invalid_value',
+                values: ['Notification'],
+                path: ['Records', 0, 'body', 'Type'],
+                message: 'Invalid input: expected "Notification"',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 0, 'body', 'Message'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 0, 'body', 'MessageId'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                path: ['Records', 0, 'body', 'Timestamp'],
+                message: 'Invalid input: expected string, received undefined',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -282,16 +305,23 @@ describe('Envelope: SnsSqsEnvelope', () => {
       const result = SnsSqsEnvelope.safeParse(event, JSONStringified(schema));
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse SQS Record at index 1', {
-          cause: new ZodError([
-            {
-              code: 'custom',
-              message: 'Invalid JSON',
-              path: ['Records', 1, 'body'],
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse SQS Record at index 1'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'custom',
+                message: expect.stringMatching(/^Invalid JSON - /),
+                fatal: true,
+                path: ['Records', 1, 'body'],
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });
@@ -323,25 +353,29 @@ describe('Envelope: SnsSqsEnvelope', () => {
       const result = SnsSqsEnvelope.safeParse(event, z.number());
 
       // Assess
-      expect(result).be.deep.equal({
+      expect(result).toEqual({
         success: false,
-        error: new ParseError('Failed to parse SQS Records at indexes 0, 1', {
-          cause: new ZodError([
-            {
-              code: 'invalid_type',
-              expected: 'number',
-              received: 'string',
-              path: ['Records', 0, 'body'],
-              message: 'Expected number, received string',
-            },
-            {
-              code: 'invalid_type',
-              expected: 'number',
-              received: 'string',
-              path: ['Records', 1, 'body'],
-              message: 'Expected number, received string',
-            },
-          ]),
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse SQS Records at indexes 0, 1'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              {
+                code: 'invalid_type',
+                expected: 'number',
+                path: ['Records', 0, 'body'],
+                message: 'Invalid input: expected number, received string',
+              },
+              {
+                code: 'invalid_type',
+                expected: 'number',
+                path: ['Records', 1, 'body'],
+                message: 'Invalid input: expected number, received string',
+              },
+            ],
+          }),
         }),
         originalEvent: event,
       });

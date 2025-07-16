@@ -7,7 +7,7 @@ You can use the package in both TypeScript and JavaScript code bases.
 - [Intro](#intro)
 - [Key features](#key-features)
 - [Usage](#usage)
-    - [Middleware](#middleware)
+    - [Middy.js Middleware](#middyjs-middleware)
     - [Decorator](#decorator)
     - [Manual parsing](#manual-parsing)
     - [Safe parsing](#safe-parsing)
@@ -23,55 +23,37 @@ You can use the package in both TypeScript and JavaScript code bases.
 
 ## Intro
 
-The parser utility provides data validation and parsing using [Zod](https://zod.dev), a TypeScript-first schema declaration and validation library.
+This utility provides data validation and parsing for [Standard Schema](https://github.com/standard-schema/standard-schema), together with a collection of built-in [Zod](https://zod.dev) schemas and envelopes to parse and unwrap popular AWS event source payloads.
 
 ## Key features
 
-- Define data schema as Zod schema, then parse, validate and extract only what you want
-- Built-in envelopes to unwrap and validate popular AWS event sources payloads
-- Extend and customize envelopes to fit your needs
-- Safe parsing option to avoid throwing errors and custom error handling
-- Available for Middy.js middleware and TypeScript method decorators
+- Accept a [Standard Schema](https://github.com/standard-schema/standard-schema) and parse incoming payloads
+- Built-in Zod schemas and envelopes to unwrap and validate popular AWS event sources payloads
+- Extend and customize built-in Zod schemas to fit your needs
+- Safe parsing option to avoid throwing errors and allow custom error handling
+- Available as Middy.js middleware and TypeScript class method decorator
 
 ## Usage
 
 To get started, install the library by running:
 
 ```sh
-npm install @aws-lambda-powertools/parser zod@~3
+npm install @aws-lambda-powertools/parser zod
 ```
 
-Then, define your schema using Zod:
+You can parse inbound events using the `parser` decorator, Middy.js middleware, or [manually](#manual-parsing) using built-in envelopes and schemas.
+
+When using the decorator or middleware, you can specify a schema to parse the event: this can be a [built-in Zod schema](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser/#built-in-schemas) or a custom schema you defined. Custom schemas can be defined using Zod or any other [Standard Schema compatible library](https://standardschema.dev/#what-schema-libraries-implement-the-spec).
+
+### Middy.js Middleware
+
+Using Zod schemas:
 
 ```typescript
-import { z } from 'zod';
-
-const orderSchema = z.object({
-  id: z.number().positive(),
-  description: z.string(),
-  items: z.array(
-    z.object({
-      id: z.number().positive(),
-      quantity: z.number(),
-      description: z.string(),
-    })
-  ),
-  optionalField: z.string().optional(),
-});
-
-export { orderSchema };
-```
-
-Next, you can parse incoming events using the `parser` decorator or Middy.js middleware:
-
-### Middleware
-
-```typescript
-import type { Context } from 'aws-lambda';
-import { parser } from '@aws-lambda-powertools/parser/middleware';
-import { z } from 'zod';
-import middy from '@middy/core';
 import { Logger } from '@aws-lambda-powertools/logger';
+import { parser } from '@aws-lambda-powertools/parser/middleware';
+import middy from '@middy/core';
+import { z } from 'zod';
 
 const logger = new Logger();
 
@@ -81,38 +63,72 @@ const orderSchema = z.object({
   items: z.array(
     z.object({
       id: z.number().positive(),
-      quantity: z.number(),
+      quantity: z.number().positive(),
       description: z.string(),
     })
   ),
   optionalField: z.string().optional(),
 });
 
-type Order = z.infer<typeof orderSchema>;
+export const handler = middy()
+  .use(parser({ schema: orderSchema }))
+  .handler(async (event): Promise<void> => {
+    for (const item of event.items) {
+      // item is parsed as OrderItem
+      logger.info('Processing item', { item });
+    }
+  });
+```
 
-const lambdaHandler = async (
-  event: Order,
-  _context: Context
-): Promise<void> => {
-  for (const item of event.items) {
-    // item is parsed as OrderItem
-    logger.info('Processing item', { item });
-  }
-};
+Using Valibot schemas:
 
-export const handler = middy(lambdaHandler).use(
-  parser({ schema: orderSchema })
-);
+```typescript
+import { Logger } from '@aws-lambda-powertools/logger';
+import { parser } from '@aws-lambda-powertools/parser/middleware';
+import middy from '@middy/core';
+import {
+  array,
+  number,
+  object,
+  optional,
+  pipe,
+  string,
+  toMinValue,
+} from 'valibot';
+
+const logger = new Logger();
+
+const orderSchema = object({
+  id: pipe(number(), toMinValue(0)),
+  description: string(),
+  items: array(
+    object({
+      id: pipe(number(), toMinValue(0)),
+      quantity: pipe(number(), toMinValue(1)),
+      description: string(),
+    })
+  ),
+  optionalField: optional(string()),
+});
+
+export const handler = middy()
+  .use(parser({ schema: orderSchema }))
+  .handler(async (event): Promise<void> => {
+    for (const item of event.items) {
+      // item is parsed as OrderItem
+      logger.info('Processing item', { item });
+    }
+  });
 ```
 
 ### Decorator
 
 ```typescript
-import type { Context } from 'aws-lambda';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
-import { parser } from '@aws-lambda-powertools/parser';
-import { z } from 'zod';
 import { Logger } from '@aws-lambda-powertools/logger';
+import { parser } from '@aws-lambda-powertools/parser';
+import type { Context } from 'aws-lambda';
+import { z } from 'zod';
 
 const logger = new Logger();
 
@@ -147,7 +163,7 @@ export const handler = myFunction.handler.bind(myFunction);
 
 ### Manual parsing
 
-If you don't want to add an additional dependency, or you prefer the manual approach, you can `parse` the event directly by calling the `parse` method on schemas and envelopes:
+If you don't want to add an additional middleware dependency, or you prefer the manual approach, you can parse the event directly by calling the `parse` method on schemas and envelopes:
 
 ```typescript
 import type { Context } from 'aws-lambda';

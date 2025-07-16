@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import type { APIGatewayProxyWebsocketEvent } from '../types/schema.js';
+import { APIGatewayRecord, APIGatewayStringArray } from './apigw-proxy.js';
 
 /**
  * A zod schema for API Gateway Proxy WebSocket events.
@@ -59,19 +61,19 @@ import { z } from 'zod';
  * }
  * ```
  *
+ * @see {@link APIGatewayProxyWebsocketEvent | `APIGatewayProxyWebsocketEvent`}
  * @see {@link https://docs.aws.amazon.com/apigateway/latest/developerguide/websocket-api-develop-integrations.html}
  */
 export const APIGatewayProxyWebsocketEventSchema = z.object({
   type: z.string(),
   methodArn: z.string(),
-  headers: z.record(z.string()),
-  multiValueHeaders: z.record(z.array(z.string())),
-  queryStringParameters: z.record(z.string()).nullable().optional(),
+  headers: z.record(z.string(), z.string()).nullish(),
+  multiValueHeaders: z.record(z.string(), APIGatewayStringArray),
+  queryStringParameters: APIGatewayRecord.nullable(),
   multiValueQueryStringParameters: z
-    .record(z.array(z.string()))
-    .nullable()
-    .optional(),
-  stageVariables: z.record(z.string()).nullable().optional(),
+    .record(z.string(), APIGatewayStringArray)
+    .nullable(),
+  stageVariables: APIGatewayRecord.nullable().optional(),
   requestContext: z.object({
     routeKey: z.string(),
     eventType: z.enum(['CONNECT', 'DISCONNECT', 'MESSAGE']),

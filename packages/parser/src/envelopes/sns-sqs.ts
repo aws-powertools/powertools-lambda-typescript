@@ -1,11 +1,11 @@
-import { ZodError, type ZodIssue, type ZodSchema, type z } from 'zod';
+import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { SnsSqsNotificationSchema } from '../schemas/sns.js';
 import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult, SnsSqsNotification } from '../types/index.js';
 import { envelopeDiscriminator } from './envelope.js';
 
-const createError = (index: number, issues: ZodIssue[]) => ({
+const createError = (index: number, issues: z.core.$ZodIssue[]) => ({
   issues: issues.map((issue) => ({
     ...issue,
     path: ['Records', index, 'body', ...issue.path],
@@ -19,13 +19,13 @@ type ParseStepSuccess<T> = {
 
 type ParseStepError = {
   success: false;
-  error: { issues: ZodIssue[] };
+  error: { issues: z.core.$ZodIssue[] };
 };
 
 type ParseStepResult<T> = ParseStepSuccess<T> | ParseStepError;
 
 const parseStep = <U>(
-  parser: (data: unknown) => z.SafeParseReturnType<unknown, U>,
+  parser: (data: unknown) => z.ZodSafeParseResult<U>,
   data: unknown,
   index: number
 ): ParseStepResult<U> => {
@@ -56,7 +56,7 @@ export const SnsSqsEnvelope = {
    * @hidden
    */
   [envelopeDiscriminator]: 'array' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
+  parse<T>(data: unknown, schema: ZodType<T>): T[] {
     let parsedEnvelope: z.infer<typeof SqsSchema>;
     try {
       parsedEnvelope = SqsSchema.parse(data);
@@ -84,7 +84,8 @@ export const SnsSqsEnvelope = {
                 : [
                     {
                       code: 'custom',
-                      message: 'Invalid JSON',
+                      input: record.body,
+                      message: `Invalid JSON - ${(error as Error).message}`,
                       path: ['Records', recordIndex, 'body'],
                     },
                   ]
@@ -95,10 +96,7 @@ export const SnsSqsEnvelope = {
     });
   },
 
-  safeParse<T extends ZodSchema>(
-    data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>[]> {
+  safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T[]> {
     const parsedEnvelope = SqsSchema.safeParse(data);
     if (!parsedEnvelope.success) {
       return {
@@ -113,7 +111,7 @@ export const SnsSqsEnvelope = {
     const parseRecord = (
       record: { body: string },
       index: number
-    ): ParseStepResult<z.infer<T>> => {
+    ): ParseStepResult<T> => {
       try {
         const body = JSON.parse(record.body);
         const notification = parseStep<SnsSqsNotification>(
@@ -123,18 +121,19 @@ export const SnsSqsEnvelope = {
         );
         if (!notification.success) return notification;
 
-        return parseStep<z.infer<T>>(
+        return parseStep<T>(
           (data) => schema.safeParse(data),
           notification.data.Message,
           index
         );
-      } catch {
+      } catch (error) {
         return {
           success: false,
           error: createError(index, [
             {
               code: 'custom',
-              message: 'Invalid JSON',
+              message: `Invalid JSON - ${(error as Error).message}`,
+              input: record.body,
               path: [],
             },
           ]),
@@ -144,9 +143,9 @@ export const SnsSqsEnvelope = {
 
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
-      records: z.infer<T>[];
+      records: T[];
       errors: {
-        [key: number | string]: { issues: ZodIssue[] };
+        [key: number | string]: { issues: z.core.$ZodIssue[] };
       };
     }>(
       (acc, record, index) => {

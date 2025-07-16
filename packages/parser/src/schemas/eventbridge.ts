@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { EventBridgeEvent } from '../types/schema.js';
 
 /**
  * Zod schema for EventBridge event
@@ -24,7 +25,7 @@ import { z } from 'zod';
  * }
  * ```
  *
- * @see {@link types.EventBridgeEvent | EventBridgeEvent}
+ * @see {@link EventBridgeEvent | `EventBridgeEvent`}
  * @see {@link https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-and-events.html}
  */
 const EventBridgeSchema = z.object({
@@ -32,7 +33,7 @@ const EventBridgeSchema = z.object({
   id: z.string(),
   source: z.string(),
   account: z.string(),
-  time: z.string().datetime(),
+  time: z.iso.datetime(),
   region: z.string(),
   resources: z.array(z.string()),
   'detail-type': z.string(),

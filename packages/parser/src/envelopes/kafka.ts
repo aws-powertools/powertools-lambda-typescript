@@ -1,4 +1,4 @@
-import { ZodError, type ZodIssue, type ZodSchema, z } from 'zod';
+import { ZodError, type ZodType, z } from 'zod';
 import { ParseError } from '../errors.js';
 import {
   KafkaMskEventSchema,
@@ -43,7 +43,7 @@ export const KafkaEnvelope = {
    * @hidden
    */
   [envelopeDiscriminator]: 'array' as const,
-  parse<T extends ZodSchema>(data: unknown, schema: T): z.infer<T>[] {
+  parse<T>(data: unknown, schema: ZodType<T>): z.infer<ZodType<T>>[] {
     const eventSource = extractEventSource(data);
 
     const parsedEnvelope =
@@ -51,7 +51,7 @@ export const KafkaEnvelope = {
         ? KafkaMskEventSchema.parse(data)
         : KafkaSelfManagedEventSchema.parse(data);
 
-    const values: z.infer<T>[] = [];
+    const values: z.infer<ZodType<T>>[] = [];
     for (const topicRecord of Object.values(parsedEnvelope.records)) {
       for (const record of topicRecord) {
         values.push(schema.parse(record.value));
@@ -61,10 +61,10 @@ export const KafkaEnvelope = {
     return values;
   },
 
-  safeParse<T extends ZodSchema>(
+  safeParse<T>(
     data: unknown,
-    schema: T
-  ): ParsedResult<unknown, z.infer<T>[]> {
+    schema: ZodType<T>
+  ): ParsedResult<unknown, z.infer<ZodType<T>>[]> {
     // manually fetch event source to deside between Msk or SelfManaged
     const eventSource = (data as KafkaMskEvent).eventSource;
 
@@ -83,8 +83,8 @@ export const KafkaEnvelope = {
       };
     }
 
-    const values: z.infer<T>[] = [];
-    const issues: ZodIssue[] = [];
+    const values: z.infer<z.ZodType<T>>[] = [];
+    const issues: z.core.$ZodIssue[] = [];
     for (const [topicKey, topicRecord] of Object.entries(
       parsedEnvelope.data.records
     )) {
@@ -92,11 +92,12 @@ export const KafkaEnvelope = {
         const parsedRecord = schema.safeParse(record.value);
         if (!parsedRecord.success) {
           issues.push(
-            ...(parsedRecord.error as ZodError).issues.map((issue) => ({
+            ...parsedRecord.error.issues.map((issue) => ({
               ...issue,
               path: ['records', topicKey, ...issue.path],
             }))
           );
+          continue;
         }
         values.push(parsedRecord.data);
       }

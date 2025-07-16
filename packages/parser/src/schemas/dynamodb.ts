@@ -2,6 +2,7 @@ import { unmarshallDynamoDB } from '@aws-lambda-powertools/commons/utils/unmarsh
 import { z } from 'zod';
 import type { KinesisEnvelope } from '../envelopes/kinesis.js';
 import type { DynamoDBMarshalled } from '../helpers/dynamodb.js';
+import type { DynamoDBStreamEvent } from '../types/schema.js';
 
 const DynamoDBStreamChangeRecordBase = z.object({
   ApproximateCreationDateTime: z.number().optional(),
@@ -251,15 +252,15 @@ const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
  * }
  * ```
  *
- * @see {@link types.DynamoDBStreamEvent | DynamoDBStreamEvent}
+ * @see {@link DynamoDBStreamEvent | DynamoDBStreamEvent}
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html}
  */
 const DynamoDBStreamSchema = z.object({
-  Records: z.array(DynamoDBStreamRecord).min(1),
+  Records: z.array(DynamoDBStreamRecord).nonempty(),
   window: z
     .object({
-      start: z.string().datetime(),
-      end: z.string().datetime(),
+      start: z.iso.datetime(),
+      end: z.iso.datetime(),
     })
     .optional(),
   state: z.record(z.string(), z.string()).optional(),

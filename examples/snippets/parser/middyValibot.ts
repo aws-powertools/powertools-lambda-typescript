@@ -1,21 +1,29 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 import { parser } from '@aws-lambda-powertools/parser/middleware';
 import middy from '@middy/core';
-import { z } from 'zod';
+import {
+  array,
+  number,
+  object,
+  optional,
+  pipe,
+  string,
+  toMinValue,
+} from 'valibot';
 
 const logger = new Logger();
 
-const orderSchema = z.object({
-  id: z.number().positive(),
-  description: z.string(),
-  items: z.array(
-    z.object({
-      id: z.number().positive(),
-      quantity: z.number().positive(),
-      description: z.string(),
+const orderSchema = object({
+  id: pipe(number(), toMinValue(0)),
+  description: string(),
+  items: array(
+    object({
+      id: pipe(number(), toMinValue(0)),
+      quantity: pipe(number(), toMinValue(1)),
+      description: string(),
     })
   ),
-  optionalField: z.string().optional(),
+  optionalField: optional(string()),
 });
 
 export const handler = middy()

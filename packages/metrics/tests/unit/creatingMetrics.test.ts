@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_NAMESPACE,
+  MAX_METRIC_NAME_LENGTH,
   MAX_METRICS_SIZE,
   MetricResolution,
+  MIN_METRIC_NAME_LENGTH,
 } from '../../src/constants.js';
 import { Metrics, MetricUnit } from '../../src/index.js';
 
@@ -265,6 +267,84 @@ describe('Creating metrics', () => {
         service: 'hello-world',
         test: Array.from({ length: MAX_METRICS_SIZE }, (_, i) => i),
       })
+    );
+  });
+
+  it('throws when an invalid metric name is passed', () => {
+    // Prepare
+    const metrics = new Metrics();
+
+    // Act & Assess
+    // @ts-expect-error - Testing runtime behavior with non-numeric metric value
+    expect(() => metrics.addMetric(1, MetricUnit.Count, 1)).toThrowError(
+      '1 is not a valid string'
+    );
+  });
+
+  it('throws when an empty string is passed in the metric name', () => {
+    // Prepare
+    const metrics = new Metrics();
+
+    // Act & Assess
+    expect(() => metrics.addMetric('', MetricUnit.Count, 1)).toThrowError(
+      `The metric name should be between ${MIN_METRIC_NAME_LENGTH} and ${MAX_METRIC_NAME_LENGTH} characters`
+    );
+  });
+
+  it(`throws when a string of more than ${MAX_METRIC_NAME_LENGTH} characters is passed in the metric name`, () => {
+    // Prepare
+    const metrics = new Metrics();
+
+    // Act & Assess
+    expect(() =>
+      metrics.addMetric(
+        'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis,.',
+        MetricUnit.Count,
+        1
+      )
+    ).toThrowError(
+      new RangeError(
+        `The metric name should be between ${MIN_METRIC_NAME_LENGTH} and ${MAX_METRIC_NAME_LENGTH} characters`
+      )
+    );
+  });
+
+  it('throws when a non-numeric metric value is passed', () => {
+    // Prepare
+    const metrics = new Metrics();
+
+    // Act & Assess
+    expect(() =>
+      // @ts-expect-error - Testing runtime behavior with non-numeric metric value
+      metrics.addMetric('test', MetricUnit.Count, 'one')
+    ).toThrowError(new RangeError('one is not a valid number'));
+  });
+
+  it('throws when an invalid unit is passed', () => {
+    // Prepare
+    const metrics = new Metrics();
+
+    // Act & Assess
+    // @ts-expect-error - Testing runtime behavior with invalid metric unit
+    expect(() => metrics.addMetric('test', 'invalid-unit', 1)).toThrowError(
+      new RangeError(
+        `Invalid metric unit 'invalid-unit', expected either option: ${Object.values(MetricUnit).join(',')}`
+      )
+    );
+  });
+
+  it('throws when an invalid resolution is passed', () => {
+    // Prepare
+    const metrics = new Metrics();
+
+    // Act & Assess
+    expect(() =>
+      // @ts-expect-error - Testing runtime behavior with invalid metric unit
+      metrics.addMetric('test', MetricUnit.Count, 1, 'invalid-resolution')
+    ).toThrowError(
+      new RangeError(
+        `Invalid metric resolution 'invalid-resolution', expected either option: ${Object.values(MetricResolution).join(',')}`
+      )
     );
   });
 });

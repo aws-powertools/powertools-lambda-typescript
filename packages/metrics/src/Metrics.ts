@@ -1,5 +1,11 @@
 import { Console } from 'node:console';
-import { isIntegerNumber, Utility } from '@aws-lambda-powertools/commons';
+import {
+  isIntegerNumber,
+  isNumber,
+  isString,
+  isStringUndefinedNullEmpty,
+  Utility,
+} from '@aws-lambda-powertools/commons';
 import type {
   GenericLogger,
   HandlerMethodDecorator,
@@ -12,10 +18,12 @@ import {
   EMF_MAX_TIMESTAMP_FUTURE_AGE,
   EMF_MAX_TIMESTAMP_PAST_AGE,
   MAX_DIMENSION_COUNT,
+  MAX_METRIC_NAME_LENGTH,
   MAX_METRIC_VALUES_SIZE,
   MAX_METRICS_SIZE,
   MetricResolution as MetricResolutions,
   MetricUnit as MetricUnits,
+  MIN_METRIC_NAME_LENGTH,
 } from './constants.js';
 import type {
   ConfigServiceInterface,
@@ -238,7 +246,7 @@ class Metrics extends Utility implements MetricsInterface {
    * @param value - The value of the dimension
    */
   public addDimension(name: string, value: string): void {
-    if (!value) {
+    if (isStringUndefinedNullEmpty(name) || isStringUndefinedNullEmpty(value)) {
       this.#logger.warn(
         `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
       );
@@ -275,7 +283,10 @@ class Metrics extends Utility implements MetricsInterface {
   public addDimensions(dimensions: Dimensions): void {
     const newDimensionSet: Dimensions = {};
     for (const [key, value] of Object.entries(dimensions)) {
-      if (!value) {
+      if (
+        isStringUndefinedNullEmpty(key) ||
+        isStringUndefinedNullEmpty(value)
+      ) {
         this.#logger.warn(
           `The dimension ${key} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
         );
@@ -1067,6 +1078,25 @@ class Metrics extends Utility implements MetricsInterface {
     value: number,
     resolution: MetricResolution
   ): void {
+    if (!isString(name)) throw new Error(`${name} is not a valid string`);
+    if (
+      name.length < MIN_METRIC_NAME_LENGTH ||
+      name.length > MAX_METRIC_NAME_LENGTH
+    )
+      throw new RangeError(
+        `The metric name should be between ${MIN_METRIC_NAME_LENGTH} and ${MAX_METRIC_NAME_LENGTH} characters`
+      );
+    if (!isNumber(value))
+      throw new RangeError(`${value} is not a valid number`);
+    if (!Object.values(MetricUnits).includes(unit))
+      throw new RangeError(
+        `Invalid metric unit '${unit}', expected either option: ${Object.values(MetricUnits).join(',')}`
+      );
+    if (!Object.values(MetricResolutions).includes(resolution))
+      throw new RangeError(
+        `Invalid metric resolution '${resolution}', expected either option: ${Object.values(MetricResolutions).join(',')}`
+      );
+
     if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
       this.publishStoredMetrics();
     }

@@ -7,6 +7,14 @@ const COLD_START_METRIC = 'ColdStart';
  */
 const DEFAULT_NAMESPACE = 'default_namespace';
 /**
+ * The minimum length constraint of the metric name
+ */
+const MIN_METRIC_NAME_LENGTH = 1;
+/**
+ * The maximum length constraint of the metric name
+ */
+const MAX_METRIC_NAME_LENGTH = 255;
+/**
  * The maximum number of metrics that can be emitted in a single EMF blob.
  */
 const MAX_METRICS_SIZE = 100;
@@ -78,6 +86,8 @@ const MetricResolution = {
 export {
   COLD_START_METRIC,
   DEFAULT_NAMESPACE,
+  MIN_METRIC_NAME_LENGTH,
+  MAX_METRIC_NAME_LENGTH,
   MAX_METRICS_SIZE,
   MAX_METRIC_VALUES_SIZE,
   MAX_DIMENSION_COUNT,

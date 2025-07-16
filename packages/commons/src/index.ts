@@ -22,6 +22,7 @@ export {
   isRecord,
   isStrictEqual,
   isString,
+  isStringUndefinedNullEmpty,
   isTruthy,
 } from './typeUtils.js';
 export { Utility } from './Utility.js';

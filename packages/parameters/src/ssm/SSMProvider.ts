@@ -1,4 +1,5 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { getBooleanFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import type {
   GetParameterCommandInput,
   GetParametersByPathCommandInput,
@@ -843,13 +844,12 @@ class SSMProvider extends BaseProvider {
     if (options?.decrypt !== undefined) return options.decrypt;
     if (sdkOptions?.WithDecryption !== undefined)
       return sdkOptions.WithDecryption;
-    if (this.envVarsService.getSSMDecrypt() !== '') {
-      return this.envVarsService.isValueTrue(
-        this.envVarsService.getSSMDecrypt()
-      );
-    }
 
-    return undefined;
+    return getBooleanFromEnv({
+      key: 'POWERTOOLS_PARAMETERS_SSM_DECRYPT',
+      defaultValue: false,
+      extendedParsing: true,
+    });
   }
 
   /**

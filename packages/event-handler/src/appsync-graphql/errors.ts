@@ -8,4 +8,11 @@ class ResolverNotFoundException extends Error {
   }
 }
 
-export { ResolverNotFoundException };
+class InvalidBatchResponseException extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'InvalidBatchResponseException';
+  }
+}
+
+export { ResolverNotFoundException, InvalidBatchResponseException };

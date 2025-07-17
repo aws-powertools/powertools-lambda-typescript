@@ -5,8 +5,11 @@ import type {
   RouteHandlerOptions,
 } from '../types/appsync-graphql.js';
 import type { ResolveOptions } from '../types/common.js';
-import { ResolverNotFoundException } from './errors.js';
 import { Router } from './Router.js';
+import {
+  InvalidBatchResponseException,
+  ResolverNotFoundException,
+} from './errors.js';
 import { isAppSyncGraphQLEvent } from './utils.js';
 
 /**
@@ -109,7 +112,17 @@ class AppSyncGraphQLResolver extends Router {
         );
         return;
       }
-      return await this.#executeBatchResolvers(event, context, options);
+      try {
+        return await this.#executeBatchResolvers(event, context, options);
+      } catch (error) {
+        this.logger.error(
+          `An error occurred in batch handler ${event[0].info.fieldName}`,
+          error
+        );
+        if (error instanceof InvalidBatchResponseException) throw error;
+        if (error instanceof ResolverNotFoundException) throw error;
+        return this.#formatErrorResponse(error);
+      }
     }
     if (!isAppSyncGraphQLEvent(event)) {
       this.logger.warn(
@@ -134,7 +147,6 @@ class AppSyncGraphQLResolver extends Router {
     context: Context,
     options?: ResolveOptions
   ): Promise<unknown[]> {
-    const results: unknown[] = [];
     const { fieldName, parentTypeName: typeName } = events[0].info;
     const batchHandlerOptions = this.batchResolverRegistry.resolve(
       typeName,
@@ -142,24 +154,17 @@ class AppSyncGraphQLResolver extends Router {
     );
 
     if (batchHandlerOptions) {
-      try {
-        const result = await this.#callBatchResolver(
-          events,
-          context,
-          batchHandlerOptions,
-          options
-        );
-        results.push(...result);
-      } catch (error) {
-        this.logger.error(
-          `An error occurred in batch handler ${fieldName}`,
-          error
-        );
-        throw error;
-      }
+      return await this.#callBatchResolver(
+        events,
+        context,
+        batchHandlerOptions,
+        options
+      );
     }
 
-    return results;
+    throw new ResolverNotFoundException(
+      `No resolver found for ${typeName}-${fieldName}`
+    );
   }
 
   async #callBatchResolver(
@@ -173,7 +178,6 @@ class AppSyncGraphQLResolver extends Router {
       `Graceful error handling flag raiseOnError=${raiseOnError}`
     );
 
-    // Checks whether the entire batch should be processed at once
     if (aggregate) {
       const response = await (
         options.handler as BatchResolverAggregateHandlerFn
@@ -183,7 +187,7 @@ class AppSyncGraphQLResolver extends Router {
       ]);
 
       if (!Array.isArray(response)) {
-        throw new Error(
+        throw new InvalidBatchResponseException(
           'The response must be a List when using batch resolvers'
         );
       }
@@ -193,12 +197,6 @@ class AppSyncGraphQLResolver extends Router {
 
     const handler = options.handler as ResolverHandler;
 
-    /**
-     * Non aggregated events, so we call this event list x times and
-     * process each event individually.
-     */
-
-    // If `raiseOnError` is true, stop on first exception we encounter
     if (raiseOnError) {
       const results: unknown[] = [];
       for (const event of events) {
@@ -211,7 +209,6 @@ class AppSyncGraphQLResolver extends Router {
       return results;
     }
 
-    // By default, we gracefully append `null` for any records that failed processing
     const results: unknown[] = [];
     for (let idx = 0; idx < events.length; idx++) {
       const event = events[idx];
@@ -226,6 +223,7 @@ class AppSyncGraphQLResolver extends Router {
         this.logger.debug(
           `Failed to process event number ${idx} from field '${event.info.fieldName}'`
         );
+        // By default, we gracefully append `null` for any records that failed processing
         results.push(null);
       }
     }

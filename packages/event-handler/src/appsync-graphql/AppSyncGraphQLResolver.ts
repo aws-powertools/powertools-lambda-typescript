@@ -5,11 +5,11 @@ import type {
   RouteHandlerOptions,
 } from '../types/appsync-graphql.js';
 import type { ResolveOptions } from '../types/common.js';
-import { Router } from './Router.js';
 import {
   InvalidBatchResponseException,
   ResolverNotFoundException,
 } from './errors.js';
+import { Router } from './Router.js';
 import { isAppSyncGraphQLEvent } from './utils.js';
 
 /**
@@ -60,6 +60,29 @@ class AppSyncGraphQLResolver extends Router {
    * }, {
    *   fieldName: 'getPost',
    *   typeName: 'Query'
+   * });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * Resolves the response based on the provided batch event and route handlers configured.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import type { AppSyncResolverEvent, Context } from 'aws-lambda';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * app.batchResolver(async (events: AppSyncResolverEvent<Record<string, unknown>>[]) => {
+   *   // your business logic here
+   *   const ids = events.map((event) => event.source.id);
+   *   return ids.map((id) => ({
+   *     id,
+   *     title: 'Post Title',
+   *     content: 'Post Content',
+   *   }));
    * });
    *
    * export const handler = async (event, context) =>
@@ -193,6 +216,21 @@ class AppSyncGraphQLResolver extends Router {
     );
   }
 
+  /**
+   * Handles batch invocation of AppSync GraphQL resolvers with support for aggregation and error handling.
+   *
+   * @param events - An array of AppSyncResolverEvent objects representing the batch of incoming events.
+   * @param context - The Lambda context object.
+   * @param options - Route handler options, including the handler function, aggregation, and error handling flags.
+   * @param resolveOptions - Optional resolve options, such as custom scope for handler invocation.
+   *
+   * @throws {InvalidBatchResponseException} If the aggregate handler does not return an array.
+   *
+   * @remarks
+   * - If `aggregate` is true, invokes the handler once with the entire batch and expects an array response.
+   * - If `raiseOnError` is true, errors are propagated and will cause the function to throw.
+   * - If `raiseOnError` is false, errors are logged and `null` is appended for failed events, allowing graceful degradation.
+   */
   async #callBatchResolver(
     events: AppSyncResolverEvent<Record<string, unknown>>[],
     context: Context,

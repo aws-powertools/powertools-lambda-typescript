@@ -191,6 +191,19 @@ class AppSyncGraphQLResolver extends Router {
     return this.#formatErrorResponse(error);
   }
 
+  /**
+   * Executes batch resolvers for multiple AppSync GraphQL events.
+   *
+   * This method processes an array of AppSync resolver events as a batch operation.
+   * It looks up the appropriate batch resolver from the registry using the field name
+   * and parent type name from the first event, then delegates to the batch resolver
+   * if found.
+   *
+   * @param events - Array of AppSync resolver events to process as a batch
+   * @param context - AWS Lambda context object
+   * @param options - Optional resolve options for customizing resolver behavior
+   * @throws {ResolverNotFoundException} When no batch resolver is registered for the given type and field combination
+   */
   async #executeBatchResolvers(
     events: AppSyncResolverEvent<Record<string, unknown>>[],
     context: Context,

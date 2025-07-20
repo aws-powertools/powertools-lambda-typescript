@@ -144,17 +144,11 @@ type GraphQlRouteOptions = {
  *
  * @template T - Determines if aggregation is enabled. If `true` (default), the `aggregate` property is set to `true` and `raiseOnError` is not allowed.
  * @template R - Determines if errors should be raised when the handler fails. Defaults to `false`.
- *
- * If `T` is `true`, the options enforce aggregation and disallow `raiseOnError`.
- * If `T` is `false` or `undefined`, both `aggregate` and `raiseOnError` can be set.
  */
 type GraphQlBatchRouteOptions<
   T extends boolean | undefined = true,
   R extends boolean | undefined = false,
-> = GraphQlRouteOptions &
-  (T extends true
-    ? { aggregate?: true; raiseOnError?: never }
-    : { aggregate?: T; raiseOnError?: R });
+> = GraphQlRouteOptions & { aggregate?: T; raiseOnError?: R };
 
 export type {
   RouteHandlerRegistryOptions,

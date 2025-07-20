@@ -21,16 +21,16 @@ type BatchResolverHandlerFn<TParams = Record<string, unknown>> = (
   }
 ) => Promise<unknown>;
 
-type BatchResolverAggregateHandlerFn<TParams = Record<string, unknown>> = (
-  event: AppSyncResolverEvent<TParams>[],
+type BatchResolverAggregateHandlerFn = (
+  event: AppSyncResolverEvent<Record<string, unknown>>[],
   options: {
-    event: AppSyncResolverEvent<TParams>[];
+    event: AppSyncResolverEvent<Record<string, unknown>>[];
     context: Context;
   }
 ) => Promise<unknown>;
 
-type BatchResolverSyncAggregateHandlerFn<TParams = Record<string, unknown>> = (
-  event: AppSyncResolverEvent<TParams>[],
+type BatchResolverSyncAggregateHandlerFn = (
+  event: AppSyncResolverEvent<Record<string, unknown>>[],
   options: {
     context: Context;
   }
@@ -40,9 +40,7 @@ type BatchResolverHandler<
   TParams = Record<string, unknown>,
   T extends boolean | undefined = undefined,
 > = T extends true
-  ?
-      | BatchResolverAggregateHandlerFn<TParams>
-      | BatchResolverSyncAggregateHandlerFn<TParams>
+  ? BatchResolverAggregateHandlerFn | BatchResolverSyncAggregateHandlerFn
   : BatchResolverHandlerFn<TParams> | BatchResolverSyncHandlerFn<TParams>;
 
 // #region Resolver fn

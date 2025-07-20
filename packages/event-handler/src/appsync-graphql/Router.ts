@@ -328,6 +328,100 @@ class Router {
     };
   }
 
+  /**
+   * Register a batch resolver function for GraphQL events that support batching.
+   *
+   * Registers a handler for a specific GraphQL field that can process multiple requests in a batch.
+   * The handler will be invoked when requests are made for the specified field, and can either
+   * process requests individually or aggregate them for batch processing.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import type { AppSyncResolverEvent } from 'aws-lambda';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * // Register a batch Query resolver with aggregation (default)
+   * app.batchResolver(async (events: AppSyncResolverEvent<Record<string, unknown>>[]) => {
+   *   // Process all events in batch
+   *   return events.map(event => ({ id: event.source.id, data: 'processed' }));
+   * }, {
+   *   fieldName: 'getPosts'
+   * });
+   *
+   * // Register a batch resolver without aggregation
+   * app.batchResolver(async (args, { event, context }) => {
+   *   // Process individual request
+   *   return { id: args.id, data: 'processed' };
+   * }, {
+   *   fieldName: 'getPost',
+   *   aggregate: false
+   * });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * You can also specify the type of the arguments using generic type parameters for non-aggregated handlers:
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver()
+   *
+   * app.batchResolver<{ postId: string }, false>(async (args, { event, context }) => {
+   *   // args is typed as { postId: string }
+   *   return { id: args.postId };
+   * }, {
+   *   fieldName: 'getPost',
+   *   aggregate: false
+   * });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * As a decorator:
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * class Lambda {
+   *   ⁣@app.batchResolver({ fieldName: 'getPosts' })
+   *   async handleGetPosts(events) {
+   *     // Process batch of events
+   *     return events.map(event => ({ id: event.arguments.id, data: 'processed' }));
+   *   }
+   *
+   *   ⁣@app.batchResolver({ fieldName: 'getPost', aggregate: false })
+   *   async handleGetPost(args, { event, context }) {
+   *     // Process individual request
+   *     return { id: args.id, data: 'processed' };
+   *   }
+   *
+   *   async handler(event, context) {
+   *     return app.resolve(event, context, {
+   *       scope: this, // bind decorated methods to the class instance
+   *     });
+   *   }
+   * }
+   *
+   * const lambda = new Lambda();
+   * export const handler = lambda.handler.bind(lambda);
+   * ```
+   *
+   * @param handler - The batch handler function to be called when events are received.
+   * @param options - Batch route options including the required fieldName and optional configuration.
+   * @param options.fieldName - The name of the field to register the handler for.
+   * @param options.typeName - The name of the GraphQL type to use for the resolver, defaults to `Query`.
+   * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
+   * @param options.raiseOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
+   */
   public batchResolver<
     TParams extends Record<string, unknown>,
     T extends boolean = true,
@@ -336,11 +430,9 @@ class Router {
     handler: BatchResolverHandler<TParams, T>,
     options: GraphQlBatchRouteOptions<T, R>
   ): void;
-  public batchResolver<
-    TParams extends Record<string, unknown>,
-    T extends boolean = true,
-    R extends boolean = false,
-  >(options: GraphQlBatchRouteOptions<T, R>): MethodDecorator;
+  public batchResolver<T extends boolean = true, R extends boolean = false>(
+    options: GraphQlBatchRouteOptions<T, R>
+  ): MethodDecorator;
   public batchResolver<
     TParams extends Record<string, unknown>,
     T extends boolean = true,

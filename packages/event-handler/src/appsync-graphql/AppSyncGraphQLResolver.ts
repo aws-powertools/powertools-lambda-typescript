@@ -252,7 +252,7 @@ class AppSyncGraphQLResolver extends Router {
   ): Promise<unknown[]> {
     const { aggregate, raiseOnError } = options;
     this.logger.debug(
-      `Graceful error handling flag raiseOnError=${raiseOnError}`
+      `Aggregate flag aggregate=${aggregate} & Graceful error handling flag raiseOnError=${raiseOnError}`
     );
 
     if (aggregate) {
@@ -265,7 +265,7 @@ class AppSyncGraphQLResolver extends Router {
 
       if (!Array.isArray(response)) {
         throw new InvalidBatchResponseException(
-          'The response must be a List when using batch resolvers'
+          'The response must be an array when using batch resolvers'
         );
       }
 

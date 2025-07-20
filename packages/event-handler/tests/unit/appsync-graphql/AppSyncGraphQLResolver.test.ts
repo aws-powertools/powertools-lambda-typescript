@@ -635,7 +635,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       )
     ).rejects.toThrow(
       new InvalidBatchResponseException(
-        'The response must be a List when using batch resolvers'
+        'The response must be an array when using batch resolvers'
       )
     );
   });

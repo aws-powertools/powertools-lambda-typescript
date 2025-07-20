@@ -467,6 +467,234 @@ class Router {
       return descriptor;
     };
   }
+
+  /**
+   * Register a batch handler function for the `query` event.
+   *
+   * Registers a batch handler for a specific GraphQL Query field that can process multiple requests in a batch.
+   * The handler will be invoked when requests are made for the specified field in the Query type.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import type { AppSyncResolverEvent } from 'aws-lambda';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * // Register a batch Query resolver with aggregation (default)
+   * app.onBatchQuery('getPosts', async (events: AppSyncResolverEvent<Record<string, unknown>>[]) => {
+   *   // Process all events in batch
+   *   return events.map(event => ({ id: event.source.id, data: 'processed' }));
+   * });
+   *
+   * // Register a batch Query resolver without aggregation
+   * app.onBatchQuery('getPost', async (args, { event, context }) => {
+   *   // Process individual request
+   *   return { id: args.id, data: 'processed' };
+   * }, { aggregate: false });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * As a decorator:
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * class Lambda {
+   *   ⁣@app.onBatchQuery('getPosts')
+   *   async handleGetPosts(events) {
+   *     // Process batch of events
+   *     return events.map(event => ({ id: event.arguments.id, data: 'processed' }));
+   *   }
+   *
+   *   ⁣@app.onBatchQuery('getPost', { aggregate: false })
+   *   async handleGetPost(args, { event, context }) {
+   *     // Process individual request
+   *     return { id: args.id, data: 'processed' };
+   *   }
+   *
+   *   async handler(event, context) {
+   *     return app.resolve(event, context, {
+   *       scope: this, // bind decorated methods to the class instance
+   *     });
+   *   }
+   * }
+   *
+   * const lambda = new Lambda();
+   * export const handler = lambda.handler.bind(lambda);
+   * ```
+   *
+   * @param fieldName - The name of the Query field to register the batch handler for.
+   * @param handler - The batch handler function to be called when events are received.
+   * @param options - Optional batch configuration including aggregate and raiseOnError settings.
+   */
+  public onBatchQuery<
+    TParams extends Record<string, unknown>,
+    T extends boolean = true,
+    R extends boolean = false,
+  >(
+    fieldName: string,
+    handler: BatchResolverHandler<TParams, T>,
+    options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
+  ): void;
+  public onBatchQuery<T extends boolean = true, R extends boolean = false>(
+    fieldName: string,
+    options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
+  ): MethodDecorator;
+  public onBatchQuery<
+    TParams extends Record<string, unknown>,
+    T extends boolean = true,
+    R extends boolean = false,
+  >(
+    fieldName: string,
+    handlerOrOptions?:
+      | BatchResolverHandler<TParams, T>
+      | Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>,
+    options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
+  ): MethodDecorator | undefined {
+    if (typeof handlerOrOptions === 'function') {
+      this.batchResolverRegistry.register({
+        fieldName,
+        handler: handlerOrOptions as BatchResolverHandler,
+        typeName: 'Query',
+        aggregate: options?.aggregate ?? true,
+        raiseOnError: options?.raiseOnError ?? false,
+      });
+
+      return;
+    }
+
+    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+      this.batchResolverRegistry.register({
+        fieldName,
+        handler: descriptor?.value,
+        typeName: 'Query',
+        aggregate: handlerOrOptions?.aggregate ?? true,
+        raiseOnError: handlerOrOptions?.raiseOnError ?? false,
+      });
+
+      return descriptor;
+    };
+  }
+
+  /**
+   * Register a batch handler function for the `mutation` event.
+   *
+   * Registers a batch handler for a specific GraphQL Mutation field that can process multiple requests in a batch.
+   * The handler will be invoked when requests are made for the specified field in the Mutation type.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import type { AppSyncResolverEvent } from 'aws-lambda';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * // Register a batch Mutation resolver with aggregation (default)
+   * app.onBatchMutation('createPosts', async (events: AppSyncResolverEvent<Record<string, unknown>>[]) => {
+   *   // Process all events in batch
+   *   return events.map(event => ({ id: event.arguments.id, status: 'created' }));
+   * });
+   *
+   * // Register a batch Mutation resolver without aggregation
+   * app.onBatchMutation('createPost', async (args, { event, context }) => {
+   *   // Process individual request
+   *   return { id: args.id, status: 'created' };
+   * }, { aggregate: false });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * As a decorator:
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * class Lambda {
+   *   ⁣@app.onBatchMutation('createPosts')
+   *   async handleCreatePosts(events) {
+   *     // Process batch of events
+   *     return events.map(event => ({ id: event.arguments.id, status: 'created' }));
+   *   }
+   *
+   *   ⁣@app.onBatchMutation('createPost', { aggregate: false })
+   *   async handleCreatePost(args, { event, context }) {
+   *     // Process individual request
+   *     return { id: args.id, status: 'created' };
+   *   }
+   *
+   *   async handler(event, context) {
+   *     return app.resolve(event, context, {
+   *       scope: this, // bind decorated methods to the class instance
+   *     });
+   *   }
+   * }
+   *
+   * const lambda = new Lambda();
+   * export const handler = lambda.handler.bind(lambda);
+   * ```
+   *
+   * @param fieldName - The name of the Mutation field to register the batch handler for.
+   * @param handler - The batch handler function to be called when events are received.
+   * @param options - Optional batch configuration including aggregate and raiseOnError settings.
+   */
+  public onBatchMutation<
+    TParams extends Record<string, unknown>,
+    T extends boolean = true,
+    R extends boolean = false,
+  >(
+    fieldName: string,
+    handler: BatchResolverHandler<TParams, T>,
+    options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
+  ): void;
+  public onBatchMutation<T extends boolean = true, R extends boolean = false>(
+    fieldName: string,
+    options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
+  ): MethodDecorator;
+  public onBatchMutation<
+    TParams extends Record<string, unknown>,
+    T extends boolean = true,
+    R extends boolean = false,
+  >(
+    fieldName: string,
+    handlerOrOptions?:
+      | BatchResolverHandler<TParams, T>
+      | Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>,
+    options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
+  ): MethodDecorator | undefined {
+    if (typeof handlerOrOptions === 'function') {
+      this.batchResolverRegistry.register({
+        fieldName,
+        handler: handlerOrOptions as BatchResolverHandler,
+        typeName: 'Mutation',
+        aggregate: options?.aggregate ?? true,
+        raiseOnError: options?.raiseOnError ?? false,
+      });
+
+      return;
+    }
+
+    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+      this.batchResolverRegistry.register({
+        fieldName,
+        handler: descriptor?.value,
+        typeName: 'Mutation',
+        aggregate: handlerOrOptions?.aggregate ?? true,
+        raiseOnError: handlerOrOptions?.raiseOnError ?? false,
+      });
+
+      return descriptor;
+    };
+  }
 }
 
 export { Router };

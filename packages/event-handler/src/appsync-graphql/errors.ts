@@ -8,6 +8,9 @@ class ResolverNotFoundException extends Error {
   }
 }
 
+/**
+ * Error thrown when the response from a batch resolver is invalid.
+ */
 class InvalidBatchResponseException extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);

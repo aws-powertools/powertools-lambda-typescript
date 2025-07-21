@@ -1027,9 +1027,10 @@ class Metrics extends Utility implements MetricsInterface {
    * @param namespace - The namespace to be used
    */
   private setNamespace(namespace: string | undefined): void {
-    this.namespace = (namespace ||
+    this.namespace =
+      namespace ||
       this.getCustomConfigService()?.getNamespace() ||
-      this.#envConfig.namespace) as string;
+      this.#envConfig.namespace;
   }
 
   /**
@@ -1078,9 +1079,10 @@ class Metrics extends Utility implements MetricsInterface {
    */
   private setService(service: string | undefined): void {
     const targetService =
-      ((service ||
-        this.getCustomConfigService()?.getServiceName() ||
-        this.#envConfig.serviceName) as string) || this.defaultServiceName;
+      service ||
+      this.getCustomConfigService()?.getServiceName() ||
+      this.#envConfig.serviceName ||
+      this.defaultServiceName;
     if (targetService.length > 0) {
       this.setDefaultDimensions({ service: targetService });
     }

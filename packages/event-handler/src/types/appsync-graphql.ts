@@ -142,8 +142,8 @@ type GraphQlRouteOptions = {
 /**
  * Options for configuring a batch GraphQL route handler.
  *
- * @template T - Determines if aggregation is enabled. If `true` (default), the `aggregate` property is set to `true` and `raiseOnError` is not allowed.
- * @template R - Determines if errors should be raised when the handler fails. Defaults to `false`.
+ * @template T - If `true`, the handler receives all events at once. If `false`, the handler is called for each event individually. Defaults to `true`.
+ * @template R - If `true`, errors thrown by the handler will be raised. Defaults to `false`.
  */
 type GraphQlBatchRouteOptions<
   T extends boolean | undefined = true,

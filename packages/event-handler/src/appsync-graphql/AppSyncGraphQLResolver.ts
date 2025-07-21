@@ -119,6 +119,35 @@ class AppSyncGraphQLResolver extends Router {
    * export const handler = lambda.handler.bind(lambda);
    * ```
    *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import type { AppSyncResolverEvent } from 'aws-lambda';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * class Lambda {
+   *   ⁣@app.batchResolver({ fieldName: 'getPosts', typeName: 'Query' })
+   *   async getPosts(events: AppSyncResolverEvent<Record<string, unknown>>[]) {
+   *     // your business logic here
+   *     const ids = events.map((event) => event.source.id);
+   *     return ids.map((id) => ({
+   *       id,
+   *       title: 'Post Title',
+   *       content: 'Post Content',
+   *     }));
+   *   }
+   *
+   *   async handler(event, context) {
+   *     return app.resolve(event, context, {
+   *       scope: this, // bind decorated methods to the class instance
+   *     });
+   *   }
+   * }
+   *
+   * const lambda = new Lambda();
+   * export const handler = lambda.handler.bind(lambda);
+   * ```
    * @param event - The incoming event, which may be an AppSync GraphQL event or an array of events.
    * @param context - The AWS Lambda context object.
    * @param options - Optional parameters for the resolver, such as the scope of the handler.

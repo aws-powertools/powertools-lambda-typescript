@@ -11,6 +11,7 @@ import type {
   HandlerMethodDecorator,
 } from '@aws-lambda-powertools/commons/types';
 import {
+  getBooleanFromEnv,
   getServiceName,
   getStringFromEnv,
   isDevMode,
@@ -222,12 +223,12 @@ class Metrics extends Utility implements MetricsInterface {
    * Cached environment config values.
    * Initialized once in setEnvConfig().
    */
-  #envConfig!: {
-    namespace: string;
-    functionName: string;
-    serviceName: string;
-    disabled: boolean;
-    devMode: boolean;
+  readonly #envConfig = {
+    namespace: '',
+    functionName: '',
+    serviceName: '',
+    disabled: false,
+    devMode: false,
   };
 
   /**
@@ -983,30 +984,21 @@ class Metrics extends Utility implements MetricsInterface {
    * Set the environment variables service to be used.
    */
   private setEnvConfig(): void {
-    this.#envConfig = {
-      namespace: getStringFromEnv({
-        key: 'POWERTOOLS_METRICS_NAMESPACE',
-        defaultValue: '',
-      }),
-      functionName: getStringFromEnv({
-        key: 'POWERTOOLS_METRICS_FUNCTION_NAME',
-        defaultValue: '',
-      }),
-      serviceName: getServiceName(),
-      disabled: this.#getMetricsDisabledFromEnv(),
-      devMode: isDevMode(),
-    };
-  }
-
-  #getMetricsDisabledFromEnv(): boolean {
-    const disabledValue = getStringFromEnv({
-      key: 'POWERTOOLS_METRICS_DISABLED',
+    this.#envConfig.namespace = getStringFromEnv({
+      key: 'POWERTOOLS_METRICS_NAMESPACE',
       defaultValue: '',
     });
-
-    if (disabledValue.toLowerCase() === 'false') return false;
-    if (disabledValue.toLowerCase() === 'true') return true;
-    return isDevMode();
+    this.#envConfig.functionName = getStringFromEnv({
+      key: 'POWERTOOLS_METRICS_FUNCTION_NAME',
+      defaultValue: '',
+    });
+    this.#envConfig.serviceName = getServiceName();
+    this.#envConfig.disabled = getBooleanFromEnv({
+      key: 'POWERTOOLS_METRICS_DISABLED',
+      defaultValue: false,
+      extendedParsing: true,
+    });
+    this.#envConfig.devMode = isDevMode();
   }
 
   /**
@@ -1015,7 +1007,7 @@ class Metrics extends Utility implements MetricsInterface {
    * @param functionName - The function name to be used for the cold start metric set in the constructor
    */
   protected setFunctionNameForColdStartMetric(functionName?: string): void {
-    const value = functionName?.trim() ?? this.#envConfig.functionName.trim();
+    const value = functionName?.trim() ?? this.#envConfig.functionName;
     if (value && value.length > 0) {
       this.functionName = value;
     }
@@ -1039,7 +1031,14 @@ class Metrics extends Utility implements MetricsInterface {
    * The `POWERTOOLS_METRICS_DISABLED` environment variable takes precedence over `POWERTOOLS_DEV`.
    */
   private setDisabled(): void {
-    this.disabled = this.#envConfig.disabled;
+    if (
+      'POWERTOOLS_METRICS_DISABLED' in process.env &&
+      process.env.POWERTOOLS_METRICS_DISABLED !== undefined
+    ) {
+      this.disabled = this.#envConfig.disabled;
+      return;
+    }
+    this.disabled = this.#envConfig.devMode;
   }
 
   /**

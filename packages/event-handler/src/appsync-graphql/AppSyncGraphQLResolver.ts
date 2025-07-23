@@ -71,7 +71,7 @@ class AppSyncGraphQLResolver extends Router {
    * @example
    * ```ts
    * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
-   * import type { AppSyncResolverEvent, Context } from 'aws-lambda';
+   * import type { AppSyncResolverEvent } from 'aws-lambda';
    *
    * const app = new AppSyncGraphQLResolver();
    *
@@ -302,9 +302,9 @@ class AppSyncGraphQLResolver extends Router {
     }
 
     const handler = options.handler as ResolverHandler;
+    const results: unknown[] = [];
 
     if (raiseOnError) {
-      const results: unknown[] = [];
       for (const event of events) {
         const result = await handler.apply(resolveOptions?.scope ?? this, [
           event.arguments,
@@ -315,9 +315,7 @@ class AppSyncGraphQLResolver extends Router {
       return results;
     }
 
-    const results: unknown[] = [];
-    for (let i = 0; i < events.length; i++) {
-      const event = events[i];
+    for (const [i, event] of events.entries()) {
       try {
         const result = await handler.apply(resolveOptions?.scope ?? this, [
           event.arguments,

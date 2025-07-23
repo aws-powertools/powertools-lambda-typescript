@@ -101,7 +101,7 @@
     "@aws-sdk/client-lambda": "^3.848.0",
     "@smithy/util-utf8": "^4.0.0",
     "aws-cdk-lib": "^2.206.0",
-    "esbuild": "^0.25.6",
+    "esbuild": "^0.25.8",
     "promise-retry": "^2.0.1"
   },
   "devDependencies": {

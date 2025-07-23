@@ -75,9 +75,9 @@ class AppSyncGraphQLResolver extends Router {
    *
    * const app = new AppSyncGraphQLResolver();
    *
-   * app.batchResolver(async (events: AppSyncResolverEvent<Record<string, unknown>>[]) => {
+   * app.batchResolver(async (events: AppSyncResolverEvent<{ id: number }>[]) => {
    *   // your business logic here
-   *   const ids = events.map((event) => event.source.id);
+   *   const ids = events.map((event) => event.arguments.id);
    *   return ids.map((id) => ({
    *     id,
    *     title: 'Post Title',
@@ -128,9 +128,9 @@ class AppSyncGraphQLResolver extends Router {
    *
    * class Lambda {
    *   ⁣@app.batchResolver({ fieldName: 'getPosts', typeName: 'Query' })
-   *   async getPosts(events: AppSyncResolverEvent<Record<string, unknown>>[]) {
+   *   async getPosts(events: AppSyncResolverEvent<{ id: number }>[]) {
    *     // your business logic here
-   *     const ids = events.map((event) => event.source.id);
+   *     const ids = events.map((event) => event.arguments.id);
    *     return ids.map((id) => ({
    *       id,
    *       title: 'Post Title',

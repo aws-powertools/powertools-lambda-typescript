@@ -22,8 +22,24 @@ type HttpMethod = keyof typeof HttpVerbs;
 type Path = `/${string}`;
 
 type RouteOptions = {
-  method?: HttpMethod;
-  path?: Path;
+  method: HttpMethod | HttpMethod[];
+  path: Path;
 };
 
-export type { HttpMethod, Path, RouterOptions, RouteHandler, RouteOptions };
+type RouteRegistryOptions = {
+  /**
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
+   */
+  logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+};
+
+export type {
+  HttpMethod,
+  Path,
+  RouterOptions,
+  RouteHandler,
+  RouteOptions,
+  RouteRegistryOptions,
+};

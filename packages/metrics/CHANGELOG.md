@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.25.0) (2025-07-24)
+
+### Improvements
+
+- replace EnvironmentVariablesService with cached #envConfig ([#4188](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4188)) ([919063b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/919063bc10f15b55f84c183208274836ae1d367e))
+- add runtime validations when adding dimensions ([#4181](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4181)) ([4226058](https://github.com/aws-powertools/powertools-lambda-typescript/commit/42260585eb84de373c6ae5daaf5d541dd5f78ec1))
 ## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
 
 ### Improvements

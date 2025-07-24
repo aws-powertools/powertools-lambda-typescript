@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.25.0) (2025-07-24)
+
+### Features
+
+- add base router class ([#3972](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3972)) ([3d4998c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3d4998cda6c1b8c1bea47d5c6a9fe760b6e957fb))
 ## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
 
 **Note:** Version bump only for this package

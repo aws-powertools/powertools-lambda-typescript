@@ -1,5 +1,22 @@
 # Change Log
 
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.25.0) (2025-07-24)
+
+### Improvements
+
+- **metrics** replace EnvironmentVariablesService with cached #envConfig ([#4188](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4188)) ([919063b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/919063bc10f15b55f84c183208274836ae1d367e))
+- **metrics** add runtime validations when adding dimensions ([#4181](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4181)) ([4226058](https://github.com/aws-powertools/powertools-lambda-typescript/commit/42260585eb84de373c6ae5daaf5d541dd5f78ec1))
+- **parameters** replace EnvironmentVariablesService class with helper functions in Parameters ([#4168](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4168)) ([ce4e618](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ce4e6181ffed20153f3743707fdd31f68f392e0c))
+
+### Bug Fixes
+
+- **parser** set zod peer range to 4.x ([#4196](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4196)) ([7a65fcf](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7a65fcf9759ac1a1f072ef5442ee8b0767705a92))
+
+### Features
+
+- **event-handler** add base router class ([#3972](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3972)) ([3d4998c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3d4998cda6c1b8c1bea47d5c6a9fe760b6e957fb))
+
+
 ## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
 
 ### Improvements

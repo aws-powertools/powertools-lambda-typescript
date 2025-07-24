@@ -34,12 +34,13 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@b8e12f37991bb03672113b65cae09d52d494bbef # v1.0.0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@5ae7c190d6b51491bb14f593c3509c1bcbf7a3c1 # v1.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          build: "false"
       - name: Version and changelog
         id: version-n-changelog
-        uses: aws-powertools/actions/.github/actions/version-n-changelog@b8e12f37991bb03672113b65cae09d52d494bbef # v1.0.0
+        uses: aws-powertools/actions/.github/actions/version-n-changelog@5ae7c190d6b51491bb14f593c3509c1bcbf7a3c1 # v1.1.0
         with:
           release-type: ${{ github.event.inputs.release-type }}
       - name: Update user agent version
@@ -50,7 +51,7 @@ jobs:
         run: git add .
       - name: Create PR
         id: create-pr
-        uses: ./.github/actions/create-pr
+        uses: aws-powertools/actions/.github/actions/create-pr@5ae7c190d6b51491bb14f593c3509c1bcbf7a3c1 # v1.1.0
         with:
           temp_branch_prefix: "ci-bump"
           pull_request_title: "chore(ci): bump version to ${{ steps.version-n-changelog.outputs.new-version  }}"

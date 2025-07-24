@@ -1,7 +1,11 @@
 name: Make Version
 
 on:
-  workflow_dispatch: { }
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: 'Release type (major, minor, patch)'
+        required: false
 
 permissions:
   contents: read
@@ -14,39 +18,40 @@ jobs:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: "22"
     outputs:
-      RELEASE_VERSION: ${{ steps.set-release-version.outputs.RELEASE_VERSION }}
+      RELEASE_VERSION: ${{ steps.version-n-changelog.outputs.new-version  }}
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           ref: ${{ github.ref }}
-          fetch-depth: 0 # fetch all history, commits and tags, lerna scans it to the last tag and looks at commits, we need all of it to determine the next version
-      - name: Setup NodeJS
+          fetch-depth: 0 # fetch all history, commits and tags, so we can determine the next version
+      - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: "22"
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
-      - name: Version
-        id: bump-version
-        run: npx lerna version --conventional-commits --force-publish --no-git-tag-version --no-push --no-commit-hooks --yes
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@b8e12f37991bb03672113b65cae09d52d494bbef # v1.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Version and changelog
+        id: version-n-changelog
+        uses: aws-powertools/actions/.github/actions/version-n-changelog@b8e12f37991bb03672113b65cae09d52d494bbef # v1.0.0
+        with:
+          release-type: ${{ github.event.inputs.release-type }}
       - name: Update user agent version
         run: |
-          VERSION=$(cat lerna.json | jq .version -r)
+          VERSION=$(${{ steps.version-n-changelog.outputs.new-version }})
           echo -e "// this file is auto generated, do not modify\nexport const PT_VERSION = '$VERSION';" > packages/commons/src/version.ts
       - name: Stage changes
         run: git add .
-      - name: Set release version
-        id: set-release-version
-        run: |
-          VERSION=$(cat lerna.json | jq .version -r)
-          echo RELEASE_VERSION="$VERSION" >> "$GITHUB_OUTPUT"
       - name: Create PR
         id: create-pr
         uses: ./.github/actions/create-pr
         with:
           temp_branch_prefix: "ci-bump"
-          pull_request_title: "chore(ci): bump version to ${{ steps.set-release-version.outputs.RELEASE_VERSION }}"
+          pull_request_title: "chore(ci): bump version to ${{ steps.version-n-changelog.outputs.new-version  }}"
           github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -11,6 +11,7 @@ export const handler = async (
       value: parameter,
     };
   } catch (_error) {
+    console.error('Unable to retrieve secret: ', _error);
     return {
       message: 'Unable to retrieve secret',
     };

@@ -1,6 +1,6 @@
 import type { Path } from '../types/rest.js';
 
-const PARAM_PATTERN = /:([a-zA-Z_]\w*)(?=[/]|$)/g;
+const PARAM_PATTERN = /:([a-zA-Z_]\w*)(?=\/|$)/g;
 const SAFE_CHARS = "-._~()'!*:@,;=+&$";
 const UNSAFE_CHARS = '%<> \\[\\]{}|^';
 

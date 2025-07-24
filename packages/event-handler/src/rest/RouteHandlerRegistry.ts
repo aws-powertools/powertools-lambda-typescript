@@ -4,8 +4,8 @@ import type { Route } from './Route.js';
 import { validatePathPattern } from './utils.js';
 
 class RouteHandlerRegistry {
-  #routes: Map<string, Route> = new Map();
-  #routesByMethod: Map<string, Route[]> = new Map();
+  readonly #routes: Map<string, Route> = new Map();
+  readonly #routesByMethod: Map<string, Route[]> = new Map();
 
   readonly #logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 

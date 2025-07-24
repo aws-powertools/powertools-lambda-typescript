@@ -88,7 +88,6 @@ labelPRBasedOnFilePath:
     - SECURITY.md
     - LICENSE
     - LICENSE-THIRD-PARTY
-    - lerna.json
     - .nvmrc
     - .biome.json
     - .npmignore

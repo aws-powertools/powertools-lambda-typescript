@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { HttpVerbs } from '../../../src/rest/constants.js';
 import { Route } from '../../../src/rest/Route.js';
 import { RouteHandlerRegistry } from '../../../src/rest/RouteHandlerRegistry.js';

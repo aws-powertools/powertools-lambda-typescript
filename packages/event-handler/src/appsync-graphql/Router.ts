@@ -356,7 +356,6 @@ class Router {
    *
    * const app = new AppSyncGraphQLResolver();
    *
-   * // Register a batch Query resolver with aggregation (default)
    * app.batchResolver(async (events: AppSyncResolverEvent<{id: number}>[]) => {
    *   // Process all events in batch
    *   return events.map(event => ({ id: event.arguments.id, data: 'processed' }));
@@ -364,7 +363,32 @@ class Router {
    *   fieldName: 'getPosts'
    * });
    *
-   * // Register a batch resolver without aggregation
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * By default, the handler will receive all batch events at once as an array and you are responsible for processing
+   * them and returning an array of results. The first parameter is an array of events, while the second parameter
+   * provides the original event array and context.
+   *
+   * If your function throws an error, we catch it and format the error response to be sent back to AppSync. This helps
+   * the client understand what went wrong and handle the error accordingly.
+   *
+   * It's important to note that if your function throws an error when processing in aggregate mode, the entire
+   * batch of events will be affected.
+   *
+   * **Process events individually**
+   *
+   * If you want to process each event individually instead of receiving all events at once, you can set the
+   * `aggregate` option to `false`. In this case, the handler will be called once for each event in the batch,
+   * similar to regular resolvers.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
    * app.batchResolver(async (args, { event, context }) => {
    *   // Process individual request
    *   return { id: args.id, data: 'processed' };
@@ -376,6 +400,40 @@ class Router {
    * export const handler = async (event, context) =>
    *   app.resolve(event, context);
    * ```
+   *
+   * When the handler is called, the first parameter contains the arguments from the GraphQL request, while the second
+   * parameter provides the original event and context, similar to regular resolvers.
+   *
+   * When `aggregate` is `false`, by default if one of the events in the batch throws an error, we catch it
+   * and append `null` for that specific event in the results array, allowing other events to be processed successfully.
+   * This provides graceful error handling where partial failures don't affect the entire batch.
+   *
+   * **Strict error handling**
+   *
+   * If you want stricter error handling when processing events individually, you can set the `raiseOnError` option
+   * to `true`. In this case, if any event throws an error, the entire batch processing will stop and the error
+   * will be propagated.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * app.batchResolver(async (args, { event, context }) => {
+   *   // Process individual request
+   *   return { id: args.id, data: 'processed' };
+   * }, {
+   *   fieldName: 'getPost',
+   *   aggregate: false,
+   *   raiseOnError: true
+   * });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * Note that `raiseOnError` can only be used when `aggregate` is set to `false`.
    *
    * You can also specify the type of the arguments using generic type parameters for non-aggregated handlers:
    *
@@ -415,6 +473,12 @@ class Router {
    *   ⁣@app.batchResolver({ fieldName: 'getPost', aggregate: false })
    *   async handleGetPost(args, { event, context }) {
    *     // Process individual request
+   *     return { id: args.id, data: 'processed' };
+   *   }
+   *
+   *   ⁣@app.batchResolver({ fieldName: 'getPost', aggregate: false, raiseOnError: true })
+   *   async handleGetPostStrict(args, { event, context }) {
+   *     // Process individual request with strict error handling
    *     return { id: args.id, data: 'processed' };
    *   }
    *

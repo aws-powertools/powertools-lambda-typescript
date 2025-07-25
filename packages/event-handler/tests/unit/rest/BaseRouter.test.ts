@@ -2,7 +2,7 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
-import { HttpVerbs } from '../../../src/rest/constatnts.js';
+import { HttpVerbs } from '../../../src/rest/constants.js';
 import type {
   HttpMethod,
   RouteHandler,

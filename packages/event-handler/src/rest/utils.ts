@@ -1,8 +1,5 @@
-import type { Path } from '../types/rest.js';
-
-const PARAM_PATTERN = /:([a-zA-Z_]\w*)(?=\/|$)/g;
-const SAFE_CHARS = "-._~()'!*:@,;=+&$";
-const UNSAFE_CHARS = '%<> \\[\\]{}|^';
+import type { CompiledRoute, Path, ValidationResult } from '../types/rest.js';
+import { PARAM_PATTERN, SAFE_CHARS, UNSAFE_CHARS } from './constants.js';
 
 export function compilePath(path: Path): CompiledRoute {
   const paramNames: string[] = [];
@@ -21,11 +18,6 @@ export function compilePath(path: Path): CompiledRoute {
     isDynamic: paramNames.length > 0,
   };
 }
-
-type ValidationResult = {
-  isValid: boolean;
-  issues: string[];
-};
 
 export function validatePathPattern(path: Path): ValidationResult {
   const issues: string[] = [];
@@ -50,11 +42,4 @@ export function validatePathPattern(path: Path): ValidationResult {
     isValid: issues.length === 0,
     issues,
   };
-}
-
-interface CompiledRoute {
-  originalPath: string;
-  regex: RegExp;
-  paramNames: string[];
-  isDynamic: boolean;
 }

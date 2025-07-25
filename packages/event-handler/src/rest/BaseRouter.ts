@@ -12,7 +12,7 @@ import type {
   RouteOptions,
   RouterOptions,
 } from '../types/rest.js';
-import { HttpVerbs } from './constatnts.js';
+import { HttpVerbs } from './constants.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 

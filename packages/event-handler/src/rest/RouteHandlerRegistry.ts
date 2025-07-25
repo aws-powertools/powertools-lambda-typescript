@@ -30,11 +30,9 @@ class RouteHandlerRegistry {
 
     this.#routes.set(route.id, route);
 
-    if (!this.#routesByMethod.has(route.method)) {
-      this.#routesByMethod.set(route.method, []);
-    }
-    // biome-ignore lint/style/noNonNullAssertion: Map.set operation above ensures Map.get won't return undefined
-    this.#routesByMethod.get(route.method)!.push(route);
+    const routesByMethod = this.#routesByMethod.get(route.method) ?? [];
+    routesByMethod.push(route);
+    this.#routesByMethod.set(route.method, routesByMethod);
   }
 
   public getRouteCount(): number {

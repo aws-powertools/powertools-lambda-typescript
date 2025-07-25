@@ -63,6 +63,7 @@ class Router {
    * @example
    * ```ts
    * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import type { AppSyncResolverEvent } from 'aws-lambda';
    *
    * const app = new AppSyncGraphQLResolver();
    *
@@ -81,6 +82,13 @@ class Router {
    * }, {
    *   fieldName: 'createPost',
    *   typeName: 'Mutation'
+   * });
+   *
+   * // Register a batch resolver
+   * app.batchResolver(async (events: AppSyncResolverEvent<{ id: number }>[]) => {
+   *   return events.map(event => ({ id: event.arguments.id, data: 'processed' }));
+   * }, {
+   *   fieldName: 'getPosts',
    * });
    *
    * export const handler = async (event, context) =>
@@ -111,7 +119,7 @@ class Router {
    * @example
    * ```ts
    * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
-   *
+   * import type { AppSyncResolverEvent } from 'aws-lambda';
    * const app = new AppSyncGraphQLResolver();
    *
    * class Lambda {
@@ -119,6 +127,12 @@ class Router {
    *   async handleGetPost(payload) {
    *     // your business logic here
    *     return payload;
+   *   }
+   *
+   *   @app.batchResolver({ fieldName: 'getPosts' })
+   *   async handleGetPosts(events: AppSyncResolverEvent<{ id: number }>[]) {
+   *    // Process batch of events
+   *    return events.map(event => ({ id: event.arguments.id, data: 'processed' }));
    *   }
    *
    *   async handler(event, context) {
@@ -343,9 +357,9 @@ class Router {
    * const app = new AppSyncGraphQLResolver();
    *
    * // Register a batch Query resolver with aggregation (default)
-   * app.batchResolver(async (events: AppSyncResolverEvent<Record<string, unknown>>[]) => {
+   * app.batchResolver(async (events: AppSyncResolverEvent<{id: number}>[]) => {
    *   // Process all events in batch
-   *   return events.map(event => ({ id: event.source.id, data: 'processed' }));
+   *   return events.map(event => ({ id: event.arguments.id, data: 'processed' }));
    * }, {
    *   fieldName: 'getPosts'
    * });
@@ -371,7 +385,7 @@ class Router {
    *
    * const app = new AppSyncGraphQLResolver()
    *
-   * app.batchResolver<{ postId: string }, false>(async (args, { event, context }) => {
+   * app.batchResolver<{ postId: string }>(async (args, { event, context }) => {
    *   // args is typed as { postId: string }
    *   return { id: args.postId };
    * }, {
@@ -482,9 +496,9 @@ class Router {
    * const app = new AppSyncGraphQLResolver();
    *
    * // Register a batch Query resolver with aggregation (default)
-   * app.onBatchQuery('getPosts', async (events: AppSyncResolverEvent<Record<string, unknown>>[]) => {
+   * app.onBatchQuery('getPosts', async (events: AppSyncResolverEvent<{ id: number }>[]) => {
    *   // Process all events in batch
-   *   return events.map(event => ({ id: event.source.id, data: 'processed' }));
+   *   return events.map(event => ({ id: event.arguments.id, data: 'processed' }));
    * });
    *
    * // Register a batch Query resolver without aggregation
@@ -502,12 +516,13 @@ class Router {
    * @example
    * ```ts
    * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import type { AppSyncResolverEvent } from 'aws-lambda';
    *
    * const app = new AppSyncGraphQLResolver();
    *
    * class Lambda {
    *   ⁣@app.onBatchQuery('getPosts')
-   *   async handleGetPosts(events) {
+   *   async handleGetPosts(events: AppSyncResolverEvent<{ id: number }>[]) {
    *     // Process batch of events
    *     return events.map(event => ({ id: event.arguments.id, data: 'processed' }));
    *   }
@@ -613,7 +628,7 @@ class Router {
    * const app = new AppSyncGraphQLResolver();
    *
    * // Register a batch Mutation resolver with aggregation (default)
-   * app.onBatchMutation('createPosts', async (events: AppSyncResolverEvent<Record<string, unknown>>[]) => {
+   * app.onBatchMutation('createPosts', async (events: AppSyncResolverEvent<{ id: number }>[]) => {
    *   // Process all events in batch
    *   return events.map(event => ({ id: event.arguments.id, status: 'created' }));
    * });
@@ -633,12 +648,13 @@ class Router {
    * @example
    * ```ts
    * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import type { AppSyncResolverEvent } from 'aws-lambda';
    *
    * const app = new AppSyncGraphQLResolver();
    *
    * class Lambda {
    *   ⁣@app.onBatchMutation('createPosts')
-   *   async handleCreatePosts(events) {
+   *   async handleCreatePosts(events: AppSyncResolverEvent<{ id: number }>[]) {
    *     // Process batch of events
    *     return events.map(event => ({ id: event.arguments.id, status: 'created' }));
    *   }

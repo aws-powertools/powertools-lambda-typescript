@@ -144,13 +144,18 @@ type GraphQlRouteOptions = {
 /**
  * Options for configuring a batch GraphQL route handler.
  *
- * @template T - If `true`, the handler receives all events at once. If `false`, the handler is called for each event individually. Defaults to `true`.
+ * @template T - If `true`, the handler receives all events at once and `raiseOnError` cannot be specified.
+ *               If `false`, the handler is called for each event individually and `raiseOnError` can be specified.
+ *               Defaults to `true`.
  * @template R - If `true`, errors thrown by the handler will be raised. Defaults to `false`.
  */
 type GraphQlBatchRouteOptions<
   T extends boolean | undefined = true,
   R extends boolean | undefined = false,
-> = GraphQlRouteOptions & { aggregate?: T; raiseOnError?: R };
+> = GraphQlRouteOptions &
+  (T extends true
+    ? { aggregate?: T; raiseOnError?: never }
+    : { aggregate?: T; raiseOnError?: R });
 
 export type {
   RouteHandlerRegistryOptions,

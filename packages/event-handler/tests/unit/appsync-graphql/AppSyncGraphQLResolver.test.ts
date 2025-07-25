@@ -558,7 +558,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     ]);
   });
 
-  it('returns null for failed records when aggregate=false and raiseOnError=false', async () => {
+  it('returns null for failed records when aggregate=false', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
     const handler = vi
@@ -571,7 +571,6 @@ describe('Class: AppSyncGraphQLResolver', () => {
       fieldName: 'batchGet',
       typeName: 'Query',
       aggregate: false,
-      raiseOnError: false,
     });
     const events = [
       onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
@@ -583,6 +582,10 @@ describe('Class: AppSyncGraphQLResolver', () => {
     const result = await app.resolve(events, context);
 
     // Assess
+    expect(console.debug).toHaveBeenNthCalledWith(
+      4,
+      "Failed to process event #2 from field 'batchGet'"
+    );
     expect(result).toEqual([
       { id: '1', value: 'A' },
       null,
@@ -597,7 +600,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       .fn()
       .mockResolvedValueOnce({ id: '1', value: 'A' })
       .mockRejectedValueOnce(new Error('fail'))
-      .mockResolvedValueOnce(new Error('fail again'));
+      .mockResolvedValueOnce({ id: '3', value: 'C' });
     app.batchResolver(handler, {
       fieldName: 'batchGet',
       typeName: 'Query',
@@ -617,7 +620,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('throws if aggregate handler does not return an array', async () => {
+  it('throws error if aggregate handler does not return an array', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
     const handler = vi.fn().mockResolvedValue({ id: '1', value: 'A' });

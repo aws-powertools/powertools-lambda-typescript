@@ -315,17 +315,17 @@ class AppSyncGraphQLResolver extends Router {
       return results;
     }
 
-    for (const [i, event] of events.entries()) {
+    for (let i = 0; i < events.length; i++) {
       try {
         const result = await handler.apply(resolveOptions?.scope ?? this, [
-          event.arguments,
-          { event, context },
+          events[i].arguments,
+          { event: events[i], context },
         ]);
         results.push(result);
       } catch (error) {
         this.logger.error(error);
         this.logger.debug(
-          `Failed to process event number ${i} from field '${event.info.fieldName}'`
+          `Failed to process event #${i + 1} from field '${events[i].info.fieldName}'`
         );
         // By default, we gracefully append `null` for any records that failed processing
         results.push(null);

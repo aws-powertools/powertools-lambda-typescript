@@ -25,7 +25,7 @@ type BatchResolverAggregateHandlerFn<
   TParams = Record<string, unknown>,
   TSource = Record<string, unknown>,
 > = (
-  event: AppSyncResolverEvent<TParams, TSource>[],
+  events: AppSyncResolverEvent<TParams, TSource>[],
   options: {
     event: AppSyncResolverEvent<TParams, TSource>[];
     context: Context;
@@ -36,8 +36,9 @@ type BatchResolverSyncAggregateHandlerFn<
   TParams = Record<string, unknown>,
   TSource = Record<string, unknown>,
 > = (
-  event: AppSyncResolverEvent<TParams, TSource>[],
+  events: AppSyncResolverEvent<TParams, TSource>[],
   options: {
+    event: AppSyncResolverEvent<TParams, TSource>[];
     context: Context;
   }
 ) => unknown;

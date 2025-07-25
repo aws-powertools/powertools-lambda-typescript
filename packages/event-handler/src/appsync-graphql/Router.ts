@@ -500,12 +500,18 @@ class Router {
    * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
    * @param options.raiseOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
    */
-  public batchResolver<TParams extends Record<string, unknown>>(
-    handler: BatchResolverHandler<TParams, true>,
+  public batchResolver<
+    TParams extends Record<string, unknown>,
+    TSource = Record<string, unknown>,
+  >(
+    handler: BatchResolverHandler<TParams, TSource, true>,
     options: GraphQlBatchRouteOptions<true, boolean>
   ): void;
-  public batchResolver<TParams extends Record<string, unknown>>(
-    handler: BatchResolverHandler<TParams, false>,
+  public batchResolver<
+    TParams extends Record<string, unknown>,
+    TSource = Record<string, unknown>,
+  >(
+    handler: BatchResolverHandler<TParams, TSource, false>,
     options: GraphQlBatchRouteOptions<false, boolean>
   ): void;
   public batchResolver<T extends boolean = true, R extends boolean = false>(
@@ -513,10 +519,13 @@ class Router {
   ): MethodDecorator;
   public batchResolver<
     TParams extends Record<string, unknown>,
+    TSource = Record<string, unknown>,
     T extends boolean = true,
     R extends boolean = false,
   >(
-    handler: BatchResolverHandler<TParams, T> | GraphQlBatchRouteOptions<T, R>,
+    handler:
+      | BatchResolverHandler<TParams, TSource, T>
+      | GraphQlBatchRouteOptions<T, R>,
     options?: GraphQlBatchRouteOptions<T, R>
   ): MethodDecorator | undefined {
     if (typeof handler === 'function') {
@@ -674,17 +683,23 @@ class Router {
    * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
    * @param options.raiseOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
    */
-  public onBatchQuery<TParams extends Record<string, unknown>>(
+  public onBatchQuery<
+    TParams extends Record<string, unknown>,
+    TSource = Record<string, unknown>,
+  >(
     fieldName: string,
-    handler: BatchResolverHandler<TParams, true>,
+    handler: BatchResolverHandler<TParams, TSource, true>,
     options?: Omit<
       GraphQlBatchRouteOptions<true, boolean>,
       'fieldName' | 'typeName'
     >
   ): void;
-  public onBatchQuery<TParams extends Record<string, unknown>>(
+  public onBatchQuery<
+    TParams extends Record<string, unknown>,
+    TSource = Record<string, unknown>,
+  >(
     fieldName: string,
-    handler: BatchResolverHandler<TParams, false>,
+    handler: BatchResolverHandler<TParams, TSource, false>,
     options?: Omit<
       GraphQlBatchRouteOptions<false, boolean>,
       'fieldName' | 'typeName'
@@ -706,12 +721,13 @@ class Router {
   ): MethodDecorator;
   public onBatchQuery<
     TParams extends Record<string, unknown>,
+    TSource = Record<string, unknown>,
     T extends boolean = true,
     R extends boolean = false,
   >(
     fieldName: string,
     handlerOrOptions?:
-      | BatchResolverHandler<TParams, T>
+      | BatchResolverHandler<TParams, TSource, T>
       | Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>,
     options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
   ): MethodDecorator | undefined {
@@ -867,17 +883,23 @@ class Router {
    * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
    * @param options.raiseOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
    */
-  public onBatchMutation<TParams extends Record<string, unknown>>(
+  public onBatchMutation<
+    TParams extends Record<string, unknown>,
+    TSource = Record<string, unknown>,
+  >(
     fieldName: string,
-    handler: BatchResolverHandler<TParams, true>,
+    handler: BatchResolverHandler<TParams, TSource, true>,
     options?: Omit<
       GraphQlBatchRouteOptions<true, boolean>,
       'fieldName' | 'typeName'
     >
   ): void;
-  public onBatchMutation<TParams extends Record<string, unknown>>(
+  public onBatchMutation<
+    TParams extends Record<string, unknown>,
+    TSource = Record<string, unknown>,
+  >(
     fieldName: string,
-    handler: BatchResolverHandler<TParams, false>,
+    handler: BatchResolverHandler<TParams, TSource, false>,
     options?: Omit<
       GraphQlBatchRouteOptions<false, boolean>,
       'fieldName' | 'typeName'
@@ -899,12 +921,13 @@ class Router {
   ): MethodDecorator;
   public onBatchMutation<
     TParams extends Record<string, unknown>,
+    TSource = Record<string, unknown>,
     T extends boolean = true,
     R extends boolean = false,
   >(
     fieldName: string,
     handlerOrOptions?:
-      | BatchResolverHandler<TParams, T>
+      | BatchResolverHandler<TParams, TSource, T>
       | Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>,
     options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
   ): MethodDecorator | undefined {

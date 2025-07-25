@@ -21,16 +21,22 @@ type BatchResolverHandlerFn<TParams = Record<string, unknown>> = (
   }
 ) => Promise<unknown>;
 
-type BatchResolverAggregateHandlerFn<TParams = Record<string, unknown>> = (
-  event: AppSyncResolverEvent<TParams>[],
+type BatchResolverAggregateHandlerFn<
+  TParams = Record<string, unknown>,
+  TSource = Record<string, unknown>,
+> = (
+  event: AppSyncResolverEvent<TParams, TSource>[],
   options: {
-    event: AppSyncResolverEvent<TParams>[];
+    event: AppSyncResolverEvent<TParams, TSource>[];
     context: Context;
   }
 ) => Promise<unknown>;
 
-type BatchResolverSyncAggregateHandlerFn<TParams = Record<string, unknown>> = (
-  event: AppSyncResolverEvent<TParams>[],
+type BatchResolverSyncAggregateHandlerFn<
+  TParams = Record<string, unknown>,
+  TSource = Record<string, unknown>,
+> = (
+  event: AppSyncResolverEvent<TParams, TSource>[],
   options: {
     context: Context;
   }
@@ -38,11 +44,12 @@ type BatchResolverSyncAggregateHandlerFn<TParams = Record<string, unknown>> = (
 
 type BatchResolverHandler<
   TParams = Record<string, unknown>,
+  TSource = Record<string, unknown>,
   T extends boolean | undefined = undefined,
 > = T extends true
   ?
-      | BatchResolverAggregateHandlerFn<TParams>
-      | BatchResolverSyncAggregateHandlerFn<TParams>
+      | BatchResolverAggregateHandlerFn<TParams, TSource>
+      | BatchResolverSyncAggregateHandlerFn<TParams, TSource>
   : BatchResolverHandlerFn<TParams> | BatchResolverSyncHandlerFn<TParams>;
 
 // #region Resolver fn
@@ -88,11 +95,16 @@ type RouteHandlerRegistryOptions = {
  * @property fieldName - The name of the field to be registered
  * @property typeName - The name of the type to be registered
  */
-type RouteHandlerOptions<TParams, T extends boolean, R extends boolean> = {
+type RouteHandlerOptions<
+  TParams,
+  T extends boolean,
+  R extends boolean,
+  TSource = Record<string, unknown>,
+> = {
   /**
    * The handler function to be called when the event is received
    */
-  handler: BatchResolverHandler<TParams, T> | ResolverHandler<TParams>;
+  handler: BatchResolverHandler<TParams, TSource, T> | ResolverHandler<TParams>;
   /**
    * The field name of the event to be registered
    */

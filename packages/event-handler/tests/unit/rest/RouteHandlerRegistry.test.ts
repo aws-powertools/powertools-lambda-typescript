@@ -7,13 +7,7 @@ import type { Path } from '../../../src/types/rest.js';
 describe('Class: RouteHandlerRegistry', () => {
   it('should warn when registering a duplicate route', () => {
     // Prepare
-    const mockLogger = {
-      debug: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-    };
-
-    const registry = new RouteHandlerRegistry({ logger: mockLogger });
+    const registry = new RouteHandlerRegistry({ logger: console });
     const handler = () => 'test';
     const path = '/test';
     const method = HttpVerbs.GET;
@@ -26,7 +20,7 @@ describe('Class: RouteHandlerRegistry', () => {
     registry.register(route2);
 
     // Assert
-    expect(mockLogger.warn).toHaveBeenCalledWith(
+    expect(console.warn).toHaveBeenCalledWith(
       `Handler for method: ${method} and path: ${path} already exists. The previous handler will be replaced.`
     );
     expect(registry.getRouteCount()).toBe(1);
@@ -50,13 +44,7 @@ describe('Class: RouteHandlerRegistry', () => {
     'should not register routes with invalid path pattern: $description',
     ({ path }) => {
       // Prepare
-      const mockLogger = {
-        debug: vi.fn(),
-        warn: vi.fn(),
-        error: vi.fn(),
-      };
-
-      const registry = new RouteHandlerRegistry({ logger: mockLogger });
+      const registry = new RouteHandlerRegistry({ logger: console });
       const handler = () => 'test';
 
       const route = new Route(HttpVerbs.GET, path as Path, handler);
@@ -65,7 +53,7 @@ describe('Class: RouteHandlerRegistry', () => {
       registry.register(route);
 
       // Assert
-      expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect(console.warn).toHaveBeenCalledWith(
         'Malformed parameter syntax. Use :paramName format.'
       );
       expect(registry.getRouteCount()).toBe(0);
@@ -76,13 +64,7 @@ describe('Class: RouteHandlerRegistry', () => {
 
   it('should not register routes with duplicate parameter names', () => {
     // Prepare
-    const mockLogger = {
-      debug: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-    };
-
-    const registry = new RouteHandlerRegistry({ logger: mockLogger });
+    const registry = new RouteHandlerRegistry({ logger: console });
     const handler = () => 'test';
 
     // Create a route with duplicate parameter names
@@ -93,9 +75,7 @@ describe('Class: RouteHandlerRegistry', () => {
     registry.register(route);
 
     // Assert
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Duplicate parameter names: id'
-    );
+    expect(console.warn).toHaveBeenCalledWith('Duplicate parameter names: id');
     expect(registry.getRouteCount()).toBe(0); // Route should not be registered
     expect(registry.getAllRoutes()).toHaveLength(0);
     expect(registry.getRoutesByMethod(HttpVerbs.GET)).toHaveLength(0);
@@ -104,8 +84,7 @@ describe('Class: RouteHandlerRegistry', () => {
   describe('getRouteCount', () => {
     it('returns 0 for empty registry', () => {
       // Prepare
-      const mockLogger = { debug: vi.fn(), warn: vi.fn(), error: vi.fn() };
-      const registry = new RouteHandlerRegistry({ logger: mockLogger });
+      const registry = new RouteHandlerRegistry({ logger: console });
 
       // Act & Assert
       expect(registry.getRouteCount()).toBe(0);
@@ -113,8 +92,7 @@ describe('Class: RouteHandlerRegistry', () => {
 
     it('returns correct count after registering routes', () => {
       // Prepare
-      const mockLogger = { debug: vi.fn(), warn: vi.fn(), error: vi.fn() };
-      const registry = new RouteHandlerRegistry({ logger: mockLogger });
+      const registry = new RouteHandlerRegistry({ logger: console });
       const handler = () => 'test';
 
       // Act & Assert
@@ -132,8 +110,7 @@ describe('Class: RouteHandlerRegistry', () => {
   describe('getRoutesByMethod', () => {
     it('returns empty array for non-existent method', () => {
       // Prepare
-      const mockLogger = { debug: vi.fn(), warn: vi.fn(), error: vi.fn() };
-      const registry = new RouteHandlerRegistry({ logger: mockLogger });
+      const registry = new RouteHandlerRegistry({ logger: console });
 
       // Act & Assert
       expect(registry.getRoutesByMethod('GET')).toEqual([]);
@@ -147,8 +124,7 @@ describe('Class: RouteHandlerRegistry', () => {
       { method: HttpVerbs.DELETE },
     ])('returns routes for $method method', ({ method }) => {
       // Prepare
-      const mockLogger = { debug: vi.fn(), warn: vi.fn(), error: vi.fn() };
-      const registry = new RouteHandlerRegistry({ logger: mockLogger });
+      const registry = new RouteHandlerRegistry({ logger: console });
       const handler = () => 'test';
 
       const route1 = new Route(method, '/users', handler);
@@ -170,8 +146,7 @@ describe('Class: RouteHandlerRegistry', () => {
 
     it('handles case-insensitive method lookup', () => {
       // Prepare
-      const mockLogger = { debug: vi.fn(), warn: vi.fn(), error: vi.fn() };
-      const registry = new RouteHandlerRegistry({ logger: mockLogger });
+      const registry = new RouteHandlerRegistry({ logger: console });
       const handler = () => 'test';
 
       const getRoute = new Route(HttpVerbs.GET, '/users', handler);
@@ -189,8 +164,7 @@ describe('Class: RouteHandlerRegistry', () => {
   describe('getAllRoutes', () => {
     it('returns empty array for empty registry', () => {
       // Prepare
-      const mockLogger = { debug: vi.fn(), warn: vi.fn(), error: vi.fn() };
-      const registry = new RouteHandlerRegistry({ logger: mockLogger });
+      const registry = new RouteHandlerRegistry({ logger: console });
 
       // Act & Assert
       expect(registry.getAllRoutes()).toEqual([]);
@@ -198,8 +172,7 @@ describe('Class: RouteHandlerRegistry', () => {
 
     it('returns all registered routes', () => {
       // Prepare
-      const mockLogger = { debug: vi.fn(), warn: vi.fn(), error: vi.fn() };
-      const registry = new RouteHandlerRegistry({ logger: mockLogger });
+      const registry = new RouteHandlerRegistry({ logger: console });
       const handler = () => 'test';
 
       const route1 = new Route(HttpVerbs.GET, '/users', handler);

@@ -275,7 +275,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
       @app.batchResolver({ fieldName: 'batchGet' })
       public async handleBatchGet(
-        events: AppSyncResolverEvent<Record<string, unknown>>[]
+        events: AppSyncResolverEvent<{ id: number }>[]
       ) {
         const ids = events.map((event) => event.arguments.id);
         return ids.map((id) => ({

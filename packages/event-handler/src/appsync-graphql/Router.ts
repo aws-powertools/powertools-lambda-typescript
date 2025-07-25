@@ -422,13 +422,13 @@ class Router {
    * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
    * @param options.raiseOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
    */
-  public batchResolver<
-    TParams extends Record<string, unknown>,
-    T extends boolean = true,
-    R extends boolean = false,
-  >(
-    handler: BatchResolverHandler<TParams, T>,
-    options: GraphQlBatchRouteOptions<T, R>
+  public batchResolver<TParams extends Record<string, unknown>>(
+    handler: BatchResolverHandler<TParams, true>,
+    options: GraphQlBatchRouteOptions<true, boolean>
+  ): void;
+  public batchResolver<TParams extends Record<string, unknown>>(
+    handler: BatchResolverHandler<TParams, false>,
+    options: GraphQlBatchRouteOptions<false, boolean>
   ): void;
   public batchResolver<T extends boolean = true, R extends boolean = false>(
     options: GraphQlBatchRouteOptions<T, R>
@@ -533,18 +533,35 @@ class Router {
    * @param handler - The batch handler function to be called when events are received.
    * @param options - Optional batch configuration including aggregate and raiseOnError settings.
    */
-  public onBatchQuery<
-    TParams extends Record<string, unknown>,
-    T extends boolean = true,
-    R extends boolean = false,
-  >(
+  public onBatchQuery<TParams extends Record<string, unknown>>(
     fieldName: string,
-    handler: BatchResolverHandler<TParams, T>,
-    options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
+    handler: BatchResolverHandler<TParams, true>,
+    options?: Omit<
+      GraphQlBatchRouteOptions<true, boolean>,
+      'fieldName' | 'typeName'
+    >
   ): void;
-  public onBatchQuery<T extends boolean = true, R extends boolean = false>(
+  public onBatchQuery<TParams extends Record<string, unknown>>(
     fieldName: string,
-    options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
+    handler: BatchResolverHandler<TParams, false>,
+    options?: Omit<
+      GraphQlBatchRouteOptions<false, boolean>,
+      'fieldName' | 'typeName'
+    >
+  ): void;
+  public onBatchQuery(
+    fieldName: string,
+    options: Omit<
+      GraphQlBatchRouteOptions<false, boolean>,
+      'fieldName' | 'typeName'
+    >
+  ): MethodDecorator;
+  public onBatchQuery(
+    fieldName: string,
+    options?: Omit<
+      GraphQlBatchRouteOptions<true, boolean>,
+      'fieldName' | 'typeName'
+    >
   ): MethodDecorator;
   public onBatchQuery<
     TParams extends Record<string, unknown>,
@@ -647,18 +664,35 @@ class Router {
    * @param handler - The batch handler function to be called when events are received.
    * @param options - Optional batch configuration including aggregate and raiseOnError settings.
    */
-  public onBatchMutation<
-    TParams extends Record<string, unknown>,
-    T extends boolean = true,
-    R extends boolean = false,
-  >(
+  public onBatchMutation<TParams extends Record<string, unknown>>(
     fieldName: string,
-    handler: BatchResolverHandler<TParams, T>,
-    options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
+    handler: BatchResolverHandler<TParams, true>,
+    options?: Omit<
+      GraphQlBatchRouteOptions<true, boolean>,
+      'fieldName' | 'typeName'
+    >
   ): void;
-  public onBatchMutation<T extends boolean = true, R extends boolean = false>(
+  public onBatchMutation<TParams extends Record<string, unknown>>(
     fieldName: string,
-    options?: Omit<GraphQlBatchRouteOptions<T, R>, 'fieldName' | 'typeName'>
+    handler: BatchResolverHandler<TParams, false>,
+    options?: Omit<
+      GraphQlBatchRouteOptions<false, boolean>,
+      'fieldName' | 'typeName'
+    >
+  ): void;
+  public onBatchMutation(
+    fieldName: string,
+    options: Omit<
+      GraphQlBatchRouteOptions<false, boolean>,
+      'fieldName' | 'typeName'
+    >
+  ): MethodDecorator;
+  public onBatchMutation(
+    fieldName: string,
+    options?: Omit<
+      GraphQlBatchRouteOptions<true, boolean>,
+      'fieldName' | 'typeName'
+    >
   ): MethodDecorator;
   public onBatchMutation<
     TParams extends Record<string, unknown>,

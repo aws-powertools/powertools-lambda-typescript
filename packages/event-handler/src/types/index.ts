@@ -11,6 +11,7 @@ export type {
 } from './appsync-events.js';
 
 export type {
+  BatchResolverHandler,
   GraphQlRouteOptions,
   GraphQlRouterOptions,
   ResolverHandler,

@@ -322,7 +322,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       public async handleBatchGet({ id }: { id: string }) {
         return {
           id,
-          scope: `${this.scope} id=${id}`,
+          scope: `${this.scope} id=${id} raiseOnError=true aggregate=false`,
         };
       }
 
@@ -344,8 +344,8 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Assess
     expect(result).toEqual([
-      { id: 1, scope: 'scoped id=1' },
-      { id: 2, scope: 'scoped id=2' },
+      { id: 1, scope: 'scoped id=1 raiseOnError=true aggregate=false' },
+      { id: 2, scope: 'scoped id=2 raiseOnError=true aggregate=false' },
     ]);
   });
 
@@ -364,7 +364,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       public async handleBatchGet({ id }: { id: string }) {
         return {
           id,
-          scope: `${this.scope} id=${id}`,
+          scope: `${this.scope} id=${id} raiseOnError=false aggregate=false`,
         };
       }
 
@@ -386,8 +386,8 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Assess
     expect(result).toEqual([
-      { id: 1, scope: 'scoped id=1' },
-      { id: 2, scope: 'scoped id=2' },
+      { id: 1, scope: 'scoped id=1 raiseOnError=false aggregate=false' },
+      { id: 2, scope: 'scoped id=2 raiseOnError=false aggregate=false' },
     ]);
   });
 

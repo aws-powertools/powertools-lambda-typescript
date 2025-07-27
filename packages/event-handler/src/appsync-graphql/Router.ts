@@ -540,7 +540,7 @@ class Router {
     }
 
     const batchResolverOptions = handler;
-    return (target, _propertyKey, descriptor: PropertyDescriptor) => {
+    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
       const { typeName = 'Query', fieldName } = batchResolverOptions;
       this.batchResolverRegistry.register({
         fieldName,

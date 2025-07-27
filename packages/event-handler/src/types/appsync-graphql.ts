@@ -5,18 +5,24 @@ import type { Router } from '../appsync-graphql/Router.js';
 
 // #region BatchResolver fn
 
-type BatchResolverSyncHandlerFn<TParams = Record<string, unknown>> = (
+type BatchResolverSyncHandlerFn<
+  TParams = Record<string, unknown>,
+  TSource = Record<string, unknown> | null,
+> = (
   args: TParams,
   options: {
-    event: AppSyncResolverEvent<TParams>;
+    event: AppSyncResolverEvent<TParams, TSource>;
     context: Context;
   }
 ) => unknown;
 
-type BatchResolverHandlerFn<TParams = Record<string, unknown>> = (
+type BatchResolverHandlerFn<
+  TParams = Record<string, unknown>,
+  TSource = Record<string, unknown> | null,
+> = (
   args: TParams,
   options: {
-    event: AppSyncResolverEvent<TParams>;
+    event: AppSyncResolverEvent<TParams, TSource>;
     context: Context;
   }
 ) => Promise<unknown>;
@@ -51,7 +57,9 @@ type BatchResolverHandler<
   ?
       | BatchResolverAggregateHandlerFn<TParams, TSource>
       | BatchResolverSyncAggregateHandlerFn<TParams, TSource>
-  : BatchResolverHandlerFn<TParams> | BatchResolverSyncHandlerFn<TParams>;
+  :
+      | BatchResolverHandlerFn<TParams, TSource>
+      | BatchResolverSyncHandlerFn<TParams, TSource>;
 
 // #region Resolver fn
 

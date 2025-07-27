@@ -410,7 +410,7 @@ class Router {
    *
    * If you want stricter error handling when processing events individually, you can set the `raiseOnError` option
    * to `true`. In this case, if any event throws an error, the entire batch processing will stop and the error
-   * will be propagated.
+   * will be propagated. Note that `raiseOnError` can only be used when `aggregate` is set to `false`.
    *
    * @example
    * ```ts
@@ -430,8 +430,6 @@ class Router {
    * export const handler = async (event, context) =>
    *   app.resolve(event, context);
    * ```
-   *
-   * Note that `raiseOnError` can only be used when `aggregate` is set to `false`.
    *
    * You can also specify the type of the arguments using generic type parameters for non-aggregated handlers:
    *

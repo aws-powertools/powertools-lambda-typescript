@@ -185,20 +185,19 @@ class AppSyncGraphQLResolver extends Router {
   /**
    * Executes the provided asynchronous function with error handling.
    * If the function throws an error, it delegates error processing to `#handleError`
-   * and returns its result cast to the expected type.
+   * and returns the formatted error response.
    *
-   * @typeParam T - The return type of the asynchronous function.
-   * @param fn - A function returning a Promise of type `T` to be executed.
+   * @param fn - A function returning a Promise to be executed with error handling.
    * @param errorMessage - A custom error message to be used if an error occurs.
    */
-  async #withErrorHandling<T>(
-    fn: () => Promise<T>,
+  async #withErrorHandling(
+    fn: () => Promise<unknown>,
     errorMessage: string
-  ): Promise<T> {
+  ): Promise<unknown> {
     try {
       return await fn();
     } catch (error) {
-      return this.#handleError(error, errorMessage) as T;
+      return this.#handleError(error, errorMessage);
     }
   }
 

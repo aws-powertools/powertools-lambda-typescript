@@ -45,7 +45,7 @@ type BatchResolverSyncAggregateHandlerFn<
 
 type BatchResolverHandler<
   TParams = Record<string, unknown>,
-  TSource = Record<string, unknown>,
+  TSource = Record<string, unknown> | null,
   T extends boolean | undefined = undefined,
 > = T extends true
   ?
@@ -100,7 +100,7 @@ type RouteHandlerOptions<
   TParams,
   T extends boolean,
   R extends boolean,
-  TSource = Record<string, unknown>,
+  TSource = Record<string, unknown> | null,
 > = {
   /**
    * The handler function to be called when the event is received

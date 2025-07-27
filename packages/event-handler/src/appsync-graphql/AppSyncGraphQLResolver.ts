@@ -165,7 +165,7 @@ class AppSyncGraphQLResolver extends Router {
       }
       return this.#withErrorHandling(
         () => this.#executeBatchResolvers(event, context, options),
-        `An error occurred in handler ${event[0].info.fieldName}`
+        event[0]
       );
     }
     if (!isAppSyncGraphQLEvent(event)) {
@@ -177,7 +177,7 @@ class AppSyncGraphQLResolver extends Router {
 
     return this.#withErrorHandling(
       () => this.#executeSingleResolver(event, context, options),
-      `An error occurred in handler ${event.info.fieldName}`
+      event
     );
   }
 
@@ -187,15 +187,16 @@ class AppSyncGraphQLResolver extends Router {
    * and returns the formatted error response.
    *
    * @param fn - A function returning a Promise to be executed with error handling.
-   * @param errorMessage - A custom error message to be used if an error occurs.
+   * @param event - The AppSync event (single or first of batch).
    */
   async #withErrorHandling(
     fn: () => Promise<unknown>,
-    errorMessage: string
+    event: AppSyncResolverEvent<Record<string, unknown>>
   ): Promise<unknown> {
     try {
       return await fn();
     } catch (error) {
+      const errorMessage = `An error occurred in handler ${event.info.fieldName}`;
       return this.#handleError(error, errorMessage);
     }
   }

@@ -1,7 +1,6 @@
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import type {
   BatchResolverAggregateHandlerFn,
-  BatchResolverHandler,
   BatchResolverHandlerFn,
   ResolverHandler,
   RouteHandlerOptions,

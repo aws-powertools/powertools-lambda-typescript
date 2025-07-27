@@ -522,6 +522,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     const result = await app.resolve(events, context);
 
     // Assess
+    expect(handler).toHaveBeenCalledTimes(1);
     expect(handler).toHaveBeenCalledWith(events, { event: events, context });
     expect(result).toEqual([
       { id: '1', value: 'A' },
@@ -613,8 +614,11 @@ describe('Class: AppSyncGraphQLResolver', () => {
       onGraphqlEventFactory('batchGet', 'Query', { id: '3' }),
     ];
 
-    // Act && Assess
+    // Act
     const result = await app.resolve(events, context);
+
+    // Assess
+    expect(handler).toHaveBeenCalledTimes(2);
     expect(result).toEqual({
       error: 'Error - fail',
     });

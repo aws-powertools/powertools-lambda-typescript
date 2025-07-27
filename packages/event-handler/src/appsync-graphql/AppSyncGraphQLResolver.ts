@@ -1,6 +1,8 @@
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import type {
   BatchResolverAggregateHandlerFn,
+  BatchResolverHandler,
+  BatchResolverHandlerFn,
   ResolverHandler,
   RouteHandlerOptions,
 } from '../types/appsync-graphql.js';
@@ -187,7 +189,7 @@ class AppSyncGraphQLResolver extends Router {
    * and returns the formatted error response.
    *
    * @param fn - A function returning a Promise to be executed with error handling.
-   * @param event - The AppSync event (single or first of batch).
+   * @param event - The AppSync resolver event (single or first of batch).
    */
   async #withErrorHandling(
     fn: () => Promise<unknown>,
@@ -302,7 +304,7 @@ class AppSyncGraphQLResolver extends Router {
       return response;
     }
 
-    const handler = options.handler as ResolverHandler;
+    const handler = options.handler as BatchResolverHandlerFn;
     const results: unknown[] = [];
 
     if (raiseOnError) {

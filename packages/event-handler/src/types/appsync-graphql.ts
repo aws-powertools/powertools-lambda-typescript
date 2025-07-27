@@ -186,5 +186,6 @@ export type {
   GraphQlBatchRouteOptions,
   ResolverHandler,
   BatchResolverHandler,
+  BatchResolverHandlerFn,
   BatchResolverAggregateHandlerFn,
 };

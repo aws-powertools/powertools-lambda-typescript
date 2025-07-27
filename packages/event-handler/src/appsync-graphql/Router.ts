@@ -502,14 +502,14 @@ class Router {
    */
   public batchResolver<
     TParams extends Record<string, unknown>,
-    TSource = Record<string, unknown>,
+    TSource = Record<string, unknown> | null,
   >(
     handler: BatchResolverHandler<TParams, TSource, true>,
     options: GraphQlBatchRouteOptions<true, boolean>
   ): void;
   public batchResolver<
     TParams extends Record<string, unknown>,
-    TSource = Record<string, unknown>,
+    TSource = Record<string, unknown> | null,
   >(
     handler: BatchResolverHandler<TParams, TSource, false>,
     options: GraphQlBatchRouteOptions<false, boolean>
@@ -519,7 +519,7 @@ class Router {
   ): MethodDecorator;
   public batchResolver<
     TParams extends Record<string, unknown>,
-    TSource = Record<string, unknown>,
+    TSource = Record<string, unknown> | null,
     T extends boolean = true,
     R extends boolean = false,
   >(
@@ -685,7 +685,7 @@ class Router {
    */
   public onBatchQuery<
     TParams extends Record<string, unknown>,
-    TSource = Record<string, unknown>,
+    TSource = Record<string, unknown> | null,
   >(
     fieldName: string,
     handler: BatchResolverHandler<TParams, TSource, true>,
@@ -696,7 +696,7 @@ class Router {
   ): void;
   public onBatchQuery<
     TParams extends Record<string, unknown>,
-    TSource = Record<string, unknown>,
+    TSource = Record<string, unknown> | null,
   >(
     fieldName: string,
     handler: BatchResolverHandler<TParams, TSource, false>,
@@ -721,7 +721,7 @@ class Router {
   ): MethodDecorator;
   public onBatchQuery<
     TParams extends Record<string, unknown>,
-    TSource = Record<string, unknown>,
+    TSource = Record<string, unknown> | null,
     T extends boolean = true,
     R extends boolean = false,
   >(
@@ -885,7 +885,7 @@ class Router {
    */
   public onBatchMutation<
     TParams extends Record<string, unknown>,
-    TSource = Record<string, unknown>,
+    TSource = Record<string, unknown> | null,
   >(
     fieldName: string,
     handler: BatchResolverHandler<TParams, TSource, true>,
@@ -896,7 +896,7 @@ class Router {
   ): void;
   public onBatchMutation<
     TParams extends Record<string, unknown>,
-    TSource = Record<string, unknown>,
+    TSource = Record<string, unknown> | null,
   >(
     fieldName: string,
     handler: BatchResolverHandler<TParams, TSource, false>,
@@ -921,7 +921,7 @@ class Router {
   ): MethodDecorator;
   public onBatchMutation<
     TParams extends Record<string, unknown>,
-    TSource = Record<string, unknown>,
+    TSource = Record<string, unknown> | null,
     T extends boolean = true,
     R extends boolean = false,
   >(

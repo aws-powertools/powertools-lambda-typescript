@@ -71,11 +71,10 @@ class AppSyncGraphQLResolver extends Router {
    * @example
    * ```ts
    * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
-   * import type { AppSyncResolverEvent } from 'aws-lambda';
    *
    * const app = new AppSyncGraphQLResolver();
    *
-   * app.batchResolver(async (events: AppSyncResolverEvent<{ id: number }>[]) => {
+   * app.batchResolver<{ id: number }>(async (events) => {
    *   // your business logic here
    *   const ids = events.map((event) => event.arguments.id);
    *   return ids.map((id) => ({

@@ -193,8 +193,8 @@ describe('Class: Router', () => {
       public getLocations() {
         return [
           {
-            name: 'Location 1',
-            description: 'Description 1',
+            name: 'Batch Location 1',
+            description: 'Batch Description 1',
           },
         ];
       }
@@ -213,7 +213,7 @@ describe('Class: Router', () => {
     );
 
     expect(response).toEqual([
-      { name: 'Location 1', description: 'Description 1' },
+      { name: 'Batch Location 1', description: 'Batch Description 1' },
     ]);
   });
 

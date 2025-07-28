@@ -826,7 +826,12 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - The dimensions to be added to the default dimensions object
    */
   public setDefaultDimensions(dimensions: Dimensions | undefined): void {
-    if (!dimensions) return;
+    if (!dimensions) {
+      this.#logger.warn(
+        'No dimensions were supplied to setDefaultDimensions. Skipping update.'
+      );
+      return;
+    }
 
     const cleanedDimensions: Dimensions = {};
 

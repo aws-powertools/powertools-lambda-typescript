@@ -552,4 +552,79 @@ describe('Working with dimensions', () => {
       })
     );
   });
+
+  it('warns when setDefaultDimensions overwrites existing dimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+      defaultDimensions: { environment: 'prod' },
+    });
+
+    // Act
+    metrics.setDefaultDimensions({ region: 'us-east-1' });
+    metrics.setDefaultDimensions({
+      environment: 'staging', // overwrites default dimension
+    });
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledOnce();
+    expect(console.warn).toHaveBeenCalledWith(
+      'Dimension "environment" has already been added. The previous value will be overwritten.'
+    );
+  });
+
+  it('returns immediately if dimensions is undefined', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      namespace: DEFAULT_NAMESPACE,
+    });
+    // Act
+    metrics.setDefaultDimensions(undefined);
+    metrics.addMetric('myMetric', MetricUnit.Count, 1);
+    // Assess: No warning, only default dimensions/service
+    expect(console.warn).not.toHaveBeenCalled();
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+      })
+    );
+  });
+  it.each([
+    { value: undefined, name: 'valid-name' },
+    { value: null, name: 'valid-name' },
+    { value: '', name: 'valid-name' },
+    { value: 'valid-value', name: '' },
+  ])(
+    'skips invalid default dimension values in setDefaultDimensions ($name)',
+    ({ value, name }) => {
+      // Arrange
+      const metrics = new Metrics({
+        singleMetric: true,
+        namespace: DEFAULT_NAMESPACE,
+      });
+
+      // Act
+      metrics.setDefaultDimensions({
+        validDimension: 'valid',
+        [name as string]: value as string,
+      });
+
+      metrics.addMetric('test', MetricUnit.Count, 1);
+      metrics.publishStoredMetrics();
+
+      // Assert
+      expect(console.warn).toHaveBeenCalledWith(
+        `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+      );
+
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.objectContaining({ validDimension: 'valid' })
+      );
+
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.not.objectContaining({ [name]: value })
+      );
+    }
+  );
 });

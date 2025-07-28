@@ -45,8 +45,7 @@ jobs:
           release-type: ${{ github.event.inputs.release-type }}
       - name: Update user agent version
         run: |
-          VERSION=$(${{ steps.version-n-changelog.outputs.new-version }})
-          echo -e "// this file is auto generated, do not modify\nexport const PT_VERSION = '$VERSION';" > packages/commons/src/version.ts
+          echo -e "// this file is auto generated, do not modify\nexport const PT_VERSION = '${{ steps.version-n-changelog.outputs.new-version }}';" > packages/commons/src/version.ts
       - name: Stage changes
         run: git add .
       - name: Create PR

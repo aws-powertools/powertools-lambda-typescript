@@ -272,8 +272,8 @@ class AppSyncGraphQLResolver extends Router {
    *
    * @remarks
    * - If `aggregate` is true, invokes the handler once with the entire batch and expects an array response.
-   * - If `raiseOnError` is true, errors are propagated and will cause the function to throw.
-   * - If `raiseOnError` is false, errors are logged and `null` is appended for failed events, allowing graceful degradation.
+   * - If `throwOnError` is true, errors are propagated and will cause the function to throw.
+   * - If `throwOnError` is false, errors are logged and `null` is appended for failed events, allowing graceful degradation.
    */
   async #callBatchResolver(
     events: AppSyncResolverEvent<Record<string, unknown>>[],
@@ -281,9 +281,9 @@ class AppSyncGraphQLResolver extends Router {
     options: RouteHandlerOptions<Record<string, unknown>, boolean, boolean>,
     resolveOptions?: ResolveOptions
   ): Promise<unknown[]> {
-    const { aggregate, raiseOnError } = options;
+    const { aggregate, throwOnError } = options;
     this.logger.debug(
-      `Aggregate flag aggregate=${aggregate} & Graceful error handling flag raiseOnError=${raiseOnError}`
+      `Aggregate flag aggregate=${aggregate} & Graceful error handling flag throwOnError=${throwOnError}`
     );
 
     if (aggregate) {
@@ -306,7 +306,7 @@ class AppSyncGraphQLResolver extends Router {
     const handler = options.handler as BatchResolverHandlerFn;
     const results: unknown[] = [];
 
-    if (raiseOnError) {
+    if (throwOnError) {
       for (const event of events) {
         const result = await handler.apply(resolveOptions?.scope ?? this, [
           event.arguments,

@@ -307,7 +307,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     ]);
   });
 
-  it('preserves the scope when using `batchResolver` decorator when aggregate=false and raiseOnError=true', async () => {
+  it('preserves the scope when using `batchResolver` decorator when aggregate=false and throwOnError=true', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
 
@@ -316,13 +316,13 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
       @app.batchResolver({
         fieldName: 'batchGet',
-        raiseOnError: true,
+        throwOnError: true,
         aggregate: false,
       })
       public async handleBatchGet({ id }: { id: string }) {
         return {
           id,
-          scope: `${this.scope} id=${id} raiseOnError=true aggregate=false`,
+          scope: `${this.scope} id=${id} throwOnError=true aggregate=false`,
         };
       }
 
@@ -344,12 +344,12 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Assess
     expect(result).toEqual([
-      { id: 1, scope: 'scoped id=1 raiseOnError=true aggregate=false' },
-      { id: 2, scope: 'scoped id=2 raiseOnError=true aggregate=false' },
+      { id: 1, scope: 'scoped id=1 throwOnError=true aggregate=false' },
+      { id: 2, scope: 'scoped id=2 throwOnError=true aggregate=false' },
     ]);
   });
 
-  it('preserves the scope when using `batchResolver` decorator when aggregate=false and raiseOnError=false', async () => {
+  it('preserves the scope when using `batchResolver` decorator when aggregate=false and throwOnError=false', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
 
@@ -358,13 +358,13 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
       @app.batchResolver({
         fieldName: 'batchGet',
-        raiseOnError: false,
+        throwOnError: false,
         aggregate: false,
       })
       public async handleBatchGet({ id }: { id: string }) {
         return {
           id,
-          scope: `${this.scope} id=${id} raiseOnError=false aggregate=false`,
+          scope: `${this.scope} id=${id} throwOnError=false aggregate=false`,
         };
       }
 
@@ -386,8 +386,8 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Assess
     expect(result).toEqual([
-      { id: 1, scope: 'scoped id=1 raiseOnError=false aggregate=false' },
-      { id: 2, scope: 'scoped id=2 raiseOnError=false aggregate=false' },
+      { id: 1, scope: 'scoped id=1 throwOnError=false aggregate=false' },
+      { id: 2, scope: 'scoped id=2 throwOnError=false aggregate=false' },
     ]);
   });
 
@@ -530,7 +530,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     ]);
   });
 
-  it('registers a batch resolver via direct function call and invokes it (aggregate=false) and (raiseOnError=true)', async () => {
+  it('registers a batch resolver via direct function call and invokes it (aggregate=false) and (throwOnError=true)', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
     const handler = vi
@@ -541,7 +541,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       fieldName: 'batchGet',
       typeName: 'Query',
       aggregate: false,
-      raiseOnError: true,
+      throwOnError: true,
     });
     const events = [
       onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
@@ -594,7 +594,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     ]);
   });
 
-  it('stops on first error when aggregate=false and raiseOnError=true', async () => {
+  it('stops on first error when aggregate=false and throwOnError=true', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
     const handler = vi
@@ -606,7 +606,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       fieldName: 'batchGet',
       typeName: 'Query',
       aggregate: false,
-      raiseOnError: true,
+      throwOnError: true,
     });
     const events = [
       onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),

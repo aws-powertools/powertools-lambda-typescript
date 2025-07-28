@@ -131,7 +131,7 @@ type RouteHandlerOptions<
    * Whether to raise an error if the handler fails
    * @default false
    */
-  raiseOnError?: R;
+  throwOnError?: R;
 };
 
 // #region Router
@@ -165,8 +165,8 @@ type GraphQlRouteOptions = {
 /**
  * Options for configuring a batch GraphQL route handler.
  *
- * @template T - If `true`, the handler receives all events at once and `raiseOnError` cannot be specified.
- *               If `false`, the handler is called for each event individually and `raiseOnError` can be specified.
+ * @template T - If `true`, the handler receives all events at once and `throwOnError` cannot be specified.
+ *               If `false`, the handler is called for each event individually and `throwOnError` can be specified.
  *               Defaults to `true`.
  * @template R - If `true`, errors thrown by the handler will be raised. Defaults to `false`.
  */
@@ -175,8 +175,8 @@ type GraphQlBatchRouteOptions<
   R extends boolean | undefined = false,
 > = GraphQlRouteOptions &
   (T extends true
-    ? { aggregate?: T; raiseOnError?: never }
-    : { aggregate?: T; raiseOnError?: R });
+    ? { aggregate?: T; throwOnError?: never }
+    : { aggregate?: T; throwOnError?: R });
 
 export type {
   RouteHandlerRegistryOptions,

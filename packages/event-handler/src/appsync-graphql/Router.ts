@@ -408,9 +408,9 @@ class Router {
    *
    * **Strict error handling**
    *
-   * If you want stricter error handling when processing events individually, you can set the `raiseOnError` option
+   * If you want stricter error handling when processing events individually, you can set the `throwOnError` option
    * to `true`. In this case, if any event throws an error, the entire batch processing will stop and the error
-   * will be propagated. Note that `raiseOnError` can only be used when `aggregate` is set to `false`.
+   * will be propagated. Note that `throwOnError` can only be used when `aggregate` is set to `false`.
    *
    * @example
    * ```ts
@@ -424,7 +424,7 @@ class Router {
    * }, {
    *   fieldName: 'getPost',
    *   aggregate: false,
-   *   raiseOnError: true
+   *   throwOnError: true
    * });
    *
    * export const handler = async (event, context) =>
@@ -472,7 +472,7 @@ class Router {
    *     return { id: args.id, data: 'processed' };
    *   }
    *
-   *   ⁣@app.batchResolver({ fieldName: 'getPost', aggregate: false, raiseOnError: true })
+   *   ⁣@app.batchResolver({ fieldName: 'getPost', aggregate: false, throwOnError: true })
    *   async handleGetPostStrict(args, { event, context }) {
    *     // Process individual request with strict error handling
    *     return { id: args.id, data: 'processed' };
@@ -494,7 +494,7 @@ class Router {
    * @param options.fieldName - The name of the field to register the handler for.
    * @param options.typeName - The name of the GraphQL type to use for the resolver, defaults to `Query`.
    * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
-   * @param options.raiseOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
+   * @param options.throwOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
    */
   public batchResolver<
     TParams extends Record<string, unknown>,
@@ -532,7 +532,7 @@ class Router {
         handler: handler as BatchResolverHandler,
         typeName,
         aggregate: batchResolverOptions?.aggregate ?? true,
-        raiseOnError: batchResolverOptions?.raiseOnError ?? false,
+        throwOnError: batchResolverOptions?.throwOnError ?? false,
       });
       return;
     }
@@ -545,7 +545,7 @@ class Router {
         handler: descriptor?.value,
         typeName,
         aggregate: batchResolverOptions?.aggregate ?? true,
-        raiseOnError: batchResolverOptions?.raiseOnError ?? false,
+        throwOnError: batchResolverOptions?.throwOnError ?? false,
       });
       return descriptor;
     };
@@ -613,9 +613,9 @@ class Router {
    *
    * **Strict error handling**
    *
-   * If you want stricter error handling when processing events individually, you can set the `raiseOnError` option
+   * If you want stricter error handling when processing events individually, you can set the `throwOnError` option
    * to `true`. In this case, if any event throws an error, the entire batch processing will stop and the error
-   * will be propagated. Note that `raiseOnError` can only be used when `aggregate` is set to `false`.
+   * will be propagated. Note that `throwOnError` can only be used when `aggregate` is set to `false`.
    *
    * @example
    * ```ts
@@ -626,7 +626,7 @@ class Router {
    * app.onBatchQuery('getPost', async (args, { event, context }) => {
    *   // Process individual request
    *   return { id: args.id, data: 'processed' };
-   * }, { aggregate: false, raiseOnError: true });
+   * }, { aggregate: false, throwOnError: true });
    *
    * export const handler = async (event, context) =>
    *   app.resolve(event, context);
@@ -654,7 +654,7 @@ class Router {
    *     return { id: args.id, data: 'processed' };
    *   }
    *
-   *   ⁣@app.onBatchQuery('getPost', { aggregate: false, raiseOnError: true })
+   *   ⁣@app.onBatchQuery('getPost', { aggregate: false, throwOnError: true })
    *   async handleGetPostStrict(args, { event, context }) {
    *     // Process individual request with strict error handling
    *     return { id: args.id, data: 'processed' };
@@ -673,9 +673,9 @@ class Router {
    *
    * @param fieldName - The name of the Query field to register the batch handler for.
    * @param handler - The batch handler function to be called when events are received.
-   * @param options - Optional batch configuration including aggregate and raiseOnError settings.
+   * @param options - Optional batch configuration including aggregate and throwOnError settings.
    * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
-   * @param options.raiseOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
+   * @param options.throwOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
    */
   public onBatchQuery<
     TParams extends Record<string, unknown>,
@@ -731,7 +731,7 @@ class Router {
         handler: handlerOrOptions as BatchResolverHandler,
         typeName: 'Query',
         aggregate: options?.aggregate ?? true,
-        raiseOnError: options?.raiseOnError ?? false,
+        throwOnError: options?.throwOnError ?? false,
       });
 
       return;
@@ -743,7 +743,7 @@ class Router {
         handler: descriptor?.value,
         typeName: 'Query',
         aggregate: handlerOrOptions?.aggregate ?? true,
-        raiseOnError: handlerOrOptions?.raiseOnError ?? false,
+        throwOnError: handlerOrOptions?.throwOnError ?? false,
       });
 
       return descriptor;
@@ -810,9 +810,9 @@ class Router {
    *
    * **Strict error handling**
    *
-   * If you want stricter error handling when processing events individually, you can set the `raiseOnError` option
+   * If you want stricter error handling when processing events individually, you can set the `throwOnError` option
    * to `true`. In this case, if any event throws an error, the entire batch processing will stop and the error
-   * will be propagated. Note that `raiseOnError` can only be used when `aggregate` is set to `false`.
+   * will be propagated. Note that `throwOnError` can only be used when `aggregate` is set to `false`.
    *
    * @example
    * ```ts
@@ -823,7 +823,7 @@ class Router {
    * app.onBatchMutation('createPost', async (args, { event, context }) => {
    *   // Process individual request
    *   return { id: args.id, status: 'created' };
-   * }, { aggregate: false, raiseOnError: true });
+   * }, { aggregate: false, throwOnError: true });
    *
    * export const handler = async (event, context) =>
    *   app.resolve(event, context);
@@ -851,7 +851,7 @@ class Router {
    *     return { id: args.id, status: 'created' };
    *   }
    *
-   *   ⁣@app.onBatchMutation('createPost', { aggregate: false, raiseOnError: true })
+   *   ⁣@app.onBatchMutation('createPost', { aggregate: false, throwOnError: true })
    *   async handleCreatePostStrict(args, { event, context }) {
    *     // Process individual request with strict error handling
    *     return { id: args.id, status: 'created' };
@@ -870,9 +870,9 @@ class Router {
    *
    * @param fieldName - The name of the Mutation field to register the batch handler for.
    * @param handler - The batch handler function to be called when events are received.
-   * @param options - Optional batch configuration including aggregate and raiseOnError settings.
+   * @param options - Optional batch configuration including aggregate and throwOnError settings.
    * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
-   * @param options.raiseOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
+   * @param options.throwOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
    */
   public onBatchMutation<
     TParams extends Record<string, unknown>,
@@ -928,7 +928,7 @@ class Router {
         handler: handlerOrOptions as BatchResolverHandler,
         typeName: 'Mutation',
         aggregate: options?.aggregate ?? true,
-        raiseOnError: options?.raiseOnError ?? false,
+        throwOnError: options?.throwOnError ?? false,
       });
 
       return;
@@ -940,7 +940,7 @@ class Router {
         handler: descriptor?.value,
         typeName: 'Mutation',
         aggregate: handlerOrOptions?.aggregate ?? true,
-        raiseOnError: handlerOrOptions?.raiseOnError ?? false,
+        throwOnError: handlerOrOptions?.throwOnError ?? false,
       });
 
       return descriptor;

@@ -283,7 +283,7 @@ class AppSyncGraphQLResolver extends Router {
   ): Promise<unknown[]> {
     const { aggregate, throwOnError } = options;
     this.logger.debug(
-      `Aggregate flag aggregate=${aggregate} & Graceful error handling flag throwOnError=${throwOnError}`
+      `Aggregate flag aggregate=${aggregate} & graceful error handling flag throwOnError=${throwOnError}`
     );
 
     if (aggregate) {

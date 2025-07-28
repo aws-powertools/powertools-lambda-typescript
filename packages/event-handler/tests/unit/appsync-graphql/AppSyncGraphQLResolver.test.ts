@@ -307,89 +307,65 @@ describe('Class: AppSyncGraphQLResolver', () => {
     ]);
   });
 
-  it('preserves the scope when using `batchResolver` decorator when aggregate=false and throwOnError=true', async () => {
-    // Prepare
-    const app = new AppSyncGraphQLResolver({ logger: console });
+  it.each([
+    {
+      throwOnError: true,
+      description: 'throwOnError=true',
+    },
+    {
+      throwOnError: false,
+      description: 'throwOnError=false',
+    },
+  ])(
+    'preserves the scope when using `batchResolver` decorator when aggregate=false and $description',
+    async ({ throwOnError }) => {
+      // Prepare
+      const app = new AppSyncGraphQLResolver({ logger: console });
 
-    class Lambda {
-      public scope = 'scoped';
+      class Lambda {
+        public scope = 'scoped';
 
-      @app.batchResolver({
-        fieldName: 'batchGet',
-        throwOnError: true,
-        aggregate: false,
-      })
-      public async handleBatchGet({ id }: { id: string }) {
-        return {
-          id,
-          scope: `${this.scope} id=${id} throwOnError=true aggregate=false`,
-        };
+        @app.batchResolver({
+          fieldName: 'batchGet',
+          throwOnError,
+          aggregate: false,
+        })
+        public async handleBatchGet({ id }: { id: string }) {
+          return {
+            id,
+            scope: `${this.scope} id=${id} throwOnError=${throwOnError} aggregate=false`,
+          };
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context, { scope: this });
+        }
       }
+      const lambda = new Lambda();
+      const handler = lambda.handler.bind(lambda);
 
-      public async handler(event: unknown, context: Context) {
-        return app.resolve(event, context, { scope: this });
-      }
+      // Act
+      const result = await handler(
+        [
+          onGraphqlEventFactory('batchGet', 'Query', { id: 1 }),
+          onGraphqlEventFactory('batchGet', 'Query', { id: 2 }),
+        ],
+        context
+      );
+
+      // Assess
+      expect(result).toEqual([
+        {
+          id: 1,
+          scope: `scoped id=1 throwOnError=${throwOnError} aggregate=false`,
+        },
+        {
+          id: 2,
+          scope: `scoped id=2 throwOnError=${throwOnError} aggregate=false`,
+        },
+      ]);
     }
-    const lambda = new Lambda();
-    const handler = lambda.handler.bind(lambda);
-
-    // Act
-    const result = await handler(
-      [
-        onGraphqlEventFactory('batchGet', 'Query', { id: 1 }),
-        onGraphqlEventFactory('batchGet', 'Query', { id: 2 }),
-      ],
-      context
-    );
-
-    // Assess
-    expect(result).toEqual([
-      { id: 1, scope: 'scoped id=1 throwOnError=true aggregate=false' },
-      { id: 2, scope: 'scoped id=2 throwOnError=true aggregate=false' },
-    ]);
-  });
-
-  it('preserves the scope when using `batchResolver` decorator when aggregate=false and throwOnError=false', async () => {
-    // Prepare
-    const app = new AppSyncGraphQLResolver({ logger: console });
-
-    class Lambda {
-      public scope = 'scoped';
-
-      @app.batchResolver({
-        fieldName: 'batchGet',
-        throwOnError: false,
-        aggregate: false,
-      })
-      public async handleBatchGet({ id }: { id: string }) {
-        return {
-          id,
-          scope: `${this.scope} id=${id} throwOnError=false aggregate=false`,
-        };
-      }
-
-      public async handler(event: unknown, context: Context) {
-        return app.resolve(event, context, { scope: this });
-      }
-    }
-    const lambda = new Lambda();
-    const handler = lambda.handler.bind(lambda);
-
-    // Act
-    const result = await handler(
-      [
-        onGraphqlEventFactory('batchGet', 'Query', { id: 1 }),
-        onGraphqlEventFactory('batchGet', 'Query', { id: 2 }),
-      ],
-      context
-    );
-
-    // Assess
-    expect(result).toEqual([
-      { id: 1, scope: 'scoped id=1 throwOnError=false aggregate=false' },
-      { id: 2, scope: 'scoped id=2 throwOnError=false aggregate=false' },
-    ]);
-  });
+  );
 
   it('emits debug message when AWS_LAMBDA_LOG_LEVEL is set to DEBUG', async () => {
     // Prepare

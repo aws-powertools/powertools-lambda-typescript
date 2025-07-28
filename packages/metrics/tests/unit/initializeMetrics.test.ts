@@ -65,7 +65,12 @@ describe('Initialize Metrics', () => {
 
   it('uses the default namespace when none is provided', () => {
     // Prepare
-    const metrics = new Metrics({ singleMetric: true });
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
+    });
 
     // Act
     metrics.addMetric('test', MetricUnit.Count, 1);

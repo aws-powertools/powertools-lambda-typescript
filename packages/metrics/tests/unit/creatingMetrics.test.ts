@@ -182,6 +182,9 @@ describe('Creating metrics', () => {
     const metrics = new Metrics({
       singleMetric: false,
       namespace: DEFAULT_NAMESPACE,
+      defaultDimensions: {
+        enviroment: 'test',
+      },
     });
 
     // Act

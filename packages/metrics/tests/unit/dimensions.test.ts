@@ -462,6 +462,9 @@ describe('Working with dimensions', () => {
     const metrics = new Metrics({
       singleMetric: true,
       namespace: DEFAULT_NAMESPACE,
+      defaultDimensions: {
+        enviroment: 'test',
+      },
     });
 
     // Act & Assess
@@ -498,6 +501,9 @@ describe('Working with dimensions', () => {
       const metrics = new Metrics({
         singleMetric: true,
         namespace: DEFAULT_NAMESPACE,
+        defaultDimensions: {
+          enviroment: 'test',
+        },
       });
 
       // Act & Assess
@@ -573,23 +579,28 @@ describe('Working with dimensions', () => {
     );
   });
 
-  it('returns immediately if dimensions is undefined', () => {
+  it('logs a warning and returns immediately if dimensions is undefined', () => {
     // Prepare
     const metrics = new Metrics({
       singleMetric: true,
       namespace: DEFAULT_NAMESPACE,
     });
+
     // Act
-    metrics.setDefaultDimensions(undefined);
     metrics.addMetric('myMetric', MetricUnit.Count, 1);
-    // Assess: No warning, only default dimensions/service
-    expect(console.warn).not.toHaveBeenCalled();
+
+    // Assert
+    expect(console.warn).toHaveBeenCalledWith(
+      'No dimensions were supplied to setDefaultDimensions. Skipping update.'
+    );
+
     expect(console.log).toHaveEmittedEMFWith(
       expect.objectContaining({
         service: 'hello-world',
       })
     );
   });
+
   it.each([
     { value: undefined, name: 'valid-name' },
     { value: null, name: 'valid-name' },
@@ -602,6 +613,9 @@ describe('Working with dimensions', () => {
       const metrics = new Metrics({
         singleMetric: true,
         namespace: DEFAULT_NAMESPACE,
+        defaultDimensions: {
+          enviroment: 'test',
+        },
       });
 
       // Act

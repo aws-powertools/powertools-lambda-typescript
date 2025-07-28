@@ -1,4 +1,3 @@
-import { EnvironmentVariablesService } from '@aws-lambda-powertools/commons';
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { isRecord } from '@aws-lambda-powertools/commons/typeutils';
 import type {
@@ -8,6 +7,7 @@ import type {
   RouterOptions,
 } from '../types/appsync-events.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
+import { getStringFromEnv, isDevMode } from '@aws-lambda-powertools/commons/utils/env';
 
 /**
  * Class for registering routes for the `onPublish` and `onSubscribe` events in AWS AppSync Events APIs.
@@ -31,14 +31,12 @@ class Router {
    * Whether the router is running in development mode.
    */
   protected readonly isDev: boolean = false;
-  /**
-   * The environment variables service instance.
-   */
-  protected readonly envService: EnvironmentVariablesService;
-
+ 
   public constructor(options?: RouterOptions) {
-    this.envService = new EnvironmentVariablesService();
-    const alcLogLevel = this.envService.get('AWS_LAMBDA_LOG_LEVEL');
+    const alcLogLevel = getStringFromEnv({
+      key: 'AWS_LAMBDA_LOG_LEVEL',
+      defaultValue: '',
+    });
     this.logger = options?.logger ?? {
       debug: alcLogLevel === 'DEBUG' ? console.debug : () => undefined,
       error: console.error,
@@ -52,7 +50,7 @@ class Router {
       logger: this.logger,
       eventType: 'onSubscribe',
     });
-    this.isDev = this.envService.isDevMode();
+    this.isDev = isDevMode();
   }
 
   /**

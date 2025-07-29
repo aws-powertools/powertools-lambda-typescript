@@ -1,7 +1,9 @@
 import { Console } from 'node:console';
 import {
   isIntegerNumber,
+  isNullOrUndefined,
   isNumber,
+  isRecord,
   isString,
   isStringUndefinedNullEmpty,
   Utility,
@@ -826,9 +828,16 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - The dimensions to be added to the default dimensions object
    */
   public setDefaultDimensions(dimensions: Dimensions | undefined): void {
-    if (!dimensions) {
+    if (isNullOrUndefined(dimensions)) {
       this.#logger.warn(
         'No dimensions were supplied to setDefaultDimensions. Skipping update.'
+      );
+      return;
+    }
+
+    if (!isRecord(dimensions)) {
+      this.#logger.warn(
+        'Invalid dimensions type provided to setDefaultDimensions. Expected an object.'
       );
       return;
     }

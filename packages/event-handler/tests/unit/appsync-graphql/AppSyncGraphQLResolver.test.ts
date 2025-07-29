@@ -449,7 +449,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     }
   );
 
-  it('logs a warning and returns early if one of the batch event is not compatible', async () => {
+  it('logs a warning and returns early if one of the batch events is not compatible', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
     app.batchResolver(vi.fn(), {
@@ -477,63 +477,81 @@ describe('Class: AppSyncGraphQLResolver', () => {
     expect(result).toBeUndefined();
   });
 
-  it('registers a batch resolver via direct function call and invokes it (aggregate=true)', async () => {
-    // Prepare
-    const app = new AppSyncGraphQLResolver({ logger: console });
-    const handler = vi.fn().mockResolvedValue([
-      { id: '1', value: 'A' },
-      { id: '2', value: 'B' },
-    ]);
-    app.batchResolver(handler, {
-      fieldName: 'batchGet',
-      typeName: 'Query',
+  it.each([
+    {
       aggregate: true,
-    });
-    const events = [
-      onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
-      onGraphqlEventFactory('batchGet', 'Query', { id: '2' }),
-    ];
-
-    // Act
-    const result = await app.resolve(events, context);
-
-    // Assess
-    expect(handler).toHaveBeenCalledTimes(1);
-    expect(handler).toHaveBeenCalledWith(events, { event: events, context });
-    expect(result).toEqual([
-      { id: '1', value: 'A' },
-      { id: '2', value: 'B' },
-    ]);
-  });
-
-  it('registers a batch resolver via direct function call and invokes it (aggregate=false) and (throwOnError=true)', async () => {
-    // Prepare
-    const app = new AppSyncGraphQLResolver({ logger: console });
-    const handler = vi
-      .fn()
-      .mockResolvedValueOnce({ id: '1', value: 'A' })
-      .mockResolvedValueOnce({ id: '2', value: 'B' });
-    app.batchResolver(handler, {
-      fieldName: 'batchGet',
-      typeName: 'Query',
+      description: 'aggregate=true',
+      setupHandler: (handler: ReturnType<typeof vi.fn>) => {
+        handler.mockResolvedValue([
+          { id: '1', value: 'A' },
+          { id: '2', value: 'B' },
+        ]);
+      },
+    },
+    {
       aggregate: false,
-      throwOnError: true,
-    });
-    const events = [
-      onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
-      onGraphqlEventFactory('batchGet', 'Query', { id: '2' }),
-    ];
+      description: 'aggregate=false and throwOnError=true',
+      setupHandler: (handler: ReturnType<typeof vi.fn>) => {
+        handler
+          .mockResolvedValueOnce({ id: '1', value: 'A' })
+          .mockResolvedValueOnce({ id: '2', value: 'B' });
+      },
+    },
+  ])(
+    'registers a batch resolver via direct function call and invokes it ($description)',
+    async ({ aggregate, setupHandler }) => {
+      // Prepare
+      const app = new AppSyncGraphQLResolver({ logger: console });
+      const handler = vi.fn();
+      setupHandler(handler);
 
-    // Act
-    const result = await app.resolve(events, context);
+      if (aggregate) {
+        app.batchResolver(handler, {
+          fieldName: 'batchGet',
+          typeName: 'Query',
+          aggregate: true,
+        });
+      } else {
+        app.batchResolver(handler, {
+          fieldName: 'batchGet',
+          typeName: 'Query',
+          aggregate: false,
+          throwOnError: true,
+        });
+      }
 
-    // Assess
-    expect(handler).toHaveBeenCalledTimes(2);
-    expect(result).toEqual([
-      { id: '1', value: 'A' },
-      { id: '2', value: 'B' },
-    ]);
-  });
+      const events = [
+        onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
+        onGraphqlEventFactory('batchGet', 'Query', { id: '2' }),
+      ];
+
+      // Act
+      const result = await app.resolve(events, context);
+
+      // Assess
+      if (aggregate) {
+        expect(handler).toHaveBeenCalledTimes(1);
+        expect(handler).toHaveBeenCalledWith(events, {
+          event: events,
+          context,
+        });
+      } else {
+        expect(handler).toHaveBeenCalledTimes(2);
+        expect(handler).toHaveBeenNthCalledWith(1, events[0].arguments, {
+          event: events[0],
+          context,
+        });
+        expect(handler).toHaveBeenNthCalledWith(2, events[1].arguments, {
+          event: events[1],
+          context,
+        });
+      }
+      expect(result).toEqual([
+        { id: '1', value: 'A' },
+        { id: '2', value: 'B' },
+      ]);
+    }
+  );
 
   it('returns null for failed records when aggregate=false', async () => {
     // Prepare

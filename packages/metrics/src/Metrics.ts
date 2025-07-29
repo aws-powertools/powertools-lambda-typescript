@@ -1,7 +1,9 @@
 import { Console } from 'node:console';
 import {
   isIntegerNumber,
+  isNullOrUndefined,
   isNumber,
+  isRecord,
   isString,
   isStringUndefinedNullEmpty,
   Utility,
@@ -240,8 +242,10 @@ class Metrics extends Utility implements MetricsInterface {
     super();
 
     this.dimensions = {};
-    this.setOptions(options);
+    this.setEnvConfig();
+    this.setConsole();
     this.#logger = options.logger || this.console;
+    this.setOptions(options);
   }
 
   /**
@@ -824,13 +828,41 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - The dimensions to be added to the default dimensions object
    */
   public setDefaultDimensions(dimensions: Dimensions | undefined): void {
+    if (isNullOrUndefined(dimensions) || !isRecord(dimensions)) {
+      return;
+    }
+
+    const cleanedDimensions: Dimensions = {};
+
+    for (const [key, value] of Object.entries(dimensions)) {
+      if (
+        isStringUndefinedNullEmpty(key) ||
+        isStringUndefinedNullEmpty(value)
+      ) {
+        this.#logger.warn(
+          `The dimension ${key} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+        );
+        continue;
+      }
+
+      if (Object.hasOwn(this.defaultDimensions, key)) {
+        this.#logger.warn(
+          `Dimension "${key}" has already been added. The previous value will be overwritten.`
+        );
+      }
+
+      cleanedDimensions[key] = value;
+    }
+
     const targetDimensions = {
       ...this.defaultDimensions,
-      ...dimensions,
+      ...cleanedDimensions,
     };
-    if (MAX_DIMENSION_COUNT <= Object.keys(targetDimensions).length) {
+
+    if (Object.keys(targetDimensions).length >= MAX_DIMENSION_COUNT) {
       throw new Error('Max dimension count hit');
     }
+
     this.defaultDimensions = targetDimensions;
   }
 
@@ -1058,8 +1090,6 @@ class Metrics extends Utility implements MetricsInterface {
       functionName,
     } = options;
 
-    this.setEnvConfig();
-    this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setDisabled();
     this.setNamespace(namespace);

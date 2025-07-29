@@ -641,4 +641,31 @@ describe('Working with dimensions', () => {
       );
     }
   );
+  it('logs a warning and returns immediately if dimensions is not a plain object (fails isRecord)', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      namespace: DEFAULT_NAMESPACE,
+      defaultDimensions: {
+        enviroment: 'test',
+      },
+    });
+
+    // Act
+    // @ts-expect-error – intentionally passing an invalid value to simulate bad input at runtime
+    metrics.setDefaultDimensions('invalid-dimensions');
+
+    // Assert
+    expect(console.warn).toHaveBeenCalledWith(
+      'Invalid dimensions type provided to setDefaultDimensions. Expected an object.'
+    );
+
+    metrics.addMetric('someMetric', MetricUnit.Count, 1);
+
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+      })
+    );
+  });
 });

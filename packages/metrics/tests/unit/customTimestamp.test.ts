@@ -48,7 +48,9 @@ describe('Setting custom timestamp', () => {
 
   it('logs a warning when the provided timestamp is too far in the past', () => {
     // Prepare
-    const metrics = new Metrics({ singleMetric: true });
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
 
     // Act
     metrics.setTimestamp(Date.now() - EMF_MAX_TIMESTAMP_PAST_AGE - 1000);
@@ -63,7 +65,9 @@ describe('Setting custom timestamp', () => {
 
   it('logs a warning when the provided timestamp is too far in the future', () => {
     // Prepare
-    const metrics = new Metrics({ singleMetric: true });
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
 
     // Act
     metrics.setTimestamp(Date.now() + EMF_MAX_TIMESTAMP_FUTURE_AGE + 1000);

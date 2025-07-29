@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
+
+### Improvements
+
+- replace EnvironmentVariablesService class with helper functions in Parameters ([#4168](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4168)) ([ce4e618](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ce4e6181ffed20153f3743707fdd31f68f392e0c))
 ## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
 
 **Note:** Version bump only for this package

@@ -1,5 +1,26 @@
 # Change Log
 
+## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
+
+### Bug Fixes
+
+- **metrics** revert changes when raise warning with overridden default dimensions ([#4226](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4226)) ([c9d6aa0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c9d6aa09acc666d09ed13ebef331502f4119dacc))
+- **metrics** emit warning when default dimensions are overwritten ([#4222](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4222)) ([a933a6a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a933a6af6135b79b855353bbaf265ab0a3be60da))
+- **parser** set zod peer range to 4.x ([#4196](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4196)) ([7a65fcf](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7a65fcf9759ac1a1f072ef5442ee8b0767705a92))
+
+### Improvements
+
+- **metrics** replace EnvironmentVariablesService with cached #envConfig ([#4188](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4188)) ([919063b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/919063bc10f15b55f84c183208274836ae1d367e))
+- **metrics** add runtime validations when adding dimensions ([#4181](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4181)) ([4226058](https://github.com/aws-powertools/powertools-lambda-typescript/commit/42260585eb84de373c6ae5daaf5d541dd5f78ec1))
+- **parameters** replace EnvironmentVariablesService class with helper functions in Parameters ([#4168](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4168)) ([ce4e618](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ce4e6181ffed20153f3743707fdd31f68f392e0c))
+- **event-handler** replace EnvironmentVariablesService class with helper functions in Event Handler ([#4225](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4225)) ([d17818e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d17818e1b8b17a8307e61966ab857f9c05c49670))
+
+### Features
+
+- **event-handler** add route management system for ApiGw event handler ([#4211](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4211)) ([c2cbb64](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c2cbb642ca3a4cc57ad0e80d9f1239e8f67d56e3))
+- **event-handler** add base router class ([#3972](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3972)) ([3d4998c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3d4998cda6c1b8c1bea47d5c6a9fe760b6e957fb))
+
+
 ## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
 
 ### Improvements

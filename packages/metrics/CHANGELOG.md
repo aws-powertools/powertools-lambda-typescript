@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
+
+### Bug Fixes
+
+- revert changes when raise warning with overridden default dimensions ([#4226](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4226)) ([c9d6aa0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c9d6aa09acc666d09ed13ebef331502f4119dacc))
+- emit warning when default dimensions are overwritten ([#4222](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4222)) ([a933a6a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a933a6af6135b79b855353bbaf265ab0a3be60da))
+
+### Improvements
+
+- replace EnvironmentVariablesService with cached #envConfig ([#4188](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4188)) ([919063b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/919063bc10f15b55f84c183208274836ae1d367e))
+- add runtime validations when adding dimensions ([#4181](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4181)) ([4226058](https://github.com/aws-powertools/powertools-lambda-typescript/commit/42260585eb84de373c6ae5daaf5d541dd5f78ec1))
 ## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
 
 ### Improvements

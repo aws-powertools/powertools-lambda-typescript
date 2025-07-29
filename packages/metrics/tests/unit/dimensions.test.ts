@@ -579,7 +579,7 @@ describe('Working with dimensions', () => {
     );
   });
 
-  it('logs a warning and returns immediately if dimensions is undefined', () => {
+  it('returns immediately if dimensions is undefined', () => {
     // Prepare
     const metrics = new Metrics({
       singleMetric: true,
@@ -590,9 +590,7 @@ describe('Working with dimensions', () => {
     metrics.addMetric('myMetric', MetricUnit.Count, 1);
 
     // Assert
-    expect(console.warn).toHaveBeenCalledWith(
-      'No dimensions were supplied to setDefaultDimensions. Skipping update.'
-    );
+    expect(console.warn).not.toHaveBeenCalled();
 
     expect(console.log).toHaveEmittedEMFWith(
       expect.objectContaining({
@@ -641,24 +639,19 @@ describe('Working with dimensions', () => {
       );
     }
   );
-  it('logs a warning and returns immediately if dimensions is not a plain object (fails isRecord)', () => {
+  it('returns immediately without logging if dimensions is not a plain object', () => {
     // Prepare
     const metrics = new Metrics({
       singleMetric: true,
       namespace: DEFAULT_NAMESPACE,
-      defaultDimensions: {
-        enviroment: 'test',
-      },
     });
 
     // Act
-    // @ts-expect-error – intentionally passing an invalid value to simulate bad input at runtime
-    metrics.setDefaultDimensions('invalid-dimensions');
+    // @ts-expect-error – simulate runtime misuse
+    metrics.setDefaultDimensions('not-an-object');
 
     // Assert
-    expect(console.warn).toHaveBeenCalledWith(
-      'Invalid dimensions type provided to setDefaultDimensions. Expected an object.'
-    );
+    expect(console.warn).not.toHaveBeenCalled();
 
     metrics.addMetric('someMetric', MetricUnit.Count, 1);
 

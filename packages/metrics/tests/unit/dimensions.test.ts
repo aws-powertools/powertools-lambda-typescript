@@ -462,9 +462,6 @@ describe('Working with dimensions', () => {
     const metrics = new Metrics({
       singleMetric: true,
       namespace: DEFAULT_NAMESPACE,
-      defaultDimensions: {
-        enviroment: 'test',
-      },
     });
 
     // Act & Assess
@@ -501,9 +498,6 @@ describe('Working with dimensions', () => {
       const metrics = new Metrics({
         singleMetric: true,
         namespace: DEFAULT_NAMESPACE,
-        defaultDimensions: {
-          enviroment: 'test',
-        },
       });
 
       // Act & Assess
@@ -611,9 +605,6 @@ describe('Working with dimensions', () => {
       const metrics = new Metrics({
         singleMetric: true,
         namespace: DEFAULT_NAMESPACE,
-        defaultDimensions: {
-          enviroment: 'test',
-        },
       });
 
       // Act

@@ -50,9 +50,6 @@ describe('Setting custom timestamp', () => {
     // Prepare
     const metrics = new Metrics({
       singleMetric: true,
-      defaultDimensions: {
-        environment: 'test',
-      },
     });
 
     // Act
@@ -70,9 +67,6 @@ describe('Setting custom timestamp', () => {
     // Prepare
     const metrics = new Metrics({
       singleMetric: true,
-      defaultDimensions: {
-        environment: 'test',
-      },
     });
 
     // Act
@@ -91,9 +85,6 @@ describe('Setting custom timestamp', () => {
     const metrics = new Metrics({
       singleMetric: true,
       namespace: DEFAULT_NAMESPACE,
-      defaultDimensions: {
-        environment: 'test',
-      },
     });
 
     // Act
@@ -121,9 +112,6 @@ describe('Setting custom timestamp', () => {
     const metrics = new Metrics({
       singleMetric: true,
       namespace: DEFAULT_NAMESPACE,
-      defaultDimensions: {
-        environment: 'test',
-      },
     });
 
     // Act

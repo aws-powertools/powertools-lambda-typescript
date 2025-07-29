@@ -67,9 +67,6 @@ describe('Initialize Metrics', () => {
     // Prepare
     const metrics = new Metrics({
       singleMetric: true,
-      defaultDimensions: {
-        environment: 'test',
-      },
     });
 
     // Act

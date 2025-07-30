@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
+
+### Improvements
+
+- replace EnvironmentVariablesService class with helper functions in Event Handler ([#4225](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4225)) ([d17818e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d17818e1b8b17a8307e61966ab857f9c05c49670))
+
+### Features
+
+- add route management system for ApiGw event handler ([#4211](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4211)) ([c2cbb64](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c2cbb642ca3a4cc57ad0e80d9f1239e8f67d56e3))
+- add base router class ([#3972](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3972)) ([3d4998c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3d4998cda6c1b8c1bea47d5c6a9fe760b6e957fb))
 ## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
 
 **Note:** Version bump only for this package

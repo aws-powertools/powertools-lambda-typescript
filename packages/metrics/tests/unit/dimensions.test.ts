@@ -583,7 +583,7 @@ describe('Working with dimensions', () => {
     // Act
     metrics.addMetric('myMetric', MetricUnit.Count, 1);
 
-    // Assert
+    // Assess
     expect(console.warn).not.toHaveBeenCalled();
 
     expect(console.log).toHaveEmittedEMFWith(

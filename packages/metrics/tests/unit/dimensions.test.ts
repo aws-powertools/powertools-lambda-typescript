@@ -581,7 +581,7 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics.addMetric('myMetric', MetricUnit.Count, 1);
+    metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.warn).not.toHaveBeenCalled();
@@ -616,7 +616,7 @@ describe('Working with dimensions', () => {
       metrics.addMetric('test', MetricUnit.Count, 1);
       metrics.publishStoredMetrics();
 
-      // Assert
+      // Assess
       expect(console.warn).toHaveBeenCalledWith(
         `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
       );
@@ -641,7 +641,7 @@ describe('Working with dimensions', () => {
     // @ts-expect-error – simulate runtime misuse
     metrics.setDefaultDimensions('not-an-object');
 
-    // Assert
+    // Assess
     expect(console.warn).not.toHaveBeenCalled();
 
     metrics.addMetric('someMetric', MetricUnit.Count, 1);

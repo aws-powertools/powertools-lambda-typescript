@@ -437,11 +437,6 @@ class Metrics extends Utility implements MetricsInterface {
     if (!this.getColdStart()) return;
     const singleMetric = this.singleMetric();
 
-    if (this.defaultDimensions.service) {
-      singleMetric.setDefaultDimensions({
-        service: this.defaultDimensions.service,
-      });
-    }
     const value = this.functionName?.trim() ?? functionName?.trim();
     if (value && value.length > 0) {
       singleMetric.addDimension('function_name', value);
@@ -846,9 +841,14 @@ class Metrics extends Utility implements MetricsInterface {
       }
 
       if (Object.hasOwn(this.defaultDimensions, key)) {
-        this.#logger.warn(
-          `Dimension "${key}" has already been added. The previous value will be overwritten.`
-        );
+        const currentValue = this.defaultDimensions[key];
+        const suppressOverwriteWarning =
+          key === 'service' && currentValue === this.defaultServiceName;
+        if (!suppressOverwriteWarning) {
+          this.#logger.warn(
+            `Dimension "${key}" has already been added. The previous value will be overwritten.`
+          );
+        }
       }
 
       cleanedDimensions[key] = value;

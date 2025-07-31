@@ -144,7 +144,7 @@ describe('Envelope: CloudWatch', () => {
       });
     });
 
-    it('returns an error if the event is not a valid CloudWatch Logs event', () => {
+    it('returns an error if the event is not a valid CloudWatch Logs event (invalid base64 passed in the data property)', () => {
       // Prepare
       const event = {
         awslogs: {
@@ -171,6 +171,34 @@ describe('Envelope: CloudWatch', () => {
                 path: ['awslogs', 'data'],
                 message: 'Invalid base64-encoded string',
               },
+            ],
+          }),
+        }),
+        originalEvent: event,
+      });
+    });
+
+    it('returns an error if the event is not a valid CloudWatch Logs event (valid base64 passed but invalid JSON in the payload)', () => {
+      // Prepare
+      const event = {
+        awslogs: {
+          data: 'eyJ0ZXN0IjoidGVzdCJ9',
+        },
+      };
+
+      // Act
+      const result = CloudWatchEnvelope.safeParse(event, z.object({}));
+
+      // Assess
+      expect(result).toEqual({
+        success: false,
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse CloudWatch Log envelope'
+          ),
+          cause: expect.objectContaining({
+            issues: [
               {
                 code: 'custom',
                 message: 'Failed to decompress CloudWatch log data',

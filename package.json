@@ -70,6 +70,6 @@
     "*.md": "markdownlint-cli2 --fix"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }

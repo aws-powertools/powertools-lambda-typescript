@@ -12,7 +12,6 @@
     "test:unit": "vitest --run tests/unit",
     "test:unit:coverage": "echo 'Not Implemented'",
     "test:unit:types": "echo 'Not Implemented'",
-    "test:e2e:nodejs18x": "echo 'Not Implemented'",
     "test:e2e:nodejs20x": "echo 'Not Implemented'",
     "test:e2e:nodejs22x": "echo 'Not Implemented'",
     "test:e2e": "vitest --run tests/e2e",

@@ -33,7 +33,7 @@ jobs:
             packages/tracer,
             layers,
           ]
-        version: [18, 20, 22]
+        version: [20, 22]
         arch: [x86_64, arm64]
       fail-fast: false
     steps:

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "incremental": true,
     "composite": true,
-    "target": "ES2022", // Node.js 18
+    "target": "ES2023", // Node.js 20
     "experimentalDecorators": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",

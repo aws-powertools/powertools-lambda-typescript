@@ -15,7 +15,6 @@
     "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
     "test:unit:types": "vitest --run tests/types --typecheck",
     "test:unit:watch": "vitest tests/unit",
-    "test:e2e:nodejs18x": "echo 'Not implemented'",
     "test:e2e:nodejs20x": "echo 'Not implemented'",
     "test:e2e:nodejs22x": "echo 'Not implemented'",
     "test:e2e": "echo 'Not implemented'",

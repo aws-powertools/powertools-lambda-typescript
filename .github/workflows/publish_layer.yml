@@ -106,11 +106,12 @@ jobs:
       - name: Replace layer versions in documentation
         run: |
           ./.github/scripts/update_layer_arn.sh ${{ inputs.layer_documentation_version }}
+      - name: Stage changes
+        run: git add .
       - name: Create PR
         id: create-pr
-        uses: ./.github/actions/create-pr
+        uses: aws-powertools/actions/.github/actions/create-pr@da5bcb1a3d22f87bc48b570c818d26f44c0fc960 # v1.3.0
         with: 
-          files: 'docs/getting-started/lambda-layers.md'
           temp_branch_prefix: 'ci-layer-docs'
           pull_request_title: 'chore(ci): update layer ARN on documentation'
           github_token: ${{ secrets.GITHUB_TOKEN }}

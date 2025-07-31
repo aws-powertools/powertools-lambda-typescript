@@ -10,8 +10,13 @@ import type {
   GenericLogger,
   HandlerMethodDecorator,
 } from '@aws-lambda-powertools/commons/types';
+import {
+  getBooleanFromEnv,
+  getServiceName,
+  getStringFromEnv,
+  isDevMode,
+} from '@aws-lambda-powertools/commons/utils/env';
 import type { Callback, Context, Handler } from 'aws-lambda';
-import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import {
   COLD_START_METRIC,
   DEFAULT_NAMESPACE,
@@ -169,11 +174,6 @@ class Metrics extends Utility implements MetricsInterface {
   private dimensionSets: Dimensions[] = [];
 
   /**
-   * Service for accessing environment variables
-   */
-  private envVarsService?: EnvironmentVariablesService;
-
-  /**
    * Name of the Lambda function
    */
   private functionName?: string;
@@ -218,6 +218,18 @@ class Metrics extends Utility implements MetricsInterface {
    * Whether to disable metrics
    */
   private disabled = false;
+
+  /**
+   * Cached environment config values.
+   * Initialized once in setEnvConfig().
+   */
+  readonly #envConfig = {
+    namespace: '',
+    functionName: '',
+    serviceName: '',
+    disabled: false,
+    devMode: false,
+  };
 
   /**
    * Custom timestamp for the metrics
@@ -913,13 +925,6 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Get the environment variables service.
-   */
-  private getEnvVarsService(): EnvironmentVariablesService {
-    return this.envVarsService as EnvironmentVariablesService;
-  }
-
-  /**
    * Check if a metric is new or not.
    *
    * A metric is considered new if there is no metric with the same name already stored.
@@ -952,7 +957,7 @@ class Metrics extends Utility implements MetricsInterface {
    * @private
    */
   private setConsole(): void {
-    if (!this.getEnvVarsService().isDevMode()) {
+    if (!this.#envConfig.devMode) {
       this.console = new Console({
         stdout: process.stdout,
         stderr: process.stderr,
@@ -978,8 +983,22 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * Set the environment variables service to be used.
    */
-  private setEnvVarsService(): void {
-    this.envVarsService = new EnvironmentVariablesService();
+  private setEnvConfig(): void {
+    this.#envConfig.namespace = getStringFromEnv({
+      key: 'POWERTOOLS_METRICS_NAMESPACE',
+      defaultValue: '',
+    });
+    this.#envConfig.functionName = getStringFromEnv({
+      key: 'POWERTOOLS_METRICS_FUNCTION_NAME',
+      defaultValue: '',
+    });
+    this.#envConfig.serviceName = getServiceName();
+    this.#envConfig.disabled = getBooleanFromEnv({
+      key: 'POWERTOOLS_METRICS_DISABLED',
+      defaultValue: false,
+      extendedParsing: true,
+    });
+    this.#envConfig.devMode = isDevMode();
   }
 
   /**
@@ -988,8 +1007,7 @@ class Metrics extends Utility implements MetricsInterface {
    * @param functionName - The function name to be used for the cold start metric set in the constructor
    */
   protected setFunctionNameForColdStartMetric(functionName?: string): void {
-    const value =
-      functionName?.trim() ?? this.getEnvVarsService().getFunctionName().trim();
+    const value = functionName?.trim() ?? this.#envConfig.functionName;
     if (value && value.length > 0) {
       this.functionName = value;
     }
@@ -1001,9 +1019,10 @@ class Metrics extends Utility implements MetricsInterface {
    * @param namespace - The namespace to be used
    */
   private setNamespace(namespace: string | undefined): void {
-    this.namespace = (namespace ||
+    this.namespace =
+      namespace ||
       this.getCustomConfigService()?.getNamespace() ||
-      this.getEnvVarsService().getNamespace()) as string;
+      this.#envConfig.namespace;
   }
 
   /**
@@ -1012,7 +1031,14 @@ class Metrics extends Utility implements MetricsInterface {
    * The `POWERTOOLS_METRICS_DISABLED` environment variable takes precedence over `POWERTOOLS_DEV`.
    */
   private setDisabled(): void {
-    this.disabled = this.getEnvVarsService().getMetricsDisabled();
+    if (
+      'POWERTOOLS_METRICS_DISABLED' in process.env &&
+      process.env.POWERTOOLS_METRICS_DISABLED !== undefined
+    ) {
+      this.disabled = this.#envConfig.disabled;
+      return;
+    }
+    this.disabled = this.#envConfig.devMode;
   }
 
   /**
@@ -1032,7 +1058,7 @@ class Metrics extends Utility implements MetricsInterface {
       functionName,
     } = options;
 
-    this.setEnvVarsService();
+    this.setEnvConfig();
     this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setDisabled();
@@ -1052,9 +1078,9 @@ class Metrics extends Utility implements MetricsInterface {
    */
   private setService(service: string | undefined): void {
     const targetService =
-      ((service ||
-        this.getCustomConfigService()?.getServiceName() ||
-        this.getEnvVarsService().getServiceName()) as string) ||
+      service ||
+      this.getCustomConfigService()?.getServiceName() ||
+      this.#envConfig.serviceName ||
       this.defaultServiceName;
     if (targetService.length > 0) {
       this.setDefaultDimensions({ service: targetService });

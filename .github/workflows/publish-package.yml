@@ -50,4 +50,4 @@ jobs:
         uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
       - name: Publish to npm
         run: |
-          NPM_CONFIG_PROVENANCE=true npx lerna publish from-package --force-publish ${{ github.event.input.package }} --git-head ${{ github.sha }} --yes
+          npm publish --workspace ${{ github.event.input.package }} --provenance

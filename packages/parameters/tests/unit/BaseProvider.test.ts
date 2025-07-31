@@ -546,9 +546,6 @@ describe('Function: clearCaches', () => {
 describe('Class: GetOptions', () => {
   it('sets the default maxAge when not provided', () => {
     // Prepare
-    const envVarsService = {
-      getParametersMaxAge: vi.fn(),
-    };
     const options = new GetOptions();
 
     // Assess
@@ -559,9 +556,6 @@ describe('Class: GetOptions', () => {
 describe('Class: GetMultipleOptions', () => {
   it('sets throwOnTransformError to false when not provided', () => {
     // Prepare
-    const envVarsService = {
-      getParametersMaxAge: vi.fn(),
-    };
     const options = new GetMultipleOptions();
 
     // Assess

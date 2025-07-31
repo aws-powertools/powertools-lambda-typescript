@@ -1,5 +1,4 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
-import { isRecord } from '@aws-lambda-powertools/commons/typeutils';
 import {
   getStringFromEnv,
   isDevMode,
@@ -13,10 +12,15 @@ import type {
   RouteOptions,
   RouterOptions,
 } from '../types/rest.js';
-import { HttpVerbs } from './constatnts.js';
+import { HttpVerbs } from './constants.js';
+import { Route } from './Route.js';
+import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 
 abstract class BaseRouter {
   protected context: Record<string, unknown>;
+
+  protected routeRegistry: RouteHandlerRegistry;
+
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
    *
@@ -39,6 +43,7 @@ abstract class BaseRouter {
       error: console.error,
       warn: console.warn,
     };
+    this.routeRegistry = new RouteHandlerRegistry({ logger: this.logger });
     this.isDev = isDevMode();
   }
 
@@ -48,126 +53,98 @@ abstract class BaseRouter {
     options?: ResolveOptions
   ): Promise<unknown>;
 
-  public abstract route(handler: RouteHandler, options: RouteOptions): void;
+  public route(handler: RouteHandler, options: RouteOptions): void {
+    const { method, path } = options;
+    const methods = Array.isArray(method) ? method : [method];
+
+    for (const method of methods) {
+      this.routeRegistry.register(new Route(method, path, handler));
+    }
+  }
 
   #handleHttpMethod(
     method: HttpMethod,
     path: Path,
-    handler?: RouteHandler | RouteOptions,
-    options?: RouteOptions
+    handler?: RouteHandler
   ): MethodDecorator | undefined {
     if (handler && typeof handler === 'function') {
-      this.route(handler, { ...(options || {}), method, path });
+      this.route(handler, { method, path });
       return;
     }
 
     return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-      const routeOptions = isRecord(handler) ? handler : options;
-      this.route(descriptor.value, { ...(routeOptions || {}), method, path });
+      this.route(descriptor.value, { method, path });
       return descriptor;
     };
   }
 
-  public get(path: string, handler: RouteHandler, options?: RouteOptions): void;
-  public get(path: string, options?: RouteOptions): MethodDecorator;
-  public get(
-    path: Path,
-    handler?: RouteHandler | RouteOptions,
-    options?: RouteOptions
-  ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.GET, path, handler, options);
+  public get(path: Path, handler: RouteHandler): void;
+  public get(path: Path): MethodDecorator;
+  public get(path: Path, handler?: RouteHandler): MethodDecorator | undefined {
+    return this.#handleHttpMethod(HttpVerbs.GET, path, handler);
   }
 
-  public post(path: Path, handler: RouteHandler, options?: RouteOptions): void;
-  public post(path: Path, options?: RouteOptions): MethodDecorator;
-  public post(
-    path: Path,
-    handler?: RouteHandler | RouteOptions,
-    options?: RouteOptions
-  ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.POST, path, handler, options);
+  public post(path: Path, handler: RouteHandler): void;
+  public post(path: Path): MethodDecorator;
+  public post(path: Path, handler?: RouteHandler): MethodDecorator | undefined {
+    return this.#handleHttpMethod(HttpVerbs.POST, path, handler);
   }
 
-  public put(path: Path, handler: RouteHandler, options?: RouteOptions): void;
-  public put(path: Path, options?: RouteOptions): MethodDecorator;
-  public put(
-    path: Path,
-    handler?: RouteHandler | RouteOptions,
-    options?: RouteOptions
-  ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.PUT, path, handler, options);
+  public put(path: Path, handler: RouteHandler): void;
+  public put(path: Path): MethodDecorator;
+  public put(path: Path, handler?: RouteHandler): MethodDecorator | undefined {
+    return this.#handleHttpMethod(HttpVerbs.PUT, path, handler);
   }
 
-  public patch(path: Path, handler: RouteHandler, options?: RouteOptions): void;
-  public patch(path: Path, options?: RouteOptions): MethodDecorator;
+  public patch(path: Path, handler: RouteHandler): void;
+  public patch(path: Path): MethodDecorator;
   public patch(
     path: Path,
-    handler?: RouteHandler | RouteOptions,
-    options?: RouteOptions
+    handler?: RouteHandler
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.PATCH, path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.PATCH, path, handler);
   }
 
+  public delete(path: Path, handler: RouteHandler): void;
+  public delete(path: Path): MethodDecorator;
   public delete(
     path: Path,
-    handler: RouteHandler,
-    options?: RouteOptions
-  ): void;
-  public delete(path: Path, options?: RouteOptions): MethodDecorator;
-  public delete(
-    path: Path,
-    handler?: RouteHandler | RouteOptions,
-    options?: RouteOptions
+    handler?: RouteHandler
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.DELETE, path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.DELETE, path, handler);
   }
 
-  public head(path: Path, handler: RouteHandler, options?: RouteOptions): void;
-  public head(path: Path, options?: RouteOptions): MethodDecorator;
-  public head(
-    path: Path,
-    handler?: RouteHandler | RouteOptions,
-    options?: RouteOptions
-  ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.HEAD, path, handler, options);
+  public head(path: Path, handler: RouteHandler): void;
+  public head(path: Path): MethodDecorator;
+  public head(path: Path, handler?: RouteHandler): MethodDecorator | undefined {
+    return this.#handleHttpMethod(HttpVerbs.HEAD, path, handler);
   }
 
+  public options(path: Path, handler: RouteHandler): void;
+  public options(path: Path): MethodDecorator;
   public options(
     path: Path,
-    handler: RouteHandler,
-    options?: RouteOptions
-  ): void;
-  public options(path: Path, options?: RouteOptions): MethodDecorator;
-  public options(
-    path: Path,
-    handler?: RouteHandler | RouteOptions,
-    options?: RouteOptions
+    handler?: RouteHandler
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.OPTIONS, path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.OPTIONS, path, handler);
   }
 
+  public connect(path: Path, handler: RouteHandler): void;
+  public connect(path: Path): MethodDecorator;
   public connect(
     path: Path,
-    handler: RouteHandler,
-    options?: RouteOptions
-  ): void;
-  public connect(path: Path, options?: RouteOptions): MethodDecorator;
-  public connect(
-    path: Path,
-    handler?: RouteHandler | RouteOptions,
-    options?: RouteOptions
+    handler?: RouteHandler
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.CONNECT, path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.CONNECT, path, handler);
   }
 
-  public trace(path: Path, handler: RouteHandler, options?: RouteOptions): void;
-  public trace(path: Path, options?: RouteOptions): MethodDecorator;
+  public trace(path: Path, handler: RouteHandler): void;
+  public trace(path: Path): MethodDecorator;
   public trace(
     path: Path,
-    handler?: RouteHandler | RouteOptions,
-    options?: RouteOptions
+    handler?: RouteHandler
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.TRACE, path, handler, options);
+    return this.#handleHttpMethod(HttpVerbs.TRACE, path, handler);
   }
 }
 

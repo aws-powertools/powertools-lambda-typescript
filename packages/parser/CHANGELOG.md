@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
+
+### Bug Fixes
+
+- set zod peer range to 4.x ([#4196](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4196)) ([7a65fcf](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7a65fcf9759ac1a1f072ef5442ee8b0767705a92))
 ## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
 
 ### Bug Fixes

@@ -180,7 +180,7 @@ step 4. This will publish the Lambda layers to the AWS GovCloud (US-East) and AW
 6. **Verify GovCloud Layers (Gamma)**: Download the `AWSLambdaPowertoolsTypeScriptV2-us-gov-east-1.json` and
 `AWSLambdaPowertoolsTypeScriptV2-us-gov-west-1.json` ZIP files. Unzip the files, inspect the JSON files therein and
 ensure the version number in the `Description` field (i.e., `Powertools for AWS Lambda (TypeScript) version 2.20.0`)
-and the layer version in the `LayerVersionArn` field (i.e., `arn:aws-us-gov:lambda:us-gov-east-1:164754790254:layer:AWSLambdaPowertoolsTypeScriptV2:31`)
+and the layer version in the `LayerVersionArn` field (i.e., `arn:aws-us-gov:lambda:us-gov-east-1:164754790254:layer:AWSLambdaPowertoolsTypeScriptV2:32`)
 are correct.
 7. **Publish GovCloud Layers (Prod)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch,
 targeting the `Prod` deployment environment and the GovCloud partition, using the Lambda layer version from step 4.
@@ -188,7 +188,7 @@ This will publish the Lambda layers to the AWS GovCloud (US-East) and AWS GovClo
 8. **Verify GovCloud Layers (Prod)**: Download the `AWSLambdaPowertoolsTypeScriptV2-us-gov-east-1.json` and
 `AWSLambdaPowertoolsTypeScriptV2-us-gov-west-1.json` ZIP files. Unzip the files, inspect the JSON files therein and
 ensure the version number in the `Description` field (i.e., `Powertools for AWS Lambda (TypeScript) version 2.20.0`)
-and the layer version in the `LayerVersionArn` field (i.e., `arn:aws-us-gov:lambda:us-gov-west-1:165093116878:layer:AWSLambdaPowertoolsTypeScriptV2:31`)
+and the layer version in the `LayerVersionArn` field (i.e., `arn:aws-us-gov:lambda:us-gov-west-1:165093116878:layer:AWSLambdaPowertoolsTypeScriptV2:32`)
 are correct.
 9. **Publish China Layer (Gamma)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting
 the `Gamma` deployment environment and the China partition, using the Lambda layer version from step 4. This will
@@ -196,14 +196,14 @@ publish the Lambda layer to the AWS China (Beijing) Region.
 10. **Verify China Layer (Gamma)**: Download the `AWSLambdaPowertoolsTypeScriptV2-cn-north-1.json` ZIP file. Unzip
 the file, inspect the JSON file therein and ensure the version number in the `Description` field
 (i.e., `Powertools for AWS Lambda (TypeScript) version 2.20.0`) and the layer version in the `LayerVersionArn` field
-(i.e., `arn:aws-cn:lambda:cn-north-1:498595349401:layer:AWSLambdaPowertoolsTypeScriptV2:31`) are correct.
+(i.e., `arn:aws-cn:lambda:cn-north-1:498595349401:layer:AWSLambdaPowertoolsTypeScriptV2:32`) are correct.
 11. **Publish China Layer (Prod)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch,
 targeting the `Prod` deployment environment and the China partition, and using the Lambda layer version from step 4.
 This will publish the Lambda layer to the AWS China (Beijing) Region.
 12. **Verify China Layer (Prod)**: Download the `AWSLambdaPowertoolsTypeScriptV2-cn-north-1.json` ZIP file. Unzip the
 file, inspect the JSON file therein and ensure the version number in the `Description` field
 (i.e., `Powertools for AWS Lambda (TypeScript) version 2.20.0`) and the layer version in the `LayerVersionArn`
-field (i.e., `arn:aws-cn:lambda:cn-north-1:498634801083:layer:AWSLambdaPowertoolsTypeScriptV2:31`) are correct.
+field (i.e., `arn:aws-cn:lambda:cn-north-1:498634801083:layer:AWSLambdaPowertoolsTypeScriptV2:32`) are correct.
 13. **Merge docs PR**: Once the `Layer Deployment (Partition)` workflow for the production China partition is complete,
 merge the PR from step 4 to update the documentation with the new version.
 14. **Update SSM Parameters (Beta)**: Run the `SSM Parameters` workflow with the `main` branch, targeting the `beta`

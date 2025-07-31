@@ -2,19 +2,15 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
-import { HttpVerbs } from '../../../src/rest/constatnts.js';
-import type { ResolveOptions } from '../../../src/types/index.js';
+import { HttpVerbs } from '../../../src/rest/constants.js';
 import type {
   HttpMethod,
   RouteHandler,
-  RouteOptions,
   RouterOptions,
 } from '../../../src/types/rest.js';
 
 describe('Class: BaseRouter', () => {
   class TestResolver extends BaseRouter {
-    public readonly handlers: Map<string, RouteHandler> = new Map();
-
     constructor(options?: RouterOptions) {
       super(options);
       this.logger.debug('test debug');
@@ -33,22 +29,13 @@ describe('Class: BaseRouter', () => {
       }
     }
 
-    public route(handler: RouteHandler, options: RouteOptions) {
-      if (options.path == null || options.method == null)
-        throw new Error('path or method cannot be null');
-      this.handlers.set(options.path + options.method, handler);
-    }
-
-    public resolve(
-      event: unknown,
-      context: Context,
-      options?: ResolveOptions
-    ): Promise<unknown> {
+    public resolve(event: unknown, context: Context): Promise<unknown> {
       this.#isEvent(event);
       const { method, path } = event;
-      const handler = this.handlers.get(path + method);
-      if (handler == null) throw new Error('404');
-      return handler(event, context);
+      const routes = this.routeRegistry.getRoutesByMethod(method);
+      const route = routes.find((x) => x.path === path);
+      if (route == null) throw new Error('404');
+      return route.handler(event, context);
     }
   }
 
@@ -69,14 +56,39 @@ describe('Class: BaseRouter', () => {
   ])('routes %s requests', async (method, verb) => {
     // Prepare
     const app = new TestResolver();
-    (app[verb as Lowercase<HttpMethod>] as Function)(
-      '/test',
-      () => `${verb}-test`
-    );
+    (
+      app[verb as Lowercase<HttpMethod>] as (
+        path: string,
+        handler: RouteHandler
+      ) => void
+    )('/test', () => `${verb}-test`);
     // Act
     const actual = await app.resolve({ path: '/test', method }, context);
     // Assess
     expect(actual).toEqual(`${verb}-test`);
+  });
+
+  it('accepts multiple HTTP methods', async () => {
+    // Act
+    const app = new TestResolver();
+    app.route(() => 'route-test', {
+      path: '/test',
+      method: [HttpVerbs.GET, HttpVerbs.POST],
+    });
+
+    // Act
+    const getResult = await app.resolve(
+      { path: '/test', method: HttpVerbs.GET },
+      context
+    );
+    const postResult = await app.resolve(
+      { path: '/test', method: HttpVerbs.POST },
+      context
+    );
+
+    // Assess
+    expect(getResult).toEqual('route-test');
+    expect(postResult).toEqual('route-test');
   });
 
   it('uses the global console when no logger is not provided', () => {
@@ -128,7 +140,7 @@ describe('Class: BaseRouter', () => {
     const app = new TestResolver();
 
     class Lambda {
-      @app.get('/test', {})
+      @app.get('/test')
       public async getTest() {
         return 'get-test';
       }
@@ -174,7 +186,7 @@ describe('Class: BaseRouter', () => {
       }
 
       public async handler(event: unknown, context: Context) {
-        return app.resolve(event, context, {});
+        return app.resolve(event, context);
       }
     }
 

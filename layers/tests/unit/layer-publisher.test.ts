@@ -1,7 +1,7 @@
 import { App } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
 import { describe, it } from 'vitest';
-import { LayerPublisherStack } from '../../src/layer-publisher-stack';
+import { LayerPublisherStack } from '../../src/layer-publisher-stack.js';
 
 describe('Class: LayerPublisherStack', () => {
   it('creates the stack with a layer in it', () => {

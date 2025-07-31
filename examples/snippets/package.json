@@ -39,7 +39,7 @@
     "@aws-sdk/client-ssm": "^3.857.0",
     "@aws-sdk/util-dynamodb": "^3.857.0",
     "@middy/core": "^4.7.0",
-    "@redis/client": "^5.6.1",
+    "@redis/client": "^5.7.0",
     "@valkey/valkey-glide": "^2.0.1",
     "aws-sdk": "^2.1692.0",
     "aws-sdk-client-mock": "^4.1.0",

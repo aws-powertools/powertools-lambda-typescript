@@ -1,6 +1,15 @@
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
+import type {
+  BatchResolverAggregateHandlerFn,
+  BatchResolverHandlerFn,
+  ResolverHandler,
+  RouteHandlerOptions,
+} from '../types/appsync-graphql.js';
 import type { ResolveOptions } from '../types/common.js';
-import { ResolverNotFoundException } from './errors.js';
+import {
+  InvalidBatchResponseException,
+  ResolverNotFoundException,
+} from './errors.js';
 import { Router } from './Router.js';
 import { isAppSyncGraphQLEvent } from './utils.js';
 
@@ -58,6 +67,28 @@ class AppSyncGraphQLResolver extends Router {
    *   app.resolve(event, context);
    * ```
    *
+   * Resolves the response based on the provided batch event and route handlers configured.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * app.batchResolver<{ id: number }>(async (events) => {
+   *   // your business logic here
+   *   const ids = events.map((event) => event.arguments.id);
+   *   return ids.map((id) => ({
+   *     id,
+   *     title: 'Post Title',
+   *     content: 'Post Content',
+   *   }));
+   * });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
    * The method works also as class method decorator, so you can use it like this:
    *
    * @example
@@ -88,6 +119,35 @@ class AppSyncGraphQLResolver extends Router {
    * export const handler = lambda.handler.bind(lambda);
    * ```
    *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import type { AppSyncResolverEvent } from 'aws-lambda';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * class Lambda {
+   *   ⁣@app.batchResolver({ fieldName: 'getPosts', typeName: 'Query' })
+   *   async getPosts(events: AppSyncResolverEvent<{ id: number }>[]) {
+   *     // your business logic here
+   *     const ids = events.map((event) => event.arguments.id);
+   *     return ids.map((id) => ({
+   *       id,
+   *       title: 'Post Title',
+   *       content: 'Post Content',
+   *     }));
+   *   }
+   *
+   *   async handler(event, context) {
+   *     return app.resolve(event, context, {
+   *       scope: this, // bind decorated methods to the class instance
+   *     });
+   *   }
+   * }
+   *
+   * const lambda = new Lambda();
+   * export const handler = lambda.handler.bind(lambda);
+   * ```
    * @param event - The incoming event, which may be an AppSync GraphQL event or an array of events.
    * @param context - The AWS Lambda context object.
    * @param options - Optional parameters for the resolver, such as the scope of the handler.
@@ -98,8 +158,16 @@ class AppSyncGraphQLResolver extends Router {
     options?: ResolveOptions
   ): Promise<unknown> {
     if (Array.isArray(event)) {
-      this.logger.warn('Batch resolver is not implemented yet');
-      return;
+      if (event.some((e) => !isAppSyncGraphQLEvent(e))) {
+        this.logger.warn(
+          'Received a batch event that is not compatible with this resolver'
+        );
+        return;
+      }
+      return this.#withErrorHandling(
+        () => this.#executeBatchResolvers(event, context, options),
+        event[0]
+      );
     }
     if (!isAppSyncGraphQLEvent(event)) {
       this.logger.warn(
@@ -107,16 +175,166 @@ class AppSyncGraphQLResolver extends Router {
       );
       return;
     }
+
+    return this.#withErrorHandling(
+      () => this.#executeSingleResolver(event, context, options),
+      event
+    );
+  }
+
+  /**
+   * Executes the provided asynchronous function with error handling.
+   * If the function throws an error, it delegates error processing to `#handleError`
+   * and returns the formatted error response.
+   *
+   * @param fn - A function returning a Promise to be executed with error handling.
+   * @param event - The AppSync resolver event (single or first of batch).
+   */
+  async #withErrorHandling(
+    fn: () => Promise<unknown>,
+    event: AppSyncResolverEvent<Record<string, unknown>>
+  ): Promise<unknown> {
     try {
-      return await this.#executeSingleResolver(event, context, options);
+      return await fn();
     } catch (error) {
-      this.logger.error(
-        `An error occurred in handler ${event.info.fieldName}`,
-        error
+      return this.#handleError(
+        error,
+        `An error occurred in handler ${event.info.fieldName}`
       );
-      if (error instanceof ResolverNotFoundException) throw error;
-      return this.#formatErrorResponse(error);
     }
+  }
+
+  /**
+   * Handles errors encountered during resolver execution.
+   *
+   * Logs the provided error message and error object. If the error is an instance of
+   * `InvalidBatchResponseException` or `ResolverNotFoundException`, it is re-thrown.
+   * Otherwise, the error is formatted into a response using `#formatErrorResponse`.
+   *
+   * @param error - The error object to handle.
+   * @param errorMessage - A descriptive message to log alongside the error.
+   * @throws InvalidBatchResponseException | ResolverNotFoundException
+   */
+  #handleError(error: unknown, errorMessage: string) {
+    this.logger.error(errorMessage, error);
+    if (error instanceof InvalidBatchResponseException) throw error;
+    if (error instanceof ResolverNotFoundException) throw error;
+    return this.#formatErrorResponse(error);
+  }
+
+  /**
+   * Executes batch resolvers for multiple AppSync GraphQL events.
+   *
+   * This method processes an array of AppSync resolver events as a batch operation.
+   * It looks up the appropriate batch resolver from the registry using the field name
+   * and parent type name from the first event, then delegates to the batch resolver
+   * if found.
+   *
+   * @param events - Array of AppSync resolver events to process as a batch
+   * @param context - AWS Lambda context object
+   * @param options - Optional resolve options for customizing resolver behavior
+   * @throws {ResolverNotFoundException} When no batch resolver is registered for the given type and field combination
+   */
+  async #executeBatchResolvers(
+    events: AppSyncResolverEvent<Record<string, unknown>>[],
+    context: Context,
+    options?: ResolveOptions
+  ): Promise<unknown[]> {
+    const { fieldName, parentTypeName: typeName } = events[0].info;
+    const batchHandlerOptions = this.batchResolverRegistry.resolve(
+      typeName,
+      fieldName
+    );
+
+    if (batchHandlerOptions) {
+      return await this.#callBatchResolver(
+        events,
+        context,
+        batchHandlerOptions,
+        options
+      );
+    }
+
+    throw new ResolverNotFoundException(
+      `No batch resolver found for ${typeName}-${fieldName}`
+    );
+  }
+
+  /**
+   * Handles batch invocation of AppSync GraphQL resolvers with support for aggregation and error handling.
+   *
+   * @param events - An array of AppSyncResolverEvent objects representing the batch of incoming events.
+   * @param context - The Lambda context object.
+   * @param options - Route handler options, including the handler function, aggregation, and error handling flags.
+   * @param resolveOptions - Optional resolve options, such as custom scope for handler invocation.
+   *
+   * @throws {InvalidBatchResponseException} If the aggregate handler does not return an array.
+   *
+   * @remarks
+   * - If `aggregate` is true, invokes the handler once with the entire batch and expects an array response.
+   * - If `throwOnError` is true, errors are propagated and will cause the function to throw.
+   * - If `throwOnError` is false, errors are logged and `null` is appended for failed events, allowing graceful degradation.
+   */
+  async #callBatchResolver(
+    events: AppSyncResolverEvent<Record<string, unknown>>[],
+    context: Context,
+    options: RouteHandlerOptions<Record<string, unknown>, boolean, boolean>,
+    resolveOptions?: ResolveOptions
+  ): Promise<unknown[]> {
+    const { aggregate, throwOnError } = options;
+    this.logger.debug(
+      `Aggregate flag aggregate=${aggregate} & graceful error handling flag throwOnError=${throwOnError}`
+    );
+
+    if (aggregate) {
+      const response = await (
+        options.handler as BatchResolverAggregateHandlerFn
+      ).apply(resolveOptions?.scope ?? this, [
+        events,
+        { event: events, context },
+      ]);
+
+      if (!Array.isArray(response)) {
+        throw new InvalidBatchResponseException(
+          'The response must be an array when using batch resolvers'
+        );
+      }
+
+      return response;
+    }
+
+    const handler = options.handler as BatchResolverHandlerFn;
+    const results: unknown[] = [];
+
+    if (throwOnError) {
+      for (const event of events) {
+        const result = await handler.apply(resolveOptions?.scope ?? this, [
+          event.arguments,
+          { event, context },
+        ]);
+        results.push(result);
+      }
+      return results;
+    }
+
+    for (let i = 0; i < events.length; i++) {
+      try {
+        const result = await handler.apply(resolveOptions?.scope ?? this, [
+          events[i].arguments,
+          { event: events[i], context },
+        ]);
+        results.push(result);
+      } catch (error) {
+        this.logger.error(error);
+        this.logger.debug(
+          `Failed to process event #${i + 1} from field '${events[i].info.fieldName}'`
+        );
+        // By default, we gracefully append `null` for any records that failed processing
+        results.push(null);
+      }
+    }
+
+    return results;
   }
 
   /**
@@ -143,10 +361,10 @@ class AppSyncGraphQLResolver extends Router {
       fieldName
     );
     if (resolverHandlerOptions) {
-      return resolverHandlerOptions.handler.apply(options?.scope ?? this, [
-        event.arguments,
-        { event, context },
-      ]);
+      return (resolverHandlerOptions.handler as ResolverHandler).apply(
+        options?.scope ?? this,
+        [event.arguments, { event, context }]
+      );
     }
 
     throw new ResolverNotFoundException(

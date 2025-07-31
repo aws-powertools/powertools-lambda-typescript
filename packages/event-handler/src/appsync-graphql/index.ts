@@ -1,5 +1,8 @@
 export { AppSyncGraphQLResolver } from './AppSyncGraphQLResolver.js';
-export { ResolverNotFoundException } from './errors.js';
+export {
+  ResolverNotFoundException,
+  InvalidBatchResponseException,
+} from './errors.js';
 export {
   awsDate,
   awsDateTime,

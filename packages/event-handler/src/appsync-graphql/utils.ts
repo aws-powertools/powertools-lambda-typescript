@@ -12,9 +12,7 @@ import type { AppSyncResolverEvent } from 'aws-lambda';
 const isAppSyncGraphQLEvent = (
   event: unknown
 ): event is AppSyncResolverEvent<Record<string, unknown>> => {
-  if (typeof event !== 'object' || event === null || !isRecord(event)) {
-    return false;
-  }
+  if (!isRecord(event)) return false;
   return (
     isRecord(event.arguments) &&
     'identity' in event &&

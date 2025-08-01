@@ -4,7 +4,10 @@ import type { RouteHandlerOptions } from '../../../src/types/appsync-graphql.js'
 
 describe('Class: RouteHandlerRegistry', () => {
   class MockRouteHandlerRegistry extends RouteHandlerRegistry {
-    public declare resolvers: Map<string, RouteHandlerOptions>;
+    public declare resolvers: Map<
+      string,
+      RouteHandlerOptions<Record<string, unknown>, boolean, boolean>
+    >;
   }
 
   const getRegistry = () => new MockRouteHandlerRegistry({ logger: console });

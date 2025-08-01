@@ -122,6 +122,101 @@ describe('Class: Router', () => {
     ]);
   });
 
+  it('registers batch resolvers using the functional approach', () => {
+    // Prepare
+    const app = new Router({ logger: console });
+    const getPosts = vi.fn(() => [{ id: 1 }]);
+    const addPosts = vi.fn(async () => [{ id: 2 }]);
+
+    // Act
+    app.onBatchQuery('getPosts', getPosts);
+    app.onBatchMutation('addPosts', addPosts);
+
+    // Assess
+    expect(console.debug).toHaveBeenNthCalledWith(
+      1,
+      'Adding resolver for field Query.getPosts'
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      2,
+      'Adding resolver for field Mutation.addPosts'
+    );
+  });
+
+  it('registers batch resolvers using the decorator pattern', () => {
+    // Prepare
+    const app = new Router({ logger: console });
+
+    // Act
+    class Lambda {
+      readonly prop = 'value';
+
+      @app.onBatchQuery('getPosts')
+      public getPosts() {
+        return `${this.prop} batchQuery`;
+      }
+
+      @app.onBatchMutation('addPosts')
+      public addPosts() {
+        return `${this.prop} batchMutation`;
+      }
+    }
+    const lambda = new Lambda();
+    const res1 = lambda.getPosts();
+    const res2 = lambda.addPosts();
+
+    // Assess
+    expect(console.debug).toHaveBeenNthCalledWith(
+      1,
+      'Adding resolver for field Query.getPosts'
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      2,
+      'Adding resolver for field Mutation.addPosts'
+    );
+
+    // verify that class scope is preserved after decorating
+    expect(res1).toBe('value batchQuery');
+    expect(res2).toBe('value batchMutation');
+  });
+
+  it('registers nested batch resolvers using the decorator pattern', () => {
+    // Prepare
+    const app = new Router({ logger: console });
+
+    // Act
+    class Lambda {
+      readonly prop = 'value';
+
+      @app.onBatchQuery('listLocations')
+      @app.onBatchQuery('locations')
+      public getLocations() {
+        return [
+          {
+            name: 'Batch Location 1',
+            description: 'Batch Description 1',
+          },
+        ];
+      }
+    }
+    const lambda = new Lambda();
+    const response = lambda.getLocations();
+
+    // Assess
+    expect(console.debug).toHaveBeenNthCalledWith(
+      1,
+      'Adding resolver for field Query.locations'
+    );
+    expect(console.debug).toHaveBeenNthCalledWith(
+      2,
+      'Adding resolver for field Query.listLocations'
+    );
+
+    expect(response).toEqual([
+      { name: 'Batch Location 1', description: 'Batch Description 1' },
+    ]);
+  });
+
   it('uses a default logger with only warnings if none is provided', () => {
     // Prepare
     const app = new Router();

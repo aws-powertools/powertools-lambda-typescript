@@ -33,7 +33,7 @@ All our decorators assume that the method they are decorating is asynchronous. T
 If your existing codebase relies on the [Middy.js](https://middy.js.org/docs/) middleware engine, you can use the Powertools for AWS Lambda (TypeScript) middleware to integrate with your existing code. This approach is similar to the Class Method decorator pattern but uses the Middy.js middleware engine to apply Powertools utilities.
 
 !!! note
-    We guarantee support for Middy.js `v4.x` through `v6.x` versions.
+    We guarantee support for Middy.js `v5.x` and `v6.x`.
     Check Middy.js docs to learn more about [best practices](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"} when working with Powertools for AWS middlewares.
 
 ```ts

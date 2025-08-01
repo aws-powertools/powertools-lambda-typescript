@@ -15,7 +15,6 @@
     "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
     "test:unit:types": "echo 'Not Implemented'",
     "test:unit:watch": "vitest tests/unit",
-    "test:e2e:nodejs18x": "RUNTIME=nodejs18x vitest --run tests/e2e",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x vitest --run tests/e2e",
     "test:e2e:nodejs22x": "RUNTIME=nodejs22x vitest --run tests/e2e",
     "test:e2e": "vitest --run tests/e2e",
@@ -30,8 +29,8 @@
   "license": "MIT-0",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.856.0",
-    "@aws-sdk/client-xray": "^3.856.0"
+    "@aws-sdk/client-dynamodb": "^3.857.0",
+    "@aws-sdk/client-xray": "^3.857.0"
   },
   "peerDependencies": {
     "@middy/core": "4.x || 5.x || 6.x"

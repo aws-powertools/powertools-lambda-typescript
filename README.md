@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD013  -->
 # Powertools for AWS Lambda (TypeScript)
 
-![NodeSupport](https://img.shields.io/static/v1?label=node&message=%2018|%2020|%2022&style=flat&logo=nodedotjs)
+![NodeSupport](https://img.shields.io/static/v1?label=node&message=%2020|%2022&style=flat&logo=nodedotjs)
 ![GitHub Release](https://img.shields.io/github/v/release/aws-powertools/powertools-lambda-typescript?style=flat)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-typescript&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-typescript)

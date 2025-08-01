@@ -1,30 +1,16 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { Context } from 'aws-lambda';
+import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';
-import { ResolverNotFoundException } from '../../../src/appsync-graphql/index.js';
+import {
+  InvalidBatchResponseException,
+  ResolverNotFoundException,
+} from '../../../src/appsync-graphql/index.js';
 import { onGraphqlEventFactory } from '../../helpers/factories.js';
 
 describe('Class: AppSyncGraphQLResolver', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('logs a warning and returns early if the event is batched', async () => {
-    // Prepare
-    const app = new AppSyncGraphQLResolver({ logger: console });
-
-    // Act
-    const result = await app.resolve(
-      [onGraphqlEventFactory('getPost', 'Query')],
-      context
-    );
-
-    // Assess
-    expect(console.warn).toHaveBeenCalledWith(
-      'Batch resolver is not implemented yet'
-    );
-    expect(result).toBeUndefined();
   });
 
   it('logs a warning and returns early if the event is not compatible', async () => {
@@ -63,6 +49,21 @@ describe('Class: AppSyncGraphQLResolver', () => {
       app.resolve(onGraphqlEventFactory('addPost', 'Mutation'), context)
     ).rejects.toThrow(
       new ResolverNotFoundException('No resolver found for Mutation-addPost')
+    );
+    expect(console.error).toHaveBeenCalled();
+  });
+
+  it('throws error if there are no handlers for batch events', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+
+    // Act && Assess
+    await expect(
+      app.resolve([onGraphqlEventFactory('relatedPosts', 'Query')], context)
+    ).rejects.toThrow(
+      new ResolverNotFoundException(
+        'No batch resolver found for Query-relatedPosts'
+      )
     );
     expect(console.error).toHaveBeenCalled();
   });
@@ -265,6 +266,107 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
+  it('preserves the scope when using `batchResolver` decorator', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+
+    class Lambda {
+      public scope = 'scoped';
+
+      @app.batchResolver({ fieldName: 'batchGet' })
+      public async handleBatchGet(
+        events: AppSyncResolverEvent<{ id: number }>[]
+      ) {
+        const ids = events.map((event) => event.arguments.id);
+        return ids.map((id) => ({
+          id,
+          scope: `${this.scope} id=${id}`,
+        }));
+      }
+
+      public async handler(event: unknown, context: Context) {
+        return app.resolve(event, context, { scope: this });
+      }
+    }
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
+
+    // Act
+    const result = await handler(
+      [
+        onGraphqlEventFactory('batchGet', 'Query', { id: 1 }),
+        onGraphqlEventFactory('batchGet', 'Query', { id: 2 }),
+      ],
+      context
+    );
+
+    // Assess
+    expect(result).toEqual([
+      { id: 1, scope: 'scoped id=1' },
+      { id: 2, scope: 'scoped id=2' },
+    ]);
+  });
+
+  it.each([
+    {
+      throwOnError: true,
+      description: 'throwOnError=true',
+    },
+    {
+      throwOnError: false,
+      description: 'throwOnError=false',
+    },
+  ])(
+    'preserves the scope when using `batchResolver` decorator when aggregate=false and $description',
+    async ({ throwOnError }) => {
+      // Prepare
+      const app = new AppSyncGraphQLResolver({ logger: console });
+
+      class Lambda {
+        public scope = 'scoped';
+
+        @app.batchResolver({
+          fieldName: 'batchGet',
+          throwOnError,
+          aggregate: false,
+        })
+        public async handleBatchGet({ id }: { id: string }) {
+          return {
+            id,
+            scope: `${this.scope} id=${id} throwOnError=${throwOnError} aggregate=false`,
+          };
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context, { scope: this });
+        }
+      }
+      const lambda = new Lambda();
+      const handler = lambda.handler.bind(lambda);
+
+      // Act
+      const result = await handler(
+        [
+          onGraphqlEventFactory('batchGet', 'Query', { id: 1 }),
+          onGraphqlEventFactory('batchGet', 'Query', { id: 2 }),
+        ],
+        context
+      );
+
+      // Assess
+      expect(result).toEqual([
+        {
+          id: 1,
+          scope: `scoped id=1 throwOnError=${throwOnError} aggregate=false`,
+        },
+        {
+          id: 2,
+          scope: `scoped id=2 throwOnError=${throwOnError} aggregate=false`,
+        },
+      ]);
+    }
+  );
+
   it('emits debug message when AWS_LAMBDA_LOG_LEVEL is set to DEBUG', async () => {
     // Prepare
     vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
@@ -346,4 +448,196 @@ describe('Class: AppSyncGraphQLResolver', () => {
       });
     }
   );
+
+  it('logs a warning and returns early if one of the batch events is not compatible', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    app.batchResolver(vi.fn(), {
+      fieldName: 'batchGet',
+      typeName: 'Query',
+      aggregate: true,
+    });
+
+    // Act
+    const result = await app.resolve(
+      [
+        onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
+        {
+          key: 'notCompatible',
+          type: 'unknown',
+        },
+      ],
+      context
+    );
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'Received a batch event that is not compatible with this resolver'
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it.each([
+    {
+      aggregate: true,
+      description: 'aggregate=true',
+      setupHandler: (handler: ReturnType<typeof vi.fn>) => {
+        handler.mockResolvedValue([
+          { id: '1', value: 'A' },
+          { id: '2', value: 'B' },
+        ]);
+      },
+    },
+    {
+      aggregate: false,
+      description: 'aggregate=false and throwOnError=true',
+      setupHandler: (handler: ReturnType<typeof vi.fn>) => {
+        handler
+          .mockResolvedValueOnce({ id: '1', value: 'A' })
+          .mockResolvedValueOnce({ id: '2', value: 'B' });
+      },
+    },
+  ])(
+    'registers a batch resolver via direct function call and invokes it ($description)',
+    async ({ aggregate, setupHandler }) => {
+      // Prepare
+      const app = new AppSyncGraphQLResolver({ logger: console });
+      const handler = vi.fn();
+      setupHandler(handler);
+
+      if (aggregate) {
+        app.batchResolver(handler, {
+          fieldName: 'batchGet',
+          typeName: 'Query',
+          aggregate: true,
+        });
+      } else {
+        app.batchResolver(handler, {
+          fieldName: 'batchGet',
+          typeName: 'Query',
+          aggregate: false,
+          throwOnError: true,
+        });
+      }
+
+      const events = [
+        onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
+        onGraphqlEventFactory('batchGet', 'Query', { id: '2' }),
+      ];
+
+      // Act
+      const result = await app.resolve(events, context);
+
+      // Assess
+      if (aggregate) {
+        expect(handler).toHaveBeenCalledTimes(1);
+        expect(handler).toHaveBeenCalledWith(events, {
+          event: events,
+          context,
+        });
+      } else {
+        expect(handler).toHaveBeenCalledTimes(2);
+        expect(handler).toHaveBeenNthCalledWith(1, events[0].arguments, {
+          event: events[0],
+          context,
+        });
+        expect(handler).toHaveBeenNthCalledWith(2, events[1].arguments, {
+          event: events[1],
+          context,
+        });
+      }
+      expect(result).toEqual([
+        { id: '1', value: 'A' },
+        { id: '2', value: 'B' },
+      ]);
+    }
+  );
+
+  it('returns null for failed records when aggregate=false', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    const handler = vi
+      .fn()
+      .mockResolvedValueOnce({ id: '1', value: 'A' })
+      .mockRejectedValueOnce(new Error('fail'))
+      .mockResolvedValueOnce({ id: '3', value: 'C' });
+
+    app.batchResolver(handler, {
+      fieldName: 'batchGet',
+      typeName: 'Query',
+      aggregate: false,
+    });
+    const events = [
+      onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
+      onGraphqlEventFactory('batchGet', 'Query', { id: '2' }),
+      onGraphqlEventFactory('batchGet', 'Query', { id: '3' }),
+    ];
+
+    // Act
+    const result = await app.resolve(events, context);
+
+    // Assess
+    expect(console.debug).toHaveBeenNthCalledWith(
+      4,
+      "Failed to process event #2 from field 'batchGet'"
+    );
+    expect(result).toEqual([
+      { id: '1', value: 'A' },
+      null,
+      { id: '3', value: 'C' },
+    ]);
+  });
+
+  it('stops on first error when aggregate=false and throwOnError=true', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    const handler = vi
+      .fn()
+      .mockResolvedValueOnce({ id: '1', value: 'A' })
+      .mockRejectedValueOnce(new Error('fail'))
+      .mockResolvedValueOnce({ id: '3', value: 'C' });
+    app.batchResolver(handler, {
+      fieldName: 'batchGet',
+      typeName: 'Query',
+      aggregate: false,
+      throwOnError: true,
+    });
+    const events = [
+      onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
+      onGraphqlEventFactory('batchGet', 'Query', { id: '2' }),
+      onGraphqlEventFactory('batchGet', 'Query', { id: '3' }),
+    ];
+
+    // Act
+    const result = await app.resolve(events, context);
+
+    // Assess
+    expect(handler).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({
+      error: 'Error - fail',
+    });
+  });
+
+  it('throws error if aggregate handler does not return an array', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    const handler = vi.fn().mockResolvedValue({ id: '1', value: 'A' });
+    app.batchResolver(handler, {
+      fieldName: 'batchGet',
+      typeName: 'Query',
+      aggregate: true,
+    });
+
+    // Act && Assess
+    await expect(
+      app.resolve(
+        [onGraphqlEventFactory('batchGet', 'Query', { id: '1' })],
+        context
+      )
+    ).rejects.toThrow(
+      new InvalidBatchResponseException(
+        'The response must be an array when using batch resolvers'
+      )
+    );
+  });
 });

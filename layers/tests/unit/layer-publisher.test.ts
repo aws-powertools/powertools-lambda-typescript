@@ -1,7 +1,7 @@
 import { App } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
 import { describe, it } from 'vitest';
-import { LayerPublisherStack } from '../../src/layer-publisher-stack';
+import { LayerPublisherStack } from '../../src/layer-publisher-stack.js';
 
 describe('Class: LayerPublisherStack', () => {
   it('creates the stack with a layer in it', () => {
@@ -20,7 +20,7 @@ describe('Class: LayerPublisherStack', () => {
     // Assess
     template.resourceCountIs('AWS::Lambda::LayerVersion', 1);
     template.hasResourceProperties('AWS::Lambda::LayerVersion', {
-      CompatibleRuntimes: ['nodejs18.x', 'nodejs20.x', 'nodejs22.x'],
+      CompatibleRuntimes: ['nodejs20.x', 'nodejs22.x'],
       LicenseInfo: 'MIT-0',
       /* CompatibleArchitectures: [
         'x86_64',

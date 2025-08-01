@@ -41,11 +41,7 @@ export class LayerPublisherStack extends Stack {
     this.lambdaLayerVersion = new LayerVersion(this, 'LambdaPowertoolsLayer', {
       layerVersionName: props?.layerName,
       description: `Powertools for AWS Lambda (TypeScript) version ${powertoolsPackageVersion}`,
-      compatibleRuntimes: [
-        Runtime.NODEJS_18_X,
-        Runtime.NODEJS_20_X,
-        Runtime.NODEJS_22_X,
-      ],
+      compatibleRuntimes: [Runtime.NODEJS_20_X, Runtime.NODEJS_22_X],
       license: 'MIT-0',
       compatibleArchitectures: [Architecture.ARM_64, Architecture.X86_64],
       code: Code.fromAsset(resolve(__dirname), {

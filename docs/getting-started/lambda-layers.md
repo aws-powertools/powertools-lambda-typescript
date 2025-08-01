@@ -109,7 +109,6 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
         "CreatedDate": "2025-04-08T07:38:30.424+0000",
         "Version": 24,
         "CompatibleRuntimes": [
-            "nodejs18.x",
             "nodejs20.x",
             "nodejs22.x"
         ],

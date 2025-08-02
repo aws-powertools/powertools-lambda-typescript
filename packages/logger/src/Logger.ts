@@ -6,6 +6,12 @@ import type {
   HandlerMethodDecorator,
   SyncHandler,
 } from '@aws-lambda-powertools/commons/types';
+import {
+  getBooleanFromEnv,
+  getNumberFromEnv,
+  getStringFromEnv,
+  isDevMode,
+} from '@aws-lambda-powertools/commons/utils/env';
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
 import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
@@ -829,7 +835,9 @@ class Logger extends Utility implements LoggerInterface {
         this.logLevel > LogLevelThreshold[selectedLogLevel]
       ) {
         this.#warnOnce(
-          `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${this.#alcLogLevel}). This can lead to data loss, consider adjusting them.`
+          `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${
+            this.#alcLogLevel
+          }). This can lead to data loss, consider adjusting them.`
         );
       }
 
@@ -1125,7 +1133,7 @@ class Logger extends Utility implements LoggerInterface {
    * or as the global node console if the `POWERTOOLS_DEV' env variable is set and has truthy value.
    */
   private setConsole(): void {
-    if (!this.getEnvVarsService().isDevMode()) {
+    if (!isDevMode()) {
       this.console = new Console({
         stdout: process.stdout,
         stderr: process.stderr,
@@ -1190,9 +1198,21 @@ class Logger extends Utility implements LoggerInterface {
 
       return;
     }
-    const envVarsValue = this.getEnvVarsService()?.getLogLevel()?.toUpperCase();
-    if (this.isValidLogLevel(envVarsValue)) {
-      this.logLevel = LogLevelThreshold[envVarsValue];
+
+    const logLevelVariable = getStringFromEnv({
+      key: 'POWERTOOLS_LOG_LEVEL',
+      defaultValue: '',
+    });
+    const logLevelVariableAlias = getStringFromEnv({
+      key: 'LOG_LEVEL',
+      defaultValue: '',
+    });
+
+    const logLevelValue =
+      logLevelVariable !== '' ? logLevelVariable : logLevelVariableAlias;
+
+    if (this.isValidLogLevel(logLevelValue)) {
+      this.logLevel = LogLevelThreshold[logLevelValue];
       this.#initialLogLevel = this.logLevel;
 
       return;
@@ -1212,8 +1232,15 @@ class Logger extends Utility implements LoggerInterface {
     const constructorValue = sampleRateValue;
     const customConfigValue =
       this.getCustomConfigService()?.getSampleRateValue();
-    const envVarsValue = this.getEnvVarsService().getSampleRateValue();
-    for (const value of [constructorValue, customConfigValue, envVarsValue]) {
+    const sampleRateEnvVariable = getNumberFromEnv({
+      key: 'POWERTOOLS_LOGGER_SAMPLE_RATE',
+      defaultValue: 0,
+    });
+    for (const value of [
+      constructorValue,
+      customConfigValue,
+      sampleRateEnvVariable,
+    ]) {
       if (this.isValidSampleRate(value)) {
         this.#debugLogSampling.sampleRateValue = value;
         this.powertoolsLogData.sampleRateValue = value;
@@ -1236,9 +1263,10 @@ class Logger extends Utility implements LoggerInterface {
    * the event passed to the Lambda function handler should be logged or not.
    */
   private setLogEvent(): void {
-    if (this.getEnvVarsService().getLogEvent()) {
-      this.logEvent = true;
-    }
+    this.logEvent = getBooleanFromEnv({
+      key: 'POWERTOOLS_LOGGER_LOG_EVENT',
+      defaultValue: false,
+    });
   }
 
   /**
@@ -1265,7 +1293,7 @@ class Logger extends Utility implements LoggerInterface {
    * add JSON indentation for pretty printing logs.
    */
   private setLogIndentation(): void {
-    if (this.getEnvVarsService().isDevMode()) {
+    if (isDevMode()) {
       this.logIndentation = LogJsonIndent.PRETTY;
     }
   }
@@ -1307,7 +1335,13 @@ class Logger extends Utility implements LoggerInterface {
     );
 
     // configurations that affect Logger behavior
-    const AlcLogLevel = this.getEnvVarsService().getAwsLogLevel();
+    const lambdaLogLevel = getStringFromEnv({
+      key: 'AWS_LAMBDA_LOG_LEVEL',
+      defaultValue: '',
+    });
+    const AlcLogLevel =
+      lambdaLogLevel === 'FATAL' ? 'CRITICAL' : lambdaLogLevel;
+
     if (this.isValidLogLevel(AlcLogLevel)) {
       this.#alcLogLevel = AlcLogLevel;
     }
@@ -1340,15 +1374,23 @@ class Logger extends Utility implements LoggerInterface {
     persistentKeys?: ConstructorOptions['persistentKeys']
   ): void {
     this.addToPowertoolsLogData({
-      awsRegion: this.getEnvVarsService().getAwsRegion(),
+      awsRegion: getStringFromEnv({
+        key: 'AWS_REGION',
+      }),
       environment:
         environment ||
         this.getCustomConfigService()?.getCurrentEnvironment() ||
-        this.getEnvVarsService().getCurrentEnvironment(),
+        getStringFromEnv({
+          key: 'ENVIRONMENT',
+          defaultValue: '',
+        }),
       serviceName:
         serviceName ||
         this.getCustomConfigService()?.getServiceName() ||
-        this.getEnvVarsService().getServiceName() ||
+        getStringFromEnv({
+          key: 'POWERTOOLS_SERVICE_NAME',
+          defaultValue: '',
+        }) ||
         this.defaultServiceName,
     });
     persistentKeys && this.appendPersistentKeys(persistentKeys);

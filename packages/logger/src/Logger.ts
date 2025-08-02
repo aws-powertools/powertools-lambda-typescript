@@ -10,6 +10,7 @@ import {
   getBooleanFromEnv,
   getNumberFromEnv,
   getStringFromEnv,
+  getXRayTraceIdFromEnv,
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
 import type { Context, Handler } from 'aws-lambda';
@@ -858,7 +859,7 @@ class Logger extends Utility implements LoggerInterface {
     const unformattedBaseAttributes = {
       logLevel: this.getLogLevelNameFromNumber(logLevel),
       timestamp: new Date(),
-      xRayTraceId: this.envVarsService.getXrayTraceId(),
+      xRayTraceId: getXRayTraceIdFromEnv(),
       ...this.getPowertoolsLogData(),
       message: '',
     };
@@ -1089,7 +1090,7 @@ class Logger extends Utility implements LoggerInterface {
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): void {
-    const traceId = this.envVarsService.getXrayTraceId();
+    const traceId = getXRayTraceIdFromEnv();
     if (traceId !== undefined && this.shouldBufferLog(traceId, logLevel)) {
       try {
         this.bufferLogItem(
@@ -1475,7 +1476,7 @@ class Logger extends Utility implements LoggerInterface {
    * your function throws an error.
    */
   public flushBuffer(): void {
-    const traceId = this.envVarsService.getXrayTraceId();
+    const traceId = getXRayTraceIdFromEnv();
     if (traceId === undefined) {
       return;
     }
@@ -1519,7 +1520,7 @@ class Logger extends Utility implements LoggerInterface {
    * Empties the buffer for the current request
    */
   public clearBuffer(): void {
-    const traceId = this.envVarsService.getXrayTraceId();
+    const traceId = getXRayTraceIdFromEnv();
     if (traceId === undefined) {
       return;
     }

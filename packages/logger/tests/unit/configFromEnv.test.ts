@@ -1,3 +1,4 @@
+import { LogLevel } from '@aws-lambda-powertools/testing-utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 
@@ -20,6 +21,18 @@ describe('Class: EnvironmentVariablesService', () => {
     // The Advanced Logging Controls feature in AWS Lambda supports the `FATAL` log level, which we don't support
     // and instead map to `CRITICAL` as per the existing log levels. In this test, we expect the value to be `CRITICAL`.
     expect(value).toEqual('CRITICAL');
+  });
+
+  it('returns the original value when AWS_LAMBDA_LOG_LEVEL is not FATAL', () => {
+    // Prepare
+    process.env.AWS_LAMBDA_LOG_LEVEL = LogLevel.INFO;
+    const service = new EnvironmentVariablesService();
+
+    // Act
+    const value = service.getAwsLogLevel();
+
+    // Assess
+    expect(value).toEqual('INFO');
   });
 
   it('returns the value of the environment variable AWS_REGION', () => {
@@ -168,6 +181,21 @@ describe('Class: EnvironmentVariablesService', () => {
     // Assess
     expect(value).toEqual(0.01);
   });
+
+  it.each([undefined, ''])(
+    'returns undefined sample rate when POWERTOOLS_LOGGER_SAMPLE_RATE is %s',
+    (sampleRateValue) => {
+      // Prepare
+      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = sampleRateValue;
+      const service = new EnvironmentVariablesService();
+
+      // Act
+      const value = service.getSampleRateValue();
+
+      // Assess
+      expect(value).toBeUndefined();
+    }
+  );
 
   it('returns the value of the TZ environment variable when set', () => {
     // Prepare

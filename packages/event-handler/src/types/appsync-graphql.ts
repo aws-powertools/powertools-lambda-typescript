@@ -178,6 +178,40 @@ type GraphQlBatchRouteOptions<
     ? { aggregate?: T; throwOnError?: never }
     : { aggregate?: T; throwOnError?: R });
 
+// #endregion Router
+
+// #region Exception handling
+
+type ExceptionSyncHandlerFn<TError extends Error = Error> = (
+  error: TError
+) => unknown;
+
+type ExceptionHandlerFn<TError extends Error = Error> = (
+  error: TError
+) => Promise<unknown>;
+
+type ExceptionHandler<TError extends Error = Error> =
+  | ExceptionSyncHandlerFn<TError>
+  | ExceptionHandlerFn<TError>;
+
+/**
+ * Options for handling exceptions in the event handler.
+ *
+ * @template TError - The type of error that extends the base Error class
+ */
+type ExceptionHandlerOptions<TError extends Error = Error> = {
+  /**
+   * The error class/constructor to handle (must be Error or a subclass)
+   */
+  error: TError;
+  /**
+   * The handler function to be called when the error is caught
+   */
+  handler: ExceptionHandler<TError>;
+};
+
+// #endregion Exception handling
+
 export type {
   RouteHandlerRegistryOptions,
   RouteHandlerOptions,
@@ -188,4 +222,6 @@ export type {
   BatchResolverHandler,
   BatchResolverHandlerFn,
   BatchResolverAggregateHandlerFn,
+  ExceptionHandler,
+  ExceptionHandlerOptions,
 };

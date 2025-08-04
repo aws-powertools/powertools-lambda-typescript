@@ -182,32 +182,31 @@ type GraphQlBatchRouteOptions<
 
 // #region Exception handling
 
-type ExceptionSyncHandlerFn<TError extends Error = Error> = (
-  error: TError
-) => unknown;
+type ExceptionSyncHandlerFn<T extends Error> = (error: T) => unknown;
 
-type ExceptionHandlerFn<TError extends Error = Error> = (
-  error: TError
-) => Promise<unknown>;
+type ExceptionHandlerFn<T extends Error> = (error: T) => Promise<unknown>;
 
-type ExceptionHandler<TError extends Error = Error> =
-  | ExceptionSyncHandlerFn<TError>
-  | ExceptionHandlerFn<TError>;
+type ExceptionHandler<T extends Error = Error> =
+  | ExceptionSyncHandlerFn<T>
+  | ExceptionHandlerFn<T>;
+
+// biome-ignore lint/suspicious/noExplicitAny: this is a generic type that is intentionally open
+type ErrorClass<T extends Error> = new (...args: any[]) => T;
 
 /**
  * Options for handling exceptions in the event handler.
  *
- * @template TError - The type of error that extends the base Error class
+ * @template T - The type of error that extends the base Error class
  */
-type ExceptionHandlerOptions<TError extends Error = Error> = {
+type ExceptionHandlerOptions<T extends Error = Error> = {
   /**
    * The error class/constructor to handle (must be Error or a subclass)
    */
-  error: TError;
+  error: ErrorClass<T>;
   /**
    * The handler function to be called when the error is caught
    */
-  handler: ExceptionHandler<TError>;
+  handler: ExceptionHandler<T>;
 };
 
 // #endregion Exception handling
@@ -223,5 +222,6 @@ export type {
   BatchResolverHandlerFn,
   BatchResolverAggregateHandlerFn,
   ExceptionHandler,
+  ErrorClass,
   ExceptionHandlerOptions,
 };

@@ -209,6 +209,18 @@ type ExceptionHandlerOptions<T extends Error = Error> = {
   handler: ExceptionHandler<T>;
 };
 
+/**
+ * Options for the {@link ExceptionHandlerRegistry | `ExceptionHandlerRegistry`} class
+ */
+type ExceptionHandlerRegistryOptions = {
+  /**
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
+   */
+  logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+};
+
 // #endregion Exception handling
 
 export type {
@@ -224,4 +236,5 @@ export type {
   ExceptionHandler,
   ErrorClass,
   ExceptionHandlerOptions,
+  ExceptionHandlerRegistryOptions,
 };

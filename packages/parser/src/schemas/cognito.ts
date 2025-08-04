@@ -192,7 +192,7 @@ const PostAuthenticationTriggerSchema = CognitoTriggerBaseSchema.extend({
 const PreTokenGenerationTriggerGroupConfigurationSchema = z.object({
   groupsToOverride: z.array(z.string()),
   iamRolesToOverride: z.array(z.string()),
-  preferredRole: z.string().optional(),
+  preferredRole: z.string().nullable(),
 });
 
 /**

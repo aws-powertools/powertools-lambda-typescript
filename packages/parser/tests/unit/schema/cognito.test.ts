@@ -396,6 +396,29 @@ describe('Schemas: Cognito User Pool', () => {
     expect(result).toEqual(event);
   });
 
+  it('parses a valid pre-token generation event v1 with null preferredRole', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+    event.request = {
+      userAttributes: {
+        sub: '42051434-5091-70ec-4b71-7c26db407ea4',
+        'cognito:user_status': 'CONFIRMED',
+      },
+      groupConfiguration: {
+        groupsToOverride: ['group1', 'group2'],
+        iamRolesToOverride: ['role1', 'role2'],
+        preferredRole: null,
+      },
+      clientMetadata: { key: 'value' },
+    };
+
+    // Act
+    const result = PreTokenGenerationTriggerSchemaV1.parse(event);
+
+    // Assess
+    expect(result).toEqual(event);
+  });
+
   it('throws if the pre-token generation event v1 is missing a required field', () => {
     // Prepare
     const event = structuredClone(baseEvent);

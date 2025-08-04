@@ -506,15 +506,11 @@ describe('Class: AppSyncGraphQLResolver', () => {
       setupHandler(handler);
 
       if (aggregate) {
-        app.batchResolver(handler, {
-          fieldName: 'batchGet',
-          typeName: 'Query',
+        app.onBatchQuery('batchGet', handler, {
           aggregate: true,
         });
       } else {
-        app.batchResolver(handler, {
-          fieldName: 'batchGet',
-          typeName: 'Query',
+        app.onBatchQuery('batchGet', handler, {
           aggregate: false,
           throwOnError: true,
         });
@@ -596,16 +592,14 @@ describe('Class: AppSyncGraphQLResolver', () => {
       .mockResolvedValueOnce({ id: '1', value: 'A' })
       .mockRejectedValueOnce(new Error('fail'))
       .mockResolvedValueOnce({ id: '3', value: 'C' });
-    app.batchResolver(handler, {
-      fieldName: 'batchGet',
-      typeName: 'Query',
+    app.onBatchMutation('batchPut', handler, {
       aggregate: false,
       throwOnError: true,
     });
     const events = [
-      onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
-      onGraphqlEventFactory('batchGet', 'Query', { id: '2' }),
-      onGraphqlEventFactory('batchGet', 'Query', { id: '3' }),
+      onGraphqlEventFactory('batchPut', 'Mutation', { id: '1' }),
+      onGraphqlEventFactory('batchPut', 'Mutation', { id: '2' }),
+      onGraphqlEventFactory('batchPut', 'Mutation', { id: '3' }),
     ];
 
     // Act
@@ -639,5 +633,103 @@ describe('Class: AppSyncGraphQLResolver', () => {
         'The response must be an array when using batch resolvers'
       )
     );
+  });
+
+  it.each([
+    {
+      throwOnError: true,
+      description: 'throwOnError=true',
+    },
+    {
+      throwOnError: false,
+      description: 'throwOnError=false',
+    },
+  ])(
+    'preserves the scope when using `onBatchQuery` decorator when aggregate=false and $description',
+    async ({ throwOnError }) => {
+      // Prepare
+      const app = new AppSyncGraphQLResolver({ logger: console });
+
+      class Lambda {
+        public readonly scope = 'scoped';
+
+        @app.onBatchQuery('batchGet', {
+          throwOnError,
+        })
+        public async handleBatchGet(
+          events: AppSyncResolverEvent<{ id: number }>[]
+        ) {
+          const ids = events.map((event) => event.arguments.id);
+          return ids.map((id) => ({
+            id,
+            scope: `${this.scope} id=${id}`,
+          }));
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context, { scope: this });
+        }
+      }
+      const lambda = new Lambda();
+      const handler = lambda.handler.bind(lambda);
+
+      // Act
+      const result = await handler(
+        [
+          onGraphqlEventFactory('batchGet', 'Query', { id: 1 }),
+          onGraphqlEventFactory('batchGet', 'Query', { id: 2 }),
+        ],
+        context
+      );
+
+      // Assess
+      expect(result).toEqual([
+        { id: 1, scope: 'scoped id=1' },
+        { id: 2, scope: 'scoped id=2' },
+      ]);
+    }
+  );
+
+  it('preserves the scope when using `onBatchMutation` decorator', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+
+    class Lambda {
+      public readonly scope = 'scoped';
+
+      @app.onBatchMutation('batchPut', {
+        throwOnError: true,
+      })
+      public async handleBatchGet(
+        events: AppSyncResolverEvent<{ id: number }>[]
+      ) {
+        const ids = events.map((event) => event.arguments.id);
+        return ids.map((id) => ({
+          id,
+          scope: `${this.scope} id=${id}`,
+        }));
+      }
+
+      public async handler(event: unknown, context: Context) {
+        return app.resolve(event, context, { scope: this });
+      }
+    }
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
+
+    // Act
+    const result = await handler(
+      [
+        onGraphqlEventFactory('batchPut', 'Mutation', { id: 1 }),
+        onGraphqlEventFactory('batchPut', 'Mutation', { id: 2 }),
+      ],
+      context
+    );
+
+    // Assess
+    expect(result).toEqual([
+      { id: 1, scope: 'scoped id=1' },
+      { id: 2, scope: 'scoped id=2' },
+    ]);
   });
 });

@@ -822,7 +822,6 @@ class Tracer extends Utility implements TracerInterface {
 
     if (this.#envConfig.captureHTTPsRequests.toLowerCase() === 'false') {
       this.captureHTTPsRequests = false;
-      return;
     }
   }
 

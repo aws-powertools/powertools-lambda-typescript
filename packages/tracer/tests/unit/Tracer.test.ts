@@ -975,7 +975,7 @@ describe('Class: Tracer', () => {
       createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
 
       class Lambda implements LambdaInterface {
-        private memberVariable: string;
+        readonly memberVariable: string;
 
         public constructor(memberVariable: string) {
           this.memberVariable = memberVariable;

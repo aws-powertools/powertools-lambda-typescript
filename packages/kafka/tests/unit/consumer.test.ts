@@ -141,13 +141,15 @@ describe('Kafka consumer', () => {
       // Prepare
       const handler = kafkaConsumer(
         async (event) => {
+          const results = [];
           for (const record of event.records) {
             try {
-              return record.value;
+              results.push(record.value);
             } catch (error) {
               return error;
             }
           }
+          return results;
         },
         {
           // @ts-expect-error - testing missing schemaStr
@@ -241,14 +243,16 @@ describe('Kafka consumer', () => {
       // Prepare
       const handler = kafkaConsumer(
         async (event) => {
+          const results = [];
           for (const record of event.records) {
             try {
               const { value, key } = record;
-              return [value, key];
+              results.push([value, key]);
             } catch (error) {
               return error;
             }
           }
+          return results;
         },
         {
           value: {

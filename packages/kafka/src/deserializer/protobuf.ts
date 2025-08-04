@@ -40,7 +40,7 @@ const deserialize = <T>(
     }
   } catch (error) {
     throw new KafkaConsumerDeserializationError(
-      `Failed to deserialize Protobuf message: ${error}, message: ${data}, messageType: ${messageType}`
+      `Failed to deserialize Protobuf message: ${error}, message: ${data}, messageType: ${JSON.stringify(messageType)}`
     );
   }
 
@@ -64,7 +64,7 @@ const deserialize = <T>(
       return decoded;
     } catch {
       throw new KafkaConsumerDeserializationError(
-        `Failed to deserialize Protobuf message: ${error}, message: ${data}, messageType: ${messageType}`
+        `Failed to deserialize Protobuf message: ${error}, message: ${data}, messageType: ${JSON.stringify(messageType)}`
       );
     }
   }

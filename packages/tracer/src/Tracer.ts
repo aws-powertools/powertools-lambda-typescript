@@ -867,7 +867,7 @@ class Tracer extends Utility implements TracerInterface {
    *
    * @param options - Configuration passed to the tracer
    */
-  private setOptions(options: TracerOptions): Tracer {
+  private setOptions(options: TracerOptions): this {
     const { enabled, serviceName, captureHTTPsRequests, customConfigService } =
       options;
 

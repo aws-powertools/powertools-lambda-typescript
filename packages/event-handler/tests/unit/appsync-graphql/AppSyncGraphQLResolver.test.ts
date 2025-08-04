@@ -662,7 +662,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
           const ids = events.map((event) => event.arguments.id);
           return ids.map((id) => ({
             id,
-            scope: `${this.scope} id=${id}`,
+            scope: this.scope,
           }));
         }
 
@@ -672,7 +672,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
         public async handleBatchPut(
           _events: AppSyncResolverEvent<{ id: number }>[]
         ) {
-          return [true, true];
+          return [this.scope, this.scope];
         }
 
         public async handler(event: unknown, context: Context) {
@@ -700,10 +700,10 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
       // Assess
       expect(resultQuery).toEqual([
-        { id: 1, scope: 'scoped id=1' },
-        { id: 2, scope: 'scoped id=2' },
+        { id: 1, scope: 'scoped' },
+        { id: 2, scope: 'scoped' },
       ]);
-      expect(resultMutation).toEqual([true, true]);
+      expect(resultMutation).toEqual(['scoped', 'scoped']);
     }
   );
 });

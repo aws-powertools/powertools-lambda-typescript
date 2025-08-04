@@ -197,7 +197,7 @@ class AppSyncGraphQLResolver extends Router {
     try {
       return await fn();
     } catch (error) {
-      return this.#handleError(
+      return await this.#handleError(
         error,
         `An error occurred in handler ${event.info.fieldName}`
       );
@@ -209,16 +209,34 @@ class AppSyncGraphQLResolver extends Router {
    *
    * Logs the provided error message and error object. If the error is an instance of
    * `InvalidBatchResponseException` or `ResolverNotFoundException`, it is re-thrown.
+   * Checks for registered exception handlers and calls them if available.
    * Otherwise, the error is formatted into a response using `#formatErrorResponse`.
    *
    * @param error - The error object to handle.
    * @param errorMessage - A descriptive message to log alongside the error.
    * @throws InvalidBatchResponseException | ResolverNotFoundException
    */
-  #handleError(error: unknown, errorMessage: string) {
+  async #handleError(error: unknown, errorMessage: string): Promise<unknown> {
     this.logger.error(errorMessage, error);
     if (error instanceof InvalidBatchResponseException) throw error;
     if (error instanceof ResolverNotFoundException) throw error;
+    if (this.exceptionHandlerRegistry.hasHandlers() && error instanceof Error) {
+      const exceptionHandler = this.exceptionHandlerRegistry.resolve(error);
+      if (exceptionHandler) {
+        try {
+          this.logger.debug(
+            `Calling exception handler for error: ${error.constructor.name}`
+          );
+          return await exceptionHandler(error);
+        } catch (handlerError) {
+          this.logger.error(
+            `Exception handler for ${error.constructor.name} threw an error`,
+            handlerError
+          );
+        }
+      }
+    }
+
     return this.#formatErrorResponse(error);
   }
 

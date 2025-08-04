@@ -5,11 +5,14 @@ import {
 } from '@aws-lambda-powertools/commons/utils/env';
 import type {
   BatchResolverHandler,
+  ErrorClass,
+  ExceptionHandler,
   GraphQlBatchRouteOptions,
   GraphQlRouteOptions,
   GraphQlRouterOptions,
   ResolverHandler,
 } from '../types/appsync-graphql.js';
+import { ExceptionHandlerRegistry } from './ExceptionHandlerRegistry.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 
 /**
@@ -24,6 +27,10 @@ class Router {
    * A map of registered routes for GraphQL batch events, keyed by their fieldNames.
    */
   protected readonly batchResolverRegistry: RouteHandlerRegistry;
+  /**
+   * A map of registered exception handlers for handling errors in GraphQL resolvers.
+   */
+  protected readonly exceptionHandlerRegistry: ExceptionHandlerRegistry;
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
    *
@@ -49,6 +56,9 @@ class Router {
       logger: this.logger,
     });
     this.batchResolverRegistry = new RouteHandlerRegistry({
+      logger: this.logger,
+    });
+    this.exceptionHandlerRegistry = new ExceptionHandlerRegistry({
       logger: this.logger,
     });
     this.isDev = isDevMode();
@@ -943,6 +953,100 @@ class Router {
         throwOnError: handlerOrOptions?.throwOnError,
       });
 
+      return descriptor;
+    };
+  }
+
+  /**
+   * Register an exception handler for a specific error class.
+   *
+   * Registers a handler for a specific error class that can be thrown by GraphQL resolvers.
+   * The handler will be invoked when an error of the specified class (or its subclasses) is thrown
+   * from any resolver function.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * // Register an exception handler for AssertionError
+   * app.exceptionHandler(AssertionError, async (error) => {
+   *   return {
+   *     message: 'Assertion failed',
+   *     details: error.message
+   *   };
+   * });
+   *
+   * // Register a resolver that might throw an AssertionError
+   * app.onQuery('getTodo', async () => {
+   *   throw new AssertionError('Something went wrong');
+   * });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * As a decorator:
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * class Lambda {
+   *   ⁣@app.exceptionHandler(AssertionError)
+   *   async handleAssertionError(error) {
+   *     return {
+   *        message: 'Assertion failed',
+   *        details: error.message
+   *     };
+   *   }
+   *
+   *   ⁣@app.onQuery('getUser')
+   *   async getUser() {
+   *     throw new AssertionError('Something went wrong');
+   *   }
+   *
+   *   async handler(event, context) {
+   *     return app.resolve(event, context, {
+   *       scope: this, // bind decorated methods to the class instance
+   *     });
+   *   }
+   * }
+   *
+   * const lambda = new Lambda();
+   * export const handler = lambda.handler.bind(lambda);
+   * ```
+   *
+   * @param errorClass - The error class to handle.
+   * @param handler - The handler function to be called when the error is caught.
+   */
+  public exceptionHandler<TError extends Error>(
+    error: ErrorClass<TError>,
+    handler: ExceptionHandler<TError>
+  ): void;
+  public exceptionHandler<TError extends Error>(
+    error: ErrorClass<TError>
+  ): MethodDecorator;
+  public exceptionHandler<TError extends Error>(
+    error: ErrorClass<TError>,
+    handler?: ExceptionHandler<TError>
+  ): MethodDecorator | undefined {
+    if (typeof handler === 'function') {
+      this.exceptionHandlerRegistry.register({
+        error,
+        handler: handler as ExceptionHandler<Error>,
+      });
+      return;
+    }
+
+    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+      this.exceptionHandlerRegistry.register({
+        error,
+        handler: descriptor?.value,
+      });
       return descriptor;
     };
   }

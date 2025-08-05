@@ -79,10 +79,6 @@ describe('Log sampling', () => {
     },
     {
       options: {},
-      type: 'custom config service',
-    },
-    {
-      options: {},
       type: 'env variable',
     },
   ])('ignores invalid sample rate values via $type', ({ options, type }) => {

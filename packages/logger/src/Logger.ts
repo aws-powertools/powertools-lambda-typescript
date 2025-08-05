@@ -15,7 +15,6 @@ import {
 } from '@aws-lambda-powertools/commons/utils/env';
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
-import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import {
   LogJsonIndent,
   LogLevelThreshold,
@@ -119,10 +118,6 @@ class Logger extends Utility implements LoggerInterface {
    * Custom config service instance used to configure the logger.
    */
   private customConfigService?: ConfigServiceInterface;
-  /**
-   * Environment variables service instance used to fetch environment variables.
-   */
-  private envVarsService = new EnvironmentVariablesService();
   /**
    * Whether to print the Lambda invocation event in the logs.
    */
@@ -836,7 +831,9 @@ class Logger extends Utility implements LoggerInterface {
         this.logLevel > LogLevelThreshold[selectedLogLevel]
       ) {
         this.#warnOnce(
-          `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${this.#alcLogLevel}). This can lead to data loss, consider adjusting them.`
+          `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${
+            this.#alcLogLevel
+          }). This can lead to data loss, consider adjusting them.`
         );
       }
 
@@ -980,13 +977,6 @@ class Logger extends Utility implements LoggerInterface {
    */
   private getCustomConfigService(): ConfigServiceInterface | undefined {
     return this.customConfigService;
-  }
-
-  /**
-   * Get the instance of a service that fetches environment variables.
-   */
-  private getEnvVarsService(): EnvironmentVariablesService {
-    return this.envVarsService as EnvironmentVariablesService;
   }
 
   /**
@@ -1282,7 +1272,6 @@ class Logger extends Utility implements LoggerInterface {
     this.logFormatter =
       logFormatter ??
       new PowertoolsLogFormatter({
-        envVarsService: this.getEnvVarsService(),
         logRecordOrder,
       });
   }

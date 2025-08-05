@@ -19,7 +19,7 @@ const createCaptureAsyncFuncMock = (
   vi
     .spyOn(provider, 'captureAsyncFunc')
     .mockImplementation(async (methodName, callBackFn) => {
-      const newSubsegment = subsegment ?? new Subsegment(`### ${methodName}`);
+      const newSubsegment = subsegment || new Subsegment(`### ${methodName}`);
       vi.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
       return await callBackFn(newSubsegment);
     });

@@ -692,9 +692,7 @@ describe('Class: Tracer', () => {
         .mockImplementation(() => ({}));
 
       // Act
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
-        '## foo.bar'
-      );
+      const newSubsegment = new Subsegment('## foo.bar');
       tracer.setSegment(newSubsegment);
 
       // Assess
@@ -961,9 +959,7 @@ describe('Class: Tracer', () => {
     it('awaits async methods correctly', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
-        '### dummyMethod'
-      );
+      const newSubsegment = new Subsegment('### dummyMethod');
 
       vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
         () => newSubsegment
@@ -975,7 +971,7 @@ describe('Class: Tracer', () => {
       createCaptureAsyncFuncMock(tracer.provider, newSubsegment);
 
       class Lambda implements LambdaInterface {
-        private memberVariable: string;
+        private readonly memberVariable: string;
 
         public constructor(memberVariable: string) {
           this.memberVariable = memberVariable;
@@ -1021,8 +1017,7 @@ describe('Class: Tracer', () => {
     it('catches the error and logs a warning when a segment fails to close/serialize', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const handlerSubsegment: Segment | Subsegment | undefined =
-        new Subsegment('### dummyMethod');
+      const handlerSubsegment = new Subsegment('### dummyMethod');
       vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
         () => handlerSubsegment
       );
@@ -1192,9 +1187,7 @@ describe('Class: Tracer', () => {
     it('captures the exception correctly', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
-        '### dummyMethod'
-      );
+      const newSubsegment = new Subsegment('### dummyMethod');
       vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
         () => newSubsegment
       );
@@ -1237,9 +1230,7 @@ describe('Class: Tracer', () => {
     it('preserves the this scope correctly when used as decorator', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
-        '### dummyMethod'
-      );
+      const newSubsegment = new Subsegment('### dummyMethod');
       vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
         () => newSubsegment
       );
@@ -1274,9 +1265,7 @@ describe('Class: Tracer', () => {
     it('awaits the async method correctly when used as decorator', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
-        '### dummyMethod'
-      );
+      const newSubsegment = new Subsegment('### dummyMethod');
 
       vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
         () => newSubsegment
@@ -1375,9 +1364,7 @@ describe('Class: Tracer', () => {
     it('sets the correct name for the subsegment when used as decorator and with a custom subSegmentName', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const newSubsegment: Segment | Subsegment | undefined = new Subsegment(
-        '### dummyMethod'
-      );
+      const newSubsegment = new Subsegment('### dummyMethod');
       vi.spyOn(newSubsegment, 'flush').mockImplementation(() => null);
       vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
         () => newSubsegment
@@ -1412,8 +1399,7 @@ describe('Class: Tracer', () => {
     it('catches the error and logs a warning when a segment fails to close/serialize', async () => {
       // Prepare
       const tracer: Tracer = new Tracer();
-      const handlerSubsegment: Segment | Subsegment | undefined =
-        new Subsegment('### dummyMethod');
+      const handlerSubsegment = new Subsegment('### dummyMethod');
       vi.spyOn(tracer.provider, 'getSegment').mockImplementation(
         () => handlerSubsegment
       );

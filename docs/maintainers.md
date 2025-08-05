@@ -16,8 +16,8 @@ This is document explains who the maintainers are, their responsibilities, and h
 | Maintainer         | GitHub ID                                                                   | Affiliation |
 | ------------------ | --------------------------------------------------------------------------- | ----------- |
 | Andrea Amorosi     | [dreamorosi](https://github.com/dreamorosi){target="_blank" rel="nofollow"} | Amazon      |
-| Alexander Schueren | [am29d](https://github.com/am29d){target="_blank" rel="nofollow"}           | Amazon      |
-| Simon Thulbourn    | [sthulb](https://github.com/sthulb){target="_blank" rel="nofollow"}         | Amazon      |
+| Swopnil Dangol     | [sdangol](https://github.com/sdangol){target="_blank" rel="nofollow"}       | Amazon      |
+| Stefano Vozza      | [svozza](https://github.com/svozza){target="_blank" rel="nofollow"}         | Amazon      |
 
 ## Emeritus
 
@@ -25,6 +25,8 @@ Previous active maintainers who contributed to this project.
 
 | Maintainer                 | GitHub ID                                                                       | Affiliation |
 | -------------------------- | ------------------------------------------------------------------------------- | ----------- |
+| Alexander Schueren         | [am29d](https://github.com/am29d){target="_blank" rel="nofollow"}               |             |
+| Simon Thulbourn            | [sthulb](https://github.com/sthulb){target="_blank" rel="nofollow"}             | Amazon      |
 | Sara Gerion                | [saragerion](https://github.com/saragerion){target="_blank" rel="nofollow"}     | Amazon      |
 | Florian Chazal             | [flochaz](https://github.com/flochaz){target="_blank" rel="nofollow"}           | Amazon      |
 | Chadchapol Vittavutkarnvej | [ijemmy](https://github.com/ijemmy){target="_blank" rel="nofollow"}             | Booking.com |

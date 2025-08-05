@@ -531,8 +531,8 @@ class Router {
         fieldName,
         handler: handler as BatchResolverHandler,
         typeName,
-        aggregate: batchResolverOptions?.aggregate ?? true,
-        throwOnError: batchResolverOptions?.throwOnError ?? false,
+        aggregate: batchResolverOptions?.aggregate,
+        throwOnError: batchResolverOptions?.throwOnError,
       });
       return;
     }
@@ -544,8 +544,8 @@ class Router {
         fieldName,
         handler: descriptor?.value,
         typeName,
-        aggregate: batchResolverOptions?.aggregate ?? true,
-        throwOnError: batchResolverOptions?.throwOnError ?? false,
+        aggregate: batchResolverOptions?.aggregate,
+        throwOnError: batchResolverOptions?.throwOnError,
       });
       return descriptor;
     };
@@ -730,8 +730,8 @@ class Router {
         fieldName,
         handler: handlerOrOptions as BatchResolverHandler,
         typeName: 'Query',
-        aggregate: options?.aggregate ?? true,
-        throwOnError: options?.throwOnError ?? false,
+        aggregate: options?.aggregate,
+        throwOnError: options?.throwOnError,
       });
 
       return;
@@ -742,8 +742,8 @@ class Router {
         fieldName,
         handler: descriptor?.value,
         typeName: 'Query',
-        aggregate: handlerOrOptions?.aggregate ?? true,
-        throwOnError: handlerOrOptions?.throwOnError ?? false,
+        aggregate: handlerOrOptions?.aggregate,
+        throwOnError: handlerOrOptions?.throwOnError,
       });
 
       return descriptor;
@@ -927,8 +927,8 @@ class Router {
         fieldName,
         handler: handlerOrOptions as BatchResolverHandler,
         typeName: 'Mutation',
-        aggregate: options?.aggregate ?? true,
-        throwOnError: options?.throwOnError ?? false,
+        aggregate: options?.aggregate,
+        throwOnError: options?.throwOnError,
       });
 
       return;
@@ -939,8 +939,8 @@ class Router {
         fieldName,
         handler: descriptor?.value,
         typeName: 'Mutation',
-        aggregate: handlerOrOptions?.aggregate ?? true,
-        throwOnError: handlerOrOptions?.throwOnError ?? false,
+        aggregate: handlerOrOptions?.aggregate,
+        throwOnError: handlerOrOptions?.throwOnError,
       });
 
       return descriptor;

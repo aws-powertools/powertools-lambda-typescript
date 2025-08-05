@@ -59,8 +59,10 @@ describe('Class: RouteHandlerRegistry', () => {
     // Assess
     expect(registry.resolvers.size).toBe(1);
     expect(registry.resolvers.get('Query.getPost')).toEqual({
+      aggregate: true,
       fieldName: 'getPost',
       typeName: 'Query',
+      throwOnError: false,
       handler: otherHandler,
     });
     expect(console.warn).toHaveBeenCalledWith(
@@ -68,7 +70,7 @@ describe('Class: RouteHandlerRegistry', () => {
     );
   });
 
-  it('will not replace the resolver if the event type is different', () => {
+  it("doesn't replace the resolver if the event type is different", () => {
     // Prepare
     const registry = getRegistry();
     const originalHandler = vi.fn();
@@ -89,13 +91,17 @@ describe('Class: RouteHandlerRegistry', () => {
     // Assess
     expect(registry.resolvers.size).toBe(2);
     expect(registry.resolvers.get('Query.getPost')).toEqual({
+      aggregate: true,
       fieldName: 'getPost',
       typeName: 'Query',
+      throwOnError: false,
       handler: originalHandler,
     });
     expect(registry.resolvers.get('Mutation.getPost')).toEqual({
+      aggregate: true,
       fieldName: 'getPost',
       typeName: 'Mutation',
+      throwOnError: false,
       handler: otherHandler,
     });
   });

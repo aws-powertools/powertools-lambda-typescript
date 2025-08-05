@@ -291,7 +291,7 @@ describe('Formatters', () => {
 
   it('when logRecordOrder is not set, it will not order the attributes in the log item', () => {
     // Prepare
-    const formatter = new PowertoolsLogFormatter({});
+    const formatter = new PowertoolsLogFormatter();
     const additionalLogAttributes: LogAttributes = {
       additional_key: 'additional_value',
     };
@@ -583,7 +583,7 @@ describe('Formatters', () => {
       The negative value indicates that `Asia/Dhaka` is ahead of UTC.
     */
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
-    const formatter = new PowertoolsLogFormatter({});
+    const formatter = new PowertoolsLogFormatter();
 
     // Act
     const timestamp = formatter.formatTimestamp(new Date());
@@ -602,7 +602,7 @@ describe('Formatters', () => {
       The negative value indicates that `Asia/Dhaka` is ahead of UTC.
     */
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
-    const formatter = new PowertoolsLogFormatter({});
+    const formatter = new PowertoolsLogFormatter();
 
     // Act
     const timestamp = formatter.formatTimestamp(new Date());
@@ -629,7 +629,7 @@ describe('Formatters', () => {
     // Prepare
     process.env.TZ = ':/etc/localtime';
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(0);
-    const formatter = new PowertoolsLogFormatter({});
+    const formatter = new PowertoolsLogFormatter();
 
     // Act
     const timestamp = formatter.formatTimestamp(new Date());

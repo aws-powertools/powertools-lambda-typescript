@@ -104,6 +104,17 @@ describe('Log levels', () => {
     expect(logger.getLevelName()).toBe(LogLevel.CRITICAL);
   });
 
+  it('sets the log level to CRITICAL when AWS_LAMBDA_LOG_LEVEL is FATAL', () => {
+    // Prepare
+    process.env.AWS_LAMBDA_LOG_LEVEL = 'FATAL';
+
+    // Act
+    const logger = new Logger();
+
+    // Assess
+    expect(logger.getLevelName()).toBe('CRITICAL');
+  });
+
   it('sets the correct log level when using a custom config service', () => {
     // Prepare
     process.env.POWERTOOLS_LOG_LEVEL = undefined;

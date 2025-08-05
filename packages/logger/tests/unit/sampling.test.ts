@@ -1,19 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { Logger, LogLevel, LogLevelThreshold } from '../../src/index.js';
-
-class CustomConfigService extends EnvironmentVariablesService {
-  #sampleRateValue = 1;
-
-  public constructor(value = 1) {
-    super();
-    this.#sampleRateValue = value;
-  }
-
-  public getSampleRateValue(): number {
-    return this.#sampleRateValue;
-  }
-}
 
 describe('Log sampling', () => {
   const ENVIRONMENT_VARIABLES = process.env;
@@ -41,17 +27,6 @@ describe('Log sampling', () => {
     const logger: Logger = new Logger({
       logLevel: LogLevel.ERROR,
       sampleRateValue: 1,
-    });
-
-    // Assess
-    expect(logger.level).toBe(LogLevelThreshold.DEBUG);
-  });
-
-  it('changes the log level to DEBUG log sampling is configured via custom config service', () => {
-    // Act
-    const logger: Logger = new Logger({
-      logLevel: LogLevel.ERROR,
-      customConfigService: new CustomConfigService(),
     });
 
     // Assess
@@ -89,7 +64,6 @@ describe('Log sampling', () => {
     // Act
     const logger: Logger = new Logger({
       sampleRateValue: 1,
-      customConfigService: new CustomConfigService(0.75),
     });
 
     // Assess
@@ -102,12 +76,6 @@ describe('Log sampling', () => {
         sampleRateValue: 42,
       },
       type: 'constructor',
-    },
-    {
-      options: {
-        customConfigService: new CustomConfigService(42),
-      },
-      type: 'custom config service',
     },
     {
       options: {},

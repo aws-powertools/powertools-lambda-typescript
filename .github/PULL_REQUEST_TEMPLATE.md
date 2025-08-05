@@ -8,7 +8,7 @@
 
 > Please add the issue number below, if no issue is present the PR might get blocked and not be reviewed
 
-**Issue number:** 
+**Issue number:** closes #<issue_number>
 
 <!-------
 Before creating the pull request, please make sure you do the following:

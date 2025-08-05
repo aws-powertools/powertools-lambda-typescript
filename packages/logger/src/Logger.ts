@@ -831,9 +831,7 @@ class Logger extends Utility implements LoggerInterface {
         this.logLevel > LogLevelThreshold[selectedLogLevel]
       ) {
         this.#warnOnce(
-          `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${
-            this.#alcLogLevel
-          }). This can lead to data loss, consider adjusting them.`
+          `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${this.#alcLogLevel}). This can lead to data loss, consider adjusting them.`
         );
       }
 

@@ -6,9 +6,15 @@ import type {
   HandlerMethodDecorator,
   SyncHandler,
 } from '@aws-lambda-powertools/commons/types';
+import {
+  getBooleanFromEnv,
+  getNumberFromEnv,
+  getStringFromEnv,
+  getXRayTraceIdFromEnv,
+  isDevMode,
+} from '@aws-lambda-powertools/commons/utils/env';
 import type { Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
-import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import {
   LogJsonIndent,
   LogLevelThreshold,
@@ -112,10 +118,6 @@ class Logger extends Utility implements LoggerInterface {
    * Custom config service instance used to configure the logger.
    */
   private customConfigService?: ConfigServiceInterface;
-  /**
-   * Environment variables service instance used to fetch environment variables.
-   */
-  private envVarsService = new EnvironmentVariablesService();
   /**
    * Whether to print the Lambda invocation event in the logs.
    */
@@ -850,7 +852,7 @@ class Logger extends Utility implements LoggerInterface {
     const unformattedBaseAttributes = {
       logLevel: this.getLogLevelNameFromNumber(logLevel),
       timestamp: new Date(),
-      xRayTraceId: this.envVarsService.getXrayTraceId(),
+      xRayTraceId: getXRayTraceIdFromEnv(),
       ...this.getPowertoolsLogData(),
       message: '',
     };
@@ -976,13 +978,6 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Get the instance of a service that fetches environment variables.
-   */
-  private getEnvVarsService(): EnvironmentVariablesService {
-    return this.envVarsService as EnvironmentVariablesService;
-  }
-
-  /**
    * Get the instance of a service that formats the structure of a
    * log item's keys and values in the desired way.
    */
@@ -1081,7 +1076,7 @@ class Logger extends Utility implements LoggerInterface {
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): void {
-    const traceId = this.envVarsService.getXrayTraceId();
+    const traceId = getXRayTraceIdFromEnv();
     if (traceId !== undefined && this.shouldBufferLog(traceId, logLevel)) {
       try {
         this.bufferLogItem(
@@ -1125,7 +1120,7 @@ class Logger extends Utility implements LoggerInterface {
    * or as the global node console if the `POWERTOOLS_DEV' env variable is set and has truthy value.
    */
   private setConsole(): void {
-    if (!this.getEnvVarsService().isDevMode()) {
+    if (!isDevMode()) {
       this.console = new Console({
         stdout: process.stdout,
         stderr: process.stderr,
@@ -1190,9 +1185,21 @@ class Logger extends Utility implements LoggerInterface {
 
       return;
     }
-    const envVarsValue = this.getEnvVarsService()?.getLogLevel()?.toUpperCase();
-    if (this.isValidLogLevel(envVarsValue)) {
-      this.logLevel = LogLevelThreshold[envVarsValue];
+
+    const logLevelVariable = getStringFromEnv({
+      key: 'POWERTOOLS_LOG_LEVEL',
+      defaultValue: '',
+    });
+    const logLevelVariableAlias = getStringFromEnv({
+      key: 'LOG_LEVEL',
+      defaultValue: '',
+    });
+
+    const logLevelValue =
+      logLevelVariable !== '' ? logLevelVariable : logLevelVariableAlias;
+
+    if (this.isValidLogLevel(logLevelValue)) {
+      this.logLevel = LogLevelThreshold[logLevelValue];
       this.#initialLogLevel = this.logLevel;
 
       return;
@@ -1212,8 +1219,15 @@ class Logger extends Utility implements LoggerInterface {
     const constructorValue = sampleRateValue;
     const customConfigValue =
       this.getCustomConfigService()?.getSampleRateValue();
-    const envVarsValue = this.getEnvVarsService().getSampleRateValue();
-    for (const value of [constructorValue, customConfigValue, envVarsValue]) {
+    const sampleRateEnvVariable = getNumberFromEnv({
+      key: 'POWERTOOLS_LOGGER_SAMPLE_RATE',
+      defaultValue: 0,
+    });
+    for (const value of [
+      constructorValue,
+      customConfigValue,
+      sampleRateEnvVariable,
+    ]) {
       if (this.isValidSampleRate(value)) {
         this.#debugLogSampling.sampleRateValue = value;
         this.powertoolsLogData.sampleRateValue = value;
@@ -1236,9 +1250,10 @@ class Logger extends Utility implements LoggerInterface {
    * the event passed to the Lambda function handler should be logged or not.
    */
   private setLogEvent(): void {
-    if (this.getEnvVarsService().getLogEvent()) {
-      this.logEvent = true;
-    }
+    this.logEvent = getBooleanFromEnv({
+      key: 'POWERTOOLS_LOGGER_LOG_EVENT',
+      defaultValue: false,
+    });
   }
 
   /**
@@ -1255,7 +1270,6 @@ class Logger extends Utility implements LoggerInterface {
     this.logFormatter =
       logFormatter ??
       new PowertoolsLogFormatter({
-        envVarsService: this.getEnvVarsService(),
         logRecordOrder,
       });
   }
@@ -1265,7 +1279,7 @@ class Logger extends Utility implements LoggerInterface {
    * add JSON indentation for pretty printing logs.
    */
   private setLogIndentation(): void {
-    if (this.getEnvVarsService().isDevMode()) {
+    if (isDevMode()) {
       this.logIndentation = LogJsonIndent.PRETTY;
     }
   }
@@ -1307,7 +1321,13 @@ class Logger extends Utility implements LoggerInterface {
     );
 
     // configurations that affect Logger behavior
-    const AlcLogLevel = this.getEnvVarsService().getAwsLogLevel();
+    const lambdaLogLevel = getStringFromEnv({
+      key: 'AWS_LAMBDA_LOG_LEVEL',
+      defaultValue: '',
+    });
+    const AlcLogLevel =
+      lambdaLogLevel === 'FATAL' ? 'CRITICAL' : lambdaLogLevel;
+
     if (this.isValidLogLevel(AlcLogLevel)) {
       this.#alcLogLevel = AlcLogLevel;
     }
@@ -1340,15 +1360,23 @@ class Logger extends Utility implements LoggerInterface {
     persistentKeys?: ConstructorOptions['persistentKeys']
   ): void {
     this.addToPowertoolsLogData({
-      awsRegion: this.getEnvVarsService().getAwsRegion(),
+      awsRegion: getStringFromEnv({
+        key: 'AWS_REGION',
+      }),
       environment:
         environment ||
         this.getCustomConfigService()?.getCurrentEnvironment() ||
-        this.getEnvVarsService().getCurrentEnvironment(),
+        getStringFromEnv({
+          key: 'ENVIRONMENT',
+          defaultValue: '',
+        }),
       serviceName:
         serviceName ||
         this.getCustomConfigService()?.getServiceName() ||
-        this.getEnvVarsService().getServiceName() ||
+        getStringFromEnv({
+          key: 'POWERTOOLS_SERVICE_NAME',
+          defaultValue: '',
+        }) ||
         this.defaultServiceName,
     });
     persistentKeys && this.appendPersistentKeys(persistentKeys);
@@ -1433,7 +1461,7 @@ class Logger extends Utility implements LoggerInterface {
    * your function throws an error.
    */
   public flushBuffer(): void {
-    const traceId = this.envVarsService.getXrayTraceId();
+    const traceId = getXRayTraceIdFromEnv();
     if (traceId === undefined) {
       return;
     }
@@ -1477,7 +1505,7 @@ class Logger extends Utility implements LoggerInterface {
    * Empties the buffer for the current request
    */
   public clearBuffer(): void {
-    const traceId = this.envVarsService.getXrayTraceId();
+    const traceId = getXRayTraceIdFromEnv();
     if (traceId === undefined) {
       return;
     }

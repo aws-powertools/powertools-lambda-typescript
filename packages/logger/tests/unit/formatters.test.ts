@@ -1,6 +1,5 @@
 import { AssertionError } from 'node:assert';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EnvironmentVariablesService } from '../../src/config/EnvironmentVariablesService.js';
 import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
 import {
   LogFormatter,
@@ -17,10 +16,6 @@ import type { LogKey, UnformattedAttributes } from '../../src/types/logKeys.js';
 
 const fileNameRegexpWithLine = new RegExp(/formatters.test.ts:\d+:\d+/);
 const formatter = new PowertoolsLogFormatter();
-const formatterWithEnv = new PowertoolsLogFormatter({
-  envVarsService: new EnvironmentVariablesService(),
-});
-
 class ErrorWithCause extends Error {
   public constructor(message: string, options?: { cause: unknown }) {
     super(message, options);
@@ -296,7 +291,7 @@ describe('Formatters', () => {
 
   it('when logRecordOrder is not set, it will not order the attributes in the log item', () => {
     // Prepare
-    const formatter = new PowertoolsLogFormatter({});
+    const formatter = new PowertoolsLogFormatter();
     const additionalLogAttributes: LogAttributes = {
       additional_key: 'additional_value',
     };
@@ -422,7 +417,9 @@ describe('Formatters', () => {
           location: expect.any(String),
           message: 'bar',
           name: 'Error',
-          stack: expect.stringMatching(fileNameRegexpWithLine),
+          stack: expect.arrayContaining([
+            expect.stringMatching(fileNameRegexpWithLine),
+          ]),
         },
       },
     },
@@ -443,12 +440,33 @@ describe('Formatters', () => {
 
       // Assess
       expect(formattedError).toEqual({
-        stack: expect.stringMatching(fileNameRegexpWithLine),
+        stack: expect.arrayContaining([
+          expect.stringMatching(fileNameRegexpWithLine),
+        ]),
         name,
         ...expectedFields,
       });
     }
   );
+
+  it('formats stack as string when not in dev mode', () => {
+    // Prepare
+    const originalDevMode = process.env.POWERTOOLS_DEV;
+    delete process.env.POWERTOOLS_DEV; // Ensure dev mode is off
+
+    const error = new Error('Test error');
+    const formatter = new PowertoolsLogFormatter();
+
+    // Act
+    const formattedError = formatter.formatError(error);
+
+    // Assess
+    expect(formattedError.stack).toEqual(expect.any(String));
+    expect(Array.isArray(formattedError.stack)).toBe(false);
+
+    // Cleanup
+    process.env.POWERTOOLS_DEV = originalDevMode;
+  });
 
   it('formats custom errors by including only enumerable properties', () => {
     // Prepare
@@ -487,7 +505,9 @@ describe('Formatters', () => {
     // Assess
     expect(formattedError).toEqual({
       location: expect.any(String),
-      stack: expect.stringMatching(fileNameRegexpWithLine),
+      stack: expect.arrayContaining([
+        expect.stringMatching(fileNameRegexpWithLine),
+      ]),
       name: 'SuperCustomError',
       message: 'Something went wrong',
       code: 500,
@@ -516,7 +536,7 @@ describe('Formatters', () => {
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
 
     // Act
-    const timestamp = formatterWithEnv.formatTimestamp(new Date());
+    const timestamp = formatter.formatTimestamp(new Date());
 
     // Assess
     expect(timestamp).toEqual('2016-06-20T08:08:10.000-04:00');
@@ -532,7 +552,7 @@ describe('Formatters', () => {
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
 
     // Act
-    const timestamp = formatterWithEnv.formatTimestamp(new Date());
+    const timestamp = formatter.formatTimestamp(new Date());
 
     // Assess
     expect(timestamp).toEqual('2016-06-20T08:08:10.000-04:00');
@@ -548,7 +568,7 @@ describe('Formatters', () => {
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(240);
 
     // Act
-    const timestamp = formatterWithEnv.formatTimestamp(new Date());
+    const timestamp = formatter.formatTimestamp(new Date());
 
     // Assess
     expect(timestamp).toEqual('2016-06-20T08:08:10.000-04:00');
@@ -563,9 +583,7 @@ describe('Formatters', () => {
       The negative value indicates that `Asia/Dhaka` is ahead of UTC.
     */
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
-    const formatter = new PowertoolsLogFormatter({
-      envVarsService: new EnvironmentVariablesService(),
-    });
+    const formatter = new PowertoolsLogFormatter();
 
     // Act
     const timestamp = formatter.formatTimestamp(new Date());
@@ -584,9 +602,7 @@ describe('Formatters', () => {
       The negative value indicates that `Asia/Dhaka` is ahead of UTC.
     */
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
-    const formatter = new PowertoolsLogFormatter({
-      envVarsService: new EnvironmentVariablesService(),
-    });
+    const formatter = new PowertoolsLogFormatter();
 
     // Act
     const timestamp = formatter.formatTimestamp(new Date());
@@ -597,11 +613,8 @@ describe('Formatters', () => {
 
   it('returns defaults to :UTC when an env variable service is not set', () => {
     // Prepare
-    process.env.TZ = 'Asia/Dhaka';
-    /*
-      Difference between UTC and `Asia/Dhaka`(GMT +06.00) is 360 minutes.
-      The negative value indicates that `Asia/Dhaka` is ahead of UTC.
-    */
+    process.env.TZ = undefined;
+
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
     const formatter = new PowertoolsLogFormatter();
 
@@ -616,9 +629,7 @@ describe('Formatters', () => {
     // Prepare
     process.env.TZ = ':/etc/localtime';
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(0);
-    const formatter = new PowertoolsLogFormatter({
-      envVarsService: new EnvironmentVariablesService(),
-    });
+    const formatter = new PowertoolsLogFormatter();
 
     // Act
     const timestamp = formatter.formatTimestamp(new Date());

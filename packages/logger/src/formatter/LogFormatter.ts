@@ -1,5 +1,7 @@
-import type { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
-import type { LogFormatterOptions } from '../types/formatters.js';
+import {
+  getStringFromEnv,
+  isDevMode,
+} from '@aws-lambda-powertools/commons/utils/env';
 import type { LogAttributes } from '../types/Logger.js';
 import type { UnformattedAttributes } from '../types/logKeys.js';
 import type { LogItem } from './LogItem.js';
@@ -13,15 +15,6 @@ import type { LogItem } from './LogItem.js';
  * @abstract
  */
 abstract class LogFormatter {
-  /**
-   * Instance of the {@link EnvironmentVariablesService} to use for configuration.
-   */
-  protected envVarsService?: EnvironmentVariablesService;
-
-  public constructor(options?: LogFormatterOptions) {
-    this.envVarsService = options?.envVarsService;
-  }
-
   /**
    * Format key-value pairs of log attributes.
    *
@@ -117,9 +110,7 @@ abstract class LogFormatter {
       location: this.getCodeLocation(error.stack),
       message,
       stack:
-        this.envVarsService?.isDevMode() && typeof stack === 'string'
-          ? stack?.split('\n')
-          : stack,
+        isDevMode() && typeof stack === 'string' ? stack?.split('\n') : stack,
       cause: cause instanceof Error ? this.formatError(cause) : cause,
     };
     for (const key in error) {
@@ -137,9 +128,7 @@ abstract class LogFormatter {
   /**
    * Format a date into an ISO 8601 string with the configured timezone.
    *
-   * If the log formatter is passed an {@link EnvironmentVariablesService} instance
-   * during construction, the timezone is read from the `TZ` environment variable, if present.
-   *
+   * The timezone is read from the `TZ` environment variable, if present.
    * Otherwise, the timezone defaults to ':UTC'.
    *
    * @param now - The date to format
@@ -151,7 +140,11 @@ abstract class LogFormatter {
      * If a specific timezone is configured and it's not the default `UTC`,
      * format the timestamp with the appropriate timezone offset.
      **/
-    const configuredTimezone = this.envVarsService?.getTimezone();
+    const configuredTimezone = getStringFromEnv({
+      key: 'TZ',
+      defaultValue: '',
+    });
+
     if (configuredTimezone && !configuredTimezone.includes(defaultTimezone))
       return this.#generateISOTimestampWithOffset(now, configuredTimezone);
 

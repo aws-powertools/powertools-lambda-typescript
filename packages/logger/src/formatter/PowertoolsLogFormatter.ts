@@ -27,7 +27,7 @@ class PowertoolsLogFormatter extends LogFormatter {
   #logRecordOrder?: LogRecordOrderKeys;
 
   public constructor(options?: PowertoolsLogFormatterOptions) {
-    super(options);
+    super();
     this.#logRecordOrder = options?.logRecordOrder;
   }
 

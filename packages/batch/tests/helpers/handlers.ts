@@ -5,7 +5,7 @@ import type {
   SQSRecord,
 } from 'aws-lambda';
 
-const baseSqsHandler = (record: SQSRecord): string => {
+const sqsRecordHandler = (record: SQSRecord): string => {
   const body = record.body;
   if (body.includes('fail')) {
     throw Error('Failed to process record.');
@@ -14,11 +14,10 @@ const baseSqsHandler = (record: SQSRecord): string => {
   return body;
 };
 
-const sqsRecordHandler = baseSqsHandler;
 const asyncSqsRecordHandler = async (record: SQSRecord): Promise<string> =>
-  Promise.resolve(baseSqsHandler(record));
+  Promise.resolve(sqsRecordHandler(record));
 
-const baseKinesisHandler = (record: KinesisStreamRecord): string => {
+const kinesisRecordHandler = (record: KinesisStreamRecord): string => {
   const body = record.kinesis.data;
   if (body.includes('fail')) {
     throw Error('Failed to process record.');
@@ -27,12 +26,11 @@ const baseKinesisHandler = (record: KinesisStreamRecord): string => {
   return body;
 };
 
-const kinesisRecordHandler = baseKinesisHandler;
 const asyncKinesisRecordHandler = async (
   record: KinesisStreamRecord
-): Promise<string> => Promise.resolve(baseKinesisHandler(record));
+): Promise<string> => Promise.resolve(kinesisRecordHandler(record));
 
-const baseDynamodbHandler = (record: DynamoDBRecord): object => {
+const dynamodbRecordHandler = (record: DynamoDBRecord): object => {
   const body = record.dynamodb?.NewImage?.Message || { S: 'fail' };
   if (body.S?.includes('fail')) {
     throw Error('Failed to process record.');
@@ -41,17 +39,13 @@ const baseDynamodbHandler = (record: DynamoDBRecord): object => {
   return body;
 };
 
-const dynamodbRecordHandler = baseDynamodbHandler;
 const asyncDynamodbRecordHandler = async (
   record: DynamoDBRecord
 ): Promise<object> => {
-  return Promise.resolve(baseDynamodbHandler(record));
+  return Promise.resolve(dynamodbRecordHandler(record));
 };
 
-const baseHandlerWithContext = (
-  record: SQSRecord,
-  context: Context
-): string => {
+const handlerWithContext = (record: SQSRecord, context: Context): string => {
   try {
     if (context.getRemainingTimeInMillis() === 0) {
       throw Error('No time remaining.');
@@ -63,12 +57,11 @@ const baseHandlerWithContext = (
   return record.body;
 };
 
-const handlerWithContext = baseHandlerWithContext;
 const asyncHandlerWithContext = async (
   record: SQSRecord,
   context: Context
 ): Promise<string> => {
-  return Promise.resolve(baseHandlerWithContext(record, context));
+  return Promise.resolve(handlerWithContext(record, context));
 };
 
 export {

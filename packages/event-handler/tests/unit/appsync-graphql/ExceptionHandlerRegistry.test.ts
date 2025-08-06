@@ -1,5 +1,5 @@
-import { ExceptionHandlerRegistry } from 'src/appsync-graphql/ExceptionHandlerRegistry.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ExceptionHandlerRegistry } from '../../../src/appsync-graphql/ExceptionHandlerRegistry.js';
 import type { ExceptionHandlerOptions } from '../../../src/types/appsync-graphql.js';
 
 describe('Class: ExceptionHandlerRegistry', () => {

@@ -967,6 +967,7 @@ class Router {
    * @example
    * ```ts
    * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import { AssertionError } from 'assert';
    *
    * const app = new AppSyncGraphQLResolver();
    *
@@ -980,7 +981,7 @@ class Router {
    *
    * // Register a resolver that might throw an AssertionError
    * app.onQuery('getTodo', async () => {
-   *   throw new AssertionError('Something went wrong');
+   *   throw new AssertionError();
    * });
    *
    * export const handler = async (event, context) =>
@@ -992,12 +993,13 @@ class Router {
    * @example
    * ```ts
    * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   * import { AssertionError } from 'assert';
    *
    * const app = new AppSyncGraphQLResolver();
    *
    * class Lambda {
    *   ⁣@app.exceptionHandler(AssertionError)
-   *   async handleAssertionError(error) {
+   *   async handleAssertionError(error: AssertionError) {
    *     return {
    *        message: 'Assertion failed',
    *        details: error.message
@@ -1006,7 +1008,7 @@ class Router {
    *
    *   ⁣@app.onQuery('getUser')
    *   async getUser() {
-   *     throw new AssertionError('Something went wrong');
+   *     throw new AssertionError();
    *   }
    *
    *   async handler(event, context) {

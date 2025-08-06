@@ -48,7 +48,10 @@ const asyncDynamodbRecordHandler = async (
   return Promise.resolve(baseDynamodbHandler(record));
 };
 
-const handlerWithContext = (record: SQSRecord, context: Context): string => {
+const baseHandlerWithContext = (
+  record: SQSRecord,
+  context: Context
+): string => {
   try {
     if (context.getRemainingTimeInMillis() === 0) {
       throw Error('No time remaining.');
@@ -60,19 +63,12 @@ const handlerWithContext = (record: SQSRecord, context: Context): string => {
   return record.body;
 };
 
+const handlerWithContext = baseHandlerWithContext;
 const asyncHandlerWithContext = async (
   record: SQSRecord,
   context: Context
 ): Promise<string> => {
-  try {
-    if (context.getRemainingTimeInMillis() === 0) {
-      throw Error('No time remaining.');
-    }
-  } catch {
-    throw Error(`Context possibly malformed. Displaying context:\n${context}`);
-  }
-
-  return Promise.resolve(record.body);
+  return Promise.resolve(baseHandlerWithContext(record, context));
 };
 
 export {

@@ -14,14 +14,8 @@ const sqsRecordHandler = (record: SQSRecord): string => {
   return body;
 };
 
-const asyncSqsRecordHandler = async (record: SQSRecord): Promise<string> => {
-  const body = record.body;
-  if (body.includes('fail')) {
-    throw Error('Failed to process record.');
-  }
-
-  return body;
-};
+const asyncSqsRecordHandler = async (record: SQSRecord): Promise<string> =>
+  Promise.resolve(sqsRecordHandler(record));
 
 const kinesisRecordHandler = (record: KinesisStreamRecord): string => {
   const body = record.kinesis.data;
@@ -34,14 +28,7 @@ const kinesisRecordHandler = (record: KinesisStreamRecord): string => {
 
 const asyncKinesisRecordHandler = async (
   record: KinesisStreamRecord
-): Promise<string> => {
-  const body = record.kinesis.data;
-  if (body.includes('fail')) {
-    throw Error('Failed to process record.');
-  }
-
-  return body;
-};
+): Promise<string> => Promise.resolve(kinesisRecordHandler(record));
 
 const dynamodbRecordHandler = (record: DynamoDBRecord): object => {
   const body = record.dynamodb?.NewImage?.Message || { S: 'fail' };
@@ -55,12 +42,7 @@ const dynamodbRecordHandler = (record: DynamoDBRecord): object => {
 const asyncDynamodbRecordHandler = async (
   record: DynamoDBRecord
 ): Promise<object> => {
-  const body = record.dynamodb?.NewImage?.Message || { S: 'fail' };
-  if (body.S?.includes('fail')) {
-    throw Error('Failed to process record.');
-  }
-
-  return body;
+  return Promise.resolve(dynamodbRecordHandler(record));
 };
 
 const handlerWithContext = (record: SQSRecord, context: Context): string => {
@@ -79,15 +61,7 @@ const asyncHandlerWithContext = async (
   record: SQSRecord,
   context: Context
 ): Promise<string> => {
-  try {
-    if (context.getRemainingTimeInMillis() === 0) {
-      throw Error('No time remaining.');
-    }
-  } catch {
-    throw Error(`Context possibly malformed. Displaying context:\n${context}`);
-  }
-
-  return Promise.resolve(record.body);
+  return Promise.resolve(handlerWithContext(record, context));
 };
 
 export {

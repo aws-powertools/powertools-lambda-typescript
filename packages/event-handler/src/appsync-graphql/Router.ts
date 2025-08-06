@@ -1023,16 +1023,16 @@ class Router {
    * @param errorClass - The error class to handle.
    * @param handler - The handler function to be called when the error is caught.
    */
-  public exceptionHandler<TError extends Error>(
-    error: ErrorClass<TError>,
-    handler: ExceptionHandler<TError>
+  public exceptionHandler<T extends Error>(
+    error: ErrorClass<T>,
+    handler: ExceptionHandler<T>
   ): void;
-  public exceptionHandler<TError extends Error>(
-    error: ErrorClass<TError>
+  public exceptionHandler<T extends Error>(
+    error: ErrorClass<T>
   ): MethodDecorator;
-  public exceptionHandler<TError extends Error>(
-    error: ErrorClass<TError>,
-    handler?: ExceptionHandler<TError>
+  public exceptionHandler<T extends Error>(
+    error: ErrorClass<T>,
+    handler?: ExceptionHandler<T>
   ): MethodDecorator | undefined {
     if (typeof handler === 'function') {
       this.exceptionHandlerRegistry.register({

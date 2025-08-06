@@ -3,4 +3,4 @@ mkdocs-material==9.6.16
 mkdocs-git-revision-date-plugin==0.3.2
 mkdocs-exclude==1.0.2
 mkdocs-typedoc==1.0.4
-mkdocs-llmstxt==0.3.0
+mkdocs-llmstxt==0.3.1

@@ -1,4 +1,5 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
+import { AssertionError } from 'assert';
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';
@@ -7,6 +8,27 @@ import {
   ResolverNotFoundException,
 } from '../../../src/appsync-graphql/index.js';
 import { onGraphqlEventFactory } from '../../helpers/factories.js';
+
+class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
+class DatabaseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'DatabaseError';
+  }
+}
 
 describe('Class: AppSyncGraphQLResolver', () => {
   beforeEach(() => {
@@ -706,4 +728,282 @@ describe('Class: AppSyncGraphQLResolver', () => {
       expect(resultMutation).toEqual(['scoped', 'scoped']);
     }
   );
+
+  // #region Exception Handling
+
+  it('should register and use an exception handler for specific error types', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+
+    app.exceptionHandler(ValidationError, async (error) => {
+      return {
+        message: 'Validation failed',
+        details: error.message,
+        type: 'validation_error',
+      };
+    });
+
+    app.onQuery<{ id: string }>('getUser', async ({ id }) => {
+      if (!id) {
+        throw new ValidationError('User ID is required');
+      }
+      return { id, name: 'John Doe' };
+    });
+
+    // Act
+    const result = await app.resolve(
+      onGraphqlEventFactory('getUser', 'Query', {}),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      message: 'Validation failed',
+      details: 'User ID is required',
+      type: 'validation_error',
+    });
+  });
+
+  it('should handle multiple different error types with specific handlers', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+
+    app.exceptionHandler(ValidationError, async (error) => {
+      return {
+        message: 'Validation failed',
+        details: error.message,
+        type: 'validation_error',
+      };
+    });
+
+    app.exceptionHandler(NotFoundError, async (error) => {
+      return {
+        message: 'Resource not found',
+        details: error.message,
+        type: 'not_found_error',
+      };
+    });
+
+    app.onQuery<{ id: string }>('getUser', async ({ id }) => {
+      if (!id) {
+        throw new ValidationError('User ID is required');
+      }
+      if (id === 'not-found') {
+        throw new NotFoundError(`User with ID ${id} not found`);
+      }
+      return { id, name: 'John Doe' };
+    });
+
+    // Act
+    const validationResult = await app.resolve(
+      onGraphqlEventFactory('getUser', 'Query', {}),
+      context
+    );
+    const notFoundResult = await app.resolve(
+      onGraphqlEventFactory('getUser', 'Query', { id: 'not-found' }),
+      context
+    );
+
+    // Asses
+    expect(validationResult).toEqual({
+      message: 'Validation failed',
+      details: 'User ID is required',
+      type: 'validation_error',
+    });
+    expect(notFoundResult).toEqual({
+      message: 'Resource not found',
+      details: 'User with ID not-found not found',
+      type: 'not_found_error',
+    });
+  });
+
+  it('should prefer exact error class match over inheritance match', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+
+    app.exceptionHandler(Error, async (error) => {
+      return {
+        message: 'Generic error occurred',
+        details: error.message,
+        type: 'generic_error',
+      };
+    });
+
+    app.exceptionHandler(ValidationError, async (error) => {
+      return {
+        message: 'Validation failed',
+        details: error.message,
+        type: 'validation_error',
+      };
+    });
+
+    app.onQuery('getUser', async () => {
+      throw new ValidationError('Specific validation error');
+    });
+
+    // Act
+    const result = await app.resolve(
+      onGraphqlEventFactory('getUser', 'Query', {}),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      message: 'Validation failed',
+      details: 'Specific validation error',
+      type: 'validation_error',
+    });
+  });
+
+  it('should fall back to default error formatting when no exception handler is found', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+
+    app.exceptionHandler(AssertionError, async (error) => {
+      return {
+        message: 'Validation failed',
+        details: error.message,
+        type: 'validation_error',
+      };
+    });
+
+    app.onQuery('getUser', async () => {
+      throw new DatabaseError('Database connection failed');
+    });
+
+    // Act
+    const result = await app.resolve(
+      onGraphqlEventFactory('getUser', 'Query', {}),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      error: 'DatabaseError - Database connection failed',
+    });
+  });
+
+  it('should fall back to default error formatting when exception handler throws an error', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+
+    app.exceptionHandler(ValidationError, async () => {
+      throw new Error('Exception handler failed');
+    });
+
+    app.onQuery('getUser', async () => {
+      throw new ValidationError('Original error');
+    });
+
+    // Act
+    const result = await app.resolve(
+      onGraphqlEventFactory('getUser', 'Query', {}),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      error: 'ValidationError - Original error',
+    });
+    expect(console.error).toHaveBeenNthCalledWith(
+      2,
+      'Exception handler for ValidationError threw an error',
+      new Error('Exception handler failed')
+    );
+  });
+
+  it('should work with async exception handlers', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+
+    app.exceptionHandler(ValidationError, async (error) => {
+      return {
+        message: 'Async validation failed',
+        details: error.message,
+        type: 'async_validation_error',
+      };
+    });
+
+    app.onQuery('getUser', async () => {
+      throw new ValidationError('Async error test');
+    });
+
+    // Act
+    const result = await app.resolve(
+      onGraphqlEventFactory('getUser', 'Query', {}),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      message: 'Async validation failed',
+      details: 'Async error test',
+      type: 'async_validation_error',
+    });
+  });
+
+  it('should not interfere with ResolverNotFoundException', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+
+    app.exceptionHandler(RangeError, async (error) => {
+      return {
+        message: 'This should not be called',
+        details: error.message,
+        type: 'should_not_happen',
+      };
+    });
+
+    // Act & Assess
+    await expect(
+      app.resolve(
+        onGraphqlEventFactory('nonExistentResolver', 'Query'),
+        context
+      )
+    ).rejects.toThrow('No resolver found for Query-nonExistentResolver');
+  });
+
+  it('should work as a method decorator', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+
+    class TestService {
+      @app.exceptionHandler(ValidationError)
+      async handleValidationError(error: ValidationError) {
+        return {
+          message: 'Decorator validation failed',
+          details: error.message,
+          type: 'decorator_validation_error',
+        };
+      }
+
+      @app.onQuery('getUser')
+      async getUser() {
+        throw new ValidationError('Decorator error test');
+      }
+
+      async handler(event: unknown, context: Context) {
+        return app.resolve(event, context, {
+          scope: this,
+        });
+      }
+    }
+
+    const service = new TestService();
+
+    // Act
+    const result = await service.handler(
+      onGraphqlEventFactory('getUser', 'Query', {}),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      message: 'Decorator validation failed',
+      details: 'Decorator error test',
+      type: 'decorator_validation_error',
+    });
+  });
+
+  // #endregion Exception handling
 });

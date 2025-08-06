@@ -5,7 +5,7 @@ import type {
   SQSRecord,
 } from 'aws-lambda';
 
-const sqsRecordHandler = (record: SQSRecord): string => {
+const baseSqsHandler = (record: SQSRecord): string => {
   const body = record.body;
   if (body.includes('fail')) {
     throw Error('Failed to process record.');
@@ -14,16 +14,11 @@ const sqsRecordHandler = (record: SQSRecord): string => {
   return body;
 };
 
-const asyncSqsRecordHandler = async (record: SQSRecord): Promise<string> => {
-  const body = record.body;
-  if (body.includes('fail')) {
-    throw Error('Failed to process record.');
-  }
+const sqsRecordHandler = baseSqsHandler;
+const asyncSqsRecordHandler = async (record: SQSRecord): Promise<string> =>
+  Promise.resolve(baseSqsHandler(record));
 
-  return body;
-};
-
-const kinesisRecordHandler = (record: KinesisStreamRecord): string => {
+const baseKinesisHandler = (record: KinesisStreamRecord): string => {
   const body = record.kinesis.data;
   if (body.includes('fail')) {
     throw Error('Failed to process record.');
@@ -32,18 +27,12 @@ const kinesisRecordHandler = (record: KinesisStreamRecord): string => {
   return body;
 };
 
+const kinesisRecordHandler = baseKinesisHandler;
 const asyncKinesisRecordHandler = async (
   record: KinesisStreamRecord
-): Promise<string> => {
-  const body = record.kinesis.data;
-  if (body.includes('fail')) {
-    throw Error('Failed to process record.');
-  }
+): Promise<string> => Promise.resolve(baseKinesisHandler(record));
 
-  return body;
-};
-
-const dynamodbRecordHandler = (record: DynamoDBRecord): object => {
+const baseDynamodbHandler = (record: DynamoDBRecord): object => {
   const body = record.dynamodb?.NewImage?.Message || { S: 'fail' };
   if (body.S?.includes('fail')) {
     throw Error('Failed to process record.');
@@ -52,15 +41,11 @@ const dynamodbRecordHandler = (record: DynamoDBRecord): object => {
   return body;
 };
 
+const dynamodbRecordHandler = baseDynamodbHandler;
 const asyncDynamodbRecordHandler = async (
   record: DynamoDBRecord
 ): Promise<object> => {
-  const body = record.dynamodb?.NewImage?.Message || { S: 'fail' };
-  if (body.S?.includes('fail')) {
-    throw Error('Failed to process record.');
-  }
-
-  return body;
+  return Promise.resolve(baseDynamodbHandler(record));
 };
 
 const handlerWithContext = (record: SQSRecord, context: Context): string => {

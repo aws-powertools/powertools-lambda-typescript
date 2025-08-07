@@ -48,7 +48,7 @@ class Parser {
    * The maximum binding power for a token
    * that can stop a projection.
    */
-  #projectionStop = 10;
+  readonly #projectionStop = 10;
   /**
    * Cache object
    */
@@ -56,7 +56,7 @@ class Parser {
   /**
    * The maximum size of the cache.
    */
-  #maxCacheSize = 128;
+  readonly #maxCacheSize = 128;
   #tokenizer?: Lexer;
   #tokens: Token[];
   #index = 0;

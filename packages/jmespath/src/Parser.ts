@@ -30,7 +30,7 @@ import { ParsedResult } from './ParsedResult.js';
 import type { Node, Token } from './types.js';
 
 /**
- * Top down operaotr precedence parser for JMESPath.
+ * Top down operator precedence parser for JMESPath.
  *
  * ## References
  * The implementation of this Parser is based on the implementation of

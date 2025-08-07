@@ -26,6 +26,7 @@ updates:
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
+    target-branch: main # see https://github.com/dependabot/dependabot-core/issues/1778#issuecomment-1988140219
     directories:
       - "/"
     labels: [ ]
@@ -35,6 +36,39 @@ updates:
     ignore:
       - dependency-name: "@middy/core"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "@aws-sdk/*"
+      - dependency-name: "@smithy/*"
+      - dependency-name: "aws-sdk-client-mock"
+      - dependency-name: "aws-sdk-client-mock-vitest"
+      - dependency-name: "@aws-cdk/toolkit-lib"
+      - dependency-name: "aws-cdk-lib"
+      - dependency-name: "aws-cdk"
+    groups:
+      typescript:
+        patterns:
+        - "typedoc"
+        - "typedoc-plugin-*"
+        - "typescript"
+      vitest:
+        patterns:
+        - "vitest"
+        - "@vitest/*"
+  
+  - package-ecosystem: npm
+    directories:
+      - "/"
+    labels: [ ]
+    schedule:
+      interval: weekly
+    versioning-strategy: increase
+    allow:
+      - dependency-name: "@aws-sdk/*"
+      - dependency-name: "@smithy/*"
+      - dependency-name: "aws-sdk-client-mock"
+      - dependency-name: "aws-sdk-client-mock-vitest"
+      - dependency-name: "@aws-cdk/toolkit-lib"
+      - dependency-name: "aws-cdk-lib"
+      - dependency-name: "aws-cdk"
     groups:
       aws-sdk-v3:
         patterns:
@@ -47,12 +81,3 @@ updates:
         - "@aws-cdk/toolkit-lib"
         - "aws-cdk-lib"
         - "aws-cdk"
-      typescript:
-        patterns:
-        - "typedoc"
-        - "typedoc-plugin-*"
-        - "typescript"
-      vitest:
-        patterns:
-        - "vitest"
-        - "@vitest/*"

@@ -81,7 +81,7 @@ class Lexer {
    *
    * @param current The current character
    */
-  #consumeComparatorSigns = (
+  readonly #consumeComparatorSigns = (
     current: '<' | '>' | '!' | '=' | '|' | '&'
   ): Token => {
     switch (current) {

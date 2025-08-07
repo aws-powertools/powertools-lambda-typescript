@@ -25,7 +25,7 @@ import { isTruthy, sliceArray } from './utils.js';
  * @internal
  */
 class TreeInterpreter {
-  #functions: Functions;
+  readonly #functions: Functions;
 
   /**
    * @param options The options to use for the interpreter.

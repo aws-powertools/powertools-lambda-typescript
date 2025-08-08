@@ -45,12 +45,6 @@ export function validatePathPattern(path: Path): ValidationResult {
   };
 }
 
-type ProcessedParams = {
-  raw: Record<string, string>;
-  processed: Record<string, any>;
-  route: Route;
-};
-
 export function processParams(
   params: Record<string, string>
 ): Record<string, any> {

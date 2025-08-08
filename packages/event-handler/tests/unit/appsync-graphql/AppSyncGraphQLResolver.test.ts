@@ -923,9 +923,10 @@ describe('Class: AppSyncGraphQLResolver', () => {
   it('should fall back to default error formatting when exception handler throws an error', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
+    const errorToBeThrown = new Error('Exception handler failed');
 
     app.exceptionHandler(ValidationError, async () => {
-      throw new Error('Exception handler failed');
+      throw errorToBeThrown;
     });
 
     app.onQuery('getUser', async () => {
@@ -945,7 +946,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     expect(console.error).toHaveBeenNthCalledWith(
       2,
       'Exception handler for ValidationError threw an error',
-      new Error('Exception handler failed')
+      errorToBeThrown
     );
   });
 

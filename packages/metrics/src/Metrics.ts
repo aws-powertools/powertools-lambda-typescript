@@ -240,8 +240,10 @@ class Metrics extends Utility implements MetricsInterface {
     super();
 
     this.dimensions = {};
-    this.setOptions(options);
+    this.setEnvConfig();
+    this.setConsole();
     this.#logger = options.logger || this.console;
+    this.setOptions(options);
   }
 
   /**
@@ -293,38 +295,16 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - An object with key-value pairs of dimensions
    */
   public addDimensions(dimensions: Dimensions): void {
-    const newDimensionSet: Dimensions = {};
-    for (const [key, value] of Object.entries(dimensions)) {
-      if (
-        isStringUndefinedNullEmpty(key) ||
-        isStringUndefinedNullEmpty(value)
-      ) {
-        this.#logger.warn(
-          `The dimension ${key} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
-        );
-        continue;
-      }
-      if (
-        Object.hasOwn(this.dimensions, key) ||
-        Object.hasOwn(this.defaultDimensions, key) ||
-        Object.hasOwn(newDimensionSet, key)
-      ) {
-        this.#logger.warn(
-          `Dimension "${key}" has already been added. The previous value will be overwritten.`
-        );
-      }
-      newDimensionSet[key] = value;
-    }
-
+    const newDimensions = this.#sanitizeDimensions(dimensions);
     const currentCount = this.getCurrentDimensionsCount();
-    const newSetCount = Object.keys(newDimensionSet).length;
+    const newSetCount = Object.keys(newDimensions).length;
     if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
     }
 
-    this.dimensionSets.push(newDimensionSet);
+    this.dimensionSets.push(newDimensions);
   }
 
   /**
@@ -823,15 +803,20 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param dimensions - The dimensions to be added to the default dimensions object
    */
-  public setDefaultDimensions(dimensions: Dimensions | undefined): void {
-    const targetDimensions = {
-      ...this.defaultDimensions,
-      ...dimensions,
-    };
-    if (MAX_DIMENSION_COUNT <= Object.keys(targetDimensions).length) {
-      throw new Error('Max dimension count hit');
+  public setDefaultDimensions(dimensions: Dimensions): void {
+    const newDimensions = this.#sanitizeDimensions(dimensions);
+    const currentCount = Object.keys(this.defaultDimensions).length;
+    const newSetCount = Object.keys(newDimensions).length;
+    if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
+      throw new RangeError(
+        `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+      );
     }
-    this.defaultDimensions = targetDimensions;
+
+    this.defaultDimensions = {
+      ...this.defaultDimensions,
+      ...newDimensions,
+    };
   }
 
   /**
@@ -1058,13 +1043,11 @@ class Metrics extends Utility implements MetricsInterface {
       functionName,
     } = options;
 
-    this.setEnvConfig();
-    this.setConsole();
     this.setCustomConfigService(customConfigService);
     this.setDisabled();
     this.setNamespace(namespace);
     this.setService(serviceName);
-    this.setDefaultDimensions(defaultDimensions);
+    this.setDefaultDimensions(defaultDimensions || {});
     this.setFunctionNameForColdStartMetric(functionName);
     this.isSingleMetric = singleMetric || false;
 
@@ -1072,7 +1055,7 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Set the service to be used.
+   * Set the service dimension that will be included in the metrics.
    *
    * @param service - The service to be used
    */
@@ -1083,7 +1066,7 @@ class Metrics extends Utility implements MetricsInterface {
       this.#envConfig.serviceName ||
       this.defaultServiceName;
     if (targetService.length > 0) {
-      this.setDefaultDimensions({ service: targetService });
+      this.defaultDimensions = { service: targetService };
     }
   }
 
@@ -1190,6 +1173,38 @@ class Metrics extends Utility implements MetricsInterface {
      * which will be skipped by Amazon CloudWatch.
      **/
     return 0;
+  }
+
+  /**
+   * Sanitizes the dimensions by removing invalid entries and skipping duplicates.
+   *
+   * @param dimensions - The dimensions to sanitize.
+   */
+  #sanitizeDimensions(dimensions: Dimensions): Dimensions {
+    const newDimensions: Dimensions = {};
+    for (const [key, value] of Object.entries(dimensions)) {
+      if (
+        isStringUndefinedNullEmpty(key) ||
+        isStringUndefinedNullEmpty(value)
+      ) {
+        this.#logger.warn(
+          `The dimension ${key} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+        );
+        continue;
+      }
+      if (
+        Object.hasOwn(this.dimensions, key) ||
+        Object.hasOwn(this.defaultDimensions, key) ||
+        Object.hasOwn(newDimensions, key)
+      ) {
+        this.#logger.warn(
+          `Dimension "${key}" has already been added. The previous value will be overwritten.`
+        );
+      }
+      newDimensions[key] = value;
+    }
+
+    return newDimensions;
   }
 }
 

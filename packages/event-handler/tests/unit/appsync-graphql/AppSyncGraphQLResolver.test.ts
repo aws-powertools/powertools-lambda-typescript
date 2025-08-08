@@ -762,7 +762,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       message: 'Aggregation failed',
     },
   ])(
-    'should register handler for %s',
+    'should invoke exception handler for %s',
     async ({
       errorClass,
       message,
@@ -801,7 +801,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     }
   );
 
-  it('should handle multiple different error types with specific handlers', async () => {
+  it('should handle multiple different error types with specific exception handlers', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -950,7 +950,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     );
   });
 
-  it('should work with sync exception handlers', async () => {
+  it('should invoke sync exception handlers and return their result', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -976,11 +976,11 @@ describe('Class: AppSyncGraphQLResolver', () => {
     expect(result).toEqual({
       message: 'Sync validation failed',
       details: 'Sync error test',
-      type: 'async_validation_error',
+      type: 'sync_validation_error',
     });
   });
 
-  it('should not interfere with ResolverNotFoundException', async () => {
+  it('does not catch ResolverNotFoundException with unrelated exception handlers', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -1001,7 +1001,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     ).rejects.toThrow('No resolver found for Query-nonExistentResolver');
   });
 
-  it('should work as a method decorator', async () => {
+  it('invokes exception handler when used as a method decorator', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 

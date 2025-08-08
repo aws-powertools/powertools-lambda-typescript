@@ -825,7 +825,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       if (!id) {
         throw new ValidationError('User ID is required');
       }
-      if (id === 'not-found') {
+      if (id === '0') {
         throw new NotFoundError(`User with ID ${id} not found`);
       }
       return { id, name: 'John Doe' };
@@ -837,7 +837,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       context
     );
     const notFoundResult = await app.resolve(
-      onGraphqlEventFactory('getUser', 'Query', { id: 'not-found' }),
+      onGraphqlEventFactory('getUser', 'Query', { id: '0' }),
       context
     );
 
@@ -849,7 +849,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
     expect(notFoundResult).toEqual({
       message: 'Resource not found',
-      details: 'User with ID not-found not found',
+      details: 'User with ID 0 not found',
       type: 'not_found_error',
     });
   });

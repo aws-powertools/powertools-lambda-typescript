@@ -7,6 +7,7 @@ import {
   InvalidBatchResponseException,
   ResolverNotFoundException,
 } from '../../../src/appsync-graphql/index.js';
+import type { ErrorClass } from '../../../src/types/appsync-graphql.js';
 import { onGraphqlEventFactory } from '../../helpers/factories.js';
 
 class ValidationError extends Error {
@@ -731,38 +732,74 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
   // #region Exception Handling
 
-  it('should register and use an exception handler for specific error types', async () => {
-    // Prepare
-    const app = new AppSyncGraphQLResolver();
+  it.each([
+    {
+      errorClass: EvalError,
+      message: 'Evaluation failed',
+    },
+    {
+      errorClass: RangeError,
+      message: 'Range failed',
+    },
+    {
+      errorClass: ReferenceError,
+      message: 'Reference failed',
+    },
+    {
+      errorClass: SyntaxError,
+      message: 'Syntax missing',
+    },
+    {
+      errorClass: TypeError,
+      message: 'Type failed',
+    },
+    {
+      errorClass: URIError,
+      message: 'URI failed',
+    },
+    {
+      errorClass: AggregateError,
+      message: 'Aggregation failed',
+    },
+  ])(
+    'should register handler for %s',
+    async ({
+      errorClass,
+      message,
+    }: {
+      errorClass: ErrorClass<Error>;
+      message: string;
+    }) => {
+      // Prepare
+      const app = new AppSyncGraphQLResolver();
 
-    app.exceptionHandler(ValidationError, async (error) => {
-      return {
-        message: 'Validation failed',
-        details: error.message,
-        type: 'validation_error',
-      };
-    });
+      app.exceptionHandler(errorClass, async (err) => {
+        return {
+          message: err.message,
+          errorName: err.constructor.name,
+        };
+      });
 
-    app.onQuery<{ id: string }>('getUser', async ({ id }) => {
-      if (!id) {
-        throw new ValidationError('User ID is required');
-      }
-      return { id, name: 'John Doe' };
-    });
+      app.onQuery('getUser', async () => {
+        if (errorClass === AggregateError) {
+          throw new errorClass([new Error()], message);
+        }
+        throw new errorClass(message);
+      });
 
-    // Act
-    const result = await app.resolve(
-      onGraphqlEventFactory('getUser', 'Query', {}),
-      context
-    );
+      // Act
+      const result = await app.resolve(
+        onGraphqlEventFactory('getUser', 'Query', {}),
+        context
+      );
 
-    // Assess
-    expect(result).toEqual({
-      message: 'Validation failed',
-      details: 'User ID is required',
-      type: 'validation_error',
-    });
-  });
+      // Assess
+      expect(result).toEqual({
+        message,
+        errorName: errorClass.name,
+      });
+    }
+  );
 
   it('should handle multiple different error types with specific handlers', async () => {
     // Prepare

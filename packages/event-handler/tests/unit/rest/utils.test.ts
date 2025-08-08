@@ -180,7 +180,7 @@ describe('Path Utilities', () => {
         const compiled = compilePath(path as Path);
 
         // Assert
-        expect(compiled.originalPath).toBe(path);
+        expect(compiled.path).toBe(path);
         expect(compiled.paramNames).toEqual(expectedParams);
         expect(compiled.isDynamic).toBe(expectedParams.length > 0);
 

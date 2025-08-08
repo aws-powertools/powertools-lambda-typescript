@@ -980,7 +980,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('does not catch ResolverNotFoundException with unrelated exception handlers', async () => {
+  it('should not interfere with ResolverNotFoundException', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -1001,7 +1001,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     ).rejects.toThrow('No resolver found for Query-nonExistentResolver');
   });
 
-  it('invokes exception handler when used as a method decorator', async () => {
+  it('should work as a method decorator', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 

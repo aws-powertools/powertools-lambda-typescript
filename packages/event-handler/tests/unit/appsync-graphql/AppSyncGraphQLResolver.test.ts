@@ -950,20 +950,20 @@ describe('Class: AppSyncGraphQLResolver', () => {
     );
   });
 
-  it('should work with async exception handlers', async () => {
+  it('should work with sync exception handlers', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
-    app.exceptionHandler(ValidationError, async (error) => {
+    app.exceptionHandler(ValidationError, (error) => {
       return {
-        message: 'Async validation failed',
+        message: 'Sync validation failed',
         details: error.message,
-        type: 'async_validation_error',
+        type: 'sync_validation_error',
       };
     });
 
     app.onQuery('getUser', async () => {
-      throw new ValidationError('Async error test');
+      throw new ValidationError('Sync error test');
     });
 
     // Act
@@ -974,8 +974,8 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Assess
     expect(result).toEqual({
-      message: 'Async validation failed',
-      details: 'Async error test',
+      message: 'Sync validation failed',
+      details: 'Sync error test',
       type: 'async_validation_error',
     });
   });

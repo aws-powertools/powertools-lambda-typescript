@@ -1,6 +1,5 @@
 import type { CompiledRoute, Path, ValidationResult } from '../types/rest.js';
 import { PARAM_PATTERN, SAFE_CHARS, UNSAFE_CHARS } from './constants.js';
-import type { Route } from './Route.js';
 
 export function compilePath(path: Path): CompiledRoute {
   const paramNames: string[] = [];

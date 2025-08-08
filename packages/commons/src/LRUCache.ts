@@ -80,8 +80,7 @@ class LRUCache<K, V> {
    * @param config - The configuration options for the cache
    */
   public constructor(config?: LRUCacheOptions) {
-    this.maxSize =
-      config?.maxSize !== undefined ? config.maxSize : DEFAULT_MAX_SIZE;
+    this.maxSize = config?.maxSize ?? DEFAULT_MAX_SIZE;
     this.map = new Map();
   }
 

@@ -295,38 +295,16 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - An object with key-value pairs of dimensions
    */
   public addDimensions(dimensions: Dimensions): void {
-    const newDimensionSet: Dimensions = {};
-    for (const [key, value] of Object.entries(dimensions)) {
-      if (
-        isStringUndefinedNullEmpty(key) ||
-        isStringUndefinedNullEmpty(value)
-      ) {
-        this.#logger.warn(
-          `The dimension ${key} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
-        );
-        continue;
-      }
-      if (
-        Object.hasOwn(this.dimensions, key) ||
-        Object.hasOwn(this.defaultDimensions, key) ||
-        Object.hasOwn(newDimensionSet, key)
-      ) {
-        this.#logger.warn(
-          `Dimension "${key}" has already been added. The previous value will be overwritten.`
-        );
-      }
-      newDimensionSet[key] = value;
-    }
-
+    const newDimensions = this.#sanitizeDimensions(dimensions);
     const currentCount = this.getCurrentDimensionsCount();
-    const newSetCount = Object.keys(newDimensionSet).length;
+    const newSetCount = Object.keys(newDimensions).length;
     if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
     }
 
-    this.dimensionSets.push(newDimensionSet);
+    this.dimensionSets.push(newDimensions);
   }
 
   /**
@@ -826,30 +804,9 @@ class Metrics extends Utility implements MetricsInterface {
    * @param dimensions - The dimensions to be added to the default dimensions object
    */
   public setDefaultDimensions(dimensions: Dimensions): void {
-    const newDimensionSet: Dimensions = {};
-    for (const [key, value] of Object.entries(dimensions)) {
-      if (
-        isStringUndefinedNullEmpty(key) ||
-        isStringUndefinedNullEmpty(value)
-      ) {
-        this.#logger.warn(
-          `The dimension ${key} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
-        );
-        continue;
-      }
-      if (
-        Object.hasOwn(this.dimensions, key) ||
-        Object.hasOwn(this.defaultDimensions, key) ||
-        Object.hasOwn(newDimensionSet, key)
-      ) {
-        this.#logger.warn(
-          `Dimension "${key}" has already been added. The previous value will be overwritten.`
-        );
-      }
-      newDimensionSet[key] = value;
-    }
+    const newDimensions = this.#sanitizeDimensions(dimensions);
     const currentCount = Object.keys(this.defaultDimensions).length;
-    const newSetCount = Object.keys(newDimensionSet).length;
+    const newSetCount = Object.keys(newDimensions).length;
     if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
@@ -858,7 +815,7 @@ class Metrics extends Utility implements MetricsInterface {
 
     this.defaultDimensions = {
       ...this.defaultDimensions,
-      ...newDimensionSet,
+      ...newDimensions,
     };
   }
 
@@ -1216,6 +1173,38 @@ class Metrics extends Utility implements MetricsInterface {
      * which will be skipped by Amazon CloudWatch.
      **/
     return 0;
+  }
+
+  /**
+   * Sanitizes the dimensions by removing invalid entries and skipping duplicates.
+   *
+   * @param dimensions - The dimensions to sanitize.
+   */
+  #sanitizeDimensions(dimensions: Dimensions): Dimensions {
+    const newDimensions: Dimensions = {};
+    for (const [key, value] of Object.entries(dimensions)) {
+      if (
+        isStringUndefinedNullEmpty(key) ||
+        isStringUndefinedNullEmpty(value)
+      ) {
+        this.#logger.warn(
+          `The dimension ${key} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+        );
+        continue;
+      }
+      if (
+        Object.hasOwn(this.dimensions, key) ||
+        Object.hasOwn(this.defaultDimensions, key) ||
+        Object.hasOwn(newDimensions, key)
+      ) {
+        this.#logger.warn(
+          `Dimension "${key}" has already been added. The previous value will be overwritten.`
+        );
+      }
+      newDimensions[key] = value;
+    }
+
+    return newDimensions;
   }
 }
 

@@ -111,6 +111,9 @@ class RouteHandlerRegistry {
         this.#logger.warn(
           `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
         );
+        // as dynamic routes are stored in an array, we can't rely on
+        // overwriting a key in a map like with static routes so have
+        // to manually manage duplicate routes
         const index = this.#dynamicRoutesIndexMap.get(route.id)!;
         this.#dynamicRoutes.splice(index, 1);
       }

@@ -106,13 +106,13 @@ class RouteHandlerRegistry {
       };
       if (this.#dynamicRoutesSet.has(route.id)) {
         this.#logger.warn(
-          `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
+            `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
         );
         // as dynamic routes are stored in an array, we can't rely on
         // overwriting a key in a map like with static routes so have
         // to manually manage overwriting them
         const i = this.#dynamicRoutes.findIndex(
-          (oldRoute) => oldRoute.id === route.id
+            (oldRoute) => oldRoute.id === route.id
         );
         this.#dynamicRoutes[i] = dynamicRoute;
       } else {
@@ -122,7 +122,7 @@ class RouteHandlerRegistry {
     } else {
       if (this.#staticRoutes.has(route.id)) {
         this.#logger.warn(
-          `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
+            `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
         );
       }
       this.#staticRoutes.set(route.id, route);

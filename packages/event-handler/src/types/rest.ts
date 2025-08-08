@@ -33,7 +33,7 @@ type Path = `/${string}`;
 
 type RouteHandlerOptions = {
   handler: RouteHandler;
-  params: Record<string, string>;
+  params: Record<string, any>;
   rawParams: Record<string, string>;
 };
 

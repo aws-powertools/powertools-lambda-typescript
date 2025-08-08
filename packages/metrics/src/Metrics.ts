@@ -1,9 +1,7 @@
 import { Console } from 'node:console';
 import {
   isIntegerNumber,
-  isNullOrUndefined,
   isNumber,
-  isRecord,
   isString,
   isStringUndefinedNullEmpty,
   Utility,
@@ -140,9 +138,6 @@ import type {
  *
  */
 class Metrics extends Utility implements MetricsInterface {
-  // Flag to indicate internal calls
-  private static suppressWarnings = false;
-
   /**
    * Console instance used to print logs.
    *
@@ -438,11 +433,13 @@ class Metrics extends Utility implements MetricsInterface {
    */
   public captureColdStartMetric(functionName?: string): void {
     if (!this.getColdStart()) return;
+    const singleMetric = this.singleMetric();
 
-    const singleMetric = Metrics.supressSetDefaultDimensionsWarnings(() =>
-      this.singleMetric()
-    );
-
+    if (this.defaultDimensions.service) {
+      singleMetric.setDefaultDimensions({
+        service: this.defaultDimensions.service,
+      });
+    }
     const value = this.functionName?.trim() ?? functionName?.trim();
     if (value && value.length > 0) {
       singleMetric.addDimension('function_name', value);
@@ -828,50 +825,41 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param dimensions - The dimensions to be added to the default dimensions object
    */
-  public setDefaultDimensions(dimensions: Dimensions | undefined): void {
-    if (isNullOrUndefined(dimensions) || !isRecord(dimensions)) {
-      return;
-    }
-
-    const cleanedDimensions: Dimensions = {};
-
+  public setDefaultDimensions(dimensions: Dimensions): void {
+    const newDimensionSet: Dimensions = {};
     for (const [key, value] of Object.entries(dimensions)) {
       if (
         isStringUndefinedNullEmpty(key) ||
         isStringUndefinedNullEmpty(value)
       ) {
-        if (!Metrics.suppressWarnings) {
-          this.#logger.warn(
-            `The dimension ${key} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
-          );
-        }
+        this.#logger.warn(
+          `The dimension ${key} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+        );
         continue;
       }
-
-      if (Object.hasOwn(this.defaultDimensions, key)) {
-        const currentValue = this.defaultDimensions[key];
-        const serviceOverwriteWarning =
-          key === 'service' && currentValue === this.defaultServiceName;
-        if (!serviceOverwriteWarning && !Metrics.suppressWarnings) {
-          this.#logger.warn(
-            `Dimension "${key}" has already been added. The previous value will be overwritten.`
-          );
-        }
+      if (
+        Object.hasOwn(this.dimensions, key) ||
+        Object.hasOwn(this.defaultDimensions, key) ||
+        Object.hasOwn(newDimensionSet, key)
+      ) {
+        this.#logger.warn(
+          `Dimension "${key}" has already been added. The previous value will be overwritten.`
+        );
       }
-
-      cleanedDimensions[key] = value;
+      newDimensionSet[key] = value;
+    }
+    const currentCount = Object.keys(this.defaultDimensions).length;
+    const newSetCount = Object.keys(newDimensionSet).length;
+    if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
+      throw new RangeError(
+        `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+      );
     }
 
-    const targetDimensions = {
+    this.defaultDimensions = {
       ...this.defaultDimensions,
-      ...cleanedDimensions,
+      ...newDimensionSet,
     };
-
-    if (Object.keys(targetDimensions).length >= MAX_DIMENSION_COUNT) {
-      throw new Error('Max dimension count hit');
-    }
-
-    this.defaultDimensions = targetDimensions;
   }
 
   /**
@@ -1102,36 +1090,15 @@ class Metrics extends Utility implements MetricsInterface {
     this.setDisabled();
     this.setNamespace(namespace);
     this.setService(serviceName);
-    this.setDefaultDimensions(defaultDimensions);
+    this.setDefaultDimensions(defaultDimensions || {});
     this.setFunctionNameForColdStartMetric(functionName);
     this.isSingleMetric = singleMetric || false;
 
     return this;
   }
-  /**
-   * Suppresses warning logs during internal calls to `setDefaultDimensions`.
-   *
-   * This utility is used to wrap internal logic that sets default dimensions
-   * (e.g., setting the `service` dimension internally) where we want to avoid
-   * emitting misleading or redundant warnings about overwriting dimensions.
-   *
-   * It temporarily sets `Metrics.supressWarnings = true` during the function execution,
-   * and ensures the flag is reset to `false` even if an error occurs (via `finally`).
-   *
-   * @param fn - The function to execute with warnings suppressed.
-   * @returns The return value of the wrapped function.
-   */
-  private static supressSetDefaultDimensionsWarnings<T>(fn: () => T): T {
-    Metrics.supressWarnings = true;
-    try {
-      return fn();
-    } finally {
-      Metrics.supressWarnings = false;
-    }
-  }
 
   /**
-   * Set the service to be used.
+   * Set the service dimension that will be included in the metrics.
    *
    * @param service - The service to be used
    */
@@ -1142,7 +1109,7 @@ class Metrics extends Utility implements MetricsInterface {
       this.#envConfig.serviceName ||
       this.defaultServiceName;
     if (targetService.length > 0) {
-      this.setDefaultDimensions({ service: targetService });
+      this.defaultDimensions = { service: targetService };
     }
   }
 

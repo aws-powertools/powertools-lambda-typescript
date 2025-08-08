@@ -358,7 +358,7 @@ describe('Working with dimensions', () => {
 
     // Assess
     expect(() => metrics.setDefaultDimensions({ extra: 'test' })).toThrowError(
-      'Max dimension count hit'
+      'The number of metric dimensions must be lower than 29'
     );
   });
 
@@ -573,26 +573,6 @@ describe('Working with dimensions', () => {
     );
   });
 
-  it('returns immediately if dimensions is undefined', () => {
-    // Prepare
-    const metrics = new Metrics({
-      singleMetric: true,
-      namespace: DEFAULT_NAMESPACE,
-    });
-
-    // Act
-    metrics.addMetric('myMetric', MetricUnit.Count, 1);
-
-    // Assess
-    expect(console.warn).not.toHaveBeenCalled();
-
-    expect(console.log).toHaveEmittedEMFWith(
-      expect.objectContaining({
-        service: 'hello-world',
-      })
-    );
-  });
-
   it.each([
     { value: undefined, name: 'valid-name' },
     { value: null, name: 'valid-name' },
@@ -630,26 +610,4 @@ describe('Working with dimensions', () => {
       );
     }
   );
-  it('returns immediately without logging if dimensions is not a plain object', () => {
-    // Prepare
-    const metrics = new Metrics({
-      singleMetric: true,
-      namespace: DEFAULT_NAMESPACE,
-    });
-
-    // Act
-    // @ts-expect-error – simulate runtime misuse
-    metrics.setDefaultDimensions('not-an-object');
-
-    // Assess
-    expect(console.warn).not.toHaveBeenCalled();
-
-    metrics.addMetric('someMetric', MetricUnit.Count, 1);
-
-    expect(console.log).toHaveEmittedEMFWith(
-      expect.objectContaining({
-        service: 'hello-world',
-      })
-    );
-  });
 });

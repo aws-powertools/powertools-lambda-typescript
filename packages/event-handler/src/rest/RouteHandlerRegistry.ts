@@ -50,22 +50,40 @@ class RouteHandlerRegistry {
     return bSegments - aSegments;
   }
   /**
+   * Finds the correct insertion index using binary search to maintain sorted order.
+   * @param route - The route to find insertion point for
+   * @returns The index where the route should be inserted
+   */
+  #binarySearchInsertIndex(route: DynamicRoute): number {
+    let left = 0;
+    let right = this.#dynamicRoutes.length;
+
+    while (left < right) {
+      const mid = Math.floor((left + right) / 2);
+      const comparison = this.#compareRouteSpecificity(
+        route,
+        this.#dynamicRoutes[mid]
+      );
+
+      if (comparison < 0) {
+        right = mid;
+      } else {
+        left = mid + 1;
+      }
+    }
+
+    return left;
+  }
+  /**
    * Adds a dynamic route to the registry, ensuring that the dynamic
    * routes array says sorted in ascending order of specificity.
    * @param route - The dynamic route to add
    * @returns The index in the specific routes array where the route was stored
    */
   #addDynamicRoute(route: DynamicRoute): number {
-    for (let i = 0; i < this.#dynamicRoutes.length; i++) {
-      const existingRoute = this.#dynamicRoutes[i];
-      if (this.#compareRouteSpecificity(route, existingRoute) < 0) {
-        this.#dynamicRoutes.splice(i, 0, route);
-        return i;
-      }
-    }
-
-    this.#dynamicRoutes.push(route);
-    return this.#dynamicRoutes.length - 1;
+    const index = this.#binarySearchInsertIndex(route);
+    this.#dynamicRoutes.splice(index, 0, route);
+    return index;
   }
 
   /**

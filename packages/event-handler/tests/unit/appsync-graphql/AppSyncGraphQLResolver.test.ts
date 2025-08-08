@@ -775,7 +775,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
       app.exceptionHandler(errorClass, async (err) => {
         return {
-          message: err.message,
+          message,
           errorName: err.constructor.name,
         };
       });

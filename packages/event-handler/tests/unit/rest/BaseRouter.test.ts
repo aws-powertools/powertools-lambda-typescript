@@ -5,6 +5,7 @@ import { BaseRouter } from '../../../src/rest/BaseRouter.js';
 import { HttpVerbs } from '../../../src/rest/constants.js';
 import type {
   HttpMethod,
+  Path,
   RouteHandler,
   RouterOptions,
 } from '../../../src/types/rest.js';
@@ -18,12 +19,16 @@ describe('Class: BaseRouter', () => {
       this.logger.error('test error');
     }
 
-    #isEvent(obj: unknown): asserts obj is { path: string; method: string } {
+    #isEvent(obj: unknown): asserts obj is { path: Path; method: HttpMethod } {
       if (
         typeof obj !== 'object' ||
         obj === null ||
         !('path' in obj) ||
-        !('method' in obj)
+        !('method' in obj) ||
+        typeof (obj as any).path !== 'string' ||
+        !(obj as any).path.startsWith('/') ||
+        typeof (obj as any).method !== 'string' ||
+        !Object.values(HttpVerbs).includes((obj as any).method as HttpMethod)
       ) {
         throw new Error('Invalid event object');
       }
@@ -32,8 +37,7 @@ describe('Class: BaseRouter', () => {
     public resolve(event: unknown, context: Context): Promise<unknown> {
       this.#isEvent(event);
       const { method, path } = event;
-      const routes = this.routeRegistry.getRoutesByMethod(method);
-      const route = routes.find((x) => x.path === path);
+      const route = this.routeRegistry.resolve(method, path);
       if (route == null) throw new Error('404');
       return route.handler(event, context);
     }

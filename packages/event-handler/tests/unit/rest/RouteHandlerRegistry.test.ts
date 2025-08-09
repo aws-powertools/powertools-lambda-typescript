@@ -31,7 +31,7 @@ describe('Class: RouteHandlerRegistry', () => {
 
       const result = registry.resolve(method, resolvePath as Path);
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(handler2);
+      expect(result?.handler).toBe(handler2);
     }
   );
 
@@ -109,11 +109,11 @@ describe('Class: RouteHandlerRegistry', () => {
     // Assess
     const getResult = registry.resolve(HttpVerbs.GET, '/users/123');
     expect(getResult).not.toBeNull();
-    expect(getResult!.handler).toBe(getHandler);
+    expect(getResult?.handler).toBe(getHandler);
 
     const postResult = registry.resolve(HttpVerbs.POST, '/users/123');
     expect(postResult).not.toBeNull();
-    expect(postResult!.handler).toBe(postHandler);
+    expect(postResult?.handler).toBe(postHandler);
   });
 
   describe('getRouteCount', () => {
@@ -250,7 +250,7 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const result = registry.resolve(HttpVerbs.GET, '/users/123/profile');
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(mostSpecificHandler);
+      expect(result?.handler).toBe(mostSpecificHandler);
     });
 
     it('prioritizes static routes over dynamic routes', () => {
@@ -268,7 +268,7 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const result = registry.resolve(HttpVerbs.GET, '/users/profile');
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(staticHandler);
+      expect(result?.handler).toBe(staticHandler);
     });
 
     it('prioritizes deeper paths over shallower ones', () => {
@@ -284,7 +284,7 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const result = registry.resolve(HttpVerbs.GET, '/api/v1/123');
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(deepHandler);
+      expect(result?.handler).toBe(deepHandler);
     });
 
     it('prioritizes more specific segments over generic parameters', () => {
@@ -302,7 +302,7 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const result = registry.resolve(HttpVerbs.GET, '/users/123');
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(specificHandler);
+      expect(result?.handler).toBe(specificHandler);
     });
 
     it('prioritizes routes with fewer parameters', () => {
@@ -322,7 +322,7 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const result = registry.resolve(HttpVerbs.GET, '/users/123/posts');
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(fewerParamsHandler);
+      expect(result?.handler).toBe(fewerParamsHandler);
     });
 
     it('prioritizes static segments over parameters when parameter count differs', () => {
@@ -342,7 +342,7 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const result = registry.resolve(HttpVerbs.GET, '/api/users/123/delete');
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(staticHandler);
+      expect(result?.handler).toBe(staticHandler);
     });
 
     it('prioritizes more static segments in mixed routes', () => {
@@ -362,7 +362,7 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const result = registry.resolve(HttpVerbs.GET, '/api/v1/users/123');
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(moreStaticHandler);
+      expect(result?.handler).toBe(moreStaticHandler);
     });
 
     it('handles complex mixed static/dynamic precedence', () => {
@@ -386,7 +386,7 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const result = registry.resolve(HttpVerbs.GET, '/users/profile/settings');
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(mostStaticHandler);
+      expect(result?.handler).toBe(mostStaticHandler);
     });
 
     it('maintains specificity regardless of registration order - specific first', () => {
@@ -406,7 +406,7 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const result = registry.resolve(HttpVerbs.GET, '/users/123/profile');
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(specificHandler);
+      expect(result?.handler).toBe(specificHandler);
     });
 
     it('maintains specificity regardless of registration order - general first', () => {
@@ -426,7 +426,7 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const result = registry.resolve(HttpVerbs.GET, '/users/123/profile');
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(specificHandler);
+      expect(result?.handler).toBe(specificHandler);
     });
 
     it('handles root-level routes', () => {
@@ -442,11 +442,11 @@ describe('Class: RouteHandlerRegistry', () => {
       // Assess
       const rootResult = registry.resolve(HttpVerbs.GET, '/');
       expect(rootResult).not.toBeNull();
-      expect(rootResult!.handler).toBe(rootHandler);
+      expect(rootResult?.handler).toBe(rootHandler);
 
       const paramResult = registry.resolve(HttpVerbs.GET, '/123');
       expect(paramResult).not.toBeNull();
-      expect(paramResult!.handler).toBe(paramHandler);
+      expect(paramResult?.handler).toBe(paramHandler);
     });
 
     it('handles very long paths with mixed segments', () => {
@@ -477,7 +477,7 @@ describe('Class: RouteHandlerRegistry', () => {
         '/api/v1/users/123/profile/settings/data'
       );
       expect(result).not.toBeNull();
-      expect(result!.handler).toBe(longSpecificHandler);
+      expect(result?.handler).toBe(longSpecificHandler);
     });
   });
 
@@ -493,9 +493,9 @@ describe('Class: RouteHandlerRegistry', () => {
 
       // Assess
       expect(result).not.toBeNull();
-      expect(result!.params).toEqual({ id: '123' });
-      expect(result!.rawParams).toEqual({ id: '123' });
-      expect(result!.handler).toBe(handler);
+      expect(result?.params).toEqual({ id: '123' });
+      expect(result?.rawParams).toEqual({ id: '123' });
+      expect(result?.handler).toBe(handler);
     });
 
     it('extracts multiple parameters correctly', () => {
@@ -511,9 +511,9 @@ describe('Class: RouteHandlerRegistry', () => {
 
       // Assess
       expect(result).not.toBeNull();
-      expect(result!.params).toEqual({ userId: '123', postId: '456' });
-      expect(result!.rawParams).toEqual({ userId: '123', postId: '456' });
-      expect(result!.handler).toBe(handler);
+      expect(result?.params).toEqual({ userId: '123', postId: '456' });
+      expect(result?.rawParams).toEqual({ userId: '123', postId: '456' });
+      expect(result?.handler).toBe(handler);
     });
 
     it('returns empty params for static routes', () => {
@@ -527,9 +527,9 @@ describe('Class: RouteHandlerRegistry', () => {
 
       // Assess
       expect(result).not.toBeNull();
-      expect(result!.params).toEqual({});
-      expect(result!.rawParams).toEqual({});
-      expect(result!.handler).toBe(handler);
+      expect(result?.params).toEqual({});
+      expect(result?.rawParams).toEqual({});
+      expect(result?.handler).toBe(handler);
     });
 
     it('decodes URL-encoded spaces in parameters', () => {
@@ -543,8 +543,8 @@ describe('Class: RouteHandlerRegistry', () => {
 
       // Assess
       expect(result).not.toBeNull();
-      expect(result!.params).toEqual({ query: 'hello world' });
-      expect(result!.rawParams).toEqual({ query: 'hello%20world' });
+      expect(result?.params).toEqual({ query: 'hello world' });
+      expect(result?.rawParams).toEqual({ query: 'hello%20world' });
     });
 
     it('decodes URL-encoded special characters in parameters', () => {
@@ -561,8 +561,8 @@ describe('Class: RouteHandlerRegistry', () => {
 
       // Assess
       expect(result).not.toBeNull();
-      expect(result!.params).toEqual({ email: 'user@example.com' });
-      expect(result!.rawParams).toEqual({ email: 'user%40example.com' });
+      expect(result?.params).toEqual({ email: 'user@example.com' });
+      expect(result?.rawParams).toEqual({ email: 'user%40example.com' });
     });
 
     it('decodes multiple URL-encoded parameters', () => {
@@ -581,11 +581,11 @@ describe('Class: RouteHandlerRegistry', () => {
 
       // Assess
       expect(result).not.toBeNull();
-      expect(result!.params).toEqual({
+      expect(result?.params).toEqual({
         folder: 'my folder',
         filename: 'test+file.txt',
       });
-      expect(result!.rawParams).toEqual({
+      expect(result?.rawParams).toEqual({
         folder: 'my%20folder',
         filename: 'test%2Bfile.txt',
       });
@@ -625,13 +625,13 @@ describe('Class: RouteHandlerRegistry', () => {
 
       // Assess
       expect(result).not.toBeNull();
-      expect(result!.params).toEqual({
+      expect(result?.params).toEqual({
         version: 'v1',
         userId: '123',
         postId: '456',
         commentId: '789',
       });
-      expect(result!.rawParams).toEqual({
+      expect(result?.rawParams).toEqual({
         version: 'v1',
         userId: '123',
         postId: '456',
@@ -655,12 +655,12 @@ describe('Class: RouteHandlerRegistry', () => {
 
       // Assess
       expect(result).not.toBeNull();
-      expect(result!.params).toEqual({
+      expect(result?.params).toEqual({
         category: 'electronics',
         query: 'C++',
         page: '1',
       });
-      expect(result!.rawParams).toEqual({
+      expect(result?.rawParams).toEqual({
         category: 'electronics',
         query: 'C%2B%2B',
         page: '1',

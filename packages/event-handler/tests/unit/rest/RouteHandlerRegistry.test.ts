@@ -708,6 +708,10 @@ describe('Class: RouteHandlerRegistry', () => {
       );
 
       // Assess
+      expect(() => {
+        registry.resolve(HttpVerbs.GET, '/api/%20/users/%20');
+      }).toThrow();
+
       try {
         registry.resolve(HttpVerbs.GET, '/api/%20/users/%20');
       } catch (error: any) {

@@ -941,6 +941,11 @@ describe('Class: AppSyncGraphQLResolver', () => {
       error: 'ValidationError - Original error',
     });
     expect(console.error).toHaveBeenNthCalledWith(
+      1,
+      'An error occurred in handler getUser',
+      new ValidationError('Original error')
+    );
+    expect(console.error).toHaveBeenNthCalledWith(
       2,
       'Exception handler for ValidationError threw an error',
       errorToBeThrown

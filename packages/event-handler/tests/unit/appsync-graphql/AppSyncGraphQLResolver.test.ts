@@ -1007,7 +1007,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
-    class TestService {
+    class Lambda {
       @app.exceptionHandler(ValidationError)
       async handleValidationError(error: ValidationError) {
         return {
@@ -1017,9 +1017,24 @@ describe('Class: AppSyncGraphQLResolver', () => {
         };
       }
 
+      @app.exceptionHandler(NotFoundError)
+      handleNotFoundError(error: NotFoundError) {
+        return {
+          message: 'Decorator user not found',
+          details: error.message,
+          type: 'decorator_user_not_found',
+        };
+      }
+
       @app.onQuery('getUser')
-      async getUser() {
-        throw new ValidationError('Decorator error test');
+      async getUser({ id, name }: { id: string; name: string }) {
+        if (!id) {
+          throw new ValidationError('Decorator error test');
+        }
+        if (id === '0') {
+          throw new NotFoundError(`User with ID ${id} not found`);
+        }
+        return { id, name };
       }
 
       async handler(event: unknown, context: Context) {
@@ -1029,19 +1044,29 @@ describe('Class: AppSyncGraphQLResolver', () => {
       }
     }
 
-    const service = new TestService();
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
 
     // Act
-    const result = await service.handler(
+    const validationError = await handler(
       onGraphqlEventFactory('getUser', 'Query', {}),
+      context
+    );
+    const notFoundError = await handler(
+      onGraphqlEventFactory('getUser', 'Query', { id: '0', name: 'John Doe' }),
       context
     );
 
     // Assess
-    expect(result).toEqual({
+    expect(validationError).toEqual({
       message: 'Decorator validation failed',
       details: 'Decorator error test',
       type: 'decorator_validation_error',
+    });
+    expect(notFoundError).toEqual({
+      message: 'Decorator user not found',
+      details: 'User with ID 0 not found',
+      type: 'decorator_user_not_found',
     });
   });
 

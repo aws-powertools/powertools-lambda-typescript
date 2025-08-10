@@ -17,9 +17,10 @@ import {
 
 class RouteHandlerRegistry {
   readonly #staticRoutes: Map<string, Route> = new Map();
-  readonly #dynamicRoutesIndexMap: Map<string, number> = new Map();
+  readonly #dynamicRoutesSet: Set<string> = new Set();
   readonly #dynamicRoutes: DynamicRoute[] = [];
   readonly #routesByMethod: Map<string, Route[]> = new Map();
+  #shouldSort = true;
 
   readonly #logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 
@@ -50,43 +51,6 @@ class RouteHandlerRegistry {
     return bSegments - aSegments;
   }
   /**
-   * Finds the correct insertion index using binary search to maintain sorted order.
-   * @param route - The route to find insertion point for
-   * @returns The index where the route should be inserted
-   */
-  #binarySearchInsertIndex(route: DynamicRoute): number {
-    let left = 0;
-    let right = this.#dynamicRoutes.length;
-
-    while (left < right) {
-      const mid = Math.floor((left + right) / 2);
-      const comparison = this.#compareRouteSpecificity(
-        route,
-        this.#dynamicRoutes[mid]
-      );
-
-      if (comparison < 0) {
-        right = mid;
-      } else {
-        left = mid + 1;
-      }
-    }
-
-    return left;
-  }
-  /**
-   * Adds a dynamic route to the registry, ensuring that the dynamic
-   * routes array says sorted in ascending order of specificity.
-   * @param route - The dynamic route to add
-   * @returns The index in the specific routes array where the route was stored
-   */
-  #addDynamicRoute(route: DynamicRoute): number {
-    const index = this.#binarySearchInsertIndex(route);
-    this.#dynamicRoutes.splice(index, 0, route);
-    return index;
-  }
-
-  /**
    * Registers a route in the registry after validating its path pattern.
    *
    * The function decides whether to store the route in the static registry
@@ -96,6 +60,7 @@ class RouteHandlerRegistry {
    * @param route - The route to register
    */
   public register(route: Route): void {
+    this.#shouldSort = true;
     const { isValid, issues } = validatePathPattern(route.path);
     if (!isValid) {
       for (const issue of issues) {
@@ -107,23 +72,25 @@ class RouteHandlerRegistry {
     const compiled = compilePath(route.path);
 
     if (compiled.isDynamic) {
-      let routeIndex = this.#dynamicRoutesIndexMap.get(route.id) ?? -1;
-      if (routeIndex >= 0) {
+      const dynamicRoute = {
+        ...route,
+        ...compiled,
+      };
+      if (this.#dynamicRoutesSet.has(route.id)) {
         this.#logger.warn(
           `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
         );
         // as dynamic routes are stored in an array, we can't rely on
         // overwriting a key in a map like with static routes so have
-        // to manually manage deleting them
-        this.#dynamicRoutes.splice(routeIndex, 1);
+        // to manually manage overwriting them
+        const i = this.#dynamicRoutes.findIndex(
+          (oldRoute) => oldRoute.id === route.id
+        );
+        this.#dynamicRoutes[i] = dynamicRoute;
+      } else {
+        this.#dynamicRoutes.push(dynamicRoute);
       }
-
-      routeIndex = this.#addDynamicRoute({
-        ...route,
-        ...compiled,
-      });
-
-      this.#dynamicRoutesIndexMap.set(route.id, routeIndex);
+      this.#dynamicRoutesSet.add(route.id);
     } else {
       if (this.#staticRoutes.has(route.id)) {
         this.#logger.warn(
@@ -158,6 +125,10 @@ class RouteHandlerRegistry {
    * @returns Route handler options or null if no match found
    */
   public resolve(method: HttpMethod, path: Path): RouteHandlerOptions | null {
+    if (this.#shouldSort) {
+      this.#dynamicRoutes.sort(this.#compareRouteSpecificity);
+      this.#shouldSort = false;
+    }
     const routeId = `${method}:${path}`;
 
     const staticRoute = this.#staticRoutes.get(routeId);

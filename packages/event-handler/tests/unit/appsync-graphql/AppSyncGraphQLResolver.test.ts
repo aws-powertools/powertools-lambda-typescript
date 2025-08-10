@@ -958,7 +958,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     app.exceptionHandler(ValidationError, (error) => {
       return {
-        message: 'Sync validation failed',
+        message: 'This is a sync handler',
         details: error.message,
         type: 'sync_validation_error',
       };
@@ -976,7 +976,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     // Assess
     expect(result).toEqual({
-      message: 'Sync validation failed',
+      message: 'This is a sync handler',
       details: 'Sync error test',
       type: 'sync_validation_error',
     });

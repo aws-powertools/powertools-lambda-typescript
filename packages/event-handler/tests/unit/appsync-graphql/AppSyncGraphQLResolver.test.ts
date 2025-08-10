@@ -764,10 +764,9 @@ describe('Class: AppSyncGraphQLResolver', () => {
       });
 
       app.onQuery('getUser', async () => {
-        if (errorClass === AggregateError) {
-          throw new errorClass([new Error()], message);
-        }
-        throw new errorClass(message);
+        throw errorClass === AggregateError
+          ? new errorClass([new Error()], message)
+          : new errorClass(message);
       });
 
       // Act

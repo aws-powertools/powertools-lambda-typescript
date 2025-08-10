@@ -50,7 +50,7 @@ class ExceptionHandlerRegistry {
   /**
    * Resolves and returns the appropriate exception handler for a given error instance.
    *
-   * This method attempts to find a registered exception handler based on the error's constructor name.
+   * This method attempts to find a registered exception handler based on the error class name.
    * If a matching handler is found, it is returned; otherwise, `undefined` is returned.
    *
    * @param error - The error instance for which to resolve an exception handler.

@@ -60,6 +60,7 @@ type BatchResolverHandler<
   :
       | BatchResolverHandlerFn<TParams, TSource>
       | BatchResolverSyncHandlerFn<TParams, TSource>;
+//#endregion
 
 // #region Resolver fn
 
@@ -82,6 +83,8 @@ type ResolverHandlerFn<TParams = Record<string, unknown>> = (
 type ResolverHandler<TParams = Record<string, unknown>> =
   | ResolverSyncHandlerFn<TParams>
   | ResolverHandlerFn<TParams>;
+
+//#endregion
 
 // #region Resolver registry
 
@@ -134,6 +137,8 @@ type RouteHandlerOptions<
   throwOnError?: R;
 };
 
+//#endregion
+
 // #region Router
 
 /**
@@ -178,7 +183,7 @@ type GraphQlBatchRouteOptions<
     ? { aggregate?: T; throwOnError?: never }
     : { aggregate?: T; throwOnError?: R });
 
-// #endregion Router
+//#endregion
 
 // #region Exception handling
 
@@ -221,7 +226,7 @@ type ExceptionHandlerRegistryOptions = {
   logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 };
 
-// #endregion Exception handling
+//#endregion
 
 export type {
   RouteHandlerRegistryOptions,

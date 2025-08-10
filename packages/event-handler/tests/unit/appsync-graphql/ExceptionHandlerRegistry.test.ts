@@ -56,15 +56,17 @@ describe('Class: ExceptionHandlerRegistry', () => {
 
   it('resolve returns the correct handler for a registered error instance', () => {
     // Prepare
-    const handler = vi.fn();
+    const customErrorHandler = vi.fn();
+    const rangeErrorHandler = vi.fn();
     const registry = getRegistry();
 
     // Act
-    registry.register({ error: CustomError, handler });
+    registry.register({ error: CustomError, handler: customErrorHandler });
+    registry.register({ error: RangeError, handler: rangeErrorHandler });
     const resolved = registry.resolve(new CustomError('fail'));
 
     // Assess
-    expect(resolved).toBe(handler);
+    expect(resolved).toBe(customErrorHandler);
   });
 
   it('resolve returns undefined if no handler is registered for the error', () => {

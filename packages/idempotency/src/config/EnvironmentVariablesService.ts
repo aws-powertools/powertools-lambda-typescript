@@ -19,8 +19,9 @@ class EnvironmentVariablesService
   implements ConfigServiceInterface
 {
   // Reserved environment variables
-  private functionNameVariable = 'AWS_LAMBDA_FUNCTION_NAME';
-  private idempotencyDisabledVariable = 'POWERTOOLS_IDEMPOTENCY_DISABLED';
+  private readonly functionNameVariable = 'AWS_LAMBDA_FUNCTION_NAME';
+  private readonly idempotencyDisabledVariable =
+    'POWERTOOLS_IDEMPOTENCY_DISABLED';
 
   /**
    * It returns the value of the AWS_LAMBDA_FUNCTION_NAME environment variable.

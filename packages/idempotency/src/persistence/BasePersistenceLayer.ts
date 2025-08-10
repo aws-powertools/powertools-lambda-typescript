@@ -28,7 +28,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   private cache?: LRUCache<string, IdempotencyRecord>;
   private configured = false;
   // envVarsService is always initialized in the constructor
-  private envVarsService!: EnvironmentVariablesService;
+  private readonly envVarsService!: EnvironmentVariablesService;
   private eventKeyJmesPath?: string;
   protected expiresAfterSeconds: number = 60 * 60; // 1 hour default
   private hashFunction = 'md5';

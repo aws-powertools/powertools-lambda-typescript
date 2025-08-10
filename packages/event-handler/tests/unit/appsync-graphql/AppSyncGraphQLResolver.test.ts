@@ -10,9 +10,24 @@ import {
 import type { ErrorClass } from '../../../src/types/appsync-graphql.js';
 import { onGraphqlEventFactory } from '../../helpers/factories.js';
 
-class ValidationError extends Error {}
-class NotFoundError extends Error {}
-class DatabaseError extends Error {}
+class ValidationError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'ValidationError';
+  }
+}
+class NotFoundError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'NotFoundError';
+  }
+}
+class DatabaseError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'DatabaseError';
+  }
+}
 
 describe('Class: AppSyncGraphQLResolver', () => {
   beforeEach(() => {

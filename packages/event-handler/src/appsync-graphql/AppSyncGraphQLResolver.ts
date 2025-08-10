@@ -398,7 +398,7 @@ class AppSyncGraphQLResolver extends Router {
   #formatErrorResponse(error: unknown) {
     if (error instanceof Error) {
       return {
-        error: `${error.constructor.name} - ${error.message}`,
+        error: `${error.name} - ${error.message}`,
       };
     }
     return {

@@ -56,7 +56,7 @@ class ExceptionHandlerRegistry {
    * @param error - The error instance for which to resolve an exception handler.
    */
   public resolve(error: Error): ExceptionHandler | undefined {
-    const errorName = error.constructor.name;
+    const errorName = error.name;
     this.#logger.debug(`Looking for exception handler for error: ${errorName}`);
 
     const handlerOptions = this.handlers.get(errorName);

@@ -6,7 +6,12 @@ describe('Class: ExceptionHandlerRegistry', () => {
   class MockExceptionHandlerRegistry extends ExceptionHandlerRegistry {
     public declare handlers: Map<string, ExceptionHandlerOptions>;
   }
-  class CustomError extends Error {}
+  class CustomError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'CustomError';
+    }
+  }
 
   const getRegistry = () =>
     new MockExceptionHandlerRegistry({ logger: console });

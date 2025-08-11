@@ -25,7 +25,7 @@ abstract class ServiceError extends Error {
   public readonly details?: Record<string, unknown>;
 
   constructor(
-    message: string,
+    message?: string,
     options?: ErrorOptions,
     details?: Record<string, unknown>
   ) {
@@ -53,7 +53,7 @@ export class BadRequestError extends ServiceError {
     options?: ErrorOptions,
     details?: Record<string, unknown>
   ) {
-    super(message ?? 'Bad request', options, details);
+    super(message, options, details);
   }
 }
 
@@ -66,7 +66,7 @@ export class UnauthorizedError extends ServiceError {
     options?: ErrorOptions,
     details?: Record<string, unknown>
   ) {
-    super(message ?? 'Unauthorized', options, details);
+    super(message, options, details);
   }
 }
 
@@ -79,7 +79,7 @@ export class ForbiddenError extends ServiceError {
     options?: ErrorOptions,
     details?: Record<string, unknown>
   ) {
-    super(message ?? 'Forbidden', options, details);
+    super(message, options, details);
   }
 }
 
@@ -92,7 +92,7 @@ export class NotFoundError extends ServiceError {
     options?: ErrorOptions,
     details?: Record<string, unknown>
   ) {
-    super(message ?? 'Not found', options, details);
+    super(message, options, details);
   }
 }
 
@@ -105,7 +105,7 @@ export class MethodNotAllowedError extends ServiceError {
     options?: ErrorOptions,
     details?: Record<string, unknown>
   ) {
-    super(message ?? 'Method not allowed', options, details);
+    super(message, options, details);
   }
 }
 
@@ -118,7 +118,7 @@ export class RequestTimeoutError extends ServiceError {
     options?: ErrorOptions,
     details?: Record<string, unknown>
   ) {
-    super(message ?? 'Request timeout', options, details);
+    super(message, options, details);
   }
 }
 
@@ -131,7 +131,7 @@ export class RequestEntityTooLargeError extends ServiceError {
     options?: ErrorOptions,
     details?: Record<string, unknown>
   ) {
-    super(message ?? 'Request entity too large', options, details);
+    super(message, options, details);
   }
 }
 
@@ -144,7 +144,7 @@ export class InternalServerError extends ServiceError {
     options?: ErrorOptions,
     details?: Record<string, unknown>
   ) {
-    super(message ?? 'Internal server error', options, details);
+    super(message, options, details);
   }
 }
 
@@ -157,6 +157,6 @@ export class ServiceUnavailableError extends ServiceError {
     options?: ErrorOptions,
     details?: Record<string, unknown>
   ) {
-    super(message ?? 'Service unavailable', options, details);
+    super(message, options, details);
   }
 }

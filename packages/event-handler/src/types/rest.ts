@@ -88,6 +88,7 @@ export type {
   ErrorResponse,
   ErrorConstructor,
   ErrorHandler,
+  HttpStatusCode,
   HttpMethod,
   Path,
   RouterOptions,

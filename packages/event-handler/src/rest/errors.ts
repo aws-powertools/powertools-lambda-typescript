@@ -1,4 +1,4 @@
-import type { ErrorResponse } from '../types/rest.js';
+import type { ErrorResponse, HttpStatusCode } from '../types/rest.js';
 import { HttpErrorCodes } from './constants.js';
 
 export class RouteMatchingError extends Error {
@@ -20,7 +20,7 @@ export class ParameterValidationError extends RouteMatchingError {
 }
 
 abstract class ServiceError extends Error {
-  abstract readonly statusCode: number;
+  abstract readonly statusCode: HttpStatusCode;
   abstract readonly errorType: string;
   public readonly details?: Record<string, unknown>;
 

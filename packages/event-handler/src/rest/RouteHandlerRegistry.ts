@@ -88,8 +88,8 @@ class RouteHandlerRegistry {
         this.#dynamicRoutes[i] = dynamicRoute;
       } else {
         this.#dynamicRoutes.push(dynamicRoute);
+        this.#dynamicRoutesSet.add(route.id);
       }
-      this.#dynamicRoutesSet.add(route.id);
     } else {
       if (this.#staticRoutes.has(route.id)) {
         this.#logger.warn(

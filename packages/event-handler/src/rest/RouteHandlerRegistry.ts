@@ -5,15 +5,11 @@ import type {
   Path,
   RouteHandlerOptions,
   RouteRegistryOptions,
+  ValidationResult,
 } from '../types/rest.js';
 import { ParameterValidationError } from './errors.js';
 import type { Route } from './Route.js';
-import {
-  compilePath,
-  processParams,
-  validateParams,
-  validatePathPattern,
-} from './utils.js';
+import { compilePath, validatePathPattern } from './utils.js';
 
 class RouteHandlerRegistry {
   readonly #staticRoutes: Map<string, Route> = new Map();
@@ -48,6 +44,39 @@ class RouteHandlerRegistry {
     const bSegments = b.path.split('/').length;
 
     return bSegments - aSegments;
+  }
+  /**
+   * Processes route parameters by URL-decoding their values.
+   * @param params - Raw parameter values extracted from the route path
+   * @returns Processed parameters with URL-decoded values
+   */
+  #processParams(params: Record<string, string>): Record<string, string> {
+    const processed: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(params)) {
+      processed[key] = decodeURIComponent(value);
+    }
+
+    return processed;
+  }
+  /**
+   * Validates route parameters to ensure they are not empty or whitespace-only.
+   * @param params - Parameters to validate
+   * @returns Validation result with success status and any issues found
+   */
+  #validateParams(params: Record<string, string>): ValidationResult {
+    const issues: string[] = [];
+
+    for (const [key, value] of Object.entries(params)) {
+      if (!value || value.trim() === '') {
+        issues.push(`Parameter '${key}' cannot be empty`);
+      }
+    }
+
+    return {
+      isValid: issues.length === 0,
+      issues,
+    };
   }
   /**
    * Registers a route in the registry after validating its path pattern.
@@ -99,7 +128,6 @@ class RouteHandlerRegistry {
       this.#staticRoutes.set(route.id, route);
     }
   }
-
   /**
    * Resolves a route handler for the given HTTP method and path.
    *
@@ -142,9 +170,9 @@ class RouteHandlerRegistry {
       if (match?.groups) {
         const params = match.groups;
 
-        const processedParams = processParams(params);
+        const processedParams = this.#processParams(params);
 
-        const validation = validateParams(processedParams);
+        const validation = this.#validateParams(processedParams);
 
         if (!validation.isValid) {
           throw new ParameterValidationError(validation.issues);

@@ -3,6 +3,12 @@ import type { BaseRouter } from '../rest/BaseRouter.js';
 import type { HttpVerbs } from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
 
+type ErrorResponse = {
+  statusCode: number;
+  error: string;
+  message: string;
+};
+
 /**
  * Options for the {@link BaseRouter} class
  */
@@ -59,6 +65,7 @@ type ValidationResult = {
 export type {
   CompiledRoute,
   DynamicRoute,
+  ErrorResponse,
   HttpMethod,
   Path,
   RouterOptions,

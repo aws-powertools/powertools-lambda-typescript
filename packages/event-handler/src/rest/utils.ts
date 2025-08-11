@@ -43,32 +43,3 @@ export function validatePathPattern(path: Path): ValidationResult {
     issues,
   };
 }
-
-export function processParams(
-  params: Record<string, string>
-): Record<string, string> {
-  const processed: Record<string, string> = {};
-
-  for (const [key, value] of Object.entries(params)) {
-    processed[key] = decodeURIComponent(value);
-  }
-
-  return processed;
-}
-
-export function validateParams(
-  params: Record<string, string>
-): ValidationResult {
-  const issues: string[] = [];
-
-  for (const [key, value] of Object.entries(params)) {
-    if (!value || value.trim() === '') {
-      issues.push(`Parameter '${key}' cannot be empty`);
-    }
-  }
-
-  return {
-    isValid: issues.length === 0,
-    issues,
-  };
-}

@@ -12,7 +12,7 @@ export function compilePath(path: Path): CompiledRoute {
   const finalPattern = `^${regexPattern}$`;
 
   return {
-    originalPath: path,
+    path,
     regex: new RegExp(finalPattern),
     paramNames,
     isDynamic: paramNames.length > 0,

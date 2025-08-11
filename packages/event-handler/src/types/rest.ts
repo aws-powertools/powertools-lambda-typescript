@@ -1,6 +1,7 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { BaseRouter } from '../rest/BaseRouter.js';
 import type { HttpVerbs } from '../rest/constants.js';
+import type { Route } from '../rest/Route.js';
 
 /**
  * Options for the {@link BaseRouter} class
@@ -15,11 +16,13 @@ type RouterOptions = {
 };
 
 interface CompiledRoute {
-  originalPath: string;
+  path: Path;
   regex: RegExp;
   paramNames: string[];
   isDynamic: boolean;
 }
+
+type DynamicRoute = Route & CompiledRoute;
 
 // biome-ignore lint/suspicious/noExplicitAny: we want to keep arguments and return types as any to accept any type of function
 type RouteHandler<T = any, R = any> = (...args: T[]) => R;
@@ -27,6 +30,12 @@ type RouteHandler<T = any, R = any> = (...args: T[]) => R;
 type HttpMethod = keyof typeof HttpVerbs;
 
 type Path = `/${string}`;
+
+type RouteHandlerOptions = {
+  handler: RouteHandler;
+  params: Record<string, string>;
+  rawParams: Record<string, string>;
+};
 
 type RouteOptions = {
   method: HttpMethod | HttpMethod[];
@@ -49,11 +58,13 @@ type ValidationResult = {
 
 export type {
   CompiledRoute,
+  DynamicRoute,
   HttpMethod,
   Path,
   RouterOptions,
   RouteHandler,
   RouteOptions,
+  RouteHandlerOptions,
   RouteRegistryOptions,
   ValidationResult,
 };

@@ -11,7 +11,7 @@ export class ErrorHandlerRegistry {
 
   readonly #logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 
-  constructor(options: ErrorHandlerRegistryOptions) {
+  public constructor(options: ErrorHandlerRegistryOptions) {
     this.#logger = options.logger;
   }
 

@@ -54,7 +54,7 @@ abstract class BaseRouter {
     this.isDev = isDevMode();
   }
 
-  errorHandler<T extends Error>(
+  public errorHandler<T extends Error>(
     errorType: ErrorConstructor<T> | ErrorConstructor<T>[],
     handler: ErrorHandler<T>
   ): void {

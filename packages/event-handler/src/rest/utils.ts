@@ -46,8 +46,8 @@ export function validatePathPattern(path: Path): ValidationResult {
 
 export function processParams(
   params: Record<string, string>
-): Record<string, any> {
-  const processed: Record<string, any> = {};
+): Record<string, string> {
+  const processed: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(params)) {
     processed[key] = decodeURIComponent(value);

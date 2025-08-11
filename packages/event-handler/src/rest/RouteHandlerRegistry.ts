@@ -19,7 +19,6 @@ class RouteHandlerRegistry {
   readonly #staticRoutes: Map<string, Route> = new Map();
   readonly #dynamicRoutesSet: Set<string> = new Set();
   readonly #dynamicRoutes: DynamicRoute[] = [];
-  readonly #routesByMethod: Map<string, Route[]> = new Map();
   #shouldSort = true;
 
   readonly #logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
@@ -99,10 +98,6 @@ class RouteHandlerRegistry {
       }
       this.#staticRoutes.set(route.id, route);
     }
-
-    const routesByMethod = this.#routesByMethod.get(route.method) ?? [];
-    routesByMethod.push(route);
-    this.#routesByMethod.set(route.method, routesByMethod);
   }
 
   /**
@@ -164,32 +159,6 @@ class RouteHandlerRegistry {
     }
 
     return null;
-  }
-
-  /**
-   * Returns the total number of registered routes.
-   * @returns Total count of registered routes
-   */
-  public getRouteCount(): number {
-    return [...Array.from(this.#staticRoutes.values()), ...this.#dynamicRoutes]
-      .length;
-  }
-
-  /**
-   * Returns all routes registered for a specific HTTP method.
-   * @param method - The HTTP method to filter by
-   * @returns Array of routes for the specified method
-   */
-  public getRoutesByMethod(method: string): Route[] {
-    return this.#routesByMethod.get(method.toUpperCase()) || [];
-  }
-
-  /**
-   * Returns all registered routes (both static and dynamic).
-   * @returns Array of all registered routes
-   */
-  public getAllRoutes(): Route[] {
-    return [...Array.from(this.#staticRoutes.values()), ...this.#dynamicRoutes];
   }
 }
 

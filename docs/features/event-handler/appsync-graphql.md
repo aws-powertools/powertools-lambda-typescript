@@ -148,6 +148,30 @@ You can access the original Lambda event or context for additional information. 
 
     1. The `event` parameter contains the original AppSync event and has type `AppSyncResolverEvent` from the `@types/aws-lambda`.
 
+### Exception Handling
+
+You can use the **`exceptionHandler`** method with any exception. This allows you to handle a common exception outside your resolver.
+
+When using exception handlers, you'll also need to configure your AppSync response mapping template to properly handle the custom error responses.
+
+=== "Exception Handling"
+
+    ```typescript hl_lines="11-13 16-18"
+    --8<-- "examples/snippets/event-handler/appsync-graphql/exceptionHandling.ts"
+    ```
+
+=== "VTL Response Mapping Template"
+
+    ```velocity hl_lines="1-3"
+    --8<-- "examples/snippets/event-handler/appsync-graphql/exceptionHandlingResponseMapping.vtl"
+    ```
+
+=== "Exception Handling response"
+
+    ```json hl_lines="11 20"
+    --8<-- "examples/snippets/event-handler/appsync-graphql/exceptionHandlingResponse.json"
+    ```
+
 ### Logging
 
 By default, the utility uses the global `console` logger and emits only warnings and errors.

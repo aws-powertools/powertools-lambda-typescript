@@ -77,6 +77,15 @@ type RouteRegistryOptions = {
   logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 };
 
+type ErrorHandlerRegistryOptions = {
+  /**
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
+   */
+  logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+};
+
 type ValidationResult = {
   isValid: boolean;
   issues: string[];
@@ -87,6 +96,7 @@ export type {
   DynamicRoute,
   ErrorResponse,
   ErrorConstructor,
+  ErrorHandlerRegistryOptions,
   ErrorHandler,
   HttpStatusCode,
   HttpMethod,

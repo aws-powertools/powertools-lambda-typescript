@@ -1,9 +1,9 @@
 import { createHash, type Hash } from 'node:crypto';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { LRUCache } from '@aws-lambda-powertools/commons/utils/lru-cache';
+import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import { search } from '@aws-lambda-powertools/jmespath';
 import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
-import { EnvironmentVariablesService } from '../config/EnvironmentVariablesService.js';
 import { IdempotencyRecordStatus } from '../constants.js';
 import { deepSort } from '../deepSort.js';
 import {
@@ -27,8 +27,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   public idempotencyKeyPrefix: string;
   private cache?: LRUCache<string, IdempotencyRecord>;
   private configured = false;
-  // envVarsService is always initialized in the constructor
-  private readonly envVarsService!: EnvironmentVariablesService;
   private eventKeyJmesPath?: string;
   protected expiresAfterSeconds: number = 60 * 60; // 1 hour default
   private hashFunction = 'md5';
@@ -39,8 +37,10 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   #jmesPathOptions?: JMESPathParsingOptions;
 
   public constructor() {
-    this.envVarsService = new EnvironmentVariablesService();
-    this.idempotencyKeyPrefix = this.getEnvVarsService().getFunctionName();
+    this.idempotencyKeyPrefix = getStringFromEnv({
+      key: 'AWS_LAMBDA_FUNCTION_NAME',
+      errorMessage: 'AWS_LAMBDA_FUNCTION_NAME environment variable is required',
+    });
   }
 
   /**
@@ -242,14 +242,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     hash.update(data);
 
     return hash.digest('base64');
-  }
-
-  /**
-   * Getter for `envVarsService`.
-   * Used internally during initialization.
-   */
-  private getEnvVarsService(): EnvironmentVariablesService {
-    return this.envVarsService;
   }
 
   /**

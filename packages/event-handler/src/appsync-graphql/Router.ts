@@ -974,14 +974,18 @@ class Router {
    * // Register an exception handler for AssertionError
    * app.exceptionHandler(AssertionError, async (error) => {
    *   return {
-   *     message: 'Assertion failed',
-   *     details: error.message
+   *     error: {
+   *       message: error.message,
+   *       type: error.name
+   *     }
    *   };
    * });
    *
    * // Register a resolver that might throw an AssertionError
-   * app.onQuery('getTodo', async () => {
-   *   throw new AssertionError();
+   * app.onQuery('createSomething', async () => {
+   *   throw new AssertionError({
+   *     message: 'This is an assertion Error',
+   *   });
    * });
    *
    * export const handler = async (event, context) =>
@@ -1001,14 +1005,18 @@ class Router {
    *   ⁣@app.exceptionHandler(AssertionError)
    *   async handleAssertionError(error: AssertionError) {
    *     return {
-   *        message: 'Assertion failed',
-   *        details: error.message
+   *       error: {
+   *         message: error.message,
+   *         type: error.name
+   *       }
    *     };
    *   }
    *
    *   ⁣@app.onQuery('getUser')
    *   async getUser() {
-   *     throw new AssertionError();
+   *     throw new AssertionError({
+   *       message: 'This is an assertion Error',
+   *     });
    *   }
    *
    *   async handler(event, context) {

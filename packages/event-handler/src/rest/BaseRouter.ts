@@ -6,6 +6,8 @@ import {
 import type { Context } from 'aws-lambda';
 import type { ResolveOptions } from '../types/index.js';
 import type {
+  ErrorConstructor,
+  ErrorHandler,
   HttpMethod,
   Path,
   RouteHandler,
@@ -13,13 +15,15 @@ import type {
   RouterOptions,
 } from '../types/rest.js';
 import { HttpVerbs } from './constants.js';
+import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 
 abstract class BaseRouter {
   protected context: Record<string, unknown>;
 
-  protected routeRegistry: RouteHandlerRegistry;
+  protected readonly routeRegistry: RouteHandlerRegistry;
+  protected readonly errorHandlerRegistry: ErrorHandlerRegistry;
 
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
@@ -32,7 +36,7 @@ abstract class BaseRouter {
    */
   protected readonly isDev: boolean = false;
 
-  public constructor(options?: RouterOptions) {
+  protected constructor(options?: RouterOptions) {
     this.context = {};
     const alcLogLevel = getStringFromEnv({
       key: 'AWS_LAMBDA_LOG_LEVEL',
@@ -44,7 +48,17 @@ abstract class BaseRouter {
       warn: console.warn,
     };
     this.routeRegistry = new RouteHandlerRegistry({ logger: this.logger });
+    this.errorHandlerRegistry = new ErrorHandlerRegistry({
+      logger: this.logger,
+    });
     this.isDev = isDevMode();
+  }
+
+  public errorHandler<T extends Error>(
+    errorType: ErrorConstructor<T> | ErrorConstructor<T>[],
+    handler: ErrorHandler<T>
+  ): void {
+    this.errorHandlerRegistry.register(errorType, handler);
   }
 
   public abstract resolve(

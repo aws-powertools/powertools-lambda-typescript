@@ -2,7 +2,8 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
-import { HttpVerbs } from '../../../src/rest/constants.js';
+import { HttpErrorCodes, HttpVerbs } from '../../../src/rest/constants.js';
+import { BadRequestError } from '../../../src/rest/errors.js';
 import type {
   HttpMethod,
   Path,
@@ -212,5 +213,29 @@ describe('Class: BaseRouter', () => {
       // Assess
       expect(actual).toEqual(expected);
     });
+  });
+
+  it('handles errors through registered error handlers', async () => {
+    // Prepare
+    class TestRouterWithErrorAccess extends TestResolver {
+      get testErrorHandlerRegistry() {
+        return this.errorHandlerRegistry;
+      }
+    }
+
+    const app = new TestRouterWithErrorAccess();
+    const errorHandler = (error: BadRequestError) => ({
+      statusCode: HttpErrorCodes.BAD_REQUEST,
+      error: error.name,
+      message: `Handled: ${error.message}`,
+    });
+
+    app.errorHandler(BadRequestError, errorHandler);
+
+    // Act & Assess
+    const registeredHandler = app.testErrorHandlerRegistry.resolve(
+      new BadRequestError('test')
+    );
+    expect(registeredHandler).toBe(errorHandler);
   });
 });

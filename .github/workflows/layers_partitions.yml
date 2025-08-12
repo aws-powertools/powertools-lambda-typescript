@@ -5,6 +5,16 @@
 # We pull each the version of the layer and store them as artifacts, the we upload them to each of the Partitioned AWS accounts.
 #
 # A number of safety checks are performed to ensure safety.
+#
+# === Automated activities ===
+# 1. [Setup] configure partition-specific regions, partition names, and STS audience based on target partition (China/GovCloud)
+# 2. [Download] retrieve the specified layer version from the main AWS partition (us-east-1) and store as artifacts
+# 3. [Copy & Verify] deploy the layer to all regions in the target partition and validate layer deployment by comparing SHA256, description, and version numbers
+#
+# === Manual activities ===
+# 1. After the `make-release` workflow finishes and the PR for the documentation update gets created, trigger this workflow manually via `workflow_dispatch` with environment, version, and partition inputs for each Gamma and Prod environment in the China and GovCloud partitions
+# 2. Monitor deployment progress and verify successful layer publication across all target regions
+# 3. Once this workflow is completed, the PR for the documentation update can me merged
 
 on:
   workflow_dispatch:
@@ -44,6 +54,7 @@ permissions:
   contents: read
 
 jobs:
+  # This job configures partition-specific settings including regions, partition names, and STS audience based on the target partition (China or GovCloud) selected in the workflow inputs.
   setup:
     runs-on: ubuntu-latest
     outputs:
@@ -65,6 +76,7 @@ jobs:
           echo regions='["us-gov-east-1", "us-gov-west-1"]'>> "$GITHUB_OUTPUT"
           echo partition='aws-us-gov'>> "$GITHUB_OUTPUT"
           echo aud='sts.amazonaws.com'>> "$GITHUB_OUTPUT"
+  # This job downloads the specified layer version from the main AWS partition (us-east-1) and stores both the layer zip file and metadata as GitHub Actions artifacts for use in deployment.
   download:
     runs-on: ubuntu-latest
     permissions:
@@ -96,7 +108,7 @@ jobs:
           path: AWSLambdaPowertoolsTypeScriptV2.json
           retention-days: 1
           if-no-files-found: error
-
+  # This job deploys the layer to all regions in the target partition using a matrix strategy. It performs integrity checks, publishes the layer, sets public permissions, and validates deployment.
   copy:
     name: Copy
     needs: 
@@ -153,6 +165,11 @@ jobs:
             --action lambda:GetLayerVersion \
             --principal '*' \
             --version-number "$LAYER_VERSION"
+      # This step retrieves the newly deployed layer metadata and compares it against the original source layer:
+      # 1. SHA256 hash verification - ensures the layer content is identical to the source
+      # 2. Description validation - confirms the version number in the description matches the source
+      # 3. Layer Version number verification - validates that the layer version numbers match between source and target
+      # 4. Tabular comparison output - displays side-by-side comparison of key layer properties
       - name: Verify Layer
         env:
           LAYER_VERSION: ${{ steps.create-layer.outputs.LAYER_VERSION }}
@@ -162,6 +179,12 @@ jobs:
           REMOTE_SHA=$(jq -r '.Content.CodeSha256' $layer_output)
           LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)
           test "$REMOTE_SHA" == "$LOCAL_SHA" && echo "SHA OK: ${LOCAL_SHA}" || exit 1
+          REMOTE_DESCRIPTION=$(jq -r '.Description' $layer_output)
+          LOCAL_DESCRIPTION=$(jq -r '.Description' AWSLambdaPowertoolsTypeScriptV2.json)
+          test "$REMOTE_DESCRIPTION" == "$LOCAL_DESCRIPTION" && echo "Version number OK: ${LOCAL_DESCRIPTION}" || exit 1
+          REMOTE_LAYER_VERSION=$(jq -r '.LayerVersionArn' $layer_output | sed 's/.*://')
+          LOCAL_LAYER_VERSION=$(jq -r '.LayerVersionArn' AWSLambdaPowertoolsTypeScriptV2.json | sed 's/.*://')
+          test "$REMOTE_LAYER_VERSION" == "$LOCAL_LAYER_VERSION" && echo "Layer Version number OK: ${LOCAL_LAYER_VERSION}" || exit 1
           jq -s -r '["Layer Arn", "Runtimes", "Version", "Description", "SHA256"], ([.[0], .[1]] | .[] | [.LayerArn, (.CompatibleRuntimes | join("/")), .Version, .Description, .Content.CodeSha256]) |@tsv' AWSLambdaPowertoolsTypeScriptV2.json $layer_output | column -t -s $'\t'
 
       - name: Store Metadata - ${{ matrix.region }}

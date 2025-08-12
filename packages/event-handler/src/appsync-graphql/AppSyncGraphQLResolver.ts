@@ -225,12 +225,12 @@ class AppSyncGraphQLResolver extends Router {
       if (exceptionHandler) {
         try {
           this.logger.debug(
-            `Calling exception handler for error: ${error.constructor.name}`
+            `Calling exception handler for error: ${error.name}`
           );
           return await exceptionHandler(error);
         } catch (handlerError) {
           this.logger.error(
-            `Exception handler for ${error.constructor.name} threw an error`,
+            `Exception handler for ${error.name} threw an error`,
             handlerError
           );
         }

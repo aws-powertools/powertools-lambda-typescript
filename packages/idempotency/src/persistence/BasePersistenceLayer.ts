@@ -37,7 +37,10 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   #jmesPathOptions?: JMESPathParsingOptions;
 
   public constructor() {
-    this.idempotencyKeyPrefix = this.#getFunctionName();
+    this.idempotencyKeyPrefix = getStringFromEnv({
+      key: 'AWS_LAMBDA_FUNCTION_NAME',
+      errorMessage: 'AWS_LAMBDA_FUNCTION_NAME environment variable is required',
+    });
   }
 
   /**
@@ -239,18 +242,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     hash.update(data);
 
     return hash.digest('base64');
-  }
-
-  /**
-   * Get the AWS Lambda function name from environment variables.
-   *
-   * @returns the Lambda function name
-   */
-  #getFunctionName(): string {
-    return getStringFromEnv({
-      key: 'AWS_LAMBDA_FUNCTION_NAME',
-      errorMessage: 'AWS_LAMBDA_FUNCTION_NAME environment variable is required',
-    });
   }
 
   /**

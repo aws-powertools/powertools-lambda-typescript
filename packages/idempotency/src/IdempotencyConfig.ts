@@ -79,7 +79,11 @@ class IdempotencyConfig {
     this.hashFunction = config.hashFunction ?? 'md5';
     this.lambdaContext = config.lambdaContext;
     this.responseHook = config.responseHook;
-    this.#enabled = this.#getIdempotencyEnabled();
+    this.#enabled = !getBooleanFromEnv({
+      key: 'POWERTOOLS_IDEMPOTENCY_DISABLED',
+      defaultValue: false,
+      extendedParsing: true,
+    });
   }
 
   /**
@@ -89,19 +93,6 @@ class IdempotencyConfig {
    */
   public isEnabled(): boolean {
     return this.#enabled;
-  }
-
-  /**
-   * Determines if the idempotency feature is enabled by checking the environment variable.
-   *
-   * @returns {boolean} Returns true if the idempotency feature is enabled.
-   */
-  #getIdempotencyEnabled(): boolean {
-    return !getBooleanFromEnv({
-      key: 'POWERTOOLS_IDEMPOTENCY_DISABLED',
-      defaultValue: false,
-      extendedParsing: true,
-    });
   }
 
   public registerLambdaContext(context: Context): void {

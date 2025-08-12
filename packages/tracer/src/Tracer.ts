@@ -428,9 +428,12 @@ class Tracer extends Utility implements TracerInterface {
       const tracerRef = this;
       // Use a function() {} instead of an () => {} arrow function so that we can
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
-      descriptor.value = function (this: Handler, event, context, callback) {
+      descriptor.value = function (
+        this: Handler,
+        ...args: Parameters<Handler>
+      ) {
         if (!tracerRef.isTracingEnabled()) {
-          return originalMethod.apply(this, [event, context, callback]);
+          return originalMethod.apply(this, args);
         }
 
         return tracerRef.provider.captureAsyncFunc(
@@ -440,11 +443,7 @@ class Tracer extends Utility implements TracerInterface {
             tracerRef.addServiceNameAnnotation();
             let result: unknown;
             try {
-              result = await originalMethod.apply(this, [
-                event,
-                context,
-                callback,
-              ]);
+              result = await originalMethod.apply(this, args);
               if (options?.captureResponse ?? true) {
                 tracerRef.addResponseAsMetadata(result, process.env._HANDLER);
               }

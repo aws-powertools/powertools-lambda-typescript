@@ -1,5 +1,13 @@
 # Change Log
 
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
+
+### Features
+
+- add event handler registry ([#4307](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4307)) ([aaac429](https://github.com/aws-powertools/powertools-lambda-typescript/commit/aaac4295594bc4b9c241fcf7bd8589ebc8b68d68))
+- add error classes for http errors ([#4299](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4299)) ([c1c3dd5](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c1c3dd50f5c335f2fd8a13cfd95340971d8840a1))
+- implement route matching & resolution system for rest handler ([#4297](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4297)) ([b8ca368](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b8ca36841f710db062b726ca8d53876e2291e92d))
+- add support for AppSync GraphQL batch resolvers ([#4218](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4218)) ([12ac2e4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/12ac2e40dfe63764f62670ea288e556f7302d2aa))
 ## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
 
 ### Improvements

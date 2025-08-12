@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
+
+### Improvements
+
+- fix code quality issues ([#4292](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4292)) ([5ee4198](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5ee419845f38754f57351be15c4d82ed912641dc))
 ## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
 
 **Note:** Version bump only for this package

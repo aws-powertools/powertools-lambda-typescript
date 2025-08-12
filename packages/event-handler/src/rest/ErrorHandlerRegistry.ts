@@ -3,7 +3,6 @@ import type {
   ErrorConstructor,
   ErrorHandler,
   ErrorHandlerRegistryOptions,
-  RouteRegistryOptions,
 } from '../types/rest.js';
 
 export class ErrorHandlerRegistry {

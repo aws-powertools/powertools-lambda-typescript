@@ -130,7 +130,7 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref itemsTable
       Layers:
-        - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:32
+        - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:33
       Environment:
         Variables:
           TABLE_NAME: !Ref itemsTable

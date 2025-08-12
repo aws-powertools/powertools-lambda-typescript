@@ -109,7 +109,6 @@ jobs:
           retention-days: 1
           if-no-files-found: error
   # This job deploys the layer to all regions in the target partition using a matrix strategy. It performs integrity checks, publishes the layer, sets public permissions, and validates deployment.
-
   copy:
     name: Copy
     needs: 
@@ -166,6 +165,11 @@ jobs:
             --action lambda:GetLayerVersion \
             --principal '*' \
             --version-number "$LAYER_VERSION"
+      # This step retrieves the newly deployed layer metadata and compares it against the original source layer:
+      # 1. SHA256 hash verification - ensures the layer content is identical to the source
+      # 2. Description validation - confirms the version number in the description matches wit the source
+      # 3. Layer Version number verification - validates that the layer version numbers match between source and target
+      # 4. Tabular comparison output - displays side-by-side comparison of key layer properties
       - name: Verify Layer
         env:
           LAYER_VERSION: ${{ steps.create-layer.outputs.LAYER_VERSION }}

@@ -1030,7 +1030,7 @@ class Router {
    * export const handler = lambda.handler.bind(lambda);
    * ```
    *
-   * @param errorClass - The error class to handle.
+   * @param error - The error class to handle.
    * @param handler - The handler function to be called when the error is caught.
    */
   public exceptionHandler<T extends Error>(

@@ -1,5 +1,5 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { Context } from 'aws-lambda';
+import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
 import { HttpErrorCodes, HttpVerbs } from '../../../src/rest/constants.js';
@@ -16,6 +16,24 @@ import type {
   RouterOptions,
 } from '../../../src/types/rest.js';
 
+const createTestEvent = (
+  path: string,
+  httpMethod: string
+): APIGatewayProxyEvent => ({
+  path,
+  httpMethod,
+  headers: {},
+  body: null,
+  multiValueHeaders: {},
+  isBase64Encoded: false,
+  pathParameters: null,
+  queryStringParameters: null,
+  multiValueQueryStringParameters: null,
+  stageVariables: null,
+  requestContext: {} as any,
+  resource: '',
+});
+
 describe('Class: BaseRouter', () => {
   class TestResolver extends BaseRouter {
     constructor(options?: RouterOptions) {
@@ -25,16 +43,18 @@ describe('Class: BaseRouter', () => {
       this.logger.error('test error');
     }
 
-    #isEvent(obj: unknown): asserts obj is { path: Path; method: HttpMethod } {
+    #isEvent(obj: unknown): asserts obj is APIGatewayProxyEvent {
       if (
         typeof obj !== 'object' ||
         obj === null ||
         !('path' in obj) ||
-        !('method' in obj) ||
+        !('httpMethod' in obj) ||
         typeof (obj as any).path !== 'string' ||
         !(obj as any).path.startsWith('/') ||
-        typeof (obj as any).method !== 'string' ||
-        !Object.values(HttpVerbs).includes((obj as any).method as HttpMethod)
+        typeof (obj as any).httpMethod !== 'string' ||
+        !Object.values(HttpVerbs).includes(
+          (obj as any).httpMethod as HttpMethod
+        )
       ) {
         throw new Error('Invalid event object');
       }
@@ -46,14 +66,27 @@ describe('Class: BaseRouter', () => {
       options?: any
     ): Promise<unknown> {
       this.#isEvent(event);
-      const { method, path } = event;
-      const route = this.routeRegistry.resolve(method, path);
+      const { httpMethod: method, path } = event;
+      const route = this.routeRegistry.resolve(
+        method as HttpMethod,
+        path as Path
+      );
+      const request = new Request(`http://localhost${path}`, {
+        method,
+        headers: event.headers as Record<string, string>,
+        body: event.body,
+      });
       try {
         if (route == null)
           throw new NotFoundError(`Route ${method} ${path} not found`);
-        return await route.handler(event, context);
+        return await route.handler(route.params, { request, event, context });
       } catch (error) {
-        return await this.handleError(error as Error, options);
+        return await this.handleError(error as Error, {
+          request,
+          event,
+          context,
+          ...options,
+        });
       }
     }
   }
@@ -70,8 +103,6 @@ describe('Class: BaseRouter', () => {
     ['DELETE', 'delete'],
     ['HEAD', 'head'],
     ['OPTIONS', 'options'],
-    ['TRACE', 'trace'],
-    ['CONNECT', 'connect'],
   ])('routes %s requests', async (method, verb) => {
     // Prepare
     const app = new TestResolver();
@@ -80,40 +111,46 @@ describe('Class: BaseRouter', () => {
         path: string,
         handler: RouteHandler
       ) => void
-    )('/test', () => `${verb}-test`);
+    )('/test', async () => ({ result: `${verb}-test` }));
     // Act
-    const actual = await app.resolve({ path: '/test', method }, context);
+    const actual = (await app.resolve(
+      createTestEvent('/test', method),
+      context
+    )) as Response;
     // Assess
-    expect(actual).toEqual(`${verb}-test`);
+    expect(actual).toEqual({ result: `${verb}-test` });
   });
 
   it('accepts multiple HTTP methods', async () => {
     // Act
     const app = new TestResolver();
-    app.route(() => 'route-test', {
+    app.route(async () => ({ result: 'route-test' }), {
       path: '/test',
       method: [HttpVerbs.GET, HttpVerbs.POST],
     });
 
     // Act
     const getResult = await app.resolve(
-      { path: '/test', method: HttpVerbs.GET },
+      createTestEvent('/test', HttpVerbs.GET),
       context
     );
     const postResult = await app.resolve(
-      { path: '/test', method: HttpVerbs.POST },
+      createTestEvent('/test', HttpVerbs.POST),
       context
     );
 
     // Assess
-    expect(getResult).toEqual('route-test');
-    expect(postResult).toEqual('route-test');
+    expect(getResult).toEqual({ result: 'route-test' });
+    expect(postResult).toEqual({ result: 'route-test' });
   });
 
   it('uses the global console when no logger is not provided', () => {
     // Act
     const app = new TestResolver();
-    app.route(() => true, { path: '/', method: HttpVerbs.GET });
+    app.route(async () => ({ success: true }), {
+      path: '/',
+      method: HttpVerbs.GET,
+    });
 
     // Assess
     expect(console.debug).not.toHaveBeenCalled();
@@ -127,7 +164,10 @@ describe('Class: BaseRouter', () => {
 
     // Act
     const app = new TestResolver();
-    app.route(() => true, { path: '/', method: HttpVerbs.GET });
+    app.route(async () => ({ success: true }), {
+      path: '/',
+      method: HttpVerbs.GET,
+    });
 
     // Assess
     expect(console.debug).toHaveBeenCalledWith('test debug');
@@ -147,7 +187,10 @@ describe('Class: BaseRouter', () => {
 
     // Act
     const app = new TestResolver({ logger });
-    app.route(() => true, { path: '/', method: HttpVerbs.GET });
+    app.route(async () => ({ success: true }), {
+      path: '/',
+      method: HttpVerbs.GET,
+    });
 
     // Assess
     expect(logger.error).toHaveBeenCalledWith('test error');
@@ -161,47 +204,37 @@ describe('Class: BaseRouter', () => {
     class Lambda {
       @app.get('/test')
       public async getTest() {
-        return 'get-test';
+        return { result: 'get-test' };
       }
 
       @app.post('/test')
       public async postTest() {
-        return 'post-test';
+        return { result: 'post-test' };
       }
 
       @app.put('/test')
       public async putTest() {
-        return 'put-test';
+        return { result: 'put-test' };
       }
 
       @app.patch('/test')
       public async patchTest() {
-        return 'patch-test';
+        return { result: 'patch-test' };
       }
 
       @app.delete('/test')
       public async deleteTest() {
-        return 'delete-test';
+        return { result: 'delete-test' };
       }
 
       @app.head('/test')
       public async headTest() {
-        return 'head-test';
+        return { result: 'head-test' };
       }
 
       @app.options('/test')
       public async optionsTest() {
-        return 'options-test';
-      }
-
-      @app.trace('/test')
-      public async traceTest() {
-        return 'trace-test';
-      }
-
-      @app.connect('/test')
-      public async connectTest() {
-        return 'connect-test';
+        return { result: 'options-test' };
       }
 
       public async handler(event: unknown, context: Context) {
@@ -210,20 +243,21 @@ describe('Class: BaseRouter', () => {
     }
 
     it.each([
-      ['GET', 'get-test'],
-      ['POST', 'post-test'],
-      ['PUT', 'put-test'],
-      ['PATCH', 'patch-test'],
-      ['DELETE', 'delete-test'],
-      ['HEAD', 'head-test'],
-      ['OPTIONS', 'options-test'],
-      ['TRACE', 'trace-test'],
-      ['CONNECT', 'connect-test'],
+      ['GET', { result: 'get-test' }],
+      ['POST', { result: 'post-test' }],
+      ['PUT', { result: 'put-test' }],
+      ['PATCH', { result: 'patch-test' }],
+      ['DELETE', { result: 'delete-test' }],
+      ['HEAD', { result: 'head-test' }],
+      ['OPTIONS', { result: 'options-test' }],
     ])('routes %s requests with decorators', async (method, expected) => {
       // Prepare
       const lambda = new Lambda();
       // Act
-      const actual = await lambda.handler({ path: '/test', method }, context);
+      const actual = await lambda.handler(
+        createTestEvent('/test', method),
+        context
+      );
       // Assess
       expect(actual).toEqual(expected);
     });
@@ -233,6 +267,7 @@ describe('Class: BaseRouter', () => {
     it('calls registered error handler when BadRequestError is thrown', async () => {
       // Prepare
       const app = new TestResolver();
+      vi.stubEnv('POWERTOOLS_DEV', 'true');
 
       app.errorHandler(BadRequestError, async (error) => ({
         statusCode: HttpErrorCodes.BAD_REQUEST,
@@ -246,7 +281,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -274,7 +309,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/nonexistent', method: 'GET' },
+        createTestEvent('/nonexistent', 'GET'),
         context
       )) as Response;
 
@@ -306,7 +341,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -336,7 +371,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -359,7 +394,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -394,7 +429,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -420,7 +455,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -446,7 +481,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -472,7 +507,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -511,11 +546,11 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const badResult = (await app.resolve(
-        { path: '/bad', method: 'GET' },
+        createTestEvent('/bad', 'GET'),
         context
       )) as Response;
       const methodResult = (await app.resolve(
-        { path: '/method', method: 'GET' },
+        createTestEvent('/method', 'GET'),
         context
       )) as Response;
 
@@ -557,7 +592,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -586,7 +621,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await app.resolve(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -624,7 +659,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await lambda.handler(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -663,7 +698,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await lambda.handler(
-        { path: '/nonexistent', method: 'GET' },
+        createTestEvent('/nonexistent', 'GET'),
         context
       )) as Response;
 
@@ -707,7 +742,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await lambda.handler(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -754,7 +789,7 @@ describe('Class: BaseRouter', () => {
 
       // Act
       const result = (await handler(
-        { path: '/test', method: 'GET' },
+        createTestEvent('/test', 'GET'),
         context
       )) as Response;
 
@@ -768,6 +803,129 @@ describe('Class: BaseRouter', () => {
           message: 'scoped: test error',
         })
       );
+    });
+  });
+
+  describe('handler options passing', () => {
+    it('passes request, event, and context to functional route handlers', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const testEvent = createTestEvent('/test', 'GET');
+
+      app.get('/test', async (_params, options) => {
+        return {
+          hasRequest: options?.request instanceof Request,
+          hasEvent: options?.event === testEvent,
+          hasContext: options?.context === context,
+        };
+      });
+
+      // Act
+      const actual = (await app.resolve(testEvent, context)) as any;
+
+      // Assess
+      expect(actual.hasRequest).toBe(true);
+      expect(actual.hasEvent).toBe(true);
+      expect(actual.hasContext).toBe(true);
+    });
+
+    it('passes request, event, and context to functional error handlers', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const testEvent = createTestEvent('/test', 'GET');
+
+      app.errorHandler(BadRequestError, async (error, options) => ({
+        statusCode: HttpErrorCodes.BAD_REQUEST,
+        error: 'Bad Request',
+        message: error.message,
+        hasRequest: options.request instanceof Request,
+        hasEvent: options.event === testEvent,
+        hasContext: options.context === context,
+      }));
+
+      app.get('/test', () => {
+        throw new BadRequestError('test error');
+      });
+
+      // Act
+      const result = (await app.resolve(testEvent, context)) as Response;
+      const body = await result.json();
+
+      // Assess
+      expect(body.hasRequest).toBe(true);
+      expect(body.hasEvent).toBe(true);
+      expect(body.hasContext).toBe(true);
+    });
+
+    it('passes request, event, and context to decorator route handlers', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const testEvent = createTestEvent('/test', 'GET');
+
+      class Lambda {
+        @app.get('/test')
+        public async getTest(_params: any, options: any) {
+          return {
+            hasRequest: options?.request instanceof Request,
+            hasEvent: options?.event === testEvent,
+            hasContext: options?.context === context,
+          };
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context);
+        }
+      }
+
+      const lambda = new Lambda();
+
+      // Act
+      const actual = (await lambda.handler(testEvent, context)) as any;
+
+      // Assess
+      expect(actual.hasRequest).toBe(true);
+      expect(actual.hasEvent).toBe(true);
+      expect(actual.hasContext).toBe(true);
+    });
+
+    it('passes request, event, and context to decorator error handlers', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const testEvent = createTestEvent('/test', 'GET');
+
+      class Lambda {
+        @app.errorHandler(BadRequestError)
+        public async handleBadRequest(error: BadRequestError, options: any) {
+          return {
+            statusCode: HttpErrorCodes.BAD_REQUEST,
+            error: 'Bad Request',
+            message: error.message,
+            hasRequest: options.request instanceof Request,
+            hasEvent: options.event === testEvent,
+            hasContext: options.context === context,
+          };
+        }
+
+        @app.get('/test')
+        public async getTest() {
+          throw new BadRequestError('test error');
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context);
+        }
+      }
+
+      const lambda = new Lambda();
+
+      // Act
+      const result = (await lambda.handler(testEvent, context)) as Response;
+      const body = await result.json();
+
+      // Assess
+      expect(body.hasRequest).toBe(true);
+      expect(body.hasEvent).toBe(true);
+      expect(body.hasContext).toBe(true);
     });
   });
 });

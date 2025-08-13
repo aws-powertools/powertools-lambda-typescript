@@ -4,7 +4,7 @@ import { ErrorHandlerRegistry } from '../../../src/rest/ErrorHandlerRegistry.js'
 import type { HttpStatusCode } from '../../../src/types/rest.js';
 
 const createErrorHandler =
-  (statusCode: HttpStatusCode, message?: string) => (error: Error) => ({
+  (statusCode: HttpStatusCode, message?: string) => async (error: Error) => ({
     statusCode,
     error: error.name,
     message: message ?? error.message,

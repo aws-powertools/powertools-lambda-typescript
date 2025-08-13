@@ -851,7 +851,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('should prefer exact error class match over inheritance match', async () => {
+  it('should prefer exact error class match over inheritance match during exception handling', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -982,7 +982,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('should not interfere with ResolverNotFoundException', async () => {
+  it('should not interfere with ResolverNotFoundException during exception handling', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -1003,7 +1003,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     ).rejects.toThrow('No resolver found for Query-nonExistentResolver');
   });
 
-  it('should work as a method decorator', async () => {
+  it('should work as a method decorator for `exceptionHandler`', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 

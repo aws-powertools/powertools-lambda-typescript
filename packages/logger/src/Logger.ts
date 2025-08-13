@@ -1362,6 +1362,7 @@ class Logger extends Utility implements LoggerInterface {
     this.addToPowertoolsLogData({
       awsRegion: getStringFromEnv({
         key: 'AWS_REGION',
+        defaultValue: '',
       }),
       environment:
         environment ||

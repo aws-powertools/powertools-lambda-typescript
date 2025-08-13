@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
+
+### Features
+
+- make `parse` function available standalone ([#4300](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4300)) ([4998d6b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4998d6bffcb45710d96160dbb685145de3254f4a))
+
+### Bug Fixes
+
+- cognito schema `preferredRole` may be null ([#4259](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4259)) ([5ef5c85](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5ef5c85b1983617f64bce1410aeb9fd57859c04d))
 ## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
 
 ### Bug Fixes

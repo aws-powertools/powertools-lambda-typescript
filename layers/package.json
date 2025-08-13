@@ -1,6 +1,6 @@
 {
   "name": "layers",
-  "version": "2.24.1",
+  "version": "2.25.0",
   "bin": {
     "layer": "bin/layers.js"
   },
@@ -43,6 +43,6 @@
     "aws-cdk": "^2.1024.0",
     "aws-cdk-lib": "^2.210.0",
     "esbuild": "^0.25.8",
-    "tsx": "^4.20.3"
+    "tsx": "^4.20.4"
   }
 }

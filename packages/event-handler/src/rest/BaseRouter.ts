@@ -16,6 +16,11 @@ import type {
 } from '../types/rest.js';
 import { HttpVerbs } from './constants.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
+import {
+  MethodNotAllowedError,
+  NotFoundError,
+  ServiceError,
+} from './errors.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 
@@ -54,11 +59,35 @@ abstract class BaseRouter {
     this.isDev = isDevMode();
   }
 
+  /**
+   * Registers a custom error handler for specific error types.
+   *
+   * @param errorType - The error constructor(s) to handle
+   * @param handler - The error handler function that returns an ErrorResponse
+   */
   public errorHandler<T extends Error>(
     errorType: ErrorConstructor<T> | ErrorConstructor<T>[],
     handler: ErrorHandler<T>
   ): void {
     this.errorHandlerRegistry.register(errorType, handler);
+  }
+
+  /**
+   * Registers a custom handler for 404 Not Found errors.
+   *
+   * @param handler - The error handler function for NotFoundError
+   */
+  public notFound(handler: ErrorHandler<NotFoundError>): void {
+    this.errorHandlerRegistry.register(NotFoundError, handler);
+  }
+
+  /**
+   * Registers a custom handler for 405 Method Not Allowed errors.
+   *
+   * @param handler - The error handler function for MethodNotAllowedError
+   */
+  public methodNotAllowed(handler: ErrorHandler<MethodNotAllowedError>): void {
+    this.errorHandlerRegistry.register(MethodNotAllowedError, handler);
   }
 
   public abstract resolve(
@@ -74,6 +103,62 @@ abstract class BaseRouter {
     for (const method of methods) {
       this.routeRegistry.register(new Route(method, path, handler));
     }
+  }
+
+  /**
+   * Handles errors by finding a registered error handler or falling
+   * back to a default handler.
+   *
+   * @param error - The error to handle
+   * @returns A Response object with appropriate status code and error details
+   */
+  protected async handleError(error: Error): Promise<Response> {
+    const handler = this.errorHandlerRegistry.resolve(error);
+    if (handler !== null) {
+      try {
+        const body = await handler(error);
+        return new Response(JSON.stringify(body), {
+          status: body.statusCode,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (handlerError) {
+        return this.#defaultErrorHandler(handlerError as Error);
+      }
+    }
+
+    if (error instanceof ServiceError) {
+      return new Response(JSON.stringify(error.toJSON()), {
+        status: error.statusCode,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return this.#defaultErrorHandler(error);
+  }
+
+  /**
+   * Default error handler that returns a 500 Internal Server Error response.
+   * In development mode, includes stack trace and error details.
+   *
+   * @param error - The error to handle
+   * @returns A Response object with 500 status and error details
+   */
+  #defaultErrorHandler(error: Error): Response {
+    return new Response(
+      JSON.stringify({
+        statusCode: 500,
+        error: 'Internal Server Error',
+        message: isDevMode() ? error.message : 'Internal Server Error',
+        ...(isDevMode() && {
+          stack: error.stack,
+          details: { errorName: error.name },
+        }),
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 
   #handleHttpMethod(

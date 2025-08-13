@@ -3,7 +3,12 @@ import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
 import { HttpErrorCodes, HttpVerbs } from '../../../src/rest/constants.js';
-import { BadRequestError } from '../../../src/rest/errors.js';
+import {
+  BadRequestError,
+  InternalServerError,
+  MethodNotAllowedError,
+  NotFoundError,
+} from '../../../src/rest/errors.js';
 import type {
   HttpMethod,
   Path,
@@ -35,12 +40,17 @@ describe('Class: BaseRouter', () => {
       }
     }
 
-    public resolve(event: unknown, context: Context): Promise<unknown> {
+    public async resolve(event: unknown, context: Context): Promise<unknown> {
       this.#isEvent(event);
       const { method, path } = event;
       const route = this.routeRegistry.resolve(method, path);
-      if (route == null) throw new Error('404');
-      return route.handler(event, context);
+      try {
+        if (route == null)
+          throw new NotFoundError(`Route ${method} ${path} not found`);
+        return route.handler(event, context);
+      } catch (error) {
+        return await this.handleError(error as Error);
+      }
     }
   }
 
@@ -215,27 +225,369 @@ describe('Class: BaseRouter', () => {
     });
   });
 
-  it('handles errors through registered error handlers', async () => {
-    // Prepare
-    class TestRouterWithErrorAccess extends TestResolver {
-      get testErrorHandlerRegistry() {
-        return this.errorHandlerRegistry;
-      }
-    }
+  describe('error handling', () => {
+    it('calls registered error handler when BadRequestError is thrown', async () => {
+      // Prepare
+      const app = new TestResolver();
 
-    const app = new TestRouterWithErrorAccess();
-    const errorHandler = (error: BadRequestError) => ({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
-      error: error.name,
-      message: `Handled: ${error.message}`,
+      app.errorHandler(BadRequestError, async (error) => ({
+        statusCode: HttpErrorCodes.BAD_REQUEST,
+        error: 'Bad Request',
+        message: `Handled: ${error.message}`,
+      }));
+
+      app.get('/test', () => {
+        throw new BadRequestError('test error');
+      });
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.BAD_REQUEST);
+      expect(await result.text()).toBe(
+        JSON.stringify({
+          statusCode: HttpErrorCodes.BAD_REQUEST,
+          error: 'Bad Request',
+          message: 'Handled: test error',
+        })
+      );
     });
 
-    app.errorHandler(BadRequestError, errorHandler);
+    it('calls notFound handler when route is not found', async () => {
+      // Prepare
+      const app = new TestResolver();
 
-    // Act & Assess
-    const registeredHandler = app.testErrorHandlerRegistry.resolve(
-      new BadRequestError('test')
-    );
-    expect(registeredHandler).toBe(errorHandler);
+      app.notFound(async (error) => ({
+        statusCode: HttpErrorCodes.NOT_FOUND,
+        error: 'Not Found',
+        message: `Custom: ${error.message}`,
+      }));
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/nonexistent', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.NOT_FOUND);
+      expect(await result.text()).toBe(
+        JSON.stringify({
+          statusCode: HttpErrorCodes.NOT_FOUND,
+          error: 'Not Found',
+          message: 'Custom: Route GET /nonexistent not found',
+        })
+      );
+    });
+
+    it('calls methodNotAllowed handler when MethodNotAllowedError is thrown', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.methodNotAllowed(async (error) => ({
+        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        error: 'Method Not Allowed',
+        message: `Custom: ${error.message}`,
+      }));
+
+      app.get('/test', () => {
+        throw new MethodNotAllowedError('POST not allowed');
+      });
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.METHOD_NOT_ALLOWED);
+      expect(await result.text()).toBe(
+        JSON.stringify({
+          statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+          error: 'Method Not Allowed',
+          message: 'Custom: POST not allowed',
+        })
+      );
+    });
+
+    it('falls back to default error handler when registered handler throws', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.errorHandler(BadRequestError, async () => {
+        throw new Error('Handler failed');
+      });
+
+      app.get('/test', () => {
+        throw new BadRequestError('original error');
+      });
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      const body = await result.json();
+      expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(body.error).toBe('Internal Server Error');
+      expect(body.message).toBe('Internal Server Error');
+    });
+
+    it('uses default handling when no error handler is registered', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.get('/test', () => {
+        throw new Error('unhandled error');
+      });
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      const body = await result.json();
+      expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(body.error).toBe('Internal Server Error');
+      expect(body.message).toBe('Internal Server Error');
+    });
+
+    it('calls most specific error handler when multiple handlers match', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.errorHandler(Error, async () => ({
+        statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+        error: 'Generic Error',
+        message: 'Generic handler',
+      }));
+
+      app.errorHandler(BadRequestError, async () => ({
+        statusCode: HttpErrorCodes.BAD_REQUEST,
+        error: 'Bad Request',
+        message: 'Specific handler',
+      }));
+
+      app.get('/test', () => {
+        throw new BadRequestError('test error');
+      });
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.BAD_REQUEST);
+      expect(await result.text()).toBe(
+        JSON.stringify({
+          statusCode: HttpErrorCodes.BAD_REQUEST,
+          error: 'Bad Request',
+          message: 'Specific handler',
+        })
+      );
+    });
+
+    it('uses ServiceError toJSON method when no custom handler is registered', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.get('/test', () => {
+        throw new InternalServerError('service error');
+      });
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(await result.text()).toBe(
+        JSON.stringify({
+          statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+          error: 'InternalServerError',
+          message: 'service error',
+        })
+      );
+    });
+
+    it('hides error details when POWERTOOLS_DEV env var is not set', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.get('/test', () => {
+        throw new Error('sensitive error details');
+      });
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      const body = await result.json();
+      expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(body.error).toBe('Internal Server Error');
+      expect(body.message).toBe('Internal Server Error');
+      expect(body.stack).toBeUndefined();
+      expect(body.details).toBeUndefined();
+    });
+
+    it('shows error details in development mode', async () => {
+      // Prepare
+      vi.stubEnv('POWERTOOLS_DEV', 'true');
+      const app = new TestResolver();
+
+      app.get('/test', () => {
+        throw new Error('debug error details');
+      });
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      const body = await result.json();
+      expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(body.error).toBe('Internal Server Error');
+      expect(body.message).toBe('debug error details');
+      expect(body.stack).toBeDefined();
+      expect(body.details).toBeDefined();
+      expect(body.details.errorName).toBe('Error');
+    });
+
+    it('accepts array of error types for single handler', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.errorHandler(
+        [BadRequestError, MethodNotAllowedError],
+        async (error: Error) => ({
+          statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+          error: 'Validation Error',
+          message: `Array handler: ${error.message}`,
+        })
+      );
+
+      app.get('/bad', () => {
+        throw new BadRequestError('bad request');
+      });
+
+      app.get('/method', () => {
+        throw new MethodNotAllowedError('method not allowed');
+      });
+
+      // Act
+      const badResult = (await app.resolve(
+        { path: '/bad', method: 'GET' },
+        context
+      )) as Response;
+      const methodResult = (await app.resolve(
+        { path: '/method', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(badResult.status).toBe(HttpErrorCodes.UNPROCESSABLE_ENTITY);
+      expect(await badResult.json()).toEqual({
+        statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+        error: 'Validation Error',
+        message: 'Array handler: bad request',
+      });
+
+      expect(methodResult.status).toBe(HttpErrorCodes.UNPROCESSABLE_ENTITY);
+      expect(await methodResult.json()).toEqual({
+        statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+        error: 'Validation Error',
+        message: 'Array handler: method not allowed',
+      });
+    });
+
+    it('replaces previous handler when registering new handler for same error type', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.errorHandler(BadRequestError, async () => ({
+        statusCode: HttpErrorCodes.BAD_REQUEST,
+        error: 'First Handler',
+        message: 'first',
+      }));
+
+      app.errorHandler(BadRequestError, async (error) => ({
+        statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+        error: 'Second Handler',
+        message: `second: ${error.message}`,
+      }));
+
+      app.get('/test', () => {
+        throw new BadRequestError('test error');
+      });
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result.status).toBe(HttpErrorCodes.UNPROCESSABLE_ENTITY);
+      expect(await result.json()).toEqual({
+        statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+        error: 'Second Handler',
+        message: 'second: test error',
+      });
+    });
+
+    it('returns response with correct Content-Type header', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.errorHandler(BadRequestError, async (error) => ({
+        statusCode: HttpErrorCodes.BAD_REQUEST,
+        error: 'Bad Request',
+        message: error.message,
+      }));
+
+      app.get('/test', () => {
+        throw new BadRequestError('test error');
+      });
+
+      // Act
+      const result = (await app.resolve(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result.headers.get('Content-Type')).toBe('application/json');
+    });
   });
 });

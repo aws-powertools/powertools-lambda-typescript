@@ -20,7 +20,7 @@ interface ErrorContext {
 type ErrorHandler<T extends Error = Error> = (
   error: T,
   context?: ErrorContext
-) => ErrorResponse;
+) => Promise<ErrorResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
   new (...args: any[]): T;

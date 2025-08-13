@@ -112,11 +112,11 @@ abstract class BaseRouter {
    * @param error - The error to handle
    * @returns A Response object with appropriate status code and error details
    */
-  protected handleError(error: Error): Response {
+  protected async handleError(error: Error): Promise<Response> {
     const handler = this.errorHandlerRegistry.resolve(error);
-    if (handler != null) {
+    if (handler !== null) {
       try {
-        const body = handler(error);
+        const body = await handler(error);
         return new Response(JSON.stringify(body), {
           status: body.statusCode,
           headers: { 'Content-Type': 'application/json' },
@@ -144,17 +144,11 @@ abstract class BaseRouter {
    * @returns A Response object with 500 status and error details
    */
   #defaultErrorHandler(error: Error): Response {
-    const isProduction =
-      getStringFromEnv({
-        key: 'NODE_ENV',
-        defaultValue: '',
-      }) === 'production';
-
     return new Response(
       JSON.stringify({
         statusCode: 500,
         error: 'Internal Server Error',
-        message: isProduction ? 'Internal Server Error' : error.message,
+        message: isDevMode() ? error.message : 'Internal Server Error',
         ...(isDevMode() && {
           stack: error.stack,
           details: { errorName: error.name },

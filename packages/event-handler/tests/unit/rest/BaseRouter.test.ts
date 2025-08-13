@@ -49,7 +49,7 @@ describe('Class: BaseRouter', () => {
           throw new NotFoundError(`Route ${method} ${path} not found`);
         return route.handler(event, context);
       } catch (error) {
-        return this.handleError(error as Error);
+        return await this.handleError(error as Error);
       }
     }
   }
@@ -230,7 +230,7 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
 
-      app.errorHandler(BadRequestError, (error) => ({
+      app.errorHandler(BadRequestError, async (error) => ({
         statusCode: HttpErrorCodes.BAD_REQUEST,
         error: 'Bad Request',
         message: `Handled: ${error.message}`,
@@ -262,7 +262,7 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
 
-      app.notFound((error) => ({
+      app.notFound(async (error) => ({
         statusCode: HttpErrorCodes.NOT_FOUND,
         error: 'Not Found',
         message: `Custom: ${error.message}`,
@@ -290,7 +290,7 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
 
-      app.methodNotAllowed((error) => ({
+      app.methodNotAllowed(async (error) => ({
         statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
         error: 'Method Not Allowed',
         message: `Custom: ${error.message}`,
@@ -322,7 +322,7 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
 
-      app.errorHandler(BadRequestError, () => {
+      app.errorHandler(BadRequestError, async () => {
         throw new Error('Handler failed');
       });
 
@@ -342,7 +342,7 @@ describe('Class: BaseRouter', () => {
       const body = await result.json();
       expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
       expect(body.error).toBe('Internal Server Error');
-      expect(body.message).toBe('Handler failed');
+      expect(body.message).toBe('Internal Server Error');
     });
 
     it('uses default handling when no error handler is registered', async () => {
@@ -365,20 +365,20 @@ describe('Class: BaseRouter', () => {
       const body = await result.json();
       expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
       expect(body.error).toBe('Internal Server Error');
-      expect(body.message).toBe('unhandled error');
+      expect(body.message).toBe('Internal Server Error');
     });
 
     it('calls most specific error handler when multiple handlers match', async () => {
       // Prepare
       const app = new TestResolver();
 
-      app.errorHandler(Error, () => ({
+      app.errorHandler(Error, async () => ({
         statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
         error: 'Generic Error',
         message: 'Generic handler',
       }));
 
-      app.errorHandler(BadRequestError, () => ({
+      app.errorHandler(BadRequestError, async () => ({
         statusCode: HttpErrorCodes.BAD_REQUEST,
         error: 'Bad Request',
         message: 'Specific handler',
@@ -432,9 +432,8 @@ describe('Class: BaseRouter', () => {
       );
     });
 
-    it('hides error details in production mode', async () => {
+    it('hides error details when POWERTOOLS_DEV env var is not set', async () => {
       // Prepare
-      vi.stubEnv('NODE_ENV', 'production');
       const app = new TestResolver();
 
       app.get('/test', () => {
@@ -491,7 +490,7 @@ describe('Class: BaseRouter', () => {
 
       app.errorHandler(
         [BadRequestError, MethodNotAllowedError],
-        (error: Error) => ({
+        async (error: Error) => ({
           statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
           error: 'Validation Error',
           message: `Array handler: ${error.message}`,
@@ -536,13 +535,13 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
 
-      app.errorHandler(BadRequestError, () => ({
+      app.errorHandler(BadRequestError, async () => ({
         statusCode: HttpErrorCodes.BAD_REQUEST,
         error: 'First Handler',
         message: 'first',
       }));
 
-      app.errorHandler(BadRequestError, (error) => ({
+      app.errorHandler(BadRequestError, async (error) => ({
         statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
         error: 'Second Handler',
         message: `second: ${error.message}`,
@@ -571,7 +570,7 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
 
-      app.errorHandler(BadRequestError, (error) => ({
+      app.errorHandler(BadRequestError, async (error) => ({
         statusCode: HttpErrorCodes.BAD_REQUEST,
         error: 'Bad Request',
         message: error.message,

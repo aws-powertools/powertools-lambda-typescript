@@ -205,7 +205,7 @@ type ErrorClass<T extends Error> = new (...args: any[]) => T;
  */
 type ExceptionHandlerOptions<T extends Error = Error> = {
   /**
-   * The error class/constructor to handle (must be Error or a subclass)
+   * The error class to handle (must be Error or a subclass)
    */
   error: ErrorClass<T>;
   /**

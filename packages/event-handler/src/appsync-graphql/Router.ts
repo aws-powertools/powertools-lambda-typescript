@@ -961,8 +961,8 @@ class Router {
    * Register an exception handler for a specific error class.
    *
    * Registers a handler for a specific error class that can be thrown by GraphQL resolvers.
-   * The handler will be invoked when an error of the specified class (or its subclasses) is thrown
-   * from any resolver function.
+   * The handler will be invoked when an error of the specified class is thrown from any
+   * resolver function.
    *
    * @example
    * ```ts

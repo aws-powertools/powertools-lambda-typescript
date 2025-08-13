@@ -1,7 +1,7 @@
 import { createHash, type Hash } from 'node:crypto';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
-import { LRUCache } from '@aws-lambda-powertools/commons/utils/lru-cache';
 import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
+import { LRUCache } from '@aws-lambda-powertools/commons/utils/lru-cache';
 import { search } from '@aws-lambda-powertools/jmespath';
 import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import { IdempotencyRecordStatus } from '../constants.js';
@@ -39,7 +39,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   public constructor() {
     this.idempotencyKeyPrefix = getStringFromEnv({
       key: 'AWS_LAMBDA_FUNCTION_NAME',
-      errorMessage: 'AWS_LAMBDA_FUNCTION_NAME environment variable is required',
+      defaultValue: '',
     });
   }
 

@@ -9,7 +9,12 @@ const logger = new Logger({
 const app = new AppSyncGraphQLResolver({ logger });
 
 app.exceptionHandler(AssertionError, async (error) => {
-  return { error: { message: error.message, type: error.name } };
+  return {
+    error: {
+      message: error.message,
+      type: error.name,
+    },
+  };
 });
 
 app.onQuery('createSomething', async () => {

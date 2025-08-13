@@ -40,16 +40,20 @@ describe('Class: BaseRouter', () => {
       }
     }
 
-    public async resolve(event: unknown, context: Context): Promise<unknown> {
+    public async resolve(
+      event: unknown,
+      context: Context,
+      options?: any
+    ): Promise<unknown> {
       this.#isEvent(event);
       const { method, path } = event;
       const route = this.routeRegistry.resolve(method, path);
       try {
         if (route == null)
           throw new NotFoundError(`Route ${method} ${path} not found`);
-        return route.handler(event, context);
+        return await route.handler(event, context);
       } catch (error) {
-        return await this.handleError(error as Error);
+        return await this.handleError(error as Error, options);
       }
     }
   }
@@ -588,6 +592,182 @@ describe('Class: BaseRouter', () => {
 
       // Assess
       expect(result.headers.get('Content-Type')).toBe('application/json');
+    });
+  });
+
+  describe('decorators error handling', () => {
+    it('works with errorHandler decorator', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      class Lambda {
+        @app.errorHandler(BadRequestError)
+        public async handleBadRequest(error: BadRequestError) {
+          return {
+            statusCode: HttpErrorCodes.BAD_REQUEST,
+            error: 'Bad Request',
+            message: `Decorated: ${error.message}`,
+          };
+        }
+
+        @app.get('/test')
+        public async getTest() {
+          throw new BadRequestError('test error');
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context);
+        }
+      }
+
+      const lambda = new Lambda();
+
+      // Act
+      const result = (await lambda.handler(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.BAD_REQUEST);
+      expect(await result.text()).toBe(
+        JSON.stringify({
+          statusCode: HttpErrorCodes.BAD_REQUEST,
+          error: 'Bad Request',
+          message: 'Decorated: test error',
+        })
+      );
+    });
+
+    it('works with notFound decorator', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      class Lambda {
+        @app.notFound()
+        public async handleNotFound(error: NotFoundError) {
+          return {
+            statusCode: HttpErrorCodes.NOT_FOUND,
+            error: 'Not Found',
+            message: `Decorated: ${error.message}`,
+          };
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context);
+        }
+      }
+
+      const lambda = new Lambda();
+
+      // Act
+      const result = (await lambda.handler(
+        { path: '/nonexistent', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.NOT_FOUND);
+      expect(await result.text()).toBe(
+        JSON.stringify({
+          statusCode: HttpErrorCodes.NOT_FOUND,
+          error: 'Not Found',
+          message: 'Decorated: Route GET /nonexistent not found',
+        })
+      );
+    });
+
+    it('works with methodNotAllowed decorator', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      class Lambda {
+        @app.methodNotAllowed()
+        public async handleMethodNotAllowed(error: MethodNotAllowedError) {
+          return {
+            statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+            error: 'Method Not Allowed',
+            message: `Decorated: ${error.message}`,
+          };
+        }
+
+        @app.get('/test')
+        public async getTest() {
+          throw new MethodNotAllowedError('POST not allowed');
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context);
+        }
+      }
+
+      const lambda = new Lambda();
+
+      // Act
+      const result = (await lambda.handler(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.METHOD_NOT_ALLOWED);
+      expect(await result.text()).toBe(
+        JSON.stringify({
+          statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+          error: 'Method Not Allowed',
+          message: 'Decorated: POST not allowed',
+        })
+      );
+    });
+
+    it('preserves scope when using error handler decorators', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      class Lambda {
+        public scope = 'scoped';
+
+        @app.errorHandler(BadRequestError)
+        public async handleBadRequest(error: BadRequestError) {
+          return {
+            statusCode: HttpErrorCodes.BAD_REQUEST,
+            error: 'Bad Request',
+            message: `${this.scope}: ${error.message}`,
+          };
+        }
+
+        @app.get('/test')
+        public async getTest() {
+          throw new BadRequestError('test error');
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context, { scope: this });
+        }
+      }
+
+      const lambda = new Lambda();
+      const handler = lambda.handler.bind(lambda);
+
+      // Act
+      const result = (await handler(
+        { path: '/test', method: 'GET' },
+        context
+      )) as Response;
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpErrorCodes.BAD_REQUEST);
+      expect(await result.text()).toBe(
+        JSON.stringify({
+          statusCode: HttpErrorCodes.BAD_REQUEST,
+          error: 'Bad Request',
+          message: 'scoped: test error',
+        })
+      );
     });
   });
 });

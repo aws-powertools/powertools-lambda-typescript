@@ -68,8 +68,23 @@ abstract class BaseRouter {
   public errorHandler<T extends Error>(
     errorType: ErrorConstructor<T> | ErrorConstructor<T>[],
     handler: ErrorHandler<T>
-  ): void {
-    this.errorHandlerRegistry.register(errorType, handler);
+  ): void;
+  public errorHandler<T extends Error>(
+    errorType: ErrorConstructor<T> | ErrorConstructor<T>[]
+  ): MethodDecorator;
+  public errorHandler<T extends Error>(
+    errorType: ErrorConstructor<T> | ErrorConstructor<T>[],
+    handler?: ErrorHandler<T>
+  ): MethodDecorator | undefined {
+    if (handler && typeof handler === 'function') {
+      this.errorHandlerRegistry.register(errorType, handler);
+      return;
+    }
+
+    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+      this.errorHandlerRegistry.register(errorType, descriptor?.value);
+      return descriptor;
+    };
   }
 
   /**
@@ -77,8 +92,20 @@ abstract class BaseRouter {
    *
    * @param handler - The error handler function for NotFoundError
    */
-  public notFound(handler: ErrorHandler<NotFoundError>): void {
-    this.errorHandlerRegistry.register(NotFoundError, handler);
+  public notFound(handler: ErrorHandler<NotFoundError>): void;
+  public notFound(): MethodDecorator;
+  public notFound(
+    handler?: ErrorHandler<NotFoundError>
+  ): MethodDecorator | undefined {
+    if (handler && typeof handler === 'function') {
+      this.errorHandlerRegistry.register(NotFoundError, handler);
+      return;
+    }
+
+    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+      this.errorHandlerRegistry.register(NotFoundError, descriptor?.value);
+      return descriptor;
+    };
   }
 
   /**
@@ -86,8 +113,23 @@ abstract class BaseRouter {
    *
    * @param handler - The error handler function for MethodNotAllowedError
    */
-  public methodNotAllowed(handler: ErrorHandler<MethodNotAllowedError>): void {
-    this.errorHandlerRegistry.register(MethodNotAllowedError, handler);
+  public methodNotAllowed(handler: ErrorHandler<MethodNotAllowedError>): void;
+  public methodNotAllowed(): MethodDecorator;
+  public methodNotAllowed(
+    handler?: ErrorHandler<MethodNotAllowedError>
+  ): MethodDecorator | undefined {
+    if (handler && typeof handler === 'function') {
+      this.errorHandlerRegistry.register(MethodNotAllowedError, handler);
+      return;
+    }
+
+    return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+      this.errorHandlerRegistry.register(
+        MethodNotAllowedError,
+        descriptor?.value
+      );
+      return descriptor;
+    };
   }
 
   public abstract resolve(
@@ -110,13 +152,17 @@ abstract class BaseRouter {
    * back to a default handler.
    *
    * @param error - The error to handle
+   * @param options - Optional resolve options for scope binding
    * @returns A Response object with appropriate status code and error details
    */
-  protected async handleError(error: Error): Promise<Response> {
+  protected async handleError(
+    error: Error,
+    options?: ResolveOptions
+  ): Promise<Response> {
     const handler = this.errorHandlerRegistry.resolve(error);
     if (handler !== null) {
       try {
-        const body = await handler(error);
+        const body = await handler.apply(options?.scope ?? this, [error]);
         return new Response(JSON.stringify(body), {
           status: body.statusCode,
           headers: { 'Content-Type': 'application/json' },

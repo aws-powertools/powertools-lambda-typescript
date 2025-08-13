@@ -63,6 +63,27 @@ describe('Class: BasePersistenceLayer', () => {
         })
       );
     });
+
+    it('initializes with empty key prefix if AWS_LAMBDA_FUNCTION_NAME is not in the environment variable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_FUNCTION_NAME', undefined);
+
+      // Act
+      const persistenceLayer = new PersistenceLayerTestClass();
+
+      // Assess
+      expect(persistenceLayer.idempotencyKeyPrefix).toBe('');
+      expect(persistenceLayer).toEqual(
+        expect.objectContaining({
+          configured: false,
+          expiresAfterSeconds: 3600,
+          hashFunction: 'md5',
+          payloadValidationEnabled: false,
+          throwOnNoIdempotencyKey: false,
+          useLocalCache: false,
+        })
+      );
+    });
   });
 
   describe('Method: configure', () => {

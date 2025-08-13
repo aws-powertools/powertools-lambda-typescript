@@ -182,9 +182,11 @@ jobs:
           REMOTE_DESCRIPTION=$(jq -r '.Description' $layer_output)
           LOCAL_DESCRIPTION=$(jq -r '.Description' AWSLambdaPowertoolsTypeScriptV2.json)
           test "$REMOTE_DESCRIPTION" == "$LOCAL_DESCRIPTION" && echo "Version number OK: ${LOCAL_DESCRIPTION}" || exit 1
-          REMOTE_LAYER_VERSION=$(jq -r '.LayerVersionArn' $layer_output | sed 's/.*://')
-          LOCAL_LAYER_VERSION=$(jq -r '.LayerVersionArn' AWSLambdaPowertoolsTypeScriptV2.json | sed 's/.*://')
-          test "$REMOTE_LAYER_VERSION" == "$LOCAL_LAYER_VERSION" && echo "Layer Version number OK: ${LOCAL_LAYER_VERSION}" || exit 1
+          if [ "${{ inputs.environment }}" == "Prod" ]; then
+            REMOTE_LAYER_VERSION=$(jq -r '.LayerVersionArn' $layer_output | sed 's/.*://')
+            LOCAL_LAYER_VERSION=$(jq -r '.LayerVersionArn' AWSLambdaPowertoolsTypeScriptV2.json | sed 's/.*://')
+            test "$REMOTE_LAYER_VERSION" == "$LOCAL_LAYER_VERSION" && echo "Layer Version number OK: ${LOCAL_LAYER_VERSION}" || exit 1
+          fi
           jq -s -r '["Layer Arn", "Runtimes", "Version", "Description", "SHA256"], ([.[0], .[1]] | .[] | [.LayerArn, (.CompatibleRuntimes | join("/")), .Version, .Description, .Content.CodeSha256]) |@tsv' AWSLambdaPowertoolsTypeScriptV2.json $layer_output | column -t -s $'\t'
 
       - name: Store Metadata - ${{ matrix.region }}

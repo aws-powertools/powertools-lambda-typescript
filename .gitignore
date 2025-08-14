@@ -51,3 +51,5 @@ tsconfig.tsbuildinfo
 # LLMs
 .claude
 .amazonq
+.kiro
+.github/instructions

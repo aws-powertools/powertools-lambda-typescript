@@ -1,5 +1,22 @@
 # Change Log
 
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+### Improvements
+
+- **logger** resolve issue when no logger region is set ([#4319](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4319)) ([b74b3b4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b74b3b4d1102e8d33c677d2c73ddc355717c4cef))
+- **idempotency** Prevent error when AWS_LAMBDA_FUNCTION_NAME is not passed in the Idempotency Persistence Layer ([#4327](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4327)) ([17845d0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/17845d0de45508388100aefdbe42d1e0d9a02522))
+
+### Bug Fixes
+
+- **tracer** pass args of decorated method as they are ([#4312](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4312)) ([7bd81ae](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7bd81aed4d259c909107a1d312bd722bc258f358))
+
+### Features
+
+- **event-handler** add decorator functionality for error handlers ([#4323](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4323)) ([562747a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/562747a4c415ea2225529e5e276269e87c7b08b9))
+- **event-handler** add error handling functionality to BaseRouter ([#4316](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4316)) ([5aff398](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5aff3984359a5a4f4408a5d286d3c36976d454fa))
+
+
 ## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
 
 ### Improvements

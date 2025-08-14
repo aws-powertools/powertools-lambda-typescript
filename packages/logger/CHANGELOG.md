@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+### Improvements
+
+- resolve issue when no logger region is set ([#4319](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4319)) ([b74b3b4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b74b3b4d1102e8d33c677d2c73ddc355717c4cef))
 ## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
 
 ### Improvements

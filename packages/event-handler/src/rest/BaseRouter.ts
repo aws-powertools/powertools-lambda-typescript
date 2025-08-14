@@ -8,6 +8,7 @@ import type { ResolveOptions } from '../types/index.js';
 import type {
   ErrorConstructor,
   ErrorHandler,
+  ErrorResolveOptions,
   HttpMethod,
   Path,
   RouteHandler,
@@ -157,12 +158,19 @@ abstract class BaseRouter {
    */
   protected async handleError(
     error: Error,
-    options?: ResolveOptions
+    options: ErrorResolveOptions
   ): Promise<Response> {
     const handler = this.errorHandlerRegistry.resolve(error);
     if (handler !== null) {
       try {
-        const body = await handler.apply(options?.scope ?? this, [error]);
+        const body = await handler.apply(options.scope ?? this, [
+          error,
+          {
+            request: options.request,
+            event: options.event,
+            context: options.context,
+          },
+        ]);
         return new Response(JSON.stringify(body), {
           status: body.statusCode,
           headers: { 'Content-Type': 'application/json' },
@@ -272,24 +280,6 @@ abstract class BaseRouter {
     handler?: RouteHandler
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(HttpVerbs.OPTIONS, path, handler);
-  }
-
-  public connect(path: Path, handler: RouteHandler): void;
-  public connect(path: Path): MethodDecorator;
-  public connect(
-    path: Path,
-    handler?: RouteHandler
-  ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.CONNECT, path, handler);
-  }
-
-  public trace(path: Path, handler: RouteHandler): void;
-  public trace(path: Path): MethodDecorator;
-  public trace(
-    path: Path,
-    handler?: RouteHandler
-  ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.TRACE, path, handler);
   }
 }
 

@@ -1,6 +1,4 @@
 export const HttpVerbs = {
-  CONNECT: 'CONNECT',
-  TRACE: 'TRACE',
   GET: 'GET',
   POST: 'POST',
   PUT: 'PUT',

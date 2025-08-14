@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+### Improvements
+
+- Prevent error when AWS_LAMBDA_FUNCTION_NAME is not passed in the Idempotency Persistence Layer ([#4327](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4327)) ([17845d0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/17845d0de45508388100aefdbe42d1e0d9a02522))
 ## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
 
 ### Improvements

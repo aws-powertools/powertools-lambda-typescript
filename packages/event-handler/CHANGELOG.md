@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+### Features
+
+- add decorator functionality for error handlers ([#4323](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4323)) ([562747a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/562747a4c415ea2225529e5e276269e87c7b08b9))
+- add error handling functionality to BaseRouter ([#4316](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4316)) ([5aff398](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5aff3984359a5a4f4408a5d286d3c36976d454fa))
 ## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
 
 ### Features

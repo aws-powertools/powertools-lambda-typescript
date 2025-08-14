@@ -124,6 +124,9 @@ Knowing which companies are using this library is important to help prioritize t
 [**Flyweight**](https://flyweight.io/){target="_blank" rel="nofollow"}
 { .card }
 
+[**FraudFalcon**](https://fraudfalcon.app){target="_blank" rel="nofollow"}
+{ .card }
+
 [**globaldatanet**](https://globaldatanet.com/){target="_blank" rel="nofollow"}
 { .card }
 

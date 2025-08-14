@@ -1,3 +1,5 @@
+import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
+import type { APIGatewayProxyEvent } from 'aws-lambda';
 import type { CompiledRoute, Path, ValidationResult } from '../types/rest.js';
 import { PARAM_PATTERN, SAFE_CHARS, UNSAFE_CHARS } from './constants.js';
 
@@ -43,3 +45,26 @@ export function validatePathPattern(path: Path): ValidationResult {
     issues,
   };
 }
+
+/**
+ * Type guard to check if the provided event is an API Gateway Proxy event.
+ *
+ * We use this function to ensure that the event is an object and has the
+ * required properties without adding a dependency.
+ *
+ * @param event - The incoming event to check
+ */
+export const isAPIGatewayProxyEvent = (
+  event: unknown
+): event is APIGatewayProxyEvent => {
+  if (!isRecord(event)) return false;
+  return (
+    isString(event.httpMethod) &&
+    isString(event.path) &&
+    isString(event.resource) &&
+    isRecord(event.headers) &&
+    isRecord(event.requestContext) &&
+    typeof event.isBase64Encoded === 'boolean' &&
+    (event.body === null || isString(event.body))
+  );
+};

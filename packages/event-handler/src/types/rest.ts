@@ -53,7 +53,6 @@ interface CompiledRoute {
 
 type DynamicRoute = Route & CompiledRoute;
 
-// biome-ignore lint/suspicious/noExplicitAny: we want to keep arguments and return types as any to accept any type of function
 type RouteHandler<
   TParams = Record<string, unknown>,
   TReturn = Response | JSONObject,

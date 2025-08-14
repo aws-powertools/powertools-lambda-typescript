@@ -3,12 +3,14 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
 import { HttpErrorCodes, HttpVerbs } from '../../../src/rest/constants.js';
+import { proxyEventToWebRequest } from '../../../src/rest/converters.js';
 import {
   BadRequestError,
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
 } from '../../../src/rest/errors.js';
+import { isAPIGatewayProxyEvent } from '../../../src/rest/utils.js';
 import type {
   HttpMethod,
   Path,
@@ -43,39 +45,19 @@ describe('Class: BaseRouter', () => {
       this.logger.error('test error');
     }
 
-    #isEvent(obj: unknown): asserts obj is APIGatewayProxyEvent {
-      if (
-        typeof obj !== 'object' ||
-        obj === null ||
-        !('path' in obj) ||
-        !('httpMethod' in obj) ||
-        typeof (obj as any).path !== 'string' ||
-        !(obj as any).path.startsWith('/') ||
-        typeof (obj as any).httpMethod !== 'string' ||
-        !Object.values(HttpVerbs).includes(
-          (obj as any).httpMethod as HttpMethod
-        )
-      ) {
-        throw new Error('Invalid event object');
-      }
-    }
-
     public async resolve(
       event: unknown,
       context: Context,
       options?: any
     ): Promise<unknown> {
-      this.#isEvent(event);
+      if (!isAPIGatewayProxyEvent(event))
+        throw new Error('not an API Gateway event!');
       const { httpMethod: method, path } = event;
       const route = this.routeRegistry.resolve(
         method as HttpMethod,
         path as Path
       );
-      const request = new Request(`http://localhost${path}`, {
-        method,
-        headers: event.headers as Record<string, string>,
-        body: event.body,
-      });
+      const request = proxyEventToWebRequest(event);
       try {
         if (route == null)
           throw new NotFoundError(`Route ${method} ${path} not found`);
@@ -838,9 +820,9 @@ describe('Class: BaseRouter', () => {
         statusCode: HttpErrorCodes.BAD_REQUEST,
         error: 'Bad Request',
         message: error.message,
-        hasRequest: options.request instanceof Request,
-        hasEvent: options.event === testEvent,
-        hasContext: options.context === context,
+        hasRequest: options?.request instanceof Request,
+        hasEvent: options?.event === testEvent,
+        hasContext: options?.context === context,
       }));
 
       app.get('/test', () => {

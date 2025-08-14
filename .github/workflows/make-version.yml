@@ -4,10 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       release-type:
-        description: 'Release type (major, minor, patch)'
+        description: 'Release type, if auto it will be determined by the changes since the last tag'
         required: false
         type: choice
         options: 
+        - auto
         - major
         - minor
         - patch
@@ -39,13 +40,13 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@743fa57a003787b157991ea5c6e3cf0d40468676 # v1.4.0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           build: "false"
       - name: Version and changelog
         id: version-n-changelog
-        uses: aws-powertools/actions/.github/actions/version-n-changelog@743fa57a003787b157991ea5c6e3cf0d40468676 # v1.4.0
+        uses: aws-powertools/actions/.github/actions/version-n-changelog@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
         with:
           release-type: ${{ github.event.inputs.release-type }}
       - name: Update user agent version
@@ -55,7 +56,7 @@ jobs:
         run: git add .
       - name: Create PR
         id: create-pr
-        uses: aws-powertools/actions/.github/actions/create-pr@743fa57a003787b157991ea5c6e3cf0d40468676 # v1.4.0
+        uses: aws-powertools/actions/.github/actions/create-pr@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
         with:
           temp_branch_prefix: "ci-bump"
           pull_request_title: "chore(ci): bump version to ${{ steps.version-n-changelog.outputs.new-version  }}"

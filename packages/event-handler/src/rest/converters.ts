@@ -1,13 +1,13 @@
 import type { APIGatewayProxyEvent } from 'aws-lambda';
 
-function createBody(body: string | null, isBase64Encoded: boolean) {
+const createBody = (body: string | null, isBase64Encoded: boolean) => {
   if (body === null) return null;
 
   if (!isBase64Encoded) {
     return body;
   }
   return Buffer.from(body, 'base64').toString('utf8');
-}
+};
 
 export function proxyEventToWebRequest(event: APIGatewayProxyEvent) {
   const { httpMethod, path, domainName } = event.requestContext;

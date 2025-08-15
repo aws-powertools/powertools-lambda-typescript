@@ -9,7 +9,7 @@ const createBody = (body: string | null, isBase64Encoded: boolean) => {
   return Buffer.from(body, 'base64').toString('utf8');
 };
 
-export function proxyEventToWebRequest(event: APIGatewayProxyEvent) {
+export const proxyEventToWebRequest = (event: APIGatewayProxyEvent) => {
   const { httpMethod, path, domainName } = event.requestContext;
 
   const headers = new Headers();

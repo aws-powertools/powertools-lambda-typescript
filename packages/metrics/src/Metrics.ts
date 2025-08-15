@@ -598,17 +598,15 @@ class Metrics extends Utility implements MetricsInterface {
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
       descriptor.value = async function (
         this: Handler,
-        event: unknown,
-        context: Context,
-        callback: Callback
+        ...args: [unknown, Context, Callback]
       ): Promise<unknown> {
         if (captureColdStartMetric) {
-          metricsRef.captureColdStartMetric(context.functionName);
+          metricsRef.captureColdStartMetric(args[1].functionName);
         }
 
         let result: unknown;
         try {
-          result = await originalMethod.apply(this, [event, context, callback]);
+          result = await originalMethod.apply(this, args);
         } finally {
           metricsRef.publishStoredMetrics();
         }

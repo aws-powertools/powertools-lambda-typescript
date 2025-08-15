@@ -337,7 +337,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    *
    * This is called when the handler throws an error.
    */
-  #deleteInProgressRecord = async (): Promise<void> => {
+  readonly #deleteInProgressRecord = async (): Promise<void> => {
     try {
       await this.#persistenceStore.deleteRecord(
         this.#functionPayloadToBeHashed
@@ -356,7 +356,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * Before returning a result, we might neede to look up the idempotency record
    * and validate it to ensure that it is consistent with the payload to be hashed.
    */
-  #saveInProgressOrReturnExistingResult = async (): Promise<{
+  readonly #saveInProgressOrReturnExistingResult = async (): Promise<{
     isIdempotent: boolean;
     result: JSONValue;
   }> => {
@@ -419,7 +419,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    *
    * @param result The result returned by the handler.
    */
-  #saveSuccessfulResult = async (result: ReturnType<Func>): Promise<void> => {
+  readonly #saveSuccessfulResult = async (
+    result: ReturnType<Func>
+  ): Promise<void> => {
     try {
       await this.#persistenceStore.saveSuccess(
         this.#functionPayloadToBeHashed,

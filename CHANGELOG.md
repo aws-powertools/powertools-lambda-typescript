@@ -1,5 +1,47 @@
 # Change Log
 
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+### Improvements
+
+- **logger** resolve issue when no logger region is set ([#4319](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4319)) ([b74b3b4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b74b3b4d1102e8d33c677d2c73ddc355717c4cef))
+- **idempotency** Prevent error when AWS_LAMBDA_FUNCTION_NAME is not passed in the Idempotency Persistence Layer ([#4327](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4327)) ([17845d0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/17845d0de45508388100aefdbe42d1e0d9a02522))
+
+### Bug Fixes
+
+- **tracer** pass args of decorated method as they are ([#4312](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4312)) ([7bd81ae](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7bd81aed4d259c909107a1d312bd722bc258f358))
+
+### Features
+
+- **event-handler** add decorator functionality for error handlers ([#4323](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4323)) ([562747a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/562747a4c415ea2225529e5e276269e87c7b08b9))
+- **event-handler** add error handling functionality to BaseRouter ([#4316](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4316)) ([5aff398](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5aff3984359a5a4f4408a5d286d3c36976d454fa))
+
+
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
+
+### Improvements
+
+- **commons** fix code quality issues ([#4292](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4292)) ([5ee4198](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5ee419845f38754f57351be15c4d82ed912641dc))
+- **jmespath** fix code quality issues ([#4286](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4286)) ([787633d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/787633deb573ecdccb8dd1610df68bc4e6e90949))
+- **logger** replace EnvironmentVariablesService class with helper functions ([#4251](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4251)) ([b2fcd90](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b2fcd90834c417dec8c2d45743f2384df3541243))
+- **tracer** fix code quality issues ([#4264](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4264)) ([081a514](https://github.com/aws-powertools/powertools-lambda-typescript/commit/081a514b6e1cb81513080352e5dbcadc89ac0574))
+- **idempotency** fix code quality issues ([#4298](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4298)) ([1fc8604](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1fc86041f773bcaa1ea836b782d6b688d1e3636c))
+- **batch** improve code quality in test handlers ([#4281](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4281)) ([75e233f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/75e233f340acb27a4d31babbdd1a6d81f974f279))
+- **kafka** improve tests & error handling ([#4262](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4262)) ([dab0be1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dab0be1b5be166f972dcd2152968999dc212a0a7))
+
+### Features
+
+- **parser** make `parse` function available standalone ([#4300](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4300)) ([4998d6b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4998d6bffcb45710d96160dbb685145de3254f4a))
+- **event-handler** add event handler registry ([#4307](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4307)) ([aaac429](https://github.com/aws-powertools/powertools-lambda-typescript/commit/aaac4295594bc4b9c241fcf7bd8589ebc8b68d68))
+- **event-handler** add error classes for http errors ([#4299](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4299)) ([c1c3dd5](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c1c3dd50f5c335f2fd8a13cfd95340971d8840a1))
+- **event-handler** implement route matching & resolution system for rest handler ([#4297](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4297)) ([b8ca368](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b8ca36841f710db062b726ca8d53876e2291e92d))
+- **event-handler** add support for AppSync GraphQL batch resolvers ([#4218](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4218)) ([12ac2e4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/12ac2e40dfe63764f62670ea288e556f7302d2aa))
+
+### Bug Fixes
+
+- **parser** cognito schema `preferredRole` may be null ([#4259](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4259)) ([5ef5c85](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5ef5c85b1983617f64bce1410aeb9fd57859c04d))
+
+
 ## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
 
 ### Bug Fixes

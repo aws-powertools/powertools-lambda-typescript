@@ -201,6 +201,7 @@ The following companies, among others, use Powertools:
 - [Certible](https://www.certible.com/)
 - [Elva](https://elva-group.com)
 - [Flyweight](https://flyweight.io/)
+- [FraudFalcon](https://fraudfalcon.app)
 - [globaldatanet](https://globaldatanet.com/)
 - [Guild](https://guild.com)
 - [Hashnode](https://hashnode.com/)

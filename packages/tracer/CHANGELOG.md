@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+### Bug Fixes
+
+- pass args of decorated method as they are ([#4312](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4312)) ([7bd81ae](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7bd81aed4d259c909107a1d312bd722bc258f358))
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
+
+### Improvements
+
+- fix code quality issues ([#4264](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4264)) ([081a514](https://github.com/aws-powertools/powertools-lambda-typescript/commit/081a514b6e1cb81513080352e5dbcadc89ac0574))
 ## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
 
 **Note:** Version bump only for this package

@@ -50,16 +50,16 @@ import { IdempotencyRecord } from './IdempotencyRecord.js';
  * @category Persistence Layer
  */
 class DynamoDBPersistenceLayer extends BasePersistenceLayer {
-  private client: DynamoDBClient;
-  private dataAttr: string;
-  private expiryAttr: string;
-  private inProgressExpiryAttr: string;
-  private keyAttr: string;
-  private sortKeyAttr?: string;
-  private staticPkValue: string;
-  private statusAttr: string;
-  private tableName: string;
-  private validationKeyAttr: string;
+  private readonly client: DynamoDBClient;
+  private readonly dataAttr: string;
+  private readonly expiryAttr: string;
+  private readonly inProgressExpiryAttr: string;
+  private readonly keyAttr: string;
+  private readonly sortKeyAttr?: string;
+  private readonly staticPkValue: string;
+  private readonly statusAttr: string;
+  private readonly tableName: string;
+  private readonly validationKeyAttr: string;
 
   public constructor(config: DynamoDBPersistenceOptions) {
     super();

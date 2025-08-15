@@ -42,7 +42,7 @@ class IdempotencyRecord {
    * {@link constants.IdempotencyRecordStatusValue | IdempotencyRecordStatusValue}
    * @private
    */
-  private status: IdempotencyRecordStatusValue;
+  private readonly status: IdempotencyRecordStatusValue;
 
   public constructor(config: IdempotencyRecordOptions) {
     this.idempotencyKey = config.idempotencyKey;

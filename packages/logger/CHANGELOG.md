@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+### Improvements
+
+- resolve issue when no logger region is set ([#4319](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4319)) ([b74b3b4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b74b3b4d1102e8d33c677d2c73ddc355717c4cef))
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
+
+### Improvements
+
+- replace EnvironmentVariablesService class with helper functions ([#4251](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4251)) ([b2fcd90](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b2fcd90834c417dec8c2d45743f2384df3541243))
 ## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
 
 **Note:** Version bump only for this package

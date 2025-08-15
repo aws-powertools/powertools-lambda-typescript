@@ -13,7 +13,7 @@ import {
   getXRayTraceIdFromEnv,
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
-import type { Context, Handler } from 'aws-lambda';
+import type { Callback, Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
 import {
   LogJsonIndent,
@@ -493,19 +493,17 @@ class Logger extends Utility implements LoggerInterface {
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
       descriptor.value = async function (
         this: Handler,
-        event,
-        context,
-        callback
+        ...args: [unknown, Context, Callback]
       ) {
         loggerRef.refreshSampleRateCalculation();
-        loggerRef.addContext(context);
-        loggerRef.logEventIfEnabled(event, options?.logEvent);
+        loggerRef.addContext(args[1]);
+        loggerRef.logEventIfEnabled(args[0], options?.logEvent);
         if (options?.correlationIdPath) {
-          loggerRef.setCorrelationId(event, options?.correlationIdPath);
+          loggerRef.setCorrelationId(args[0], options?.correlationIdPath);
         }
 
         try {
-          return await originalMethod.apply(this, [event, context, callback]);
+          return await originalMethod.apply(this, args);
         } catch (error) {
           if (options?.flushBufferOnUncaughtError) {
             loggerRef.flushBuffer();

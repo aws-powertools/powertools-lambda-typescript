@@ -1,6 +1,6 @@
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type { Context, Handler } from 'aws-lambda';
+import type { Callback, Context, Handler } from 'aws-lambda';
 import { parse } from './parser.js';
 import type { Envelope, ParserOptions } from './types/index.js';
 import type { ParserOutput } from './types/parser.js';
@@ -75,21 +75,22 @@ export const parser = <
 >(
   options: ParserOptions<TSchema, TEnvelope, TSafeParse>
 ): HandlerMethodDecorator => {
-  return (_target, _propertyKey, descriptor) => {
-    // biome-ignore lint/style/noNonNullAssertion: The descriptor.value is the method this decorator decorates, it cannot be undefined.
-    const original = descriptor.value!;
+  return (
+    _target: unknown,
+    _propertyKey: string | symbol,
+    descriptor: PropertyDescriptor
+  ) => {
+    const original = descriptor.value;
 
     const { schema, envelope, safeParse } = options;
 
     descriptor.value = async function (
       this: Handler,
-      event: ParserOutput<TSchema, TEnvelope, TSafeParse>,
-      context: Context,
-      callback
+      ...args: [ParserOutput<TSchema, TEnvelope, TSafeParse>, Context, Callback]
     ) {
-      const parsedEvent = parse(event, envelope, schema, safeParse);
+      const parsedEvent = parse(args[0], envelope, schema, safeParse);
 
-      return original.call(this, parsedEvent, context, callback);
+      return original.apply(this, [parsedEvent, ...args.slice(1)]);
     };
 
     return descriptor;

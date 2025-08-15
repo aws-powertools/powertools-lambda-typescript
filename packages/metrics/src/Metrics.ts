@@ -867,7 +867,6 @@ class Metrics extends Utility implements MetricsInterface {
   public singleMetric(): Metrics {
     return new Metrics({
       namespace: this.namespace,
-      serviceName: this.dimensions.service,
       defaultDimensions: this.defaultDimensions,
       singleMetric: true,
       logger: this.#logger,
@@ -1040,8 +1039,12 @@ class Metrics extends Utility implements MetricsInterface {
     this.setCustomConfigService(customConfigService);
     this.setDisabled();
     this.setNamespace(namespace);
-    this.setDefaultDimensions(defaultDimensions || {});
-    this.setService(serviceName);
+    const resolvedServiceName = this.#resolveServiceName(serviceName);
+    this.setDefaultDimensions(
+      defaultDimensions
+        ? { service: resolvedServiceName, ...defaultDimensions }
+        : { service: resolvedServiceName }
+    );
     this.setFunctionNameForColdStartMetric(functionName);
     this.isSingleMetric = singleMetric || false;
 
@@ -1053,15 +1056,13 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param service - The service to be used
    */
-  private setService(service: string | undefined): void {
-    const targetService =
+  #resolveServiceName(service?: string): string {
+    return (
       service ||
       this.getCustomConfigService()?.getServiceName() ||
       this.#envConfig.serviceName ||
-      this.defaultServiceName;
-    if (targetService.length > 0) {
-      this.defaultDimensions = { service: targetService };
-    }
+      this.defaultServiceName
+    );
   }
 
   /**

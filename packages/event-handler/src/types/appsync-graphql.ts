@@ -60,6 +60,7 @@ type BatchResolverHandler<
   :
       | BatchResolverHandlerFn<TParams, TSource>
       | BatchResolverSyncHandlerFn<TParams, TSource>;
+//#endregion
 
 // #region Resolver fn
 
@@ -82,6 +83,8 @@ type ResolverHandlerFn<TParams = Record<string, unknown>> = (
 type ResolverHandler<TParams = Record<string, unknown>> =
   | ResolverSyncHandlerFn<TParams>
   | ResolverHandlerFn<TParams>;
+
+//#endregion
 
 // #region Resolver registry
 
@@ -134,6 +137,8 @@ type RouteHandlerOptions<
   throwOnError?: R;
 };
 
+//#endregion
+
 // #region Router
 
 /**
@@ -178,6 +183,51 @@ type GraphQlBatchRouteOptions<
     ? { aggregate?: T; throwOnError?: never }
     : { aggregate?: T; throwOnError?: R });
 
+//#endregion
+
+// #region Exception handling
+
+type ExceptionSyncHandlerFn<T extends Error> = (error: T) => unknown;
+
+type ExceptionHandlerFn<T extends Error> = (error: T) => Promise<unknown>;
+
+type ExceptionHandler<T extends Error = Error> =
+  | ExceptionSyncHandlerFn<T>
+  | ExceptionHandlerFn<T>;
+
+// biome-ignore lint/suspicious/noExplicitAny: this is a generic type that is intentionally open
+type ErrorClass<T extends Error> = new (...args: any[]) => T;
+
+/**
+ * Options for handling exceptions in the event handler.
+ *
+ * @template T - The type of error that extends the base Error class
+ */
+type ExceptionHandlerOptions<T extends Error = Error> = {
+  /**
+   * The error class to handle (must be Error or a subclass)
+   */
+  error: ErrorClass<T>;
+  /**
+   * The handler function to be called when the error is caught
+   */
+  handler: ExceptionHandler<T>;
+};
+
+/**
+ * Options for the {@link ExceptionHandlerRegistry | `ExceptionHandlerRegistry`} class
+ */
+type ExceptionHandlerRegistryOptions = {
+  /**
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
+   */
+  logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+};
+
+//#endregion
+
 export type {
   RouteHandlerRegistryOptions,
   RouteHandlerOptions,
@@ -188,4 +238,8 @@ export type {
   BatchResolverHandler,
   BatchResolverHandlerFn,
   BatchResolverAggregateHandlerFn,
+  ExceptionHandler,
+  ErrorClass,
+  ExceptionHandlerOptions,
+  ExceptionHandlerRegistryOptions,
 };

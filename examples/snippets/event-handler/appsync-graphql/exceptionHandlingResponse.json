@@ -1,0 +1,23 @@
+{
+  "data": {
+    "createSomething": null
+  },
+  "errors": [
+    {
+      "path": [
+        "createSomething"
+      ],
+      "data": null,
+      "errorType": "AssertionError",
+      "errorInfo": null,
+      "locations": [
+        {
+          "line": 2,
+          "column": 3,
+          "sourceName": null
+        }
+      ],
+      "message": "This is an assertion Error"
+    }
+  ]
+}

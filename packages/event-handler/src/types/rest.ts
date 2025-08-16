@@ -53,9 +53,11 @@ interface CompiledRoute {
 
 type DynamicRoute = Route & CompiledRoute;
 
+type HandlerResponse = Response | JSONObject;
+
 type RouteHandler<
   TParams = Record<string, unknown>,
-  TReturn = Response | JSONObject,
+  TReturn = HandlerResponse,
 > = (args: TParams, options?: RequestOptions) => Promise<TReturn>;
 
 type HttpMethod = keyof typeof HttpVerbs;
@@ -106,6 +108,7 @@ export type {
   ErrorHandlerRegistryOptions,
   ErrorHandler,
   ErrorResolveOptions,
+  HandlerResponse,
   HttpStatusCode,
   HttpMethod,
   Path,

@@ -3,7 +3,7 @@ import {
   getStringFromEnv,
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
-import type { Context } from 'aws-lambda';
+import type { APIGatewayProxyResult, Context } from 'aws-lambda';
 import type { ResolveOptions } from '../types/index.js';
 import type {
   ErrorConstructor,
@@ -16,6 +16,11 @@ import type {
   RouterOptions,
 } from '../types/rest.js';
 import { HttpVerbs } from './constants.js';
+import {
+  handlerResultToProxyResult,
+  proxyEventToWebRequest,
+  responseToProxyResult,
+} from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import {
   MethodNotAllowedError,
@@ -24,6 +29,7 @@ import {
 } from './errors.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
+import { isAPIGatewayProxyEvent } from './utils.js';
 
 abstract class BaseRouter {
   protected context: Record<string, unknown>;
@@ -133,11 +139,49 @@ abstract class BaseRouter {
     };
   }
 
-  public abstract resolve(
+  public async resolve(
     event: unknown,
     context: Context,
     options?: ResolveOptions
-  ): Promise<unknown>;
+  ): Promise<APIGatewayProxyResult | undefined> {
+    if (!isAPIGatewayProxyEvent(event)) {
+      this.logger.warn(
+        'Received an event that is not compatible with this resolver'
+      );
+      return;
+    }
+
+    try {
+      const request = proxyEventToWebRequest(event);
+      const path = new URL(request.url).pathname as Path;
+      const method = request.method.toUpperCase() as HttpMethod;
+
+      const route = this.routeRegistry.resolve(method, path);
+
+      if (route === null) {
+        throw new NotFoundError(`Route ${path} for method ${method} not found`);
+      }
+
+      const result = await route.handler.apply(options?.scope ?? this, [
+        route.params,
+        {
+          event,
+          context,
+          request,
+        },
+      ]);
+
+      return await handlerResultToProxyResult(result);
+    } catch (error) {
+      const result = await this.handleError(error as Error, {
+        request: proxyEventToWebRequest(event),
+        event,
+        context,
+        scope: options?.scope,
+      });
+      return await responseToProxyResult(result);
+    }
+  }
 
   public route(handler: RouteHandler, options: RouteOptions): void {
     const { method, path } = options;

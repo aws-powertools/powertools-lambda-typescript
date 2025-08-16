@@ -1,8 +1,9 @@
-import type { APIGatewayProxyEvent } from 'aws-lambda';
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   compilePath,
   isAPIGatewayProxyEvent,
+  isAPIGatewayProxyResult,
   validatePathPattern,
 } from '../../../src/rest/utils.js';
 import type { Path } from '../../../src/types/rest.js';
@@ -297,6 +298,69 @@ describe('Path Utilities', () => {
       };
 
       expect(isAPIGatewayProxyEvent(incompleteEvent)).toBe(false);
+    });
+  });
+
+  describe('isAPIGatewayProxyResult', () => {
+    it('should return true for valid API Gateway Proxy result', () => {
+      const validResult: APIGatewayProxyResult = {
+        statusCode: 200,
+        body: 'Hello World',
+      };
+
+      expect(isAPIGatewayProxyResult(validResult)).toBe(true);
+    });
+
+    it('should return true for valid result with all optional fields', () => {
+      const validResult = {
+        statusCode: 200,
+        body: 'Hello World',
+        headers: { 'Content-Type': 'text/plain' },
+        multiValueHeaders: { 'Set-Cookie': ['cookie1', 'cookie2'] },
+        isBase64Encoded: false,
+      };
+
+      expect(isAPIGatewayProxyResult(validResult)).toBe(true);
+    });
+
+    it.each([
+      { case: 'null', result: null },
+      { case: 'undefined', result: undefined },
+      { case: 'string', result: 'not an object' },
+      { case: 'number', result: 123 },
+      { case: 'array', result: [] },
+    ])('should return false for $case', ({ result }) => {
+      expect(isAPIGatewayProxyResult(result)).toBe(false);
+    });
+
+    it.each([
+      { field: 'statusCode', value: 'not a number' },
+      { field: 'statusCode', value: null },
+      { field: 'body', value: 123 },
+      { field: 'body', value: null },
+      { field: 'headers', value: 'not an object' },
+      { field: 'multiValueHeaders', value: 'not an object' },
+      { field: 'isBase64Encoded', value: 'not a boolean' },
+    ])(
+      'should return false when $field is invalid ($value)',
+      ({ field, value }) => {
+        const baseResult = {
+          statusCode: 200,
+          body: 'Hello World',
+        };
+
+        const invalidResult = { ...baseResult, [field]: value };
+        expect(isAPIGatewayProxyResult(invalidResult)).toBe(false);
+      }
+    );
+
+    it('should return false when required fields are missing', () => {
+      const incompleteResult = {
+        statusCode: 200,
+        // missing body
+      };
+
+      expect(isAPIGatewayProxyResult(incompleteResult)).toBe(false);
     });
   });
 });

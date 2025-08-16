@@ -1,5 +1,5 @@
 import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
-import type { APIGatewayProxyEvent } from 'aws-lambda';
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import type { CompiledRoute, Path, ValidationResult } from '../types/rest.js';
 import { PARAM_PATTERN, SAFE_CHARS, UNSAFE_CHARS } from './constants.js';
 
@@ -66,5 +66,28 @@ export const isAPIGatewayProxyEvent = (
     isRecord(event.requestContext) &&
     typeof event.isBase64Encoded === 'boolean' &&
     (event.body === null || isString(event.body))
+  );
+};
+
+/**
+ * Type guard to check if the provided result is an API Gateway Proxy result.
+ *
+ * We use this function to ensure that the result is an object and has the
+ * required properties without adding a dependency.
+ *
+ * @param result - The result to check
+ */
+export const isAPIGatewayProxyResult = (
+  result: unknown
+): result is APIGatewayProxyResult => {
+  if (!isRecord(result)) return false;
+  return (
+    typeof result.statusCode === 'number' &&
+    isString(result.body) &&
+    (result.headers === undefined || isRecord(result.headers)) &&
+    (result.multiValueHeaders === undefined ||
+      isRecord(result.multiValueHeaders)) &&
+    (result.isBase64Encoded === undefined ||
+      typeof result.isBase64Encoded === 'boolean')
   );
 };

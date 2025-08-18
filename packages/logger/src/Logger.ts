@@ -1187,8 +1187,6 @@ class Logger extends Utility implements LoggerInterface {
     if (this.isValidLogLevel(logLevelValue)) {
       this.logLevel = LogLevelThreshold[logLevelValue];
       this.#initialLogLevel = this.logLevel;
-
-      return;
     }
   }
 

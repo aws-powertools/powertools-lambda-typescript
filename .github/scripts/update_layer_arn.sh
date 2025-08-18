@@ -8,8 +8,10 @@
 # see .github/workflows/publish_layer.yml
 
 
-# Get the new version number from the first command-line argument
-new_version=$1
+# Get the current layer version from SSM Parameter
+current_layer_arn=$(aws ssm get-parameter --name /aws/service/powertools/typescript/generic/all/latest --query Parameter.Value --output text --region us-east-1)
+current_layer_version=$(echo $current_layer_arn | sed 's/.*://')
+new_version=$((current_layer_version + 1))
 if [ -z "$new_version" ]; then
     echo "Usage: $0 <new_version>"
     exit 1

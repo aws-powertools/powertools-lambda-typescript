@@ -24,7 +24,7 @@ class PowertoolsLogFormatter extends LogFormatter {
    *
    * This can be a set of keys or an array of keys.
    */
-  #logRecordOrder?: LogRecordOrderKeys;
+  readonly #logRecordOrder?: LogRecordOrderKeys;
 
   public constructor(options?: PowertoolsLogFormatterOptions) {
     super();

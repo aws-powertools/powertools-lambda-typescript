@@ -269,12 +269,10 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
         const logMessages = invocationLogs[i].getFunctionLogs();
 
         // Check that the X-Ray Trace ID is logged on every log
-        const traceIds: string[] = [];
         for (const message of logMessages) {
           const log = TestInvocationLogs.parseFunctionLog(message);
           expect(log).toHaveProperty('xray_trace_id');
           expect(log.xray_trace_id).toMatch(XRAY_TRACE_ID_REGEX);
-          traceIds.push(log.xray_trace_id as string);
         }
       }
     });

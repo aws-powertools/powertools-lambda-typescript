@@ -1,18 +1,28 @@
-import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type Mock,
+  vi,
+} from 'vitest';
 import { LogJsonIndent, LogLevel } from '../../src/constants.js';
 import { Logger } from '../../src/Logger.js';
 
 describe('Log levels', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
   beforeEach(() => {
-    process.env = { ...ENVIRONMENT_VARIABLES, POWERTOOLS_DEV: 'true' };
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('uses the default service name when none is provided', () => {
     // Prepare
-    process.env.POWERTOOLS_SERVICE_NAME = undefined;
+    vi.stubEnv('POWERTOOLS_SERVICE_NAME', undefined);
     const logger = new Logger();
 
     // Act
@@ -28,7 +38,7 @@ describe('Log levels', () => {
 
   it('uses service name specified in environment variables', () => {
     // Prepare
-    process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
+    vi.stubEnv('POWERTOOLS_SERVICE_NAME', 'hello-world');
     const logger = new Logger();
 
     // Act
@@ -44,7 +54,7 @@ describe('Log levels', () => {
 
   it('uses service name specified in the constructor', () => {
     // Prepare
-    process.env.POWERTOOLS_SERVICE_NAME = undefined;
+    vi.stubEnv('POWERTOOLS_SERVICE_NAME', undefined);
     const logger = new Logger({ serviceName: 'hello-world' });
 
     // Act
@@ -60,7 +70,7 @@ describe('Log levels', () => {
 
   it('overrides the service name when creating a child logger', () => {
     // Prepare
-    process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
+    vi.stubEnv('POWERTOOLS_SERVICE_NAME', 'hello-world');
     const logger = new Logger();
     const childLogger = logger.createChild({ serviceName: 'child-service' });
 
@@ -127,7 +137,7 @@ describe('Log levels', () => {
 
   it("doesn't use the global console object by default", () => {
     // Prepare
-    process.env.POWERTOOLS_DEV = undefined;
+    vi.stubEnv('POWERTOOLS_DEV', undefined);
     const logger = new Logger();
 
     // Assess

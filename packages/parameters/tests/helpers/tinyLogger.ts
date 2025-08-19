@@ -13,7 +13,7 @@ import { Console } from 'node:console';
  * the function code is working as expected.
  */
 export class TinyLogger {
-  private console = new Console({
+  private readonly console: Console = new Console({
     stdout: process.stdout,
     stderr: process.stderr,
   });

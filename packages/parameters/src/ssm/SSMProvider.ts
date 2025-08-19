@@ -821,7 +821,7 @@ class SSMProvider extends BaseProvider {
    * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    */
   protected static handleAnyInvalidGetParameterErrors(
-    result: GetParametersCommandOutput,
+    result: Partial<GetParametersCommandOutput>,
     throwOnError: boolean
   ): string[] {
     const errors: string[] = [];
@@ -920,7 +920,7 @@ class SSMProvider extends BaseProvider {
    * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    */
   protected transformAndCacheGetParametersResponse(
-    response: GetParametersCommandOutput,
+    response: Partial<GetParametersCommandOutput>,
     parameters: Record<string, SSMGetParametersByNameOptions>,
     throwOnError: boolean
   ): Record<string, unknown> {

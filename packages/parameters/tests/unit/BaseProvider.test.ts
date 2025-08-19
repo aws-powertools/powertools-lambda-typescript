@@ -24,7 +24,7 @@ class TestProvider extends BaseProvider {
   public constructor() {
     super({
       awsSdkV3ClientPrototype: class {
-        #name = 'TestProvider';
+        readonly #name: string = 'TestProvider';
 
         public hello(): string {
           return this.#name;
@@ -412,7 +412,7 @@ describe('Class: BaseProvider', () => {
       // Act & Assess
       await expect(
         provider.getMultiple('my-path', {
-          // @ts-ignore - we want to test an unexpected runtime error
+          // @ts-expect-error - we want to test an unexpected runtime error
           transform: 1,
           throwOnTransformError: true,
         })

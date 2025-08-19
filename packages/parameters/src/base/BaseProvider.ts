@@ -92,7 +92,7 @@ abstract class BaseProvider implements BaseProviderInterface {
   public async get(
     name: string,
     options?: GetOptionsInterface
-  ): Promise<unknown | undefined> {
+  ): Promise<unknown> {
     const configs = new GetOptions(options);
     const key = [name, configs.transform].toString();
 

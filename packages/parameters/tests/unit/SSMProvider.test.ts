@@ -1012,7 +1012,7 @@ describe('Class: SSMProvider', () => {
         throwOnError: boolean
       ): string[] {
         return SSMProvider.handleAnyInvalidGetParameterErrors(
-          result as GetParametersCommandOutput,
+          result,
           throwOnError
         );
       }
@@ -1232,7 +1232,7 @@ describe('Class: SSMProvider', () => {
         throwOnError: boolean
       ): Record<string, unknown> {
         return super.transformAndCacheGetParametersResponse(
-          response as GetParametersCommandOutput,
+          response,
           parameters,
           throwOnError
         );

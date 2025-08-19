@@ -1,7 +1,7 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { search } from '../../src/correlationId.js';
 import { Logger } from '../../src/Logger.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
@@ -20,14 +20,13 @@ const getContextLogEntries = (overrides?: Record<string, unknown>) => ({
 });
 
 describe('Inject Lambda Context', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
   beforeEach(() => {
-    process.env = {
-      ...ENVIRONMENT_VARIABLES,
-      POWERTOOLS_DEV: 'true',
-    };
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('adds the context to log messages when the feature is enabled', () => {

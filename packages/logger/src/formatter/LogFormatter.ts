@@ -183,7 +183,7 @@ abstract class LogFormatter {
    *
    * @param timezone - IANA time zone identifier (e.g., "Asia/Dhaka").
    */
-  #getDateFormatter = (timezone: string): Intl.DateTimeFormat => {
+  readonly #getDateFormatter = (timezone: string): Intl.DateTimeFormat => {
     const twoDigitFormatOption = '2-digit';
     const validTimeZone = Intl.supportedValuesOf('timeZone').includes(timezone)
       ? timezone

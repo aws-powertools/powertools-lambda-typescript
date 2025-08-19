@@ -29,7 +29,7 @@
   "license": "MIT-0",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.864.0",
+    "@aws-sdk/client-dynamodb": "^3.868.0",
     "@aws-sdk/client-xray": "^3.864.0"
   },
   "peerDependencies": {

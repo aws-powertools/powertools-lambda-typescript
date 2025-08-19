@@ -104,7 +104,7 @@ jobs:
           mask-aws-account-id: true
       - name: Replace layer versions in documentation
         run: |
-          ./.github/scripts/update_layer_arn.sh ${{ inputs.latest_published_version }}
+          ./.github/scripts/update_layer_arn.sh
       - name: Stage changes
         run: git add .
       - name: Create PR

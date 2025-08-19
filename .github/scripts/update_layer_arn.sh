@@ -9,12 +9,9 @@
 
 
 # Get the current layer version from SSM Parameter
-if [ -z "$1" ]; then
-    echo "Usage: $0 <new_version>"
-    exit 1
-fi
-current_layer_arn=$(aws ssm get-parameter --name /aws/service/powertools/typescript/generic/all/$1 --query Parameter.Value --output text --region us-east-1)
+current_layer_arn=$(aws ssm get-parameter --name /aws/service/powertools/typescript/generic/all/latest --query Parameter.Value --output text --region us-east-1)
 current_layer_version=$(echo $current_layer_arn | sed 's/.*://')
+new_version=$((current_layer_version + 1))
 
 # Find all files with specified extensions in ./docs and ./examples directories
 # -type f: only find files (not directories)
@@ -29,7 +26,7 @@ find ./docs ./examples -type f \( -name "*.md" -o -name "*.ts" -o -name "*.yaml"
     # -E: use extended regular expressions
     # IF TESTING IN MAC, replace `-i` with `-i ''`
     # The regex matches the layer name and replaces only the version number at the end
-    sed -i -E "s/AWSLambdaPowertoolsTypeScriptV2:[0-9]+/AWSLambdaPowertoolsTypeScriptV2:$current_layer_version/g" "$file"
+    sed -i -E "s/AWSLambdaPowertoolsTypeScriptV2:[0-9]+/AWSLambdaPowertoolsTypeScriptV2:$new_version/g" "$file"
     if [ $? -eq 0 ]; then
         echo "Updated $file successfully"
         grep "arn:aws:lambda:" "$file"

@@ -8,10 +8,13 @@
 # see .github/workflows/publish_layer.yml
 
 
-# Get the current layer version from SSM Parameter
-current_layer_arn=$(aws ssm get-parameter --name /aws/service/powertools/typescript/generic/all/latest --query Parameter.Value --output text --region us-east-1)
-current_layer_version=$(echo $current_layer_arn | sed 's/.*://')
-new_version=$((current_layer_version + 1))
+# Get the new layer arn from the first command-line argument
+new_layer_arn=$1
+if [ -z "$new_layer_arn" ]; then
+    echo "Usage: $0 <new_layer_arn>"
+    exit 1
+fi
+new_version=$(echo $new_layer_arn | sed 's/.*://')
 
 # Find all files with specified extensions in ./docs and ./examples directories
 # -type f: only find files (not directories)

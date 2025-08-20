@@ -100,7 +100,11 @@ jobs:
         run: |
           mkdir cdk-layer-stack
           jq -r -c '.LayerPublisherStack.LatestLayerArn' layers/cdk-outputs.json > cdk-layer-stack/${{ matrix.region }}-layer-version.txt
-          echo "layer-arn=$(cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt)" | tee -a "$GITHUB_OUTPUT"
+          if [ "${{ matrix.region }}" = "us-east-1" ]; then
+            echo "layer-arn=$(cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt)" | tee -a "$GITHUB_OUTPUT"
+          else
+            cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt
+          fi
       - name: Save Layer ARN artifact
         if: ${{ inputs.stage == 'PROD' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

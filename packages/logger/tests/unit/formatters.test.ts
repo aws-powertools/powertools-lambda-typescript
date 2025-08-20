@@ -95,9 +95,14 @@ class CustomFormatter extends LogFormatter {
 }
 
 describe('Formatters', () => {
-  let logger: Logger;
-  let loggerWithReplacer: Logger;
-  let loggerWithCustomLogFormatter: Logger;
+  // Ensure dev mode is on for logger initialization
+  vi.stubEnv('POWERTOOLS_DEV', 'true');
+  const logger = new Logger();
+  const loggerWithReplacer = new Logger({ jsonReplacerFn });
+  const loggerWithCustomLogFormatter = new Logger({
+    logFormatter: new CustomFormatter(),
+  });
+  vi.unstubAllEnvs();
 
   beforeEach(() => {
     vi.stubEnv('POWERTOOLS_DEV', 'true');
@@ -105,12 +110,6 @@ describe('Formatters', () => {
     vi.useFakeTimers().setSystemTime(mockDate);
     vi.clearAllMocks();
     unformattedAttributes.timestamp = mockDate;
-
-    logger = new Logger();
-    loggerWithReplacer = new Logger({ jsonReplacerFn });
-    loggerWithCustomLogFormatter = new Logger({
-      logFormatter: new CustomFormatter(),
-    });
   });
 
   afterAll(() => {

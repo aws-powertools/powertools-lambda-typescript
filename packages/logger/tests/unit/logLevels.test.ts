@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LogLevel, LogLevelThreshold } from '../../src/constants.js';
 import { Logger } from '../../src/Logger.js';
 import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
@@ -30,11 +30,13 @@ const getConsoleMethod = (
 };
 
 describe('Log levels', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
   beforeEach(() => {
-    process.env = { ...ENVIRONMENT_VARIABLES, POWERTOOLS_DEV: 'true' };
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('sets the correct log level when initialized with a log level', () => {
@@ -48,7 +50,7 @@ describe('Log levels', () => {
 
   it('defaults to INFO log level when initialized without a log level', () => {
     // Prepare
-    process.env.POWERTOOLS_LOG_LEVEL = undefined;
+    vi.stubEnv('POWERTOOLS_LOG_LEVEL', undefined);
 
     // Act
     const logger = new Logger();
@@ -60,7 +62,7 @@ describe('Log levels', () => {
 
   it('defaults to INFO log level when initialized with an invalid log level', () => {
     // Prepare
-    process.env.POWERTOOLS_LOG_LEVEL = undefined;
+    vi.stubEnv('POWERTOOLS_LOG_LEVEL', undefined);
 
     // Act
     const logger = new Logger({ logLevel: 'INVALID' as LogLevelType });
@@ -94,7 +96,7 @@ describe('Log levels', () => {
 
   it('sets the correct log level when setting the POWERTOOLS_LOG_LEVEL environment variable', () => {
     // Prepare
-    process.env.POWERTOOLS_LOG_LEVEL = LogLevel.CRITICAL;
+    vi.stubEnv('POWERTOOLS_LOG_LEVEL', LogLevel.CRITICAL);
 
     // Act
     const logger = new Logger();
@@ -106,7 +108,7 @@ describe('Log levels', () => {
 
   it('sets the log level to CRITICAL when AWS_LAMBDA_LOG_LEVEL is FATAL', () => {
     // Prepare
-    process.env.AWS_LAMBDA_LOG_LEVEL = 'FATAL';
+    vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'FATAL');
 
     // Act
     const logger = new Logger();
@@ -117,7 +119,7 @@ describe('Log levels', () => {
 
   it('sets the correct log level when using a custom config service', () => {
     // Prepare
-    process.env.POWERTOOLS_LOG_LEVEL = undefined;
+    vi.stubEnv('POWERTOOLS_LOG_LEVEL', undefined);
     const customConfigService = {
       getLogLevel: () => LogLevel.WARN,
       getCurrentEnvironment: vi.fn(),
@@ -199,9 +201,9 @@ describe('Log levels', () => {
 
   it('emits a warning and falls back to the ALC level when trying to set a more verbose log level than the one set in ALC', () => {
     // Prepare
-    process.env.AWS_LAMBDA_LOG_LEVEL = LogLevel.ERROR;
-    process.env.LOG_LEVEL = undefined;
-    process.env.POWERTOOLS_LOG_LEVEL = undefined;
+    vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', LogLevel.ERROR);
+    vi.stubEnv('LOG_LEVEL', undefined);
+    vi.stubEnv('POWERTOOLS_LOG_LEVEL', undefined);
     const logger = new Logger();
     const warningSpy = vi.spyOn(logger, 'warn');
 
@@ -219,9 +221,9 @@ describe('Log levels', () => {
 
   it('emits a warning and falls back to the ALC level when trying to init the logger with a more verbose log level than the one set in ALC', () => {
     // Prepare
-    process.env.AWS_LAMBDA_LOG_LEVEL = LogLevel.INFO;
-    process.env.LOG_LEVEL = undefined;
-    process.env.POWERTOOLS_LOG_LEVEL = undefined;
+    vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', LogLevel.INFO);
+    vi.stubEnv('LOG_LEVEL', undefined);
+    vi.stubEnv('POWERTOOLS_LOG_LEVEL', undefined);
     const warningSpy = vi.spyOn(console, 'warn');
 
     // Act

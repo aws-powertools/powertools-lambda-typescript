@@ -462,7 +462,7 @@ describe('Formatters', () => {
 
   it('formats stack as string when not in dev mode', () => {
     // Prepare
-    vi.unstubAllEnvs(); // Ensure dev mode is off
+    vi.stubEnv('POWERTOOLS_DEV', 'false'); // Ensure dev mode is off
 
     const error = new Error('Test error');
     const formatter = new PowertoolsLogFormatter();
@@ -473,9 +473,6 @@ describe('Formatters', () => {
     // Assess
     expect(formattedError.stack).toEqual(expect.any(String));
     expect(Array.isArray(formattedError.stack)).toBe(false);
-
-    // Cleanup
-    vi.stubEnv('POWERTOOLS_DEV', 'true');
   });
 
   it('formats custom errors by including only enumerable properties', () => {
@@ -623,7 +620,7 @@ describe('Formatters', () => {
 
   it('returns defaults to :UTC when an env variable service is not set', () => {
     // Prepare
-    vi.unstubAllEnvs();
+    vi.stubEnv('TZ', undefined);
 
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
     const formatter = new PowertoolsLogFormatter();

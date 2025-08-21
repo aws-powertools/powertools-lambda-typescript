@@ -150,14 +150,22 @@ You can access the original Lambda event or context for additional information. 
 
 ### Exception Handling
 
-You can use the **`exceptionHandler`** method with any exception. This allows you to handle common errors outside your resolver and return a custom response.
+You can use the **`exceptionHandler`** method to handle any exception. This allows you to handle common errors outside your resolver and return a custom response.
 
-You can use a VTL response mapping template to detect these custom responses and forward them to the client gracefully.
+The **`exceptionHandler`** method also supports passing an array of exceptions that you wish to handle with a single handler.
+
+You can use an AppSync JavaScript resolver or a VTL response mapping template to detect these custom responses and forward them to the client gracefully.
 
 === "Exception Handling"
 
     ```typescript hl_lines="11-18 21-23"
     --8<-- "examples/snippets/event-handler/appsync-graphql/exceptionHandling.ts"
+    ```
+
+=== "APPSYNC JS Resolver"
+
+    ```js hl_lines="11-13"
+    --8<-- "examples/snippets/event-handler/appsync-graphql/exceptionHandlingResolver.js"
     ```
 
 === "VTL Response Mapping Template"

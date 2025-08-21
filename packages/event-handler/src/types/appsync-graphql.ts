@@ -207,7 +207,7 @@ type ExceptionHandlerOptions<T extends Error = Error> = {
   /**
    * The error class to handle (must be Error or a subclass)
    */
-  error: ErrorClass<T>;
+  error: ErrorClass<T> | ErrorClass<T>[];
   /**
    * The handler function to be called when the error is caught
    */

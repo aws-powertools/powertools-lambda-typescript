@@ -1,5 +1,6 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type {
+  ErrorClass,
   ExceptionHandler,
   ExceptionHandlerOptions,
   ExceptionHandlerRegistryOptions,
@@ -23,15 +24,34 @@ class ExceptionHandlerRegistry {
   }
 
   /**
-   * Registers an exception handler for a specific error class.
+   * Registers an exception handler for one or more error classes.
    *
    * If a handler for the given error class is already registered, it will be replaced and a warning will be logged.
    *
-   * @param options - The options containing the error class and its associated handler.
+   * @param options - The options containing the error class(es) and their associated handler.
+   * @param options.error - A single error class or an array of error classes to handle.
+   * @param options.handler - The exception handler function that will be invoked when the error occurs.
    */
   public register(options: ExceptionHandlerOptions<Error>): void {
     const { error, handler } = options;
-    const errorName = error.name;
+    const errors = Array.isArray(error) ? error : [error];
+
+    for (const err of errors) {
+      this.registerErrorHandler(err, handler as ExceptionHandler);
+    }
+  }
+
+  /**
+   * Registers a error handler for a specific error class.
+   *
+   * @param errorClass - The error class to register the handler for.
+   * @param handler - The exception handler function.
+   */
+  private registerErrorHandler(
+    errorClass: ErrorClass<Error>,
+    handler: ExceptionHandler
+  ): void {
+    const errorName = errorClass.name;
 
     this.#logger.debug(`Adding exception handler for error class ${errorName}`);
 
@@ -42,8 +62,8 @@ class ExceptionHandlerRegistry {
     }
 
     this.handlers.set(errorName, {
-      error,
-      handler: handler as ExceptionHandler,
+      error: errorClass,
+      handler,
     });
   }
 
@@ -51,11 +71,11 @@ class ExceptionHandlerRegistry {
    * Resolves and returns the appropriate exception handler for a given error instance.
    *
    * This method attempts to find a registered exception handler based on the error class name.
-   * If a matching handler is found, it is returned; otherwise, `undefined` is returned.
+   * If a matching handler is found, it is returned; otherwise, `null` is returned.
    *
    * @param error - The error instance for which to resolve an exception handler.
    */
-  public resolve(error: Error): ExceptionHandler | undefined {
+  public resolve(error: Error): ExceptionHandler | null {
     const errorName = error.name;
     this.#logger.debug(`Looking for exception handler for error: ${errorName}`);
 
@@ -66,14 +86,7 @@ class ExceptionHandlerRegistry {
     }
 
     this.#logger.debug(`No exception handler found for error: ${errorName}`);
-    return undefined;
-  }
-
-  /**
-   * Checks if there are any registered exception handlers.
-   */
-  public hasHandlers(): boolean {
-    return this.handlers.size > 0;
+    return null;
   }
 }
 

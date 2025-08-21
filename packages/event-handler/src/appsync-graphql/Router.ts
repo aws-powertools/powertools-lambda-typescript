@@ -1034,14 +1034,14 @@ class Router {
    * @param handler - The handler function to be called when the error is caught.
    */
   public exceptionHandler<T extends Error>(
-    error: ErrorClass<T>,
+    error: ErrorClass<T> | ErrorClass<T>[],
     handler: ExceptionHandler<T>
   ): void;
   public exceptionHandler<T extends Error>(
-    error: ErrorClass<T>
+    error: ErrorClass<T> | ErrorClass<T>[]
   ): MethodDecorator;
   public exceptionHandler<T extends Error>(
-    error: ErrorClass<T>,
+    error: ErrorClass<T> | ErrorClass<T>[],
     handler?: ExceptionHandler<T>
   ): MethodDecorator | undefined {
     if (typeof handler === 'function') {

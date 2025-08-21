@@ -1173,9 +1173,10 @@ describe('Class: AppSyncGraphQLResolver', () => {
       }
 
       async handler(event: unknown, context: Context) {
-        return app.resolve(event, context, {
+        const resolved = app.resolve(event, context, {
           scope: this,
         });
+        return resolved;
       }
     }
 

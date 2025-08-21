@@ -13,6 +13,13 @@ on:
         required: true
 
   workflow_call:
+    secrets:
+      AWS_LAYERS_BETA_ROLE_ARN:
+        description: "Role ARN for deploying the Layer to Beta"
+      AWS_LAYERS_PROD_ROLE_ARN:
+        description: "Role ARN for deploying the Layer to Prod"
+      GITHUB_TOKEN:
+        description: "Github Token to interact with Github"
     inputs:
       latest_published_version:
         type: string

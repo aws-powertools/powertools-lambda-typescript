@@ -8,12 +8,13 @@
 # see .github/workflows/publish_layer.yml
 
 
-# Get the new version number from the first command-line argument
-new_version=$1
-if [ -z "$new_version" ]; then
-    echo "Usage: $0 <new_version>"
+# Get the new layer arn from the first command-line argument
+new_layer_arn=$1
+if [ -z "$new_layer_arn" ]; then
+    echo "Usage: $0 <new_layer_arn>"
     exit 1
 fi
+new_version=$(echo $new_layer_arn | sed 's/.*://')
 
 # Find all files with specified extensions in ./docs and ./examples directories
 # -type f: only find files (not directories)

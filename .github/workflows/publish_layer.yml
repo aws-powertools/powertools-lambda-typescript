@@ -11,9 +11,6 @@ on:
         description: "Latest npm published version to rebuild corresponding layer for, e.g. 1.0.2"
         default: "1.0.2"
         required: true
-      layer_documentation_version:
-        description: "Version to be updated in our documentation. e.g. if the current layer number is 3, this value must be 4."
-        required: true
 
   workflow_call:
     inputs:
@@ -26,10 +23,6 @@ on:
         default: false
         type: boolean
         required: false
-      layer_documentation_version:
-        description: "Version to be updated in our documentation. e.g. if the current layer number is 3, this value must be 4."
-        required: true
-        type: string
 
 jobs:
   # Build layer by running cdk synth in layer-publisher directory and uploading cdk.out for deployment
@@ -105,7 +98,7 @@ jobs:
           ref: ${{ github.sha }}
       - name: Replace layer versions in documentation
         run: |
-          ./.github/scripts/update_layer_arn.sh ${{ inputs.layer_documentation_version }}
+          ./.github/scripts/update_layer_arn.sh ${{ needs.deploy-prod.outputs.layer-arn }}
       - name: Stage changes
         run: git add .
       - name: Create PR

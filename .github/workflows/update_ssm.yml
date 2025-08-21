@@ -26,8 +26,8 @@ on:
         description: Environment to deploy to
         type: choice
         options:
-          - Beta
-          - Prod
+          - beta
+          - prod
         required: true
 
       write_latest:
@@ -37,6 +37,32 @@ on:
 
       package_version:
         description: Semantic Version of published layer
+        type: string
+        required: true
+
+      layer-version:
+        description: Layer version of the published layer
+        type: string
+        required: true
+
+  workflow_call:
+    inputs:
+      environment:
+        description: Environment to deploy to
+        type: string
+        required: true
+
+      write_latest:
+        description: Write to the latest path
+        type: boolean
+        required: false
+
+      package_version:
+        description: Semantic Version of published layer
+        type: string
+        required: true
+      layer-version:
+        description: Layer version of the published layer
         type: string
         required: true
 
@@ -101,22 +127,15 @@ jobs:
           # Dynamic secret access is safe here - secrets are scoped per environment
           role-to-assume: ${{ secrets[format('{0}', steps.transform.outputs.CONVERTED_REGION)] }}
           mask-aws-account-id: true
-      - id: get-version
-        env:
-          prefix: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
-        run: |
-          current_layer_version=$(aws ssm get-parameter --name ${{ env.prefix }}/typescript/generic/all/${{ inputs.package_version }} --query Parameter.Value --output text --region us-east-1)
-          new_layer_version=$((current_layer_version + 1))
-          echo "new_layer_version=$new_layer_version" >> "$GITHUB_OUTPUT"
       - id: write-version
         env:
           prefix: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
         run: |
-          aws ssm put-parameter --name ${{ env.prefix }}/typescript/generic/all/${{ inputs.package_version }} --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ steps.get-version.outputs.new_layer_version }}" --type String --overwrite
+          aws ssm put-parameter --name ${{ env.prefix }}/typescript/generic/all/${{ inputs.package_version }} --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer-version }}" --type String --overwrite
 
       - id: write-latest
         if: inputs.write_latest == true
         env:
           prefix: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
         run: |
-          aws ssm put-parameter --name ${{ env.prefix }}/typescript/generic/all/latest --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ steps.get-version.outputs.new_layer_version }}" --type String --overwrite
+          aws ssm put-parameter --name ${{ env.prefix }}/typescript/generic/all/latest --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer-version }}" --type String --overwrite

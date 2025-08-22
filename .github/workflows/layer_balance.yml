@@ -40,6 +40,8 @@ jobs:
       contents: read
       id-token: write
     environment: layer-${{ inputs.environment }}
+    env:
+      BALANCE_ROLE_ARN: ${{ secrets.BALANCE_ROLE_ARN }}
     steps:
       - id: credentials
         name: AWS Credentials
@@ -62,8 +64,8 @@ jobs:
       - id: run-balance-new-region
         name: Run Balance
         if: ${{ inputs.start_at == '' }}
-        run: balance -read-region us-east-1 -write-region ${{ inputs.region }} -write-role ${{ secrets.BALANCE_ROLE_ARN }} -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
+        run: balance -read-region us-east-1 -write-region ${{ inputs.region }} -write-role $BALANCE_ROLE_ARN -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
       - id: run-balance-existing
         name: Run Balance (Existing Region)
         if: ${{ inputs.start_at != '' }}
-        run: balance -read-region us-east-1 -start-at ${{ inputs.start_at }} -write-region ${{ inputs.region }} -write-role ${{ secrets.BALANCE_ROLE_ARN }} -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
+        run: balance -read-region us-east-1 -start-at ${{ inputs.start_at }} -write-region ${{ inputs.region }} -write-role $BALANCE_ROLE_ARN -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false

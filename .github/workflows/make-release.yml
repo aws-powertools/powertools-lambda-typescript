@@ -91,7 +91,10 @@ jobs:
   # publish_layer -> reusable_deploy_layer_stack -> reusable_update_layer_arn_docs
   publish_layer:
     needs: publish-npm
-    secrets: inherit
+    secrets:
+      AWS_LAYERS_BETA_ROLE_ARN: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
+      AWS_LAYERS_PROD_ROLE_ARN: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
+      TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       id-token: write
       contents: write

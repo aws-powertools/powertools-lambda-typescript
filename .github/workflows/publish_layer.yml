@@ -13,6 +13,13 @@ on:
         required: true
 
   workflow_call:
+    secrets:
+      AWS_LAYERS_BETA_ROLE_ARN:
+        description: "Role ARN for deploying the Layer to Beta"
+      AWS_LAYERS_PROD_ROLE_ARN:
+        description: "Role ARN for deploying the Layer to Prod"
+      TOKEN_GITHUB:
+        description: "GitHub Token to interact with GitHub"
     inputs:
       latest_published_version:
         type: string
@@ -117,4 +124,4 @@ jobs:
         with: 
           temp_branch_prefix: 'ci-layer-docs'
           pull_request_title: 'chore(ci): update layer ARN on documentation'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN_GITHUB }}

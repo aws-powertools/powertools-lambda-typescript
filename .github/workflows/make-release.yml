@@ -94,6 +94,7 @@ jobs:
     secrets:
       AWS_LAYERS_BETA_ROLE_ARN: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
       AWS_LAYERS_PROD_ROLE_ARN: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
+      TOKEN: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       id-token: write
       contents: write

@@ -49,10 +49,13 @@ jobs:
           mask-aws-account-id: true
 
       - name: Invoke Lambda function
+        env:
+          TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ANALYTICS_DISPATCHER_ARN: ${{ secrets.AWS_ANALYTICS_DISPATCHER_ARN }}
         run: |
-          payload=$(echo -n '{"githubToken": "${{ secrets.GITHUB_TOKEN }}"}' | base64)
+          payload=$(echo -n '{"githubToken": "$TOKEN_GITHUB"}' | base64)
           response=$(aws lambda invoke \
-            --function-name "${{ secrets.AWS_ANALYTICS_DISPATCHER_ARN }}" \
+            --function-name "$AWS_ANALYTICS_DISPATCHER_ARN" \
             --payload "$payload" \
             response.json \
             --query 'FunctionError' \

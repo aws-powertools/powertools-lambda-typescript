@@ -80,16 +80,6 @@ jobs:
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
 
-  update-ssm-beta:
-    needs: [deploy-beta]
-    uses: ./.github/workflows/update_ssm.yml
-    permissions:
-      contents: read
-    with:
-      environment: beta
-      package_version: ${{ inputs.latest_published_version }}
-      layer-version: ${{ needs.deploy-beta.outputs.layer-version }}
-
   update-ssm-prod:
     needs: [deploy-prod]
     uses: ./.github/workflows/update_ssm.yml

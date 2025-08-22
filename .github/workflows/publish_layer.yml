@@ -80,6 +80,16 @@ jobs:
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
 
+  update-ssm-prod:
+    needs: [deploy-prod]
+    uses: ./.github/workflows/update_ssm.yml
+    permissions:
+      contents: read
+    with:
+      environment: prod
+      package_version: ${{ inputs.latest_published_version }}
+      layer-version: ${{ needs.deploy-prod.outputs.layer-version }}
+
   update_layer_arn_docs:
     needs: [deploy-prod]
     # Force Github action to run only a single job at a time (based on the group name)
@@ -98,7 +108,7 @@ jobs:
           ref: ${{ github.sha }}
       - name: Replace layer versions in documentation
         run: |
-          ./.github/scripts/update_layer_arn.sh ${{ needs.deploy-prod.outputs.layer-arn }}
+          ./.github/scripts/update_layer_arn.sh ${{ needs.deploy-prod.outputs.layer-version }}
       - name: Stage changes
         run: git add .
       - name: Create PR

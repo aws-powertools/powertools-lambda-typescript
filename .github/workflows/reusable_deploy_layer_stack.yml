@@ -16,9 +16,9 @@ on:
         required: true
         type: string
     outputs:
-      layer-arn:
-        description: "The latest deployed Layer ARN"
-        value: ${{ jobs.deploy-cdk-stack.outputs.layer-arn }}
+      layer-version:
+        description: "The latest deployed Layer version"
+        value: ${{ jobs.deploy-cdk-stack.outputs.layer-version }}
     secrets:
       target-account-role:
         required: true
@@ -70,7 +70,7 @@ jobs:
             "mx-central-1"
           ]
     outputs:
-      layer-arn: ${{ steps.store-latest-layer-arn.outputs.layer-arn }}
+      layer-version: ${{ steps.store-latest-layer-arn.outputs.layer-version }}
     steps:
       - name: checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
@@ -100,10 +100,11 @@ jobs:
         run: |
           mkdir cdk-layer-stack
           jq -r -c '.LayerPublisherStack.LatestLayerArn' layers/cdk-outputs.json > cdk-layer-stack/${{ matrix.region }}-layer-version.txt
+          layer_arn=$(cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt)
+          echo "$layer_arn"
           if [ "${{ matrix.region }}" = "us-east-1" ]; then
-            echo "layer-arn=$(cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt)" | tee -a "$GITHUB_OUTPUT"
-          else
-            cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt
+            layer_version=$(echo $layer_arn | sed 's/.*://')
+            echo "layer-version=$layer_version" >> "$GITHUB_OUTPUT"
           fi
       - name: Save Layer ARN artifact
         if: ${{ inputs.stage == 'PROD' }}

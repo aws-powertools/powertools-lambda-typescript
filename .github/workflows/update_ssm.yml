@@ -5,7 +5,6 @@
 # * environment: will prefix /beta/ into the parameter
 # * write_latest: will create a latest alias instead of a version number in the parameter
 # * package_version: semantic version number of the released layer (3.x.y)
-# * layer_version: this is sequential layer version from the ARN
 #
 # A successful parameter would look similar to:
 #   /aws/service/powertools/python/arm64/python3.8/3.1.0
@@ -27,8 +26,8 @@ on:
         description: Environment to deploy to
         type: choice
         options:
-          - Beta
-          - Prod
+          - beta
+          - prod
         required: true
 
       write_latest:
@@ -41,8 +40,29 @@ on:
         type: string
         required: true
 
-      layer_version:
-        description: Layer version
+      layer-version:
+        description: Layer version of the published layer
+        type: string
+        required: true
+
+  workflow_call:
+    inputs:
+      environment:
+        description: Environment to deploy to
+        type: string
+        required: true
+
+      write_latest:
+        description: Write to the latest path
+        type: boolean
+        required: false
+
+      package_version:
+        description: Semantic Version of published layer
+        type: string
+        required: true
+      layer-version:
+        description: Layer version of the published layer
         type: string
         required: true
 
@@ -111,11 +131,11 @@ jobs:
         env:
           prefix: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
         run: |
-          aws ssm put-parameter --name ${{ env.prefix }}/typescript/generic/all/${{ inputs.package_version }} --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer_version }}" --type String --overwrite
+          aws ssm put-parameter --name ${{ env.prefix }}/typescript/generic/all/${{ inputs.package_version }} --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer-version }}" --type String --overwrite
 
       - id: write-latest
         if: inputs.write_latest == true
         env:
           prefix: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
         run: |
-          aws ssm put-parameter --name ${{ env.prefix }}/typescript/generic/all/latest --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer_version }}" --type String --overwrite
+          aws ssm put-parameter --name ${{ env.prefix }}/typescript/generic/all/latest --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer-version }}" --type String --overwrite

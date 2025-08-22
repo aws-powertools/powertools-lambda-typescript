@@ -11,6 +11,14 @@
 #   /aws/service/powertools/python/arm64/python3.8/3.1.0
 # And will have a value of:
 #   arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsPythonV3-python38-arm64:4
+#
+# CodeQL Security Note:
+# This workflow uses dynamic secret access via secrets[format(...)] which triggers
+# an "Excessive Secrets Exposure" alert. However, this is safe because:
+# - Secrets are scoped per environment (SSM)
+# - Each job only accesses secrets for SSM
+# - No global secrets array containing mixed credentials (API keys, PEM files, etc.)
+# - The secrets object is already minimally scoped to the environment being used
 
 on:
   workflow_dispatch:
@@ -96,6 +104,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
         with:
           aws-region: ${{ matrix.region }}
+          # Dynamic secret access is safe here - secrets are scoped per environment
           role-to-assume: ${{ secrets[format('{0}', steps.transform.outputs.CONVERTED_REGION)] }}
           mask-aws-account-id: true
       - id: write-version

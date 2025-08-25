@@ -828,9 +828,9 @@ describe('Class: BaseRouter', () => {
 
       app.get('/test', async (_params, options) => {
         return {
-          hasRequest: options?.request instanceof Request,
-          hasEvent: options?.event === testEvent,
-          hasContext: options?.context === context,
+          hasRequest: options.request instanceof Request,
+          hasEvent: options.event === testEvent,
+          hasContext: options.context === context,
         };
       });
 
@@ -853,9 +853,9 @@ describe('Class: BaseRouter', () => {
         statusCode: HttpErrorCodes.BAD_REQUEST,
         error: 'Bad Request',
         message: error.message,
-        hasRequest: options?.request instanceof Request,
-        hasEvent: options?.event === testEvent,
-        hasContext: options?.context === context,
+        hasRequest: options.request instanceof Request,
+        hasEvent: options.event === testEvent,
+        hasContext: options.context === context,
       }));
 
       app.get('/test', () => {
@@ -881,9 +881,9 @@ describe('Class: BaseRouter', () => {
         @app.get('/test')
         public async getTest(_params: any, options: any) {
           return {
-            hasRequest: options?.request instanceof Request,
-            hasEvent: options?.event === testEvent,
-            hasContext: options?.context === context,
+            hasRequest: options.request instanceof Request,
+            hasEvent: options.event === testEvent,
+            hasContext: options.context === context,
           };
         }
 

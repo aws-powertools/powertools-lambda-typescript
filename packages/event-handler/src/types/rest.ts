@@ -24,7 +24,7 @@ type ErrorResolveOptions = RequestOptions & ResolveOptions;
 
 type ErrorHandler<T extends Error = Error> = (
   error: T,
-  options?: RequestOptions
+  options: RequestOptions
 ) => Promise<ErrorResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
@@ -58,7 +58,7 @@ type HandlerResponse = Response | JSONObject;
 type RouteHandler<
   TParams = Record<string, unknown>,
   TReturn = HandlerResponse,
-> = (args: TParams, options?: RequestOptions) => Promise<TReturn>;
+> = (args: TParams, options: RequestOptions) => Promise<TReturn>;
 
 type HttpMethod = keyof typeof HttpVerbs;
 

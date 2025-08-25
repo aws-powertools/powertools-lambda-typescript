@@ -1,7 +1,17 @@
 import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import type { CompiledRoute, Path, ValidationResult } from '../types/rest.js';
-import { PARAM_PATTERN, SAFE_CHARS, UNSAFE_CHARS } from './constants.js';
+import type {
+  CompiledRoute,
+  HttpMethod,
+  Path,
+  ValidationResult,
+} from '../types/rest.js';
+import {
+  HttpVerbs,
+  PARAM_PATTERN,
+  SAFE_CHARS,
+  UNSAFE_CHARS,
+} from './constants.js';
 
 export function compilePath(path: Path): CompiledRoute {
   const paramNames: string[] = [];
@@ -67,6 +77,10 @@ export const isAPIGatewayProxyEvent = (
     typeof event.isBase64Encoded === 'boolean' &&
     (event.body === null || isString(event.body))
   );
+};
+
+export const isHttpMethod = (method: string): method is HttpMethod => {
+  return Object.keys(HttpVerbs).includes(method);
 };
 
 /**

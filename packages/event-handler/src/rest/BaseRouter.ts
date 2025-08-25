@@ -15,7 +15,7 @@ import type {
   RouteOptions,
   RouterOptions,
 } from '../types/rest.js';
-import { HttpVerbs } from './constants.js';
+import { HttpErrorCodes, HttpVerbs } from './constants.js';
 import {
   handlerResultToProxyResult,
   proxyEventToWebRequest,
@@ -23,13 +23,14 @@ import {
 } from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import {
+  InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
   ServiceError,
 } from './errors.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
-import { isAPIGatewayProxyEvent } from './utils.js';
+import { isAPIGatewayProxyEvent, isHttpMethod } from './utils.js';
 
 abstract class BaseRouter {
   protected context: Record<string, unknown>;
@@ -156,16 +157,27 @@ abstract class BaseRouter {
     options?: ResolveOptions
   ): Promise<APIGatewayProxyResult | undefined> {
     if (!isAPIGatewayProxyEvent(event)) {
-      this.logger.warn(
+      this.logger.error(
         'Received an event that is not compatible with this resolver'
       );
-      return;
+      throw new InternalServerError();
     }
 
+    const method = event.requestContext.httpMethod.toUpperCase();
+    if (!isHttpMethod(method)) {
+      this.logger.error(`HTTP method ${method} is not supported.`);
+      // We can't throw a MethodNotAllowedError outside the try block as it
+      // will be converted to an internal server error by the API Gateway runtime
+      return {
+        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        body: '',
+      };
+    }
+
+    const request = proxyEventToWebRequest(event);
+
     try {
-      const request = proxyEventToWebRequest(event);
       const path = new URL(request.url).pathname as Path;
-      const method = request.method.toUpperCase() as HttpMethod;
 
       const route = this.routeRegistry.resolve(method, path);
 
@@ -184,8 +196,9 @@ abstract class BaseRouter {
 
       return await handlerResultToProxyResult(result);
     } catch (error) {
+      this.logger.debug(`There was an error processing the request: ${error}`);
       const result = await this.handleError(error as Error, {
-        request: proxyEventToWebRequest(event),
+        request,
         event,
         context,
         scope: options?.scope,

@@ -79,6 +79,23 @@ describe('Class: BaseRouter', () => {
     });
   });
 
+  it.each([['CONNECT'], ['TRACE']])(
+    'throws MethodNotAllowedError for %s requests',
+    async (method) => {
+      // Prepare
+      const app = new TestResolver();
+
+      // Act & Assess
+      const result = await app.resolve(
+        createTestEvent('/test', method),
+        context
+      );
+
+      expect(result?.statusCode).toBe(HttpErrorCodes.METHOD_NOT_ALLOWED);
+      expect(result?.body).toEqual('');
+    }
+  );
+
   it('accepts multiple HTTP methods', async () => {
     // Act
     const app = new TestResolver();
@@ -965,18 +982,14 @@ describe('Class: BaseRouter', () => {
   });
 
   describe('resolve method', () => {
-    it('returns undefined and logs warning for non-API Gateway events', async () => {
+    it('throws an internal server error for non-API Gateway events', async () => {
       // Prepare
       const app = new TestResolver();
       const nonApiGatewayEvent = { Records: [] }; // SQS-like event
 
-      // Act
-      const result = await app.resolve(nonApiGatewayEvent, context);
-
-      // Assess
-      expect(result).toBeUndefined();
-      expect(console.warn).toHaveBeenCalledWith(
-        'Received an event that is not compatible with this resolver'
+      // Act & Assess
+      expect(app.resolve(nonApiGatewayEvent, context)).rejects.toThrowError(
+        InternalServerError
       );
     });
 

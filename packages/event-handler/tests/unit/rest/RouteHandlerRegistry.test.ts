@@ -13,8 +13,8 @@ describe('Class: RouteHandlerRegistry', () => {
     ({ path, resolvePath }) => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler1 = () => 'first';
-      const handler2 = () => 'second';
+      const handler1 = async () => ({ message: 'first' });
+      const handler2 = async () => ({ message: 'second' });
       const method = HttpVerbs.GET;
 
       // Act
@@ -50,7 +50,7 @@ describe('Class: RouteHandlerRegistry', () => {
     ({ path }) => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       const route = new Route(HttpVerbs.GET, path as Path, handler);
 
@@ -68,7 +68,7 @@ describe('Class: RouteHandlerRegistry', () => {
   it("doesn't register routes with duplicate parameter names", () => {
     // Prepare
     const registry = new RouteHandlerRegistry({ logger: console });
-    const handler = () => 'test';
+    const handler = async () => ({ message: 'test' });
 
     // Create a route with duplicate parameter names
     const invalidPath = '/users/:id/posts/:id';
@@ -85,7 +85,7 @@ describe('Class: RouteHandlerRegistry', () => {
   it('returns null when no route is found', () => {
     // Prepare
     const registry = new RouteHandlerRegistry({ logger: console });
-    const handler = () => 'test';
+    const handler = async () => ({ message: 'test' });
 
     // Act
     registry.register(new Route(HttpVerbs.GET, '/users', handler));
@@ -99,8 +99,8 @@ describe('Class: RouteHandlerRegistry', () => {
   it('skips dynamic routes with different HTTP methods', () => {
     // Prepare
     const registry = new RouteHandlerRegistry({ logger: console });
-    const getHandler = () => 'get';
-    const postHandler = () => 'post';
+    const getHandler = async () => ({ message: 'get' });
+    const postHandler = async () => ({ message: 'post' });
 
     // Act
     registry.register(new Route(HttpVerbs.GET, '/users/:id', getHandler));
@@ -120,9 +120,9 @@ describe('Class: RouteHandlerRegistry', () => {
     it('handles routes of different specificity', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const generalHandler = () => 'general';
-      const specificHandler = () => 'specific';
-      const mostSpecificHandler = () => 'most-specific';
+      const generalHandler = async () => ({ message: 'general' });
+      const specificHandler = async () => ({ message: 'specific' });
+      const mostSpecificHandler = async () => ({ message: 'most-specific' });
 
       // Act
       registry.register(
@@ -144,8 +144,8 @@ describe('Class: RouteHandlerRegistry', () => {
     it('prioritizes static routes over dynamic routes', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const dynamicHandler = () => 'dynamic';
-      const staticHandler = () => 'static';
+      const dynamicHandler = async () => ({ message: 'dynamic' });
+      const staticHandler = async () => ({ message: 'static' });
 
       // Act
       registry.register(new Route(HttpVerbs.GET, '/users/:id', dynamicHandler));
@@ -162,8 +162,8 @@ describe('Class: RouteHandlerRegistry', () => {
     it('prioritizes deeper paths over shallower ones', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const shallowHandler = () => 'shallow';
-      const deepHandler = () => 'deep';
+      const shallowHandler = async () => ({ message: 'shallow' });
+      const deepHandler = async () => ({ message: 'deep' });
 
       // Act
       registry.register(new Route(HttpVerbs.GET, '/api/:id', shallowHandler));
@@ -178,8 +178,8 @@ describe('Class: RouteHandlerRegistry', () => {
     it('prioritizes more specific segments over generic parameters', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const genericHandler = () => 'generic';
-      const specificHandler = () => 'specific';
+      const genericHandler = async () => ({ message: 'generic' });
+      const specificHandler = async () => ({ message: 'specific' });
 
       // Act
       registry.register(new Route(HttpVerbs.GET, '/:a/:b', genericHandler));
@@ -196,8 +196,8 @@ describe('Class: RouteHandlerRegistry', () => {
     it('prioritizes routes with fewer parameters', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const moreParamsHandler = () => 'more-params';
-      const fewerParamsHandler = () => 'fewer-params';
+      const moreParamsHandler = async () => ({ message: 'more-params' });
+      const fewerParamsHandler = async () => ({ message: 'fewer-params' });
 
       // Act
       registry.register(
@@ -216,8 +216,8 @@ describe('Class: RouteHandlerRegistry', () => {
     it('prioritizes static segments over parameters when parameter count differs', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const moreParamsHandler = () => 'more-params';
-      const staticHandler = () => 'static';
+      const moreParamsHandler = async () => ({ message: 'more-params' });
+      const staticHandler = async () => ({ message: 'static' });
 
       // Act
       registry.register(
@@ -236,8 +236,8 @@ describe('Class: RouteHandlerRegistry', () => {
     it('prioritizes more static segments in mixed routes', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const lessStaticHandler = () => 'less-static';
-      const moreStaticHandler = () => 'more-static';
+      const lessStaticHandler = async () => ({ message: 'less-static' });
+      const moreStaticHandler = async () => ({ message: 'more-static' });
 
       // Act
       registry.register(
@@ -256,9 +256,9 @@ describe('Class: RouteHandlerRegistry', () => {
     it('handles complex mixed static/dynamic precedence', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const allDynamicHandler = () => 'all-dynamic';
-      const mixedHandler = () => 'mixed';
-      const mostStaticHandler = () => 'most-static';
+      const allDynamicHandler = async () => ({ message: 'all-dynamic' });
+      const mixedHandler = async () => ({ message: 'mixed' });
+      const mostStaticHandler = async () => ({ message: 'most-static' });
 
       // Act
       registry.register(
@@ -280,8 +280,8 @@ describe('Class: RouteHandlerRegistry', () => {
     it('maintains specificity regardless of registration order - specific first', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const specificHandler = () => 'specific';
-      const generalHandler = () => 'general';
+      const specificHandler = async () => ({ message: 'specific' });
+      const generalHandler = async () => ({ message: 'general' });
 
       // Act - Register specific route first
       registry.register(
@@ -300,8 +300,8 @@ describe('Class: RouteHandlerRegistry', () => {
     it('maintains specificity regardless of registration order - general first', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const specificHandler = () => 'specific';
-      const generalHandler = () => 'general';
+      const specificHandler = async () => ({ message: 'specific' });
+      const generalHandler = async () => ({ message: 'general' });
 
       // Act
       registry.register(
@@ -320,8 +320,8 @@ describe('Class: RouteHandlerRegistry', () => {
     it('handles root-level routes', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const rootHandler = () => 'root';
-      const paramHandler = () => 'param';
+      const rootHandler = async () => ({ message: 'root' });
+      const paramHandler = async () => ({ message: 'param' });
 
       // Act
       registry.register(new Route(HttpVerbs.GET, '/:id', paramHandler));
@@ -340,8 +340,8 @@ describe('Class: RouteHandlerRegistry', () => {
     it('handles very long paths with mixed segments', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const longGenericHandler = () => 'long-generic';
-      const longSpecificHandler = () => 'long-specific';
+      const longGenericHandler = async () => ({ message: 'long-generic' });
+      const longSpecificHandler = async () => ({ message: 'long-specific' });
 
       // Act
       registry.register(
@@ -373,7 +373,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('extracts single parameter correctly', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(new Route(HttpVerbs.GET, '/users/:id', handler));
@@ -389,7 +389,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('extracts multiple parameters correctly', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(
@@ -407,7 +407,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('returns empty params for static routes', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(new Route(HttpVerbs.GET, '/users/profile', handler));
@@ -423,7 +423,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('decodes URL-encoded spaces in parameters', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(new Route(HttpVerbs.GET, '/search/:query', handler));
@@ -438,7 +438,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('decodes URL-encoded special characters in parameters', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(new Route(HttpVerbs.GET, '/users/:email', handler));
@@ -456,7 +456,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('decodes multiple URL-encoded parameters', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(
@@ -482,7 +482,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('throws ParameterValidationError for whitespace-only parameters', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(new Route(HttpVerbs.GET, '/users/:id', handler));
@@ -496,7 +496,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('extracts parameters with complex route patterns', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(
@@ -530,7 +530,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('handles mixed parameter types and URL encoding', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(
@@ -558,7 +558,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('throws ParameterValidationError with correct error message for whitespace-only parameter', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(new Route(HttpVerbs.GET, '/users/:id', handler));
@@ -572,7 +572,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('throws ParameterValidationError with multiple error messages for multiple invalid parameters', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(
@@ -588,7 +588,7 @@ describe('Class: RouteHandlerRegistry', () => {
     it('includes all validation issues in error message', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = () => 'test';
+      const handler = async () => ({ message: 'test' });
 
       // Act
       registry.register(

@@ -3,7 +3,7 @@ import {
   getStringFromEnv,
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
-import type { Context } from 'aws-lambda';
+import type { APIGatewayProxyResult, Context } from 'aws-lambda';
 import type { ResolveOptions } from '../types/index.js';
 import type {
   ErrorConstructor,
@@ -15,15 +15,22 @@ import type {
   RouteOptions,
   RouterOptions,
 } from '../types/rest.js';
-import { HttpVerbs } from './constants.js';
+import { HttpErrorCodes, HttpVerbs } from './constants.js';
+import {
+  handlerResultToProxyResult,
+  proxyEventToWebRequest,
+  responseToProxyResult,
+} from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import {
+  InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
   ServiceError,
 } from './errors.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
+import { isAPIGatewayProxyEvent, isHttpMethod } from './utils.js';
 
 abstract class BaseRouter {
   protected context: Record<string, unknown>;
@@ -133,11 +140,72 @@ abstract class BaseRouter {
     };
   }
 
-  public abstract resolve(
+  /**
+   * Resolves an API Gateway event by routing it to the appropriate handler
+   * and converting the result to an API Gateway proxy result. Handles errors
+   * using registered error handlers or falls back to default error handling
+   * (500 Internal Server Error).
+   *
+   * @param event - The Lambda event to resolve
+   * @param context - The Lambda context
+   * @param options - Optional resolve options for scope binding
+   * @returns An API Gateway proxy result or undefined for incompatible events
+   */
+  public async resolve(
     event: unknown,
     context: Context,
     options?: ResolveOptions
-  ): Promise<unknown>;
+  ): Promise<APIGatewayProxyResult | undefined> {
+    if (!isAPIGatewayProxyEvent(event)) {
+      this.logger.error(
+        'Received an event that is not compatible with this resolver'
+      );
+      throw new InternalServerError();
+    }
+
+    const method = event.requestContext.httpMethod.toUpperCase();
+    if (!isHttpMethod(method)) {
+      this.logger.error(`HTTP method ${method} is not supported.`);
+      // We can't throw a MethodNotAllowedError outside the try block as it
+      // will be converted to an internal server error by the API Gateway runtime
+      return {
+        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        body: '',
+      };
+    }
+
+    const request = proxyEventToWebRequest(event);
+
+    try {
+      const path = new URL(request.url).pathname as Path;
+
+      const route = this.routeRegistry.resolve(method, path);
+
+      if (route === null) {
+        throw new NotFoundError(`Route ${path} for method ${method} not found`);
+      }
+
+      const result = await route.handler.apply(options?.scope ?? this, [
+        route.params,
+        {
+          event,
+          context,
+          request,
+        },
+      ]);
+
+      return await handlerResultToProxyResult(result);
+    } catch (error) {
+      this.logger.debug(`There was an error processing the request: ${error}`);
+      const result = await this.handleError(error as Error, {
+        request,
+        event,
+        context,
+        scope: options?.scope,
+      });
+      return await responseToProxyResult(result);
+    }
+  }
 
   public route(handler: RouteHandler, options: RouteOptions): void {
     const { method, path } = options;

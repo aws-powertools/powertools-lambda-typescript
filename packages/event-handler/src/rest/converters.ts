@@ -27,16 +27,20 @@ const createBody = (body: string | null, isBase64Encoded: boolean) => {
 export const proxyEventToWebRequest = (
   event: APIGatewayProxyEvent
 ): Request => {
-  const { httpMethod, path, domainName } = event.requestContext;
+  const { httpMethod, path } = event;
+  const { domainName } = event.requestContext;
 
   const headers = new Headers();
   for (const [name, value] of Object.entries(event.headers ?? {})) {
-    if (value != null) headers.append(name, value);
+    if (value != null) headers.set(name, value);
   }
 
   for (const [name, values] of Object.entries(event.multiValueHeaders ?? {})) {
     for (const value of values ?? []) {
-      headers.append(name, value);
+      const headerValue = headers.get(name);
+      if (!headerValue?.includes(value)) {
+        headers.append(name, value);
+      }
     }
   }
   const hostname = headers.get('Host') ?? domainName;

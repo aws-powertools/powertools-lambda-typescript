@@ -1,20 +1,27 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import middy from 'middy5';
-import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type Mock,
+  vi,
+} from 'vitest';
 import { LogLevel, UncaughtErrorLogMessage } from '../../src/constants.js';
 import { Logger } from '../../src/Logger.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
 
 describe('Buffer logs', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
   beforeEach(() => {
-    process.env = {
-      ...ENVIRONMENT_VARIABLES,
-      POWERTOOLS_DEV: 'true',
-    };
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('does not buffer logs when disabled', () => {
@@ -94,7 +101,7 @@ describe('Buffer logs', () => {
 
   it('outputs a warning when the Advanced Logging Configuration Log Level is less verbose than the Log Buffering Log Level', () => {
     // Assemble
-    process.env.AWS_LAMBDA_LOG_LEVEL = 'INFO';
+    vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'INFO');
     const logger = new Logger({
       logLevel: LogLevel.DEBUG,
       logBufferOptions: { enabled: true, bufferAtVerbosity: 'DEBUG' },
@@ -116,7 +123,7 @@ describe('Buffer logs', () => {
 
   it('When the buffer is flushed it outputs a warning if the Advanced Logging Configuration Log Level is less verbose than the Log Buffering Log Level', () => {
     // Assemble
-    process.env.AWS_LAMBDA_LOG_LEVEL = 'INFO';
+    vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'INFO');
     const logger = new Logger({
       logLevel: LogLevel.DEBUG,
       logBufferOptions: { enabled: true, bufferAtVerbosity: 'DEBUG' },
@@ -195,7 +202,7 @@ describe('Buffer logs', () => {
 
   it('does not output buffered logs when trace id is not set', () => {
     // Prepare
-    process.env._X_AMZN_TRACE_ID = undefined;
+    vi.stubEnv('_X_AMZN_TRACE_ID', undefined);
     const logger = new Logger({ logBufferOptions: { enabled: true } });
 
     // Act
@@ -210,7 +217,7 @@ describe('Buffer logs', () => {
 
   it('it safely short circuits when clearBuffer is called without a trace id', () => {
     // Prepare
-    process.env._X_AMZN_TRACE_ID = undefined;
+    vi.stubEnv('_X_AMZN_TRACE_ID', undefined);
     const logger = new Logger({
       logLevel: LogLevel.ERROR,
       logBufferOptions: { enabled: true, bufferAtVerbosity: LogLevel.DEBUG },

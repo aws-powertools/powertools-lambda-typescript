@@ -15,6 +15,14 @@
 # 1. After the `make-release` workflow finishes and the PR for the documentation update gets created, trigger this workflow manually via `workflow_dispatch` with environment, version, and partition inputs for each Gamma and Prod environment in the China and GovCloud partitions
 # 2. Monitor deployment progress and verify successful layer publication across all target regions
 # 3. Once this workflow is completed, the PR for the documentation update can me merged
+#
+# CodeQL Security Note:
+# This workflow uses dynamic secret access via secrets[format(...)] which triggers
+# an "Excessive Secrets Exposure" alert. However, this is safe because:
+# - Secrets are scoped per environment (China/GovCloud Gamma/Prod)
+# - Each job only accesses secrets for its specific partition and region
+# - No global secrets array containing mixed credentials (API keys, PEM files, etc.)
+# - The secrets object is already minimally scoped to the environment being used
 
 on:
   workflow_dispatch:
@@ -142,6 +150,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
         with:
+          # Dynamic secret access is safe here - secrets are scoped per environment
           role-to-assume: ${{ secrets[format('IAM_ROLE_{0}', steps.transform.outputs.CONVERTED_REGION)] }}
           aws-region: ${{ matrix.region}}
           mask-aws-account-id: true
@@ -175,6 +184,7 @@ jobs:
           LAYER_VERSION: ${{ steps.create-layer.outputs.LAYER_VERSION }}
         run: |
           export layer_output='AWSLambdaPowertoolsTypeScriptV2-${{matrix.region}}.json'
+          # Dynamic secret access is safe here - secrets are scoped per environment
           aws --region ${{ matrix.region}} lambda get-layer-version-by-arn --arn 'arn:${{ needs.setup.outputs.partition }}:lambda:${{ matrix.region}}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ env.LAYER_VERSION }}' > $layer_output
           REMOTE_SHA=$(jq -r '.Content.CodeSha256' $layer_output)
           LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)

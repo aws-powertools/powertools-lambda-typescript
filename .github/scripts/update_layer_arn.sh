@@ -8,7 +8,7 @@
 # see .github/workflows/publish_layer.yml
 
 
-# Get the new version number from the first command-line argument
+# Get the new layer version from the first command-line argument
 new_version=$1
 if [ -z "$new_version" ]; then
     echo "Usage: $0 <new_version>"

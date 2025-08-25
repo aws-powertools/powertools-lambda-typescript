@@ -1,11 +1,13 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger, LogLevel, LogLevelThreshold } from '../../src/index.js';
 
 describe('Log sampling', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
   beforeEach(() => {
-    process.env = { ...ENVIRONMENT_VARIABLES, POWERTOOLS_DEV: 'true' };
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('informs the customer that sample rate is setting the level to DEBUG', () => {
@@ -35,7 +37,7 @@ describe('Log sampling', () => {
 
   it('changes the log level to debug log sampling is configured via env variable', () => {
     // Prepare
-    process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '1';
+    vi.stubEnv('POWERTOOLS_LOGGER_SAMPLE_RATE', '1');
 
     // Act
     const logger: Logger = new Logger({
@@ -59,7 +61,7 @@ describe('Log sampling', () => {
 
   it('prioritizes and uses the sample rate specified in the constructor', () => {
     // Prepare
-    process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '0.5';
+    vi.stubEnv('POWERTOOLS_LOGGER_SAMPLE_RATE', '0.5');
 
     // Act
     const logger: Logger = new Logger({
@@ -84,7 +86,7 @@ describe('Log sampling', () => {
   ])('ignores invalid sample rate values via $type', ({ options, type }) => {
     // Prepare
     if (type === 'env variable') {
-      process.env.POWERTOOLS_LOGGER_SAMPLE_RATE = '42';
+      vi.stubEnv('POWERTOOLS_LOGGER_SAMPLE_RATE', '42');
     }
 
     // Act

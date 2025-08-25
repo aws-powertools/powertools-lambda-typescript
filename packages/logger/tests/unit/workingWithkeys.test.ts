@@ -1,20 +1,19 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
 import type { ConstructorOptions } from '../../src/types/Logger.js';
 
 describe('Working with keys', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
   beforeEach(() => {
-    process.env = {
-      ...ENVIRONMENT_VARIABLES,
-      POWERTOOLS_DEV: 'true',
-    };
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it.each([

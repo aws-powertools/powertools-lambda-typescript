@@ -97,6 +97,9 @@ jobs:
       environment: prod
       package_version: ${{ inputs.latest_published_version }}
       layer-version: ${{ needs.deploy-prod.outputs.layer-version }}
+    secrets:
+      # We use "inherit" because need to propagate the secrets to the reusable workflow, secrets are already scoped by using GitHub's deployment environments to mitigate the risk of secret exposure.
+      inherit
 
   update_layer_arn_docs:
     needs: [deploy-prod]

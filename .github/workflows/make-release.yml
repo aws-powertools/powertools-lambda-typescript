@@ -94,9 +94,8 @@ jobs:
   publish_layer:
     needs: publish-npm
     secrets:
-      AWS_LAYERS_BETA_ROLE_ARN: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
-      AWS_LAYERS_PROD_ROLE_ARN: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
-      TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
+      # The update_ssm workflow called from the publish_layer workflow needs the secrets for all the regions. This will trigger a SonarQube warning.
+      inherit
     permissions:
       id-token: write
       contents: write

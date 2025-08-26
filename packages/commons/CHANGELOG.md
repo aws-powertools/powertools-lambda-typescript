@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
+
+### Maintenance
+
+- concatenate PT UA to AWS_SDK_UA_APP_ID when one is set ([#4374](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4374)) ([519cbfe](https://github.com/aws-powertools/powertools-lambda-typescript/commit/519cbfe99db110eceadb8d7814f0693dc751c6db))
 ## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
 
 **Note:** Version bump only for this package

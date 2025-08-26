@@ -91,7 +91,8 @@ jobs:
     needs: [deploy-prod]
     uses: ./.github/workflows/update_ssm.yml
     permissions:
-      contents: read
+      contents: write
+      id-token: write
     with:
       environment: prod
       package_version: ${{ inputs.latest_published_version }}

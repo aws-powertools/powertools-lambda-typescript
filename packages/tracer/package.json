@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/tracer",
-  "version": "2.25.1",
+  "version": "2.25.2",
   "description": "The tracer package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -29,8 +29,8 @@
   "license": "MIT-0",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.868.0",
-    "@aws-sdk/client-xray": "^3.864.0"
+    "@aws-sdk/client-dynamodb": "^3.873.0",
+    "@aws-sdk/client-xray": "^3.873.0"
   },
   "peerDependencies": {
     "@middy/core": "4.x || 5.x || 6.x"
@@ -86,7 +86,7 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "2.25.1",
+    "@aws-lambda-powertools/commons": "2.25.2",
     "aws-xray-sdk-core": "^3.10.3"
   },
   "keywords": [

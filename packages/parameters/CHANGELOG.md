@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
+
+### Maintenance
+
+- fix SonarQube code quality issues and optimize imports ([#4359](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4359)) ([59a191d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/59a191d976148a2e36a5ad2b0352e82216eaf043))
 ## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
 
 **Note:** Version bump only for this package

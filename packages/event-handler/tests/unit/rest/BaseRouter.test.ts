@@ -3,17 +3,14 @@ import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
 import { HttpErrorCodes, HttpVerbs } from '../../../src/rest/constants.js';
-import { proxyEventToWebRequest } from '../../../src/rest/converters.js';
 import {
   BadRequestError,
   InternalServerError,
   MethodNotAllowedError,
-  NotFoundError,
+  type NotFoundError,
 } from '../../../src/rest/errors.js';
-import { isAPIGatewayProxyEvent } from '../../../src/rest/utils.js';
 import type {
   HttpMethod,
-  Path,
   RouteHandler,
   RouterOptions,
 } from '../../../src/types/rest.js';
@@ -32,7 +29,11 @@ const createTestEvent = (
   queryStringParameters: null,
   multiValueQueryStringParameters: null,
   stageVariables: null,
-  requestContext: {} as any,
+  requestContext: {
+    httpMethod,
+    path,
+    domainName: 'localhost',
+  } as any,
   resource: '',
 });
 
@@ -43,33 +44,6 @@ describe('Class: BaseRouter', () => {
       this.logger.debug('test debug');
       this.logger.warn('test warn');
       this.logger.error('test error');
-    }
-
-    public async resolve(
-      event: unknown,
-      context: Context,
-      options?: any
-    ): Promise<unknown> {
-      if (!isAPIGatewayProxyEvent(event))
-        throw new Error('not an API Gateway event!');
-      const { httpMethod: method, path } = event;
-      const route = this.routeRegistry.resolve(
-        method as HttpMethod,
-        path as Path
-      );
-      const request = proxyEventToWebRequest(event);
-      try {
-        if (route == null)
-          throw new NotFoundError(`Route ${method} ${path} not found`);
-        return await route.handler(route.params, { request, event, context });
-      } catch (error) {
-        return await this.handleError(error as Error, {
-          request,
-          event,
-          context,
-          ...options,
-        });
-      }
     }
   }
 
@@ -95,13 +69,32 @@ describe('Class: BaseRouter', () => {
       ) => void
     )('/test', async () => ({ result: `${verb}-test` }));
     // Act
-    const actual = (await app.resolve(
-      createTestEvent('/test', method),
-      context
-    )) as Response;
+    const actual = await app.resolve(createTestEvent('/test', method), context);
     // Assess
-    expect(actual).toEqual({ result: `${verb}-test` });
+    expect(actual).toEqual({
+      statusCode: 200,
+      body: JSON.stringify({ result: `${verb}-test` }),
+      headers: { 'Content-Type': 'application/json' },
+      isBase64Encoded: false,
+    });
   });
+
+  it.each([['CONNECT'], ['TRACE']])(
+    'throws MethodNotAllowedError for %s requests',
+    async (method) => {
+      // Prepare
+      const app = new TestResolver();
+
+      // Act & Assess
+      const result = await app.resolve(
+        createTestEvent('/test', method),
+        context
+      );
+
+      expect(result?.statusCode).toBe(HttpErrorCodes.METHOD_NOT_ALLOWED);
+      expect(result?.body).toEqual('');
+    }
+  );
 
   it('accepts multiple HTTP methods', async () => {
     // Act
@@ -122,8 +115,14 @@ describe('Class: BaseRouter', () => {
     );
 
     // Assess
-    expect(getResult).toEqual({ result: 'route-test' });
-    expect(postResult).toEqual({ result: 'route-test' });
+    const expectedResult = {
+      statusCode: 200,
+      body: JSON.stringify({ result: 'route-test' }),
+      headers: { 'Content-Type': 'application/json' },
+      isBase64Encoded: false,
+    };
+    expect(getResult).toEqual(expectedResult);
+    expect(postResult).toEqual(expectedResult);
   });
 
   it('uses the global console when no logger is not provided', () => {
@@ -241,7 +240,12 @@ describe('Class: BaseRouter', () => {
         context
       );
       // Assess
-      expect(actual).toEqual(expected);
+      expect(actual).toEqual({
+        statusCode: 200,
+        body: JSON.stringify(expected),
+        headers: { 'Content-Type': 'application/json' },
+        isBase64Encoded: false,
+      });
     });
   });
 
@@ -262,21 +266,23 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.BAD_REQUEST);
-      expect(await result.text()).toBe(
-        JSON.stringify({
+      expect(result).toEqual({
+        statusCode: HttpErrorCodes.BAD_REQUEST,
+        body: JSON.stringify({
           statusCode: HttpErrorCodes.BAD_REQUEST,
           error: 'Bad Request',
           message: 'Handled: test error',
-        })
-      );
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      });
     });
 
     it('calls notFound handler when route is not found', async () => {
@@ -290,21 +296,23 @@ describe('Class: BaseRouter', () => {
       }));
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/nonexistent', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.NOT_FOUND);
-      expect(await result.text()).toBe(
-        JSON.stringify({
+      expect(result).toEqual({
+        statusCode: HttpErrorCodes.NOT_FOUND,
+        body: JSON.stringify({
           statusCode: HttpErrorCodes.NOT_FOUND,
           error: 'Not Found',
-          message: 'Custom: Route GET /nonexistent not found',
-        })
-      );
+          message: 'Custom: Route /nonexistent for method GET not found',
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      });
     });
 
     it('calls methodNotAllowed handler when MethodNotAllowedError is thrown', async () => {
@@ -322,21 +330,23 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.METHOD_NOT_ALLOWED);
-      expect(await result.text()).toBe(
-        JSON.stringify({
+      expect(result).toEqual({
+        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        body: JSON.stringify({
           statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
           error: 'Method Not Allowed',
           message: 'Custom: POST not allowed',
-        })
-      );
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      });
     });
 
     it('falls back to default error handler when registered handler throws', async () => {
@@ -352,15 +362,14 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
-      const body = await result.json();
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      const body = JSON.parse(result?.body ?? '{}');
       expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
       expect(body.error).toBe('Internal Server Error');
       expect(body.message).toBe('Internal Server Error');
@@ -375,15 +384,14 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
-      const body = await result.json();
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      const body = JSON.parse(result?.body ?? '{}');
       expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
       expect(body.error).toBe('Internal Server Error');
       expect(body.message).toBe('Internal Server Error');
@@ -410,21 +418,23 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.BAD_REQUEST);
-      expect(await result.text()).toBe(
-        JSON.stringify({
+      expect(result).toEqual({
+        statusCode: HttpErrorCodes.BAD_REQUEST,
+        body: JSON.stringify({
           statusCode: HttpErrorCodes.BAD_REQUEST,
           error: 'Bad Request',
           message: 'Specific handler',
-        })
-      );
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      });
     });
 
     it('uses ServiceError toJSON method when no custom handler is registered', async () => {
@@ -436,21 +446,23 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
-      expect(await result.text()).toBe(
-        JSON.stringify({
+      expect(result).toEqual({
+        statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+        body: JSON.stringify({
           statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
           error: 'InternalServerError',
           message: 'service error',
-        })
-      );
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      });
     });
 
     it('hides error details when POWERTOOLS_DEV env var is not set', async () => {
@@ -462,15 +474,14 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
-      const body = await result.json();
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      const body = JSON.parse(result?.body ?? '{}');
       expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
       expect(body.error).toBe('Internal Server Error');
       expect(body.message).toBe('Internal Server Error');
@@ -488,15 +499,14 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
-      const body = await result.json();
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      const body = JSON.parse(result?.body ?? '{}');
       expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
       expect(body.error).toBe('Internal Server Error');
       expect(body.message).toBe('debug error details');
@@ -527,29 +537,41 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const badResult = (await app.resolve(
+      const badResult = await app.resolve(
         createTestEvent('/bad', 'GET'),
         context
-      )) as Response;
-      const methodResult = (await app.resolve(
+      );
+      const methodResult = await app.resolve(
         createTestEvent('/method', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(badResult.status).toBe(HttpErrorCodes.UNPROCESSABLE_ENTITY);
-      expect(await badResult.json()).toEqual({
+      const expectedBadResult = {
         statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
-        error: 'Validation Error',
-        message: 'Array handler: bad request',
-      });
+        body: JSON.stringify({
+          statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+          error: 'Validation Error',
+          message: 'Array handler: bad request',
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      };
+      const expectedMethodResult = {
+        statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+        body: JSON.stringify({
+          statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+          error: 'Validation Error',
+          message: 'Array handler: method not allowed',
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      };
 
-      expect(methodResult.status).toBe(HttpErrorCodes.UNPROCESSABLE_ENTITY);
-      expect(await methodResult.json()).toEqual({
-        statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
-        error: 'Validation Error',
-        message: 'Array handler: method not allowed',
-      });
+      expect(badResult).toEqual(expectedBadResult);
+      expect(methodResult).toEqual(expectedMethodResult);
     });
 
     it('replaces previous handler when registering new handler for same error type', async () => {
@@ -573,17 +595,22 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result.status).toBe(HttpErrorCodes.UNPROCESSABLE_ENTITY);
-      expect(await result.json()).toEqual({
+      expect(result).toEqual({
         statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
-        error: 'Second Handler',
-        message: 'second: test error',
+        body: JSON.stringify({
+          statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+          error: 'Second Handler',
+          message: 'second: test error',
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
       });
     });
 
@@ -602,13 +629,13 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(
+      const result = await app.resolve(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result.headers.get('Content-Type')).toBe('application/json');
+      expect(result?.headers?.['content-type']).toBe('application/json');
     });
   });
 
@@ -640,21 +667,23 @@ describe('Class: BaseRouter', () => {
       const lambda = new Lambda();
 
       // Act
-      const result = (await lambda.handler(
+      const result = await lambda.handler(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.BAD_REQUEST);
-      expect(await result.text()).toBe(
-        JSON.stringify({
+      expect(result).toEqual({
+        statusCode: HttpErrorCodes.BAD_REQUEST,
+        body: JSON.stringify({
           statusCode: HttpErrorCodes.BAD_REQUEST,
           error: 'Bad Request',
           message: 'Decorated: test error',
-        })
-      );
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      });
     });
 
     it('works with notFound decorator', async () => {
@@ -679,21 +708,23 @@ describe('Class: BaseRouter', () => {
       const lambda = new Lambda();
 
       // Act
-      const result = (await lambda.handler(
+      const result = await lambda.handler(
         createTestEvent('/nonexistent', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.NOT_FOUND);
-      expect(await result.text()).toBe(
-        JSON.stringify({
+      expect(result).toEqual({
+        statusCode: HttpErrorCodes.NOT_FOUND,
+        body: JSON.stringify({
           statusCode: HttpErrorCodes.NOT_FOUND,
           error: 'Not Found',
-          message: 'Decorated: Route GET /nonexistent not found',
-        })
-      );
+          message: 'Decorated: Route /nonexistent for method GET not found',
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      });
     });
 
     it('works with methodNotAllowed decorator', async () => {
@@ -723,21 +754,23 @@ describe('Class: BaseRouter', () => {
       const lambda = new Lambda();
 
       // Act
-      const result = (await lambda.handler(
+      const result = await lambda.handler(
         createTestEvent('/test', 'GET'),
         context
-      )) as Response;
+      );
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.METHOD_NOT_ALLOWED);
-      expect(await result.text()).toBe(
-        JSON.stringify({
+      expect(result).toEqual({
+        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        body: JSON.stringify({
           statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
           error: 'Method Not Allowed',
           message: 'Decorated: POST not allowed',
-        })
-      );
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      });
     });
 
     it('preserves scope when using error handler decorators', async () => {
@@ -770,21 +803,20 @@ describe('Class: BaseRouter', () => {
       const handler = lambda.handler.bind(lambda);
 
       // Act
-      const result = (await handler(
-        createTestEvent('/test', 'GET'),
-        context
-      )) as Response;
+      const result = await handler(createTestEvent('/test', 'GET'), context);
 
       // Assess
-      expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(HttpErrorCodes.BAD_REQUEST);
-      expect(await result.text()).toBe(
-        JSON.stringify({
+      expect(result).toEqual({
+        statusCode: HttpErrorCodes.BAD_REQUEST,
+        body: JSON.stringify({
           statusCode: HttpErrorCodes.BAD_REQUEST,
           error: 'Bad Request',
           message: 'scoped: test error',
-        })
-      );
+        }),
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {},
+        isBase64Encoded: false,
+      });
     });
   });
 
@@ -796,14 +828,15 @@ describe('Class: BaseRouter', () => {
 
       app.get('/test', async (_params, options) => {
         return {
-          hasRequest: options?.request instanceof Request,
-          hasEvent: options?.event === testEvent,
-          hasContext: options?.context === context,
+          hasRequest: options.request instanceof Request,
+          hasEvent: options.event === testEvent,
+          hasContext: options.context === context,
         };
       });
 
       // Act
-      const actual = (await app.resolve(testEvent, context)) as any;
+      const result = await app.resolve(testEvent, context);
+      const actual = JSON.parse(result?.body ?? '{}');
 
       // Assess
       expect(actual.hasRequest).toBe(true);
@@ -820,9 +853,9 @@ describe('Class: BaseRouter', () => {
         statusCode: HttpErrorCodes.BAD_REQUEST,
         error: 'Bad Request',
         message: error.message,
-        hasRequest: options?.request instanceof Request,
-        hasEvent: options?.event === testEvent,
-        hasContext: options?.context === context,
+        hasRequest: options.request instanceof Request,
+        hasEvent: options.event === testEvent,
+        hasContext: options.context === context,
       }));
 
       app.get('/test', () => {
@@ -830,8 +863,8 @@ describe('Class: BaseRouter', () => {
       });
 
       // Act
-      const result = (await app.resolve(testEvent, context)) as Response;
-      const body = await result.json();
+      const result = await app.resolve(testEvent, context);
+      const body = JSON.parse(result?.body ?? '{}');
 
       // Assess
       expect(body.hasRequest).toBe(true);
@@ -848,9 +881,9 @@ describe('Class: BaseRouter', () => {
         @app.get('/test')
         public async getTest(_params: any, options: any) {
           return {
-            hasRequest: options?.request instanceof Request,
-            hasEvent: options?.event === testEvent,
-            hasContext: options?.context === context,
+            hasRequest: options.request instanceof Request,
+            hasEvent: options.event === testEvent,
+            hasContext: options.context === context,
           };
         }
 
@@ -862,7 +895,8 @@ describe('Class: BaseRouter', () => {
       const lambda = new Lambda();
 
       // Act
-      const actual = (await lambda.handler(testEvent, context)) as any;
+      const result = await lambda.handler(testEvent, context);
+      const actual = JSON.parse(result?.body ?? '{}');
 
       // Assess
       expect(actual.hasRequest).toBe(true);
@@ -901,13 +935,102 @@ describe('Class: BaseRouter', () => {
       const lambda = new Lambda();
 
       // Act
-      const result = (await lambda.handler(testEvent, context)) as Response;
-      const body = await result.json();
+      const result = await lambda.handler(testEvent, context);
+      const body = JSON.parse(result?.body ?? '{}');
 
       // Assess
       expect(body.hasRequest).toBe(true);
       expect(body.hasEvent).toBe(true);
       expect(body.hasContext).toBe(true);
+    });
+
+    it('preserves scope when using route handler decorators', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      class Lambda {
+        public scope = 'scoped';
+
+        @app.get('/test')
+        public async getTest() {
+          return {
+            message: `${this.scope}: success`,
+          };
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context, { scope: this });
+        }
+      }
+
+      const lambda = new Lambda();
+      const handler = lambda.handler.bind(lambda);
+
+      // Act
+      const result = await handler(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(result).toEqual({
+        statusCode: 200,
+        body: JSON.stringify({
+          message: 'scoped: success',
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        isBase64Encoded: false,
+      });
+    });
+  });
+
+  describe('resolve method', () => {
+    it('throws an internal server error for non-API Gateway events', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const nonApiGatewayEvent = { Records: [] }; // SQS-like event
+
+      // Act & Assess
+      expect(app.resolve(nonApiGatewayEvent, context)).rejects.toThrowError(
+        InternalServerError
+      );
+    });
+
+    it('returns APIGatewayProxyResult for successful requests', async () => {
+      // Prepare
+      const app = new TestResolver();
+      app.get('/test', async () => ({ success: true }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result).toEqual({
+        statusCode: 200,
+        body: JSON.stringify({ success: true }),
+        headers: { 'Content-Type': 'application/json' },
+        isBase64Encoded: false,
+      });
+    });
+
+    it('returns APIGatewayProxyResult for error responses', async () => {
+      // Prepare
+      const app = new TestResolver();
+      app.get('/test', () => {
+        throw new Error('test error');
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      const body = JSON.parse(result?.body ?? '{}');
+      expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(body.error).toBe('Internal Server Error');
     });
   });
 });

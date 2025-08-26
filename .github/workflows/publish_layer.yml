@@ -98,7 +98,7 @@ jobs:
       package_version: ${{ inputs.latest_published_version }}
       layer-version: ${{ needs.deploy-prod.outputs.layer-version }}
     secrets:
-      # The update_ssm workflow needs the secrets for all the regions. This will trigger a SonarQube warning.
+      # We use "inherit" because need to propagate the secrets to the reusable workflow, secrets are already scoped by using GitHub's deployment environments to mitigate the risk of secret exposure.
       inherit
 
   update_layer_arn_docs:

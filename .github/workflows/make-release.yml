@@ -94,7 +94,7 @@ jobs:
   publish_layer:
     needs: publish-npm
     secrets:
-      # The update_ssm workflow called from the publish_layer workflow needs the secrets for all the regions. This will trigger a SonarQube warning.
+      # We use "inherit" because need to propagate the secrets to the reusable workflow, secrets are already scoped by using GitHub's deployment environments to mitigate the risk of secret exposure.
       inherit
     permissions:
       id-token: write

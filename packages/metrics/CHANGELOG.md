@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
+
+### Improvements
+
+- emit warning when default dimensions are overwritten ([#4287](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4287)) ([4c1bcc3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4c1bcc3a521b9d4c65d9e00f1b4563336df15742))
 ## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
 
 **Note:** Version bump only for this package

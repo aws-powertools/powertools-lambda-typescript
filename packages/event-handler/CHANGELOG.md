@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
+
+### Features
+
+- add function to convert Lambda proxy event to web response object ([#4343](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4343)) ([6277e0d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6277e0d0f4dbc2f9dfa0011dd16e52bb96ce3f59))
+
+### Bug Fixes
+
+- pass event, context and request objects into handler ([#4329](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4329)) ([ea0e615](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ea0e61583cc2c06672dfb136c436c5a31764a0e6))
 ## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
 
 ### Features

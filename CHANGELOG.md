@@ -1,5 +1,24 @@
 # Change Log
 
+## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
+
+### Maintenance
+
+- **commons** concatenate PT UA to AWS_SDK_UA_APP_ID when one is set ([#4374](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4374)) ([519cbfe](https://github.com/aws-powertools/powertools-lambda-typescript/commit/519cbfe99db110eceadb8d7814f0693dc751c6db))
+- **parameters** fix SonarQube code quality issues and optimize imports ([#4359](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4359)) ([59a191d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/59a191d976148a2e36a5ad2b0352e82216eaf043))
+
+### Improvements
+
+- **logger** use vitest env helpers in unit tests ([#4360](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4360)) ([f9ea611](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f9ea6113cfb854d7b9136d5e44969467c8609efd))
+- **logger** mark private members as readonly and fix code quality issues ([#4350](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4350)) ([5ac7712](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5ac77129f4ae8f5790b95f540abeeb2d91df7a9d))
+- **metrics** emit warning when default dimensions are overwritten ([#4287](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4287)) ([4c1bcc3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4c1bcc3a521b9d4c65d9e00f1b4563336df15742))
+
+### Features
+
+- **event-handler** add function to convert Lambda proxy event to web response object ([#4343](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4343)) ([6277e0d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6277e0d0f4dbc2f9dfa0011dd16e52bb96ce3f59))
+- **event-handler** pass event, context and request objects into handler ([#4329](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4329)) ([ea0e615](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ea0e61583cc2c06672dfb136c436c5a31764a0e6))
+
+
 ## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
 
 ### Improvements

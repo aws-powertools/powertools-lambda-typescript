@@ -150,7 +150,7 @@ You can access the original Lambda event or context for additional information. 
 
 ### Exception Handling
 
-You can use the **`exceptionHandler`** method to handle any exception. This allows you to handle common errors outside your resolver and return a custom response.
+You can use the `exceptionHandler` method to handle any exception. This allows you to handle common errors outside your resolver and return a custom response.
 
 The `exceptionHandler` method also supports passing an array of exceptions that you wish to handle with a single handler.
 

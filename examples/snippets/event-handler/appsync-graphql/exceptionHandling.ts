@@ -19,7 +19,7 @@ app.exceptionHandler(AssertionError, async (error) => {
 
 app.onQuery('createSomething', async () => {
   throw new AssertionError({
-    message: 'This is an assertion Error',
+    message: 'This is an assertion error',
   });
 });
 

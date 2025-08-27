@@ -1,5 +1,5 @@
-import context from '@aws-lambda-powertools/testing-utils/context';
 import { AssertionError } from 'node:assert';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';
@@ -760,7 +760,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       message: 'Aggregation failed',
     },
   ])(
-    'should invoke exception handler for %s',
+    'invokes exception handler for %s',
     async ({
       errorClass,
       message,
@@ -772,14 +772,9 @@ describe('Class: AppSyncGraphQLResolver', () => {
       const app = new AppSyncGraphQLResolver();
 
       app.exceptionHandler(errorClass, async (err) => ({
-          message,
-          errorName: err.constructor.name,
-      });
-        return {
-          message,
-          errorName: err.constructor.name,
-        };
-      });
+        message,
+        errorName: err.constructor.name,
+      }));
 
       app.onQuery('getUser', async () => {
         throw errorClass === AggregateError
@@ -801,7 +796,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     }
   );
 
-  it('should handle multiple different error types with specific exception handlers', async () => {
+  it('handles multiple different error types with specific exception handlers', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -854,7 +849,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('should prefer exact error class match over inheritance match during exception handling', async () => {
+  it('prefers exact error class match over inheritance match during exception handling', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -892,7 +887,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('should fall back to default error formatting when no exception handler is found', async () => {
+  it('falls back to default error formatting when no exception handler is found', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -920,7 +915,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('should fall back to default error formatting when exception handler throws an error', async () => {
+  it('falls back to default error formatting when exception handler throws an error', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
     const errorToBeThrown = new Error('Exception handler failed');
@@ -955,7 +950,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     );
   });
 
-  it('should invoke sync exception handlers and return their result', async () => {
+  it('invokes sync exception handlers and return their result', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -985,7 +980,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('should not interfere with ResolverNotFoundException during exception handling', async () => {
+  it('does not interfere with ResolverNotFoundException during exception handling', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -1006,7 +1001,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     ).rejects.toThrow('No resolver found for Query-nonExistentResolver');
   });
 
-  it('should work as a method decorator for `exceptionHandler`', async () => {
+  it('works as a method decorator for `exceptionHandler`', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -1079,7 +1074,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('should handle array of error classes with single exception handler function', async () => {
+  it('handles array of error classes with single exception handler function', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
 
@@ -1143,7 +1138,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('should preserve scope when using array error handler as method decorator', async () => {
+  it('preserves scope when using array error handler as method decorator', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -1229,7 +1224,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('should handle mix of single and array error handlers with proper precedence', async () => {
+  it('handles mix of single and array error handlers with proper precedence', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
@@ -1305,7 +1300,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
-  it('should handle empty array of error classes gracefully', async () => {
+  it('handles empty array of error classes gracefully', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
 

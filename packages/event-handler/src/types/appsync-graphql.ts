@@ -1,5 +1,6 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
+import type { ExceptionHandlerRegistry } from '../appsync-graphql/ExceptionHandlerRegistry.js';
 import type { RouteHandlerRegistry } from '../appsync-graphql/RouteHandlerRegistry.js';
 import type { Router } from '../appsync-graphql/Router.js';
 

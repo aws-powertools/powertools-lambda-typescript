@@ -37,7 +37,7 @@ class ExceptionHandlerRegistry {
     const errors = Array.isArray(error) ? error : [error];
 
     for (const err of errors) {
-      this.registerErrorHandler(err, handler as ExceptionHandler);
+      this.registerErrorHandler(err, handler);
     }
   }
 

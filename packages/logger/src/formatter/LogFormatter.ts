@@ -162,7 +162,7 @@ abstract class LogFormatter {
     }
 
     const stackLines = stack.split('\n');
-    const regex = /\(([^)]*?):(\d+?):(\d+?)\)\\?$/;
+    const regex = /\(([^()]*?):(\d+?):(\d+?)\)\\?$/;
 
     for (const item of stackLines) {
       const match = regex.exec(item);

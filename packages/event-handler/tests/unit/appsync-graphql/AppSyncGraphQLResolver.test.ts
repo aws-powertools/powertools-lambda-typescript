@@ -771,7 +771,10 @@ describe('Class: AppSyncGraphQLResolver', () => {
       // Prepare
       const app = new AppSyncGraphQLResolver();
 
-      app.exceptionHandler(errorClass, async (err) => {
+      app.exceptionHandler(errorClass, async (err) => ({
+          message,
+          errorName: err.constructor.name,
+      });
         return {
           message,
           errorName: err.constructor.name,

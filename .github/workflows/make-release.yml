@@ -94,9 +94,8 @@ jobs:
   publish_layer:
     needs: publish-npm
     secrets:
-      AWS_LAYERS_BETA_ROLE_ARN: ${{ secrets.AWS_LAYERS_BETA_ROLE_ARN }}
-      AWS_LAYERS_PROD_ROLE_ARN: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
-      TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
+      # We use "inherit" because need to propagate the secrets to the reusable workflow, secrets are already scoped by using GitHub's deployment environments to mitigate the risk of secret exposure.
+      inherit
     permissions:
       id-token: write
       contents: write

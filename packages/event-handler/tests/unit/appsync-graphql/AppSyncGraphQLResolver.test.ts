@@ -1,5 +1,5 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { AssertionError } from 'assert';
+import { AssertionError } from 'node:assert';
 import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';

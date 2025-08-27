@@ -201,7 +201,7 @@ class AppSyncGraphQLResolver extends Router {
     try {
       return await fn();
     } catch (error) {
-      return await this.#handleError(
+      return this.#handleError(
         error,
         `An error occurred in handler ${event.info.fieldName}`,
         options

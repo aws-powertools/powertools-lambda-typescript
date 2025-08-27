@@ -152,7 +152,7 @@ You can access the original Lambda event or context for additional information. 
 
 You can use the **`exceptionHandler`** method to handle any exception. This allows you to handle common errors outside your resolver and return a custom response.
 
-The **`exceptionHandler`** method also supports passing an array of exceptions that you wish to handle with a single handler.
+The `exceptionHandler` method also supports passing an array of exceptions that you wish to handle with a single handler.
 
 You can use an AppSync JavaScript resolver or a VTL response mapping template to detect these custom responses and forward them to the client gracefully.
 

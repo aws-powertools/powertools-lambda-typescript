@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { customUserAgentMiddleware } from '../../src/awsSdkUtils.js';
 import {
   addUserAgentMiddleware,
@@ -8,14 +8,11 @@ import {
 
 vi.hoisted(() => {
   process.env.AWS_EXECUTION_ENV = '';
+  process.env.AWS_SDK_UA_APP_ID = 'test';
 });
 
 describe('Helpers: awsSdk', () => {
   describe('Function: userAgentMiddleware', () => {
-    beforeAll(() => {
-      vi.spyOn(console, 'warn').mockImplementation(() => ({}));
-    });
-
     it('handles gracefully failures in adding a middleware and only log a warning', () => {
       // Prepare
       const client = {
@@ -25,13 +22,10 @@ describe('Helpers: awsSdk', () => {
           },
         },
       };
-      const warningSpy = vi
-        .spyOn(console, 'warn')
-        .mockImplementation(() => ({}));
 
       // Act & Assess
       expect(() => addUserAgentMiddleware(client, 'my-feature')).not.toThrow();
-      expect(warningSpy).toHaveBeenCalledTimes(1);
+      expect(console.warn).toHaveBeenCalledTimes(1);
     });
 
     it('should return and do nothing if the client already has a Powertools UA middleware', async () => {
@@ -86,6 +80,11 @@ describe('Helpers: awsSdk', () => {
         }
       );
     });
+  });
+
+  it('concatenates the PT AWS_SDK_UA_APP_ID when one is already set', () => {
+    // Assess
+    expect(process.env.AWS_SDK_UA_APP_ID).toEqual(`test/PT/TEST/${version}`);
   });
 
   describe('Function: customUserAgentMiddleware', () => {

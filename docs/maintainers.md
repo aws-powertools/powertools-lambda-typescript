@@ -190,21 +190,7 @@ targeting the `Prod` deployment environment and the China partition, and using t
 This will publish the Lambda layer to the AWS China (Beijing) Region.
 9. **Merge docs PR**: Once the `Layer Deployment (Partition)` workflow for the production China partition is complete,
 merge the PR from step 4 to update the documentation with the new version.
-10. **Update SSM Parameters (Beta)**: Run the `SSM Parameters` workflow with the `main` branch, targeting the `beta`
-deployment environment, and using the package version from npm (i.e., `2.20.0`) and Lambda layer version from step 4.
-This will update the SSM parameters with the new version.
-11. **Verify SSM Parameters (Beta)**: Use the AWS CLI to verify that the SSM parameters were updated correctly. Run
-the following command: `aws ssm get-parameter --name=/aws/service/powertools/beta/typescript/generic/all/latest`
-and `aws ssm get-parameter --name=/aws/service/powertools/beta/typescript/generic/all/<version>` to verify that the
-SSM parameters were updated correctly.
-12. **Update SSM Parameters (Prod)**: Run the `SSM Parameters` workflow with the `main` branch, targeting the `prod`
-deployment environment, and using the package version from npm (i.e., `2.20.0`) and Lambda layer version from step 4.
-This will update the SSM parameters with the new version.
-13. **Verify SSM Parameters (Prod)**: Use the AWS CLI to verify that the SSM parameters were updated correctly. Run
-the following command: `aws ssm get-parameter --name=/aws/service/powertools/typescript/generic/all/latest`
-and `aws ssm get-parameter --name=/aws/service/powertools/typescript/generic/all/<version>` to verify that the
-SSM parameters were updated correctly.
-14. **Update Docs**: Run the `Rebuild latest docs` workflow with the `main` branch using the package version from
+10. **Update Docs**: Run the `Rebuild latest docs` workflow with the `main` branch using the package version from
 npm (i.e. `2.20.0`). This will update the documentation with the new version.
 
 Once complete, you can start drafting the release notes to let customers know **what changed and what's in it for them (a.k.a why they should care)**. We have guidelines in the release notes section so you know what good looks like.

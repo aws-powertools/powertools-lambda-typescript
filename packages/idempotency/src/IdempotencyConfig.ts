@@ -1,7 +1,7 @@
+import { getBooleanFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
 import type { JMESPathParsingOptions } from '@aws-lambda-powertools/jmespath/types';
 import type { Context } from 'aws-lambda';
-import { EnvironmentVariablesService } from './config/EnvironmentVariablesService.js';
 import type {
   IdempotencyConfigOptions,
   ResponseHook,
@@ -64,7 +64,6 @@ class IdempotencyConfig {
    * Use the local cache to store idempotency keys.
    */
   public useLocalCache: boolean;
-  readonly #envVarsService: EnvironmentVariablesService;
   readonly #enabled: boolean = true;
 
   public constructor(config: IdempotencyConfigOptions) {
@@ -80,8 +79,11 @@ class IdempotencyConfig {
     this.hashFunction = config.hashFunction ?? 'md5';
     this.lambdaContext = config.lambdaContext;
     this.responseHook = config.responseHook;
-    this.#envVarsService = new EnvironmentVariablesService();
-    this.#enabled = this.#envVarsService.getIdempotencyEnabled();
+    this.#enabled = !getBooleanFromEnv({
+      key: 'POWERTOOLS_IDEMPOTENCY_DISABLED',
+      defaultValue: false,
+      extendedParsing: true,
+    });
   }
 
   /**

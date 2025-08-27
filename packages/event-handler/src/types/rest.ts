@@ -1,7 +1,12 @@
-import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
+import type {
+  GenericLogger,
+  JSONObject,
+} from '@aws-lambda-powertools/commons/types';
+import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import type { BaseRouter } from '../rest/BaseRouter.js';
 import type { HttpErrorCodes, HttpVerbs } from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
+import type { ResolveOptions } from './common.js';
 
 type ErrorResponse = {
   statusCode: HttpStatusCode;
@@ -9,18 +14,18 @@ type ErrorResponse = {
   message: string;
 };
 
-interface ErrorContext {
-  path: string;
-  method: string;
-  headers: Record<string, string>;
-  timestamp: string;
-  requestId?: string;
-}
+type RequestOptions = {
+  request: Request;
+  event: APIGatewayProxyEvent;
+  context: Context;
+};
+
+type ErrorResolveOptions = RequestOptions & ResolveOptions;
 
 type ErrorHandler<T extends Error = Error> = (
   error: T,
-  context?: ErrorContext
-) => ErrorResponse;
+  options: RequestOptions
+) => Promise<ErrorResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
   new (...args: any[]): T;
@@ -48,8 +53,12 @@ interface CompiledRoute {
 
 type DynamicRoute = Route & CompiledRoute;
 
-// biome-ignore lint/suspicious/noExplicitAny: we want to keep arguments and return types as any to accept any type of function
-type RouteHandler<T = any, R = any> = (...args: T[]) => R;
+type HandlerResponse = Response | JSONObject;
+
+type RouteHandler<
+  TParams = Record<string, unknown>,
+  TReturn = HandlerResponse,
+> = (args: TParams, options: RequestOptions) => Promise<TReturn>;
 
 type HttpMethod = keyof typeof HttpVerbs;
 
@@ -98,9 +107,12 @@ export type {
   ErrorConstructor,
   ErrorHandlerRegistryOptions,
   ErrorHandler,
+  ErrorResolveOptions,
+  HandlerResponse,
   HttpStatusCode,
   HttpMethod,
   Path,
+  RequestOptions,
   RouterOptions,
   RouteHandler,
   RouteOptions,

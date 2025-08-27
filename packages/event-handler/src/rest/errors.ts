@@ -19,12 +19,12 @@ export class ParameterValidationError extends RouteMatchingError {
   }
 }
 
-abstract class ServiceError extends Error {
+export abstract class ServiceError extends Error {
   abstract readonly statusCode: HttpStatusCode;
   abstract readonly errorType: string;
   public readonly details?: Record<string, unknown>;
 
-  constructor(
+  protected constructor(
     message?: string,
     options?: ErrorOptions,
     details?: Record<string, unknown>

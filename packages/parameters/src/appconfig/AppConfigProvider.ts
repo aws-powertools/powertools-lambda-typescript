@@ -189,8 +189,8 @@ class AppConfigProvider extends BaseProvider {
     { value: string; expiration: number }
   >();
   protected valueStore = new Map<string, Uint8Array>();
-  private application?: string;
-  private environment: string;
+  private readonly application?: string;
+  private readonly environment: string;
 
   /**
    * It initializes the AppConfigProvider class.

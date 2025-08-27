@@ -1,5 +1,11 @@
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import { compilePath, validatePathPattern } from '../../../src/rest/utils.js';
+import {
+  compilePath,
+  isAPIGatewayProxyEvent,
+  isAPIGatewayProxyResult,
+  validatePathPattern,
+} from '../../../src/rest/utils.js';
 import type { Path } from '../../../src/types/rest.js';
 
 describe('Path Utilities', () => {
@@ -200,5 +206,161 @@ describe('Path Utilities', () => {
         }
       }
     );
+  });
+
+  describe('isAPIGatewayProxyEvent', () => {
+    it('should return true for valid API Gateway Proxy event', () => {
+      const validEvent: APIGatewayProxyEvent = {
+        httpMethod: 'GET',
+        path: '/test',
+        resource: '/test',
+        headers: {},
+        requestContext: {
+          accountId: '123456789012',
+          apiId: 'test-api',
+          httpMethod: 'GET',
+          requestId: 'test-request-id',
+          resourceId: 'test-resource',
+          resourcePath: '/test',
+          stage: 'test',
+          identity: {
+            sourceIp: '127.0.0.1',
+          },
+        } as any,
+        isBase64Encoded: false,
+        body: null,
+      } as APIGatewayProxyEvent;
+
+      expect(isAPIGatewayProxyEvent(validEvent)).toBe(true);
+    });
+
+    it('should return true for valid event with string body', () => {
+      const validEvent = {
+        httpMethod: 'POST',
+        path: '/test',
+        resource: '/test',
+        headers: { 'content-type': 'application/json' },
+        requestContext: { stage: 'test' },
+        isBase64Encoded: false,
+        body: '{"key":"value"}',
+      };
+
+      expect(isAPIGatewayProxyEvent(validEvent)).toBe(true);
+    });
+
+    it.each([
+      { case: 'null', event: null },
+      { case: 'undefined', event: undefined },
+      { case: 'string', event: 'not an object' },
+      { case: 'number', event: 123 },
+      { case: 'array', event: [] },
+    ])('should return false for $case', ({ event }) => {
+      expect(isAPIGatewayProxyEvent(event)).toBe(false);
+    });
+
+    it.each([
+      { field: 'httpMethod', value: 123 },
+      { field: 'httpMethod', value: null },
+      { field: 'path', value: 123 },
+      { field: 'path', value: null },
+      { field: 'resource', value: 123 },
+      { field: 'resource', value: null },
+      { field: 'headers', value: 'not an object' },
+      { field: 'headers', value: null },
+      { field: 'requestContext', value: 'not an object' },
+      { field: 'requestContext', value: null },
+      { field: 'isBase64Encoded', value: 'not a boolean' },
+      { field: 'isBase64Encoded', value: null },
+      { field: 'body', value: 123 },
+    ])(
+      'should return false when $field is invalid ($value)',
+      ({ field, value }) => {
+        const baseEvent = {
+          httpMethod: 'GET',
+          path: '/test',
+          resource: '/test',
+          headers: {},
+          requestContext: {},
+          isBase64Encoded: false,
+          body: null,
+        };
+
+        const invalidEvent = { ...baseEvent, [field]: value };
+        expect(isAPIGatewayProxyEvent(invalidEvent)).toBe(false);
+      }
+    );
+
+    it('should return false when required fields are missing', () => {
+      const incompleteEvent = {
+        httpMethod: 'GET',
+        path: '/test',
+        // missing resource, headers, requestContext, isBase64Encoded, body
+      };
+
+      expect(isAPIGatewayProxyEvent(incompleteEvent)).toBe(false);
+    });
+  });
+
+  describe('isAPIGatewayProxyResult', () => {
+    it('should return true for valid API Gateway Proxy result', () => {
+      const validResult: APIGatewayProxyResult = {
+        statusCode: 200,
+        body: 'Hello World',
+      };
+
+      expect(isAPIGatewayProxyResult(validResult)).toBe(true);
+    });
+
+    it('should return true for valid result with all optional fields', () => {
+      const validResult = {
+        statusCode: 200,
+        body: 'Hello World',
+        headers: { 'Content-Type': 'text/plain' },
+        multiValueHeaders: { 'Set-Cookie': ['cookie1', 'cookie2'] },
+        isBase64Encoded: false,
+      };
+
+      expect(isAPIGatewayProxyResult(validResult)).toBe(true);
+    });
+
+    it.each([
+      { case: 'null', result: null },
+      { case: 'undefined', result: undefined },
+      { case: 'string', result: 'not an object' },
+      { case: 'number', result: 123 },
+      { case: 'array', result: [] },
+    ])('should return false for $case', ({ result }) => {
+      expect(isAPIGatewayProxyResult(result)).toBe(false);
+    });
+
+    it.each([
+      { field: 'statusCode', value: 'not a number' },
+      { field: 'statusCode', value: null },
+      { field: 'body', value: 123 },
+      { field: 'body', value: null },
+      { field: 'headers', value: 'not an object' },
+      { field: 'multiValueHeaders', value: 'not an object' },
+      { field: 'isBase64Encoded', value: 'not a boolean' },
+    ])(
+      'should return false when $field is invalid ($value)',
+      ({ field, value }) => {
+        const baseResult = {
+          statusCode: 200,
+          body: 'Hello World',
+        };
+
+        const invalidResult = { ...baseResult, [field]: value };
+        expect(isAPIGatewayProxyResult(invalidResult)).toBe(false);
+      }
+    );
+
+    it('should return false when required fields are missing', () => {
+      const incompleteResult = {
+        statusCode: 200,
+        // missing body
+      };
+
+      expect(isAPIGatewayProxyResult(incompleteResult)).toBe(false);
+    });
   });
 });

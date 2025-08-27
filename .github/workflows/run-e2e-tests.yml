@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       prNumber:
-        description: '(Optional) PR Number. If you specify a value the value of the branch field will be ignored.'
+        description: 'Optional PR number to checkout useful to run e2e tests on forks. When specified the branch field will be ignored.'
         required: false
         default: ''
 
@@ -18,6 +18,7 @@ jobs:
       NODE_ENV: dev
       PR_NUMBER: ${{ inputs.prNumber }}
       GH_TOKEN: ${{ github.token }}
+    environment: e2e-tests
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
@@ -39,40 +40,27 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      # If we pass a PR Number when triggering the workflow we will retrieve the PR info and get its headSHA
-      - name: Extract PR details
-        id: extract_PR_details
-        if: ${{ inputs.prNumber != '' }}
-        run: |
-          # Get the PR number from the input
-          pr_number=${{ inputs.prNumber }}
-          # Get the headSHA of the PR
-          head_sha=$(gh pr view $pr_number --json headRefOid -q '.headRefOid')
-          # Set the headSHA as an output variable
-          echo "headSHA=$head_sha" >> $GITHUB_OUTPUT
-          echo "headSHA=$head_sha"
       # Only if a PR Number was passed and the headSHA of the PR extracted,
       # we checkout the PR at that point in time
       - name: Checkout PR code
         if: ${{ inputs.prNumber != '' }}
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          ref: ${{ steps.extract_PR_details.outputs.headSHA }}
-      - name: Setup NodeJS
+        run: |
+          gh pr checkout ${{ inputs.prNumber }}
+      - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
         with:
-          nodeVersion: '22'
+          node-version: '22'
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
+          role-to-assume: ${{ secrets.E2E_IAM_ROLE_ARN }}
           aws-region: eu-west-1
           mask-aws-account-id: true
-      - name: Run integration tests on utils
+      - name: Run e2e ${{ matrix.package }}-${{ matrix.version }}-${{ matrix.arch }}
         env:
           RUNTIME: nodejs${{ matrix.version }}x
           CI: true

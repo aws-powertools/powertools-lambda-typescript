@@ -11,11 +11,15 @@ on:
         description: "Latest npm published version to rebuild corresponding layer for, e.g. 1.0.2"
         default: "1.0.2"
         required: true
-      layer_documentation_version:
-        description: "Version to be updated in our documentation. e.g. if the current layer number is 3, this value must be 4."
-        required: true
 
   workflow_call:
+    secrets:
+      AWS_LAYERS_BETA_ROLE_ARN:
+        description: "Role ARN for deploying the Layer to Beta"
+      AWS_LAYERS_PROD_ROLE_ARN:
+        description: "Role ARN for deploying the Layer to Prod"
+      TOKEN_GITHUB:
+        description: "GitHub Token to interact with GitHub"
     inputs:
       latest_published_version:
         type: string
@@ -26,10 +30,6 @@ on:
         default: false
         type: boolean
         required: false
-      layer_documentation_version:
-        description: "Version to be updated in our documentation. e.g. if the current layer number is 3, this value must be 4."
-        required: true
-        type: string
 
 jobs:
   # Build layer by running cdk synth in layer-publisher directory and uploading cdk.out for deployment
@@ -87,6 +87,20 @@ jobs:
     secrets:
       target-account-role: ${{ secrets.AWS_LAYERS_PROD_ROLE_ARN }}
 
+  update-ssm-prod:
+    needs: [deploy-prod]
+    uses: ./.github/workflows/update_ssm.yml
+    permissions:
+      contents: write
+      id-token: write
+    with:
+      environment: prod
+      package_version: ${{ inputs.latest_published_version }}
+      layer-version: ${{ needs.deploy-prod.outputs.layer-version }}
+    secrets:
+      # We use "inherit" because need to propagate the secrets to the reusable workflow, secrets are already scoped by using GitHub's deployment environments to mitigate the risk of secret exposure.
+      inherit
+
   update_layer_arn_docs:
     needs: [deploy-prod]
     # Force Github action to run only a single job at a time (based on the group name)
@@ -105,7 +119,7 @@ jobs:
           ref: ${{ github.sha }}
       - name: Replace layer versions in documentation
         run: |
-          ./.github/scripts/update_layer_arn.sh ${{ inputs.layer_documentation_version }}
+          ./.github/scripts/update_layer_arn.sh ${{ needs.deploy-prod.outputs.layer-version }}
       - name: Stage changes
         run: git add .
       - name: Create PR
@@ -114,4 +128,4 @@ jobs:
         with: 
           temp_branch_prefix: 'ci-layer-docs'
           pull_request_title: 'chore(ci): update layer ARN on documentation'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN_GITHUB }}

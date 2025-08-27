@@ -13,7 +13,7 @@ import {
   getXRayTraceIdFromEnv,
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
-import type { Context, Handler } from 'aws-lambda';
+import type { Callback, Context, Handler } from 'aws-lambda';
 import merge from 'lodash.merge';
 import {
   LogJsonIndent,
@@ -117,7 +117,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Custom config service instance used to configure the logger.
    */
-  private customConfigService?: ConfigServiceInterface;
+  private readonly customConfigService?: ConfigServiceInterface;
   /**
    * Whether to print the Lambda invocation event in the logs.
    */
@@ -149,7 +149,7 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Standard attributes managed by Powertools that will be logged in all log items.
    */
-  private powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{
+  private readonly powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{
     sampleRateValue: 0,
   };
   /**
@@ -169,14 +169,14 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * Flag used to determine if the logger is initialized.
    */
-  #isInitialized = false;
+  readonly #isInitialized: boolean = false;
   /**
    * Map used to hold the list of keys and their type.
    *
    * Because keys of different types can be overwritten, we keep a list of keys that were added and their last
    * type. We then use this map at log preparation time to pick the last one.
    */
-  #keys: Map<string, 'temp' | 'persistent'> = new Map();
+  readonly #keys: Map<string, 'temp' | 'persistent'> = new Map();
   /**
    * This is the initial log leval as set during the initialization of the logger.
    *
@@ -263,7 +263,9 @@ class Logger extends Utility implements LoggerInterface {
   public constructor(options: ConstructorOptions = {}) {
     super();
     const { customConfigService, ...rest } = options;
-    this.setCustomConfigService(customConfigService);
+    this.customConfigService = customConfigService
+      ? customConfigService
+      : undefined;
     // all logs are buffered until the logger is initialized
     this.setOptions(rest);
     this.#isInitialized = true;
@@ -493,19 +495,17 @@ class Logger extends Utility implements LoggerInterface {
       // access `myClass` as `this` in a decorated `myClass.myMethod()`.
       descriptor.value = async function (
         this: Handler,
-        event,
-        context,
-        callback
+        ...args: [unknown, Context, Callback]
       ) {
         loggerRef.refreshSampleRateCalculation();
-        loggerRef.addContext(context);
-        loggerRef.logEventIfEnabled(event, options?.logEvent);
+        loggerRef.addContext(args[1]);
+        loggerRef.logEventIfEnabled(args[0], options?.logEvent);
         if (options?.correlationIdPath) {
-          loggerRef.setCorrelationId(event, options?.correlationIdPath);
+          loggerRef.setCorrelationId(args[0], options?.correlationIdPath);
         }
 
         try {
-          return await originalMethod.apply(this, [event, context, callback]);
+          return await originalMethod.apply(this, args);
         } catch (error) {
           if (options?.flushBufferOnUncaughtError) {
             loggerRef.flushBuffer();
@@ -1138,20 +1138,6 @@ class Logger extends Utility implements LoggerInterface {
   }
 
   /**
-   * Set the Logger's customer config service instance, which will be used
-   * to fetch environment variables.
-   *
-   * @param customConfigService - The custom config service
-   */
-  private setCustomConfigService(
-    customConfigService?: ConfigServiceInterface
-  ): void {
-    this.customConfigService = customConfigService
-      ? customConfigService
-      : undefined;
-  }
-
-  /**
    * Set the initial Logger log level based on the following order:
    * 1. If a log level is set using AWS Lambda Advanced Logging Controls, it sets it.
    * 2. If a log level is passed to the constructor, it sets it.
@@ -1201,8 +1187,6 @@ class Logger extends Utility implements LoggerInterface {
     if (this.isValidLogLevel(logLevelValue)) {
       this.logLevel = LogLevelThreshold[logLevelValue];
       this.#initialLogLevel = this.logLevel;
-
-      return;
     }
   }
 
@@ -1362,6 +1346,7 @@ class Logger extends Utility implements LoggerInterface {
     this.addToPowertoolsLogData({
       awsRegion: getStringFromEnv({
         key: 'AWS_REGION',
+        defaultValue: '',
       }),
       environment:
         environment ||

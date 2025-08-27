@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
+
+### Improvements
+
+- use vitest env helpers in unit tests ([#4360](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4360)) ([f9ea611](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f9ea6113cfb854d7b9136d5e44969467c8609efd))
+- mark private members as readonly and fix code quality issues ([#4350](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4350)) ([5ac7712](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5ac77129f4ae8f5790b95f540abeeb2d91df7a9d))
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+### Improvements
+
+- resolve issue when no logger region is set ([#4319](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4319)) ([b74b3b4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b74b3b4d1102e8d33c677d2c73ddc355717c4cef))
 ## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
 
 ### Improvements

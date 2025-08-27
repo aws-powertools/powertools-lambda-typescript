@@ -1,5 +1,13 @@
 import { AssertionError } from 'node:assert';
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import { PowertoolsLogFormatter } from '../../src/formatter/PowertoolsLogFormatter.js';
 import {
   LogFormatter,
@@ -53,13 +61,8 @@ const unformattedAttributes: UnformattedAttributes = {
   },
 };
 
-process.env.POWERTOOLS_DEV = 'true';
-
-const logger = new Logger();
-
 const jsonReplacerFn: CustomJsonReplacerFn = (_: string, value: unknown) =>
   value instanceof Set ? [...value] : value;
-const loggerWithReplacer = new Logger({ jsonReplacerFn });
 
 /**
  * A custom log formatter that formats logs using only the message, log level as a number, and timestamp.
@@ -90,15 +93,19 @@ class CustomFormatter extends LogFormatter {
     );
   }
 }
-const loggerWithCustomLogFormatter = new Logger({
-  logFormatter: new CustomFormatter(),
-});
 
 describe('Formatters', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
+  // Ensure dev mode is on for logger initialization
+  vi.stubEnv('POWERTOOLS_DEV', 'true');
+  const logger = new Logger();
+  const loggerWithReplacer = new Logger({ jsonReplacerFn });
+  const loggerWithCustomLogFormatter = new Logger({
+    logFormatter: new CustomFormatter(),
+  });
+  vi.unstubAllEnvs();
 
   beforeEach(() => {
-    process.env = { ...ENVIRONMENT_VARIABLES };
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
     const mockDate = new Date(1466424490000);
     vi.useFakeTimers().setSystemTime(mockDate);
     vi.clearAllMocks();
@@ -107,6 +114,10 @@ describe('Formatters', () => {
 
   afterAll(() => {
     vi.useRealTimers();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   // #region base log keys
@@ -451,8 +462,7 @@ describe('Formatters', () => {
 
   it('formats stack as string when not in dev mode', () => {
     // Prepare
-    const originalDevMode = process.env.POWERTOOLS_DEV;
-    delete process.env.POWERTOOLS_DEV; // Ensure dev mode is off
+    vi.stubEnv('POWERTOOLS_DEV', 'false'); // Ensure dev mode is off
 
     const error = new Error('Test error');
     const formatter = new PowertoolsLogFormatter();
@@ -463,9 +473,6 @@ describe('Formatters', () => {
     // Assess
     expect(formattedError.stack).toEqual(expect.any(String));
     expect(Array.isArray(formattedError.stack)).toBe(false);
-
-    // Cleanup
-    process.env.POWERTOOLS_DEV = originalDevMode;
   });
 
   it('formats custom errors by including only enumerable properties', () => {
@@ -528,7 +535,7 @@ describe('Formatters', () => {
 
   it('formats the timestamp to ISO 8601, accounting for the `America/New_York` timezone offset', () => {
     // Prepare
-    process.env.TZ = 'America/New_York';
+    vi.stubEnv('TZ', 'America/New_York');
     /*
       Difference between UTC and `America/New_York`(GMT -04.00) is 240 minutes.
       The positive value indicates that `America/New_York` is behind UTC.
@@ -544,7 +551,7 @@ describe('Formatters', () => {
 
   it('formats the timestamp to ISO 8601 with correct milliseconds for `America/New_York` timezone', () => {
     // Prepare
-    process.env.TZ = 'America/New_York';
+    vi.stubEnv('TZ', 'America/New_York');
     /*
       Difference between UTC and `America/New_York`(GMT -04.00) is 240 minutes.
       The positive value indicates that `America/New_York` is behind UTC.
@@ -560,7 +567,7 @@ describe('Formatters', () => {
 
   it('formats the timestamp to ISO 8601, adjusting for `America/New_York` timezone, preserving milliseconds and accounting for date change', () => {
     // Prepare
-    process.env.TZ = 'America/New_York';
+    vi.stubEnv('TZ', 'America/New_York');
     /*
       Difference between UTC and `America/New_York`(GMT -04.00) is 240 minutes.
       The positive value indicates that `America/New_York` is behind UTC.
@@ -576,7 +583,7 @@ describe('Formatters', () => {
 
   it('it formats the timestamp to ISO 8601 with correct milliseconds for `Asia/Dhaka` timezone', () => {
     // Prepare
-    process.env.TZ = 'Asia/Dhaka';
+    vi.stubEnv('TZ', 'Asia/Dhaka');
     vi.setSystemTime(new Date('2016-06-20T12:08:10.910Z'));
     /*
       Difference between UTC and `Asia/Dhaka`(GMT +06.00) is 360 minutes.
@@ -594,7 +601,7 @@ describe('Formatters', () => {
 
   it('formats the timestamp to ISO 8601, adjusting for `Asia/Dhaka` timezone, preserving milliseconds and accounting for date change', () => {
     // Prepare
-    process.env.TZ = 'Asia/Dhaka';
+    vi.stubEnv('TZ', 'Asia/Dhaka');
     const mockDate = new Date('2016-06-20T20:08:10.910Z');
     vi.setSystemTime(mockDate);
     /*
@@ -613,7 +620,7 @@ describe('Formatters', () => {
 
   it('returns defaults to :UTC when an env variable service is not set', () => {
     // Prepare
-    process.env.TZ = undefined;
+    vi.stubEnv('TZ', undefined);
 
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-360);
     const formatter = new PowertoolsLogFormatter();
@@ -627,7 +634,7 @@ describe('Formatters', () => {
 
   it('defaults to :UTC when the TZ env variable is set to :/etc/localtime', () => {
     // Prepare
-    process.env.TZ = ':/etc/localtime';
+    vi.stubEnv('TZ', ':/etc/localtime');
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(0);
     const formatter = new PowertoolsLogFormatter();
 

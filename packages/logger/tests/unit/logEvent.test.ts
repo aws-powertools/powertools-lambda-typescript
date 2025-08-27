@@ -1,7 +1,7 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../src/Logger.js';
 import { injectLambdaContext } from '../../src/middleware/middy.js';
 
@@ -10,15 +10,14 @@ const event = {
 };
 
 describe('Log event', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
   beforeEach(() => {
-    process.env = {
-      ...ENVIRONMENT_VARIABLES,
-      POWERTOOLS_LOGGER_LOG_EVENT: 'true',
-      POWERTOOLS_DEV: 'true',
-    };
+    vi.stubEnv('POWERTOOLS_LOGGER_LOG_EVENT', 'true');
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('logs the event with the correct log level and message', () => {
@@ -35,7 +34,7 @@ describe('Log event', () => {
 
   it("doesn't log the event when the feature is disabled", () => {
     // Prepare
-    process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'false';
+    vi.stubEnv('POWERTOOLS_LOGGER_LOG_EVENT', 'false');
     const logger = new Logger();
 
     // Act
@@ -112,7 +111,7 @@ describe('Log event', () => {
 
   it('prefers the local logEvent configuration over the environment variable', async () => {
     // Prepare
-    process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'false';
+    vi.stubEnv('POWERTOOLS_LOGGER_LOG_EVENT', 'false');
     const logger = new Logger();
     const handler = middy(async () => {}).use(
       injectLambdaContext(logger, { logEvent: true })
@@ -127,7 +126,7 @@ describe('Log event', () => {
 
   it('passes down the log event configuration to child loggers', () => {
     // Prepare
-    process.env.POWERTOOLS_LOGGER_LOG_EVENT = 'false';
+    vi.stubEnv('POWERTOOLS_LOGGER_LOG_EVENT', 'false');
     const logger = new Logger();
     const childLogger = logger.createChild();
 

@@ -1,5 +1,5 @@
-import { Router } from 'src/appsync-graphql/Router.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Router } from '../../../src/appsync-graphql/Router.js';
 
 describe('Class: Router', () => {
   beforeEach(() => {

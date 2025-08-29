@@ -30,7 +30,9 @@ const APIGatewayEventIdentity = z.object({
    *
    * See aws-powertools/powertools-lambda-python#1562 for more information.
    */
-  sourceIp: z.union([z.ipv4(), z.literal('test-invoke-source-ip')]).optional(),
+  sourceIp: z
+    .union([z.ipv4(), z.ipv6(), z.literal('test-invoke-source-ip')])
+    .optional(),
   user: z.string().nullish(),
   userAgent: z.string().nullish(),
   userArn: z.string().nullish(),

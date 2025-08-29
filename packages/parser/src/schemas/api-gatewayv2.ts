@@ -110,7 +110,7 @@ const APIGatewayRequestContextV2Schema = z.object({
     method: APIGatewayHttpMethod,
     path: z.string(),
     protocol: z.string(),
-    sourceIp: z.ipv4(),
+    sourceIp: z.union([z.ipv4(), z.ipv6()]),
     userAgent: z.string(),
   }),
   requestId: z.string(),

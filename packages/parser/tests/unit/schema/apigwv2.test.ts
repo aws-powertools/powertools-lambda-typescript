@@ -45,6 +45,41 @@ describe('Schema: API Gateway HTTP (v2)', () => {
       expect(parsedEvent).toEqual(event);
     });
 
+    it('parses an event with IPv6 sourceIp', () => {
+      // Prepare
+      const event = getTestEvent<APIGatewayProxyEventV2>({
+        eventsPath,
+        filename: 'no-auth',
+      });
+      // Add IPv6 address to the event
+      event.requestContext.http.sourceIp =
+        '2001:0db8:85a3:0000:0000:8a2e:0370:7334';
+
+      // Act
+      const parsedEvent = APIGatewayProxyEventV2Schema.parse(event);
+
+      // Assess
+      expect(parsedEvent.requestContext.http.sourceIp).toEqual(
+        '2001:0db8:85a3:0000:0000:8a2e:0370:7334'
+      );
+    });
+
+    it('parses an event with shortened IPv6 sourceIp', () => {
+      // Prepare
+      const event = getTestEvent<APIGatewayProxyEventV2>({
+        eventsPath,
+        filename: 'no-auth',
+      });
+      // Add shortened IPv6 address to the event
+      event.requestContext.http.sourceIp = '::1';
+
+      // Act
+      const parsedEvent = APIGatewayProxyEventV2Schema.parse(event);
+
+      // Assess
+      expect(parsedEvent.requestContext.http.sourceIp).toEqual('::1');
+    });
+
     it('parses an event with a JWT authorizer', () => {
       // Prepare
       const event = getTestEvent({

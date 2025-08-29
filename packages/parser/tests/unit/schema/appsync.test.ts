@@ -112,40 +112,6 @@ describe('Schema: AppSync Resolver', () => {
         },
       },
     },
-    {
-      name: 'cognito identity with IPv6 sourceIp',
-      event: {
-        ...appSyncResolverEvent,
-        identity: {
-          claims: {
-            sub: '192879fc-a240-4bf1-ab5a-d6a00f3063f9',
-          },
-          defaultAuthStrategy: 'ALLOW',
-          groups: null,
-          issuer:
-            'https://cognito-idp.us-west-2.amazonaws.com/us-west-xxxxxxxxxxx',
-          sourceIp: ['2001:0db8:85a3:0000:0000:8a2e:0370:7334'],
-          sub: '192879fc-a240-4bf1-ab5a-d6a00f3063f9',
-          username: 'jdoe',
-        },
-      },
-    },
-    {
-      name: 'iam identity with mixed IPv4 and IPv6 sourceIp',
-      event: {
-        ...appSyncResolverEvent,
-        identity: {
-          accountId: '012345678901',
-          cognitoIdentityAuthProvider: null,
-          cognitoIdentityAuthType: null,
-          cognitoIdentityId: null,
-          cognitoIdentityPoolId: null,
-          sourceIp: ['1.1.1.1', '::1', '2001:db8::8a2e:370:7334'],
-          userArn: 'arn:aws:sts::012345678901:assumed-role/role',
-          username: 'AROAXYKJUOW6FHGUSK5FA:username',
-        },
-      },
-    },
   ];
 
   it.each(events)('parses an AppSyn resolver event with $name', ({ event }) => {

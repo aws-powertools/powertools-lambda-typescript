@@ -4,6 +4,7 @@ import {
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
 } from '../../../src/schemas/index.js';
+import type { APIGatewayProxyEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: API Gateway REST', () => {
@@ -100,10 +101,10 @@ describe('Schema: API Gateway REST', () => {
     });
     it('parses an event with IPv6 sourceIp', () => {
       // Prepare
-      const event = getTestEvent({
+      const event = getTestEvent<APIGatewayProxyEvent>({
         eventsPath,
         filename: 'no-auth',
-      }) as any;
+      });
       // Add IPv6 address to the event
       event.requestContext.identity.sourceIp =
         '2001:0db8:85a3:0000:0000:8a2e:0370:7334';
@@ -119,10 +120,10 @@ describe('Schema: API Gateway REST', () => {
 
     it('parses an event with shortened IPv6 sourceIp', () => {
       // Prepare
-      const event = getTestEvent({
+      const event = getTestEvent<APIGatewayProxyEvent>({
         eventsPath,
         filename: 'no-auth',
-      }) as any;
+      });
       // Add shortened IPv6 address to the event
       event.requestContext.identity.sourceIp = '::1';
 

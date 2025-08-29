@@ -47,10 +47,10 @@ describe('Schema: API Gateway HTTP (v2)', () => {
 
     it('parses an event with IPv6 sourceIp', () => {
       // Prepare
-      const event = getTestEvent({
+      const event = getTestEvent<APIGatewayProxyEventV2>({
         eventsPath,
         filename: 'no-auth',
-      }) as any;
+      });
       // Add IPv6 address to the event
       event.requestContext.http.sourceIp =
         '2001:0db8:85a3:0000:0000:8a2e:0370:7334';
@@ -66,10 +66,10 @@ describe('Schema: API Gateway HTTP (v2)', () => {
 
     it('parses an event with shortened IPv6 sourceIp', () => {
       // Prepare
-      const event = getTestEvent({
+      const event = getTestEvent<APIGatewayProxyEventV2>({
         eventsPath,
         filename: 'no-auth',
-      }) as any;
+      });
       // Add shortened IPv6 address to the event
       event.requestContext.http.sourceIp = '::1';
 

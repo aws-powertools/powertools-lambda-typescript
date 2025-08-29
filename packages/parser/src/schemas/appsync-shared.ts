@@ -16,7 +16,7 @@ const AppSyncCognitoIdentity = z.object({
   issuer: z.string(),
   username: z.string(),
   claims: z.record(z.string(), z.unknown()),
-  sourceIp: z.array(z.ipv4()),
+  sourceIp: z.array(z.union([z.ipv4(), z.ipv6()])),
   defaultAuthStrategy: z.string().nullable(),
   groups: z.array(z.string()).nullable(),
 });

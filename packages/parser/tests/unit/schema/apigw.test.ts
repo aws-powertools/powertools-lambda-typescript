@@ -4,6 +4,7 @@ import {
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
 } from '../../../src/schemas/index.js';
+import type { APIGatewayProxyEvent } from '../../../src/types/schema.js';
 import { getTestEvent } from '../helpers/utils.js';
 
 describe('Schema: API Gateway REST', () => {
@@ -97,6 +98,40 @@ describe('Schema: API Gateway REST', () => {
 
       // Assess
       expect(parsedEvent).toEqual(event);
+    });
+    it('parses an event with IPv6 sourceIp', () => {
+      // Prepare
+      const event = getTestEvent<APIGatewayProxyEvent>({
+        eventsPath,
+        filename: 'no-auth',
+      });
+      // Add IPv6 address to the event
+      event.requestContext.identity.sourceIp =
+        '2001:0db8:85a3:0000:0000:8a2e:0370:7334';
+
+      // Act
+      const parsedEvent = APIGatewayProxyEventSchema.parse(event);
+
+      // Assess
+      expect(parsedEvent.requestContext.identity.sourceIp).toEqual(
+        '2001:0db8:85a3:0000:0000:8a2e:0370:7334'
+      );
+    });
+
+    it('parses an event with shortened IPv6 sourceIp', () => {
+      // Prepare
+      const event = getTestEvent<APIGatewayProxyEvent>({
+        eventsPath,
+        filename: 'no-auth',
+      });
+      // Add shortened IPv6 address to the event
+      event.requestContext.identity.sourceIp = '::1';
+
+      // Act
+      const parsedEvent = APIGatewayProxyEventSchema.parse(event);
+
+      // Assess
+      expect(parsedEvent.requestContext.identity.sourceIp).toEqual('::1');
     });
   });
 

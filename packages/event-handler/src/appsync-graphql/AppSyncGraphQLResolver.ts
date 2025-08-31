@@ -181,6 +181,20 @@ class AppSyncGraphQLResolver extends Router {
   }
 
   /**
+   * Includes a router and merges its registries into the current resolver.
+   *
+   * This method allows you to compose multiple routers by merging their
+   * route registries into the current AppSync GraphQL resolver instance.
+   *
+   * @param router - The router instance whose registries will be merged
+   */
+  public includeRouter(router: Router): void {
+    this.logger.debug('Including router');
+    this.mergeRegistriesFrom(router);
+    this.logger.debug('Router included successfully');
+  }
+
+  /**
    * Executes the provided asynchronous function with error handling.
    * If the function throws an error, it delegates error processing to `#handleError`
    * and returns the formatted error response.

@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   DynamoDBRecord,
   KinesisStreamRecord,
@@ -11,6 +12,7 @@ import {
 } from './constants.js';
 import { FullBatchFailureError } from './errors.js';
 import type {
+  BasePartialBatchProcessorConfig,
   EventSourceDataClassTypes,
   PartialItemFailureResponse,
   PartialItemFailures,
@@ -43,11 +45,19 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public eventType: keyof typeof EventType;
 
   /**
+   * The schema of the body of the event record for parsing
+   */
+  public schema?: StandardSchemaV1;
+
+  /**
    * Initializes base batch processing class
    *
    * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
    */
-  public constructor(eventType: keyof typeof EventType) {
+  public constructor(
+    eventType: keyof typeof EventType,
+    config?: BasePartialBatchProcessorConfig
+  ) {
     super();
     this.eventType = eventType;
     this.batchResponse = DEFAULT_RESPONSE;
@@ -56,6 +66,9 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
       [EventType.KinesisDataStreams]: () => this.collectKinesisFailures(),
       [EventType.DynamoDBStreams]: () => this.collectDynamoDBFailures(),
     };
+    if (config) {
+      this.schema = config.schema;
+    }
   }
 
   /**
@@ -194,10 +207,32 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * @param record The record to be processed
    * @param eventType The type of event to process
    */
-  public toBatchType(
+  public async toBatchType(
     record: EventSourceDataClassTypes,
-    eventType: keyof typeof EventType
-  ): SQSRecord | KinesisStreamRecord | DynamoDBRecord {
+    eventType: keyof typeof EventType,
+    schema?: StandardSchemaV1
+  ): Promise<SQSRecord | KinesisStreamRecord | DynamoDBRecord> {
+    if (schema) {
+      const { parse } = await import('@aws-lambda-powertools/parser');
+      if (eventType === EventType.SQS) {
+        try {
+          return parse(record, undefined, schema) as SQSRecord;
+        } catch (error) {
+          const { JSONStringified } = await import(
+            '@aws-lambda-powertools/parser/helpers'
+          );
+          const { SqsRecordSchema } = await import(
+            '@aws-lambda-powertools/parser/schemas/sqs'
+          );
+          const extendedSchema = SqsRecordSchema.extend({
+            // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
+            body: JSONStringified(schema as any),
+          });
+          return parse(record, undefined, extendedSchema);
+        }
+      }
+      throw new Error('Unsupported event type');
+    }
     return DATA_CLASS_MAPPING[eventType](record);
   }
 }

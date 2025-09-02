@@ -1,9 +1,11 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   Context,
   DynamoDBRecord,
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
+
 import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import type { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
 import type { SqsFifoPartialProcessorAsync } from './SqsFifoPartialProcessorAsync.js';
@@ -89,6 +91,10 @@ type PartialItemFailures = { itemIdentifier: string };
  */
 type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
 
+type BasePartialBatchProcessorConfig = {
+  schema: StandardSchemaV1;
+};
+
 export type {
   BatchProcessingOptions,
   BaseRecord,
@@ -97,4 +103,5 @@ export type {
   FailureResponse,
   PartialItemFailures,
   PartialItemFailureResponse,
+  BasePartialBatchProcessorConfig,
 };

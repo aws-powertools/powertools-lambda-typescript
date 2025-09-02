@@ -100,7 +100,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
     record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
     try {
-      const data = this.toBatchType(record, this.eventType);
+      const data = await this.toBatchType(record, this.eventType, this.schema);
       const result = await this.handler(data, this.options?.context);
 
       return this.successHandler(record, result);

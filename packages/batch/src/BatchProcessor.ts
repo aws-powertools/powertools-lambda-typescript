@@ -1,8 +1,10 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
+  AttributeValue,
   DynamoDBRecord,
   KinesisStreamRecord,
   SQSRecord,
+  StreamRecord,
 } from 'aws-lambda';
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import { EventType, SchemaType } from './constants.js';
@@ -172,6 +174,35 @@ class BatchProcessor extends BasePartialBatchProcessor {
         const extendedSchema = SqsRecordSchema.extend({
           // biome-ignore lint/suspicious/noExplicitAny: The vendor field in the schema is verified that the schema is a Zod schema
           body: JSONStringified(schema as any),
+        });
+        return parse(record, undefined, extendedSchema);
+      }
+      console.warn(
+        'The schema provided is not supported. Only Zod schemas are supported for extension.'
+      );
+      throw new Error('Unsupported schema type');
+    }
+    if (eventType === EventType.DynamoDBStreams) {
+      const extendedSchemaParsing = parse(record, undefined, schema, true);
+      if (extendedSchemaParsing.success)
+        return extendedSchemaParsing.data as DynamoDBRecord;
+      if (schema['~standard'].vendor === SchemaType.Zod) {
+        const { DynamoDBMarshalled } = await import(
+          '@aws-lambda-powertools/parser/helpers/dynamodb'
+        );
+        const { DynamoDBStreamRecord, DynamoDBStreamChangeRecordBase } =
+          await import('@aws-lambda-powertools/parser/schemas/dynamodb');
+        const extendedSchema = DynamoDBStreamRecord.extend({
+          dynamodb: DynamoDBStreamChangeRecordBase.extend({
+            // biome-ignore lint/suspicious/noExplicitAny: The vendor field in the schema is verified that the schema is a Zod schema
+            OldImage: DynamoDBMarshalled<StreamRecord['OldImage']>(
+              schema as any
+            ).optional(),
+            // biome-ignore lint/suspicious/noExplicitAny: The vendor field in the schema is verified that the schema is a Zod schema
+            NewImage: DynamoDBMarshalled<StreamRecord['NewImage']>(
+              schema as any
+            ).optional(),
+          }),
         });
         return parse(record, undefined, extendedSchema);
       }

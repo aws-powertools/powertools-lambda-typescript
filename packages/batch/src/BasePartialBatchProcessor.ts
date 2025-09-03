@@ -207,32 +207,10 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * @param record The record to be processed
    * @param eventType The type of event to process
    */
-  public async toBatchType(
+  public toBatchType(
     record: EventSourceDataClassTypes,
-    eventType: keyof typeof EventType,
-    schema?: StandardSchemaV1
-  ): Promise<SQSRecord | KinesisStreamRecord | DynamoDBRecord> {
-    if (schema) {
-      const { parse } = await import('@aws-lambda-powertools/parser');
-      if (eventType === EventType.SQS) {
-        try {
-          return parse(record, undefined, schema) as SQSRecord;
-        } catch (error) {
-          const { JSONStringified } = await import(
-            '@aws-lambda-powertools/parser/helpers'
-          );
-          const { SqsRecordSchema } = await import(
-            '@aws-lambda-powertools/parser/schemas/sqs'
-          );
-          const extendedSchema = SqsRecordSchema.extend({
-            // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
-            body: JSONStringified(schema as any),
-          });
-          return parse(record, undefined, extendedSchema);
-        }
-      }
-      throw new Error('Unsupported event type');
-    }
+    eventType: keyof typeof EventType
+  ): SQSRecord | KinesisStreamRecord | DynamoDBRecord {
     return DATA_CLASS_MAPPING[eventType](record);
   }
 }

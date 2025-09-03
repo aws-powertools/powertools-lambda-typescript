@@ -1,6 +1,18 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
+import type {
+  DynamoDBRecord,
+  KinesisStreamRecord,
+  SQSRecord,
+} from 'aws-lambda';
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
+import { EventType } from './constants.js';
 import { BatchProcessingError } from './errors.js';
-import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
+import type {
+  BaseRecord,
+  EventSourceDataClassTypes,
+  FailureResponse,
+  SuccessResponse,
+} from './types.js';
 
 /**
  * Process records in a batch asynchronously and handle partial failure cases.
@@ -100,7 +112,12 @@ class BatchProcessor extends BasePartialBatchProcessor {
     record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
     try {
-      const data = await this.toBatchType(record, this.eventType, this.schema);
+      const parsedRecord = await this.parseRecord(
+        record,
+        this.eventType,
+        this.schema
+      );
+      const data = this.toBatchType(parsedRecord, this.eventType);
       const result = await this.handler(data, this.options?.context);
 
       return this.successHandler(record, result);
@@ -120,6 +137,35 @@ class BatchProcessor extends BasePartialBatchProcessor {
     throw new BatchProcessingError(
       'Not implemented. Use asyncProcess() instead.'
     );
+  }
+
+  public async parseRecord(
+    record: EventSourceDataClassTypes,
+    eventType: keyof typeof EventType,
+    schema?: StandardSchemaV1
+  ): Promise<SQSRecord | KinesisStreamRecord | DynamoDBRecord> {
+    if (schema) {
+      const { parse } = await import('@aws-lambda-powertools/parser');
+      if (eventType === EventType.SQS) {
+        try {
+          return parse(record, undefined, schema) as SQSRecord;
+        } catch (error) {
+          const { JSONStringified } = await import(
+            '@aws-lambda-powertools/parser/helpers'
+          );
+          const { SqsRecordSchema } = await import(
+            '@aws-lambda-powertools/parser/schemas/sqs'
+          );
+          const extendedSchema = SqsRecordSchema.extend({
+            // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
+            body: JSONStringified(schema as any),
+          });
+          return parse(record, undefined, extendedSchema);
+        }
+      }
+      throw new Error('Unsupported event type');
+    }
+    return record;
   }
 }
 

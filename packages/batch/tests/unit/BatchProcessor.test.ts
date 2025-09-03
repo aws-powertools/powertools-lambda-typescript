@@ -570,5 +570,44 @@ describe('Class: AsyncBatchProcessor', () => {
         );
       });
     });
+
+    it('completes processing with all failures if an unsupported event type is used for parsing', async () => {
+      // Prepare
+      const customSchema = z.object({
+        name: z.string(),
+        age: z.number(),
+      });
+      const customObject1 = {
+        name: 'test-1',
+        age: 20,
+      };
+      const customObject2 = {
+        name: 'test-2',
+        age: 'invalid-age',
+      };
+      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+      const records = [firstRecord, secondRecord];
+      //@ts-expect-error
+      const processor = new BatchProcessor('invalid-event-type', {
+        schema: customSchema,
+      });
+
+      // Act
+      processor.register(
+        records,
+        async (
+          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
+        ) => {
+          return customObject.body;
+        },
+        options
+      );
+
+      // Assess
+      await expect(processor.process()).rejects.toThrowError(
+        FullBatchFailureError
+      );
+    });
   });
 });

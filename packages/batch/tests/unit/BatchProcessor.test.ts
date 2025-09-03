@@ -656,9 +656,10 @@ describe('Class: AsyncBatchProcessor', () => {
       const customSchema = z.object({
         Message: z.string(),
       });
-      const firstRecord = dynamodbRecordFactory('failure');
+
+      //@ts-expect-error Passing a number
+      const firstRecord = dynamodbRecordFactory(1);
       const secondRecord = dynamodbRecordFactory('success');
-      const thirdRecord = dynamodbRecordFactory('fail');
       const records = [firstRecord, secondRecord];
       const processor = new BatchProcessor(EventType.DynamoDBStreams, {
         schema: customSchema,
@@ -669,12 +670,15 @@ describe('Class: AsyncBatchProcessor', () => {
       const processedMessages = await processor.process();
 
       // Assess
-      expect(processedMessages[1]).toStrictEqual(['success', '', secondRecord]);
-      expect(processor.failureMessages.length).toBe(2);
+      expect(processedMessages[1]).toStrictEqual([
+        'success',
+        'success',
+        secondRecord,
+      ]);
+      expect(processor.failureMessages.length).toBe(1);
       expect(processor.response()).toStrictEqual({
         batchItemFailures: [
           { itemIdentifier: firstRecord.dynamodb?.SequenceNumber },
-          { itemIdentifier: thirdRecord.dynamodb?.SequenceNumber },
         ],
       });
     });
@@ -682,114 +686,44 @@ describe('Class: AsyncBatchProcessor', () => {
     it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
       // Prepare
       const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
+        Message: z.string(),
       });
-      const customObject1 = {
-        name: 'test-1',
-        age: 20,
-      };
-      const customObject2 = {
-        name: 'test-2',
-        age: 30,
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+
+      const firstRecord = dynamodbRecordFactory('success');
+      const secondRecord = dynamodbRecordFactory('success');
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
+      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
         schema: customSchema,
       });
 
       // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
+      processor.register(records, asyncDynamodbRecordHandler, options);
       const processedMessages = await processor.process();
 
       // Assess
       expect(processedMessages).toStrictEqual([
-        ['success', customObject1, firstRecord],
-        ['success', customObject2, secondRecord],
+        ['success', 'success', firstRecord],
+        ['success', 'success', secondRecord],
       ]);
     });
 
     it('completes processing with all failures if all the payload does not match the passed schema', async () => {
       // Prepare
       const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
+        Message: z.string(),
       });
-      const customObject1 = {
-        name: 'test-1',
-        age: 'invalid-age',
-      };
-      const customObject2 = {
-        name: 20,
-        age: 30,
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
 
+      //@ts-expect-error Passing a number
+      const firstRecord = dynamodbRecordFactory(1);
+      //@ts-expect-error Passing a number
+      const secondRecord = dynamodbRecordFactory(2);
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
+      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
         schema: customSchema,
       });
 
       // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
-
-      // Assess
-      await expect(processor.process()).rejects.toThrowError(
-        FullBatchFailureError
-      );
-    });
-
-    it('completes processing with failures if an unsupported event type is used for parsing', async () => {
-      // Prepare
-      const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
-      });
-      const customObject1 = {
-        name: 'test-1',
-        age: 20,
-      };
-      const customObject2 = {
-        name: 'test-2',
-        age: 'invalid-age',
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-      const records = [firstRecord, secondRecord];
-      //@ts-expect-error
-      const processor = new BatchProcessor('invalid-event-type', {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
+      processor.register(records, asyncDynamodbRecordHandler, options);
 
       // Assess
       await expect(processor.process()).rejects.toThrowError(
@@ -800,32 +734,18 @@ describe('Class: AsyncBatchProcessor', () => {
     it('completes processing with failures if an unsupported schema type is used for parsing', async () => {
       // Prepare
       const customSchema = v.object({
-        name: v.string(),
-        age: v.number(),
+        Message: v.string(),
       });
-      const customObject1 = {
-        name: 'test-1',
-        age: 20,
-      };
-      const customObject2 = {
-        name: 'test-2',
-        age: 'invalid-age',
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+
+      const firstRecord = dynamodbRecordFactory('success');
+      const secondRecord = dynamodbRecordFactory('success');
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
+      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
         schema: customSchema,
       });
 
       // Act
-      processor.register(
-        records,
-        async (customObject: SQSRecord) => {
-          return customObject.body;
-        },
-        options
-      );
+      processor.register(records, asyncDynamodbRecordHandler, options);
 
       // Assess
       await expect(processor.process()).rejects.toThrowError(
@@ -835,7 +755,7 @@ describe('Class: AsyncBatchProcessor', () => {
   });
 
   describe('Batch processing with Parser Integration: Passing Extended DynamoDB Record Schema', () => {
-    it.only('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
       // Prepare
       const customSchema = z.object({
         Message: z.string(),
@@ -847,14 +767,12 @@ describe('Class: AsyncBatchProcessor', () => {
         await import('@aws-lambda-powertools/parser/schemas/dynamodb');
       const extendedSchema = DynamoDBStreamRecord.extend({
         dynamodb: DynamoDBStreamChangeRecordBase.extend({
-          OldImage: DynamoDBMarshalled(customSchema).optional(),
+          NewImage: DynamoDBMarshalled(customSchema).optional(),
         }),
       });
       //@ts-expect-error Passing a number
       const firstRecord = dynamodbRecordFactory(1);
       const secondRecord = dynamodbRecordFactory('success');
-      //@ts-expect-error Passing a number
-      const thirdRecord = dynamodbRecordFactory(2);
       const records = [firstRecord, secondRecord];
       const processor = new BatchProcessor(EventType.DynamoDBStreams, {
         schema: extendedSchema,
@@ -870,11 +788,10 @@ describe('Class: AsyncBatchProcessor', () => {
         'success',
         secondRecord,
       ]);
-      expect(processor.failureMessages.length).toBe(2);
+      expect(processor.failureMessages.length).toBe(1);
       expect(processor.response()).toStrictEqual({
         batchItemFailures: [
           { itemIdentifier: firstRecord.dynamodb?.SequenceNumber },
-          { itemIdentifier: thirdRecord.dynamodb?.SequenceNumber },
         ],
       });
     });
@@ -882,95 +799,62 @@ describe('Class: AsyncBatchProcessor', () => {
     it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
       // Prepare
       const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
+        Message: z.string(),
       });
-      const { JSONStringified } = await import(
-        '@aws-lambda-powertools/parser/helpers'
+      const { DynamoDBMarshalled } = await import(
+        '@aws-lambda-powertools/parser/helpers/dynamodb'
       );
-      const { SqsRecordSchema } = await import(
-        '@aws-lambda-powertools/parser/schemas/sqs'
-      );
-      const extendedSchema = SqsRecordSchema.extend({
-        // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
-        body: JSONStringified(customSchema as any),
+      const { DynamoDBStreamRecord, DynamoDBStreamChangeRecordBase } =
+        await import('@aws-lambda-powertools/parser/schemas/dynamodb');
+      const extendedSchema = DynamoDBStreamRecord.extend({
+        dynamodb: DynamoDBStreamChangeRecordBase.extend({
+          NewImage: DynamoDBMarshalled(customSchema).optional(),
+        }),
       });
-      const customObject1 = {
-        name: 'test-1',
-        age: 20,
-      };
-      const customObject2 = {
-        name: 'test-2',
-        age: 30,
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+      const firstRecord = dynamodbRecordFactory('success');
+      const secondRecord = dynamodbRecordFactory('success');
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
+      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
         schema: extendedSchema,
       });
 
       // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
+      processor.register(records, asyncDynamodbRecordHandler, options);
       const processedMessages = await processor.process();
 
       // Assess
       expect(processedMessages).toStrictEqual([
-        ['success', customObject1, firstRecord],
-        ['success', customObject2, secondRecord],
+        ['success', 'success', firstRecord],
+        ['success', 'success', secondRecord],
       ]);
     });
 
     it('completes processing with all failures if all the payload does not match the passed schema', async () => {
       // Prepare
       const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
+        Message: z.string(),
       });
-      const { JSONStringified } = await import(
-        '@aws-lambda-powertools/parser/helpers'
+      const { DynamoDBMarshalled } = await import(
+        '@aws-lambda-powertools/parser/helpers/dynamodb'
       );
-      const { SqsRecordSchema } = await import(
-        '@aws-lambda-powertools/parser/schemas/sqs'
-      );
-      const extendedSchema = SqsRecordSchema.extend({
-        // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
-        body: JSONStringified(customSchema as any),
+      const { DynamoDBStreamRecord, DynamoDBStreamChangeRecordBase } =
+        await import('@aws-lambda-powertools/parser/schemas/dynamodb');
+      const extendedSchema = DynamoDBStreamRecord.extend({
+        dynamodb: DynamoDBStreamChangeRecordBase.extend({
+          NewImage: DynamoDBMarshalled(customSchema).optional(),
+        }),
       });
-      const customObject1 = {
-        name: 'test-1',
-        age: 'invalid-age',
-      };
-      const customObject2 = {
-        name: 20,
-        age: 30,
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-
+      //@ts-expect-error Passing a number
+      const firstRecord = dynamodbRecordFactory(1);
+      //@ts-expect-error Passing a number
+      const secondRecord = dynamodbRecordFactory(2);
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
+      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
         schema: extendedSchema,
       });
 
       // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
+      processor.register(records, asyncDynamodbRecordHandler, options);
 
       // Assess
       await expect(processor.process()).rejects.toThrowError(

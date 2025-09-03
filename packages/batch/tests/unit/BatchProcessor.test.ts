@@ -1,5 +1,6 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context, SQSRecord } from 'aws-lambda';
+import * as v from 'valibot';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import {
@@ -288,290 +289,132 @@ describe('Class: AsyncBatchProcessor', () => {
     expect(() => processor.processSync()).toThrowError(BatchProcessingError);
   });
 
-  describe('Batch processing with Parser Integration', () => {
-    describe('Passing Internal Schema', () => {
-      it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
-        // Prepare
-        const customSchema = z.object({
-          name: z.string(),
-          age: z.number(),
-        });
-        const customObject1 = {
-          name: 'test-1',
-          age: 20,
-        };
-        const customObject2 = {
-          name: 'test-2',
-          age: 'invalid-age',
-        };
-        const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-        const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-        const records = [firstRecord, secondRecord];
-        const processor = new BatchProcessor(EventType.SQS, {
-          schema: customSchema,
-        });
-
-        // Act
-        processor.register(
-          records,
-          async (
-            customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-          ) => {
-            return customObject.body;
-          },
-          options
-        );
-        const processedMessages = await processor.process();
-
-        // Assess
-        expect(processedMessages[0]).toStrictEqual([
-          'success',
-          customObject1,
-          firstRecord,
-        ]);
-        expect(processor.failureMessages.length).toBe(1);
-        expect(processor.response()).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: secondRecord.messageId }],
-        });
+  describe('Batch processing with Parser Integration: Passing Internal Schema', () => {
+    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+      // Prepare
+      const customSchema = z.object({
+        name: z.string(),
+        age: z.number(),
+      });
+      const customObject1 = {
+        name: 'test-1',
+        age: 20,
+      };
+      const customObject2 = {
+        name: 'test-2',
+        age: 'invalid-age',
+      };
+      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS, {
+        schema: customSchema,
       });
 
-      it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-        // Prepare
-        const customSchema = z.object({
-          name: z.string(),
-          age: z.number(),
-        });
-        const customObject1 = {
-          name: 'test-1',
-          age: 20,
-        };
-        const customObject2 = {
-          name: 'test-2',
-          age: 30,
-        };
-        const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-        const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-        const records = [firstRecord, secondRecord];
-        const processor = new BatchProcessor(EventType.SQS, {
-          schema: customSchema,
-        });
+      // Act
+      processor.register(
+        records,
+        async (
+          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
+        ) => {
+          return customObject.body;
+        },
+        options
+      );
+      const processedMessages = await processor.process();
 
-        // Act
-        processor.register(
-          records,
-          async (
-            customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-          ) => {
-            return customObject.body;
-          },
-          options
-        );
-        const processedMessages = await processor.process();
-
-        // Assess
-        expect(processedMessages).toStrictEqual([
-          ['success', customObject1, firstRecord],
-          ['success', customObject2, secondRecord],
-        ]);
-      });
-
-      it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-        // Prepare
-        const customSchema = z.object({
-          name: z.string(),
-          age: z.number(),
-        });
-        const customObject1 = {
-          name: 'test-1',
-          age: 'invalid-age',
-        };
-        const customObject2 = {
-          name: 20,
-          age: 30,
-        };
-        const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-        const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-
-        const records = [firstRecord, secondRecord];
-        const processor = new BatchProcessor(EventType.SQS, {
-          schema: customSchema,
-        });
-
-        // Act
-        processor.register(
-          records,
-          async (
-            customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-          ) => {
-            return customObject.body;
-          },
-          options
-        );
-
-        // Assess
-        await expect(processor.process()).rejects.toThrowError(
-          FullBatchFailureError
-        );
+      // Assess
+      expect(processedMessages[0]).toStrictEqual([
+        'success',
+        customObject1,
+        firstRecord,
+      ]);
+      expect(processor.failureMessages.length).toBe(1);
+      expect(processor.response()).toStrictEqual({
+        batchItemFailures: [{ itemIdentifier: secondRecord.messageId }],
       });
     });
 
-    describe('Passing Extended Schema', () => {
-      it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
-        // Prepare
-        const customSchema = z.object({
-          name: z.string(),
-          age: z.number(),
-        });
-        const { JSONStringified } = await import(
-          '@aws-lambda-powertools/parser/helpers'
-        );
-        const { SqsRecordSchema } = await import(
-          '@aws-lambda-powertools/parser/schemas/sqs'
-        );
-        const extendedSchema = SqsRecordSchema.extend({
-          // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
-          body: JSONStringified(customSchema as any),
-        });
-        const customObject1 = {
-          name: 'test-1',
-          age: 20,
-        };
-        const customObject2 = {
-          name: 'test-2',
-          age: 'invalid-age',
-        };
-        const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-        const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-        const records = [firstRecord, secondRecord];
-        const processor = new BatchProcessor(EventType.SQS, {
-          schema: extendedSchema,
-        });
-
-        // Act
-        processor.register(
-          records,
-          async (
-            customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-          ) => {
-            return customObject.body;
-          },
-          options
-        );
-        const processedMessages = await processor.process();
-
-        // Assess
-        expect(processedMessages[0]).toStrictEqual([
-          'success',
-          customObject1,
-          firstRecord,
-        ]);
-        expect(processor.failureMessages.length).toBe(1);
-        expect(processor.response()).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: secondRecord.messageId }],
-        });
+    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
+      // Prepare
+      const customSchema = z.object({
+        name: z.string(),
+        age: z.number(),
+      });
+      const customObject1 = {
+        name: 'test-1',
+        age: 20,
+      };
+      const customObject2 = {
+        name: 'test-2',
+        age: 30,
+      };
+      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS, {
+        schema: customSchema,
       });
 
-      it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-        // Prepare
-        const customSchema = z.object({
-          name: z.string(),
-          age: z.number(),
-        });
-        const { JSONStringified } = await import(
-          '@aws-lambda-powertools/parser/helpers'
-        );
-        const { SqsRecordSchema } = await import(
-          '@aws-lambda-powertools/parser/schemas/sqs'
-        );
-        const extendedSchema = SqsRecordSchema.extend({
-          // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
-          body: JSONStringified(customSchema as any),
-        });
-        const customObject1 = {
-          name: 'test-1',
-          age: 20,
-        };
-        const customObject2 = {
-          name: 'test-2',
-          age: 30,
-        };
-        const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-        const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-        const records = [firstRecord, secondRecord];
-        const processor = new BatchProcessor(EventType.SQS, {
-          schema: extendedSchema,
-        });
+      // Act
+      processor.register(
+        records,
+        async (
+          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
+        ) => {
+          return customObject.body;
+        },
+        options
+      );
+      const processedMessages = await processor.process();
 
-        // Act
-        processor.register(
-          records,
-          async (
-            customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-          ) => {
-            return customObject.body;
-          },
-          options
-        );
-        const processedMessages = await processor.process();
-
-        // Assess
-        expect(processedMessages).toStrictEqual([
-          ['success', customObject1, firstRecord],
-          ['success', customObject2, secondRecord],
-        ]);
-      });
-
-      it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-        // Prepare
-        const customSchema = z.object({
-          name: z.string(),
-          age: z.number(),
-        });
-        const { JSONStringified } = await import(
-          '@aws-lambda-powertools/parser/helpers'
-        );
-        const { SqsRecordSchema } = await import(
-          '@aws-lambda-powertools/parser/schemas/sqs'
-        );
-        const extendedSchema = SqsRecordSchema.extend({
-          // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
-          body: JSONStringified(customSchema as any),
-        });
-        const customObject1 = {
-          name: 'test-1',
-          age: 'invalid-age',
-        };
-        const customObject2 = {
-          name: 20,
-          age: 30,
-        };
-        const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-        const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-
-        const records = [firstRecord, secondRecord];
-        const processor = new BatchProcessor(EventType.SQS, {
-          schema: extendedSchema,
-        });
-
-        // Act
-        processor.register(
-          records,
-          async (
-            customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-          ) => {
-            return customObject.body;
-          },
-          options
-        );
-
-        // Assess
-        await expect(processor.process()).rejects.toThrowError(
-          FullBatchFailureError
-        );
-      });
+      // Assess
+      expect(processedMessages).toStrictEqual([
+        ['success', customObject1, firstRecord],
+        ['success', customObject2, secondRecord],
+      ]);
     });
 
-    it('completes processing with all failures if an unsupported event type is used for parsing', async () => {
+    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
+      // Prepare
+      const customSchema = z.object({
+        name: z.string(),
+        age: z.number(),
+      });
+      const customObject1 = {
+        name: 'test-1',
+        age: 'invalid-age',
+      };
+      const customObject2 = {
+        name: 20,
+        age: 30,
+      };
+      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS, {
+        schema: customSchema,
+      });
+
+      // Act
+      processor.register(
+        records,
+        async (
+          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
+        ) => {
+          return customObject.body;
+        },
+        options
+      );
+
+      // Assess
+      await expect(processor.process()).rejects.toThrowError(
+        FullBatchFailureError
+      );
+    });
+
+    it('completes processing with failures if an unsupported event type is used for parsing', async () => {
       // Prepare
       const customSchema = z.object({
         name: z.string(),
@@ -591,6 +434,198 @@ describe('Class: AsyncBatchProcessor', () => {
       //@ts-expect-error
       const processor = new BatchProcessor('invalid-event-type', {
         schema: customSchema,
+      });
+
+      // Act
+      processor.register(
+        records,
+        async (
+          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
+        ) => {
+          return customObject.body;
+        },
+        options
+      );
+
+      // Assess
+      await expect(processor.process()).rejects.toThrowError(
+        FullBatchFailureError
+      );
+    });
+
+    it('completes processing with failures if an unsupported schema type is used for parsing', async () => {
+      // Prepare
+      const customSchema = v.object({
+        name: v.string(),
+        age: v.number(),
+      });
+      const customObject1 = {
+        name: 'test-1',
+        age: 20,
+      };
+      const customObject2 = {
+        name: 'test-2',
+        age: 'invalid-age',
+      };
+      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS, {
+        schema: customSchema,
+      });
+
+      // Act
+      processor.register(
+        records,
+        async (customObject: SQSRecord) => {
+          return customObject.body;
+        },
+        options
+      );
+
+      // Assess
+      await expect(processor.process()).rejects.toThrowError(
+        FullBatchFailureError
+      );
+    });
+  });
+
+  describe('Batch processing with Parser Integration: Passing Extended Schema', () => {
+    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+      // Prepare
+      const customSchema = z.object({
+        name: z.string(),
+        age: z.number(),
+      });
+      const { JSONStringified } = await import(
+        '@aws-lambda-powertools/parser/helpers'
+      );
+      const { SqsRecordSchema } = await import(
+        '@aws-lambda-powertools/parser/schemas/sqs'
+      );
+      const extendedSchema = SqsRecordSchema.extend({
+        // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
+        body: JSONStringified(customSchema as any),
+      });
+      const customObject1 = {
+        name: 'test-1',
+        age: 20,
+      };
+      const customObject2 = {
+        name: 'test-2',
+        age: 'invalid-age',
+      };
+      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS, {
+        schema: extendedSchema,
+      });
+
+      // Act
+      processor.register(
+        records,
+        async (
+          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
+        ) => {
+          return customObject.body;
+        },
+        options
+      );
+      const processedMessages = await processor.process();
+
+      // Assess
+      expect(processedMessages[0]).toStrictEqual([
+        'success',
+        customObject1,
+        firstRecord,
+      ]);
+      expect(processor.failureMessages.length).toBe(1);
+      expect(processor.response()).toStrictEqual({
+        batchItemFailures: [{ itemIdentifier: secondRecord.messageId }],
+      });
+    });
+
+    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
+      // Prepare
+      const customSchema = z.object({
+        name: z.string(),
+        age: z.number(),
+      });
+      const { JSONStringified } = await import(
+        '@aws-lambda-powertools/parser/helpers'
+      );
+      const { SqsRecordSchema } = await import(
+        '@aws-lambda-powertools/parser/schemas/sqs'
+      );
+      const extendedSchema = SqsRecordSchema.extend({
+        // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
+        body: JSONStringified(customSchema as any),
+      });
+      const customObject1 = {
+        name: 'test-1',
+        age: 20,
+      };
+      const customObject2 = {
+        name: 'test-2',
+        age: 30,
+      };
+      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS, {
+        schema: extendedSchema,
+      });
+
+      // Act
+      processor.register(
+        records,
+        async (
+          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
+        ) => {
+          return customObject.body;
+        },
+        options
+      );
+      const processedMessages = await processor.process();
+
+      // Assess
+      expect(processedMessages).toStrictEqual([
+        ['success', customObject1, firstRecord],
+        ['success', customObject2, secondRecord],
+      ]);
+    });
+
+    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
+      // Prepare
+      const customSchema = z.object({
+        name: z.string(),
+        age: z.number(),
+      });
+      const { JSONStringified } = await import(
+        '@aws-lambda-powertools/parser/helpers'
+      );
+      const { SqsRecordSchema } = await import(
+        '@aws-lambda-powertools/parser/schemas/sqs'
+      );
+      const extendedSchema = SqsRecordSchema.extend({
+        // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
+        body: JSONStringified(customSchema as any),
+      });
+      const customObject1 = {
+        name: 'test-1',
+        age: 'invalid-age',
+      };
+      const customObject2 = {
+        name: 20,
+        age: 30,
+      };
+      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS, {
+        schema: extendedSchema,
       });
 
       // Act

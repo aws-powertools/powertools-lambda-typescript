@@ -5,7 +5,7 @@ import type {
   SQSRecord,
 } from 'aws-lambda';
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
-import { EventType } from './constants.js';
+import { EventType, SchemaType } from './constants.js';
 import { BatchProcessingError } from './errors.js';
 import type {
   BaseRecord,
@@ -112,12 +112,11 @@ class BatchProcessor extends BasePartialBatchProcessor {
     record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
     try {
-      const parsedRecord = await this.parseRecord(
-        record,
-        this.eventType,
-        this.schema
-      );
-      const data = this.toBatchType(parsedRecord, this.eventType);
+      const recordToProcess =
+        this.schema == null
+          ? record
+          : await this.parseRecord(record, this.eventType, this.schema);
+      const data = this.toBatchType(recordToProcess, this.eventType);
       const result = await this.handler(data, this.options?.context);
 
       return this.successHandler(record, result);
@@ -142,39 +141,49 @@ class BatchProcessor extends BasePartialBatchProcessor {
   /**
    * Parse the record according to the schema passed.
    *
-   * If the schema is not provided, it returns the record as is.
+   * If the passed schema is already an extended schema,
+   * it directly uses the schema to parse the record
+   *
+   * If the passed schema is an internal payload schema,
+   * it checks whether it is a zod schema and
+   * then extends the zod schema according to the passed event type for parsing
    *
    * @param record The record to be parsed
    * @param eventType The type of event to process
    * @param schema The StandardSchema to be used for parsing
    */
-  public async parseRecord(
+  private async parseRecord(
     record: EventSourceDataClassTypes,
     eventType: keyof typeof EventType,
-    schema?: StandardSchemaV1
+    schema: StandardSchemaV1
   ): Promise<SQSRecord | KinesisStreamRecord | DynamoDBRecord> {
-    if (schema) {
-      const { parse } = await import('@aws-lambda-powertools/parser');
-      if (eventType === EventType.SQS) {
-        try {
-          return parse(record, undefined, schema) as SQSRecord;
-        } catch (error) {
-          const { JSONStringified } = await import(
-            '@aws-lambda-powertools/parser/helpers'
-          );
-          const { SqsRecordSchema } = await import(
-            '@aws-lambda-powertools/parser/schemas/sqs'
-          );
-          const extendedSchema = SqsRecordSchema.extend({
-            // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
-            body: JSONStringified(schema as any),
-          });
-          return parse(record, undefined, extendedSchema);
-        }
+    const { parse } = await import('@aws-lambda-powertools/parser');
+    if (eventType === EventType.SQS) {
+      const extendedSchemaParsing = parse(record, undefined, schema, true);
+      if (extendedSchemaParsing.success)
+        return extendedSchemaParsing.data as SQSRecord;
+      if (schema['~standard'].vendor === SchemaType.Zod) {
+        const { JSONStringified } = await import(
+          '@aws-lambda-powertools/parser/helpers'
+        );
+        const { SqsRecordSchema } = await import(
+          '@aws-lambda-powertools/parser/schemas/sqs'
+        );
+        const extendedSchema = SqsRecordSchema.extend({
+          // biome-ignore lint/suspicious/noExplicitAny: The vendor field in the schema is verified that the schema is a Zod schema
+          body: JSONStringified(schema as any),
+        });
+        return parse(record, undefined, extendedSchema);
       }
-      throw new Error('Unsupported event type');
+      console.warn(
+        'The schema provided is not supported. Only Zod schemas are supported for extension.'
+      );
+      throw new Error('Unsupported schema type');
     }
-    return record;
+    console.warn(
+      `The event type provided is not supported. Supported events: ${Object.values(EventType).join(',')}`
+    );
+    throw new Error('Unsupported event type');
   }
 }
 

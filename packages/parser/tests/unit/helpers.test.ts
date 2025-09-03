@@ -1,3 +1,4 @@
+import { gzipSync } from 'node:zlib';
 import {
   KinesisDataStreamRecord,
   KinesisDataStreamRecordPayload,
@@ -285,7 +286,7 @@ describe('Helper: DynamoDBMarshalled', () => {
 });
 
 describe('Helper: Base64Encoded', () => {
-  it('returns a valid base64 decoded payload', () => {
+  it('returns a valid base64 decoded object when passed an encoded object', () => {
     // Prepare
     const data = {
       body: Buffer.from(JSON.stringify(structuredClone(basePayload))).toString(
@@ -304,12 +305,46 @@ describe('Helper: Base64Encoded', () => {
     });
   });
 
-  it('throws an error if the payload is invalid', () => {
+  it('returns a valid base64 decoded object when passed a compressed object', () => {
+    // Prepare
+    const data = {
+      body: Buffer.from(
+        gzipSync(JSON.stringify(structuredClone(basePayload)))
+      ).toString('base64'),
+    };
+
+    // Act
+    const extendedSchema = envelopeSchema.extend({
+      body: Base64Encoded(bodySchema),
+    });
+
+    // Assess
+    expect(extendedSchema.parse(data)).toStrictEqual({
+      body: basePayload,
+    });
+  });
+
+  it('throws an error if the payload is does not match the schema', () => {
     // Prepare
     const data = {
       body: Buffer.from(
         JSON.stringify({ ...basePayload, email: 'invalid' })
       ).toString('base64'),
+    };
+
+    // Act
+    const extendedSchema = envelopeSchema.extend({
+      body: Base64Encoded(bodySchema),
+    });
+
+    // Assess
+    expect(() => extendedSchema.parse(data)).toThrow();
+  });
+
+  it('throws an error if the payload is malformed', () => {
+    // Prepare
+    const data = {
+      body: Buffer.from('{"foo": 1, }').toString('base64'),
     };
 
     // Act

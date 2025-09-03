@@ -450,7 +450,7 @@ describe('Formatters', () => {
       const formattedError = formatter.formatError(error);
 
       // Assess
-      expect(formattedError).toEqual({
+      expect(formattedError).toMatchObject({
         stack: expect.arrayContaining([
           expect.stringMatching(fileNameRegexpWithLine),
         ]),

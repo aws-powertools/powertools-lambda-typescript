@@ -371,6 +371,7 @@ describe('Formatters', () => {
         operator: 'strictEqual',
         code: 'ERR_ASSERTION',
         generatedMessage: true,
+        diff: 'simple',
       },
     },
     {
@@ -450,7 +451,7 @@ describe('Formatters', () => {
       const formattedError = formatter.formatError(error);
 
       // Assess
-      expect(formattedError).toMatchObject({
+      expect(formattedError).toEqual({
         stack: expect.arrayContaining([
           expect.stringMatching(fileNameRegexpWithLine),
         ]),

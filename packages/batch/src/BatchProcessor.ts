@@ -1,6 +1,5 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
-  AttributeValue,
   DynamoDBRecord,
   KinesisStreamRecord,
   SQSRecord,

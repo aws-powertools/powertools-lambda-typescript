@@ -1,9 +1,5 @@
-import {
-  DynamoDBStreamChangeRecordBase,
-  DynamoDBStreamRecord,
-} from '@aws-lambda-powertools/parser/schemas/dynamodb';
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { Context, DynamoDBRecord, SQSRecord } from 'aws-lambda';
+import type { Context, SQSRecord } from 'aws-lambda';
 import * as v from 'valibot';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
@@ -508,8 +504,7 @@ describe('Class: AsyncBatchProcessor', () => {
         '@aws-lambda-powertools/parser/schemas/sqs'
       );
       const extendedSchema = SqsRecordSchema.extend({
-        // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
-        body: JSONStringified(customSchema as any),
+        body: JSONStringified(customSchema),
       });
       const customObject1 = {
         name: 'test-1',
@@ -563,8 +558,7 @@ describe('Class: AsyncBatchProcessor', () => {
         '@aws-lambda-powertools/parser/schemas/sqs'
       );
       const extendedSchema = SqsRecordSchema.extend({
-        // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
-        body: JSONStringified(customSchema as any),
+        body: JSONStringified(customSchema),
       });
       const customObject1 = {
         name: 'test-1',
@@ -613,8 +607,7 @@ describe('Class: AsyncBatchProcessor', () => {
         '@aws-lambda-powertools/parser/schemas/sqs'
       );
       const extendedSchema = SqsRecordSchema.extend({
-        // biome-ignore lint/suspicious/noExplicitAny: at least for now, we need to broaden the type because the JSONstringified helper method is not typed with StandardSchemaV1 but with ZodSchema
-        body: JSONStringified(customSchema as any),
+        body: JSONStringified(customSchema),
       });
       const customObject1 = {
         name: 'test-1',

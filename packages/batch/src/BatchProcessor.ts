@@ -139,6 +139,15 @@ class BatchProcessor extends BasePartialBatchProcessor {
     );
   }
 
+  /**
+   * Parse the record according to the schema passed.
+   *
+   * If the schema is not provided, it returns the record as is.
+   *
+   * @param record The record to be parsed
+   * @param eventType The type of event to process
+   * @param schema The StandardSchema to be used for parsing
+   */
   public async parseRecord(
     record: EventSourceDataClassTypes,
     eventType: keyof typeof EventType,

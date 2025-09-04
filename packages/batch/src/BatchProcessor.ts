@@ -140,6 +140,67 @@ class BatchProcessor extends BasePartialBatchProcessor {
   }
 
   /**
+   * Create an extended schema according to the event type passed.
+   *
+   * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
+   * @param schema The StandardSchema to be used for parsing
+   */
+  private async createExtendedSchema(
+    eventType: keyof typeof EventType,
+    schema: StandardSchemaV1
+  ) {
+    switch (eventType) {
+      case EventType.SQS: {
+        const [{ JSONStringified }, { SqsRecordSchema }] = await Promise.all([
+          import('@aws-lambda-powertools/parser/helpers'),
+          import('@aws-lambda-powertools/parser/schemas/sqs'),
+        ]);
+        return SqsRecordSchema.extend({
+          body: JSONStringified(schema as any),
+        });
+      }
+      case EventType.KinesisDataStreams: {
+        const [
+          { Base64Encoded },
+          { KinesisDataStreamRecord, KinesisDataStreamRecordPayload },
+        ] = await Promise.all([
+          import('@aws-lambda-powertools/parser/helpers'),
+          import('@aws-lambda-powertools/parser/schemas/kinesis'),
+        ]);
+        return KinesisDataStreamRecord.extend({
+          kinesis: KinesisDataStreamRecordPayload.extend({
+            data: Base64Encoded(schema as any),
+          }),
+        });
+      }
+      case EventType.DynamoDBStreams: {
+        const [
+          { DynamoDBMarshalled },
+          { DynamoDBStreamRecord, DynamoDBStreamChangeRecordBase },
+        ] = await Promise.all([
+          import('@aws-lambda-powertools/parser/helpers/dynamodb'),
+          import('@aws-lambda-powertools/parser/schemas/dynamodb'),
+        ]);
+        return DynamoDBStreamRecord.extend({
+          dynamodb: DynamoDBStreamChangeRecordBase.extend({
+            OldImage: DynamoDBMarshalled<StreamRecord['OldImage']>(
+              schema as any
+            ).optional(),
+            NewImage: DynamoDBMarshalled<StreamRecord['NewImage']>(
+              schema as any
+            ).optional(),
+          }),
+        });
+      }
+      default:
+        console.warn(
+          `The event type provided is not supported. Supported events: ${Object.values(EventType).join(',')}`
+        );
+        throw new Error('Unsupported event type');
+    }
+  }
+
+  /**
    * Parse the record according to the schema passed.
    *
    * If the passed schema is already an extended schema,
@@ -159,84 +220,27 @@ class BatchProcessor extends BasePartialBatchProcessor {
     schema: StandardSchemaV1
   ): Promise<SQSRecord | KinesisStreamRecord | DynamoDBRecord> {
     const { parse } = await import('@aws-lambda-powertools/parser');
-    if (eventType === EventType.SQS) {
-      const extendedSchemaParsing = parse(record, undefined, schema, true);
-      if (extendedSchemaParsing.success)
-        return extendedSchemaParsing.data as SQSRecord;
-      if (schema['~standard'].vendor === SchemaType.Zod) {
-        const { JSONStringified } = await import(
-          '@aws-lambda-powertools/parser/helpers'
-        );
-        const { SqsRecordSchema } = await import(
-          '@aws-lambda-powertools/parser/schemas/sqs'
-        );
-        const extendedSchema = SqsRecordSchema.extend({
-          // biome-ignore lint/suspicious/noExplicitAny: The vendor field in the schema is verified that the schema is a Zod schema
-          body: JSONStringified(schema as any),
-        });
-        return parse(record, undefined, extendedSchema);
-      }
+    // Try parsing with the original schema first
+    const extendedSchemaParsing = parse(record, undefined, schema, true);
+    if (extendedSchemaParsing.success) {
+      return extendedSchemaParsing.data as
+        | SQSRecord
+        | KinesisStreamRecord
+        | DynamoDBRecord;
+    }
+    // Only proceed with schema extension if it's a Zod schema
+    if (schema['~standard'].vendor !== SchemaType.Zod) {
       console.warn(
         'The schema provided is not supported. Only Zod schemas are supported for extension.'
       );
       throw new Error('Unsupported schema type');
     }
-    if (eventType === EventType.KinesisDataStreams) {
-      const extendedSchemaParsing = parse(record, undefined, schema, true);
-      if (extendedSchemaParsing.success)
-        return extendedSchemaParsing.data as KinesisStreamRecord;
-      if (schema['~standard'].vendor === SchemaType.Zod) {
-        const { Base64Encoded } = await import(
-          '@aws-lambda-powertools/parser/helpers'
-        );
-        const { KinesisDataStreamRecord, KinesisDataStreamRecordPayload } =
-          await import('@aws-lambda-powertools/parser/schemas/kinesis');
-        const extendedSchema = KinesisDataStreamRecord.extend({
-          kinesis: KinesisDataStreamRecordPayload.extend({
-            // biome-ignore lint/suspicious/noExplicitAny: The vendor field in the schema is verified that the schema is a Zod schema
-            data: Base64Encoded(schema as any),
-          }),
-        });
-        return parse(record, undefined, extendedSchema);
-      }
-      console.warn(
-        'The schema provided is not supported. Only Zod schemas are supported for extension.'
-      );
-      throw new Error('Unsupported schema type');
-    }
-    if (eventType === EventType.DynamoDBStreams) {
-      const extendedSchemaParsing = parse(record, undefined, schema, true);
-      if (extendedSchemaParsing.success)
-        return extendedSchemaParsing.data as DynamoDBRecord;
-      if (schema['~standard'].vendor === SchemaType.Zod) {
-        const { DynamoDBMarshalled } = await import(
-          '@aws-lambda-powertools/parser/helpers/dynamodb'
-        );
-        const { DynamoDBStreamRecord, DynamoDBStreamChangeRecordBase } =
-          await import('@aws-lambda-powertools/parser/schemas/dynamodb');
-        const extendedSchema = DynamoDBStreamRecord.extend({
-          dynamodb: DynamoDBStreamChangeRecordBase.extend({
-            // biome-ignore lint/suspicious/noExplicitAny: The vendor field in the schema is verified that the schema is a Zod schema
-            OldImage: DynamoDBMarshalled<StreamRecord['OldImage']>(
-              schema as any
-            ).optional(),
-            // biome-ignore lint/suspicious/noExplicitAny: The vendor field in the schema is verified that the schema is a Zod schema
-            NewImage: DynamoDBMarshalled<StreamRecord['NewImage']>(
-              schema as any
-            ).optional(),
-          }),
-        });
-        return parse(record, undefined, extendedSchema);
-      }
-      console.warn(
-        'The schema provided is not supported. Only Zod schemas are supported for extension.'
-      );
-      throw new Error('Unsupported schema type');
-    }
-    console.warn(
-      `The event type provided is not supported. Supported events: ${Object.values(EventType).join(',')}`
-    );
-    throw new Error('Unsupported event type');
+    // Handle schema extension based on event type
+    const extendedSchema = await this.createExtendedSchema(eventType, schema);
+    return parse(record, undefined, extendedSchema) as
+      | SQSRecord
+      | KinesisStreamRecord
+      | DynamoDBRecord;
   }
 }
 

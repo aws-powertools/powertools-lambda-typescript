@@ -855,4 +855,200 @@ describe('Class: AsyncBatchProcessor', () => {
       );
     });
   });
+
+  describe('Batch processing with Parser Integration: Passing Internal DynamoDB Record Schema', () => {
+    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+      // Prepare
+      const customSchema = z.string();
+      //@ts-expect-error Passing a number
+      const firstRecord = kinesisRecordFactory(1);
+      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
+        schema: customSchema,
+      });
+
+      // Act
+      processor.register(records, asyncKinesisRecordHandler, options);
+      const processedMessages = await processor.process();
+
+      // Assess
+      expect(processedMessages[1]).toStrictEqual([
+        'success',
+        'success',
+        secondRecord,
+      ]);
+      expect(processor.failureMessages.length).toBe(1);
+      expect(processor.response()).toStrictEqual({
+        batchItemFailures: [
+          { itemIdentifier: firstRecord.kinesis.sequenceNumber },
+        ],
+      });
+    });
+
+    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
+      // Prepare
+      const customSchema = z.string();
+      const firstRecord = kinesisRecordFactory('c3VjY2Vzcw==');
+      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
+        schema: customSchema,
+      });
+
+      // Act
+      processor.register(records, asyncKinesisRecordHandler, options);
+      const processedMessages = await processor.process();
+
+      // Assess
+      expect(processedMessages).toStrictEqual([
+        ['success', 'success', firstRecord],
+        ['success', 'success', secondRecord],
+      ]);
+    });
+
+    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
+      // Prepare
+      const customSchema = z.string();
+      //@ts-expect-error Passing a number
+      const firstRecord = kinesisRecordFactory(1);
+      //@ts-expect-error Passing a number
+      const secondRecord = kinesisRecordFactory(1);
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
+        schema: customSchema,
+      });
+
+      // Act
+      processor.register(records, asyncKinesisRecordHandler, options);
+
+      // Assess
+      await expect(processor.process()).rejects.toThrowError(
+        FullBatchFailureError
+      );
+    });
+
+    it('completes processing with failures if an unsupported schema type is used for parsing', async () => {
+      // Prepare
+      const customSchema = v.string();
+
+      const firstRecord = kinesisRecordFactory('c3VjY2Vzcw==');
+      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
+        schema: customSchema,
+      });
+
+      // Act
+      processor.register(records, asyncKinesisRecordHandler, options);
+
+      // Assess
+      await expect(processor.process()).rejects.toThrowError(
+        FullBatchFailureError
+      );
+    });
+  });
+
+  describe('Batch processing with Parser Integration: Passing Extended Kinesis Record Schema', () => {
+    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+      // Prepare
+      const customSchema = z.string();
+      const { Base64Encoded } = await import(
+        '@aws-lambda-powertools/parser/helpers'
+      );
+      const { KinesisDataStreamRecord, KinesisDataStreamRecordPayload } =
+        await import('@aws-lambda-powertools/parser/schemas/kinesis');
+      const extendedSchema = KinesisDataStreamRecord.extend({
+        kinesis: KinesisDataStreamRecordPayload.extend({
+          data: Base64Encoded(customSchema).optional(),
+        }),
+      });
+      //@ts-expect-error Passing a number
+      const firstRecord = kinesisRecordFactory(1);
+      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
+        schema: extendedSchema,
+      });
+
+      // Act
+      processor.register(records, asyncKinesisRecordHandler, options);
+      const processedMessages = await processor.process();
+
+      // Assess
+      expect(processedMessages[1]).toStrictEqual([
+        'success',
+        'success',
+        secondRecord,
+      ]);
+      expect(processor.failureMessages.length).toBe(1);
+      expect(processor.response()).toStrictEqual({
+        batchItemFailures: [
+          { itemIdentifier: firstRecord.kinesis.sequenceNumber },
+        ],
+      });
+    });
+
+    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
+      // Prepare
+      const customSchema = z.string();
+      const { Base64Encoded } = await import(
+        '@aws-lambda-powertools/parser/helpers'
+      );
+      const { KinesisDataStreamRecord, KinesisDataStreamRecordPayload } =
+        await import('@aws-lambda-powertools/parser/schemas/kinesis');
+      const extendedSchema = KinesisDataStreamRecord.extend({
+        kinesis: KinesisDataStreamRecordPayload.extend({
+          data: Base64Encoded(customSchema).optional(),
+        }),
+      });
+      const firstRecord = kinesisRecordFactory('c3VjY2Vzcw==');
+      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
+        schema: extendedSchema,
+      });
+
+      // Act
+      processor.register(records, asyncKinesisRecordHandler, options);
+      const processedMessages = await processor.process();
+
+      // Assess
+      expect(processedMessages).toStrictEqual([
+        ['success', 'success', firstRecord],
+        ['success', 'success', secondRecord],
+      ]);
+    });
+
+    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
+      // Prepare
+      const customSchema = z.string();
+      const { Base64Encoded } = await import(
+        '@aws-lambda-powertools/parser/helpers'
+      );
+      const { KinesisDataStreamRecord, KinesisDataStreamRecordPayload } =
+        await import('@aws-lambda-powertools/parser/schemas/kinesis');
+      const extendedSchema = KinesisDataStreamRecord.extend({
+        kinesis: KinesisDataStreamRecordPayload.extend({
+          data: Base64Encoded(customSchema).optional(),
+        }),
+      });
+      //@ts-expect-error Passing a number
+      const firstRecord = kinesisRecordFactory(1);
+      //@ts-expect-error Passing a number
+      const secondRecord = kinesisRecordFactory(1);
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
+        schema: extendedSchema,
+      });
+
+      // Act
+      processor.register(records, asyncKinesisRecordHandler, options);
+
+      // Assess
+      await expect(processor.process()).rejects.toThrowError(
+        FullBatchFailureError
+      );
+    });
+  });
 });

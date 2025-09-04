@@ -1,4 +1,3 @@
-import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
 import { Base64Encoded } from 'src/helpers/index.js';
 import { z } from 'zod';
 import type { KinesisDataStreamEvent } from '../types/schema.js';
@@ -27,13 +26,7 @@ const KinesisDynamoDBStreamSchema = z.object({
   Records: z.array(
     KinesisDataStreamRecord.extend({
       kinesis: KinesisDataStreamRecordPayload.extend({
-        data: z
-          .string()
-          .transform((data) => {
-            const decoded = decoder.decode(fromBase64(data, 'base64'));
-            return JSON.parse(decoded);
-          })
-          .pipe(DynamoDBStreamToKinesisRecord),
+        data: Base64Encoded(z.any()).pipe(DynamoDBStreamToKinesisRecord),
       }),
     })
   ),

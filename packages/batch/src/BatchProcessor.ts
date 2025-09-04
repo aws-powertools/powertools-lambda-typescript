@@ -181,6 +181,29 @@ class BatchProcessor extends BasePartialBatchProcessor {
       );
       throw new Error('Unsupported schema type');
     }
+    if (eventType === EventType.KinesisDataStreams) {
+      const extendedSchemaParsing = parse(record, undefined, schema, true);
+      if (extendedSchemaParsing.success)
+        return extendedSchemaParsing.data as KinesisStreamRecord;
+      if (schema['~standard'].vendor === SchemaType.Zod) {
+        const { Base64Encoded } = await import(
+          '@aws-lambda-powertools/parser/helpers'
+        );
+        const { KinesisDataStreamRecord, KinesisDataStreamRecordPayload } =
+          await import('@aws-lambda-powertools/parser/schemas/kinesis');
+        const extendedSchema = KinesisDataStreamRecord.extend({
+          kinesis: KinesisDataStreamRecordPayload.extend({
+            // biome-ignore lint/suspicious/noExplicitAny: The vendor field in the schema is verified that the schema is a Zod schema
+            data: Base64Encoded(schema as any),
+          }),
+        });
+        return parse(record, undefined, extendedSchema);
+      }
+      console.warn(
+        'The schema provided is not supported. Only Zod schemas are supported for extension.'
+      );
+      throw new Error('Unsupported schema type');
+    }
     if (eventType === EventType.DynamoDBStreams) {
       const extendedSchemaParsing = parse(record, undefined, schema, true);
       if (extendedSchemaParsing.success)

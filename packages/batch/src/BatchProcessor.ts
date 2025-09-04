@@ -218,15 +218,12 @@ class BatchProcessor extends BasePartialBatchProcessor {
     record: EventSourceDataClassTypes,
     eventType: keyof typeof EventType,
     schema: StandardSchemaV1
-  ): Promise<SQSRecord | KinesisStreamRecord | DynamoDBRecord> {
+  ): Promise<EventSourceDataClassTypes> {
     const { parse } = await import('@aws-lambda-powertools/parser');
     // Try parsing with the original schema first
     const extendedSchemaParsing = parse(record, undefined, schema, true);
     if (extendedSchemaParsing.success) {
-      return extendedSchemaParsing.data as
-        | SQSRecord
-        | KinesisStreamRecord
-        | DynamoDBRecord;
+      return extendedSchemaParsing.data as EventSourceDataClassTypes;
     }
     // Only proceed with schema extension if it's a Zod schema
     if (schema['~standard'].vendor !== SchemaType.Zod) {
@@ -237,10 +234,11 @@ class BatchProcessor extends BasePartialBatchProcessor {
     }
     // Handle schema extension based on event type
     const extendedSchema = await this.createExtendedSchema(eventType, schema);
-    return parse(record, undefined, extendedSchema) as
-      | SQSRecord
-      | KinesisStreamRecord
-      | DynamoDBRecord;
+    return parse(
+      record,
+      undefined,
+      extendedSchema
+    ) as EventSourceDataClassTypes;
   }
 }
 

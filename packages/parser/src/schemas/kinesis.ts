@@ -1,35 +1,16 @@
-import { gunzipSync } from 'node:zlib';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
+import { Base64Encoded } from 'src/helpers/index.js';
 import { z } from 'zod';
 import type { KinesisDataStreamEvent } from '../types/schema.js';
 import { DynamoDBStreamToKinesisRecord } from './dynamodb.js';
-
-const decoder = new TextDecoder();
 
 const KinesisDataStreamRecordPayload = z.object({
   kinesisSchemaVersion: z.string(),
   partitionKey: z.string(),
   sequenceNumber: z.string(),
   approximateArrivalTimestamp: z.number(),
-  data: z.string().transform((data) => {
-    const decompressed = decompress(data);
-    const decoded = decoder.decode(fromBase64(data, 'base64'));
-    try {
-      // If data was not compressed, try to parse it as JSON otherwise it must be string
-      return decompressed === data ? JSON.parse(decoded) : decompressed;
-    } catch {
-      return decoded;
-    }
-  }),
+  data: Base64Encoded(z.any()),
 });
-
-const decompress = (data: string): string => {
-  try {
-    return JSON.parse(gunzipSync(fromBase64(data, 'base64')).toString('utf8'));
-  } catch {
-    return data;
-  }
-};
 
 const KinesisDataStreamRecord = z.object({
   eventSource: z.literal('aws:kinesis'),

@@ -1,5 +1,5 @@
-import { Base64Encoded } from 'src/helpers/index.js';
 import { z } from 'zod';
+import { Base64Encoded } from '../helpers/index.js';
 import type { KinesisDataStreamEvent } from '../types/schema.js';
 import { DynamoDBStreamToKinesisRecord } from './dynamodb.js';
 

@@ -1,7 +1,13 @@
+import { gzipSync } from 'node:zlib';
+import {
+  KinesisDataStreamRecord,
+  KinesisDataStreamRecordPayload,
+  KinesisDataStreamSchema,
+} from 'src/schemas/kinesis.js';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { DynamoDBMarshalled } from '../../src/helpers/dynamodb.js';
-import { JSONStringified } from '../../src/helpers/index.js';
+import { Base64Encoded, JSONStringified } from '../../src/helpers/index.js';
 import { AlbSchema } from '../../src/schemas/alb.js';
 import {
   DynamoDBStreamRecord,
@@ -14,6 +20,7 @@ import {
 import { SqsRecordSchema, SqsSchema } from '../../src/schemas/sqs.js';
 import type {
   DynamoDBStreamEvent,
+  KinesisDataStreamEvent,
   SnsEvent,
   SqsEvent,
 } from '../../src/types/schema.js';
@@ -275,5 +282,131 @@ describe('Helper: DynamoDBMarshalled', () => {
 
     // Act & Assess
     expect(() => extendedSchema.parse(event)).toThrow();
+  });
+});
+
+describe('Helper: Base64Encoded', () => {
+  it('returns a valid base64 decoded object when passed an encoded object', () => {
+    // Prepare
+    const data = {
+      body: Buffer.from(JSON.stringify(structuredClone(basePayload))).toString(
+        'base64'
+      ),
+    };
+
+    // Act
+    const extendedSchema = envelopeSchema.extend({
+      body: Base64Encoded(bodySchema),
+    });
+
+    // Assess
+    expect(extendedSchema.parse(data)).toStrictEqual({
+      body: basePayload,
+    });
+  });
+
+  it('returns a valid base64 decoded object when passed a compressed object', () => {
+    // Prepare
+    const data = {
+      body: Buffer.from(
+        gzipSync(JSON.stringify(structuredClone(basePayload)))
+      ).toString('base64'),
+    };
+
+    // Act
+    const extendedSchema = envelopeSchema.extend({
+      body: Base64Encoded(bodySchema),
+    });
+
+    // Assess
+    expect(extendedSchema.parse(data)).toStrictEqual({
+      body: basePayload,
+    });
+  });
+
+  it('throws an error if the payload is does not match the schema', () => {
+    // Prepare
+    const data = {
+      body: Buffer.from(
+        JSON.stringify({ ...basePayload, email: 'invalid' })
+      ).toString('base64'),
+    };
+
+    // Act
+    const extendedSchema = envelopeSchema.extend({
+      body: Base64Encoded(bodySchema),
+    });
+
+    // Assess
+    expect(() => extendedSchema.parse(data)).toThrow();
+  });
+
+  it('throws an error if the payload is malformed', () => {
+    // Prepare
+    const data = {
+      body: Buffer.from('{"foo": 1, }').toString('base64'),
+    };
+
+    // Act
+    const extendedSchema = envelopeSchema.extend({
+      body: Base64Encoded(bodySchema),
+    });
+
+    // Assess
+    expect(() => extendedSchema.parse(data)).toThrow();
+  });
+
+  it('throws an error if the base64 payload is malformed', () => {
+    // Prepare
+    const data = {
+      body: 'invalid-base64-string',
+    };
+
+    // Act
+    const extendedSchema = envelopeSchema.extend({
+      body: Base64Encoded(bodySchema),
+    });
+
+    // Assess
+    expect(() => extendedSchema.parse(data)).toThrow();
+  });
+
+  it('parses extended KinesisDataStreamSchema', () => {
+    // Prepare
+    const testEvent = getTestEvent<KinesisDataStreamEvent>({
+      eventsPath: 'kinesis',
+      filename: 'stream',
+    });
+    const stringifiedBody = JSON.stringify(basePayload);
+    testEvent.Records[0].kinesis.data =
+      Buffer.from(stringifiedBody).toString('base64');
+    testEvent.Records[1].kinesis.data =
+      Buffer.from(stringifiedBody).toString('base64');
+
+    // Act
+    const extendedSchema = KinesisDataStreamSchema.extend({
+      Records: z.array(
+        KinesisDataStreamRecord.extend({
+          kinesis: KinesisDataStreamRecordPayload.extend({
+            data: Base64Encoded(bodySchema),
+          }),
+        })
+      ),
+    });
+
+    // Assess
+    expect(extendedSchema.parse(testEvent)).toStrictEqual({
+      ...testEvent,
+      Records: [
+        {
+          ...testEvent.Records[0],
+          kinesis: { ...testEvent.Records[0].kinesis, data: basePayload },
+        },
+        {
+          ...testEvent.Records[1],
+          kinesis: { ...testEvent.Records[1].kinesis, data: basePayload },
+        },
+      ],
+    });
   });
 });

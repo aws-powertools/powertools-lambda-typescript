@@ -47,7 +47,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   /**
    * The schema of the body of the event record for parsing
    */
-  public schema?: StandardSchemaV1;
+  protected schema?: StandardSchemaV1;
 
   /**
    * Initializes base batch processing class

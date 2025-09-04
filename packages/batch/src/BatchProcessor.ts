@@ -192,11 +192,12 @@ class BatchProcessor extends BasePartialBatchProcessor {
           }),
         });
       }
-      default:
+      default: {
         console.warn(
           `The event type provided is not supported. Supported events: ${Object.values(EventType).join(',')}`
         );
         throw new Error('Unsupported event type');
+      }
     }
   }
 

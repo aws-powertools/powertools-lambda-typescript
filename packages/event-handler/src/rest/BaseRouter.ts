@@ -146,6 +146,29 @@ abstract class BaseRouter {
     };
   }
 
+  /**
+   * Registers a global middleware function that will be executed for all routes.
+   *
+   * Global middleware executes before route-specific middleware and follows the onion model
+   * where middleware executes in registration order before `next()` and in reverse order after `next()`.
+   *
+   * @param middleware - The middleware function to register globally
+   *
+   * @example
+   * ```typescript
+   * const authMiddleware: Middleware = async (params, options, next) => {
+   *   // Authentication logic
+   *   if (!isAuthenticated(options.request)) {
+   *     return new Response('Unauthorized', { status: 401 });
+   *   }
+   *   await next();
+   *   // Cleanup or logging after request completion
+   *   console.log('Request completed');
+   * };
+   *
+   * router.use(authMiddleware);
+   * ```
+   */
   public use(middleware: Middleware): void {
     this.middlwares.push(middleware);
   }
@@ -212,6 +235,10 @@ abstract class BaseRouter {
         () => handler(route.params, { event, context, request })
       );
 
+      // In practice this we never happen because the final 'middleware' is
+      // the handler function that allways returns HandlerResponse. However, the
+      // type signature of of NextFunction includes undefined so we need this for
+      // the TS compiler
       if (result === undefined) throw new InternalServerError();
 
       return await handlerResultToProxyResult(result);

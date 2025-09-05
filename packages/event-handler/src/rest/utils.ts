@@ -109,6 +109,40 @@ export const isAPIGatewayProxyResult = (
   );
 };
 
+/**
+ * Composes multiple middleware functions into a single middleware function.
+ *
+ * Middleware functions are executed in order, with each middleware having the ability
+ * to call `next()` to proceed to the next middleware in the chain. The composed middleware
+ * follows the onion model where middleware executes in order before `next()` and in
+ * reverse order after `next()`.
+ *
+ * @param middlewares - Array of middleware functions to compose
+ * @returns A single middleware function that executes all provided middlewares in sequence
+ *
+ * @example
+ * ```typescript
+ * const middleware1: Middleware = async (params, options, next) => {
+ *   console.log('middleware1 start');
+ *   await next();
+ *   console.log('middleware1 end');
+ * };
+ *
+ * const middleware2: Middleware = async (params, options, next) => {
+ *   console.log('middleware2 start');
+ *   await next();
+ *   console.log('middleware2 end');
+ * };
+ *
+ * const composed: Middleware = composeMiddleware([middleware1, middleware2]);
+ * // Execution order:
+ * //   middleware1 start
+ * //   -> middleware2 start
+ * //   -> handler
+ * //   -> middleware2 end
+ * //   -> middleware1 end
+ * ```
+ */
 export const composeMiddleware = (middlewares: Middleware[]): Middleware => {
   return async (
     params: Record<string, string>,

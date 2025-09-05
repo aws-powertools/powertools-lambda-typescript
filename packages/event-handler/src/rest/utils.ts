@@ -2,8 +2,11 @@ import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import type {
   CompiledRoute,
+  HandlerResponse,
   HttpMethod,
+  Middleware,
   Path,
+  RequestOptions,
   ValidationResult,
 } from '../types/rest.js';
 import {
@@ -104,4 +107,74 @@ export const isAPIGatewayProxyResult = (
     (result.isBase64Encoded === undefined ||
       typeof result.isBase64Encoded === 'boolean')
   );
+};
+
+/**
+ * Composes multiple middleware functions into a single middleware function.
+ *
+ * Middleware functions are executed in order, with each middleware having the ability
+ * to call `next()` to proceed to the next middleware in the chain. The composed middleware
+ * follows the onion model where middleware executes in order before `next()` and in
+ * reverse order after `next()`.
+ *
+ * @param middlewares - Array of middleware functions to compose
+ * @returns A single middleware function that executes all provided middlewares in sequence
+ *
+ * @example
+ * ```typescript
+ * const middleware1: Middleware = async (params, options, next) => {
+ *   console.log('middleware1 start');
+ *   await next();
+ *   console.log('middleware1 end');
+ * };
+ *
+ * const middleware2: Middleware = async (params, options, next) => {
+ *   console.log('middleware2 start');
+ *   await next();
+ *   console.log('middleware2 end');
+ * };
+ *
+ * const composed: Middleware = composeMiddleware([middleware1, middleware2]);
+ * // Execution order:
+ * //   middleware1 start
+ * //   -> middleware2 start
+ * //   -> handler
+ * //   -> middleware2 end
+ * //   -> middleware1 end
+ * ```
+ */
+export const composeMiddleware = (middlewares: Middleware[]): Middleware => {
+  return async (
+    params: Record<string, string>,
+    options: RequestOptions,
+    next: () => Promise<HandlerResponse | void>
+  ): Promise<HandlerResponse | void> => {
+    let index = -1;
+    let result: HandlerResponse | undefined;
+
+    const dispatch = async (i: number): Promise<void> => {
+      if (i <= index) throw new Error('next() called multiple times');
+      index = i;
+
+      if (i === middlewares.length) {
+        const nextResult = await next();
+        if (nextResult !== undefined) {
+          result = nextResult;
+        }
+        return;
+      }
+
+      const middleware = middlewares[i];
+      const middlewareResult = await middleware(params, options, () =>
+        dispatch(i + 1)
+      );
+
+      if (middlewareResult !== undefined) {
+        result = middlewareResult;
+      }
+    };
+
+    await dispatch(0);
+    return result;
+  };
 };

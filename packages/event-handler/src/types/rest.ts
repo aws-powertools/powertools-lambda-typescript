@@ -77,6 +77,14 @@ type RouteOptions = {
   path: Path;
 };
 
+type NextFunction = () => Promise<HandlerResponse | void>;
+
+type Middleware = (
+  params: Record<string, string>,
+  options: RequestOptions,
+  next: NextFunction
+) => Promise<void | HandlerResponse>;
+
 type RouteRegistryOptions = {
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
@@ -111,6 +119,7 @@ export type {
   HandlerResponse,
   HttpStatusCode,
   HttpMethod,
+  Middleware,
   Path,
   RequestOptions,
   RouterOptions,

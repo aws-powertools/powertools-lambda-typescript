@@ -70,11 +70,13 @@ type RouteHandlerOptions = {
   handler: RouteHandler;
   params: Record<string, string>;
   rawParams: Record<string, string>;
+  middleware: Middleware[];
 };
 
 type RouteOptions = {
   method: HttpMethod | HttpMethod[];
   path: Path;
+  middleware?: Middleware[];
 };
 
 type NextFunction = () => Promise<HandlerResponse | void>;

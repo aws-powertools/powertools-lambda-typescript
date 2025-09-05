@@ -117,8 +117,8 @@ export const isAPIGatewayProxyResult = (
  * follows the onion model where middleware executes in order before `next()` and in
  * reverse order after `next()`.
  *
- * @param middlewares - Array of middleware functions to compose
- * @returns A single middleware function that executes all provided middlewares in sequence
+ * @param middleware - Array of middleware functions to compose
+ * @returns A single middleware function that executes all provided middleware in sequence
  *
  * @example
  * ```typescript
@@ -143,7 +143,7 @@ export const isAPIGatewayProxyResult = (
  * //   -> middleware1 end
  * ```
  */
-export const composeMiddleware = (middlewares: Middleware[]): Middleware => {
+export const composeMiddleware = (middleware: Middleware[]): Middleware => {
   return async (
     params: Record<string, string>,
     options: RequestOptions,
@@ -156,7 +156,7 @@ export const composeMiddleware = (middlewares: Middleware[]): Middleware => {
       if (i <= index) throw new Error('next() called multiple times');
       index = i;
 
-      if (i === middlewares.length) {
+      if (i === middleware.length) {
         const nextResult = await next();
         if (nextResult !== undefined) {
           result = nextResult;
@@ -164,8 +164,8 @@ export const composeMiddleware = (middlewares: Middleware[]): Middleware => {
         return;
       }
 
-      const middleware = middlewares[i];
-      const middlewareResult = await middleware(params, options, () =>
+      const middlewareFn = middleware[i];
+      const middlewareResult = await middlewareFn(params, options, () =>
         dispatch(i + 1)
       );
 

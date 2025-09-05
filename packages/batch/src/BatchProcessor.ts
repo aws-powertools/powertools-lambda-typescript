@@ -1,6 +1,19 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
+import type {
+  DynamoDBRecord,
+  KinesisStreamRecord,
+  SQSRecord,
+  StreamRecord,
+} from 'aws-lambda';
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
+import { EventType, SchemaType } from './constants.js';
 import { BatchProcessingError } from './errors.js';
-import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
+import type {
+  BaseRecord,
+  EventSourceDataClassTypes,
+  FailureResponse,
+  SuccessResponse,
+} from './types.js';
 
 /**
  * Process records in a batch asynchronously and handle partial failure cases.
@@ -100,7 +113,11 @@ class BatchProcessor extends BasePartialBatchProcessor {
     record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
     try {
-      const data = this.toBatchType(record, this.eventType);
+      const recordToProcess =
+        this.schema == null
+          ? record
+          : await this.parseRecord(record, this.eventType, this.schema);
+      const data = this.toBatchType(recordToProcess, this.eventType);
       const result = await this.handler(data, this.options?.context);
 
       return this.successHandler(record, result);
@@ -120,6 +137,156 @@ class BatchProcessor extends BasePartialBatchProcessor {
     throw new BatchProcessingError(
       'Not implemented. Use asyncProcess() instead.'
     );
+  }
+
+  /**
+   * Create an extended schema according to the event type passed.
+   *
+   * If useTransformers is true, parsing with transformers
+   * else parse without transformers
+   *
+   * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
+   * @param schema The StandardSchema to be used for parsing
+   * @param useTransformers Whether to use transformers for parsing
+   */
+  private async createExtendedSchema(
+    eventType: keyof typeof EventType,
+    schema: StandardSchemaV1,
+    useTransformers: boolean
+  ) {
+    switch (eventType) {
+      case EventType.SQS: {
+        if (useTransformers) {
+          const [{ JSONStringified }, { SqsRecordSchema }] = await Promise.all([
+            import('@aws-lambda-powertools/parser/helpers'),
+            import('@aws-lambda-powertools/parser/schemas/sqs'),
+          ]);
+          return SqsRecordSchema.extend({
+            body: JSONStringified(schema as any),
+          });
+        }
+        const { SqsRecordSchema } = await import(
+          '@aws-lambda-powertools/parser/schemas/sqs'
+        );
+        return SqsRecordSchema.extend({ body: schema });
+      }
+
+      case EventType.KinesisDataStreams: {
+        if (useTransformers) {
+          const [
+            { Base64Encoded },
+            { KinesisDataStreamRecord, KinesisDataStreamRecordPayload },
+          ] = await Promise.all([
+            import('@aws-lambda-powertools/parser/helpers'),
+            import('@aws-lambda-powertools/parser/schemas/kinesis'),
+          ]);
+          return KinesisDataStreamRecord.extend({
+            kinesis: KinesisDataStreamRecordPayload.extend({
+              data: Base64Encoded(schema as any),
+            }),
+          });
+        }
+        const { KinesisDataStreamRecord, KinesisDataStreamRecordPayload } =
+          await import('@aws-lambda-powertools/parser/schemas/kinesis');
+        return KinesisDataStreamRecord.extend({
+          kinesis: KinesisDataStreamRecordPayload.extend({ data: schema }),
+        });
+      }
+
+      case EventType.DynamoDBStreams: {
+        if (useTransformers) {
+          const [
+            { DynamoDBMarshalled },
+            { DynamoDBStreamRecord, DynamoDBStreamChangeRecordBase },
+          ] = await Promise.all([
+            import('@aws-lambda-powertools/parser/helpers/dynamodb'),
+            import('@aws-lambda-powertools/parser/schemas/dynamodb'),
+          ]);
+          return DynamoDBStreamRecord.extend({
+            dynamodb: DynamoDBStreamChangeRecordBase.extend({
+              OldImage: DynamoDBMarshalled<StreamRecord['OldImage']>(
+                schema as any
+              ).optional(),
+              NewImage: DynamoDBMarshalled<StreamRecord['NewImage']>(
+                schema as any
+              ).optional(),
+            }),
+          });
+        }
+        const { DynamoDBStreamRecord, DynamoDBStreamChangeRecordBase } =
+          await import('@aws-lambda-powertools/parser/schemas/dynamodb');
+        return DynamoDBStreamRecord.extend({
+          dynamodb: DynamoDBStreamChangeRecordBase.extend({
+            OldImage: (schema as any).optional(),
+            NewImage: (schema as any).optional(),
+          }),
+        });
+      }
+
+      default: {
+        console.warn(
+          `The event type provided is not supported. Supported events: ${Object.values(EventType).join(',')}`
+        );
+        throw new Error('Unsupported event type');
+      }
+    }
+  }
+
+  /**
+   * Parse the record according to the schema passed.
+   *
+   * If the passed schema is already an extended schema,
+   * it directly uses the schema to parse the record
+   *
+   * Only Zod Schemas are supported for automatic schema extension
+   *
+   * @param record The record to be parsed
+   * @param eventType The type of event to process
+   * @param schema The StandardSchema to be used for parsing
+   */
+  private async parseRecord(
+    record: EventSourceDataClassTypes,
+    eventType: keyof typeof EventType,
+    schema: StandardSchemaV1
+  ): Promise<EventSourceDataClassTypes> {
+    const { parse } = await import('@aws-lambda-powertools/parser');
+    // Try parsing with the original schema first
+    const extendedSchemaParsing = parse(record, undefined, schema, true);
+    if (extendedSchemaParsing.success) {
+      return extendedSchemaParsing.data as EventSourceDataClassTypes;
+    }
+    // Only proceed with schema extension if it's a Zod schema
+    if (schema['~standard'].vendor !== SchemaType.Zod) {
+      console.warn(
+        'The schema provided is not supported. Only Zod schemas are supported for extension.'
+      );
+      throw new Error('Unsupported schema type');
+    }
+    // Handle schema extension based on event type
+    try {
+      // Try without transformers first, then with transformers
+      const extendedSchemaWithoutTransformers = await this.createExtendedSchema(
+        eventType,
+        schema,
+        false
+      );
+      return parse(
+        record,
+        undefined,
+        extendedSchemaWithoutTransformers
+      ) as EventSourceDataClassTypes;
+    } catch {
+      const extendedSchemaWithTransformers = await this.createExtendedSchema(
+        eventType,
+        schema,
+        true
+      );
+      return parse(
+        record,
+        undefined,
+        extendedSchemaWithTransformers
+      ) as EventSourceDataClassTypes;
+    }
   }
 }
 

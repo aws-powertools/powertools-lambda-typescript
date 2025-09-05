@@ -2,8 +2,11 @@ import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import type {
   CompiledRoute,
+  HandlerResponse,
   HttpMethod,
+  Middleware,
   Path,
+  RequestOptions,
   ValidationResult,
 } from '../types/rest.js';
 import {
@@ -104,4 +107,40 @@ export const isAPIGatewayProxyResult = (
     (result.isBase64Encoded === undefined ||
       typeof result.isBase64Encoded === 'boolean')
   );
+};
+
+export const composeMiddleware = (middlewares: Middleware[]): Middleware => {
+  return async (
+    params: Record<string, string>,
+    options: RequestOptions,
+    next: () => Promise<HandlerResponse | void>
+  ): Promise<HandlerResponse | void> => {
+    let index = -1;
+    let result: HandlerResponse | undefined;
+
+    const dispatch = async (i: number): Promise<void> => {
+      if (i <= index) throw new Error('next() called multiple times');
+      index = i;
+
+      if (i === middlewares.length) {
+        const nextResult = await next();
+        if (nextResult !== undefined) {
+          result = nextResult;
+        }
+        return;
+      }
+
+      const middleware = middlewares[i];
+      const middlewareResult = await middleware(params, options, () =>
+        dispatch(i + 1)
+      );
+
+      if (middlewareResult !== undefined) {
+        result = middlewareResult;
+      }
+    };
+
+    await dispatch(0);
+    return result;
+  };
 };

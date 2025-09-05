@@ -10,6 +10,7 @@ import type {
   ErrorHandler,
   ErrorResolveOptions,
   HttpMethod,
+  Middleware,
   Path,
   RouteHandler,
   RouteOptions,
@@ -30,13 +31,18 @@ import {
 } from './errors.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
-import { isAPIGatewayProxyEvent, isHttpMethod } from './utils.js';
+import {
+  composeMiddleware,
+  isAPIGatewayProxyEvent,
+  isHttpMethod,
+} from './utils.js';
 
 abstract class BaseRouter {
   protected context: Record<string, unknown>;
 
   protected readonly routeRegistry: RouteHandlerRegistry;
   protected readonly errorHandlerRegistry: ErrorHandlerRegistry;
+  protected readonly middlwares: Middleware[] = [];
 
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
@@ -140,6 +146,10 @@ abstract class BaseRouter {
     };
   }
 
+  public use(middleware: Middleware): void {
+    this.middlwares.push(middleware);
+  }
+
   /**
    * Resolves an API Gateway event by routing it to the appropriate handler
    * and converting the result to an API Gateway proxy result. Handles errors
@@ -185,14 +195,24 @@ abstract class BaseRouter {
         throw new NotFoundError(`Route ${path} for method ${method} not found`);
       }
 
-      const result = await route.handler.apply(options?.scope ?? this, [
+      const handler =
+        options?.scope != null
+          ? route.handler.bind(options.scope)
+          : route.handler;
+
+      const middleware = composeMiddleware([...this.middlwares]);
+
+      const result = await middleware(
         route.params,
         {
           event,
           context,
           request,
         },
-      ]);
+        () => handler(route.params, { event, context, request })
+      );
+
+      if (result === undefined) throw new InternalServerError();
 
       return await handlerResultToProxyResult(result);
     } catch (error) {

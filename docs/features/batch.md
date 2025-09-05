@@ -31,9 +31,9 @@ stateDiagram-v2
 
 ## Key features
 
-- Reports batch item failures to reduce number of retries for a record upon errors
-- Simple interface to process each batch record
-- Build your own batch processor by extending primitives
+* Reports batch item failures to reduce number of retries for a record upon errors
+* Simple interface to process each batch record
+* Build your own batch processor by extending primitives
 
 ## Background
 
@@ -51,14 +51,13 @@ journey
 
 This behavior changes when you enable the [ReportBatchItemFailures feature](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-batchfailurereporting) in your Lambda function event source configuration:
 
-- [**SQS queues**](#sqs-standard). Only messages reported as failure will return to the queue for a retry, while successful ones will be deleted.
-- [**Kinesis data streams**](#kinesis-and-dynamodb-streams) and [**DynamoDB streams**](#kinesis-and-dynamodb-streams). Single reported failure will use its sequence number as the stream checkpoint. Multiple reported failures will use the lowest sequence number as checkpoint.
+* [**SQS queues**](#sqs-standard). Only messages reported as failure will return to the queue for a retry, while successful ones will be deleted.
+* [**Kinesis data streams**](#kinesis-and-dynamodb-streams) and [**DynamoDB streams**](#kinesis-and-dynamodb-streams). Single reported failure will use its sequence number as the stream checkpoint. Multiple  reported failures will use the lowest sequence number as checkpoint.
 
 <!-- HTML tags are required in admonition content thus increasing line length beyond our limits -->
 <!-- markdownlint-disable MD013 -->
-
 ???+ warning "Warning: This utility lowers the chance of processing records more than once; it does not guarantee it"
-We recommend implementing processing logic in an [idempotent manner](./idempotency.md){target="\_blank"} whenever possible.
+    We recommend implementing processing logic in an [idempotent manner](./idempotency.md){target="_blank"} whenever possible.
 
     You can find more details on how Lambda works with either [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html){target="_blank"}, [Kinesis](https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html){target="_blank"}, or [DynamoDB](https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html){target="_blank"} in the AWS Documentation.
 
@@ -109,7 +108,7 @@ Processing batches from SQS works in three stages:
 3. Use **`processPartialResponse`** to kick off processing
 
 !!! note
-By default, the batch processor will process messages in parallel, which does not guarantee the order of processing. If you need to process messages in order, set the [`processInParallel` option to `false`](#sequential-processing), or use [`SqsFifoPartialProcessor` for SQS FIFO queues](#fifo-queues).
+    By default, the batch processor will process messages in parallel, which does not guarantee the order of processing. If you need to process messages in order, set the [`processInParallel` option to `false`](#sequential-processing), or use [`SqsFifoPartialProcessor` for SQS FIFO queues](#fifo-queues).
 
 === "index.ts"
 
@@ -123,7 +122,7 @@ By default, the batch processor will process messages in parallel, which does no
 
     1.  **Step 1**. Creates a partial failure batch processor for SQS queues. See [partial failure mechanics for details](#partial-failure-mechanics)
     2.  **Step 2**. Defines a function to receive one record at a time from the batch
-    3.  **Step 3**. Kicks off processing
+    3.  **Step 3**. Kicks off processing   
 
 === "Sample response"
 
@@ -141,7 +140,7 @@ By default, the batch processor will process messages in parallel, which does no
 
 #### FIFO queues
 
-When using [SQS FIFO queues](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fifo-queues.html){target="\_blank"}, a batch may include messages from different group IDs.
+When using [SQS FIFO queues](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fifo-queues.html){target="_blank"}, a batch may include messages from different group IDs.
 
 By default, we will stop processing at the first failure and mark unprocessed messages as failed to preserve ordering. However, this behavior may not be optimal for customers who wish to proceed with processing messages from a different group ID.
 
@@ -198,7 +197,7 @@ Processing batches from DynamoDB Streams works in three stages:
 3. Use **`processPartialResponse`** to kick off processing
 
 ???+ info
-This code example optionally uses Logger for completion.
+    This code example optionally uses Logger for completion.
 
 === "index.ts"
 
@@ -224,7 +223,7 @@ This code example optionally uses Logger for completion.
 
 ### Error handling
 
-By default, we catch any exception raised by your record handler function. This allows us to **(1)** continue processing the batch, **(2)** collect each batch item that failed processing, and **(3)** return the appropriate response correctly without failing your Lambda function execution.
+By default, we catch any exception raised by your record handler function. This allows us to **(1)** continue processing the batch, **(2)** collect each batch item that failed processing, and **(3)** return the appropriate  response correctly without failing your Lambda function execution.
 
 === "Sample error handling with custom exception"
 
@@ -250,15 +249,15 @@ By default, we catch any exception raised by your record handler function. This 
 
 All records in the batch will be passed to this handler for processing, even if exceptions are thrown - Here's the behaviour after completing the batch:
 
-- **All records successfully processed**. We will return an empty list of item failures `{'batchItemFailures': []}`
-- **Partial success with some exceptions**. We will return a list of all item IDs/sequence numbers that failed processing
-- **All records failed to be processed**. We will throw a `FullBatchFailureError` error with a list of all the errors thrown while processing unless `throwOnFullBatchFailure` is disabled.
+* **All records successfully processed**. We will return an empty list of item failures `{'batchItemFailures': []}`
+* **Partial success with some exceptions**. We will return a list of all item IDs/sequence numbers that failed processing
+* **All records failed to be processed**. We will throw a `FullBatchFailureError` error with a list of all the errors thrown while processing unless `throwOnFullBatchFailure` is disabled.
 
 The following sequence diagrams explain how each Batch processor behaves under different scenarios.
 
 #### SQS Standard
 
-> Read more about [Batch Failure Reporting feature in AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting){target="\_blank"}.
+> Read more about [Batch Failure Reporting feature in AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting){target="_blank"}.
 
 Sequence diagram to explain how [`BatchProcessor` works](#processing-messages-from-sqs) with SQS Standard queues.
 
@@ -283,7 +282,7 @@ sequenceDiagram
 
 #### SQS FIFO
 
-> Read more about [Batch Failure Reporting feature in AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting){target="\_blank"}.
+> Read more about [Batch Failure Reporting feature in AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting){target="_blank"}.
 
 Sequence diagram to explain how [`SqsFifoPartialProcessor` works](#fifo-queues) with SQS FIFO queues without `skipGroupOnError` flag.
 
@@ -336,11 +335,11 @@ sequenceDiagram
 
 #### Kinesis and DynamoDB Streams
 
-> Read more about [Batch Failure Reporting feature](https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-batchfailurereporting){target="\_blank"}.
+> Read more about [Batch Failure Reporting feature](https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-batchfailurereporting){target="_blank"}.
 
 Sequence diagram to explain how `BatchProcessor` works with both [Kinesis Data Streams](#processing-messages-from-kinesis) and [DynamoDB Streams](#processing-messages-from-dynamodb).
 
-For brevity, we will use `Streams` to refer to either services. For theory on stream checkpoints, see this [blog post](https://aws.amazon.com/blogs/compute/optimizing-batch-processing-with-custom-checkpoints-in-aws-lambda/){target="\_blank"}
+For brevity, we will use `Streams` to refer to either services. For theory on stream checkpoints, see this [blog post](https://aws.amazon.com/blogs/compute/optimizing-batch-processing-with-custom-checkpoints-in-aws-lambda/){target="_blank"}
 
 <center>
 ```mermaid
@@ -522,11 +521,11 @@ If you want to have full control and optimize the flow, you can pass an extended
 
 Use the `BatchProcessor` directly in your function to access a list of all returned values from your `recordHandler` function.
 
-- **When successful**. We will include a tuple with `success`, the result of `recordHandler`, and the batch record
-- **When failed**. We will include a tuple with `fail`, exception as a string, and the batch record
+* **When successful**. We will include a tuple with `success`, the result of `recordHandler`, and the batch record
+* **When failed**. We will include a tuple with `fail`, exception as a string, and the batch record
 
 ```typescript hl_lines="17 19-20 23 28" title="Accessing processed messages"
---8 < --"examples/snippets/batch/accessProcessedMessages.ts";
+--8<-- "examples/snippets/batch/accessProcessedMessages.ts"
 ```
 
 1. The processor requires the records array. This is typically handled by `processPartialResponse`.
@@ -536,22 +535,22 @@ Use the `BatchProcessor` directly in your function to access a list of all retur
 
 Within your `recordHandler` function, you might need access to the Lambda context to determine how much time you have left before your function times out.
 
-We can automatically inject the [Lambda context](https://docs.aws.amazon.com/lambda/latest/dg/typescript-context.html){target="\_blank"} into your `recordHandler` as optional second argument if you pass it to the `processPartialResponse` function.
+We can automatically inject the [Lambda context](https://docs.aws.amazon.com/lambda/latest/dg/typescript-context.html){target="_blank"} into your `recordHandler` as optional second argument if you pass it to the `processPartialResponse` function.
 
 ```typescript hl_lines="12 27"
---8 < --"examples/snippets/batch/accessLambdaContext.ts";
+--8<-- "examples/snippets/batch/accessLambdaContext.ts"
 ```
 
 ### Working with full batch failures
 
 By default, the `BatchProcessor` will throw a `FullBatchFailureError` if all records in the batch fail to process, we do this to reflect the failure in your operational metrics.
 
-When working with functions that handle batches with a small number of records, or when you use errors as a flow control mechanism, this behavior might not be desirable as your function might generate an unnaturally high number of errors. When this happens, the [Lambda service will scale down the concurrency of your function](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-backoff-strategy){target="\_blank"}, potentially impacting performance.
+When working with functions that handle batches with a small number of records, or when you use errors as a flow control mechanism, this behavior might not be desirable as your function might generate an unnaturally high number of errors. When this happens, the [Lambda service will scale down the concurrency of your function](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-backoff-strategy){target="_blank"}, potentially impacting performance.
 
 For these scenarios, you can set the `throwOnFullBatchFailure` option to `false` when calling.
 
 ```typescript hl_lines="17"
---8 < --"examples/snippets/batch/noThrowOnFullBatchFailure.ts";
+--8<-- "examples/snippets/batch/noThrowOnFullBatchFailure.ts"
 ```
 
 ### Extending BatchProcessor
@@ -560,13 +559,13 @@ You might want to bring custom logic to the existing `BatchProcessor` to slightl
 
 For these scenarios, you can subclass `BatchProcessor` and quickly override `successHandler` and `failureHandler` methods:
 
-- **`successHandler()`** – Keeps track of successful batch records
-- **`failureHandler()`** – Keeps track of failed batch records
+* **`successHandler()`** – Keeps track of successful batch records
+* **`failureHandler()`** – Keeps track of failed batch records
 
 Let's suppose you'd like to add a metric named `BatchRecordFailures` for each batch record that failed processing
 
 ```typescript hl_lines="3 15 19 26 32" title="Extending failure handling mechanism in BatchProcessor"
---8 < --"examples/snippets/batch/extendingFailure.ts";
+--8<-- "examples/snippets/batch/extendingFailure.ts"
 ```
 
 ### Sequential processing
@@ -578,7 +577,7 @@ By default, the `BatchProcessor` processes records in parallel using `Promise.al
 When processing records from SQS FIFO queues, we recommend using the [`SqsFifoPartialProcessor`](#fifo-queues) class, which guarantees ordering of records and implements a short-circuit mechanism to skip processing records from a different message group ID.
 
 ```typescript hl_lines="8 17" title="Sequential processing"
---8 < --"examples/snippets/batch/sequentialAsyncProcessing.ts";
+--8<-- "examples/snippets/batch/sequentialAsyncProcessing.ts"
 ```
 
 ### Create your own partial processor
@@ -607,15 +606,15 @@ classDiagram
 <i>Visual representation to bring your own processor</i>
 </center>
 
-- **`prepare()`** – called once as part of the processor initialization
-- **`clean()`** – teardown logic called once after `processRecord` completes
-- **`processRecord()`** – If you need to implement asynchronous logic, use this method, otherwise define it in your class with empty logic
-- **`processRecordSync()`** – handles all processing logic for each individual message of a batch, including calling the `recordHandler` (`this.handler`)
+* **`prepare()`** – called once as part of the processor initialization
+* **`clean()`** – teardown logic called once after `processRecord` completes
+* **`processRecord()`** – If you need to implement asynchronous logic, use this method, otherwise define it in your class with empty logic
+* **`processRecordSync()`** – handles all processing logic for each individual message of a batch, including calling the `recordHandler` (`this.handler`)
 
 You can then pass this class to `processPartialResponse` to process the records in your Lambda handler function.
 
 ```typescript hl_lines="21 35 55 60 72 85" title="Creating a custom batch processor"
---8 < --"examples/snippets/batch/customPartialProcessor.ts";
+--8<-- "examples/snippets/batch/customPartialProcessor.ts"
 ```
 
 ## Tracing with AWS X-Ray
@@ -623,7 +622,7 @@ You can then pass this class to `processPartialResponse` to process the records 
 You can use Tracer to create subsegments for each batch record processed. To do so, you can open a new subsegment for each record, and close it when you're done processing it. When adding annotations and metadata to the subsegment, you can do so directly without calling `tracer.setSegment(subsegment)`. This allows you to work with the subsegment directly and avoid having to either pass the parent subsegment around or have to restore the parent subsegment at the end of the record processing.
 
 ```typescript
---8 < --"examples/snippets/batch/advancedTracingRecordHandler.ts";
+--8<-- "examples/snippets/batch/advancedTracingRecordHandler.ts"
 ```
 
 1. Retrieve the current segment, then create a subsegment for the record being processed

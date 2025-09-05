@@ -393,6 +393,130 @@ sequenceDiagram
 
 ## Advanced
 
+### Parser integration
+
+You can define your own schema to parse your batch record payload via the **`schema`** parameter when initializing the **`BatchProcessor`**.
+
+#### Using inner payload schema
+
+You can just define the schema of your internal payload and we will handle the parsing for you depending on the type of event that you are using.
+
+=== "SQS - using inner payload"
+
+    ```typescript hl_lines="9-12 14 17"
+    --8<-- "examples/snippets/batch/parser-integration/sqsWithoutTransformer.ts"
+    ```
+
+=== "SQS - Sample Event"
+
+    ```json hl_lines="6 22"
+    --8<-- "examples/snippets/batch/samples/sampleSQSEventForParser.json"
+    ```
+
+=== "Kinesis Data Streams - using inner payload"
+
+    ```typescript hl_lines="9-12 14 17"
+    --8<-- "examples/snippets/batch/parser-integration/kinesisWithoutTransformer.ts"
+    ```
+
+=== "Kinesis - Sample Event"
+
+    ```json hl_lines="6 22"
+    --8<-- "examples/snippets/batch/samples/sampleKinesisEventForParser.json"
+    ```
+
+=== "DynamoDB Streams - using inner payload"
+
+    ```typescript hl_lines="9-12 14 17"
+    --8<-- "examples/snippets/batch/parser-integration/dynamodbWithoutTransformer.ts"
+    ```
+
+=== "DynamoDB - Sample Event"
+
+    ```json hl_lines="13-18 39-44"
+    --8<-- "examples/snippets/batch/samples/sampleDynamoDBStreamsEventForParser.json"
+    ```
+
+#### Controlling the transformer
+
+If you want more control over the transformer used for parsing the inner payload, you can provide your own transform helper function.
+
+=== "SQS - using custom transformer"
+
+    ```typescript hl_lines="10-13 15 18"
+    --8<-- "examples/snippets/batch/parser-integration/sqsWithTransformer.ts"
+    ```
+
+=== "SQS - Sample Event"
+
+    ```json hl_lines="6 22"
+    --8<-- "examples/snippets/batch/samples/sampleSQSEventForParser.json"
+    ```
+
+=== "Kinesis Data Streams - using custom transformer"
+
+    ```typescript hl_lines="10-13 15 18"
+    --8<-- "examples/snippets/batch/parser-integration/kinesisWithTransformer.ts"
+    ```
+
+=== "Kinesis - Sample Event"
+
+    ```json hl_lines="6 22"
+    --8<-- "examples/snippets/batch/samples/sampleKinesisEventForParser.json"
+    ```
+
+=== "DynamoDB Streams - using custom transformer"
+
+    ```typescript hl_lines="10-13 15 18"
+    --8<-- "examples/snippets/batch/parser-integration/dynamodbWithTransformer.ts"
+    ```
+
+=== "DynamoDB - Sample Event"
+
+    ```json hl_lines="13-18 39-44"
+    --8<-- "examples/snippets/batch/samples/sampleDynamoDBStreamsEventForParser.json"
+    ```
+
+#### Extending the schema yourself
+
+If you want to have full control and optimize the flow, you can pass an extended schema with any transformers you need.
+
+=== "SQS - using extended schema"
+
+    ```typescript hl_lines="11-16 18 21"
+    --8<-- "examples/snippets/batch/parser-integration/sqsExtended.ts"
+    ```
+
+=== "SQS - Sample Event"
+
+    ```json hl_lines="6 22"
+    --8<-- "examples/snippets/batch/samples/sampleSQSEventForParser.json"
+    ```
+
+=== "Kinesis Data Streams - using extended schema"
+
+    ```typescript hl_lines="11-18 20 23"
+    --8<-- "examples/snippets/batch/parser-integration/kinesisExtended.ts"
+    ```
+
+=== "Kinesis - Sample Event"
+
+    ```json hl_lines="6 22"
+    --8<-- "examples/snippets/batch/samples/sampleKinesisEventForParser.json"
+    ```
+
+=== "DynamoDB Streams - using extended schema"
+
+    ```typescript hl_lines="11-20 22 25"
+    --8<-- "examples/snippets/batch/parser-integration/dynamodbExtended.ts"
+    ```
+
+=== "DynamoDB - Sample Event"
+
+    ```json hl_lines="13-18 39-44"
+    --8<-- "examples/snippets/batch/samples/sampleDynamoDBStreamsEventForParser.json"
+    ```
+
 ### Accessing processed messages
 
 Use the `BatchProcessor` directly in your function to access a list of all returned values from your `recordHandler` function.

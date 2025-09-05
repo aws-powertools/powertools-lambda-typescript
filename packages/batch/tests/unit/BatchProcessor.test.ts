@@ -3,8 +3,22 @@ import {
   JSONStringified,
 } from '@aws-lambda-powertools/parser/helpers';
 import { DynamoDBMarshalled } from '@aws-lambda-powertools/parser/helpers/dynamodb';
+import {
+  KinesisDataStreamRecord,
+  SqsRecordSchema,
+} from '@aws-lambda-powertools/parser/schemas';
+import {
+  DynamoDBStreamChangeRecordBase,
+  DynamoDBStreamRecord,
+} from '@aws-lambda-powertools/parser/schemas/dynamodb';
+import { KinesisDataStreamRecordPayload } from '@aws-lambda-powertools/parser/schemas/kinesis';
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { Context, SQSRecord } from 'aws-lambda';
+import type {
+  Context,
+  DynamoDBRecord,
+  KinesisStreamRecord,
+  SQSRecord,
+} from 'aws-lambda';
 import * as v from 'valibot';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
@@ -294,1012 +308,334 @@ describe('Class: AsyncBatchProcessor', () => {
     expect(() => processor.processSync()).toThrowError(BatchProcessingError);
   });
 
-  it('completes processing with failures if an unsupported event type is used for parsing', async () => {
-    // Prepare
+  describe('Batch processing with Parser Integration', () => {
     const customSchema = z.object({
-      name: z.string(),
-      age: z.number(),
+      Message: z.string(),
     });
-    const customObject1 = {
-      name: 'test-1',
-      age: 20,
+    const successPayload1 = {
+      Message: 'test-1',
     };
-    const customObject2 = {
-      name: 'test-2',
-      age: 'invalid-age',
+    const successPayload2 = {
+      Message: 'test-2',
     };
-    const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-    const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-    const records = [firstRecord, secondRecord];
-    //@ts-expect-error
-    const processor = new BatchProcessor('invalid-event-type', {
-      schema: customSchema,
-    });
-
-    // Act
-    processor.register(
-      records,
-      async (
-        customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-      ) => {
-        return customObject.body;
+    const failurePayload1 = {
+      Message: 1,
+    };
+    const failurePayload2 = {
+      Message: 2,
+    };
+    const sqsRecordHandler = async (parsedRecord: SQSRecord) => {
+      return parsedRecord.body;
+    };
+    const kinesisRecordHandler = async (parsedRecord: KinesisStreamRecord) => {
+      return parsedRecord.kinesis.data;
+    };
+    const dynamodbRecordHandler = async (parsedRecord: DynamoDBRecord) => {
+      return parsedRecord.dynamodb?.NewImage;
+    };
+    const cases = [
+      {
+        description: 'passing Extended Schema',
+        SQS: {
+          schema: SqsRecordSchema.extend({
+            body: JSONStringified(customSchema),
+          }),
+        },
+        Kinesis: {
+          schema: KinesisDataStreamRecord.extend({
+            kinesis: KinesisDataStreamRecordPayload.extend({
+              data: Base64Encoded(customSchema).optional(),
+            }),
+          }),
+        },
+        DynamoDB: {
+          schema: DynamoDBStreamRecord.extend({
+            dynamodb: DynamoDBStreamChangeRecordBase.extend({
+              NewImage: DynamoDBMarshalled(customSchema).optional(),
+            }),
+          }),
+        },
       },
-      options
-    );
-
-    // Assess
-    await expect(processor.process()).rejects.toThrowError(
-      FullBatchFailureError
-    );
-  });
-
-  it('completes processing with failures if an unsupported schema type is used for parsing', async () => {
-    // Prepare
-    const customSchema = v.object({
-      name: v.string(),
-      age: v.number(),
-    });
-    const customObject1 = {
-      name: 'test-1',
-      age: 20,
-    };
-    const customObject2 = {
-      name: 'test-2',
-      age: 'invalid-age',
-    };
-    const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-    const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-    const records = [firstRecord, secondRecord];
-    const processor = new BatchProcessor(EventType.SQS, {
-      schema: customSchema,
-    });
-
-    // Act
-    processor.register(
-      records,
-      async (customObject: SQSRecord) => {
-        return customObject.body;
+      {
+        description: 'passing Internal Schema without transformers',
+        SQS: {
+          schema: customSchema,
+        },
+        Kinesis: {
+          schema: customSchema,
+        },
+        DynamoDB: {
+          schema: customSchema,
+        },
       },
-      options
+      {
+        description: 'passing Internal Schema with transformers',
+        SQS: {
+          schema: JSONStringified(customSchema),
+        },
+        Kinesis: {
+          schema: Base64Encoded(customSchema),
+        },
+        DynamoDB: {
+          schema: DynamoDBMarshalled(customSchema),
+        },
+      },
+    ];
+    describe.each(cases)('SQS Record Schema $description', ({ SQS }) => {
+      it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
+        // Prepare
+        const firstRecord = sqsRecordFactory(JSON.stringify(successPayload1));
+        const secondRecord = sqsRecordFactory(JSON.stringify(successPayload2));
+        const records = [firstRecord, secondRecord];
+        const processor = new BatchProcessor(EventType.SQS, {
+          schema: SQS.schema,
+        });
+
+        // Act
+        processor.register(records, sqsRecordHandler, options);
+        const processedMessages = await processor.process();
+
+        // Assess
+        expect(processedMessages).toStrictEqual([
+          ['success', successPayload1, firstRecord],
+          ['success', successPayload2, secondRecord],
+        ]);
+      });
+
+      it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+        // Prepare
+        const firstRecord = sqsRecordFactory(JSON.stringify(successPayload1));
+        const secondRecord = sqsRecordFactory(JSON.stringify(failurePayload1));
+        const records = [firstRecord, secondRecord];
+        const processor = new BatchProcessor(EventType.SQS, {
+          schema: SQS.schema,
+        });
+
+        // Act
+        processor.register(records, sqsRecordHandler, options);
+        const processedMessages = await processor.process();
+
+        // Assess
+        expect(processedMessages[0]).toStrictEqual([
+          'success',
+          successPayload1,
+          firstRecord,
+        ]);
+        expect(processor.failureMessages.length).toBe(1);
+        expect(processor.response()).toStrictEqual({
+          batchItemFailures: [{ itemIdentifier: secondRecord.messageId }],
+        });
+      });
+
+      it('completes processing with all failures if all the payload does not match the passed schema', async () => {
+        // Prepare
+        const firstRecord = sqsRecordFactory(JSON.stringify(failurePayload1));
+        const secondRecord = sqsRecordFactory(JSON.stringify(failurePayload2));
+
+        const records = [firstRecord, secondRecord];
+        const processor = new BatchProcessor(EventType.SQS, {
+          schema: SQS.schema,
+        });
+
+        // Act
+        processor.register(records, sqsRecordHandler, options);
+
+        // Assess
+        await expect(processor.process()).rejects.toThrowError(
+          FullBatchFailureError
+        );
+      });
+    });
+
+    describe.each(cases)(
+      'Kinesis Record Schema $description',
+      ({ Kinesis }) => {
+        it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
+          // Prepare
+          const firstRecord = kinesisRecordFactory(
+            Buffer.from(JSON.stringify(successPayload1)).toString('base64')
+          );
+          const secondRecord = kinesisRecordFactory(
+            Buffer.from(JSON.stringify(successPayload2)).toString('base64')
+          );
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.KinesisDataStreams, {
+            schema: Kinesis.schema,
+          });
+
+          // Act
+          processor.register(records, kinesisRecordHandler, options);
+          const processedMessages = await processor.process();
+
+          // Assess
+          expect(processedMessages).toStrictEqual([
+            ['success', successPayload1, firstRecord],
+            ['success', successPayload2, secondRecord],
+          ]);
+        });
+
+        it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+          // Prepare
+          const firstRecord = kinesisRecordFactory(
+            Buffer.from(JSON.stringify(successPayload1)).toString('base64')
+          );
+          const secondRecord = kinesisRecordFactory(
+            Buffer.from(JSON.stringify(failurePayload1)).toString('base64')
+          );
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.KinesisDataStreams, {
+            schema: Kinesis.schema,
+          });
+
+          // Act
+          processor.register(records, kinesisRecordHandler, options);
+          const processedMessages = await processor.process();
+
+          // Assess
+          expect(processedMessages[0]).toStrictEqual([
+            'success',
+            successPayload1,
+            firstRecord,
+          ]);
+          expect(processor.failureMessages.length).toBe(1);
+          expect(processor.response()).toStrictEqual({
+            batchItemFailures: [
+              { itemIdentifier: secondRecord.kinesis.sequenceNumber },
+            ],
+          });
+        });
+
+        it('completes processing with all failures if all the payload does not match the passed schema', async () => {
+          // Prepare
+          const firstRecord = kinesisRecordFactory(
+            Buffer.from(JSON.stringify(failurePayload1)).toString('base64')
+          );
+          const secondRecord = kinesisRecordFactory(
+            Buffer.from(JSON.stringify(failurePayload2)).toString('base64')
+          );
+
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.KinesisDataStreams, {
+            schema: Kinesis.schema,
+          });
+
+          // Act
+          processor.register(records, sqsRecordHandler, options);
+
+          // Assess
+          await expect(processor.process()).rejects.toThrowError(
+            FullBatchFailureError
+          );
+        });
+      }
     );
 
-    // Assess
-    await expect(processor.process()).rejects.toThrowError(
-      FullBatchFailureError
+    describe.each(cases)(
+      'DynamoDB Record Schema $description',
+      ({ DynamoDB }) => {
+        it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
+          // Prepare
+          const firstRecord = dynamodbRecordFactory(successPayload1.Message);
+          const secondRecord = dynamodbRecordFactory(successPayload2.Message);
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.DynamoDBStreams, {
+            schema: DynamoDB.schema,
+          });
+
+          // Act
+          processor.register(records, dynamodbRecordHandler, options);
+          const processedMessages = await processor.process();
+
+          // Assess
+          expect(processedMessages).toStrictEqual([
+            ['success', successPayload1, firstRecord],
+            ['success', successPayload2, secondRecord],
+          ]);
+        });
+
+        it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+          // Prepare
+          const firstRecord = dynamodbRecordFactory(successPayload1.Message);
+          //@ts-expect-error Passing an invalid payload for testing
+          const secondRecord = dynamodbRecordFactory(failurePayload1.Message);
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.DynamoDBStreams, {
+            schema: DynamoDB.schema,
+          });
+
+          // Act
+          processor.register(records, dynamodbRecordHandler, options);
+          const processedMessages = await processor.process();
+
+          // Assess
+          expect(processedMessages[0]).toStrictEqual([
+            'success',
+            successPayload1,
+            firstRecord,
+          ]);
+          expect(processor.failureMessages.length).toBe(1);
+          expect(processor.response()).toStrictEqual({
+            batchItemFailures: [
+              { itemIdentifier: secondRecord.dynamodb?.SequenceNumber },
+            ],
+          });
+        });
+
+        it('completes processing with all failures if all the payload does not match the passed schema', async () => {
+          // Prepare
+          //@ts-expect-error Passing an invalid payload for testing
+          const firstRecord = dynamodbRecordFactory(failurePayload1.Message);
+          //@ts-expect-error Passing an invalid payload for testing
+          const secondRecord = dynamodbRecordFactory(failurePayload2.Message);
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.DynamoDBStreams, {
+            schema: DynamoDB.schema,
+          });
+
+          // Act
+          processor.register(records, dynamodbRecordHandler, options);
+
+          // Assess
+          await expect(processor.process()).rejects.toThrowError(
+            FullBatchFailureError
+          );
+        });
+      }
     );
-  });
 
-  describe('Batch processing with Parser Integration: Passing Extended SQS Record Schema', () => {
-    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+    it('completes processing with all failures if an unsupported event type is used for parsing', async () => {
       // Prepare
-      const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
-      });
-      const { JSONStringified } = await import(
-        '@aws-lambda-powertools/parser/helpers'
-      );
-      const { SqsRecordSchema } = await import(
-        '@aws-lambda-powertools/parser/schemas/sqs'
-      );
-      const extendedSchema = SqsRecordSchema.extend({
-        body: JSONStringified(customSchema),
-      });
-      const customObject1 = {
-        name: 'test-1',
-        age: 20,
-      };
-      const customObject2 = {
-        name: 'test-2',
-        age: 'invalid-age',
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+      const firstRecord = sqsRecordFactory(JSON.stringify(successPayload1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(successPayload2));
       const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
-        schema: extendedSchema,
+      //@ts-expect-error
+      const processor = new BatchProcessor('invalid-event-type', {
+        schema: customSchema,
       });
 
       // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages[0]).toStrictEqual([
-        'success',
-        customObject1,
-        firstRecord,
-      ]);
-      expect(processor.failureMessages.length).toBe(1);
-      expect(processor.response()).toStrictEqual({
-        batchItemFailures: [{ itemIdentifier: secondRecord.messageId }],
-      });
-    });
-
-    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-      // Prepare
-      const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
-      });
-      const { JSONStringified } = await import(
-        '@aws-lambda-powertools/parser/helpers'
-      );
-      const { SqsRecordSchema } = await import(
-        '@aws-lambda-powertools/parser/schemas/sqs'
-      );
-      const extendedSchema = SqsRecordSchema.extend({
-        body: JSONStringified(customSchema),
-      });
-      const customObject1 = {
-        name: 'test-1',
-        age: 20,
-      };
-      const customObject2 = {
-        name: 'test-2',
-        age: 30,
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
-        schema: extendedSchema,
-      });
-
-      // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages).toStrictEqual([
-        ['success', customObject1, firstRecord],
-        ['success', customObject2, secondRecord],
-      ]);
-    });
-
-    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
-      });
-      const { JSONStringified } = await import(
-        '@aws-lambda-powertools/parser/helpers'
-      );
-      const { SqsRecordSchema } = await import(
-        '@aws-lambda-powertools/parser/schemas/sqs'
-      );
-      const extendedSchema = SqsRecordSchema.extend({
-        body: JSONStringified(customSchema),
-      });
-      const customObject1 = {
-        name: 'test-1',
-        age: 'invalid-age',
-      };
-      const customObject2 = {
-        name: 20,
-        age: 30,
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
-        schema: extendedSchema,
-      });
-
-      // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
+      processor.register(records, sqsRecordHandler, options);
 
       // Assess
       await expect(processor.process()).rejects.toThrowError(
         FullBatchFailureError
       );
     });
-  });
 
-  describe('Batch processing with Parser Integration: Passing Internal SQS Record Schema with transformers', () => {
-    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+    it('completes processing with failures if an unsupported schema type is used for parsing', async () => {
       // Prepare
-      const customSchema = JSONStringified(
-        z.object({
-          name: z.string(),
-          age: z.number(),
-        })
-      );
-      const customObject1 = {
-        name: 'test-1',
-        age: 20,
-      };
-      const customObject2 = {
-        name: 'test-2',
-        age: 'invalid-age',
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
+      const unsupportedSchema = v.object({
+        Message: v.string(),
+      });
+      const firstRecord = sqsRecordFactory(JSON.stringify(successPayload1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(successPayload2));
       const records = [firstRecord, secondRecord];
       const processor = new BatchProcessor(EventType.SQS, {
-        schema: customSchema,
+        schema: unsupportedSchema,
       });
 
       // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages[0]).toStrictEqual([
-        'success',
-        customObject1,
-        firstRecord,
-      ]);
-      expect(processor.failureMessages.length).toBe(1);
-      expect(processor.response()).toStrictEqual({
-        batchItemFailures: [{ itemIdentifier: secondRecord.messageId }],
-      });
-    });
-
-    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-      // Prepare
-      const customSchema = JSONStringified(
-        z.object({
-          name: z.string(),
-          age: z.number(),
-        })
-      );
-      const customObject1 = {
-        name: 'test-1',
-        age: 20,
-      };
-      const customObject2 = {
-        name: 'test-2',
-        age: 30,
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages).toStrictEqual([
-        ['success', customObject1, firstRecord],
-        ['success', customObject2, secondRecord],
-      ]);
-    });
-
-    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = JSONStringified(
-        z.object({
-          name: z.string(),
-          age: z.number(),
-        })
-      );
-      const customObject1 = {
-        name: 'test-1',
-        age: 'invalid-age',
-      };
-      const customObject2 = {
-        name: 20,
-        age: 30,
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
-
-      // Assess
-      await expect(processor.process()).rejects.toThrowError(
-        FullBatchFailureError
-      );
-    });
-  });
-
-  describe('Batch processing with Parser Integration: Passing Internal SQS Record Schema without transformers', () => {
-    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
-      });
-      const customObject1 = {
-        name: 'test-1',
-        age: 20,
-      };
-      const customObject2 = {
-        name: 'test-2',
-        age: 'invalid-age',
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages[0]).toStrictEqual([
-        'success',
-        customObject1,
-        firstRecord,
-      ]);
-      expect(processor.failureMessages.length).toBe(1);
-      expect(processor.response()).toStrictEqual({
-        batchItemFailures: [{ itemIdentifier: secondRecord.messageId }],
-      });
-    });
-
-    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-      // Prepare
-      const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
-      });
-      const customObject1 = {
-        name: 'test-1',
-        age: 20,
-      };
-      const customObject2 = {
-        name: 'test-2',
-        age: 30,
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages).toStrictEqual([
-        ['success', customObject1, firstRecord],
-        ['success', customObject2, secondRecord],
-      ]);
-    });
-
-    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.object({
-        name: z.string(),
-        age: z.number(),
-      });
-      const customObject1 = {
-        name: 'test-1',
-        age: 'invalid-age',
-      };
-      const customObject2 = {
-        name: 20,
-        age: 30,
-      };
-      const firstRecord = sqsRecordFactory(JSON.stringify(customObject1));
-      const secondRecord = sqsRecordFactory(JSON.stringify(customObject2));
-
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.SQS, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(
-        records,
-        async (
-          customObject: SQSRecord & { body: z.infer<typeof customSchema> }
-        ) => {
-          return customObject.body;
-        },
-        options
-      );
-
-      // Assess
-      await expect(processor.process()).rejects.toThrowError(
-        FullBatchFailureError
-      );
-    });
-  });
-
-  describe('Batch processing with Parser Integration: Passing Extended DynamoDB Record Schema', () => {
-    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.object({
-        Message: z.string(),
-      });
-      const { DynamoDBMarshalled } = await import(
-        '@aws-lambda-powertools/parser/helpers/dynamodb'
-      );
-      const { DynamoDBStreamRecord, DynamoDBStreamChangeRecordBase } =
-        await import('@aws-lambda-powertools/parser/schemas/dynamodb');
-      const extendedSchema = DynamoDBStreamRecord.extend({
-        dynamodb: DynamoDBStreamChangeRecordBase.extend({
-          NewImage: DynamoDBMarshalled(customSchema).optional(),
-        }),
-      });
-      //@ts-expect-error Passing a number
-      const firstRecord = dynamodbRecordFactory(1);
-      const secondRecord = dynamodbRecordFactory('success');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-        schema: extendedSchema,
-      });
-
-      // Act
-      processor.register(records, asyncDynamodbRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages[1]).toStrictEqual([
-        'success',
-        'success',
-        secondRecord,
-      ]);
-      expect(processor.failureMessages.length).toBe(1);
-      expect(processor.response()).toStrictEqual({
-        batchItemFailures: [
-          { itemIdentifier: firstRecord.dynamodb?.SequenceNumber },
-        ],
-      });
-    });
-
-    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-      // Prepare
-      const customSchema = z.object({
-        Message: z.string(),
-      });
-      const { DynamoDBMarshalled } = await import(
-        '@aws-lambda-powertools/parser/helpers/dynamodb'
-      );
-      const { DynamoDBStreamRecord, DynamoDBStreamChangeRecordBase } =
-        await import('@aws-lambda-powertools/parser/schemas/dynamodb');
-      const extendedSchema = DynamoDBStreamRecord.extend({
-        dynamodb: DynamoDBStreamChangeRecordBase.extend({
-          NewImage: DynamoDBMarshalled(customSchema).optional(),
-        }),
-      });
-      const firstRecord = dynamodbRecordFactory('success');
-      const secondRecord = dynamodbRecordFactory('success');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-        schema: extendedSchema,
-      });
-
-      // Act
-      processor.register(records, asyncDynamodbRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages).toStrictEqual([
-        ['success', 'success', firstRecord],
-        ['success', 'success', secondRecord],
-      ]);
-    });
-
-    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.object({
-        Message: z.string(),
-      });
-      const { DynamoDBMarshalled } = await import(
-        '@aws-lambda-powertools/parser/helpers/dynamodb'
-      );
-      const { DynamoDBStreamRecord, DynamoDBStreamChangeRecordBase } =
-        await import('@aws-lambda-powertools/parser/schemas/dynamodb');
-      const extendedSchema = DynamoDBStreamRecord.extend({
-        dynamodb: DynamoDBStreamChangeRecordBase.extend({
-          NewImage: DynamoDBMarshalled(customSchema).optional(),
-        }),
-      });
-      //@ts-expect-error Passing a number
-      const firstRecord = dynamodbRecordFactory(1);
-      //@ts-expect-error Passing a number
-      const secondRecord = dynamodbRecordFactory(2);
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-        schema: extendedSchema,
-      });
-
-      // Act
-      processor.register(records, asyncDynamodbRecordHandler, options);
-
-      // Assess
-      await expect(processor.process()).rejects.toThrowError(
-        FullBatchFailureError
-      );
-    });
-  });
-
-  describe('Batch processing with Parser Integration: Passing Internal DynamoDB Record Schema with transformers', () => {
-    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = DynamoDBMarshalled(
-        z.object({
-          Message: z.string(),
-        })
-      );
-
-      //@ts-expect-error Passing a number
-      const firstRecord = dynamodbRecordFactory(1);
-      const secondRecord = dynamodbRecordFactory('success');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncDynamodbRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages[1]).toStrictEqual([
-        'success',
-        'success',
-        secondRecord,
-      ]);
-      expect(processor.failureMessages.length).toBe(1);
-      expect(processor.response()).toStrictEqual({
-        batchItemFailures: [
-          { itemIdentifier: firstRecord.dynamodb?.SequenceNumber },
-        ],
-      });
-    });
-
-    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-      // Prepare
-      const customSchema = DynamoDBMarshalled(
-        z.object({
-          Message: z.string(),
-        })
-      );
-
-      const firstRecord = dynamodbRecordFactory('success');
-      const secondRecord = dynamodbRecordFactory('success');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncDynamodbRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages).toStrictEqual([
-        ['success', 'success', firstRecord],
-        ['success', 'success', secondRecord],
-      ]);
-    });
-
-    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = DynamoDBMarshalled(
-        z.object({
-          Message: z.string(),
-        })
-      );
-
-      //@ts-expect-error Passing a number
-      const firstRecord = dynamodbRecordFactory(1);
-      //@ts-expect-error Passing a number
-      const secondRecord = dynamodbRecordFactory(2);
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncDynamodbRecordHandler, options);
-
-      // Assess
-      await expect(processor.process()).rejects.toThrowError(
-        FullBatchFailureError
-      );
-    });
-  });
-
-  describe('Batch processing with Parser Integration: Passing Internal DynamoDB Record Schema without transformers', () => {
-    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.object({
-        Message: z.string(),
-      });
-
-      //@ts-expect-error Passing a number
-      const firstRecord = dynamodbRecordFactory(1);
-      const secondRecord = dynamodbRecordFactory('success');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncDynamodbRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages[1]).toStrictEqual([
-        'success',
-        'success',
-        secondRecord,
-      ]);
-      expect(processor.failureMessages.length).toBe(1);
-      expect(processor.response()).toStrictEqual({
-        batchItemFailures: [
-          { itemIdentifier: firstRecord.dynamodb?.SequenceNumber },
-        ],
-      });
-    });
-
-    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-      // Prepare
-      const customSchema = z.object({
-        Message: z.string(),
-      });
-
-      const firstRecord = dynamodbRecordFactory('success');
-      const secondRecord = dynamodbRecordFactory('success');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncDynamodbRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages).toStrictEqual([
-        ['success', 'success', firstRecord],
-        ['success', 'success', secondRecord],
-      ]);
-    });
-
-    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.object({
-        Message: z.string(),
-      });
-
-      //@ts-expect-error Passing a number
-      const firstRecord = dynamodbRecordFactory(1);
-      //@ts-expect-error Passing a number
-      const secondRecord = dynamodbRecordFactory(2);
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncDynamodbRecordHandler, options);
-
-      // Assess
-      await expect(processor.process()).rejects.toThrowError(
-        FullBatchFailureError
-      );
-    });
-  });
-
-  describe('Batch processing with Parser Integration: Passing Extended Kinesis Record Schema', () => {
-    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.string();
-      const { Base64Encoded } = await import(
-        '@aws-lambda-powertools/parser/helpers'
-      );
-      const { KinesisDataStreamRecord, KinesisDataStreamRecordPayload } =
-        await import('@aws-lambda-powertools/parser/schemas/kinesis');
-      const extendedSchema = KinesisDataStreamRecord.extend({
-        kinesis: KinesisDataStreamRecordPayload.extend({
-          data: Base64Encoded(customSchema).optional(),
-        }),
-      });
-      //@ts-expect-error Passing a number
-      const firstRecord = kinesisRecordFactory(1);
-      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-        schema: extendedSchema,
-      });
-
-      // Act
-      processor.register(records, asyncKinesisRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages[1]).toStrictEqual([
-        'success',
-        'success',
-        secondRecord,
-      ]);
-      expect(processor.failureMessages.length).toBe(1);
-      expect(processor.response()).toStrictEqual({
-        batchItemFailures: [
-          { itemIdentifier: firstRecord.kinesis.sequenceNumber },
-        ],
-      });
-    });
-
-    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-      // Prepare
-      const customSchema = z.string();
-      const { Base64Encoded } = await import(
-        '@aws-lambda-powertools/parser/helpers'
-      );
-      const { KinesisDataStreamRecord, KinesisDataStreamRecordPayload } =
-        await import('@aws-lambda-powertools/parser/schemas/kinesis');
-      const extendedSchema = KinesisDataStreamRecord.extend({
-        kinesis: KinesisDataStreamRecordPayload.extend({
-          data: Base64Encoded(customSchema).optional(),
-        }),
-      });
-      const firstRecord = kinesisRecordFactory('c3VjY2Vzcw==');
-      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-        schema: extendedSchema,
-      });
-
-      // Act
-      processor.register(records, asyncKinesisRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages).toStrictEqual([
-        ['success', 'success', firstRecord],
-        ['success', 'success', secondRecord],
-      ]);
-    });
-
-    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.string();
-      const { Base64Encoded } = await import(
-        '@aws-lambda-powertools/parser/helpers'
-      );
-      const { KinesisDataStreamRecord, KinesisDataStreamRecordPayload } =
-        await import('@aws-lambda-powertools/parser/schemas/kinesis');
-      const extendedSchema = KinesisDataStreamRecord.extend({
-        kinesis: KinesisDataStreamRecordPayload.extend({
-          data: Base64Encoded(customSchema).optional(),
-        }),
-      });
-      //@ts-expect-error Passing a number
-      const firstRecord = kinesisRecordFactory(1);
-      //@ts-expect-error Passing a number
-      const secondRecord = kinesisRecordFactory(1);
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-        schema: extendedSchema,
-      });
-
-      // Act
-      processor.register(records, asyncKinesisRecordHandler, options);
-
-      // Assess
-      await expect(processor.process()).rejects.toThrowError(
-        FullBatchFailureError
-      );
-    });
-  });
-
-  describe('Batch processing with Parser Integration: Passing Internal Kinesis Record Schema with transformers', () => {
-    it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = Base64Encoded(z.string());
-      //@ts-expect-error Passing a number
-      const firstRecord = kinesisRecordFactory(1);
-      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncKinesisRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages[1]).toStrictEqual([
-        'success',
-        'success',
-        secondRecord,
-      ]);
-      expect(processor.failureMessages.length).toBe(1);
-      expect(processor.response()).toStrictEqual({
-        batchItemFailures: [
-          { itemIdentifier: firstRecord.kinesis.sequenceNumber },
-        ],
-      });
-    });
-
-    it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-      // Prepare
-      const customSchema = Base64Encoded(z.string());
-      const firstRecord = kinesisRecordFactory('c3VjY2Vzcw==');
-      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncKinesisRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages).toStrictEqual([
-        ['success', 'success', firstRecord],
-        ['success', 'success', secondRecord],
-      ]);
-    });
-
-    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = Base64Encoded(z.string());
-      //@ts-expect-error Passing a number
-      const firstRecord = kinesisRecordFactory(1);
-      //@ts-expect-error Passing a number
-      const secondRecord = kinesisRecordFactory(1);
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncKinesisRecordHandler, options);
-
-      // Assess
-      await expect(processor.process()).rejects.toThrowError(
-        FullBatchFailureError
-      );
-    });
-  });
-
-  describe('Batch processing with Parser Integration: Passing Internal Kinesis Record Schema without transformers', () => {
-    it.skip('completes the processing with failures if some of the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.string();
-      //@ts-expect-error Passing a number
-      const firstRecord = kinesisRecordFactory(1);
-      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncKinesisRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages[1]).toStrictEqual([
-        'success',
-        'success',
-        secondRecord,
-      ]);
-      expect(processor.failureMessages.length).toBe(1);
-      expect(processor.response()).toStrictEqual({
-        batchItemFailures: [
-          { itemIdentifier: firstRecord.kinesis.sequenceNumber },
-        ],
-      });
-    });
-
-    it.skip('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-      // Prepare
-      const customSchema = z.string();
-      const firstRecord = kinesisRecordFactory('c3VjY2Vzcw==');
-      const secondRecord = kinesisRecordFactory('c3VjY2Vzcw==');
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncKinesisRecordHandler, options);
-      const processedMessages = await processor.process();
-
-      // Assess
-      expect(processedMessages).toStrictEqual([
-        ['success', 'success', firstRecord],
-        ['success', 'success', secondRecord],
-      ]);
-    });
-
-    it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-      // Prepare
-      const customSchema = z.string();
-      //@ts-expect-error Passing a number
-      const firstRecord = kinesisRecordFactory(1);
-      //@ts-expect-error Passing a number
-      const secondRecord = kinesisRecordFactory(1);
-      const records = [firstRecord, secondRecord];
-      const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-        schema: customSchema,
-      });
-
-      // Act
-      processor.register(records, asyncKinesisRecordHandler, options);
+      processor.register(records, sqsRecordHandler, options);
 
       // Assess
       await expect(processor.process()).rejects.toThrowError(

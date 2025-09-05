@@ -1,5 +1,5 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
 import { HttpErrorCodes, HttpVerbs } from '../../../src/rest/constants.js';
@@ -17,72 +17,13 @@ import type {
   RouteHandler,
   RouterOptions,
 } from '../../../src/types/rest.js';
-
-const createTestEvent = (
-  path: string,
-  httpMethod: string
-): APIGatewayProxyEvent => ({
-  path,
-  httpMethod,
-  headers: {},
-  body: null,
-  multiValueHeaders: {},
-  isBase64Encoded: false,
-  pathParameters: null,
-  queryStringParameters: null,
-  multiValueQueryStringParameters: null,
-  stageVariables: null,
-  requestContext: {
-    httpMethod,
-    path,
-    domainName: 'localhost',
-  } as any,
-  resource: '',
-});
-
-// Middleware factory functions
-const createTrackingMiddleware = (
-  name: string,
-  executionOrder: string[]
-): Middleware => {
-  return async (_params, _options, next) => {
-    executionOrder.push(`${name}-start`);
-    await next();
-    executionOrder.push(`${name}-end`);
-  };
-};
-
-const createThrowingMiddleware = (
-  name: string,
-  executionOrder: string[],
-  errorMessage: string
-): Middleware => {
-  return async (_params, _options, _next) => {
-    executionOrder.push(name);
-    throw new Error(errorMessage);
-  };
-};
-
-const createReturningMiddleware = (
-  name: string,
-  executionOrder: string[],
-  response: any
-): Middleware => {
-  return async (_params, _options, _next) => {
-    executionOrder.push(name);
-    return response;
-  };
-};
-
-const createNoNextMiddleware = (
-  name: string,
-  executionOrder: string[]
-): Middleware => {
-  return async (_params, _options, _next) => {
-    executionOrder.push(name);
-    // Intentionally doesn't call next()
-  };
-};
+import {
+  createNoNextMiddleware,
+  createReturningMiddleware,
+  createTestEvent,
+  createThrowingMiddleware,
+  createTrackingMiddleware,
+} from './helpers.js';
 
 describe('Class: BaseRouter', () => {
   class TestResolver extends BaseRouter {
@@ -493,7 +434,6 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
       const executionOrder: string[] = [];
-      let middlewareScope: any;
 
       app.use(async (params, options, next) => {
         executionOrder.push('middleware-start');
@@ -507,7 +447,6 @@ describe('Class: BaseRouter', () => {
         @app.get('/test')
         public async getTest() {
           executionOrder.push('handler');
-          middlewareScope = this.scope;
           return { message: `${this.scope}: success` };
         }
 
@@ -529,7 +468,6 @@ describe('Class: BaseRouter', () => {
         'handler',
         'middleware-end',
       ]);
-      expect(middlewareScope).toBe('class-scope');
       expect(result).toEqual({
         statusCode: 200,
         body: JSON.stringify({ message: 'class-scope: success' }),
@@ -1032,24 +970,24 @@ describe('Class: BaseRouter', () => {
       );
 
       class Lambda {
+        public scope = 'class-scope';
+
         @app.get('/test', [middleware])
         public async getTest() {
           executionOrder.push('handler');
-          return { result: 'decorator-with-middleware' };
+          return { result: `${this.scope}: decorator-with-middleware` };
         }
 
         public async handler(event: unknown, context: Context) {
-          return app.resolve(event, context);
+          return app.resolve(event, context, { scope: this });
         }
       }
 
       const lambda = new Lambda();
+      const handler = lambda.handler.bind(lambda);
 
       // Act
-      const result = await lambda.handler(
-        createTestEvent('/test', 'GET'),
-        context
-      );
+      const result = await handler(createTestEvent('/test', 'GET'), context);
 
       // Assess
       expect(executionOrder).toEqual([
@@ -1059,7 +997,9 @@ describe('Class: BaseRouter', () => {
       ]);
       expect(result).toEqual({
         statusCode: 200,
-        body: JSON.stringify({ result: 'decorator-with-middleware' }),
+        body: JSON.stringify({
+          result: 'class-scope: decorator-with-middleware',
+        }),
         headers: { 'Content-Type': 'application/json' },
         isBase64Encoded: false,
       });

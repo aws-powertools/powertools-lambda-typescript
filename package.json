@@ -50,7 +50,7 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
-    "@biomejs/biome": "^2.2.2",
+    "@biomejs/biome": "^2.2.3",
     "@types/aws-lambda": "^8.10.152",
     "@types/node": "^24.3.1",
     "@vitest/coverage-v8": "^3.2.4",

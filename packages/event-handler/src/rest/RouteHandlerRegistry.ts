@@ -160,6 +160,7 @@ class RouteHandlerRegistry {
         handler: staticRoute.handler,
         rawParams: {},
         params: {},
+        middleware: staticRoute.middleware,
       };
     }
 
@@ -182,6 +183,7 @@ class RouteHandlerRegistry {
           handler: route.handler,
           params: processedParams,
           rawParams: params,
+          middleware: route.middleware,
         };
       }
     }

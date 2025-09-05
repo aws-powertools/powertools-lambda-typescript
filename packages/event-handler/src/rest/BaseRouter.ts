@@ -42,7 +42,7 @@ abstract class BaseRouter {
 
   protected readonly routeRegistry: RouteHandlerRegistry;
   protected readonly errorHandlerRegistry: ErrorHandlerRegistry;
-  protected readonly middlwares: Middleware[] = [];
+  protected readonly middleware: Middleware[] = [];
 
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
@@ -170,7 +170,7 @@ abstract class BaseRouter {
    * ```
    */
   public use(middleware: Middleware): void {
-    this.middlwares.push(middleware);
+    this.middleware.push(middleware);
   }
 
   /**
@@ -223,7 +223,10 @@ abstract class BaseRouter {
           ? route.handler.bind(options.scope)
           : route.handler;
 
-      const middleware = composeMiddleware([...this.middlwares]);
+      const middleware = composeMiddleware([
+        ...this.middleware,
+        ...route.middleware,
+      ]);
 
       const result = await middleware(
         route.params,
@@ -255,11 +258,11 @@ abstract class BaseRouter {
   }
 
   public route(handler: RouteHandler, options: RouteOptions): void {
-    const { method, path } = options;
+    const { method, path, middleware = [] } = options;
     const methods = Array.isArray(method) ? method : [method];
 
     for (const method of methods) {
-      this.routeRegistry.register(new Route(method, path, handler));
+      this.routeRegistry.register(new Route(method, path, handler, middleware));
     }
   }
 
@@ -333,10 +336,26 @@ abstract class BaseRouter {
   #handleHttpMethod(
     method: HttpMethod,
     path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler,
     handler?: RouteHandler
   ): MethodDecorator | undefined {
-    if (handler && typeof handler === 'function') {
-      this.route(handler, { method, path });
+    if (Array.isArray(middlewareOrHandler)) {
+      if (handler && typeof handler === 'function') {
+        this.route(handler, { method, path, middleware: middlewareOrHandler });
+        return;
+      }
+      return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
+        this.route(descriptor.value, {
+          method,
+          path,
+          middleware: middlewareOrHandler,
+        });
+        return descriptor;
+      };
+    }
+
+    if (middlewareOrHandler && typeof middlewareOrHandler === 'function') {
+      this.route(middlewareOrHandler, { method, path });
       return;
     }
 
@@ -347,54 +366,142 @@ abstract class BaseRouter {
   }
 
   public get(path: Path, handler: RouteHandler): void;
+  public get(path: Path, middleware: Middleware[], handler: RouteHandler): void;
   public get(path: Path): MethodDecorator;
-  public get(path: Path, handler?: RouteHandler): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.GET, path, handler);
+  public get(path: Path, middleware: Middleware[]): MethodDecorator;
+  public get(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler,
+    handler?: RouteHandler
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod(
+      HttpVerbs.GET,
+      path,
+      middlewareOrHandler,
+      handler
+    );
   }
 
   public post(path: Path, handler: RouteHandler): void;
+  public post(
+    path: Path,
+    middleware: Middleware[],
+    handler: RouteHandler
+  ): void;
   public post(path: Path): MethodDecorator;
-  public post(path: Path, handler?: RouteHandler): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.POST, path, handler);
+  public post(path: Path, middleware: Middleware[]): MethodDecorator;
+  public post(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler,
+    handler?: RouteHandler
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod(
+      HttpVerbs.POST,
+      path,
+      middlewareOrHandler,
+      handler
+    );
   }
 
   public put(path: Path, handler: RouteHandler): void;
+  public put(path: Path, middleware: Middleware[], handler: RouteHandler): void;
   public put(path: Path): MethodDecorator;
-  public put(path: Path, handler?: RouteHandler): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.PUT, path, handler);
+  public put(path: Path, middleware: Middleware[]): MethodDecorator;
+  public put(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler,
+    handler?: RouteHandler
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod(
+      HttpVerbs.PUT,
+      path,
+      middlewareOrHandler,
+      handler
+    );
   }
 
   public patch(path: Path, handler: RouteHandler): void;
-  public patch(path: Path): MethodDecorator;
   public patch(
     path: Path,
+    middleware: Middleware[],
+    handler: RouteHandler
+  ): void;
+  public patch(path: Path): MethodDecorator;
+  public patch(path: Path, middleware: Middleware[]): MethodDecorator;
+  public patch(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler,
     handler?: RouteHandler
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.PATCH, path, handler);
+    return this.#handleHttpMethod(
+      HttpVerbs.PATCH,
+      path,
+      middlewareOrHandler,
+      handler
+    );
   }
 
   public delete(path: Path, handler: RouteHandler): void;
-  public delete(path: Path): MethodDecorator;
   public delete(
     path: Path,
+    middleware: Middleware[],
+    handler: RouteHandler
+  ): void;
+  public delete(path: Path): MethodDecorator;
+  public delete(path: Path, middleware: Middleware[]): MethodDecorator;
+  public delete(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler,
     handler?: RouteHandler
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.DELETE, path, handler);
+    return this.#handleHttpMethod(
+      HttpVerbs.DELETE,
+      path,
+      middlewareOrHandler,
+      handler
+    );
   }
 
   public head(path: Path, handler: RouteHandler): void;
+  public head(
+    path: Path,
+    middleware: Middleware[],
+    handler: RouteHandler
+  ): void;
   public head(path: Path): MethodDecorator;
-  public head(path: Path, handler?: RouteHandler): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.HEAD, path, handler);
+  public head(path: Path, middleware: Middleware[]): MethodDecorator;
+  public head(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler,
+    handler?: RouteHandler
+  ): MethodDecorator | undefined {
+    return this.#handleHttpMethod(
+      HttpVerbs.HEAD,
+      path,
+      middlewareOrHandler,
+      handler
+    );
   }
 
   public options(path: Path, handler: RouteHandler): void;
-  public options(path: Path): MethodDecorator;
   public options(
     path: Path,
+    middleware: Middleware[],
+    handler: RouteHandler
+  ): void;
+  public options(path: Path): MethodDecorator;
+  public options(path: Path, middleware: Middleware[]): MethodDecorator;
+  public options(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler,
     handler?: RouteHandler
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(HttpVerbs.OPTIONS, path, handler);
+    return this.#handleHttpMethod(
+      HttpVerbs.OPTIONS,
+      path,
+      middlewareOrHandler,
+      handler
+    );
   }
 }
 

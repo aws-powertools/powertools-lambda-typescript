@@ -1,5 +1,5 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseRouter } from '../../../src/rest/BaseRouter.js';
 import { HttpErrorCodes, HttpVerbs } from '../../../src/rest/constants.js';
@@ -11,31 +11,19 @@ import {
 } from '../../../src/rest/errors.js';
 import type {
   HttpMethod,
+  Middleware,
+  Path,
+  RequestOptions,
   RouteHandler,
   RouterOptions,
 } from '../../../src/types/rest.js';
-
-const createTestEvent = (
-  path: string,
-  httpMethod: string
-): APIGatewayProxyEvent => ({
-  path,
-  httpMethod,
-  headers: {},
-  body: null,
-  multiValueHeaders: {},
-  isBase64Encoded: false,
-  pathParameters: null,
-  queryStringParameters: null,
-  multiValueQueryStringParameters: null,
-  stageVariables: null,
-  requestContext: {
-    httpMethod,
-    path,
-    domainName: 'localhost',
-  } as any,
-  resource: '',
-});
+import {
+  createNoNextMiddleware,
+  createReturningMiddleware,
+  createTestEvent,
+  createThrowingMiddleware,
+  createTrackingMiddleware,
+} from './helpers.js';
 
 describe('Class: BaseRouter', () => {
   class TestResolver extends BaseRouter {
@@ -179,23 +167,14 @@ describe('Class: BaseRouter', () => {
     expect(logger.debug).toHaveBeenCalledWith('test debug');
   });
 
-  describe('middleware', () => {
+  describe('middleware - global', () => {
     it('executes middleware in order before route handler', async () => {
       // Prepare
       const app = new TestResolver();
       const executionOrder: string[] = [];
 
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware1-start');
-        await next();
-        executionOrder.push('middleware1-end');
-      });
-
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware2-start');
-        await next();
-        executionOrder.push('middleware2-end');
-      });
+      app.use(createTrackingMiddleware('middleware1', executionOrder));
+      app.use(createTrackingMiddleware('middleware2', executionOrder));
 
       app.get('/test', async () => {
         executionOrder.push('handler');
@@ -220,15 +199,14 @@ describe('Class: BaseRouter', () => {
       const app = new TestResolver();
       const executionOrder: string[] = [];
 
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware1');
-        await next();
-      });
-
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware2');
-        return new Response('Short-circuited', { status: 401 });
-      });
+      app.use(createTrackingMiddleware('middleware1', executionOrder));
+      app.use(
+        createReturningMiddleware(
+          'middleware2',
+          executionOrder,
+          new Response('Short-circuited', { status: 401 })
+        )
+      );
 
       app.get('/test', async () => {
         executionOrder.push('handler');
@@ -242,7 +220,11 @@ describe('Class: BaseRouter', () => {
       );
 
       // Assess
-      expect(executionOrder).toEqual(['middleware1', 'middleware2']);
+      expect(executionOrder).toEqual([
+        'middleware1-start',
+        'middleware2',
+        'middleware1-end',
+      ]);
       expect(result?.statusCode).toBe(401);
       expect(result?.body).toBe('Short-circuited');
     });
@@ -251,7 +233,7 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
       let middlewareParams: Record<string, string> | undefined;
-      let middlewareOptions: any;
+      let middlewareOptions: RequestOptions | undefined;
 
       app.use(async (params, options, next) => {
         middlewareParams = params;
@@ -267,9 +249,9 @@ describe('Class: BaseRouter', () => {
 
       // Assess
       expect(middlewareParams).toEqual({ id: '123' });
-      expect(middlewareOptions.event).toBe(testEvent);
-      expect(middlewareOptions.context).toBe(context);
-      expect(middlewareOptions.request).toBeInstanceOf(Request);
+      expect(middlewareOptions?.event).toBe(testEvent);
+      expect(middlewareOptions?.context).toBe(context);
+      expect(middlewareOptions?.request).toBeInstanceOf(Request);
     });
 
     it('returns error response when next() is called multiple times', async () => {
@@ -301,15 +283,14 @@ describe('Class: BaseRouter', () => {
       const app = new TestResolver();
       const executionOrder: string[] = [];
 
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware1');
-        throw new Error('Middleware error');
-      });
-
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware2');
-        await next();
-      });
+      app.use(
+        createThrowingMiddleware(
+          'middleware1',
+          executionOrder,
+          'Middleware error'
+        )
+      );
+      app.use(createTrackingMiddleware('middleware2', executionOrder));
 
       app.get('/test', async () => {
         executionOrder.push('handler');
@@ -322,7 +303,7 @@ describe('Class: BaseRouter', () => {
         context
       );
 
-      // Assess
+      // Assesss
       expect(executionOrder).toEqual(['middleware1']);
       expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
     });
@@ -364,17 +345,8 @@ describe('Class: BaseRouter', () => {
       const app = new TestResolver();
       const executionOrder: string[] = [];
 
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware1-start');
-        await next();
-        executionOrder.push('middleware1-end');
-      });
-
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware2-start');
-        await next();
-        executionOrder.push('middleware2-end');
-      });
+      app.use(createTrackingMiddleware('middleware1', executionOrder));
+      app.use(createTrackingMiddleware('middleware2', executionOrder));
 
       app.get('/test', async () => {
         executionOrder.push('handler');
@@ -401,15 +373,8 @@ describe('Class: BaseRouter', () => {
       const app = new TestResolver();
       const executionOrder: string[] = [];
 
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware1');
-        // Middleware doesn't call next() - should result in undefined
-      });
-
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware2');
-        await next();
-      });
+      app.use(createNoNextMiddleware('middleware1', executionOrder));
+      app.use(createTrackingMiddleware('middleware2', executionOrder));
 
       app.get('/test', async () => {
         executionOrder.push('handler');
@@ -432,15 +397,13 @@ describe('Class: BaseRouter', () => {
       const app = new TestResolver();
       const executionOrder: string[] = [];
 
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware1');
-        await next();
-      });
-
-      app.use(async (params, options, next) => {
-        executionOrder.push('middleware2');
-        return { statusCode: 202, message: 'Accepted by middleware' };
-      });
+      app.use(createTrackingMiddleware('middleware1', executionOrder));
+      app.use(
+        createReturningMiddleware('middleware2', executionOrder, {
+          statusCode: 202,
+          message: 'Accepted by middleware',
+        })
+      );
 
       app.get('/test', async () => {
         executionOrder.push('handler');
@@ -454,7 +417,11 @@ describe('Class: BaseRouter', () => {
       );
 
       // Assess
-      expect(executionOrder).toEqual(['middleware1', 'middleware2']);
+      expect(executionOrder).toEqual([
+        'middleware1-start',
+        'middleware2',
+        'middleware1-end',
+      ]);
       expect(result?.statusCode).toBe(200);
       const body = JSON.parse(result?.body ?? '{}');
       expect(body).toEqual({
@@ -467,7 +434,6 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
       const executionOrder: string[] = [];
-      let middlewareScope: any;
 
       app.use(async (params, options, next) => {
         executionOrder.push('middleware-start');
@@ -481,7 +447,6 @@ describe('Class: BaseRouter', () => {
         @app.get('/test')
         public async getTest() {
           executionOrder.push('handler');
-          middlewareScope = this.scope;
           return { message: `${this.scope}: success` };
         }
 
@@ -503,13 +468,424 @@ describe('Class: BaseRouter', () => {
         'handler',
         'middleware-end',
       ]);
-      expect(middlewareScope).toBe('class-scope');
       expect(result).toEqual({
         statusCode: 200,
         body: JSON.stringify({ message: 'class-scope: success' }),
         headers: { 'Content-Type': 'application/json' },
         isBase64Encoded: false,
       });
+    });
+  });
+
+  describe('middleware - route specific', () => {
+    it('executes route-specific middleware after global middleware', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      app.use(createTrackingMiddleware('global-middleware', executionOrder));
+      const routeMiddleware = createTrackingMiddleware(
+        'route-middleware',
+        executionOrder
+      );
+
+      app.get('/test', [routeMiddleware], async () => {
+        executionOrder.push('handler');
+        return { success: true };
+      });
+
+      // Act
+      await app.resolve(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(executionOrder).toEqual([
+        'global-middleware-start',
+        'route-middleware-start',
+        'handler',
+        'route-middleware-end',
+        'global-middleware-end',
+      ]);
+    });
+
+    it('executes multiple route-specific middleware in order', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      app.use(createTrackingMiddleware('global-middleware', executionOrder));
+      const routeMiddleware1 = createTrackingMiddleware(
+        'route-middleware-1',
+        executionOrder
+      );
+      const routeMiddleware2 = createTrackingMiddleware(
+        'route-middleware-2',
+        executionOrder
+      );
+
+      app.get('/test', [routeMiddleware1, routeMiddleware2], async () => {
+        executionOrder.push('handler');
+        return { success: true };
+      });
+
+      // Act
+      await app.resolve(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(executionOrder).toEqual([
+        'global-middleware-start',
+        'route-middleware-1-start',
+        'route-middleware-2-start',
+        'handler',
+        'route-middleware-2-end',
+        'route-middleware-1-end',
+        'global-middleware-end',
+      ]);
+    });
+
+    it('routes without middleware only run global middleware', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      app.use(createTrackingMiddleware('global-middleware', executionOrder));
+
+      app.get('/test', async () => {
+        executionOrder.push('handler');
+        return { success: true };
+      });
+
+      // Act
+      await app.resolve(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(executionOrder).toEqual([
+        'global-middleware-start',
+        'handler',
+        'global-middleware-end',
+      ]);
+    });
+
+    it('allows route middleware to short-circuit and skip handler', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      app.use(createTrackingMiddleware('global-middleware', executionOrder));
+      const routeMiddleware = createReturningMiddleware(
+        'route-middleware',
+        executionOrder,
+        new Response('Route middleware response', { status: 403 })
+      );
+
+      app.get('/test', [routeMiddleware], async () => {
+        executionOrder.push('handler');
+        return { success: true };
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(executionOrder).toEqual([
+        'global-middleware-start',
+        'route-middleware',
+        'global-middleware-end',
+      ]);
+      expect(result?.statusCode).toBe(403);
+      expect(result?.body).toBe('Route middleware response');
+    });
+
+    it.each([
+      {
+        path: '/auth',
+        middlewareNames: ['auth-middleware'],
+        expectedOrder: ['global-middleware', 'auth-middleware', 'handler'],
+      },
+      {
+        path: '/admin',
+        middlewareNames: ['auth-middleware', 'admin-middleware'],
+        expectedOrder: [
+          'global-middleware',
+          'auth-middleware',
+          'admin-middleware',
+          'handler',
+        ],
+      },
+      {
+        path: '/public',
+        middlewareNames: [],
+        expectedOrder: ['global-middleware', 'handler'],
+      },
+    ])(
+      'different routes can have different middleware: $path',
+      async ({ path, middlewareNames, expectedOrder }) => {
+        // Prepare
+        const app = new TestResolver();
+        const executionOrder: string[] = [];
+
+        app.use(async (params, options, next) => {
+          executionOrder.push('global-middleware');
+          await next();
+        });
+
+        const middleware: Middleware[] = middlewareNames.map(
+          (name) => async (params, options, next) => {
+            executionOrder.push(name);
+            await next();
+          }
+        );
+
+        app.get(path as Path, middleware, async () => {
+          executionOrder.push('handler');
+          return { success: true };
+        });
+
+        // Act
+        await app.resolve(createTestEvent(path, 'GET'), context);
+
+        // Assess
+        expect(executionOrder).toEqual(expectedOrder);
+      }
+    );
+
+    it('handles errors thrown in route middleware before next()', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      const routeMiddleware = createThrowingMiddleware(
+        'route-middleware',
+        executionOrder,
+        'Route middleware error'
+      );
+
+      app.get('/test', [routeMiddleware], async () => {
+        executionOrder.push('handler');
+        return { success: true };
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(executionOrder).toEqual(['route-middleware']);
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    });
+
+    it('handles errors thrown in route middleware after next()', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      const routeMiddleware: Middleware = async (params, options, next) => {
+        executionOrder.push('route-middleware-start');
+        await next();
+        executionOrder.push('route-middleware-end');
+        throw new Error('Route cleanup error');
+      };
+
+      app.get('/test', [routeMiddleware], async () => {
+        executionOrder.push('handler');
+        return { success: true };
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(executionOrder).toEqual([
+        'route-middleware-start',
+        'handler',
+        'route-middleware-end',
+      ]);
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    });
+
+    it('handles route middleware not calling next()', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      const routeMiddleware = createNoNextMiddleware(
+        'route-middleware',
+        executionOrder
+      );
+
+      app.get('/test', [routeMiddleware], async () => {
+        executionOrder.push('handler');
+        return { success: true };
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(executionOrder).toEqual(['route-middleware']);
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    });
+
+    it('handles route middleware returning JSON objects', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      const routeMiddleware = createReturningMiddleware(
+        'route-middleware',
+        executionOrder,
+        { statusCode: 202, message: 'Accepted by route middleware' }
+      );
+
+      app.get('/test', [routeMiddleware], async () => {
+        executionOrder.push('handler');
+        return { success: true };
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(executionOrder).toEqual(['route-middleware']);
+      expect(result?.statusCode).toBe(200);
+      const body = JSON.parse(result?.body ?? '{}');
+      expect(body).toEqual({
+        statusCode: 202,
+        message: 'Accepted by route middleware',
+      });
+    });
+
+    it('passes params and options to route middleware', async () => {
+      // Prepare
+      const app = new TestResolver();
+      let middlewareParams: Record<string, string> | undefined;
+      let middlewareOptions: RequestOptions | undefined;
+
+      const routeMiddleware: Middleware = async (params, options, next) => {
+        middlewareParams = params;
+        middlewareOptions = options;
+        await next();
+      };
+
+      app.get('/test/:id', [routeMiddleware], async () => ({ success: true }));
+
+      // Act
+      const testEvent = createTestEvent('/test/123', 'GET');
+      await app.resolve(testEvent, context);
+
+      // Assess
+      expect(middlewareParams).toEqual({ id: '123' });
+      expect(middlewareOptions?.event).toBe(testEvent);
+      expect(middlewareOptions?.context).toBe(context);
+      expect(middlewareOptions?.request).toBeInstanceOf(Request);
+    });
+
+    it('propagates errors through mixed global and route middleware', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      app.use(createTrackingMiddleware('global-middleware', executionOrder));
+      const routeMiddleware = createTrackingMiddleware(
+        'route-middleware',
+        executionOrder
+      );
+
+      app.get('/test', [routeMiddleware], async () => {
+        executionOrder.push('handler');
+        throw new Error('Handler error');
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(executionOrder).toEqual([
+        'global-middleware-start',
+        'route-middleware-start',
+        'handler',
+      ]);
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    });
+
+    it('handles errors when global middleware throws before route middleware', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      app.use(
+        createThrowingMiddleware(
+          'global-middleware',
+          executionOrder,
+          'Global middleware error'
+        )
+      );
+      const routeMiddleware = createTrackingMiddleware(
+        'route-middleware',
+        executionOrder
+      );
+
+      app.get('/test', [routeMiddleware], async () => {
+        executionOrder.push('handler');
+        return { success: true };
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(executionOrder).toEqual(['global-middleware']);
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    });
+
+    it('handles errors when route middleware throws with global middleware present', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+
+      app.use(createTrackingMiddleware('global-middleware', executionOrder));
+      const routeMiddleware = createThrowingMiddleware(
+        'route-middleware',
+        executionOrder,
+        'Route middleware error'
+      );
+
+      app.get('/test', [routeMiddleware], async () => {
+        executionOrder.push('handler');
+        return { success: true };
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(executionOrder).toEqual([
+        'global-middleware-start',
+        'route-middleware',
+      ]);
+      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
     });
   });
 
@@ -581,6 +957,135 @@ describe('Class: BaseRouter', () => {
         isBase64Encoded: false,
       });
     });
+  });
+
+  describe('decorators with middleware', () => {
+    it('executes middleware with decorator syntax', async () => {
+      // Prepare
+      const app = new TestResolver();
+      const executionOrder: string[] = [];
+      const middleware = createTrackingMiddleware(
+        'decorator-middleware',
+        executionOrder
+      );
+
+      class Lambda {
+        public scope = 'class-scope';
+
+        @app.get('/test', [middleware])
+        public async getTest() {
+          executionOrder.push('handler');
+          return { result: `${this.scope}: decorator-with-middleware` };
+        }
+
+        public async handler(event: unknown, context: Context) {
+          return app.resolve(event, context, { scope: this });
+        }
+      }
+
+      const lambda = new Lambda();
+      const handler = lambda.handler.bind(lambda);
+
+      // Act
+      const result = await handler(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(executionOrder).toEqual([
+        'decorator-middleware-start',
+        'handler',
+        'decorator-middleware-end',
+      ]);
+      expect(result).toEqual({
+        statusCode: 200,
+        body: JSON.stringify({
+          result: 'class-scope: decorator-with-middleware',
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        isBase64Encoded: false,
+      });
+    });
+
+    it.each([
+      ['GET', { result: 'get-decorator-middleware' }],
+      ['POST', { result: 'post-decorator-middleware' }],
+      ['PUT', { result: 'put-decorator-middleware' }],
+      ['PATCH', { result: 'patch-decorator-middleware' }],
+      ['DELETE', { result: 'delete-decorator-middleware' }],
+      ['HEAD', { result: 'head-decorator-middleware' }],
+      ['OPTIONS', { result: 'options-decorator-middleware' }],
+    ])(
+      'routes %s requests with decorator middleware',
+      async (method, expected) => {
+        // Prepare
+        const app = new TestResolver();
+        const executionOrder: string[] = [];
+        const middleware = createTrackingMiddleware(
+          `${method.toLowerCase()}-middleware`,
+          executionOrder
+        );
+
+        class Lambda {
+          @app.get('/test', [middleware])
+          public async getTest() {
+            return { result: 'get-decorator-middleware' };
+          }
+
+          @app.post('/test', [middleware])
+          public async postTest() {
+            return { result: 'post-decorator-middleware' };
+          }
+
+          @app.put('/test', [middleware])
+          public async putTest() {
+            return { result: 'put-decorator-middleware' };
+          }
+
+          @app.patch('/test', [middleware])
+          public async patchTest() {
+            return { result: 'patch-decorator-middleware' };
+          }
+
+          @app.delete('/test', [middleware])
+          public async deleteTest() {
+            return { result: 'delete-decorator-middleware' };
+          }
+
+          @app.head('/test', [middleware])
+          public async headTest() {
+            return { result: 'head-decorator-middleware' };
+          }
+
+          @app.options('/test', [middleware])
+          public async optionsTest() {
+            return { result: 'options-decorator-middleware' };
+          }
+
+          public async handler(event: unknown, context: Context) {
+            return app.resolve(event, context);
+          }
+        }
+
+        const lambda = new Lambda();
+
+        // Act
+        const result = await lambda.handler(
+          createTestEvent('/test', method),
+          context
+        );
+
+        // Assess
+        expect(executionOrder).toEqual([
+          `${method.toLowerCase()}-middleware-start`,
+          `${method.toLowerCase()}-middleware-end`,
+        ]);
+        expect(result).toEqual({
+          statusCode: 200,
+          body: JSON.stringify(expected),
+          headers: { 'Content-Type': 'application/json' },
+          isBase64Encoded: false,
+        });
+      }
+    );
   });
 
   describe('error handling', () => {

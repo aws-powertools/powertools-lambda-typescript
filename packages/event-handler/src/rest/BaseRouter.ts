@@ -10,6 +10,7 @@ import type {
   ErrorHandler,
   ErrorResolveOptions,
   HttpMethod,
+  Middleware,
   Path,
   RouteHandler,
   RouteOptions,
@@ -30,13 +31,18 @@ import {
 } from './errors.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
-import { isAPIGatewayProxyEvent, isHttpMethod } from './utils.js';
+import {
+  composeMiddleware,
+  isAPIGatewayProxyEvent,
+  isHttpMethod,
+} from './utils.js';
 
 abstract class BaseRouter {
   protected context: Record<string, unknown>;
 
   protected readonly routeRegistry: RouteHandlerRegistry;
   protected readonly errorHandlerRegistry: ErrorHandlerRegistry;
+  protected readonly middlwares: Middleware[] = [];
 
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
@@ -141,6 +147,33 @@ abstract class BaseRouter {
   }
 
   /**
+   * Registers a global middleware function that will be executed for all routes.
+   *
+   * Global middleware executes before route-specific middleware and follows the onion model
+   * where middleware executes in registration order before `next()` and in reverse order after `next()`.
+   *
+   * @param middleware - The middleware function to register globally
+   *
+   * @example
+   * ```typescript
+   * const authMiddleware: Middleware = async (params, options, next) => {
+   *   // Authentication logic
+   *   if (!isAuthenticated(options.request)) {
+   *     return new Response('Unauthorized', { status: 401 });
+   *   }
+   *   await next();
+   *   // Cleanup or logging after request completion
+   *   console.log('Request completed');
+   * };
+   *
+   * router.use(authMiddleware);
+   * ```
+   */
+  public use(middleware: Middleware): void {
+    this.middlwares.push(middleware);
+  }
+
+  /**
    * Resolves an API Gateway event by routing it to the appropriate handler
    * and converting the result to an API Gateway proxy result. Handles errors
    * using registered error handlers or falls back to default error handling
@@ -185,14 +218,28 @@ abstract class BaseRouter {
         throw new NotFoundError(`Route ${path} for method ${method} not found`);
       }
 
-      const result = await route.handler.apply(options?.scope ?? this, [
+      const handler =
+        options?.scope != null
+          ? route.handler.bind(options.scope)
+          : route.handler;
+
+      const middleware = composeMiddleware([...this.middlwares]);
+
+      const result = await middleware(
         route.params,
         {
           event,
           context,
           request,
         },
-      ]);
+        () => handler(route.params, { event, context, request })
+      );
+
+      // In practice this we never happen because the final 'middleware' is
+      // the handler function that allways returns HandlerResponse. However, the
+      // type signature of of NextFunction includes undefined so we need this for
+      // the TS compiler
+      if (result === undefined) throw new InternalServerError();
 
       return await handlerResultToProxyResult(result);
     } catch (error) {

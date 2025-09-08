@@ -2,11 +2,11 @@ import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import type {
   CompiledRoute,
+  HandlerOptions,
   HandlerResponse,
   HttpMethod,
   Middleware,
   Path,
-  RequestOptions,
   ValidationResult,
 } from '../types/rest.js';
 import {
@@ -146,7 +146,7 @@ export const isAPIGatewayProxyResult = (
 export const composeMiddleware = (middleware: Middleware[]): Middleware => {
   return async (
     params: Record<string, string>,
-    options: RequestOptions,
+    options: HandlerOptions,
     next: () => Promise<HandlerResponse | void>
   ): Promise<HandlerResponse | void> => {
     let index = -1;

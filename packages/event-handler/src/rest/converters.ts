@@ -89,13 +89,60 @@ export const responseToProxyResult = async (
     }
   }
 
-  return {
+  const result: APIGatewayProxyResult = {
     statusCode: response.status,
     headers,
-    multiValueHeaders,
     body: await response.text(),
     isBase64Encoded: false,
   };
+
+  if (Object.keys(multiValueHeaders).length > 0) {
+    result.multiValueHeaders = multiValueHeaders;
+  }
+
+  return result;
+};
+
+/**
+ * Converts a handler response to a Web API Response object.
+ * Handles APIGatewayProxyResult, Response objects, and plain objects.
+ *
+ * @param response - The handler response (APIGatewayProxyResult, Response, or plain object)
+ * @param headers - Optional headers to be included in the response
+ * @returns A Web API Response object
+ */
+export const handlerResultToResponse = (
+  response: HandlerResponse,
+  resHeaders?: Headers
+): Response => {
+  if (response instanceof Response) {
+    return response;
+  }
+
+  const headers = new Headers(resHeaders);
+  headers.set('Content-Type', 'application/json');
+
+  if (isAPIGatewayProxyResult(response)) {
+    for (const [key, value] of Object.entries(response.headers ?? {})) {
+      if (value != null) {
+        headers.set(key, String(value));
+      }
+    }
+
+    for (const [key, values] of Object.entries(
+      response.multiValueHeaders ?? {}
+    )) {
+      for (const value of values ?? []) {
+        headers.append(key, String(value));
+      }
+    }
+
+    return new Response(response.body, {
+      status: response.statusCode,
+      headers,
+    });
+  }
+  return Response.json(response, { headers });
 };
 
 /**
@@ -117,7 +164,7 @@ export const handlerResultToProxyResult = async (
   return {
     statusCode: 200,
     body: JSON.stringify(response),
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'content-type': 'application/json' },
     isBase64Encoded: false,
   };
 };

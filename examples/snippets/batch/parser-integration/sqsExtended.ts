@@ -5,7 +5,7 @@ import {
 } from '@aws-lambda-powertools/batch';
 import { JSONStringified } from '@aws-lambda-powertools/parser/helpers';
 import { SqsRecordSchema } from '@aws-lambda-powertools/parser/schemas';
-import type { SQSHandler, SQSRecord } from 'aws-lambda';
+import type { SQSHandler } from 'aws-lambda';
 import { z } from 'zod';
 
 const customSchema = SqsRecordSchema.extend({

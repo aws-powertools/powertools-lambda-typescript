@@ -8,7 +8,7 @@ import {
   KinesisDataStreamRecord,
   KinesisDataStreamRecordPayload,
 } from '@aws-lambda-powertools/parser/schemas/kinesis';
-import type { KinesisStreamHandler, KinesisStreamRecord } from 'aws-lambda';
+import type { KinesisStreamHandler } from 'aws-lambda';
 import { z } from 'zod';
 
 const customSchema = KinesisDataStreamRecord.extend({

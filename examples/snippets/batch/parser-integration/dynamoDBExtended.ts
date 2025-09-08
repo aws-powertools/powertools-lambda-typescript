@@ -8,7 +8,7 @@ import {
   DynamoDBStreamChangeRecordBase,
   DynamoDBStreamRecord,
 } from '@aws-lambda-powertools/parser/schemas/dynamodb';
-import type { DynamoDBRecord, DynamoDBStreamHandler } from 'aws-lambda';
+import type { DynamoDBStreamHandler } from 'aws-lambda';
 import { z } from 'zod';
 
 const customSchema = DynamoDBStreamRecord.extend({

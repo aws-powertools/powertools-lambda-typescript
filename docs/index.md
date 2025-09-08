@@ -94,6 +94,10 @@ There are many ways you can help us gain future investments to improve everyone'
 
 </div>
 
+### Becoming a reference customer
+
+Knowing which companies are using this library is important to help prioritize the project internally. [These](https://github.com/aws-powertools/powertools-lambda-typescript?tab=readme-ov-file#becoming-a-reference-customer) are some of the customers who use Powertools for AWS.
+
 ### Using Lambda Layers
 
 !!! note "Layers help us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way."

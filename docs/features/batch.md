@@ -479,7 +479,7 @@ If you want more control over the transformer used for parsing the inner payload
 
 #### Extending the schema yourself
 
-If you want to have full control and optimize the flow, you can pass an extended schema with any transformers you need.
+If you want to have full control, you can pass an extended schema with any transformers you need.
 
 === "SQS - using extended schema"
 

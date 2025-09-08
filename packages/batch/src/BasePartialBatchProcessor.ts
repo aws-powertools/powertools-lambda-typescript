@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   DynamoDBRecord,
   KinesisStreamRecord,
@@ -11,6 +12,7 @@ import {
 } from './constants.js';
 import { FullBatchFailureError } from './errors.js';
 import type {
+  BasePartialBatchProcessorConfig,
   EventSourceDataClassTypes,
   PartialItemFailureResponse,
   PartialItemFailures,
@@ -43,11 +45,19 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public eventType: keyof typeof EventType;
 
   /**
+   * The schema of the body of the event record for parsing
+   */
+  protected schema?: StandardSchemaV1;
+
+  /**
    * Initializes base batch processing class
    *
    * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
    */
-  public constructor(eventType: keyof typeof EventType) {
+  public constructor(
+    eventType: keyof typeof EventType,
+    config?: BasePartialBatchProcessorConfig
+  ) {
     super();
     this.eventType = eventType;
     this.batchResponse = DEFAULT_RESPONSE;
@@ -56,6 +66,9 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
       [EventType.KinesisDataStreams]: () => this.collectKinesisFailures(),
       [EventType.DynamoDBStreams]: () => this.collectDynamoDBFailures(),
     };
+    if (config) {
+      this.schema = config.schema;
+    }
   }
 
   /**

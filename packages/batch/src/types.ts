@@ -91,7 +91,18 @@ type PartialItemFailures = { itemIdentifier: string };
  */
 type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
 
+/**
+ * Type representing the configuration options passed to the BasePartialBatchProcessor class.
+ *
+ * @property schema - The schema to be used for parsing
+ */
 type BasePartialBatchProcessorConfig = {
+  /**
+   * The schema be either of the following:
+   * 1. An internal schema of the payload of the supported event types.
+   * 2. An internal schema along with helper transformer functions.
+   * 3. An extended schema of the supported event type.
+   */
   schema: StandardSchemaV1;
 };
 

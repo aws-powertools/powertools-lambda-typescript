@@ -1,12 +1,7 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type {
-  DynamoDBRecord,
-  KinesisStreamRecord,
-  SQSRecord,
-  StreamRecord,
-} from 'aws-lambda';
+import type { StreamRecord } from 'aws-lambda';
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
-import { EventType, SchemaType } from './constants.js';
+import { EventType, SchemaVendor } from './constants.js';
 import { BatchProcessingError } from './errors.js';
 import type {
   BaseRecord,
@@ -92,7 +87,7 @@ import type {
  * });
  * ```
  *
- * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
+ * @param eventType - The type of event to process (SQS, Kinesis, DynamoDB)
  */
 class BatchProcessor extends BasePartialBatchProcessor {
   /**
@@ -107,7 +102,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
    * If the handler function completes successfully, the method returns a success response.
    * Otherwise, it returns a failure response with the error that occurred during processing.
    *
-   * @param record The record to be processed
+   * @param record - The record to be processed
    */
   public async processRecord(
     record: BaseRecord
@@ -116,7 +111,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
       const recordToProcess =
         this.schema == null
           ? record
-          : await this.parseRecord(record, this.eventType, this.schema);
+          : await this.#parseRecord(record, this.eventType, this.schema);
       const data = this.toBatchType(recordToProcess, this.eventType);
       const result = await this.handler(data, this.options?.context);
 
@@ -129,7 +124,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
   /**
    * @throws {BatchProcessingError} This method is not implemented for synchronous processing.
    *
-   * @param _record The record to be processed
+   * @param _record - The record to be processed
    */
   public processRecordSync(
     _record: BaseRecord
@@ -140,20 +135,21 @@ class BatchProcessor extends BasePartialBatchProcessor {
   }
 
   /**
-   * Create an extended schema according to the event type passed.
+   * Extend the schema according to the event type passed.
    *
-   * If useTransformers is true, parsing with transformers
-   * else parse without transformers
+   * If useTransformers is true, extend using opinionated transformers.
+   * Otherwise, extend without any transformers.
    *
-   * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
-   * @param schema The StandardSchema to be used for parsing
-   * @param useTransformers Whether to use transformers for parsing
+   * @param eventType - The type of event to process (SQS, Kinesis, DynamoDB)
+   * @param schema - The StandardSchema to be used for parsing
+   * @param useTransformers - Whether to use transformers for parsing
    */
-  private async createExtendedSchema(
-    eventType: keyof typeof EventType,
-    schema: StandardSchemaV1,
-    useTransformers: boolean
-  ) {
+  async #createExtendedSchema(options: {
+    eventType: keyof typeof EventType;
+    schema: StandardSchemaV1;
+    useTransformers: boolean;
+  }) {
+    const { eventType, schema, useTransformers } = options;
     switch (eventType) {
       case EventType.SQS: {
         if (useTransformers) {
@@ -233,18 +229,18 @@ class BatchProcessor extends BasePartialBatchProcessor {
   }
 
   /**
-   * Parse the record according to the schema passed.
+   * Parse the record according to the schema and event type passed.
    *
    * If the passed schema is already an extended schema,
-   * it directly uses the schema to parse the record
+   * use the schema directly to parse the record.
    *
-   * Only Zod Schemas are supported for automatic schema extension
+   * Only Zod Schemas are supported for schema extension.
    *
-   * @param record The record to be parsed
-   * @param eventType The type of event to process
-   * @param schema The StandardSchema to be used for parsing
+   * @param record - The record to be parsed
+   * @param eventType - The type of event to process
+   * @param schema - The StandardSchema to be used for parsing
    */
-  private async parseRecord(
+  async #parseRecord(
     record: EventSourceDataClassTypes,
     eventType: keyof typeof EventType,
     schema: StandardSchemaV1
@@ -256,37 +252,43 @@ class BatchProcessor extends BasePartialBatchProcessor {
       return extendedSchemaParsing.data as EventSourceDataClassTypes;
     }
     // Only proceed with schema extension if it's a Zod schema
-    if (schema['~standard'].vendor !== SchemaType.Zod) {
+    if (schema['~standard'].vendor !== SchemaVendor.Zod) {
       console.warn(
         'The schema provided is not supported. Only Zod schemas are supported for extension.'
       );
       throw new Error('Unsupported schema type');
     }
     // Handle schema extension based on event type
-    try {
-      // Try without transformers first, then with transformers
-      const extendedSchemaWithoutTransformers = await this.createExtendedSchema(
-        eventType,
-        schema,
-        false
-      );
-      return parse(
-        record,
-        undefined,
-        extendedSchemaWithoutTransformers
-      ) as EventSourceDataClassTypes;
-    } catch {
-      const extendedSchemaWithTransformers = await this.createExtendedSchema(
-        eventType,
-        schema,
-        true
-      );
-      return parse(
-        record,
-        undefined,
-        extendedSchemaWithTransformers
-      ) as EventSourceDataClassTypes;
+    // Try without transformers first, then with transformers
+    const schemaWithoutTransformers = await this.#createExtendedSchema({
+      eventType,
+      schema,
+      useTransformers: false,
+    });
+    const schemaWithoutTransformersParsing = parse(
+      record,
+      undefined,
+      schemaWithoutTransformers,
+      true
+    );
+    if (schemaWithoutTransformersParsing.success) {
+      return schemaWithoutTransformersParsing.data as EventSourceDataClassTypes;
     }
+    const schemaWithTransformers = await this.#createExtendedSchema({
+      eventType,
+      schema,
+      useTransformers: true,
+    });
+    const schemaWithTransformersParsing = parse(
+      record,
+      undefined,
+      schemaWithTransformers,
+      true
+    );
+    if (schemaWithTransformersParsing.success) {
+      return schemaWithTransformersParsing.data as EventSourceDataClassTypes;
+    }
+    throw new Error('Failed to parse record');
   }
 }
 

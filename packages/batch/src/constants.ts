@@ -18,9 +18,9 @@ const EventType = {
 } as const;
 
 /**
- * Enum of supported schema types for the utility
+ * Enum of supported schema vendors for the utility
  */
-const SchemaType = {
+const SchemaVendor = {
   Zod: 'zod',
 } as const;
 
@@ -42,4 +42,4 @@ const DATA_CLASS_MAPPING = {
     record as DynamoDBRecord,
 };
 
-export { EventType, SchemaType, DEFAULT_RESPONSE, DATA_CLASS_MAPPING };
+export { EventType, SchemaVendor, DEFAULT_RESPONSE, DATA_CLASS_MAPPING };

@@ -8,9 +8,9 @@ import {
   validatePathPattern,
 } from '../../../src/rest/utils.js';
 import type {
-  HandlerOptions,
   Middleware,
   Path,
+  RequestContext,
 } from '../../../src/types/rest.js';
 
 describe('Path Utilities', () => {
@@ -370,7 +370,7 @@ describe('Path Utilities', () => {
   });
 
   describe('composeMiddleware', () => {
-    const mockOptions: HandlerOptions = {
+    const mockOptions: RequestContext = {
       event: {} as APIGatewayProxyEvent,
       context: {} as any,
       request: new Request('https://example.com'),

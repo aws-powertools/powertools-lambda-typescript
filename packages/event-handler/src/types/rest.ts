@@ -14,18 +14,18 @@ type ErrorResponse = {
   message: string;
 };
 
-type HandlerOptions = {
+type RequestContext = {
   request: Request;
   event: APIGatewayProxyEvent;
   context: Context;
   res: Response;
 };
 
-type ErrorResolveOptions = HandlerOptions & ResolveOptions;
+type ErrorResolveOptions = RequestContext & ResolveOptions;
 
 type ErrorHandler<T extends Error = Error> = (
   error: T,
-  options: HandlerOptions
+  options: RequestContext
 ) => Promise<ErrorResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
@@ -59,7 +59,7 @@ type HandlerResponse = Response | JSONObject;
 type RouteHandler<
   TParams = Record<string, unknown>,
   TReturn = HandlerResponse,
-> = (args: TParams, options: HandlerOptions) => Promise<TReturn>;
+> = (args: TParams, options: RequestContext) => Promise<TReturn>;
 
 type HttpMethod = keyof typeof HttpVerbs;
 
@@ -84,7 +84,7 @@ type NextFunction = () => Promise<HandlerResponse | void>;
 
 type Middleware = (
   params: Record<string, string>,
-  options: HandlerOptions,
+  options: RequestContext,
   next: NextFunction
 ) => Promise<void | HandlerResponse>;
 
@@ -124,7 +124,7 @@ export type {
   HttpMethod,
   Middleware,
   Path,
-  HandlerOptions,
+  RequestContext,
   RouterOptions,
   RouteHandler,
   RouteOptions,

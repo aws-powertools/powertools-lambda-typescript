@@ -10,10 +10,10 @@ import {
   type NotFoundError,
 } from '../../../src/rest/errors.js';
 import type {
-  HandlerOptions,
   HttpMethod,
   Middleware,
   Path,
+  RequestContext,
   RouteHandler,
   RouterOptions,
 } from '../../../src/types/rest.js';
@@ -233,7 +233,7 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
       let middlewareParams: Record<string, string> | undefined;
-      let middlewareOptions: HandlerOptions | undefined;
+      let middlewareOptions: RequestContext | undefined;
 
       app.use(async (params, options, next) => {
         middlewareParams = params;
@@ -895,7 +895,7 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
       let middlewareParams: Record<string, string> | undefined;
-      let middlewareOptions: HandlerOptions | undefined;
+      let middlewareOptions: RequestContext | undefined;
 
       const routeMiddleware: Middleware = async (params, options, next) => {
         middlewareParams = params;

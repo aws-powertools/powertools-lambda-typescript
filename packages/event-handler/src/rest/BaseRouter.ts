@@ -9,10 +9,10 @@ import type {
   ErrorConstructor,
   ErrorHandler,
   ErrorResolveOptions,
-  HandlerOptions,
   HttpMethod,
   Middleware,
   Path,
+  RequestContext,
   RouteHandler,
   RouteOptions,
   RouterOptions,
@@ -211,7 +211,7 @@ abstract class BaseRouter {
 
     const request = proxyEventToWebRequest(event);
 
-    const handlerOptions: HandlerOptions = {
+    const handlerOptions: RequestContext = {
       event,
       context,
       request,

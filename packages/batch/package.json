@@ -73,6 +73,7 @@
     "nodejs"
   ],
   "devDependencies": {
-    "@aws-lambda-powertools/testing-utils": "file:../testing"
+    "@aws-lambda-powertools/testing-utils": "file:../testing",
+    "@aws-lambda-powertools/parser": "2.25.2"
   }
 }

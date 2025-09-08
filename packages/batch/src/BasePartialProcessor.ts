@@ -74,8 +74,8 @@ abstract class BasePartialProcessor {
    * This method should be called when a record fails processing so that
    * the processor can keep track of the error and the record that failed.
    *
-   * @param record Record that failed processing
-   * @param error Error that was thrown
+   * @param record - Record that failed processing
+   * @param error - Error that was thrown
    */
   public failureHandler(
     record: EventSourceDataClassTypes,
@@ -131,7 +131,7 @@ abstract class BasePartialProcessor {
    * This is to ensure that the processor keeps track of the results and the records
    * that succeeded and failed processing.
    *
-   * @param record Record to be processed
+   * @param record - Record to be processed
    */
   public abstract processRecord(
     record: BaseRecord
@@ -149,7 +149,7 @@ abstract class BasePartialProcessor {
    * This is to ensure that the processor keeps track of the results and the records
    * that succeeded and failed processing.
    *
-   * @param record Record to be processed
+   * @param record - Record to be processed
    */
   public abstract processRecordSync(
     record: BaseRecord
@@ -198,9 +198,9 @@ abstract class BasePartialProcessor {
    * to allow for reusing the processor instance across multiple invocations
    * by instantiating the processor outside of the Lambda function handler.
    *
-   * @param records Array of records to be processed
-   * @param handler CallableFunction to process each record from the batch
-   * @param options Options to be used during processing (optional)
+   * @param records - Array of records to be processed
+   * @param handler - CallableFunction to process each record from the batch
+   * @param options - Options to be used during processing (optional)
    */
   public register(
     records: BaseRecord[],
@@ -223,8 +223,8 @@ abstract class BasePartialProcessor {
    * This method should be called when a record succeeds processing so that
    * the processor can keep track of the result and the record that succeeded.
    *
-   * @param record Record that succeeded processing
-   * @param result Result from record handler
+   * @param record - Record that succeeded processing
+   * @param result - Result from record handler
    */
   public successHandler(
     record: EventSourceDataClassTypes,

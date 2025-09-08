@@ -18,6 +18,13 @@ const EventType = {
 } as const;
 
 /**
+ * Enum of supported schema vendors for the utility
+ */
+const SchemaVendor = {
+  Zod: 'zod',
+} as const;
+
+/**
  * Default response for the partial batch processor
  */
 const DEFAULT_RESPONSE: PartialItemFailureResponse = {
@@ -35,4 +42,4 @@ const DATA_CLASS_MAPPING = {
     record as DynamoDBRecord,
 };
 
-export { EventType, DEFAULT_RESPONSE, DATA_CLASS_MAPPING };
+export { EventType, SchemaVendor, DEFAULT_RESPONSE, DATA_CLASS_MAPPING };

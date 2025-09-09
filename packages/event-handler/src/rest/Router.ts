@@ -39,7 +39,7 @@ import {
   isHttpMethod,
 } from './utils.js';
 
-abstract class BaseRouter {
+class Router {
   protected context: Record<string, unknown>;
 
   protected readonly routeRegistry: RouteHandlerRegistry;
@@ -57,7 +57,7 @@ abstract class BaseRouter {
    */
   protected readonly isDev: boolean = false;
 
-  protected constructor(options?: RouterOptions) {
+  public constructor(options?: RouterOptions) {
     this.context = {};
     const alcLogLevel = getStringFromEnv({
       key: 'AWS_LAMBDA_LOG_LEVEL',
@@ -515,4 +515,4 @@ abstract class BaseRouter {
   }
 }
 
-export { BaseRouter };
+export { Router };

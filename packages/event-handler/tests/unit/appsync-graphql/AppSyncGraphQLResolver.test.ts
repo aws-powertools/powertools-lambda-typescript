@@ -1357,8 +1357,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     }));
 
     const app = new AppSyncGraphQLResolver({ logger: console });
-    app.includeRouter(userRouter);
-    app.includeRouter(todoRouter);
+    app.includeRouter([userRouter, todoRouter]);
 
     // Act
     const getUserResult = await app.resolve(

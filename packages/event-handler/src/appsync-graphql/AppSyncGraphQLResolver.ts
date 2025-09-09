@@ -201,17 +201,45 @@ class AppSyncGraphQLResolver extends Router {
   }
 
   /**
-   * Includes a router and merges its registries into the current resolver.
+   * Includes one or more routers and merges their registries into the current resolver.
    *
    * This method allows you to compose multiple routers by merging their
    * route registries into the current AppSync GraphQL resolver instance.
+   * All resolver handlers, batch resolver handlers, and exception handlers
+   * from the included routers will be available in the current resolver.
    *
-   * @param router - The router instance whose registries will be merged
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver, Router } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const postsRouter = new Router();
+   * postsRouter.onQuery('getPosts', async () => {
+   *   return [{ id: 1, title: 'Post 1' }];
+   * });
+   *
+   * const usersRouter = new Router();
+   * usersRouter.onQuery('getUsers', async () => {
+   *   return [{ id: 1, name: 'John Doe' }];
+   * });
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * app.includeRouter([usersRouter, postsRouter]);
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * @param router - The router instance or array of router instances whose registries will be merged
    */
-  public includeRouter(router: Router): void {
-    this.logger.debug('Including router');
-    this.mergeRegistriesFrom(router);
-    this.logger.debug('Router included successfully');
+  public includeRouter(router: Router | Router[]): void {
+    const routers = Array.isArray(router) ? router : [router];
+
+    routers.forEach((router) => {
+      this.logger.debug('Including router');
+      this.mergeRegistriesFrom(router);
+      this.logger.debug('Router included successfully');
+    });
   }
 
   /**

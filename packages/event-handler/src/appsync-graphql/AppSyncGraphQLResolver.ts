@@ -234,12 +234,11 @@ class AppSyncGraphQLResolver extends Router {
    */
   public includeRouter(router: Router | Router[]): void {
     const routers = Array.isArray(router) ? router : [router];
-
+    this.logger.debug('Including router');
     routers.forEach((router) => {
-      this.logger.debug('Including router');
       this.mergeRegistriesFrom(router);
-      this.logger.debug('Router included successfully');
     });
+    this.logger.debug('Router included successfully');
   }
 
   /**

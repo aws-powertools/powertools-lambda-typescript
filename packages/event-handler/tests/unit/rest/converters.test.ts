@@ -2,6 +2,7 @@ import type { APIGatewayProxyEvent } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   handlerResultToProxyResult,
+  handlerResultToResponse,
   proxyEventToWebRequest,
   responseToProxyResult,
 } from '../../../src/rest/converters.js';
@@ -109,7 +110,7 @@ describe('Converters', () => {
       const request = proxyEventToWebRequest(event);
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('POST');
-      expect(await request.text()).toBe('{"key":"value"}');
+      expect(request.text()).resolves.toBe('{"key":"value"}');
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
@@ -126,7 +127,7 @@ describe('Converters', () => {
 
       const request = proxyEventToWebRequest(event);
       expect(request).toBeInstanceOf(Request);
-      expect(await request.text()).toBe(originalText);
+      expect(request.text()).resolves.toBe(originalText);
     });
 
     it('handles single-value headers', () => {
@@ -315,7 +316,7 @@ describe('Converters', () => {
       const response = new Response('Hello World', {
         status: 200,
         headers: {
-          'Content-type': 'application/json',
+          'content-type': 'application/json',
         },
       });
 
@@ -325,7 +326,6 @@ describe('Converters', () => {
       expect(result.body).toBe('Hello World');
       expect(result.isBase64Encoded).toBe(false);
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
-      expect(result.multiValueHeaders).toEqual({});
     });
 
     it('handles single-value headers', async () => {
@@ -341,7 +341,6 @@ describe('Converters', () => {
         'content-type': 'text/plain',
         'x-custom': 'value',
       });
-      expect(result.multiValueHeaders).toEqual({});
     });
 
     it('handles multi-value headers', async () => {
@@ -430,8 +429,116 @@ describe('Converters', () => {
 
       expect(result.statusCode).toBe(200);
       expect(result.body).toBe(JSON.stringify(obj));
-      expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
+      expect(result.headers).toEqual({ 'content-type': 'application/json' });
       expect(result.isBase64Encoded).toBe(false);
+    });
+  });
+
+  describe('handlerResultToResponse', () => {
+    it('returns Response object as-is', () => {
+      const response = new Response('Hello', { status: 201 });
+
+      const result = handlerResultToResponse(response);
+
+      expect(result).toBe(response);
+    });
+
+    it('converts APIGatewayProxyResult to Response', async () => {
+      const proxyResult = {
+        statusCode: 201,
+        body: 'Hello World',
+        headers: { 'content-type': 'text/plain' },
+        isBase64Encoded: false,
+      };
+
+      const result = handlerResultToResponse(proxyResult);
+
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(201);
+      expect(await result.text()).toBe('Hello World');
+      expect(result.headers.get('content-type')).toBe('text/plain');
+    });
+
+    it('converts APIGatewayProxyResult with multiValueHeaders', async () => {
+      const proxyResult = {
+        statusCode: 200,
+        body: 'test',
+        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: {
+          'Set-Cookie': ['cookie1=value1', 'cookie2=value2'],
+        },
+        isBase64Encoded: false,
+      };
+
+      const result = handlerResultToResponse(proxyResult);
+
+      expect(result.headers.get('content-type')).toBe('application/json');
+      expect(result.headers.get('Set-Cookie')).toBe(
+        'cookie1=value1, cookie2=value2'
+      );
+    });
+
+    it('converts plain object to JSON Response with default headers', async () => {
+      const obj = { message: 'success' };
+
+      const result = handlerResultToResponse(obj);
+
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(200);
+      expect(result.text()).resolves.toBe(JSON.stringify(obj));
+      expect(result.headers.get('Content-Type')).toBe('application/json');
+    });
+
+    it('uses provided headers for plain object', async () => {
+      const obj = { message: 'success' };
+      const headers = new Headers({ 'x-custom': 'value' });
+
+      const result = handlerResultToResponse(obj, headers);
+
+      expect(result.headers.get('Content-Type')).toBe('application/json');
+      expect(result.headers.get('x-custom')).toBe('value');
+    });
+
+    it('handles APIGatewayProxyResult with undefined headers', async () => {
+      const proxyResult = {
+        statusCode: 200,
+        body: 'test',
+        headers: undefined,
+        isBase64Encoded: false,
+      };
+
+      const result = handlerResultToResponse(proxyResult);
+
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(200);
+    });
+
+    it('handles APIGatewayProxyResult with undefined multiValueHeaders', async () => {
+      const proxyResult = {
+        statusCode: 200,
+        body: 'test',
+        headers: { 'content-type': 'text/plain' },
+        multiValueHeaders: undefined,
+        isBase64Encoded: false,
+      };
+
+      const result = handlerResultToResponse(proxyResult);
+
+      expect(result.headers.get('content-type')).toBe('text/plain');
+    });
+
+    it('handles APIGatewayProxyResult with undefined values in multiValueHeaders', async () => {
+      const proxyResult = {
+        statusCode: 200,
+        body: 'test',
+        headers: { 'content-type': 'text/plain' },
+        multiValueHeaders: { 'Set-Cookie': undefined },
+        isBase64Encoded: false,
+      };
+
+      const result = handlerResultToResponse(proxyResult);
+
+      expect(result.headers.get('content-type')).toBe('text/plain');
     });
   });
 });

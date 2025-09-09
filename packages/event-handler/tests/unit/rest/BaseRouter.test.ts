@@ -13,7 +13,7 @@ import type {
   HttpMethod,
   Middleware,
   Path,
-  RequestOptions,
+  RequestContext,
   RouteHandler,
   RouterOptions,
 } from '../../../src/types/rest.js';
@@ -62,7 +62,7 @@ describe('Class: BaseRouter', () => {
     expect(actual).toEqual({
       statusCode: 200,
       body: JSON.stringify({ result: `${verb}-test` }),
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'content-type': 'application/json' },
       isBase64Encoded: false,
     });
   });
@@ -106,7 +106,7 @@ describe('Class: BaseRouter', () => {
     const expectedResult = {
       statusCode: 200,
       body: JSON.stringify({ result: 'route-test' }),
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'content-type': 'application/json' },
       isBase64Encoded: false,
     };
     expect(getResult).toEqual(expectedResult);
@@ -233,7 +233,7 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
       let middlewareParams: Record<string, string> | undefined;
-      let middlewareOptions: RequestOptions | undefined;
+      let middlewareOptions: RequestContext | undefined;
 
       app.use(async (params, options, next) => {
         middlewareParams = params;
@@ -430,6 +430,129 @@ describe('Class: BaseRouter', () => {
       });
     });
 
+    it('allows middleware to manipulate response headers', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.use(async (params, options, next) => {
+        await next();
+        options.res.headers.set('x-custom-header', 'middleware-value');
+        options.res.headers.set('x-request-id', '12345');
+      });
+
+      app.get('/test', async () => ({ success: true }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result).toEqual({
+        statusCode: 200,
+        body: JSON.stringify({ success: true }),
+        headers: {
+          'content-type': 'application/json',
+          'x-custom-header': 'middleware-value',
+          'x-request-id': '12345',
+        },
+        isBase64Encoded: false,
+      });
+    });
+
+    it('allows middleware to completely overwrite response', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.use(async (params, options, next) => {
+        await next();
+        const originalBody = await options.res.text();
+        options.res = new Response(`Modified: ${originalBody}`, {
+          headers: { 'content-type': 'text/plain' },
+        });
+      });
+
+      app.get('/test', async () => ({ success: true }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result).toEqual({
+        statusCode: 200,
+        body: 'Modified: {"success":true}',
+        headers: { 'content-type': 'text/plain' },
+        isBase64Encoded: false,
+      });
+    });
+
+    it('preserves headers set before calling next()', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.use(async (params, options, next) => {
+        options.res.headers.set('x-before-handler', 'middleware-value');
+        await next();
+      });
+
+      app.get('/test', async () => ({ success: true }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result).toEqual({
+        statusCode: 200,
+        body: JSON.stringify({ success: true }),
+        headers: {
+          'content-type': 'application/json',
+          'x-before-handler': 'middleware-value',
+        },
+        isBase64Encoded: false,
+      });
+    });
+
+    it('overwrites headers when set later in the middleware stack', async () => {
+      // Prepare
+      const app = new TestResolver();
+
+      app.use(async (params, options, next) => {
+        options.res.headers.set('x-test-header', 'before-next');
+        await next();
+      });
+
+      app.use(async (params, options, next) => {
+        await next();
+        options.res.headers.set('x-test-header', 'after-next');
+      });
+
+      app.get('/test', async () => ({ success: true }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result).toEqual({
+        statusCode: 200,
+        body: JSON.stringify({ success: true }),
+        headers: {
+          'content-type': 'application/json',
+          'x-test-header': 'after-next',
+        },
+        isBase64Encoded: false,
+      });
+    });
+
     it('works with class decorators and preserves scope access', async () => {
       // Prepare
       const app = new TestResolver();
@@ -471,7 +594,7 @@ describe('Class: BaseRouter', () => {
       expect(result).toEqual({
         statusCode: 200,
         body: JSON.stringify({ message: 'class-scope: success' }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });
     });
@@ -772,7 +895,7 @@ describe('Class: BaseRouter', () => {
       // Prepare
       const app = new TestResolver();
       let middlewareParams: Record<string, string> | undefined;
-      let middlewareOptions: RequestOptions | undefined;
+      let middlewareOptions: RequestContext | undefined;
 
       const routeMiddleware: Middleware = async (params, options, next) => {
         middlewareParams = params;
@@ -953,7 +1076,7 @@ describe('Class: BaseRouter', () => {
       expect(actual).toEqual({
         statusCode: 200,
         body: JSON.stringify(expected),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });
     });
@@ -1000,7 +1123,7 @@ describe('Class: BaseRouter', () => {
         body: JSON.stringify({
           result: 'class-scope: decorator-with-middleware',
         }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });
     });
@@ -1081,7 +1204,7 @@ describe('Class: BaseRouter', () => {
         expect(result).toEqual({
           statusCode: 200,
           body: JSON.stringify(expected),
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'content-type': 'application/json' },
           isBase64Encoded: false,
         });
       }
@@ -1119,7 +1242,6 @@ describe('Class: BaseRouter', () => {
           message: 'Handled: test error',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       });
     });
@@ -1149,7 +1271,6 @@ describe('Class: BaseRouter', () => {
           message: 'Custom: Route /nonexistent for method GET not found',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       });
     });
@@ -1183,7 +1304,6 @@ describe('Class: BaseRouter', () => {
           message: 'Custom: POST not allowed',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       });
     });
@@ -1271,7 +1391,6 @@ describe('Class: BaseRouter', () => {
           message: 'Specific handler',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       });
     });
@@ -1299,7 +1418,6 @@ describe('Class: BaseRouter', () => {
           message: 'service error',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       });
     });
@@ -1394,7 +1512,6 @@ describe('Class: BaseRouter', () => {
           message: 'Array handler: bad request',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       };
       const expectedMethodResult = {
@@ -1405,7 +1522,6 @@ describe('Class: BaseRouter', () => {
           message: 'Array handler: method not allowed',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       };
 
@@ -1448,7 +1564,6 @@ describe('Class: BaseRouter', () => {
           message: 'second: test error',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       });
     });
@@ -1520,7 +1635,6 @@ describe('Class: BaseRouter', () => {
           message: 'Decorated: test error',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       });
     });
@@ -1561,7 +1675,6 @@ describe('Class: BaseRouter', () => {
           message: 'Decorated: Route /nonexistent for method GET not found',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       });
     });
@@ -1607,7 +1720,6 @@ describe('Class: BaseRouter', () => {
           message: 'Decorated: POST not allowed',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       });
     });
@@ -1653,7 +1765,6 @@ describe('Class: BaseRouter', () => {
           message: 'scoped: test error',
         }),
         headers: { 'content-type': 'application/json' },
-        multiValueHeaders: {},
         isBase64Encoded: false,
       });
     });
@@ -1814,7 +1925,7 @@ describe('Class: BaseRouter', () => {
         body: JSON.stringify({
           message: 'scoped: success',
         }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });
     });
@@ -1847,7 +1958,7 @@ describe('Class: BaseRouter', () => {
       expect(result).toEqual({
         statusCode: 200,
         body: JSON.stringify({ success: true }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });
     });

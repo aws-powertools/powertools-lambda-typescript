@@ -12,6 +12,7 @@ import type {
   HttpMethod,
   Middleware,
   Path,
+  RequestContext,
   RouteHandler,
   RouteOptions,
   RouterOptions,
@@ -19,6 +20,7 @@ import type {
 import { HttpErrorCodes, HttpVerbs } from './constants.js';
 import {
   handlerResultToProxyResult,
+  handlerResultToResponse,
   proxyEventToWebRequest,
   responseToProxyResult,
 } from './converters.js';
@@ -209,6 +211,15 @@ abstract class BaseRouter {
 
     const request = proxyEventToWebRequest(event);
 
+    const handlerOptions: RequestContext = {
+      event,
+      context,
+      request,
+      // this response should be overwritten by the handler, if it isn't
+      // it means somthing went wrong with the middleware chain
+      res: new Response('', { status: 500 }),
+    };
+
     try {
       const path = new URL(request.url).pathname as Path;
 
@@ -223,34 +234,36 @@ abstract class BaseRouter {
           ? route.handler.bind(options.scope)
           : route.handler;
 
+      const handlerMiddleware: Middleware = async (params, options, next) => {
+        const handlerResult = await handler(params, options);
+        options.res = handlerResultToResponse(
+          handlerResult,
+          options.res.headers
+        );
+
+        await next();
+      };
+
       const middleware = composeMiddleware([
         ...this.middleware,
         ...route.middleware,
+        handlerMiddleware,
       ]);
 
-      const result = await middleware(
+      const middlewareResult = await middleware(
         route.params,
-        {
-          event,
-          context,
-          request,
-        },
-        () => handler(route.params, { event, context, request })
+        handlerOptions,
+        () => Promise.resolve()
       );
 
-      // In practice this we never happen because the final 'middleware' is
-      // the handler function that allways returns HandlerResponse. However, the
-      // type signature of of NextFunction includes undefined so we need this for
-      // the TS compiler
-      if (result === undefined) throw new InternalServerError();
+      // middleware result takes precedence to allow short-circuiting
+      const result = middlewareResult ?? handlerOptions.res;
 
-      return await handlerResultToProxyResult(result);
+      return handlerResultToProxyResult(result);
     } catch (error) {
       this.logger.debug(`There was an error processing the request: ${error}`);
       const result = await this.handleError(error as Error, {
-        request,
-        event,
-        context,
+        ...handlerOptions,
         scope: options?.scope,
       });
       return await responseToProxyResult(result);
@@ -281,13 +294,10 @@ abstract class BaseRouter {
     const handler = this.errorHandlerRegistry.resolve(error);
     if (handler !== null) {
       try {
-        const body = await handler.apply(options.scope ?? this, [
+        const { scope, ...handlerOptions } = options;
+        const body = await handler.apply(scope ?? this, [
           error,
-          {
-            request: options.request,
-            event: options.event,
-            context: options.context,
-          },
+          handlerOptions,
         ]);
         return new Response(JSON.stringify(body), {
           status: body.statusCode,

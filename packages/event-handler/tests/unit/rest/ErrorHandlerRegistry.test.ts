@@ -3,12 +3,12 @@ import { HttpErrorCodes } from '../../../src/rest/constants.js';
 import { ErrorHandlerRegistry } from '../../../src/rest/ErrorHandlerRegistry.js';
 import type {
   HttpStatusCode,
-  RequestOptions,
+  RequestContext,
 } from '../../../src/types/rest.js';
 
 const createErrorHandler =
   (statusCode: HttpStatusCode, message?: string) =>
-  async (error: Error, _options: RequestOptions) => ({
+  async (error: Error, _options: RequestContext) => ({
     statusCode,
     error: error.name,
     message: message ?? error.message,

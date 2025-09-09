@@ -6,7 +6,7 @@ import type {
   HttpMethod,
   Middleware,
   Path,
-  RequestOptions,
+  RequestContext,
   ValidationResult,
 } from '../types/rest.js';
 import {
@@ -146,7 +146,7 @@ export const isAPIGatewayProxyResult = (
 export const composeMiddleware = (middleware: Middleware[]): Middleware => {
   return async (
     params: Record<string, string>,
-    options: RequestOptions,
+    options: RequestContext,
     next: () => Promise<HandlerResponse | void>
   ): Promise<HandlerResponse | void> => {
     let index = -1;

@@ -2,11 +2,16 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   compilePath,
+  composeMiddleware,
   isAPIGatewayProxyEvent,
   isAPIGatewayProxyResult,
   validatePathPattern,
 } from '../../../src/rest/utils.js';
-import type { Path } from '../../../src/types/rest.js';
+import type {
+  Middleware,
+  Path,
+  RequestContext,
+} from '../../../src/types/rest.js';
 
 describe('Path Utilities', () => {
   describe('validatePathPattern', () => {
@@ -361,6 +366,116 @@ describe('Path Utilities', () => {
       };
 
       expect(isAPIGatewayProxyResult(incompleteResult)).toBe(false);
+    });
+  });
+
+  describe('composeMiddleware', () => {
+    const mockOptions: RequestContext = {
+      event: {} as APIGatewayProxyEvent,
+      context: {} as any,
+      request: new Request('https://example.com'),
+      res: new Response(),
+    };
+
+    it('executes middleware in order', async () => {
+      const executionOrder: string[] = [];
+      const middleware: Middleware[] = [
+        async (_params, _options, next) => {
+          executionOrder.push('middleware1-start');
+          await next();
+          executionOrder.push('middleware1-end');
+        },
+        async (_params, _options, next) => {
+          executionOrder.push('middleware2-start');
+          await next();
+          executionOrder.push('middleware2-end');
+        },
+      ];
+
+      const composed = composeMiddleware(middleware);
+      await composed({}, mockOptions, async () => {
+        executionOrder.push('handler');
+      });
+
+      expect(executionOrder).toEqual([
+        'middleware1-start',
+        'middleware2-start',
+        'handler',
+        'middleware2-end',
+        'middleware1-end',
+      ]);
+    });
+
+    it('returns result from middleware that short-circuits', async () => {
+      const middleware: Middleware[] = [
+        async (_params, _options, next) => {
+          await next();
+        },
+        async (_params, _options, _next) => {
+          return { shortCircuit: true };
+        },
+      ];
+
+      const composed = composeMiddleware(middleware);
+      const result = await composed({}, mockOptions, async () => {
+        return { handler: true };
+      });
+
+      expect(result).toEqual({ shortCircuit: true });
+    });
+
+    it('returns result from next function when middleware does not return', async () => {
+      const middleware: Middleware[] = [
+        async (_params, _options, next) => {
+          await next();
+        },
+      ];
+
+      const composed = composeMiddleware(middleware);
+      const result = await composed({}, mockOptions, async () => {
+        return { handler: true };
+      });
+
+      expect(result).toEqual({ handler: true });
+    });
+
+    it('throws error when next() is called multiple times', async () => {
+      const middleware: Middleware[] = [
+        async (_params, _options, next) => {
+          await next();
+          await next();
+        },
+      ];
+
+      const composed = composeMiddleware(middleware);
+
+      await expect(composed({}, mockOptions, async () => {})).rejects.toThrow(
+        'next() called multiple times'
+      );
+    });
+
+    it('handles empty middleware array', async () => {
+      const composed = composeMiddleware([]);
+      const result = await composed({}, mockOptions, async () => {
+        return { handler: true };
+      });
+
+      expect(result).toEqual({ handler: true });
+    });
+
+    it('returns undefined when next function returns undefined', async () => {
+      const middleware: Middleware[] = [
+        async (_params, _options, next) => {
+          await next();
+        },
+      ];
+
+      const composed = composeMiddleware(middleware);
+      const result = await composed({}, mockOptions, async () => {
+        return undefined;
+      });
+
+      expect(result).toBeUndefined();
     });
   });
 });

@@ -44,7 +44,7 @@ import { isAppSyncGraphQLEvent } from './utils.js';
  */
 class AppSyncGraphQLResolver extends Router {
   /**
-   * A map to hold contextual data that can be shared across all resolver handlers.
+   * A map to hold shared contextual data accessible to all resolver handlers.
    */
   public readonly sharedContext: Map<string, unknown>;
 
@@ -250,33 +250,26 @@ class AppSyncGraphQLResolver extends Router {
    *
    * @example
    * ```ts
-   * import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
-   * import type { Context } from 'aws-lambda';
+   * import { AppSyncGraphQLResolver, Router } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const postsRouter = new Router();
+   * postsRouter.onQuery('getPosts', async ({ sharedContext }) => {
+   *   const requestId = sharedContext?.get('requestId');
+   *   return [{ id: 1, title: 'Post 1', requestId }];
+   * });
+   *
+   * const usersRouter = new Router();
+   * usersRouter.onQuery('getUsers', async ({ sharedContext }) => {
+   *   const requestId = sharedContext?.get('requestId');
+   *   return [{ id: 1, name: 'John Doe', requestId }];
+   * });
    *
    * const app = new AppSyncGraphQLResolver();
+   * app.includeRouter([usersRouter, postsRouter]);
+   * app.appendContext({ requestId: '12345' });
    *
-   * export const handler = async (event: unknown, context: Context) => {
-   *   // Share context between main app and routers
-   *   app.appendContext({
-   *     isAdmin: true,
-   *     requestId: context.awsRequestId,
-   *     timestamp: Date.now()
-   *   });
-   *
-   *   return app.resolve(event, context);
-   * };
-   *
-   * // Resolver handlers can access shared context
-   * app.onQuery('getUser', async ({ id }, { sharedContext }) => {
-   *   const isAdmin = sharedContext?.get('isAdmin');
-   *   const requestId = sharedContext?.get('requestId');
-   *
-   *   return {
-   *     id,
-   *     name: 'John Doe',
-   *     email: isAdmin ? 'john@example.com' : 'hidden'
-   *   };
-   * });
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
    * ```
    *
    * @param data - A record of key-value pairs to add to the shared context

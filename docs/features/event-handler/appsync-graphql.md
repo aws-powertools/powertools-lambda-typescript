@@ -114,6 +114,64 @@ Here's a table with their related scalar as a quick reference:
 
 ## Advanced
 
+### Split operations with Router
+
+As you grow the number of related GraphQL operations a given Lambda function should handle, it is natural to split them into separate files to ease maintenance - That's when the `Router` feature comes handy.
+
+Let's assume you have `app.ts` as your Lambda function entrypoint and routes in `postRouter.ts` and `userRouter.ts`. This is how you'd use the `Router` feature.
+
+=== "postRouter.ts"
+
+    We import **Router** instead of **AppSyncGraphQLResolver**; syntax wise is exactly the same.
+
+    ```typescript hl_lines="1 3"
+    --8<-- "examples/snippets/event-handler/appsync-graphql/postRouter.ts"
+    ```
+
+=== "userRouter.ts"
+
+    We import **Router** instead of **AppSyncGraphQLResolver**; syntax wise is exactly the same.
+
+    ```typescript hl_lines="1 3"
+    --8<-- "examples/snippets/event-handler/appsync-graphql/userRouter.ts"
+    ```
+
+=== "app.ts"
+
+    We use `includeRouter` method and include all operations registered in the router instances.
+
+    ```typescript hl_lines="2-3 7"
+    --8<-- "examples/snippets/event-handler/appsync-graphql/splitRouter.ts"
+    ```
+
+#### Sharing contextual data
+
+You can use `appendContext` when you want to share data between your App and Router instances. Any data you share will be available via the `sharedContext` parameter in your resolver handlers.
+
+???+ warning
+    For safety, we clear the context after each invocation.
+
+???+ tip
+    This can also be useful for injecting contextual information before a request is processed.
+
+=== "app.ts"
+
+    ```typescript hl_lines="9"
+    --8<-- "examples/snippets/event-handler/appsync-graphql/appendContext.ts"
+    ```
+
+=== "postRouter.ts"
+
+    ```typescript hl_lines="5-8"
+    --8<-- "examples/snippets/event-handler/appsync-graphql/postRouterWithContext.ts"
+    ```
+
+=== "userRouter.ts"
+
+    ```typescript hl_lines="5-8"
+    --8<-- "examples/snippets/event-handler/appsync-graphql/userRouterWithContext.ts"
+    ```
+
 ### Nested mappings
 
 !!! note

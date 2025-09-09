@@ -183,6 +183,9 @@ class AppSyncGraphQLResolver extends Router {
           options
         );
       } finally {
+        /**
+         * Clear shared context after batch processing to avoid data leakage between invocations.
+         */
         this.sharedContext.clear();
       }
     }
@@ -200,6 +203,9 @@ class AppSyncGraphQLResolver extends Router {
         options
       );
     } finally {
+      /**
+       * Clear shared context after single event processing to avoid data leakage between invocations.
+       */
       this.sharedContext.clear();
     }
   }
@@ -269,6 +275,7 @@ class AppSyncGraphQLResolver extends Router {
    * });
    *
    * const app = new AppSyncGraphQLResolver();
+   *
    * app.includeRouter([usersRouter, postsRouter]);
    * app.appendContext({ requestId: '12345' });
    *

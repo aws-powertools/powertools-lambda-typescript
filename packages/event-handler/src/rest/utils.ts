@@ -75,10 +75,17 @@ export const isAPIGatewayProxyEvent = (
     isString(event.httpMethod) &&
     isString(event.path) &&
     isString(event.resource) &&
-    isRecord(event.headers) &&
+    (event.headers == null || isRecord(event.headers)) &&
+    (event.multiValueHeaders == null || isRecord(event.multiValueHeaders)) &&
     isRecord(event.requestContext) &&
     typeof event.isBase64Encoded === 'boolean' &&
-    (event.body === null || isString(event.body))
+    (event.body === null || isString(event.body)) &&
+    (event.pathParameters === null || isRecord(event.pathParameters)) &&
+    (event.queryStringParameters === null ||
+      isRecord(event.queryStringParameters)) &&
+    (event.multiValueQueryStringParameters === null ||
+      isRecord(event.multiValueQueryStringParameters)) &&
+    (event.stageVariables === null || isRecord(event.stageVariables))
   );
 };
 

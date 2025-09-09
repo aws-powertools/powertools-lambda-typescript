@@ -1,7 +1,6 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BaseRouter } from '../../../src/rest/BaseRouter.js';
 import { HttpErrorCodes, HttpVerbs } from '../../../src/rest/constants.js';
 import {
   BadRequestError,
@@ -9,6 +8,7 @@ import {
   MethodNotAllowedError,
   type NotFoundError,
 } from '../../../src/rest/errors.js';
+import { Router } from '../../../src/rest/Router.js';
 import type {
   HttpMethod,
   Middleware,
@@ -26,7 +26,7 @@ import {
 } from './helpers.js';
 
 describe('Class: BaseRouter', () => {
-  class TestResolver extends BaseRouter {
+  class TestResolver extends Router {
     constructor(options?: RouterOptions) {
       super(options);
       this.logger.debug('test debug');
@@ -49,7 +49,7 @@ describe('Class: BaseRouter', () => {
     ['OPTIONS', 'options'],
   ])('routes %s requests', async (method, verb) => {
     // Prepare
-    const app = new TestResolver();
+    const app = new Router();
     (
       app[verb as Lowercase<HttpMethod>] as (
         path: string,
@@ -71,7 +71,7 @@ describe('Class: BaseRouter', () => {
     'throws MethodNotAllowedError for %s requests',
     async (method) => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       // Act & Assess
       const result = await app.resolve(
@@ -86,7 +86,7 @@ describe('Class: BaseRouter', () => {
 
   it('accepts multiple HTTP methods', async () => {
     // Act
-    const app = new TestResolver();
+    const app = new Router();
     app.route(async () => ({ result: 'route-test' }), {
       path: '/test',
       method: [HttpVerbs.GET, HttpVerbs.POST],
@@ -170,7 +170,7 @@ describe('Class: BaseRouter', () => {
   describe('middleware - global', () => {
     it('executes middleware in order before route handler', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createTrackingMiddleware('middleware1', executionOrder));
@@ -196,7 +196,7 @@ describe('Class: BaseRouter', () => {
 
     it('allows middleware to short-circuit by returning Response', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createTrackingMiddleware('middleware1', executionOrder));
@@ -231,7 +231,7 @@ describe('Class: BaseRouter', () => {
 
     it('passes params and options to middleware', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       let middlewareParams: Record<string, string> | undefined;
       let middlewareOptions: RequestContext | undefined;
 
@@ -257,7 +257,7 @@ describe('Class: BaseRouter', () => {
     it('returns error response when next() is called multiple times', async () => {
       // Prepare
       vi.stubEnv('POWERTOOLS_DEV', 'true');
-      const app = new TestResolver();
+      const app = new Router();
 
       app.use(async (params, options, next) => {
         await next();
@@ -280,7 +280,7 @@ describe('Class: BaseRouter', () => {
 
     it('handles errors thrown in middleware before next()', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(
@@ -310,7 +310,7 @@ describe('Class: BaseRouter', () => {
 
     it('handles errors thrown in middleware after next()', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(async (params, options, next) => {
@@ -342,7 +342,7 @@ describe('Class: BaseRouter', () => {
 
     it('propagates handler errors through middleware chain', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createTrackingMiddleware('middleware1', executionOrder));
@@ -370,7 +370,7 @@ describe('Class: BaseRouter', () => {
 
     it('handles middleware not calling next()', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createNoNextMiddleware('middleware1', executionOrder));
@@ -394,7 +394,7 @@ describe('Class: BaseRouter', () => {
 
     it('handles middleware returning JSON objects', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createTrackingMiddleware('middleware1', executionOrder));
@@ -432,7 +432,7 @@ describe('Class: BaseRouter', () => {
 
     it('allows middleware to manipulate response headers', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.use(async (params, options, next) => {
         await next();
@@ -463,7 +463,7 @@ describe('Class: BaseRouter', () => {
 
     it('allows middleware to completely overwrite response', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.use(async (params, options, next) => {
         await next();
@@ -492,7 +492,7 @@ describe('Class: BaseRouter', () => {
 
     it('preserves headers set before calling next()', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.use(async (params, options, next) => {
         options.res.headers.set('x-before-handler', 'middleware-value');
@@ -521,7 +521,7 @@ describe('Class: BaseRouter', () => {
 
     it('overwrites headers when set later in the middleware stack', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.use(async (params, options, next) => {
         options.res.headers.set('x-test-header', 'before-next');
@@ -555,7 +555,7 @@ describe('Class: BaseRouter', () => {
 
     it('works with class decorators and preserves scope access', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(async (params, options, next) => {
@@ -603,7 +603,7 @@ describe('Class: BaseRouter', () => {
   describe('middleware - route specific', () => {
     it('executes route-specific middleware after global middleware', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createTrackingMiddleware('global-middleware', executionOrder));
@@ -632,7 +632,7 @@ describe('Class: BaseRouter', () => {
 
     it('executes multiple route-specific middleware in order', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createTrackingMiddleware('global-middleware', executionOrder));
@@ -667,7 +667,7 @@ describe('Class: BaseRouter', () => {
 
     it('routes without middleware only run global middleware', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createTrackingMiddleware('global-middleware', executionOrder));
@@ -690,7 +690,7 @@ describe('Class: BaseRouter', () => {
 
     it('allows route middleware to short-circuit and skip handler', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createTrackingMiddleware('global-middleware', executionOrder));
@@ -746,7 +746,7 @@ describe('Class: BaseRouter', () => {
       'different routes can have different middleware: $path',
       async ({ path, middlewareNames, expectedOrder }) => {
         // Prepare
-        const app = new TestResolver();
+        const app = new Router();
         const executionOrder: string[] = [];
 
         app.use(async (params, options, next) => {
@@ -776,7 +776,7 @@ describe('Class: BaseRouter', () => {
 
     it('handles errors thrown in route middleware before next()', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       const routeMiddleware = createThrowingMiddleware(
@@ -803,7 +803,7 @@ describe('Class: BaseRouter', () => {
 
     it('handles errors thrown in route middleware after next()', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       const routeMiddleware: Middleware = async (params, options, next) => {
@@ -835,7 +835,7 @@ describe('Class: BaseRouter', () => {
 
     it('handles route middleware not calling next()', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       const routeMiddleware = createNoNextMiddleware(
@@ -861,7 +861,7 @@ describe('Class: BaseRouter', () => {
 
     it('handles route middleware returning JSON objects', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       const routeMiddleware = createReturningMiddleware(
@@ -893,7 +893,7 @@ describe('Class: BaseRouter', () => {
 
     it('passes params and options to route middleware', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       let middlewareParams: Record<string, string> | undefined;
       let middlewareOptions: RequestContext | undefined;
 
@@ -918,7 +918,7 @@ describe('Class: BaseRouter', () => {
 
     it('propagates errors through mixed global and route middleware', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createTrackingMiddleware('global-middleware', executionOrder));
@@ -949,7 +949,7 @@ describe('Class: BaseRouter', () => {
 
     it('handles errors when global middleware throws before route middleware', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(
@@ -982,7 +982,7 @@ describe('Class: BaseRouter', () => {
 
     it('handles errors when route middleware throws with global middleware present', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
 
       app.use(createTrackingMiddleware('global-middleware', executionOrder));
@@ -1013,7 +1013,7 @@ describe('Class: BaseRouter', () => {
   });
 
   describe('decorators', () => {
-    const app = new TestResolver();
+    const app = new Router();
 
     class Lambda {
       @app.get('/test')
@@ -1085,7 +1085,7 @@ describe('Class: BaseRouter', () => {
   describe('decorators with middleware', () => {
     it('executes middleware with decorator syntax', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const executionOrder: string[] = [];
       const middleware = createTrackingMiddleware(
         'decorator-middleware',
@@ -1140,7 +1140,7 @@ describe('Class: BaseRouter', () => {
       'routes %s requests with decorator middleware',
       async (method, expected) => {
         // Prepare
-        const app = new TestResolver();
+        const app = new Router();
         const executionOrder: string[] = [];
         const middleware = createTrackingMiddleware(
           `${method.toLowerCase()}-middleware`,
@@ -1214,7 +1214,7 @@ describe('Class: BaseRouter', () => {
   describe('error handling', () => {
     it('calls registered error handler when BadRequestError is thrown', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       vi.stubEnv('POWERTOOLS_DEV', 'true');
 
       app.errorHandler(BadRequestError, async (error) => ({
@@ -1248,7 +1248,7 @@ describe('Class: BaseRouter', () => {
 
     it('calls notFound handler when route is not found', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.notFound(async (error) => ({
         statusCode: HttpErrorCodes.NOT_FOUND,
@@ -1277,7 +1277,7 @@ describe('Class: BaseRouter', () => {
 
     it('calls methodNotAllowed handler when MethodNotAllowedError is thrown', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.methodNotAllowed(async (error) => ({
         statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
@@ -1310,7 +1310,7 @@ describe('Class: BaseRouter', () => {
 
     it('falls back to default error handler when registered handler throws', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.errorHandler(BadRequestError, async () => {
         throw new Error('Handler failed');
@@ -1336,7 +1336,7 @@ describe('Class: BaseRouter', () => {
 
     it('uses default handling when no error handler is registered', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.get('/test', () => {
         throw new Error('unhandled error');
@@ -1358,7 +1358,7 @@ describe('Class: BaseRouter', () => {
 
     it('calls most specific error handler when multiple handlers match', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.errorHandler(Error, async () => ({
         statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
@@ -1397,7 +1397,7 @@ describe('Class: BaseRouter', () => {
 
     it('uses ServiceError toJSON method when no custom handler is registered', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.get('/test', () => {
         throw new InternalServerError('service error');
@@ -1424,7 +1424,7 @@ describe('Class: BaseRouter', () => {
 
     it('hides error details when POWERTOOLS_DEV env var is not set', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.get('/test', () => {
         throw new Error('sensitive error details');
@@ -1449,7 +1449,7 @@ describe('Class: BaseRouter', () => {
     it('shows error details in development mode', async () => {
       // Prepare
       vi.stubEnv('POWERTOOLS_DEV', 'true');
-      const app = new TestResolver();
+      const app = new Router();
 
       app.get('/test', () => {
         throw new Error('debug error details');
@@ -1474,7 +1474,7 @@ describe('Class: BaseRouter', () => {
 
     it('accepts array of error types for single handler', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.errorHandler(
         [BadRequestError, MethodNotAllowedError],
@@ -1531,7 +1531,7 @@ describe('Class: BaseRouter', () => {
 
     it('replaces previous handler when registering new handler for same error type', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.errorHandler(BadRequestError, async () => ({
         statusCode: HttpErrorCodes.BAD_REQUEST,
@@ -1570,7 +1570,7 @@ describe('Class: BaseRouter', () => {
 
     it('returns response with correct Content-Type header', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       app.errorHandler(BadRequestError, async (error) => ({
         statusCode: HttpErrorCodes.BAD_REQUEST,
@@ -1596,7 +1596,7 @@ describe('Class: BaseRouter', () => {
   describe('decorators error handling', () => {
     it('works with errorHandler decorator', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       class Lambda {
         @app.errorHandler(BadRequestError)
@@ -1641,7 +1641,7 @@ describe('Class: BaseRouter', () => {
 
     it('works with notFound decorator', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       class Lambda {
         @app.notFound()
@@ -1681,7 +1681,7 @@ describe('Class: BaseRouter', () => {
 
     it('works with methodNotAllowed decorator', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       class Lambda {
         @app.methodNotAllowed()
@@ -1726,7 +1726,7 @@ describe('Class: BaseRouter', () => {
 
     it('preserves scope when using error handler decorators', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       class Lambda {
         public scope = 'scoped';
@@ -1773,7 +1773,7 @@ describe('Class: BaseRouter', () => {
   describe('handler options passing', () => {
     it('passes request, event, and context to functional route handlers', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const testEvent = createTestEvent('/test', 'GET');
 
       app.get('/test', async (_params, options) => {
@@ -1796,7 +1796,7 @@ describe('Class: BaseRouter', () => {
 
     it('passes request, event, and context to functional error handlers', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const testEvent = createTestEvent('/test', 'GET');
 
       app.errorHandler(BadRequestError, async (error, options) => ({
@@ -1824,7 +1824,7 @@ describe('Class: BaseRouter', () => {
 
     it('passes request, event, and context to decorator route handlers', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const testEvent = createTestEvent('/test', 'GET');
 
       class Lambda {
@@ -1856,7 +1856,7 @@ describe('Class: BaseRouter', () => {
 
     it('passes request, event, and context to decorator error handlers', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const testEvent = createTestEvent('/test', 'GET');
 
       class Lambda {
@@ -1896,7 +1896,7 @@ describe('Class: BaseRouter', () => {
 
     it('preserves scope when using route handler decorators', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
 
       class Lambda {
         public scope = 'scoped';
@@ -1934,7 +1934,7 @@ describe('Class: BaseRouter', () => {
   describe('resolve method', () => {
     it('throws an internal server error for non-API Gateway events', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       const nonApiGatewayEvent = { Records: [] }; // SQS-like event
 
       // Act & Assess
@@ -1945,7 +1945,7 @@ describe('Class: BaseRouter', () => {
 
     it('returns APIGatewayProxyResult for successful requests', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       app.get('/test', async () => ({ success: true }));
 
       // Act
@@ -1965,7 +1965,7 @@ describe('Class: BaseRouter', () => {
 
     it('returns APIGatewayProxyResult for error responses', async () => {
       // Prepare
-      const app = new TestResolver();
+      const app = new Router();
       app.get('/test', () => {
         throw new Error('test error');
       });

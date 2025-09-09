@@ -3,9 +3,9 @@ import type {
   JSONObject,
 } from '@aws-lambda-powertools/commons/types';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import type { BaseRouter } from '../rest/BaseRouter.js';
 import type { HttpErrorCodes, HttpVerbs } from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
+import type { Router } from '../rest/Router.js';
 import type { ResolveOptions } from './common.js';
 
 type ErrorResponse = {
@@ -34,7 +34,7 @@ interface ErrorConstructor<T extends Error = Error> {
 }
 
 /**
- * Options for the {@link BaseRouter} class
+ * Options for the {@link Router} class
  */
 type RouterOptions = {
   /**

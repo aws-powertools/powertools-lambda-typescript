@@ -46,11 +46,11 @@ class AppSyncGraphQLResolver extends Router {
   /**
    * A map to hold contextual data that can be shared across all resolver handlers.
    */
-  public readonly context: Map<string, unknown>;
+  public readonly sharedContext: Map<string, unknown>;
 
   public constructor(options?: GraphQlRouterOptions) {
     super(options);
-    this.context = new Map<string, unknown>();
+    this.sharedContext = new Map<string, unknown>();
   }
 
   /**
@@ -183,7 +183,7 @@ class AppSyncGraphQLResolver extends Router {
           options
         );
       } finally {
-        this.context.clear();
+        this.sharedContext.clear();
       }
     }
     if (!isAppSyncGraphQLEvent(event)) {
@@ -200,7 +200,7 @@ class AppSyncGraphQLResolver extends Router {
         options
       );
     } finally {
-      this.context.clear();
+      this.sharedContext.clear();
     }
   }
 
@@ -287,7 +287,7 @@ class AppSyncGraphQLResolver extends Router {
    */
   public appendContext(data: Record<string, unknown>): void {
     Object.entries(data).forEach(([key, value]) => {
-      this.context.set(key, value);
+      this.sharedContext.set(key, value);
     });
   }
 
@@ -429,7 +429,9 @@ class AppSyncGraphQLResolver extends Router {
         {
           event: events,
           context,
-          ...(this.context.size > 0 && { sharedContext: this.context }),
+          ...(this.sharedContext.size > 0 && {
+            sharedContext: this.sharedContext,
+          }),
         },
       ]);
 
@@ -452,7 +454,9 @@ class AppSyncGraphQLResolver extends Router {
           {
             event,
             context,
-            ...(this.context.size > 0 && { sharedContext: this.context }),
+            ...(this.sharedContext.size > 0 && {
+              sharedContext: this.sharedContext,
+            }),
           },
         ]);
         results.push(result);
@@ -467,7 +471,9 @@ class AppSyncGraphQLResolver extends Router {
           {
             event: events[i],
             context,
-            ...(this.context.size > 0 && { sharedContext: this.context }),
+            ...(this.sharedContext.size > 0 && {
+              sharedContext: this.sharedContext,
+            }),
           },
         ]);
         results.push(result);
@@ -515,7 +521,9 @@ class AppSyncGraphQLResolver extends Router {
           {
             event,
             context,
-            ...(this.context.size > 0 && { sharedContext: this.context }),
+            ...(this.sharedContext.size > 0 && {
+              sharedContext: this.sharedContext,
+            }),
           },
         ]
       );

@@ -1,8 +1,11 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it } from 'vitest';
-import { HttpErrorCodes, HttpVerbs } from '../../../../src/rest/constants.js';
-import { InternalServerError } from '../../../../src/rest/errors.js';
-import { Router } from '../../../../src/rest/Router.js';
+import {
+  HttpErrorCodes,
+  HttpVerbs,
+  InternalServerError,
+  Router,
+} from '../../../../src/rest/index.js';
 import type { HttpMethod, RouteHandler } from '../../../../src/types/rest.js';
 import { createTestEvent } from '../helpers.js';
 

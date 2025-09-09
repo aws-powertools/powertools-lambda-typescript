@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { HttpErrorCodes } from '../../../src/rest/constants.js';
 import {
   BadRequestError,
   ForbiddenError,
+  HttpErrorCodes,
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
@@ -10,7 +10,7 @@ import {
   RequestTimeoutError,
   ServiceUnavailableError,
   UnauthorizedError,
-} from '../../../src/rest/errors.js';
+} from '../../../src/rest/index.js';
 
 describe('HTTP Error Classes', () => {
   it.each([

@@ -1,13 +1,13 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
-import { HttpErrorCodes } from '../../../../src/rest/constants.js';
 import {
   BadRequestError,
+  HttpErrorCodes,
   MethodNotAllowedError,
   type NotFoundError,
-} from '../../../../src/rest/errors.js';
-import { Router } from '../../../../src/rest/Router.js';
+  Router,
+} from '../../../../src/rest/index.js';
 import { createTestEvent, createTrackingMiddleware } from '../helpers.js';
 
 describe('Class: Router - Decorators', () => {

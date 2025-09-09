@@ -36,7 +36,7 @@ interface ErrorConstructor<T extends Error = Error> {
 /**
  * Options for the {@link Router} class
  */
-type RouterOptions = {
+type RestRouterOptions = {
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
    *
@@ -67,14 +67,14 @@ type HttpStatusCode = (typeof HttpErrorCodes)[keyof typeof HttpErrorCodes];
 
 type Path = `/${string}`;
 
-type RouteHandlerOptions = {
+type RestRouteHandlerOptions = {
   handler: RouteHandler;
   params: Record<string, string>;
   rawParams: Record<string, string>;
   middleware: Middleware[];
 };
 
-type RouteOptions = {
+type RestRouteOptions = {
   method: HttpMethod | HttpMethod[];
   path: Path;
   middleware?: Middleware[];
@@ -125,10 +125,10 @@ export type {
   Middleware,
   Path,
   RequestContext,
-  RouterOptions,
+  RestRouterOptions,
   RouteHandler,
-  RouteOptions,
-  RouteHandlerOptions,
+  RestRouteOptions,
+  RestRouteHandlerOptions,
   RouteRegistryOptions,
   ValidationResult,
 };

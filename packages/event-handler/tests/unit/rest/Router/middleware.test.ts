@@ -1,8 +1,7 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
-import { HttpErrorCodes } from '../../../../src/rest/constants.js';
-import { Router } from '../../../../src/rest/Router.js';
+import { HttpErrorCodes, Router } from '../../../../src/rest/index.js';
 import type {
   Middleware,
   Path,

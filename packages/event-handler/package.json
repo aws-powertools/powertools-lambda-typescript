@@ -67,6 +67,16 @@
         "types": "./lib/esm/types/index.d.ts",
         "default": "./lib/esm/types/index.js"
       }
+    },
+    "./experimental-rest": {
+      "require": {
+        "types": "./lib/cjs/rest/index.d.ts",
+        "default": "./lib/cjs/rest/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/rest/index.d.ts",
+        "default": "./lib/esm/rest/index.js"
+      }
     }
   },
   "typesVersions": {
@@ -86,6 +96,10 @@
       "types": [
         "./lib/cjs/types/index.d.ts",
         "./lib/esm/types/index.d.ts"
+      ],
+      "experimental-rest": [
+        "./lib/cjs/rest/index.d.ts",
+        "./lib/esm/rest/index.d.ts"
       ]
     }
   },

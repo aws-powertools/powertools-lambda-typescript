@@ -6,7 +6,7 @@ import {
   isAPIGatewayProxyEvent,
   isAPIGatewayProxyResult,
   validatePathPattern,
-} from '../../../src/rest/utils.js';
+} from '../../../src/rest/index.js';
 import type {
   Middleware,
   Path,

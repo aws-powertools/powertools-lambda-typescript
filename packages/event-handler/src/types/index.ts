@@ -30,3 +30,19 @@ export type {
   Anything,
   ResolveOptions,
 } from './common.js';
+
+export type {
+  ErrorHandler,
+  ErrorResolveOptions,
+  ErrorResponse,
+  HandlerResponse,
+  HttpMethod,
+  HttpStatusCode,
+  Middleware,
+  Path,
+  RequestContext,
+  RestRouteHandlerOptions,
+  RestRouteOptions,
+  RestRouterOptions,
+  RouteHandler,
+} from './rest.js';

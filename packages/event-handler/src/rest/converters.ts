@@ -74,7 +74,7 @@ export const proxyEventToWebRequest = (
  * @param response - The Web API Response object
  * @returns An API Gateway proxy result
  */
-export const responseToProxyResult = async (
+export const webResponseToProxyResult = async (
   response: Response
 ): Promise<APIGatewayProxyResult> => {
   const headers: Record<string, string> = {};
@@ -111,7 +111,7 @@ export const responseToProxyResult = async (
  * @param headers - Optional headers to be included in the response
  * @returns A Web API Response object
  */
-export const handlerResultToResponse = (
+export const handlerResultToWebResponse = (
   response: HandlerResponse,
   resHeaders?: Headers
 ): Response => {
@@ -159,7 +159,7 @@ export const handlerResultToProxyResult = async (
     return response;
   }
   if (response instanceof Response) {
-    return await responseToProxyResult(response);
+    return await webResponseToProxyResult(response);
   }
   return {
     statusCode: 200,

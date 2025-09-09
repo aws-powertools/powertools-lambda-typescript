@@ -1917,5 +1917,116 @@ describe('Class: AppSyncGraphQLResolver', () => {
     });
   });
 
+  it('does not include sharedContext when context is empty for batch resolvers with throwOnError=true', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+    const handlerSpy = vi.fn().mockResolvedValue({ id: '1', processed: true });
+
+    app.batchResolver(handlerSpy, {
+      fieldName: 'batchProcess',
+      aggregate: false,
+      throwOnError: true,
+    });
+
+    // Act
+    await app.resolve(
+      [onGraphqlEventFactory('batchProcess', 'Query', { id: '1' })],
+      context
+    );
+
+    // Assess
+    expect(handlerSpy).toHaveBeenCalledWith(
+      { id: '1' },
+      {
+        event: expect.any(Object),
+        context,
+      }
+    );
+  });
+
+  it('does not include sharedContext when context is empty for batch resolvers with throwOnError=false', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+    const handlerSpy = vi.fn().mockResolvedValue({ id: '1', processed: true });
+
+    app.batchResolver(handlerSpy, {
+      fieldName: 'batchProcess',
+      aggregate: false,
+      throwOnError: false,
+    });
+
+    // Act
+    await app.resolve(
+      [onGraphqlEventFactory('batchProcess', 'Query', { id: '1' })],
+      context
+    );
+
+    // Assess
+    expect(handlerSpy).toHaveBeenCalledWith(
+      { id: '1' },
+      {
+        event: expect.any(Object),
+        context,
+      }
+    );
+  });
+
+  it('includes sharedContext when context has data for batch resolvers with throwOnError=true', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+    const handlerSpy = vi.fn().mockResolvedValue({ id: '1', processed: true });
+    app.batchResolver(handlerSpy, {
+      fieldName: 'batchProcess',
+      aggregate: false,
+      throwOnError: true,
+    });
+
+    // Act
+    app.appendContext({ requestId: 'test-123' });
+
+    await app.resolve(
+      [onGraphqlEventFactory('batchProcess', 'Query', { id: '1' })],
+      context
+    );
+
+    // Assess
+    expect(handlerSpy).toHaveBeenCalledWith(
+      { id: '1' },
+      expect.objectContaining({
+        event: expect.any(Object),
+        context,
+        sharedContext: expect.any(Map),
+      })
+    );
+  });
+
+  it('includes sharedContext when context has data for batch resolvers with throwOnError=false', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+    const handlerSpy = vi.fn().mockResolvedValue({ id: '1', processed: true });
+    app.batchResolver(handlerSpy, {
+      fieldName: 'batchProcess',
+      aggregate: false,
+      throwOnError: false,
+    });
+
+    // Act
+    app.appendContext({ requestId: 'test-456' });
+    await app.resolve(
+      [onGraphqlEventFactory('batchProcess', 'Query', { id: '1' })],
+      context
+    );
+
+    // Assess
+    expect(handlerSpy).toHaveBeenCalledWith(
+      { id: '1' },
+      expect.objectContaining({
+        event: expect.any(Object),
+        context,
+        sharedContext: expect.any(Map),
+      })
+    );
+  });
+
   // #endregion appendContext
 });

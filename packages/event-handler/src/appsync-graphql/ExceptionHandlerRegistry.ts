@@ -70,7 +70,6 @@ class ExceptionHandlerRegistry {
    * @param otherRegistry - The registry to merge handlers from.
    */
   public merge(otherRegistry: ExceptionHandlerRegistry): void {
-    this.#logger.debug('Merging exception handler registries');
     for (const [errorName, handlerOptions] of otherRegistry.handlers) {
       if (this.handlers.has(errorName)) {
         this.#warnHandlerOverriding(errorName);

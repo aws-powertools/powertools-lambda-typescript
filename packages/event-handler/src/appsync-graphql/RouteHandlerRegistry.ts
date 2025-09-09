@@ -86,7 +86,6 @@ class RouteHandlerRegistry {
    * @param otherRegistry - The registry to merge handlers from.
    */
   public merge(otherRegistry: RouteHandlerRegistry): void {
-    this.#logger.debug('Merging route handler registries');
     for (const [key, handler] of otherRegistry.resolvers) {
       if (this.resolvers.has(key)) {
         this.#warnResolverOverriding(handler.fieldName, handler.typeName);

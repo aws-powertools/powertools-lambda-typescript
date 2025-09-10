@@ -2,10 +2,10 @@ import type { APIGatewayProxyEvent } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   handlerResultToProxyResult,
-  handlerResultToResponse,
+  handlerResultToWebResponse,
   proxyEventToWebRequest,
-  responseToProxyResult,
-} from '../../../src/rest/converters.js';
+  webResponseToProxyResult,
+} from '../../../src/rest/index.js';
 
 describe('Converters', () => {
   describe('proxyEventToWebRequest', () => {
@@ -320,7 +320,7 @@ describe('Converters', () => {
         },
       });
 
-      const result = await responseToProxyResult(response);
+      const result = await webResponseToProxyResult(response);
 
       expect(result.statusCode).toBe(200);
       expect(result.body).toBe('Hello World');
@@ -334,7 +334,7 @@ describe('Converters', () => {
         headers: { 'content-type': 'text/plain', 'x-custom': 'value' },
       });
 
-      const result = await responseToProxyResult(response);
+      const result = await webResponseToProxyResult(response);
 
       expect(result.statusCode).toBe(201);
       expect(result.headers).toEqual({
@@ -352,7 +352,7 @@ describe('Converters', () => {
         },
       });
 
-      const result = await responseToProxyResult(response);
+      const result = await webResponseToProxyResult(response);
 
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
       expect(result.multiValueHeaders).toEqual({
@@ -369,7 +369,7 @@ describe('Converters', () => {
         },
       });
 
-      const result = await responseToProxyResult(response);
+      const result = await webResponseToProxyResult(response);
 
       expect(result.headers).toEqual({
         'content-type': 'application/json',
@@ -382,7 +382,7 @@ describe('Converters', () => {
     it('handles different status codes', async () => {
       const response = new Response('Not Found', { status: 404 });
 
-      const result = await responseToProxyResult(response);
+      const result = await webResponseToProxyResult(response);
 
       expect(result.statusCode).toBe(404);
       expect(result.body).toBe('Not Found');
@@ -391,7 +391,7 @@ describe('Converters', () => {
     it('handles empty response body', async () => {
       const response = new Response(null, { status: 204 });
 
-      const result = await responseToProxyResult(response);
+      const result = await webResponseToProxyResult(response);
 
       expect(result.statusCode).toBe(204);
       expect(result.body).toBe('');
@@ -438,7 +438,7 @@ describe('Converters', () => {
     it('returns Response object as-is', () => {
       const response = new Response('Hello', { status: 201 });
 
-      const result = handlerResultToResponse(response);
+      const result = handlerResultToWebResponse(response);
 
       expect(result).toBe(response);
     });
@@ -451,7 +451,7 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
-      const result = handlerResultToResponse(proxyResult);
+      const result = handlerResultToWebResponse(proxyResult);
 
       expect(result).toBeInstanceOf(Response);
       expect(result.status).toBe(201);
@@ -470,7 +470,7 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
-      const result = handlerResultToResponse(proxyResult);
+      const result = handlerResultToWebResponse(proxyResult);
 
       expect(result.headers.get('content-type')).toBe('application/json');
       expect(result.headers.get('Set-Cookie')).toBe(
@@ -481,7 +481,7 @@ describe('Converters', () => {
     it('converts plain object to JSON Response with default headers', async () => {
       const obj = { message: 'success' };
 
-      const result = handlerResultToResponse(obj);
+      const result = handlerResultToWebResponse(obj);
 
       expect(result).toBeInstanceOf(Response);
       expect(result.status).toBe(200);
@@ -493,7 +493,7 @@ describe('Converters', () => {
       const obj = { message: 'success' };
       const headers = new Headers({ 'x-custom': 'value' });
 
-      const result = handlerResultToResponse(obj, headers);
+      const result = handlerResultToWebResponse(obj, headers);
 
       expect(result.headers.get('Content-Type')).toBe('application/json');
       expect(result.headers.get('x-custom')).toBe('value');
@@ -507,7 +507,7 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
-      const result = handlerResultToResponse(proxyResult);
+      const result = handlerResultToWebResponse(proxyResult);
 
       expect(result).toBeInstanceOf(Response);
       expect(result.status).toBe(200);
@@ -522,7 +522,7 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
-      const result = handlerResultToResponse(proxyResult);
+      const result = handlerResultToWebResponse(proxyResult);
 
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
@@ -536,7 +536,7 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
-      const result = handlerResultToResponse(proxyResult);
+      const result = handlerResultToWebResponse(proxyResult);
 
       expect(result.headers.get('content-type')).toBe('text/plain');
     });

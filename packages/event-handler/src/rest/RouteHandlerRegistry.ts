@@ -3,7 +3,7 @@ import type {
   DynamicRoute,
   HttpMethod,
   Path,
-  RouteHandlerOptions,
+  RestRouteHandlerOptions,
   RouteRegistryOptions,
   ValidationResult,
 } from '../types/rest.js';
@@ -147,7 +147,10 @@ class RouteHandlerRegistry {
    * @param path - The path to match
    * @returns Route handler options or null if no match found
    */
-  public resolve(method: HttpMethod, path: Path): RouteHandlerOptions | null {
+  public resolve(
+    method: HttpMethod,
+    path: Path
+  ): RestRouteHandlerOptions | null {
     if (this.#shouldSort) {
       this.#dynamicRoutes.sort(this.#compareRouteSpecificity);
       this.#shouldSort = false;

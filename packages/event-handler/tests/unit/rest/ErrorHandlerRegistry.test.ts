@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { HttpErrorCodes } from '../../../src/rest/constants.js';
 import { ErrorHandlerRegistry } from '../../../src/rest/ErrorHandlerRegistry.js';
+import { HttpErrorCodes } from '../../../src/rest/index.js';
 import type {
   HttpStatusCode,
   RequestContext,

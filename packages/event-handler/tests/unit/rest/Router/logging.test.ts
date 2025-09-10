@@ -1,11 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { HttpVerbs } from '../../../../src/rest/constants.js';
-import { Router } from '../../../../src/rest/Router.js';
-import type { RouterOptions } from '../../../../src/types/rest.js';
+import { HttpVerbs, Router } from '../../../../src/rest/index.js';
+import type { RestRouterOptions } from '../../../../src/types/rest.js';
 
 describe('Class: Router - Logging', () => {
   class TestResolver extends Router {
-    constructor(options?: RouterOptions) {
+    constructor(options?: RestRouterOptions) {
       super(options);
       this.logger.debug('test debug');
       this.logger.warn('test warn');

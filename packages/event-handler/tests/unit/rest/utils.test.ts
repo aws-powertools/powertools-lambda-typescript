@@ -1,12 +1,11 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
-  compilePath,
   composeMiddleware,
   isAPIGatewayProxyEvent,
   isAPIGatewayProxyResult,
-  validatePathPattern,
-} from '../../../src/rest/utils.js';
+} from '../../../src/rest/index.js';
+import { compilePath, validatePathPattern } from '../../../src/rest/utils.js';
 import type {
   Middleware,
   Path,

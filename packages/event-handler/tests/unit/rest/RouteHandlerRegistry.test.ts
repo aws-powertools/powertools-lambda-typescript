@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HttpVerbs } from '../../../src/rest/constants.js';
+import { HttpVerbs } from '../../../src/rest/index.js';
 import { Route } from '../../../src/rest/Route.js';
 import { RouteHandlerRegistry } from '../../../src/rest/RouteHandlerRegistry.js';
 import type { Path } from '../../../src/types/rest.js';

@@ -1,12 +1,12 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { HttpErrorCodes } from '../../../../src/rest/constants.js';
 import {
   BadRequestError,
+  HttpErrorCodes,
   InternalServerError,
   MethodNotAllowedError,
-} from '../../../../src/rest/errors.js';
-import { Router } from '../../../../src/rest/Router.js';
+  Router,
+} from '../../../../src/rest/index.js';
 import { createTestEvent } from '../helpers.js';
 
 describe('Class: Router - Error Handling', () => {

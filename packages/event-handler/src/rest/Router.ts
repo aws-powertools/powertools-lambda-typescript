@@ -13,16 +13,16 @@ import type {
   Middleware,
   Path,
   RequestContext,
+  RestRouteOptions,
+  RestRouterOptions,
   RouteHandler,
-  RouteOptions,
-  RouterOptions,
 } from '../types/rest.js';
 import { HttpErrorCodes, HttpVerbs } from './constants.js';
 import {
   handlerResultToProxyResult,
-  handlerResultToResponse,
+  handlerResultToWebResponse,
   proxyEventToWebRequest,
-  responseToProxyResult,
+  webResponseToProxyResult,
 } from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import {
@@ -57,7 +57,7 @@ class Router {
    */
   protected readonly isDev: boolean = false;
 
-  public constructor(options?: RouterOptions) {
+  public constructor(options?: RestRouterOptions) {
     this.context = {};
     const alcLogLevel = getStringFromEnv({
       key: 'AWS_LAMBDA_LOG_LEVEL',
@@ -236,7 +236,7 @@ class Router {
 
       const handlerMiddleware: Middleware = async (params, options, next) => {
         const handlerResult = await handler(params, options);
-        options.res = handlerResultToResponse(
+        options.res = handlerResultToWebResponse(
           handlerResult,
           options.res.headers
         );
@@ -266,11 +266,11 @@ class Router {
         ...handlerOptions,
         scope: options?.scope,
       });
-      return await responseToProxyResult(result);
+      return await webResponseToProxyResult(result);
     }
   }
 
-  public route(handler: RouteHandler, options: RouteOptions): void {
+  public route(handler: RouteHandler, options: RestRouteOptions): void {
     const { method, path, middleware = [] } = options;
     const methods = Array.isArray(method) ? method : [method];
 

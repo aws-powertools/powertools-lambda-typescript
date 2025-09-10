@@ -412,7 +412,7 @@ describe('Class: Router - Decorators', () => {
 
       // Act
       const result = await lambda.handler(testEvent, context);
-      const actual = JSON.parse(result?.body ?? '{}');
+      const actual = JSON.parse(result.body);
 
       // Assess
       expect(actual.hasRequest).toBe(true);
@@ -452,7 +452,7 @@ describe('Class: Router - Decorators', () => {
 
       // Act
       const result = await lambda.handler(testEvent, context);
-      const body = JSON.parse(result?.body ?? '{}');
+      const body = JSON.parse(result.body);
 
       // Assess
       expect(body.hasRequest).toBe(true);

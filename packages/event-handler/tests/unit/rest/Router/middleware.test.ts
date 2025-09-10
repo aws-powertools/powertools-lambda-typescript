@@ -127,8 +127,8 @@ describe('Class: Router - Middleware', () => {
         'middleware2',
         'middleware1-end',
       ]);
-      expect(result?.statusCode).toBe(401);
-      expect(result?.body).toBe('Short-circuited');
+      expect(result.statusCode).toBe(401);
+      expect(result.body).toBe('Short-circuited');
     });
 
     it('passes params and options to middleware', async () => {
@@ -175,8 +175,8 @@ describe('Class: Router - Middleware', () => {
       );
 
       // Assess
-      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
-      const body = JSON.parse(result?.body ?? '{}');
+      expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      const body = JSON.parse(result.body);
       expect(body.message).toContain('next() called multiple times');
     });
 
@@ -207,7 +207,7 @@ describe('Class: Router - Middleware', () => {
 
       // Assess
       expect(executionOrder).toEqual(['middleware1']);
-      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
     });
 
     it('handles errors thrown in middleware after next()', async () => {
@@ -239,7 +239,7 @@ describe('Class: Router - Middleware', () => {
         'handler',
         'middleware1-end',
       ]);
-      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
     });
 
     it('propagates handler errors through middleware chain', async () => {
@@ -267,7 +267,7 @@ describe('Class: Router - Middleware', () => {
         'middleware2-start',
         'handler',
       ]);
-      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
     });
 
     it('handles middleware not calling next()', async () => {
@@ -291,7 +291,7 @@ describe('Class: Router - Middleware', () => {
 
       // Assess
       expect(executionOrder).toEqual(['middleware1']);
-      expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
     });
 
     it('handles middleware returning JSON objects', async () => {
@@ -324,8 +324,8 @@ describe('Class: Router - Middleware', () => {
         'middleware2',
         'middleware1-end',
       ]);
-      expect(result?.statusCode).toBe(200);
-      const body = JSON.parse(result?.body ?? '{}');
+      expect(result.statusCode).toBe(200);
+      const body = JSON.parse(result.body);
       expect(body).toEqual({
         statusCode: 202,
         message: 'Accepted by middleware',
@@ -619,8 +619,8 @@ describe('Class: Router - Middleware', () => {
         'route-middleware',
         'global-middleware-end',
       ]);
-      expect(result?.statusCode).toBe(403);
-      expect(result?.body).toBe('Route middleware response');
+      expect(result.statusCode).toBe(403);
+      expect(result.body).toBe('Route middleware response');
     });
   });
 });

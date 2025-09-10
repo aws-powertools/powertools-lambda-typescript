@@ -449,12 +449,12 @@ describe('Path Utilities', () => {
     it('executes middleware in order', async () => {
       const executionOrder: string[] = [];
       const middleware: Middleware[] = [
-        async (_params, _options, next) => {
+        async (_params, _reqCtx, next) => {
           executionOrder.push('middleware1-start');
           await next();
           executionOrder.push('middleware1-end');
         },
-        async (_params, _options, next) => {
+        async (_params, _reqCtx, next) => {
           executionOrder.push('middleware2-start');
           await next();
           executionOrder.push('middleware2-end');
@@ -477,10 +477,10 @@ describe('Path Utilities', () => {
 
     it('returns result from middleware that short-circuits', async () => {
       const middleware: Middleware[] = [
-        async (_params, _options, next) => {
+        async (_params, _reqCtx, next) => {
           await next();
         },
-        async (_params, _options, _next) => {
+        async (_params, _reqCtx, _next) => {
           return { shortCircuit: true };
         },
       ];
@@ -495,7 +495,7 @@ describe('Path Utilities', () => {
 
     it('returns result from next function when middleware does not return', async () => {
       const middleware: Middleware[] = [
-        async (_params, _options, next) => {
+        async (_params, _reqCtx, next) => {
           await next();
         },
       ];
@@ -510,7 +510,7 @@ describe('Path Utilities', () => {
 
     it('throws error when next() is called multiple times', async () => {
       const middleware: Middleware[] = [
-        async (_params, _options, next) => {
+        async (_params, _reqCtx, next) => {
           await next();
           await next();
         },
@@ -534,7 +534,7 @@ describe('Path Utilities', () => {
 
     it('returns undefined when next function returns undefined', async () => {
       const middleware: Middleware[] = [
-        async (_params, _options, next) => {
+        async (_params, _reqCtx, next) => {
           await next();
         },
       ];

@@ -25,7 +25,7 @@ type ErrorResolveOptions = RequestContext & ResolveOptions;
 
 type ErrorHandler<T extends Error = Error> = (
   error: T,
-  options: RequestContext
+  reqCtx: RequestContext
 ) => Promise<ErrorResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
@@ -59,7 +59,7 @@ type HandlerResponse = Response | JSONObject;
 type RouteHandler<
   TParams = Record<string, unknown>,
   TReturn = HandlerResponse,
-> = (args: TParams, options: RequestContext) => Promise<TReturn>;
+> = (args: TParams, reqCtx: RequestContext) => Promise<TReturn>;
 
 type HttpMethod = keyof typeof HttpVerbs;
 
@@ -84,7 +84,7 @@ type NextFunction = () => Promise<HandlerResponse | void>;
 
 type Middleware = (
   params: Record<string, string>,
-  options: RequestContext,
+  reqCtx: RequestContext,
   next: NextFunction
 ) => Promise<void | HandlerResponse>;
 

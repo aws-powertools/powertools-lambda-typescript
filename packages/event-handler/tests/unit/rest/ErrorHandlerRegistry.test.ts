@@ -8,7 +8,7 @@ import type {
 
 const createErrorHandler =
   (statusCode: HttpStatusCode, message?: string) =>
-  async (error: Error, _options: RequestContext) => ({
+  async (error: Error, _reqCtx: RequestContext) => ({
     statusCode,
     error: error.name,
     message: message ?? error.message,

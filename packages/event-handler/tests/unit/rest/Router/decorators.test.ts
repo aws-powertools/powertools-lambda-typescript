@@ -395,11 +395,11 @@ describe('Class: Router - Decorators', () => {
 
       class Lambda {
         @app.get('/test')
-        public async getTest(_params: any, options: any) {
+        public async getTest(_params: any, reqCtx: any) {
           return {
-            hasRequest: options.request instanceof Request,
-            hasEvent: options.event === testEvent,
-            hasContext: options.context === context,
+            hasRequest: reqCtx.request instanceof Request,
+            hasEvent: reqCtx.event === testEvent,
+            hasContext: reqCtx.context === context,
           };
         }
 
@@ -427,14 +427,14 @@ describe('Class: Router - Decorators', () => {
 
       class Lambda {
         @app.errorHandler(BadRequestError)
-        public async handleBadRequest(error: BadRequestError, options: any) {
+        public async handleBadRequest(error: BadRequestError, reqCtx: any) {
           return {
             statusCode: HttpErrorCodes.BAD_REQUEST,
             error: 'Bad Request',
             message: error.message,
-            hasRequest: options.request instanceof Request,
-            hasEvent: options.event === testEvent,
-            hasContext: options.context === context,
+            hasRequest: reqCtx.request instanceof Request,
+            hasEvent: reqCtx.event === testEvent,
+            hasContext: reqCtx.context === context,
           };
         }
 

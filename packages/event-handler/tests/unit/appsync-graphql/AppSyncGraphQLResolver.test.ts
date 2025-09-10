@@ -2003,7 +2003,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       expect.objectContaining({
         event: expect.any(Object),
         context,
-        sharedContext: expect.any(Map),
+        sharedContext: new Map([['requestId', 'test-123']]),
       })
     );
   });
@@ -2031,7 +2031,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       expect.objectContaining({
         event: expect.any(Object),
         context,
-        sharedContext: expect.any(Map),
+        sharedContext: new Map([['requestId', 'test-456']]),
       })
     );
   });

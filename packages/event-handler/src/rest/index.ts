@@ -1,5 +1,28 @@
 export { HttpErrorCodes, HttpVerbs } from './constants.js';
-export * from './converters.js';
-export * from './errors.js';
+export {
+  handlerResultToProxyResult,
+  handlerResultToWebResponse,
+  proxyEventToWebRequest,
+  webResponseToProxyResult,
+} from './converters.js';
+export {
+  BadRequestError,
+  ForbiddenError,
+  InternalServerError,
+  MethodNotAllowedError,
+  NotFoundError,
+  ParameterValidationError,
+  RequestEntityTooLargeError,
+  RequestTimeoutError,
+  RouteMatchingError,
+  ServiceError,
+  ServiceUnavailableError,
+  UnauthorizedError,
+} from './errors.js';
 export { Router } from './Router.js';
-export * from './utils.js';
+export {
+  composeMiddleware,
+  isAPIGatewayProxyEvent,
+  isAPIGatewayProxyResult,
+  isHttpMethod,
+} from './utils.js';

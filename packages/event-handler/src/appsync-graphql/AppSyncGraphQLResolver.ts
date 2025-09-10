@@ -184,7 +184,7 @@ class AppSyncGraphQLResolver extends Router {
         );
       } finally {
         /**
-         * Clear shared context after batch processing to avoid data leakage between invocations.
+         * Clear shared context after batch processing for safety
          */
         this.sharedContext.clear();
       }
@@ -204,7 +204,7 @@ class AppSyncGraphQLResolver extends Router {
       );
     } finally {
       /**
-       * Clear shared context after single event processing to avoid data leakage between invocations.
+       * Clear shared context after batch processing for safety
        */
       this.sharedContext.clear();
     }
@@ -222,19 +222,15 @@ class AppSyncGraphQLResolver extends Router {
    * ```ts
    * import { AppSyncGraphQLResolver, Router } from '@aws-lambda-powertools/event-handler/appsync-graphql';
    *
-   * const postsRouter = new Router();
-   * postsRouter.onQuery('getPosts', async () => {
-   *   return [{ id: 1, title: 'Post 1' }];
-   * });
+   * const postRouter = new Router();
+   * postRouter.onQuery('getPosts', async () => [{ id: 1, title: 'Post 1' }]);
    *
-   * const usersRouter = new Router();
-   * usersRouter.onQuery('getUsers', async () => {
-   *   return [{ id: 1, name: 'John Doe' }];
-   * });
+   * const userRouter = new Router();
+   * userRouter.onQuery('getUsers', async () => [{ id: 1, name: 'John Doe' }]);
    *
    * const app = new AppSyncGraphQLResolver();
    *
-   * app.includeRouter([usersRouter, postsRouter]);
+   * app.includeRouter([userRouter, postRouter]);
    *
    * export const handler = async (event, context) =>
    *   app.resolve(event, context);
@@ -244,10 +240,11 @@ class AppSyncGraphQLResolver extends Router {
    */
   public includeRouter(router: Router | Router[]): void {
     const routers = Array.isArray(router) ? router : [router];
+
     this.logger.debug('Including router');
-    routers.forEach((router) => {
-      this.mergeRegistriesFrom(router);
-    });
+    for (const routerToBeIncluded of routers) {
+      this.mergeRegistriesFrom(routerToBeIncluded);
+    }
     this.logger.debug('Router included successfully');
   }
 
@@ -262,21 +259,21 @@ class AppSyncGraphQLResolver extends Router {
    * ```ts
    * import { AppSyncGraphQLResolver, Router } from '@aws-lambda-powertools/event-handler/appsync-graphql';
    *
-   * const postsRouter = new Router();
-   * postsRouter.onQuery('getPosts', async ({ sharedContext }) => {
+   * const postRouter = new Router();
+   * postRouter.onQuery('getPosts', async ({ sharedContext }) => {
    *   const requestId = sharedContext?.get('requestId');
    *   return [{ id: 1, title: 'Post 1', requestId }];
    * });
    *
-   * const usersRouter = new Router();
-   * usersRouter.onQuery('getUsers', async ({ sharedContext }) => {
+   * const userRouter = new Router();
+   * userRouter.onQuery('getUsers', async ({ sharedContext }) => {
    *   const requestId = sharedContext?.get('requestId');
    *   return [{ id: 1, name: 'John Doe', requestId }];
    * });
    *
    * const app = new AppSyncGraphQLResolver();
    *
-   * app.includeRouter([usersRouter, postsRouter]);
+   * app.includeRouter([userRouter, postRouter]);
    * app.appendContext({ requestId: '12345' });
    *
    * export const handler = async (event, context) =>
@@ -286,9 +283,9 @@ class AppSyncGraphQLResolver extends Router {
    * @param data - A record of key-value pairs to add to the shared context
    */
   public appendContext(data: Record<string, unknown>): void {
-    Object.entries(data).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(data)) {
       this.sharedContext.set(key, value);
-    });
+    }
   }
 
   /**

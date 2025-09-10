@@ -371,13 +371,13 @@ describe('Class: Router - Error Handling', () => {
     const app = new Router();
     const testEvent = createTestEvent('/test', 'GET');
 
-    app.errorHandler(BadRequestError, async (error, options) => ({
+    app.errorHandler(BadRequestError, async (error, reqCtx) => ({
       statusCode: HttpErrorCodes.BAD_REQUEST,
       error: 'Bad Request',
       message: error.message,
-      hasRequest: options.request instanceof Request,
-      hasEvent: options.event === testEvent,
-      hasContext: options.context === context,
+      hasRequest: reqCtx.request instanceof Request,
+      hasEvent: reqCtx.event === testEvent,
+      hasContext: reqCtx.context === context,
     }));
 
     app.get('/test', () => {

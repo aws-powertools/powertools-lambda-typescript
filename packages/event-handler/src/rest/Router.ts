@@ -79,7 +79,7 @@ class Router {
    * Registers a custom error handler for specific error types.
    *
    * @param errorType - The error constructor(s) to handle
-   * @param handler - The error handler function that returns an ErrorResponse
+   * @param handler - The error handler that returns an error response
    */
   public errorHandler<T extends Error>(
     errorType: ErrorConstructor<T> | ErrorConstructor<T>[],
@@ -106,7 +106,8 @@ class Router {
   /**
    * Registers a custom handler for 404 Not Found errors.
    *
-   * @param handler - The error handler function for NotFoundError
+   * @param handler - The error handler that returns an error
+   * response
    */
   public notFound(handler: ErrorHandler<NotFoundError>): void;
   public notFound(): MethodDecorator;
@@ -127,7 +128,7 @@ class Router {
   /**
    * Registers a custom handler for 405 Method Not Allowed errors.
    *
-   * @param handler - The error handler function for MethodNotAllowedError
+   * @param handler - The error handler that returns an error response
    */
   public methodNotAllowed(handler: ErrorHandler<MethodNotAllowedError>): void;
   public methodNotAllowed(): MethodDecorator;
@@ -158,9 +159,9 @@ class Router {
    *
    * @example
    * ```typescript
-   * const authMiddleware: Middleware = async (params, options, next) => {
+   * const authMiddleware: Middleware = async (params, reqCtx, next) => {
    *   // Authentication logic
-   *   if (!isAuthenticated(options.request)) {
+   *   if (!isAuthenticated(reqCtx.request)) {
    *     return new Response('Unauthorized', { status: 401 });
    *   }
    *   await next();
@@ -211,12 +212,12 @@ class Router {
 
     const request = proxyEventToWebRequest(event);
 
-    const handlerOptions: RequestContext = {
+    const requestContext: RequestContext = {
       event,
       context,
       request,
       // this response should be overwritten by the handler, if it isn't
-      // it means somthing went wrong with the middleware chain
+      // it means something went wrong with the middleware chain
       res: new Response('', { status: 500 }),
     };
 
@@ -234,11 +235,11 @@ class Router {
           ? route.handler.bind(options.scope)
           : route.handler;
 
-      const handlerMiddleware: Middleware = async (params, options, next) => {
-        const handlerResult = await handler(params, options);
-        options.res = handlerResultToWebResponse(
+      const handlerMiddleware: Middleware = async (params, reqCtx, next) => {
+        const handlerResult = await handler(params, reqCtx);
+        reqCtx.res = handlerResultToWebResponse(
           handlerResult,
-          options.res.headers
+          reqCtx.res.headers
         );
 
         await next();
@@ -252,18 +253,18 @@ class Router {
 
       const middlewareResult = await middleware(
         route.params,
-        handlerOptions,
+        requestContext,
         () => Promise.resolve()
       );
 
       // middleware result takes precedence to allow short-circuiting
-      const result = middlewareResult ?? handlerOptions.res;
+      const result = middlewareResult ?? requestContext.res;
 
       return handlerResultToProxyResult(result);
     } catch (error) {
       this.logger.debug(`There was an error processing the request: ${error}`);
       const result = await this.handleError(error as Error, {
-        ...handlerOptions,
+        ...requestContext,
         scope: options?.scope,
       });
       return await webResponseToProxyResult(result);
@@ -284,7 +285,7 @@ class Router {
    * back to a default handler.
    *
    * @param error - The error to handle
-   * @param options - Optional resolve options for scope binding
+   * @param options - Error resolve options including request context and scope
    * @returns A Response object with appropriate status code and error details
    */
   protected async handleError(
@@ -294,11 +295,8 @@ class Router {
     const handler = this.errorHandlerRegistry.resolve(error);
     if (handler !== null) {
       try {
-        const { scope, ...handlerOptions } = options;
-        const body = await handler.apply(scope ?? this, [
-          error,
-          handlerOptions,
-        ]);
+        const { scope, ...reqCtx } = options;
+        const body = await handler.apply(scope ?? this, [error, reqCtx]);
         return new Response(JSON.stringify(body), {
           status: body.statusCode,
           headers: { 'Content-Type': 'application/json' },

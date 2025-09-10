@@ -89,11 +89,11 @@ describe('Class: Router - Basic Routing', () => {
     const app = new Router();
     const testEvent = createTestEvent('/test', 'GET');
 
-    app.get('/test', async (_params, options) => {
+    app.get('/test', async (_params, reqCtx) => {
       return {
-        hasRequest: options.request instanceof Request,
-        hasEvent: options.event === testEvent,
-        hasContext: options.context === context,
+        hasRequest: reqCtx.request instanceof Request,
+        hasEvent: reqCtx.event === testEvent,
+        hasContext: reqCtx.context === context,
       };
     });
 

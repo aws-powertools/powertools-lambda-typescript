@@ -44,13 +44,13 @@ describe('Class: Router - Middleware', () => {
       const app = new Router();
       const executionOrder: string[] = [];
 
-      app.use(async (_params, _options, next) => {
+      app.use(async (_params, _reqCtx, next) => {
         executionOrder.push('global-middleware');
         await next();
       });
 
       const middleware: Middleware[] = middlewareNames.map(
-        (name) => async (_params, _options, next) => {
+        (name) => async (_params, _reqCtx, next) => {
           executionOrder.push(name);
           await next();
         }
@@ -137,9 +137,9 @@ describe('Class: Router - Middleware', () => {
       let middlewareParams: Record<string, string> | undefined;
       let middlewareOptions: RequestContext | undefined;
 
-      app.use(async (params, options, next) => {
+      app.use(async (params, reqCtx, next) => {
         middlewareParams = params;
-        middlewareOptions = options;
+        middlewareOptions = reqCtx;
         await next();
       });
 
@@ -161,7 +161,7 @@ describe('Class: Router - Middleware', () => {
       vi.stubEnv('POWERTOOLS_DEV', 'true');
       const app = new Router();
 
-      app.use(async (_params, _options, next) => {
+      app.use(async (_params, _reqCtx, next) => {
         await next();
         await next();
       });
@@ -215,7 +215,7 @@ describe('Class: Router - Middleware', () => {
       const app = new Router();
       const executionOrder: string[] = [];
 
-      app.use(async (_params, _options, next) => {
+      app.use(async (_params, _reqCtx, next) => {
         executionOrder.push('middleware1-start');
         await next();
         executionOrder.push('middleware1-end');
@@ -336,10 +336,10 @@ describe('Class: Router - Middleware', () => {
       // Prepare
       const app = new Router();
 
-      app.use(async (_params, options, next) => {
+      app.use(async (_params, reqCtx, next) => {
         await next();
-        options.res.headers.set('x-custom-header', 'middleware-value');
-        options.res.headers.set('x-request-id', '12345');
+        reqCtx.res.headers.set('x-custom-header', 'middleware-value');
+        reqCtx.res.headers.set('x-request-id', '12345');
       });
 
       app.get('/test', async () => ({ success: true }));
@@ -367,10 +367,10 @@ describe('Class: Router - Middleware', () => {
       // Prepare
       const app = new Router();
 
-      app.use(async (_params, options, next) => {
+      app.use(async (_params, reqCtx, next) => {
         await next();
-        const originalBody = await options.res.text();
-        options.res = new Response(`Modified: ${originalBody}`, {
+        const originalBody = await reqCtx.res.text();
+        reqCtx.res = new Response(`Modified: ${originalBody}`, {
           headers: { 'content-type': 'text/plain' },
         });
       });
@@ -396,8 +396,8 @@ describe('Class: Router - Middleware', () => {
       // Prepare
       const app = new Router();
 
-      app.use(async (_params, options, next) => {
-        options.res.headers.set('x-before-handler', 'middleware-value');
+      app.use(async (_params, reqCtx, next) => {
+        reqCtx.res.headers.set('x-before-handler', 'middleware-value');
         await next();
       });
 
@@ -425,14 +425,14 @@ describe('Class: Router - Middleware', () => {
       // Prepare
       const app = new Router();
 
-      app.use(async (_params, options, next) => {
-        options.res.headers.set('x-test-header', 'before-next');
+      app.use(async (_params, reqCtx, next) => {
+        reqCtx.res.headers.set('x-test-header', 'before-next');
         await next();
       });
 
-      app.use(async (_params, options, next) => {
+      app.use(async (_params, reqCtx, next) => {
         await next();
-        options.res.headers.set('x-test-header', 'after-next');
+        reqCtx.res.headers.set('x-test-header', 'after-next');
       });
 
       app.get('/test', async () => ({ success: true }));
@@ -460,7 +460,7 @@ describe('Class: Router - Middleware', () => {
       const app = new Router();
       const executionOrder: string[] = [];
 
-      app.use(async (_params, _options, next) => {
+      app.use(async (_params, _reqCtx, next) => {
         executionOrder.push('middleware-start');
         await next();
         executionOrder.push('middleware-end');

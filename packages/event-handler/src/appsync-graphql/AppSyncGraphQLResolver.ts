@@ -426,9 +426,7 @@ class AppSyncGraphQLResolver extends Router {
         {
           event: events,
           context,
-          ...(this.sharedContext.size > 0 && {
-            sharedContext: this.sharedContext,
-          }),
+          ...this.#getSharedContextOnlyIfNotEmpty(),
         },
       ]);
 
@@ -451,9 +449,7 @@ class AppSyncGraphQLResolver extends Router {
           {
             event,
             context,
-            ...(this.sharedContext.size > 0 && {
-              sharedContext: this.sharedContext,
-            }),
+            ...this.#getSharedContextOnlyIfNotEmpty(),
           },
         ]);
         results.push(result);
@@ -468,9 +464,7 @@ class AppSyncGraphQLResolver extends Router {
           {
             event: events[i],
             context,
-            ...(this.sharedContext.size > 0 && {
-              sharedContext: this.sharedContext,
-            }),
+            ...this.#getSharedContextOnlyIfNotEmpty(),
           },
         ]);
         results.push(result);
@@ -518,9 +512,7 @@ class AppSyncGraphQLResolver extends Router {
           {
             event,
             context,
-            ...(this.sharedContext.size > 0 && {
-              sharedContext: this.sharedContext,
-            }),
+            ...this.#getSharedContextOnlyIfNotEmpty(),
           },
         ]
       );
@@ -544,6 +536,19 @@ class AppSyncGraphQLResolver extends Router {
     }
     return {
       error: 'An unknown error occurred',
+    };
+  }
+
+  /**
+   * Returns an object containing the shared context only if it has entries.
+   * This helps avoid passing an empty map to handlers.
+   */
+  #getSharedContextOnlyIfNotEmpty(): {
+    sharedContext: Map<string, unknown> | undefined;
+  } {
+    return {
+      sharedContext:
+        this.sharedContext.size > 0 ? this.sharedContext : undefined,
     };
   }
 }

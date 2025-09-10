@@ -50,8 +50,8 @@ describe('Class: Router - Basic Routing', () => {
         context
       );
 
-      expect(result?.statusCode).toBe(HttpErrorCodes.METHOD_NOT_ALLOWED);
-      expect(result?.body).toEqual('');
+      expect(result.statusCode).toBe(HttpErrorCodes.METHOD_NOT_ALLOWED);
+      expect(result.body).toEqual('');
     }
   );
 
@@ -99,7 +99,7 @@ describe('Class: Router - Basic Routing', () => {
 
     // Act
     const result = await app.resolve(testEvent, context);
-    const actual = JSON.parse(result?.body ?? '{}');
+    const actual = JSON.parse(result.body);
 
     // Assess
     expect(actual.hasRequest).toBe(true);

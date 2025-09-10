@@ -185,13 +185,13 @@ class Router {
    * @param event - The Lambda event to resolve
    * @param context - The Lambda context
    * @param options - Optional resolve options for scope binding
-   * @returns An API Gateway proxy result or undefined for incompatible events
+   * @returns An API Gateway proxy result
    */
   public async resolve(
     event: unknown,
     context: Context,
     options?: ResolveOptions
-  ): Promise<APIGatewayProxyResult | undefined> {
+  ): Promise<APIGatewayProxyResult> {
     if (!isAPIGatewayProxyEvent(event)) {
       this.logger.error(
         'Received an event that is not compatible with this resolver'

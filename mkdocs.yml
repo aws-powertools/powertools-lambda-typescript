@@ -47,6 +47,7 @@ nav:
           - features/metrics.md
           - Event Handler:
             - features/event-handler/index.md
+            - features/event-handler/rest.md
             - features/event-handler/appsync-events.md
             - features/event-handler/appsync-graphql.md
             - features/event-handler/bedrock-agents.md
@@ -162,12 +163,6 @@ plugins:
         - snippets/node_modules/*
         - snippets/package.json
         - snippets/CHANGELOG.md
-  - typedoc:
-      source: '.'
-      output_dir: 'api'
-      tsconfig: 'tsconfig.json'
-      options: 'typedoc.json'
-      name: 'API Reference'
       
   - llmstxt:
       markdown_description: Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless best practices and increase developer velocity. It provides a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
@@ -183,6 +178,7 @@ plugins:
           - features/tracer.md
           - features/logger.md
           - features/metrics.md
+          - features/event-handler/rest.md
           - features/event-handler/appsync-events.md
           - features/event-handler/appsync-graphql.md
           - features/event-handler/bedrock-agents.md

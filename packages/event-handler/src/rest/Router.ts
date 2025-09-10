@@ -79,7 +79,8 @@ class Router {
    * Registers a custom error handler for specific error types.
    *
    * @param errorType - The error constructor(s) to handle
-   * @param handler - The error handler function that returns a Promise<ErrorResponse>
+   * @param handler - The error handler that returns an
+   * error response>
    */
   public errorHandler<T extends Error>(
     errorType: ErrorConstructor<T> | ErrorConstructor<T>[],
@@ -106,7 +107,8 @@ class Router {
   /**
    * Registers a custom handler for 404 Not Found errors.
    *
-   * @param handler - The error handler function that returns a Promise<ErrorResponse>
+   * @param handler - The error handler that returns an error
+   * response
    */
   public notFound(handler: ErrorHandler<NotFoundError>): void;
   public notFound(): MethodDecorator;
@@ -127,7 +129,7 @@ class Router {
   /**
    * Registers a custom handler for 405 Method Not Allowed errors.
    *
-   * @param handler - The error handler function that returns a Promise<ErrorResponse>
+   * @param handler - The error handler that returns an error response
    */
   public methodNotAllowed(handler: ErrorHandler<MethodNotAllowedError>): void;
   public methodNotAllowed(): MethodDecorator;
@@ -216,7 +218,7 @@ class Router {
       context,
       request,
       // this response should be overwritten by the handler, if it isn't
-      // it means somthing went wrong with the middleware chain
+      // it means something went wrong with the middleware chain
       res: new Response('', { status: 500 }),
     };
 

@@ -140,7 +140,7 @@ Let's assume you have `app.ts` as your Lambda function entrypoint and routes in 
 
     We use `includeRouter` method and include all operations registered in the router instances.
 
-    ```typescript hl_lines="2-3 7"
+    ```typescript hl_lines="3-4 8"
     --8<-- "examples/snippets/event-handler/appsync-graphql/splitRouter.ts"
     ```
 
@@ -156,7 +156,7 @@ You can use `appendContext` when you want to share data between your App and Rou
 
 === "app.ts"
 
-    ```typescript hl_lines="9"
+    ```typescript hl_lines="10"
     --8<-- "examples/snippets/event-handler/appsync-graphql/appendContext.ts"
     ```
 

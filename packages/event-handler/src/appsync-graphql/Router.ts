@@ -73,13 +73,8 @@ class Router {
    * @param router - The source router whose registries will be merged into this router
    */
   protected mergeRegistriesFrom(router: Router): void {
-    this.logger.debug('Merging route handler registries');
     this.resolverRegistry.merge(router.resolverRegistry);
-
-    this.logger.debug('Merging batch route handler registries');
     this.batchResolverRegistry.merge(router.batchResolverRegistry);
-
-    this.logger.debug('Merging exception handler registries');
     this.exceptionHandlerRegistry.merge(router.exceptionHandlerRegistry);
   }
 

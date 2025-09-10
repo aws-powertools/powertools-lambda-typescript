@@ -79,8 +79,7 @@ class Router {
    * Registers a custom error handler for specific error types.
    *
    * @param errorType - The error constructor(s) to handle
-   * @param handler - The error handler that returns an
-   * error response>
+   * @param handler - The error handler that returns an error response
    */
   public errorHandler<T extends Error>(
     errorType: ErrorConstructor<T> | ErrorConstructor<T>[],

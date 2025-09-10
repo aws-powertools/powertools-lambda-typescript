@@ -31,21 +31,246 @@ If you're using any API Gateway integration, you must have an existing [API Gate
 
 In case of using [VPC Lattice](https://docs.aws.amazon.com/lambda/latest/dg/services-vpc-lattice.html){target="_blank"}, you must have a service network configured to invoke your Lambda function.
 
-This is the sample infrastructure for API Gateway and Lambda Function URLs we are using for the examples in this documentation.
+This is the sample infrastructure for API Gateway and Lambda Function URLs we are using for the examples in this documentation. There is no additional permissions or dependencies required to use this utility.
 
-???+ info "There is no additional permissions or dependencies required to use this utility."
+??? "See Infrastructure as Code (IaC) examples"
+    === "API Gateway SAM Template"
 
-=== "API Gateway SAM Template"
+        ```yaml title="AWS Serverless Application Model (SAM) example"
+        --8<-- "examples/snippets/event-handler/rest/templates/api_gateway.yml"
+        ```
 
-    ```yaml title="AWS Serverless Application Model (SAM) example"
-    --8<-- "examples/snippets/event-handler/rest/templates/api_gateway.yml"
+### Route events
+
+Before you start defining your routes, it's important to understand how the event handler works with different types of events. The event handler can process events from API Gateway REST APIs, and will soon support ALB, Lambda Function URLs, and VPC Lattice as well.
+
+When a request is received, the event handler will automatically convert the event into a `Request` object and give you access to the current request context, including headers, query parameters, and request body, as well as path parameters via typed arguments.
+
+#### Response auto-serialization
+
+!!! tip "Want full control over the response, headers, and status code? Read about the `Response` object here."
+
+For your convenience, when you return a JavaScript object from your route handler, we automatically perform these actions:
+
+* Auto-serialize the response to JSON and trim whitespace
+* Include the response under the appropriate equivalent of a `body`
+* Set the `Content-Type` header to `application/json`
+* Set the HTTP status code to 200 (OK)
+
+=== "index.ts"
+
+    ```ts hl_lines="6"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_serialization.ts"
     ```
 
-=== "Lambda Function URL SAM Template"
+    1. This object will be serialized, trimmed, and included under the `body` key
 
-    ```yaml title="AWS Serverless Application Model (SAM) example"
-    --8<-- "examples/snippets/event-handler/rest/templates/lambda_furl.yml"
+=== "JSON response"
+
+    ```json hl_lines="8"
+    --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_serialization.json"
     ```
 
-<!-- remove line below while editing this doc & put it back until the doc has reached its first draft -->
-<!-- markdownlint-disable MD043 -->
+### Dynamic routes
+
+You can use `/todos/:todoId` to configure dynamic URL paths, where `:todoId` will be resolved at runtime.
+
+All dynamic route parameters will be available as typed object properties in the first argument of your route handler.
+
+=== "index.ts"
+
+    ```ts hl_lines="16"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_dynamic_routes.ts:3"
+    ```
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_dynamic_routes.json"
+    ```
+
+You can also nest dynamic paths, for example `/todos/:todoId/comments/:commentId`, where both `:todoId` and `:commentId` will be resolved at runtime.
+
+### HTTP Methods
+
+You can use dedicated methods to specify the HTTP method that should be handled in each resolver. That is, `app.<httpMethod>`, where the HTTP method could be `get`, `post`, `put`, `patch`, and `delete`.
+
+=== "index.ts"
+
+    ```ts hl_lines="14 16"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_methods.ts:3"
+    ```
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_methods.json"
+    ```
+
+If you need to accept multiple HTTP methods in a single function, or support a HTTP method for which no dedicated method exists (i.e. [`TRACE`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/TRACE){target="_blank"}), you can use the `route` method and pass a list of HTTP methods.
+
+=== "index.ts"
+
+    ```ts hl_lines="21-24"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_multi_methods.ts:3"
+    ```
+
+!!! tip
+    We generally recommend to have separate functions for each HTTP method, as the functionality tends to differ depending on which method is used.
+
+### Data validation
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### Accessing request details
+
+You can access request details such as headers, query parameters, and body using the `Request` object provided to your route handlers.
+
+### Handling not found routes
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### Error handling
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### Raising HTTP errors
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### Enabling SwaggerUI
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### Custom domains
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+## Advanced
+
+### CORS
+
+You can configure CORS at the router level via the `cors` middleware.
+
+!!! note "Coming soon"
+
+### Middleware
+
+// TODO: @svozza
+
+### Fine grained responses
+
+You can use the Web API's `Response` object to have full control over the response. For example, you might want to add additional headers, cookies, or set a custom content type.
+
+// TODO: @svozza please add a code example + response sample
+
+### Response streaming
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### Compress
+
+You can compress with gzip and base64 encode your responses via the `compress` parameter. You have the option to pass the `compress` parameter when working with a specific route or setting the correct `Accept-Encoding` header in the `Response` object.
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### Binary responses
+
+!!! warning "Using API Gateway?"
+    Amazon API Gateway does not support `*/*` binary media type when [CORS](#cors) is also configured. This feature requires API Gateway to configure binary media types, see our [sample infrastructure](#required-resources) for reference.
+
+For convenience, we automatically base64 encode binary responses. You can also use it in combination with the `compress` parameter if your client supports gzip.
+
+Like the `compress` feature, the client must send the `Accept` header with the correct media type.
+
+!!! tip Lambda Function URLs handle binary media types automatically.
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### Debug mode
+
+You can enable debug mode via the `POWERTOOLS_DEV` environment variable.
+
+This will enable full stack traces errors in the response, log request and responses, and set CORS in development mode.
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### OpenAPI
+
+When you enable [Data Validation](#data-validation), we use a combination of Zod and JSON Schemas to add constraints to your API's parameters.
+
+In OpenAPI documentation tools like [SwaggerUI](#enabling-swaggerui), these annotations become readable descriptions, offering a self-explanatory API interface. This reduces boilerplate code while improving functionality and enabling auto-documentation.
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### Split routers
+
+As you grow the number of routes a given Lambda function should handle, it is natural to either break into smaller Lambda functions, or split routes into separate files to ease maintenance - that's where the split `Router` feature is useful.
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this feature.
+
+### Considerations
+
+This utility is optimized for AWS Lambda computing model and prioritizes fast startup, minimal feature set, and quick onboarding for triggers supported by Lambda.
+
+Event Handler naturally leads to a single Lambda function handling multiple routes for a given service, which can be eventually broken into multiple functions.
+
+Both single (monolithic) and multiple functions (micro) offer different set of trade-offs worth knowing.
+
+!!! tip "TL;DR;"
+    Start with a monolithic function, add additional functions with new handlers, and possibly break into micro functions if necessary.
+
+#### Monolithic function
+
+![monolithic function](../../media//monolithic-function.png)
+
+A monolithic function means that your final code artifact will be deployed to a single function. This is generally the best approach to start.
+
+_**Benefits**_
+
+* **Code reuse.** It's easier to reason about your service, modularize it and reuse code as it grows. Eventually, it can be turned into a standalone library.
+* **No custom tooling.** Monolithic functions are treated just like normal Python packages; no upfront investment in tooling.
+* **Faster deployment and debugging.** Whether you use all-at-once, linear, or canary deployments, a monolithic function is a single deployable unit. IDEs like PyCharm and VSCode have tooling to quickly profile, visualize, and step through debug any Python package.
+
+_**Downsides**_
+
+* **Cold starts.** Frequent deployments and/or high load can diminish the benefit of monolithic functions depending on your latency requirements, due to [Lambda scaling model](https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html){target="_blank"}. Always load test to pragmatically balance between your customer experience and development cognitive load.
+* **Granular security permissions.** The micro function approach enables you to use fine-grained permissions & access controls, separate external dependencies & code signing at the function level. Conversely, you could have multiple functions while duplicating the final code artifact in a monolithic approach. Regardless, least privilege can be applied to either approaches.
+* **Higher risk per deployment.** A misconfiguration or invalid import can cause disruption if not caught earlier in automated testing. Multiple functions can mitigate misconfigurations but they would still share the same code artifact. You can further minimize risks with multiple environments in your CI/CD pipeline.
+
+#### Micro function
+
+![micro function](../../media//micro-function.png)
+
+A micro function means that your final code artifact will be different to each function deployed. This is generally the approach to start if you're looking for fine-grain control and/or high load on certain parts of your service.
+
+_**Benefits**_
+
+**Granular scaling.** A micro function can benefit from the [Lambda scaling model](https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html){target="_blank"} to scale differently depending on each part of your application. Concurrency controls and provisioned concurrency can also be used at a granular level for capacity management.
+**Discoverability.** Micro functions are easier to visualize when using distributed tracing. Their high-level architectures can be self-explanatory, and complexity is highly visible — assuming each function is named to the business purpose it serves.
+**Package size.** An independent function can be significant smaller (KB vs MB) depending on external dependencies it require to perform its purpose. Conversely, a monolithic approach can benefit from [Lambda Layers](https://docs.aws.amazon.com/lambda/latest/dg/invocation-layers.html){target="_blank"} to optimize builds for external dependencies.
+
+_**Downsides**_
+
+**Upfront investment.** You need custom build tooling to bundle assets, including [native bindings for runtime compatibility](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html){target="_blank"}. Operations become more elaborate — you need to standardize tracing labels/annotations, structured logging, and metrics to pinpoint root causes.
+**Engineering discipline** is necessary for both approaches. Micro-function approach however requires further attention in consistency as the number of functions grow, just like any distributed system.
+**Harder to share code.** Shared code must be carefully evaluated to avoid unnecessary deployments when that changes. Equally, if shared code isn't a library, your development, building, deployment tooling need to accommodate the distinct layout.
+**Slower safe deployments.** Safely deploying multiple functions require coordination — AWS CodeDeploy deploys and verifies each function sequentially. This increases lead time substantially (minutes to hours) depending on the deployment strategy you choose. You can mitigate it by selectively enabling it in prod-like environments only, and where the risk profile is applicable.
+Automated testing, operational and security reviews are essential to stability in either approaches.
+
+## Testing your code
+
+!!! note "Coming soon"
+    Please open an issue if you would like us to prioritize this section.

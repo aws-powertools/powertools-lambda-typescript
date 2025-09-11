@@ -446,6 +446,18 @@ pre-processing and in reverse order during post-processing.
 !!! note "Composition order"
     Unlike traditional function composition which typically works right-to-left, `composeMiddleware` follows the convention used by most web frameworks and executes middleware left-to-right (first to last in the array). This means `composeMiddleware([a, b, c])` executes middleware `a` first, then `b`, then `c`.
 
+#### Being a good citizen
+
+Middleware can add subtle improvements to request/response processing, but also add significant complexity if you're not careful.
+
+Keep the following in mind when authoring middleware for Event Handler:
+
+* **Call the next middleware.** If you are not returning early by returns a `Response` object
+ or JSON object, always ensure you call the `next` function.
+* **Keep a lean scope.** Focus on a single task per middleware to ease composability and maintenance.
+* **Catch your own exceptions.** Catch and handle known exceptions to your logic, unless you want to raise HTTP Errors, or propagate specific exceptions to the client.
+* **Avoid destructuring the response object.** As mentioned in the [destructuring pitfalls](#avoiding-destructuring-pitfalls) section, always access the response through `reqCtx.res` rather than destructuring to avoid stale references.
+
 ### Fine grained responses
 
 You can use the Web API's `Response` object to have full control over the response. For

@@ -1,5 +1,5 @@
 import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
-import type { APIGatewayProxyResult, Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 
 const app = new Router();
 

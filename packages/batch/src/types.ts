@@ -5,6 +5,7 @@ import type {
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
+import type { ZodType } from 'zod';
 import type { GenericLogger } from '../../commons/lib/esm/types/GenericLogger.js';
 import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import type { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
@@ -101,14 +102,16 @@ type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
  */
 type BasePartialBatchProcessorParserConfig =
   | {
+      parser?: CallableFunction;
       schema?: StandardSchemaV1;
       innerSchema?: never;
       transformer?: never;
       logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
     }
   | {
+      parser?: CallableFunction;
       schema?: never;
-      innerSchema?: StandardSchemaV1;
+      innerSchema?: ZodType;
       transformer?: 'json' | 'base64' | 'unmarshall';
       logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
     };

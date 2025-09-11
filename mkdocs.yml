@@ -163,7 +163,12 @@ plugins:
         - snippets/node_modules/*
         - snippets/package.json
         - snippets/CHANGELOG.md
-      
+  - typedoc:
+      source: '.'
+      output_dir: 'api'
+      tsconfig: 'tsconfig.json'
+      options: 'typedoc.json'
+      name: 'API Reference'
   - llmstxt:
       markdown_description: Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless best practices and increase developer velocity. It provides a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
       full_output: llms-full.txt

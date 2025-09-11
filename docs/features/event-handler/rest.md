@@ -259,7 +259,7 @@ executes last in post-processing wins.
 
 === "JSON Response"
 
-    ```json hl_lines="5"
+    ```json hl_lines="6-7"
     --8<-- "examples/snippets/event-handler/rest/samples/advanced_mw_middleware_order.json"
     ```
 

@@ -107,7 +107,7 @@ You can use dedicated methods to specify the HTTP method that should be handled 
     --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_methods.json"
     ```
 
-If you need to accept multiple HTTP methods in a single function, or support a HTTP method for which no dedicated method exists (i.e. [`TRACE`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/TRACE){target="_blank"}), you can use the `route` method and pass a list of HTTP methods.
+If you need to accept multiple HTTP methods in a single function, or support an HTTP method for which no dedicated method exists (i.e. [`TRACE`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/TRACE){target="_blank"}), you can use the `route` method and pass a list of HTTP methods.
 
 === "index.ts"
 

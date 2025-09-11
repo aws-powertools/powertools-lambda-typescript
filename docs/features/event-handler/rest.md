@@ -424,7 +424,7 @@ example, you might want to add additional headers, cookies, or set a custom cont
 
 === "index.ts"
 
-    ```ts hl_lines="14-21 28-32"
+    ```ts hl_lines="11-19 25-32"
     --8<-- "examples/snippets/event-handler/rest/advanced_fine_grained_responses.ts:6"
     ```
 

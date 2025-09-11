@@ -419,7 +419,7 @@ the handler has run and we have access to request body.
 
 === "index.ts"
 
-    ```ts hl_lines="8 15"
+    ```ts hl_lines="6 14-15"
     --8<-- "examples/snippets/event-handler/rest/advanced_mw_destructuring_problem.ts:3"
     ```
 

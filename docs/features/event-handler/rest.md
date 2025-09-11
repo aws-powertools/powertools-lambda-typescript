@@ -296,7 +296,7 @@ but the post-processing of already executed middleware will.
 
 === "index.ts"
 
-    ```ts hl_lines="12-17"
+    ```ts hl_lines="13-18"
     --8<-- "examples/snippets/event-handler/rest/advanced_mw_early_return.ts:3"
     ```
 

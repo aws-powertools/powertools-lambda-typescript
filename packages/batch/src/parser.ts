@@ -99,7 +99,7 @@ const parseWithErrorHandling = async (
   }
   const issues = result.error.cause as ReadonlyArray<StandardSchemaV1.Issue>;
   const errorMessage = issues
-    .map((issue) => `${issue?.path?.join('.')}: ${issue.message}`)
+    .map((issue) => `${issue.path?.join('.')}: ${issue.message}`)
     .join('; ');
   logger.debug(errorMessage);
   throw new ParsingError(errorMessage);

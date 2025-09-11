@@ -427,6 +427,25 @@ During the middleware execution chain, the response object (`reqCtx.res`) can be
 other middleware or the route handler. When you destructure the request context, you capture
 a reference to the response object as it existed at that moment, not the current response.
 
+#### Composing middleware
+
+You can create reusable middleware stacks by using the `composeMiddleware` function to combine
+multiple middleware into a single middleware function. This is useful for creating standardized
+middleware combinations that can be shared across different routes or applications.
+
+=== "index.ts"
+
+    ```ts hl_lines="25-26 32 35"
+    --8<-- "examples/snippets/event-handler/rest/advanced_mw_compose_middleware.ts:3"
+    ```
+
+The `composeMiddleware` function maintains the same execution order as if you had applied the
+middleware individually, following the onion pattern where middleware execute in order during
+pre-processing and in reverse order during post-processing.
+
+!!! note "Composition order"
+    Unlike traditional function composition which typically works right-to-left, `composeMiddleware` follows the convention used by most web frameworks and executes middleware left-to-right (first to last in the array). This means `composeMiddleware([a, b, c])` executes middleware `a` first, then `b`, then `c`.
+
 ### Fine grained responses
 
 You can use the Web API's `Response` object to have full control over the response. For

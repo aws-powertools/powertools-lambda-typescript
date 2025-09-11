@@ -404,7 +404,7 @@ accepts configuration options and returns a middleware function.
 
 === "index.ts"
 
-    ```ts hl_lines="8-30 35 38"
+    ```ts hl_lines="5-26 31"
     --8<-- "examples/snippets/event-handler/rest/advanced_mw_custom_middleware.ts:3"
     ```
 

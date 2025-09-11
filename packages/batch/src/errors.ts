@@ -63,10 +63,21 @@ class UnexpectedBatchTypeError extends BatchProcessingError {
   }
 }
 
+/**
+ * Error thrown by the Batch Processing utility when a record fails to be parsed.
+ */
+class ParsingError extends BatchProcessingError {
+  public constructor(message: string) {
+    super(message);
+    this.name = 'ParsingError';
+  }
+}
+
 export {
   BatchProcessingError,
   FullBatchFailureError,
   SqsFifoShortCircuitError,
   SqsFifoMessageGroupShortCircuitError,
   UnexpectedBatchTypeError,
+  ParsingError,
 };

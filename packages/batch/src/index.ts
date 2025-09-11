@@ -5,6 +5,7 @@ export { EventType } from './constants.js';
 export {
   BatchProcessingError,
   FullBatchFailureError,
+  ParsingError,
   SqsFifoMessageGroupShortCircuitError,
   SqsFifoShortCircuitError,
   UnexpectedBatchTypeError,

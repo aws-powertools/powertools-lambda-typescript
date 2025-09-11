@@ -452,7 +452,7 @@ Middleware can add subtle improvements to request/response processing, but also 
 
 Keep the following in mind when authoring middleware for Event Handler:
 
-* **Call the next middleware.** If you are not returning early by returns a `Response` object
+* **Call the next middleware.** If you are not returning early by returning a `Response` object
  or JSON object, always ensure you call the `next` function.
 * **Keep a lean scope.** Focus on a single task per middleware to ease composability and maintenance.
 * **Catch your own exceptions.** Catch and handle known exceptions to your logic, unless you want to raise HTTP Errors, or propagate specific exceptions to the client.

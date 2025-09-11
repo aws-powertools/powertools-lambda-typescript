@@ -435,7 +435,7 @@ middleware combinations that can be shared across different routes or applicatio
 
 === "index.ts"
 
-    ```ts hl_lines="25-26 32 35"
+    ```ts hl_lines="33-34 39"
     --8<-- "examples/snippets/event-handler/rest/advanced_mw_compose_middleware.ts:3"
     ```
 

@@ -253,7 +253,7 @@ executes last in post-processing wins.
 
 === "index.ts"
 
-    ```ts hl_lines="8-11 13-16 23"
+    ```ts hl_lines="9-14 16-21 31"
     --8<-- "examples/snippets/event-handler/rest/advanced_mw_middleware_order.ts:3"
     ```
 

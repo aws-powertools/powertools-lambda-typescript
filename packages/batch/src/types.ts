@@ -5,7 +5,7 @@ import type {
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
-
+import type { GenericLogger } from '../../commons/lib/esm/types/GenericLogger.js';
 import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import type { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
 import type { SqsFifoPartialProcessorAsync } from './SqsFifoPartialProcessorAsync.js';
@@ -92,18 +92,37 @@ type PartialItemFailures = { itemIdentifier: string };
 type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
 
 /**
- * Type representing the configuration options passed to the BasePartialBatchProcessor class.
+ * Type representing the parser configuration options passed to the BasePartialBatchProcessor class.
  *
  * @property schema - The schema to be used for parsing
+ * @property innerSchema - The schema for the inner payload
+ * @property transformer - The transformer to be used for parsing the payload
+ * @property logger - The logger to be used for logging debug and warning messages.
  */
-type BasePartialBatchProcessorConfig = {
+type BasePartialBatchProcessorParserConfig = {
   /**
-   * The schema be either of the following:
-   * 1. An internal schema of the payload of the supported event types.
-   * 2. An internal schema along with helper transformer functions.
-   * 3. An extended schema of the supported event type.
+   * The schema for the full event including the extended inner payload schema.
+   *
+   * StandardSchema is supported.
    */
-  schema: StandardSchemaV1;
+  schema?: StandardSchemaV1;
+  /**
+   * The schema for the inner payload of the event.
+   * Only Zod schemas are supported.
+   */
+  innerSchema?: StandardSchemaV1;
+  /**
+   * The transformer to be used for parsing the payload.
+   * Supported transformers are:
+   * 1. 'json': Uses JSONStringified helper
+   * 2. 'base64': Uses Base64Encoded helper
+   * 3. 'unmarshall': Uses DynamoDBMarshalled helper
+   */
+  transformer?: 'json' | 'base64' | 'unmarshall';
+  /**
+   * The logger to be used for logging debug and warning messages.
+   */
+  logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 };
 
 export type {
@@ -114,5 +133,5 @@ export type {
   FailureResponse,
   PartialItemFailures,
   PartialItemFailureResponse,
-  BasePartialBatchProcessorConfig,
+  BasePartialBatchProcessorParserConfig,
 };

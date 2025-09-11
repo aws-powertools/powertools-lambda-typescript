@@ -336,19 +336,19 @@ describe('Class: AsyncBatchProcessor', () => {
     const cases = [
       {
         description: 'passing Extended Schema',
-        SQS: {
+        SQSParserConfig: {
           schema: SqsRecordSchema.extend({
             body: JSONStringified(customSchema),
           }),
         },
-        Kinesis: {
+        KinesisParserConfig: {
           schema: KinesisDataStreamRecord.extend({
             kinesis: KinesisDataStreamRecordPayload.extend({
               data: Base64Encoded(customSchema).optional(),
             }),
           }),
         },
-        DynamoDB: {
+        DynamoDBParserConfig: {
           schema: DynamoDBStreamRecord.extend({
             dynamodb: DynamoDBStreamChangeRecordBase.extend({
               NewImage: DynamoDBMarshalled(customSchema).optional(),
@@ -357,99 +357,105 @@ describe('Class: AsyncBatchProcessor', () => {
         },
       },
       {
-        description: 'passing Internal Schema without transformers',
-        SQS: {
-          schema: customSchema,
+        description: 'passing Internal Schema without transformer property set',
+        SQSParserConfig: {
+          innerSchema: JSONStringified(customSchema),
         },
-        Kinesis: {
-          schema: customSchema,
+        KinesisParserConfig: {
+          innerSchema: Base64Encoded(customSchema),
         },
-        DynamoDB: {
-          schema: customSchema,
+        DynamoDBParserConfig: {
+          innerSchema: DynamoDBMarshalled(customSchema),
         },
       },
       {
-        description: 'passing Internal Schema with transformers',
-        SQS: {
-          schema: JSONStringified(customSchema),
+        description: 'passing Internal Schema with transformer property set',
+        SQSParserConfig: {
+          innerSchema: customSchema,
+          transformer: 'json' as const,
         },
-        Kinesis: {
-          schema: Base64Encoded(customSchema),
+        KinesisParserConfig: {
+          innerSchema: customSchema,
+          transformer: 'base64' as const,
         },
-        DynamoDB: {
-          schema: DynamoDBMarshalled(customSchema),
+        DynamoDBParserConfig: {
+          innerSchema: customSchema,
+          transformer: 'unmarshall' as const,
         },
       },
     ];
-    describe.each(cases)('SQS Record Schema $description', ({ SQS }) => {
-      it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
-        // Prepare
-        const firstRecord = sqsRecordFactory(JSON.stringify(successPayload1));
-        const secondRecord = sqsRecordFactory(JSON.stringify(successPayload2));
-        const records = [firstRecord, secondRecord];
-        const processor = new BatchProcessor(EventType.SQS, {
-          schema: SQS.schema,
+    describe.each(cases)(
+      'SQS Record Schema $description',
+      ({ SQSParserConfig }) => {
+        it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
+          // Prepare
+          const firstRecord = sqsRecordFactory(JSON.stringify(successPayload1));
+          const secondRecord = sqsRecordFactory(
+            JSON.stringify(successPayload2)
+          );
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.SQS, SQSParserConfig);
+
+          // Act
+          processor.register(records, sqsRecordHandler, options);
+          const processedMessages = await processor.process();
+
+          // Assess
+          expect(processedMessages).toStrictEqual([
+            ['success', successPayload1, firstRecord],
+            ['success', successPayload2, secondRecord],
+          ]);
         });
 
-        // Act
-        processor.register(records, sqsRecordHandler, options);
-        const processedMessages = await processor.process();
+        it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
+          // Prepare
+          const firstRecord = sqsRecordFactory(JSON.stringify(successPayload1));
+          const secondRecord = sqsRecordFactory(
+            JSON.stringify(failurePayload1)
+          );
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.SQS, SQSParserConfig);
 
-        // Assess
-        expect(processedMessages).toStrictEqual([
-          ['success', successPayload1, firstRecord],
-          ['success', successPayload2, secondRecord],
-        ]);
-      });
+          // Act
+          processor.register(records, sqsRecordHandler, options);
+          const processedMessages = await processor.process();
 
-      it('completes the processing with failures if some of the payload does not match the passed schema', async () => {
-        // Prepare
-        const firstRecord = sqsRecordFactory(JSON.stringify(successPayload1));
-        const secondRecord = sqsRecordFactory(JSON.stringify(failurePayload1));
-        const records = [firstRecord, secondRecord];
-        const processor = new BatchProcessor(EventType.SQS, {
-          schema: SQS.schema,
+          // Assess
+          expect(processedMessages[0]).toStrictEqual([
+            'success',
+            successPayload1,
+            firstRecord,
+          ]);
+          expect(processor.failureMessages.length).toBe(1);
+          expect(processor.response()).toStrictEqual({
+            batchItemFailures: [{ itemIdentifier: secondRecord.messageId }],
+          });
         });
 
-        // Act
-        processor.register(records, sqsRecordHandler, options);
-        const processedMessages = await processor.process();
+        it('completes processing with all failures if all the payload does not match the passed schema', async () => {
+          // Prepare
+          const firstRecord = sqsRecordFactory(JSON.stringify(failurePayload1));
+          const secondRecord = sqsRecordFactory(
+            JSON.stringify(failurePayload2)
+          );
 
-        // Assess
-        expect(processedMessages[0]).toStrictEqual([
-          'success',
-          successPayload1,
-          firstRecord,
-        ]);
-        expect(processor.failureMessages.length).toBe(1);
-        expect(processor.response()).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: secondRecord.messageId }],
+          const records = [firstRecord, secondRecord];
+          const processor = new BatchProcessor(EventType.SQS, SQSParserConfig);
+
+          // Act
+          processor.register(records, sqsRecordHandler, options);
+
+          // Assess
+          await expect(processor.process()).rejects.toThrowError(
+            FullBatchFailureError
+          );
         });
-      });
-
-      it('completes processing with all failures if all the payload does not match the passed schema', async () => {
-        // Prepare
-        const firstRecord = sqsRecordFactory(JSON.stringify(failurePayload1));
-        const secondRecord = sqsRecordFactory(JSON.stringify(failurePayload2));
-
-        const records = [firstRecord, secondRecord];
-        const processor = new BatchProcessor(EventType.SQS, {
-          schema: SQS.schema,
-        });
-
-        // Act
-        processor.register(records, sqsRecordHandler, options);
-
-        // Assess
-        await expect(processor.process()).rejects.toThrowError(
-          FullBatchFailureError
-        );
-      });
-    });
+      }
+    );
 
     describe.each(cases)(
       'Kinesis Record Schema $description',
-      ({ Kinesis }) => {
+      ({ KinesisParserConfig }) => {
         it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
           // Prepare
           const firstRecord = kinesisRecordFactory(
@@ -459,9 +465,10 @@ describe('Class: AsyncBatchProcessor', () => {
             Buffer.from(JSON.stringify(successPayload2)).toString('base64')
           );
           const records = [firstRecord, secondRecord];
-          const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-            schema: Kinesis.schema,
-          });
+          const processor = new BatchProcessor(
+            EventType.KinesisDataStreams,
+            KinesisParserConfig
+          );
 
           // Act
           processor.register(records, kinesisRecordHandler, options);
@@ -483,9 +490,10 @@ describe('Class: AsyncBatchProcessor', () => {
             Buffer.from(JSON.stringify(failurePayload1)).toString('base64')
           );
           const records = [firstRecord, secondRecord];
-          const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-            schema: Kinesis.schema,
-          });
+          const processor = new BatchProcessor(
+            EventType.KinesisDataStreams,
+            KinesisParserConfig
+          );
 
           // Act
           processor.register(records, kinesisRecordHandler, options);
@@ -515,9 +523,10 @@ describe('Class: AsyncBatchProcessor', () => {
           );
 
           const records = [firstRecord, secondRecord];
-          const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-            schema: Kinesis.schema,
-          });
+          const processor = new BatchProcessor(
+            EventType.KinesisDataStreams,
+            KinesisParserConfig
+          );
 
           // Act
           processor.register(records, sqsRecordHandler, options);
@@ -532,15 +541,16 @@ describe('Class: AsyncBatchProcessor', () => {
 
     describe.each(cases)(
       'DynamoDB Record Schema $description',
-      ({ DynamoDB }) => {
+      ({ DynamoDBParserConfig }) => {
         it('completes the processing with no failures and parses the payload before passing to the record handler', async () => {
           // Prepare
           const firstRecord = dynamodbRecordFactory(successPayload1.Message);
           const secondRecord = dynamodbRecordFactory(successPayload2.Message);
           const records = [firstRecord, secondRecord];
-          const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-            schema: DynamoDB.schema,
-          });
+          const processor = new BatchProcessor(
+            EventType.DynamoDBStreams,
+            DynamoDBParserConfig
+          );
 
           // Act
           processor.register(records, dynamodbRecordHandler, options);
@@ -559,9 +569,10 @@ describe('Class: AsyncBatchProcessor', () => {
           //@ts-expect-error Passing an invalid payload for testing
           const secondRecord = dynamodbRecordFactory(failurePayload1.Message);
           const records = [firstRecord, secondRecord];
-          const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-            schema: DynamoDB.schema,
-          });
+          const processor = new BatchProcessor(
+            EventType.DynamoDBStreams,
+            DynamoDBParserConfig
+          );
 
           // Act
           processor.register(records, dynamodbRecordHandler, options);
@@ -588,9 +599,10 @@ describe('Class: AsyncBatchProcessor', () => {
           //@ts-expect-error Passing an invalid payload for testing
           const secondRecord = dynamodbRecordFactory(failurePayload2.Message);
           const records = [firstRecord, secondRecord];
-          const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-            schema: DynamoDB.schema,
-          });
+          const processor = new BatchProcessor(
+            EventType.DynamoDBStreams,
+            DynamoDBParserConfig
+          );
 
           // Act
           processor.register(records, dynamodbRecordHandler, options);
@@ -610,7 +622,8 @@ describe('Class: AsyncBatchProcessor', () => {
       const records = [firstRecord, secondRecord];
       //@ts-expect-error
       const processor = new BatchProcessor('invalid-event-type', {
-        schema: customSchema,
+        innerSchema: customSchema,
+        transformer: 'json',
       });
 
       // Act
@@ -631,7 +644,27 @@ describe('Class: AsyncBatchProcessor', () => {
       const secondRecord = sqsRecordFactory(JSON.stringify(successPayload2));
       const records = [firstRecord, secondRecord];
       const processor = new BatchProcessor(EventType.SQS, {
-        schema: unsupportedSchema,
+        innerSchema: unsupportedSchema,
+        transformer: 'json',
+      });
+
+      // Act
+      processor.register(records, sqsRecordHandler, options);
+
+      // Assess
+      await expect(processor.process()).rejects.toThrowError(
+        FullBatchFailureError
+      );
+    });
+
+    it('completes processing with failures if the schema is not passed for the parsing', async () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory(JSON.stringify(successPayload1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(successPayload2));
+      const records = [firstRecord, secondRecord];
+
+      const processor = new BatchProcessor(EventType.SQS, {
+        transformer: 'json',
       });
 
       // Act

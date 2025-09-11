@@ -162,30 +162,6 @@ You can configure CORS at the router level via the `cors` middleware.
 
 ### Middleware
 
-```mermaid
-sequenceDiagram
-    participant Request
-    participant Router
-    participant M1 as Middleware 1
-    participant M2 as Middleware 2
-    participant Handler as Route Handler
-
-    Request->>Router: Incoming Request
-    Router->>M1: Execute (params, reqCtx, next)
-    Note over M1: Pre-processing
-    M1->>M2: Call next()
-    Note over M2: Pre-processing
-    M2->>Handler: Call next()
-    Note over Handler: Execute handler
-    Handler-->>M2: Return
-    Note over M2: Post-processing
-    M2-->>M1: Return
-    Note over M1: Post-processing
-    M1-->>Router: Return
-    Router-->>Request: Response
-
-```
-
 Middleware are functions that execute during the request-response cycle, sitting between the
 incoming request and your route handler. They provide a way to implement cross-cutting
 concerns like authentication, logging, validation, and response transformation without
@@ -197,30 +173,12 @@ Each middleware function receives the following arguments:
 * **reqCtx** Request context containing the event, Lambda context, request, and response objects
 * **next** A function to pass control to the next middleware in the chain
 
-Middleware can be applied globally, only on specific routes, or a combination of both.
+Middleware can be applied globally on all routes, only on specific routes, or a combination of both.
 
-#### Global middleware
-
-You can use `app.use` to register middleware that should always run regardless of the route.
-
-=== "index.ts"
-
-    ```ts hl_lines="8-17"
-    --8<-- "examples/snippets/event-handler/rest/advanced_mw_global_middleware.ts:3"
-    ```
-
-#### Route specific middleware
-
-You can apply middleware to specific routes by passing them as arguments before the route
-handler.
-
-=== "index.ts"
-
-    ```ts hl_lines="9-18 25"
-    --8<-- "examples/snippets/event-handler/rest/advanced_mw_route_middleware.ts:3"
-    ```
-
-#### Order of execution
+Middleware follow an onion pattern where global middleware executes first in pre-processing,
+then route-specific middleware. After the handler executes, the order reverses for
+post-processing. When middleware modify the same response properties, the middleware that
+executes last in post-processing wins.
 
 ```mermaid
 sequenceDiagram
@@ -246,10 +204,11 @@ sequenceDiagram
 
 ```
 
-Middleware follow an onion pattern where global middleware executes first in pre-processing,
-then route-specific middleware. After the handler executes, the order reverses for
-post-processing. When middleware modify the same response properties, the middleware that
-executes last in post-processing wins.
+#### Registering middleware
+
+You can use `app.use` to register middleware that should always run regardless of the route
+and you can apply middleware to specific routes by passing them as arguments before the route
+handler.
 
 === "index.ts"
 
@@ -264,6 +223,11 @@ executes last in post-processing wins.
     ```
 
 #### Returning early
+
+There are cases where you may want to terminate the execution of the middleware chain early. To
+do so, middleware can short-circuit processing by returning a `Response` or JSON object
+instead of calling `next()`. Neither the handler nor any subsequent middleware will run
+but the post-processing of already executed middleware will.
 
 ```mermaid
 sequenceDiagram
@@ -289,11 +253,6 @@ sequenceDiagram
 
 ```
 
-There are cases where you may want to terminate the execution of the middleware chain early. To
-do so, middleware can short-circuit processing by returning a `Response` or JSON object
-instead of calling `next()`. Neither the handler nor any subsequent middleware will run
-but the post-processing of already executed middleware will.
-
 === "index.ts"
 
     ```ts hl_lines="13-18"
@@ -306,7 +265,11 @@ but the post-processing of already executed middleware will.
     --8<-- "examples/snippets/event-handler/rest/samples/advanced_mw_early_return.json"
     ```
 
-#### Exception Handling
+#### Error Handling
+
+By default, any unhandled error in the middleware chain will be propagated as a HTTP
+500 back to the client. As you would expect, unlike early return, this stops the middleware
+chain entirely and no post-processing steps for any previously executed middleware will occur.
 
 ```mermaid
 sequenceDiagram
@@ -321,9 +284,9 @@ sequenceDiagram
     Router->>M1: Execute (params, reqCtx, next)
     Note over M1: Pre-processing
     M1->>M2: Call next()
-    Note over M2: Throws Exception
-    M2-->>M1: Exception propagated
-    M1-->>Router: Exception propagated
+    Note over M2: Throws Error
+    M2-->>M1: Error propagated
+    M1-->>Router: Error propagated
     Router->>EH: Handle error
     EH-->>Router: HTTP 500 Response
     Router-->>Request: HTTP 500 Error
@@ -331,11 +294,10 @@ sequenceDiagram
 
 ```
 
-<center>*Unhandled exceptions*</center>
+<center>*Unhandled errors*</center>
 
-By default, any unhandled exception in the middleware chain will be propagated as a HTTP
-500 back to the client. As you would expect, unlike early return, this stops the middleware
-chain entirely and no post-processing steps for any previously executed middleware will occur.
+You can handle errors in middleware as you would anywhere else, simply surround your code in
+a `try`/`catch` block and processing will occur as usual.
 
 ```mermaid
 sequenceDiagram
@@ -349,8 +311,8 @@ sequenceDiagram
     Router->>M1: Execute (params, reqCtx, next)
     Note over M1: Pre-processing
     M1->>M2: Call next()
-    Note over M2: Exception thrown & caught
-    Note over M2: Handle exception gracefully
+    Note over M2: Error thrown & caught
+    Note over M2: Handle error gracefully
     M2->>Handler: Call next()
     Note over Handler: Execute handler
     Handler-->>M2: Return
@@ -362,10 +324,12 @@ sequenceDiagram
 
 ```
 
-<center>*Handled exceptions*</center>
+<center>*Handled errors*</center>
 
-You can handle exceptions in middleware as you would anywhere else, simply surround your code in
-a `try`/`catch` block and processing will occur as usual.
+Similarly, you can choose to stop processing entirely by throwing an error in your
+middleware. Event handler provides many [built-in HTTP errors](#throwing-http-errors) that
+you can use or you can throw a custom error of your own. As noted above, this means
+that no post-processing of your request will occur.
 
 ```mermaid
 sequenceDiagram
@@ -380,9 +344,9 @@ sequenceDiagram
     Router->>M1: Execute (params, reqCtx, next)
     Note over M1: Pre-processing
     M1->>M2: Call next()
-    Note over M2: Intentionally throws exception
-    M2-->>M1: Exception propagated
-    M1-->>Router: Exception propagated
+    Note over M2: Intentionally throws error
+    M2-->>M1: Error propagated
+    M1-->>Router: Error propagated
     Router->>EH: Handle error
     EH-->>Router: HTTP Error Response
     Router-->>Request: HTTP Error Response
@@ -390,12 +354,7 @@ sequenceDiagram
 
 ```
 
-<center>*Intentional exceptions*</center>
-
-Similarly, you can choose to stop processing entirely by throwing an exception in your
-middleware. Event handler provides many [built-in HTTP errors](#throwing-http-errors) that
-you can use or you can throw a custom error of your own. As noted above, this means
-that no post-processing of your request will occur.
+<center>*Intentional errors*</center>
 
 #### Custom middleware
 
@@ -455,7 +414,7 @@ Keep the following in mind when authoring middleware for Event Handler:
 * **Call the next middleware.** If you are not returning early by returning a `Response` object
  or JSON object, always ensure you call the `next` function.
 * **Keep a lean scope.** Focus on a single task per middleware to ease composability and maintenance.
-* **Catch your own exceptions.** Catch and handle known exceptions to your logic, unless you want to raise HTTP Errors, or propagate specific exceptions to the client.
+* **Catch your own errors.** Catch and handle known errors to your logic, unless you want to raise HTTP Errors, or propagate specific errors to the client.
 * **Avoid destructuring the response object.** As mentioned in the [destructuring pitfalls](#avoiding-destructuring-pitfalls) section, always access the response through `reqCtx.res` rather than destructuring to avoid stale references.
 
 ### Fine grained responses

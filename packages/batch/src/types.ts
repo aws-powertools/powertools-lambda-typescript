@@ -99,32 +99,19 @@ type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
  * @property transformer - The transformer to be used for parsing the payload
  * @property logger - The logger to be used for logging debug and warning messages.
  */
-type BasePartialBatchProcessorParserConfig = {
-  /**
-   * The schema for the full event including the extended inner payload schema.
-   *
-   * StandardSchema is supported.
-   */
-  schema?: StandardSchemaV1;
-  /**
-   * The schema for the inner payload of the event.
-   * Only Zod schemas are supported.
-   */
-  innerSchema?: StandardSchemaV1;
-  /**
-   * The transformer to be used for parsing the payload.
-   * No transformers will be used if this is not provided.
-   * Supported transformers are:
-   * 1. 'json': Uses JSONStringified helper
-   * 2. 'base64': Uses Base64Encoded helper
-   * 3. 'unmarshall': Uses DynamoDBMarshalled helper
-   */
-  transformer?: 'json' | 'base64' | 'unmarshall';
-  /**
-   * The logger to be used for logging debug and warning messages.
-   */
-  logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
-};
+type BasePartialBatchProcessorParserConfig =
+  | {
+      schema?: StandardSchemaV1;
+      innerSchema?: never;
+      transformer?: never;
+      logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+    }
+  | {
+      schema?: never;
+      innerSchema?: StandardSchemaV1;
+      transformer?: 'json' | 'base64' | 'unmarshall';
+      logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+    };
 
 export type {
   BatchProcessingOptions,

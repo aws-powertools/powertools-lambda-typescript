@@ -79,7 +79,7 @@ All dynamic route parameters will be available as typed object properties in the
 
 === "index.ts"
 
-    ```ts hl_lines="16"
+    ```ts hl_lines="14"
     --8<-- "examples/snippets/event-handler/rest/gettingStarted_dynamic_routes.ts:3"
     ```
 

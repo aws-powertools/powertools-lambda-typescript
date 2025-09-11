@@ -364,7 +364,7 @@ sequenceDiagram
 
 <center>*Handled exceptions*</center>
 
-You can handle exceptions in middleware as you woul anywhere else, simply surround your code in
+You can handle exceptions in middleware as you would anywhere else, simply surround your code in
 a `try`/`catch` block and processing will occur as usual.
 
 ```mermaid

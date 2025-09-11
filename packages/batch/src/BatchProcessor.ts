@@ -225,9 +225,11 @@ class BatchProcessor extends BasePartialBatchProcessor {
       return result.data as EventSourceDataClassTypes;
     }
     const issues = result.error.cause as ReadonlyArray<StandardSchemaV1.Issue>;
-    throw new Error(
-      `Failed to parse record: ${issues.map((issue) => `${issue?.path?.join('.')}: ${issue.message}`).join('; ')}`
-    );
+    const errorMessage = issues
+      .map((issue) => `${issue?.path?.join('.')}: ${issue.message}`)
+      .join('; ');
+    this.logger.error(errorMessage);
+    throw new Error(errorMessage);
   }
 
   /**
@@ -256,7 +258,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
     if (innerSchema != null) {
       // Only proceed with schema extension if it's a Zod schema
       if (innerSchema['~standard'].vendor !== SchemaVendor.Zod) {
-        console.warn(
+        this.logger.error(
           'The schema provided is not supported. Only Zod schemas are supported for extension.'
         );
         throw new Error('Unsupported schema type');
@@ -275,6 +277,9 @@ class BatchProcessor extends BasePartialBatchProcessor {
       });
       return this.#parseWithErrorHandling(record, schemaWithoutTransformers);
     }
+    this.logger.error(
+      'The schema provided is not supported. Only Zod schemas are supported for extension.'
+    );
     throw new Error('Either schema or innerSchema is required for parsing');
   }
 }

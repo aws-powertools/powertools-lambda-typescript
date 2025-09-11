@@ -1,8 +1,10 @@
+import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import type {
   DynamoDBRecord,
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
+import type { GenericLogger } from '../../commons/lib/esm/types/GenericLogger.js';
 import { BasePartialProcessor } from './BasePartialProcessor.js';
 import {
   DATA_CLASS_MAPPING,
@@ -44,6 +46,13 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public eventType: keyof typeof EventType;
 
   /**
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
+   */
+  protected readonly logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+
+  /**
    * The configuration options for the parser integration
    */
   protected parserConfig?: BasePartialBatchProcessorParserConfig;
@@ -66,6 +75,15 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
       [EventType.DynamoDBStreams]: () => this.collectDynamoDBFailures(),
     };
     this.parserConfig = parserConfig;
+    const alcLogLevel = getStringFromEnv({
+      key: 'AWS_LAMBDA_LOG_LEVEL',
+      defaultValue: '',
+    });
+    this.logger = parserConfig?.logger ?? {
+      debug: alcLogLevel === 'DEBUG' ? console.debug : () => undefined,
+      error: console.error,
+      warn: console.warn,
+    };
   }
 
   /**

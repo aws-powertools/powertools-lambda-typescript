@@ -94,8 +94,8 @@ type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
 /**
  * Type representing the parser configuration options passed to the BasePartialBatchProcessor class.
  *
- * @property schema - The schema to be used for parsing
- * @property innerSchema - The schema for the inner payload
+ * @property schema - The full event schema to be used for parsing
+ * @property innerSchema - The inner payload schema
  * @property transformer - The transformer to be used for parsing the payload
  * @property logger - The logger to be used for logging debug and warning messages.
  */
@@ -113,6 +113,7 @@ type BasePartialBatchProcessorParserConfig = {
   innerSchema?: StandardSchemaV1;
   /**
    * The transformer to be used for parsing the payload.
+   * No transformers will be used if this is not provided.
    * Supported transformers are:
    * 1. 'json': Uses JSONStringified helper
    * 2. 'base64': Uses Base64Encoded helper

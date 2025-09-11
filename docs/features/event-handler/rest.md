@@ -5,7 +5,7 @@ status: new
 ---
 
 !!! warning "Feature status"
-     This feature is under active development and may undergo significant changes. We recommend using it in non-critical workloads and [providing feedback](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose) to help us improve it.
+     This feature is under active development and may undergo significant changes. We recommend using it in non-critical workloads and [providing feedback](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose){target="_blank"} to help us improve it.
 
 Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), Lambda Function URLs, and VPC Lattice.
 
@@ -48,7 +48,7 @@ When a request is received, the event handler will automatically convert the eve
 
 #### Response auto-serialization
 
-!!! tip "Want full control over the response, headers, and status code? Read about the `Response` object here."
+!!! tip "Want full control over the response, headers, and status code? Read about it in the [Fine grained responses](#fine-grained-responses) section."
 
 For your convenience, when you return a JavaScript object from your route handler, we automatically perform these actions:
 
@@ -121,7 +121,7 @@ If you need to accept multiple HTTP methods in a single function, or support an 
 ### Data validation
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose) if you would like us to prioritize this feature.
 
 ### Accessing request details
 
@@ -130,27 +130,27 @@ You can access request details such as headers, query parameters, and body using
 ### Handling not found routes
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose){target="_blank"} if you would like us to prioritize this feature.
 
 ### Error handling
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose){target="_blank"} if you would like us to prioritize this feature.
 
 ### Throwing HTTP errors
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose){target="_blank"} if you would like us to prioritize this feature.
 
 ### Enabling SwaggerUI
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose){target="_blank"} if you would like us to prioritize this feature.
 
 ### Custom domains
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose){target="_blank"} if you would like us to prioritize this feature.
 
 ## Advanced
 
@@ -478,14 +478,14 @@ example, you might want to add additional headers, cookies, or set a custom cont
 ### Response streaming
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose) if you would like us to prioritize this feature.
 
 ### Compress
 
 You can compress with gzip and base64 encode your responses via the `compress` parameter. You have the option to pass the `compress` parameter when working with a specific route or setting the correct `Accept-Encoding` header in the `Response` object.
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose) if you would like us to prioritize this feature.
 
 ### Binary responses
 
@@ -500,7 +500,7 @@ Like the `compress` feature, the client must send the `Accept` header with the c
     Lambda Function URLs handle binary media types automatically.
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose) if you would like us to prioritize this feature.
 
 ### Debug mode
 
@@ -509,7 +509,7 @@ You can enable debug mode via the `POWERTOOLS_DEV` environment variable.
 This will enable full stack traces errors in the response, log request and responses, and set CORS in development mode.
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose) if you would like us to prioritize this feature.
 
 ### OpenAPI
 
@@ -518,14 +518,14 @@ When you enable [Data Validation](#data-validation), we use a combination of Zod
 In OpenAPI documentation tools like [SwaggerUI](#enabling-swaggerui), these annotations become readable descriptions, offering a self-explanatory API interface. This reduces boilerplate code while improving functionality and enabling auto-documentation.
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose) if you would like us to prioritize this feature.
 
 ### Split routers
 
 As you grow the number of routes a given Lambda function should handle, it is natural to either break into smaller Lambda functions, or split routes into separate files to ease maintenance - that's where the split `Router` feature is useful.
 
 !!! note "Coming soon"
-    Please open an issue if you would like us to prioritize this feature.
+    Please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose) if you would like us to prioritize this feature.
 
 ### Considerations
 
@@ -554,7 +554,7 @@ _**Downsides**_
 
 * **Cold starts.** Frequent deployments and/or high load can diminish the benefit of monolithic functions depending on your latency requirements, due to the [Lambda scaling model](https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html){target="_blank"}. Always load test to find a pragmatic balance between customer experience and developer cognitive load.
 * **Granular security permissions.** The micro function approach enables you to use fine-grained permissions and access controls, separate external dependencies and code signing at the function level. Conversely, you could have multiple functions while duplicating the final code artifact in a monolithic approach. Regardless, least privilege can be applied to either approaches.
-* **Higher risk per deployment.** A misconfiguration or invalid import can cause disruption if not caught early in automated testing. Multiple functions can mitigate misconfigurations but they will uld still share the same code artifact. You can further minimize risks with multiple environments in your CI/CD pipeline.
+* **Higher risk per deployment.** A misconfiguration or invalid import can cause disruption if not caught early in automated testing. Multiple functions can mitigate misconfigurations but they will still share the same code artifact. You can further minimize risks with multiple environments in your CI/CD pipeline.
 
 #### Micro function
 
@@ -564,16 +564,16 @@ A micro function means that your final code artifact will be different to each f
 
 _**Benefits**_
 
-**Granular scaling.** A micro function can benefit from the [Lambda scaling model](https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html){target="_blank"} to scale differently depending on each part of your application. Concurrency controls and provisioned concurrency can also be used at a granular level for capacity management.
-**Discoverability.** Micro functions are easier to visualize when using distributed tracing. Their high-level architectures can be self-explanatory, and complexity is highly visible — assuming each function is named after the business purpose it serves.
-**Package size.** An independent function can be significantly smaller (KB vs MB) depending on the external dependencies it requires to perform its purpose. Conversely, a monolithic approach can benefit from [Lambda Layers](https://docs.aws.amazon.com/lambda/latest/dg/invocation-layers.html){target="_blank"} to optimize builds for external dependencies.
+* **Granular scaling.** A micro function can benefit from the [Lambda scaling model](https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html){target="_blank"} to scale differently depending on each part of your application. Concurrency controls and provisioned concurrency can also be used at a granular level for capacity management.
+* **Discoverability.** Micro functions are easier to visualize when using distributed tracing. Their high-level architectures can be self-explanatory, and complexity is highly visible — assuming each function is named after the business purpose it serves.
+* **Package size.** An independent function can be significantly smaller (KB vs MB) depending on the external dependencies it requires to perform its purpose. Conversely, a monolithic approach can benefit from [Lambda Layers](https://docs.aws.amazon.com/lambda/latest/dg/invocation-layers.html){target="_blank"} to optimize builds for external dependencies.
 
 _**Downsides**_
 
-**Upfront investment.** You need custom build tooling to bundle assets, including [native bindings for runtime compatibility](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html){target="_blank"}. Operations become more elaborate — you need to standardize tracing labels/annotations, structured logging, and metrics to pinpoint root causes.
-**Engineering discipline** is necessary for both approaches. However, the micro-function approach requires further attention to consistency as the number of functions grow, just like any distributed system.
-**Harder to share code.** Shared code must be carefully evaluated to avoid unnecessary deployments when this code changes. Equally, if shared code isn't a library, your development, building, deployment tooling need to accommodate the distinct layout.
-**Slower safe deployments.** Safely deploying multiple functions require coordination — AWS CodeDeploy deploys and verifies each function sequentially. This increases lead time substantially (minutes to hours) depending on the deployment strategy you choose. You can mitigate it by selectively enabling it in prod-like environments only, and where the risk profile is applicable.
+* **Upfront investment.** You need custom build tooling to bundle assets, including [native bindings for runtime compatibility](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html){target="_blank"}. Operations become more elaborate — you need to standardize tracing labels/annotations, structured logging, and metrics to pinpoint root causes.
+* **Engineering discipline** is necessary for both approaches. However, the micro-function approach requires further attention to consistency as the number of functions grow, just like any distributed system.
+* **Harder to share code.** Shared code must be carefully evaluated to avoid unnecessary deployments when this code changes. Equally, if shared code isn't a library, your development, building, deployment tooling need to accommodate the distinct layout.
+* **Slower safe deployments.** Safely deploying multiple functions require coordination — AWS CodeDeploy deploys and verifies each function sequentially. This increases lead time substantially (minutes to hours) depending on the deployment strategy you choose. You can mitigate it by selectively enabling it in prod-like environments only, and where the risk profile is applicable.
 Automated testing, operational and security reviews are essential to stability in either approaches.
 
 ## Testing your code

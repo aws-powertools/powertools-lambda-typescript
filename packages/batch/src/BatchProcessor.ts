@@ -228,7 +228,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
     const errorMessage = issues
       .map((issue) => `${issue?.path?.join('.')}: ${issue.message}`)
       .join('; ');
-    this.logger.error(errorMessage);
+    this.logger.debug(errorMessage);
     throw new Error(errorMessage);
   }
 

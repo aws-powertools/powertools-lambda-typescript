@@ -675,5 +675,58 @@ describe('Class: AsyncBatchProcessor', () => {
         FullBatchFailureError
       );
     });
+
+    it('uses a custom logger when provided', async () => {
+      // Prepare
+      const logger = {
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      };
+      const unsupportedSchema = v.object({
+        Message: v.string(),
+      });
+      const firstRecord = sqsRecordFactory(JSON.stringify(successPayload1));
+      const secondRecord = sqsRecordFactory(JSON.stringify(successPayload2));
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS, {
+        innerSchema: unsupportedSchema,
+        transformer: 'json',
+        logger,
+      });
+
+      // Act
+      processor.register(records, sqsRecordHandler, options);
+
+      // Assess
+      await expect(processor.process()).rejects.toThrowError(
+        FullBatchFailureError
+      );
+      expect(logger.error).toHaveBeenCalledWith(
+        'The schema provided is not supported. Only Zod schemas are supported for extension.'
+      );
+    });
+
+    it('emits debug logs when AWS_LAMBDA_LOG_LEVEL is set to DEBUG', async () => {
+      // Prepare
+      const consoleSpy = vi.spyOn(console, 'debug');
+      vi.stubEnv('AWS_LAMBDA_LOG_LEVEL', 'DEBUG');
+      const firstRecord = sqsRecordFactory(JSON.stringify(failurePayload1));
+      const records = [firstRecord];
+      const processor = new BatchProcessor(EventType.SQS, {
+        innerSchema: customSchema,
+        transformer: 'json',
+      });
+
+      // Act
+      processor.register(records, sqsRecordHandler, options);
+
+      // Assess
+      await expect(processor.process()).rejects.toThrowError(
+        FullBatchFailureError
+      );
+      expect(consoleSpy).toHaveBeenCalled();
+    });
   });
 });

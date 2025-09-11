@@ -397,6 +397,36 @@ middleware. Event handler provides many [built-in HTTP errors](#throwing-http-er
 you can use or you can throw a custom error of your own. As noted above, this means
 that no post-processing of your request will occur.
 
+#### Custom middleware
+
+A common pattern to create reusable middleware is to implement a factory functions that
+accepts configuration options and returns a middleware function.
+
+=== "index.ts"
+
+    ```ts hl_lines="8-30 35 38"
+    --8<-- "examples/snippets/event-handler/rest/advanced_mw_custom_middleware.ts:3"
+    ```
+
+In this example we have a middleware that acts only in the post-processing stage as all
+the logic occurs after the `next` function has been called. This is so as to ensure that
+the handler has run and we have access to request body.
+
+#### Avoiding destructuring pitfalls
+
+!!! warning "Critical: Never destructure the response object"
+    When writing middleware, always access the response through `reqCtx.res` rather than destructuring `{ res }` from the request context. Destructuring captures a reference to the original response object, which becomes stale when middleware replaces the response.
+
+=== "index.ts"
+
+    ```ts hl_lines="8 15"
+    --8<-- "examples/snippets/event-handler/rest/advanced_mw_destructuring_problem.ts:3"
+    ```
+
+During the middleware execution chain, the response object (`reqCtx.res`) can be replaced by
+other middleware or the route handler. When you destructure the request context, you capture
+a reference to the response object as it existed at that moment, not the current response.
+
 ### Fine grained responses
 
 You can use the Web API's `Response` object to have full control over the response. For

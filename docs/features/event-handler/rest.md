@@ -162,13 +162,166 @@ You can configure CORS at the router level via the `cors` middleware.
 
 ### Middleware
 
-// TODO: @svozza
+```mermaid
+sequenceDiagram
+    participant Request
+    participant Router
+    participant M1 as Middleware 1
+    participant M2 as Middleware 2
+    participant Handler as Route Handler
+
+    Request->>Router: Incoming Request
+    Router->>M1: Execute (params, reqCtx, next)
+    Note over M1: Pre-processing
+    M1->>M2: Call next()
+    Note over M2: Pre-processing
+    M2->>Handler: Call next()
+    Note over Handler: Execute handler
+    Handler-->>M2: Return
+    Note over M2: Post-processing
+    M2-->>M1: Return
+    Note over M1: Post-processing
+    M1-->>Router: Return
+    Router-->>Request: Response
+
+```
+
+Middleware are functions that execute during the request-response cycle, sitting between the
+incoming request and your route handler. They provide a way to implement cross-cutting
+concerns like authentication, logging, validation, and response transformation without
+cluttering your route handlers.
+
+Each middleware function receives the following arguments:
+
+* **params** Route parameters extracted from the URL path
+* **reqCtx** Request context containing the event, Lambda context, request, and response objects
+* **next** A function to pass control to the next middleware in the chain
+
+Middleware can be applied globally, only on specific routes, or a combination of both.
+
+#### Global middleware
+
+You can use `app.use` to register middleware that should always run regardless of the route.
+
+=== "index.ts"
+
+    ```ts hl_lines="8-17"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_global_middleware.ts:3"
+    ```
+
+#### Route specific middleware
+
+You can apply middleware to specific routes by passing them as arguments before the route
+handler.
+
+=== "index.ts"
+
+    ```ts hl_lines="9-18 25"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_route_middleware.ts:3"
+    ```
+
+#### Order of execution
+
+```mermaid
+sequenceDiagram
+    participant Request
+    participant Router
+    participant GM as Global Middleware
+    participant RM as Route Middleware
+    participant Handler as Route Handler
+
+    Request->>Router: Incoming Request
+    Router->>GM: Execute (params, reqCtx, next)
+    Note over GM: Pre-processing
+    GM->>RM: Call next()
+    Note over RM: Pre-processing
+    RM->>Handler: Call next()
+    Note over Handler: Execute handler
+    Handler-->>RM: Return
+    Note over RM: Post-processing
+    RM-->>GM: Return
+    Note over GM: Post-processing
+    GM-->>Router: Return
+    Router-->>Request: Response
+
+```
+
+Middleware follow an onion pattern where global middleware executes first in pre-processing,
+then route-specific middleware. After the handler executes, the order reverses for
+post-processing. When middleware modify the same response properties, the middleware that
+executes last in post-processing wins.
+
+=== "index.ts"
+
+    ```ts hl_lines="8-11 13-16 23"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_middleware_order.ts:3"
+    ```
+
+=== "JSON Response"
+
+    ```json hl_lines="5"
+    --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_middleware_order.json"
+    ```
+
+#### Returning early
+
+```mermaid
+sequenceDiagram
+    participant Request
+    participant Router
+    participant M1 as Middleware 1
+    participant M2 as Middleware 2
+    participant M3 as Middleware 3
+    participant Handler as Route Handler
+
+    Request->>Router: Incoming Request
+    Router->>M1: Execute (params, reqCtx, next)
+    Note over M1: Pre-processing
+    M1->>M2: Call next()
+    Note over M2: Pre-processing
+    M2->>M2: Return Response (early return)
+    Note over M2: Post-processing
+    M2-->>M1: Return Response
+    Note over M1: Post-processing
+    M1-->>Router: Return Response
+    Router-->>Request: Response
+    Note over M3,Handler: Never executed
+
+```
+
+There are cases where you may want to terminate the execution of the middleware chain early. To
+do so, middleware can short-circuit processing by returning a `Response` or JSON object
+instead of calling `next()`. Neither the handler nor any subsequent middleware will run
+but the post-processing of already executed middleware will.
+
+=== "index.ts"
+
+    ```ts hl_lines="12-17"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_early_return.ts:3"
+    ```
+
+=== "JSON Response"
+
+    ```json hl_lines="2"
+    --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_early_return.json"
+    ```
 
 ### Fine grained responses
 
-You can use the Web API's `Response` object to have full control over the response. For example, you might want to add additional headers, cookies, or set a custom content type.
+You can use the Web API's `Response` object to have full control over the response. For
+example, you might want to add additional headers, cookies, or set a custom content type.
 
-// TODO: @svozza please add a code example + response sample
+=== "index.ts"
+
+    ```ts hl_lines="9-16 21-26"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_fine_grained_responses.ts:3"
+    ```
+
+=== "JSON Response"
+
+    ```json hl_lines="4-6"
+    --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_fine_grained_responses.json"
+    ```
 
 ### Response streaming
 

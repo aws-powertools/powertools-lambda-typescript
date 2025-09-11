@@ -12,7 +12,8 @@ const customSchema = z.object({
 });
 
 const processor = new BatchProcessor(EventType.KinesisDataStreams, {
-  schema: customSchema,
+  innerSchema: customSchema,
+  transformer: 'base64',
 });
 
 const recordHandler = async ({

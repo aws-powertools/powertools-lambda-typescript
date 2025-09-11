@@ -395,15 +395,17 @@ sequenceDiagram
 
 ### Parser integration
 
-You can define your own schema to parse your batch record payload via the **`schema`** parameter when initializing the **`BatchProcessor`**.
+You can define your own schema to parse your batch record payload via the parser configuration options when initializing the **`BatchProcessor`**.
 
 #### Using inner payload schema
 
 You can just define the schema of your internal payload and we will handle the parsing for you depending on the type of event that you are using.
 
+You can specify any transformers needed to transform your payload before being used for parsing the inner payload.
+
 === "SQS - using inner payload"
 
-    ```typescript hl_lines="9-12 14 17"
+    ```typescript hl_lines="9-12 14-17"
     --8<-- "examples/snippets/batch/parser-integration/sqsWithoutTransformer.ts"
     ```
 
@@ -415,7 +417,7 @@ You can just define the schema of your internal payload and we will handle the p
 
 === "Kinesis Data Streams - using inner payload"
 
-    ```typescript hl_lines="9-12 14 17"
+    ```typescript hl_lines="9-12 14-17 21"
     --8<-- "examples/snippets/batch/parser-integration/kinesisWithoutTransformer.ts"
     ```
 
@@ -427,48 +429,8 @@ You can just define the schema of your internal payload and we will handle the p
 
 === "DynamoDB Streams - using inner payload"
 
-    ```typescript hl_lines="9-12 14 17"
+    ```typescript hl_lines="9-12 14-17 21"
     --8<-- "examples/snippets/batch/parser-integration/dynamodbWithoutTransformer.ts"
-    ```
-
-=== "DynamoDB - Sample Event"
-
-    ```json hl_lines="13-18 39-44"
-    --8<-- "examples/snippets/batch/samples/sampleDynamoDBStreamsEventForParser.json"
-    ```
-
-#### Controlling the transformer
-
-If you want more control over the transformer used for parsing the inner payload, you can provide your own transform helper function.
-
-=== "SQS - using custom transformer"
-
-    ```typescript hl_lines="10-13 15 18"
-    --8<-- "examples/snippets/batch/parser-integration/sqsWithTransformer.ts"
-    ```
-
-=== "SQS - Sample Event"
-
-    ```json hl_lines="6 22"
-    --8<-- "examples/snippets/batch/samples/sampleSQSEventForParser.json"
-    ```
-
-=== "Kinesis Data Streams - using custom transformer"
-
-    ```typescript hl_lines="10-13 15 18"
-    --8<-- "examples/snippets/batch/parser-integration/kinesisWithTransformer.ts"
-    ```
-
-=== "Kinesis - Sample Event"
-
-    ```json hl_lines="6 22"
-    --8<-- "examples/snippets/batch/samples/sampleKinesisEventForParser.json"
-    ```
-
-=== "DynamoDB Streams - using custom transformer"
-
-    ```typescript hl_lines="10-13 15 18"
-    --8<-- "examples/snippets/batch/parser-integration/dynamodbWithTransformer.ts"
     ```
 
 === "DynamoDB - Sample Event"

@@ -11,7 +11,10 @@ const customSchema = z.object({
   age: z.number(),
 });
 
-const processor = new BatchProcessor(EventType.SQS, { schema: customSchema });
+const processor = new BatchProcessor(EventType.SQS, {
+  innerSchema: customSchema,
+  transformer: 'json',
+});
 
 const recordHandler = async ({
   body: { name, age },

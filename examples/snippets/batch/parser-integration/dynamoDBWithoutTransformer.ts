@@ -12,7 +12,8 @@ const customSchema = z.object({
 });
 
 const processor = new BatchProcessor(EventType.DynamoDBStreams, {
-  schema: customSchema,
+  innerSchema: customSchema,
+  transformer: 'unmarshall',
 });
 
 const recordHandler = async ({

@@ -67,7 +67,7 @@ For your convenience, when you return a JavaScript object from your route handle
 
 === "JSON response"
 
-    ```json hl_lines="8"
+    ```json hl_lines="6"
     --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_serialization.json"
     ```
 

@@ -496,7 +496,8 @@ For convenience, we automatically base64 encode binary responses. You can also u
 
 Like the `compress` feature, the client must send the `Accept` header with the correct media type.
 
-!!! tip Lambda Function URLs handle binary media types automatically.
+!!! tip
+    Lambda Function URLs handle binary media types automatically.
 
 !!! note "Coming soon"
     Please open an issue if you would like us to prioritize this feature.

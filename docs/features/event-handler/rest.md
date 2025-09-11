@@ -173,11 +173,11 @@ Each middleware function receives the following arguments:
 * **reqCtx** Request context containing the event, Lambda context, request, and response objects
 * **next** A function to pass control to the next middleware in the chain
 
-Middleware can be applied globally on all routes, only on specific routes, or a combination of both.
+Middleware can be applied on specific routes, globally on all routes, or a combination of both.
 
-Middleware follow an onion pattern where global middleware executes first in pre-processing,
-then route-specific middleware. After the handler executes, the order reverses for
-post-processing. When middleware modify the same response properties, the middleware that
+Middleware execution follows an onion pattern where global middleware runs first in
+pre-processing, then route-specific middleware. After the handler executes, the order reverses
+for post-processing. When middleware modify the same response properties, the middleware that
 executes last in post-processing wins.
 
 ```mermaid
@@ -424,7 +424,7 @@ example, you might want to add additional headers, cookies, or set a custom cont
 
 === "index.ts"
 
-    ```ts hl_lines="14-21 28-34"
+    ```ts hl_lines="14-21 28-32"
     --8<-- "examples/snippets/event-handler/rest/advanced_fine_grained_responses.ts:6"
     ```
 

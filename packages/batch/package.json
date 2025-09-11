@@ -38,6 +38,10 @@
         "default": "./lib/esm/index.js"
       }
     },
+    "./parser": {
+      "import": "./lib/esm/parser.js",
+      "require": "./lib/cjs/parser.js"
+    },
     "./types": {
       "import": "./lib/esm/types.js",
       "require": "./lib/cjs/types.js"
@@ -45,6 +49,10 @@
   },
   "typesVersions": {
     "*": {
+      "parser": [
+        "lib/cjs/parser.d.ts",
+        "lib/esm/parser.d.ts"
+      ],
       "types": [
         "lib/cjs/types.d.ts",
         "lib/esm/types.d.ts"

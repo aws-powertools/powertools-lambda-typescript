@@ -5,7 +5,8 @@ import type {
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
-
+import type { ZodType } from 'zod';
+import type { GenericLogger } from '../../commons/lib/esm/types/GenericLogger.js';
 import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import type { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
 import type { SqsFifoPartialProcessorAsync } from './SqsFifoPartialProcessorAsync.js';
@@ -92,19 +93,28 @@ type PartialItemFailures = { itemIdentifier: string };
 type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
 
 /**
- * Type representing the configuration options passed to the BasePartialBatchProcessor class.
+ * Type representing the parser configuration options passed to the BasePartialBatchProcessor class.
  *
- * @property schema - The schema to be used for parsing
+ * @property schema - The full event schema to be used for parsing
+ * @property innerSchema - The inner payload schema
+ * @property transformer - The transformer to be used for parsing the payload
+ * @property logger - The logger to be used for logging debug and warning messages.
  */
-type BasePartialBatchProcessorConfig = {
-  /**
-   * The schema be either of the following:
-   * 1. An internal schema of the payload of the supported event types.
-   * 2. An internal schema along with helper transformer functions.
-   * 3. An extended schema of the supported event type.
-   */
-  schema: StandardSchemaV1;
-};
+type BasePartialBatchProcessorParserConfig =
+  | {
+      parser?: CallableFunction;
+      schema?: StandardSchemaV1;
+      innerSchema?: never;
+      transformer?: never;
+      logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+    }
+  | {
+      parser?: CallableFunction;
+      schema?: never;
+      innerSchema?: ZodType;
+      transformer?: 'json' | 'base64' | 'unmarshall';
+      logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+    };
 
 export type {
   BatchProcessingOptions,
@@ -114,5 +124,5 @@ export type {
   FailureResponse,
   PartialItemFailures,
   PartialItemFailureResponse,
-  BasePartialBatchProcessorConfig,
+  BasePartialBatchProcessorParserConfig,
 };

@@ -1,9 +1,10 @@
-import type { StandardSchemaV1 } from '@standard-schema/spec';
+import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import type {
   DynamoDBRecord,
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
+import type { GenericLogger } from '../../commons/lib/esm/types/GenericLogger.js';
 import { BasePartialProcessor } from './BasePartialProcessor.js';
 import {
   DATA_CLASS_MAPPING,
@@ -12,7 +13,7 @@ import {
 } from './constants.js';
 import { FullBatchFailureError } from './errors.js';
 import type {
-  BasePartialBatchProcessorConfig,
+  BasePartialBatchProcessorParserConfig,
   EventSourceDataClassTypes,
   PartialItemFailureResponse,
   PartialItemFailures,
@@ -45,9 +46,16 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public eventType: keyof typeof EventType;
 
   /**
-   * The schema of the body of the event record for parsing
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
    */
-  protected schema?: StandardSchemaV1;
+  protected readonly logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+
+  /**
+   * The configuration options for the parser integration
+   */
+  protected parserConfig?: BasePartialBatchProcessorParserConfig;
 
   /**
    * Initializes base batch processing class
@@ -56,7 +64,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    */
   public constructor(
     eventType: keyof typeof EventType,
-    config?: BasePartialBatchProcessorConfig
+    parserConfig?: BasePartialBatchProcessorParserConfig
   ) {
     super();
     this.eventType = eventType;
@@ -66,9 +74,16 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
       [EventType.KinesisDataStreams]: () => this.collectKinesisFailures(),
       [EventType.DynamoDBStreams]: () => this.collectDynamoDBFailures(),
     };
-    if (config) {
-      this.schema = config.schema;
-    }
+    this.parserConfig = parserConfig;
+    const alcLogLevel = getStringFromEnv({
+      key: 'AWS_LAMBDA_LOG_LEVEL',
+      defaultValue: '',
+    });
+    this.logger = parserConfig?.logger ?? {
+      debug: alcLogLevel === 'DEBUG' ? console.debug : () => undefined,
+      error: console.error,
+      warn: console.warn,
+    };
   }
 
   /**

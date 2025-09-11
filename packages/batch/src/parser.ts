@@ -147,9 +147,7 @@ const parser = async (
       logger
     );
   }
-  logger.error(
-    'The schema provided is not supported. Only Zod schemas are supported for extension.'
-  );
+  logger.error('There was no schema or innerSchema provided');
   throw new ParsingError(
     'Either schema or innerSchema is required for parsing'
   );

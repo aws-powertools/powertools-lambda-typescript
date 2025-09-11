@@ -137,7 +137,7 @@ You can access request details such as headers, query parameters, and body using
 !!! note "Coming soon"
     Please open an issue if you would like us to prioritize this feature.
 
-### Raising HTTP errors
+### Throwing HTTP errors
 
 !!! note "Coming soon"
     Please open an issue if you would like us to prioritize this feature.
@@ -307,6 +307,95 @@ but the post-processing of already executed middleware will.
     ```
 
 #### Exception Handling
+
+```mermaid
+sequenceDiagram
+    participant Request
+    participant Router
+    participant EH as Error Handler
+    participant M1 as Middleware 1
+    participant M2 as Middleware 2
+    participant Handler as Route Handler
+
+    Request->>Router: Incoming Request
+    Router->>M1: Execute (params, reqCtx, next)
+    Note over M1: Pre-processing
+    M1->>M2: Call next()
+    Note over M2: Throws Exception
+    M2-->>M1: Exception propagated
+    M1-->>Router: Exception propagated
+    Router->>EH: Handle error
+    EH-->>Router: HTTP 500 Response
+    Router-->>Request: HTTP 500 Error
+    Note over Handler: Never executed
+
+```
+
+<center>*Unhandled exceptions*</center>
+
+By default, any unhandled exception in the middleware chain will be propagated as a HTTP
+500 back to the client. As you would expect, unlike early return, this stops the middleware
+chain entirely and no post-processing steps for any previously executed middleware will occur.
+
+```mermaid
+sequenceDiagram
+    participant Request
+    participant Router
+    participant M1 as Middleware 1
+    participant M2 as Middleware 2
+    participant Handler as Route Handler
+
+    Request->>Router: Incoming Request
+    Router->>M1: Execute (params, reqCtx, next)
+    Note over M1: Pre-processing
+    M1->>M2: Call next()
+    Note over M2: Exception thrown & caught
+    Note over M2: Handle exception gracefully
+    M2->>Handler: Call next()
+    Note over Handler: Execute handler
+    Handler-->>M2: Return
+    Note over M2: Post-processing
+    M2-->>M1: Return
+    Note over M1: Post-processing
+    M1-->>Router: Return
+    Router-->>Request: Response
+
+```
+
+<center>*Handled exceptions*</center>
+
+You can handle exceptions in middleware as you woul anywhere else, simply surround your code in
+a `try`/`catch` block and processing will occur as usual.
+
+```mermaid
+sequenceDiagram
+    participant Request
+    participant Router
+    participant EH as Error Handler
+    participant M1 as Middleware 1
+    participant M2 as Middleware 2
+    participant Handler as Route Handler
+
+    Request->>Router: Incoming Request
+    Router->>M1: Execute (params, reqCtx, next)
+    Note over M1: Pre-processing
+    M1->>M2: Call next()
+    Note over M2: Intentionally throws exception
+    M2-->>M1: Exception propagated
+    M1-->>Router: Exception propagated
+    Router->>EH: Handle error
+    EH-->>Router: HTTP Error Response
+    Router-->>Request: HTTP Error Response
+    Note over Handler: Never executed
+
+```
+
+<center>*Intentional exceptions*</center>
+
+Similarly, you can choose to stop processing entirely by throwing an exception in your
+middleware. Event handler provides many [built-in HTTP errors](#throwing-http-errors) that
+you can use or you can throw a custom error of your own. As noted above, this means
+that no post-processing of your request will occur.
 
 ### Fine grained responses
 

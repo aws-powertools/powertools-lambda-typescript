@@ -1,5 +1,26 @@
 # Change Log
 
+## [2.26.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.2...v2.26.0) (2025-09-11)
+
+### Features
+
+- remove undefined from Router's resolve type signature ([#4463](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4463)) ([d36ef55](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d36ef5569de910e467f7c6d6b1d518112a998d40))
+- implement mechanism to manipulate response in middleware ([#4439](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4439)) ([35a510d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/35a510d3f3191b479105238f5f956bfeeb519389))
+- add route specific middleware registration and execution ([#4437](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4437)) ([e6ea674](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e6ea674b97953d0391573ea6536f9eb5f02f659b))
+- add middleware registration and composition to rest handler ([#4428](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4428)) ([fc87eb3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/fc87eb3f5c05a31002becf30e22928c8d7913a3f))
+- add support for error handling in AppSync GraphQL ([#4317](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4317)) ([77a992f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/77a992ff39ed41da2c965bc86d65a326f4db21d6))
+- add resolution logic to base router ([#4349](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4349)) ([f1ecc6d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f1ecc6da353ed1d4a1a943a4b75dc3e2b50d8e5e))
+
+### Maintenance
+
+- rename variables to reflect that options object is now a RequestContext ([#4460](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4460)) ([5b4ee1a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5b4ee1ac77c4ebf0af6181f56a47340173306673))
+- expose rest handler functionality ([#4458](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4458)) ([23eddfd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/23eddfdd2f3ec0824dccd080824628c63ed8308c))
+- split Router tests into multiple files ([#4449](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4449)) ([91a1ec4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/91a1ec4c4765e814b67f669ed2ff77c674cc3155))
+- rename BaseRouter class to Router ([#4448](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4448)) ([b043c28](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b043c28820b18e2d518153992f4f3243d476e208))
+
+### Bug Fixes
+
+- handle nullable fields in APIGatewayProxyEvent ([#4455](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4455)) ([200f47b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/200f47b0c9e3864b2732d93ca50dd65323b109fb))
 ## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
 
 ### Features

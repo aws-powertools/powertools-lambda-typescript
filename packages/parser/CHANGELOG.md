@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.26.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.2...v2.26.0) (2025-09-11)
+
+### Bug Fixes
+
+- updated the binaryValue and stringValue in the SqsMsgAttributeSchema to nullable  ([#4450](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4450)) ([cefcbdb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/cefcbdbaec087ce1bfcee4294754dc173c0c473b))
+
+### Features
+
+- integrate parser with Batch Processing ([#4408](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4408)) ([0b6bbbb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0b6bbbb751caaa7a81e1c2aaf823892c54b9e9cb))
+- implemented a helper function `Base64Encoded` to decode base64 encoded payloads ([#4413](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4413)) ([1554360](https://github.com/aws-powertools/powertools-lambda-typescript/commit/15543602ea8182b0a5972fc2acfb364da4ad97f3))
+- add IPv6 support for sourceIp in API Gateway schemas ([#4398](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4398)) ([2a94c37](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2a94c3759a04057423db8f346c921166ada173d0))
 ## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
 
 **Note:** Version bump only for this package

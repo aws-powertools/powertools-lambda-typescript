@@ -120,8 +120,8 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
-    const body = JSON.parse(result?.body ?? '{}');
+    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    const body = JSON.parse(result.body);
     expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
     expect(body.error).toBe('Internal Server Error');
     expect(body.message).toBe('Internal Server Error');
@@ -140,8 +140,8 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
-    const body = JSON.parse(result?.body ?? '{}');
+    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    const body = JSON.parse(result.body);
     expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
     expect(body.error).toBe('Internal Server Error');
     expect(body.message).toBe('Internal Server Error');
@@ -220,8 +220,8 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
-    const body = JSON.parse(result?.body ?? '{}');
+    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    const body = JSON.parse(result.body);
     expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
     expect(body.error).toBe('Internal Server Error');
     expect(body.message).toBe('Internal Server Error');
@@ -242,8 +242,8 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result?.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
-    const body = JSON.parse(result?.body ?? '{}');
+    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    const body = JSON.parse(result.body);
     expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
     expect(body.error).toBe('Internal Server Error');
     expect(body.message).toBe('debug error details');
@@ -363,7 +363,7 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result?.headers?.['content-type']).toBe('application/json');
+    expect(result.headers?.['content-type']).toBe('application/json');
   });
 
   it('passes request, event, and context to functional error handlers', async () => {
@@ -371,13 +371,13 @@ describe('Class: Router - Error Handling', () => {
     const app = new Router();
     const testEvent = createTestEvent('/test', 'GET');
 
-    app.errorHandler(BadRequestError, async (error, options) => ({
+    app.errorHandler(BadRequestError, async (error, reqCtx) => ({
       statusCode: HttpErrorCodes.BAD_REQUEST,
       error: 'Bad Request',
       message: error.message,
-      hasRequest: options.request instanceof Request,
-      hasEvent: options.event === testEvent,
-      hasContext: options.context === context,
+      hasRequest: reqCtx.request instanceof Request,
+      hasEvent: reqCtx.event === testEvent,
+      hasContext: reqCtx.context === context,
     }));
 
     app.get('/test', () => {
@@ -386,7 +386,7 @@ describe('Class: Router - Error Handling', () => {
 
     // Act
     const result = await app.resolve(testEvent, context);
-    const body = JSON.parse(result?.body ?? '{}');
+    const body = JSON.parse(result.body);
 
     // Assess
     expect(body.hasRequest).toBe(true);

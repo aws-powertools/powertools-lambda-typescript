@@ -1,7 +1,6 @@
 ---
 title: Bedrock Agents
 description: Event Handler for Amazon Bedrock Agents
-status: new
 ---
 
 <!-- markdownlint-disable MD043 -->

@@ -43,7 +43,7 @@
     "@valkey/valkey-glide": "^2.0.1",
     "aws-sdk": "^2.1692.0",
     "aws-sdk-client-mock": "^4.1.0",
-    "zod": "^4.1.5"
+    "zod": "^4.1.7"
   },
   "dependencies": {
     "arktype": "^2.1.22",

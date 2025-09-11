@@ -1,0 +1,8 @@
+{
+  "statusCode": 401,
+  "body": "{\"error\":\"Unauthorized\"}",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "isBase64Encoded": false
+}

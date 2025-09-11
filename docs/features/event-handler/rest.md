@@ -466,7 +466,7 @@ example, you might want to add additional headers, cookies, or set a custom cont
 === "index.ts"
 
     ```ts hl_lines="14-21 28-34"
-    --8<-- "examples/snippets/event-handler/rest/advanced_fine_grained_responses.ts:3"
+    --8<-- "examples/snippets/event-handler/rest/advanced_fine_grained_responses.ts:6"
     ```
 
 === "JSON Response"

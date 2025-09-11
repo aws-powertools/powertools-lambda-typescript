@@ -206,7 +206,7 @@ You can use `app.use` to register middleware that should always run regardless o
 === "index.ts"
 
     ```ts hl_lines="8-17"
-    --8<-- "examples/snippets/event-handler/rest/gettingStarted_global_middleware.ts:3"
+    --8<-- "examples/snippets/event-handler/rest/advanced_mw_global_middleware.ts:3"
     ```
 
 #### Route specific middleware
@@ -217,7 +217,7 @@ handler.
 === "index.ts"
 
     ```ts hl_lines="9-18 25"
-    --8<-- "examples/snippets/event-handler/rest/gettingStarted_route_middleware.ts:3"
+    --8<-- "examples/snippets/event-handler/rest/advanced_mw_route_middleware.ts:3"
     ```
 
 #### Order of execution
@@ -254,13 +254,13 @@ executes last in post-processing wins.
 === "index.ts"
 
     ```ts hl_lines="8-11 13-16 23"
-    --8<-- "examples/snippets/event-handler/rest/gettingStarted_middleware_order.ts:3"
+    --8<-- "examples/snippets/event-handler/rest/advanced_mw_middleware_order.ts:3"
     ```
 
 === "JSON Response"
 
     ```json hl_lines="5"
-    --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_middleware_order.json"
+    --8<-- "examples/snippets/event-handler/rest/samples/advanced_mw_middleware_order.json"
     ```
 
 #### Returning early
@@ -297,14 +297,16 @@ but the post-processing of already executed middleware will.
 === "index.ts"
 
     ```ts hl_lines="12-17"
-    --8<-- "examples/snippets/event-handler/rest/gettingStarted_early_return.ts:3"
+    --8<-- "examples/snippets/event-handler/rest/advanced_mw_early_return.ts:3"
     ```
 
 === "JSON Response"
 
     ```json hl_lines="2"
-    --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_early_return.json"
+    --8<-- "examples/snippets/event-handler/rest/samples/advanced_mw_early_return.json"
     ```
+
+#### Exception Handling
 
 ### Fine grained responses
 
@@ -314,13 +316,13 @@ example, you might want to add additional headers, cookies, or set a custom cont
 === "index.ts"
 
     ```ts hl_lines="9-16 21-26"
-    --8<-- "examples/snippets/event-handler/rest/gettingStarted_fine_grained_responses.ts:3"
+    --8<-- "examples/snippets/event-handler/rest/advanced_fine_grained_responses.ts:3"
     ```
 
 === "JSON Response"
 
     ```json hl_lines="4-6"
-    --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_fine_grained_responses.json"
+    --8<-- "examples/snippets/event-handler/rest/samples/advanced_fine_grained_responses.json"
     ```
 
 ### Response streaming

@@ -209,6 +209,28 @@ class BatchProcessor extends BasePartialBatchProcessor {
   }
 
   /**
+   * Parse the record with the passed schema and
+   * return the result or throw the error depending on parsing success
+   *
+   * @param record - The record to be parsed
+   * @param schema - The modified schema to parse with
+   */
+  async #parseWithErrorHandling(
+    record: EventSourceDataClassTypes,
+    schema: StandardSchemaV1
+  ) {
+    const { parse } = await import('@aws-lambda-powertools/parser');
+    const result = parse(record, undefined, schema, true);
+    if (result.success) {
+      return result.data as EventSourceDataClassTypes;
+    }
+    const issues = result.error.cause as ReadonlyArray<StandardSchemaV1.Issue>;
+    throw new Error(
+      `Failed to parse record: ${issues.map((issue) => `${issue?.path?.join('.')}: ${issue.message}`).join('; ')}`
+    );
+  }
+
+  /**
    * Parse the record according to the schema and event type passed.
    *
    * If the passed schema is already an extended schema,
@@ -226,19 +248,10 @@ class BatchProcessor extends BasePartialBatchProcessor {
     if (this.parserConfig == null) {
       return record;
     }
-    const { parse } = await import('@aws-lambda-powertools/parser');
     const { schema, innerSchema, transformer } = this.parserConfig;
     // If the external schema is specified, use it to parse the record
     if (schema != null) {
-      const extendedSchemaParsing = parse(record, undefined, schema, true);
-      if (extendedSchemaParsing.success) {
-        return extendedSchemaParsing.data as EventSourceDataClassTypes;
-      }
-      const issues = extendedSchemaParsing.error
-        .cause as ReadonlyArray<StandardSchemaV1.Issue>;
-      throw new Error(
-        `Failed to parse record: ${issues.map((issue) => `${issue?.path?.join('.')}: ${issue.message}`).join('; ')} `
-      );
+      return this.#parseWithErrorHandling(record, schema);
     }
     if (innerSchema != null) {
       // Only proceed with schema extension if it's a Zod schema
@@ -254,39 +267,13 @@ class BatchProcessor extends BasePartialBatchProcessor {
           innerSchema,
           transformer,
         });
-        const schemaWithTransformersParsing = parse(
-          record,
-          undefined,
-          schemaWithTransformers,
-          true
-        );
-        if (schemaWithTransformersParsing.success) {
-          return schemaWithTransformersParsing.data as EventSourceDataClassTypes;
-        }
-        const issues = schemaWithTransformersParsing.error
-          .cause as ReadonlyArray<StandardSchemaV1.Issue>;
-        throw new Error(
-          `Failed to parse record: ${issues.map((issue) => `${issue?.path?.join('.')}: ${issue.message}`).join('; ')} `
-        );
+        return this.#parseWithErrorHandling(record, schemaWithTransformers);
       }
       const schemaWithoutTransformers = await this.#createExtendedSchema({
         eventType,
         innerSchema,
       });
-      const schemaWithoutTransformersParsing = parse(
-        record,
-        undefined,
-        schemaWithoutTransformers,
-        true
-      );
-      if (schemaWithoutTransformersParsing.success) {
-        return schemaWithoutTransformersParsing.data as EventSourceDataClassTypes;
-      }
-      const issues = schemaWithoutTransformersParsing.error
-        .cause as ReadonlyArray<StandardSchemaV1.Issue>;
-      throw new Error(
-        `Failed to parse record: ${issues.map((issue) => `${issue?.path?.join('.')}: ${issue.message}`).join('; ')} `
-      );
+      return this.#parseWithErrorHandling(record, schemaWithoutTransformers);
     }
     throw new Error('Either schema or innerSchema is required for parsing');
   }

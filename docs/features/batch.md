@@ -28,7 +28,7 @@ If your function fails to process any message from the batch, the entire batch r
 This behavior changes when you enable the [ReportBatchItemFailures feature](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-batchfailurereporting) in your Lambda function event source configuration:
 
 * [**SQS queues**](#sqs-standard). Only messages reported as failure will return to the queue for a retry, while successful ones will be deleted.
-* [**Kinesis data streams**](#kinesis-and-dynamodb-streams) and [**DynamoDB streams**](#kinesis-and-dynamodb-streams). Single reported failure will use its sequence number as the stream checkpoint. Multiple reported failures will use the lowest sequence number as checkpoint.
+* [**Kinesis data streams**](#kinesis-and-dynamodb-streams) and [**DynamoDB streams**](#kinesis-and-dynamodb-streams). Single reported failure will use its sequence number as the stream checkpoint. Multiple reported failures will use the lowest sequence number as the checkpoint.
 
 <!-- HTML tags are required in admonition content thus increasing line length beyond our limits -->
 <!-- markdownlint-disable MD013 -->
@@ -213,7 +213,7 @@ By default, we catch any exception raised by your record handler function. This 
 
     1. Any exception works here. See [extending `BatchProcessor` section, if you want to override this behavior.](#extending-batchprocessor)
 
-    2. Exceptions raised in `recordHandler` will propagate to `processPartialResponse`. <br/><br/> We catch them and include each failed batch item identifier in the response dictionary (see `Sample response` tab).
+    2. Errors raised in `recordHandler` will propagate to `processPartialResponse`. <br/><br/> We catch them and include each failed batch item identifier in the response object (see `Sample response` tab).
 
 === "Sample response"
 
@@ -336,7 +336,7 @@ Parser integration eliminates runtime errors from malformed data and provides co
 
 #### Using item schema only
 
-When you want to focus on validating your payload without dealing with the full event structure, use `innerSchema`. We automatically extend the base event schema for you, reducing boilerplate while still validating the entire record.
+When you want to focus on validating your payload without dealing with the full event structure, use `innerSchema`. We automatically extend the base event schema for you, reducing boilerplate code while still validating the entire record.
 
 Available transformers by event type:
 

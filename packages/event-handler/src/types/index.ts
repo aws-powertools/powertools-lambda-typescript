@@ -46,3 +46,5 @@ export type {
   RestRouterOptions,
   RouteHandler,
 } from './rest.js';
+
+export type { CorsOptions } from '../rest/middleware/cors.js';

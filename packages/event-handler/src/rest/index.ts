@@ -19,6 +19,7 @@ export {
   ServiceUnavailableError,
   UnauthorizedError,
 } from './errors.js';
+export { cors } from './middleware/index.js';
 export { Router } from './Router.js';
 export {
   composeMiddleware,

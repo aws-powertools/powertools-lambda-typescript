@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.26.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.2...v2.26.0) (2025-09-11)
+
+### Improvements
+
+- update `getCodeLocation` regex to improve performance ([#4389](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4389)) ([801333d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/801333deff04b09d4adb88860c60f497295685d9))
 ## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
 
 ### Improvements

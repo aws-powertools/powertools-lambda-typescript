@@ -230,7 +230,7 @@ type ParsedRecord<TRecord, TPayload, TOldPayload = TPayload> = TRecord extends {
     ? Omit<TRecord, 'kinesis'> & {
         kinesis: Omit<TRecord['kinesis'], 'data'> & { data: TPayload };
       }
-    : TRecord extends { dynamodb?: StreamRecord | undefined }
+    : TRecord extends { dynamodb?: StreamRecord }
       ? Omit<TRecord, 'dynamodb'> & {
           dynamodb: Omit<StreamRecord, 'NewImage' | 'OldImage'> & {
             NewImage: TPayload;

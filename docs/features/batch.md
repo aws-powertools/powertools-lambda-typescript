@@ -298,7 +298,7 @@ The behavior changes slightly when there are multiple item failures. Stream chec
 
 The Batch Processing utility integrates with the [Parser utility](./parser.md) to automatically validate and parse each batch record before processing. This ensures your record handler receives properly typed and validated data, eliminating the need for manual parsing and validation.
 
-To enable parser integration, import the `parser` function from `@aws-lambda-powertools/batch/parser` and pass it along with a schema when instantiating the `BatchProcessor`.
+To enable parser integration, import the `parser` function from `@aws-lambda-powertools/batch/parser` and pass it along with a schema when instantiating the `BatchProcessor`. This requires you to also [install the Parser utility](./parser.md#getting-started).
 
 ```typescript
 import { parser } from '@aws-lambda-powertools/batch/parser';

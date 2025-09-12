@@ -4,6 +4,7 @@ import {
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { parser } from '@aws-lambda-powertools/batch/parser';
+import type { ParsedRecord } from '@aws-lambda-powertools/batch/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { JSONStringified } from '@aws-lambda-powertools/parser/helpers';
 import { SqsRecordSchema } from '@aws-lambda-powertools/parser/schemas';
@@ -27,9 +28,7 @@ const processor = new BatchProcessor(EventType.SQS, {
 const recordHandler = async ({
   messageId,
   body: { name, age },
-}: Omit<SqsRecord, 'body'> & {
-  body: z.infer<typeof myItemSchema>;
-}) => {
+}: ParsedRecord<SqsRecord, z.infer<typeof myItemSchema>>) => {
   logger.info(`Processing record ${messageId}`, { name, age });
 };
 

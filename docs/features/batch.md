@@ -28,7 +28,7 @@ If your function fails to process any message from the batch, the entire batch r
 This behavior changes when you enable the [ReportBatchItemFailures feature](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-batchfailurereporting) in your Lambda function event source configuration:
 
 * [**SQS queues**](#sqs-standard). Only messages reported as failure will return to the queue for a retry, while successful ones will be deleted.
-* [**Kinesis data streams**](#kinesis-and-dynamodb-streams) and [**DynamoDB streams**](#kinesis-and-dynamodb-streams). Single reported failure will use its sequence number as the stream checkpoint. Multiple  reported failures will use the lowest sequence number as checkpoint.
+* [**Kinesis data streams**](#kinesis-and-dynamodb-streams) and [**DynamoDB streams**](#kinesis-and-dynamodb-streams). Single reported failure will use its sequence number as the stream checkpoint. Multiple reported failures will use the lowest sequence number as checkpoint.
 
 <!-- HTML tags are required in admonition content thus increasing line length beyond our limits -->
 <!-- markdownlint-disable MD013 -->
@@ -213,7 +213,7 @@ By default, we catch any exception raised by your record handler function. This 
 
     1. Any exception works here. See [extending `BatchProcessor` section, if you want to override this behavior.](#extending-batchprocessor)
 
-    2. Exceptions raised in `recordHandler` will propagate to `process_partial_response`. <br/><br/> We catch them and include each failed batch item identifier in the response dictionary (see `Sample response` tab).
+    2. Exceptions raised in `recordHandler` will propagate to `processPartialResponse`. <br/><br/> We catch them and include each failed batch item identifier in the response dictionary (see `Sample response` tab).
 
 === "Sample response"
 
@@ -296,81 +296,105 @@ The behavior changes slightly when there are multiple item failures. Stream chec
 
 ### Parser integration
 
-Thanks to the [Parser utility](./parser.md) integration, you can pass a [Standard Schema](https://standardschema.dev){target="_blank"}-compatible schema when instantiating the `BatchProcessor` and we will use it to validate each item in the batch before passing it to your record handler.
+The Batch Processing utility integrates with the [Parser utility](./parser.md) to automatically validate and parse each batch record before processing. This ensures your record handler receives properly typed and validated data, eliminating the need for manual parsing and validation.
 
-Since this is an opt-in feature, you will need to import the `parser` function from `@aws-lambda-powertools/batch/parser`, this allows us to keep the parsing logic separate from the main processing logic and avoid increasing the bundle size.
+To enable parser integration, import the `parser` function from `@aws-lambda-powertools/batch/parser` and pass it along with a schema when instantiating the `BatchProcessor`.
+
+```typescript
+import { parser } from '@aws-lambda-powertools/batch/parser';
+```
+
+You have two approaches for schema validation:
+
+1. **Item schema only** (`innerSchema`) - Focus on your payload schema, we handle extending the base event structure
+2. **Full event schema** (`schema`) - Validate the entire event record structure with complete control
+
+#### Benefits of parser integration
+
+Parser integration eliminates runtime errors from malformed data and provides compile-time type safety, making your code more reliable and easier to maintain. Invalid records are automatically marked as failed and won't reach your handler, reducing defensive coding.
+
+=== "Without parser integration"
+
+    ```typescript
+    const recordHandler = async (record: SQSRecord) => {
+      // Manual parsing with no type safety
+      const payload = JSON.parse(record.body); // any type
+      console.log(payload.name); // No autocomplete, runtime errors possible
+    };
+    ```
+
+=== "With parser integration"
+
+    ```typescript
+    const mySchema = z.object({ name: z.string(), age: z.number() });
+    
+    const recordHandler = async (record: ParsedRecord<SQSRecord, z.infer<typeof mySchema>>) => {
+      // Automatic validation and strong typing
+      console.log(record.body.name); // Full type safety and autocomplete
+    };
+    ```
 
 #### Using item schema only
 
-When you only want to customize the schema of the item's payload you can pass an `innerSchema` objecta and we will use it to extend the base schema based on the `EventType` passed to the `BatchProcessor`.
+When you want to focus on validating your payload without dealing with the full event structure, use `innerSchema`. We automatically extend the base event schema for you, reducing boilerplate while still validating the entire record.
 
-When doing this, you can also specify a `transformer` to tell us how to transform the payload before validation.
+Available transformers by event type:
 
-=== "SQS - using inner payload"
+| Event Type | Base Schema               | Available Transformers       | When to use transformer                                        |
+|------------|---------------------------|------------------------------|----------------------------------------------------------------|
+| SQS        | `SqsRecordSchema`         | `json`, `base64`             | `json` for stringified JSON, `base64` for encoded data         |
+| Kinesis    | `KinesisDataStreamRecord` | `base64`                     | Required for Kinesis data (always base64 encoded)              |
+| DynamoDB   | `DynamoDBStreamRecord`    | `unmarshall`                 | Required to convert DynamoDB attribute values to plain objects |
 
-    ```typescript hl_lines="6 11-14 19 26"
+=== "SQS with JSON payload"
+
+    ```typescript hl_lines="6 12-15 19-21 27-28"
     --8<-- "examples/snippets/batch/advanced_parser_item_sqs.ts"
     ```
 
-=== "SQS - Sample Event"
+=== "Sample Event"
 
     ```json hl_lines="6 22"
     --8<-- "examples/snippets/batch/samples/parser_SQS.json"
     ```
 
-The example below shows how to use the `innerSchema` with `EventType.SQS`, but you can use it with other event types as well:
+#### Using full event schema
 
-| Event Type | Base Schema               | Transformer                  |
-|------------|---------------------------|------------------------------|
-| SQS        | `SqsRecordSchema`         | `json`, `base64` (optional)  |
-| Kinesis    | `KinesisDataStreamRecord` | `base64`                     |
-| DynamoDB   | `DynamoDBStreamRecord`    | `unmarshall`                 |
-
-#### Extending built-in schemas
-
-When you want more control over the schema, you can extend a [built-in schema](./parser.md#built-in-schemas) for SQS, Kinesis Data Streams, or DynamoDB Streams with your own custom schema for the payload and we'll parse each item before passing it to your record handler. If the payload does not match the schema, the item will be marked as failed.
+For complete control over validation, extend the built-in schemas with your custom payload schema. This approach gives you full control over the entire event structure.
 
 === "SQS"
 
-    === "index.ts"
-
-        ```typescript hl_lines="6 14-16 20-23 29"
-        --8<-- "examples/snippets/batch/advanced_parser_sqs.ts"
-        ```
-
-    === "Sample Event"
-
-        ```json hl_lines="6 22"
-        --8<-- "examples/snippets/batch/samples/parser_SQS.json"
-        ```
-
-=== "DynamoDB Streams"
-
-    === "index.ts"
-
-        ```typescript hl_lines="6 17-19 24-28 35"
-        --8<-- "examples/snippets/batch/advanced_parser_DynamoDB.ts"
-        ```
-
-    === "Sample Event"
-
-        ```json hl_lines="13-18 39-44"
-        --8<-- "examples/snippets/batch/samples/parser_DynamoDB.json"
-        ```
+    ```typescript hl_lines="6 15-17 22-24 30-31"
+    --8<-- "examples/snippets/batch/advanced_parser_sqs.ts"
+    ```
 
 === "Kinesis Data Streams"
 
-    === "index.ts"
+    ```typescript hl_lines="6 18-23 28-32 39 41-44"
+    --8<-- "examples/snippets/batch/advanced_parser_Kinesis.ts"
+    ```
 
-        ```typescript hl_lines="6 17-22 27-31 38"
-        --8<-- "examples/snippets/batch/advanced_parser_Kinesis.ts"
-        ```
+=== "DynamoDB Streams"
 
-    === "Sample Event"
+    ```typescript hl_lines="6 17-19 24-28 35 37"
+    --8<-- "examples/snippets/batch/advanced_parser_DynamoDB.ts"
+    ```
 
-        ```json hl_lines="8 24"
-        --8<-- "examples/snippets/batch/samples/parser_Kinesis.json"
-        ```
+#### Typed record handlers with ParsedRecord
+
+To get full type safety in your record handlers, use the `ParsedRecord` utility type:
+
+```typescript
+import type { ParsedRecord } from '@aws-lambda-powertools/batch';
+
+// For most cases - single schema
+type MyRecord = ParsedRecord<SQSRecord, z.infer<typeof mySchema>>;
+
+// For DynamoDB - separate schemas for NewImage and OldImage
+type MyDynamoRecord = ParsedRecord<DynamoDBRecord, z.infer<typeof newSchema>, z.infer<typeof oldSchema>>;
+```
+
+This eliminates verbose type annotations and provides clean autocompletion for your parsed data.
 
 ### Accessing processed messages
 

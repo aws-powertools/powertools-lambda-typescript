@@ -4,6 +4,7 @@ import {
   processPartialResponse,
 } from '@aws-lambda-powertools/batch';
 import { parser } from '@aws-lambda-powertools/batch/parser';
+import type { ParsedRecord } from '@aws-lambda-powertools/batch/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Base64Encoded } from '@aws-lambda-powertools/parser/helpers';
 import {
@@ -37,11 +38,10 @@ const recordHandler = async ({
     sequenceNumber,
     data: { name, age },
   },
-}: Omit<KinesisDataStreamRecordEvent, 'kinesis'> & {
-  kinesis: Omit<KinesisDataStreamRecordEvent['kinesis'], 'data'> & {
-    data: z.infer<typeof myItemSchema>;
-  };
-}) => {
+}: ParsedRecord<
+  KinesisDataStreamRecordEvent,
+  z.infer<typeof myItemSchema>
+>) => {
   logger.info(`Processing record: ${sequenceNumber}`, {
     name,
     age,

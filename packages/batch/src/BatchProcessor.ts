@@ -79,6 +79,40 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
  * });
  * ```
  *
+ * **Process batch with schema validation**
+ *
+ * @example
+ * ```typescript
+ * import {
+ *   BatchProcessor,
+ *   EventType,
+ *   processPartialResponse,
+ * } from '@aws-lambda-powertools/batch';
+ * import { parser } from '@aws-lambda-powertools/batch/parser';
+ * import { SqsRecordSchema } from '@aws-lambda-powertools/parser/schemas';
+ * import type { SQSHandler } from 'aws-lambda';
+ * import { z } from 'zod';
+ *
+ * const myItemSchema = z.object({ name: z.string(), age: z.number() });
+ *
+ * const processor = new BatchProcessor(EventType.SQS, {
+ *   parser,
+ *   schema: SqsRecordSchema.extend({
+ *     body: myItemSchema,
+ *   }),
+ * });
+ *
+ * const recordHandler = async (record) => {
+ *   // record is now fully typed and validated
+ *   console.log(record.body.name, record.body.age);
+ * };
+ *
+ * export const handler: SQSHandler = async (event, context) =>
+ *   processPartialResponse(event, recordHandler, processor, {
+ *     context,
+ *   });
+ * ```
+ *
  * @param eventType - The type of event to process (SQS, Kinesis, DynamoDB)
  */
 class BatchProcessor extends BasePartialBatchProcessor {

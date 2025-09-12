@@ -14,3 +14,4 @@ export { processPartialResponse } from './processPartialResponse.js';
 export { processPartialResponseSync } from './processPartialResponseSync.js';
 export { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
 export { SqsFifoPartialProcessorAsync } from './SqsFifoPartialProcessorAsync.js';
+export type { ParsedRecord } from './types.js';

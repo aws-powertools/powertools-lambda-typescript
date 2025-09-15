@@ -32,6 +32,7 @@ export type {
 } from './common.js';
 
 export type {
+  CorsOptions,
   ErrorHandler,
   ErrorResolveOptions,
   ErrorResponse,
@@ -46,5 +47,3 @@ export type {
   RestRouterOptions,
   RouteHandler,
 } from './rest.js';
-
-export type { CorsOptions } from '../rest/middleware/cors.js';

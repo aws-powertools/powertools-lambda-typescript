@@ -87,3 +87,20 @@ export const PARAM_PATTERN = /:([a-zA-Z_]\w*)(?=\/|$)/g;
 export const SAFE_CHARS = "-._~()'!*:@,;=+&$";
 
 export const UNSAFE_CHARS = '%<> \\[\\]{}|^';
+
+/**
+ * Default CORS configuration
+ */
+export const DEFAULT_CORS_OPTIONS = {
+  origin: '*',
+  allowMethods: ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT'],
+  allowHeaders: [
+    'Authorization',
+    'Content-Type',
+    'X-Amz-Date',
+    'X-Api-Key',
+    'X-Amz-Security-Token',
+  ],
+  exposeHeaders: [],
+  credentials: false,
+} as const;

@@ -12,12 +12,12 @@ const compress = (options?: CompressionOptions): Middleware => {
   return async (_, reqCtx, next) => {
     await next();
 
-    const contentLength = reqCtx.res.headers.get('Content-Length');
+    const contentLength = reqCtx.res.headers.get('content-length');
 
     // Check if response should be compressed
     if (
-      reqCtx.res.headers.has('Content-Encoding') || // already encoded
-      reqCtx.res.headers.has('Transfer-Encoding') || // already encoded or chunked
+      reqCtx.res.headers.has('content-encoding') || // already encoded
+      reqCtx.res.headers.has('transfer-encoding') || // already encoded or chunked
       reqCtx.request.method === 'HEAD' || // HEAD request
       (contentLength && Number(contentLength) < threshold) || // content-length below threshold
       !shouldCompress(reqCtx.res) || // not compressible type
@@ -26,7 +26,7 @@ const compress = (options?: CompressionOptions): Middleware => {
       return;
     }
 
-    const acceptedEncoding = reqCtx.request.headers.get('Accept-Encoding');
+    const acceptedEncoding = reqCtx.request.headers.get('accept-encoding');
     const encoding =
       options?.encoding ??
       Object.values(COMPRESSION_ENCODING_TYPES).find((encoding) =>
@@ -40,18 +40,18 @@ const compress = (options?: CompressionOptions): Middleware => {
     // Compress the response
     const stream = new CompressionStream(encoding);
     reqCtx.res = new Response(reqCtx.res.body.pipeThrough(stream), reqCtx.res);
-    reqCtx.res.headers.delete('Content-Length');
-    reqCtx.res.headers.set('Content-Encoding', encoding);
+    reqCtx.res.headers.delete('content-length');
+    reqCtx.res.headers.set('content-encoding', encoding);
   };
 };
 
 const shouldCompress = (res: Response) => {
-  const type = res.headers.get('Content-Type');
+  const type = res.headers.get('content-type');
   return type && COMPRESSIBLE_CONTENT_TYPE_REGEX.test(type);
 };
 
 const shouldTransform = (res: Response) => {
-  const cacheControl = res.headers.get('Cache-Control');
+  const cacheControl = res.headers.get('cache-control');
   // Don't compress for Cache-Control: no-transform
   // https://tools.ietf.org/html/rfc7234#section-5.2.2.4
   return !cacheControl || !CACHE_CONTROL_NO_TRANSFORM_REGEX.test(cacheControl);

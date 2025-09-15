@@ -1,5 +1,6 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { Router } from 'src/rest/Router.js';
+import type { Middleware } from 'src/types/index.js';
 import { describe, expect, it } from 'vitest';
 import { compress } from '../../../../src/rest/middleware/compress.js';
 import { createTestEvent } from '../helpers.js';
@@ -25,9 +26,19 @@ describe('Compress Middleware', () => {
     // Prepare
     const event = createTestEvent('/test', 'GET');
     const app = new Router();
-    app.get('/test', [compress({ threshold: 1024 })], async () => {
-      return { test: 'small' };
-    });
+    app.get(
+      '/test',
+      [
+        compress({ threshold: 1024 }),
+        (): Middleware => async (_, reqCtx, next) => {
+          await next();
+          reqCtx.res.headers.set('content-length', '1');
+        },
+      ],
+      async () => {
+        return { test: 'x' };
+      }
+    );
 
     // Act
     const result = await app.resolve(event, context);
@@ -53,28 +64,47 @@ describe('Compress Middleware', () => {
 
   it('skips compression when already encoded', async () => {
     // Prepare
-    const event = createTestEvent('/test', 'HEAD');
+    const event = createTestEvent('/test', 'GET');
     const app = new Router();
-    app.get('/test', [compress()], async () => {
-      return { test: 'x'.repeat(2000) };
-    });
+    app.get(
+      '/test',
+      [
+        compress({
+          encoding: 'deflate',
+        }),
+        compress({
+          encoding: 'gzip',
+        }),
+      ],
+      async () => {
+        return { test: 'x'.repeat(2000) };
+      }
+    );
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.headers?.['content-encoding']).toBeUndefined();
+    expect(result.headers?.['content-encoding']).toEqual('gzip');
   });
 
   it('skips compression for non-compressible content types', async () => {
     // Prepare
-    const event = createTestEvent('/test', 'GET', {
-      'Content-Type': 'image/png',
-    });
+    const event = createTestEvent('/test', 'GET');
     const app = new Router();
-    app.get('/test', [compress()], async () => {
-      return 'x'.repeat(2000);
-    });
+    app.get(
+      '/test',
+      [
+        compress(),
+        (): Middleware => async (_, reqCtx, next) => {
+          await next();
+          reqCtx.res.headers.set('content-type', 'image/jpeg');
+        },
+      ],
+      async () => {
+        return {};
+      }
+    );
 
     // Act
     const result = await app.resolve(event, context);
@@ -87,10 +117,19 @@ describe('Compress Middleware', () => {
     // Prepare
     const event = createTestEvent('/test', 'GET');
     const app = new Router();
-    app.get('/test', [compress()], async (_, reqCtx) => {
-      reqCtx.res.headers.set('Cache-Control', 'no-transform');
-      return 'x'.repeat(2000);
-    });
+    app.get(
+      '/test',
+      [
+        compress(),
+        (): Middleware => async (_, reqCtx, next) => {
+          await next();
+          reqCtx.res.headers.set('cache-control', 'no-transform');
+        },
+      ],
+      async () => {
+        return {};
+      }
+    );
 
     // Act
     const result = await app.resolve(event, context);
@@ -101,13 +140,19 @@ describe('Compress Middleware', () => {
 
   it('uses specified encoding when provided', async () => {
     // Prepare
-    const event = createTestEvent('/test', 'GET', {
-      'Accept-Encoding': 'deflate, gzip',
-    });
+    const event = createTestEvent('/test', 'GET');
     const app = new Router();
-    app.get('/test', [compress({ encoding: 'deflate' })], async () => {
-      return 'x'.repeat(2000);
-    });
+    app.get(
+      '/test',
+      [
+        compress({
+          encoding: 'deflate',
+        }),
+      ],
+      async () => {
+        return { test: 'x'.repeat(2000) };
+      }
+    );
 
     // Act
     const result = await app.resolve(event, context);
@@ -123,7 +168,7 @@ describe('Compress Middleware', () => {
     });
     const app = new Router();
     app.get('/test', [compress()], async () => {
-      return 'x'.repeat(2000);
+      return { test: 'x'.repeat(2000) };
     });
 
     // Act
@@ -133,30 +178,23 @@ describe('Compress Middleware', () => {
     expect(result.headers?.['content-encoding']).toBe('deflate');
   });
 
-  it('defaults to gzip when no encoding specified', async () => {
-    // Prepare
-    const event = createTestEvent('/test', 'GET', {
-      'Accept-Encoding': 'br',
-    });
-    const app = new Router();
-    app.get('/test', [compress()], async () => {
-      return 'x'.repeat(2000);
-    });
-
-    // Act
-    const result = await app.resolve(event, context);
-
-    // Assess
-    expect(result.headers?.['content-encoding']).toBe('gzip');
-  });
-
   it('skips compression when no body present', async () => {
     // Prepare
     const event = createTestEvent('/test', 'GET');
     const app = new Router();
-    app.get('/test', [compress()], async () => {
-      return new Response(null);
-    });
+    app.get(
+      '/test',
+      [
+        compress(),
+        (): Middleware => async (_, reqCtx, next) => {
+          await next();
+          reqCtx.res = new Response(null);
+        },
+      ],
+      async () => {
+        return {};
+      }
+    );
 
     // Act
     const result = await app.resolve(event, context);

@@ -72,8 +72,8 @@ export const createSettingHeadersMiddleware = (headers: {
 }): Middleware => {
   return async (_params, _options, next) => {
     await next();
-    Object.entries(headers).map(([key, value]) =>
-      _options.res.headers.set(key, value)
-    );
+    Object.entries(headers).forEach(([key, value]) => {
+      _options.res.headers.set(key, value);
+    });
   };
 };

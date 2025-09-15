@@ -1,3 +1,4 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   Context,
@@ -7,7 +8,6 @@ import type {
   StreamRecord,
 } from 'aws-lambda';
 import type { ZodType } from 'zod';
-import type { GenericLogger } from '../../commons/lib/esm/types/GenericLogger.js';
 import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import type { BatchProcessor } from './BatchProcessor.js';
 import type { parser } from './parser.js';
@@ -111,7 +111,7 @@ type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
  *
  * You can optionally pass a `logger` for debug and warning messages.
  *
- * @note `innerSchema` supports only Zod schemas, while `schema` supports any Standard Schema-compatible parsing library.
+ * Note: `innerSchema` supports only Zod schemas, while `schema` supports any Standard Schema-compatible parsing library.
  *
  * @property parser - Required when using schema parsing (import from `@aws-lambda-powertools/batch/parser`)
  * @property schema - Complete event schema (mutually exclusive with innerSchema)

@@ -21,7 +21,8 @@ const compress = (options?: CompressionOptions): Middleware => {
       reqCtx.request.method === 'HEAD' || // HEAD request
       (contentLength && Number(contentLength) < threshold) || // content-length below threshold
       !shouldCompress(reqCtx.res) || // not compressible type
-      !shouldTransform(reqCtx.res) // cache-control: no-transform
+      !shouldTransform(reqCtx.res) || // cache-control: no-transform
+      !reqCtx.res.body
     ) {
       return;
     }
@@ -33,9 +34,6 @@ const compress = (options?: CompressionOptions): Middleware => {
         acceptedEncoding?.includes(encoding)
       ) ??
       COMPRESSION_ENCODING_TYPES.GZIP;
-    if (!encoding || !reqCtx.res.body) {
-      return;
-    }
 
     // Compress the response
     const stream = new CompressionStream(encoding);

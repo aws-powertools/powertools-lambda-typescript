@@ -75,10 +75,10 @@ const compress = (options?: CompressionOptions): Middleware => {
     // Check if response should be compressed
     if (
       isEncodedOrChunked ||
-      reqCtx.request.method === 'HEAD' || // HEAD request
-      (contentLength && Number(contentLength) < threshold) || // content-length below threshold
-      !shouldCompress(reqCtx.res) || // not compressible type
-      !shouldTransform(reqCtx.res) || // cache-control: no-transform
+      reqCtx.request.method === 'HEAD' ||
+      (contentLength && Number(contentLength) < threshold) ||
+      !shouldCompress(reqCtx.res) ||
+      !shouldTransform(reqCtx.res) ||
       !reqCtx.res.body
     ) {
       return;

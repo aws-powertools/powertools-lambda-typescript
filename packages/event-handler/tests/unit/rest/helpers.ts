@@ -70,10 +70,10 @@ export const createNoNextMiddleware = (
 export const createSettingHeadersMiddleware = (headers: {
   [key: string]: string;
 }): Middleware => {
-  return async (_params, _options, next) => {
+  return async (_params, options, next) => {
     await next();
     Object.entries(headers).forEach(([key, value]) => {
-      _options.res.headers.set(key, value);
+      options.res.headers.set(key, value);
     });
   };
 };

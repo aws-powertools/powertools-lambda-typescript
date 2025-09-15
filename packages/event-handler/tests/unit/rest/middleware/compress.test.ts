@@ -107,30 +107,50 @@ describe('Compress Middleware', () => {
     expect(result.headers?.['content-encoding']).toEqual('gzip');
   });
 
-  it('skips compression for non-compressible content types', async () => {
-    // Prepare
-    const event = createTestEvent('/test', 'GET');
-    const app = new Router();
-    app.get(
-      '/test',
-      [
-        compress(),
-        createSettingHeadersMiddleware({
-          'content-length': '2000',
-          'content-type': 'image/jpeg',
-        }),
-      ],
-      async () => {
-        return { test: 'x'.repeat(2000) };
-      }
-    );
+  it.each([
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'audio/mpeg',
+    'audio/mp4',
+    'audio/ogg',
+    'video/mp4',
+    'video/mpeg',
+    'video/webm',
+    'application/zip',
+    'application/gzip',
+    'application/x-gzip',
+    'application/octet-stream',
+    'application/pdf',
+    'application/msword',
+    'text/event-stream',
+  ])(
+    'skips compression for non-compressible content types',
+    async (contentType) => {
+      // Prepare
+      const event = createTestEvent('/test', 'GET');
+      const app = new Router();
+      app.get(
+        '/test',
+        [
+          compress(),
+          createSettingHeadersMiddleware({
+            'content-length': '2000',
+            'content-type': contentType,
+          }),
+        ],
+        async () => {
+          return { test: 'x'.repeat(2000) };
+        }
+      );
 
-    // Act
-    const result = await app.resolve(event, context);
+      // Act
+      const result = await app.resolve(event, context);
 
-    // Assess
-    expect(result.headers?.['content-encoding']).toBeUndefined();
-  });
+      // Assess
+      expect(result.headers?.['content-encoding']).toBeUndefined();
+    }
+  );
 
   it('skips compression when cache-control no-transform is set', async () => {
     // Prepare

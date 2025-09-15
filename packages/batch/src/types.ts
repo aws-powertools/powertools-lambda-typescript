@@ -34,10 +34,10 @@ type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
    * If true skip the group on error during processing.
    */
   skipGroupOnError?: T extends
-    | SqsFifoPartialProcessor
-    | SqsFifoPartialProcessorAsync
-    ? boolean
-    : never;
+  | SqsFifoPartialProcessor
+  | SqsFifoPartialProcessorAsync
+  ? boolean
+  : never;
   /**
    *  Set this to false to prevent throwing an error if the entire batch fails.
    */
@@ -48,10 +48,10 @@ type BatchProcessingOptions<T = BasePartialBatchProcessor> = {
    * When set to `false`, the records will be processed sequentially.
    */
   processInParallel?: T extends
-    | SqsFifoPartialProcessor
-    | SqsFifoPartialProcessorAsync
-    ? never
-    : boolean;
+  | SqsFifoPartialProcessor
+  | SqsFifoPartialProcessorAsync
+  ? never
+  : boolean;
 };
 
 /**
@@ -111,7 +111,7 @@ type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
  *
  * You can optionally pass a `logger` for debug and warning messages.
  *
- * @note `innerSchema` supports only Zod schemas, while `schema` supports any Standard Schema-compatible parsing library.
+ * Note: `innerSchema` supports only Zod schemas, while `schema` supports any Standard Schema-compatible parsing library.
  *
  * @property parser - Required when using schema parsing (import from `@aws-lambda-powertools/batch/parser`)
  * @property schema - Complete event schema (mutually exclusive with innerSchema)
@@ -121,50 +121,50 @@ type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
  */
 type BasePartialBatchProcessorParserConfig =
   | {
-      /**
-       * Required when using schema parsing - import from `@aws-lambda-powertools/batch/parser`
-       */
-      parser: typeof parser;
-      /**
-       * Complete event schema using Standard Schema specification, mutually exclusive with `innerSchema`
-       */
-      schema: StandardSchemaV1;
-      innerSchema?: never;
-      transformer?: never;
-      /**
-       * Optional logger for debug and warning messages
-       */
-      logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
-    }
+    /**
+     * Required when using schema parsing - import from `@aws-lambda-powertools/batch/parser`
+     */
+    parser: typeof parser;
+    /**
+     * Complete event schema using Standard Schema specification, mutually exclusive with `innerSchema`
+     */
+    schema: StandardSchemaV1;
+    innerSchema?: never;
+    transformer?: never;
+    /**
+     * Optional logger for debug and warning messages
+     */
+    logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+  }
   | {
-      /**
-       * Required when using schema parsing - import from `@aws-lambda-powertools/batch/parser`
-       */
-      parser: typeof parser;
-      schema?: never;
-      /**
-       * Payload-only Zod schema, mutually exclusive with `schema`
-       */
-      innerSchema: ZodType;
-      /**
-       * Payload transformer, only available with `innerSchema`
-       */
-      transformer?: 'json' | 'base64' | 'unmarshall';
-      /**
-       * Optional logger for debug and warning messages
-       */
-      logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
-    }
+    /**
+     * Required when using schema parsing - import from `@aws-lambda-powertools/batch/parser`
+     */
+    parser: typeof parser;
+    schema?: never;
+    /**
+     * Payload-only Zod schema, mutually exclusive with `schema`
+     */
+    innerSchema: ZodType;
+    /**
+     * Payload transformer, only available with `innerSchema`
+     */
+    transformer?: 'json' | 'base64' | 'unmarshall';
+    /**
+     * Optional logger for debug and warning messages
+     */
+    logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+  }
   | {
-      parser?: never;
-      schema?: never;
-      innerSchema?: never;
-      transformer?: never;
-      /**
-       * Optional logger for debug and warning messages
-       */
-      logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
-    };
+    parser?: never;
+    schema?: never;
+    innerSchema?: never;
+    transformer?: never;
+    /**
+     * Optional logger for debug and warning messages
+     */
+    logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+  };
 
 /**
  * Utility type for creating typed record handlers with custom payload schemas.
@@ -227,17 +227,17 @@ type ParsedRecord<TRecord, TPayload, TOldPayload = TPayload> = TRecord extends {
 }
   ? Omit<TRecord, 'body'> & { body: TPayload }
   : TRecord extends { kinesis: { data: string } }
-    ? Omit<TRecord, 'kinesis'> & {
-        kinesis: Omit<TRecord['kinesis'], 'data'> & { data: TPayload };
-      }
-    : TRecord extends { dynamodb?: StreamRecord }
-      ? Omit<TRecord, 'dynamodb'> & {
-          dynamodb: Omit<StreamRecord, 'NewImage' | 'OldImage'> & {
-            NewImage: TPayload;
-            OldImage: TOldPayload;
-          };
-        }
-      : TRecord;
+  ? Omit<TRecord, 'kinesis'> & {
+    kinesis: Omit<TRecord['kinesis'], 'data'> & { data: TPayload };
+  }
+  : TRecord extends { dynamodb?: StreamRecord }
+  ? Omit<TRecord, 'dynamodb'> & {
+    dynamodb: Omit<StreamRecord, 'NewImage' | 'OldImage'> & {
+      NewImage: TPayload;
+      OldImage: TOldPayload;
+    };
+  }
+  : TRecord;
 
 export type {
   BatchProcessingOptions,

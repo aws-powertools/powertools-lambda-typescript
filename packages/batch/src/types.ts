@@ -95,7 +95,7 @@ type PartialItemFailures = { itemIdentifier: string };
 type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
 
 /**
- * Configuration options for {@link BatchProcessor | `BatchProcessor`} parser integration.
+ * Configuration options for {@link BatchProcessor} parser integration.
  *
  * When enabling parser integration, you must provide {@link parser} along with either `schema` or `innerSchema`.
  * Import `parser` from `@aws-lambda-powertools/batch/parser`.

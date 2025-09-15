@@ -1,18 +1,27 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { Router } from 'src/rest/Router.js';
 import type { Middleware } from 'src/types/index.js';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { compress } from '../../../../src/rest/middleware/index.js';
-import { createTestEvent } from '../helpers.js';
+import { createSettingHeadersMiddleware, createTestEvent } from '../helpers.js';
 
 describe('Compress Middleware', () => {
   it('compresses response when conditions are met', async () => {
     // Prepare
     const event = createTestEvent('/test', 'GET');
     const app = new Router();
-    app.get('/test', [compress()], async () => {
-      return { test: 'x'.repeat(2000) };
-    });
+    app.get(
+      '/test',
+      [
+        compress(),
+        createSettingHeadersMiddleware({
+          'content-length': '2000',
+        }),
+      ],
+      async () => {
+        return { test: 'x'.repeat(2000) };
+      }
+    );
 
     // Act
     const result = await app.resolve(event, context);
@@ -30,10 +39,9 @@ describe('Compress Middleware', () => {
       '/test',
       [
         compress({ threshold: 1024 }),
-        (): Middleware => async (_, reqCtx, next) => {
-          await next();
-          reqCtx.res.headers.set('content-length', '1');
-        },
+        createSettingHeadersMiddleware({
+          'content-length': '1',
+        }),
       ],
       async () => {
         return { test: 'x' };
@@ -51,9 +59,18 @@ describe('Compress Middleware', () => {
     // Prepare
     const event = createTestEvent('/test', 'HEAD');
     const app = new Router();
-    app.head('/test', [compress()], async () => {
-      return { test: 'x'.repeat(2000) };
-    });
+    app.head(
+      '/test',
+      [
+        compress(),
+        createSettingHeadersMiddleware({
+          'content-length': '2000',
+        }),
+      ],
+      async () => {
+        return { test: 'x'.repeat(2000) };
+      }
+    );
 
     // Act
     const result = await app.resolve(event, context);
@@ -74,6 +91,9 @@ describe('Compress Middleware', () => {
         }),
         compress({
           encoding: 'gzip',
+        }),
+        createSettingHeadersMiddleware({
+          'content-length': '2000',
         }),
       ],
       async () => {
@@ -96,13 +116,13 @@ describe('Compress Middleware', () => {
       '/test',
       [
         compress(),
-        (): Middleware => async (_, reqCtx, next) => {
-          await next();
-          reqCtx.res.headers.set('content-type', 'image/jpeg');
-        },
+        createSettingHeadersMiddleware({
+          'content-length': '2000',
+          'content-type': 'image/jpeg',
+        }),
       ],
       async () => {
-        return {};
+        return { test: 'x'.repeat(2000) };
       }
     );
 
@@ -121,13 +141,13 @@ describe('Compress Middleware', () => {
       '/test',
       [
         compress(),
-        (): Middleware => async (_, reqCtx, next) => {
-          await next();
-          reqCtx.res.headers.set('cache-control', 'no-transform');
-        },
+        createSettingHeadersMiddleware({
+          'content-length': '2000',
+          'cache-control': 'no-transform',
+        }),
       ],
       async () => {
-        return {};
+        return { test: 'x'.repeat(2000) };
       }
     );
 
@@ -148,6 +168,9 @@ describe('Compress Middleware', () => {
         compress({
           encoding: 'deflate',
         }),
+        createSettingHeadersMiddleware({
+          'content-length': '2000',
+        }),
       ],
       async () => {
         return { test: 'x'.repeat(2000) };
@@ -167,9 +190,18 @@ describe('Compress Middleware', () => {
       'Accept-Encoding': 'deflate',
     });
     const app = new Router();
-    app.get('/test', [compress()], async () => {
-      return { test: 'x'.repeat(2000) };
-    });
+    app.get(
+      '/test',
+      [
+        compress(),
+        createSettingHeadersMiddleware({
+          'content-length': '2000',
+        }),
+      ],
+      async () => {
+        return { test: 'x'.repeat(2000) };
+      }
+    );
 
     // Act
     const result = await app.resolve(event, context);

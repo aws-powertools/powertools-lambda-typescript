@@ -1,7 +1,6 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { Router } from 'src/rest/Router.js';
-import type { Middleware } from 'src/types/index.js';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { compress } from '../../../../src/rest/middleware/index.js';
 import { createSettingHeadersMiddleware, createTestEvent } from '../helpers.js';
 

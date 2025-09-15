@@ -80,6 +80,9 @@
     "serverless",
     "nodejs"
   ],
+  "dependencies": {
+    "@aws-lambda-powertools/commons": "2.26.0"
+  },
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@aws-lambda-powertools/parser": "2.26.0"

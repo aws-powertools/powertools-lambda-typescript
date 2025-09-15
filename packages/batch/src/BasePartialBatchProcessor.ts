@@ -1,10 +1,10 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import type {
   DynamoDBRecord,
   KinesisStreamRecord,
   SQSRecord,
 } from 'aws-lambda';
-import type { GenericLogger } from '../../commons/lib/esm/types/GenericLogger.js';
 import { BasePartialProcessor } from './BasePartialProcessor.js';
 import {
   DATA_CLASS_MAPPING,

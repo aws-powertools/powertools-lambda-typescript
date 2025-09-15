@@ -1,3 +1,4 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   Context,
@@ -7,9 +8,7 @@ import type {
   StreamRecord,
 } from 'aws-lambda';
 import type { ZodType } from 'zod';
-import type { GenericLogger } from '../../commons/lib/esm/types/GenericLogger.js';
 import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
-import type { BatchProcessor } from './BatchProcessor.js';
 import type { parser } from './parser.js';
 import type { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
 import type { SqsFifoPartialProcessorAsync } from './SqsFifoPartialProcessorAsync.js';

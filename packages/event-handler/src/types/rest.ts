@@ -3,7 +3,11 @@ import type {
   JSONObject,
 } from '@aws-lambda-powertools/commons/types';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import type { HttpErrorCodes, HttpVerbs } from '../rest/constants.js';
+import type {
+  COMPRESSION_ENCODING_TYPES,
+  HttpErrorCodes,
+  HttpVerbs,
+} from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
 import type { Router } from '../rest/Router.js';
 import type { ResolveOptions } from './common.js';
@@ -111,6 +115,11 @@ type ValidationResult = {
   issues: string[];
 };
 
+type CompressionOptions = {
+  encoding?: (typeof COMPRESSION_ENCODING_TYPES)[keyof typeof COMPRESSION_ENCODING_TYPES];
+  threshold?: number;
+};
+
 export type {
   CompiledRoute,
   DynamicRoute,
@@ -131,4 +140,5 @@ export type {
   RestRouteHandlerOptions,
   RouteRegistryOptions,
   ValidationResult,
+  CompressionOptions,
 };

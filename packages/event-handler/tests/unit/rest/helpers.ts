@@ -3,11 +3,12 @@ import type { Middleware } from '../../../src/types/rest.js';
 
 export const createTestEvent = (
   path: string,
-  httpMethod: string
+  httpMethod: string,
+  headers: Record<string, string> = {}
 ): APIGatewayProxyEvent => ({
   path,
   httpMethod,
-  headers: {},
+  headers,
   body: null,
   multiValueHeaders: {},
   isBase64Encoded: false,

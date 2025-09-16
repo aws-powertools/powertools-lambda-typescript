@@ -102,7 +102,12 @@ const compress = (options?: CompressionOptions): Middleware => {
 
 const shouldCompress = (res: Response) => {
   const type = res.headers.get('content-type');
-  return type && COMPRESSIBLE_CONTENT_TYPE_REGEX.test(type);
+  return (
+    type &&
+    (COMPRESSIBLE_CONTENT_TYPE_REGEX.COMMON.test(type) ||
+      COMPRESSIBLE_CONTENT_TYPE_REGEX.OCCASIONAL.test(type) ||
+      COMPRESSIBLE_CONTENT_TYPE_REGEX.RARE.test(type))
+  );
 };
 
 const shouldTransform = (res: Response) => {

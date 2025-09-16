@@ -1,26 +1,29 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { Router } from 'src/rest/Router.js';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { compress } from '../../../../src/rest/middleware/index.js';
 import { createSettingHeadersMiddleware, createTestEvent } from '../helpers.js';
 
 describe('Compress Middleware', () => {
+  const event = createTestEvent('/test', 'GET');
+  let app: Router;
+  const body = { test: 'x'.repeat(2000) };
+
+  beforeEach(() => {
+    app = new Router();
+    app.use(compress());
+    app.use(
+      createSettingHeadersMiddleware({
+        'content-length': '2000',
+      })
+    );
+  });
+
   it('compresses response when conditions are met', async () => {
     // Prepare
-    const event = createTestEvent('/test', 'GET');
-    const app = new Router();
-    app.get(
-      '/test',
-      [
-        compress(),
-        createSettingHeadersMiddleware({
-          'content-length': '2000',
-        }),
-      ],
-      async () => {
-        return { test: 'x'.repeat(2000) };
-      }
-    );
+    app.get('/test', async () => {
+      return body;
+    });
 
     // Act
     const result = await app.resolve(event, context);
@@ -32,9 +35,8 @@ describe('Compress Middleware', () => {
 
   it('skips compression when content is below threshold', async () => {
     // Prepare
-    const event = createTestEvent('/test', 'GET');
-    const app = new Router();
-    app.get(
+    const application = new Router();
+    application.get(
       '/test',
       [
         compress({ threshold: 1024 }),
@@ -48,7 +50,7 @@ describe('Compress Middleware', () => {
     );
 
     // Act
-    const result = await app.resolve(event, context);
+    const result = await application.resolve(event, context);
 
     // Assess
     expect(result.headers?.['content-encoding']).toBeUndefined();
@@ -56,23 +58,13 @@ describe('Compress Middleware', () => {
 
   it('skips compression for HEAD requests', async () => {
     // Prepare
-    const event = createTestEvent('/test', 'HEAD');
-    const app = new Router();
-    app.head(
-      '/test',
-      [
-        compress(),
-        createSettingHeadersMiddleware({
-          'content-length': '2000',
-        }),
-      ],
-      async () => {
-        return { test: 'x'.repeat(2000) };
-      }
-    );
+    const headEvent = createTestEvent('/test', 'HEAD');
+    app.head('/test', async () => {
+      return body;
+    });
 
     // Act
-    const result = await app.resolve(event, context);
+    const result = await app.resolve(headEvent, context);
 
     // Assess
     expect(result.headers?.['content-encoding']).toBeUndefined();
@@ -80,9 +72,8 @@ describe('Compress Middleware', () => {
 
   it('skips compression when already encoded', async () => {
     // Prepare
-    const event = createTestEvent('/test', 'GET');
-    const app = new Router();
-    app.get(
+    const application = new Router();
+    application.get(
       '/test',
       [
         compress({
@@ -96,12 +87,12 @@ describe('Compress Middleware', () => {
         }),
       ],
       async () => {
-        return { test: 'x'.repeat(2000) };
+        return body;
       }
     );
 
     // Act
-    const result = await app.resolve(event, context);
+    const result = await application.resolve(event, context);
 
     // Assess
     expect(result.headers?.['content-encoding']).toEqual('gzip');
@@ -128,9 +119,8 @@ describe('Compress Middleware', () => {
     'skips compression for non-compressible content types',
     async (contentType) => {
       // Prepare
-      const event = createTestEvent('/test', 'GET');
-      const app = new Router();
-      app.get(
+      const application = new Router();
+      application.get(
         '/test',
         [
           compress(),
@@ -140,12 +130,12 @@ describe('Compress Middleware', () => {
           }),
         ],
         async () => {
-          return { test: 'x'.repeat(2000) };
+          return body;
         }
       );
 
       // Act
-      const result = await app.resolve(event, context);
+      const result = await application.resolve(event, context);
 
       // Assess
       expect(result.headers?.['content-encoding']).toBeUndefined();
@@ -154,9 +144,8 @@ describe('Compress Middleware', () => {
 
   it('skips compression when cache-control no-transform is set', async () => {
     // Prepare
-    const event = createTestEvent('/test', 'GET');
-    const app = new Router();
-    app.get(
+    const application = new Router();
+    application.get(
       '/test',
       [
         compress(),
@@ -166,12 +155,12 @@ describe('Compress Middleware', () => {
         }),
       ],
       async () => {
-        return { test: 'x'.repeat(2000) };
+        return body;
       }
     );
 
     // Act
-    const result = await app.resolve(event, context);
+    const result = await application.resolve(event, context);
 
     // Assess
     expect(result.headers?.['content-encoding']).toBeUndefined();
@@ -179,9 +168,8 @@ describe('Compress Middleware', () => {
 
   it('uses specified encoding when provided', async () => {
     // Prepare
-    const event = createTestEvent('/test', 'GET');
-    const app = new Router();
-    app.get(
+    const application = new Router();
+    application.get(
       '/test',
       [
         compress({
@@ -192,12 +180,12 @@ describe('Compress Middleware', () => {
         }),
       ],
       async () => {
-        return { test: 'x'.repeat(2000) };
+        return body;
       }
     );
 
     // Act
-    const result = await app.resolve(event, context);
+    const result = await application.resolve(event, context);
 
     // Assess
     expect(result.headers?.['content-encoding']).toBe('deflate');
@@ -205,25 +193,15 @@ describe('Compress Middleware', () => {
 
   it('infers encoding from Accept-Encoding header', async () => {
     // Prepare
-    const event = createTestEvent('/test', 'GET', {
+    const deflateCompressionEvent = createTestEvent('/test', 'GET', {
       'Accept-Encoding': 'deflate',
     });
-    const app = new Router();
-    app.get(
-      '/test',
-      [
-        compress(),
-        createSettingHeadersMiddleware({
-          'content-length': '2000',
-        }),
-      ],
-      async () => {
-        return { test: 'x'.repeat(2000) };
-      }
-    );
+    app.get('/test', async () => {
+      return body;
+    });
 
     // Act
-    const result = await app.resolve(event, context);
+    const result = await app.resolve(deflateCompressionEvent, context);
 
     // Assess
     expect(result.headers?.['content-encoding']).toBe('deflate');

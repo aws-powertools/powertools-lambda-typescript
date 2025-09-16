@@ -3,7 +3,7 @@ import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { EventType, SchemaVendor } from './constants.js';
 import { ParsingError } from './errors.js';
 import type {
-  BasePartialBatchProcessorParserConfig,
+  BatchProcessorConfig,
   EventSourceDataClassTypes,
   RuntimeZodType,
 } from './types.js';
@@ -19,7 +19,7 @@ const isZodSchema = (schema: StandardSchemaV1): schema is RuntimeZodType =>
 /**
  * Extend the schema according to the event type passed.
  *
- * If useTransformers is true, extend using opinionated transformers.
+ * If `useTransformers` is true, extend using opinionated transformers.
  * Otherwise, extend without any transformers.
  *
  * @param options - The options for creating the extended schema
@@ -31,7 +31,7 @@ const isZodSchema = (schema: StandardSchemaV1): schema is RuntimeZodType =>
 const createExtendedSchema = async (options: {
   eventType: keyof typeof EventType;
   innerSchema: RuntimeZodType;
-  transformer?: BasePartialBatchProcessorParserConfig['transformer'];
+  transformer?: BatchProcessorConfig['transformer'];
 }) => {
   const { eventType, innerSchema, transformer } = options;
   let schema = innerSchema;
@@ -109,7 +109,7 @@ const parseWithErrorHandling = async (
   const errorMessage = issues
     .map((issue) => `${issue.path?.join('.')}: ${issue.message}`)
     .join('; ');
-  logger.debug(errorMessage);
+  logger.debug(`Failed to parse record: ${errorMessage}`);
   throw new ParsingError(errorMessage);
 };
 
@@ -130,7 +130,7 @@ const parser = async (
   record: EventSourceDataClassTypes,
   eventType: keyof typeof EventType,
   logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>,
-  parserConfig: BasePartialBatchProcessorParserConfig
+  parserConfig: BatchProcessorConfig
 ): Promise<EventSourceDataClassTypes> => {
   const { schema, innerSchema, transformer } = parserConfig;
   // If the external schema is specified, use it to parse the record

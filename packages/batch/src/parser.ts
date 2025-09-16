@@ -9,14 +9,6 @@ import type {
 } from './types.js';
 
 /**
- * Type guard to check if the schema is a Zod schema
- *
- * @param schema - The schema to check
- */
-const isZodSchema = (schema: StandardSchemaV1) =>
-  schema['~standard'].vendor === SchemaVendor.Zod;
-
-/**
  * Extend the schema according to the event type passed.
  *
  * If `useTransformers` is true, extend using opinionated transformers.
@@ -142,7 +134,7 @@ const parser = async (
   }
   if (innerSchema) {
     // Only proceed with schema extension if it's a Zod schema
-    if (!isZodSchema(innerSchema)) {
+    if (innerSchema['~standard'].vendor !== SchemaVendor.Zod) {
       logger.error(
         'The schema provided is not supported. Only Zod schemas are supported for extension.'
       );

@@ -242,18 +242,6 @@ type ParsedRecord<TRecord, TPayload, TOldPayload = TPayload> = TRecord extends {
         }
       : TRecord;
 
-/**
- * Type representing a Zod schema at runtime.
- *
- * Parts of the parser integration within BatchProcessor rely on Zod for schema transformations,
- * however some other parts also support other Standard Schema-compatible libraries.
- *
- * To avoid forcing a direct dependency on Zod, we use `unknown` here, which is not ideal but necessary.
- *
- * The vendor is checked at runtime to ensure Zod is being used when required using `StandardSchemaV1['~standard'].vendor`.
- */
-type RuntimeZodType = unknown;
-
 export type {
   BatchProcessingOptions,
   BaseRecord,
@@ -264,5 +252,4 @@ export type {
   PartialItemFailureResponse,
   BatchProcessorConfig,
   ParsedRecord,
-  RuntimeZodType,
 };

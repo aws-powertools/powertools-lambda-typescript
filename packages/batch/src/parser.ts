@@ -5,7 +5,6 @@ import { ParsingError } from './errors.js';
 import type {
   BatchProcessorConfig,
   EventSourceDataClassTypes,
-  RuntimeZodType,
 } from './types.js';
 
 /**
@@ -14,15 +13,17 @@ import type {
  * If `useTransformers` is true, extend using opinionated transformers.
  * Otherwise, extend without any transformers.
  *
+ * The vendor is already checked at runtime to ensure Zod is being used when required using `StandardSchemaV1['~standard'].vendor`.
+ *
  * @param options - The options for creating the extended schema
  * @param options.eventType - The type of event to process (SQS, Kinesis, DynamoDB)
- * @param options.schema - The StandardSchema to be used for parsing
+ * @param options.innerSchema - The StandardSchema to be used for parsing. To avoid forcing a direct dependency on Zod, we use `unknown` here, which is not ideal but necessary.
  * @param options.useTransformers - Whether to use transformers for parsing
  * @param options.logger - A logger instance for logging
  */
 const createExtendedSchema = async (options: {
   eventType: keyof typeof EventType;
-  innerSchema: RuntimeZodType;
+  innerSchema: unknown;
   transformer?: BatchProcessorConfig['transformer'];
 }) => {
   const { eventType, innerSchema, transformer } = options;
@@ -114,7 +115,8 @@ const parseWithErrorHandling = async (
  * If the passed schema is already an extended schema,
  * use the schema directly to parse the record.
  *
- * Only Zod Schemas are supported for schema extension.
+ * Parts of the parser integration within BatchProcessor rely on Zod for schema transformations,
+ * however some other parts also support other Standard Schema-compatible libraries.
  *
  * @param record - The record to be parsed
  * @param eventType - The type of event to process

@@ -131,6 +131,7 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
  * const processor = new BatchProcessor(EventType.SQS, {
  *   parser,
  *   innerSchema: myItemSchema,
+ *   transformer: 'json'
  * });
  *
  * const recordHandler = async (record) => {

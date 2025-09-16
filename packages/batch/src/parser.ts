@@ -13,7 +13,7 @@ import type {
  *
  * @param schema - The schema to check
  */
-const isZodSchema = (schema: StandardSchemaV1): schema is RuntimeZodType =>
+const isZodSchema = (schema: StandardSchemaV1) =>
   schema['~standard'].vendor === SchemaVendor.Zod;
 
 /**
@@ -40,6 +40,7 @@ const createExtendedSchema = async (options: {
       const { JSONStringified } = await import(
         '@aws-lambda-powertools/parser/helpers'
       );
+      // @ts-expect-error - we know it's a Zod schema due to the runtime check earlier
       schema = JSONStringified(innerSchema);
       break;
     }
@@ -47,6 +48,7 @@ const createExtendedSchema = async (options: {
       const { Base64Encoded } = await import(
         '@aws-lambda-powertools/parser/helpers'
       );
+      // @ts-expect-error - we know it's a Zod schema due to the runtime check earlier
       schema = Base64Encoded(innerSchema);
       break;
     }
@@ -54,6 +56,7 @@ const createExtendedSchema = async (options: {
       const { DynamoDBMarshalled } = await import(
         '@aws-lambda-powertools/parser/helpers/dynamodb'
       );
+      // @ts-expect-error - we know it's a Zod schema due to the runtime check earlier
       schema = DynamoDBMarshalled(innerSchema);
       break;
     }

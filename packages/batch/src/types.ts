@@ -7,7 +7,6 @@ import type {
   SQSRecord,
   StreamRecord,
 } from 'aws-lambda';
-import type { ZodType } from 'zod';
 import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import type { BatchProcessor } from './BatchProcessor.js';
 import type { parser } from './parser.js';
@@ -144,8 +143,12 @@ type BasePartialBatchProcessorParserConfig =
       schema?: never;
       /**
        * Payload-only Zod schema, mutually exclusive with `schema`
+       *
+       * @remarks
+       * Only Zod schemas are supported for `innerSchema` as we rely on Zod's schema extension capabilities.
+       * If you need to use a different Standard Schema-compatible library, use `schema` instead.
        */
-      innerSchema: ZodType;
+      innerSchema: StandardSchemaV1;
       /**
        * Payload transformer, only available with `innerSchema`
        */
@@ -239,6 +242,20 @@ type ParsedRecord<TRecord, TPayload, TOldPayload = TPayload> = TRecord extends {
         }
       : TRecord;
 
+/**
+ * Type representing a Zod schema at runtime.
+ *
+ * Parts of the parser integration within BatchProcessor rely on Zod for schema transformations,
+ * however some other parts also support other Standard Schema-compatible libraries.
+ *
+ * To avoid forcing a direct dependency on Zod, we use `any` here, which is not ideal but necessary.
+ *
+ * The vendor is checked at runtime to ensure Zod is being used when required using `StandardSchemaV1['~standard'].vendor`.
+ *
+ * biome-ignore lint/suspicious/noExplicitAny: using `any` to avoid direct dependency on 'zod'
+ */
+type RuntimeZodType = any;
+
 export type {
   BatchProcessingOptions,
   BaseRecord,
@@ -249,4 +266,5 @@ export type {
   PartialItemFailureResponse,
   BasePartialBatchProcessorParserConfig,
   ParsedRecord,
+  RuntimeZodType,
 };

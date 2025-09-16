@@ -1,12 +1,20 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type { ZodType } from 'zod';
 import { EventType, SchemaVendor } from './constants.js';
 import { ParsingError } from './errors.js';
 import type {
   BasePartialBatchProcessorParserConfig,
   EventSourceDataClassTypes,
+  RuntimeZodType,
 } from './types.js';
+
+/**
+ * Type guard to check if the schema is a Zod schema
+ *
+ * @param schema - The schema to check
+ */
+const isZodSchema = (schema: StandardSchemaV1): schema is RuntimeZodType =>
+  schema['~standard'].vendor === SchemaVendor.Zod;
 
 /**
  * Extend the schema according to the event type passed.
@@ -22,7 +30,7 @@ import type {
  */
 const createExtendedSchema = async (options: {
   eventType: keyof typeof EventType;
-  innerSchema: ZodType;
+  innerSchema: RuntimeZodType;
   transformer?: BasePartialBatchProcessorParserConfig['transformer'];
 }) => {
   const { eventType, innerSchema, transformer } = options;
@@ -73,8 +81,8 @@ const createExtendedSchema = async (options: {
   );
   return DynamoDBStreamRecord.extend({
     dynamodb: DynamoDBStreamChangeRecordBase.extend({
-      OldImage: schema.optional(),
-      NewImage: schema.optional(),
+      OldImage: schema,
+      NewImage: schema,
     }),
   });
 };
@@ -131,7 +139,7 @@ const parser = async (
   }
   if (innerSchema) {
     // Only proceed with schema extension if it's a Zod schema
-    if (innerSchema['~standard'].vendor !== SchemaVendor.Zod) {
+    if (!isZodSchema(innerSchema)) {
       logger.error(
         'The schema provided is not supported. Only Zod schemas are supported for extension.'
       );

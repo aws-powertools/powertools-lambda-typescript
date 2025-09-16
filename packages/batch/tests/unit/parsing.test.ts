@@ -78,7 +78,8 @@ describe('Batch processing with Parser Integration', () => {
         parser,
         schema: DynamoDBStreamRecord.extend({
           dynamodb: DynamoDBStreamChangeRecordBase.extend({
-            NewImage: DynamoDBMarshalled(customSchema).optional(),
+            NewImage: DynamoDBMarshalled(customSchema),
+            OldImage: DynamoDBMarshalled(customSchema),
           }),
         }),
       },
@@ -278,7 +279,7 @@ describe('Batch processing with Parser Integration', () => {
           ],
         });
         expect(console.debug).toHaveBeenCalledWith(
-          'dynamodb.NewImage.Message: Invalid input: expected string, received number'
+          'dynamodb.NewImage.Message: Invalid input: expected string, received number; dynamodb.OldImage.Message: Invalid input: expected string, received number'
         );
       });
     }
@@ -314,7 +315,6 @@ describe('Batch processing with Parser Integration', () => {
     const records = [firstRecord, secondRecord];
     const processor = new BatchProcessor(EventType.SQS, {
       parser,
-      // @ts-expect-error - we are explicitly testing a wrong schema vendor
       innerSchema: unsupportedSchema,
       transformer: 'json',
     });
@@ -334,6 +334,7 @@ describe('Batch processing with Parser Integration', () => {
     const secondRecord = sqsRecordFactory(JSON.stringify(successPayload2));
     const records = [firstRecord, secondRecord];
 
+    // @ts-expect-error - we are explicitly testing without a schema
     const processor = new BatchProcessor(EventType.SQS, {
       parser,
       transformer: 'json',
@@ -363,7 +364,6 @@ describe('Batch processing with Parser Integration', () => {
     const records = [firstRecord, secondRecord];
     const processor = new BatchProcessor(EventType.SQS, {
       parser,
-      // @ts-expect-error - we are explicitly testing a wrong schema vendor
       innerSchema: unsupportedSchema,
       transformer: 'json',
       logger,

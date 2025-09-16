@@ -13,7 +13,7 @@ import {
 } from './constants.js';
 import { FullBatchFailureError } from './errors.js';
 import type {
-  BasePartialBatchProcessorParserConfig,
+  BatchProcessorConfig,
   EventSourceDataClassTypes,
   PartialItemFailureResponse,
   PartialItemFailures,
@@ -55,7 +55,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   /**
    * The configuration options for the parser integration
    */
-  protected parserConfig?: BasePartialBatchProcessorParserConfig;
+  protected parserConfig?: BatchProcessorConfig;
 
   /**
    * Initializes base batch processing class
@@ -64,7 +64,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    */
   public constructor(
     eventType: keyof typeof EventType,
-    parserConfig?: BasePartialBatchProcessorParserConfig
+    parserConfig?: BatchProcessorConfig
   ) {
     super();
     this.eventType = eventType;

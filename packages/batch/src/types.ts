@@ -118,7 +118,7 @@ type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
  * @property transformer - Payload transformer (only available with innerSchema)
  * @property logger - Optional logger for debug/warning messages
  */
-type BasePartialBatchProcessorParserConfig =
+type BatchProcessorConfig =
   | {
       /**
        * Required when using schema parsing - import from `@aws-lambda-powertools/batch/parser`
@@ -264,7 +264,7 @@ export type {
   FailureResponse,
   PartialItemFailures,
   PartialItemFailureResponse,
-  BasePartialBatchProcessorParserConfig,
+  BatchProcessorConfig,
   ParsedRecord,
   RuntimeZodType,
 };

@@ -359,7 +359,7 @@ Available transformers by event type:
     ```
 
 !!! note
-    If `innerSchema` is used with DynamoDB streams, the schema will be applied to both the `NewImage` and the `OldImage` by default. If you want to have separate schema for both, you will need to extend the schema and use the full schema for parsing.
+    If `innerSchema` is used with DynamoDB streams, the schema will be applied to both the `NewImage` and the `OldImage` by default. If you want to have dedicated schemas, see the section below.
 
 #### Using full event schema
 

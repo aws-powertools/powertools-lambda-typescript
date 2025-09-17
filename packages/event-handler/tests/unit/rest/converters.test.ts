@@ -396,6 +396,18 @@ describe('Converters', () => {
       expect(result.statusCode).toBe(204);
       expect(result.body).toBe('');
     });
+
+    it('handles compressed response body', async () => {
+      const response = new Response('Hello World', {
+        status: 200,
+        headers: {
+          'content-encoding': 'gzip',
+        },
+      });
+
+      const result = await webResponseToProxyResult(response);
+      expect(result.isBase64Encoded).toBe(true);
+    });
   });
 
   describe('handlerResultToProxyResult', () => {

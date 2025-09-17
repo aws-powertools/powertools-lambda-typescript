@@ -104,17 +104,14 @@ const shouldCompress = (
     (acceptedEncoding.includes(preferredEncoding) ||
       acceptedEncoding.includes(COMPRESSION_ENCODING_TYPES.ANY));
 
-  if (
-    !shouldEncode ||
-    isEncodedOrChunked ||
-    request.method === 'HEAD' ||
-    (contentLength && Number(contentLength) < threshold) ||
-    (cacheControl && CACHE_CONTROL_NO_TRANSFORM_REGEX.test(cacheControl)) ||
-    !response.body
-  ) {
-    return false;
-  }
-  return true;
+  return (
+    shouldEncode &&
+    !isEncodedOrChunked &&
+    request.method !== 'HEAD' &&
+    (!contentLength || Number(contentLength) > threshold) &&
+    (!cacheControl || !CACHE_CONTROL_NO_TRANSFORM_REGEX.test(cacheControl)) &&
+    response.body !== null
+  );
 };
 
 export { compress };

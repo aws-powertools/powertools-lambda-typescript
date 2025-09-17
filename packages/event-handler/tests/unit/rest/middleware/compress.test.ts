@@ -32,6 +32,7 @@ describe('Compress Middleware', () => {
     // Assess
     expect(result.headers?.['content-encoding']).toBe('gzip');
     expect(result.headers?.['content-length']).toBeUndefined();
+    expect(result.isBase64Encoded).toBe(true);
     expect(result.body).toEqual(
       gzipSync(JSON.stringify(body)).toString('base64')
     );
@@ -58,6 +59,7 @@ describe('Compress Middleware', () => {
 
     // Assess
     expect(result.headers?.['content-encoding']).toBeUndefined();
+    expect(result.isBase64Encoded).toBe(false);
   });
 
   it('skips compression for HEAD requests', async () => {
@@ -72,6 +74,7 @@ describe('Compress Middleware', () => {
 
     // Assess
     expect(result.headers?.['content-encoding']).toBeUndefined();
+    expect(result.isBase64Encoded).toBe(false);
   });
 
   it('skips compression when already encoded', async () => {
@@ -100,6 +103,7 @@ describe('Compress Middleware', () => {
 
     // Assess
     expect(result.headers?.['content-encoding']).toEqual('gzip');
+    expect(result.isBase64Encoded).toBe(true);
   });
 
   it('skips compression when cache-control no-transform is set', async () => {
@@ -124,6 +128,7 @@ describe('Compress Middleware', () => {
 
     // Assess
     expect(result.headers?.['content-encoding']).toBeUndefined();
+    expect(result.isBase64Encoded).toBe(false);
   });
 
   it('uses specified encoding when provided', async () => {
@@ -149,11 +154,12 @@ describe('Compress Middleware', () => {
 
     // Assess
     expect(result.headers?.['content-encoding']).toBe('deflate');
+    expect(result.isBase64Encoded).toBe(true);
   });
 
   it('does not compress if Accept-Encoding is set to identity', async () => {
     // Prepare
-    const deflateCompressionEvent = createTestEvent('/test', 'GET', {
+    const noCompressionEvent = createTestEvent('/test', 'GET', {
       'Accept-Encoding': 'identity',
     });
     app.get('/test', async () => {
@@ -161,9 +167,10 @@ describe('Compress Middleware', () => {
     });
 
     // Act
-    const result = await app.resolve(deflateCompressionEvent, context);
+    const result = await app.resolve(noCompressionEvent, context);
 
     // Assess
-    expect(result.headers?.['content-encoding']).not.toBeDefined;
+    expect(result.headers?.['content-encoding']).toBeUndefined();
+    expect(result.isBase64Encoded).toBe(false);
   });
 });

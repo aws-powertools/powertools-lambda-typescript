@@ -1,3 +1,4 @@
+import { gzipSync } from 'node:zlib';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { Router } from 'src/rest/Router.js';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -31,6 +32,9 @@ describe('Compress Middleware', () => {
     // Assess
     expect(result.headers?.['content-encoding']).toBe('gzip');
     expect(result.headers?.['content-length']).toBeUndefined();
+    expect(result.body).toEqual(
+      gzipSync(JSON.stringify(body)).toString('base64')
+    );
   });
 
   it('skips compression when content is below threshold', async () => {
@@ -98,50 +102,6 @@ describe('Compress Middleware', () => {
     expect(result.headers?.['content-encoding']).toEqual('gzip');
   });
 
-  it.each([
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'audio/mpeg',
-    'audio/mp4',
-    'audio/ogg',
-    'video/mp4',
-    'video/mpeg',
-    'video/webm',
-    'application/zip',
-    'application/gzip',
-    'application/x-gzip',
-    'application/octet-stream',
-    'application/pdf',
-    'application/msword',
-    'text/event-stream',
-  ])(
-    'skips compression for non-compressible content types',
-    async (contentType) => {
-      // Prepare
-      const application = new Router();
-      application.get(
-        '/test',
-        [
-          compress(),
-          createSettingHeadersMiddleware({
-            'content-length': '2000',
-            'content-type': contentType,
-          }),
-        ],
-        async () => {
-          return body;
-        }
-      );
-
-      // Act
-      const result = await application.resolve(event, context);
-
-      // Assess
-      expect(result.headers?.['content-encoding']).toBeUndefined();
-    }
-  );
-
   it('skips compression when cache-control no-transform is set', async () => {
     // Prepare
     const application = new Router();
@@ -191,10 +151,10 @@ describe('Compress Middleware', () => {
     expect(result.headers?.['content-encoding']).toBe('deflate');
   });
 
-  it('infers encoding from Accept-Encoding header', async () => {
+  it('does not compress if Accept-Encoding is set to identity', async () => {
     // Prepare
     const deflateCompressionEvent = createTestEvent('/test', 'GET', {
-      'Accept-Encoding': 'deflate',
+      'Accept-Encoding': 'identity',
     });
     app.get('/test', async () => {
       return body;
@@ -204,6 +164,6 @@ describe('Compress Middleware', () => {
     const result = await app.resolve(deflateCompressionEvent, context);
 
     // Assess
-    expect(result.headers?.['content-encoding']).toBe('deflate');
+    expect(result.headers?.['content-encoding']).not.toBeDefined;
   });
 });

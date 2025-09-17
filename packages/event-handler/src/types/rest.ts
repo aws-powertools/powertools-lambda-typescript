@@ -116,7 +116,7 @@ type ValidationResult = {
 };
 
 type CompressionOptions = {
-  encoding?: (typeof COMPRESSION_ENCODING_TYPES)[keyof typeof COMPRESSION_ENCODING_TYPES];
+  encoding?: 'gzip' | 'deflate';
   threshold?: number;
 };
 

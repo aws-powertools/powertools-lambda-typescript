@@ -2,8 +2,8 @@ import type { Middleware } from '../../types/index.js';
 import type { CompressionOptions } from '../../types/rest.js';
 import {
   CACHE_CONTROL_NO_TRANSFORM_REGEX,
-  COMPRESSIBLE_CONTENT_TYPE_REGEX,
   COMPRESSION_ENCODING_TYPES,
+  DEFAULT_COMPRESSION_RESPONSE_THRESHOLD,
 } from '../constants.js';
 
 /**
@@ -25,8 +25,8 @@ import {
  *
  * @example
  * ```typescript
- * import { Router } from '@aws-lambda-powertools/event-handler';
- * import { compress } from '@aws-lambda-powertools/event-handler/rest/middleware';
+ * import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
+ * import { compress } from '@aws-lambda-powertools/event-handler/experimental-rest/middleware';
  *
  * const app = new Router();
  *
@@ -41,8 +41,8 @@ import {
  *
  * @example
  * ```typescript
- * import { Router } from '@aws-lambda-powertools/event-handler';
- * import { compress } from '@aws-lambda-powertools/event-handler/rest/middleware';
+ * import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
+ * import { compress } from '@aws-lambda-powertools/event-handler/experimental-rest/middleware';
  *
  * const app = new Router();
  *
@@ -62,59 +62,59 @@ import {
  */
 
 const compress = (options?: CompressionOptions): Middleware => {
-  const threshold = options?.threshold ?? 1024;
+  const preferredEncoding =
+    options?.encoding ?? COMPRESSION_ENCODING_TYPES.GZIP;
+  const threshold =
+    options?.threshold ?? DEFAULT_COMPRESSION_RESPONSE_THRESHOLD;
 
   return async (_, reqCtx, next) => {
     await next();
 
-    const contentLength = reqCtx.res.headers.get('content-length');
-    const isEncodedOrChunked =
-      reqCtx.res.headers.has('content-encoding') ||
-      reqCtx.res.headers.has('transfer-encoding');
-
-    // Check if response should be compressed
     if (
-      isEncodedOrChunked ||
-      reqCtx.request.method === 'HEAD' ||
-      (contentLength && Number(contentLength) < threshold) ||
-      !shouldCompress(reqCtx.res) ||
-      !shouldTransform(reqCtx.res) ||
-      !reqCtx.res.body
+      !shouldCompress(reqCtx.request, reqCtx.res, preferredEncoding, threshold)
     ) {
       return;
     }
 
-    const acceptedEncoding = reqCtx.request.headers.get('accept-encoding');
-    const encoding =
-      options?.encoding ??
-      Object.values(COMPRESSION_ENCODING_TYPES).find((encoding) =>
-        acceptedEncoding?.includes(encoding)
-      ) ??
-      COMPRESSION_ENCODING_TYPES.GZIP;
-
     // Compress the response
-    const stream = new CompressionStream(encoding);
+    const stream = new CompressionStream(preferredEncoding);
     reqCtx.res = new Response(reqCtx.res.body.pipeThrough(stream), reqCtx.res);
     reqCtx.res.headers.delete('content-length');
-    reqCtx.res.headers.set('content-encoding', encoding);
+    reqCtx.res.headers.set('content-encoding', preferredEncoding);
   };
 };
 
-const shouldCompress = (res: Response) => {
-  const type = res.headers.get('content-type');
-  return (
-    type &&
-    (COMPRESSIBLE_CONTENT_TYPE_REGEX.COMMON.test(type) ||
-      COMPRESSIBLE_CONTENT_TYPE_REGEX.OCCASIONAL.test(type) ||
-      COMPRESSIBLE_CONTENT_TYPE_REGEX.RARE.test(type))
-  );
-};
+const shouldCompress = (
+  request: Request,
+  response: Response,
+  preferredEncoding: NonNullable<CompressionOptions['encoding']>,
+  threshold: NonNullable<CompressionOptions['threshold']>
+): response is Response & { body: NonNullable<Response['body']> } => {
+  const acceptedEncoding =
+    request.headers.get('accept-encoding') ?? COMPRESSION_ENCODING_TYPES.ANY;
+  const contentLength = response.headers.get('content-length');
+  const cacheControl = response.headers.get('cache-control');
 
-const shouldTransform = (res: Response) => {
-  const cacheControl = res.headers.get('cache-control');
-  // Don't compress for Cache-Control: no-transform
-  // https://tools.ietf.org/html/rfc7234#section-5.2.2.4
-  return !cacheControl || !CACHE_CONTROL_NO_TRANSFORM_REGEX.test(cacheControl);
+  const isEncodedOrChunked =
+    response.headers.has('content-encoding') ||
+    response.headers.has('transfer-encoding');
+
+  const shouldEncode =
+    !acceptedEncoding.includes(COMPRESSION_ENCODING_TYPES.IDENTITY) &&
+    (acceptedEncoding.includes(preferredEncoding) ||
+      acceptedEncoding.includes(COMPRESSION_ENCODING_TYPES.ANY));
+
+  if (
+    !shouldEncode ||
+    isEncodedOrChunked ||
+    request.method === 'HEAD' ||
+    (contentLength && Number(contentLength) < threshold) ||
+    (cacheControl && CACHE_CONTROL_NO_TRANSFORM_REGEX.test(cacheControl)) ||
+    !response.body
+  ) {
+    return false;
+  }
+  return true;
 };
 
 export { compress };

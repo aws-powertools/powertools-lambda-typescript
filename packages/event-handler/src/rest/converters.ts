@@ -111,7 +111,6 @@ export const webResponseToProxyResult = async (
   } else {
     // For text content, use text()
     body = await response.text();
-    isBase64Encoded = false;
   }
 
   const result: APIGatewayProxyResult = {

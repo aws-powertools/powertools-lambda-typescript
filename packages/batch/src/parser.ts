@@ -1,29 +1,30 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type { ZodType } from 'zod';
 import { EventType, SchemaVendor } from './constants.js';
 import { ParsingError } from './errors.js';
 import type {
-  BasePartialBatchProcessorParserConfig,
+  BatchProcessorConfig,
   EventSourceDataClassTypes,
 } from './types.js';
 
 /**
  * Extend the schema according to the event type passed.
  *
- * If useTransformers is true, extend using opinionated transformers.
+ * If `useTransformers` is true, extend using opinionated transformers.
  * Otherwise, extend without any transformers.
+ *
+ * The vendor is already checked at runtime to ensure Zod is being used when required using `StandardSchemaV1['~standard'].vendor`.
  *
  * @param options - The options for creating the extended schema
  * @param options.eventType - The type of event to process (SQS, Kinesis, DynamoDB)
- * @param options.schema - The StandardSchema to be used for parsing
+ * @param options.innerSchema - The StandardSchema to be used for parsing. To avoid forcing a direct dependency on Zod, we use `unknown` here, which is not ideal but necessary.
  * @param options.useTransformers - Whether to use transformers for parsing
  * @param options.logger - A logger instance for logging
  */
 const createExtendedSchema = async (options: {
   eventType: keyof typeof EventType;
-  innerSchema: ZodType;
-  transformer?: BasePartialBatchProcessorParserConfig['transformer'];
+  innerSchema: unknown;
+  transformer?: BatchProcessorConfig['transformer'];
 }) => {
   const { eventType, innerSchema, transformer } = options;
   let schema = innerSchema;
@@ -32,6 +33,7 @@ const createExtendedSchema = async (options: {
       const { JSONStringified } = await import(
         '@aws-lambda-powertools/parser/helpers'
       );
+      // @ts-expect-error - we know it's a Zod schema due to the runtime check earlier
       schema = JSONStringified(innerSchema);
       break;
     }
@@ -39,6 +41,7 @@ const createExtendedSchema = async (options: {
       const { Base64Encoded } = await import(
         '@aws-lambda-powertools/parser/helpers'
       );
+      // @ts-expect-error - we know it's a Zod schema due to the runtime check earlier
       schema = Base64Encoded(innerSchema);
       break;
     }
@@ -46,6 +49,7 @@ const createExtendedSchema = async (options: {
       const { DynamoDBMarshalled } = await import(
         '@aws-lambda-powertools/parser/helpers/dynamodb'
       );
+      // @ts-expect-error - we know it's a Zod schema due to the runtime check earlier
       schema = DynamoDBMarshalled(innerSchema);
       break;
     }
@@ -73,8 +77,8 @@ const createExtendedSchema = async (options: {
   );
   return DynamoDBStreamRecord.extend({
     dynamodb: DynamoDBStreamChangeRecordBase.extend({
-      OldImage: schema.optional(),
-      NewImage: schema.optional(),
+      OldImage: schema,
+      NewImage: schema,
     }),
   });
 };
@@ -101,7 +105,7 @@ const parseWithErrorHandling = async (
   const errorMessage = issues
     .map((issue) => `${issue.path?.join('.')}: ${issue.message}`)
     .join('; ');
-  logger.debug(errorMessage);
+  logger.debug(`Failed to parse record: ${errorMessage}`);
   throw new ParsingError(errorMessage);
 };
 
@@ -111,7 +115,8 @@ const parseWithErrorHandling = async (
  * If the passed schema is already an extended schema,
  * use the schema directly to parse the record.
  *
- * Only Zod Schemas are supported for schema extension.
+ * Parts of the parser integration within BatchProcessor rely on Zod for schema transformations,
+ * however some other parts also support other Standard Schema-compatible libraries.
  *
  * @param record - The record to be parsed
  * @param eventType - The type of event to process
@@ -122,7 +127,7 @@ const parser = async (
   record: EventSourceDataClassTypes,
   eventType: keyof typeof EventType,
   logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>,
-  parserConfig: BasePartialBatchProcessorParserConfig
+  parserConfig: BatchProcessorConfig
 ): Promise<EventSourceDataClassTypes> => {
   const { schema, innerSchema, transformer } = parserConfig;
   // If the external schema is specified, use it to parse the record

@@ -7,7 +7,6 @@ import type {
   SQSRecord,
   StreamRecord,
 } from 'aws-lambda';
-import type { ZodType } from 'zod';
 import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import type { BatchProcessor } from './BatchProcessor.js';
 import type { parser } from './parser.js';
@@ -119,7 +118,7 @@ type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
  * @property transformer - Payload transformer (only available with innerSchema)
  * @property logger - Optional logger for debug/warning messages
  */
-type BasePartialBatchProcessorParserConfig =
+type BatchProcessorConfig =
   | {
       /**
        * Required when using schema parsing - import from `@aws-lambda-powertools/batch/parser`
@@ -144,8 +143,12 @@ type BasePartialBatchProcessorParserConfig =
       schema?: never;
       /**
        * Payload-only Zod schema, mutually exclusive with `schema`
+       *
+       * @remarks
+       * Only Zod schemas are supported for `innerSchema` as we rely on Zod's schema extension capabilities.
+       * If you need to use a different Standard Schema-compatible library, use `schema` instead.
        */
-      innerSchema: ZodType;
+      innerSchema: StandardSchemaV1;
       /**
        * Payload transformer, only available with `innerSchema`
        */
@@ -247,6 +250,6 @@ export type {
   FailureResponse,
   PartialItemFailures,
   PartialItemFailureResponse,
-  BasePartialBatchProcessorParserConfig,
+  BatchProcessorConfig,
   ParsedRecord,
 };

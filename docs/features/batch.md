@@ -358,6 +358,9 @@ Available transformers by event type:
     --8<-- "examples/snippets/batch/samples/parser_SQS.json"
     ```
 
+!!! note
+    If `innerSchema` is used with DynamoDB streams, the schema will be applied to both the `NewImage` and the `OldImage` by default. If you want to have dedicated schemas, see the section below.
+
 #### Using full event schema
 
 For complete control over validation, extend the built-in schemas with your custom payload schema. This approach gives you full control over the entire event structure.

@@ -1,3 +1,4 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   Context,
@@ -6,8 +7,6 @@ import type {
   SQSRecord,
   StreamRecord,
 } from 'aws-lambda';
-import type { ZodType } from 'zod';
-import type { GenericLogger } from '../../commons/lib/esm/types/GenericLogger.js';
 import type { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
 import type { BatchProcessor } from './BatchProcessor.js';
 import type { parser } from './parser.js';
@@ -111,7 +110,7 @@ type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
  *
  * You can optionally pass a `logger` for debug and warning messages.
  *
- * @note `innerSchema` supports only Zod schemas, while `schema` supports any Standard Schema-compatible parsing library.
+ * Note: `innerSchema` supports only Zod schemas, while `schema` supports any Standard Schema-compatible parsing library.
  *
  * @property parser - Required when using schema parsing (import from `@aws-lambda-powertools/batch/parser`)
  * @property schema - Complete event schema (mutually exclusive with innerSchema)
@@ -119,7 +118,7 @@ type PartialItemFailureResponse = { batchItemFailures: PartialItemFailures[] };
  * @property transformer - Payload transformer (only available with innerSchema)
  * @property logger - Optional logger for debug/warning messages
  */
-type BasePartialBatchProcessorParserConfig =
+type BatchProcessorConfig =
   | {
       /**
        * Required when using schema parsing - import from `@aws-lambda-powertools/batch/parser`
@@ -144,8 +143,12 @@ type BasePartialBatchProcessorParserConfig =
       schema?: never;
       /**
        * Payload-only Zod schema, mutually exclusive with `schema`
+       *
+       * @remarks
+       * Only Zod schemas are supported for `innerSchema` as we rely on Zod's schema extension capabilities.
+       * If you need to use a different Standard Schema-compatible library, use `schema` instead.
        */
-      innerSchema: ZodType;
+      innerSchema: StandardSchemaV1;
       /**
        * Payload transformer, only available with `innerSchema`
        */
@@ -247,6 +250,6 @@ export type {
   FailureResponse,
   PartialItemFailures,
   PartialItemFailureResponse,
-  BasePartialBatchProcessorParserConfig,
+  BatchProcessorConfig,
   ParsedRecord,
 };

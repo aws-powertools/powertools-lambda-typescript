@@ -183,7 +183,7 @@ describe('CORS Middleware', () => {
       });
 
     // Act
-    const result = await app.resolve(optionsRequestEvent, context);
+    await app.resolve(optionsRequestEvent, context);
 
     // Assess
     expect(executionOrder).toEqual([

@@ -87,3 +87,15 @@ export const PARAM_PATTERN = /:([a-zA-Z_]\w*)(?=\/|$)/g;
 export const SAFE_CHARS = "-._~()'!*:@,;=+&$";
 
 export const UNSAFE_CHARS = '%<> \\[\\]{}|^';
+
+export const DEFAULT_COMPRESSION_RESPONSE_THRESHOLD = 1024;
+
+export const CACHE_CONTROL_NO_TRANSFORM_REGEX =
+  /(?:^|,)\s*?no-transform\s*?(?:,|$)/i;
+
+export const COMPRESSION_ENCODING_TYPES = {
+  GZIP: 'gzip',
+  DEFLATE: 'deflate',
+  IDENTITY: 'identity',
+  ANY: '*',
+} as const;

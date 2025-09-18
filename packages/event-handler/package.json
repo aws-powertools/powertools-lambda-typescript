@@ -77,6 +77,16 @@
         "types": "./lib/esm/rest/index.d.ts",
         "default": "./lib/esm/rest/index.js"
       }
+    },
+    "./experimental-rest/middleware": {
+      "require": {
+        "types": "./lib/cjs/rest/middleware/index.d.ts",
+        "default": "./lib/cjs/rest/middleware/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/rest/middleware/index.d.ts",
+        "default": "./lib/esm/rest/middleware/index.js"
+      }
     }
   },
   "typesVersions": {

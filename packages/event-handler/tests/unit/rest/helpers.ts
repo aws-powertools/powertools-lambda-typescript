@@ -3,11 +3,12 @@ import type { Middleware } from '../../../src/types/rest.js';
 
 export const createTestEvent = (
   path: string,
-  httpMethod: string
+  httpMethod: string,
+  headers: Record<string, string> = {}
 ): APIGatewayProxyEvent => ({
   path,
   httpMethod,
-  headers: {},
+  headers,
   body: null,
   multiValueHeaders: {},
   isBase64Encoded: false,
@@ -63,5 +64,16 @@ export const createNoNextMiddleware = (
   return async (_params, _options, _next) => {
     executionOrder.push(name);
     // Intentionally doesn't call next()
+  };
+};
+
+export const createSettingHeadersMiddleware = (headers: {
+  [key: string]: string;
+}): Middleware => {
+  return async (_params, options, next) => {
+    await next();
+    Object.entries(headers).forEach(([key, value]) => {
+      options.res.headers.set(key, value);
+    });
   };
 };

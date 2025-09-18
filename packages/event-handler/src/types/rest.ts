@@ -111,6 +111,11 @@ type ValidationResult = {
   issues: string[];
 };
 
+type CompressionOptions = {
+  encoding?: 'gzip' | 'deflate';
+  threshold?: number;
+};
+
 export type {
   CompiledRoute,
   DynamicRoute,
@@ -131,4 +136,5 @@ export type {
   RestRouteHandlerOptions,
   RouteRegistryOptions,
   ValidationResult,
+  CompressionOptions,
 };

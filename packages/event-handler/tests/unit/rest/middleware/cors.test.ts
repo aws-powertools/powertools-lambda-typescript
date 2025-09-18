@@ -10,84 +10,53 @@ describe('CORS Middleware', () => {
   const optionsRequestEvent = createTestEvent('/test', 'OPTIONS');
   let app: Router;
 
+  const customCorsOptions = {
+    origin: 'https://example.com',
+    allowMethods: ['GET', 'POST'],
+    allowHeaders: ['Authorization', 'Content-Type'],
+    credentials: true,
+    exposeHeaders: ['Authorization', 'X-Custom-Header'],
+    maxAge: 86400,
+  };
+
+  const expectedDefaultHeaders = {
+    "access-control-allow-credentials": "false",
+    "access-control-allow-headers": "Authorization, Content-Type, X-Amz-Date, X-Api-Key, X-Amz-Security-Token",
+    "access-control-allow-methods": "DELETE, GET, HEAD, PATCH, POST, PUT",
+    "access-control-allow-origin": "*",
+  };
+
   beforeEach(() => {
     app = new Router();
     app.use(cors());
   });
 
   it('uses default configuration when no options are provided', async () => {
-    // Prepare
-    const corsHeaders: { [key: string]: string; } = {};
-    app.get(
-      '/test',
-      [createHeaderCheckMiddleware(corsHeaders)],
-      async () => {
-        return { success: true };
-      });
+    const corsHeaders: { [key: string]: string } = {};
+    app.get('/test', [createHeaderCheckMiddleware(corsHeaders)], async () => ({ success: true }));
 
-    // Act
     const result = await app.resolve(getRequestEvent, context);
 
-    // Assess
     expect(result.headers?.['access-control-allow-origin']).toEqual(DEFAULT_CORS_OPTIONS.origin);
-    expect(result.multiValueHeaders?.['access-control-allow-methods']).toEqual(
-      DEFAULT_CORS_OPTIONS.allowMethods
-    );
-    expect(result.multiValueHeaders?.['access-control-allow-headers']).toEqual(
-      DEFAULT_CORS_OPTIONS.allowHeaders
-    );
-    expect(result.headers?.['access-control-allow-credentials']).toEqual(
-      DEFAULT_CORS_OPTIONS.credentials.toString()
-    );
-    expect(corsHeaders).toMatchObject({
-      "access-control-allow-credentials": "false",
-      "access-control-allow-headers": "Authorization, Content-Type, X-Amz-Date, X-Api-Key, X-Amz-Security-Token",
-      "access-control-allow-methods": "DELETE, GET, HEAD, PATCH, POST, PUT",
-      "access-control-allow-origin": "*",
-    });
+    expect(result.multiValueHeaders?.['access-control-allow-methods']).toEqual(DEFAULT_CORS_OPTIONS.allowMethods);
+    expect(result.multiValueHeaders?.['access-control-allow-headers']).toEqual(DEFAULT_CORS_OPTIONS.allowHeaders);
+    expect(result.headers?.['access-control-allow-credentials']).toEqual(DEFAULT_CORS_OPTIONS.credentials.toString());
+    expect(corsHeaders).toMatchObject(expectedDefaultHeaders);
   });
 
   it('merges user options with defaults', async () => {
-    // Prepare
-    const corsHeaders: { [key: string]: string; } = {};
-    const app = new Router();
-    app.get(
-      '/test',
-      [
-        cors({
-          origin: 'https://example.com',
-          allowMethods: ['GET', 'POST'],
-          allowHeaders: ['Authorization', 'Content-Type'],
-          credentials: true,
-          exposeHeaders: ['Authorization', 'X-Custom-Header'],
-          maxAge: 86400,
-        }),
-        createHeaderCheckMiddleware(corsHeaders)
-      ],
-      async () => {
-        return { success: true };
-      });
+    const corsHeaders: { [key: string]: string } = {};
+    const customApp = new Router();
+    customApp.get('/test', [cors(customCorsOptions), createHeaderCheckMiddleware(corsHeaders)], async () => ({ success: true }));
 
-    // Act
-    const result = await app.resolve(getRequestEvent, context);
+    const result = await customApp.resolve(getRequestEvent, context);
 
-    // Assess
     expect(result.headers?.['access-control-allow-origin']).toEqual('https://example.com');
-    expect(result.multiValueHeaders?.['access-control-allow-methods']).toEqual(
-      ['GET', 'POST']
-    );
-    expect(result.multiValueHeaders?.['access-control-allow-headers']).toEqual(
-      ['Authorization', 'Content-Type']
-    );
-    expect(result.headers?.['access-control-allow-credentials']).toEqual(
-      'true'
-    );
-    expect(result.multiValueHeaders?.['access-control-expose-headers']).toEqual(
-      ['Authorization', 'X-Custom-Header']
-    );
-    expect(result.headers?.['access-control-max-age']).toEqual(
-      '86400'
-    );
+    expect(result.multiValueHeaders?.['access-control-allow-methods']).toEqual(['GET', 'POST']);
+    expect(result.multiValueHeaders?.['access-control-allow-headers']).toEqual(['Authorization', 'Content-Type']);
+    expect(result.headers?.['access-control-allow-credentials']).toEqual('true');
+    expect(result.multiValueHeaders?.['access-control-expose-headers']).toEqual(['Authorization', 'X-Custom-Header']);
+    expect(result.headers?.['access-control-max-age']).toEqual('86400');
     expect(corsHeaders).toMatchObject({
       "access-control-allow-credentials": "true",
       "access-control-allow-headers": "Authorization, Content-Type",
@@ -96,100 +65,32 @@ describe('CORS Middleware', () => {
     });
   });
 
-  it('handles array origin with matching request', async () => {
-    // Prepare
-    const allowedOrigins = ['https://app.com', 'https://admin.app.com'];
-    const app = new Router();
-    app.get(
-      '/test',
-      [
-        cors({
-          origin: allowedOrigins,
-          allowMethods: ['GET', 'POST'],
-          allowHeaders: ['Authorization', 'Content-Type'],
-          credentials: true,
-          exposeHeaders: ['Authorization', 'X-Custom-Header'],
-          maxAge: 86400,
-        }),
-      ],
-      async () => {
-        return { success: true };
-      });
+  it.each([
+    ['matching', 'https://app.com', 'https://app.com'],
+    ['non-matching', 'https://non-matching.com', '']
+  ])('handles array origin with %s request', async (_, origin, expected) => {
+    const customApp = new Router();
+    customApp.get('/test', [cors({ origin: ['https://app.com', 'https://admin.app.com'] })], async () => ({ success: true }));
 
-    // Act
-    const result = await app.resolve(createTestEvent('/test', 'GET', {
-      'Origin': 'https://app.com'
-    }), context);
+    const result = await customApp.resolve(createTestEvent('/test', 'GET', { 'Origin': origin }), context);
 
-    // Assess
-    expect(result.headers?.['access-control-allow-origin']).toEqual('https://app.com');
-  });
-
-  it('handles array origin with non-matching request', async () => {
-    // Prepare
-    const allowedOrigins = ['https://app.com', 'https://admin.app.com'];
-    const app = new Router();
-    app.get(
-      '/test',
-      [
-        cors({
-          origin: allowedOrigins,
-          allowMethods: ['GET', 'POST'],
-          allowHeaders: ['Authorization', 'Content-Type'],
-          credentials: true,
-          exposeHeaders: ['Authorization', 'X-Custom-Header'],
-          maxAge: 86400,
-        }),
-      ],
-      async () => {
-        return { success: true };
-      });
-
-    // Act
-    const result = await app.resolve(createTestEvent('/test', 'GET', {
-      'Origin': 'https://non-matching.com'
-    }), context);
-
-    // Assess
-    expect(result.headers?.['access-control-allow-origin']).toEqual('');
+    expect(result.headers?.['access-control-allow-origin']).toEqual(expected);
   });
 
   it('handles OPTIONS preflight requests', async () => {
-    // Prepare
-    app.options(
-      '/test',
-      async () => {
-        return { foo: 'bar' };
-      });
+    app.options('/test', async () => ({ foo: 'bar' }));
 
-    // Act
-    const result = await app.resolve(createTestEvent('/test', 'OPTIONS', {
-      'Access-Control-Request-Method': 'GET'
-    }), context);
+    const result = await app.resolve(createTestEvent('/test', 'OPTIONS', { 'Access-Control-Request-Method': 'GET' }), context);
 
-    // Assess
     expect(result.statusCode).toBe(204);
   });
 
   it('calls the next middleware if the Access-Control-Request-Method is not present', async () => {
-    // Prepare
-    const corsHeaders: { [key: string]: string; } = {};
-    app.options(
-      '/test',
-      [createHeaderCheckMiddleware(corsHeaders)],
-      async () => {
-        return { success: true };
-      });
+    const corsHeaders: { [key: string]: string } = {};
+    app.options('/test', [createHeaderCheckMiddleware(corsHeaders)], async () => ({ success: true }));
 
-    // Act
     await app.resolve(optionsRequestEvent, context);
 
-    // Assess
-    expect(corsHeaders).toMatchObject({
-      "access-control-allow-credentials": "false",
-      "access-control-allow-headers": "Authorization, Content-Type, X-Amz-Date, X-Api-Key, X-Amz-Security-Token",
-      "access-control-allow-methods": "DELETE, GET, HEAD, PATCH, POST, PUT",
-      "access-control-allow-origin": "*",
-    });
+    expect(corsHeaders).toMatchObject(expectedDefaultHeaders);
   });
 });

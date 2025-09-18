@@ -1,0 +1,17 @@
+sequenceDiagram
+    autonumber
+    participant Streams
+    participant Lambda service
+    participant Lambda function
+    Lambda service->>Streams: Poll latest records
+    Lambda service->>Lambda function: Invoke (batch event)
+    activate Lambda function
+    Lambda function-->Lambda function: Process 2 out of 10 batch items
+    Lambda function--xLambda function: Fail on 3rd batch item
+    Lambda function-->Lambda function: Continue processing batch items (4-10)
+    Lambda function->>Lambda service: Report batch item as failure (3)
+    deactivate Lambda function
+    activate Streams
+    Lambda service->>Streams: Checkpoints to sequence number from 3rd batch item
+    Lambda service->>Streams: Poll records starting from updated checkpoint
+    deactivate Streams

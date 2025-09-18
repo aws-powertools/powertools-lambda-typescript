@@ -66,3 +66,14 @@ export const createNoNextMiddleware = (
     // Intentionally doesn't call next()
   };
 };
+
+export const createSettingHeadersMiddleware = (headers: {
+  [key: string]: string;
+}): Middleware => {
+  return async (_params, options, next) => {
+    await next();
+    Object.entries(headers).forEach(([key, value]) => {
+      options.res.headers.set(key, value);
+    });
+  };
+};

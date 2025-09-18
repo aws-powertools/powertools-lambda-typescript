@@ -1,5 +1,6 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import type { HandlerResponse } from '../types/rest.js';
+import type { CompressionOptions, HandlerResponse } from '../types/rest.js';
+import { COMPRESSION_ENCODING_TYPES } from './constants.js';
 import { isAPIGatewayProxyResult } from './utils.js';
 
 /**
@@ -89,11 +90,34 @@ export const webResponseToProxyResult = async (
     }
   }
 
+  // Check if response contains compressed/binary content
+  const contentEncoding = response.headers.get(
+    'content-encoding'
+  ) as CompressionOptions['encoding'];
+  let body: string;
+  let isBase64Encoded = false;
+
+  if (
+    contentEncoding &&
+    [
+      COMPRESSION_ENCODING_TYPES.GZIP,
+      COMPRESSION_ENCODING_TYPES.DEFLATE,
+    ].includes(contentEncoding)
+  ) {
+    // For compressed content, get as buffer and encode to base64
+    const buffer = await response.arrayBuffer();
+    body = Buffer.from(buffer).toString('base64');
+    isBase64Encoded = true;
+  } else {
+    // For text content, use text()
+    body = await response.text();
+  }
+
   const result: APIGatewayProxyResult = {
     statusCode: response.status,
     headers,
-    body: await response.text(),
-    isBase64Encoded: false,
+    body,
+    isBase64Encoded,
   };
 
   if (Object.keys(multiValueHeaders).length > 0) {

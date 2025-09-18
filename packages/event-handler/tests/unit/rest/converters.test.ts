@@ -38,8 +38,10 @@ describe('Converters', () => {
     };
 
     it('converts basic GET request', () => {
+      // Prepare & Act
       const request = proxyEventToWebRequest(baseEvent);
 
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('GET');
       expect(request.url).toBe('https://api.example.com/test');
@@ -47,28 +49,37 @@ describe('Converters', () => {
     });
 
     it('uses Host header over domainName', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         headers: { Host: 'custom.example.com' },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.url).toBe('https://custom.example.com/test');
     });
 
     it('uses X-Forwarded-Proto header for protocol', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         headers: { 'X-Forwarded-Proto': 'https' },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.url).toBe('https://api.example.com/test');
     });
 
     it('handles null values in multiValueHeaders arrays', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         multiValueHeaders: {
@@ -77,13 +88,17 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.headers.get('Accept')).toBe(null);
       expect(request.headers.get('Custom-Header')).toBe('value1');
     });
 
     it('handles null values in multiValueQueryStringParameters arrays', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         multiValueQueryStringParameters: {
@@ -92,7 +107,10 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       const url = new URL(request.url);
       expect(url.searchParams.has('filter')).toBe(false);
@@ -100,6 +118,7 @@ describe('Converters', () => {
     });
 
     it('handles POST request with string body', async () => {
+      // Prepare
       const event = {
         ...baseEvent,
         httpMethod: 'POST',
@@ -107,7 +126,10 @@ describe('Converters', () => {
         headers: { 'Content-Type': 'application/json' },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('POST');
       expect(request.text()).resolves.toBe('{"key":"value"}');
@@ -115,9 +137,9 @@ describe('Converters', () => {
     });
 
     it('decodes base64 encoded body', async () => {
+      // Prepare
       const originalText = 'Hello World';
       const base64Text = Buffer.from(originalText).toString('base64');
-
       const event = {
         ...baseEvent,
         httpMethod: 'POST',
@@ -125,12 +147,16 @@ describe('Converters', () => {
         isBase64Encoded: true,
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.text()).resolves.toBe(originalText);
     });
 
     it('handles single-value headers', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         headers: {
@@ -139,13 +165,17 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.headers.get('Authorization')).toBe('Bearer token123');
       expect(request.headers.get('User-Agent')).toBe('test-agent');
     });
 
     it('handles multiValueHeaders', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         multiValueHeaders: {
@@ -154,13 +184,17 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.headers.get('Accept')).toBe('application/json, text/html');
       expect(request.headers.get('Custom-Header')).toBe('value1, value2');
     });
 
     it('handles both single and multi-value headers', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         headers: {
@@ -171,13 +205,17 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.headers.get('Authorization')).toBe('Bearer token123');
       expect(request.headers.get('Accept')).toBe('application/json, text/html');
     });
 
     it('deduplicates headers when same header exists in both headers and multiValueHeaders', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         headers: {
@@ -190,7 +228,10 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.headers.get('Host')).toBe(
         'abcd1234.execute-api.eu-west-1.amazonaws.com'
@@ -199,6 +240,7 @@ describe('Converters', () => {
     });
 
     it('appends unique values from multiValueHeaders when header already exists', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         headers: {
@@ -209,12 +251,16 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.headers.get('Accept')).toBe('application/json, text/html');
     });
 
     it('handles queryStringParameters', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         queryStringParameters: {
@@ -223,7 +269,10 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       const url = new URL(request.url);
       expect(url.searchParams.get('name')).toBe('john');
@@ -231,6 +280,7 @@ describe('Converters', () => {
     });
 
     it('handles multiValueQueryStringParameters', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         multiValueQueryStringParameters: {
@@ -239,7 +289,10 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       const url = new URL(request.url);
       expect(url.searchParams.getAll('filter')).toEqual(['name', 'age']);
@@ -247,6 +300,7 @@ describe('Converters', () => {
     });
 
     it('handles both queryStringParameters and multiValueQueryStringParameters', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         queryStringParameters: {
@@ -257,7 +311,10 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       const url = new URL(request.url);
       expect(url.searchParams.get('single')).toBe('value');
@@ -265,6 +322,7 @@ describe('Converters', () => {
     });
 
     it('skips null queryStringParameter values', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         queryStringParameters: {
@@ -273,7 +331,10 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       const url = new URL(request.url);
       expect(url.searchParams.get('valid')).toBe('value');
@@ -281,6 +342,7 @@ describe('Converters', () => {
     });
 
     it('skips null header values', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         headers: {
@@ -289,13 +351,17 @@ describe('Converters', () => {
         },
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.headers.get('Valid-Header')).toBe('value');
       expect(request.headers.get('Null-Header')).toBe(null);
     });
 
     it('handles null/undefined collections', () => {
+      // Prepare
       const event = {
         ...baseEvent,
         headers: null as any,
@@ -304,7 +370,10 @@ describe('Converters', () => {
         multiValueQueryStringParameters: null as any,
       };
 
+      // Act
       const request = proxyEventToWebRequest(event);
+
+      // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('GET');
       expect(request.url).toBe('https://api.example.com/test');
@@ -313,6 +382,7 @@ describe('Converters', () => {
 
   describe('responseToProxyResult', () => {
     it('converts basic Response to API Gateway result', async () => {
+      // Prepare
       const response = new Response('Hello World', {
         status: 200,
         headers: {
@@ -320,8 +390,10 @@ describe('Converters', () => {
         },
       });
 
+      // Act
       const result = await webResponseToProxyResult(response);
 
+      // Assess
       expect(result.statusCode).toBe(200);
       expect(result.body).toBe('Hello World');
       expect(result.isBase64Encoded).toBe(false);
@@ -329,13 +401,16 @@ describe('Converters', () => {
     });
 
     it('handles single-value headers', async () => {
+      // Prepare
       const response = new Response('Hello', {
         status: 201,
         headers: { 'content-type': 'text/plain', 'x-custom': 'value' },
       });
 
+      // Act
       const result = await webResponseToProxyResult(response);
 
+      // Assess
       expect(result.statusCode).toBe(201);
       expect(result.headers).toEqual({
         'content-type': 'text/plain',
@@ -344,6 +419,7 @@ describe('Converters', () => {
     });
 
     it('handles multi-value headers', async () => {
+      // Prepare
       const response = new Response('Hello', {
         status: 200,
         headers: {
@@ -352,8 +428,10 @@ describe('Converters', () => {
         },
       });
 
+      // Act
       const result = await webResponseToProxyResult(response);
 
+      // Assess
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
       expect(result.multiValueHeaders).toEqual({
         'set-cookie': ['cookie1=value1', 'cookie2=value2'],
@@ -361,6 +439,7 @@ describe('Converters', () => {
     });
 
     it('handles mixed single and multi-value headers', async () => {
+      // Prepare
       const response = new Response('Hello', {
         status: 200,
         headers: {
@@ -369,8 +448,10 @@ describe('Converters', () => {
         },
       });
 
+      // Act
       const result = await webResponseToProxyResult(response);
 
+      // Assess
       expect(result.headers).toEqual({
         'content-type': 'application/json',
       });
@@ -380,10 +461,13 @@ describe('Converters', () => {
     });
 
     it('handles different status codes', async () => {
+      // Prepare
       const response = new Response('Not Found', { status: 404 });
 
+      // Act
       const result = await webResponseToProxyResult(response);
 
+      // Assess
       expect(result.statusCode).toBe(404);
       expect(result.body).toBe('Not Found');
     });
@@ -391,15 +475,37 @@ describe('Converters', () => {
     it('handles empty response body', async () => {
       const response = new Response(null, { status: 204 });
 
+      // Act
       const result = await webResponseToProxyResult(response);
 
+      // Assess
       expect(result.statusCode).toBe(204);
       expect(result.body).toBe('');
+    });
+
+    it('handles compressed response body', async () => {
+      // Prepare
+      const response = new Response('Hello World', {
+        status: 200,
+        headers: {
+          'content-encoding': 'gzip',
+        },
+      });
+
+      // Act
+      const result = await webResponseToProxyResult(response);
+
+      // Assess
+      expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toEqual(
+        Buffer.from('Hello World').toString('base64')
+      );
     });
   });
 
   describe('handlerResultToProxyResult', () => {
     it('returns APIGatewayProxyResult as-is', async () => {
+      // Prepare
       const proxyResult = {
         statusCode: 200,
         body: 'test',
@@ -407,26 +513,34 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
+      // Act
       const result = await handlerResultToProxyResult(proxyResult);
 
+      // Assess
       expect(result).toBe(proxyResult);
     });
 
     it('converts Response object', async () => {
+      // Prepare
       const response = new Response('Hello', { status: 201 });
 
+      // Act
       const result = await handlerResultToProxyResult(response);
 
+      // Assess
       expect(result.statusCode).toBe(201);
       expect(result.body).toBe('Hello');
       expect(result.isBase64Encoded).toBe(false);
     });
 
     it('converts plain object to JSON', async () => {
+      // Prepare
       const obj = { message: 'success', data: [1, 2, 3] };
 
+      // Act
       const result = await handlerResultToProxyResult(obj);
 
+      // Assess
       expect(result.statusCode).toBe(200);
       expect(result.body).toBe(JSON.stringify(obj));
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
@@ -436,14 +550,18 @@ describe('Converters', () => {
 
   describe('handlerResultToResponse', () => {
     it('returns Response object as-is', () => {
+      // Prepare
       const response = new Response('Hello', { status: 201 });
 
+      // Act
       const result = handlerResultToWebResponse(response);
 
+      // Assess
       expect(result).toBe(response);
     });
 
     it('converts APIGatewayProxyResult to Response', async () => {
+      // Prepare
       const proxyResult = {
         statusCode: 201,
         body: 'Hello World',
@@ -451,8 +569,10 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
+      // Act
       const result = handlerResultToWebResponse(proxyResult);
 
+      // Assess
       expect(result).toBeInstanceOf(Response);
       expect(result.status).toBe(201);
       expect(await result.text()).toBe('Hello World');
@@ -460,6 +580,7 @@ describe('Converters', () => {
     });
 
     it('converts APIGatewayProxyResult with multiValueHeaders', async () => {
+      // Prepare
       const proxyResult = {
         statusCode: 200,
         body: 'test',
@@ -470,8 +591,10 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
+      // Act
       const result = handlerResultToWebResponse(proxyResult);
 
+      // Assess
       expect(result.headers.get('content-type')).toBe('application/json');
       expect(result.headers.get('Set-Cookie')).toBe(
         'cookie1=value1, cookie2=value2'
@@ -479,10 +602,13 @@ describe('Converters', () => {
     });
 
     it('converts plain object to JSON Response with default headers', async () => {
+      // Prepare
       const obj = { message: 'success' };
 
+      // Act
       const result = handlerResultToWebResponse(obj);
 
+      // Assess
       expect(result).toBeInstanceOf(Response);
       expect(result.status).toBe(200);
       expect(result.text()).resolves.toBe(JSON.stringify(obj));
@@ -490,16 +616,20 @@ describe('Converters', () => {
     });
 
     it('uses provided headers for plain object', async () => {
+      // Prepare
       const obj = { message: 'success' };
       const headers = new Headers({ 'x-custom': 'value' });
 
+      // Act
       const result = handlerResultToWebResponse(obj, headers);
 
+      // Assess
       expect(result.headers.get('Content-Type')).toBe('application/json');
       expect(result.headers.get('x-custom')).toBe('value');
     });
 
     it('handles APIGatewayProxyResult with undefined headers', async () => {
+      // Prepare
       const proxyResult = {
         statusCode: 200,
         body: 'test',
@@ -507,13 +637,16 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
+      // Act
       const result = handlerResultToWebResponse(proxyResult);
 
+      // Assess
       expect(result).toBeInstanceOf(Response);
       expect(result.status).toBe(200);
     });
 
     it('handles APIGatewayProxyResult with undefined multiValueHeaders', async () => {
+      // Prepare
       const proxyResult = {
         statusCode: 200,
         body: 'test',
@@ -522,12 +655,15 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
+      // Act
       const result = handlerResultToWebResponse(proxyResult);
 
+      // Assess
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
 
     it('handles APIGatewayProxyResult with undefined values in multiValueHeaders', async () => {
+      // Prepare
       const proxyResult = {
         statusCode: 200,
         body: 'test',
@@ -536,8 +672,10 @@ describe('Converters', () => {
         isBase64Encoded: false,
       };
 
+      // Act
       const result = handlerResultToWebResponse(proxyResult);
 
+      // Assess
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
   });

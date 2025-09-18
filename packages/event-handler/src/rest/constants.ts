@@ -102,5 +102,17 @@ export const DEFAULT_CORS_OPTIONS = {
     'X-Amz-Security-Token',
   ],
   exposeHeaders: [],
-  credentials: false,
+  credentials: false
+};
+
+export const DEFAULT_COMPRESSION_RESPONSE_THRESHOLD = 1024;
+
+export const CACHE_CONTROL_NO_TRANSFORM_REGEX =
+  /(?:^|,)\s*?no-transform\s*?(?:,|$)/i;
+
+export const COMPRESSION_ENCODING_TYPES = {
+  GZIP: 'gzip',
+  DEFLATE: 'deflate',
+  IDENTITY: 'identity',
+  ANY: '*',
 } as const;

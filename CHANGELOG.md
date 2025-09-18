@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.26.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.0...v2.26.1) (2025-09-15)
+
+### Bug Fixes
+
+- **batch** declare the @aws-lambda-powertools/commons dependency ([#4484](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4484)) ([8cfcccd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8cfcccd6e94a6f0b25087ffbd8a4a2ec4bbf0e3d))
+
+
 ## [2.26.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.2...v2.26.0) (2025-09-11)
 
 ### Improvements

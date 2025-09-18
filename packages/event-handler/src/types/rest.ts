@@ -153,6 +153,11 @@ type CorsOptions = {
   maxAge?: number;
 };
 
+type CompressionOptions = {
+  encoding?: 'gzip' | 'deflate';
+  threshold?: number;
+};
+
 export type {
   CompiledRoute,
   CorsOptions,
@@ -174,4 +179,5 @@ export type {
   RestRouteHandlerOptions,
   RouteRegistryOptions,
   ValidationResult,
+  CompressionOptions,
 };

@@ -407,6 +407,9 @@ describe('Converters', () => {
 
       const result = await webResponseToProxyResult(response);
       expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toEqual(
+        Buffer.from('Hello World').toString('base64')
+      );
     });
   });
 

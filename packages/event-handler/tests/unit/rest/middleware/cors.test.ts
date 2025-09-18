@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { cors } from '../../../../src/rest/middleware/cors.js';
-import { createTestEvent, createTrackingMiddleware } from '../helpers.js';
+import { createTestEvent, createHeaderCheckMiddleware } from '../helpers.js';
 import { Router } from '../../../../src/rest/Router.js';
 import { DEFAULT_CORS_OPTIONS } from 'src/rest/constants.js';
 
@@ -17,12 +17,11 @@ describe('CORS Middleware', () => {
 
   it('uses default configuration when no options are provided', async () => {
     // Prepare
-    const executionOrder: string[] = [];
+    const corsHeaders: { [key: string]: string; } = {};
     app.get(
       '/test',
-      [createTrackingMiddleware('middleware1', executionOrder)],
+      [createHeaderCheckMiddleware(corsHeaders)],
       async () => {
-        executionOrder.push('handler');
         return { success: true };
       });
 
@@ -40,18 +39,19 @@ describe('CORS Middleware', () => {
     expect(result.headers?.['access-control-allow-credentials']).toEqual(
       DEFAULT_CORS_OPTIONS.credentials.toString()
     );
-    expect(executionOrder).toEqual([
-      'middleware1-start',
-      'handler',
-      'middleware1-end',
-    ]);
+    expect(corsHeaders).toMatchObject({
+      "access-control-allow-credentials": "false",
+      "access-control-allow-headers": "Authorization, Content-Type, X-Amz-Date, X-Api-Key, X-Amz-Security-Token",
+      "access-control-allow-methods": "DELETE, GET, HEAD, PATCH, POST, PUT",
+      "access-control-allow-origin": "*",
+    });
   });
 
   it('merges user options with defaults', async () => {
     // Prepare
-    const executionOrder: string[] = [];
-    const application = new Router();
-    application.get(
+    const corsHeaders: { [key: string]: string; } = {};
+    const app = new Router();
+    app.get(
       '/test',
       [
         cors({
@@ -62,15 +62,14 @@ describe('CORS Middleware', () => {
           exposeHeaders: ['Authorization', 'X-Custom-Header'],
           maxAge: 86400,
         }),
-        createTrackingMiddleware('middleware1', executionOrder)
+        createHeaderCheckMiddleware(corsHeaders)
       ],
       async () => {
-        executionOrder.push('handler');
         return { success: true };
       });
 
     // Act
-    const result = await application.resolve(getRequestEvent, context);
+    const result = await app.resolve(getRequestEvent, context);
 
     // Assess
     expect(result.headers?.['access-control-allow-origin']).toEqual('https://example.com');
@@ -89,18 +88,19 @@ describe('CORS Middleware', () => {
     expect(result.headers?.['access-control-max-age']).toEqual(
       '86400'
     );
-    expect(executionOrder).toEqual([
-      'middleware1-start',
-      'handler',
-      'middleware1-end',
-    ]);
+    expect(corsHeaders).toMatchObject({
+      "access-control-allow-credentials": "true",
+      "access-control-allow-headers": "Authorization, Content-Type",
+      "access-control-allow-methods": "GET, POST",
+      "access-control-allow-origin": "https://example.com",
+    });
   });
 
   it('handles array origin with matching request', async () => {
     // Prepare
     const allowedOrigins = ['https://app.com', 'https://admin.app.com'];
-    const application = new Router();
-    application.get(
+    const app = new Router();
+    app.get(
       '/test',
       [
         cors({
@@ -117,7 +117,7 @@ describe('CORS Middleware', () => {
       });
 
     // Act
-    const result = await application.resolve(createTestEvent('/test', 'GET', {
+    const result = await app.resolve(createTestEvent('/test', 'GET', {
       'Origin': 'https://app.com'
     }), context);
 
@@ -128,8 +128,8 @@ describe('CORS Middleware', () => {
   it('handles array origin with non-matching request', async () => {
     // Prepare
     const allowedOrigins = ['https://app.com', 'https://admin.app.com'];
-    const application = new Router();
-    application.get(
+    const app = new Router();
+    app.get(
       '/test',
       [
         cors({
@@ -146,7 +146,7 @@ describe('CORS Middleware', () => {
       });
 
     // Act
-    const result = await application.resolve(createTestEvent('/test', 'GET', {
+    const result = await app.resolve(createTestEvent('/test', 'GET', {
       'Origin': 'https://non-matching.com'
     }), context);
 
@@ -173,12 +173,11 @@ describe('CORS Middleware', () => {
 
   it('calls the next middleware if the Access-Control-Request-Method is not present', async () => {
     // Prepare
-    const executionOrder: string[] = [];
+    const corsHeaders: { [key: string]: string; } = {};
     app.options(
       '/test',
-      [createTrackingMiddleware('middleware1', executionOrder)],
+      [createHeaderCheckMiddleware(corsHeaders)],
       async () => {
-        executionOrder.push('handler');
         return { success: true };
       });
 
@@ -186,10 +185,11 @@ describe('CORS Middleware', () => {
     await app.resolve(optionsRequestEvent, context);
 
     // Assess
-    expect(executionOrder).toEqual([
-      'middleware1-start',
-      'handler',
-      'middleware1-end',
-    ]);
+    expect(corsHeaders).toMatchObject({
+      "access-control-allow-credentials": "false",
+      "access-control-allow-headers": "Authorization, Content-Type, X-Amz-Date, X-Api-Key, X-Amz-Security-Token",
+      "access-control-allow-methods": "DELETE, GET, HEAD, PATCH, POST, PUT",
+      "access-control-allow-origin": "*",
+    });
   });
 });

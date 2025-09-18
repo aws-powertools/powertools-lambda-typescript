@@ -93,8 +93,6 @@ export const cors = (options?: CorsOptions): Middleware => {
         headers: reqCtx.res.headers,
       });
     }
-
-    // Continue to next middleware/handler
     await next();
   };
 };

@@ -33,7 +33,7 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
  *   });
  * ```
  *
- * **Process batch triggered by Kinesis Data Streams*
+ * **Process batch triggered by Kinesis Data Streams**
  *
  * @example
  * ```typescript
@@ -112,6 +112,40 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
  *     context,
  *   });
  * ```
+ *
+ * **Process batch with inner schema validation**
+ *
+ * @example
+ * ```typescript
+ * import {
+ *   BatchProcessor,
+ *   EventType,
+ *   processPartialResponse,
+ * } from '@aws-lambda-powertools/batch';
+ * import { parser } from '@aws-lambda-powertools/batch/parser';
+ * import type { SQSHandler } from 'aws-lambda';
+ * import { z } from 'zod';
+ *
+ * const myItemSchema = z.object({ name: z.string(), age: z.number() });
+ *
+ * const processor = new BatchProcessor(EventType.SQS, {
+ *   parser,
+ *   innerSchema: myItemSchema,
+ *   transformer: 'json'
+ * });
+ *
+ * const recordHandler = async (record) => {
+ *   // record is now fully typed and validated
+ *   console.log(record.body.name, record.body.age);
+ * };
+ *
+ * export const handler: SQSHandler = async (event, context) =>
+ *   processPartialResponse(event, recordHandler, processor, {
+ *     context,
+ *   });
+ * ```
+ *
+ * Note: If `innerSchema` is used with DynamoDB streams, the schema will be applied to both the NewImage and the OldImage by default. If you want to have separate schema for both, you will need to extend the schema and use the full schema for parsing.
  *
  * @param eventType - The type of event to process (SQS, Kinesis, DynamoDB)
  */

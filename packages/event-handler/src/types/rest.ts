@@ -117,16 +117,10 @@ type ValidationResult = {
 type CorsOptions = {
   /**
    * The Access-Control-Allow-Origin header value.
-   * Can be a string, array of strings, or a function that returns a string or boolean.
+   * Can be a string, array of strings.
    * @default '*'
    */
-  origin?:
-    | string
-    | string[]
-    | ((
-        origin: string | undefined,
-        reqCtx: RequestContext
-      ) => string | boolean);
+  origin?: string | string[];
 
   /**
    * The Access-Control-Allow-Methods header value.

@@ -256,29 +256,32 @@ describe('Class: Router - Decorators', () => {
       });
     });
 
-    it('works with notFound decorator', async () => {
+    it('works with notFound decorator and preserves scope', async () => {
       // Prepare
       const app = new Router();
 
       class Lambda {
+        public scope = 'scoped';
+
         @app.notFound()
         public async handleNotFound(error: NotFoundError) {
           return {
             statusCode: HttpErrorCodes.NOT_FOUND,
             error: 'Not Found',
-            message: `Decorated: ${error.message}`,
+            message: `${this.scope}: ${error.message}`,
           };
         }
 
         public async handler(event: unknown, _context: Context) {
-          return app.resolve(event, _context);
+          return app.resolve(event, _context, { scope: this });
         }
       }
 
       const lambda = new Lambda();
+      const handler = lambda.handler.bind(lambda);
 
       // Act
-      const result = await lambda.handler(
+      const result = await handler(
         createTestEvent('/nonexistent', 'GET'),
         context
       );
@@ -289,7 +292,7 @@ describe('Class: Router - Decorators', () => {
         body: JSON.stringify({
           statusCode: HttpErrorCodes.NOT_FOUND,
           error: 'Not Found',
-          message: 'Decorated: Route /nonexistent for method GET not found',
+          message: 'scoped: Route /nonexistent for method GET not found',
         }),
         headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,

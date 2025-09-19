@@ -35,7 +35,7 @@ describe('CORS Middleware', () => {
       '/test',
       [
         cors({
-          origin: 'http://another-origin.com',
+          origin: 'https://another-origin.com',
         }),
       ],
       async () => ({ success: true })

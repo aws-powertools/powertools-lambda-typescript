@@ -32,6 +32,7 @@ export type {
 } from './common.js';
 
 export type {
+  CorsOptions,
   ErrorHandler,
   ErrorResolveOptions,
   ErrorResponse,

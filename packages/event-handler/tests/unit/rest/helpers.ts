@@ -77,3 +77,14 @@ export const createSettingHeadersMiddleware = (headers: {
     });
   };
 };
+
+export const createHeaderCheckMiddleware = (headers: {
+  [key: string]: string;
+}): Middleware => {
+  return async (_params, options, next) => {
+    options.res.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
+    await next();
+  };
+};

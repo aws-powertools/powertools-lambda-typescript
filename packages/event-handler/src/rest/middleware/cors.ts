@@ -1,25 +1,9 @@
-import type {
-  CorsOptions,
-  Middleware,
-} from '../../types/rest.js';
+import type { CorsOptions, Middleware } from '../../types/rest.js';
 import {
   DEFAULT_CORS_OPTIONS,
   HttpErrorCodes,
   HttpVerbs,
 } from '../constants.js';
-
-/**
- * Resolves the origin value based on the configuration
- */
-const resolveOrigin = (
-  originConfig: NonNullable<CorsOptions['origin']>,
-  requestOrigin: string | null,
-): string => {
-  if (Array.isArray(originConfig)) {
-    return requestOrigin && originConfig.includes(requestOrigin) ? requestOrigin : '';
-  }
-  return originConfig;
-};
 
 /**
  * Creates a CORS middleware that adds appropriate CORS headers to responses
@@ -29,9 +13,9 @@ const resolveOrigin = (
  * ```typescript
  * import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
  * import { cors } from '@aws-lambda-powertools/event-handler/experimental-rest/middleware';
- * 
+ *
  * const app = new Router();
- * 
+ *
  * // Use default configuration
  * app.use(cors());
  *
@@ -50,7 +34,7 @@ const resolveOrigin = (
  *   }
  * }));
  * ```
- * 
+ *
  * @param options.origin - The origin to allow requests from
  * @param options.allowMethods - The HTTP methods to allow
  * @param options.allowHeaders - The headers to allow
@@ -61,38 +45,76 @@ const resolveOrigin = (
 export const cors = (options?: CorsOptions): Middleware => {
   const config = {
     ...DEFAULT_CORS_OPTIONS,
-    ...options
+    ...options,
   };
+  const allowedOrigins =
+    typeof config.origin === 'string' ? [config.origin] : config.origin;
+  const allowsWildcard = allowedOrigins.includes('*');
 
   return async (_params, reqCtx, next) => {
     const requestOrigin = reqCtx.request.headers.get('Origin');
-    const resolvedOrigin = resolveOrigin(config.origin, requestOrigin);
-
-    reqCtx.res.headers.set('access-control-allow-origin', resolvedOrigin);
-    if (resolvedOrigin !== '*') {
-      reqCtx.res.headers.set('Vary', 'Origin');
-    }
-    config.allowMethods.forEach(method => {
-      reqCtx.res.headers.append('access-control-allow-methods', method);
-    });
-    config.allowHeaders.forEach(header => {
-      reqCtx.res.headers.append('access-control-allow-headers', header);
-    });
-    config.exposeHeaders.forEach(header => {
-      reqCtx.res.headers.append('access-control-expose-headers', header);
-    });
-    reqCtx.res.headers.set('access-control-allow-credentials', config.credentials.toString());
-    if (config.maxAge !== undefined) {
-      reqCtx.res.headers.set('access-control-max-age', config.maxAge.toString());
+    if (
+      !requestOrigin ||
+      (!allowsWildcard && !allowedOrigins.includes(requestOrigin))
+    ) {
+      await next();
+      return;
     }
 
+    const isOptions = reqCtx.request.method === HttpVerbs.OPTIONS;
     // Handle preflight OPTIONS request
-    if (reqCtx.request.method === HttpVerbs.OPTIONS && reqCtx.request.headers.has('Access-Control-Request-Method')) {
+    if (isOptions) {
+      const requestMethod = reqCtx.request.headers.get(
+        'Access-Control-Request-Method'
+      );
+      const requestHeaders = reqCtx.request.headers.get(
+        'Access-Control-Request-Headers'
+      );
+      if (
+        !requestMethod ||
+        !config.allowMethods.includes(requestMethod) ||
+        !requestHeaders ||
+        requestHeaders
+          .split(',')
+          .some((header) => !config.allowHeaders.includes(header.trim()))
+      ) {
+        await next();
+        return;
+      }
+    }
+
+    const resolvedOrigin = allowsWildcard ? '*' : requestOrigin;
+    reqCtx.res.headers.set('access-control-allow-origin', resolvedOrigin);
+    if (!allowsWildcard && Array.isArray(config.origin)) {
+      reqCtx.res.headers.set('vary', 'Origin');
+    }
+    if (config.credentials) {
+      reqCtx.res.headers.set('access-control-allow-credentials', 'true');
+    }
+
+    if (isOptions) {
+      if (config.maxAge !== undefined) {
+        reqCtx.res.headers.set(
+          'access-control-max-age',
+          config.maxAge.toString()
+        );
+      }
+      config.allowMethods.forEach((method) => {
+        reqCtx.res.headers.append('access-control-allow-methods', method);
+      });
+      config.allowHeaders.forEach((header) => {
+        reqCtx.res.headers.append('access-control-allow-headers', header);
+      });
       return new Response(null, {
         status: HttpErrorCodes.NO_CONTENT,
         headers: reqCtx.res.headers,
       });
     }
+
+    config.exposeHeaders.forEach((header) => {
+      reqCtx.res.headers.append('access-control-expose-headers', header);
+    });
+
     await next();
   };
 };

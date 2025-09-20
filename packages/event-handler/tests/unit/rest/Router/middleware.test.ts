@@ -421,6 +421,33 @@ describe('Class: Router - Middleware', () => {
       });
     });
 
+    it('headers set by handler before next() take precedence', async () => {
+      // Prepare
+      const app = new Router();
+
+      app.use(async (_params, reqCtx, next) => {
+        reqCtx.res.headers.set('x-before-handler', 'middleware-value');
+        await next();
+      });
+
+      app.get('/handler-precedence', async () => {
+        const response = Response.json({ success: true });
+        response.headers.set('x-before-handler', 'handler-value');
+        return response;
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/handler-precedence', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.headers?.['content-type']).toBe('application/json');
+      expect(result.headers?.['x-before-handler']).toBe('handler-value');
+    });
+
     it('overwrites headers when set later in the middleware stack', async () => {
       // Prepare
       const app = new Router();
@@ -453,6 +480,24 @@ describe('Class: Router - Middleware', () => {
         },
         isBase64Encoded: false,
       });
+    });
+
+    it('executes global middleware even when route is not found', async () => {
+      // Prepare
+      const app = new Router();
+      const executionOrder: string[] = [];
+
+      const globalMiddleware = createTrackingMiddleware(
+        'global',
+        executionOrder
+      );
+      app.use(globalMiddleware);
+
+      // Act
+      await app.resolve(createTestEvent('/nonexistent', 'GET'), context);
+
+      // Assess
+      expect(executionOrder).toEqual(['global-start', 'global-end']);
     });
 
     it('works with class decorators and preserves scope access', async () => {

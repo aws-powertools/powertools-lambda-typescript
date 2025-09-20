@@ -111,6 +111,48 @@ type ValidationResult = {
   issues: string[];
 };
 
+/**
+ * Configuration options for CORS middleware
+ */
+type CorsOptions = {
+  /**
+   * The Access-Control-Allow-Origin header value.
+   * Can be a string, array of strings.
+   * @default '*'
+   */
+  origin?: string | string[];
+
+  /**
+   * The Access-Control-Allow-Methods header value.
+   * @default ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']
+   */
+  allowMethods?: string[];
+
+  /**
+   * The Access-Control-Allow-Headers header value.
+   * @default ['Authorization', 'Content-Type', 'X-Amz-Date', 'X-Api-Key', 'X-Amz-Security-Token']
+   */
+  allowHeaders?: string[];
+
+  /**
+   * The Access-Control-Expose-Headers header value.
+   * @default []
+   */
+  exposeHeaders?: string[];
+
+  /**
+   * The Access-Control-Allow-Credentials header value.
+   * @default false
+   */
+  credentials?: boolean;
+
+  /**
+   * The Access-Control-Max-Age header value in seconds.
+   * Only applicable for preflight requests.
+   */
+  maxAge?: number;
+};
+
 type CompressionOptions = {
   encoding?: 'gzip' | 'deflate';
   threshold?: number;
@@ -118,6 +160,7 @@ type CompressionOptions = {
 
 export type {
   CompiledRoute,
+  CorsOptions,
   DynamicRoute,
   ErrorResponse,
   ErrorConstructor,

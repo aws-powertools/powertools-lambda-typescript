@@ -226,33 +226,40 @@ class Router {
 
       const route = this.routeRegistry.resolve(method, path);
 
-      if (route === null) {
-        throw new NotFoundError(`Route ${path} for method ${method} not found`);
-      }
-
-      const handler =
-        options?.scope != null
-          ? route.handler.bind(options.scope)
-          : route.handler;
-
       const handlerMiddleware: Middleware = async (params, reqCtx, next) => {
-        const handlerResult = await handler(params, reqCtx);
-        reqCtx.res = handlerResultToWebResponse(
-          handlerResult,
-          reqCtx.res.headers
-        );
+        if (route === null) {
+          const notFoundRes = await this.handleError(
+            new NotFoundError(`Route ${path} for method ${method} not found`),
+            { ...reqCtx, scope: options?.scope }
+          );
+          reqCtx.res = handlerResultToWebResponse(
+            notFoundRes,
+            reqCtx.res.headers
+          );
+        } else {
+          const handler =
+            options?.scope != null
+              ? route.handler.bind(options.scope)
+              : route.handler;
+
+          const handlerResult = await handler(params, reqCtx);
+          reqCtx.res = handlerResultToWebResponse(
+            handlerResult,
+            reqCtx.res.headers
+          );
+        }
 
         await next();
       };
 
       const middleware = composeMiddleware([
         ...this.middleware,
-        ...route.middleware,
+        ...(route?.middleware ?? []),
         handlerMiddleware,
       ]);
 
       const middlewareResult = await middleware(
-        route.params,
+        route?.params ?? {},
         requestContext,
         () => Promise.resolve()
       );

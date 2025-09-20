@@ -65,6 +65,20 @@ class Router {
   }
 
   /**
+   * Merges resolver registries from another router into this router.
+   *
+   * This method combines the resolver registry, batch resolver registry, and exception handler registry
+   * from the provided router with the current router's registries.
+   *
+   * @param router - The source router whose registries will be merged into this router
+   */
+  protected mergeRegistriesFrom(router: Router): void {
+    this.resolverRegistry.merge(router.resolverRegistry);
+    this.batchResolverRegistry.merge(router.batchResolverRegistry);
+    this.exceptionHandlerRegistry.merge(router.exceptionHandlerRegistry);
+  }
+
+  /**
    * Register a resolver function for any GraphQL event.
    *
    * Registers a handler for a specific GraphQL field. The handler will be invoked when a request is made

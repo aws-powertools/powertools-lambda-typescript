@@ -50,9 +50,7 @@ class RouteHandlerRegistry {
     this.#logger.debug(`Adding resolver for field ${typeName}.${fieldName}`);
     const cacheKey = this.#makeKey(typeName, fieldName);
     if (this.resolvers.has(cacheKey)) {
-      this.#logger.warn(
-        `A resolver for field '${fieldName}' is already registered for '${typeName}'. The previous resolver will be replaced.`
-      );
+      this.#warnResolverOverriding(fieldName, typeName);
     }
     this.resolvers.set(cacheKey, {
       fieldName,
@@ -82,6 +80,21 @@ class RouteHandlerRegistry {
   }
 
   /**
+   * Merges handlers from another RouteHandlerRegistry into this registry.
+   * Existing handlers with the same key will be replaced and a warning will be logged.
+   *
+   * @param otherRegistry - The registry to merge handlers from.
+   */
+  public merge(otherRegistry: RouteHandlerRegistry): void {
+    for (const [key, handler] of otherRegistry.resolvers) {
+      if (this.resolvers.has(key)) {
+        this.#warnResolverOverriding(handler.fieldName, handler.typeName);
+      }
+      this.resolvers.set(key, handler);
+    }
+  }
+
+  /**
    * Generates a unique key by combining the provided GraphQL type name and field name.
    *
    * @param typeName - The name of the GraphQL type.
@@ -89,6 +102,19 @@ class RouteHandlerRegistry {
    */
   #makeKey(typeName: string, fieldName: string): string {
     return `${typeName}.${fieldName}`;
+  }
+
+  /**
+   * Logs a warning message indicating that a resolver for the specified field and type
+   * is already registered and will be replaced by a new resolver.
+   *
+   * @param fieldName - The name of the field for which the resolver is being overridden.
+   * @param typeName - The name of the type associated with the field.
+   */
+  #warnResolverOverriding(fieldName: string, typeName: string): void {
+    this.#logger.warn(
+      `A resolver for field '${fieldName}' is already registered for '${typeName}'. The previous resolver will be replaced.`
+    );
   }
 }
 

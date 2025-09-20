@@ -1,0 +1,9 @@
+{
+  "statusCode": 200,
+  "headers": {
+    "access-control-allow-origin": "*",
+    "content-type": "application/json"
+  },
+  "body": "{\"status\":\"ok\"}",
+  "isBase64Encoded": false
+}

@@ -140,7 +140,14 @@ export const handlerResultToWebResponse = (
   resHeaders?: Headers
 ): Response => {
   if (response instanceof Response) {
-    return response;
+    const headers = new Headers(resHeaders);
+    for (const [key, value] of response.headers.entries()) {
+      headers.set(key, value);
+    }
+    return new Response(response.body, {
+      status: response.status,
+      headers,
+    });
   }
 
   const headers = new Headers(resHeaders);

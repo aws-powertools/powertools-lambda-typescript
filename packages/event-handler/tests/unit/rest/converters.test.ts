@@ -549,17 +549,6 @@ describe('Converters', () => {
   });
 
   describe('handlerResultToResponse', () => {
-    it('returns Response object as-is', () => {
-      // Prepare
-      const response = new Response('Hello', { status: 201 });
-
-      // Act
-      const result = handlerResultToWebResponse(response);
-
-      // Assess
-      expect(result).toBe(response);
-    });
-
     it('converts APIGatewayProxyResult to Response', async () => {
       // Prepare
       const proxyResult = {
@@ -677,6 +666,26 @@ describe('Converters', () => {
 
       // Assess
       expect(result.headers.get('content-type')).toBe('text/plain');
+    });
+
+    it('merges headers from resHeaders with Response object, headers from Response take precedence', () => {
+      // Prepare
+      const response = new Response('Hello', {
+        headers: { 'content-type': 'text/plain' },
+      });
+      const resHeaders = new Headers({
+        'x-custom': 'value',
+        'content-type': 'application/json', // should not override existing
+      });
+
+      // Act
+      const result = handlerResultToWebResponse(response, resHeaders);
+
+      // Assess
+      expect(result.headers.get('content-type')).toBe('text/plain');
+      expect(result.headers.get('x-custom')).toBe('value');
+      expect(result.status).toBe(200);
+      expect(result.text()).resolves.toBe('Hello');
     });
   });
 });

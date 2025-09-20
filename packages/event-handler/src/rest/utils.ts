@@ -172,9 +172,22 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
       }
 
       const middlewareFn = middleware[i];
-      const middlewareResult = await middlewareFn(params, reqCtx, () =>
-        dispatch(i + 1)
-      );
+      let nextPromise: Promise<void> | null = null;
+      let nextAwaited = false;
+      const nextFn = async () => {
+        nextPromise = dispatch(i + 1);
+        const result = await nextPromise;
+        nextAwaited = true;
+        return result;
+      };
+
+      const middlewareResult = await middlewareFn(params, reqCtx, nextFn);
+
+      if (nextPromise && !nextAwaited && i < middleware.length - 1) {
+        throw new Error(
+          'Middleware called next() without awaiting. This may lead to unexpected behavior.'
+        );
+      }
 
       if (middlewareResult !== undefined) {
         result = middlewareResult;

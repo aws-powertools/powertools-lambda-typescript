@@ -1,0 +1,9 @@
+{
+  "statusCode": 500,
+  "error": "Internal Server Error",
+  "message": "Actual error message from the exception",
+  "stack": "Full stack trace of the error",
+  "details": {
+    "errorName": "Name of the error class"
+  }
+}

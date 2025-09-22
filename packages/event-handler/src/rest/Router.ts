@@ -243,9 +243,9 @@ class Router {
           );
         } else {
           const handler =
-            options?.scope != null
-              ? route.handler.bind(options.scope)
-              : route.handler;
+            options?.scope == null
+              ? route.handler
+              : route.handler.bind(options.scope);
 
           const handlerResult = await handler(params, reqCtx);
           reqCtx.res = handlerResultToWebResponse(
@@ -286,12 +286,10 @@ class Router {
   public route(handler: RouteHandler, options: RestRouteOptions): void {
     const { method, path, middleware = [] } = options;
     const methods = Array.isArray(method) ? method : [method];
-    const resolvedPath: Path =
-      this.prefix === undefined
-        ? path
-        : path === '/'
-          ? this.prefix
-          : `${this.prefix}${path}`;
+    let resolvedPath = path;
+    if (this.prefix) {
+      resolvedPath = path === '/' ? this.prefix : `${this.prefix}${path}`;
+    }
 
     for (const method of methods) {
       this.routeRegistry.register(

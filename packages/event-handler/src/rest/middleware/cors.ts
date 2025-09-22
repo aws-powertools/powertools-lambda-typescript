@@ -50,6 +50,12 @@ export const cors = (options?: CorsOptions): Middleware => {
   const allowedOrigins =
     typeof config.origin === 'string' ? [config.origin] : config.origin;
   const allowsWildcard = allowedOrigins.includes('*');
+  const allowedMethods = config.allowMethods.map((method) =>
+    method.toUpperCase()
+  );
+  const allowedHeaders = config.allowHeaders.map((header) =>
+    header.toLowerCase()
+  );
 
   return async (_params, reqCtx, next) => {
     const requestOrigin = reqCtx.request.headers.get('Origin');
@@ -72,18 +78,11 @@ export const cors = (options?: CorsOptions): Middleware => {
         ?.toLowerCase();
       if (
         !requestMethod ||
-        !config.allowMethods
-          .map((m) => m.toUpperCase())
-          .includes(requestMethod) ||
+        !allowedMethods.includes(requestMethod) ||
         !requestHeaders ||
         requestHeaders
           .split(',')
-          .some(
-            (header) =>
-              !config.allowHeaders
-                .map((h) => h.toLowerCase())
-                .includes(header.trim())
-          )
+          .some((header) => !allowedHeaders.includes(header.trim()))
       ) {
         await next();
         return;
@@ -106,10 +105,10 @@ export const cors = (options?: CorsOptions): Middleware => {
           config.maxAge.toString()
         );
       }
-      config.allowMethods.forEach((method) => {
+      allowedMethods.forEach((method) => {
         reqCtx.res.headers.append('access-control-allow-methods', method);
       });
-      config.allowHeaders.forEach((header) => {
+      allowedHeaders.forEach((header) => {
         reqCtx.res.headers.append('access-control-allow-headers', header);
       });
       return new Response(null, {

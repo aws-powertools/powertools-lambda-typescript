@@ -144,7 +144,7 @@ You can use the `notFound()` method as a higher-order function or class method d
 
 ### Error handling
 
-You can use the `errorHandler()` method as higher-order function or class method decorator to define a custom error handler for errors thrown in your route handlers or middleware.
+You can use the `errorHandler()` method as a higher-order function or class method decorator to define a custom error handler for errors thrown in your route handlers or middleware.
 
 This allows you to catch and return custom error responses, or perform any other error handling logic you need.
 
@@ -553,7 +553,7 @@ Please [check this issue](https://github.com/aws-powertools/powertools-lambda-ty
 
 !!! note "Coming soon"
 
-As applications grow and the number of routes a Lambda function handles increases, it becomes natural to either break into smaller Lambda functions or split routes into separate files to ease maintenance.
+As applications grow and the number of routes a Lambda function handles increases, it becomes natural to either break it into smaller Lambda functions or split routes into separate files to ease maintenance.
 
 Currently, the TypeScript event-handler's Router class doesn't provide a way to compose multiple router instances, forcing developers to define all routes in a single file or manually merge route definitions.
 

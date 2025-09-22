@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant Request
+    participant Router
+    participant EH as Error Handler
+    participant M1 as Middleware 1
+    participant M2 as Middleware 2
+    participant Handler as Route Handler
+
+    Request->>Router: Incoming Request
+    Router->>M1: Execute (params, reqCtx, next)
+    Note over M1: Pre-processing
+    M1->>M2: Call next()
+    Note over M2: Intentionally throws error
+    M2-->>M1: Error propagated
+    M1-->>Router: Error propagated
+    Router->>EH: Handle error
+    EH-->>Router: HTTP Error Response
+    Router-->>Request: HTTP Error Response
+    Note over Handler: Never executed

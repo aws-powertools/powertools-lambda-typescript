@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant Request
+    participant Router
+    participant M1 as Middleware 1
+    participant M2 as Middleware 2
+    participant M3 as Middleware 3
+    participant Handler as Route Handler
+
+    Request->>Router: Incoming Request
+    Router->>M1: Execute (params, reqCtx, next)
+    Note over M1: Pre-processing
+    M1->>M2: Call next()
+    Note over M2: Pre-processing
+    M2->>M2: Return Response (early return)
+    Note over M2: Post-processing
+    M2-->>M1: Return Response
+    Note over M1: Post-processing
+    M1-->>Router: Return Response
+    Router-->>Request: Response
+    Note over M3,Handler: Never executed

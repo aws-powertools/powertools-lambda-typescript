@@ -56,6 +56,10 @@ class Router {
    * Whether the router is running in development mode.
    */
   protected readonly isDev: boolean = false;
+  /**
+   * The base prefix to be used for all routes registered using this Router.
+   */
+  protected readonly prefix?: Path;
 
   public constructor(options?: RestRouterOptions) {
     this.context = {};
@@ -73,6 +77,7 @@ class Router {
       logger: this.logger,
     });
     this.isDev = isDevMode();
+    this.prefix = options?.prefix;
   }
 
   /**
@@ -238,9 +243,9 @@ class Router {
           );
         } else {
           const handler =
-            options?.scope != null
-              ? route.handler.bind(options.scope)
-              : route.handler;
+            options?.scope == null
+              ? route.handler
+              : route.handler.bind(options.scope);
 
           const handlerResult = await handler(params, reqCtx);
           reqCtx.res = handlerResultToWebResponse(
@@ -281,9 +286,15 @@ class Router {
   public route(handler: RouteHandler, options: RestRouteOptions): void {
     const { method, path, middleware = [] } = options;
     const methods = Array.isArray(method) ? method : [method];
+    let resolvedPath = path;
+    if (this.prefix) {
+      resolvedPath = path === '/' ? this.prefix : `${this.prefix}${path}`;
+    }
 
     for (const method of methods) {
-      this.routeRegistry.register(new Route(method, path, handler, middleware));
+      this.routeRegistry.register(
+        new Route(method, resolvedPath, handler, middleware)
+      );
     }
   }
 

@@ -1,48 +1,57 @@
-declare const compresssBody: (body: string) => Promise<string>;
+declare const getUserTodos: (
+  userId: string
+) => Promise<Record<string, string>[]>;
+declare const jwt: {
+  verify(token: string, secret: string): { sub: string; roles: string[] };
+};
 
-import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
+import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
+import {
+  Router,
+  UnauthorizedError,
+} from '@aws-lambda-powertools/event-handler/experimental-rest';
 import type { Middleware } from '@aws-lambda-powertools/event-handler/types';
+import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
 
-interface CompressOptions {
-  threshold?: number;
-  level?: number;
-}
+const jwtSecret = getStringFromEnv({
+  key: 'JWT_SECRET',
+  errorMessage: 'JWT_SECRET is not set',
+});
+
+const logger = new Logger({});
+const app = new Router();
+const store: { userId: string; roles: string[] } = { userId: '', roles: [] };
 
 // Factory function that returns middleware
-const compress = (options: CompressOptions = {}): Middleware => {
-  return async (params, reqCtx, next) => {
-    await next();
+const verifyToken = (options: { jwtSecret: string }): Middleware => {
+  return async (_, { request }, next) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth || !auth.startsWith('Bearer '))
+      return new UnauthorizedError('Missing or invalid Authorization header');
 
-    // Check if response should be compressed
-    const body = await reqCtx.res.text();
-    const threshold = options.threshold || 1024;
-
-    if (body.length > threshold) {
-      const compressedBody = await compresssBody(body);
-      const compressedRes = new Response(compressedBody, reqCtx.res);
-      compressedRes.headers.set('Content-Encoding', 'gzip');
-      reqCtx.res = compressedRes;
+    const token = auth.slice(7);
+    try {
+      const payload = jwt.verify(token, options.jwtSecret);
+      store.userId = payload.sub;
+      store.roles = payload.roles;
+    } catch (error) {
+      logger.error('Token verification failed', { error });
+      return new UnauthorizedError('Invalid token');
     }
+
+    await next();
   };
 };
-
-const app = new Router();
 
 // Use custom middleware globally
-app.use(compress({ threshold: 500 }));
+app.use(verifyToken({ jwtSecret }));
 
-app.get('/data', async () => {
-  return {
-    message: 'Large response data',
-    data: new Array(100).fill('content'),
-  };
+app.post('/todos', async (_) => {
+  const { userId } = store;
+  const todos = await getUserTodos(userId);
+  return { todos };
 });
 
-app.get('/small', async () => {
-  return { message: 'Small response' };
-});
-
-export const handler = async (event: unknown, context: Context) => {
-  return await app.resolve(event, context);
-};
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);

@@ -117,4 +117,31 @@ describe('Class: Router - Basic Routing', () => {
       InternalServerError
     );
   });
+
+  it('routes to the prefixed path when having a shared prefix defined', async () => {
+    // Prepare
+    const app = new Router({
+      prefix: '/todos',
+    });
+    app.post('/', async () => {
+      return { actualPath: '/todos' };
+    });
+    app.get('/:todoId', async ({ todoId }) => {
+      return { actualPath: `/todos/${todoId}` };
+    });
+
+    // Act
+    const createResult = await app.resolve(
+      createTestEvent('/todos', 'POST'),
+      context
+    );
+    const getResult = await app.resolve(
+      createTestEvent('/todos/1', 'GET'),
+      context
+    );
+
+    // Assess
+    expect(JSON.parse(createResult.body).actualPath).toBe('/todos');
+    expect(JSON.parse(getResult.body).actualPath).toBe('/todos/1');
+  });
 });

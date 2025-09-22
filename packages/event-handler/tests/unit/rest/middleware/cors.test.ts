@@ -126,6 +126,11 @@ describe('CORS Middleware', () => {
   it('does not set CORS headers when preflight request method does not match allowed method', async () => {
     // Prepare
     const app = new Router();
+    app.use(
+      cors({
+        allowMethods: ['POST'],
+      })
+    );
 
     // Act
     const result = await app.resolve(
@@ -143,6 +148,11 @@ describe('CORS Middleware', () => {
   it('does not set CORS headers when preflight request header does not match allowed header', async () => {
     // Prepare
     const app = new Router();
+    app.use(
+      cors({
+        allowHeaders: ['Content-Type'],
+      })
+    );
 
     // Act
     const result = await app.resolve(

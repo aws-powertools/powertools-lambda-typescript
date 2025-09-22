@@ -87,6 +87,6 @@
   "devDependencies": {
     "@aws-lambda-powertools/parser": "2.26.1",
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "zod": "^4.1.9"
+    "zod": "^4.1.11"
   }
 }

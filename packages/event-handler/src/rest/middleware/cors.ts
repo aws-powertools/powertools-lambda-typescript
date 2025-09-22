@@ -57,48 +57,60 @@ export const cors = (options?: CorsOptions): Middleware => {
     header.toLowerCase()
   );
 
+  const isOriginAllowed = (
+    requestOrigin: string | null
+  ): requestOrigin is string => {
+    return (
+      requestOrigin !== null &&
+      (allowsWildcard || allowedOrigins.includes(requestOrigin))
+    );
+  };
+
+  const isValidPreflightRequest = (requestHeaders: Headers) => {
+    const accessControlRequestMethod = requestHeaders
+      .get('Access-Control-Request-Method')
+      ?.toUpperCase();
+    const accessControlRequestHeaders = requestHeaders
+      .get('Access-Control-Request-Headers')
+      ?.toLowerCase();
+    return (
+      accessControlRequestMethod &&
+      allowedMethods.includes(accessControlRequestMethod) &&
+      accessControlRequestHeaders &&
+      accessControlRequestHeaders
+        .split(',')
+        .some((header) => allowedHeaders.includes(header.trim()))
+    );
+  };
+
+  const setCORSBaseHeaders = (
+    requestOrigin: string,
+    responseHeaders: Headers
+  ) => {
+    const resolvedOrigin = allowsWildcard ? '*' : requestOrigin;
+    responseHeaders.set('access-control-allow-origin', resolvedOrigin);
+    if (!allowsWildcard && Array.isArray(config.origin)) {
+      responseHeaders.set('vary', 'Origin');
+    }
+    if (config.credentials) {
+      responseHeaders.set('access-control-allow-credentials', 'true');
+    }
+  };
+
   return async (_params, reqCtx, next) => {
     const requestOrigin = reqCtx.request.headers.get('Origin');
-    if (
-      !requestOrigin ||
-      (!allowsWildcard && !allowedOrigins.includes(requestOrigin))
-    ) {
+    if (!isOriginAllowed(requestOrigin)) {
       await next();
       return;
     }
 
-    const isOptions = reqCtx.request.method === HttpVerbs.OPTIONS;
     // Handle preflight OPTIONS request
-    if (isOptions) {
-      const requestMethod = reqCtx.request.headers
-        .get('Access-Control-Request-Method')
-        ?.toUpperCase();
-      const requestHeaders = reqCtx.request.headers
-        .get('Access-Control-Request-Headers')
-        ?.toLowerCase();
-      if (
-        !requestMethod ||
-        !allowedMethods.includes(requestMethod) ||
-        !requestHeaders ||
-        requestHeaders
-          .split(',')
-          .some((header) => !allowedHeaders.includes(header.trim()))
-      ) {
+    if (reqCtx.request.method === HttpVerbs.OPTIONS) {
+      if (!isValidPreflightRequest(reqCtx.request.headers)) {
         await next();
         return;
       }
-    }
-
-    const resolvedOrigin = allowsWildcard ? '*' : requestOrigin;
-    reqCtx.res.headers.set('access-control-allow-origin', resolvedOrigin);
-    if (!allowsWildcard && Array.isArray(config.origin)) {
-      reqCtx.res.headers.set('vary', 'Origin');
-    }
-    if (config.credentials) {
-      reqCtx.res.headers.set('access-control-allow-credentials', 'true');
-    }
-
-    if (isOptions) {
+      setCORSBaseHeaders(requestOrigin, reqCtx.res.headers);
       if (config.maxAge !== undefined) {
         reqCtx.res.headers.set(
           'access-control-max-age',
@@ -117,10 +129,10 @@ export const cors = (options?: CorsOptions): Middleware => {
       });
     }
 
+    setCORSBaseHeaders(requestOrigin, reqCtx.res.headers);
     for (const header of config.exposeHeaders) {
       reqCtx.res.headers.append('access-control-expose-headers', header);
     }
-
     await next();
   };
 };

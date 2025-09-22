@@ -6,7 +6,6 @@ import type {
   HttpMethod,
   Middleware,
   Path,
-  RequestContext,
   ValidationResult,
 } from '../types/rest.js';
 import {

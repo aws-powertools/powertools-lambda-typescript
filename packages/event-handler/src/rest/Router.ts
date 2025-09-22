@@ -164,7 +164,7 @@ class Router {
    *
    * @example
    * ```typescript
-   * const authMiddleware: Middleware = async ({params, reqCtx, next}) => {
+   * const authMiddleware: Middleware = async ({ params, reqCtx, next }) => {
    *   // Authentication logic
    *   if (!isAuthenticated(reqCtx.req)) {
    *     return new Response('Unauthorized', { status: 401 });

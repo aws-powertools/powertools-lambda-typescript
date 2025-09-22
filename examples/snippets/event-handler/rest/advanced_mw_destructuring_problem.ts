@@ -5,7 +5,7 @@ import type { Context } from 'aws-lambda';
 const app = new Router();
 
 // ❌ WRONG: Using destructuring captures a reference to the original response
-const badMiddleware: Middleware = async (params, { res }, next) => {
+const _badMiddleware: Middleware = async (_, { res }, next) => {
   res.headers.set('X-Before', 'Before');
   await next();
   // This header will NOT be added because 'res' is a stale reference
@@ -13,7 +13,7 @@ const badMiddleware: Middleware = async (params, { res }, next) => {
 };
 
 // ✅ CORRECT: Always access response through reqCtx
-const goodMiddleware: Middleware = async (params, reqCtx, next) => {
+const goodMiddleware: Middleware = async (_, reqCtx, next) => {
   reqCtx.res.headers.set('X-Before', 'Before');
   await next();
   // This header WILL be added because we get the current response
@@ -26,6 +26,5 @@ app.get('/test', async () => {
   return { message: 'Hello World!' };
 });
 
-export const handler = async (event: unknown, context: Context) => {
-  return await app.resolve(event, context);
-};
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);

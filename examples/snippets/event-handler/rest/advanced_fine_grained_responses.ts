@@ -23,7 +23,7 @@ app.get('/todos', async () => {
   });
 });
 
-app.post('/todos', async (params, reqCtx) => {
+app.post('/todos', async (_, reqCtx) => {
   const body = await reqCtx.request.json();
   const todo = await createTodo(body.title);
 
@@ -36,6 +36,5 @@ app.post('/todos', async (params, reqCtx) => {
   });
 });
 
-export const handler = async (event: unknown, context: Context) => {
-  return app.resolve(event, context);
-};
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);

@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant Request
+    participant Router
+    participant GM as Global Middleware
+    participant RM as Route Middleware
+    participant Handler as Route Handler
+
+    Request->>Router: Incoming Request
+    Router->>GM: Execute (params, reqCtx, next)
+    Note over GM: Pre-processing
+    GM->>RM: Call next()
+    Note over RM: Pre-processing
+    RM->>Handler: Call next()
+    Note over Handler: Execute handler
+    Handler-->>RM: Return
+    Note over RM: Post-processing
+    RM-->>GM: Return
+    Note over GM: Post-processing
+    GM-->>Router: Return
+    Router-->>Request: Response

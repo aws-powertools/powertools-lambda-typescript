@@ -1,0 +1,9 @@
+{
+  "headers": {
+    "Accept": "image/png",
+    "Accept-Encoding": "gzip"
+  },
+  "resource": "/logo",
+  "path": "/logo",
+  "httpMethod": "GET"
+}

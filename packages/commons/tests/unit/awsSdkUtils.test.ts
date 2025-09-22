@@ -84,7 +84,9 @@ describe('Helpers: awsSdk', () => {
 
   it('concatenates the PT AWS_SDK_UA_APP_ID when one is already set', () => {
     // Assess
-    expect(process.env.AWS_SDK_UA_APP_ID).toEqual(`test/PT/TEST/${version}`);
+    expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+      `test/PT/NO-OP/${version}/PTEnv/NA`
+    );
   });
 
   describe('Function: customUserAgentMiddleware', () => {

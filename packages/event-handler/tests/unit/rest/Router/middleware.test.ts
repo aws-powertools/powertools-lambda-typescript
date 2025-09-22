@@ -180,6 +180,32 @@ describe('Class: Router - Middleware', () => {
       expect(body.message).toContain('next() called multiple times');
     });
 
+    it('should throw error if middleware does not await next()', async () => {
+      // Prepare
+      vi.stubEnv('POWERTOOLS_DEV', 'true');
+      const app = new Router();
+
+      app.use(async (_params, _reqCtx, next) => {
+        await next();
+      });
+
+      app.use(async (_params, _reqCtx, next) => {
+        next();
+      });
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'OPTIONS'),
+        context
+      );
+
+      // Assess
+      const body = JSON.parse(result.body);
+      expect(body.message).toEqual(
+        'Middleware called next() without awaiting. This may lead to unexpected behavior.'
+      );
+    });
+
     it('handles errors thrown in middleware before next()', async () => {
       // Prepare
       const app = new Router();

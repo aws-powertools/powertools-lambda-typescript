@@ -197,7 +197,7 @@ describe('CORS Middleware', () => {
       corsConfig.allowMethods
     );
     expect(result.multiValueHeaders?.['access-control-allow-headers']).toEqual(
-      corsConfig.allowHeaders
+      corsConfig.allowHeaders.map((header) => header.toLowerCase())
     );
     expect(result.headers?.['access-control-max-age']).toEqual(
       corsConfig.maxAge.toString()

@@ -105,21 +105,21 @@ export const cors = (options?: CorsOptions): Middleware => {
           config.maxAge.toString()
         );
       }
-      allowedMethods.forEach((method) => {
+      for (const method of allowedMethods) {
         reqCtx.res.headers.append('access-control-allow-methods', method);
-      });
-      allowedHeaders.forEach((header) => {
+      }
+      for (const header of allowedHeaders) {
         reqCtx.res.headers.append('access-control-allow-headers', header);
-      });
+      }
       return new Response(null, {
         status: HttpErrorCodes.NO_CONTENT,
         headers: reqCtx.res.headers,
       });
     }
 
-    config.exposeHeaders.forEach((header) => {
+    for (const header of config.exposeHeaders) {
       reqCtx.res.headers.append('access-control-expose-headers', header);
-    });
+    }
 
     await next();
   };

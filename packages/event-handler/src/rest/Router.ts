@@ -164,9 +164,9 @@ class Router {
    *
    * @example
    * ```typescript
-   * const authMiddleware: Middleware = async (params, reqCtx, next) => {
+   * const authMiddleware: Middleware = async ({ params, reqCtx, next }) => {
    *   // Authentication logic
-   *   if (!isAuthenticated(reqCtx.request)) {
+   *   if (!isAuthenticated(reqCtx.req)) {
    *     return new Response('Unauthorized', { status: 401 });
    *   }
    *   await next();
@@ -215,23 +215,27 @@ class Router {
       };
     }
 
-    const request = proxyEventToWebRequest(event);
+    const req = proxyEventToWebRequest(event);
 
     const requestContext: RequestContext = {
       event,
       context,
-      request,
+      req,
       // this response should be overwritten by the handler, if it isn't
       // it means something went wrong with the middleware chain
       res: new Response('', { status: 500 }),
     };
 
     try {
-      const path = new URL(request.url).pathname as Path;
+      const path = new URL(req.url).pathname as Path;
 
       const route = this.routeRegistry.resolve(method, path);
 
-      const handlerMiddleware: Middleware = async (params, reqCtx, next) => {
+      const handlerMiddleware: Middleware = async ({
+        params,
+        reqCtx,
+        next,
+      }) => {
         if (route === null) {
           const notFoundRes = await this.handleError(
             new NotFoundError(`Route ${path} for method ${method} not found`),
@@ -263,11 +267,11 @@ class Router {
         handlerMiddleware,
       ]);
 
-      const middlewareResult = await middleware(
-        route?.params ?? {},
-        requestContext,
-        () => Promise.resolve()
-      );
+      const middlewareResult = await middleware({
+        params: route?.params ?? {},
+        reqCtx: requestContext,
+        next: () => Promise.resolve(),
+      });
 
       // middleware result takes precedence to allow short-circuiting
       const result = middlewareResult ?? requestContext.res;

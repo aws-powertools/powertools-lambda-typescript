@@ -154,7 +154,7 @@ describe('Class: Router - Middleware', () => {
       expect(middlewareParams).toEqual({ id: '123' });
       expect(middlewareOptions?.event).toBe(testEvent);
       expect(middlewareOptions?.context).toBe(context);
-      expect(middlewareOptions?.request).toBeInstanceOf(Request);
+      expect(middlewareOptions?.req).toBeInstanceOf(Request);
     });
 
     it('returns error response when next() is called multiple times', async () => {

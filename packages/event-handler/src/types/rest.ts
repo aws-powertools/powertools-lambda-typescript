@@ -15,7 +15,7 @@ type ErrorResponse = {
 };
 
 type RequestContext = {
-  request: Request;
+  req: Request;
   event: APIGatewayProxyEvent;
   context: Context;
   res: Response;

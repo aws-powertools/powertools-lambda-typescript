@@ -166,7 +166,7 @@ class Router {
    * ```typescript
    * const authMiddleware: Middleware = async ({params, reqCtx, next}) => {
    *   // Authentication logic
-   *   if (!isAuthenticated(reqCtx.request)) {
+   *   if (!isAuthenticated(reqCtx.req)) {
    *     return new Response('Unauthorized', { status: 401 });
    *   }
    *   await next();
@@ -215,19 +215,19 @@ class Router {
       };
     }
 
-    const request = proxyEventToWebRequest(event);
+    const req = proxyEventToWebRequest(event);
 
     const requestContext: RequestContext = {
       event,
       context,
-      request,
+      req,
       // this response should be overwritten by the handler, if it isn't
       // it means something went wrong with the middleware chain
       res: new Response('', { status: 500 }),
     };
 
     try {
-      const path = new URL(request.url).pathname as Path;
+      const path = new URL(req.url).pathname as Path;
 
       const route = this.routeRegistry.resolve(method, path);
 

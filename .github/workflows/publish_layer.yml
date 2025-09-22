@@ -48,7 +48,9 @@ jobs:
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
       - name: CDK build
-        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=${{ inputs.latest_published_version }} -o cdk.out
+        env:
+          LAYER_VERSION: ${{ inputs.latest_published_version }}
+        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=$LAYER_VERSION -o cdk.out
       - name: Zip output
         run: zip -r cdk.out.zip layers/cdk.out
       - name: Archive CDK artifacts

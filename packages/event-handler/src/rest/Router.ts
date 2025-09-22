@@ -164,7 +164,7 @@ class Router {
    *
    * @example
    * ```typescript
-   * const authMiddleware: Middleware = async (params, reqCtx, next) => {
+   * const authMiddleware: Middleware = async ({params, reqCtx, next}) => {
    *   // Authentication logic
    *   if (!isAuthenticated(reqCtx.request)) {
    *     return new Response('Unauthorized', { status: 401 });
@@ -231,7 +231,11 @@ class Router {
 
       const route = this.routeRegistry.resolve(method, path);
 
-      const handlerMiddleware: Middleware = async (params, reqCtx, next) => {
+      const handlerMiddleware: Middleware = async ({
+        params,
+        reqCtx,
+        next,
+      }) => {
         if (route === null) {
           const notFoundRes = await this.handleError(
             new NotFoundError(`Route ${path} for method ${method} not found`),
@@ -263,11 +267,11 @@ class Router {
         handlerMiddleware,
       ]);
 
-      const middlewareResult = await middleware(
-        route?.params ?? {},
-        requestContext,
-        () => Promise.resolve()
-      );
+      const middlewareResult = await middleware({
+        params: route?.params ?? {},
+        reqCtx: requestContext,
+        next: () => Promise.resolve(),
+      });
 
       // middleware result takes precedence to allow short-circuiting
       const result = middlewareResult ?? requestContext.res;

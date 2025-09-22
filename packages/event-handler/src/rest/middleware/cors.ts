@@ -96,7 +96,7 @@ export const cors = (options?: CorsOptions): Middleware => {
     }
   };
 
-  return async (_params, reqCtx, next) => {
+  return async ({ reqCtx, next }) => {
     const requestOrigin = reqCtx.request.headers.get('Origin');
     if (!isOriginAllowed(requestOrigin)) {
       await next();

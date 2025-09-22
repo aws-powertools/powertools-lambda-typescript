@@ -67,7 +67,7 @@ const compress = (options?: CompressionOptions): Middleware => {
   const threshold =
     options?.threshold ?? DEFAULT_COMPRESSION_RESPONSE_THRESHOLD;
 
-  return async (_, reqCtx, next) => {
+  return async ({ reqCtx, next }) => {
     await next();
 
     if (

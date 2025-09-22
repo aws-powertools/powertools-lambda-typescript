@@ -400,7 +400,7 @@ describe('Class: Router - Decorators', () => {
         @app.get('/test')
         public async getTest(_params: any, reqCtx: any) {
           return {
-            hasRequest: reqCtx.request instanceof Request,
+            hasRequest: reqCtx.req instanceof Request,
             hasEvent: reqCtx.event === testEvent,
             hasContext: reqCtx.context === context,
           };
@@ -435,7 +435,7 @@ describe('Class: Router - Decorators', () => {
             statusCode: HttpErrorCodes.BAD_REQUEST,
             error: 'Bad Request',
             message: error.message,
-            hasRequest: reqCtx.request instanceof Request,
+            hasRequest: reqCtx.req instanceof Request,
             hasEvent: reqCtx.event === testEvent,
             hasContext: reqCtx.context === context,
           };

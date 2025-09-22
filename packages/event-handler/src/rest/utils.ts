@@ -6,7 +6,6 @@ import type {
   HttpMethod,
   Middleware,
   Path,
-  RequestContext,
   ValidationResult,
 } from '../types/rest.js';
 import {
@@ -129,13 +128,13 @@ export const isAPIGatewayProxyResult = (
  *
  * @example
  * ```typescript
- * const middleware1: Middleware = async (params, options, next) => {
+ * const middleware1: Middleware = async ({params, options, next}) => {
  *   console.log('middleware1 start');
  *   await next();
  *   console.log('middleware1 end');
  * };
  *
- * const middleware2: Middleware = async (params, options, next) => {
+ * const middleware2: Middleware = async ({params, options, next}) => {
  *   console.log('middleware2 start');
  *   await next();
  *   console.log('middleware2 end');
@@ -151,11 +150,7 @@ export const isAPIGatewayProxyResult = (
  * ```
  */
 export const composeMiddleware = (middleware: Middleware[]): Middleware => {
-  return async (
-    params: Record<string, string>,
-    reqCtx: RequestContext,
-    next: () => Promise<HandlerResponse | void>
-  ): Promise<HandlerResponse | void> => {
+  return async ({ params, reqCtx, next }): Promise<HandlerResponse | void> => {
     let index = -1;
     let result: HandlerResponse | undefined;
 
@@ -181,7 +176,11 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
         return result;
       };
 
-      const middlewareResult = await middlewareFn(params, reqCtx, nextFn);
+      const middlewareResult = await middlewareFn({
+        params,
+        reqCtx,
+        next: nextFn,
+      });
 
       if (nextPromise && !nextAwaited && i < middleware.length - 1) {
         throw new Error(

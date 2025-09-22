@@ -67,12 +67,10 @@ const compress = (options?: CompressionOptions): Middleware => {
   const threshold =
     options?.threshold ?? DEFAULT_COMPRESSION_RESPONSE_THRESHOLD;
 
-  return async (_, reqCtx, next) => {
+  return async ({ reqCtx, next }) => {
     await next();
 
-    if (
-      !shouldCompress(reqCtx.request, reqCtx.res, preferredEncoding, threshold)
-    ) {
+    if (!shouldCompress(reqCtx.req, reqCtx.res, preferredEncoding, threshold)) {
       return;
     }
 

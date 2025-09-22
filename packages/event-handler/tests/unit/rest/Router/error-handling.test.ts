@@ -375,7 +375,7 @@ describe('Class: Router - Error Handling', () => {
       statusCode: HttpErrorCodes.BAD_REQUEST,
       error: 'Bad Request',
       message: error.message,
-      hasRequest: reqCtx.request instanceof Request,
+      hasRequest: reqCtx.req instanceof Request,
       hasEvent: reqCtx.event === testEvent,
       hasContext: reqCtx.context === context,
     }));

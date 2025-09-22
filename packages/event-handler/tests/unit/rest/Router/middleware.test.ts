@@ -44,16 +44,17 @@ describe('Class: Router - Middleware', () => {
       const app = new Router();
       const executionOrder: string[] = [];
 
-      app.use(async (_params, _reqCtx, next) => {
+      app.use(async ({ next }) => {
         executionOrder.push('global-middleware');
         await next();
       });
 
       const middleware: Middleware[] = middlewareNames.map(
-        (name) => async (_params, _reqCtx, next) => {
-          executionOrder.push(name);
-          await next();
-        }
+        (name) =>
+          async ({ next }) => {
+            executionOrder.push(name);
+            await next();
+          }
       );
 
       app.get(path as Path, middleware, async () => {
@@ -137,7 +138,7 @@ describe('Class: Router - Middleware', () => {
       let middlewareParams: Record<string, string> | undefined;
       let middlewareOptions: RequestContext | undefined;
 
-      app.use(async (params, reqCtx, next) => {
+      app.use(async ({ params, reqCtx, next }) => {
         middlewareParams = params;
         middlewareOptions = reqCtx;
         await next();
@@ -153,7 +154,7 @@ describe('Class: Router - Middleware', () => {
       expect(middlewareParams).toEqual({ id: '123' });
       expect(middlewareOptions?.event).toBe(testEvent);
       expect(middlewareOptions?.context).toBe(context);
-      expect(middlewareOptions?.request).toBeInstanceOf(Request);
+      expect(middlewareOptions?.req).toBeInstanceOf(Request);
     });
 
     it('returns error response when next() is called multiple times', async () => {
@@ -161,7 +162,7 @@ describe('Class: Router - Middleware', () => {
       vi.stubEnv('POWERTOOLS_DEV', 'true');
       const app = new Router();
 
-      app.use(async (_params, _reqCtx, next) => {
+      app.use(async ({ next }) => {
         await next();
         await next();
       });
@@ -185,11 +186,11 @@ describe('Class: Router - Middleware', () => {
       vi.stubEnv('POWERTOOLS_DEV', 'true');
       const app = new Router();
 
-      app.use(async (_params, _reqCtx, next) => {
+      app.use(async ({ next }) => {
         await next();
       });
 
-      app.use(async (_params, _reqCtx, next) => {
+      app.use(async ({ next }) => {
         next();
       });
 
@@ -241,7 +242,7 @@ describe('Class: Router - Middleware', () => {
       const app = new Router();
       const executionOrder: string[] = [];
 
-      app.use(async (_params, _reqCtx, next) => {
+      app.use(async ({ next }) => {
         executionOrder.push('middleware1-start');
         await next();
         executionOrder.push('middleware1-end');
@@ -362,7 +363,7 @@ describe('Class: Router - Middleware', () => {
       // Prepare
       const app = new Router();
 
-      app.use(async (_params, reqCtx, next) => {
+      app.use(async ({ reqCtx, next }) => {
         await next();
         reqCtx.res.headers.set('x-custom-header', 'middleware-value');
         reqCtx.res.headers.set('x-request-id', '12345');
@@ -393,7 +394,7 @@ describe('Class: Router - Middleware', () => {
       // Prepare
       const app = new Router();
 
-      app.use(async (_params, reqCtx, next) => {
+      app.use(async ({ reqCtx, next }) => {
         await next();
         const originalBody = await reqCtx.res.text();
         reqCtx.res = new Response(`Modified: ${originalBody}`, {
@@ -422,7 +423,7 @@ describe('Class: Router - Middleware', () => {
       // Prepare
       const app = new Router();
 
-      app.use(async (_params, reqCtx, next) => {
+      app.use(async ({ reqCtx, next }) => {
         reqCtx.res.headers.set('x-before-handler', 'middleware-value');
         await next();
       });
@@ -451,7 +452,7 @@ describe('Class: Router - Middleware', () => {
       // Prepare
       const app = new Router();
 
-      app.use(async (_params, reqCtx, next) => {
+      app.use(async ({ reqCtx, next }) => {
         reqCtx.res.headers.set('x-before-handler', 'middleware-value');
         await next();
       });
@@ -478,12 +479,12 @@ describe('Class: Router - Middleware', () => {
       // Prepare
       const app = new Router();
 
-      app.use(async (_params, reqCtx, next) => {
+      app.use(async ({ reqCtx, next }) => {
         reqCtx.res.headers.set('x-test-header', 'before-next');
         await next();
       });
 
-      app.use(async (_params, reqCtx, next) => {
+      app.use(async ({ reqCtx, next }) => {
         await next();
         reqCtx.res.headers.set('x-test-header', 'after-next');
       });
@@ -531,7 +532,7 @@ describe('Class: Router - Middleware', () => {
       const app = new Router();
       const executionOrder: string[] = [];
 
-      app.use(async (_params, _reqCtx, next) => {
+      app.use(async ({ next }) => {
         executionOrder.push('middleware-start');
         await next();
         executionOrder.push('middleware-end');

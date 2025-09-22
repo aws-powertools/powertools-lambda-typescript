@@ -33,17 +33,17 @@
     "@aws-lambda-powertools/parameters": "^2.26.1",
     "@aws-lambda-powertools/parser": "^2.26.1",
     "@aws-lambda-powertools/tracer": "^2.26.1",
-    "@aws-sdk/client-appconfigdata": "^3.888.0",
-    "@aws-sdk/client-dynamodb": "^3.888.0",
-    "@aws-sdk/client-secrets-manager": "^3.888.0",
-    "@aws-sdk/client-ssm": "^3.888.0",
-    "@aws-sdk/util-dynamodb": "^3.888.0",
+    "@aws-sdk/client-appconfigdata": "^3.893.0",
+    "@aws-sdk/client-dynamodb": "^3.893.0",
+    "@aws-sdk/client-secrets-manager": "^3.893.0",
+    "@aws-sdk/client-ssm": "^3.893.0",
+    "@aws-sdk/util-dynamodb": "^3.893.0",
     "@middy/core": "^4.7.0",
     "@redis/client": "^5.8.2",
     "@valkey/valkey-glide": "^2.1.0",
     "aws-sdk": "^2.1692.0",
     "aws-sdk-client-mock": "^4.1.0",
-    "zod": "^4.1.9"
+    "zod": "^4.1.11"
   },
   "dependencies": {
     "arktype": "^2.1.22",

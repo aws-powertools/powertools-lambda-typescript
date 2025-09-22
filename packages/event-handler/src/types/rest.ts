@@ -43,6 +43,10 @@ type RestRouterOptions = {
    * When no logger is provided, we'll only log warnings and errors using the global `console` object.
    */
   logger?: GenericLogger;
+  /**
+   * The base prefix to be used for all routes registered using this Router.
+   */
+  prefix?: Path;
 };
 
 interface CompiledRoute {

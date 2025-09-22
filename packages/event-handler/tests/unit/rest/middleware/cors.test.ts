@@ -1,6 +1,6 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { DEFAULT_CORS_OPTIONS } from 'src/rest/constants.js';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { DEFAULT_CORS_OPTIONS } from '../../../../src/rest/constants.js';
 import { cors } from '../../../../src/rest/middleware/cors.js';
 import { Router } from '../../../../src/rest/Router.js';
 import { createHeaderCheckMiddleware, createTestEvent } from '../helpers.js';

@@ -76,10 +76,9 @@ export const cors = (options?: CorsOptions): Middleware => {
     return (
       accessControlRequestMethod &&
       allowedMethods.includes(accessControlRequestMethod) &&
-      accessControlRequestHeaders &&
       accessControlRequestHeaders
-        .split(',')
-        .some((header) => allowedHeaders.includes(header.trim()))
+        ?.split(',')
+        .every((header) => allowedHeaders.includes(header.trim()))
     );
   };
 

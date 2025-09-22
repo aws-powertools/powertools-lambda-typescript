@@ -449,12 +449,12 @@ describe('Path Utilities', () => {
     it('executes middleware in order', async () => {
       const executionOrder: string[] = [];
       const middleware: Middleware[] = [
-        async (_params, _reqCtx, next) => {
+        async ({ next }) => {
           executionOrder.push('middleware1-start');
           await next();
           executionOrder.push('middleware1-end');
         },
-        async (_params, _reqCtx, next) => {
+        async ({ next }) => {
           executionOrder.push('middleware2-start');
           await next();
           executionOrder.push('middleware2-end');
@@ -462,8 +462,12 @@ describe('Path Utilities', () => {
       ];
 
       const composed = composeMiddleware(middleware);
-      await composed({}, mockOptions, async () => {
-        executionOrder.push('handler');
+      await composed({
+        params: {},
+        reqCtx: mockOptions,
+        next: async () => {
+          executionOrder.push('handler');
+        },
       });
 
       expect(executionOrder).toEqual([
@@ -477,17 +481,21 @@ describe('Path Utilities', () => {
 
     it('returns result from middleware that short-circuits', async () => {
       const middleware: Middleware[] = [
-        async (_params, _reqCtx, next) => {
+        async ({ next }) => {
           await next();
         },
-        async (_params, _reqCtx, _next) => {
+        async () => {
           return { shortCircuit: true };
         },
       ];
 
       const composed = composeMiddleware(middleware);
-      const result = await composed({}, mockOptions, async () => {
-        return { handler: true };
+      const result = await composed({
+        params: {},
+        reqCtx: mockOptions,
+        next: async () => {
+          return { handler: true };
+        },
       });
 
       expect(result).toEqual({ shortCircuit: true });
@@ -495,14 +503,18 @@ describe('Path Utilities', () => {
 
     it('returns result from next function when middleware does not return', async () => {
       const middleware: Middleware[] = [
-        async (_params, _reqCtx, next) => {
+        async ({ next }) => {
           await next();
         },
       ];
 
       const composed = composeMiddleware(middleware);
-      const result = await composed({}, mockOptions, async () => {
-        return { handler: true };
+      const result = await composed({
+        params: {},
+        reqCtx: mockOptions,
+        next: async () => {
+          return { handler: true };
+        },
       });
 
       expect(result).toEqual({ handler: true });
@@ -510,7 +522,7 @@ describe('Path Utilities', () => {
 
     it('throws error when next() is called multiple times', async () => {
       const middleware: Middleware[] = [
-        async (_params, _reqCtx, next) => {
+        async ({ next }) => {
           await next();
           await next();
         },
@@ -518,15 +530,19 @@ describe('Path Utilities', () => {
 
       const composed = composeMiddleware(middleware);
 
-      await expect(composed({}, mockOptions, async () => {})).rejects.toThrow(
-        'next() called multiple times'
-      );
+      await expect(
+        composed({ params: {}, reqCtx: mockOptions, next: async () => {} })
+      ).rejects.toThrow('next() called multiple times');
     });
 
     it('handles empty middleware array', async () => {
       const composed = composeMiddleware([]);
-      const result = await composed({}, mockOptions, async () => {
-        return { handler: true };
+      const result = await composed({
+        params: {},
+        reqCtx: mockOptions,
+        next: async () => {
+          return { handler: true };
+        },
       });
 
       expect(result).toEqual({ handler: true });
@@ -534,14 +550,18 @@ describe('Path Utilities', () => {
 
     it('returns undefined when next function returns undefined', async () => {
       const middleware: Middleware[] = [
-        async (_params, _reqCtx, next) => {
+        async ({ next }) => {
           await next();
         },
       ];
 
       const composed = composeMiddleware(middleware);
-      const result = await composed({}, mockOptions, async () => {
-        return undefined;
+      const result = await composed({
+        params: {},
+        reqCtx: mockOptions,
+        next: async () => {
+          return undefined;
+        },
       });
 
       expect(result).toBeUndefined();

@@ -91,7 +91,7 @@ describe('Class: Router - Basic Routing', () => {
 
     app.get('/test', async (_params, reqCtx) => {
       return {
-        hasRequest: reqCtx.request instanceof Request,
+        hasRequest: reqCtx.req instanceof Request,
         hasEvent: reqCtx.event === testEvent,
         hasContext: reqCtx.context === context,
       };

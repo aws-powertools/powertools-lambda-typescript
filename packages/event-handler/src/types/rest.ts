@@ -15,7 +15,7 @@ type ErrorResponse = {
 };
 
 type RequestContext = {
-  request: Request;
+  req: Request;
   event: APIGatewayProxyEvent;
   context: Context;
   res: Response;
@@ -86,11 +86,11 @@ type RestRouteOptions = {
 
 type NextFunction = () => Promise<HandlerResponse | void>;
 
-type Middleware = (
-  params: Record<string, string>,
-  reqCtx: RequestContext,
-  next: NextFunction
-) => Promise<void | HandlerResponse>;
+type Middleware = (args: {
+  params: Record<string, string>;
+  reqCtx: RequestContext;
+  next: NextFunction;
+}) => Promise<void | HandlerResponse>;
 
 type RouteRegistryOptions = {
   /**

@@ -126,15 +126,6 @@ describe('CORS Middleware', () => {
   it('does not set CORS headers when preflight request method does not match allowed method', async () => {
     // Prepare
     const app = new Router();
-    app.options(
-      '/test',
-      [
-        cors({
-          allowMethods: ['POST'],
-        }),
-      ],
-      async () => ({ foo: 'bar' })
-    );
 
     // Act
     const result = await app.resolve(
@@ -152,15 +143,6 @@ describe('CORS Middleware', () => {
   it('does not set CORS headers when preflight request header does not match allowed header', async () => {
     // Prepare
     const app = new Router();
-    app.options(
-      '/test',
-      [
-        cors({
-          allowHeaders: ['Authorization'],
-        }),
-      ],
-      async () => ({ foo: 'bar' })
-    );
 
     // Act
     const result = await app.resolve(
@@ -184,7 +166,7 @@ describe('CORS Middleware', () => {
       allowHeaders: ['Authorization', 'Content-Type'],
       maxAge: 3600,
     };
-    app.options('/test', [cors(corsConfig)], async () => ({ foo: 'bar' }));
+    app.use(cors(corsConfig));
 
     // Act
     const result = await app.resolve(

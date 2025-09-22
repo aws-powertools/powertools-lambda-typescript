@@ -64,19 +64,26 @@ export const cors = (options?: CorsOptions): Middleware => {
     const isOptions = reqCtx.request.method === HttpVerbs.OPTIONS;
     // Handle preflight OPTIONS request
     if (isOptions) {
-      const requestMethod = reqCtx.request.headers.get(
-        'Access-Control-Request-Method'
-      );
-      const requestHeaders = reqCtx.request.headers.get(
-        'Access-Control-Request-Headers'
-      );
+      const requestMethod = reqCtx.request.headers
+        .get('Access-Control-Request-Method')
+        ?.toUpperCase();
+      const requestHeaders = reqCtx.request.headers
+        .get('Access-Control-Request-Headers')
+        ?.toLowerCase();
       if (
         !requestMethod ||
-        !config.allowMethods.includes(requestMethod) ||
+        !config.allowMethods
+          .map((m) => m.toUpperCase())
+          .includes(requestMethod) ||
         !requestHeaders ||
         requestHeaders
           .split(',')
-          .some((header) => !config.allowHeaders.includes(header.trim()))
+          .some(
+            (header) =>
+              !config.allowHeaders
+                .map((h) => h.toLowerCase())
+                .includes(header.trim())
+          )
       ) {
         await next();
         return;

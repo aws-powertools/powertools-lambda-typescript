@@ -69,6 +69,7 @@ jobs:
           REGION: ${{ inputs.region }}
         working-directory: build/project
         run: |
+          set -euo pipefail
           npx cdk init app --language=typescript
           AWS_REGION="$REGION" npx cdk bootstrap
 
@@ -104,4 +105,6 @@ jobs:
         env:
           BALANCE_ROLE_ARN: ${{ secrets.BALANCE_ROLE_ARN }}
           REGION: ${{ inputs.region }}
-        run: balance -read-region us-east-1 -write-region $REGION -write-role $BALANCE_ROLE_ARN -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
+        run: |
+          set -euo pipefail
+          balance -read-region us-east-1 -write-region "$REGION" -write-role "$BALANCE_ROLE_ARN" -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false

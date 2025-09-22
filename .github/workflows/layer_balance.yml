@@ -66,11 +66,15 @@ jobs:
         if: ${{ inputs.start_at == '' }}
         env:
           REGION: ${{ inputs.region }}
-        run: balance -read-region us-east-1 -write-region $REGION -write-role $BALANCE_ROLE_ARN -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
+        run: |
+          set -euo pipefail
+          balance -read-region us-east-1 -write-region "$REGION" -write-role "$BALANCE_ROLE_ARN" -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
       - id: run-balance-existing
         name: Run Balance (Existing Region)
         if: ${{ inputs.start_at != '' }}
         env:
           REGION: ${{ inputs.region }}
           START_AT: ${{ inputs.start_at }}
-        run: balance -read-region us-east-1 -start-at $START_AT -write-region $REGION -write-role $BALANCE_ROLE_ARN -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
+        run: |
+          set -euo pipefail
+          balance -read-region us-east-1 -start-at "$START_AT" -write-region "$REGION" -write-role "$BALANCE_ROLE_ARN" -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false

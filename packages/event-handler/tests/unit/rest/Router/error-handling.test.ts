@@ -431,6 +431,30 @@ describe('Class: Router - Error Handling', () => {
     });
   });
 
+  it('handles returning a JSONObject from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => ({ foo: 'bar' }));
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.OK,
+      body: JSON.stringify({
+        foo: 'bar',
+      }),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
+
   it('handles throwing a built in NotFound error from the error handler', async () => {
     // Prepare
     const app = new Router();

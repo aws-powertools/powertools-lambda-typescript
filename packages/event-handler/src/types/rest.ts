@@ -40,8 +40,11 @@ type ErrorHandler<T extends Error = Error> = T extends
   ? (
       error: T,
       reqCtx: RequestContext
-    ) => Promise<Omit<ErrorResponse, 'statusCode'> | Response>
-  : (error: T, reqCtx: RequestContext) => Promise<ErrorResponse | Response>;
+    ) => Promise<Omit<ErrorResponse, 'statusCode'> | Response | JSONObject>
+  : (
+      error: T,
+      reqCtx: RequestContext
+    ) => Promise<ErrorResponse | Response | JSONObject>;
 
 interface ErrorConstructor<T extends Error = Error> {
   new (...args: any[]): T;

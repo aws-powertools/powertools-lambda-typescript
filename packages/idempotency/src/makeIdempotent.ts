@@ -56,7 +56,9 @@ const isOptionsWithDataIndexArgument = (
  * // we use wrapper to make processing function idempotent with DynamoDBPersistenceLayer
  * const processIdempotently = makeIdempotent(processRecord, {
  *   persistenceStore: new DynamoDBPersistenceLayer()
- *   dataKeywordArgument: 'transactionId', // keyword argument to hash the payload and the result
+ *   config: new IdempotencyConfig({
+ *     eventKeyJmesPath: 'transactionId', // this will use `transactionId` argument as idempotency payload
+ *   }),
  * });
  *
  * export const handler = async (

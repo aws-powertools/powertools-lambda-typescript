@@ -4,7 +4,11 @@ import {
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
 import type { APIGatewayProxyResult, Context } from 'aws-lambda';
-import type { HandlerResponse, ResolveOptions } from '../types/index.js';
+import type {
+  HandlerResponse,
+  HttpStatusCode,
+  ResolveOptions,
+} from '../types/index.js';
 import type {
   ErrorConstructor,
   ErrorHandler,
@@ -282,10 +286,7 @@ class Router {
       });
       const statusCode =
         result instanceof Response ? result.status : result.statusCode;
-      return handlerResultToProxyResult(
-        result,
-        statusCode as (typeof HttpErrorCodes)[keyof typeof HttpErrorCodes]
-      );
+      return handlerResultToProxyResult(result, statusCode as HttpStatusCode);
     }
   }
 

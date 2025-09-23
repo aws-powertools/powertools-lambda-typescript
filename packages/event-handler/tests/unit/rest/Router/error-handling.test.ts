@@ -539,4 +539,32 @@ describe('Class: Router - Error Handling', () => {
       isBase64Encoded: false,
     });
   });
+
+  it('handles throwing a generic error from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => {
+      throw new Error('This error is thrown from the error handler');
+    });
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+      body: JSON.stringify({
+        statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+        error: 'Internal Server Error',
+        message: 'Internal Server Error',
+      }),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
 });

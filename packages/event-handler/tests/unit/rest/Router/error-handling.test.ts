@@ -393,4 +393,42 @@ describe('Class: Router - Error Handling', () => {
     expect(body.hasEvent).toBe(true);
     expect(body.hasContext).toBe(true);
   });
+
+  it('handles returning a Response from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(
+      BadRequestError,
+      async () =>
+        new Response(
+          JSON.stringify({
+            foo: 'bar',
+          }),
+          {
+            status: HttpErrorCodes.BAD_REQUEST,
+            headers: {
+              'content-type': 'application/json',
+            },
+          }
+        )
+    );
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.BAD_REQUEST,
+      body: JSON.stringify({
+        foo: 'bar',
+      }),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
 });

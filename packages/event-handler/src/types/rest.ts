@@ -27,7 +27,7 @@ type ErrorResolveOptions = RequestContext & ResolveOptions;
 type ErrorHandler<T extends Error = Error> = (
   error: T,
   reqCtx: RequestContext
-) => Promise<ErrorResponse>;
+) => Promise<ErrorResponse | Response>;
 
 interface ErrorConstructor<T extends Error = Error> {
   new (...args: any[]): T;

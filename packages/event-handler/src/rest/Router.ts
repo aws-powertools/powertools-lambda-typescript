@@ -316,6 +316,9 @@ class Router {
       try {
         const { scope, ...reqCtx } = options;
         const body = await handler.apply(scope ?? this, [error, reqCtx]);
+        if (body instanceof Response) {
+          return body;
+        }
         return new Response(JSON.stringify(body), {
           status: body.statusCode,
           headers: { 'Content-Type': 'application/json' },

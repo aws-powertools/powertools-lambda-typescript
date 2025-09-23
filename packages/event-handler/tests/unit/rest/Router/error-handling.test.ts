@@ -542,6 +542,7 @@ describe('Class: Router - Error Handling', () => {
 
   it('handles throwing a generic error from the error handler', async () => {
     // Prepare
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
     const app = new Router();
 
     app.errorHandler(BadRequestError, async () => {
@@ -556,15 +557,13 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result).toEqual({
-      statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
-      body: JSON.stringify({
-        statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
-        error: 'Internal Server Error',
-        message: 'Internal Server Error',
-      }),
-      headers: { 'content-type': 'application/json' },
-      isBase64Encoded: false,
+    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    const body = JSON.parse(result.body);
+    expect(body.error).toBe('Internal Server Error');
+    expect(body.message).toBe('This error is thrown from the error handler');
+    expect(body.stack).toBeDefined();
+    expect(body.details).toEqual({
+      errorName: 'Error',
     });
   });
 });

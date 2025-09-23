@@ -138,8 +138,8 @@ describe('Class: Router - Middleware', () => {
       let middlewareParams: Record<string, string> | undefined;
       let middlewareOptions: RequestContext | undefined;
 
-      app.use(async ({ params, reqCtx, next }) => {
-        middlewareParams = params;
+      app.use(async ({ reqCtx, next }) => {
+        middlewareParams = reqCtx.params;
         middlewareOptions = reqCtx;
         await next();
       });

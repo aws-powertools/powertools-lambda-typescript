@@ -398,7 +398,7 @@ describe('Class: Router - Decorators', () => {
 
       class Lambda {
         @app.get('/test')
-        public async getTest(_params: any, reqCtx: any) {
+        public async getTest(reqCtx: any) {
           return {
             hasRequest: reqCtx.req instanceof Request,
             hasEvent: reqCtx.event === testEvent,

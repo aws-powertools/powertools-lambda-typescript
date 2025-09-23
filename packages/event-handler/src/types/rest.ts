@@ -19,6 +19,7 @@ type RequestContext = {
   event: APIGatewayProxyEvent;
   context: Context;
   res: Response;
+  params: Record<string, string>;
 };
 
 type ErrorResolveOptions = RequestContext & ResolveOptions;
@@ -60,10 +61,9 @@ type DynamicRoute = Route & CompiledRoute;
 
 type HandlerResponse = Response | JSONObject;
 
-type RouteHandler<
-  TParams = Record<string, unknown>,
-  TReturn = HandlerResponse,
-> = (args: TParams, reqCtx: RequestContext) => Promise<TReturn>;
+type RouteHandler<TReturn = HandlerResponse> = (
+  reqCtx: RequestContext
+) => Promise<TReturn>;
 
 type HttpMethod = keyof typeof HttpVerbs;
 
@@ -87,7 +87,6 @@ type RestRouteOptions = {
 type NextFunction = () => Promise<HandlerResponse | void>;
 
 type Middleware = (args: {
-  params: Record<string, string>;
   reqCtx: RequestContext;
   next: NextFunction;
 }) => Promise<void | HandlerResponse>;

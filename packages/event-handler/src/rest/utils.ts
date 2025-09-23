@@ -150,7 +150,7 @@ export const isAPIGatewayProxyResult = (
  * ```
  */
 export const composeMiddleware = (middleware: Middleware[]): Middleware => {
-  return async ({ params, reqCtx, next }): Promise<HandlerResponse | void> => {
+  return async ({ reqCtx, next }): Promise<HandlerResponse | void> => {
     let index = -1;
     let result: HandlerResponse | undefined;
 
@@ -177,7 +177,6 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
       };
 
       const middlewareResult = await middlewareFn({
-        params,
         reqCtx,
         next: nextFn,
       });

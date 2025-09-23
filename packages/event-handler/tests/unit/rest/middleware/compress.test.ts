@@ -1,8 +1,8 @@
 import { gzipSync } from 'node:zlib';
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { Router } from 'src/rest/Router.js';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { compress } from '../../../../src/rest/middleware/index.js';
+import { Router } from '../../../../src/rest/Router.js';
 import { createSettingHeadersMiddleware, createTestEvent } from '../helpers.js';
 
 describe('Compress Middleware', () => {

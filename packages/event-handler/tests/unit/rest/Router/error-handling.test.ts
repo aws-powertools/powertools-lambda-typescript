@@ -5,6 +5,7 @@ import {
   HttpErrorCodes,
   InternalServerError,
   MethodNotAllowedError,
+  NotFoundError,
   Router,
 } from '../../../../src/rest/index.js';
 import { createTestEvent } from '../helpers.js';
@@ -424,6 +425,34 @@ describe('Class: Router - Error Handling', () => {
       statusCode: HttpErrorCodes.BAD_REQUEST,
       body: JSON.stringify({
         foo: 'bar',
+      }),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
+
+  it('handles throwing a built in error from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => {
+      throw new NotFoundError('This error is thrown from the error handler');
+    });
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.NOT_FOUND,
+      body: JSON.stringify({
+        statusCode: HttpErrorCodes.NOT_FOUND,
+        error: 'NotFoundError',
+        message: 'This error is thrown from the error handler',
       }),
       headers: { 'content-type': 'application/json' },
       isBase64Encoded: false,

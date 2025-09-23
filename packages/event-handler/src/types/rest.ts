@@ -12,11 +12,17 @@ import type { Route } from '../rest/Route.js';
 import type { Router } from '../rest/Router.js';
 import type { ResolveOptions } from './common.js';
 
-type ErrorResponse = {
-  statusCode: HttpStatusCode;
-  error: string;
-  message: string;
-};
+type ErrorResponse =
+  | {
+      statusCode: HttpStatusCode;
+      error: string;
+      message?: string;
+    }
+  | {
+      statusCode: HttpStatusCode;
+      error?: string;
+      message: string;
+    };
 
 type RequestContext = {
   req: Request;

@@ -331,6 +331,12 @@ class Router {
           headers: { 'Content-Type': 'application/json' },
         });
       } catch (handlerError) {
+        if (handlerError instanceof NotFoundError) {
+          return await this.handleError(handlerError, options);
+        }
+        if (handlerError instanceof MethodNotAllowedError) {
+          return await this.handleError(handlerError, options);
+        }
         return this.#defaultErrorHandler(handlerError as Error);
       }
     }

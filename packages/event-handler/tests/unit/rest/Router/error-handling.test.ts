@@ -49,7 +49,6 @@ describe('Class: Router - Error Handling', () => {
     const app = new Router();
 
     app.notFound(async (error) => ({
-      statusCode: HttpErrorCodes.NOT_FOUND,
       error: 'Not Found',
       message: `Custom: ${error.message}`,
     }));
@@ -64,9 +63,9 @@ describe('Class: Router - Error Handling', () => {
     expect(result).toEqual({
       statusCode: HttpErrorCodes.NOT_FOUND,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.NOT_FOUND,
         error: 'Not Found',
         message: 'Custom: Route /nonexistent for method GET not found',
+        statusCode: HttpErrorCodes.NOT_FOUND,
       }),
       headers: { 'content-type': 'application/json' },
       isBase64Encoded: false,
@@ -78,7 +77,6 @@ describe('Class: Router - Error Handling', () => {
     const app = new Router();
 
     app.methodNotAllowed(async (error) => ({
-      statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
       error: 'Method Not Allowed',
       message: `Custom: ${error.message}`,
     }));
@@ -94,9 +92,9 @@ describe('Class: Router - Error Handling', () => {
     expect(result).toEqual({
       statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
         error: 'Method Not Allowed',
         message: 'Custom: POST not allowed',
+        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
       }),
       headers: { 'content-type': 'application/json' },
       isBase64Encoded: false,

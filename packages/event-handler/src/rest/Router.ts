@@ -319,6 +319,13 @@ class Router {
         if (body instanceof Response) {
           return body;
         }
+        if (!body.statusCode) {
+          if (error instanceof NotFoundError) {
+            body.statusCode = HttpErrorCodes.NOT_FOUND;
+          } else if (error instanceof MethodNotAllowedError) {
+            body.statusCode = HttpErrorCodes.METHOD_NOT_ALLOWED;
+          }
+        }
         return new Response(JSON.stringify(body), {
           status: body.statusCode,
           headers: { 'Content-Type': 'application/json' },

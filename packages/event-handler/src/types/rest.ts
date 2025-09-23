@@ -8,12 +8,6 @@ import type { Route } from '../rest/Route.js';
 import type { Router } from '../rest/Router.js';
 import type { ResolveOptions } from './common.js';
 
-type ErrorResponse = {
-  statusCode: HttpStatusCode;
-  error: string;
-  message: string;
-};
-
 type RequestContext = {
   req: Request;
   event: APIGatewayProxyEvent;
@@ -27,7 +21,7 @@ type ErrorResolveOptions = RequestContext & ResolveOptions;
 type ErrorHandler<T extends Error = Error> = (
   error: T,
   reqCtx: RequestContext
-) => Promise<ErrorResponse>;
+) => Promise<HandlerResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
   new (...args: any[]): T;
@@ -165,7 +159,6 @@ export type {
   CompiledRoute,
   CorsOptions,
   DynamicRoute,
-  ErrorResponse,
   ErrorConstructor,
   ErrorHandlerRegistryOptions,
   ErrorHandler,

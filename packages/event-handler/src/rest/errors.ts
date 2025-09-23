@@ -1,4 +1,5 @@
-import type { ErrorResponse, HttpStatusCode } from '../types/rest.js';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type { HandlerResponse, HttpStatusCode } from '../types/rest.js';
 import { HttpErrorCodes } from './constants.js';
 
 export class RouteMatchingError extends Error {
@@ -34,12 +35,14 @@ export abstract class ServiceError extends Error {
     this.details = details;
   }
 
-  toJSON(): ErrorResponse {
+  toJSON(): HandlerResponse {
     return {
       statusCode: this.statusCode,
       error: this.errorType,
       message: this.message,
-      ...(this.details && { details: this.details }),
+      ...(this.details && {
+        details: this.details as Record<string, JSONValue>,
+      }),
     };
   }
 }

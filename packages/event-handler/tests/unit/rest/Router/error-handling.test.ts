@@ -5,6 +5,7 @@ import {
   HttpErrorCodes,
   InternalServerError,
   MethodNotAllowedError,
+  NotFoundError,
   Router,
 } from '../../../../src/rest/index.js';
 import { createTestEvent } from '../helpers.js';
@@ -49,7 +50,6 @@ describe('Class: Router - Error Handling', () => {
     const app = new Router();
 
     app.notFound(async (error) => ({
-      statusCode: HttpErrorCodes.NOT_FOUND,
       error: 'Not Found',
       message: `Custom: ${error.message}`,
     }));
@@ -64,9 +64,9 @@ describe('Class: Router - Error Handling', () => {
     expect(result).toEqual({
       statusCode: HttpErrorCodes.NOT_FOUND,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.NOT_FOUND,
         error: 'Not Found',
         message: 'Custom: Route /nonexistent for method GET not found',
+        statusCode: HttpErrorCodes.NOT_FOUND,
       }),
       headers: { 'content-type': 'application/json' },
       isBase64Encoded: false,
@@ -78,7 +78,6 @@ describe('Class: Router - Error Handling', () => {
     const app = new Router();
 
     app.methodNotAllowed(async (error) => ({
-      statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
       error: 'Method Not Allowed',
       message: `Custom: ${error.message}`,
     }));
@@ -94,9 +93,9 @@ describe('Class: Router - Error Handling', () => {
     expect(result).toEqual({
       statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
         error: 'Method Not Allowed',
         message: 'Custom: POST not allowed',
+        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
       }),
       headers: { 'content-type': 'application/json' },
       isBase64Encoded: false,
@@ -392,5 +391,179 @@ describe('Class: Router - Error Handling', () => {
     expect(body.hasRequest).toBe(true);
     expect(body.hasEvent).toBe(true);
     expect(body.hasContext).toBe(true);
+  });
+
+  it('handles returning a Response from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(
+      BadRequestError,
+      async () =>
+        new Response(
+          JSON.stringify({
+            foo: 'bar',
+          }),
+          {
+            status: HttpErrorCodes.BAD_REQUEST,
+            headers: {
+              'content-type': 'application/json',
+            },
+          }
+        )
+    );
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.BAD_REQUEST,
+      body: JSON.stringify({
+        foo: 'bar',
+      }),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
+
+  it('handles returning an API Gateway Proxy result from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => ({
+      statusCode: HttpErrorCodes.BAD_REQUEST,
+      body: JSON.stringify({
+        foo: 'bar',
+      }),
+    }));
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.BAD_REQUEST,
+      body: JSON.stringify({
+        foo: 'bar',
+      }),
+    });
+  });
+
+  it('handles returning a JSONObject from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => ({ foo: 'bar' }));
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+      body: JSON.stringify({
+        foo: 'bar',
+      }),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
+
+  it('handles throwing a built in NotFound error from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => {
+      throw new NotFoundError('This error is thrown from the error handler');
+    });
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.NOT_FOUND,
+      body: JSON.stringify({
+        statusCode: HttpErrorCodes.NOT_FOUND,
+        error: 'NotFoundError',
+        message: 'This error is thrown from the error handler',
+      }),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
+
+  it('handles throwing a built in MethodNotAllowedError error from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => {
+      throw new MethodNotAllowedError(
+        'This error is thrown from the error handler'
+      );
+    });
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+      body: JSON.stringify({
+        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        error: 'MethodNotAllowedError',
+        message: 'This error is thrown from the error handler',
+      }),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
+
+  it('handles throwing a generic error from the error handler', async () => {
+    // Prepare
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => {
+      throw new Error('This error is thrown from the error handler');
+    });
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    const body = JSON.parse(result.body);
+    expect(body.error).toBe('Internal Server Error');
+    expect(body.message).toBe('This error is thrown from the error handler');
+    expect(body.stack).toBeDefined();
+    expect(body.details).toEqual({
+      errorName: 'Error',
+    });
   });
 });

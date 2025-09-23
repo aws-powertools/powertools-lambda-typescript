@@ -431,6 +431,33 @@ describe('Class: Router - Error Handling', () => {
     });
   });
 
+  it('handles returning an API Gateway Proxy result from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => ({
+      statusCode: HttpErrorCodes.BAD_REQUEST,
+      body: JSON.stringify({
+        foo: 'bar',
+      }),
+    }));
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.BAD_REQUEST,
+      body: JSON.stringify({
+        foo: 'bar',
+      }),
+    });
+  });
+
   it('handles returning a JSONObject from the error handler', async () => {
     // Prepare
     const app = new Router();

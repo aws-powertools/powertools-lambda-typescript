@@ -280,11 +280,11 @@ class Router {
         ...requestContext,
         scope: options?.scope,
       });
+      const statusCode =
+        result instanceof Response ? result.status : result.statusCode;
       return handlerResultToProxyResult(
         result,
-        (result.status ??
-          result.statusCode ??
-          HttpErrorCodes.INTERNAL_SERVER_ERROR) as (typeof HttpErrorCodes)[keyof typeof HttpErrorCodes]
+        statusCode as (typeof HttpErrorCodes)[keyof typeof HttpErrorCodes]
       );
     }
   }

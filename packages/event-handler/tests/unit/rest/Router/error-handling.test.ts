@@ -446,7 +446,7 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.OK,
+      statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
       body: JSON.stringify({
         foo: 'bar',
       }),

@@ -327,7 +327,8 @@ class Router {
           }
         }
         return new Response(JSON.stringify(body), {
-          status: (body.statusCode as number) ?? HttpErrorCodes.OK,
+          status:
+            (body.statusCode as number) ?? HttpErrorCodes.INTERNAL_SERVER_ERROR,
           headers: { 'Content-Type': 'application/json' },
         });
       } catch (handlerError) {

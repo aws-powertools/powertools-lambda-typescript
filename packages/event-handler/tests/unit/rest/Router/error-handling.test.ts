@@ -431,7 +431,7 @@ describe('Class: Router - Error Handling', () => {
     });
   });
 
-  it('handles throwing a built in error from the error handler', async () => {
+  it('handles throwing a built in NotFound error from the error handler', async () => {
     // Prepare
     const app = new Router();
 
@@ -452,6 +452,36 @@ describe('Class: Router - Error Handling', () => {
       body: JSON.stringify({
         statusCode: HttpErrorCodes.NOT_FOUND,
         error: 'NotFoundError',
+        message: 'This error is thrown from the error handler',
+      }),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
+
+  it('handles throwing a built in MethodNotAllowedError error from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => {
+      throw new MethodNotAllowedError(
+        'This error is thrown from the error handler'
+      );
+    });
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+      body: JSON.stringify({
+        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        error: 'MethodNotAllowedError',
         message: 'This error is thrown from the error handler',
       }),
       headers: { 'content-type': 'application/json' },

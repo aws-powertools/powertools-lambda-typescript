@@ -3,26 +3,10 @@ import type {
   JSONObject,
 } from '@aws-lambda-powertools/commons/types';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import type {
-  MethodNotAllowedError,
-  NotFoundError,
-} from '../../src/rest/errors.js';
 import type { HttpErrorCodes, HttpVerbs } from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
 import type { Router } from '../rest/Router.js';
 import type { ResolveOptions } from './common.js';
-
-type ErrorResponse =
-  | {
-      statusCode: HttpStatusCode;
-      error: string;
-      message?: string;
-    }
-  | {
-      statusCode: HttpStatusCode;
-      error?: string;
-      message: string;
-    };
 
 type RequestContext = {
   req: Request;
@@ -34,17 +18,10 @@ type RequestContext = {
 
 type ErrorResolveOptions = RequestContext & ResolveOptions;
 
-type ErrorHandler<T extends Error = Error> = T extends
-  | NotFoundError
-  | MethodNotAllowedError
-  ? (
-      error: T,
-      reqCtx: RequestContext
-    ) => Promise<Omit<ErrorResponse, 'statusCode'> | Response | JSONObject>
-  : (
-      error: T,
-      reqCtx: RequestContext
-    ) => Promise<ErrorResponse | Response | JSONObject>;
+type ErrorHandler<T extends Error = Error> = (
+  error: T,
+  reqCtx: RequestContext
+) => Promise<HandlerResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
   new (...args: any[]): T;
@@ -182,7 +159,6 @@ export type {
   CompiledRoute,
   CorsOptions,
   DynamicRoute,
-  ErrorResponse,
   ErrorConstructor,
   ErrorHandlerRegistryOptions,
   ErrorHandler,

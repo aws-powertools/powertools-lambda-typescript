@@ -4,7 +4,7 @@ import {
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
 import type { APIGatewayProxyResult, Context } from 'aws-lambda';
-import type { ResolveOptions } from '../types/index.js';
+import type { HandlerResponse, ResolveOptions } from '../types/index.js';
 import type {
   ErrorConstructor,
   ErrorHandler,
@@ -22,7 +22,6 @@ import {
   handlerResultToProxyResult,
   handlerResultToWebResponse,
   proxyEventToWebRequest,
-  webResponseToProxyResult,
 } from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import {
@@ -36,6 +35,7 @@ import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 import {
   composeMiddleware,
   isAPIGatewayProxyEvent,
+  isAPIGatewayProxyResult,
   isHttpMethod,
 } from './utils.js';
 
@@ -280,7 +280,12 @@ class Router {
         ...requestContext,
         scope: options?.scope,
       });
-      return await webResponseToProxyResult(result);
+      return handlerResultToProxyResult(
+        result,
+        (result.status ??
+          result.statusCode ??
+          HttpErrorCodes.INTERNAL_SERVER_ERROR) as (typeof HttpErrorCodes)[keyof typeof HttpErrorCodes]
+      );
     }
   }
 
@@ -310,13 +315,13 @@ class Router {
   protected async handleError(
     error: Error,
     options: ErrorResolveOptions
-  ): Promise<Response> {
+  ): Promise<HandlerResponse> {
     const handler = this.errorHandlerRegistry.resolve(error);
     if (handler !== null) {
       try {
         const { scope, ...reqCtx } = options;
         const body = await handler.apply(scope ?? this, [error, reqCtx]);
-        if (body instanceof Response) {
+        if (body instanceof Response || isAPIGatewayProxyResult(body)) {
           return body;
         }
         if (!body.statusCode) {

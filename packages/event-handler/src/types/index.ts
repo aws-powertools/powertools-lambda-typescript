@@ -35,7 +35,6 @@ export type {
   CorsOptions,
   ErrorHandler,
   ErrorResolveOptions,
-  ErrorResponse,
   HandlerResponse,
   HttpMethod,
   HttpStatusCode,

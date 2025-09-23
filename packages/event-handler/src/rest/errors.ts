@@ -1,4 +1,4 @@
-import type { ErrorResponse, HttpStatusCode } from '../types/rest.js';
+import type { HandlerResponse, HttpStatusCode } from '../types/rest.js';
 import { HttpErrorCodes } from './constants.js';
 
 export class RouteMatchingError extends Error {
@@ -34,7 +34,7 @@ export abstract class ServiceError extends Error {
     this.details = details;
   }
 
-  toJSON(): ErrorResponse {
+  toJSON(): HandlerResponse {
     return {
       statusCode: this.statusCode,
       error: this.errorType,

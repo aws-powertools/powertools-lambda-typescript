@@ -224,6 +224,7 @@ class Router {
       // this response should be overwritten by the handler, if it isn't
       // it means something went wrong with the middleware chain
       res: new Response('', { status: 500 }),
+      params: {},
     };
 
     try {
@@ -231,11 +232,7 @@ class Router {
 
       const route = this.routeRegistry.resolve(method, path);
 
-      const handlerMiddleware: Middleware = async ({
-        params,
-        reqCtx,
-        next,
-      }) => {
+      const handlerMiddleware: Middleware = async ({ reqCtx, next }) => {
         if (route === null) {
           const notFoundRes = await this.handleError(
             new NotFoundError(`Route ${path} for method ${method} not found`),
@@ -251,7 +248,7 @@ class Router {
               ? route.handler
               : route.handler.bind(options.scope);
 
-          const handlerResult = await handler(params, reqCtx);
+          const handlerResult = await handler(reqCtx);
           reqCtx.res = handlerResultToWebResponse(
             handlerResult,
             reqCtx.res.headers
@@ -267,8 +264,8 @@ class Router {
         handlerMiddleware,
       ]);
 
+      requestContext.params = route?.params ?? {};
       const middlewareResult = await middleware({
-        params: route?.params ?? {},
         reqCtx: requestContext,
         next: () => Promise.resolve(),
       });

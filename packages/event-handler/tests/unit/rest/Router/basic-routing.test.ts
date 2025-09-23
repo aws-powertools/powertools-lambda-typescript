@@ -89,7 +89,7 @@ describe('Class: Router - Basic Routing', () => {
     const app = new Router();
     const testEvent = createTestEvent('/test', 'GET');
 
-    app.get('/test', async (_params, reqCtx) => {
+    app.get('/test', async (reqCtx) => {
       return {
         hasRequest: reqCtx.req instanceof Request,
         hasEvent: reqCtx.event === testEvent,
@@ -126,8 +126,8 @@ describe('Class: Router - Basic Routing', () => {
     app.post('/', async () => {
       return { actualPath: '/todos' };
     });
-    app.get('/:todoId', async ({ todoId }) => {
-      return { actualPath: `/todos/${todoId}` };
+    app.get('/:todoId', async (reqCtx) => {
+      return { actualPath: `/todos/${reqCtx.params.todoId}` };
     });
 
     // Act

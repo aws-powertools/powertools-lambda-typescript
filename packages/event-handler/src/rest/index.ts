@@ -1,4 +1,4 @@
-export { HttpErrorCodes, HttpVerbs } from './constants.js';
+export { HttpStatusCodes, HttpVerbs } from './constants.js';
 export {
   handlerResultToProxyResult,
   handlerResultToWebResponse,

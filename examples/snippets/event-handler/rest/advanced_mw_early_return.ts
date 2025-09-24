@@ -9,8 +9,8 @@ const logger = new Logger();
 const app = new Router({ logger });
 
 // Authentication middleware - returns early if no auth header
-const authMiddleware: Middleware = async (_, reqCtx, next) => {
-  const authHeader = reqCtx.request.headers.get('authorization');
+const authMiddleware: Middleware = async ({ reqCtx, next }) => {
+  const authHeader = reqCtx.req.headers.get('authorization');
 
   if (!authHeader) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -23,7 +23,7 @@ const authMiddleware: Middleware = async (_, reqCtx, next) => {
 };
 
 // Logging middleware - never executes when auth fails
-const loggingMiddleware: Middleware = async (_, __, next) => {
+const loggingMiddleware: Middleware = async ({ next }) => {
   logger.info('Request processed');
   await next();
 };

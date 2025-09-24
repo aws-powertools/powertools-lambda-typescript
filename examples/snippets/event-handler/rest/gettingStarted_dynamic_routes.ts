@@ -13,7 +13,7 @@ const logger = new Logger({
 });
 const app = new Router({ logger });
 
-app.get('/todos/:todoId', async ({ todoId }) => {
+app.get('/todos/:todoId', async ({ params: { todoId } }) => {
   const todo = await getTodoById(todoId);
   return { todo };
 });

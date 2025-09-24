@@ -20,7 +20,6 @@ const mockFunctionPayloadToBeHashed = {};
 const persistenceStore = new PersistenceLayerTestClass();
 const mockIdempotencyOptions = {
   persistenceStore,
-  dataKeywordArgument: 'testKeywordArgument',
   config: new IdempotencyConfig({}),
 };
 

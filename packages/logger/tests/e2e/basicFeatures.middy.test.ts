@@ -65,7 +65,7 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
   });
 
   describe('Log level filtering', () => {
-    it('should filter log based on POWERTOOLS_LOG_LEVEL (INFO) environment variable in Lambda', async () => {
+    it('should filter log based on POWERTOOLS_LOG_LEVEL (INFO) environment variable in Lambda', () => {
       for (let i = 0; i < invocationCount; i++) {
         // Get log messages of the invocation and filter by level
         const debugLogs = invocationLogs[i].getFunctionLogs('DEBUG');
@@ -76,7 +76,7 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
   });
 
   describe('Context data', () => {
-    it('should inject context info in each log', async () => {
+    it('should inject context info in each log', () => {
       for (let i = 0; i < invocationCount; i++) {
         // Get log messages of the invocation
         const logMessages = invocationLogs[i].getFunctionLogs();
@@ -92,7 +92,7 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
       }
     });
 
-    it('should include coldStart equal to TRUE only on the first invocation, FALSE otherwise', async () => {
+    it('should include coldStart equal to TRUE only on the first invocation, FALSE otherwise', () => {
       for (let i = 0; i < invocationCount; i++) {
         // Get log messages of the invocation
         const logMessages = invocationLogs[i].getFunctionLogs();
@@ -109,7 +109,7 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
     });
   });
 
-  it('logs the event for every invocation, only once, and without keys from previous invocations', async () => {
+  it('logs the event for every invocation, only once, and without keys from previous invocations', () => {
     const { RUNTIME_ADDED_KEY: runtimeAddedKey } = commonEnvironmentVars;
 
     for (let i = 0; i < invocationCount; i++) {
@@ -132,7 +132,7 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
   });
 
   describe('Persistent additional log keys and values', () => {
-    it('should contain persistent value in every log', async () => {
+    it('should contain persistent value in every log', () => {
       const {
         PERSISTENT_KEY: persistentKey,
         PERSISTENT_VALUE: persistentValue,
@@ -151,7 +151,7 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
       }
     });
 
-    it('should not contain persistent keys that were removed on runtime', async () => {
+    it('should not contain persistent keys that were removed on runtime', () => {
       const { REMOVABLE_KEY: removableKey, REMOVABLE_VALUE: removableValue } =
         commonEnvironmentVars;
 
@@ -176,7 +176,7 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
   });
 
   describe('One-time additional log keys and values', () => {
-    it('should log additional keys and value only once', async () => {
+    it('should log additional keys and value only once', () => {
       const {
         SINGLE_LOG_ITEM_KEY: singleLogItemKey,
         SINGLE_LOG_ITEM_VALUE: singleLogItemValue,
@@ -200,7 +200,7 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
   });
 
   describe('Error logging', () => {
-    it('should log error only once', async () => {
+    it('should log error only once', () => {
       const { ERROR_MSG: errorMsg } = commonEnvironmentVars;
 
       for (let i = 0; i < invocationCount; i++) {
@@ -226,7 +226,7 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
   });
 
   describe('Arbitrary object logging', () => {
-    it('should log additional arbitrary object only once', async () => {
+    it('should log additional arbitrary object only once', () => {
       const {
         ARBITRARY_OBJECT_KEY: objectKey,
         ARBITRARY_OBJECT_DATA: objectData,
@@ -263,7 +263,7 @@ describe('Logger E2E tests, basic functionalities middy usage', () => {
   });
 
   describe('X-Ray Trace ID injection', () => {
-    it('should inject & parse the X-Ray Trace ID of the current invocation into every log', async () => {
+    it('should inject & parse the X-Ray Trace ID of the current invocation into every log', () => {
       for (let i = 0; i < invocationCount; i++) {
         // Get log messages of the invocation
         const logMessages = invocationLogs[i].getFunctionLogs();

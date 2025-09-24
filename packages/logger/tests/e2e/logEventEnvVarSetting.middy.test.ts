@@ -60,7 +60,7 @@ describe('Logger E2E tests, log event via env var setting with middy', () => {
   });
 
   describe('Log event', () => {
-    it('should log the event as the first log of each invocation only', async () => {
+    it('should log the event as the first log of each invocation only', () => {
       for (let i = 0; i < invocationCount; i++) {
         // Get log messages of the invocation
         const logMessages = invocationLogs[i].getFunctionLogs();

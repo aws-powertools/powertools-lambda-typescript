@@ -57,7 +57,7 @@ describe('Logger E2E tests, child logger', () => {
   });
 
   describe('Child logger', () => {
-    it('should not log at same level of parent because of its own logLevel', async () => {
+    it('should not log at same level of parent because of its own logLevel', () => {
       const { PARENT_LOG_MSG: parentLogMsg, CHILD_LOG_MSG: childLogMsg } =
         commonEnvironmentVars;
 
@@ -77,7 +77,7 @@ describe('Logger E2E tests, child logger', () => {
       }
     });
 
-    it('should log only level passed to a child', async () => {
+    it('should log only level passed to a child', () => {
       const { CHILD_LOG_MSG: childLogMsg } = commonEnvironmentVars;
       for (let i = 0; i < invocationCount; i++) {
         // Get log messages of the invocation
@@ -95,7 +95,7 @@ describe('Logger E2E tests, child logger', () => {
       }
     });
 
-    it('should NOT inject context into the child logger', async () => {
+    it('should NOT inject context into the child logger', () => {
       const { CHILD_LOG_MSG: childLogMsg } = commonEnvironmentVars;
 
       for (let i = 0; i < invocationCount; i++) {
@@ -118,7 +118,7 @@ describe('Logger E2E tests, child logger', () => {
       }
     });
 
-    it('both logger instances should have the same persistent key/value', async () => {
+    it('both logger instances should have the same persistent key/value', () => {
       const { PERSISTENT_KEY: persistentKey } = commonEnvironmentVars;
 
       for (let i = 0; i < invocationCount; i++) {

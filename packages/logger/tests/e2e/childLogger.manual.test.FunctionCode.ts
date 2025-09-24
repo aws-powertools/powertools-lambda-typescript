@@ -20,10 +20,10 @@ const childLogger = parentLogger.createChild({
   logLevel: CHILD_LOG_LEVEL,
 });
 
-export const handler = async (
+export const handler = (
   _event: TestEvent,
   context: Context
-): TestOutput => {
+): Awaited<TestOutput> => {
   parentLogger.addContext(context);
 
   childLogger.info(CHILD_LOG_MSG);

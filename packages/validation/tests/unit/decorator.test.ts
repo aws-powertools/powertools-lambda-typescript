@@ -21,11 +21,11 @@ const outboundSchema = {
 };
 
 describe('Decorator: validator', () => {
-  it('should validate inbound and outbound successfully', async () => {
+  it('should validate inbound and outbound successfully', () => {
     // Prepare
     class TestClass {
       @validator({ inboundSchema, outboundSchema })
-      async multiply(input: { value: number }): Promise<{ result: number }> {
+      multiply(input: { value: number }): { result: number } {
         return { result: input.value * 2 };
       }
     }
@@ -33,17 +33,17 @@ describe('Decorator: validator', () => {
     const input = { value: 5 };
 
     // Act
-    const output = await instance.multiply(input);
+    const output = instance.multiply(input);
 
     // Assess
     expect(output).toEqual({ result: 10 });
   });
 
-  it('should throw error on inbound validation failure', async () => {
+  it('should throw error on inbound validation failure', () => {
     // Prepare
     class TestClass {
       @validator({ inboundSchema, outboundSchema })
-      async multiply(input: { value: number }): Promise<{ result: number }> {
+      multiply(input: { value: number }): { result: number } {
         return { result: input.value * 2 };
       }
     }
@@ -53,32 +53,28 @@ describe('Decorator: validator', () => {
     };
 
     // Act & Assess
-    await expect(instance.multiply(invalidInput)).rejects.toThrow(
-      SchemaValidationError
-    );
+    expect(instance.multiply(invalidInput)).toThrow(SchemaValidationError);
   });
 
-  it('should throw error on outbound validation failure', async () => {
+  it('should throw error on outbound validation failure', () => {
     // Prepare
     class TestClassInvalid {
       @validator({ inboundSchema, outboundSchema })
-      async multiply(_input: { value: number }) {
+      multiply(_input: { value: number }) {
         return { result: 'invalid' };
       }
     }
     const instance = new TestClassInvalid();
 
     // Act & Assess
-    await expect(instance.multiply({ value: 5 })).rejects.toThrow(
-      SchemaValidationError
-    );
+    expect(instance.multiply({ value: 5 })).toThrow(SchemaValidationError);
   });
 
-  it('should no-op when no schemas are provided', async () => {
+  it('should no-op when no schemas are provided', () => {
     // Prepare
     class TestClassNoOp {
       @validator({})
-      async echo(input: unknown): Promise<unknown> {
+      echo(input: unknown): unknown {
         return input;
       }
     }
@@ -86,17 +82,17 @@ describe('Decorator: validator', () => {
     const data = { foo: 'bar' };
 
     // Act
-    const result = await instance.echo(data);
+    const result = instance.echo(data);
 
     // Assess
     expect(result).toEqual(data);
   });
 
-  it('should validate inbound only', async () => {
+  it('should validate inbound only', () => {
     // Prepare
     class TestClassInbound {
       @validator({ inboundSchema })
-      async process(input: { value: number }): Promise<{ data: string }> {
+      process(input: { value: number }): { data: string } {
         return { data: JSON.stringify(input) };
       }
     }
@@ -104,17 +100,17 @@ describe('Decorator: validator', () => {
     const input = { value: 10 };
 
     // Act
-    const output = await instance.process(input);
+    const output = instance.process(input);
 
     // Assess
     expect(output).toEqual({ data: JSON.stringify(input) });
   });
 
-  it('should validate outbound only', async () => {
+  it('should validate outbound only', () => {
     // Prepare
     class TestClassOutbound {
       @validator({ outboundSchema })
-      async process(_input: { text: string }): Promise<{ result: number }> {
+      process(_input: { text: string }): { result: number } {
         return { result: 42 };
       }
     }
@@ -122,7 +118,7 @@ describe('Decorator: validator', () => {
     const input = { text: 'hello' };
 
     // Act
-    const output = await instance.process(input);
+    const output = instance.process(input);
 
     // Assess
     expect(output).toEqual({ result: 42 });

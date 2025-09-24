@@ -105,7 +105,7 @@ import { validate } from './validate.js';
  * @param options.ajv - Optional Ajv instance to use for validation, if not provided a new instance will be created.
  */
 const validator = (options: ValidatorOptions) => {
-  const before: MiddlewareFn = async (request) => {
+  const before: MiddlewareFn = (request) => {
     if (options.inboundSchema) {
       const originalEvent = structuredClone(request.event);
       try {
@@ -125,7 +125,7 @@ const validator = (options: ValidatorOptions) => {
     }
   };
 
-  const after = async (handler: MiddyLikeRequest) => {
+  const after = (handler: MiddyLikeRequest) => {
     if (options.outboundSchema) {
       try {
         handler.response = validate({

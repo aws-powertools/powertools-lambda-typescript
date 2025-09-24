@@ -22,7 +22,7 @@ const outboundSchema = {
   additionalProperties: false,
 };
 
-const baseHandler = async (event: { inputValue: unknown }) => {
+const baseHandler = (event: { inputValue: unknown }) => {
   return {
     outputValue: event.inputValue,
   };

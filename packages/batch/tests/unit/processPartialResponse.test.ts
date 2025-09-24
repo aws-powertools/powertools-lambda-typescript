@@ -54,7 +54,7 @@ describe('Function: processPartialResponse()', () => {
   const handlerWithKinesisEvent = (
     event: KinesisStreamEvent,
     options: BatchProcessingOptions
-  ) => {
+  ): Promise<PartialItemFailureResponse> => {
     const processor = new BatchProcessor(EventType.KinesisDataStreams);
 
     const handler = async (
@@ -74,7 +74,7 @@ describe('Function: processPartialResponse()', () => {
   const handlerWithDynamoDBEvent = (
     event: DynamoDBStreamEvent,
     options: BatchProcessingOptions
-  ) => {
+  ): Promise<PartialItemFailureResponse> => {
     const processor = new BatchProcessor(EventType.DynamoDBStreams);
 
     const handler = async (

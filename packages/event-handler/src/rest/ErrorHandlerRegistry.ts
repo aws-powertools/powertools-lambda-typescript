@@ -71,4 +71,19 @@ export class ErrorHandlerRegistry {
 
     return null;
   }
+
+  /**
+   * Merges another {@link ErrorHandlerRegistry | `ErrorHandlerRegistry`} instance into the current instance.
+   * It takes the handlers from the provided registry and adds them to the current registry.
+   *
+   * @param errorHandlerRegistry - The registry instance to merge with the current instance
+   */
+  public merge(errorHandlerRegistry: ErrorHandlerRegistry): void {
+    for (const [
+      errorConstructor,
+      errorHandler,
+    ] of errorHandlerRegistry.#handlers) {
+      this.register(errorConstructor, errorHandler);
+    }
+  }
 }

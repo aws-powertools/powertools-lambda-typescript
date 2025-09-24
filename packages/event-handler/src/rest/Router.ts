@@ -551,6 +551,43 @@ class Router {
       handler
     );
   }
+
+  /**
+   * Merges the routes, context and middleware from the passed router instance into this router instance
+   *
+   * @example
+   * ```typescript
+   * import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
+   *
+   * const todosRouter = new Router();
+   *
+   * todosRouter.get('/todos', async () => {
+   *   // List Todos
+   * });
+   *
+   * todosRouter.get('/todos/{todoId}', async () => {
+   *   // Get Todo
+   * });
+   *
+   * const app = new Router();
+   * app.includeRouter(todosRouter);
+   *
+   * export const handler = async (event: unknown, context: Context) => {
+   *   return app.resolve(event, context);
+   * };
+   * ```
+   * @param router - The Router from which to merge the routes, context and middleware
+   * @param options.prefix - An optional prefix to be added to the paths defined in the router
+   */
+  public includeRouter(router: Router, options?: { prefix: Path }): void {
+    this.context = {
+      ...this.context,
+      ...router.context,
+    };
+    this.routeRegistry.merge(router.routeRegistry, options);
+    this.errorHandlerRegistry.merge(router.errorHandlerRegistry);
+    this.middleware.push(...router.middleware);
+  }
 }
 
 export { Router };

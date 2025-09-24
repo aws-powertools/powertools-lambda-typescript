@@ -83,16 +83,19 @@ export const handler = async (
   event: DynamoDBStreamEvent,
   context: Context
 ): Promise<DynamoDBBatchResponse> => {
-  return tracer.provider.captureAsyncFunc('### handler', async (segment) => {
-    const result = await processPartialResponse(
-      event,
-      recordHandler,
-      processor,
-      { context }
-    );
+  return (await tracer.provider.captureAsyncFunc(
+    '### handler',
+    async (segment) => {
+      const result = await processPartialResponse(
+        event,
+        recordHandler,
+        processor,
+        { context }
+      );
 
-    segment?.close();
+      segment?.close();
 
-    return result;
-  }) as DynamoDBBatchResponse;
+      return result;
+    }
+  )) as DynamoDBBatchResponse;
 };

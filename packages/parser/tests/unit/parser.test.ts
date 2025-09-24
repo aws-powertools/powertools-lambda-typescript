@@ -24,7 +24,7 @@ describe('Parser', () => {
   });
   const JSONPayload = { name: 'John', age: 18 };
 
-  it('parses an event with schema and envelope', async () => {
+  it('parses an event with schema and envelope', () => {
     // Prepare
     const event = structuredClone(baseSqsEvent);
     event.Records[1].body = 'bar';
@@ -37,7 +37,7 @@ describe('Parser', () => {
     expect(result).toStrictEqual(['Test message.', 'bar']);
   });
 
-  it('throws when envelope does not match', async () => {
+  it('throws when envelope does not match', () => {
     // Prepare
     const event = structuredClone(baseEventBridgeEvent);
 
@@ -45,7 +45,7 @@ describe('Parser', () => {
     expect(() => parse(event, SqsEnvelope, z.string())).toThrow();
   });
 
-  it('throws when schema does not match', async () => {
+  it('throws when schema does not match', () => {
     // Prepare
     const event = structuredClone(baseSqsEvent);
     // @ts-expect-error - setting an invalid body
@@ -55,7 +55,7 @@ describe('Parser', () => {
     expect(() => parse(event, SqsEnvelope, z.string())).toThrow();
   });
 
-  it('parses the event successfully', async () => {
+  it('parses the event successfully', () => {
     // Prepare
     const event = 42;
 
@@ -66,7 +66,7 @@ describe('Parser', () => {
     expect(result).toEqual(event);
   });
 
-  it('throws when the event does not match the schema', async () => {
+  it('throws when the event does not match the schema', () => {
     // Prepare
     const event = structuredClone(JSONPayload);
 
@@ -74,7 +74,7 @@ describe('Parser', () => {
     expect(() => parse(event, undefined, z.number())).toThrow();
   });
 
-  it('returns the payload when using safeParse', async () => {
+  it('returns the payload when using safeParse', () => {
     // Prepare
     const event = structuredClone(JSONPayload);
 
@@ -88,7 +88,7 @@ describe('Parser', () => {
     });
   });
 
-  it('returns the error when using safeParse and the payload is invalid', async () => {
+  it('returns the error when using safeParse and the payload is invalid', () => {
     // Prepare
     const event = structuredClone(JSONPayload);
 
@@ -103,7 +103,7 @@ describe('Parser', () => {
     });
   });
 
-  it('returns the payload when using safeParse with envelope', async () => {
+  it('returns the payload when using safeParse with envelope', () => {
     // Prepare
     const detail = structuredClone(JSONPayload);
     const event = structuredClone(baseEventBridgeEvent);
@@ -119,7 +119,7 @@ describe('Parser', () => {
     });
   });
 
-  it('returns an error when using safeParse with envelope and the payload is invalid', async () => {
+  it('returns an error when using safeParse with envelope and the payload is invalid', () => {
     // Prepare
     const event = structuredClone(baseEventBridgeEvent);
 

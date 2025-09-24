@@ -169,12 +169,14 @@ const AppSyncEventsSubscribeSchema = AppSyncEventsBaseSchema.extend({
 
 export {
   AppSyncEventsBaseSchema,
-  AppSyncCognitoIdentity,
-  AppSyncIamIdentity,
   AppSyncLambdaAuthIdentity,
-  AppSyncOidcIdentity,
   AppSyncEventsRequestSchema,
   AppSyncEventsInfoSchema,
   AppSyncEventsPublishSchema,
   AppSyncEventsSubscribeSchema,
 };
+export {
+  AppSyncCognitoIdentity,
+  AppSyncIamIdentity,
+  AppSyncOidcIdentity,
+} from './appsync-shared.js';

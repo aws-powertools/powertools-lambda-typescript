@@ -25,10 +25,10 @@ const store: { userId: string; roles: string[] } = { userId: '', roles: [] };
 
 // Factory function that returns middleware
 const verifyToken = (options: { jwtSecret: string }): Middleware => {
-  return async (_, { request }, next) => {
-    const auth = request.headers.get('Authorization');
+  return async ({ reqCtx: { req }, next }) => {
+    const auth = req.headers.get('Authorization');
     if (!auth || !auth.startsWith('Bearer '))
-      return new UnauthorizedError('Missing or invalid Authorization header');
+      throw new UnauthorizedError('Missing or invalid Authorization header');
 
     const token = auth.slice(7);
     try {
@@ -37,7 +37,7 @@ const verifyToken = (options: { jwtSecret: string }): Middleware => {
       store.roles = payload.roles;
     } catch (error) {
       logger.error('Token verification failed', { error });
-      return new UnauthorizedError('Invalid token');
+      throw new UnauthorizedError('Invalid token');
     }
 
     await next();
@@ -47,7 +47,7 @@ const verifyToken = (options: { jwtSecret: string }): Middleware => {
 // Use custom middleware globally
 app.use(verifyToken({ jwtSecret }));
 
-app.post('/todos', async (_) => {
+app.post('/todos', async () => {
   const { userId } = store;
   const todos = await getUserTodos(userId);
   return { todos };

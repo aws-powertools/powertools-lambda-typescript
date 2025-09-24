@@ -14,8 +14,8 @@ const logger = new Logger({
 const app = new Router({ logger });
 
 app.route(
-  async (_, { request }) => {
-    const body = await request.json();
+  async ({ req }) => {
+    const body = await req.json();
     const todo = await putTodo(body);
 
     return todo;

@@ -8,8 +8,8 @@ import type { Context } from 'aws-lambda';
 
 const app = new Router();
 
-app.use(async (_, reqCtx, next) => {
-  if (!isAuthenticated(reqCtx.request.headers.get('Authorization') ?? '')) {
+app.use(async ({ reqCtx, next }) => {
+  if (!isAuthenticated(reqCtx.req.headers.get('Authorization') ?? '')) {
     throw new UnauthorizedError(); // This will return a 401 Unauthorized response
   }
   await next();

@@ -39,7 +39,7 @@ describe('Function: processPartialResponse()', () => {
   const handlerWithSqsEvent = (
     event: SQSEvent,
     options: BatchProcessingOptions
-  ) => {
+  ): Promise<PartialItemFailureResponse> => {
     const processor = new BatchProcessor(EventType.SQS);
 
     const handler = async (

@@ -136,7 +136,7 @@ describe('Parameters E2E tests, Secrets Manager provider', () => {
   });
 
   describe('SecretsProvider usage', () => {
-    it('should retrieve a secret as plain string', async () => {
+    it('retrieves a secret as plain string', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
 
@@ -146,7 +146,7 @@ describe('Parameters E2E tests, Secrets Manager provider', () => {
       });
     });
 
-    it('should retrieve a secret using transform json option', async () => {
+    it('retrieves a secret using transform json option', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
 
@@ -156,7 +156,7 @@ describe('Parameters E2E tests, Secrets Manager provider', () => {
       });
     });
 
-    it('should retrieve a secret using transform binary option', async () => {
+    it('retrieves a secret using transform binary option', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
 
@@ -167,7 +167,7 @@ describe('Parameters E2E tests, Secrets Manager provider', () => {
     });
   });
 
-  it('should retrieve a secret twice with cached value', async () => {
+  it('retrieves a secret twice with cached value', () => {
     const logs = invocationLogs.getFunctionLogs();
     const testLogFirst = TestInvocationLogs.parseFunctionLog(logs[3]);
 
@@ -178,7 +178,7 @@ describe('Parameters E2E tests, Secrets Manager provider', () => {
     });
   });
 
-  it('should retrieve a secret twice with forceFetch second time', async () => {
+  it('retrieves a secret twice with forceFetch second time', () => {
     const logs = invocationLogs.getFunctionLogs();
     const testLogFirst = TestInvocationLogs.parseFunctionLog(logs[4]);
 

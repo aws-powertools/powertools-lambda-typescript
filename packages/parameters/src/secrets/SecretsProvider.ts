@@ -11,15 +11,12 @@ import type {
 } from '../types/SecretsProvider.js';
 
 /**
- * ## Intro
- * The Parameters utility provides a SecretsProvider that allows to retrieve secrets from AWS Secrets Manager.
- *
- * ## Getting started
+ * The Parameters utility provides a `SecretsProvider` that allows to retrieve secrets from AWS Secrets Manager.
  *
  * This utility supports AWS SDK v3 for JavaScript only (`@aws-sdk/client-secrets-manager`). This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
  *
- * ## Basic usage
+ * **Basic usage**
  *
  * @example
  * ```typescript
@@ -35,9 +32,7 @@ import type {
  *
  * If you want to retrieve secrets without customizing the provider, you can use the {@link getSecret} function instead.
  *
- * ## Advanced usage
- *
- * ### Caching
+ * **Caching**
  *
  * By default, the provider will cache parameters retrieved in-memory for 5 seconds.
  * You can adjust how long values should be kept in cache by using the `maxAge` parameter.
@@ -68,7 +63,7 @@ import type {
  * };
  * ```
  *
- * ### Transformations
+ * **Transformations**
  *
  * For parameters stored in JSON or Base64 format, you can use the transform argument for deserialization.
  *
@@ -84,7 +79,7 @@ import type {
  * };
  * ```
  *
- * ### Extra SDK options
+ * **Extra SDK options**
  *
  * When retrieving a secret, you can pass extra options to the AWS SDK v3 for JavaScript client by using the `sdkOptions` parameter.
  *
@@ -106,7 +101,7 @@ import type {
  *
  * This object accepts the same options as the [AWS SDK v3 for JavaScript Secrets Manager client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-secrets-manager/interfaces/getsecretvaluecommandinput.html).
  *
- * ### Customize AWS SDK v3 for JavaScript client
+ * **Customize AWS SDK v3 for JavaScript client**
  *
  * By default, the provider will create a new Secrets Manager client using the default configuration.
  *
@@ -140,16 +135,17 @@ import type {
  *
  * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
  *
- * @class
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
  */
 class SecretsProvider extends BaseProvider {
   public declare client: SecretsManagerClient;
 
   /**
-   * It initializes the SecretsProvider class.
+   * Initialize a `SecretsProvider` class.
    *
-   * @param {SecretsProviderOptions} config - The configuration object.
+   * @param config - The configuration object.
+   * @param config.clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with `awsSdkV3Client`.
+   * @param config.awsSdkV3Client - Optional AWS SDK v3 client to pass during {@link SecretsProvider | `SecretsProvider`} class instantiation. Mutually exclusive with `clientConfig`.
    */
   public constructor(config?: SecretsProviderOptions) {
     super({
@@ -175,19 +171,16 @@ class SecretsProvider extends BaseProvider {
    * };
    * ```
    *
-   * You can customize the retrieval of the secret by passing options to the function:
-   * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
-   * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`
-   * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
-   *
-   * For usage examples check {@link SecretsProvider}.
-   *
-   * @param {string} name - The name of the secret
-   * @param {SecretsGetOptions} options - Options to customize the retrieval of the secret
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   *
+   * @param name - The name of the secret
+   * @param options - Options to customize the retrieval of the secret
+   * @param options.maxAge - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
+   * @param options.forceFetch - Whether to always fetch a new value from the store regardless if already available in cache
+   * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`
+   * @param options.sdkOptions - Extra options to pass to the AWS SDK v3 for JavaScript client
    */
-  public async get<
+  public get<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | SecretsGetOptions
@@ -206,7 +199,7 @@ class SecretsProvider extends BaseProvider {
   }
 
   /**
-   * Retrieving multiple parameter values is not supported with AWS Secrets Manager.
+   * Retrieving multiple secrets is not supported with AWS Secrets Manager.
    */
   /* v8 ignore start */ public async getMultiple(
     path: string,
@@ -216,10 +209,11 @@ class SecretsProvider extends BaseProvider {
   } /* v8 ignore stop */
 
   /**
-   * Retrieve a configuration from AWS Secrets Manager.
+   * Retrieve a secret from AWS Secrets Manager.
    *
-   * @param {string} name - Name of the configuration or its ID
-   * @param {SecretsGetOptions} options - SDK options to propagate to the AWS SDK v3 for JavaScript client
+   * @param name - Name of the secret or its ID
+   * @param options - SDK options to propagate to the AWS SDK v3 for JavaScript client
+   * @param options.sdkOptions - Extra options to pass to the AWS SDK v3 for JavaScript client, accepts the same options as {@link GetSecretValueCommandInput | `GetSecretValueCommandInput`} except `SecretId`.
    */
   protected async _get(
     name: string,
@@ -240,11 +234,11 @@ class SecretsProvider extends BaseProvider {
   }
 
   /**
-   * Retrieving multiple parameter values is not supported with AWS Secrets Manager.
+   * Retrieving multiple secrets is not supported with AWS Secrets Manager.
    *
    * @throws Not Implemented Error.
    */
-  protected async _getMultiple(
+  protected _getMultiple(
     _path: string,
     _options?: unknown
   ): Promise<Record<string, unknown> | undefined> {

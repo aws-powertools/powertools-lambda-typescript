@@ -1,5 +1,8 @@
 import { getServiceName } from '@aws-lambda-powertools/commons/utils/env';
-import type { StartConfigurationSessionCommandInput } from '@aws-sdk/client-appconfigdata';
+import type {
+  AppConfigDataClientConfig,
+  StartConfigurationSessionCommandInput,
+} from '@aws-sdk/client-appconfigdata';
 import {
   AppConfigDataClient,
   GetLatestConfigurationCommand,
@@ -14,15 +17,12 @@ import type {
 } from '../types/AppConfigProvider.js';
 
 /**
- * ## Intro
- * The Parameters utility provides an AppConfigProvider that allows to retrieve configuration profiles from AWS AppConfig.
- *
- * ## Getting started
+ * The Parameters utility provides an `AppConfigProvider` that allows to retrieve configuration profiles from AWS AppConfig.
  *
  * This utility supports AWS SDK v3 for JavaScript only (`@aws-sdk/client-appconfigdata`). This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
  *
- * ## Basic usage
+ * **Basic usage**
  *
  * @example
  * ```typescript
@@ -41,9 +41,7 @@ import type {
  * ```
  * If you want to retrieve configs without customizing the provider, you can use the {@link getAppConfig} function instead.
  *
- * ## Advanced usage
- *
- * ### Caching
+ * **Caching**
  *
  * By default, the provider will cache parameters retrieved in-memory for 5 seconds.
  * You can adjust how long values should be kept in cache by using the `maxAge` parameter.
@@ -82,7 +80,7 @@ import type {
  * };
  * ```
  *
- * ### Transformations
+ * **Transformations**
  *
  * For configurations stored as freeform JSON, Freature Flag, you can use the transform argument for deserialization. This will return a JavaScript object instead of a string.
  *
@@ -118,7 +116,7 @@ import type {
  * };
  * ```
  *
- * ### Extra SDK options
+ * **Extra SDK options**
  *
  * When retrieving a configuration profile, you can pass extra options to the AWS SDK v3 for JavaScript client by using the `sdkOptions` parameter.
  *
@@ -144,7 +142,7 @@ import type {
  *
  * This object accepts the same options as the [AWS SDK v3 for JavaScript AppConfigData client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/interfaces/startconfigurationsessioncommandinput.html).
  *
- * ### Customize AWS SDK v3 for JavaScript client
+ * **Customize AWS SDK v3 for JavaScript client**
  *
  * By default, the provider will create a new AppConfigData client using the default configuration.
  *
@@ -193,9 +191,14 @@ class AppConfigProvider extends BaseProvider {
   private readonly environment: string;
 
   /**
-   * It initializes the AppConfigProvider class.
-   * *
-   * @param {AppConfigProviderOptions} options - The configuration object.
+   * initializes an `AppConfigProvider` class instance.
+   *
+   * @param options - The configuration object.
+   * @param options.environment - The environment ID or the environment name.
+   * @param options.application - Optional application ID or the application name.
+   * @param options.clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with `awsSdkV3Client`. Accepts the same configuration object as the AWS SDK v3 client ({@link AppConfigDataClientConfig | `AppConfigDataClientConfig`}).
+   * @param options.awsSdkV3Client - Optional ({@link AppConfigDataClient | `AppConfigDataClient`}) instance to pass during `AppConfigProvider` class instantiation. Mutually exclusive with `clientConfig`.
+   *
    */
   public constructor(options: AppConfigProviderOptions) {
     super({
@@ -235,19 +238,16 @@ class AppConfigProvider extends BaseProvider {
    * };
    * ```
    *
-   * You can customize the retrieval of the configuration profile by passing options to the function:
-   * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
-   * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`
-   * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
-   *
-   * For usage examples check {@link AppConfigProvider}.
-   *
-   * @param {string} name - The name of the configuration profile or its ID
-   * @param {AppConfigGetOptions} options - Options to configure the provider
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   *
+   * @param name - The name of the configuration profile or its ID
+   * @param options - Options to configure the provider
+   * @param options.maxAge - Maximum age of the value in the cache, in seconds.
+   * @param options.forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+   * @param options.sdkOptions - Additional options to pass to the AWS SDK v3 client. Supports all options from {@link StartConfigurationSessionCommandInput | `StartConfigurationSessionCommandInput`} except `ApplicationIdentifier`, `EnvironmentIdentifier`, and `ConfigurationProfileIdentifier`.
+   * @param options.transform - Optional transform to be applied, can be 'json' or 'binary'.
    */
-  public async get<
+  public get<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | AppConfigGetOptions
@@ -287,8 +287,12 @@ class AppConfigProvider extends BaseProvider {
    * polls the configuration multiple times, we return the most recent value by returning the cached
    * one if an empty response is returned by AppConfig.
    *
-   * @param {string} name - Name of the configuration or its ID
-   * @param {AppConfigGetOptions} options - SDK options to propagate to `StartConfigurationSession` API call
+   * @param name - Name of the configuration or its ID
+   * @param options - SDK options to propagate to `StartConfigurationSession` API call
+   * @param options.maxAge - Maximum age of the value in the cache, in seconds.
+   * @param options.forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+   * @param options.sdkOptions - Additional options to pass to the AWS SDK v3 client. Supports all options from {@link StartConfigurationSessionCommandInput | `StartConfigurationSessionCommandInput`} except `ApplicationIdentifier`, `EnvironmentIdentifier`, and `ConfigurationProfileIdentifier`.
+   * @param options.transform - Optional transform to be applied, can be 'json' or 'binary'.
    */
   protected async _get(
     name: string,
@@ -339,7 +343,7 @@ class AppConfigProvider extends BaseProvider {
     /** When the response is not empty, stash the result locally before returning
      * See AppConfig docs:
      * {@link https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration.html}
-     **/
+     */
     if (
       response.Configuration !== undefined &&
       response.Configuration?.length > 0
@@ -358,7 +362,7 @@ class AppConfigProvider extends BaseProvider {
    *
    * @throws Not Implemented Error.
    */
-  protected async _getMultiple(
+  protected _getMultiple(
     _path: string,
     _sdkOptions?: unknown
   ): Promise<Record<string, unknown> | undefined> {

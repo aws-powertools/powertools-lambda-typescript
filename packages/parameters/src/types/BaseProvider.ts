@@ -1,7 +1,7 @@
 import type { Transform } from '../constants.js';
 
 /**
- * Options for the BaseProvider class constructor.
+ * Options for the `BaseProvider` class constructor.
  */
 type BaseProviderConstructorOptions = {
   /**
@@ -30,10 +30,10 @@ type TransformOptions = (typeof Transform)[keyof typeof Transform];
 /**
  * Options for the `get` method.
  *
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds. Will be applied after the first API call.
- * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @property {unknown} sdkOptions - Options to pass to the underlying SDK.
- * @property {TransformOptions} transform - Transform to be applied, can be 'json', 'binary', or 'auto'.
+ * @property maxAge - Maximum age of the value in the cache, in seconds. Will be applied after the first API call.
+ * @property forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property sdkOptions - Options to pass to the underlying SDK.
+ * @property transform - Optional transform to be applied, can be 'json', 'binary', or 'auto'.
  */
 interface GetOptionsInterface {
   /**
@@ -57,11 +57,11 @@ interface GetOptionsInterface {
 /**
  * Options for the `getMultiple` method.
  *
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds. Will be applied after the first API call.
- * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @property {unknown} sdkOptions - Options to pass to the underlying SDK.
- * @property {TransformOptions} transform - Transform to be applied, can be 'json', 'binary', or 'auto'.
- * @property {boolean} throwOnTransformError - Whether to throw an error if a value cannot be transformed.
+ * @property maxAge - Maximum age of the value in the cache, in seconds. Will be applied after the first API call.
+ * @property forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property sdkOptions - Options to pass to the underlying SDK.
+ * @property transform - Transform to be applied, can be 'json', 'binary', or 'auto'.
+ * @property throwOnTransformError - Whether to throw an error if a value cannot be transformed.
  */
 interface GetMultipleOptionsInterface extends GetOptionsInterface {
   /**

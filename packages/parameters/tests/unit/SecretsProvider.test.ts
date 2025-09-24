@@ -23,7 +23,7 @@ describe('Class: SecretsProvider', () => {
   });
 
   describe('Method: constructor', () => {
-    it('instantiates a new AWS SDK with default options', async () => {
+    it('instantiates a new AWS SDK with default options', () => {
       // Prepare
       const options: SecretsProviderOptions = {};
 
@@ -57,7 +57,7 @@ describe('Class: SecretsProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    it('uses the provided AWS SDK client', async () => {
+    it('uses the provided AWS SDK client', () => {
       // Prepare
       const awsSdkV3Client = new SecretsManagerClient({
         endpoint: 'http://localhost:3000',
@@ -79,7 +79,7 @@ describe('Class: SecretsProvider', () => {
       );
     });
 
-    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: SecretsProviderOptions = {

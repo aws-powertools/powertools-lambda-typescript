@@ -188,7 +188,7 @@ describe('Parameters E2E tests, SSM provider', () => {
 
   describe('SSMProvider usage', () => {
     // Test 1 - get a single parameter by name with default options
-    it('should retrieve a single parameter', async () => {
+    it('retrieves a single parameter', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
 
@@ -199,7 +199,7 @@ describe('Parameters E2E tests, SSM provider', () => {
     });
 
     // Test 2 - get a single parameter by name with decrypt
-    it('should retrieve a single parameter with decryption', async () => {
+    it('retrieves a single parameter with decryption', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
 
@@ -210,7 +210,7 @@ describe('Parameters E2E tests, SSM provider', () => {
     });
 
     // Test 3 - get multiple parameters by path with default options
-    it('should retrieve multiple parameters', async () => {
+    it('retrieves multiple parameters', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
       const expectedParameterNameA = paramA.substring(
@@ -232,7 +232,7 @@ describe('Parameters E2E tests, SSM provider', () => {
     // Test 4 - get multiple parameters by path recursively
     // (aka. get all parameters under a path recursively) i.e.
     // given /param, retrieve /param/get/a and /param/get/b (note path depth)
-    it('should retrieve multiple parameters recursively', async () => {
+    it('retrieves multiple parameters recursively', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
       const expectedParameterNameA = paramA.substring(
@@ -251,7 +251,7 @@ describe('Parameters E2E tests, SSM provider', () => {
       });
     });
 
-    it('should retrieve multiple parameters with decryption', async () => {
+    it('retrieves multiple parameters with decryption', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
       const expectedParameterNameA = paramEncryptedA.substring(
@@ -271,7 +271,7 @@ describe('Parameters E2E tests, SSM provider', () => {
     });
 
     // Test 6 - get multiple parameters by name with default options
-    it('should retrieve multiple parameters by name', async () => {
+    it('retrieves multiple parameters by name', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[5]);
 
@@ -285,7 +285,7 @@ describe('Parameters E2E tests, SSM provider', () => {
     });
 
     // Test 7 - get multiple parameters by name, some of them encrypted and some not
-    it('should retrieve multiple parameters by name with mixed decryption', async () => {
+    it('retrieves multiple parameters by name with mixed decryption', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[6]);
 
@@ -301,7 +301,7 @@ describe('Parameters E2E tests, SSM provider', () => {
 
     // Test 8 - get parameter twice with middleware, which counts the number
     // of requests, we check later if we only called SSM API once
-    it('should retrieve single parameter cached', async () => {
+    it('retrieves single parameter cached', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[7]);
 
@@ -313,7 +313,7 @@ describe('Parameters E2E tests, SSM provider', () => {
 
     // Test 9 - get parameter twice, but force fetch 2nd time,
     // we count number of SDK requests and  check that we made two API calls
-    it('should retrieve single parameter twice without caching', async () => {
+    it('retrieves single parameter twice without caching', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[8]);
 
@@ -324,7 +324,7 @@ describe('Parameters E2E tests, SSM provider', () => {
     });
 
     // Test 10 - store and overwrite single parameter
-    it('should store and overwrite single parameter', async () => {
+    it('stores and overwrite single parameter', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[9]);
 

@@ -65,7 +65,7 @@
     "vitest": "^3.0.9"
   },
   "lint-staged": {
-    "*.{js,ts}": "biome check --write",
+    "*.{js,ts,json}": "biome check --write --no-errors-on-unmatched",
     "*.md": "markdownlint-cli2 --fix"
   },
   "engines": {

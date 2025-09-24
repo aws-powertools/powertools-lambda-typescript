@@ -20,6 +20,7 @@
     "package": "echo 'Not applicable'",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
+    "lint:ci": "biome ci .",
     "createLayerFolder": "cdk synth --context BuildFromLocal=true"
   },
   "repository": {

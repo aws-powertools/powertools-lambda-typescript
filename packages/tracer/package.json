@@ -23,6 +23,7 @@
     "build": "npm run build:esm & npm run build:cjs",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
+    "lint:ci": "biome ci .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/tracer#readme",

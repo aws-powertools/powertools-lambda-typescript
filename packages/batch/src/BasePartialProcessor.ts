@@ -239,9 +239,7 @@ abstract class BasePartialProcessor {
   /**
    * Processes records in parallel using `Promise.all`.
    */
-  async #processRecordsInParallel(): Promise<
-    (SuccessResponse | FailureResponse)[]
-  > {
+  #processRecordsInParallel(): Promise<(SuccessResponse | FailureResponse)[]> {
     return Promise.all(
       this.records.map((record) => this.processRecord(record))
     );

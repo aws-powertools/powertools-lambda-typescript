@@ -186,7 +186,7 @@ describe('SQS FIFO Processors', () => {
     });
   }
 
-  it('continues processing and moves to the next group when `skipGroupOnError` is true', async () => {
+  it('continues processing and moves to the next group when `skipGroupOnError` is true', () => {
     // Prepare
     const firstRecord = sqsRecordFactory('fail', '1');
     const secondRecord = sqsRecordFactory('success', '2');

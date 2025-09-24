@@ -66,7 +66,7 @@ const capSliceRange = (
  * - If the given step is omitted, it it assumed to be 1.
  * - If the given step is 0, an invalid-value error MUST be raised (thrown before calling the function)
  * - If the element being sliced is not an array, the result is null (returned before calling the function)
- * _ If the element being sliced is an array and yields no results, the result MUST be an empty array.
+ * - If the element being sliced is an array and yields no results, the result MUST be an empty array.
  *
  * @param array - The array to slice
  * @param start - The start index

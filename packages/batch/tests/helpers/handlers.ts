@@ -1,4 +1,5 @@
 import type {
+  AttributeValue,
   Context,
   DynamoDBRecord,
   KinesisStreamRecord,
@@ -8,19 +9,25 @@ import type {
 const sqsRecordHandler = (record: SQSRecord): string => {
   const body = record.body;
   if (body.includes('fail')) {
-    throw Error('Failed to process record.');
+    throw new Error('Failed to process record.');
   }
 
   return body;
 };
 
-const asyncSqsRecordHandler = async (record: SQSRecord): Promise<string> =>
-  Promise.resolve(sqsRecordHandler(record));
+const asyncSqsRecordHandler = async (record: SQSRecord): Promise<string> => {
+  const body = record.body;
+  if (body.includes('fail')) {
+    throw new Error('Failed to process record.');
+  }
+  await new Promise((resolve) => setTimeout(resolve, 1));
+  return body;
+};
 
 const kinesisRecordHandler = (record: KinesisStreamRecord): string => {
   const body = record.kinesis.data;
   if (body.includes('fail')) {
-    throw Error('Failed to process record.');
+    throw new Error('Failed to process record.');
   }
 
   return body;
@@ -28,40 +35,64 @@ const kinesisRecordHandler = (record: KinesisStreamRecord): string => {
 
 const asyncKinesisRecordHandler = async (
   record: KinesisStreamRecord
-): Promise<string> => Promise.resolve(kinesisRecordHandler(record));
+): Promise<string> => {
+  const body = record.kinesis.data;
+  if (body.includes('fail')) {
+    throw new Error('Failed to process record.');
+  }
+  await new Promise((resolve) => setTimeout(resolve, 1));
+  return body;
+};
 
-const dynamodbRecordHandler = (record: DynamoDBRecord): object => {
+const dynamodbRecordHandler = (record: DynamoDBRecord): AttributeValue => {
   const body = record.dynamodb?.NewImage?.Message || { S: 'fail' };
   if (body.S?.includes('fail')) {
-    throw Error('Failed to process record.');
+    throw new Error('Failed to process record.');
   }
 
   return body;
 };
 
-const asyncDynamodbRecordHandler = (
+const asyncDynamodbRecordHandler = async (
   record: DynamoDBRecord
-): Promise<object> => {
-  return Promise.resolve(dynamodbRecordHandler(record));
+): Promise<AttributeValue> => {
+  const body = record.dynamodb?.NewImage?.Message || { S: 'fail' };
+  if (body.S?.includes('fail')) {
+    throw new Error('Failed to process record.');
+  }
+  await new Promise((resolve) => setTimeout(resolve, 1));
+  return body;
 };
 
 const handlerWithContext = (record: SQSRecord, context: Context): string => {
   try {
     if (context.getRemainingTimeInMillis() === 0) {
-      throw Error('No time remaining.');
+      throw new Error('No time remaining.');
     }
   } catch {
-    throw Error(`Context possibly malformed. Displaying context:\n${context}`);
+    throw new Error(
+      `Context possibly malformed. Displaying context:\n${context}`
+    );
   }
 
   return record.body;
 };
 
-const asyncHandlerWithContext = (
+const asyncHandlerWithContext = async (
   record: SQSRecord,
   context: Context
 ): Promise<string> => {
-  return Promise.resolve(handlerWithContext(record, context));
+  try {
+    if (context.getRemainingTimeInMillis() === 0) {
+      throw new Error('No time remaining.');
+    }
+  } catch {
+    throw new Error(
+      `Context possibly malformed. Displaying context:\n${context}`
+    );
+  }
+  await new Promise((resolve) => setTimeout(resolve, 1));
+  return record.body;
 };
 
 export {

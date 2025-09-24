@@ -1,5 +1,28 @@
 # Change Log
 
+## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
+
+### Bug Fixes
+
+- **batch** fixed the build issue with Batch processor due to missing dependencies ([#4498](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4498)) ([ef67b43](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ef67b43921f1d67b06b3257fb0f96c74e0d6dbae))
+- **event-handler** fixed CORS behaviour not aligned with CORS spec   ([#4512](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4512)) ([dd368fa](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dd368fa3eb08a86c2d5aad3cf9b832d7a8288486))
+- **event-handler** run global middleware on all requests for REST API ([#4507](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4507)) ([49d5f8a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/49d5f8a4f36a5af26c573f7706347f34ec70689e))
+
+### Improvements
+
+- **event-handler** rename HttpErrorCodes to HttpStatusCodes ([#4543](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4543)) ([e53aa88](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e53aa8816325f21510706e3f9e62fb0a76692915))
+- **event-handler** made error handler responses versatile ([#4536](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4536)) ([f08b366](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f08b366b79152d338ebefb5a25caacade6846919))
+- **event-handler** changed path parameter in middleware and routehandler signature ([#4532](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4532)) ([278fca0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/278fca0491ce9cb955326523557c3ddf9d03dbc5))
+- **event-handler** change the Middleware and RequestContext signatures ([#4530](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4530)) ([a05c074](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a05c07411629d1e23a9cb3fec8a78cf23bd8dd0c))
+
+### Features
+
+- **event-handler** implemented route prefixes in HTTP event handler ([#4523](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4523)) ([8913854](https://github.com/aws-powertools/powertools-lambda-typescript/commit/89138542cd9e195555299f401646ae94d0bb50ee))
+- **event-handler** throw error when middleware does not await next() ([#4511](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4511)) ([b0b43e8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b0b43e862fb189941fe9db220580884e7707d541))
+- **event-handler** add CORS middleware support ([#4477](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4477)) ([972cd1f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/972cd1f86b6ea01c93abef5e6cde7876360196f1))
+- **event-handler** added compress middleware for the REST API event handler ([#4495](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4495)) ([320e0dc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/320e0dcaa07476de3b7d07209ef27379b9d4900a))
+
+
 ## [2.26.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.0...v2.26.1) (2025-09-15)
 
 ### Bug Fixes

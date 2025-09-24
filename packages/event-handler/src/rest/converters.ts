@@ -1,6 +1,10 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import type { CompressionOptions, HandlerResponse } from '../types/rest.js';
-import { COMPRESSION_ENCODING_TYPES } from './constants.js';
+import type {
+  CompressionOptions,
+  HandlerResponse,
+  HttpStatusCode,
+} from '../types/rest.js';
+import { COMPRESSION_ENCODING_TYPES, HttpErrorCodes } from './constants.js';
 import { isAPIGatewayProxyResult } from './utils.js';
 
 /**
@@ -181,10 +185,12 @@ export const handlerResultToWebResponse = (
  * Handles APIGatewayProxyResult, Response objects, and plain objects.
  *
  * @param response - The handler response (APIGatewayProxyResult, Response, or plain object)
+ * @param statusCode - The response status code to return
  * @returns An API Gateway proxy result
  */
 export const handlerResultToProxyResult = async (
-  response: HandlerResponse
+  response: HandlerResponse,
+  statusCode: HttpStatusCode = HttpErrorCodes.OK
 ): Promise<APIGatewayProxyResult> => {
   if (isAPIGatewayProxyResult(response)) {
     return response;
@@ -193,7 +199,7 @@ export const handlerResultToProxyResult = async (
     return await webResponseToProxyResult(response);
   }
   return {
-    statusCode: 200,
+    statusCode,
     body: JSON.stringify(response),
     headers: { 'content-type': 'application/json' },
     isBase64Encoded: false,

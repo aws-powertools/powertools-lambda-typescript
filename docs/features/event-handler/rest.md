@@ -128,7 +128,7 @@ Please [check this issue](https://github.com/aws-powertools/powertools-lambda-ty
 
 ### Accessing request details
 
-You can access request details such as headers, query parameters, and body using the `Request` object provided to your route handlers and middleware functions via `reqCtx.request`.
+You can access request details such as headers, query parameters, and body using the `Request` object provided to your route handlers and middleware functions via `reqCtx.req`.
 
 ### Handling not found routes
 

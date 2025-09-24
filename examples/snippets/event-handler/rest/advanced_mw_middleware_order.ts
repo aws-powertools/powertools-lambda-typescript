@@ -10,14 +10,14 @@ const logger = new Logger();
 const app = new Router({ logger });
 
 // Global middleware - executes first in pre-processing, last in post-processing
-app.use(async (_, reqCtx, next) => {
+app.use(async ({ reqCtx, next }) => {
   reqCtx.res.headers.set('x-pre-processed-by', 'global-middleware');
   await next();
   reqCtx.res.headers.set('x-post-processed-by', 'global-middleware');
 });
 
 // Route-specific middleware - executes second in pre-processing, first in post-processing
-const routeMiddleware: Middleware = async (_, reqCtx, next) => {
+const routeMiddleware: Middleware = async ({ reqCtx, next }) => {
   reqCtx.res.headers.set('x-pre-processed-by', 'route-middleware');
   await next();
   reqCtx.res.headers.set('x-post-processed-by', 'route-middleware');
@@ -31,12 +31,11 @@ app.get('/todos', async () => {
 // This route will have:
 // x-pre-processed-by: route-middleware (route middleware overwrites global)
 // x-post-processed-by: global-middleware (global middleware executes last)
-app.post('/todos', [routeMiddleware], async (_, reqCtx) => {
-  const body = await reqCtx.request.json();
+app.post('/todos', [routeMiddleware], async ({ req }) => {
+  const body = await req.json();
   const todo = await putTodo(body);
   return todo;
 });
 
-export const handler = async (event: unknown, context: Context) => {
-  return app.resolve(event, context);
-};
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);

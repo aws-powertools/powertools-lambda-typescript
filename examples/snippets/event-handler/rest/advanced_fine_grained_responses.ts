@@ -23,8 +23,8 @@ app.get('/todos', async () => {
   });
 });
 
-app.post('/todos', async (_, reqCtx) => {
-  const body = await reqCtx.request.json();
+app.post('/todos', async ({ req }) => {
+  const body = await req.json();
   const todo = await createTodo(body.title);
 
   return new Response(JSON.stringify(todo), {

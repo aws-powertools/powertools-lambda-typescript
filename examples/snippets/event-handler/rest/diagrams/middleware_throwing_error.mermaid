@@ -7,9 +7,9 @@ sequenceDiagram
     participant Handler as Route Handler
 
     Request->>Router: Incoming Request
-    Router->>M1: Execute (params, reqCtx, next)
+    Router->>M1: Execute ({ reqCtx, next })
     Note over M1: Pre-processing
-    M1->>M2: Call next()
+    M1->>M2: Call await next()
     Note over M2: Intentionally throws error
     M2-->>M1: Error propagated
     M1-->>Router: Error propagated

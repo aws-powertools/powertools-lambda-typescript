@@ -13,7 +13,7 @@ app.use(
   })
 );
 
-app.get('/todos/:todoId', async ({ todoId }) => {
+app.get('/todos/:todoId', async ({ params: { todoId } }) => {
   const todo = await getTodoById(todoId);
   return { todo };
 });

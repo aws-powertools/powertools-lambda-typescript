@@ -16,12 +16,11 @@ app.errorHandler(GetTodoError, async (error, reqCtx) => {
 
   return {
     statusCode: HttpStatusCodes.BAD_REQUEST,
-    message: `Bad request: ${error.message} - ${reqCtx.request.headers.get('x-correlation-id')}`,
-    error: 'BadRequest',
+    message: `Bad request: ${error.message} - ${reqCtx.req.headers.get('x-correlation-id')}`,
   };
 });
 
-app.get('/todos/:todoId', async ({ todoId }) => {
+app.get('/todos/:todoId', async ({ params: { todoId } }) => {
   const todo = await getTodoById(todoId); // May throw GetTodoError
   return { todo };
 });

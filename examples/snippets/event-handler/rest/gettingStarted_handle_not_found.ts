@@ -15,7 +15,7 @@ app.notFound(async (error, reqCtx) => {
     statusCode: HttpStatusCodes.IM_A_TEAPOT,
     body: "I'm a teapot!",
     headers: {
-      'x-correlation-id': reqCtx.request.headers.get('x-correlation-id'),
+      'x-correlation-id': reqCtx.req.headers.get('x-correlation-id'),
     },
   };
 });

@@ -163,7 +163,7 @@ class FunctionError extends JMESPathError {
    * alias. To avoid passing the function name down the call stack, we set it
    * after the error is thrown.
    *
-   * @param functionName- The function that was being validated or executed when the error occurred.
+   * @param functionName - The function that was being validated or executed when the error occurred.
    */
   public setEvaluatedFunctionName(functionName: string): void {
     this.message = this.message.replace(

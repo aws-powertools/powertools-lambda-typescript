@@ -13,8 +13,8 @@ const logger = new Logger({
 });
 const app = new Router({ logger });
 
-app.post('/todos', async (_, { request }) => {
-  const body = await request.json();
+app.post('/todos', async ({ req }) => {
+  const body = await req.json();
   const todo = await putTodo(body);
 
   return todo;

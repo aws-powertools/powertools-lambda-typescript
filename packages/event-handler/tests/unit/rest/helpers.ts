@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent } from 'aws-lambda';
-import type { Middleware } from '../../../src/types/rest.js';
+import type { HandlerResponse, Middleware } from '../../../src/types/rest.js';
 
 export const createTestEvent = (
   path: string,
@@ -20,7 +20,7 @@ export const createTestEvent = (
     httpMethod,
     path,
     domainName: 'localhost',
-  } as any,
+  } as APIGatewayProxyEvent['requestContext'],
   resource: '',
 });
 
@@ -28,7 +28,7 @@ export const createTrackingMiddleware = (
   name: string,
   executionOrder: string[]
 ): Middleware => {
-  return async (_params, _options, next) => {
+  return async ({ next }) => {
     executionOrder.push(`${name}-start`);
     await next();
     executionOrder.push(`${name}-end`);
@@ -40,7 +40,7 @@ export const createThrowingMiddleware = (
   executionOrder: string[],
   errorMessage: string
 ): Middleware => {
-  return async (_params, _options, _next) => {
+  return async () => {
     executionOrder.push(name);
     throw new Error(errorMessage);
   };
@@ -49,9 +49,9 @@ export const createThrowingMiddleware = (
 export const createReturningMiddleware = (
   name: string,
   executionOrder: string[],
-  response: any
+  response: HandlerResponse
 ): Middleware => {
-  return async (_params, _options, _next) => {
+  return async () => {
     executionOrder.push(name);
     return response;
   };
@@ -61,7 +61,7 @@ export const createNoNextMiddleware = (
   name: string,
   executionOrder: string[]
 ): Middleware => {
-  return async (_params, _options, _next) => {
+  return async () => {
     executionOrder.push(name);
     // Intentionally doesn't call next()
   };
@@ -70,10 +70,10 @@ export const createNoNextMiddleware = (
 export const createSettingHeadersMiddleware = (headers: {
   [key: string]: string;
 }): Middleware => {
-  return async (_params, options, next) => {
+  return async ({ reqCtx, next }) => {
     await next();
     Object.entries(headers).forEach(([key, value]) => {
-      options.res.headers.set(key, value);
+      reqCtx.res.headers.set(key, value);
     });
   };
 };
@@ -81,8 +81,8 @@ export const createSettingHeadersMiddleware = (headers: {
 export const createHeaderCheckMiddleware = (headers: {
   [key: string]: string;
 }): Middleware => {
-  return async (_params, options, next) => {
-    options.res.headers.forEach((value, key) => {
+  return async ({ reqCtx, next }) => {
+    reqCtx.res.headers.forEach((value, key) => {
       headers[key] = value;
     });
     await next();

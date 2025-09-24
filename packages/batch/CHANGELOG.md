@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
+
+### Bug Fixes
+
+- fixed the build issue with Batch processor due to missing dependencies ([#4498](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4498)) ([ef67b43](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ef67b43921f1d67b06b3257fb0f96c74e0d6dbae))
 ## [2.26.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.0...v2.26.1) (2025-09-15)
 
 ### Bug Fixes

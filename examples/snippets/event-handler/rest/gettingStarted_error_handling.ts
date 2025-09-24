@@ -2,7 +2,7 @@ declare function getTodoById<T>(todoId: unknown): Promise<{ id: string } & T>;
 declare class GetTodoError extends Error {}
 
 import {
-  HttpErrorCodes,
+  HttpStatusCodes,
   Router,
 } from '@aws-lambda-powertools/event-handler/experimental-rest';
 import { Logger } from '@aws-lambda-powertools/logger';
@@ -15,13 +15,12 @@ app.errorHandler(GetTodoError, async (error, reqCtx) => {
   logger.error('Unable to get todo', { error });
 
   return {
-    statusCode: HttpErrorCodes.BAD_REQUEST,
-    message: `Bad request: ${error.message} - ${reqCtx.request.headers.get('x-correlation-id')}`,
-    error: 'BadRequest',
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: `Bad request: ${error.message} - ${reqCtx.req.headers.get('x-correlation-id')}`,
   };
 });
 
-app.get('/todos/:todoId', async ({ todoId }) => {
+app.get('/todos/:todoId', async ({ params: { todoId } }) => {
   const todo = await getTodoById(todoId); // May throw GetTodoError
   return { todo };
 });

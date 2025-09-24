@@ -1,7 +1,7 @@
 import type { CorsOptions, Middleware } from '../../types/rest.js';
 import {
   DEFAULT_CORS_OPTIONS,
-  HttpErrorCodes,
+  HttpStatusCodes,
   HttpVerbs,
 } from '../constants.js';
 
@@ -96,16 +96,16 @@ export const cors = (options?: CorsOptions): Middleware => {
     }
   };
 
-  return async (_params, reqCtx, next) => {
-    const requestOrigin = reqCtx.request.headers.get('Origin');
+  return async ({ reqCtx, next }) => {
+    const requestOrigin = reqCtx.req.headers.get('Origin');
     if (!isOriginAllowed(requestOrigin)) {
       await next();
       return;
     }
 
     // Handle preflight OPTIONS request
-    if (reqCtx.request.method === HttpVerbs.OPTIONS) {
-      if (!isValidPreflightRequest(reqCtx.request.headers)) {
+    if (reqCtx.req.method === HttpVerbs.OPTIONS) {
+      if (!isValidPreflightRequest(reqCtx.req.headers)) {
         await next();
         return;
       }
@@ -123,7 +123,7 @@ export const cors = (options?: CorsOptions): Middleware => {
         reqCtx.res.headers.append('access-control-allow-headers', header);
       }
       return new Response(null, {
-        status: HttpErrorCodes.NO_CONTENT,
+        status: HttpStatusCodes.NO_CONTENT,
         headers: reqCtx.res.headers,
       });
     }

@@ -3,22 +3,17 @@ import type {
   JSONObject,
 } from '@aws-lambda-powertools/commons/types';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import type { HttpErrorCodes, HttpVerbs } from '../rest/constants.js';
+import type { HttpStatusCodes, HttpVerbs } from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
 import type { Router } from '../rest/Router.js';
 import type { ResolveOptions } from './common.js';
 
-type ErrorResponse = {
-  statusCode: HttpStatusCode;
-  error: string;
-  message: string;
-};
-
 type RequestContext = {
-  request: Request;
+  req: Request;
   event: APIGatewayProxyEvent;
   context: Context;
   res: Response;
+  params: Record<string, string>;
 };
 
 type ErrorResolveOptions = RequestContext & ResolveOptions;
@@ -26,7 +21,7 @@ type ErrorResolveOptions = RequestContext & ResolveOptions;
 type ErrorHandler<T extends Error = Error> = (
   error: T,
   reqCtx: RequestContext
-) => Promise<ErrorResponse>;
+) => Promise<HandlerResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
   new (...args: any[]): T;
@@ -60,14 +55,13 @@ type DynamicRoute = Route & CompiledRoute;
 
 type HandlerResponse = Response | JSONObject;
 
-type RouteHandler<
-  TParams = Record<string, unknown>,
-  TReturn = HandlerResponse,
-> = (args: TParams, reqCtx: RequestContext) => Promise<TReturn>;
+type RouteHandler<TReturn = HandlerResponse> = (
+  reqCtx: RequestContext
+) => Promise<TReturn>;
 
 type HttpMethod = keyof typeof HttpVerbs;
 
-type HttpStatusCode = (typeof HttpErrorCodes)[keyof typeof HttpErrorCodes];
+type HttpStatusCode = (typeof HttpStatusCodes)[keyof typeof HttpStatusCodes];
 
 type Path = `/${string}`;
 
@@ -86,11 +80,10 @@ type RestRouteOptions = {
 
 type NextFunction = () => Promise<HandlerResponse | void>;
 
-type Middleware = (
-  params: Record<string, string>,
-  reqCtx: RequestContext,
-  next: NextFunction
-) => Promise<void | HandlerResponse>;
+type Middleware = (args: {
+  reqCtx: RequestContext;
+  next: NextFunction;
+}) => Promise<void | HandlerResponse>;
 
 type RouteRegistryOptions = {
   /**
@@ -166,7 +159,6 @@ export type {
   CompiledRoute,
   CorsOptions,
   DynamicRoute,
-  ErrorResponse,
   ErrorConstructor,
   ErrorHandlerRegistryOptions,
   ErrorHandler,

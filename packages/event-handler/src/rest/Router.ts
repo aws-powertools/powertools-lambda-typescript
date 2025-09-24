@@ -4,7 +4,11 @@ import {
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
 import type { APIGatewayProxyResult, Context } from 'aws-lambda';
-import type { ResolveOptions } from '../types/index.js';
+import type {
+  HandlerResponse,
+  HttpStatusCode,
+  ResolveOptions,
+} from '../types/index.js';
 import type {
   ErrorConstructor,
   ErrorHandler,
@@ -17,12 +21,11 @@ import type {
   RestRouterOptions,
   RouteHandler,
 } from '../types/rest.js';
-import { HttpErrorCodes, HttpVerbs } from './constants.js';
+import { HttpStatusCodes, HttpVerbs } from './constants.js';
 import {
   handlerResultToProxyResult,
   handlerResultToWebResponse,
   proxyEventToWebRequest,
-  webResponseToProxyResult,
 } from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import {
@@ -36,6 +39,7 @@ import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 import {
   composeMiddleware,
   isAPIGatewayProxyEvent,
+  isAPIGatewayProxyResult,
   isHttpMethod,
 } from './utils.js';
 
@@ -164,9 +168,9 @@ class Router {
    *
    * @example
    * ```typescript
-   * const authMiddleware: Middleware = async (params, reqCtx, next) => {
+   * const authMiddleware: Middleware = async ({ params, reqCtx, next }) => {
    *   // Authentication logic
-   *   if (!isAuthenticated(reqCtx.request)) {
+   *   if (!isAuthenticated(reqCtx.req)) {
    *     return new Response('Unauthorized', { status: 401 });
    *   }
    *   await next();
@@ -210,28 +214,29 @@ class Router {
       // We can't throw a MethodNotAllowedError outside the try block as it
       // will be converted to an internal server error by the API Gateway runtime
       return {
-        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
         body: '',
       };
     }
 
-    const request = proxyEventToWebRequest(event);
+    const req = proxyEventToWebRequest(event);
 
     const requestContext: RequestContext = {
       event,
       context,
-      request,
+      req,
       // this response should be overwritten by the handler, if it isn't
       // it means something went wrong with the middleware chain
       res: new Response('', { status: 500 }),
+      params: {},
     };
 
     try {
-      const path = new URL(request.url).pathname as Path;
+      const path = new URL(req.url).pathname as Path;
 
       const route = this.routeRegistry.resolve(method, path);
 
-      const handlerMiddleware: Middleware = async (params, reqCtx, next) => {
+      const handlerMiddleware: Middleware = async ({ reqCtx, next }) => {
         if (route === null) {
           const notFoundRes = await this.handleError(
             new NotFoundError(`Route ${path} for method ${method} not found`),
@@ -247,7 +252,7 @@ class Router {
               ? route.handler
               : route.handler.bind(options.scope);
 
-          const handlerResult = await handler(params, reqCtx);
+          const handlerResult = await handler(reqCtx);
           reqCtx.res = handlerResultToWebResponse(
             handlerResult,
             reqCtx.res.headers
@@ -263,11 +268,11 @@ class Router {
         handlerMiddleware,
       ]);
 
-      const middlewareResult = await middleware(
-        route?.params ?? {},
-        requestContext,
-        () => Promise.resolve()
-      );
+      requestContext.params = route?.params ?? {};
+      const middlewareResult = await middleware({
+        reqCtx: requestContext,
+        next: () => Promise.resolve(),
+      });
 
       // middleware result takes precedence to allow short-circuiting
       const result = middlewareResult ?? requestContext.res;
@@ -279,7 +284,9 @@ class Router {
         ...requestContext,
         scope: options?.scope,
       });
-      return await webResponseToProxyResult(result);
+      const statusCode =
+        result instanceof Response ? result.status : result.statusCode;
+      return handlerResultToProxyResult(result, statusCode as HttpStatusCode);
     }
   }
 
@@ -309,17 +316,32 @@ class Router {
   protected async handleError(
     error: Error,
     options: ErrorResolveOptions
-  ): Promise<Response> {
+  ): Promise<HandlerResponse> {
     const handler = this.errorHandlerRegistry.resolve(error);
     if (handler !== null) {
       try {
         const { scope, ...reqCtx } = options;
         const body = await handler.apply(scope ?? this, [error, reqCtx]);
+        if (body instanceof Response || isAPIGatewayProxyResult(body)) {
+          return body;
+        }
+        if (!body.statusCode) {
+          if (error instanceof NotFoundError) {
+            body.statusCode = HttpStatusCodes.NOT_FOUND;
+          } else if (error instanceof MethodNotAllowedError) {
+            body.statusCode = HttpStatusCodes.METHOD_NOT_ALLOWED;
+          }
+        }
         return new Response(JSON.stringify(body), {
-          status: body.statusCode,
+          status:
+            (body.statusCode as number) ??
+            HttpStatusCodes.INTERNAL_SERVER_ERROR,
           headers: { 'Content-Type': 'application/json' },
         });
       } catch (handlerError) {
+        if (handlerError instanceof ServiceError) {
+          return await this.handleError(handlerError, options);
+        }
         return this.#defaultErrorHandler(handlerError as Error);
       }
     }

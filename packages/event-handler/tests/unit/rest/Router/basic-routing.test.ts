@@ -1,7 +1,7 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it } from 'vitest';
 import {
-  HttpErrorCodes,
+  HttpStatusCodes,
   HttpVerbs,
   InternalServerError,
   Router,
@@ -50,7 +50,7 @@ describe('Class: Router - Basic Routing', () => {
         context
       );
 
-      expect(result.statusCode).toBe(HttpErrorCodes.METHOD_NOT_ALLOWED);
+      expect(result.statusCode).toBe(HttpStatusCodes.METHOD_NOT_ALLOWED);
       expect(result.body).toEqual('');
     }
   );
@@ -89,9 +89,9 @@ describe('Class: Router - Basic Routing', () => {
     const app = new Router();
     const testEvent = createTestEvent('/test', 'GET');
 
-    app.get('/test', async (_params, reqCtx) => {
+    app.get('/test', async (reqCtx) => {
       return {
-        hasRequest: reqCtx.request instanceof Request,
+        hasRequest: reqCtx.req instanceof Request,
         hasEvent: reqCtx.event === testEvent,
         hasContext: reqCtx.context === context,
       };
@@ -126,8 +126,8 @@ describe('Class: Router - Basic Routing', () => {
     app.post('/', async () => {
       return { actualPath: '/todos' };
     });
-    app.get('/:todoId', async ({ todoId }) => {
-      return { actualPath: `/todos/${todoId}` };
+    app.get('/:todoId', async (reqCtx) => {
+      return { actualPath: `/todos/${reqCtx.params.todoId}` };
     });
 
     // Act

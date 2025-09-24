@@ -128,7 +128,7 @@ Please [check this issue](https://github.com/aws-powertools/powertools-lambda-ty
 
 ### Accessing request details
 
-You can access request details such as headers, query parameters, and body using the `Request` object provided to your route handlers and middleware functions via `reqCtx.request`.
+You can access request details such as headers, query parameters, and body using the `Request` object provided to your route handlers and middleware functions via `reqCtx.req`.
 
 ### Handling not found routes
 
@@ -148,6 +148,8 @@ You can use the `errorHandler()` method as a higher-order function or class meth
 
 This allows you to catch and return custom error responses, or perform any other error handling logic you need.
 
+Error handlers receive the error object and the request context as arguments, and can return a [`Response` object](#returning-response-objects) or a JavaScript object that will be auto-serialized as per the [response auto-serialization](#response-auto-serialization) section.
+
 !!! tip "You can also pass a list of error classes to the `errorHandler()` method."
 
 === "index.ts"
@@ -158,15 +160,17 @@ This allows you to catch and return custom error responses, or perform any other
 
 ### Throwing HTTP errors
 
-You can throw HTTP errors in your route handlers to return specific HTTP status codes and messages. Event Handler provides a set of built-in HTTP error classes that you can use to throw common HTTP errors.
+You can throw HTTP errors in your route handlers to stop execution and return specific HTTP status codes and messages. Event Handler provides a set of built-in HTTP error classes that you can use to throw common HTTP errors.
 
 This ensures that your Lambda function doesn't fail but returns a well-defined HTTP error response to the client.
 
 If you need to send custom headers or a different response structure/code, you can use the [Response](#returning-response-objects) object instead.
 
+!!! tip "You can throw HTTP errors in your route handlers, middleware, or custom error handlers!"
+
 === "index.ts"
 
-    ```ts hl_lines="3 10"
+    ```ts hl_lines="3 11"
     --8<-- "examples/snippets/event-handler/rest/gettingStarted_throwing_http_errors.ts:3"
     ```
 
@@ -194,15 +198,21 @@ All error classes accept optional parameters for custom messages and additional 
 
 ### Route prefixes
 
-!!! note "Coming soon"
-
 When defining multiple routes related to a specific resource, it's common to have a shared prefix. For example, you might have several routes that all start with `/todos`.
 
 For example, if you have a custom domain `api.example.com` and you want to map it to the `/v1` base path of your API. In this case, all the requests will contain `/v1/<resource>` in the path, requiring you to repeat the `/v1` prefix in all your route definitions.
 
-At the moment, you have to manually include the prefix in each route definition, however we are planning to add support for route prefixes in a future release.
+To avoid repeating the prefix in each route definition, you can use the `prefix` constructor parameter when creating a new `Router` instance, and we'll automatically strip it from the request path before matching routes. After mapping a path prefix, the new root path will automatically be mapped to the path argument of `/`.
 
-Please [check this issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4513) for more details and examples, and add 👍 if you would like us to prioritize it.
+=== "index.ts"
+
+    ```ts hl_lines="4 7"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_route_prefix.ts:3"
+    ```
+
+This is also useful when splitting routes into separate files (see [Split routers](#split-routers) section) or when using [API mappings](https://docs.aws.amazon.com/apigateway/latest/developerguide/rest-api-mappings.html){target="_blank"} to map custom domains to specific base paths.
+
+For example, when using `prefix: '/pay'`, there is no difference between a request path of `/pay` and `/pay/`; and the path argument would be defined as `/`.
 
 ## Advanced
 
@@ -213,9 +223,8 @@ incoming request and your route handler. They provide a way to implement cross-c
 concerns like authentication, logging, validation, and response transformation without
 cluttering your route handlers.
 
-Each middleware function receives the following arguments:
+Each middleware function receives two arguments:
 
-* **params** - Route parameters extracted from the URL path
 * **reqCtx** - Request context containing the event, Lambda context, request, and response objects
 * **next** - A function to pass control to the next middleware in the chain
 
@@ -311,6 +320,11 @@ that no post-processing of your request will occur.
 
 A common pattern to create reusable middleware is to implement a factory functions that
 accepts configuration options and returns a middleware function.
+
+!!! note "Always `await next()` unless returning early"
+    Middleware functions must always call `await next()` to pass control to the next middleware
+    in the chain, unless you are intentionally returning early by returning a `Response` or
+    JSON object.
 
 === "index.ts"
 

@@ -7,6 +7,5 @@ app.get('/ping', async () => {
   return { message: 'pong' }; // (1)!
 });
 
-export const handler = async (event: unknown, context: Context) => {
-  return app.resolve(event, context);
-};
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);

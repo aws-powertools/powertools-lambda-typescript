@@ -44,36 +44,73 @@ const isOptionsWithDataIndexArgument = (
 };
 
 /**
- * Use function wrapper to make your function idempotent.
+ * Function wrapper to make any function idempotent.
+ *
+ * The `makeIdempotent` function is a higher-order function that takes another function and returns a new version of that function with idempotency behavior.
+ * This means that if the function is called multiple times with the same input, it will return the same result without re-executing the original function logic.
+ *
+ * By default, the entire first argument is hashed to create the idempotency key. You can customize this behavior:
+ * - Use {@link IdempotencyConfig.eventKeyJmesPath | `eventKeyJmesPath`} to hash only a subset of the payload
+ * - Use {@link ItempotentFunctionOptions.dataIndexArgument | `dataIndexArgument`} to hash a different function argument
+ *
+ *
+ * **Using a subset of the payload**
+ *
  * @example
- * ```ts
- * // this is your processing function with an example record { transactionId: '123', foo: 'bar' }
- * const processRecord = (record: Record<string, unknown>): any => {
- *   // you custom processing logic
+ * ```typescript
+ * import { makeIdempotent, IdempotencyConfig } from '@aws-lambda-powertools/idempotency';
+ * import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+ *
+ * const processRecord = (record: Record<string, unknown>): unknown => {
+ *   // your processing logic
  *   return result;
  * };
  *
- * // we use wrapper to make processing function idempotent with DynamoDBPersistenceLayer
  * const processIdempotently = makeIdempotent(processRecord, {
- *   persistenceStore: new DynamoDBPersistenceLayer()
- *   dataKeywordArgument: 'transactionId', // keyword argument to hash the payload and the result
+ *   persistenceStore: new DynamoDBPersistenceLayer({ tableName: 'idempotency-table' }),
+ *   config: new IdempotencyConfig({
+ *     eventKeyJmesPath: 'transactionId', // hash only this field as idempotency key
+ *   }),
  * });
  *
- * export const handler = async (
- *   _event: EventRecords,
- *   _context: Context
- * ): Promise<void> => {
- *   for (const record of _event.records) {
- *     const result = await processIdempotently(record);
- *     // do something with the result
+ * export const handler = async (event: { records: Record<string, unknown>[] }) => {
+ *  for (const record of event.records) {
+ *    // use the idempotent function
+ *    const result = await processIdempotently(record);
+ *    // ... do something with the result
  *   }
- *
- *   return Promise.resolve();
  * };
+ *```
+ *
+ * **Using a different function argument (useful for multi-parameter functions)**
+ *
+ * @example
+ * ```typescript
+ * import { makeIdempotent } from '@aws-lambda-powertools/idempotency';
+ * import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+ *
+ * const processRecord = (record: Record<string, unknown>, userId: string): unknown => {
+ *   // your processing logic
+ *   return result;
+ * };
+ *
+ * const processIdempotently = makeIdempotent(processRecord, {
+ *   persistenceStore: new DynamoDBPersistenceLayer({ tableName: 'idempotency-table' }),
+ *   dataIndexArgument: 1, // hash the userId (second argument) instead of first (record)
+ * });
+ *
+ * export const handler = async (event: { records: Record<string,unknown>[]; userId: string }) => {
+ *  for (const record of event.records) {
+ *    const userId = event.userId;
+ *    // use the idempotent function
+ *    const result = await processIdempotently(record, userId);
+ *    // ... do something with the result
+ *   }
+ * };
+ * ```
  *
  * @param fn - the function to make idempotent
  * @param options - the options to configure the idempotency behavior
- * ```
  */
 function makeIdempotent<Func extends AnyFunction>(
   fn: Func,

@@ -119,7 +119,7 @@ const sliceArray = <T>({
  * greater than or equal to the expected arity. If the number of arguments passed to the function
  * is less than the expected arity, a `VariadicArityError` is thrown.
  *
- * @param args -The arguments passed to the function
+ * @param args - The arguments passed to the function
  * @param argumentsSpecs - The expected types for each argument
  * @param decoratedFuncName - The name of the function being called
  * @param variadic - Whether the function is variadic

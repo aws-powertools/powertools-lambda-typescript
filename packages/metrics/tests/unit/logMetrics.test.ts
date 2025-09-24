@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
@@ -39,6 +40,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
 
       @metrics.logMetrics({ captureColdStartMetric: true })
       async handler(_event: unknown, _context: Context) {
+        await setTimeout(0); // Simulate some async operation
         this.addGreetingMetric();
       }
 
@@ -105,6 +107,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
 
       @metrics.logMetrics({ captureColdStartMetric: true })
       async handler(_event: unknown, _context: Context) {
+        await setTimeout(0); // Simulate some async operation
         this.addGreetingMetric();
       }
 
@@ -150,6 +153,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
 
       @metrics.logMetrics({ captureColdStartMetric: true })
       async handler(_event: unknown, _context: Context) {
+        await setTimeout(0); // Simulate some async operation
         this.addGreetingMetric();
       }
 
@@ -184,6 +188,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     });
     vi.spyOn(metrics, 'publishStoredMetrics');
     const handler = middy(async () => {
+      await setTimeout(0); // Simulate some async operation
       metrics.addMetric('greetings', MetricUnit.Count, 1);
     }).use(logMetrics(metrics, { captureColdStartMetric: true }));
 
@@ -210,7 +215,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     });
 
     vi.spyOn(metrics, 'publishStoredMetrics');
-    const handler = middy(async () => {
+    const handler = middy(() => {
       metrics.addMetric('greetings', MetricUnit.Count, 1);
     }).use(logMetrics(metrics, { captureColdStartMetric: true }));
 
@@ -238,7 +243,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     });
 
     vi.spyOn(metrics, 'publishStoredMetrics');
-    const handler = middy(async () => {
+    const handler = middy(() => {
       metrics.addMetric('greetings', MetricUnit.Count, 1);
     }).use(logMetrics(metrics, { captureColdStartMetric: true }));
 
@@ -266,6 +271,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     class Test {
       @metrics.logMetrics({ defaultDimensions: { environment: 'test' } })
       async handler(_event: unknown, _context: Context) {
+        await setTimeout(0); // Simulate some async operation
         metrics.addMetric('test', MetricUnit.Count, 1);
       }
     }
@@ -295,6 +301,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     });
     vi.spyOn(metrics, 'publishStoredMetrics');
     const handler = middy(async () => {
+      await setTimeout(0); // Simulate some async operation
       metrics.addMetric('greetings', MetricUnit.Count, 1);
     }).use(
       logMetrics(metrics, {
@@ -328,6 +335,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     class Test {
       @metrics.logMetrics()
       async handler(_event: unknown, _context: Context) {
+        await setTimeout(0); // Simulate some async operation
         throw new Error('Something went wrong');
       }
     }
@@ -349,6 +357,7 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     class Test {
       @metrics.logMetrics({ throwOnEmptyMetrics: true })
       async handler(_event: unknown, _context: Context) {
+        await setTimeout(0); // Simulate some async operation
         return 'Hello, world!';
       }
     }
@@ -367,12 +376,12 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
       singleMetric: false,
       namespace: DEFAULT_NAMESPACE,
     });
-    const handler = middy(async () => {}).use(
-      logMetrics([metrics], { throwOnEmptyMetrics: true })
-    );
+    const handler = middy(async () => {
+      await setTimeout(0); // Simulate some async operation
+    }).use(logMetrics([metrics], { throwOnEmptyMetrics: true }));
 
     // Act & Assess
-    expect(() => handler({}, {} as Context)).rejects.toThrowError(
+    await expect(() => handler({}, {} as Context)).rejects.toThrowError(
       'The number of metrics recorded must be higher than zero'
     );
   });

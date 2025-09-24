@@ -426,7 +426,7 @@ class Functions {
   /**
    * Determines if the provided string starts with the provided prefix.
    *
-   * @param str The - string to check
+   * @param str - The string to check
    * @param prefix - The prefix to check for
    */
   @Functions.signature({

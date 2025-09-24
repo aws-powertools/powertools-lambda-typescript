@@ -84,7 +84,7 @@ export const parser = <
 
     const { schema, envelope, safeParse } = options;
 
-    descriptor.value = async function (
+    descriptor.value = function (
       this: Handler,
       ...args: [ParserOutput<TSchema, TEnvelope, TSafeParse>, Context, Callback]
     ) {

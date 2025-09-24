@@ -85,7 +85,7 @@ type ParserOutput<
 /**
  * The parser function that can parse the data using the provided schema and envelope
  * we use function overloads to provide the correct return type based on the provided envelope
- **/
+ */
 type ParseFunction = {
   // No envelope, no safeParse
   <T extends StandardSchemaV1>(

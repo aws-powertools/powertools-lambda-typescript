@@ -28,7 +28,7 @@ describe('Helpers: awsSdk', () => {
       expect(console.warn).toHaveBeenCalledTimes(1);
     });
 
-    it('should return and do nothing if the client already has a Powertools UA middleware', async () => {
+    it('should return and do nothing if the client already has a Powertools UA middleware', () => {
       // Prepare
       const client = {
         middlewareStack: {
@@ -51,7 +51,7 @@ describe('Helpers: awsSdk', () => {
       expect(client.middlewareStack.addRelativeTo).toHaveBeenCalledTimes(0);
     });
 
-    it('should call the function to add the middleware with the correct arguments', async () => {
+    it('should call the function to add the middleware with the correct arguments', () => {
       // Prepare
       const client = {
         middlewareStack: {

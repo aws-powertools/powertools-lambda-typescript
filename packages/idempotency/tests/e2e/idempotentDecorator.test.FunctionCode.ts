@@ -35,9 +35,6 @@ class DefaultLambda implements LambdaInterface {
     logger.info(`${this.message} ${JSON.stringify(_event)}`);
     // sleep to enforce error with parallel execution
     await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // We return void to test that the utility handles it correctly
-    return;
   }
 
   @idempotent({
@@ -124,12 +121,9 @@ const handlerExpired = defaultLambda.handlerExpired.bind(defaultLambda);
 const logger = new Logger();
 
 class LambdaWithKeywordArgument implements LambdaInterface {
-  public async handler(
-    event: { id: string },
-    _context: Context
-  ): Promise<string> {
+  public handler(event: { id: string }, _context: Context) {
     config.registerLambdaContext(_context);
-    await this.process(event.id, 'bar');
+    this.process(event.id, 'bar');
 
     return 'Hello World Keyword Argument';
   }

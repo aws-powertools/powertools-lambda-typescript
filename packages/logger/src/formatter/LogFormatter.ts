@@ -139,7 +139,7 @@ abstract class LogFormatter {
     /**
      * If a specific timezone is configured and it's not the default `UTC`,
      * format the timestamp with the appropriate timezone offset.
-     **/
+     */
     const configuredTimezone = getStringFromEnv({
       key: 'TZ',
       defaultValue: '',

@@ -59,7 +59,7 @@ describe('Logger E2E tests, sample rate and injectLambdaContext()', () => {
   });
 
   describe('Enabling sample rate', () => {
-    it('should log all levels based on given sample rate, not just ERROR', async () => {
+    it('should log all levels based on given sample rate, not just ERROR', () => {
       // Fetch log streams from all invocations
       let countSampled = 0;
       let countNotSampled = 0;
@@ -94,7 +94,7 @@ describe('Logger E2E tests, sample rate and injectLambdaContext()', () => {
   });
 
   describe('Decorator injectLambdaContext()', () => {
-    it('should inject Lambda context into every log emitted', async () => {
+    it('should inject Lambda context into every log emitted', () => {
       for (let i = 0; i < invocationCount; i++) {
         // Get log messages of the invocation
         const logMessages = invocationLogs[i].getFunctionLogs('ERROR');

@@ -468,7 +468,6 @@ class Parser {
   }
 
   /**
-  /**
    * Process a left bracket token.
    *
    * @param leftNode - The left hand side of the expression.

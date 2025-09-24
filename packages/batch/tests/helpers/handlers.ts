@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import type {
   AttributeValue,
   Context,
@@ -20,7 +21,7 @@ const asyncSqsRecordHandler = async (record: SQSRecord): Promise<string> => {
   if (body.includes('fail')) {
     throw new Error('Failed to process record.');
   }
-  await new Promise((resolve) => setTimeout(resolve, 1));
+  await setTimeout(1); // simulate some processing time
   return body;
 };
 
@@ -40,7 +41,7 @@ const asyncKinesisRecordHandler = async (
   if (body.includes('fail')) {
     throw new Error('Failed to process record.');
   }
-  await new Promise((resolve) => setTimeout(resolve, 1));
+  await setTimeout(1); // simulate some processing time
   return body;
 };
 
@@ -60,7 +61,7 @@ const asyncDynamodbRecordHandler = async (
   if (body.S?.includes('fail')) {
     throw new Error('Failed to process record.');
   }
-  await new Promise((resolve) => setTimeout(resolve, 1));
+  await setTimeout(1); // simulate some processing time
   return body;
 };
 
@@ -91,7 +92,7 @@ const asyncHandlerWithContext = async (
       `Context possibly malformed. Displaying context:\n${context}`
     );
   }
-  await new Promise((resolve) => setTimeout(resolve, 1));
+  await setTimeout(1); // simulate some processing time
   return record.body;
 };
 

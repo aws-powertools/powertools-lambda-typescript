@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
@@ -13,6 +14,10 @@ import { captureLambdaHandler } from '../../src/middleware/middy.js';
 
 describe('Middy middleware', () => {
   const ENVIRONMENT_VARIABLES = process.env;
+  const lambdaHandler: Handler = async (_event: unknown, _context: Context) => {
+    await setTimeout(0); // Simulate some async operation
+    throw new Error('Exception thrown!');
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -64,12 +69,6 @@ describe('Middy middleware', () => {
           () => new Segment('facade', process.env._X_AMZN_TRACE_ID || null)
         )
         .mockImplementationOnce(() => new Subsegment('## index.handler'));
-      const lambdaHandler: Handler = async (
-        _event: unknown,
-        _context: Context
-      ) => {
-        throw new Error('Exception thrown!');
-      };
       const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
 
       // Act & Assess
@@ -173,12 +172,6 @@ describe('Middy middleware', () => {
       setContextMissingStrategy(() => null);
       const addErrorSpy = vi.spyOn(newSubsegment, 'addError');
       const addErrorFlagSpy = vi.spyOn(newSubsegment, 'addErrorFlag');
-      const lambdaHandler: Handler = async (
-        _event: unknown,
-        _context: Context
-      ) => {
-        throw new Error('Exception thrown!');
-      };
       const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
 
       // Act & Assess
@@ -208,12 +201,6 @@ describe('Middy middleware', () => {
       );
       setContextMissingStrategy(() => null);
       const addErrorSpy = vi.spyOn(newSubsegment, 'addError');
-      const lambdaHandler: Handler = async (
-        _event: unknown,
-        _context: Context
-      ) => {
-        throw new Error('Exception thrown!');
-      };
       const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
 
       // Act & Assess

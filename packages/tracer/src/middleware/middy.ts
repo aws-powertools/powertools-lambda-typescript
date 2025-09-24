@@ -11,10 +11,10 @@ import type { CaptureLambdaHandlerOptions } from '../types/Tracer.js';
  * A middy middleware automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
  *
  * Using this middleware on your handler function will automatically:
- * * handle the subsegment lifecycle
- * * add the `ColdStart` annotation
- * * add the function response as metadata
- * * add the function error as metadata (if any)
+ * - handle the subsegment lifecycle
+ * - add the `ColdStart` annotation
+ * - add the function response as metadata
+ * - add the function error as metadata (if any)
  *
  * @example
  * ```typescript
@@ -33,7 +33,6 @@ import type { CaptureLambdaHandlerOptions } from '../types/Tracer.js';
  *
  * @param target - The Tracer instance to use for tracing
  * @param options - (_optional_) Options for the middleware
- * @returns middleware - The middy middleware object
  */
 const captureLambdaHandler = (
   target: Tracer,
@@ -83,9 +82,7 @@ const captureLambdaHandler = (
     target.setSegment(lambdaSegment);
   };
 
-  const captureLambdaHandlerBefore = async (
-    request: MiddyLikeRequest
-  ): Promise<void> => {
+  const before = (request: MiddyLikeRequest) => {
     if (target.isTracingEnabled()) {
       open();
       setCleanupFunction(request);
@@ -94,9 +91,7 @@ const captureLambdaHandler = (
     }
   };
 
-  const captureLambdaHandlerAfter = async (
-    request: MiddyLikeRequest
-  ): Promise<void> => {
+  const after = (request: MiddyLikeRequest) => {
     if (target.isTracingEnabled()) {
       if (options?.captureResponse ?? true) {
         target.addResponseAsMetadata(request.response, process.env._HANDLER);
@@ -105,9 +100,7 @@ const captureLambdaHandler = (
     }
   };
 
-  const captureLambdaHandlerError = async (
-    request: MiddyLikeRequest
-  ): Promise<void> => {
+  const onError = (request: MiddyLikeRequest) => {
     if (target.isTracingEnabled()) {
       target.addErrorAsMetadata(request.error as Error);
       close();
@@ -115,9 +108,9 @@ const captureLambdaHandler = (
   };
 
   return {
-    before: captureLambdaHandlerBefore,
-    after: captureLambdaHandlerAfter,
-    onError: captureLambdaHandlerError,
+    before,
+    after,
+    onError,
   };
 };
 

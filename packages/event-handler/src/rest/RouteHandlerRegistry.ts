@@ -205,25 +205,22 @@ class RouteHandlerRegistry {
     routeHandlerRegistry: RouteHandlerRegistry,
     options?: { prefix: Path }
   ): void {
-    for (const route of routeHandlerRegistry.#staticRoutes.values()) {
+    const routes = [
+      ...routeHandlerRegistry.#staticRoutes.values(),
+      ...routeHandlerRegistry.#dynamicRoutes,
+    ];
+    for (const route of routes) {
+      let path = route.path;
+      if (options?.prefix) {
+        path =
+          route.path === '/'
+            ? options.prefix
+            : `${options.prefix}${route.path}`;
+      }
       this.register(
         new Route(
           route.method as HttpMethod,
-          options?.prefix
-            ? route.path === '/'
-              ? options.prefix
-              : `${options.prefix}${route.path}`
-            : route.path,
-          route.handler,
-          route.middleware
-        )
-      );
-    }
-    for (const route of routeHandlerRegistry.#dynamicRoutes) {
-      this.register(
-        new Route(
-          route.method as HttpMethod,
-          options?.prefix ? `${options.prefix}${route.path}` : route.path,
+          path,
           route.handler,
           route.middleware
         )

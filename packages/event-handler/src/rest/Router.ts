@@ -562,11 +562,11 @@ class Router {
    * const todosRouter = new Router();
    *
    * todosRouter.get('/todos', async () => {
-   *   // List Todos
+   *   // List API
    * });
    *
    * todosRouter.get('/todos/{todoId}', async () => {
-   *   // Get Todo
+   *   // Get API
    * });
    *
    * const app = new Router();

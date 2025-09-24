@@ -64,22 +64,29 @@ jobs:
           python-version: "3.12"
       - name: Install doc generation dependencies
         run: |
+          set -euo pipefail
           pip install --require-hashes -r docs/requirements.txt
       - name: Git refresh tip (detached mode)
         # Git Detached mode (release notes) doesn't have origin
         if: ${{ inputs.detached_mode }}
         run: |
+          set -euo pipefail
           git config pull.rebase true
-          git config remote.origin.url >&- || git remote add origin https://github.com/"$ORIGIN"
+          git config remote.origin.url >&- || git remote add origin "https://github.com/$ORIGIN"
           git pull origin "$BRANCH"
         env:
           BRANCH: ${{ inputs.git_ref }}
       - name: Normalize Version Number
-        run: echo "VERSION=$(echo ${{ inputs.version }} | sed 's/v//')" >> $GITHUB_ENV
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          echo "VERSION=$(echo "$VERSION" | sed 's/v//')" >> "$GITHUB_ENV"
       - name: Build docs website and API reference
         env:
           ALIAS: ${{ inputs.alias }}
         run: |
+          set -euo pipefail
           rm -rf site
           mkdocs build
       - name: Configure AWS credentials
@@ -99,18 +106,20 @@ jobs:
           ALIAS: ${{ inputs.alias }}
           AWS_DOCS_BUCKET: ${{ secrets.AWS_DOCS_BUCKET }}
         run: |
+          set -euo pipefail
           aws s3 sync \
             site/ \
-            s3://$AWS_DOCS_BUCKET/lambda-typescript/$VERSION/
+            "s3://$AWS_DOCS_BUCKET/lambda-typescript/$VERSION/"
       - name: Deploy Docs (Alias)
         env:
           VERSION: ${{ inputs.version }}
           ALIAS: ${{ inputs.alias }}
           AWS_DOCS_BUCKET: ${{ secrets.AWS_DOCS_BUCKET }}
         run: |
+          set -euo pipefail
           aws s3 sync \
             site/ \
-            s3://$AWS_DOCS_BUCKET/lambda-typescript/$ALIAS/
+            "s3://$AWS_DOCS_BUCKET/lambda-typescript/$ALIAS/"
       - name: Deploy Docs (Version JSON)
         env:
           VERSION: ${{ inputs.version }}
@@ -129,11 +138,12 @@ jobs:
         #      - if it's a new version number, we add it at position 0 in the array.
         #   4. Once done, we'll upload it back to S3.
         run: |
+          set -euo pipefail
           aws s3 cp \
-            s3://$AWS_DOCS_BUCKET/lambda-typescript/versions.json \
+            "s3://$AWS_DOCS_BUCKET/lambda-typescript/versions.json" \
             versions_old.json
-          jq 'del(.[].aliases[] | select(. == "${{ env.ALIAS }}"))' < versions_old.json > versions_proc.json
-          jq '. as $o | [{"title": "${{ env.VERSION }}", "version": "${{ env.VERSION }}", "aliases": ["${{ env.ALIAS }}"] }] as $n | $n | if .[0].title | test("[a-z]+") or any($o[].title == $n[0].title;.) then [($o | .[] | select(.title == $n[0].title).aliases += $n[0].aliases | . )] else $n + $o end' < versions_proc.json > versions.json
+          jq --arg ALIAS "$ALIAS" 'del(.[].aliases[] | select(. == $ALIAS))' < versions_old.json > versions_proc.json
+          jq --arg VERSION "$VERSION" --arg ALIAS "$ALIAS" '. as $o | [{"title": $VERSION, "version": $VERSION, "aliases": [$ALIAS]}] as $n | $n | if .[0].title | test("[a-z]+") or any($o[].title == $n[0].title;.) then [($o | .[] | select(.title == $n[0].title).aliases += $n[0].aliases | . )] else $n + $o end' < versions_proc.json > versions.json
           aws s3 cp \
             versions.json \
-            s3://$AWS_DOCS_BUCKET/lambda-typescript/versions.json
+            "s3://$AWS_DOCS_BUCKET/lambda-typescript/versions.json"

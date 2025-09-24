@@ -44,8 +44,11 @@ jobs:
       # we checkout the PR at that point in time
       - name: Checkout PR code
         if: ${{ inputs.prNumber != '' }}
+        env:
+          PR_NUMBER: ${{ inputs.prNumber }}
         run: |
-          gh pr checkout ${{ inputs.prNumber }}
+          set -euo pipefail
+          gh pr checkout "$PR_NUMBER"
       - name: Setup Node.js
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:

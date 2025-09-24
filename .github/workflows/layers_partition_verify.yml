@@ -90,9 +90,12 @@ jobs:
           aws-region: us-east-1
           mask-aws-account-id: true
       - name: Output AWSLambdaPowertoolsTypeScriptV2
+        env:
+          VERSION: ${{ inputs.version }}
         # fetch the specific layer version information from the us-east-1 commercial region
         run: |
-          aws --region us-east-1 lambda get-layer-version-by-arn --arn 'arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.version }}' > AWSLambdaPowertoolsTypeScriptV2.json
+          set -euo pipefail
+          aws --region us-east-1 lambda get-layer-version-by-arn --arn "arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${VERSION}" > AWSLambdaPowertoolsTypeScriptV2.json
       - name: Store Metadata
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -133,13 +136,22 @@ jobs:
           audience: ${{ needs.setup.outputs.aud }}
       - id: partition_version
         name: Partition Layer Version
+        env:
+          VERSION: ${{ inputs.version }}
+          PARTITION_VERSION: ${{ inputs.partition_version }}
         run: |
-          echo 'partition_version=$([[ -n "${{ inputs.partition_version}}" ]] && echo ${{ inputs.partition_version}} || echo ${{ inputs.version }} )' >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          if [ -n "${PARTITION_VERSION:-}" ]; then
+            echo "partition_version=${PARTITION_VERSION}" >> "$GITHUB_OUTPUT"
+          else
+            echo "partition_version=${VERSION}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Verify Layer
         run: |
-          export layer_output='AWSLambdaPowertoolsTypeScriptV2-${{matrix.region}}.json'
+          set -euo pipefail
+          layer_output="AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json"
           # Dynamic secret access is safe here - secrets are scoped per environment
-          aws --region ${{ matrix.region}} lambda get-layer-version-by-arn --arn "arn:${{ needs.setup.outputs.partition }}:lambda:${{ matrix.region}}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ steps.partition_version.outputs.partition_version }}" > $layer_output
+          aws --region "${{ matrix.region }}" lambda get-layer-version-by-arn --arn "arn:${{ needs.setup.outputs.partition }}:lambda:${{ matrix.region }}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ steps.partition_version.outputs.partition_version }}" > "$layer_output"
           REMOTE_SHA=$(jq -r '.Content.CodeSha256' $layer_output)
           LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)
           test "$REMOTE_SHA" == "$LOCAL_SHA" && echo "SHA OK: ${LOCAL_SHA}" || exit 1

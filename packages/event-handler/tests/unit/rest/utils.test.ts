@@ -1,4 +1,8 @@
-import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   composeMiddleware,
@@ -440,9 +444,10 @@ describe('Path Utilities', () => {
 
   describe('composeMiddleware', () => {
     const mockOptions: RequestContext = {
+      params: {},
       event: {} as APIGatewayProxyEvent,
-      context: {} as any,
-      request: new Request('https://example.com'),
+      context: {} as Context,
+      req: new Request('https://example.com'),
       res: new Response(),
     };
 
@@ -463,7 +468,6 @@ describe('Path Utilities', () => {
 
       const composed = composeMiddleware(middleware);
       await composed({
-        params: {},
         reqCtx: mockOptions,
         next: async () => {
           executionOrder.push('handler');
@@ -491,7 +495,6 @@ describe('Path Utilities', () => {
 
       const composed = composeMiddleware(middleware);
       const result = await composed({
-        params: {},
         reqCtx: mockOptions,
         next: async () => {
           return { handler: true };
@@ -510,7 +513,6 @@ describe('Path Utilities', () => {
 
       const composed = composeMiddleware(middleware);
       const result = await composed({
-        params: {},
         reqCtx: mockOptions,
         next: async () => {
           return { handler: true };
@@ -531,14 +533,13 @@ describe('Path Utilities', () => {
       const composed = composeMiddleware(middleware);
 
       await expect(
-        composed({ params: {}, reqCtx: mockOptions, next: async () => {} })
+        composed({ reqCtx: mockOptions, next: async () => {} })
       ).rejects.toThrow('next() called multiple times');
     });
 
     it('handles empty middleware array', async () => {
       const composed = composeMiddleware([]);
       const result = await composed({
-        params: {},
         reqCtx: mockOptions,
         next: async () => {
           return { handler: true };
@@ -557,7 +558,6 @@ describe('Path Utilities', () => {
 
       const composed = composeMiddleware(middleware);
       const result = await composed({
-        params: {},
         reqCtx: mockOptions,
         next: async () => {
           return undefined;

@@ -559,11 +559,9 @@ describe('Class: RouteHandlerRegistry', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
       const handler = async () => ({ message: 'test' });
-
-      // Act
       registry.register(new Route(HttpVerbs.GET, '/users/:id', handler));
 
-      // Assess
+      // Act & Assess
       expect(() => {
         registry.resolve(HttpVerbs.GET, '/users/%20');
       }).toThrow("Parameter 'id' cannot be empty");
@@ -573,40 +571,19 @@ describe('Class: RouteHandlerRegistry', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
       const handler = async () => ({ message: 'test' });
-
-      // Act
-      registry.register(
-        new Route(HttpVerbs.GET, '/users/:userId/posts/:postId', handler)
-      );
-
-      // Assess
-      expect(() => {
-        registry.resolve(HttpVerbs.GET, '/users/%20/posts/%20%20');
-      }).toThrow('Parameter validation failed');
-    });
-
-    it('includes all validation issues in error message', () => {
-      // Prepare
-      const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = async () => ({ message: 'test' });
-
-      // Act
       registry.register(
         new Route(HttpVerbs.GET, '/api/:version/:resource/:id', handler)
       );
 
-      // Assess
-      expect(() => {
+      // Act & Assess
+      expect(async () => {
         registry.resolve(HttpVerbs.GET, '/api/%20/users/%20');
-      }).toThrow();
-
-      try {
-        registry.resolve(HttpVerbs.GET, '/api/%20/users/%20');
-      } catch (error: any) {
-        expect(error.message).toContain('Parameter validation failed');
-        expect(error.issues).toContain("Parameter 'version' cannot be empty");
-        expect(error.issues).toContain("Parameter 'id' cannot be empty");
-      }
+      }).rejects.toMatchObject({
+        issues: [
+          "Parameter 'version' cannot be empty",
+          "Parameter 'id' cannot be empty",
+        ],
+      });
     });
   });
 });

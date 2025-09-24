@@ -39,7 +39,7 @@ const dynamodbRecordHandler = (record: DynamoDBRecord): object => {
   return body;
 };
 
-const asyncDynamodbRecordHandler = async (
+const asyncDynamodbRecordHandler = (
   record: DynamoDBRecord
 ): Promise<object> => {
   return Promise.resolve(dynamodbRecordHandler(record));
@@ -57,7 +57,7 @@ const handlerWithContext = (record: SQSRecord, context: Context): string => {
   return record.body;
 };
 
-const asyncHandlerWithContext = async (
+const asyncHandlerWithContext = (
   record: SQSRecord,
   context: Context
 ): Promise<string> => {

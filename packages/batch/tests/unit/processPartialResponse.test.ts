@@ -36,7 +36,7 @@ describe('Function: processPartialResponse()', () => {
     context,
   };
 
-  const handlerWithSqsEvent = async (
+  const handlerWithSqsEvent = (
     event: SQSEvent,
     options: BatchProcessingOptions
   ) => {
@@ -51,7 +51,7 @@ describe('Function: processPartialResponse()', () => {
     return handler(event, context);
   };
 
-  const handlerWithKinesisEvent = async (
+  const handlerWithKinesisEvent = (
     event: KinesisStreamEvent,
     options: BatchProcessingOptions
   ) => {
@@ -71,7 +71,7 @@ describe('Function: processPartialResponse()', () => {
     return handler(event, context);
   };
 
-  const handlerWithDynamoDBEvent = async (
+  const handlerWithDynamoDBEvent = (
     event: DynamoDBStreamEvent,
     options: BatchProcessingOptions
   ) => {

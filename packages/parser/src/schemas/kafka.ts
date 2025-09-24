@@ -23,7 +23,7 @@ const KafkaRecordSchema = z.object({
     z.record(
       z.string(),
       z.array(z.number()).transform((value) => {
-        return String.fromCharCode(...value);
+        return String.fromCodePoint(...value);
       })
     )
   ),

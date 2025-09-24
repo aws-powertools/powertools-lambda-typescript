@@ -150,11 +150,11 @@ export const SnsSqsEnvelope = {
     }>(
       (acc, record, index) => {
         const parsed = parseRecord(record, index);
-        if (!parsed.success) {
+        if (parsed.success) {
+          acc.records.push(parsed.data);
+        } else {
           acc.success = false;
           acc.errors[index] = parsed.error;
-        } else {
-          acc.records.push(parsed.data);
         }
         return acc;
       },

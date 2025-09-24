@@ -3,7 +3,7 @@ import type {
   JSONObject,
 } from '@aws-lambda-powertools/commons/types';
 import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import type { HttpErrorCodes, HttpVerbs } from '../rest/constants.js';
+import type { HttpStatusCodes, HttpVerbs } from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
 import type { Router } from '../rest/Router.js';
 import type { ResolveOptions } from './common.js';
@@ -61,7 +61,7 @@ type RouteHandler<TReturn = HandlerResponse> = (
 
 type HttpMethod = keyof typeof HttpVerbs;
 
-type HttpStatusCode = (typeof HttpErrorCodes)[keyof typeof HttpErrorCodes];
+type HttpStatusCode = (typeof HttpStatusCodes)[keyof typeof HttpStatusCodes];
 
 type Path = `/${string}`;
 

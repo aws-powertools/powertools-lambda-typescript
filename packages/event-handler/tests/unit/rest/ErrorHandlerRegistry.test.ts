@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ErrorHandlerRegistry } from '../../../src/rest/ErrorHandlerRegistry.js';
-import { HttpErrorCodes } from '../../../src/rest/index.js';
+import { HttpStatusCodes } from '../../../src/rest/index.js';
 import type {
   HttpStatusCode,
   RequestContext,
@@ -39,8 +39,8 @@ describe('Class: ErrorHandlerRegistry', () => {
   it('logs a warning when registering a duplicate error handler', () => {
     // Prepare
     const registry = new ErrorHandlerRegistry({ logger: console });
-    const handler1 = createErrorHandler(HttpErrorCodes.BAD_REQUEST, 'first');
-    const handler2 = createErrorHandler(HttpErrorCodes.NOT_FOUND, 'second');
+    const handler1 = createErrorHandler(HttpStatusCodes.BAD_REQUEST, 'first');
+    const handler2 = createErrorHandler(HttpStatusCodes.NOT_FOUND, 'second');
 
     // Act
     registry.register(CustomError, handler1);
@@ -58,7 +58,7 @@ describe('Class: ErrorHandlerRegistry', () => {
   it('registers handlers for multiple error types', () => {
     // Prepare
     const registry = new ErrorHandlerRegistry({ logger: console });
-    const handler = createErrorHandler(HttpErrorCodes.BAD_REQUEST);
+    const handler = createErrorHandler(HttpStatusCodes.BAD_REQUEST);
 
     // Act
     registry.register([CustomError, AnotherError], handler);
@@ -71,9 +71,9 @@ describe('Class: ErrorHandlerRegistry', () => {
   it('resolves handlers using exact constructor match', () => {
     // Prepare
     const registry = new ErrorHandlerRegistry({ logger: console });
-    const customHandler = createErrorHandler(HttpErrorCodes.BAD_REQUEST);
+    const customHandler = createErrorHandler(HttpStatusCodes.BAD_REQUEST);
     const anotherHandler = createErrorHandler(
-      HttpErrorCodes.INTERNAL_SERVER_ERROR
+      HttpStatusCodes.INTERNAL_SERVER_ERROR
     );
 
     // Act
@@ -88,7 +88,7 @@ describe('Class: ErrorHandlerRegistry', () => {
   it('resolves handlers using instanceof for inheritance', () => {
     // Prepare
     const registry = new ErrorHandlerRegistry({ logger: console });
-    const baseHandler = createErrorHandler(HttpErrorCodes.BAD_REQUEST);
+    const baseHandler = createErrorHandler(HttpStatusCodes.BAD_REQUEST);
 
     // Act
     registry.register(CustomError, baseHandler);
@@ -101,7 +101,7 @@ describe('Class: ErrorHandlerRegistry', () => {
   it('resolves handlers using name-based matching', () => {
     // Prepare
     const registry = new ErrorHandlerRegistry({ logger: console });
-    const handler = createErrorHandler(HttpErrorCodes.BAD_REQUEST);
+    const handler = createErrorHandler(HttpStatusCodes.BAD_REQUEST);
 
     // Act
     registry.register(CustomError, handler);
@@ -116,7 +116,7 @@ describe('Class: ErrorHandlerRegistry', () => {
   it('returns null when no handler is found', () => {
     // Prepare
     const registry = new ErrorHandlerRegistry({ logger: console });
-    const handler = createErrorHandler(HttpErrorCodes.BAD_REQUEST);
+    const handler = createErrorHandler(HttpStatusCodes.BAD_REQUEST);
 
     // Act
     registry.register(CustomError, handler);
@@ -129,9 +129,9 @@ describe('Class: ErrorHandlerRegistry', () => {
   it('prioritizes exact constructor match over instanceof', () => {
     // Prepare
     const registry = new ErrorHandlerRegistry({ logger: console });
-    const baseHandler = createErrorHandler(HttpErrorCodes.BAD_REQUEST);
+    const baseHandler = createErrorHandler(HttpStatusCodes.BAD_REQUEST);
     const specificHandler = createErrorHandler(
-      HttpErrorCodes.INTERNAL_SERVER_ERROR
+      HttpStatusCodes.INTERNAL_SERVER_ERROR
     );
 
     // Act
@@ -145,9 +145,9 @@ describe('Class: ErrorHandlerRegistry', () => {
   it('prioritizes instanceof match over name-based matching', () => {
     // Prepare
     const registry = new ErrorHandlerRegistry({ logger: console });
-    const baseHandler = createErrorHandler(HttpErrorCodes.BAD_REQUEST);
+    const baseHandler = createErrorHandler(HttpStatusCodes.BAD_REQUEST);
     const nameHandler = createErrorHandler(
-      HttpErrorCodes.INTERNAL_SERVER_ERROR
+      HttpStatusCodes.INTERNAL_SERVER_ERROR
     );
 
     // Create a class with different name but register with name matching

@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent } from 'aws-lambda';
-import type { Middleware } from '../../../src/types/rest.js';
+import type { HandlerResponse, Middleware } from '../../../src/types/rest.js';
 
 export const createTestEvent = (
   path: string,
@@ -20,7 +20,7 @@ export const createTestEvent = (
     httpMethod,
     path,
     domainName: 'localhost',
-  } as any,
+  } as APIGatewayProxyEvent['requestContext'],
   resource: '',
 });
 
@@ -49,7 +49,7 @@ export const createThrowingMiddleware = (
 export const createReturningMiddleware = (
   name: string,
   executionOrder: string[],
-  response: any
+  response: HandlerResponse
 ): Middleware => {
   return async () => {
     executionOrder.push(name);

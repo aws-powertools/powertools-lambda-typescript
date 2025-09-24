@@ -1,7 +1,7 @@
 import type { CorsOptions, Middleware } from '../../types/rest.js';
 import {
   DEFAULT_CORS_OPTIONS,
-  HttpErrorCodes,
+  HttpStatusCodes,
   HttpVerbs,
 } from '../constants.js';
 
@@ -123,7 +123,7 @@ export const cors = (options?: CorsOptions): Middleware => {
         reqCtx.res.headers.append('access-control-allow-headers', header);
       }
       return new Response(null, {
-        status: HttpErrorCodes.NO_CONTENT,
+        status: HttpStatusCodes.NO_CONTENT,
         headers: reqCtx.res.headers,
       });
     }

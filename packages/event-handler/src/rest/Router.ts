@@ -21,7 +21,7 @@ import type {
   RestRouterOptions,
   RouteHandler,
 } from '../types/rest.js';
-import { HttpErrorCodes, HttpVerbs } from './constants.js';
+import { HttpStatusCodes, HttpVerbs } from './constants.js';
 import {
   handlerResultToProxyResult,
   handlerResultToWebResponse,
@@ -214,7 +214,7 @@ class Router {
       // We can't throw a MethodNotAllowedError outside the try block as it
       // will be converted to an internal server error by the API Gateway runtime
       return {
-        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
         body: '',
       };
     }
@@ -327,14 +327,15 @@ class Router {
         }
         if (!body.statusCode) {
           if (error instanceof NotFoundError) {
-            body.statusCode = HttpErrorCodes.NOT_FOUND;
+            body.statusCode = HttpStatusCodes.NOT_FOUND;
           } else if (error instanceof MethodNotAllowedError) {
-            body.statusCode = HttpErrorCodes.METHOD_NOT_ALLOWED;
+            body.statusCode = HttpStatusCodes.METHOD_NOT_ALLOWED;
           }
         }
         return new Response(JSON.stringify(body), {
           status:
-            (body.statusCode as number) ?? HttpErrorCodes.INTERNAL_SERVER_ERROR,
+            (body.statusCode as number) ??
+            HttpStatusCodes.INTERNAL_SERVER_ERROR,
           headers: { 'Content-Type': 'application/json' },
         });
       } catch (handlerError) {

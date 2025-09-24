@@ -1,7 +1,7 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
-import { HttpErrorCodes, Router } from '../../../../src/rest/index.js';
+import { HttpStatusCodes, Router } from '../../../../src/rest/index.js';
 import type {
   Middleware,
   Path,
@@ -176,7 +176,7 @@ describe('Class: Router - Middleware', () => {
       );
 
       // Assess
-      expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
       const body = JSON.parse(result.body);
       expect(body.message).toContain('next() called multiple times');
     });
@@ -234,7 +234,7 @@ describe('Class: Router - Middleware', () => {
 
       // Assess
       expect(executionOrder).toEqual(['middleware1']);
-      expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     });
 
     it('handles errors thrown in middleware after next()', async () => {
@@ -266,7 +266,7 @@ describe('Class: Router - Middleware', () => {
         'handler',
         'middleware1-end',
       ]);
-      expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     });
 
     it('propagates handler errors through middleware chain', async () => {
@@ -294,7 +294,7 @@ describe('Class: Router - Middleware', () => {
         'middleware2-start',
         'handler',
       ]);
-      expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     });
 
     it('handles middleware not calling next()', async () => {
@@ -318,7 +318,7 @@ describe('Class: Router - Middleware', () => {
 
       // Assess
       expect(executionOrder).toEqual(['middleware1']);
-      expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+      expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     });
 
     it('handles middleware returning JSON objects', async () => {

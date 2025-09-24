@@ -1,7 +1,7 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it } from 'vitest';
 import {
-  HttpErrorCodes,
+  HttpStatusCodes,
   HttpVerbs,
   InternalServerError,
   Router,
@@ -50,7 +50,7 @@ describe('Class: Router - Basic Routing', () => {
         context
       );
 
-      expect(result.statusCode).toBe(HttpErrorCodes.METHOD_NOT_ALLOWED);
+      expect(result.statusCode).toBe(HttpStatusCodes.METHOD_NOT_ALLOWED);
       expect(result.body).toEqual('');
     }
   );

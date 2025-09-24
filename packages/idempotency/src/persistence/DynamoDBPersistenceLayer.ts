@@ -168,9 +168,9 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
        * |       (in_progress_expiry)                                          (expiry)
        *
        * Conditions to successfully save a record:
-       * * The idempotency key does not exist:
-       *   - first time that this invocation key is used
-       *   - previous invocation with the same key was deleted due to TTL
+       * - The idempotency key does not exist:
+       * - first time that this invocation key is used
+       * - previous invocation with the same key was deleted due to TTL
        */
       const idempotencyKeyDoesNotExist = 'attribute_not_exists(#id)';
       // * The idempotency key exists but it is expired

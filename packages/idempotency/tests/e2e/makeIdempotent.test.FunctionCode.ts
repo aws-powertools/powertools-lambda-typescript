@@ -90,7 +90,7 @@ export const handlerCustomized = async (
  * Test idempotent Lambda handler with JMESPath expression to extract event key.
  */
 export const handlerLambda = makeIdempotent(
-  async (event: { body: string }, context: Context) => {
+  (event: { body: string }, context: Context) => {
     logger.addContext(context);
     const body = JSON.parse(event.body);
     logger.info('foo', { details: body.foo });

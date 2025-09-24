@@ -2,7 +2,7 @@ import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
 import { IdempotencyConfig } from '../../src/IdempotencyConfig.js';
-import { idempotent } from '../../src/idempotencyDecorator';
+import { idempotent } from '../../src/idempotencyDecorator.js';
 import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
 
 const IDEMPOTENCY_TABLE_NAME =
@@ -44,10 +44,7 @@ class DefaultLambda implements LambdaInterface {
     persistenceStore: dynamoDBPersistenceLayerCustomized,
     config: config,
   })
-  public async handlerCustomized(
-    event: { foo: string },
-    context: Context
-  ): Promise<string> {
+  public handlerCustomized(event: { foo: string }, context: Context) {
     config.registerLambdaContext(context);
     logger.info('Processed event', { details: event.foo });
 
@@ -62,10 +59,10 @@ class DefaultLambda implements LambdaInterface {
       eventKeyJmesPath: 'foo',
     }),
   })
-  public async handlerExpired(
+  public handlerExpired(
     event: { foo: string; invocation: number },
     context: Context
-  ): Promise<{ foo: string; invocation: number }> {
+  ) {
     logger.addContext(context);
 
     logger.info('Processed event', { details: event.foo });
@@ -77,10 +74,7 @@ class DefaultLambda implements LambdaInterface {
   }
 
   @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
-  public async handlerParallel(
-    event: { foo: string },
-    context: Context
-  ): Promise<string> {
+  public async handlerParallel(event: { foo: string }, context: Context) {
     logger.addContext(context);
 
     await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -99,7 +93,7 @@ class DefaultLambda implements LambdaInterface {
   public async handlerTimeout(
     event: { foo: string; invocation: number },
     context: Context
-  ): Promise<{ foo: string; invocation: number }> {
+  ) {
     logger.addContext(context);
 
     if (event.invocation === 0) {
@@ -145,7 +139,7 @@ class LambdaWithKeywordArgument implements LambdaInterface {
     config: config,
     dataIndexArgument: 1,
   })
-  public async process(id: string, foo: string): Promise<string> {
+  public process(id: string, foo: string) {
     logger.info('Got test event', { id, foo });
 
     return `idempotent result: ${foo}`;

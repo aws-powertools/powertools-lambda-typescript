@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import { describe, expect, it } from 'vitest';
 import { validator } from '../../src/decorator.js';
 import { SchemaValidationError } from '../../src/errors.js';
@@ -21,11 +22,12 @@ const outboundSchema = {
 };
 
 describe('Decorator: validator', () => {
-  it('should validate inbound and outbound successfully', () => {
+  it('validates both inbound and outbound successfully', async () => {
     // Prepare
     class TestClass {
       @validator({ inboundSchema, outboundSchema })
-      multiply(input: { value: number }): { result: number } {
+      async multiply(input: { value: number }): Promise<{ result: number }> {
+        await setTimeout(1); // simulate some processing time
         return { result: input.value * 2 };
       }
     }
@@ -33,17 +35,18 @@ describe('Decorator: validator', () => {
     const input = { value: 5 };
 
     // Act
-    const output = instance.multiply(input);
+    const output = await instance.multiply(input);
 
     // Assess
     expect(output).toEqual({ result: 10 });
   });
 
-  it('should throw error on inbound validation failure', () => {
+  it('throws an error on inbound validation failure', async () => {
     // Prepare
     class TestClass {
       @validator({ inboundSchema, outboundSchema })
-      multiply(input: { value: number }): { result: number } {
+      async multiply(input: { value: number }): Promise<{ result: number }> {
+        await setTimeout(1); // simulate some processing time
         return { result: input.value * 2 };
       }
     }
@@ -53,28 +56,34 @@ describe('Decorator: validator', () => {
     };
 
     // Act & Assess
-    expect(instance.multiply(invalidInput)).toThrow(SchemaValidationError);
+    await expect(instance.multiply(invalidInput)).rejects.toThrow(
+      SchemaValidationError
+    );
   });
 
-  it('should throw error on outbound validation failure', () => {
+  it('throws an error on outbound validation failure', async () => {
     // Prepare
     class TestClassInvalid {
       @validator({ inboundSchema, outboundSchema })
-      multiply(_input: { value: number }) {
+      async multiply(_input: { value: number }) {
+        await setTimeout(1); // simulate some processing time
         return { result: 'invalid' };
       }
     }
     const instance = new TestClassInvalid();
 
     // Act & Assess
-    expect(instance.multiply({ value: 5 })).toThrow(SchemaValidationError);
+    await expect(instance.multiply({ value: 5 })).rejects.toThrow(
+      SchemaValidationError
+    );
   });
 
-  it('should no-op when no schemas are provided', () => {
+  it('results in a no-op when no schemas are provided', async () => {
     // Prepare
     class TestClassNoOp {
       @validator({})
-      echo(input: unknown): unknown {
+      async echo(input: unknown): Promise<unknown> {
+        await setTimeout(1); // simulate some processing time
         return input;
       }
     }
@@ -82,17 +91,18 @@ describe('Decorator: validator', () => {
     const data = { foo: 'bar' };
 
     // Act
-    const result = instance.echo(data);
+    const result = await instance.echo(data);
 
     // Assess
     expect(result).toEqual(data);
   });
 
-  it('should validate inbound only', () => {
+  it('validates the inbound schema only', async () => {
     // Prepare
     class TestClassInbound {
       @validator({ inboundSchema })
-      process(input: { value: number }): { data: string } {
+      async process(input: { value: number }): Promise<{ data: string }> {
+        await setTimeout(1); // simulate some processing time
         return { data: JSON.stringify(input) };
       }
     }
@@ -100,17 +110,18 @@ describe('Decorator: validator', () => {
     const input = { value: 10 };
 
     // Act
-    const output = instance.process(input);
+    const output = await instance.process(input);
 
     // Assess
     expect(output).toEqual({ data: JSON.stringify(input) });
   });
 
-  it('should validate outbound only', () => {
+  it('validates the outbound schema only', async () => {
     // Prepare
     class TestClassOutbound {
       @validator({ outboundSchema })
-      process(_input: { text: string }): { result: number } {
+      async process(_input: { text: string }): Promise<{ result: number }> {
+        await setTimeout(1); // simulate some processing time
         return { result: 42 };
       }
     }
@@ -118,7 +129,7 @@ describe('Decorator: validator', () => {
     const input = { text: 'hello' };
 
     // Act
-    const output = instance.process(input);
+    const output = await instance.process(input);
 
     // Assess
     expect(output).toEqual({ result: 42 });

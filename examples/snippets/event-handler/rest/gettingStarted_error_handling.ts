@@ -17,7 +17,6 @@ app.errorHandler(GetTodoError, async (error, reqCtx) => {
   return {
     statusCode: HttpErrorCodes.BAD_REQUEST,
     message: `Bad request: ${error.message} - ${reqCtx.req.headers.get('x-correlation-id')}`,
-    error: 'BadRequest',
   };
 });
 

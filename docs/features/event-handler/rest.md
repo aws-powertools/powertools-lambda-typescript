@@ -148,6 +148,8 @@ You can use the `errorHandler()` method as a higher-order function or class meth
 
 This allows you to catch and return custom error responses, or perform any other error handling logic you need.
 
+Error handlers receive the error object and the request context as arguments, and can return a [`Response` object](#returning-response-objects) or a JavaScript object that will be auto-serialized as per the [response auto-serialization](#response-auto-serialization) section.
+
 !!! tip "You can also pass a list of error classes to the `errorHandler()` method."
 
 === "index.ts"
@@ -158,15 +160,17 @@ This allows you to catch and return custom error responses, or perform any other
 
 ### Throwing HTTP errors
 
-You can throw HTTP errors in your route handlers to return specific HTTP status codes and messages. Event Handler provides a set of built-in HTTP error classes that you can use to throw common HTTP errors.
+You can throw HTTP errors in your route handlers to stop execution and return specific HTTP status codes and messages. Event Handler provides a set of built-in HTTP error classes that you can use to throw common HTTP errors.
 
 This ensures that your Lambda function doesn't fail but returns a well-defined HTTP error response to the client.
 
 If you need to send custom headers or a different response structure/code, you can use the [Response](#returning-response-objects) object instead.
 
+!!! tip "You can throw HTTP errors in your route handlers, middleware, or custom error handlers!"
+
 === "index.ts"
 
-    ```ts hl_lines="3 10"
+    ```ts hl_lines="3 11"
     --8<-- "examples/snippets/event-handler/rest/gettingStarted_throwing_http_errors.ts:3"
     ```
 
@@ -202,7 +206,7 @@ To avoid repeating the prefix in each route definition, you can use the `prefix`
 
 === "index.ts"
 
-    ```ts hl_lines="6 9"
+    ```ts hl_lines="4 7"
     --8<-- "examples/snippets/event-handler/rest/gettingStarted_route_prefix.ts:3"
     ```
 
@@ -317,6 +321,11 @@ that no post-processing of your request will occur.
 
 A common pattern to create reusable middleware is to implement a factory functions that
 accepts configuration options and returns a middleware function.
+
+!!! note "Always `await next()` unless returning early"
+    Middleware functions must always call `await next()` to pass control to the next middleware
+    in the chain, unless you are intentionally returning early by returning a `Response` or
+    JSON object.
 
 === "index.ts"
 

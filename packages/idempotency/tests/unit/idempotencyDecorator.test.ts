@@ -15,10 +15,7 @@ describe('Given a class with a function to decorate', () => {
       @idempotent({
         persistenceStore: new PersistenceLayerTestClass(),
       })
-      public async handler(
-        _event: unknown,
-        _context: Context
-      ): Promise<string> {
+      public handler(_event: unknown, _context: Context) {
         return this.privateMethod();
       }
 
@@ -48,10 +45,7 @@ describe('Given a class with a function to decorate', () => {
         config: idempotencyConfig,
         keyPrefix: 'my-custom-prefix',
       })
-      public async handler(
-        _event: unknown,
-        _context: Context
-      ): Promise<boolean> {
+      public handler(_event: unknown, _context: Context) {
         return true;
       }
     }

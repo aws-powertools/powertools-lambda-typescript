@@ -16,14 +16,12 @@ const logger = new Logger();
 /**
  * Test handler with sequential execution.
  */
-export const handler = middy(
-  async (event: { foo: string }, context: Context) => {
-    logger.addContext(context);
-    logger.info('foo', { details: event.foo });
+export const handler = middy((event: { foo: string }, context: Context) => {
+  logger.addContext(context);
+  logger.info('foo', { details: event.foo });
 
-    return event.foo;
-  }
-).use(
+  return event.foo;
+}).use(
   makeHandlerIdempotent({
     persistenceStore: dynamoDBPersistenceLayer,
   })
@@ -97,7 +95,7 @@ export const handlerTimeout = middy(
  * was processed by looking at the value in the stored idempotency record.
  */
 export const handlerExpired = middy(
-  async (event: { foo: string; invocation: number }, context: Context) => {
+  (event: { foo: string; invocation: number }, context: Context) => {
     logger.addContext(context);
 
     logger.info('Processed event', { details: event.foo });

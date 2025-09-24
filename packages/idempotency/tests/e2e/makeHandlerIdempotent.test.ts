@@ -192,15 +192,13 @@ describe('Idempotency E2E tests, middy middleware usage', () => {
      * We filter the logs to find which one was successful and which one failed, then we check
      * that they contain the expected logs.
      */
-    const successfulInvocationLogs = functionLogs.find(
-      (functionLog) =>
-        functionLog.find((log) => log.includes('Processed event')) !== undefined
+    const successfulInvocationLogs = functionLogs.find((functionLog) =>
+      functionLog.some((log) => log.includes('Processed event'))
     );
-    const failedInvocationLogs = functionLogs.find(
-      (functionLog) =>
-        functionLog.find((log) =>
-          log.includes('There is already an execution in progress')
-        ) !== undefined
+    const failedInvocationLogs = functionLogs.find((functionLog) =>
+      functionLog.some((log) =>
+        log.includes('There is already an execution in progress')
+      )
     );
     expect(successfulInvocationLogs).toHaveLength(1);
     expect(failedInvocationLogs).toHaveLength(1);

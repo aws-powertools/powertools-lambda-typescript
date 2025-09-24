@@ -4,7 +4,7 @@ import type {
   HandlerResponse,
   HttpStatusCode,
 } from '../types/rest.js';
-import { COMPRESSION_ENCODING_TYPES, HttpErrorCodes } from './constants.js';
+import { COMPRESSION_ENCODING_TYPES, HttpStatusCodes } from './constants.js';
 import { isAPIGatewayProxyResult } from './utils.js';
 
 /**
@@ -190,7 +190,7 @@ export const handlerResultToWebResponse = (
  */
 export const handlerResultToProxyResult = async (
   response: HandlerResponse,
-  statusCode: HttpStatusCode = HttpErrorCodes.OK
+  statusCode: HttpStatusCode = HttpStatusCodes.OK
 ): Promise<APIGatewayProxyResult> => {
   if (isAPIGatewayProxyResult(response)) {
     return response;

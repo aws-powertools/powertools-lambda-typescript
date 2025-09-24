@@ -2,7 +2,7 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   BadRequestError,
-  HttpErrorCodes,
+  HttpStatusCodes,
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
@@ -20,7 +20,7 @@ describe('Class: Router - Error Handling', () => {
     vi.stubEnv('POWERTOOLS_DEV', 'true');
 
     app.errorHandler(BadRequestError, async (error) => ({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       error: 'Bad Request',
       message: `Handled: ${error.message}`,
     }));
@@ -34,9 +34,9 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.BAD_REQUEST,
+        statusCode: HttpStatusCodes.BAD_REQUEST,
         error: 'Bad Request',
         message: 'Handled: test error',
       }),
@@ -62,11 +62,11 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.NOT_FOUND,
+      statusCode: HttpStatusCodes.NOT_FOUND,
       body: JSON.stringify({
         error: 'Not Found',
         message: 'Custom: Route /nonexistent for method GET not found',
-        statusCode: HttpErrorCodes.NOT_FOUND,
+        statusCode: HttpStatusCodes.NOT_FOUND,
       }),
       headers: { 'content-type': 'application/json' },
       isBase64Encoded: false,
@@ -91,11 +91,11 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+      statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
       body: JSON.stringify({
         error: 'Method Not Allowed',
         message: 'Custom: POST not allowed',
-        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
       }),
       headers: { 'content-type': 'application/json' },
       isBase64Encoded: false,
@@ -119,9 +119,9 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     const body = JSON.parse(result.body);
-    expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    expect(body.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(body.error).toBe('Internal Server Error');
     expect(body.message).toBe('Internal Server Error');
   });
@@ -139,9 +139,9 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     const body = JSON.parse(result.body);
-    expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    expect(body.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(body.error).toBe('Internal Server Error');
     expect(body.message).toBe('Internal Server Error');
   });
@@ -151,13 +151,13 @@ describe('Class: Router - Error Handling', () => {
     const app = new Router();
 
     app.errorHandler(Error, async () => ({
-      statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+      statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
       error: 'Generic Error',
       message: 'Generic handler',
     }));
 
     app.errorHandler(BadRequestError, async () => ({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       error: 'Bad Request',
       message: 'Specific handler',
     }));
@@ -171,9 +171,9 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.BAD_REQUEST,
+        statusCode: HttpStatusCodes.BAD_REQUEST,
         error: 'Bad Request',
         message: 'Specific handler',
       }),
@@ -195,9 +195,9 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+      statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+        statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
         error: 'InternalServerError',
         message: 'service error',
       }),
@@ -219,9 +219,9 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     const body = JSON.parse(result.body);
-    expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    expect(body.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(body.error).toBe('Internal Server Error');
     expect(body.message).toBe('Internal Server Error');
     expect(body.stack).toBeUndefined();
@@ -241,9 +241,9 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     const body = JSON.parse(result.body);
-    expect(body.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    expect(body.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(body.error).toBe('Internal Server Error');
     expect(body.message).toBe('debug error details');
     expect(body.stack).toBeDefined();
@@ -258,7 +258,7 @@ describe('Class: Router - Error Handling', () => {
     app.errorHandler(
       [BadRequestError, MethodNotAllowedError],
       async (error: Error) => ({
-        statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+        statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
         error: 'Validation Error',
         message: `Array handler: ${error.message}`,
       })
@@ -284,9 +284,9 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     const expectedBadResult = {
-      statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+      statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+        statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
         error: 'Validation Error',
         message: 'Array handler: bad request',
       }),
@@ -294,9 +294,9 @@ describe('Class: Router - Error Handling', () => {
       isBase64Encoded: false,
     };
     const expectedMethodResult = {
-      statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+      statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+        statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
         error: 'Validation Error',
         message: 'Array handler: method not allowed',
       }),
@@ -313,13 +313,13 @@ describe('Class: Router - Error Handling', () => {
     const app = new Router();
 
     app.errorHandler(BadRequestError, async () => ({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       error: 'First Handler',
       message: 'first',
     }));
 
     app.errorHandler(BadRequestError, async (error) => ({
-      statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+      statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
       error: 'Second Handler',
       message: `second: ${error.message}`,
     }));
@@ -333,9 +333,9 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+      statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.UNPROCESSABLE_ENTITY,
+        statusCode: HttpStatusCodes.UNPROCESSABLE_ENTITY,
         error: 'Second Handler',
         message: 'second: test error',
       }),
@@ -349,7 +349,7 @@ describe('Class: Router - Error Handling', () => {
     const app = new Router();
 
     app.errorHandler(BadRequestError, async (error) => ({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       error: 'Bad Request',
       message: error.message,
     }));
@@ -371,7 +371,7 @@ describe('Class: Router - Error Handling', () => {
     const testEvent = createTestEvent('/test', 'GET');
 
     app.errorHandler(BadRequestError, async (error, reqCtx) => ({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       error: 'Bad Request',
       message: error.message,
       hasRequest: reqCtx.req instanceof Request,
@@ -405,7 +405,7 @@ describe('Class: Router - Error Handling', () => {
             foo: 'bar',
           }),
           {
-            status: HttpErrorCodes.BAD_REQUEST,
+            status: HttpStatusCodes.BAD_REQUEST,
             headers: {
               'content-type': 'application/json',
             },
@@ -422,7 +422,7 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       body: JSON.stringify({
         foo: 'bar',
       }),
@@ -436,7 +436,7 @@ describe('Class: Router - Error Handling', () => {
     const app = new Router();
 
     app.errorHandler(BadRequestError, async () => ({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       body: JSON.stringify({
         foo: 'bar',
       }),
@@ -451,7 +451,7 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       body: JSON.stringify({
         foo: 'bar',
       }),
@@ -473,7 +473,7 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+      statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
       body: JSON.stringify({
         foo: 'bar',
       }),
@@ -499,9 +499,9 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.NOT_FOUND,
+      statusCode: HttpStatusCodes.NOT_FOUND,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.NOT_FOUND,
+        statusCode: HttpStatusCodes.NOT_FOUND,
         error: 'NotFoundError',
         message: 'This error is thrown from the error handler',
       }),
@@ -529,9 +529,9 @@ describe('Class: Router - Error Handling', () => {
 
     // Assess
     expect(result).toEqual({
-      statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+      statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
       body: JSON.stringify({
-        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
         error: 'MethodNotAllowedError',
         message: 'This error is thrown from the error handler',
       }),
@@ -557,7 +557,7 @@ describe('Class: Router - Error Handling', () => {
     const result = await app.resolve(createTestEvent('/test', 'GET'), context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpErrorCodes.INTERNAL_SERVER_ERROR);
+    expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     const body = JSON.parse(result.body);
     expect(body.error).toBe('Internal Server Error');
     expect(body.message).toBe('This error is thrown from the error handler');

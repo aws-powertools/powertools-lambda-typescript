@@ -1,8 +1,8 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type { HandlerResponse, HttpStatusCode } from '../types/rest.js';
-import { HttpErrorCodes } from './constants.js';
+import { HttpStatusCodes } from './constants.js';
 
-export class RouteMatchingError extends Error {
+class RouteMatchingError extends Error {
   constructor(
     message: string,
     public readonly path: string,
@@ -13,14 +13,14 @@ export class RouteMatchingError extends Error {
   }
 }
 
-export class ParameterValidationError extends RouteMatchingError {
+class ParameterValidationError extends RouteMatchingError {
   constructor(public readonly issues: string[]) {
     super(`Parameter validation failed: ${issues.join(', ')}`, '', '');
     this.name = 'ParameterValidationError';
   }
 }
 
-export abstract class ServiceError extends Error {
+abstract class ServiceError extends Error {
   abstract readonly statusCode: HttpStatusCode;
   abstract readonly errorType: string;
   public readonly details?: Record<string, unknown>;
@@ -47,8 +47,8 @@ export abstract class ServiceError extends Error {
   }
 }
 
-export class BadRequestError extends ServiceError {
-  readonly statusCode = HttpErrorCodes.BAD_REQUEST;
+class BadRequestError extends ServiceError {
+  readonly statusCode = HttpStatusCodes.BAD_REQUEST;
   readonly errorType = 'BadRequestError';
 
   constructor(
@@ -57,11 +57,12 @@ export class BadRequestError extends ServiceError {
     details?: Record<string, unknown>
   ) {
     super(message, options, details);
+    this.name = 'BadRequestError';
   }
 }
 
-export class UnauthorizedError extends ServiceError {
-  readonly statusCode = HttpErrorCodes.UNAUTHORIZED;
+class UnauthorizedError extends ServiceError {
+  readonly statusCode = HttpStatusCodes.UNAUTHORIZED;
   readonly errorType = 'UnauthorizedError';
 
   constructor(
@@ -70,11 +71,12 @@ export class UnauthorizedError extends ServiceError {
     details?: Record<string, unknown>
   ) {
     super(message, options, details);
+    this.name = 'UnauthorizedError';
   }
 }
 
-export class ForbiddenError extends ServiceError {
-  readonly statusCode = HttpErrorCodes.FORBIDDEN;
+class ForbiddenError extends ServiceError {
+  readonly statusCode = HttpStatusCodes.FORBIDDEN;
   readonly errorType = 'ForbiddenError';
 
   constructor(
@@ -83,11 +85,12 @@ export class ForbiddenError extends ServiceError {
     details?: Record<string, unknown>
   ) {
     super(message, options, details);
+    this.name = 'ForbiddenError';
   }
 }
 
-export class NotFoundError extends ServiceError {
-  readonly statusCode = HttpErrorCodes.NOT_FOUND;
+class NotFoundError extends ServiceError {
+  readonly statusCode = HttpStatusCodes.NOT_FOUND;
   readonly errorType = 'NotFoundError';
 
   constructor(
@@ -96,11 +99,12 @@ export class NotFoundError extends ServiceError {
     details?: Record<string, unknown>
   ) {
     super(message, options, details);
+    this.name = 'NotFoundError';
   }
 }
 
-export class MethodNotAllowedError extends ServiceError {
-  readonly statusCode = HttpErrorCodes.METHOD_NOT_ALLOWED;
+class MethodNotAllowedError extends ServiceError {
+  readonly statusCode = HttpStatusCodes.METHOD_NOT_ALLOWED;
   readonly errorType = 'MethodNotAllowedError';
 
   constructor(
@@ -109,11 +113,12 @@ export class MethodNotAllowedError extends ServiceError {
     details?: Record<string, unknown>
   ) {
     super(message, options, details);
+    this.name = 'MethodNotAllowedError';
   }
 }
 
-export class RequestTimeoutError extends ServiceError {
-  readonly statusCode = HttpErrorCodes.REQUEST_TIMEOUT;
+class RequestTimeoutError extends ServiceError {
+  readonly statusCode = HttpStatusCodes.REQUEST_TIMEOUT;
   readonly errorType = 'RequestTimeoutError';
 
   constructor(
@@ -122,11 +127,12 @@ export class RequestTimeoutError extends ServiceError {
     details?: Record<string, unknown>
   ) {
     super(message, options, details);
+    this.name = 'RequestTimeoutError';
   }
 }
 
-export class RequestEntityTooLargeError extends ServiceError {
-  readonly statusCode = HttpErrorCodes.REQUEST_ENTITY_TOO_LARGE;
+class RequestEntityTooLargeError extends ServiceError {
+  readonly statusCode = HttpStatusCodes.REQUEST_ENTITY_TOO_LARGE;
   readonly errorType = 'RequestEntityTooLargeError';
 
   constructor(
@@ -135,11 +141,12 @@ export class RequestEntityTooLargeError extends ServiceError {
     details?: Record<string, unknown>
   ) {
     super(message, options, details);
+    this.name = 'RequestEntityTooLargeError';
   }
 }
 
-export class InternalServerError extends ServiceError {
-  readonly statusCode = HttpErrorCodes.INTERNAL_SERVER_ERROR;
+class InternalServerError extends ServiceError {
+  readonly statusCode = HttpStatusCodes.INTERNAL_SERVER_ERROR;
   readonly errorType = 'InternalServerError';
 
   constructor(
@@ -148,11 +155,12 @@ export class InternalServerError extends ServiceError {
     details?: Record<string, unknown>
   ) {
     super(message, options, details);
+    this.name = 'InternalServerError';
   }
 }
 
-export class ServiceUnavailableError extends ServiceError {
-  readonly statusCode = HttpErrorCodes.SERVICE_UNAVAILABLE;
+class ServiceUnavailableError extends ServiceError {
+  readonly statusCode = HttpStatusCodes.SERVICE_UNAVAILABLE;
   readonly errorType = 'ServiceUnavailableError';
 
   constructor(
@@ -161,5 +169,21 @@ export class ServiceUnavailableError extends ServiceError {
     details?: Record<string, unknown>
   ) {
     super(message, options, details);
+    this.name = 'ServiceUnavailableError';
   }
 }
+
+export {
+  BadRequestError,
+  ForbiddenError,
+  InternalServerError,
+  MethodNotAllowedError,
+  NotFoundError,
+  ParameterValidationError,
+  RequestEntityTooLargeError,
+  RequestTimeoutError,
+  RouteMatchingError,
+  ServiceError,
+  ServiceUnavailableError,
+  UnauthorizedError,
+};

@@ -3,11 +3,12 @@ import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   BadRequestError,
-  HttpErrorCodes,
+  HttpStatusCodes,
   MethodNotAllowedError,
   type NotFoundError,
   Router,
 } from '../../../../src/rest/index.js';
+import type { RequestContext } from '../../../../src/types/rest.js';
 import { createTestEvent, createTrackingMiddleware } from '../helpers.js';
 
 describe('Class: Router - Decorators', () => {
@@ -219,7 +220,7 @@ describe('Class: Router - Decorators', () => {
         @app.errorHandler(BadRequestError)
         public async handleBadRequest(error: BadRequestError) {
           return {
-            statusCode: HttpErrorCodes.BAD_REQUEST,
+            statusCode: HttpStatusCodes.BAD_REQUEST,
             error: 'Bad Request',
             message: `Decorated: ${error.message}`,
           };
@@ -245,9 +246,9 @@ describe('Class: Router - Decorators', () => {
 
       // Assess
       expect(result).toEqual({
-        statusCode: HttpErrorCodes.BAD_REQUEST,
+        statusCode: HttpStatusCodes.BAD_REQUEST,
         body: JSON.stringify({
-          statusCode: HttpErrorCodes.BAD_REQUEST,
+          statusCode: HttpStatusCodes.BAD_REQUEST,
           error: 'Bad Request',
           message: 'Decorated: test error',
         }),
@@ -266,7 +267,7 @@ describe('Class: Router - Decorators', () => {
         @app.notFound()
         public async handleNotFound(error: NotFoundError) {
           return {
-            statusCode: HttpErrorCodes.NOT_FOUND,
+            statusCode: HttpStatusCodes.NOT_FOUND,
             error: 'Not Found',
             message: `${this.scope}: ${error.message}`,
           };
@@ -288,9 +289,9 @@ describe('Class: Router - Decorators', () => {
 
       // Assess
       expect(result).toEqual({
-        statusCode: HttpErrorCodes.NOT_FOUND,
+        statusCode: HttpStatusCodes.NOT_FOUND,
         body: JSON.stringify({
-          statusCode: HttpErrorCodes.NOT_FOUND,
+          statusCode: HttpStatusCodes.NOT_FOUND,
           error: 'Not Found',
           message: 'scoped: Route /nonexistent for method GET not found',
         }),
@@ -307,7 +308,7 @@ describe('Class: Router - Decorators', () => {
         @app.methodNotAllowed()
         public async handleMethodNotAllowed(error: MethodNotAllowedError) {
           return {
-            statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+            statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
             error: 'Method Not Allowed',
             message: `Decorated: ${error.message}`,
           };
@@ -333,9 +334,9 @@ describe('Class: Router - Decorators', () => {
 
       // Assess
       expect(result).toEqual({
-        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
         body: JSON.stringify({
-          statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+          statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
           error: 'Method Not Allowed',
           message: 'Decorated: POST not allowed',
         }),
@@ -354,7 +355,7 @@ describe('Class: Router - Decorators', () => {
         @app.errorHandler(BadRequestError)
         public async handleBadRequest(error: BadRequestError) {
           return {
-            statusCode: HttpErrorCodes.BAD_REQUEST,
+            statusCode: HttpStatusCodes.BAD_REQUEST,
             error: 'Bad Request',
             message: `${this.scope}: ${error.message}`,
           };
@@ -378,9 +379,9 @@ describe('Class: Router - Decorators', () => {
 
       // Assess
       expect(result).toEqual({
-        statusCode: HttpErrorCodes.BAD_REQUEST,
+        statusCode: HttpStatusCodes.BAD_REQUEST,
         body: JSON.stringify({
-          statusCode: HttpErrorCodes.BAD_REQUEST,
+          statusCode: HttpStatusCodes.BAD_REQUEST,
           error: 'Bad Request',
           message: 'scoped: test error',
         }),
@@ -398,7 +399,7 @@ describe('Class: Router - Decorators', () => {
 
       class Lambda {
         @app.get('/test')
-        public async getTest(reqCtx: any) {
+        public async getTest(reqCtx: RequestContext) {
           return {
             hasRequest: reqCtx.req instanceof Request,
             hasEvent: reqCtx.event === testEvent,
@@ -430,9 +431,12 @@ describe('Class: Router - Decorators', () => {
 
       class Lambda {
         @app.errorHandler(BadRequestError)
-        public async handleBadRequest(error: BadRequestError, reqCtx: any) {
+        public async handleBadRequest(
+          error: BadRequestError,
+          reqCtx: RequestContext
+        ) {
           return {
-            statusCode: HttpErrorCodes.BAD_REQUEST,
+            statusCode: HttpStatusCodes.BAD_REQUEST,
             error: 'Bad Request',
             message: error.message,
             hasRequest: reqCtx.req instanceof Request,

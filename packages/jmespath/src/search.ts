@@ -45,9 +45,9 @@ const parser = new Parser();
  * console.log(result); // { foo: 'bar' }
  * ```
  *
- * @param expression The JMESPath expression to use
- * @param data The JSON object to search
- * @param options The parsing options to use
+ * @param expression - The JMESPath expression to use
+ * @param data - The JSON object to search
+ * @param options - The parsing options to use
  */
 const search = (
   expression: string,

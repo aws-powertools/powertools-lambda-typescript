@@ -16,7 +16,7 @@ import { ArityError, JMESPathTypeError, VariadicArityError } from './errors.js';
  * this reason we wrap the original isTruthy function from the commons package
  * and add a check for numbers.
  *
- * @param value The value to check
+ * @param value - The value to check
  */
 const isTruthy = (value: unknown): boolean => {
   if (isNumber(value)) {
@@ -30,9 +30,9 @@ const isTruthy = (value: unknown): boolean => {
  * Cap a slice range value to the length of an array, taking into account
  * negative values and whether the step is negative.
  *
- * @param arrayLength The length of the array
- * @param value The value to cap
- * @param isStepNegative Whether the step is negative
+ * @param arrayLength - The length of the array
+ * @param value - The value to cap
+ * @param isStepNegative - Whether the step is negative
  */
 const capSliceRange = (
   arrayLength: number,
@@ -54,24 +54,24 @@ const capSliceRange = (
 
 /**
  * Given a start, stop, and step value, the sub elements in an array are extracted as follows:
- * * The first element in the extracted array is the index denoted by start.
- * * The last element in the extracted array is the index denoted by end - 1.
- * * The step value determines how many indices to skip after each element is selected from the array. An array of 1 (the default step) will not skip any indices. A step value of 2 will skip every other index while extracting elements from an array. A step value of -1 will extract values in reverse order from the array.
+ * - The first element in the extracted array is the index denoted by start.
+ * - The last element in the extracted array is the index denoted by end - 1.
+ * - The step value determines how many indices to skip after each element is selected from the array. An array of 1 (the default step) will not skip any indices. A step value of 2 will skip every other index while extracting elements from an array. A step value of -1 will extract values in reverse order from the array.
  *
  * Slice expressions adhere to the following rules:
- * * If a negative start position is given, it is calculated as the total length of the array plus the given start position.
- * * If no start position is given, it is assumed to be 0 if the given step is greater than 0 or the end of the array if the given step is less than 0.
- * * If a negative stop position is given, it is calculated as the total length of the array plus the given stop position.
- * * If no stop position is given, it is assumed to be the length of the array if the given step is greater than 0 or 0 if the given step is less than 0.
- * * If the given step is omitted, it it assumed to be 1.
- * * If the given step is 0, an invalid-value error MUST be raised (thrown before calling the function)
- * * If the element being sliced is not an array, the result is null (returned before calling the function)
- * * If the element being sliced is an array and yields no results, the result MUST be an empty array.
+ * - If a negative start position is given, it is calculated as the total length of the array plus the given start position.
+ * - If no start position is given, it is assumed to be 0 if the given step is greater than 0 or the end of the array if the given step is less than 0.
+ * - If a negative stop position is given, it is calculated as the total length of the array plus the given stop position.
+ * - If no stop position is given, it is assumed to be the length of the array if the given step is greater than 0 or 0 if the given step is less than 0.
+ * - If the given step is omitted, it it assumed to be 1.
+ * - If the given step is 0, an invalid-value error MUST be raised (thrown before calling the function)
+ * - If the element being sliced is not an array, the result is null (returned before calling the function)
+ * - If the element being sliced is an array and yields no results, the result MUST be an empty array.
  *
- * @param array The array to slice
- * @param start The start index
- * @param end The end index
- * @param step The step value
+ * @param array - The array to slice
+ * @param start - The start index
+ * @param end - The end index
+ * @param step - The step value
  */
 const sliceArray = <T>({
   array,
@@ -119,10 +119,10 @@ const sliceArray = <T>({
  * greater than or equal to the expected arity. If the number of arguments passed to the function
  * is less than the expected arity, a `VariadicArityError` is thrown.
  *
- * @param args The arguments passed to the function
- * @param argumentsSpecs The expected types for each argument
- * @param decoratedFuncName The name of the function being called
- * @param variadic Whether the function is variadic
+ * @param args - The arguments passed to the function
+ * @param argumentsSpecs - The expected types for each argument
+ * @param decoratedFuncName - The name of the function being called
+ * @param variadic - Whether the function is variadic
  */
 const arityCheck = (
   args: unknown[],
@@ -160,8 +160,8 @@ const arityCheck = (
  * passes. If the argument does not match any of the types, then
  * a JMESPathTypeError is thrown.
  *
- * @param args The arguments passed to the function
- * @param argumentsSpecs The expected types for each argument
+ * @param args - The arguments passed to the function
+ * @param argumentsSpecs - The expected types for each argument
  */
 const typeCheck = (
   args: unknown[],
@@ -182,24 +182,24 @@ const typeCheck = (
  * passes. If the argument does not match any of the types, then
  * a JMESPathTypeError is thrown.
  *
- * @param arg
- * @param argumentSpec
+ * @param arg - The argument to check
+ * @param argumentSpec - The expected types for the argument
  */
 const typeCheckArgument = (arg: unknown, argumentSpec: Array<string>): void => {
   let valid = false;
-  argumentSpec.forEach((type, index) => {
+  for (const [index, type] of argumentSpec.entries()) {
     if (valid) return;
     valid = checkIfArgumentTypeIsValid(arg, type, index, argumentSpec);
-  });
+  }
 };
 
 /**
  * Check if the argument is of the expected type.
  *
- * @param arg The argument to check
- * @param type The expected type
- * @param index The index of the type we are checking
- * @param argumentSpec The list of types to check against
+ * @param arg - The argument to check
+ * @param type - The expected type
+ * @param index - The index of the type we are checking
+ * @param argumentSpec - The list of types to check against
  */
 const checkIfArgumentTypeIsValid = (
   arg: unknown,
@@ -243,10 +243,10 @@ const checkIfArgumentTypeIsValid = (
 /**
  * Check if the argument is of the expected type.
  *
- * @param arg The argument to check
- * @param type The type to check against
- * @param argumentSpec The list of types to check against
- * @param hasMoreTypesToCheck Whether there are more types to check
+ * @param arg - The argument to check
+ * @param type - The type to check against
+ * @param argumentSpec - The list of types to check against
+ * @param hasMoreTypesToCheck - Whether there are more types to check
  */
 const typeCheckType = (
   arg: unknown,
@@ -266,9 +266,9 @@ const typeCheckType = (
 /**
  * Check if the argument is an array of complex types.
  *
- * @param arg The argument to check
- * @param type The type to check against
- * @param hasMoreTypesToCheck Whether there are more types to check
+ * @param arg - The argument to check
+ * @param type - The type to check against
+ * @param hasMoreTypesToCheck - Whether there are more types to check
  */
 const checkComplexArrayType = (
   arg: unknown[],
@@ -293,9 +293,9 @@ const checkComplexArrayType = (
 /**
  * Check if the argument is an expression.
  *
- * @param arg The argument to check
- * @param type The type to check against
- * @param hasMoreTypesToCheck Whether there are more types to check
+ * @param arg - The argument to check
+ * @param type - The type to check against
+ * @param hasMoreTypesToCheck - Whether there are more types to check
  */
 const checkExpressionType = (
   arg: unknown,
@@ -314,9 +314,9 @@ const checkExpressionType = (
 /**
  * Check if the argument is an object.
  *
- * @param arg The argument to check
- * @param type The type to check against
- * @param hasMoreTypesToCheck Whether there are more types to check
+ * @param arg - The argument to check
+ * @param type - The type to check against
+ * @param hasMoreTypesToCheck - Whether there are more types to check
  */
 const checkObjectType = (
   arg: unknown,

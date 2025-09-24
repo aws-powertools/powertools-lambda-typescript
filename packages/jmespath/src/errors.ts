@@ -23,7 +23,7 @@ class JMESPathError extends Error {
    * thrown. In some instances the expression is not known until after the
    * error is thrown (i.e. the error is thrown down the call stack).
    *
-   * @param expression The expression that was being parsed when the error occurred.
+   * @param expression - The expression that was being parsed when the error occurred.
    */
   public setExpression(expression: string): void {
     this.expression = expression;
@@ -163,7 +163,7 @@ class FunctionError extends JMESPathError {
    * alias. To avoid passing the function name down the call stack, we set it
    * after the error is thrown.
    *
-   * @param functionName The function that was being validated or executed when the error occurred.
+   * @param functionName - The function that was being validated or executed when the error occurred.
    */
   public setEvaluatedFunctionName(functionName: string): void {
     this.message = this.message.replace(
@@ -202,6 +202,12 @@ class ArityError extends FunctionError {
     }, received ${this.actualArity}`;
   }
 
+  /**
+   * Pluralizes a word based on the count.
+   *
+   * @param word - The word to pluralize
+   * @param count - The count to determine if the word should be pluralized
+   */
   protected pluralize(word: string, count: number): string {
     return count === 1 ? word : `${word}s`;
   }
@@ -262,6 +268,9 @@ class JMESPathTypeError extends FunctionError {
     }"`;
   }
 
+  /**
+   * Serialize the expected types for the error message.
+   */
   protected serializeExpectedTypes(): string {
     const types: string[] = [];
     for (const type of this.expectedTypes) {

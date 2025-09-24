@@ -6,11 +6,11 @@ sequenceDiagram
     participant Handler as Route Handler
 
     Request->>Router: Incoming Request
-    Router->>GM: Execute (params, reqCtx, next)
+    Router->>GM: Execute ({ reqCtx, next })
     Note over GM: Pre-processing
-    GM->>RM: Call next()
+    GM->>RM: Call await next()
     Note over RM: Pre-processing
-    RM->>Handler: Call next()
+    RM->>Handler: Call await next()
     Note over Handler: Execute handler
     Handler-->>RM: Return
     Note over RM: Post-processing

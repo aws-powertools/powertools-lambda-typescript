@@ -223,9 +223,8 @@ incoming request and your route handler. They provide a way to implement cross-c
 concerns like authentication, logging, validation, and response transformation without
 cluttering your route handlers.
 
-Each middleware function receives the following arguments:
+Each middleware function receives two arguments:
 
-* **params** - Route parameters extracted from the URL path
 * **reqCtx** - Request context containing the event, Lambda context, request, and response objects
 * **next** - A function to pass control to the next middleware in the chain
 

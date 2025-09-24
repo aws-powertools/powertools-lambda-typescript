@@ -21,7 +21,7 @@ describe('Avro Deserializer: ', () => {
     expect(await deserialize(message, schema)).toEqual(expected);
   });
 
-  it('throws when avro deserialiser fails', async () => {
+  it('throws when avro deserialiser fails', () => {
     // Prepare
     const message = '0g8MTGFwdG9wUrgehes/j0A=';
     const schema = `{
@@ -39,7 +39,7 @@ describe('Avro Deserializer: ', () => {
     );
   });
 
-  it('throws when avro deserialiser has not matching schema', async () => {
+  it('throws when avro deserialiser has not matching schema', () => {
     // Prepare
     const message = '0g8MTGFwdG9wUrgehes/j0A=';
     const schema = `{

@@ -181,6 +181,7 @@ describe('Class: Router - Basic Routing', () => {
       context
     );
 
+    // Assert
     expect(JSON.parse(rootResult.body).api).toEqual('root');
     expect(JSON.parse(listTodosResult.body).api).toEqual('listTodos');
     expect(JSON.parse(notFoundResult.body).error).toEqual('Route not found');

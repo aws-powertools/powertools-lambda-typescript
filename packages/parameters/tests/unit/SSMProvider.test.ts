@@ -36,7 +36,7 @@ describe('Class: SSMProvider', () => {
   });
 
   describe('Method: constructor', () => {
-    it('adds the middleware to the created AWS SDK', async () => {
+    it('adds the middleware to the created AWS SDK', () => {
       // Prepare
       const options: SSMProviderOptions = {};
 
@@ -70,7 +70,7 @@ describe('Class: SSMProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    it('uses the provided AWS SDK client', async () => {
+    it('uses the provided AWS SDK client', () => {
       // Prepare
       const awsSdkV3Client = new SSMClient({
         endpoint: 'http://localhost:3000',
@@ -92,7 +92,7 @@ describe('Class: SSMProvider', () => {
       );
     });
 
-    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: SSMProviderOptions = {
@@ -790,7 +790,7 @@ describe('Class: SSMProvider', () => {
         this.store.set(key, value);
       }
 
-      public async getParametersByNameFromCache(
+      public getParametersByNameFromCache(
         parameters: Record<string, SSMGetParametersByNameOptions>
       ): Promise<SSMGetParametersByNameFromCacheOutputType> {
         return super.getParametersByNameFromCache(parameters);
@@ -828,7 +828,7 @@ describe('Class: SSMProvider', () => {
       public _getParametersByName = vi.fn();
       public maxGetParametersItems = 1;
 
-      public async getParametersByNameInChunks(
+      public getParametersByNameInChunks(
         parameters: Record<string, SSMGetParametersByNameOptions>,
         throwOnError: boolean,
         decrypt: boolean
@@ -933,7 +933,7 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public _get = vi.fn();
 
-      public async getParametersByNameWithDecryptOption(
+      public getParametersByNameWithDecryptOption(
         parameters: Record<string, SSMGetParametersByNameOptions>,
         throwOnError: boolean
       ): Promise<SSMGetParametersByNameOutputInterface> {

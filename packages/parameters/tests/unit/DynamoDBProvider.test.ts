@@ -27,7 +27,7 @@ describe('Class: DynamoDBProvider', () => {
   });
 
   describe('Method: constructor', () => {
-    it('instantiates a new AWS SDK with default options', async () => {
+    it('instantiates a new AWS SDK with default options', () => {
       // Prepare
       const options: DynamoDBProviderOptions = {
         tableName: 'test-table',
@@ -64,7 +64,7 @@ describe('Class: DynamoDBProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    it('uses the provided AWS SDK client', async () => {
+    it('uses the provided AWS SDK client', () => {
       // Prepare
       const awsSdkV3Client = new DynamoDBClient({
         endpoint: 'http://localhost:8000',
@@ -87,7 +87,7 @@ describe('Class: DynamoDBProvider', () => {
       );
     });
 
-    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: DynamoDBProviderOptions = {

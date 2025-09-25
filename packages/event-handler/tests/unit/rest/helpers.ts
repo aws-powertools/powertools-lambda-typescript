@@ -19,7 +19,7 @@ export const createTestEvent = (
   requestContext: {
     httpMethod,
     path,
-    domainName: 'localhost',
+    domainName: 'api.example.com',
   } as APIGatewayProxyEvent['requestContext'],
   resource: '',
 });

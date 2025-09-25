@@ -24,7 +24,7 @@ type ErrorHandler<T extends Error = Error> = (
 ) => Promise<HandlerResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
-  new (...args: any[]): T;
+  new (...args: unknown[]): T;
   prototype: T;
 }
 

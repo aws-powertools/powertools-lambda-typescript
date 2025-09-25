@@ -1,4 +1,3 @@
-import type { APIGatewayProxyEvent } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   handlerResultToProxyResult,
@@ -6,36 +5,11 @@ import {
   proxyEventToWebRequest,
   webResponseToProxyResult,
 } from '../../../src/rest/index.js';
+import { createTestEvent } from './helpers.js';
 
 describe('Converters', () => {
   describe('proxyEventToWebRequest', () => {
-    const baseEvent: APIGatewayProxyEvent = {
-      httpMethod: 'GET',
-      path: '/test',
-      resource: '/test',
-      headers: {},
-      multiValueHeaders: {},
-      queryStringParameters: null,
-      multiValueQueryStringParameters: {},
-      pathParameters: null,
-      stageVariables: null,
-      requestContext: {
-        accountId: '123456789012',
-        apiId: 'test-api',
-        httpMethod: 'GET',
-        path: '/test',
-        requestId: 'test-request-id',
-        resourceId: 'test-resource',
-        resourcePath: '/test',
-        stage: 'test',
-        domainName: 'api.example.com',
-        identity: {
-          sourceIp: '127.0.0.1',
-        },
-      } as any,
-      isBase64Encoded: false,
-      body: null,
-    };
+    const baseEvent = createTestEvent('/test', 'GET');
 
     it('converts basic GET request', () => {
       // Prepare & Act
@@ -65,17 +39,16 @@ describe('Converters', () => {
 
     it('uses X-Forwarded-Proto header for protocol', () => {
       // Prepare
-      const event = {
-        ...baseEvent,
-        headers: { 'X-Forwarded-Proto': 'https' },
-      };
+      const event = createTestEvent('/test', 'GET', {
+        'X-Forwarded-Proto': 'http',
+      });
 
       // Act
       const request = proxyEventToWebRequest(event);
 
       // Assess
       expect(request).toBeInstanceOf(Request);
-      expect(request.url).toBe('https://api.example.com/test');
+      expect(request.url).toBe('http://api.example.com/test');
     });
 
     it('handles null values in multiValueHeaders arrays', () => {

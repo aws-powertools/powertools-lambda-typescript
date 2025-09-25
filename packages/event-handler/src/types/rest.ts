@@ -57,7 +57,7 @@ type HandlerResponse = Response | JSONObject;
 
 type RouteHandler<TReturn = HandlerResponse> = (
   reqCtx: RequestContext
-) => Promise<TReturn>;
+) => Promise<TReturn> | TReturn;
 
 type HttpMethod = keyof typeof HttpVerbs;
 
@@ -78,12 +78,16 @@ type RestRouteOptions = {
   middleware?: Middleware[];
 };
 
-type NextFunction = () => Promise<HandlerResponse | void>;
+type NextFunction = () =>
+  | Promise<void>
+  | Promise<HandlerResponse>
+  | HandlerResponse
+  | void;
 
 type Middleware = (args: {
   reqCtx: RequestContext;
   next: NextFunction;
-}) => Promise<void | HandlerResponse>;
+}) => Promise<void> | Promise<HandlerResponse> | HandlerResponse | void;
 
 type RouteRegistryOptions = {
   /**
@@ -176,4 +180,5 @@ export type {
   RouteRegistryOptions,
   ValidationResult,
   CompressionOptions,
+  NextFunction,
 };

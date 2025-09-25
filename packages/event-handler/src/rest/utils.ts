@@ -5,7 +5,9 @@ import type {
   HandlerResponse,
   HttpMethod,
   Middleware,
+  NextFunction,
   Path,
+  RequestContext,
   ValidationResult,
 } from '../types/rest.js';
 import {
@@ -149,8 +151,14 @@ export const isAPIGatewayProxyResult = (
  * //   -> middleware1 end
  * ```
  */
-export const composeMiddleware = (middleware: Middleware[]): Middleware => {
-  return async ({ reqCtx, next }): Promise<HandlerResponse | void> => {
+export const composeMiddleware = (middleware: Middleware[]) => {
+  return async ({
+    reqCtx,
+    next,
+  }: {
+    reqCtx: RequestContext;
+    next: NextFunction;
+  }) => {
     let index = -1;
     let result: HandlerResponse | undefined;
 
@@ -193,6 +201,6 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
     };
 
     await dispatch(0);
-    return result;
+    if (result !== undefined) return result;
   };
 };

@@ -152,11 +152,7 @@ class AppSyncGraphQLResolver extends Router {
    * @param context - The AWS Lambda context object.
    * @param options - Optional parameters for the resolver, such as the scope of the handler.
    */
-  public async resolve(
-    event: unknown,
-    context: Context,
-    options?: ResolveOptions
-  ): Promise<unknown> {
+  public resolve(event: unknown, context: Context, options?: ResolveOptions) {
     if (Array.isArray(event)) {
       if (event.some((e) => !isAppSyncGraphQLEvent(e))) {
         this.logger.warn(
@@ -178,7 +174,7 @@ class AppSyncGraphQLResolver extends Router {
     }
 
     return this.#withErrorHandling(
-      () => this.#executeSingleResolver(event, context, options),
+      async () => await this.#executeSingleResolver(event, context, options),
       event,
       options
     );
@@ -197,7 +193,7 @@ class AppSyncGraphQLResolver extends Router {
     fn: () => Promise<unknown>,
     event: AppSyncResolverEvent<Record<string, unknown>>,
     options?: ResolveOptions
-  ): Promise<unknown> {
+  ) {
     try {
       return await fn();
     } catch (error) {
@@ -377,11 +373,11 @@ class AppSyncGraphQLResolver extends Router {
    * @param options - Optional parameters for the resolver, such as the scope of the handler.
    * @throws {ResolverNotFoundException} If no resolver is registered for the given field and type.
    */
-  async #executeSingleResolver(
+  #executeSingleResolver(
     event: AppSyncResolverEvent<Record<string, unknown>>,
     context: Context,
     options?: ResolveOptions
-  ): Promise<unknown> {
+  ) {
     const { fieldName, parentTypeName: typeName } = event.info;
 
     const resolverHandlerOptions = this.resolverRegistry.resolve(

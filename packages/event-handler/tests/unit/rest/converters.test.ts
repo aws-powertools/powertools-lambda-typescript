@@ -117,7 +117,7 @@ describe('Converters', () => {
       expect(url.searchParams.get('sort')).toBe('desc');
     });
 
-    it('handles POST request with string body', async () => {
+    it('handles POST request with string body', () => {
       // Prepare
       const event = {
         ...baseEvent,
@@ -136,7 +136,7 @@ describe('Converters', () => {
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('decodes base64 encoded body', async () => {
+    it('decodes base64 encoded body', () => {
       // Prepare
       const originalText = 'Hello World';
       const base64Text = Buffer.from(originalText).toString('base64');
@@ -568,7 +568,7 @@ describe('Converters', () => {
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
 
-    it('converts APIGatewayProxyResult with multiValueHeaders', async () => {
+    it('converts APIGatewayProxyResult with multiValueHeaders', () => {
       // Prepare
       const proxyResult = {
         statusCode: 200,
@@ -590,7 +590,7 @@ describe('Converters', () => {
       );
     });
 
-    it('converts plain object to JSON Response with default headers', async () => {
+    it('converts plain object to JSON Response with default headers', () => {
       // Prepare
       const obj = { message: 'success' };
 
@@ -604,7 +604,7 @@ describe('Converters', () => {
       expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('uses provided headers for plain object', async () => {
+    it('uses provided headers for plain object', () => {
       // Prepare
       const obj = { message: 'success' };
       const headers = new Headers({ 'x-custom': 'value' });
@@ -617,7 +617,7 @@ describe('Converters', () => {
       expect(result.headers.get('x-custom')).toBe('value');
     });
 
-    it('handles APIGatewayProxyResult with undefined headers', async () => {
+    it('handles APIGatewayProxyResult with undefined headers', () => {
       // Prepare
       const proxyResult = {
         statusCode: 200,
@@ -634,7 +634,7 @@ describe('Converters', () => {
       expect(result.status).toBe(200);
     });
 
-    it('handles APIGatewayProxyResult with undefined multiValueHeaders', async () => {
+    it('handles APIGatewayProxyResult with undefined multiValueHeaders', () => {
       // Prepare
       const proxyResult = {
         statusCode: 200,
@@ -651,7 +651,7 @@ describe('Converters', () => {
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
 
-    it('handles APIGatewayProxyResult with undefined values in multiValueHeaders', async () => {
+    it('handles APIGatewayProxyResult with undefined values in multiValueHeaders', () => {
       // Prepare
       const proxyResult = {
         statusCode: 200,

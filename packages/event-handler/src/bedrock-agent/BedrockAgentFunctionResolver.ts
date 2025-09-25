@@ -146,7 +146,7 @@ class BedrockAgentFunctionResolver {
   public tool<TParams extends Record<string, ParameterValue>>(
     fn: ToolFunction<TParams>,
     config: Configuration
-  ): undefined {
+  ) {
     const { name } = config;
     if (this.#tools.has(name)) {
       this.#logger.warn(

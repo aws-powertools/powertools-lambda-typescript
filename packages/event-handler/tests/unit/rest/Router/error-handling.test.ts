@@ -107,7 +107,7 @@ describe('Class: Router - Error Handling', () => {
     vi.stubEnv('POWERTOOLS_DEV', '');
     const app = new Router();
 
-    app.errorHandler(BadRequestError, async () => {
+    app.errorHandler(BadRequestError, () => {
       throw new Error('Handler failed');
     });
 
@@ -486,7 +486,7 @@ describe('Class: Router - Error Handling', () => {
     // Prepare
     const app = new Router();
 
-    app.errorHandler(BadRequestError, async () => {
+    app.errorHandler(BadRequestError, () => {
       throw new NotFoundError('This error is thrown from the error handler');
     });
 
@@ -514,7 +514,7 @@ describe('Class: Router - Error Handling', () => {
     // Prepare
     const app = new Router();
 
-    app.errorHandler(BadRequestError, async () => {
+    app.errorHandler(BadRequestError, () => {
       throw new MethodNotAllowedError(
         'This error is thrown from the error handler'
       );
@@ -545,7 +545,7 @@ describe('Class: Router - Error Handling', () => {
     vi.stubEnv('POWERTOOLS_DEV', 'true');
     const app = new Router();
 
-    app.errorHandler(BadRequestError, async () => {
+    app.errorHandler(BadRequestError, () => {
       throw new Error('This error is thrown from the error handler');
     });
 

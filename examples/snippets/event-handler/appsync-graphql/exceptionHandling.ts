@@ -1,6 +1,6 @@
+import { AssertionError } from 'node:assert';
 import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { AssertionError } from 'node:assert';
 import type { Context } from 'aws-lambda';
 
 const logger = new Logger({

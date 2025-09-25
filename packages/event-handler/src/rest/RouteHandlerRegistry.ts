@@ -202,6 +202,8 @@ class RouteHandlerRegistry {
    * Merges another {@link RouteHandlerRegistry | `RouteHandlerRegistry`} instance into the current instance.
    * It takes the static and dynamic routes from the provided registry and adds them to the current registry.
    *
+   * Routes from the included router are added to the current router's registry. If a route with the same method and path already exists, the included router's route takes precedence.
+   *
    * @param routeHandlerRegistry - The registry instance to merge with the current instance
    * @param options - Configuration options for merging the router
    * @param options.prefix - An optional prefix to be added to the paths defined in the router

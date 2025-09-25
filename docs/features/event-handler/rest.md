@@ -479,7 +479,7 @@ You can enable response compression by using the `compress` middleware. This wil
 
 === "Response"
 
-    ```json hl_lines="7-9 11 12"
+    ```json hl_lines="4-5 7-8"
     --8<-- "examples/snippets/event-handler/rest/samples/advanced_compress_res.json"
     ```
 

@@ -18,7 +18,7 @@ export const handler = async (event: unknown, context: Context) => {
     throw new Error('An error occurred');
   } catch (error) {
     logger.error('Error occurred', { error });
-    tracer.addErrorAsMetadata(error);
+    tracer.addErrorAsMetadata(error as Error);
     throw error;
   } finally {
     subsegment?.close();

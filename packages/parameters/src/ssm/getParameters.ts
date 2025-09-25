@@ -115,13 +115,13 @@ import { SSMProvider } from './SSMProvider.js';
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
  *
  * @param path - The path of the parameters to retrieve
- * @param options - Options to configure the provider
- * @param options.maxAge - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
- * @param options.forceFetch - Whether to always fetch a new value from the store regardless if already available in cache
- * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`
- * @param options.sdkOptions - Extra options to pass to the AWS SDK v3 for JavaScript client, accepts the same options as {@link GetParametersByPathCommandInput | `GetParametersByPathCommandInput`}.
- * @param options.decrypt - Whether to decrypt the value before returning it.
- * @param options.recursive - Whether to recursively retrieve all parameters within the path.
+ * @param options - Optional options to configure the provider
+ * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+ * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+ * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+ * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link GetParametersByPathCommandInput | `GetParametersByPathCommandInput`} except `Path`
+ * @param options.decrypt - Optional flag to decrypt the value before returning it (default: `false`)
+ * @param options.recursive - Optional flag to recursively retrieve all parameters within the path (default: `false`)
  */
 const getParameters = <
   ExplicitUserProvidedType = undefined,

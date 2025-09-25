@@ -268,12 +268,12 @@ class DynamoDBProvider extends BaseProvider {
    *
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    *
-   * @param name - The name of the value to retrieve (i.e. the partition key)
-   * @param options - Options to configure the provider
-   * @param options.maxAge - Maximum age of the value in the cache, in seconds.
-   * @param options.forceFetch - Force fetch the value from the parameter store, ignoring the cache.
-   * @param options.sdkOptions - Additional options to pass to the AWS SDK v3 client, supports all options from {@link GetItemCommandInput | `GetItemCommandInput`} except `Key`, `TableName`, and `ProjectionExpression`.
-   * @param options.transform - Transform to be applied, can be 'json' or 'binary'.
+   * @param name - The name of the value to retrieve (partition key)
+   * @param options - Optional options to configure the provider
+   * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+   * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+   * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+   * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link GetItemCommandInput | `GetItemCommandInput`} except `Key`, `TableName`, and `ProjectionExpression`
    */
   public get<
     ExplicitUserProvidedType = undefined,
@@ -312,13 +312,13 @@ class DynamoDBProvider extends BaseProvider {
    *
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    *
-   * @param path - The path of the values to retrieve (i.e. the partition key)
-   * @param options - Options to configure the provider
-   * @param options.maxAge - Maximum age of the value in the cache, in seconds.
-   * @param options.forceFetch - Force fetch the value from the parameter store, ignoring the cache.
-   * @param options.sdkOptions - Additional options to pass to the AWS SDK v3 client, supports all options from {@link QueryCommandInput | `QueryCommandInput`} except `TableName` and `KeyConditionExpression`.
-   * @param options.transform - Transform to be applied, can be 'json' or 'binary'.
-   * @param options.throwOnTransformError - Whether to throw an error if the transform fails (default: `true`)
+   * @param path - The path of the values to retrieve (partition key)
+   * @param options - Optional options to configure the provider
+   * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+   * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+   * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+   * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link QueryCommandInput | `QueryCommandInput`} except `TableName` and `KeyConditionExpression`
+   * @param options.throwOnTransformError - Optional flag to throw an error if the transform fails (default: `true`)
    */
   public getMultiple<
     ExplicitUserProvidedType = undefined,

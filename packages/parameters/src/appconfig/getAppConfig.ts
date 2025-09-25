@@ -133,14 +133,14 @@ import { AppConfigProvider } from './AppConfigProvider.js';
  *
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
  *
- * @param name - The name of the configuration profile or its ID
+ * @param name - The name of the configuration profile to retrieve
  * @param options - Options to configure the provider
- * @param options.application - The application ID or the application name.
- * @param options.environment - The environment ID or the environment name.
- * @param options.maxAge - The maximum age (in seconds) to keep values in cache. Default: 5 seconds.
- * @param options.forceFetch - Whether to skip the cache and always fetch the latest value from the store. Default: `false`.
- * @param options.transform - Optional transformation to apply to the retrieved value. Supported options are: 'json' and 'binary'.
- * @param options.sdkOptions - Optional extra options to pass to the AWS SDK v3 for JavaScript client when retrieving the configuration profile.
+ * @param options.application - The application ID or the application name
+ * @param options.environment - The environment ID or the environment name
+ * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+ * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+ * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+ * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link StartConfigurationSessionCommandInput | `StartConfigurationSessionCommandInput`} except `ApplicationIdentifier`, `EnvironmentIdentifier`, and `ConfigurationProfileIdentifier`
  */
 const getAppConfig = <
   ExplicitUserProvidedType = undefined,

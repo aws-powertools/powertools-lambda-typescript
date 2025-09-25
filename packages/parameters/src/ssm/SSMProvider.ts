@@ -291,13 +291,13 @@ class SSMProvider extends BaseProvider {
 
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    *
-   * @param name - The name of the value to retrieve (i.e. the partition key)
-   * @param options - Options to configure the provider
-   * @param options.maxAge - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * @param options.forceFetch - Whether to always fetch a new value from the store regardless if already available in cache (default: false)
-   * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`
-   * @param options.sdkOptions - Extra options to pass to the AWS SDK v3 for JavaScript client
-   * @param options.decrypt - Whether to decrypt the value before returning it. (default: false)
+   * @param name - The name of the parameter to retrieve
+   * @param options - Optional options to configure the provider
+   * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+   * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+   * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+   * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link GetParameterCommandInput | `GetParameterCommandInput`} except `Name`
+   * @param options.decrypt - Optional flag to decrypt the value before returning it (default: `false`)
    */
   public get<
     ExplicitUserProvidedType = undefined,
@@ -390,14 +390,14 @@ class SSMProvider extends BaseProvider {
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
    *
    * @param path - The path of the parameters to retrieve
-   * @param options - Options to configure the retrieval
-   * @param options.maxAge - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * @param options.forceFetch - Whether to always fetch a new value from the store regardless if already available in cache
-   * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`
-   * @param options.sdkOptions - Extra options to pass to the AWS SDK v3 for JavaScript client
-   * @param options.throwOnTransformError - Whether to throw an error if the transform fails (default: `true`)
-   * @param options.decrypt - Whether to decrypt the value before returning it.
-   * @param options.recursive - Whether to recursively retrieve all parameters under the given path (default: `false`)
+   * @param options - Optional options to configure the retrieval
+   * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+   * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+   * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+   * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link GetParametersByPathCommandInput | `GetParametersByPathCommandInput`} except `Path`
+   * @param options.throwOnTransformError - Optional flag to throw an error if the transform fails (default: `true`)
+   * @param options.decrypt - Optional flag to decrypt the value before returning it (default: `false`)
+   * @param options.recursive - Optional flag to recursively retrieve all parameters under the given path (default: `false`)
    */
   public getMultiple<
     ExplicitUserProvidedType = undefined,

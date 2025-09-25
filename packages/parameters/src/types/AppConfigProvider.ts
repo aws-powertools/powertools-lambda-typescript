@@ -64,7 +64,7 @@ interface AppConfigProviderOptionsWithClientInstance
  * Options for the `AppConfigProvider` class constructor.
  *
  * @property environment - The environment ID or the environment name.
- * @property application - The optional application ID or the application name.
+ * @property application - Optional application ID or the application name, if not provided it will be inferred from the service name in the environment.
  * @property clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with `awsSdkV3Client`. Accepts the same configuration object as the AWS SDK v3 client ({@link AppConfigDataClientConfig | `AppConfigDataClientConfig`}).
  * @property awsSdkV3Client - Optional ({@link AppConfigDataClient | `AppConfigDataClient`}) instance to pass during `AppConfigProvider` class instantiation. Mutually exclusive with `clientConfig`.
  */

@@ -126,7 +126,7 @@ const getParameter = <
   InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions,
 >(
   name: string,
-  options?: InferredFromOptionsType & SSMGetOptions
+  options?: NonNullable<InferredFromOptionsType & SSMGetOptions>
 ): Promise<
   SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined
 > => {

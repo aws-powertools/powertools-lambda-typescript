@@ -138,13 +138,13 @@ import { SSMProvider } from './SSMProvider.js';
  * @param parameters - The path of the parameters to retrieve
  * @param options - Options to configure the provider
  * @param options.maxAge - Maximum age of the value in the cache, in seconds. Will be applied after the first API call.
- * @param options.forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @param options.sdkOptions - Additional options to pass to the AWS SDK v3 client. Supports all options from {@link GetParametersByNameCommandInput | `GetParametersByNameCommandInput`} except `Names`.
+ * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`
  * @param options.decrypt - Whether to decrypt the values before returning them. If true, will use `GetParameter` API for each parameter. If false (default), will use `GetParametersByName` API.
+ * @param options.throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error (default: `true`)
  */
 const getParametersByName = <ExplicitUserProvidedType = undefined>(
   parameters: Record<string, SSMGetParametersByNameOptions>,
-  options?: SSMGetParametersByNameOptions
+  options?: NonNullable<SSMGetParametersByNameOptions>
 ): Promise<SSMGetParametersByNameOutput<ExplicitUserProvidedType>> => {
   if (!Object.hasOwn(DEFAULT_PROVIDERS, 'ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();

@@ -267,11 +267,6 @@ class SSMProvider extends BaseProvider {
   protected errorsKey = '_errors';
   protected maxGetParametersItems = 10;
 
-  /**
-   * It initializes the SSMProvider class.
-   *
-   * @param config - The configuration object.
-   */
   public constructor(config?: SSMProviderOptions) {
     super({
       awsSdkV3ClientPrototype: SSMClient as new (config?: unknown) => SSMClient,
@@ -309,7 +304,7 @@ class SSMProvider extends BaseProvider {
     InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions,
   >(
     name: string,
-    options?: InferredFromOptionsType & SSMGetOptions
+    options?: NonNullable<InferredFromOptionsType & SSMGetOptions>
   ): Promise<
     SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined
   > {
@@ -411,7 +406,7 @@ class SSMProvider extends BaseProvider {
       | undefined = undefined,
   >(
     path: string,
-    options?: InferredFromOptionsType & SSMGetMultipleOptions
+    options?: NonNullable<InferredFromOptionsType & SSMGetMultipleOptions>
   ): Promise<
     | SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType>
     | undefined
@@ -466,16 +461,13 @@ class SSMProvider extends BaseProvider {
    * @param parameters - Object containing parameter names and any optional overrides
    * @param options - Options to configure the retrieval
    * @param options.maxAge - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * @param options.forceFetch - Whether to always fetch a new value from the store regardless if already available in cache
    * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`
-   * @param options.sdkOptions - Extra options to pass to the AWS SDK v3 for JavaScript client
-   * @param options.throwOnTransformError - Whether to throw an error if the transform fails (default: `true`)
    * @param options.decrypt - Whether to decrypt the value before returning it.
    * @param options.throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error (default: `true`)
    */
   public async getParametersByName<ExplicitUserProvidedType = undefined>(
     parameters: Record<string, SSMGetParametersByNameOptions>,
-    options?: SSMGetParametersByNameOptions
+    options?: NonNullable<SSMGetParametersByNameOptions>
   ): Promise<SSMGetParametersByNameOutput<ExplicitUserProvidedType>> {
     const configs = {
       ...{
@@ -552,7 +544,7 @@ class SSMProvider extends BaseProvider {
    */
   protected async _get(
     name: string,
-    options?: SSMGetOptions
+    options?: NonNullable<SSMGetOptions>
   ): Promise<string | undefined> {
     const sdkOptions: GetParameterCommandInput = {
       ...(options?.sdkOptions || {}),
@@ -582,7 +574,7 @@ class SSMProvider extends BaseProvider {
    */
   protected async _getMultiple(
     path: string,
-    options?: SSMGetMultipleOptions
+    options?: NonNullable<SSMGetMultipleOptions>
   ): Promise<Record<string, string | undefined>> {
     const sdkOptions: GetParametersByPathCommandInput = {
       ...(options?.sdkOptions || {}),

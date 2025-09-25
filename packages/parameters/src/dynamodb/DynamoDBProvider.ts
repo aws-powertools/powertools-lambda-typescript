@@ -234,17 +234,6 @@ class DynamoDBProvider extends BaseProvider {
   protected tableName: string;
   protected valueAttr = 'value';
 
-  /**
-   * Initialize a DynamoDBProvider class instance.
-   *
-   * @param config - The configuration object.
-   * @param config.tableName - The DynamoDB table name.
-   * @param config.keyAttr - Optional DynamoDB table key attribute name. Defaults to 'id'.
-   * @param config.sortAttr - Optional DynamoDB table sort attribute name. Defaults to 'sk'.
-   * @param config.valueAttr - Optional DynamoDB table value attribute name. Defaults to 'value'.
-   * @param config.clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with `awsSdkV3Client`, accepts the same options as the AWS SDK v3 client ({@link DynamoDBClient | `DynamoDBClient`}).
-   * @param config.awsSdkV3Client - Optional AWS SDK v3 client to pass during DynamoDBProvider class instantiation. Mutually exclusive with `clientConfig`, should be an instance of {@link DynamoDBClient | `DynamoDBClient`}.
-   */
   public constructor(config: DynamoDBProviderOptions) {
     super({
       awsSdkV3ClientPrototype: DynamoDBClient as new (
@@ -293,7 +282,7 @@ class DynamoDBProvider extends BaseProvider {
       | undefined = DynamoDBGetOptions,
   >(
     name: string,
-    options?: InferredFromOptionsType & DynamoDBGetOptions
+    options?: NonNullable<InferredFromOptionsType & DynamoDBGetOptions>
   ): Promise<
     | DynamoDBGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
     | undefined
@@ -338,7 +327,7 @@ class DynamoDBProvider extends BaseProvider {
       | undefined = DynamoDBGetMultipleOptions,
   >(
     path: string,
-    options?: InferredFromOptionsType & DynamoDBGetMultipleOptions
+    options?: NonNullable<InferredFromOptionsType & DynamoDBGetMultipleOptions>
   ): Promise<
     | DynamoDBGetMultipleOutput<
         ExplicitUserProvidedType,
@@ -362,12 +351,12 @@ class DynamoDBProvider extends BaseProvider {
    * @param options - Options to customize the retrieval
    * @param options.maxAge - Maximum age of the value in the cache, in seconds.
    * @param options.sdkOptions - Additional options to pass to the AWS SDK v3 client, supports all options from {@link GetItemCommandInput | `GetItemCommandInput`} except `Key`, `TableName`, and `ProjectionExpression`.
-   * @param params.forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+   * @param options.forceFetch - Force fetch the value from the parameter store, ignoring the cache.
    * @param options.transform - Transform to be applied, can be 'json' or 'binary'.
    */
   protected async _get(
     name: string,
-    options?: DynamoDBGetOptions
+    options?: NonNullable<DynamoDBGetOptions>
   ): Promise<JSONValue | undefined> {
     const sdkOptions: GetItemCommandInput = {
       ...(options?.sdkOptions || {}),
@@ -396,7 +385,7 @@ class DynamoDBProvider extends BaseProvider {
    */
   protected async _getMultiple(
     path: string,
-    options?: DynamoDBGetMultipleOptions
+    options?: NonNullable<DynamoDBGetMultipleOptions>
   ): Promise<Record<string, JSONValue>> {
     const sdkOptions: QueryCommandInput = {
       ...(options?.sdkOptions || {}),

@@ -130,7 +130,7 @@ const getParameters = <
     | undefined = SSMGetMultipleOptions,
 >(
   path: string,
-  options?: InferredFromOptionsType & SSMGetMultipleOptions
+  options?: NonNullable<InferredFromOptionsType & SSMGetMultipleOptions>
 ): Promise<
   | SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType>
   | undefined

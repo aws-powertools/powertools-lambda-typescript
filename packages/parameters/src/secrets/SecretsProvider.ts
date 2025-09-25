@@ -140,14 +140,7 @@ import type {
 class SecretsProvider extends BaseProvider {
   public declare client: SecretsManagerClient;
 
-  /**
-   * Initialize a `SecretsProvider` class.
-   *
-   * @param config - The configuration object.
-   * @param config.clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with `awsSdkV3Client`.
-   * @param config.awsSdkV3Client - Optional AWS SDK v3 client to pass during {@link SecretsProvider | `SecretsProvider`} class instantiation. Mutually exclusive with `clientConfig`.
-   */
-  public constructor(config?: SecretsProviderOptions) {
+  public constructor(config?: NonNullable<SecretsProviderOptions>) {
     super({
       awsSdkV3ClientPrototype: SecretsManagerClient as new (
         config?: unknown
@@ -187,7 +180,7 @@ class SecretsProvider extends BaseProvider {
       | undefined = SecretsGetOptions,
   >(
     name: string,
-    options?: InferredFromOptionsType & SecretsGetOptions
+    options?: NonNullable<InferredFromOptionsType & SecretsGetOptions>
   ): Promise<
     | SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
     | undefined
@@ -217,7 +210,7 @@ class SecretsProvider extends BaseProvider {
    */
   protected async _get(
     name: string,
-    options?: SecretsGetOptions
+    options?: NonNullable<SecretsGetOptions>
   ): Promise<string | Uint8Array | undefined> {
     const sdkOptions: GetSecretValueCommandInput = {
       ...(options?.sdkOptions || {}),

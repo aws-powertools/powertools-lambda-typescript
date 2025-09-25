@@ -97,7 +97,6 @@ import { SecretsProvider } from './SecretsProvider.js';
  * @param options.forceFetch - Whether to always fetch a new value from the store regardless if already available in cache (default: `false`)
  * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`
  * @param options.sdkOptions - Extra options to pass to the AWS SDK v3 for JavaScript client, accepts the same configuration object as the AWS SDK v3 client ({@link SecretsManagerClientConfig | `SecretsManagerClientConfig`}).
- * @param options.decrypt - Whether to decrypt the value before returning it. (default: `false`)
  */
 const getSecret = <
   ExplicitUserProvidedType = undefined,
@@ -106,7 +105,7 @@ const getSecret = <
     | undefined = SecretsGetOptions,
 >(
   name: string,
-  options?: InferredFromOptionsType & SecretsGetOptions
+  options?: NonNullable<InferredFromOptionsType & SecretsGetOptions>
 ): Promise<
   | SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
   | undefined

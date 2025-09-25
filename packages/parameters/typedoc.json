@@ -13,5 +13,20 @@
     "./src/errors.ts",
     "./src/constants.ts"
   ],
-  "readme": "README.md"
+  "readme": "README.md",
+  "externalSymbolLinkMappings": {
+    "@aws-sdk/client-secrets-manager": {
+      "GetSecretValueCommandInput": "#"
+    },
+    "@aws-sdk/client-dynamodb": {
+      "DynamoDBClient": "#",
+      "GetItemCommandInput": "#",
+      "QueryCommandInput": "#"
+    },
+    "@aws-sdk/client-appconfigdata": {
+      "AppConfigDataClient": "#",
+      "StartConfigurationSessionCommandInput": "#"
+    },
+    "@aws-sdk/client-ssm": { "GetParameterCommandInput": "#" }
+  }
 }

@@ -1,8 +1,5 @@
 import { getServiceName } from '@aws-lambda-powertools/commons/utils/env';
-import type {
-  AppConfigDataClientConfig,
-  StartConfigurationSessionCommandInput,
-} from '@aws-sdk/client-appconfigdata';
+import type { StartConfigurationSessionCommandInput } from '@aws-sdk/client-appconfigdata';
 import {
   AppConfigDataClient,
   GetLatestConfigurationCommand,
@@ -190,26 +187,20 @@ class AppConfigProvider extends BaseProvider {
   private readonly application?: string;
   private readonly environment: string;
 
-  /**
-   * initializes an `AppConfigProvider` class instance.
-   *
-   * @param options - The configuration object.
-   * @param options.environment - The environment ID or the environment name.
-   * @param options.application - Optional application ID or the application name.
-   * @param options.clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with `awsSdkV3Client`. Accepts the same configuration object as the AWS SDK v3 client ({@link AppConfigDataClientConfig | `AppConfigDataClientConfig`}).
-   * @param options.awsSdkV3Client - Optional ({@link AppConfigDataClient | `AppConfigDataClient`}) instance to pass during `AppConfigProvider` class instantiation. Mutually exclusive with `clientConfig`.
-   *
-   */
-  public constructor(options: AppConfigProviderOptions) {
+  public constructor({
+    application,
+    environment,
+    clientConfig,
+    awsSdkV3Client,
+  }: AppConfigProviderOptions) {
     super({
       awsSdkV3ClientPrototype: AppConfigDataClient as new (
         config?: unknown
       ) => AppConfigDataClient,
-      clientConfig: options.clientConfig,
-      awsSdkV3Client: options.awsSdkV3Client,
+      clientConfig,
+      awsSdkV3Client,
     });
 
-    const { application, environment } = options;
     this.application = application ?? getServiceName();
     if (!this.application || this.application.trim().length === 0) {
       throw new Error(
@@ -254,7 +245,7 @@ class AppConfigProvider extends BaseProvider {
       | undefined = AppConfigGetOptions,
   >(
     name: string,
-    options?: InferredFromOptionsType & AppConfigGetOptions
+    options?: NonNullable<InferredFromOptionsType & AppConfigGetOptions>
   ): Promise<
     | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
     | undefined
@@ -296,7 +287,7 @@ class AppConfigProvider extends BaseProvider {
    */
   protected async _get(
     name: string,
-    options?: AppConfigGetOptions
+    options?: NonNullable<AppConfigGetOptions>
   ): Promise<Uint8Array | undefined> {
     if (
       !this.configurationTokenStore.has(name) ||

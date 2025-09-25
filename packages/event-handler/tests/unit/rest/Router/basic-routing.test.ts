@@ -1,5 +1,5 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   HttpStatusCodes,
   HttpVerbs,
@@ -147,44 +147,48 @@ describe('Class: Router - Basic Routing', () => {
 
   it('routes to the included router when using split routers', async () => {
     // Prepare
-    const baseRouter = new Router();
-    baseRouter.get('/', async () => ({ api: 'root' }));
-    baseRouter.get('/version', async () => ({ api: 'listVersions' }));
-    baseRouter.get('/version/:id', async () => ({ api: 'getVersion' }));
-    baseRouter.notFound(async () => ({ error: 'NotFound' }));
-
-    const todoRouter = new Router();
+    const todoRouter = new Router({ logger: console });
+    todoRouter.use(async ({ next }) => {
+      console.log('todoRouter middleware');
+      await next();
+    });
     todoRouter.get('/', async () => ({ api: 'listTodos' }));
-    todoRouter.post('/create', async () => ({ api: 'createTodo' }));
-    todoRouter.get('/:id', async () => ({ api: 'getTodo' }));
-
-    const taskRouter = new Router();
-    taskRouter.get('/', async () => ({ api: 'listTasks' }));
-    taskRouter.post('/create', async () => ({ api: 'createTask' }));
-    taskRouter.get('/:taskId', async () => ({ api: 'getTask' }));
+    todoRouter.notFound(async () => {
+      return {
+        error: 'Route not found',
+      };
+    });
+    const consoleLogSpy = vi.spyOn(console, 'log');
+    const consoleWarnSpy = vi.spyOn(console, 'warn');
 
     const app = new Router();
-    app.includeRouter(baseRouter);
+    app.use(async ({ next }) => {
+      console.log('app middleware');
+      await next();
+    });
+    app.get('/todos', async () => ({ api: 'rootTodos' }));
+    app.get('/', async () => ({ api: 'root' }));
     app.includeRouter(todoRouter, { prefix: '/todos' });
-    app.includeRouter(taskRouter, { prefix: '/todos/:id/tasks' });
 
-    // Act & Assess
-    const testCases = [
-      ['/', 'GET', 'api', 'root'],
-      ['/version', 'GET', 'api', 'listVersions'],
-      ['/version/1', 'GET', 'api', 'getVersion'],
-      ['/todos', 'GET', 'api', 'listTodos'],
-      ['/todos/create', 'POST', 'api', 'createTodo'],
-      ['/todos/1', 'GET', 'api', 'getTodo'],
-      ['/todos/1/tasks', 'GET', 'api', 'listTasks'],
-      ['/todos/1/tasks/create', 'POST', 'api', 'createTask'],
-      ['/todos/1/tasks/1', 'GET', 'api', 'getTask'],
-      ['/non-existent', 'GET', 'error', 'NotFound'],
-    ] as const;
+    // Act
+    const rootResult = await app.resolve(createTestEvent('/', 'GET'), context);
+    const listTodosResult = await app.resolve(
+      createTestEvent('/todos', 'GET'),
+      context
+    );
+    const notFoundResult = await app.resolve(
+      createTestEvent('/non-existent', 'GET'),
+      context
+    );
 
-    for (const [path, method, key, expected] of testCases) {
-      const result = await app.resolve(createTestEvent(path, method), context);
-      expect(JSON.parse(result.body)[key]).toBe(expected);
-    }
+    expect(JSON.parse(rootResult.body).api).toEqual('root');
+    expect(JSON.parse(listTodosResult.body).api).toEqual('listTodos');
+    expect(JSON.parse(notFoundResult.body).error).toEqual('Route not found');
+    expect(consoleLogSpy).toHaveBeenNthCalledWith(1, 'app middleware');
+    expect(consoleLogSpy).toHaveBeenNthCalledWith(2, 'todoRouter middleware');
+    expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+      1,
+      'Handler for method: GET and path: /todos already exists. The previous handler will be replaced.'
+    );
   });
 });

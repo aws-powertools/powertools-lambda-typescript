@@ -9,7 +9,11 @@ import type {
 } from '../types/rest.js';
 import { ParameterValidationError } from './errors.js';
 import { Route } from './Route.js';
-import { compilePath, validatePathPattern } from './utils.js';
+import {
+  compilePath,
+  resolvePrefixedPath,
+  validatePathPattern,
+} from './utils.js';
 
 class RouteHandlerRegistry {
   readonly #staticRoutes: Map<string, Route> = new Map();
@@ -199,6 +203,7 @@ class RouteHandlerRegistry {
    * It takes the static and dynamic routes from the provided registry and adds them to the current registry.
    *
    * @param routeHandlerRegistry - The registry instance to merge with the current instance
+   * @param options - Configuration options for merging the router
    * @param options.prefix - An optional prefix to be added to the paths defined in the router
    */
   public merge(
@@ -210,17 +215,10 @@ class RouteHandlerRegistry {
       ...routeHandlerRegistry.#dynamicRoutes,
     ];
     for (const route of routes) {
-      let path = route.path;
-      if (options?.prefix) {
-        path =
-          route.path === '/'
-            ? options.prefix
-            : `${options.prefix}${route.path}`;
-      }
       this.register(
         new Route(
           route.method as HttpMethod,
-          path,
+          resolvePrefixedPath(route.path, options?.prefix),
           route.handler,
           route.middleware
         )

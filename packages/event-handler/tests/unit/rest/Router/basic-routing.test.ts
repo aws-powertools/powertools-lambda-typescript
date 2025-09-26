@@ -153,11 +153,9 @@ describe('Class: Router - Basic Routing', () => {
       await next();
     });
     todoRouter.get('/', async () => ({ api: 'listTodos' }));
-    todoRouter.notFound(async () => {
-      return {
-        error: 'Route not found',
-      };
-    });
+    todoRouter.notFound(async () => ({
+      error: 'Route not found',
+    }));
     const consoleLogSpy = vi.spyOn(console, 'log');
     const consoleWarnSpy = vi.spyOn(console, 'warn');
 

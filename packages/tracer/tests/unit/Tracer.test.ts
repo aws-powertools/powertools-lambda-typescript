@@ -1288,7 +1288,6 @@ describe('Class: Tracer', () => {
         @tracer.captureMethod()
         public async dummyMethod(): Promise<void> {
           await setTimeout(0); // Simulate some async operation
-          return;
         }
 
         public async handler(
@@ -1297,12 +1296,10 @@ describe('Class: Tracer', () => {
         ): Promise<void> {
           await this.dummyMethod();
           this.otherDummyMethod();
-
-          return;
         }
 
-        public otherDummyMethod(): void {
-          return;
+        public otherDummyMethod(): boolean {
+          return false;
         }
       }
 

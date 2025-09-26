@@ -7,7 +7,7 @@ import { BasePersistenceLayer } from '../../src/persistence/BasePersistenceLayer
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 
 describe('Given a class with a function to decorate', () => {
-  it('maintains the scope of the decorated function', async () => {
+  it('maintains the scope of the decorated function', () => {
     // Prepare
     class TestClass implements LambdaInterface {
       private readonly foo = 'foo';
@@ -28,13 +28,13 @@ describe('Given a class with a function to decorate', () => {
     const handler = handlerClass.handler.bind(handlerClass);
 
     // Act
-    const result = await handler({}, context);
+    const result = handler({}, context);
 
     // Assess
     expect(result).toBe('private foo');
   });
 
-  it('passes the custom keyPrefix to the persistenceStore', async () => {
+  it('passes the custom keyPrefix to the persistenceStore', () => {
     // Prepare
     const configureSpy = vi.spyOn(BasePersistenceLayer.prototype, 'configure');
     const idempotencyConfig = new IdempotencyConfig({});
@@ -54,7 +54,7 @@ describe('Given a class with a function to decorate', () => {
     const handler = handlerClass.handler.bind(handlerClass);
 
     // Act
-    const result = await handler({}, context);
+    const result = handler({}, context);
 
     // Assess
     expect(result).toBeTruthy();

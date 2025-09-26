@@ -671,8 +671,7 @@ class SSMProvider extends BaseProvider {
     let errors: string[] = [];
 
     // Fetch each possible batch param from cache and return if entire batch is cached
-    const { cached, toFetch } =
-      await this.getParametersByNameFromCache(parameters);
+    const { cached, toFetch } = this.getParametersByNameFromCache(parameters);
     if (Object.keys(cached).length >= Object.keys(parameters).length) {
       response = cached;
 

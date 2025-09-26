@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
@@ -7,7 +8,7 @@ import { BasePersistenceLayer } from '../../src/persistence/BasePersistenceLayer
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 
 describe('Given a class with a function to decorate', () => {
-  it('maintains the scope of the decorated function', () => {
+  it('maintains the scope of the decorated function', async () => {
     // Prepare
     class TestClass implements LambdaInterface {
       private readonly foo = 'foo';
@@ -15,7 +16,8 @@ describe('Given a class with a function to decorate', () => {
       @idempotent({
         persistenceStore: new PersistenceLayerTestClass(),
       })
-      public handler(_event: unknown, _context: Context) {
+      public async handler(_event: unknown, _context: Context) {
+        await setTimeout(0); // Simulate some async operation
         return this.privateMethod();
       }
 
@@ -28,7 +30,7 @@ describe('Given a class with a function to decorate', () => {
     const handler = handlerClass.handler.bind(handlerClass);
 
     // Act
-    const result = handler({}, context);
+    const result = await handler({}, context);
 
     // Assess
     expect(result).toBe('private foo');

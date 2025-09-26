@@ -79,7 +79,8 @@ type RestRouteOptions = {
   middleware?: Middleware[];
 };
 
-type NextFunction = () => Promise<HandlerResponse | void>; // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
+// biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
+type NextFunction = () => Promise<HandlerResponse | void>;
 
 type Middleware = (args: {
   reqCtx: RequestContext;

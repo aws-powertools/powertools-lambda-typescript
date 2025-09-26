@@ -196,3 +196,16 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
     return result;
   };
 };
+
+/**
+ * Resolves a prefixed path by combining the provided path and prefix.
+ *
+ * @param path - The path to resolve
+ * @param prefix - The prefix to prepend to the path
+ */
+export const resolvePrefixedPath = (path: Path, prefix?: Path): Path => {
+  if (prefix) {
+    return path === '/' ? prefix : `${prefix}${path}`;
+  }
+  return path;
+};

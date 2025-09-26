@@ -41,6 +41,7 @@ import {
   isAPIGatewayProxyEvent,
   isAPIGatewayProxyResult,
   isHttpMethod,
+  resolvePrefixedPath,
 } from './utils.js';
 
 class Router {
@@ -293,10 +294,7 @@ class Router {
   public route(handler: RouteHandler, options: RestRouteOptions): void {
     const { method, path, middleware = [] } = options;
     const methods = Array.isArray(method) ? method : [method];
-    let resolvedPath = path;
-    if (this.prefix) {
-      resolvedPath = path === '/' ? this.prefix : `${this.prefix}${path}`;
-    }
+    const resolvedPath = resolvePrefixedPath(path, this.prefix);
 
     for (const method of methods) {
       this.routeRegistry.register(
@@ -550,6 +548,50 @@ class Router {
       middlewareOrHandler,
       handler
     );
+  }
+
+  /**
+   * Merges the routes, context and middleware from the passed router instance into this router instance.
+   *
+   * **Override Behaviors:**
+   * - **Context**: Properties from the included router override existing properties with the same key in the current router. A warning is logged when conflicts occur.
+   * - **Routes**: Routes from the included router are added to the current router's registry. If a route with the same method and path already exists, the included router's route takes precedence.
+   * - **Error Handlers**: Error handlers from the included router are merged with existing handlers. If handlers for the same error type exist in both routers, the included router's handler takes precedence.
+   * - **Middleware**: Middleware from the included router is appended to the current router's middleware array. All middleware executes in registration order (current router's middleware first, then included router's middleware).
+   *
+   * @example
+   * ```typescript
+   * import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
+   *
+   * const todosRouter = new Router();
+   *
+   * todosRouter.get('/todos', async () => {
+   *   // List API
+   * });
+   *
+   * todosRouter.get('/todos/{todoId}', async () => {
+   *   // Get API
+   * });
+   *
+   * const app = new Router();
+   * app.includeRouter(todosRouter);
+   *
+   * export const handler = async (event: unknown, context: Context) => {
+   *   return app.resolve(event, context);
+   * };
+   * ```
+   * @param router - The `Router` from which to merge the routes, context and middleware
+   * @param options - Configuration options for merging the router
+   * @param options.prefix - An optional prefix to be added to the paths defined in the router
+   */
+  public includeRouter(router: Router, options?: { prefix: Path }): void {
+    this.context = {
+      ...this.context,
+      ...router.context,
+    };
+    this.routeRegistry.merge(router.routeRegistry, options);
+    this.errorHandlerRegistry.merge(router.errorHandlerRegistry);
+    this.middleware.push(...router.middleware);
   }
 }
 

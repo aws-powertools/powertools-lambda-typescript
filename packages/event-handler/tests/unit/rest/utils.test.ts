@@ -9,7 +9,11 @@ import {
   isAPIGatewayProxyEvent,
   isAPIGatewayProxyResult,
 } from '../../../src/rest/index.js';
-import { compilePath, validatePathPattern } from '../../../src/rest/utils.js';
+import {
+  compilePath,
+  resolvePrefixedPath,
+  validatePathPattern,
+} from '../../../src/rest/utils.js';
 import type {
   Middleware,
   Path,
@@ -565,6 +569,20 @@ describe('Path Utilities', () => {
       });
 
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe('resolvePrefixedPath', () => {
+    it.each([
+      { path: '/test', prefix: '/prefix', expected: '/prefix/test' },
+      { path: '/', prefix: '/prefix', expected: '/prefix' },
+      { path: '/test', expected: '/test' },
+    ])('resolves prefixed path', ({ path, prefix, expected }) => {
+      // Prepare & Act
+      const resolvedPath = resolvePrefixedPath(path as Path, prefix as Path);
+
+      // Assert
+      expect(resolvedPath).toBe(expected);
     });
   });
 });

@@ -1,5 +1,5 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   HttpStatusCodes,
   HttpVerbs,
@@ -143,5 +143,53 @@ describe('Class: Router - Basic Routing', () => {
     // Assess
     expect(JSON.parse(createResult.body).actualPath).toBe('/todos');
     expect(JSON.parse(getResult.body).actualPath).toBe('/todos/1');
+  });
+
+  it('routes to the included router when using split routers', async () => {
+    // Prepare
+    const todoRouter = new Router({ logger: console });
+    todoRouter.use(async ({ next }) => {
+      console.log('todoRouter middleware');
+      await next();
+    });
+    todoRouter.get('/', async () => ({ api: 'listTodos' }));
+    todoRouter.notFound(async () => {
+      return {
+        error: 'Route not found',
+      };
+    });
+    const consoleLogSpy = vi.spyOn(console, 'log');
+    const consoleWarnSpy = vi.spyOn(console, 'warn');
+
+    const app = new Router();
+    app.use(async ({ next }) => {
+      console.log('app middleware');
+      await next();
+    });
+    app.get('/todos', async () => ({ api: 'rootTodos' }));
+    app.get('/', async () => ({ api: 'root' }));
+    app.includeRouter(todoRouter, { prefix: '/todos' });
+
+    // Act
+    const rootResult = await app.resolve(createTestEvent('/', 'GET'), context);
+    const listTodosResult = await app.resolve(
+      createTestEvent('/todos', 'GET'),
+      context
+    );
+    const notFoundResult = await app.resolve(
+      createTestEvent('/non-existent', 'GET'),
+      context
+    );
+
+    // Assert
+    expect(JSON.parse(rootResult.body).api).toEqual('root');
+    expect(JSON.parse(listTodosResult.body).api).toEqual('listTodos');
+    expect(JSON.parse(notFoundResult.body).error).toEqual('Route not found');
+    expect(consoleLogSpy).toHaveBeenNthCalledWith(1, 'app middleware');
+    expect(consoleLogSpy).toHaveBeenNthCalledWith(2, 'todoRouter middleware');
+    expect(consoleWarnSpy).toHaveBeenNthCalledWith(
+      1,
+      'Handler for method: GET and path: /todos already exists. The previous handler will be replaced.'
+    );
   });
 });

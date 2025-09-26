@@ -174,7 +174,7 @@ class AppSyncGraphQLResolver extends Router {
     }
 
     return this.#withErrorHandling(
-      async () => await this.#executeSingleResolver(event, context, options),
+      () => this.#executeSingleResolver(event, context, options),
       event,
       options
     );
@@ -190,7 +190,7 @@ class AppSyncGraphQLResolver extends Router {
    * @param options - Optional resolve options for customizing resolver behavior.
    */
   async #withErrorHandling(
-    fn: () => Promise<unknown>,
+    fn: () => Promise<unknown> | unknown,
     event: AppSyncResolverEvent<Record<string, unknown>>,
     options?: ResolveOptions
   ) {
@@ -377,7 +377,7 @@ class AppSyncGraphQLResolver extends Router {
     event: AppSyncResolverEvent<Record<string, unknown>>,
     context: Context,
     options?: ResolveOptions
-  ) {
+  ): Promise<unknown> | unknown {
     const { fieldName, parentTypeName: typeName } = event.info;
 
     const resolverHandlerOptions = this.resolverRegistry.resolve(

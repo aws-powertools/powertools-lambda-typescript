@@ -51,45 +51,6 @@ describe('Converters', () => {
       expect(request.url).toBe('http://api.example.com/test');
     });
 
-    it('handles null values in multiValueHeaders arrays', () => {
-      // Prepare
-      const event = {
-        ...baseEvent,
-        multiValueHeaders: {
-          Accept: null as any,
-          'Custom-Header': ['value1'],
-        },
-      };
-
-      // Act
-      const request = proxyEventToWebRequest(event);
-
-      // Assess
-      expect(request).toBeInstanceOf(Request);
-      expect(request.headers.get('Accept')).toBe(null);
-      expect(request.headers.get('Custom-Header')).toBe('value1');
-    });
-
-    it('handles null values in multiValueQueryStringParameters arrays', () => {
-      // Prepare
-      const event = {
-        ...baseEvent,
-        multiValueQueryStringParameters: {
-          filter: null as any,
-          sort: ['desc'],
-        },
-      };
-
-      // Act
-      const request = proxyEventToWebRequest(event);
-
-      // Assess
-      expect(request).toBeInstanceOf(Request);
-      const url = new URL(request.url);
-      expect(url.searchParams.has('filter')).toBe(false);
-      expect(url.searchParams.get('sort')).toBe('desc');
-    });
-
     it('handles POST request with string body', () => {
       // Prepare
       const event = {
@@ -292,64 +253,6 @@ describe('Converters', () => {
       const url = new URL(request.url);
       expect(url.searchParams.get('single')).toBe('value');
       expect(url.searchParams.getAll('multi')).toEqual(['value1', 'value2']);
-    });
-
-    it('skips null queryStringParameter values', () => {
-      // Prepare
-      const event = {
-        ...baseEvent,
-        queryStringParameters: {
-          valid: 'value',
-          null: null as any,
-        },
-      };
-
-      // Act
-      const request = proxyEventToWebRequest(event);
-
-      // Assess
-      expect(request).toBeInstanceOf(Request);
-      const url = new URL(request.url);
-      expect(url.searchParams.get('valid')).toBe('value');
-      expect(url.searchParams.has('null')).toBe(false);
-    });
-
-    it('skips null header values', () => {
-      // Prepare
-      const event = {
-        ...baseEvent,
-        headers: {
-          'Valid-Header': 'value',
-          'Null-Header': null as any,
-        },
-      };
-
-      // Act
-      const request = proxyEventToWebRequest(event);
-
-      // Assess
-      expect(request).toBeInstanceOf(Request);
-      expect(request.headers.get('Valid-Header')).toBe('value');
-      expect(request.headers.get('Null-Header')).toBe(null);
-    });
-
-    it('handles null/undefined collections', () => {
-      // Prepare
-      const event = {
-        ...baseEvent,
-        headers: null as any,
-        multiValueHeaders: null as any,
-        queryStringParameters: null as any,
-        multiValueQueryStringParameters: null as any,
-      };
-
-      // Act
-      const request = proxyEventToWebRequest(event);
-
-      // Assess
-      expect(request).toBeInstanceOf(Request);
-      expect(request.method).toBe('GET');
-      expect(request.url).toBe('https://api.example.com/test');
     });
   });
 

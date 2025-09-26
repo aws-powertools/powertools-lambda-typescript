@@ -24,7 +24,8 @@ type ErrorHandler<T extends Error = Error> = (
 ) => Promise<HandlerResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
-  new (...args: unknown[]): T;
+  // biome-ignore lint/suspicious/noExplicitAny: this is a generic type that is intentionally open
+  new (...args: any[]): T;
   prototype: T;
 }
 
@@ -53,7 +54,7 @@ interface CompiledRoute {
 
 type DynamicRoute = Route & CompiledRoute;
 
-type HandlerResponse = Response | JSONObject;
+type HandlerResponse = Response | JSONObject | undefined;
 
 type RouteHandler<TReturn = HandlerResponse> = (
   reqCtx: RequestContext
@@ -79,15 +80,15 @@ type RestRouteOptions = {
 };
 
 type NextFunction = () =>
-  | Promise<void>
   | Promise<HandlerResponse>
   | HandlerResponse
+  | Promise<void>
   | void;
 
 type Middleware = (args: {
   reqCtx: RequestContext;
   next: NextFunction;
-}) => Promise<void> | Promise<HandlerResponse> | HandlerResponse | void;
+}) => NextFunction;
 
 type RouteRegistryOptions = {
   /**

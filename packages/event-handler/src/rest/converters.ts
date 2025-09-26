@@ -36,11 +36,11 @@ export const proxyEventToWebRequest = (
   const { domainName } = event.requestContext;
 
   const headers = new Headers();
-  for (const [name, value] of Object.entries(event.headers ?? {})) {
-    if (value != null) headers.set(name, value);
+  for (const [name, value] of Object.entries(event.headers)) {
+    if (value !== undefined) headers.set(name, value);
   }
 
-  for (const [name, values] of Object.entries(event.multiValueHeaders ?? {})) {
+  for (const [name, values] of Object.entries(event.multiValueHeaders)) {
     for (const value of values ?? []) {
       const headerValue = headers.get(name);
       if (!headerValue?.includes(value)) {

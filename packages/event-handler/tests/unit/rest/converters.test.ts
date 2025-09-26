@@ -51,6 +51,45 @@ describe('Converters', () => {
       expect(request.url).toBe('http://api.example.com/test');
     });
 
+    it('handles undefined values in multiValueHeaders arrays', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        multiValueHeaders: {
+          Accept: undefined,
+          'Custom-Header': ['value1'],
+        },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.headers.get('Accept')).toBe(null);
+      expect(request.headers.get('Custom-Header')).toBe('value1');
+    });
+
+    it('handles undefined values in multiValueQueryStringParameters arrays', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        multiValueQueryStringParameters: {
+          filter: undefined,
+          sort: ['desc'],
+        },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      const url = new URL(request.url);
+      expect(url.searchParams.has('filter')).toBe(false);
+      expect(url.searchParams.get('sort')).toBe('desc');
+    });
+
     it('handles POST request with string body', () => {
       // Prepare
       const event = {
@@ -253,6 +292,45 @@ describe('Converters', () => {
       const url = new URL(request.url);
       expect(url.searchParams.get('single')).toBe('value');
       expect(url.searchParams.getAll('multi')).toEqual(['value1', 'value2']);
+    });
+
+    it('skips undefined queryStringParameter values', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        queryStringParameters: {
+          valid: 'value',
+          null: undefined,
+        },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      const url = new URL(request.url);
+      expect(url.searchParams.get('valid')).toBe('value');
+      expect(url.searchParams.has('null')).toBe(false);
+    });
+
+    it('skips undefined header values', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        headers: {
+          'Valid-Header': 'value',
+          'Undefined-Header': undefined,
+        },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.headers.get('Valid-Header')).toBe('value');
+      expect(request.headers.get('Undefined-Header')).toBe(null);
     });
   });
 

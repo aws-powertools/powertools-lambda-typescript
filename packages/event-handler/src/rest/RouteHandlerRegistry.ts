@@ -16,6 +16,7 @@ import {
 } from './utils.js';
 
 class RouteHandlerRegistry {
+  readonly #regexRoutes: Map<string, DynamicRoute> = new Map();
   readonly #staticRoutes: Map<string, Route> = new Map();
   readonly #dynamicRoutesSet: Set<string> = new Set();
   readonly #dynamicRoutes: DynamicRoute[] = [];
@@ -103,6 +104,18 @@ class RouteHandlerRegistry {
 
     const compiled = compilePath(route.path);
 
+    if (/[^a-zA-Z0-9/-:]/.test(compiled.path)) {
+      if (this.#regexRoutes.has(route.id)) {
+        this.#logger.warn(
+          `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
+        );
+      }
+      this.#regexRoutes.set(route.id, {
+        ...route,
+        ...compiled,
+      });
+      return;
+    }
     if (compiled.isDynamic) {
       const dynamicRoute = {
         ...route,
@@ -171,28 +184,10 @@ class RouteHandlerRegistry {
       };
     }
 
-    for (const route of this.#dynamicRoutes) {
-      if (route.method !== method) continue;
-
-      const match = route.regex.exec(path);
-      if (match?.groups) {
-        const params = match.groups;
-
-        const processedParams = this.#processParams(params);
-
-        const validation = this.#validateParams(processedParams);
-
-        if (!validation.isValid) {
-          throw new ParameterValidationError(validation.issues);
-        }
-
-        return {
-          handler: route.handler,
-          params: processedParams,
-          rawParams: params,
-          middleware: route.middleware,
-        };
-      }
+    const routes = [...this.#dynamicRoutes, ...this.#regexRoutes.values()];
+    for (const route of routes) {
+      const result = this.#processRoute(route, method, path);
+      if (result) return result;
     }
 
     return null;
@@ -226,6 +221,28 @@ class RouteHandlerRegistry {
         )
       );
     }
+  }
+
+  #processRoute(route: DynamicRoute, method: HttpMethod, path: Path) {
+    if (route.method !== method) return;
+
+    const match = route.regex.exec(path);
+    if (!match) return;
+
+    const params = match.groups || {};
+    const processedParams = this.#processParams(params);
+    const validation = this.#validateParams(processedParams);
+
+    if (!validation.isValid) {
+      throw new ParameterValidationError(validation.issues);
+    }
+
+    return {
+      handler: route.handler,
+      params: processedParams,
+      rawParams: params,
+      middleware: route.middleware,
+    };
   }
 }
 

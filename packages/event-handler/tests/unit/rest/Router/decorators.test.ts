@@ -17,41 +17,41 @@ describe('Class: Router - Decorators', () => {
 
     class Lambda {
       @app.get('/test')
-      public async getTest() {
+      public getTest() {
         return { result: 'get-test' };
       }
 
       @app.post('/test')
-      public async postTest() {
+      public postTest() {
         return { result: 'post-test' };
       }
 
       @app.put('/test')
-      public async putTest() {
+      public putTest() {
         return { result: 'put-test' };
       }
 
       @app.patch('/test')
-      public async patchTest() {
+      public patchTest() {
         return { result: 'patch-test' };
       }
 
       @app.delete('/test')
-      public async deleteTest() {
+      public deleteTest() {
         return { result: 'delete-test' };
       }
 
       @app.head('/test')
-      public async headTest() {
+      public headTest() {
         return { result: 'head-test' };
       }
 
       @app.options('/test')
-      public async optionsTest() {
+      public optionsTest() {
         return { result: 'options-test' };
       }
 
-      public async handler(event: unknown, _context: Context) {
+      public handler(event: unknown, _context: Context) {
         return app.resolve(event, _context);
       }
     }
@@ -96,12 +96,12 @@ describe('Class: Router - Decorators', () => {
         public scope = 'class-scope';
 
         @app.get('/test', [middleware])
-        public async getTest() {
+        public getTest() {
           executionOrder.push('handler');
           return { result: `${this.scope}: decorator-with-middleware` };
         }
 
-        public async handler(event: unknown, _context: Context) {
+        public handler(event: unknown, _context: Context) {
           return app.resolve(event, _context, { scope: this });
         }
       }
@@ -149,41 +149,41 @@ describe('Class: Router - Decorators', () => {
 
         class Lambda {
           @app.get('/test', [middleware])
-          public async getTest() {
+          public getTest() {
             return { result: 'get-decorator-middleware' };
           }
 
           @app.post('/test', [middleware])
-          public async postTest() {
+          public postTest() {
             return { result: 'post-decorator-middleware' };
           }
 
           @app.put('/test', [middleware])
-          public async putTest() {
+          public putTest() {
             return { result: 'put-decorator-middleware' };
           }
 
           @app.patch('/test', [middleware])
-          public async patchTest() {
+          public patchTest() {
             return { result: 'patch-decorator-middleware' };
           }
 
           @app.delete('/test', [middleware])
-          public async deleteTest() {
+          public deleteTest() {
             return { result: 'delete-decorator-middleware' };
           }
 
           @app.head('/test', [middleware])
-          public async headTest() {
+          public headTest() {
             return { result: 'head-decorator-middleware' };
           }
 
           @app.options('/test', [middleware])
-          public async optionsTest() {
+          public optionsTest() {
             return { result: 'options-decorator-middleware' };
           }
 
-          public async handler(event: unknown, _context: Context) {
+          public handler(event: unknown, _context: Context) {
             return app.resolve(event, _context);
           }
         }
@@ -218,7 +218,7 @@ describe('Class: Router - Decorators', () => {
 
       class Lambda {
         @app.errorHandler(BadRequestError)
-        public async handleBadRequest(error: BadRequestError) {
+        public handleBadRequest(error: BadRequestError) {
           return {
             statusCode: HttpStatusCodes.BAD_REQUEST,
             error: 'Bad Request',
@@ -227,11 +227,11 @@ describe('Class: Router - Decorators', () => {
         }
 
         @app.get('/test')
-        public async getTest() {
+        public getTest() {
           throw new BadRequestError('test error');
         }
 
-        public async handler(event: unknown, _context: Context) {
+        public handler(event: unknown, _context: Context) {
           return app.resolve(event, _context);
         }
       }
@@ -265,7 +265,7 @@ describe('Class: Router - Decorators', () => {
         public scope = 'scoped';
 
         @app.notFound()
-        public async handleNotFound(error: NotFoundError) {
+        public handleNotFound(error: NotFoundError) {
           return {
             statusCode: HttpStatusCodes.NOT_FOUND,
             error: 'Not Found',
@@ -273,7 +273,7 @@ describe('Class: Router - Decorators', () => {
           };
         }
 
-        public async handler(event: unknown, _context: Context) {
+        public handler(event: unknown, _context: Context) {
           return app.resolve(event, _context, { scope: this });
         }
       }
@@ -306,7 +306,7 @@ describe('Class: Router - Decorators', () => {
 
       class Lambda {
         @app.methodNotAllowed()
-        public async handleMethodNotAllowed(error: MethodNotAllowedError) {
+        public handleMethodNotAllowed(error: MethodNotAllowedError) {
           return {
             statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
             error: 'Method Not Allowed',
@@ -315,11 +315,11 @@ describe('Class: Router - Decorators', () => {
         }
 
         @app.get('/test')
-        public async getTest() {
+        public getTest() {
           throw new MethodNotAllowedError('POST not allowed');
         }
 
-        public async handler(event: unknown, _context: Context) {
+        public handler(event: unknown, _context: Context) {
           return app.resolve(event, _context);
         }
       }
@@ -353,7 +353,7 @@ describe('Class: Router - Decorators', () => {
         public scope = 'scoped';
 
         @app.errorHandler(BadRequestError)
-        public async handleBadRequest(error: BadRequestError) {
+        public handleBadRequest(error: BadRequestError) {
           return {
             statusCode: HttpStatusCodes.BAD_REQUEST,
             error: 'Bad Request',
@@ -362,11 +362,11 @@ describe('Class: Router - Decorators', () => {
         }
 
         @app.get('/test')
-        public async getTest() {
+        public getTest() {
           throw new BadRequestError('test error');
         }
 
-        public async handler(event: unknown, _context: Context) {
+        public handler(event: unknown, _context: Context) {
           return app.resolve(event, _context, { scope: this });
         }
       }
@@ -399,7 +399,7 @@ describe('Class: Router - Decorators', () => {
 
       class Lambda {
         @app.get('/test')
-        public async getTest(reqCtx: RequestContext) {
+        public getTest(reqCtx: RequestContext) {
           return {
             hasRequest: reqCtx.req instanceof Request,
             hasEvent: reqCtx.event === testEvent,
@@ -407,7 +407,7 @@ describe('Class: Router - Decorators', () => {
           };
         }
 
-        public async handler(event: unknown, _context: Context) {
+        public handler(event: unknown, _context: Context) {
           return app.resolve(event, _context);
         }
       }
@@ -431,7 +431,7 @@ describe('Class: Router - Decorators', () => {
 
       class Lambda {
         @app.errorHandler(BadRequestError)
-        public async handleBadRequest(
+        public handleBadRequest(
           error: BadRequestError,
           reqCtx: RequestContext
         ) {
@@ -446,11 +446,11 @@ describe('Class: Router - Decorators', () => {
         }
 
         @app.get('/test')
-        public async getTest() {
+        public getTest() {
           throw new BadRequestError('test error');
         }
 
-        public async handler(event: unknown, _context: Context) {
+        public handler(event: unknown, _context: Context) {
           return app.resolve(event, _context);
         }
       }
@@ -475,13 +475,13 @@ describe('Class: Router - Decorators', () => {
         public scope = 'scoped';
 
         @app.get('/test')
-        public async getTest() {
+        public getTest() {
           return {
             message: `${this.scope}: success`,
           };
         }
 
-        public async handler(event: unknown, _context: Context) {
+        public handler(event: unknown, _context: Context) {
           return app.resolve(event, _context, { scope: this });
         }
       }

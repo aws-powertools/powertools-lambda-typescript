@@ -22,7 +22,7 @@ describe('Compress Middleware', () => {
 
   it('compresses response when conditions are met', async () => {
     // Prepare
-    app.get('/test', async () => {
+    app.get('/test', () => {
       return body;
     });
 
@@ -49,7 +49,7 @@ describe('Compress Middleware', () => {
           'content-length': '1',
         }),
       ],
-      async () => {
+      () => {
         return { test: 'x' };
       }
     );
@@ -65,7 +65,7 @@ describe('Compress Middleware', () => {
   it('skips compression for HEAD requests', async () => {
     // Prepare
     const headEvent = createTestEvent('/test', 'HEAD');
-    app.head('/test', async () => {
+    app.head('/test', () => {
       return body;
     });
 
@@ -93,7 +93,7 @@ describe('Compress Middleware', () => {
           'content-length': '2000',
         }),
       ],
-      async () => {
+      () => {
         return body;
       }
     );
@@ -118,7 +118,7 @@ describe('Compress Middleware', () => {
           'cache-control': 'no-transform',
         }),
       ],
-      async () => {
+      () => {
         return body;
       }
     );
@@ -144,7 +144,7 @@ describe('Compress Middleware', () => {
           'content-length': '2000',
         }),
       ],
-      async () => {
+      () => {
         return body;
       }
     );
@@ -162,7 +162,7 @@ describe('Compress Middleware', () => {
     const noCompressionEvent = createTestEvent('/test', 'GET', {
       'Accept-Encoding': 'identity',
     });
-    app.get('/test', async () => {
+    app.get('/test', () => {
       return body;
     });
 

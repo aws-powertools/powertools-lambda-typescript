@@ -51,7 +51,10 @@ type ToolFunction<TParams = Record<string, ParameterValue>> = (
     event: BedrockAgentFunctionEvent;
     context: Context;
   }
-) => Promise<JSONValue | BedrockFunctionResponse>;
+) =>
+  | Promise<JSONValue | BedrockFunctionResponse>
+  | JSONValue
+  | BedrockFunctionResponse;
 
 /**
  * Tool in the Bedrock Agent Function Resolver.
@@ -159,7 +162,7 @@ type ResolverOptions = {
    *
    * When no logger is provided, we'll only log warnings and errors using the global `console` object.
    */
-  logger?: GenericLogger;
+  logger?: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
 };
 
 export type {

@@ -57,7 +57,7 @@ describe('Class: Router - Middleware', () => {
           }
       );
 
-      app.get(path as Path, middleware, async () => {
+      app.get(path as Path, middleware, () => {
         executionOrder.push('handler');
         return { success: true };
       });
@@ -79,7 +79,7 @@ describe('Class: Router - Middleware', () => {
       app.use(createTrackingMiddleware('middleware1', executionOrder));
       app.use(createTrackingMiddleware('middleware2', executionOrder));
 
-      app.get('/test', async () => {
+      app.get('/test', () => {
         executionOrder.push('handler');
         return { success: true };
       });
@@ -111,7 +111,7 @@ describe('Class: Router - Middleware', () => {
         )
       );
 
-      app.get('/test', async () => {
+      app.get('/test', () => {
         executionOrder.push('handler');
         return { success: true };
       });
@@ -190,7 +190,7 @@ describe('Class: Router - Middleware', () => {
         await next();
       });
 
-      app.use(async ({ next }) => {
+      app.use(({ next }) => {
         next();
       });
 
@@ -221,7 +221,7 @@ describe('Class: Router - Middleware', () => {
       );
       app.use(createTrackingMiddleware('middleware2', executionOrder));
 
-      app.get('/test', async () => {
+      app.get('/test', () => {
         executionOrder.push('handler');
         return { success: true };
       });
@@ -249,7 +249,7 @@ describe('Class: Router - Middleware', () => {
         throw new Error('Cleanup error');
       });
 
-      app.get('/test', async () => {
+      app.get('/test', () => {
         executionOrder.push('handler');
         return { success: true };
       });
@@ -277,7 +277,7 @@ describe('Class: Router - Middleware', () => {
       app.use(createTrackingMiddleware('middleware1', executionOrder));
       app.use(createTrackingMiddleware('middleware2', executionOrder));
 
-      app.get('/test', async () => {
+      app.get('/test', () => {
         executionOrder.push('handler');
         throw new Error('Handler error');
       });
@@ -305,7 +305,7 @@ describe('Class: Router - Middleware', () => {
       app.use(createNoNextMiddleware('middleware1', executionOrder));
       app.use(createTrackingMiddleware('middleware2', executionOrder));
 
-      app.get('/test', async () => {
+      app.get('/test', () => {
         executionOrder.push('handler');
         return { success: true };
       });
@@ -334,7 +334,7 @@ describe('Class: Router - Middleware', () => {
         })
       );
 
-      app.get('/test', async () => {
+      app.get('/test', () => {
         executionOrder.push('handler');
         return { success: true };
       });
@@ -369,7 +369,7 @@ describe('Class: Router - Middleware', () => {
         reqCtx.res.headers.set('x-request-id', '12345');
       });
 
-      app.get('/test', async () => ({ success: true }));
+      app.get('/test', () => ({ success: true }));
 
       // Act
       const result = await app.resolve(
@@ -457,7 +457,7 @@ describe('Class: Router - Middleware', () => {
         await next();
       });
 
-      app.get('/handler-precedence', async () => {
+      app.get('/handler-precedence', () => {
         const response = Response.json({ success: true });
         response.headers.set('x-before-handler', 'handler-value');
         return response;
@@ -542,12 +542,12 @@ describe('Class: Router - Middleware', () => {
         public scope = 'class-scope';
 
         @app.get('/test')
-        public async getTest() {
+        public getTest() {
           executionOrder.push('handler');
           return { message: `${this.scope}: success` };
         }
 
-        public async handler(event: unknown, _context: Context) {
+        public handler(event: unknown, _context: Context) {
           return app.resolve(event, _context, { scope: this });
         }
       }
@@ -586,7 +586,7 @@ describe('Class: Router - Middleware', () => {
         executionOrder
       );
 
-      app.get('/test', [routeMiddleware], async () => {
+      app.get('/test', [routeMiddleware], () => {
         executionOrder.push('handler');
         return { success: true };
       });
@@ -619,7 +619,7 @@ describe('Class: Router - Middleware', () => {
         executionOrder
       );
 
-      app.get('/test', [routeMiddleware1, routeMiddleware2], async () => {
+      app.get('/test', [routeMiddleware1, routeMiddleware2], () => {
         executionOrder.push('handler');
         return { success: true };
       });
@@ -646,7 +646,7 @@ describe('Class: Router - Middleware', () => {
 
       app.use(createTrackingMiddleware('global-middleware', executionOrder));
 
-      app.get('/test', async () => {
+      app.get('/test', () => {
         executionOrder.push('handler');
         return { success: true };
       });
@@ -674,7 +674,7 @@ describe('Class: Router - Middleware', () => {
         new Response('Route middleware response', { status: 403 })
       );
 
-      app.get('/test', [routeMiddleware], async () => {
+      app.get('/test', [routeMiddleware], () => {
         executionOrder.push('handler');
         return { success: true };
       });

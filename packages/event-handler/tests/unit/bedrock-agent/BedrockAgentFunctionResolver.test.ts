@@ -82,7 +82,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver();
 
     app.tool(
-      async (params: { arg: string }) => {
+      (params: { arg: string }) => {
         return params.arg;
       },
       {
@@ -101,7 +101,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver();
 
     app.tool(
-      async (params: { arg: string }) => {
+      (params: { arg: string }) => {
         return params.arg;
       },
       {
@@ -132,7 +132,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     ]);
 
     app.tool(
-      async (params: { a: number; b: number }) => {
+      (params: { a: number; b: number }) => {
         return params.a + params.b;
       },
       {
@@ -148,7 +148,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     );
 
     app.tool(
-      async (params: { a: number; b: number }) => {
+      (params: { a: number; b: number }) => {
         return params.a * params.b;
       },
       {
@@ -176,7 +176,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver({ logger });
 
     app.tool(
-      async (params: { arg: string }) => {
+      (params: { arg: string }) => {
         return params.arg;
       },
       {
@@ -186,7 +186,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     );
 
     app.tool(
-      async (params: { arg: string }) => {
+      (params: { arg: string }) => {
         return params.arg;
       },
       {
@@ -196,8 +196,8 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     );
 
     app.tool(
-      async (_params) => {
-        throw new Error();
+      () => {
+        throw new Error('test error');
       },
       {
         name: 'error',
@@ -220,7 +220,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver();
 
     app.tool(
-      async (_params, options) => {
+      (_params, options) => {
         return options?.event;
       },
       {
@@ -332,7 +332,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver();
 
     app.tool(
-      async () => {
+      () => {
         return new BedrockFunctionResponse({
           body: 'I am not sure',
           responseState: 'REPROMPT',
@@ -535,7 +535,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       const app = new BedrockAgentFunctionResolver();
 
       app.tool(
-        async (_params, _options) => {
+        (_params, _options) => {
           throw toThrow;
         },
         {
@@ -564,7 +564,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     const app = new BedrockAgentFunctionResolver();
 
     app.tool(
-      async (params, _options) => {
+      (params, _options) => {
         return `Hello, ${params.name}!`;
       },
       {

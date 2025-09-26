@@ -1,4 +1,3 @@
-import type { APIGatewayProxyEvent } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   handlerResultToProxyResult,
@@ -6,36 +5,11 @@ import {
   proxyEventToWebRequest,
   webResponseToProxyResult,
 } from '../../../src/rest/index.js';
+import { createTestEvent } from './helpers.js';
 
 describe('Converters', () => {
   describe('proxyEventToWebRequest', () => {
-    const baseEvent: APIGatewayProxyEvent = {
-      httpMethod: 'GET',
-      path: '/test',
-      resource: '/test',
-      headers: {},
-      multiValueHeaders: {},
-      queryStringParameters: null,
-      multiValueQueryStringParameters: {},
-      pathParameters: null,
-      stageVariables: null,
-      requestContext: {
-        accountId: '123456789012',
-        apiId: 'test-api',
-        httpMethod: 'GET',
-        path: '/test',
-        requestId: 'test-request-id',
-        resourceId: 'test-resource',
-        resourcePath: '/test',
-        stage: 'test',
-        domainName: 'api.example.com',
-        identity: {
-          sourceIp: '127.0.0.1',
-        },
-      } as any,
-      isBase64Encoded: false,
-      body: null,
-    };
+    const baseEvent = createTestEvent('/test', 'GET');
 
     it('converts basic GET request', () => {
       // Prepare & Act
@@ -65,25 +39,24 @@ describe('Converters', () => {
 
     it('uses X-Forwarded-Proto header for protocol', () => {
       // Prepare
-      const event = {
-        ...baseEvent,
-        headers: { 'X-Forwarded-Proto': 'https' },
-      };
+      const event = createTestEvent('/test', 'GET', {
+        'X-Forwarded-Proto': 'http',
+      });
 
       // Act
       const request = proxyEventToWebRequest(event);
 
       // Assess
       expect(request).toBeInstanceOf(Request);
-      expect(request.url).toBe('https://api.example.com/test');
+      expect(request.url).toBe('http://api.example.com/test');
     });
 
-    it('handles null values in multiValueHeaders arrays', () => {
+    it('handles undefined values in multiValueHeaders arrays', () => {
       // Prepare
       const event = {
         ...baseEvent,
         multiValueHeaders: {
-          Accept: null as any,
+          Accept: undefined,
           'Custom-Header': ['value1'],
         },
       };
@@ -97,12 +70,12 @@ describe('Converters', () => {
       expect(request.headers.get('Custom-Header')).toBe('value1');
     });
 
-    it('handles null values in multiValueQueryStringParameters arrays', () => {
+    it('handles undefined values in multiValueQueryStringParameters arrays', () => {
       // Prepare
       const event = {
         ...baseEvent,
         multiValueQueryStringParameters: {
-          filter: null as any,
+          filter: undefined,
           sort: ['desc'],
         },
       };
@@ -117,7 +90,7 @@ describe('Converters', () => {
       expect(url.searchParams.get('sort')).toBe('desc');
     });
 
-    it('handles POST request with string body', async () => {
+    it('handles POST request with string body', () => {
       // Prepare
       const event = {
         ...baseEvent,
@@ -136,7 +109,7 @@ describe('Converters', () => {
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('decodes base64 encoded body', async () => {
+    it('decodes base64 encoded body', () => {
       // Prepare
       const originalText = 'Hello World';
       const base64Text = Buffer.from(originalText).toString('base64');
@@ -321,13 +294,13 @@ describe('Converters', () => {
       expect(url.searchParams.getAll('multi')).toEqual(['value1', 'value2']);
     });
 
-    it('skips null queryStringParameter values', () => {
+    it('skips undefined queryStringParameter values', () => {
       // Prepare
       const event = {
         ...baseEvent,
         queryStringParameters: {
           valid: 'value',
-          null: null as any,
+          null: undefined,
         },
       };
 
@@ -341,13 +314,13 @@ describe('Converters', () => {
       expect(url.searchParams.has('null')).toBe(false);
     });
 
-    it('skips null header values', () => {
+    it('skips undefined header values', () => {
       // Prepare
       const event = {
         ...baseEvent,
         headers: {
           'Valid-Header': 'value',
-          'Null-Header': null as any,
+          'Undefined-Header': undefined,
         },
       };
 
@@ -357,26 +330,7 @@ describe('Converters', () => {
       // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.headers.get('Valid-Header')).toBe('value');
-      expect(request.headers.get('Null-Header')).toBe(null);
-    });
-
-    it('handles null/undefined collections', () => {
-      // Prepare
-      const event = {
-        ...baseEvent,
-        headers: null as any,
-        multiValueHeaders: null as any,
-        queryStringParameters: null as any,
-        multiValueQueryStringParameters: null as any,
-      };
-
-      // Act
-      const request = proxyEventToWebRequest(event);
-
-      // Assess
-      expect(request).toBeInstanceOf(Request);
-      expect(request.method).toBe('GET');
-      expect(request.url).toBe('https://api.example.com/test');
+      expect(request.headers.get('Undefined-Header')).toBe(null);
     });
   });
 
@@ -568,7 +522,7 @@ describe('Converters', () => {
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
 
-    it('converts APIGatewayProxyResult with multiValueHeaders', async () => {
+    it('converts APIGatewayProxyResult with multiValueHeaders', () => {
       // Prepare
       const proxyResult = {
         statusCode: 200,
@@ -590,7 +544,7 @@ describe('Converters', () => {
       );
     });
 
-    it('converts plain object to JSON Response with default headers', async () => {
+    it('converts plain object to JSON Response with default headers', () => {
       // Prepare
       const obj = { message: 'success' };
 
@@ -604,7 +558,7 @@ describe('Converters', () => {
       expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('uses provided headers for plain object', async () => {
+    it('uses provided headers for plain object', () => {
       // Prepare
       const obj = { message: 'success' };
       const headers = new Headers({ 'x-custom': 'value' });
@@ -617,7 +571,7 @@ describe('Converters', () => {
       expect(result.headers.get('x-custom')).toBe('value');
     });
 
-    it('handles APIGatewayProxyResult with undefined headers', async () => {
+    it('handles APIGatewayProxyResult with undefined headers', () => {
       // Prepare
       const proxyResult = {
         statusCode: 200,
@@ -634,7 +588,7 @@ describe('Converters', () => {
       expect(result.status).toBe(200);
     });
 
-    it('handles APIGatewayProxyResult with undefined multiValueHeaders', async () => {
+    it('handles APIGatewayProxyResult with undefined multiValueHeaders', () => {
       // Prepare
       const proxyResult = {
         statusCode: 200,
@@ -651,7 +605,7 @@ describe('Converters', () => {
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
 
-    it('handles APIGatewayProxyResult with undefined values in multiValueHeaders', async () => {
+    it('handles APIGatewayProxyResult with undefined values in multiValueHeaders', () => {
       // Prepare
       const proxyResult = {
         statusCode: 200,

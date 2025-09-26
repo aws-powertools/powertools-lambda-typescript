@@ -27,6 +27,8 @@
       "AppConfigDataClient": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/appconfigdata/",
       "StartConfigurationSessionCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-appconfigdata/Interface/StartConfigurationSessionCommandInput/"
     },
-    "@aws-sdk/client-ssm": { "GetParameterCommandInput": "#" }
+    "@aws-sdk/client-ssm": {
+      "GetParameterCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-ssm/Interface/GetParameterCommandInput/"
+    }
   }
 }

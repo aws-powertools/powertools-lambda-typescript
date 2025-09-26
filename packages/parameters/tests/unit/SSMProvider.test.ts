@@ -657,7 +657,7 @@ describe('Class: SSMProvider', () => {
     it('returns parameters from cache when present', async () => {
       // Prepare
       const provider = new SSMProviderMock();
-      provider.getParametersByNameFromCache.mockResolvedValueOnce({
+      provider.getParametersByNameFromCache.mockReturnValueOnce({
         cached: {
           '/foo/bar': 'bar',
           '/foo/baz': 'baz',
@@ -690,7 +690,7 @@ describe('Class: SSMProvider', () => {
     it('retrieves the parameters from remote when not present in the cache', async () => {
       // Prepare
       const provider = new SSMProviderMock();
-      provider.getParametersByNameFromCache.mockResolvedValueOnce({
+      provider.getParametersByNameFromCache.mockReturnValueOnce({
         cached: {},
         toFetch: {
           '/foo/bar': {},
@@ -738,7 +738,7 @@ describe('Class: SSMProvider', () => {
     it('retrieves the parameters not present in the cache and returns them, together with the cached ones', async () => {
       // Prepare
       const provider = new SSMProviderMock();
-      provider.getParametersByNameFromCache.mockResolvedValueOnce({
+      provider.getParametersByNameFromCache.mockReturnValueOnce({
         cached: {
           '/foo/bar': 'bar',
         },
@@ -792,12 +792,12 @@ describe('Class: SSMProvider', () => {
 
       public getParametersByNameFromCache(
         parameters: Record<string, SSMGetParametersByNameOptions>
-      ): Promise<SSMGetParametersByNameFromCacheOutputType> {
+      ): SSMGetParametersByNameFromCacheOutputType {
         return super.getParametersByNameFromCache(parameters);
       }
     }
 
-    it('returns an object with parameters split by cached and to fetch', async () => {
+    it('returns an object with parameters split by cached and to fetch', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -811,7 +811,7 @@ describe('Class: SSMProvider', () => {
 
       // Act
       const { cached, toFetch } =
-        await provider.getParametersByNameFromCache(parameters);
+        provider.getParametersByNameFromCache(parameters);
 
       // Assess
       expect(cached).toEqual({

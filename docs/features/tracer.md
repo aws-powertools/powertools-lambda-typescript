@@ -230,7 +230,7 @@ You can trace other class methods using the `captureMethod` decorator or any arb
 
 === "Manual"
 
-    ```typescript hl_lines="7-13 19 22 26-31"
+    ```typescript hl_lines="7-10 16 21 25 27"
     --8<-- "examples/snippets/tracer/captureMethodManual.ts"
     ```
 

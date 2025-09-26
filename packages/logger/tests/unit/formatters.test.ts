@@ -371,6 +371,7 @@ describe('Formatters', () => {
         operator: 'strictEqual',
         code: 'ERR_ASSERTION',
         generatedMessage: true,
+        diff: process.versions.node >= '22.19.0' ? 'simple' : undefined,
       },
     },
     {

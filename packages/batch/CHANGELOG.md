@@ -1,5 +1,20 @@
 # Change Log
 
+## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
+
+### Bug Fixes
+
+- fixed the build issue with Batch processor due to missing dependencies ([#4498](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4498)) ([ef67b43](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ef67b43921f1d67b06b3257fb0f96c74e0d6dbae))
+## [2.26.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.0...v2.26.1) (2025-09-15)
+
+### Bug Fixes
+
+- declare the @aws-lambda-powertools/commons dependency ([#4484](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4484)) ([8cfcccd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8cfcccd6e94a6f0b25087ffbd8a4a2ec4bbf0e3d))
+## [2.26.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.2...v2.26.0) (2025-09-11)
+
+### Improvements
+
+- simplified the parser integration api with batch processor ([#4465](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4465)) ([96977ff](https://github.com/aws-powertools/powertools-lambda-typescript/commit/96977ff6b1330adcf82d9caa3b30454208d654e8))
 ## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
 
 **Note:** Version bump only for this package

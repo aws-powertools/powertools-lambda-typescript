@@ -87,7 +87,7 @@ describe('Class: IdempotencyConfig', () => {
   });
 
   describe('Method: registerLambdaContext', () => {
-    it('stores the provided context', async () => {
+    it('stores the provided context', () => {
       // Prepare
       const config = new IdempotencyConfig({});
 

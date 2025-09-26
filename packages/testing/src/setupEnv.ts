@@ -228,7 +228,7 @@ expect.addEqualityTesters([
       // or this.equals(a.message, b.message)
       return this.equals(a.issues, b.issues);
     }
-    return aOk !== bOk ? false : undefined;
+    return aOk === bOk ? undefined : false;
   },
 ]);
 

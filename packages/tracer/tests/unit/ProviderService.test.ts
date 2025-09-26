@@ -306,7 +306,7 @@ describe('Class: ProviderService', () => {
   });
 
   describe('Method: instrumentFetch', () => {
-    it('subscribes to the diagnostics channel', async () => {
+    it('subscribes to the diagnostics channel', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
 
@@ -319,7 +319,7 @@ describe('Class: ProviderService', () => {
       expect(channel('undici:request:error').hasSubscribers).toBe(true);
     });
 
-    it('traces a successful request', async () => {
+    it('traces a successful request', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
@@ -367,7 +367,7 @@ describe('Class: ProviderService', () => {
       );
     });
 
-    it('excludes the content_length header when invalid or not found', async () => {
+    it('excludes the content_length header when invalid or not found', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
@@ -406,7 +406,7 @@ describe('Class: ProviderService', () => {
       expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
-    it('adds a throttle flag to the segment when the status code is 429', async () => {
+    it('adds a throttle flag to the segment when the status code is 429', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
@@ -442,7 +442,7 @@ describe('Class: ProviderService', () => {
       expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
-    it('adds an error flag to the segment when the status code is 4xx', async () => {
+    it('adds an error flag to the segment when the status code is 4xx', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
@@ -478,7 +478,7 @@ describe('Class: ProviderService', () => {
       expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
-    it('adds a fault flag to the segment when the status code is 5xx', async () => {
+    it('adds a fault flag to the segment when the status code is 5xx', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
@@ -514,7 +514,7 @@ describe('Class: ProviderService', () => {
       expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
-    it('skips the segment creation when the request has no origin', async () => {
+    it('skips the segment creation when the request has no origin', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
@@ -531,7 +531,7 @@ describe('Class: ProviderService', () => {
       expect(provider.setSegment).toHaveBeenCalledTimes(0);
     });
 
-    it('does not add any path to the segment when the request has no path', async () => {
+    it('does not add any path to the segment when the request has no path', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();
       const segment = new Subsegment('## dummySegment');
@@ -564,7 +564,7 @@ describe('Class: ProviderService', () => {
     });
   });
 
-  it('closes the segment and adds a fault flag when the connection fails', async () => {
+  it('closes the segment and adds a fault flag when the connection fails', () => {
     // Prepare
     const provider: ProviderService = new ProviderService();
     const segment = new Subsegment('## dummySegment');
@@ -595,7 +595,7 @@ describe('Class: ProviderService', () => {
     expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
   });
 
-  it('forwards the correct sampling decision in the request header', async () => {
+  it('forwards the correct sampling decision in the request header', () => {
     // Prepare
     const provider: ProviderService = new ProviderService();
     const segment = new Subsegment('## dummySegment');

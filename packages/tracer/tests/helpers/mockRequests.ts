@@ -49,7 +49,7 @@ const mockFetch = ({
   });
 
   if (throwError) {
-    const error = new AggregateError('Mock fetch error');
+    const error = new AggregateError([], 'Mock fetch error');
 
     errorChannel.publish({
       request,
@@ -62,8 +62,7 @@ const mockFetch = ({
   const encoder = new TextEncoder();
   const encodedHeaders = [];
   for (const [key, value] of Object.entries(headers ?? {})) {
-    encodedHeaders.push(encoder.encode(key));
-    encodedHeaders.push(encoder.encode(value));
+    encodedHeaders.push(encoder.encode(key), encoder.encode(value));
   }
   responseHeadersChannel.publish({
     request,

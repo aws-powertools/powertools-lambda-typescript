@@ -20,7 +20,6 @@ const mockFunctionPayloadToBeHashed = {};
 const persistenceStore = new PersistenceLayerTestClass();
 const mockIdempotencyOptions = {
   persistenceStore,
-  dataKeywordArgument: 'testKeywordArgument',
   config: new IdempotencyConfig({}),
 };
 
@@ -69,7 +68,7 @@ describe('Class IdempotencyHandler', () => {
       },
     ])(
       'throws when the record is in progress and within expiry window ($case)',
-      async ({ keys, expectedErrorMsg }) => {
+      ({ keys, expectedErrorMsg }) => {
         // Prepare
         const stubRecord = new IdempotencyRecord({
           ...keys,
@@ -90,7 +89,7 @@ describe('Class IdempotencyHandler', () => {
       }
     );
 
-    it('throws when the record is in progress and outside expiry window', async () => {
+    it('throws when the record is in progress and outside expiry window', () => {
       // Prepare
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
@@ -110,7 +109,7 @@ describe('Class IdempotencyHandler', () => {
       expect(mockResponseHook).not.toHaveBeenCalled();
     });
 
-    it('throws when the idempotency record is expired', async () => {
+    it('throws when the idempotency record is expired', () => {
       // Prepare
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',

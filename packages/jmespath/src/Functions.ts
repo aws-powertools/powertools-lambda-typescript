@@ -56,7 +56,7 @@ class Functions {
   /**
    * Get the absolute value of the provided number.
    *
-   * @param args The number to get the absolute value of
+   * @param args - The number to get the absolute value of
    */
   @Functions.signature({ argumentsSpecs: [['number']] })
   public funcAbs(args: number): number {
@@ -66,7 +66,7 @@ class Functions {
   /**
    * Calculate the average of the numbers in the provided array.
    *
-   * @param args The numbers to average
+   * @param args - The numbers to average
    */
   @Functions.signature({
     argumentsSpecs: [['array-number']],
@@ -78,7 +78,7 @@ class Functions {
   /**
    * Get the ceiling of the provided number.
    *
-   * @param args The number to get the ceiling of
+   * @param args - The number to get the ceiling of
    */
   @Functions.signature({ argumentsSpecs: [['number']] })
   public funcCeil(args: number): number {
@@ -88,8 +88,8 @@ class Functions {
   /**
    * Determine if the given value is contained in the provided array or string.
    *
-   * @param haystack The array or string to check
-   * @param needle The value to check for
+   * @param haystack - The array or string to check
+   * @param needle - The value to check for
    */
   @Functions.signature({
     argumentsSpecs: [['array', 'string'], ['any']],
@@ -101,8 +101,8 @@ class Functions {
   /**
    * Determines if the provided string ends with the provided suffix.
    *
-   * @param str The string to check
-   * @param suffix The suffix to check for
+   * @param str - The string to check
+   * @param suffix - The suffix to check for
    */
   @Functions.signature({
     argumentsSpecs: [['string'], ['string']],
@@ -114,7 +114,7 @@ class Functions {
   /**
    * Get the floor of the provided number.
    *
-   * @param args The number to get the floor of
+   * @param args - The number to get the floor of
    */
   @Functions.signature({ argumentsSpecs: [['number']] })
   public funcFloor(args: number): number {
@@ -124,8 +124,8 @@ class Functions {
   /**
    * Join the provided array into a single string.
    *
-   * @param separator The separator to use
-   * @param items The array of itmes to join
+   * @param separator - The separator to use
+   * @param items - The array of itmes to join
    */
   @Functions.signature({
     argumentsSpecs: [['string'], ['array-string']],
@@ -137,7 +137,7 @@ class Functions {
   /**
    * Get the keys of the provided object.
    *
-   * @param arg The object to get the keys of
+   * @param arg - The object to get the keys of
    */
   @Functions.signature({
     argumentsSpecs: [['object']],
@@ -149,7 +149,7 @@ class Functions {
   /**
    * Get the number of items in the provided item.
    *
-   * @param arg The array to get the length of
+   * @param arg - The array to get the length of
    */
   @Functions.signature({
     argumentsSpecs: [['array', 'string', 'object']],
@@ -166,8 +166,8 @@ class Functions {
   /**
    * Map the provided function over the provided array.
    *
-   * @param expression The expression to map over the array
-   * @param args The array to map the expression over
+   * @param expression - The expression to map over the array
+   * @param args - The array to map the expression over
    */
   @Functions.signature({
     argumentsSpecs: [['any'], ['array']],
@@ -184,7 +184,7 @@ class Functions {
   /**
    * Get the maximum value in the provided array.
    *
-   * @param arg The array to get the maximum value of
+   * @param arg - The array to get the maximum value of
    */
   @Functions.signature({
     argumentsSpecs: [['array-number', 'array-string']],
@@ -204,8 +204,8 @@ class Functions {
   /**
    * Get the item in the provided array that has the maximum value when the provided expression is evaluated.
    *
-   * @param args The array of items to get the maximum value of
-   * @param expression The expression to evaluate for each item in the array
+   * @param args - The array of items to get the maximum value of
+   * @param expression - The expression to evaluate for each item in the array
    */
   @Functions.signature({
     argumentsSpecs: [['array'], ['expression']],
@@ -252,7 +252,7 @@ class Functions {
    *
    * Note that this is a shallow merge and will not merge nested objects.
    *
-   * @param args The objects to merge
+   * @param args - The objects to merge
    */
   @Functions.signature({
     argumentsSpecs: [['object']],
@@ -266,7 +266,7 @@ class Functions {
   /**
    * Get the minimum value in the provided array.
    *
-   * @param arg The array to get the minimum value of
+   * @param arg - The array to get the minimum value of
    */
   @Functions.signature({
     argumentsSpecs: [['array-number', 'array-string']],
@@ -285,8 +285,8 @@ class Functions {
   /**
    * Get the item in the provided array that has the minimum value when the provided expression is evaluated.
    *
-   * @param args The array of items to get the minimum value of
-   * @param expression The expression to evaluate for each item in the array
+   * @param args - The array of items to get the minimum value of
+   * @param expression - The expression to evaluate for each item in the array
    */
   @Functions.signature({
     argumentsSpecs: [['array'], ['expression']],
@@ -332,7 +332,7 @@ class Functions {
    * Get the first argument that does not evaluate to null.
    * If all arguments evaluate to null, then null is returned.
    *
-   * @param args The keys of the items to check
+   * @param args - The keys of the items to check
    */
   @Functions.signature({
     argumentsSpecs: [[]],
@@ -345,7 +345,7 @@ class Functions {
   /**
    * Reverses the provided string or array.
    *
-   * @param arg The string or array to reverse
+   * @param arg - The string or array to reverse
    */
   @Functions.signature({
     argumentsSpecs: [['string', 'array']],
@@ -359,7 +359,7 @@ class Functions {
   /**
    * Sort the provided array.
    *
-   * @param arg The array to sort
+   * @param arg - The array to sort
    */
   @Functions.signature({
     argumentsSpecs: [['array-number', 'array-string']],
@@ -382,8 +382,8 @@ class Functions {
   /**
    * Sort the provided array by the provided expression.
    *
-   * @param args The array to sort
-   * @param expression The expression to sort by
+   * @param args - The array to sort
+   * @param expression - The expression to sort by
    */
   @Functions.signature({
     argumentsSpecs: [['array'], ['expression']],
@@ -426,8 +426,8 @@ class Functions {
   /**
    * Determines if the provided string starts with the provided prefix.
    *
-   * @param str The string to check
-   * @param prefix The prefix to check for
+   * @param str - The string to check
+   * @param prefix - The prefix to check for
    */
   @Functions.signature({
     argumentsSpecs: [['string'], ['string']],
@@ -439,7 +439,7 @@ class Functions {
   /**
    * Sum the provided numbers.
    *
-   * @param args The numbers to sum
+   * @param args - The numbers to sum
    */
   @Functions.signature({
     argumentsSpecs: [['array-number']],
@@ -454,7 +454,7 @@ class Functions {
    * If the provided value is an array, then it is returned.
    * Otherwise, the value is wrapped in an array and returned.
    *
-   * @param arg The items to convert to an array
+   * @param arg - The items to convert to an array
    */
   @Functions.signature({
     argumentsSpecs: [['any']],
@@ -473,7 +473,7 @@ class Functions {
    *
    * If the value cannot be converted to a number, then null is returned.
    *
-   * @param arg The value to convert to a number
+   * @param arg - The value to convert to a number
    */
   @Functions.signature({
     argumentsSpecs: [['any']],
@@ -496,7 +496,7 @@ class Functions {
    * If the provided value is a string, then it is returned.
    * Otherwise, the value is converted to a string and returned.
    *
-   * @param arg The value to convert to a string
+   * @param arg - The value to convert to a string
    */
   @Functions.signature({
     argumentsSpecs: [['any']],
@@ -508,7 +508,7 @@ class Functions {
   /**
    * Get the type of the provided value.
    *
-   * @param arg The value to check the type of
+   * @param arg - The value to check the type of
    */
   @Functions.signature({
     argumentsSpecs: [['any']],
@@ -520,7 +520,7 @@ class Functions {
   /**
    * Get the values of the provided object.
    *
-   * @param arg The object to get the values of
+   * @param arg - The object to get the values of
    */
   @Functions.signature({
     argumentsSpecs: [['object']],
@@ -544,7 +544,7 @@ class Functions {
    * to the `methods` set. Finally, when the recursion collects back to the current instance,
    * it adds the collected methods to the `this.methods` set so that they can be accessed later.
    *
-   * @param scope The scope of the class instance to introspect
+   * @param scope - The scope of the class instance to introspect
    */
   public introspectMethods(scope?: Functions): Set<string> {
     const prototype = Object.getPrototypeOf(this);
@@ -598,7 +598,7 @@ class Functions {
    * }
    * ```
    *
-   * @param options The options for the signature decorator
+   * @param options - The options for the signature decorator
    */
   public static signature(
     options: FunctionSignatureOptions

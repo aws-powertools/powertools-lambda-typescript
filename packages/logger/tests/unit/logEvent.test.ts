@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
@@ -86,6 +87,7 @@ describe('Log event', () => {
     class Test {
       @logger.injectLambdaContext({ logEvent: true })
       async handler(event: unknown, _context: Context) {
+        await setTimeout(1); // simulate some async operation
         return event;
       }
     }

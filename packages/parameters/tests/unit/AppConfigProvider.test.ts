@@ -9,7 +9,7 @@ import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppConfigProvider } from '../../src/appconfig/index.js';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
-import { APPCONFIG_TOKEN_EXPIRATION } from '../../src/constants';
+import { APPCONFIG_TOKEN_EXPIRATION } from '../../src/constants.js';
 import type { AppConfigProviderOptions } from '../../src/types/AppConfigProvider.js';
 
 vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
@@ -27,7 +27,7 @@ describe('Class: AppConfigProvider', () => {
   });
 
   describe('Method: constructor', () => {
-    it('instantiates a new AWS SDK and adds a middleware to it', async () => {
+    it('instantiates a new AWS SDK and adds a middleware to it', () => {
       // Prepare
       const options: AppConfigProviderOptions = {
         application: 'MyApp',
@@ -66,7 +66,7 @@ describe('Class: AppConfigProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    it('uses the provided AWS SDK client', async () => {
+    it('uses the provided AWS SDK client', () => {
       // Prepare
       const awsSdkV3Client = new AppConfigDataClient({
         endpoint: 'http://localhost:8000',
@@ -90,7 +90,7 @@ describe('Class: AppConfigProvider', () => {
       );
     });
 
-    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: AppConfigProviderOptions = {
@@ -179,7 +179,7 @@ describe('Class: AppConfigProvider', () => {
       expect(result).toBe(mockData);
     });
 
-    it('throws when no application is set', async () => {
+    it('throws when no application is set', () => {
       // Prepare
       process.env.POWERTOOLS_SERVICE_NAME = '';
       const options = {

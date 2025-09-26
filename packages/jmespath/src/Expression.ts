@@ -16,9 +16,8 @@ class Expression {
   /**
    * Evaluate the expression against a JSON value.
    *
-   * @param value The JSON value to apply the expression to.
-   * @param node The node to visit.
-   * @returns The result of applying the expression to the value.
+   * @param value - The JSON value to apply the expression to.
+   * @param node - The node to visit.
    */
   public visit(value: JSONObject, node?: Node): JSONObject {
     return this.#interpreter.visit(node ?? this.#expression, value);

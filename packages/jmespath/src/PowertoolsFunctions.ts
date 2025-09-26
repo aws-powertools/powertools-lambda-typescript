@@ -2,6 +2,7 @@ import { gunzipSync } from 'node:zlib';
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { fromBase64 } from '@aws-lambda-powertools/commons/utils/base64';
 import { Functions } from './Functions.js';
+import type { search } from './search.js';
 
 const decoder = new TextDecoder('utf-8');
 
@@ -10,7 +11,7 @@ const decoder = new TextDecoder('utf-8');
  *
  * Built-in JMESPath functions include: `powertools_json`, `powertools_base64`, `powertools_base64_gzip`
  *
- * You can use these functions to decode and/or deserialize JSON objects when using the {@link index.search | search} function.
+ * You can use these functions to decode and/or deserialize JSON objects when using the {@link search | `search`} function.
  *
  * @example
  * ```typescript
@@ -28,9 +29,6 @@ const decoder = new TextDecoder('utf-8');
  * );
  * console.log(result); // { foo: 'bar' }
  * ```
- *
- * When using the {@link envelopes.extractDataFromEnvelope} function, the PowertoolsFunctions class is automatically used.
- *
  */
 class PowertoolsFunctions extends Functions {
   @Functions.signature({
@@ -58,4 +56,5 @@ class PowertoolsFunctions extends Functions {
   }
 }
 
-export { PowertoolsFunctions, Functions };
+export { Functions } from './Functions.js';
+export { PowertoolsFunctions };

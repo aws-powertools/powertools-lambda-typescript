@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Hello world event handler API Gateway
+
+Globals:
+  Api:
+    TracingEnabled: true
+    Cors: # see CORS section
+      AllowOrigin: "'https://example.com'"
+      AllowHeaders: "'Content-Type,Authorization,X-Amz-Date'"
+      MaxAge: "'300'"
+    BinaryMediaTypes: # see Binary responses section
+      - "*~1*" # converts to */* for any binary type
+      # NOTE: use this stricter version if you're also using CORS; */* doesn't work with CORS
+      # see: https://github.com/aws-powertools/powertools-lambda-python/issues/3373#issuecomment-1821144779
+      # - "image~1*" # converts to image/*
+      # - "*~1csv" # converts to */csv, eg text/csv, application/csv
+
+  Function:
+    Timeout: 5
+    MemorySize: 256
+    Runtime: nodejs22.x
+    Tracing: Active
+    Environment:
+      Variables:
+        POWERTOOLS_LOG_LEVEL: INFO
+        POWERTOOLS_SERVICE_NAME: hello
+
+Resources:
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: hello_world
+      Description: API handler function
+      Events:
+        AnyApiEvent:
+          Type: Api
+          Properties:
+            # NOTE: this is a catch-all rule to simplify the documentation.
+            # explicit routes and methods are recommended for prod instead (see below)
+            Path: /{proxy+} # Send requests on any path to the lambda function
+            Method: ANY # Send requests using any http method to the lambda function
+        GetAllTodos:
+           Type: Api
+           Properties:
+             Path: /todos
+             Method: GET
+        GetTodoById:
+           Type: Api
+           Properties:
+             Path: /todos/{todo_id}
+             Method: GET

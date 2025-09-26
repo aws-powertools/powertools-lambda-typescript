@@ -6,39 +6,30 @@ import type {
 import { AppConfigProvider } from './AppConfigProvider.js';
 
 /**
- * ## Intro
- * The Parameters utility provides an AppConfigProvider that allows to retrieve configuration profiles from AWS AppConfig.
+ * The Parameters utility provides an `AppConfigProvider` that allows to retrieve configuration profiles from AWS AppConfig.
  *
- * ## Getting started
- *
- * This utility supports AWS SDK v3 for JavaScript only. This allows the utility to be modular, and you to install only
+ * This utility supports AWS SDK v3 for JavaScript only (`@aws-sdk/client-appconfigdata`). This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
  *
- * To use the provider, you must install the Parameters utility and the AWS SDK v3 for JavaScript for AppConfig:
- *
- * ```sh
- * npm install @aws-lambda-powertools/parameters @aws-sdk/client-appconfigdata
- * ```
- *
- * ## Basic usage
+ * **Basic usage**
  *
  * @example
  * ```typescript
  * import { getAppConfig } from '@aws-lambda-powertools/parameters/appconfig';
  *
+ * const encodedConfig = await getAppConfig('my-config', {
+ *   application: 'my-app',
+ *   environment: 'prod',
+ * });
+ * const config = new TextDecoder('utf-8').decode(encodedConfig);
+ *
  * export const handler = async (): Promise<void> => {
- *   // Retrieve a configuration profile
- *   const encodedConfig = await getAppConfig('my-config', {
- *     application: 'my-app',
- *     environment: 'prod',
- *   });
- *   const config = new TextDecoder('utf-8').decode(encodedConfig);
+ *   // Use the config variable as needed
+ *   console.log(config);
  * };
  * ```
  *
- * ## Advanced usage
- *
- * ### Caching
+ * **Caching**
  *
  * By default, the provider will cache parameters retrieved in-memory for 5 seconds.
  * You can adjust how long values should be kept in cache by using the `maxAge` parameter.
@@ -47,13 +38,15 @@ import { AppConfigProvider } from './AppConfigProvider.js';
  * ```typescript
  * import { getAppConfig } from '@aws-lambda-powertools/parameters/appconfig';
  *
+ * const encodedConfig = await getAppConfig('my-config', {
+ *   application: 'my-app',
+ *   environment: 'prod',
+ *   maxAge: 10, // Cache for 10 seconds
+ * });
+ * const config = new TextDecoder('utf-8').decode(encodedConfig);
+ *
  * export const handler = async (): Promise<void> => {
- *   // Retrieve a configuration profile and cache it for 10 seconds
- *   const encodedConfig = await getAppConfig('my-config', {
- *     application: 'my-app',
- *     environment: 'prod',
- *   });
- *   const config = new TextDecoder('utf-8').decode(encodedConfig);
+ *   // Use the config variable as needed
  * };
  * ```
  *
@@ -63,18 +56,20 @@ import { AppConfigProvider } from './AppConfigProvider.js';
  * ```typescript
  * import { getAppConfig } from '@aws-lambda-powertools/parameters/appconfig';
  *
+ * const encodedConfig = await getAppConfig('my-config', {
+ *   application: 'my-app',
+ *   environment: 'prod',
+ *   forceFetch: true, // Always fetch the latest value
+ * });
+ * const config = new TextDecoder('utf-8').decode(encodedConfig);
+ *
  * export const handler = async (): Promise<void> => {
- *   // Retrieve a config and always fetch the latest value
- *   const config = await getAppConfig('my-config', {
- *     application: 'my-app',
- *     environment: 'prod',
- *     forceFetch: true,
- *   });
- *   const config = new TextDecoder('utf-8').decode(encodedConfig);
+ *   // Use the config variable as needed
+ *   console.log
  * };
  * ```
  *
- * ### Transformations
+ * **Transformations**
  *
  * For configurations stored as freeform JSON, Freature Flag, you can use the transform argument for deserialization. This will return a JavaScript object instead of a string.
  *
@@ -82,13 +77,16 @@ import { AppConfigProvider } from './AppConfigProvider.js';
  * ```typescript
  * import { getAppConfig } from '@aws-lambda-powertools/parameters/appconfig';
  *
+ * // Retrieve a JSON config and parse it as JSON
+ * const encodedConfig = await getAppConfig('my-config', {
+ *   application: 'my-app',
+ *   environment: 'prod',
+ *   transform: 'json'
+ * });
+ *
  * export const handler = async (): Promise<void> => {
- *   // Retrieve a JSON config or Feature Flag and parse it as JSON
- *   const config = await getAppConfig('my-config', {
- *     application: 'my-app',
- *     environment: 'prod',
- *     transform: 'json'
- *   });
+ *   // Use the config variable as needed
+ *   console.log(config);
  * };
  * ```
  *
@@ -108,7 +106,7 @@ import { AppConfigProvider } from './AppConfigProvider.js';
  * };
  * ```
  *
- * ### Extra SDK options
+ * **Extra SDK options**
  *
  * When retrieving a configuration profile, you can pass extra options to the AWS SDK v3 for JavaScript client by using the `sdkOptions` parameter.
  *
@@ -131,15 +129,18 @@ import { AppConfigProvider } from './AppConfigProvider.js';
  *
  * This object accepts the same options as the [AWS SDK v3 for JavaScript AppConfigData client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/interfaces/startconfigurationsessioncommandinput.html).
  *
- * ### Built-in provider class
+ * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link AppConfigProvider | `AppConfigProvider`} class.
  *
- * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link AppConfigProvider} class.
- *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
- *
- * @param {string} name - The name of the configuration profile or its ID
- * @param {GetAppConfigOptions} options - Options to configure the provider
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+ *
+ * @param name - The name of the configuration profile to retrieve
+ * @param options - Options to configure the provider
+ * @param options.application - The application ID or the application name
+ * @param options.environment - The environment ID or the environment name
+ * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+ * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+ * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+ * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link StartConfigurationSessionCommandInput | `StartConfigurationSessionCommandInput`} except `ApplicationIdentifier`, `EnvironmentIdentifier`, and `ConfigurationProfileIdentifier`
  */
 const getAppConfig = <
   ExplicitUserProvidedType = undefined,
@@ -148,7 +149,7 @@ const getAppConfig = <
     | undefined = GetAppConfigOptions,
 >(
   name: string,
-  options: InferredFromOptionsType & GetAppConfigOptions
+  options: NonNullable<InferredFromOptionsType & GetAppConfigOptions>
 ): Promise<
   | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
   | undefined

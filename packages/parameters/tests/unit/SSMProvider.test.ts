@@ -36,7 +36,7 @@ describe('Class: SSMProvider', () => {
   });
 
   describe('Method: constructor', () => {
-    it('adds the middleware to the created AWS SDK', async () => {
+    it('adds the middleware to the created AWS SDK', () => {
       // Prepare
       const options: SSMProviderOptions = {};
 
@@ -70,7 +70,7 @@ describe('Class: SSMProvider', () => {
       expect(addUserAgentMiddleware).toHaveBeenCalled();
     });
 
-    it('uses the provided AWS SDK client', async () => {
+    it('uses the provided AWS SDK client', () => {
       // Prepare
       const awsSdkV3Client = new SSMClient({
         endpoint: 'http://localhost:3000',
@@ -92,7 +92,7 @@ describe('Class: SSMProvider', () => {
       );
     });
 
-    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', () => {
       // Prepare
       const awsSdkV3Client = {};
       const options: SSMProviderOptions = {
@@ -657,7 +657,7 @@ describe('Class: SSMProvider', () => {
     it('returns parameters from cache when present', async () => {
       // Prepare
       const provider = new SSMProviderMock();
-      provider.getParametersByNameFromCache.mockResolvedValueOnce({
+      provider.getParametersByNameFromCache.mockReturnValueOnce({
         cached: {
           '/foo/bar': 'bar',
           '/foo/baz': 'baz',
@@ -690,7 +690,7 @@ describe('Class: SSMProvider', () => {
     it('retrieves the parameters from remote when not present in the cache', async () => {
       // Prepare
       const provider = new SSMProviderMock();
-      provider.getParametersByNameFromCache.mockResolvedValueOnce({
+      provider.getParametersByNameFromCache.mockReturnValueOnce({
         cached: {},
         toFetch: {
           '/foo/bar': {},
@@ -738,7 +738,7 @@ describe('Class: SSMProvider', () => {
     it('retrieves the parameters not present in the cache and returns them, together with the cached ones', async () => {
       // Prepare
       const provider = new SSMProviderMock();
-      provider.getParametersByNameFromCache.mockResolvedValueOnce({
+      provider.getParametersByNameFromCache.mockReturnValueOnce({
         cached: {
           '/foo/bar': 'bar',
         },
@@ -790,14 +790,14 @@ describe('Class: SSMProvider', () => {
         this.store.set(key, value);
       }
 
-      public async getParametersByNameFromCache(
+      public getParametersByNameFromCache(
         parameters: Record<string, SSMGetParametersByNameOptions>
-      ): Promise<SSMGetParametersByNameFromCacheOutputType> {
+      ): SSMGetParametersByNameFromCacheOutputType {
         return super.getParametersByNameFromCache(parameters);
       }
     }
 
-    it('returns an object with parameters split by cached and to fetch', async () => {
+    it('returns an object with parameters split by cached and to fetch', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -811,7 +811,7 @@ describe('Class: SSMProvider', () => {
 
       // Act
       const { cached, toFetch } =
-        await provider.getParametersByNameFromCache(parameters);
+        provider.getParametersByNameFromCache(parameters);
 
       // Assess
       expect(cached).toEqual({
@@ -828,7 +828,7 @@ describe('Class: SSMProvider', () => {
       public _getParametersByName = vi.fn();
       public maxGetParametersItems = 1;
 
-      public async getParametersByNameInChunks(
+      public getParametersByNameInChunks(
         parameters: Record<string, SSMGetParametersByNameOptions>,
         throwOnError: boolean,
         decrypt: boolean
@@ -933,7 +933,7 @@ describe('Class: SSMProvider', () => {
     class SSMProviderMock extends SSMProvider {
       public _get = vi.fn();
 
-      public async getParametersByNameWithDecryptOption(
+      public getParametersByNameWithDecryptOption(
         parameters: Record<string, SSMGetParametersByNameOptions>,
         throwOnError: boolean
       ): Promise<SSMGetParametersByNameOutputInterface> {

@@ -18,15 +18,12 @@ import type {
 } from '../types/DynamoDBProvider.js';
 
 /**
- * ## Intro
- * The Parameters utility provides a DynamoDBProvider that allows to retrieve values from Amazon DynamoDB.
- *
- * ## Getting started
+ * The Parameters utility provides a `DynamoDBProvider` that allows to retrieve values from Amazon DynamoDB.
  *
  * This utility supports AWS SDK v3 for JavaScript only (`@aws-sdk/client-dynamodb` and `@aws-sdk/util-dynamodb`). This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
  *
- * ## Basic usage
+ * **Basic usage**
  *
  * Retrieve a value from DynamoDB:
  *
@@ -60,9 +57,7 @@ import type {
  * };
  * ```
  *
- * ## Advanced usage
- *
- * ### Caching
+ * **Caching**
  *
  * By default, the provider will cache parameters retrieved in-memory for 5 seconds.
  * You can adjust how long values should be kept in cache by using the `maxAge` parameter.
@@ -101,7 +96,7 @@ import type {
  * };
  * ```
  *
- * ### Transformations
+ * **Transformations**
  *
  * For values stored as JSON you can use the transform argument for deserialization. This will return a JavaScript object instead of a string.
  *
@@ -157,7 +152,7 @@ import type {
  * };
  * ```
  *
- * ### Custom key names
+ * **Custom key names**
  *
  * By default, the provider will use the following key names: `id` for the partition key, `sk` for the sort key, and `value` for the value.
  * You can adjust the key names by using the `keyAttr`, `sortAttr`, and `valueAttr` parameters.
@@ -174,7 +169,7 @@ import type {
  * });
  * ```
  *
- * ### Extra SDK options
+ * **Extra SDK options**
  *
  * When retrieving values, you can pass extra options to the AWS SDK v3 for JavaScript client by using the `sdkOptions` parameter.
  *
@@ -198,7 +193,7 @@ import type {
  *
  * The objects accept the same options as respectively the [AWS SDK v3 for JavaScript PutItem command](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/putitemcommand.html) and the [AWS SDK v3 for JavaScript DynamoDB client Query command](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/querycommand.html).
  *
- * ### Customize AWS SDK v3 for JavaScript client
+ * **Customize AWS SDK v3 for JavaScript client**
  *
  * By default, the provider will create a new DynamoDB client using the default configuration.
  *
@@ -239,11 +234,6 @@ class DynamoDBProvider extends BaseProvider {
   protected tableName: string;
   protected valueAttr = 'value';
 
-  /**
-   * It initializes the DynamoDBProvider class.
-   *
-   * @param {DynamoDBProviderOptions} config - The configuration object.
-   */
   public constructor(config: DynamoDBProviderOptions) {
     super({
       awsSdkV3ClientPrototype: DynamoDBClient as new (
@@ -276,26 +266,23 @@ class DynamoDBProvider extends BaseProvider {
    * };
    * ```
    *
-   * You can customize the retrieval of the value by passing options to the function:
-   * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
-   * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`
-   * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
-   *
-   * For usage examples check {@link DynamoDBProvider}.
-   *
-   * @param {string} name - The name of the value to retrieve (i.e. the partition key)
-   * @param {DynamoDBGetOptionsInterface} options - Options to configure the provider
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   *
+   * @param name - The name of the value to retrieve (partition key)
+   * @param options - Optional options to configure the provider
+   * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+   * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+   * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+   * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link GetItemCommandInput | `GetItemCommandInput`} except `Key`, `TableName`, and `ProjectionExpression`
    */
-  public async get<
+  public get<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | DynamoDBGetOptions
       | undefined = DynamoDBGetOptions,
   >(
     name: string,
-    options?: InferredFromOptionsType & DynamoDBGetOptions
+    options?: NonNullable<InferredFromOptionsType & DynamoDBGetOptions>
   ): Promise<
     | DynamoDBGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
     | undefined
@@ -323,27 +310,24 @@ class DynamoDBProvider extends BaseProvider {
    * };
    * ```
    *
-   * You can customize the retrieval of the values by passing options to the function:
-   * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
-   * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`
-   * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
-   * * `throwOnTransformError` - Whether to throw an error if the transform fails (default: `true`)
-   *
-   * For usage examples check {@link DynamoDBProvider}.
-   *
-   * @param {string} path - The path of the values to retrieve (i.e. the partition key)
-   * @param {DynamoDBGetMultipleOptions} options - Options to configure the provider
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   *
+   * @param path - The path of the values to retrieve (partition key)
+   * @param options - Optional options to configure the provider
+   * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+   * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+   * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+   * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link QueryCommandInput | `QueryCommandInput`} except `TableName` and `KeyConditionExpression`
+   * @param options.throwOnTransformError - Optional flag to throw an error if the transform fails (default: `true`)
    */
-  public async getMultiple<
+  public getMultiple<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | DynamoDBGetMultipleOptions
       | undefined = DynamoDBGetMultipleOptions,
   >(
     path: string,
-    options?: InferredFromOptionsType & DynamoDBGetMultipleOptions
+    options?: NonNullable<InferredFromOptionsType & DynamoDBGetMultipleOptions>
   ): Promise<
     | DynamoDBGetMultipleOutput<
         ExplicitUserProvidedType,
@@ -363,12 +347,16 @@ class DynamoDBProvider extends BaseProvider {
   /**
    * Retrieve an item from Amazon DynamoDB.
    *
-   * @param {string} name - Key of the item to retrieve (i.e. the partition key)
-   * @param {DynamoDBGetOptions} options - Options to customize the retrieval
+   * @param name - Key of the item to retrieve (i.e. the partition key)
+   * @param options - Options to customize the retrieval
+   * @param options.maxAge - Maximum age of the value in the cache, in seconds.
+   * @param options.sdkOptions - Additional options to pass to the AWS SDK v3 client, supports all options from {@link GetItemCommandInput | `GetItemCommandInput`} except `Key`, `TableName`, and `ProjectionExpression`.
+   * @param options.forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+   * @param options.transform - Transform to be applied, can be 'json' or 'binary'.
    */
   protected async _get(
     name: string,
-    options?: DynamoDBGetOptions
+    options?: NonNullable<DynamoDBGetOptions>
   ): Promise<JSONValue | undefined> {
     const sdkOptions: GetItemCommandInput = {
       ...(options?.sdkOptions || {}),
@@ -387,12 +375,17 @@ class DynamoDBProvider extends BaseProvider {
   /**
    * Retrieve multiple items from Amazon DynamoDB.
    *
-   * @param {string} path - The path of the values to retrieve (i.e. the partition key)
-   * @param {DynamoDBGetMultipleOptions} options - Options to customize the retrieval
+   * @param path - The path of the values to retrieve (i.e. the partition key)
+   * @param options - Options to customize the retrieval
+   * @param options.maxAge - Maximum age of the value in the cache, in seconds.
+   * @param options.forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+   * @param options.sdkOptions - Additional options to pass to the AWS SDK v3 client, supports all options from {@link QueryCommandInput | `QueryCommandInput`} except `TableName` and `KeyConditionExpression`.
+   * @param options.transform - Transform to be applied, can be 'json' or 'binary'.
+   * @param options.throwOnTransformError - Whether to throw an error if the transform fails (default: `true`)
    */
   protected async _getMultiple(
     path: string,
-    options?: DynamoDBGetMultipleOptions
+    options?: NonNullable<DynamoDBGetMultipleOptions>
   ): Promise<Record<string, JSONValue>> {
     const sdkOptions: QueryCommandInput = {
       ...(options?.sdkOptions || {}),

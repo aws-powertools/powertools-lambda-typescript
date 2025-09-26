@@ -149,7 +149,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       );
     });
 
-    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', async () => {
+    it('falls back on a new SDK client and logs a warning when an unknown object is provided instead of a client', () => {
       // Act
       const persistenceLayer = new DynamoDBPersistenceLayerTestClass({
         tableName: dummyTableName,
@@ -424,7 +424,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         expiryTimestamp: 0,
         inProgressExpiryTimestamp: 0,
       });
-      client.on(PutItemCommand).rejects(new Error());
+      client.on(PutItemCommand).rejects(new Error('some error'));
 
       // Act & Assess
       await expect(persistenceLayer._putRecord(record)).rejects.toThrow();
@@ -576,7 +576,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       });
     });
 
-    it('updates the item when the response_data is undefined', async () => {
+    it('updates the item when the response_data is undefined', () => {
       // Prepare
       const status = IdempotencyRecordStatus.EXPIRED;
       const expiryTimestamp = Date.now();

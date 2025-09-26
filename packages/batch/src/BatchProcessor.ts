@@ -33,7 +33,7 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
  *   });
  * ```
  *
- * **Process batch triggered by Kinesis Data Streams*
+ * **Process batch triggered by Kinesis Data Streams**
  *
  * @example
  * ```typescript
@@ -79,7 +79,75 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
  * });
  * ```
  *
- * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
+ * **Process batch with schema validation**
+ *
+ * @example
+ * ```typescript
+ * import {
+ *   BatchProcessor,
+ *   EventType,
+ *   processPartialResponse,
+ * } from '@aws-lambda-powertools/batch';
+ * import { parser } from '@aws-lambda-powertools/batch/parser';
+ * import { SqsRecordSchema } from '@aws-lambda-powertools/parser/schemas';
+ * import type { SQSHandler } from 'aws-lambda';
+ * import { z } from 'zod';
+ *
+ * const myItemSchema = z.object({ name: z.string(), age: z.number() });
+ *
+ * const processor = new BatchProcessor(EventType.SQS, {
+ *   parser,
+ *   schema: SqsRecordSchema.extend({
+ *     body: myItemSchema,
+ *   }),
+ * });
+ *
+ * const recordHandler = async (record) => {
+ *   // record is now fully typed and validated
+ *   console.log(record.body.name, record.body.age);
+ * };
+ *
+ * export const handler: SQSHandler = async (event, context) =>
+ *   processPartialResponse(event, recordHandler, processor, {
+ *     context,
+ *   });
+ * ```
+ *
+ * **Process batch with inner schema validation**
+ *
+ * @example
+ * ```typescript
+ * import {
+ *   BatchProcessor,
+ *   EventType,
+ *   processPartialResponse,
+ * } from '@aws-lambda-powertools/batch';
+ * import { parser } from '@aws-lambda-powertools/batch/parser';
+ * import type { SQSHandler } from 'aws-lambda';
+ * import { z } from 'zod';
+ *
+ * const myItemSchema = z.object({ name: z.string(), age: z.number() });
+ *
+ * const processor = new BatchProcessor(EventType.SQS, {
+ *   parser,
+ *   innerSchema: myItemSchema,
+ *   transformer: 'json'
+ * });
+ *
+ * const recordHandler = async (record) => {
+ *   // record is now fully typed and validated
+ *   console.log(record.body.name, record.body.age);
+ * };
+ *
+ * export const handler: SQSHandler = async (event, context) =>
+ *   processPartialResponse(event, recordHandler, processor, {
+ *     context,
+ *   });
+ * ```
+ *
+ * Note: If `innerSchema` is used with DynamoDB streams, the schema will be applied to both the NewImage and the OldImage by default. If you want to have separate schema for both, you will need to extend the schema and use the full schema for parsing.
+ *
+ * @param eventType - The type of event to process (SQS, Kinesis, DynamoDB)
  */
 class BatchProcessor extends BasePartialBatchProcessor {
   /**
@@ -94,15 +162,22 @@ class BatchProcessor extends BasePartialBatchProcessor {
    * If the handler function completes successfully, the method returns a success response.
    * Otherwise, it returns a failure response with the error that occurred during processing.
    *
-   * @param record The record to be processed
+   * @param record - The record to be processed
    */
   public async processRecord(
     record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
     try {
-      const data = this.toBatchType(record, this.eventType);
+      const recordToProcess = this.parserConfig?.parser
+        ? await this.parserConfig.parser(
+            record,
+            this.eventType,
+            this.logger,
+            this.parserConfig
+          )
+        : record;
+      const data = this.toBatchType(recordToProcess, this.eventType);
       const result = await this.handler(data, this.options?.context);
-
       return this.successHandler(record, result);
     } catch (error) {
       return this.failureHandler(record, error as Error);
@@ -112,7 +187,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
   /**
    * @throws {BatchProcessingError} This method is not implemented for synchronous processing.
    *
-   * @param _record The record to be processed
+   * @param _record - The record to be processed
    */
   public processRecordSync(
     _record: BaseRecord

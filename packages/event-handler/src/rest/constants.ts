@@ -1,4 +1,4 @@
-export const HttpVerbs = {
+const HttpVerbs = {
   GET: 'GET',
   POST: 'POST',
   PUT: 'PUT',
@@ -8,7 +8,7 @@ export const HttpVerbs = {
   OPTIONS: 'OPTIONS',
 } as const;
 
-export const HttpErrorCodes = {
+const HttpStatusCodes = {
   // 1xx Informational
   CONTINUE: 100,
   SWITCHING_PROTOCOLS: 101,
@@ -82,8 +82,48 @@ export const HttpErrorCodes = {
   NETWORK_AUTHENTICATION_REQUIRED: 511,
 } as const;
 
-export const PARAM_PATTERN = /:([a-zA-Z_]\w*)(?=\/|$)/g;
+const PARAM_PATTERN = /:([a-zA-Z_]\w*)(?=\/|$)/g;
 
-export const SAFE_CHARS = "-._~()'!*:@,;=+&$";
+const SAFE_CHARS = "-._~()'!*:@,;=+&$";
 
-export const UNSAFE_CHARS = '%<> \\[\\]{}|^';
+const UNSAFE_CHARS = '%<> \\[\\]{}|^';
+
+/**
+ * Default CORS configuration
+ */
+const DEFAULT_CORS_OPTIONS = {
+  origin: '*',
+  allowMethods: ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT'],
+  allowHeaders: [
+    'Authorization',
+    'Content-Type',
+    'X-Amz-Date',
+    'X-Api-Key',
+    'X-Amz-Security-Token',
+  ],
+  exposeHeaders: [],
+  credentials: false,
+};
+
+const DEFAULT_COMPRESSION_RESPONSE_THRESHOLD = 1024;
+
+const CACHE_CONTROL_NO_TRANSFORM_REGEX = /(?:^|,)\s*?no-transform\s*?(?:,|$)/i;
+
+const COMPRESSION_ENCODING_TYPES = {
+  GZIP: 'gzip',
+  DEFLATE: 'deflate',
+  IDENTITY: 'identity',
+  ANY: '*',
+} as const;
+
+export {
+  HttpVerbs,
+  HttpStatusCodes,
+  PARAM_PATTERN,
+  SAFE_CHARS,
+  UNSAFE_CHARS,
+  DEFAULT_CORS_OPTIONS,
+  DEFAULT_COMPRESSION_RESPONSE_THRESHOLD,
+  CACHE_CONTROL_NO_TRANSFORM_REGEX,
+  COMPRESSION_ENCODING_TYPES,
+};

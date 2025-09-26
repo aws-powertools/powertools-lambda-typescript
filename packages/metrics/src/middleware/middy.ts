@@ -60,7 +60,7 @@ const logMetrics = (
     };
   };
 
-  const logMetricsBefore = async (request: MiddyLikeRequest): Promise<void> => {
+  const logMetricsBefore = (request: MiddyLikeRequest) => {
     for (const metrics of metricsInstances) {
       const { throwOnEmptyMetrics, defaultDimensions, captureColdStartMetric } =
         options;
@@ -78,7 +78,7 @@ const logMetrics = (
     setCleanupFunction(request);
   };
 
-  const logMetricsAfterOrError = async (): Promise<void> => {
+  const logMetricsAfterOrError = () => {
     for (const metrics of metricsInstances) {
       metrics.publishStoredMetrics();
     }

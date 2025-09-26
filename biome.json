@@ -1,5 +1,6 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.0.6/schema.json",
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "root": true,
   "assist": {
     "actions": {
       "source": {
@@ -22,6 +23,32 @@
         "useNumberNamespace": "error",
         "noInferrableTypes": "error",
         "noUselessElse": "error"
+      },
+      "suspicious": {
+        "noTsIgnore": "error",
+        "noConfusingVoidType": "error",
+        "noDoubleEquals": "error",
+        "noGlobalIsNan": "error",
+        "noGlobalIsFinite": "error",
+        "useNumberToFixedDigitsArgument": "error",
+        "noPrototypeBuiltins": "error",
+        "noSkippedTests": "error",
+        "noFocusedTests": "error",
+        "noUnassignedVariables": "error",
+        "noVar": "error",
+        "useAdjacentOverloadSignatures": "error",
+        "useAwait": "error",
+        "useErrorMessage": "error",
+        "useIsArray": "error",
+        "useStaticResponseMethods": "error"
+      },
+      "correctness": {
+        "useParseIntRadix": "error",
+        "useSingleJsDocAsterisk": "error",
+        "noUnusedVariables": "error",
+        "noUnusedPrivateClassMembers": "error",
+        "noUnusedImports": "error",
+        "noUnusedFunctionParameters": "error"
       }
     }
   },

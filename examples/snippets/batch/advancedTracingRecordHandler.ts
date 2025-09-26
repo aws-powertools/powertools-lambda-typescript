@@ -22,7 +22,7 @@ const recordHandler = async (record: SQSRecord): Promise<void> => {
       // do something with the item
       subsegment?.addMetadata('item', item);
     } catch (error) {
-      subsegment?.addError(error);
+      subsegment?.addError(error as Error);
       throw error;
     }
   }

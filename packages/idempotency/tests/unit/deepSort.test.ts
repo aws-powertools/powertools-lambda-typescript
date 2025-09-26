@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deepSort } from '../../src/deepSort';
+import { deepSort } from '../../src/deepSort.js';
 
 describe('Function: deepSort', () => {
   it('can sort string correctly', () => {

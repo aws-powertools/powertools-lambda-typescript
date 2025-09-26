@@ -13,5 +13,22 @@
     "./src/errors.ts",
     "./src/constants.ts"
   ],
-  "readme": "README.md"
+  "readme": "README.md",
+  "externalSymbolLinkMappings": {
+    "@aws-sdk/client-secrets-manager": {
+      "GetSecretValueCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-secrets-manager/Interface/GetSecretValueCommandInput/"
+    },
+    "@aws-sdk/client-dynamodb": {
+      "DynamoDBClient": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/dynamodb/",
+      "GetItemCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-dynamodb/Interface/GetItemCommandInput/",
+      "QueryCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-dynamodb/Interface/QueryCommandInput/"
+    },
+    "@aws-sdk/client-appconfigdata": {
+      "AppConfigDataClient": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/appconfigdata/",
+      "StartConfigurationSessionCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-appconfigdata/Interface/StartConfigurationSessionCommandInput/"
+    },
+    "@aws-sdk/client-ssm": {
+      "GetParameterCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-ssm/Interface/GetParameterCommandInput/"
+    }
+  }
 }

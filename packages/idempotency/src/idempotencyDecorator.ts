@@ -70,7 +70,7 @@ const idempotent = (
   ) {
     const childFunction = descriptor.value;
 
-    descriptor.value = async function (this: Handler, ...args: unknown[]) {
+    descriptor.value = function (this: Handler, ...args: unknown[]) {
       return makeIdempotent(childFunction, options).bind(this)(...args);
     };
 

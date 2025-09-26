@@ -95,7 +95,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
     app.resolver<{ id: string }>(
-      async ({ id }) => {
+      ({ id }) => {
         return {
           id,
           title: 'Post Title',
@@ -125,7 +125,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
     app.resolver<{ title: string; content: string }>(
-      async ({ title, content }) => {
+      ({ title, content }) => {
         return {
           id: '123',
           title,
@@ -168,7 +168,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     const app = new AppSyncGraphQLResolver();
     app.onMutation<{ title: string; content: string }>(
       'addPost',
-      async ({ title, content }) => {
+      ({ title, content }) => {
         return {
           id: '123',
           title,
@@ -198,16 +198,13 @@ describe('Class: AppSyncGraphQLResolver', () => {
   it('resolver function has access to event and context', async () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
-    app.onQuery<{ id: string }>(
-      'getPost',
-      async ({ id }, { event, context }) => {
-        return {
-          id,
-          event,
-          context,
-        };
-      }
-    );
+    app.onQuery<{ id: string }>('getPost', ({ id }, { event, context }) => {
+      return {
+        id,
+        event,
+        context,
+      };
+    });
 
     // Act
     const event = onGraphqlEventFactory('getPost', 'Query', { id: '123' });
@@ -229,7 +226,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       public scope = 'scoped';
 
       @app.onQuery('getPost')
-      public async handleGetPost({ id }: { id: string }) {
+      public handleGetPost({ id }: { id: string }) {
         return {
           id,
           scope: `${this.scope} id=${id}`,
@@ -237,7 +234,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       }
 
       @app.onMutation('addPost')
-      public async handleAddPost({
+      public handleAddPost({
         title,
         content,
       }: {
@@ -252,11 +249,11 @@ describe('Class: AppSyncGraphQLResolver', () => {
         };
       }
 
-      public async handler(event: unknown, context: Context) {
+      public handler(event: unknown, context: Context) {
         return this.stuff(event, context);
       }
 
-      async stuff(event: unknown, context: Context) {
+      stuff(event: unknown, context: Context) {
         return app.resolve(event, context, { scope: this });
       }
     }
@@ -297,9 +294,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       public scope = 'scoped';
 
       @app.batchResolver({ fieldName: 'batchGet' })
-      public async handleBatchGet(
-        events: AppSyncResolverEvent<{ id: number }>[]
-      ) {
+      public handleBatchGet(events: AppSyncResolverEvent<{ id: number }>[]) {
         const ids = events.map((event) => event.arguments.id);
         return ids.map((id) => ({
           id,
@@ -307,7 +302,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
         }));
       }
 
-      public async handler(event: unknown, context: Context) {
+      public handler(event: unknown, context: Context) {
         return app.resolve(event, context, { scope: this });
       }
     }
@@ -353,14 +348,14 @@ describe('Class: AppSyncGraphQLResolver', () => {
           throwOnError,
           aggregate: false,
         })
-        public async handleBatchGet({ id }: { id: string }) {
+        public handleBatchGet({ id }: { id: string }) {
           return {
             id,
             scope: `${this.scope} id=${id} throwOnError=${throwOnError} aggregate=false`,
           };
         }
 
-        public async handler(event: unknown, context: Context) {
+        public handler(event: unknown, context: Context) {
           return app.resolve(event, context, { scope: this });
         }
       }
@@ -397,7 +392,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     class Lambda {
       @app.resolver({ fieldName: 'getPost' })
-      public async handleGetPost({ id }: { id: string }) {
+      public handleGetPost({ id }: { id: string }) {
         return {
           id,
           title: 'Post Title',
@@ -405,7 +400,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
         };
       }
 
-      public async handler(event: unknown, context: Context) {
+      public handler(event: unknown, context: Context) {
         return app.resolve(event, context, { scope: this });
       }
     }
@@ -447,7 +442,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       // Prepare
       const app = new AppSyncGraphQLResolver({ logger: console });
       app.resolver(
-        async () => {
+        () => {
           throw error;
         },
         {
@@ -679,9 +674,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
         @app.onBatchQuery('batchGet', {
           throwOnError,
         })
-        public async handleBatchGet(
-          events: AppSyncResolverEvent<{ id: number }>[]
-        ) {
+        public handleBatchGet(events: AppSyncResolverEvent<{ id: number }>[]) {
           const ids = events.map((event) => event.arguments.id);
           return ids.map((id) => ({
             id,
@@ -692,13 +685,11 @@ describe('Class: AppSyncGraphQLResolver', () => {
         @app.onBatchMutation('batchPut', {
           throwOnError,
         })
-        public async handleBatchPut(
-          _events: AppSyncResolverEvent<{ id: number }>[]
-        ) {
+        public handleBatchPut(_events: AppSyncResolverEvent<{ id: number }>[]) {
           return [this.scope, this.scope];
         }
 
-        public async handler(event: unknown, context: Context) {
+        public handler(event: unknown, context: Context) {
           return app.resolve(event, context, { scope: this });
         }
       }
@@ -778,9 +769,9 @@ describe('Class: AppSyncGraphQLResolver', () => {
         errorName: err.constructor.name,
       }));
 
-      app.onQuery('getUser', async () => {
+      app.onQuery('getUser', () => {
         throw errorClass === AggregateError
-          ? new errorClass([new Error()], message)
+          ? new errorClass([new Error('test error')], message)
           : new errorClass(message);
       });
 
@@ -802,7 +793,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
-    app.exceptionHandler(ValidationError, async (error) => {
+    app.exceptionHandler(ValidationError, (error) => {
       return {
         message: 'Validation failed',
         details: error.message,
@@ -810,7 +801,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       };
     });
 
-    app.exceptionHandler(NotFoundError, async (error) => {
+    app.exceptionHandler(NotFoundError, (error) => {
       return {
         message: 'Resource not found',
         details: error.message,
@@ -818,7 +809,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       };
     });
 
-    app.onQuery<{ id: string }>('getUser', async ({ id }) => {
+    app.onQuery<{ id: string }>('getUser', ({ id }) => {
       if (!id) {
         throw new ValidationError('User ID is required');
       }
@@ -855,7 +846,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
-    app.exceptionHandler(Error, async (error) => {
+    app.exceptionHandler(Error, (error) => {
       return {
         message: 'Generic error occurred',
         details: error.message,
@@ -863,7 +854,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       };
     });
 
-    app.exceptionHandler(ValidationError, async (error) => {
+    app.exceptionHandler(ValidationError, (error) => {
       return {
         message: 'Validation failed',
         details: error.message,
@@ -871,7 +862,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       };
     });
 
-    app.onQuery('getUser', async () => {
+    app.onQuery('getUser', () => {
       throw new ValidationError('Specific validation error');
     });
 
@@ -893,7 +884,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
-    app.exceptionHandler(AssertionError, async (error) => {
+    app.exceptionHandler(AssertionError, (error) => {
       return {
         message: 'Validation failed',
         details: error.message,
@@ -901,7 +892,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       };
     });
 
-    app.onQuery('getUser', async () => {
+    app.onQuery('getUser', () => {
       throw new DatabaseError('Database connection failed');
     });
 
@@ -922,11 +913,11 @@ describe('Class: AppSyncGraphQLResolver', () => {
     const app = new AppSyncGraphQLResolver({ logger: console });
     const errorToBeThrown = new Error('Exception handler failed');
 
-    app.exceptionHandler(ValidationError, async () => {
+    app.exceptionHandler(ValidationError, () => {
       throw errorToBeThrown;
     });
 
-    app.onQuery('getUser', async () => {
+    app.onQuery('getUser', () => {
       throw new ValidationError('Original error');
     });
 
@@ -964,7 +955,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       };
     });
 
-    app.onQuery('getUser', async () => {
+    app.onQuery('getUser', () => {
       throw new ValidationError('Sync error test');
     });
 
@@ -986,7 +977,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
-    app.exceptionHandler(RangeError, async (error) => {
+    app.exceptionHandler(RangeError, (error) => {
       return {
         message: 'This should not be called',
         details: error.message,
@@ -1011,7 +1002,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       public readonly scope = 'scoped';
 
       @app.exceptionHandler(ValidationError)
-      async handleValidationError(error: ValidationError) {
+      handleValidationError(error: ValidationError) {
         return {
           message: 'Decorator validation failed',
           details: error.message,
@@ -1031,7 +1022,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       }
 
       @app.onQuery('getUser')
-      async getUser({ id, name }: { id: string; name: string }) {
+      getUser({ id, name }: { id: string; name: string }) {
         if (!id) {
           throw new ValidationError('Decorator error test');
         }
@@ -1041,7 +1032,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
         return { id, name };
       }
 
-      async handler(event: unknown, context: Context) {
+      handler(event: unknown, context: Context) {
         return app.resolve(event, context, {
           scope: this,
         });
@@ -1080,7 +1071,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
 
-    app.exceptionHandler([ValidationError, NotFoundError], async (error) => {
+    app.exceptionHandler([ValidationError, NotFoundError], (error) => {
       return {
         message: 'User service error',
         details: error.message,
@@ -1089,7 +1080,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       };
     });
 
-    app.onQuery<{ id: string }>('getId', async ({ id }) => {
+    app.onQuery<{ id: string }>('getId', ({ id }) => {
       if (!id) {
         throw new ValidationError('User ID is required for retrieval');
       }
@@ -1148,7 +1139,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       public readonly serviceName = 'OrderService';
 
       @app.exceptionHandler([ValidationError, NotFoundError])
-      async handleOrderErrors(error: ValidationError | NotFoundError) {
+      handleOrderErrors(error: ValidationError | NotFoundError) {
         return {
           message: `${this.serviceName} encountered an error`,
           details: error.message,
@@ -1159,7 +1150,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       }
 
       @app.onQuery('getOrder')
-      async getOrderById({ orderId }: { orderId: string }) {
+      getOrderById({ orderId }: { orderId: string }) {
         if (!orderId) {
           throw new ValidationError('Order ID is required');
         }
@@ -1172,7 +1163,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
         return { orderId, status: 'found', service: this.serviceName };
       }
 
-      async handler(event: unknown, context: Context) {
+      handler(event: unknown, context: Context) {
         const resolved = app.resolve(event, context, {
           scope: this,
         });
@@ -1230,7 +1221,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Prepare
     const app = new AppSyncGraphQLResolver();
 
-    app.exceptionHandler([ValidationError, TypeError], async (error) => {
+    app.exceptionHandler([ValidationError, TypeError], (error) => {
       return {
         message: 'Payment validation error',
         details: error.message,
@@ -1239,7 +1230,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
       };
     });
 
-    app.exceptionHandler(ValidationError, async (error) => {
+    app.exceptionHandler(ValidationError, (error) => {
       return {
         message: 'Specific payment validation error',
         details: error.message,
@@ -1250,7 +1241,7 @@ describe('Class: AppSyncGraphQLResolver', () => {
 
     app.onQuery<{ amount: number; currency: string }>(
       'getPayment',
-      async ({ amount, currency }) => {
+      ({ amount, currency }) => {
         if (!amount || amount <= 0) {
           throw new ValidationError('Invalid payment amount');
         }
@@ -1306,14 +1297,14 @@ describe('Class: AppSyncGraphQLResolver', () => {
     // Prepare
     const app = new AppSyncGraphQLResolver({ logger: console });
 
-    app.exceptionHandler([], async (error) => {
+    app.exceptionHandler([], (error) => {
       return {
         message: 'This should never be called',
         details: error.message,
       };
     });
 
-    app.onQuery<{ requestId: string }>('getId', async ({ requestId }) => {
+    app.onQuery<{ requestId: string }>('getId', ({ requestId }) => {
       if (requestId === 'validation-error') {
         throw new ValidationError('Invalid request format');
       }

@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod/v4';
@@ -145,6 +146,7 @@ describe('Kafka consumer', () => {
           for (const record of event.records) {
             try {
               results.push(record.value);
+              await setTimeout(1); // simulate some processing time
             } catch (error) {
               return error;
             }
@@ -247,6 +249,7 @@ describe('Kafka consumer', () => {
           for (const record of event.records) {
             try {
               const { value, key } = record;
+              await setTimeout(1); // simulate some processing time
               results.push([value, key]);
             } catch (error) {
               return error;
@@ -444,6 +447,7 @@ describe('Kafka consumer', () => {
           try {
             const { value } = record;
             results.push(value);
+            await setTimeout(1); // simulate some processing time
           } catch (error) {
             results.push(error);
           }
@@ -480,6 +484,7 @@ describe('Kafka consumer', () => {
           try {
             const { value } = record;
             results.push(value);
+            await setTimeout(1); // simulate some processing time
           } catch (error) {
             results.push(error);
           }
@@ -531,6 +536,7 @@ describe('Kafka consumer', () => {
           try {
             const { value } = record;
             results.push(value);
+            await setTimeout(1); // simulate some processing time
           } catch (error) {
             results.push(error);
           }

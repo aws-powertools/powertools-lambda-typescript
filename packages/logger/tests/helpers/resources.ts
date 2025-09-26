@@ -5,7 +5,7 @@ import type {
   TestNodejsFunctionProps,
 } from '@aws-lambda-powertools/testing-utils/types';
 import { CfnOutput } from 'aws-cdk-lib';
-import { commonEnvironmentVars } from '../e2e/constants';
+import { commonEnvironmentVars } from '../e2e/constants.js';
 
 interface LoggerExtraTestProps extends ExtraTestProps {
   logGroupOutputKey?: string;

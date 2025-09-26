@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
@@ -439,7 +440,7 @@ describe('Working with keys', () => {
         foo: 'bar',
       },
     });
-    const handler = middy(async (addKey: boolean) => {
+    const handler = middy((addKey: boolean) => {
       if (addKey) {
         logger.appendKeys({
           foo: 'baz',
@@ -483,6 +484,7 @@ describe('Working with keys', () => {
             foo: 'baz',
           });
         }
+        await setTimeout(1); // simulate some async operation
         logger.info('Hello, world!');
       }
     }

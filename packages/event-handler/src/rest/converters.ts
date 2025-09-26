@@ -1,5 +1,10 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import type { HandlerResponse } from '../types/rest.js';
+import type {
+  CompressionOptions,
+  HandlerResponse,
+  HttpStatusCode,
+} from '../types/rest.js';
+import { COMPRESSION_ENCODING_TYPES, HttpStatusCodes } from './constants.js';
 import { isAPIGatewayProxyResult } from './utils.js';
 
 /**
@@ -24,18 +29,16 @@ const createBody = (body: string | null, isBase64Encoded: boolean) => {
  * @param event - The API Gateway proxy event
  * @returns A Web API Request object
  */
-export const proxyEventToWebRequest = (
-  event: APIGatewayProxyEvent
-): Request => {
+const proxyEventToWebRequest = (event: APIGatewayProxyEvent): Request => {
   const { httpMethod, path } = event;
   const { domainName } = event.requestContext;
 
   const headers = new Headers();
-  for (const [name, value] of Object.entries(event.headers ?? {})) {
-    if (value != null) headers.set(name, value);
+  for (const [name, value] of Object.entries(event.headers)) {
+    if (value !== undefined) headers.set(name, value);
   }
 
-  for (const [name, values] of Object.entries(event.multiValueHeaders ?? {})) {
+  for (const [name, values] of Object.entries(event.multiValueHeaders)) {
     for (const value of values ?? []) {
       const headerValue = headers.get(name);
       if (!headerValue?.includes(value)) {
@@ -74,7 +77,7 @@ export const proxyEventToWebRequest = (
  * @param response - The Web API Response object
  * @returns An API Gateway proxy result
  */
-export const responseToProxyResult = async (
+const webResponseToProxyResult = async (
   response: Response
 ): Promise<APIGatewayProxyResult> => {
   const headers: Record<string, string> = {};
@@ -89,13 +92,89 @@ export const responseToProxyResult = async (
     }
   }
 
-  return {
+  // Check if response contains compressed/binary content
+  const contentEncoding = response.headers.get(
+    'content-encoding'
+  ) as CompressionOptions['encoding'];
+  let body: string;
+  let isBase64Encoded = false;
+
+  if (
+    contentEncoding &&
+    [
+      COMPRESSION_ENCODING_TYPES.GZIP,
+      COMPRESSION_ENCODING_TYPES.DEFLATE,
+    ].includes(contentEncoding)
+  ) {
+    // For compressed content, get as buffer and encode to base64
+    const buffer = await response.arrayBuffer();
+    body = Buffer.from(buffer).toString('base64');
+    isBase64Encoded = true;
+  } else {
+    // For text content, use text()
+    body = await response.text();
+  }
+
+  const result: APIGatewayProxyResult = {
     statusCode: response.status,
     headers,
-    multiValueHeaders,
-    body: await response.text(),
-    isBase64Encoded: false,
+    body,
+    isBase64Encoded,
   };
+
+  if (Object.keys(multiValueHeaders).length > 0) {
+    result.multiValueHeaders = multiValueHeaders;
+  }
+
+  return result;
+};
+
+/**
+ * Converts a handler response to a Web API Response object.
+ * Handles APIGatewayProxyResult, Response objects, and plain objects.
+ *
+ * @param response - The handler response (APIGatewayProxyResult, Response, or plain object)
+ * @param resHeaders - Optional headers to be included in the response
+ */
+const handlerResultToWebResponse = (
+  response: HandlerResponse,
+  resHeaders?: Headers
+): Response => {
+  if (response instanceof Response) {
+    const headers = new Headers(resHeaders);
+    for (const [key, value] of response.headers.entries()) {
+      headers.set(key, value);
+    }
+    return new Response(response.body, {
+      status: response.status,
+      headers,
+    });
+  }
+
+  const headers = new Headers(resHeaders);
+  headers.set('Content-Type', 'application/json');
+
+  if (isAPIGatewayProxyResult(response)) {
+    for (const [key, value] of Object.entries(response.headers ?? {})) {
+      if (value != null) {
+        headers.set(key, String(value));
+      }
+    }
+
+    for (const [key, values] of Object.entries(
+      response.multiValueHeaders ?? {}
+    )) {
+      for (const value of values ?? []) {
+        headers.append(key, String(value));
+      }
+    }
+
+    return new Response(response.body, {
+      status: response.statusCode,
+      headers,
+    });
+  }
+  return Response.json(response, { headers });
 };
 
 /**
@@ -103,21 +182,30 @@ export const responseToProxyResult = async (
  * Handles APIGatewayProxyResult, Response objects, and plain objects.
  *
  * @param response - The handler response (APIGatewayProxyResult, Response, or plain object)
+ * @param statusCode - The response status code to return
  * @returns An API Gateway proxy result
  */
-export const handlerResultToProxyResult = async (
-  response: HandlerResponse
+const handlerResultToProxyResult = async (
+  response: HandlerResponse,
+  statusCode: HttpStatusCode = HttpStatusCodes.OK
 ): Promise<APIGatewayProxyResult> => {
   if (isAPIGatewayProxyResult(response)) {
     return response;
   }
   if (response instanceof Response) {
-    return await responseToProxyResult(response);
+    return await webResponseToProxyResult(response);
   }
   return {
-    statusCode: 200,
+    statusCode,
     body: JSON.stringify(response),
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'content-type': 'application/json' },
     isBase64Encoded: false,
   };
+};
+
+export {
+  proxyEventToWebRequest,
+  webResponseToProxyResult,
+  handlerResultToWebResponse,
+  handlerResultToProxyResult,
 };

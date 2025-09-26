@@ -121,7 +121,7 @@ jobs:
         run: |
           echo 'CONVERTED_REGION=${{ matrix.region }}' | tr 'a-z\-' 'A-Z_' >> "$GITHUB_OUTPUT"
       - id: creds
-        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
+        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838
         with:
           aws-region: ${{ matrix.region }}
           # Dynamic secret access is safe here - secrets are scoped per environment
@@ -129,13 +129,14 @@ jobs:
           mask-aws-account-id: true
       - id: write-version
         env:
-          prefix: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
+          PREFIX: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
+          PACKAGE_VERSION: ${{ inputs.package_version }}
         run: |
-          aws ssm put-parameter --name ${{ env.prefix }}/typescript/generic/all/${{ inputs.package_version }} --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer-version }}" --type String --overwrite
+          aws ssm put-parameter --name "$PREFIX/typescript/generic/all/$PACKAGE_VERSION" --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer-version }}" --type String --overwrite
 
       - id: write-latest
         if: inputs.write_latest == true
         env:
           prefix: ${{ inputs.environment == 'beta' && '/aws/service/powertools/beta' || '/aws/service/powertools' }}
         run: |
-          aws ssm put-parameter --name ${{ env.prefix }}/typescript/generic/all/latest --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer-version }}" --type String --overwrite
+          aws ssm put-parameter --name "${{ env.prefix }}/typescript/generic/all/latest" --value "arn:aws:lambda:${{ matrix.region }}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${{ inputs.layer-version }}" --type String --overwrite

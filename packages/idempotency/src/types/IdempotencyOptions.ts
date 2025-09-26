@@ -10,8 +10,6 @@ import type { IdempotencyRecord } from '../persistence/IdempotencyRecord.js';
  *
  * When making a function idempotent you should always set a persistence store.
  *
- * @see {@link persistence/DynamoDBPersistenceLayer.DynamoDBPersistenceLayer | DynamoDBPersistenceLayer}
- *
  * Optionally, you can also pass a custom configuration object,
  * this allows you to customize the behavior of the idempotency utility.
  *

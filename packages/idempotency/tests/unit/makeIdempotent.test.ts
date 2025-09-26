@@ -20,7 +20,7 @@ const mockIdempotencyOptions = {
 };
 const remainingTImeInMillis = 1234;
 const fnSuccessfull = async () => true;
-const fnError = async () => {
+const fnError = () => {
   throw new Error('Something went wrong');
 };
 
@@ -525,7 +525,7 @@ describe('Function: makeIdempotent', () => {
 
   it('throws immediately if an object other than an error was thrown (wrapper)', async () => {
     // Prepare
-    const fn = async (_event: unknown, _context: Context) => {
+    const fn = (_event: unknown, _context: Context) => {
       throw 'a string';
     };
     const handler = makeIdempotent(fn, mockIdempotencyOptions);

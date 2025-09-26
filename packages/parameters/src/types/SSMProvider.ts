@@ -15,9 +15,8 @@ import type {
 /**
  * Interface for SSMProvider with clientConfig property.
  *
- * @interface
- * @property {SSMClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
- * @property {never} [awsSdkV3Client] - This property should never be passed.
+ * @property clientConfig - Optional configuration to pass during client initialization, e.g. AWS region.
+ * @property awsSdkV3Client - This property should never be passed.
  */
 interface SSMProviderOptionsWithClientConfig {
   /**
@@ -30,9 +29,8 @@ interface SSMProviderOptionsWithClientConfig {
 /**
  * Interface for SSMProvider with awsSdkV3Client property.
  *
- * @interface
- * @property {SSMClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during SSMProvider class instantiation
- * @property {never} [clientConfig] - This property should never be passed.
+ * @property awsSdkV3Client - Optional AWS SDK v3 client to pass during SSMProvider class instantiation
+ * @property clientConfig - This property should never be passed.
  */
 interface SSMProviderOptionsWithClientInstance {
   /**
@@ -45,9 +43,8 @@ interface SSMProviderOptionsWithClientInstance {
 /**
  * Options for the SSMProvider class constructor.
  *
- * @type SSMProviderOptions
- * @property {SSMClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
- * @property {SSMClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during DynamoDBProvider class instantiation. Mutually exclusive with clientConfig.
+ * @property clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
+ * @property awsSdkV3Client - Optional AWS SDK v3 client to pass during DynamoDBProvider class instantiation. Mutually exclusive with clientConfig.
  */
 type SSMProviderOptions =
   | SSMProviderOptionsWithClientConfig
@@ -58,11 +55,12 @@ type SSMProviderOptions =
  *
  * @interface SSMGetOptionsBase
  * @extends {GetOptionsInterface}
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
- * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @property {GetItemCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client. Supports all options from `GetParameterCommandInput`.
- * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
- * @property {boolean} decrypt - If true, the parameter will be decrypted. Defaults to `false`.
+ *
+ * @property maxAge - Maximum age of the value in the cache, in seconds.
+ * @property forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property sdkOptions - Optional options to pass to the AWS SDK v3 client. Supports all options from {@link GetParameterCommandInput | `GetParameterCommandInput`}.
+ * @property transform - Transform to be applied, can be 'json' or 'binary'.
+ * @property decrypt - If true, the parameter will be decrypted. Defaults to `false`.
  */
 interface SSMGetOptionsBase extends GetOptionsInterface {
   /**
@@ -154,15 +152,15 @@ type SSMGetOutput<
 /**
  * Options for the SSMProvider getMultiple method.
  *
- * @interface SSMGetMultipleOptionsBase
  * @extends {GetMultipleOptionsInterface}
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
- * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @property {GetItemCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client.
- * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
- * @property {boolean} decrypt - If true, the parameter will be decrypted.
- * @property {boolean} recursive - If true, the parameter will be fetched recursively.
- * @property {boolean} throwOnTransformError - If true, the method will throw an error if the transform fails.
+ *
+ * @property maxAge - Maximum age of the value in the cache, in seconds.
+ * @property forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property [sdkOptions] - Additional options to pass to the AWS SDK v3 client.
+ * @property transform - Transform to be applied, can be 'json' or 'binary'.
+ * @property decrypt - If true, the parameter will be decrypted.
+ * @property recursive - If true, the parameter will be fetched recursively.
+ * @property throwOnTransformError - If true, the method will throw an error if the transform fails.
  */
 interface SSMGetMultipleOptionsBase extends GetMultipleOptionsInterface {
   /**
@@ -230,11 +228,10 @@ type SSMGetMultipleOutput<
 /**
  * Options for the SSMProvider getParametersByName method.
  *
- * @interface SSMGetParametersByNameOptions
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
- * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
- * @property {boolean} decrypt - If true, the parameter will be decrypted.
- * @property {boolean} throwOnError - If true, the method will throw an error if one of the parameters cannot be fetched. Otherwise it will aggregate the errors under an _errors key in the response.
+ * @property maxAge - Maximum age of the value in the cache, in seconds.
+ * @property transform - Transform to be applied, can be 'json' or 'binary'.
+ * @property decrypt - If `true`, the parameter will be decrypted.
+ * @property throwOnError - If `true`, the method will throw an error if one of the parameters cannot be fetched. Otherwise it will aggregate the errors under an `_errors` key in the response.
  */
 interface SSMGetParametersByNameOptions {
   maxAge?: number;

@@ -85,7 +85,7 @@ describe('Tracer E2E tests, manual instantiation', () => {
     }
   });
 
-  it('should generate all trace data correctly', async () => {
+  it('should generate all trace data correctly', () => {
     // Assess
     const mainSubsegment = traceData[0];
     const { subsegments, annotations, metadata } = mainSubsegment;

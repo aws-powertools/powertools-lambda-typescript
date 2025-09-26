@@ -38,7 +38,7 @@ describe('Unit test for AppSync GraphQL Resolver', () => {
     const event = onGraphqlEventFactory('listLocations', 'Query');
 
     // Act
-    const result = (await handler(event, {} as Context)) as Promise<unknown[]>;
+    const result = (await handler(event, {} as Context)) as unknown[];
 
     // Assess
     expect(result).toHaveLength(2);

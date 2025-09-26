@@ -41,29 +41,24 @@ import type {
 const { Subsegment: XraySubsegment } = xraySdk;
 
 /**
- * ## Intro
  * Tracer is an opinionated thin wrapper for [AWS X-Ray SDK for Node.js](https://github.com/aws/aws-xray-sdk-node).
  *
  * Tracing data can be visualized through AWS X-Ray Console.
  *
- * ## Key features
- *   * Auto capture cold start as annotation, and responses or full exceptions as metadata
- *   * Auto-disable when not running in AWS Lambda environment
- *   * Automatically trace HTTP(s) clients and generate segments for each request
- *   * Support tracing functions via decorators, middleware, and manual instrumentation
- *   * Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js
+ * **Key features**
+ * - Auto capture cold start as annotation, and responses or full exceptions as metadata
+ * - Auto-disable when not running in AWS Lambda environment
+ * - Automatically trace HTTP(s) clients and generate segments for each request
+ * - Support tracing functions via decorators, middleware, and manual instrumentation
+ * - Support tracing AWS SDK v2 and v3 via AWS X-Ray SDK for Node.js
  *
- * ## Usage
- *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/core/tracer/).
- *
- * ### Functions usage with middleware
+ * **Functions usage with middleware**
  *
  * If you use function-based Lambda handlers you can use the {@link Tracer.captureLambdaHandler} middy middleware to automatically:
- * * handle the subsegment lifecycle
- * * add the `ServiceName` and `ColdStart` annotations
- * * add the function response as metadata
- * * add the function error as metadata (if any)
+ * - handle the subsegment lifecycle
+ * - add the `ServiceName` and `ColdStart` annotations
+ * - add the function response as metadata
+ * - add the function error as metadata (if any)
  *
  * @example
  * ```typescript
@@ -80,13 +75,13 @@ const { Subsegment: XraySubsegment } = xraySdk;
  * export const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
  * ```
  *
- * ### Object oriented usage with decorators
+ * **Object oriented usage with decorators**
  *
  * If instead you use TypeScript Classes to wrap your Lambda handler you can use the {@link Tracer.captureLambdaHandler} decorator to automatically:
- * * handle the subsegment lifecycle
- * * add the `ServiceName` and `ColdStart` annotations
- * * add the function response as metadata
- * * add the function error as metadata (if any)
+ * - handle the subsegment lifecycle
+ * - add the `ServiceName` and `ColdStart` annotations
+ * - add the function response as metadata
+ * - add the function error as metadata (if any)
  *
  * @example
  * ```typescript
@@ -106,7 +101,7 @@ const { Subsegment: XraySubsegment } = xraySdk;
  * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
  *
- * ### Functions usage with manual instrumentation
+ * **Functions usage with manual instrumentation**
  *
  * If you prefer to manually instrument your Lambda handler you can use the methods in the tracer class directly.
  *
@@ -391,10 +386,10 @@ class Tracer extends Utility implements TracerInterface {
    * A decorator automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
    *
    * Using this decorator on your handler function will automatically:
-   * * handle the subsegment lifecycle
-   * * add the `ColdStart` annotation
-   * * add the function response as metadata
-   * * add the function error as metadata (if any)
+   * - handle the subsegment lifecycle
+   * - add the `ColdStart` annotation
+   * - add the function response as metadata
+   * - add the function error as metadata (if any)
    *
    * Note: Currently TypeScript only supports decorators on classes and methods. If you are using the
    * function syntax, you should use the middleware instead.
@@ -475,9 +470,9 @@ class Tracer extends Utility implements TracerInterface {
    * A decorator automating capture of metadata and annotations on segments or subsegments for an arbitrary function.
    *
    * Using this decorator on your function will automatically:
-   * * handle the subsegment lifecycle
-   * * add the function response as metadata
-   * * add the function error as metadata (if any)
+   * - handle the subsegment lifecycle
+   * - add the function response as metadata
+   * - add the function error as metadata (if any)
    *
    * Note: Currently TypeScript only supports decorators on classes and methods. If you are using the
    * function syntax, you should use the middleware instead.

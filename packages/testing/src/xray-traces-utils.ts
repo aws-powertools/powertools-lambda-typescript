@@ -16,7 +16,7 @@ import type {
 
 const retryOptions = {
   retries: 20,
-  minTimeout: 5_000,
+  minTimeout: 5000,
   maxTimeout: 10_000,
   factor: 1.25,
 };

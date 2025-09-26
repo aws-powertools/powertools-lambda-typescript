@@ -1,12 +1,24 @@
-import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
-  compilePath,
+  composeMiddleware,
   isAPIGatewayProxyEvent,
   isAPIGatewayProxyResult,
+} from '../../../src/rest/index.js';
+import {
+  compilePath,
+  resolvePrefixedPath,
   validatePathPattern,
 } from '../../../src/rest/utils.js';
-import type { Path } from '../../../src/types/rest.js';
+import type {
+  Middleware,
+  Path,
+  RequestContext,
+} from '../../../src/types/rest.js';
 
 describe('Path Utilities', () => {
   describe('validatePathPattern', () => {
@@ -209,44 +221,104 @@ describe('Path Utilities', () => {
   });
 
   describe('isAPIGatewayProxyEvent', () => {
-    it('should return true for valid API Gateway Proxy event', () => {
-      const validEvent: APIGatewayProxyEvent = {
-        httpMethod: 'GET',
-        path: '/test',
-        resource: '/test',
-        headers: {},
-        requestContext: {
-          accountId: '123456789012',
-          apiId: 'test-api',
-          httpMethod: 'GET',
-          requestId: 'test-request-id',
-          resourceId: 'test-resource',
-          resourcePath: '/test',
-          stage: 'test',
-          identity: {
-            sourceIp: '127.0.0.1',
-          },
-        } as any,
-        isBase64Encoded: false,
-        body: null,
-      } as APIGatewayProxyEvent;
+    const baseValidEvent = {
+      httpMethod: 'GET',
+      path: '/test',
+      resource: '/test',
+      headers: {},
+      multiValueHeaders: {},
+      queryStringParameters: {},
+      multiValueQueryStringParameters: {},
+      pathParameters: {},
+      stageVariables: {},
+      requestContext: { stage: 'test' },
+      isBase64Encoded: false,
+      body: null,
+    };
 
-      expect(isAPIGatewayProxyEvent(validEvent)).toBe(true);
+    it('should return true for valid API Gateway Proxy event with all fields populated', () => {
+      expect(isAPIGatewayProxyEvent(baseValidEvent)).toBe(true);
     });
 
-    it('should return true for valid event with string body', () => {
-      const validEvent = {
-        httpMethod: 'POST',
+    it('should return true for real API Gateway event with null fields', () => {
+      const realEvent = {
+        resource: '/{proxy+}',
         path: '/test',
-        resource: '/test',
-        headers: { 'content-type': 'application/json' },
-        requestContext: { stage: 'test' },
+        httpMethod: 'GET',
+        headers: null,
+        multiValueHeaders: null,
+        queryStringParameters: null,
+        multiValueQueryStringParameters: null,
+        pathParameters: { proxy: 'test' },
+        stageVariables: null,
+        requestContext: {
+          resourceId: 'ovdb9g',
+          resourcePath: '/{proxy+}',
+          httpMethod: 'GET',
+          stage: 'test-invoke-stage',
+          requestId: 'eecdfcfa-225a-4ee3-bdca-05fc31b6018a',
+          identity: { sourceIp: 'test-invoke-source-ip' },
+        },
+        body: null,
         isBase64Encoded: false,
+      };
+
+      expect(isAPIGatewayProxyEvent(realEvent)).toBe(true);
+    });
+
+    it('should return true for event with string body', () => {
+      const eventWithBody = {
+        ...baseValidEvent,
+        httpMethod: 'POST',
         body: '{"key":"value"}',
       };
 
-      expect(isAPIGatewayProxyEvent(validEvent)).toBe(true);
+      expect(isAPIGatewayProxyEvent(eventWithBody)).toBe(true);
     });
+
+    it.each([
+      // Headers can be null in reality (even though types say otherwise)
+      { field: 'headers', value: null },
+      { field: 'headers', value: undefined },
+      { field: 'multiValueHeaders', value: null },
+      { field: 'multiValueHeaders', value: undefined },
+      // These are officially nullable in the type definition
+      { field: 'body', value: null },
+      { field: 'pathParameters', value: null },
+      { field: 'queryStringParameters', value: null },
+      { field: 'multiValueQueryStringParameters', value: null },
+      { field: 'stageVariables', value: null },
+    ])('should return true when $field is $value', ({ field, value }) => {
+      const event = { ...baseValidEvent, [field]: value };
+      expect(isAPIGatewayProxyEvent(event)).toBe(true);
+    });
+
+    it.each([
+      {
+        field: 'headers',
+        value: { 'content-type': undefined, 'x-api-key': 'test' },
+      },
+      {
+        field: 'multiValueHeaders',
+        value: { accept: undefined, 'x-custom': ['val1', 'val2'] },
+      },
+      { field: 'pathParameters', value: { id: undefined, name: 'test' } },
+      {
+        field: 'queryStringParameters',
+        value: { filter: undefined, sort: 'asc' },
+      },
+      {
+        field: 'multiValueQueryStringParameters',
+        value: { tags: undefined, categories: ['a', 'b'] },
+      },
+      { field: 'stageVariables', value: { env: undefined, version: 'v1' } },
+    ])(
+      'should return true when $field contains undefined values',
+      ({ field, value }) => {
+        const event = { ...baseValidEvent, [field]: value };
+        expect(isAPIGatewayProxyEvent(event)).toBe(true);
+      }
+    );
 
     it.each([
       { case: 'null', event: null },
@@ -261,42 +333,52 @@ describe('Path Utilities', () => {
     it.each([
       { field: 'httpMethod', value: 123 },
       { field: 'httpMethod', value: null },
+      { field: 'httpMethod', value: undefined },
       { field: 'path', value: 123 },
       { field: 'path', value: null },
+      { field: 'path', value: undefined },
       { field: 'resource', value: 123 },
       { field: 'resource', value: null },
+      { field: 'resource', value: undefined },
       { field: 'headers', value: 'not an object' },
-      { field: 'headers', value: null },
+      { field: 'headers', value: 123 },
+      { field: 'multiValueHeaders', value: 'not an object' },
+      { field: 'multiValueHeaders', value: 123 },
+      { field: 'queryStringParameters', value: 'not an object' },
+      { field: 'queryStringParameters', value: 123 },
+      { field: 'multiValueQueryStringParameters', value: 'not an object' },
+      { field: 'multiValueQueryStringParameters', value: 123 },
+      { field: 'pathParameters', value: 'not an object' },
+      { field: 'pathParameters', value: 123 },
+      { field: 'stageVariables', value: 'not an object' },
+      { field: 'stageVariables', value: 123 },
       { field: 'requestContext', value: 'not an object' },
       { field: 'requestContext', value: null },
+      { field: 'requestContext', value: undefined },
+      { field: 'requestContext', value: 123 },
       { field: 'isBase64Encoded', value: 'not a boolean' },
       { field: 'isBase64Encoded', value: null },
+      { field: 'isBase64Encoded', value: undefined },
+      { field: 'isBase64Encoded', value: 123 },
       { field: 'body', value: 123 },
+      { field: 'body', value: {} },
     ])(
       'should return false when $field is invalid ($value)',
       ({ field, value }) => {
-        const baseEvent = {
-          httpMethod: 'GET',
-          path: '/test',
-          resource: '/test',
-          headers: {},
-          requestContext: {},
-          isBase64Encoded: false,
-          body: null,
-        };
-
-        const invalidEvent = { ...baseEvent, [field]: value };
+        const invalidEvent = { ...baseValidEvent, [field]: value };
         expect(isAPIGatewayProxyEvent(invalidEvent)).toBe(false);
       }
     );
 
-    it('should return false when required fields are missing', () => {
-      const incompleteEvent = {
-        httpMethod: 'GET',
-        path: '/test',
-        // missing resource, headers, requestContext, isBase64Encoded, body
-      };
-
+    it.each([
+      'httpMethod',
+      'path',
+      'resource',
+      'requestContext',
+      'isBase64Encoded',
+    ])('should return false when required field %s is missing', (field) => {
+      const incompleteEvent = { ...baseValidEvent };
+      delete incompleteEvent[field as keyof typeof incompleteEvent];
       expect(isAPIGatewayProxyEvent(incompleteEvent)).toBe(false);
     });
   });
@@ -361,6 +443,146 @@ describe('Path Utilities', () => {
       };
 
       expect(isAPIGatewayProxyResult(incompleteResult)).toBe(false);
+    });
+  });
+
+  describe('composeMiddleware', () => {
+    const mockOptions: RequestContext = {
+      params: {},
+      event: {} as APIGatewayProxyEvent,
+      context: {} as Context,
+      req: new Request('https://example.com'),
+      res: new Response(),
+    };
+
+    it('executes middleware in order', async () => {
+      const executionOrder: string[] = [];
+      const middleware: Middleware[] = [
+        async ({ next }) => {
+          executionOrder.push('middleware1-start');
+          await next();
+          executionOrder.push('middleware1-end');
+        },
+        async ({ next }) => {
+          executionOrder.push('middleware2-start');
+          await next();
+          executionOrder.push('middleware2-end');
+        },
+      ];
+
+      const composed = composeMiddleware(middleware);
+      await composed({
+        reqCtx: mockOptions,
+        next: () => {
+          executionOrder.push('handler');
+        },
+      });
+
+      expect(executionOrder).toEqual([
+        'middleware1-start',
+        'middleware2-start',
+        'handler',
+        'middleware2-end',
+        'middleware1-end',
+      ]);
+    });
+
+    it('returns result from middleware that short-circuits', async () => {
+      const middleware: Middleware[] = [
+        async ({ next }) => {
+          await next();
+        },
+        () => {
+          return { shortCircuit: true };
+        },
+      ];
+
+      const composed = composeMiddleware(middleware);
+      const result = await composed({
+        reqCtx: mockOptions,
+        next: () => {
+          return { handler: true };
+        },
+      });
+
+      expect(result).toEqual({ shortCircuit: true });
+    });
+
+    it('returns result from next function when middleware does not return', async () => {
+      const middleware: Middleware[] = [
+        async ({ next }) => {
+          await next();
+        },
+      ];
+
+      const composed = composeMiddleware(middleware);
+      const result = await composed({
+        reqCtx: mockOptions,
+        next: () => {
+          return { handler: true };
+        },
+      });
+
+      expect(result).toEqual({ handler: true });
+    });
+
+    it('throws error when next() is called multiple times', async () => {
+      const middleware: Middleware[] = [
+        async ({ next }) => {
+          await next();
+          await next();
+        },
+      ];
+
+      const composed = composeMiddleware(middleware);
+
+      await expect(
+        composed({ reqCtx: mockOptions, next: async () => {} })
+      ).rejects.toThrow('next() called multiple times');
+    });
+
+    it('handles empty middleware array', async () => {
+      const composed = composeMiddleware([]);
+      const result = await composed({
+        reqCtx: mockOptions,
+        next: () => {
+          return { handler: true };
+        },
+      });
+
+      expect(result).toEqual({ handler: true });
+    });
+
+    it('returns undefined when next function returns undefined', async () => {
+      const middleware: Middleware[] = [
+        async ({ next }) => {
+          await next();
+        },
+      ];
+
+      const composed = composeMiddleware(middleware);
+      const result = await composed({
+        reqCtx: mockOptions,
+        next: () => {
+          return undefined;
+        },
+      });
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('resolvePrefixedPath', () => {
+    it.each([
+      { path: '/test', prefix: '/prefix', expected: '/prefix/test' },
+      { path: '/', prefix: '/prefix', expected: '/prefix' },
+      { path: '/test', expected: '/test' },
+    ])('resolves prefixed path', ({ path, prefix, expected }) => {
+      // Prepare & Act
+      const resolvedPath = resolvePrefixedPath(path as Path, prefix as Path);
+
+      // Assert
+      expect(resolvedPath).toBe(expected);
     });
   });
 });

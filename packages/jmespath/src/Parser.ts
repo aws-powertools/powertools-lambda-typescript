@@ -32,7 +32,6 @@ import type { Node, Token } from './types.js';
 /**
  * Top down operator precedence parser for JMESPath.
  *
- * ## References
  * The implementation of this Parser is based on the implementation of
  * [jmespath.py](https://github.com/jmespath/jmespath.py/), which in turn
  * is based on [Vaughan R. Pratt's "Top Down Operator Precedence"](http://dl.acm.org/citation.cfm?doid=512927.512931).
@@ -72,7 +71,7 @@ class Parser {
    * The AST is cached, so if you parse the same expression multiple times,
    * the AST will be returned from the cache.
    *
-   * @param expression The JMESPath expression to parse.
+   * @param expression - The JMESPath expression to parse.
    */
   public parse(expression: string): ParsedResult {
     const cached = this.#cache[expression];
@@ -98,7 +97,7 @@ class Parser {
   /**
    * Do the actual parsing of the expression.
    *
-   * @param expression The JMESPath expression to parse.
+   * @param expression - The JMESPath expression to parse.
    */
   #doParse(expression: string): ParsedResult {
     try {
@@ -153,7 +152,7 @@ class Parser {
    * Get the nud function for a token. This is the function that
    * is called when a token is found at the beginning of an expression.
    *
-   * @param tokenType The type of token to get the nud function for.
+   * @param tokenType - The type of token to get the nud function for.
    */
   #getNudFunction(token: Token): Node {
     const { type: tokenType } = token;
@@ -194,7 +193,7 @@ class Parser {
    *
    * @example s."foo"
    *
-   * @param token The token to process
+   * @param token - The token to process
    */
   #processQuotedIdentifier(token: Token): Node {
     const fieldValue = field(token.value);
@@ -288,7 +287,7 @@ class Parser {
    * A default token is a syntax that allows you to access
    * elements in a list or dictionary.
    *
-   * @param token The token to process
+   * @param token - The token to process
    */
   #processDefaultToken(token: Token): Node {
     if (token.type === 'eof') {
@@ -309,8 +308,8 @@ class Parser {
    * Get the led function for a token. This is the function that
    * is called when a token is found in the middle of an expression.
    *
-   * @param tokenType The type of token to get the led function for.
-   * @param leftNode The left hand side of the expression.
+   * @param tokenType - The type of token to get the led function for.
+   * @param leftNode - The left hand side of the expression.
    */
   #getLedFunction(tokenType: Token['type'], leftNode: Node): Node {
     switch (tokenType) {
@@ -350,7 +349,7 @@ class Parser {
    *
    * @example foo.bar
    *
-   * @param leftNode The left hand side of the expression.
+   * @param leftNode - The left hand side of the expression.
    */
   #processDotToken(leftNode: Node): Node {
     if (this.#currentToken() !== 'star') {
@@ -377,7 +376,7 @@ class Parser {
    *
    * @example foo | bar
    *
-   * @param leftNode The left hand side of the expression.
+   * @param leftNode - The left hand side of the expression.
    */
   #processPipeToken(leftNode: Node): Node {
     const right = this.#expression(BINDING_POWER.pipe);
@@ -393,7 +392,7 @@ class Parser {
    *
    * @example foo || bar
    *
-   * @param leftNode The left hand side of the expression.
+   * @param leftNode - The left hand side of the expression.
    */
   #processOrToken(leftNode: Node): Node {
     const right = this.#expression(BINDING_POWER.or);
@@ -409,7 +408,7 @@ class Parser {
    *
    * @example foo && bar
    *
-   * @param leftNode The left hand side of the expression.
+   * @param leftNode - The left hand side of the expression.
    */
   #processAndToken(leftNode: Node): Node {
     const right = this.#expression(BINDING_POWER.and);
@@ -417,6 +416,11 @@ class Parser {
     return andExpression(leftNode, right);
   }
 
+  /**
+   * Process a left parenthesis token.
+   *
+   * @param leftNode - The left hand side of the expression.
+   */
   #processLParenToken(leftNode: Node): Node {
     const name = leftNode.value as string;
     const args = [];
@@ -432,6 +436,11 @@ class Parser {
     return functionExpression(name, args);
   }
 
+  /**
+   * Process a filter token.
+   *
+   * @param leftNode - The left hand side of the expression.
+   */
   #processFilterToken(leftNode: Node): Node {
     // Filters are projections
     const condition = this.#expression(0);
@@ -446,6 +455,11 @@ class Parser {
     return filterProjection(leftNode, right, condition);
   }
 
+  /**
+   * Process a projection right hand side.
+   *
+   * @param leftNode - The left hand side of the expression.
+   */
   #processFlattenToken(leftNode: Node): Node {
     const left = flatten(leftNode);
     const right = this.#parseProjectionRhs(BINDING_POWER.flatten);
@@ -453,6 +467,11 @@ class Parser {
     return projection(left, right);
   }
 
+  /**
+   * Process a left bracket token.
+   *
+   * @param leftNode - The left hand side of the expression.
+   */
   #processLBracketToken(leftNode: Node): Node {
     const token = this.#lookaheadToken(0);
     if (['number', 'colon'].includes(token.type)) {
@@ -485,7 +504,7 @@ class Parser {
    * the error occurred, the value of the token that caused
    * the error, the type of the token, and an optional reason.
    *
-   * @param options The options to use when throwing the error.
+   * @param options - The options to use when throwing the error.
    */
   #throwParseError(options?: {
     lexPosition?: number;
@@ -575,8 +594,8 @@ class Parser {
    * Process a projection if the right hand side of the
    * projection is a slice.
    *
-   * @param left The left hand side of the projection.
-   * @param right The right hand side of the projection.
+   * @param left - The left hand side of the projection.
+   * @param right - The right hand side of the projection.
    */
   #projectIfSlice(left: Node, right: Node): Node {
     const idxExpression = indexExpression([left, right]);
@@ -596,8 +615,8 @@ class Parser {
    * two values. For example `foo == bar` compares the
    * value of `foo` with the value of `bar`.
    *
-   * @param left The left hand side of the comparator.
-   * @param comparatorChar The comparator character.
+   * @param left - The left hand side of the comparator.
+   * @param comparatorChar - The comparator character.
    */
   #parseComparator(left: Node, comparatorChar: Token['type']): Node {
     return comparator(
@@ -663,7 +682,7 @@ class Parser {
   /**
    * Process the right hand side of a projection.
    *
-   * @param bindingPower The binding power of the current token.
+   * @param bindingPower - The binding power of the current token.
    */
   #parseProjectionRhs(bindingPower: number): Node {
     // Parse the right hand side of the projection.
@@ -688,7 +707,7 @@ class Parser {
   /**
    * Process the right hand side of a dot expression.
    *
-   * @param bindingPower The binding power of the current token.
+   * @param bindingPower - The binding power of the current token.
    */
   #parseDotRhs(bindingPower: number): Node {
     // From the grammar:
@@ -722,7 +741,7 @@ class Parser {
   /**
    * Process a token and throw an error if it doesn't match the expected token.
    *
-   * @param tokenType The expected token type.
+   * @param tokenType - The expected token type.
    */
   #match(tokenType: Token['type']): void {
     const currentToken = this.#currentToken();
@@ -748,7 +767,7 @@ class Parser {
   /**
    * Process a token and throw an error if it doesn't match the expected token.
    *
-   * @param tokenTypes The expected token types.
+   * @param tokenTypes - The expected token types.
    */
   #matchMultipleTokens(tokenTypes: Token['type'][]): void {
     const currentToken = this.#currentToken();
@@ -787,7 +806,7 @@ class Parser {
   /**
    * Look ahead in the token stream and get the type of the token
    *
-   * @param number The number of tokens to look ahead.
+   * @param number - The number of tokens to look ahead.
    */
   #lookahead(number: number): Token['type'] {
     return this.#tokens[this.#index + number].type;
@@ -796,7 +815,7 @@ class Parser {
   /**
    * Look ahead in the token stream and get the token
    *
-   * @param number The number of tokens to look ahead.
+   * @param number - The number of tokens to look ahead.
    */
   #lookaheadToken(number: number): Token {
     return this.#tokens[this.#index + number];

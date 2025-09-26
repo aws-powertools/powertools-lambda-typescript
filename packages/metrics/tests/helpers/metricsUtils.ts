@@ -6,7 +6,7 @@ import {
 } from '@aws-sdk/client-cloudwatch';
 import promiseRetry from 'promise-retry';
 
-const getMetrics = async (
+const getMetrics = (
   cloudWatchClient: CloudWatchClient,
   namespace: string,
   metric: string,

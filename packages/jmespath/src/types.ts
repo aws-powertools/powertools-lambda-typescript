@@ -81,8 +81,8 @@ type FunctionSignatureDecorator = (
  * }
  * ```
  *
- * @param argumentsSpecs The expected arguments for the function.
- * @param variadic Whether the function is variadic.
+ * @param argumentsSpecs - The expected arguments for the function.
+ * @param variadic - Whether the function is variadic.
  */
 type FunctionSignatureOptions = {
   argumentsSpecs: Array<Array<string>>;

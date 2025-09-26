@@ -88,13 +88,13 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
       config.staticPkValue ?? `idempotency#${this.idempotencyKeyPrefix}`;
 
     if (config.awsSdkV3Client) {
-      if (!isSdkClient(config.awsSdkV3Client)) {
+      if (isSdkClient(config.awsSdkV3Client)) {
+        this.client = config.awsSdkV3Client;
+      } else {
         console.warn(
           'awsSdkV3Client is not an AWS SDK v3 client, using default client'
         );
         this.client = new DynamoDBClient(config.clientConfig ?? {});
-      } else {
-        this.client = config.awsSdkV3Client;
       }
     } else {
       this.client = new DynamoDBClient(config.clientConfig ?? {});
@@ -168,9 +168,9 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
        * |       (in_progress_expiry)                                          (expiry)
        *
        * Conditions to successfully save a record:
-       * * The idempotency key does not exist:
-       *   - first time that this invocation key is used
-       *   - previous invocation with the same key was deleted due to TTL
+       * - The idempotency key does not exist:
+       * - first time that this invocation key is used
+       * - previous invocation with the same key was deleted due to TTL
        */
       const idempotencyKeyDoesNotExist = 'attribute_not_exists(#id)';
       // * The idempotency key exists but it is expired

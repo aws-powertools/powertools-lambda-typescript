@@ -25,7 +25,7 @@ describe('Class: BasePartialBatchProcessor', () => {
       super(EventType.SQS);
     }
 
-    public async processRecord(
+    public processRecord(
       _record: BaseRecord
     ): Promise<SuccessResponse | FailureResponse> {
       throw new Error('Not implemented');

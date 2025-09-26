@@ -1,5 +1,50 @@
 # Change Log
 
+## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
+
+### Improvements
+
+- rename HttpErrorCodes to HttpStatusCodes ([#4543](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4543)) ([e53aa88](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e53aa8816325f21510706e3f9e62fb0a76692915))
+- made error handler responses versatile ([#4536](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4536)) ([f08b366](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f08b366b79152d338ebefb5a25caacade6846919))
+- changed path parameter in middleware and routehandler signature ([#4532](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4532)) ([278fca0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/278fca0491ce9cb955326523557c3ddf9d03dbc5))
+- change the Middleware and RequestContext signatures ([#4530](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4530)) ([a05c074](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a05c07411629d1e23a9cb3fec8a78cf23bd8dd0c))
+
+### Bug Fixes
+
+- fixed CORS behaviour not aligned with CORS spec   ([#4512](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4512)) ([dd368fa](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dd368fa3eb08a86c2d5aad3cf9b832d7a8288486))
+- run global middleware on all requests for REST API ([#4507](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4507)) ([49d5f8a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/49d5f8a4f36a5af26c573f7706347f34ec70689e))
+
+### Features
+
+- implemented route prefixes in HTTP event handler ([#4523](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4523)) ([8913854](https://github.com/aws-powertools/powertools-lambda-typescript/commit/89138542cd9e195555299f401646ae94d0bb50ee))
+- throw error when middleware does not await next() ([#4511](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4511)) ([b0b43e8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b0b43e862fb189941fe9db220580884e7707d541))
+- add CORS middleware support ([#4477](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4477)) ([972cd1f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/972cd1f86b6ea01c93abef5e6cde7876360196f1))
+- added compress middleware for the REST API event handler ([#4495](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4495)) ([320e0dc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/320e0dcaa07476de3b7d07209ef27379b9d4900a))
+## [2.26.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.0...v2.26.1) (2025-09-15)
+
+**Note:** Version bump only for this package
+
+## [2.26.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.2...v2.26.0) (2025-09-11)
+
+### Features
+
+- remove undefined from Router's resolve type signature ([#4463](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4463)) ([d36ef55](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d36ef5569de910e467f7c6d6b1d518112a998d40))
+- implement mechanism to manipulate response in middleware ([#4439](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4439)) ([35a510d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/35a510d3f3191b479105238f5f956bfeeb519389))
+- add route specific middleware registration and execution ([#4437](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4437)) ([e6ea674](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e6ea674b97953d0391573ea6536f9eb5f02f659b))
+- add middleware registration and composition to rest handler ([#4428](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4428)) ([fc87eb3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/fc87eb3f5c05a31002becf30e22928c8d7913a3f))
+- add support for error handling in AppSync GraphQL ([#4317](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4317)) ([77a992f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/77a992ff39ed41da2c965bc86d65a326f4db21d6))
+- add resolution logic to base router ([#4349](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4349)) ([f1ecc6d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f1ecc6da353ed1d4a1a943a4b75dc3e2b50d8e5e))
+
+### Maintenance
+
+- rename variables to reflect that options object is now a RequestContext ([#4460](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4460)) ([5b4ee1a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5b4ee1ac77c4ebf0af6181f56a47340173306673))
+- expose rest handler functionality ([#4458](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4458)) ([23eddfd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/23eddfdd2f3ec0824dccd080824628c63ed8308c))
+- split Router tests into multiple files ([#4449](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4449)) ([91a1ec4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/91a1ec4c4765e814b67f669ed2ff77c674cc3155))
+- rename BaseRouter class to Router ([#4448](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4448)) ([b043c28](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b043c28820b18e2d518153992f4f3243d476e208))
+
+### Bug Fixes
+
+- handle nullable fields in APIGatewayProxyEvent ([#4455](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4455)) ([200f47b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/200f47b0c9e3864b2732d93ca50dd65323b109fb))
 ## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
 
 ### Features

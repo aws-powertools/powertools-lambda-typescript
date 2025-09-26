@@ -42,13 +42,15 @@ jobs:
         with:
           ref: ${{ github.sha }}
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: "22"
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
       - name: CDK build
-        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=${{ inputs.latest_published_version }} -o cdk.out
+        env:
+          LAYER_VERSION: ${{ inputs.latest_published_version }}
+        run: npm run cdk -w layers -- synth --context PowertoolsPackageVersion=$LAYER_VERSION -o cdk.out
       - name: Zip output
         run: zip -r cdk.out.zip layers/cdk.out
       - name: Archive CDK artifacts

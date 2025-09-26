@@ -45,14 +45,14 @@ jobs:
     steps:
       - id: credentials
         name: AWS Credentials
-        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
+        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.REGION_IAM_ROLE }}
           mask-aws-account-id: true
       - id: go-setup
         name: Setup Go
-        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: '>=1.23.0'
       - id: go-env
@@ -64,8 +64,17 @@ jobs:
       - id: run-balance-new-region
         name: Run Balance
         if: ${{ inputs.start_at == '' }}
-        run: balance -read-region us-east-1 -write-region ${{ inputs.region }} -write-role $BALANCE_ROLE_ARN -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
+        env:
+          REGION: ${{ inputs.region }}
+        run: |
+          set -euo pipefail
+          balance -read-region us-east-1 -write-region "$REGION" -write-role "$BALANCE_ROLE_ARN" -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
       - id: run-balance-existing
         name: Run Balance (Existing Region)
         if: ${{ inputs.start_at != '' }}
-        run: balance -read-region us-east-1 -start-at ${{ inputs.start_at }} -write-region ${{ inputs.region }} -write-role $BALANCE_ROLE_ARN -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
+        env:
+          REGION: ${{ inputs.region }}
+          START_AT: ${{ inputs.start_at }}
+        run: |
+          set -euo pipefail
+          balance -read-region us-east-1 -start-at "$START_AT" -write-region "$REGION" -write-role "$BALANCE_ROLE_ARN" -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false

@@ -1,0 +1,21 @@
+stateDiagram-v2
+    direction LR
+    BatchSource: Amazon SQS <br/><br/> Amazon Kinesis Data Streams <br/><br/> Amazon DynamoDB Streams <br/><br/>
+    LambdaInit: Lambda invocation
+    BatchProcessor: Batch Processor
+    RecordHandler: Record Handler function
+    YourLogic: Your logic to process each batch item
+    LambdaResponse: Lambda response
+
+    BatchSource --> LambdaInit
+
+    LambdaInit --> BatchProcessor
+    BatchProcessor --> RecordHandler
+
+    state BatchProcessor {
+        [*] --> RecordHandler: Your function
+        RecordHandler --> YourLogic
+    }
+
+    RecordHandler --> BatchProcessor: Collect results
+    BatchProcessor --> LambdaResponse: Report items that failed processing

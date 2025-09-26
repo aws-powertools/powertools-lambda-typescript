@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
@@ -78,7 +79,7 @@ describe('Inject Lambda Context', () => {
   it('adds the context to log messages when the feature is enabled in the Middy.js middleware', async () => {
     // Prepare
     const logger = new Logger();
-    const handler = middy(async () => {
+    const handler = middy(() => {
       logger.info('Hello, world!');
     }).use(injectLambdaContext(logger));
 
@@ -100,7 +101,7 @@ describe('Inject Lambda Context', () => {
     // Prepare
     const logger1 = new Logger({ serviceName: 'parent' });
     const logger2 = logger1.createChild({ serviceName: 'child' });
-    const handler = middy(async () => {
+    const handler = middy(() => {
       logger1.info('Hello, world!');
       logger2.info('Hello, world!');
     }).use(injectLambdaContext([logger1, logger2]));
@@ -140,6 +141,7 @@ describe('Inject Lambda Context', () => {
 
       @logger.injectLambdaContext()
       async handler(_event: unknown, _context: Context) {
+        await setTimeout(1); // simulate some async operation
         this.logGreeting();
       }
 
@@ -189,7 +191,7 @@ describe('Inject Lambda Context', () => {
     {
       case: 'middleware',
       getHandler: (logger: Logger) =>
-        middy(async () => {
+        middy(() => {
           logger.info('Hello, world!');
         }).use(injectLambdaContext(logger)),
     },
@@ -202,6 +204,7 @@ describe('Inject Lambda Context', () => {
             _event: unknown,
             _context: Context
           ): Promise<void> {
+            await setTimeout(1); // simulate some async operation
             logger.info('test');
           }
         }
@@ -245,6 +248,7 @@ describe('Inject Lambda Context', () => {
       case: 'middleware',
       getHandler: (logger: Logger) =>
         middy(async () => {
+          await setTimeout(1); // simulate some async operation
           logger.info('Hello, world!');
         }).use(
           injectLambdaContext(logger, {
@@ -263,6 +267,7 @@ describe('Inject Lambda Context', () => {
             _event: unknown,
             _context: Context
           ): Promise<void> {
+            await setTimeout(1); // simulate some async operation
             logger.info('Hello, world!');
           }
         }
@@ -306,7 +311,7 @@ describe('Inject Lambda Context', () => {
       },
     };
     // Act
-    const handler = middy(async () => {
+    const handler = middy(() => {
       logger.info('Hello, world!');
     }).use(
       injectLambdaContext(logger, {
@@ -329,7 +334,7 @@ describe('Inject Lambda Context', () => {
     const logger = new Logger({ correlationIdSearchFn: search });
 
     // Act - Use middleware which will internally call setCorrelationIdFromPath
-    const handler = middy(async () => {
+    const handler = middy(() => {
       logger.info('Hello, world!');
     }).use(
       injectLambdaContext(logger, {
@@ -388,7 +393,7 @@ describe('Inject Lambda Context', () => {
   it('uses the API_GATEWAY_REST predefined path to extract correlation ID', async () => {
     // Prepare
     const logger = new Logger({ correlationIdSearchFn: search });
-    const handler = middy(async () => {
+    const handler = middy(() => {
       logger.info('Using API Gateway request ID');
     }).use(
       injectLambdaContext(logger, {
@@ -419,7 +424,7 @@ describe('Inject Lambda Context', () => {
     {
       case: 'middleware',
       getHandler: (logger: Logger) =>
-        middy(async (event: { id: number }) => {
+        middy((event: { id: number }) => {
           logger.info('Processing event');
           logger.appendKeys({ id: event.id });
           throw new Error('Test error');
@@ -440,6 +445,7 @@ describe('Inject Lambda Context', () => {
             event: { id: number },
             _context: Context
           ): Promise<void> {
+            await setTimeout(1); // simulate some async operation
             logger.info('Processing event');
             logger.appendKeys({ id: event.id });
             throw new Error('Test error');
@@ -480,7 +486,7 @@ describe('Inject Lambda Context', () => {
     {
       case: 'middleware',
       getHandler: (logger: Logger) =>
-        middy(async (event: { id: number }) => {
+        middy((event: { id: number }) => {
           logger.info('Processing event');
           logger.appendKeys({ id: event.id });
           return true;
@@ -498,6 +504,7 @@ describe('Inject Lambda Context', () => {
             resetKeys: true,
           })
           public async handler(event: { id: number }, _context: Context) {
+            await setTimeout(1); // simulate some async operation
             logger.info('Processing event');
             logger.appendKeys({ id: event.id });
             return true;

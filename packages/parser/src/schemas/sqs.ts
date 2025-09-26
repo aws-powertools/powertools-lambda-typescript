@@ -9,8 +9,8 @@ const SqsMsgAttributeDataTypeSchema = z.union([
 ]);
 
 const SqsMsgAttributeSchema = z.object({
-  stringValue: z.string().optional(),
-  binaryValue: z.string().optional(),
+  stringValue: z.string().optional().nullable(),
+  binaryValue: z.string().optional().nullable(),
   stringListValues: z.array(z.string()).optional(),
   binaryListValues: z.array(z.string()).optional(),
   dataType: SqsMsgAttributeDataTypeSchema,

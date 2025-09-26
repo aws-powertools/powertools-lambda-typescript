@@ -50,9 +50,9 @@ import type { JMESPathParsingOptions, JSONObject } from './types.js';
  * };
  * ```
  *
- * @param data The JSON object to search
- * @param envelope The JMESPath expression to use
- * @param options The parsing options to use
+ * @param data - The JSON object to search
+ * @param envelope - The JMESPath expression to use
+ * @param options - The parsing options to use
  */
 const extractDataFromEnvelope = <T>(
   data: JSONObject,

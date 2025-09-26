@@ -18,9 +18,13 @@ app.onPublish(
           payload: { processed: true, original_payload: payload },
         });
       } catch (error) {
+        const errorString =
+          error instanceof Error
+            ? `${error.name} - ${error.message}`
+            : 'Unknown error';
         returnValues.push({
           id: payload.id,
-          error: `${error.name} - ${error.message}`,
+          error: errorString,
         });
       }
     }

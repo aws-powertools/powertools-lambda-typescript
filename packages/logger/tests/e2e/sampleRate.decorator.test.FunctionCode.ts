@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
 import { Logger } from '../../src/index.js';
@@ -16,6 +17,7 @@ class Lambda implements LambdaInterface {
   @logger.injectLambdaContext()
   public async handler(_event: TestEvent, context: Context): TestOutput {
     this.printLogInAllLevels();
+    await setTimeout(1); // simulate some async work
 
     return {
       requestId: context.awsRequestId,

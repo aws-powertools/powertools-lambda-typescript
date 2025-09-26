@@ -42,26 +42,32 @@ const BINDING_POWER = {
  * The set of ASCII lowercase letters allowed in JMESPath identifiers.
  */
 const ASCII_LOWERCASE = 'abcdefghijklmnopqrstuvwxyz';
+
 /**
  * The set of ASCII uppercase letters allowed in JMESPath identifiers.
  */
 const ASCII_UPPERCASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
 /**
  * The set of ASCII letters allowed in JMESPath identifiers.
  */
 const ASCII_LETTERS = ASCII_LOWERCASE + ASCII_UPPERCASE;
+
 /**
  * The set of ASCII digits allowed in JMESPath identifiers.
  */
 const DIGITS = '0123456789';
+
 /**
  * The set of ASCII letters and digits allowed in JMESPath identifiers.
  */
 const START_IDENTIFIER = new Set(`${ASCII_LETTERS}_`);
+
 /**
  * The set of ASCII letters and digits allowed in JMESPath identifiers.
  */
 const VALID_IDENTIFIER = new Set(`${ASCII_LETTERS}${DIGITS}_`);
+
 /**
  * The set of ASCII digits allowed in JMESPath identifiers.
  */
@@ -70,6 +76,7 @@ const VALID_NUMBER = new Set(DIGITS);
  * The set of ASCII whitespace characters allowed in JMESPath identifiers.
  */
 const WHITESPACE = new Set(' \t\n\r');
+
 /**
  * The set of simple tokens in the JMESPath grammar.
  */

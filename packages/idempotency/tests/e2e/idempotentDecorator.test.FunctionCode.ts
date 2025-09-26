@@ -2,7 +2,7 @@ import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
 import { IdempotencyConfig } from '../../src/IdempotencyConfig.js';
-import { idempotent } from '../../src/idempotencyDecorator';
+import { idempotent } from '../../src/idempotencyDecorator.js';
 import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
 
 const IDEMPOTENCY_TABLE_NAME =
@@ -35,19 +35,13 @@ class DefaultLambda implements LambdaInterface {
     logger.info(`${this.message} ${JSON.stringify(_event)}`);
     // sleep to enforce error with parallel execution
     await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // We return void to test that the utility handles it correctly
-    return;
   }
 
   @idempotent({
     persistenceStore: dynamoDBPersistenceLayerCustomized,
     config: config,
   })
-  public async handlerCustomized(
-    event: { foo: string },
-    context: Context
-  ): Promise<string> {
+  public handlerCustomized(event: { foo: string }, context: Context) {
     config.registerLambdaContext(context);
     logger.info('Processed event', { details: event.foo });
 
@@ -62,10 +56,10 @@ class DefaultLambda implements LambdaInterface {
       eventKeyJmesPath: 'foo',
     }),
   })
-  public async handlerExpired(
+  public handlerExpired(
     event: { foo: string; invocation: number },
     context: Context
-  ): Promise<{ foo: string; invocation: number }> {
+  ) {
     logger.addContext(context);
 
     logger.info('Processed event', { details: event.foo });
@@ -77,10 +71,7 @@ class DefaultLambda implements LambdaInterface {
   }
 
   @idempotent({ persistenceStore: dynamoDBPersistenceLayer })
-  public async handlerParallel(
-    event: { foo: string },
-    context: Context
-  ): Promise<string> {
+  public async handlerParallel(event: { foo: string }, context: Context) {
     logger.addContext(context);
 
     await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -99,7 +90,7 @@ class DefaultLambda implements LambdaInterface {
   public async handlerTimeout(
     event: { foo: string; invocation: number },
     context: Context
-  ): Promise<{ foo: string; invocation: number }> {
+  ) {
     logger.addContext(context);
 
     if (event.invocation === 0) {
@@ -130,12 +121,9 @@ const handlerExpired = defaultLambda.handlerExpired.bind(defaultLambda);
 const logger = new Logger();
 
 class LambdaWithKeywordArgument implements LambdaInterface {
-  public async handler(
-    event: { id: string },
-    _context: Context
-  ): Promise<string> {
+  public handler(event: { id: string }, _context: Context) {
     config.registerLambdaContext(_context);
-    await this.process(event.id, 'bar');
+    this.process(event.id, 'bar');
 
     return 'Hello World Keyword Argument';
   }
@@ -145,7 +133,7 @@ class LambdaWithKeywordArgument implements LambdaInterface {
     config: config,
     dataIndexArgument: 1,
   })
-  public async process(id: string, foo: string): Promise<string> {
+  public process(id: string, foo: string) {
     logger.info('Got test event', { id, foo });
 
     return `idempotent result: ${foo}`;

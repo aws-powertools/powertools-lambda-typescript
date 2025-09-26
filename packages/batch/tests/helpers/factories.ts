@@ -61,6 +61,7 @@ const dynamodbRecordFactory = (body: string): DynamoDBRecord => {
     eventVersion: '1.0',
     dynamodb: {
       Keys: { Id: { N: '101' } },
+      OldImage: { Message: { S: body } },
       NewImage: { Message: { S: body } },
       StreamViewType: 'NEW_AND_OLD_IMAGES',
       SequenceNumber: seq,

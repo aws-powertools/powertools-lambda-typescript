@@ -7,6 +7,14 @@ description: Simplify routing and processing of events in AWS Lambda functions
 
 <div class="grid cards" markdown>
 
+- __REST APIs__
+
+    ---
+
+    Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), Lambda Function URLs, and VPC Lattice.
+
+    [:octicons-arrow-right-24: Read more](./rest.md)
+
 - __AppSync Events API__
 
     ---

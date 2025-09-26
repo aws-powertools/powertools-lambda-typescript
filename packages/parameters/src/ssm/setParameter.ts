@@ -58,24 +58,17 @@ import { SSMProvider } from './SSMProvider.js';
  *
  * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link SSMProvider} utility.
  *
- * **Options**
+ * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
  *
- * You can customize the storage of the value by passing options to the function:
- * * `value` - The value of the parameter, which is a mandatory option.
- * * `overwrite` - Whether to overwrite the value if it already exists (default: `false`)
- * * `description` - The description of the parameter
- * * `parameterType` - The type of the parameter, can be one of `String`, `StringList`, or `SecureString` (default: `String`)
- * * `tier` - The parameter tier to use, can be one of `Standard`, `Advanced`, and `Intelligent-Tiering` (default: `Standard`)
- * * `kmsKeyId` - The KMS key id to use to encrypt the parameter
- * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
- *
- *  For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
- *
- *  @param name - Name of the parameter
- *  @param options - Options to configure the parameter
- *  @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+ * @param name - Name of the parameter
+ * @param options - Options to configure the parameter
+ * @param options.value - The value of the parameter
+ * @param options.overwrite - Whether to overwrite the value if it already exists (default: `false`)
+ * @param options.description - The description of the parameter
+ * @param options.parameterType - The type of the parameter, can be one of `String`, `StringList`, or `SecureString` (default: `String`)
+ * @param options.tier - The parameter tier to use, can be one of `Standard`, `Advanced`, and `Intelligent-Tiering` (default: `Standard`)
  */
-const setParameter = async <
+const setParameter = <
   InferredFromOptionsType extends SSMSetOptions | undefined = SSMSetOptions,
 >(
   name: string,

@@ -4,80 +4,85 @@ import type {
   AppConfigDataClientConfig,
   StartConfigurationSessionCommandInput,
 } from '@aws-sdk/client-appconfigdata';
+import type { AppConfigProvider } from '../appconfig/AppConfigProvider.js';
+import type { getAppConfig } from '../appconfig/getAppConfig.js';
 import type { GetOptionsInterface } from './BaseProvider.js';
 
 /**
- * Base interface for AppConfigProviderOptions.
+ * Base interface for {@link AppConfigProviderOptions | `AppConfigProviderOptions`}.
  *
- * @interface
- * @property {string} environment - The environment ID or the environment name.
- * @property {string} [application] - The application ID or the application name.
+ * @property environment - The environment ID or the environment name.
+ * @property application - The optional application ID or the application name.
  */
 interface AppConfigProviderOptionsBaseInterface {
+  /**
+   * The environment ID or the environment name.
+   */
   environment: string;
+  /** The optional application ID or the application name.
+   */
   application?: string;
 }
 
 /**
- * Interface for AppConfigProviderOptions with clientConfig property.
+ * Interface for {@link AppConfigProviderOptions | `AppConfigProviderOptions`} with `clientConfig` property.
  *
- * @interface
- * @extends AppConfigProviderOptionsBaseInterface
- * @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
- * @property {never} [awsSdkV3Client] - This property should never be passed.
+ * @property clientConfig - Optional configuration to pass during client initialization, e.g. AWS region.
+ * @property awsSdkV3Client - This property should never be passed when using `clientConfig`.
  */
 interface AppConfigProviderOptionsWithClientConfig
   extends AppConfigProviderOptionsBaseInterface {
   /**
-   * Optional configuration to pass during client initialization, e.g. AWS region. It accepts the same configuration object as the AWS SDK v3 client (`AppConfigDataClient`).
+   * Optional configuration to pass during client initialization, e.g. AWS region. Accepts the same configuration object as the AWS SDK v3 client ({@link AppConfigDataClientConfig | `AppConfigDataClientConfig`}).
    */
   clientConfig?: AppConfigDataClientConfig;
+  /**
+   * This property should never be passed when using `clientConfig`.
+   */
   awsSdkV3Client?: never;
 }
 
 /**
- * Interface for AppConfigProviderOptions with awsSdkV3Client property.
+ * Interface for {@link AppConfigProviderOptions | `AppConfigProviderOptions`} with awsSdkV3Client property.
  *
- * @interface
- * @extends AppConfigProviderOptionsBaseInterface
- * @property {AppConfigDataClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during AppConfigProvider class instantiation
- * @property {never} [clientConfig] - This property should never be passed.
+ * @property awsSdkV3Client - Optional AWS SDK v3 client to pass during the `AppConfigProvider` class instantiation, should be an instance of {@link AppConfigDataClient | `AppConfigDataClient`}.
+ * @property clientConfig - This property should never be passed when using `awsSdkV3Client`.
  */
 interface AppConfigProviderOptionsWithClientInstance
   extends AppConfigProviderOptionsBaseInterface {
   /**
-   * Optional AWS SDK v3 client instance (`AppConfigDataClient`) to use for AppConfig operations. If not provided, we will create a new instance of `AppConfigDataClient`.
+   * Optional AWS SDK v3 client instance ({@link AppConfigDataClient | `AppConfigDataClient`}) to use for AppConfig operations. If not provided, we will create a new instance of the client.
    */
   awsSdkV3Client?: AppConfigDataClient;
+  /**
+   * This property should never be passed when using `awsSdkV3Client`.
+   */
   clientConfig?: never;
 }
 
 /**
- * Options for the AppConfigProvider class constructor.
+ * Options for the `AppConfigProvider` class constructor.
  *
- * @type AppConfigProviderOptions
- * @property {string} environment - The environment ID or the environment name.
- * @property {string} [application] - The application ID or the application name.
- * @property {AppConfigDataClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
- * @property {AppConfigDataClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during AppConfigProvider class instantiation. Mutually exclusive with clientConfig.
+ * @property environment - The environment ID or the environment name.
+ * @property application - Optional application ID or the application name, if not provided it will be inferred from the service name in the environment.
+ * @property clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with `awsSdkV3Client`. Accepts the same configuration object as the AWS SDK v3 client ({@link AppConfigDataClientConfig | `AppConfigDataClientConfig`}).
+ * @property awsSdkV3Client - Optional ({@link AppConfigDataClient | `AppConfigDataClient`}) instance to pass during `AppConfigProvider` class instantiation. Mutually exclusive with `clientConfig`.
  */
 type AppConfigProviderOptions =
   | AppConfigProviderOptionsWithClientConfig
   | AppConfigProviderOptionsWithClientInstance;
 
 /**
- * Options for the AppConfigProvider get method.
+ * Options for the {@link AppConfigProvider.get | `AppConfigProvider.get()`} method.
  *
- * @interface AppConfigGetOptionsBase
- * @extends {GetOptionsInterface}
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
- * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @property {StartConfigurationSessionCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client.
- * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
+ * @property maxAge - Maximum age of the value in the cache, in seconds.
+ * @property forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property sdkOptions - Additional options to pass to the AWS SDK v3 client. Supports all options from {@link StartConfigurationSessionCommandInput | `StartConfigurationSessionCommandInput`} except `ApplicationIdentifier`, `EnvironmentIdentifier`, and `ConfigurationProfileIdentifier`.
+ * @property transform - Optional transform to be applied, can be 'json' or 'binary'.
  */
 interface AppConfigGetOptionsBase extends GetOptionsInterface {
   /**
-   * Additional options to pass to the AWS SDK v3 client. Supports all options from `StartConfigurationSessionCommandInput` except `ApplicationIdentifier`, `EnvironmentIdentifier`, and `ConfigurationProfileIdentifier`.
+   * Additional options to pass to the AWS SDK v3 client. Supports all options from {@link StartConfigurationSessionCommandInput | `StartConfigurationSessionCommandInput`} except `ApplicationIdentifier`, `EnvironmentIdentifier`, and `ConfigurationProfileIdentifier`.
    */
   sdkOptions?: Omit<
     Partial<StartConfigurationSessionCommandInput>,
@@ -99,6 +104,14 @@ interface AppConfigGetOptionsTransformNone extends AppConfigGetOptionsBase {
   transform?: never;
 }
 
+/**
+ * Options for the {@link AppConfigProvider.get | `AppConfigProvider.get()`} method.
+ *
+ * @property maxAge - Maximum age of the value in the cache, in seconds.
+ * @property forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property sdkOptions - Additional options to pass to the AWS SDK v3 client. Supports all options from {@link StartConfigurationSessionCommandInput | `StartConfigurationSessionCommandInput`} except `ApplicationIdentifier`, `EnvironmentIdentifier`, and `ConfigurationProfileIdentifier`.
+ * @property transform - Optional transform to be applied, can be 'json' or 'binary'.
+ */
 type AppConfigGetOptions =
   | AppConfigGetOptionsTransformNone
   | AppConfigGetOptionsTransformJson
@@ -106,7 +119,7 @@ type AppConfigGetOptions =
   | undefined;
 
 /**
- * Generic output type for the AppConfigProvider get method.
+ * Generic output type for the {@link AppConfigProvider.get | `AppConfigProvider.get()` } get method.
  */
 type AppConfigGetOutput<
   ExplicitUserProvidedType = undefined,
@@ -124,7 +137,7 @@ type AppConfigGetOutput<
   : ExplicitUserProvidedType;
 
 /**
- * Combined options for the getAppConfig utility function.
+ * Combined options for the {@link getAppConfig | `getAppConfig()`} utility function.
  */
 type GetAppConfigOptions = Omit<
   AppConfigProviderOptions,

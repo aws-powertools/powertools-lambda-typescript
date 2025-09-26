@@ -1,0 +1,10 @@
+{
+  "statusCode": 200,
+  "body": "{\"id\":\"123\",\"title\":\"New todo\"}",
+  "headers": {
+    "content-type": "application/json",
+    "x-pre-processed-by": "route-middleware",
+    "x-post-processed-by": "global-middleware"
+  },
+  "isBase64Encoded": false
+}

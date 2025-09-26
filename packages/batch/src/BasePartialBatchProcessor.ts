@@ -1,3 +1,5 @@
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
+import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
 import type {
   DynamoDBRecord,
   KinesisStreamRecord,
@@ -11,6 +13,7 @@ import {
 } from './constants.js';
 import { FullBatchFailureError } from './errors.js';
 import type {
+  BatchProcessorConfig,
   EventSourceDataClassTypes,
   PartialItemFailureResponse,
   PartialItemFailures,
@@ -43,11 +46,26 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public eventType: keyof typeof EventType;
 
   /**
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
+   */
+  protected readonly logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+
+  /**
+   * The configuration options for the parser integration
+   */
+  protected parserConfig?: BatchProcessorConfig;
+
+  /**
    * Initializes base batch processing class
    *
    * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
    */
-  public constructor(eventType: keyof typeof EventType) {
+  public constructor(
+    eventType: keyof typeof EventType,
+    parserConfig?: BatchProcessorConfig
+  ) {
     super();
     this.eventType = eventType;
     this.batchResponse = DEFAULT_RESPONSE;
@@ -55,6 +73,16 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
       [EventType.SQS]: () => this.collectSqsFailures(),
       [EventType.KinesisDataStreams]: () => this.collectKinesisFailures(),
       [EventType.DynamoDBStreams]: () => this.collectDynamoDBFailures(),
+    };
+    this.parserConfig = parserConfig;
+    const alcLogLevel = getStringFromEnv({
+      key: 'AWS_LAMBDA_LOG_LEVEL',
+      defaultValue: '',
+    });
+    this.logger = parserConfig?.logger ?? {
+      debug: alcLogLevel === 'DEBUG' ? console.debug : () => undefined,
+      error: console.error,
+      warn: console.warn,
     };
   }
 

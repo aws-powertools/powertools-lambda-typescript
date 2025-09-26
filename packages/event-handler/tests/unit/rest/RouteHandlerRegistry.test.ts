@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { HttpVerbs } from '../../../src/rest/constants.js';
+import {
+  HttpVerbs,
+  ParameterValidationError,
+} from '../../../src/rest/index.js';
 import { Route } from '../../../src/rest/Route.js';
 import { RouteHandlerRegistry } from '../../../src/rest/RouteHandlerRegistry.js';
 import type { Path } from '../../../src/types/rest.js';
@@ -559,11 +562,9 @@ describe('Class: RouteHandlerRegistry', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
       const handler = async () => ({ message: 'test' });
-
-      // Act
       registry.register(new Route(HttpVerbs.GET, '/users/:id', handler));
 
-      // Assess
+      // Act & Assess
       expect(() => {
         registry.resolve(HttpVerbs.GET, '/users/%20');
       }).toThrow("Parameter 'id' cannot be empty");
@@ -572,41 +573,20 @@ describe('Class: RouteHandlerRegistry', () => {
     it('throws ParameterValidationError with multiple error messages for multiple invalid parameters', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = async () => ({ message: 'test' });
-
-      // Act
-      registry.register(
-        new Route(HttpVerbs.GET, '/users/:userId/posts/:postId', handler)
-      );
-
-      // Assess
-      expect(() => {
-        registry.resolve(HttpVerbs.GET, '/users/%20/posts/%20%20');
-      }).toThrow('Parameter validation failed');
-    });
-
-    it('includes all validation issues in error message', () => {
-      // Prepare
-      const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = async () => ({ message: 'test' });
-
-      // Act
+      const handler = () => ({ message: 'test' });
       registry.register(
         new Route(HttpVerbs.GET, '/api/:version/:resource/:id', handler)
       );
 
-      // Assess
+      // Act & Assess
       expect(() => {
         registry.resolve(HttpVerbs.GET, '/api/%20/users/%20');
-      }).toThrow();
-
-      try {
-        registry.resolve(HttpVerbs.GET, '/api/%20/users/%20');
-      } catch (error: any) {
-        expect(error.message).toContain('Parameter validation failed');
-        expect(error.issues).toContain("Parameter 'version' cannot be empty");
-        expect(error.issues).toContain("Parameter 'id' cannot be empty");
-      }
+      }).toThrow(
+        new ParameterValidationError([
+          "Parameter 'version' cannot be empty",
+          "Parameter 'id' cannot be empty",
+        ])
+      );
     });
   });
 });

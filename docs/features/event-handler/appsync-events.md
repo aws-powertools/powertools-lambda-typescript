@@ -210,7 +210,7 @@ When processing batch of items with `aggregate` enabled, you must format the pay
 
 === "Error handling with batch of items"
 
-    ```typescript hl_lines="21-24"
+    ```typescript hl_lines="25-28"
     --8<-- "examples/snippets/event-handler/appsync-events/errorHandlingWithBatchOfItems.ts"
     ```
 

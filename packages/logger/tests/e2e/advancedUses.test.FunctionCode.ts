@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import { Logger } from '@aws-lambda-powertools/logger';
 import {
   correlationPaths,
@@ -18,7 +19,7 @@ const logger = new Logger({
 
 logger.debug('a never buffered debug log');
 
-export const handlerManual = async (event: unknown) => {
+export const handlerManual = (event: unknown) => {
   logger.addContext({} as Context); // we want only the cold start value
   logger.setCorrelationId(event, correlationPaths.EVENT_BRIDGE);
 
@@ -42,7 +43,7 @@ export const handlerMiddy = middy()
       flushBufferOnUncaughtError: true,
     })
   )
-  .handler(async () => {
+  .handler(() => {
     logger.debug('a buffered debug log');
     logger.info('an info log');
     throw new Error('ops');
@@ -56,6 +57,7 @@ class Lambda {
   public async handler(_event: unknown, _context: Context) {
     logger.debug('a buffered debug log');
     logger.info('an info log');
+    await setTimeout(1); // simulate async work
     throw new Error('ops');
   }
 }

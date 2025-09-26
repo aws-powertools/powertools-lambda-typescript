@@ -19,8 +19,8 @@ class ParsedResult {
   /**
    * Perform a JMESPath search on a JSON value.
    *
-   * @param value The JSON value to search
-   * @param options The parsing options to use
+   * @param value - The JSON value to search
+   * @param options - The parsing options to use
    */
   public search(value: JSONObject, options?: JMESPathParsingOptions): unknown {
     const interpreter = new TreeInterpreter(options);

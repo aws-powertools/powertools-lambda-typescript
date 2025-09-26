@@ -215,10 +215,10 @@ class TreeInterpreter {
 
     try {
       // We know that methodName is a key of this.#functions, but TypeScript
-      // doesn't know that, so we have to use @ts-ignore to tell it that it's
+      // doesn't know that, so we suppress the issue to tell it that it's
       // okay. We could use a type assertion like `as keyof Functions`, but
       // we also want to keep the args generic, so for now we'll just ignore it.
-      // @ts-ignore-next-line
+      // @ts-expect-error
       return this.#functions[funcName](args);
     } catch (error) {
       if (

@@ -1,6 +1,9 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { isRecord } from '@aws-lambda-powertools/commons/typeutils';
-import { getStringFromEnv, isDevMode } from '@aws-lambda-powertools/commons/utils/env';
+import {
+  getStringFromEnv,
+  isDevMode,
+} from '@aws-lambda-powertools/commons/utils/env';
 import type {
   OnPublishHandler,
   OnSubscribeHandler,
@@ -31,7 +34,7 @@ class Router {
    * Whether the router is running in development mode.
    */
   protected readonly isDev: boolean = false;
- 
+
   public constructor(options?: RouterOptions) {
     const alcLogLevel = getStringFromEnv({
       key: 'AWS_LAMBDA_LOG_LEVEL',

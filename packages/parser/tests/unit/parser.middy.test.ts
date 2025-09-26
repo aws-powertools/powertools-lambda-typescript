@@ -54,7 +54,7 @@ describe('Middleware: parser', () => {
     const event = structuredClone(baseEventBridgeEvent);
 
     // Act & Assess
-    expect(
+    await expect(
       middy()
         .use(parser({ schema: z.string(), envelope: SqsEnvelope }))
         .handler((event) => event)(event as unknown as string[], {} as Context)
@@ -68,7 +68,7 @@ describe('Middleware: parser', () => {
     event.Records[1].body = undefined;
 
     // Act & Assess
-    expect(
+    await expect(
       handlerWithSchemaAndEnvelope(event as unknown as string[], {} as Context)
     ).rejects.toThrow();
   });
@@ -91,7 +91,7 @@ describe('Middleware: parser', () => {
     const event = structuredClone(JSONPayload);
 
     // Act & Assess
-    expect(
+    await expect(
       middy((event) => event).use(parser({ schema: z.number() }))(
         event as unknown as number,
         {} as Context

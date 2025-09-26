@@ -1,6 +1,6 @@
 {
   "name": "layers",
-  "version": "2.25.2",
+  "version": "2.27.0",
   "bin": {
     "layer": "bin/layers.js"
   },
@@ -20,6 +20,7 @@
     "package": "echo 'Not applicable'",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
+    "lint:ci": "biome ci .",
     "createLayerFolder": "cdk synth --context BuildFromLocal=true"
   },
   "repository": {
@@ -40,9 +41,9 @@
     "source-map-support": "^0.5.21"
   },
   "dependencies": {
-    "aws-cdk": "^2.1026.0",
-    "aws-cdk-lib": "^2.212.0",
-    "esbuild": "^0.25.9",
-    "tsx": "^4.20.5"
+    "aws-cdk": "^2.1029.2",
+    "aws-cdk-lib": "^2.216.0",
+    "esbuild": "^0.25.10",
+    "tsx": "^4.20.6"
   }
 }

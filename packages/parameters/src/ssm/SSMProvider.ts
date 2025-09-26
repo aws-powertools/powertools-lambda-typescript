@@ -35,15 +35,12 @@ import type {
 } from '../types/SSMProvider.js';
 
 /**
- * ## Intro
- * The Parameters utility provides a SSMProvider that allows to retrieve parameters from AWS Systems Manager.
- *
- * ## Getting started
+ * The Parameters utility provides a `SSMProvider` that allows to retrieve parameters from AWS Systems Manager.
  *
  * This utility supports AWS SDK v3 for JavaScript only (`@aws-sdk/client-ssm`). This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
  *
- * ## Basic usage
+ * **Basic usage**
  *
  * Retrieve a parameter from SSM:
  *
@@ -96,9 +93,7 @@ import type {
  *
  * If you don't need to customize the provider, you can also use the {@link getParametersByName} function instead.
  *
- * ## Advanced usage
- *
- * ### Caching
+ * **Caching**
  *
  * By default, the provider will cache parameters retrieved in-memory for 5 seconds.
  * You can adjust how long values should be kept in cache by using the `maxAge` parameter.
@@ -157,7 +152,7 @@ import type {
  *
  * Likewise, you can use the `forceFetch` parameter with the `getParametersByName` method both for individual parameters and for all parameters.
  *
- * ### Decryption
+ * **Decryption**
  *
  * If you want to retrieve a parameter that is encrypted, you can use the `decrypt` parameter. This parameter is compatible with `get`, `getMultiple` and `getParametersByName`.
  *
@@ -175,7 +170,7 @@ import type {
  * };
  * ```
  *
- * ### Transformations
+ * **Transformations**
  *
  * For parameters stored as JSON you can use the transform argument for deserialization. This will return a JavaScript object instead of a string.
  *
@@ -211,7 +206,7 @@ import type {
  *
  * Both type of transformations are compatible also with the `getParametersByName` method.
  *
- * ### Extra SDK options
+ * **Extra SDK options**
  *
  * When retrieving parameters, you can pass extra options to the AWS SDK v3 for JavaScript client by using the `sdkOptions` parameter.
  *
@@ -233,7 +228,7 @@ import type {
  *
  * The objects accept the same options as respectively the [AWS SDK v3 for JavaScript GetParameter command](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametercommand.html) and the [AWS SDK v3 for JavaScript GetParametersByPath command](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/getparametersbypathcommand.html).
  *
- * ### Customize AWS SDK v3 for JavaScript client
+ * **Customize AWS SDK v3 for JavaScript client**
  *
  * By default, the provider will create a new SSM client using the default configuration.
  *
@@ -272,11 +267,6 @@ class SSMProvider extends BaseProvider {
   protected errorsKey = '_errors';
   protected maxGetParametersItems = 10;
 
-  /**
-   * It initializes the SSMProvider class.
-   *
-   * @param {SSMProviderOptions} config - The configuration object.
-   */
   public constructor(config?: SSMProviderOptions) {
     super({
       awsSdkV3ClientPrototype: SSMClient as new (config?: unknown) => SSMClient,
@@ -298,26 +288,23 @@ class SSMProvider extends BaseProvider {
    *   const parameter = await parametersProvider.get('/my-parameter');
    * };
    * ```
-   *
-   * You can customize the retrieval of the value by passing options to the function:
-   * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
-   * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`
-   * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
-   * * `decrypt` - Whether to decrypt the value before returning it.
-   *
-   * For usage examples check {@link SSMProvider}.
-   *
-   * @param {string} name - The name of the value to retrieve (i.e. the partition key)
-   * @param {SSMGetOptions} options - Options to configure the provider
+
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   *
+   * @param name - The name of the parameter to retrieve
+   * @param options - Optional options to configure the provider
+   * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+   * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+   * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+   * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link GetParameterCommandInput | `GetParameterCommandInput`} except `Name`
+   * @param options.decrypt - Optional flag to decrypt the value before returning it (default: `false`)
    */
-  public async get<
+  public get<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends SSMGetOptions | undefined = SSMGetOptions,
   >(
     name: string,
-    options?: InferredFromOptionsType & SSMGetOptions
+    options?: NonNullable<InferredFromOptionsType & SSMGetOptions>
   ): Promise<
     SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined
   > {
@@ -343,19 +330,17 @@ class SSMProvider extends BaseProvider {
    * };
    * ```
    *
-   * You can customize the storage of the value by passing options to the function:
-   * * `value` - The value of the parameter, which is a mandatory option.
-   * * `overwrite` - Whether to overwrite the value if it already exists (default: `false`)
-   * * `description` - The description of the parameter
-   * * `parameterType` - The type of the parameter, can be one of `String`, `StringList`, or `SecureString` (default: `String`)
-   * * `tier` - The parameter tier to use, can be one of `Standard`, `Advanced`, and `Intelligent-Tiering` (default: `Standard`)
-   * * `kmsKeyId` - The KMS key id to use to encrypt the parameter
-   * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
-   *
-   * @param {string} name - The name of the parameter
-   * @param {SSMSetOptions} options - Options to configure the parameter
-   * @returns {Promise<number>} The version of the parameter
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   *
+   * @param name - The name of the parameter
+   * @param options - Options to configure the parameter
+   * @param options.value - The value of the parameter
+   * @param options.overwrite - Whether to overwrite the value if it already exists (default: `false`)
+   * @param options.description - The description of the parameter
+   * @param options.parameterType - The type of the parameter, can be one of `String`, `StringList`, or `SecureString` (default: `String`)
+   * @param options.tier - The parameter tier to use, can be one of `Standard`, `Advanced`, and `Intelligent-Tiering` (default: `Standard`)
+   * @param options.kmsKeyId - The KMS key id to use to encrypt the parameter
+   * @param options.sdkOptions - Extra options to pass to the AWS SDK v3 for JavaScript client
    */
   public async set<
     InferredFromOptionsType extends SSMSetOptions | undefined = SSMSetOptions,
@@ -400,29 +385,28 @@ class SSMProvider extends BaseProvider {
    * };
    * ```
    *
-   * You can customize the retrieval of the values by passing options to the function:
-   * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
-   * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`
-   * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
-   * * `throwOnTransformError` - Whether to throw an error if the transform fails (default: `true`)
-   * * `decrypt` - Whether to decrypt the value before returning it.
-   * * `recursive` - Whether to recursively retrieve all parameters under the given path (default: `false`)
+   * For usage examples check {@link SSMProvider | `SSMProvider`}.
    *
-   * For usage examples check {@link SSMProvider}.
-   *
-   * @param {string} path - The path of the parameters to retrieve
-   * @param {SSMGetMultipleOptions} options - Options to configure the retrieval
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   *
+   * @param path - The path of the parameters to retrieve
+   * @param options - Optional options to configure the retrieval
+   * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+   * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+   * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+   * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link GetParametersByPathCommandInput | `GetParametersByPathCommandInput`} except `Path`
+   * @param options.throwOnTransformError - Optional flag to throw an error if the transform fails (default: `true`)
+   * @param options.decrypt - Optional flag to decrypt the value before returning it (default: `false`)
+   * @param options.recursive - Optional flag to recursively retrieve all parameters under the given path (default: `false`)
    */
-  public async getMultiple<
+  public getMultiple<
     ExplicitUserProvidedType = undefined,
     InferredFromOptionsType extends
       | SSMGetMultipleOptions
       | undefined = undefined,
   >(
     path: string,
-    options?: InferredFromOptionsType & SSMGetMultipleOptions
+    options?: NonNullable<InferredFromOptionsType & SSMGetMultipleOptions>
   ): Promise<
     | SSMGetMultipleOutput<ExplicitUserProvidedType, InferredFromOptionsType>
     | undefined
@@ -450,15 +434,8 @@ class SSMProvider extends BaseProvider {
    *   });
    * };
    * ```
-   * You can customize the retrieval of the values by passing options to **both the function and the parameter**:
-   * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
-   * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`
-   * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
-   * * `throwOnTransformError` - Whether to throw an error if the transform fails (default: `true`)
-   * * `decrypt` - Whether to decrypt the value before returning it
    *
-   * `throwOnError` decides whether to throw an error if a parameter is not found:
+   * The `throwOnError` option decides whether to throw an error if a parameter is not found:
    * - A) Default fail-fast behavior: Throws a `GetParameterError` error upon any failure.
    * - B) Gracefully aggregate all parameters that failed under "_errors" key.
    *
@@ -479,13 +456,18 @@ class SSMProvider extends BaseProvider {
    *                                                                     └────────────────────┘
    * ```
    *
-   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - Object containing parameter names and any optional overrides
-   * @param {SSMGetParametersByNameOptions} options - Options to configure the retrieval
    * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   *
+   * @param parameters - Object containing parameter names and any optional overrides
+   * @param options - Options to configure the retrieval
+   * @param options.maxAge - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
+   * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`
+   * @param options.decrypt - Whether to decrypt the value before returning it.
+   * @param options.throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error (default: `true`)
    */
   public async getParametersByName<ExplicitUserProvidedType = undefined>(
     parameters: Record<string, SSMGetParametersByNameOptions>,
-    options?: SSMGetParametersByNameOptions
+    options?: NonNullable<SSMGetParametersByNameOptions>
   ): Promise<SSMGetParametersByNameOutput<ExplicitUserProvidedType>> {
     const configs = {
       ...{
@@ -554,12 +536,15 @@ class SSMProvider extends BaseProvider {
   /**
    * Retrieve a parameter from AWS Systems Manager.
    *
-   * @param {string} name - Name of the parameter to retrieve
-   * @param {SSMGetOptions} options - Options to customize the retrieval
+   * @param name - Name of the parameter to retrieve
+   * @param options - Options to customize the retrieval
+   * @param options.sdkOptions - Extra options to pass to the AWS SDK v3 for JavaScript client
+   * @param options.decrypt - Whether to decrypt the value before returning it.
+   * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`, or `auto` (default: `undefined`)
    */
   protected async _get(
     name: string,
-    options?: SSMGetOptions
+    options?: NonNullable<SSMGetOptions>
   ): Promise<string | undefined> {
     const sdkOptions: GetParameterCommandInput = {
       ...(options?.sdkOptions || {}),
@@ -577,12 +562,19 @@ class SSMProvider extends BaseProvider {
   /**
    * Retrieve multiple items from AWS Systems Manager.
    *
-   * @param {string} path - The path of the parameters to retrieve
-   * @param {SSMGetMultipleOptions} options - Options to configure the provider
+   * @param path - The path of the parameters to retrieve
+   * @param options - Options to configure the provider
+   * @param options.maxAge - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
+   * @param options.forceFetch - Whether to always fetch a new value from the store regardless if already available in cache
+   * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`
+   * @param options.sdkOptions - Extra options to pass to the AWS SDK v3 for JavaScript client
+   * @param options.throwOnTransformError - Whether to throw an error if the transform fails (default: `true`)
+   * @param options.decrypt - Whether to decrypt the value before returning it.
+   * @param options.recursive - Whether to recursively retrieve all parameters under the given path (default: `false`)
    */
   protected async _getMultiple(
     path: string,
-    options?: SSMGetMultipleOptions
+    options?: NonNullable<SSMGetMultipleOptions>
   ): Promise<Record<string, string | undefined>> {
     const sdkOptions: GetParametersByPathCommandInput = {
       ...(options?.sdkOptions || {}),
@@ -613,7 +605,7 @@ class SSMProvider extends BaseProvider {
          *
          * The parameter name returned by SSM will contain the full path.
          * However, for readability, we should return only the part after the path.
-         **/
+         */
         // biome-ignore lint/style/noNonNullAssertion: If the parameter is present in the response, then it has a Name
         let name = parameter.Name!;
         name = name.replace(path, '');
@@ -630,9 +622,9 @@ class SSMProvider extends BaseProvider {
   /**
    * Retrieve multiple items by name from AWS Systems Manager.
    *
-   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
-   * @param {throwOnError} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
-   * @param {boolean} decrypt - Whether to decrypt the parameters or not
+   * @param parameters - An object of parameter names and their options
+   * @param throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
+   * @param decrypt - Whether to decrypt the parameters or not
    */
   protected async _getParametersByName(
     parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -666,9 +658,9 @@ class SSMProvider extends BaseProvider {
   /**
    * Slice batch and fetch parameters using GetPrameters API by max permissible batch size
    *
-   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
-   * @param {throwOnError} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
-   * @param {boolean} decrypt - Whether to decrypt the parameters or not
+   * @param parameters - An object of parameter names and their options
+   * @param throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
+   * @param decrypt - Whether to decrypt the parameters or not
    */
   protected async getParametersBatchByName(
     parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -679,8 +671,7 @@ class SSMProvider extends BaseProvider {
     let errors: string[] = [];
 
     // Fetch each possible batch param from cache and return if entire batch is cached
-    const { cached, toFetch } =
-      await this.getParametersByNameFromCache(parameters);
+    const { cached, toFetch } = this.getParametersByNameFromCache(parameters);
     if (Object.keys(cached).length >= Object.keys(parameters).length) {
       response = cached;
 
@@ -705,11 +696,11 @@ class SSMProvider extends BaseProvider {
   /**
    * Fetch each parameter from batch that hasn't expired from cache
    *
-   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
+   * @param parameters - An object of parameter names and their options
    */
-  protected async getParametersByNameFromCache(
+  protected getParametersByNameFromCache(
     parameters: Record<string, SSMGetParametersByNameOptions>
-  ): Promise<SSMGetParametersByNameFromCacheOutputType> {
+  ): SSMGetParametersByNameFromCacheOutputType {
     const cached: Record<string, string | Record<string, unknown>> = {};
     const toFetch: Record<string, SSMGetParametersByNameOptions> = {};
 
@@ -737,9 +728,9 @@ class SSMProvider extends BaseProvider {
   /**
    * Slice object into chunks of max permissible batch size and fetch parameters
    *
-   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
-   * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
-   * @param {boolean} decrypt - Whether to decrypt the parameters or not
+   * @param parameters - An object of parameter names and their options
+   * @param throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
+   * @param decrypt - Whether to decrypt the parameters or not
    */
   protected async getParametersByNameInChunks(
     parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -781,8 +772,8 @@ class SSMProvider extends BaseProvider {
   /**
    * Fetch parameters by name while also decrypting them
    *
-   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
-   * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
+   * @param parameters - An object of parameter names and their options
+   * @param throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    */
   protected async getParametersByNameWithDecryptOption(
     parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -814,11 +805,12 @@ class SSMProvider extends BaseProvider {
   }
 
   /**
-   * Handle any invalid parameters returned by GetParameters API
+   * Handle any invalid parameters returned by GetParameters API.
+   *
    * GetParameters is non-atomic. Failures don't always reflect in exceptions so we need to collect.
    *
-   * @param {GetParametersCommandOutput} result - The result of the GetParameters API call
-   * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
+   * @param result - The result of the GetParameters API call
+   * @param throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    */
   protected static handleAnyInvalidGetParameterErrors(
     result: Partial<GetParametersCommandOutput>,
@@ -855,8 +847,8 @@ class SSMProvider extends BaseProvider {
   /**
    * Split parameters that can be fetched by GetParameters vs GetParameter.
    *
-   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
-   * @param {SSMGetParametersByNameOptions} configs - The configs passed down
+   * @param parameters - An object of parameter names and their options
+   * @param configs - The configs passed down
    */
   protected static splitBatchAndDecryptParameters(
     parameters: Record<string, SSMGetParametersByNameOptions>,
@@ -896,9 +888,9 @@ class SSMProvider extends BaseProvider {
   /**
    * Throw a GetParameterError if fail-fast is disabled and `_errors` key is in parameters list.
    *
-   * @param {Record<string, unknown>} parameters
-   * @param {string} reservedParameter
-   * @param {boolean} throwOnError
+   * @param parameters - An object of parameter names and their options
+   * @param reservedParameter - The reserved parameter name that cannot be used when fail-fast is disabled
+   * @param throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    */
   protected static throwIfErrorsKeyIsPresent(
     parameters: Record<string, unknown>,
@@ -915,9 +907,9 @@ class SSMProvider extends BaseProvider {
   /**
    * Transform and cache the response from GetParameters API call
    *
-   * @param {GetParametersCommandOutput} response - The response from the GetParameters API call
-   * @param {Record<string, SSMGetParametersByNameOptions>} parameters - An object of parameter names and their options
-   * @param {boolean} throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
+   * @param response - The response from the GetParameters API call
+   * @param parameters - An object of parameter names and their options
+   * @param throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error or handle them gracefully
    */
   protected transformAndCacheGetParametersResponse(
     response: Partial<GetParametersCommandOutput>,

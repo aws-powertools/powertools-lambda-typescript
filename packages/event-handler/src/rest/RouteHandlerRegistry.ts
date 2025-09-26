@@ -3,13 +3,17 @@ import type {
   DynamicRoute,
   HttpMethod,
   Path,
-  RouteHandlerOptions,
+  RestRouteHandlerOptions,
   RouteRegistryOptions,
   ValidationResult,
 } from '../types/rest.js';
 import { ParameterValidationError } from './errors.js';
-import type { Route } from './Route.js';
-import { compilePath, validatePathPattern } from './utils.js';
+import { Route } from './Route.js';
+import {
+  compilePath,
+  resolvePrefixedPath,
+  validatePathPattern,
+} from './utils.js';
 
 class RouteHandlerRegistry {
   readonly #staticRoutes: Map<string, Route> = new Map();
@@ -147,7 +151,10 @@ class RouteHandlerRegistry {
    * @param path - The path to match
    * @returns Route handler options or null if no match found
    */
-  public resolve(method: HttpMethod, path: Path): RouteHandlerOptions | null {
+  public resolve(
+    method: HttpMethod,
+    path: Path
+  ): RestRouteHandlerOptions | null {
     if (this.#shouldSort) {
       this.#dynamicRoutes.sort(this.#compareRouteSpecificity);
       this.#shouldSort = false;
@@ -160,6 +167,7 @@ class RouteHandlerRegistry {
         handler: staticRoute.handler,
         rawParams: {},
         params: {},
+        middleware: staticRoute.middleware,
       };
     }
 
@@ -182,11 +190,42 @@ class RouteHandlerRegistry {
           handler: route.handler,
           params: processedParams,
           rawParams: params,
+          middleware: route.middleware,
         };
       }
     }
 
     return null;
+  }
+
+  /**
+   * Merges another {@link RouteHandlerRegistry | `RouteHandlerRegistry`} instance into the current instance.
+   * It takes the static and dynamic routes from the provided registry and adds them to the current registry.
+   *
+   * Routes from the included router are added to the current router's registry. If a route with the same method and path already exists, the included router's route takes precedence.
+   *
+   * @param routeHandlerRegistry - The registry instance to merge with the current instance
+   * @param options - Configuration options for merging the router
+   * @param options.prefix - An optional prefix to be added to the paths defined in the router
+   */
+  public merge(
+    routeHandlerRegistry: RouteHandlerRegistry,
+    options?: { prefix: Path }
+  ): void {
+    const routes = [
+      ...routeHandlerRegistry.#staticRoutes.values(),
+      ...routeHandlerRegistry.#dynamicRoutes,
+    ];
+    for (const route of routes) {
+      this.register(
+        new Route(
+          route.method as HttpMethod,
+          resolvePrefixedPath(route.path, options?.prefix),
+          route.handler,
+          route.middleware
+        )
+      );
+    }
   }
 }
 

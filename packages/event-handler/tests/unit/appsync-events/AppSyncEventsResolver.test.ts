@@ -87,7 +87,7 @@ describe('Class: AppSyncEventsResolver', () => {
         public scope = 'scoped';
 
         @app.onPublish('/foo', { aggregate })
-        public async handleFoo(payloads: OnPublishAggregatePayload) {
+        public handleFoo(payloads: OnPublishAggregatePayload) {
           return payloads.map((payload) => {
             return {
               id: payload.id,
@@ -97,15 +97,15 @@ describe('Class: AppSyncEventsResolver', () => {
         }
 
         @app.onPublish('/bar')
-        public async handleBar(payload: string) {
+        public handleBar(payload: string) {
           return `${this.scope} ${payload}`;
         }
 
-        public async handler(event: unknown, context: Context) {
+        public handler(event: unknown, context: Context) {
           return this.stuff(event, context);
         }
 
-        async stuff(event: unknown, context: Context) {
+        stuff(event: unknown, context: Context) {
           return app.resolve(event, context, { scope: this });
         }
       }
@@ -146,15 +146,15 @@ describe('Class: AppSyncEventsResolver', () => {
       public scope = 'scoped';
 
       @app.onSubscribe('/foo')
-      public async handleFoo(payload: AppSyncEventsSubscribeEvent) {
+      public handleFoo(payload: AppSyncEventsSubscribeEvent) {
         console.debug(`${this.scope} ${payload.info.channel.path}`);
       }
 
-      public async handler(event: unknown, context: Context) {
+      public handler(event: unknown, context: Context) {
         return this.stuff(event, context);
       }
 
-      async stuff(event: unknown, context: Context) {
+      stuff(event: unknown, context: Context) {
         return app.resolve(event, context, { scope: this });
       }
     }
@@ -222,7 +222,7 @@ describe('Class: AppSyncEventsResolver', () => {
     async ({ error, message }) => {
       // Prepare
       const app = new AppSyncEventsResolver({ logger: console });
-      app.onSubscribe('/foo', async () => {
+      app.onSubscribe('/foo', () => {
         throw error;
       });
 
@@ -242,7 +242,7 @@ describe('Class: AppSyncEventsResolver', () => {
   it('throws an UnauthorizedException when thrown by the handler', async () => {
     // Prepare
     const app = new AppSyncEventsResolver({ logger: console });
-    app.onSubscribe('/foo', async () => {
+    app.onSubscribe('/foo', () => {
       throw new UnauthorizedException('nah');
     });
 
@@ -258,7 +258,7 @@ describe('Class: AppSyncEventsResolver', () => {
   it('returns the response of the onPublish handler', async () => {
     // Prepare
     const app = new AppSyncEventsResolver({ logger: console });
-    app.onPublish('/foo', async (payload) => {
+    app.onPublish('/foo', (payload) => {
       if (payload === 'foo') {
         return true;
       }
@@ -303,7 +303,7 @@ describe('Class: AppSyncEventsResolver', () => {
     const app = new AppSyncEventsResolver({ logger: console });
     app.onPublish(
       '/foo',
-      async (payloads) => {
+      (payloads) => {
         return payloads.map((payload) => ({
           id: payload.id,
           payload: true,
@@ -353,7 +353,7 @@ describe('Class: AppSyncEventsResolver', () => {
     const app = new AppSyncEventsResolver({ logger: console });
     app.onPublish(
       '/foo',
-      async () => {
+      () => {
         throw new Error('Error in handler');
       },
       { aggregate: true }
@@ -379,7 +379,7 @@ describe('Class: AppSyncEventsResolver', () => {
     const app = new AppSyncEventsResolver({ logger: console });
     app.onPublish(
       '/foo',
-      async () => {
+      () => {
         throw new UnauthorizedException('nah');
       },
       { aggregate: true }
@@ -400,7 +400,7 @@ describe('Class: AppSyncEventsResolver', () => {
     const app = new AppSyncEventsResolver();
     app.onPublish(
       '/foo',
-      async () => {
+      () => {
         throw new Error('Error in handler');
       },
       { aggregate: true }

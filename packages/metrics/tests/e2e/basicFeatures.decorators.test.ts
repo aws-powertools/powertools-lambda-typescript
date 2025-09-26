@@ -168,7 +168,7 @@ describe('Metrics E2E tests, basic features decorator usage', () => {
         ? metricStat.Datapoints[0]
         : {};
       expect(singleDataPoint?.Sum).toBeGreaterThanOrEqual(
-        Number.parseInt(expectedMetricValue) * invocations
+        Number.parseInt(expectedMetricValue, 10) * invocations
       );
     });
   });

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { HttpErrorCodes } from '../../../src/rest/constants.js';
 import {
   BadRequestError,
   ForbiddenError,
+  HttpStatusCodes,
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
@@ -10,62 +10,62 @@ import {
   RequestTimeoutError,
   ServiceUnavailableError,
   UnauthorizedError,
-} from '../../../src/rest/errors.js';
+} from '../../../src/rest/index.js';
 
 describe('HTTP Error Classes', () => {
   it.each([
     {
       ErrorClass: BadRequestError,
       errorType: 'BadRequestError',
-      statusCode: HttpErrorCodes.BAD_REQUEST,
+      statusCode: HttpStatusCodes.BAD_REQUEST,
       customMessage: 'Invalid input',
     },
     {
       ErrorClass: UnauthorizedError,
       errorType: 'UnauthorizedError',
-      statusCode: HttpErrorCodes.UNAUTHORIZED,
+      statusCode: HttpStatusCodes.UNAUTHORIZED,
       customMessage: 'Token expired',
     },
     {
       ErrorClass: ForbiddenError,
       errorType: 'ForbiddenError',
-      statusCode: HttpErrorCodes.FORBIDDEN,
+      statusCode: HttpStatusCodes.FORBIDDEN,
       customMessage: 'Access denied',
     },
     {
       ErrorClass: NotFoundError,
       errorType: 'NotFoundError',
-      statusCode: HttpErrorCodes.NOT_FOUND,
+      statusCode: HttpStatusCodes.NOT_FOUND,
       customMessage: 'Resource not found',
     },
     {
       ErrorClass: MethodNotAllowedError,
       errorType: 'MethodNotAllowedError',
-      statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+      statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
       customMessage: 'POST not allowed',
     },
     {
       ErrorClass: RequestTimeoutError,
       errorType: 'RequestTimeoutError',
-      statusCode: HttpErrorCodes.REQUEST_TIMEOUT,
+      statusCode: HttpStatusCodes.REQUEST_TIMEOUT,
       customMessage: 'Operation timed out',
     },
     {
       ErrorClass: RequestEntityTooLargeError,
       errorType: 'RequestEntityTooLargeError',
-      statusCode: HttpErrorCodes.REQUEST_ENTITY_TOO_LARGE,
+      statusCode: HttpStatusCodes.REQUEST_ENTITY_TOO_LARGE,
       customMessage: 'File too large',
     },
     {
       ErrorClass: InternalServerError,
       errorType: 'InternalServerError',
-      statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+      statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
       customMessage: 'Database connection failed',
     },
     {
       ErrorClass: ServiceUnavailableError,
       errorType: 'ServiceUnavailableError',
-      statusCode: HttpErrorCodes.SERVICE_UNAVAILABLE,
+      statusCode: HttpStatusCodes.SERVICE_UNAVAILABLE,
       customMessage: 'Maintenance mode',
     },
   ])(
@@ -83,55 +83,55 @@ describe('HTTP Error Classes', () => {
       {
         ErrorClass: BadRequestError,
         errorType: 'BadRequestError',
-        statusCode: HttpErrorCodes.BAD_REQUEST,
+        statusCode: HttpStatusCodes.BAD_REQUEST,
         message: 'Invalid input',
       },
       {
         ErrorClass: UnauthorizedError,
         errorType: 'UnauthorizedError',
-        statusCode: HttpErrorCodes.UNAUTHORIZED,
+        statusCode: HttpStatusCodes.UNAUTHORIZED,
         message: 'Token expired',
       },
       {
         ErrorClass: ForbiddenError,
         errorType: 'ForbiddenError',
-        statusCode: HttpErrorCodes.FORBIDDEN,
+        statusCode: HttpStatusCodes.FORBIDDEN,
         message: 'Access denied',
       },
       {
         ErrorClass: NotFoundError,
         errorType: 'NotFoundError',
-        statusCode: HttpErrorCodes.NOT_FOUND,
+        statusCode: HttpStatusCodes.NOT_FOUND,
         message: 'Resource not found',
       },
       {
         ErrorClass: MethodNotAllowedError,
         errorType: 'MethodNotAllowedError',
-        statusCode: HttpErrorCodes.METHOD_NOT_ALLOWED,
+        statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
         message: 'POST not allowed',
       },
       {
         ErrorClass: RequestTimeoutError,
         errorType: 'RequestTimeoutError',
-        statusCode: HttpErrorCodes.REQUEST_TIMEOUT,
+        statusCode: HttpStatusCodes.REQUEST_TIMEOUT,
         message: 'Operation timed out',
       },
       {
         ErrorClass: RequestEntityTooLargeError,
         errorType: 'RequestEntityTooLargeError',
-        statusCode: HttpErrorCodes.REQUEST_ENTITY_TOO_LARGE,
+        statusCode: HttpStatusCodes.REQUEST_ENTITY_TOO_LARGE,
         message: 'File too large',
       },
       {
         ErrorClass: InternalServerError,
         errorType: 'InternalServerError',
-        statusCode: HttpErrorCodes.INTERNAL_SERVER_ERROR,
+        statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
         message: 'Database connection failed',
       },
       {
         ErrorClass: ServiceUnavailableError,
         errorType: 'ServiceUnavailableError',
-        statusCode: HttpErrorCodes.SERVICE_UNAVAILABLE,
+        statusCode: HttpStatusCodes.SERVICE_UNAVAILABLE,
         message: 'Maintenance mode',
       },
     ])(
@@ -154,7 +154,7 @@ describe('HTTP Error Classes', () => {
       const json = error.toJSON();
 
       expect(json).toEqual({
-        statusCode: HttpErrorCodes.BAD_REQUEST,
+        statusCode: HttpStatusCodes.BAD_REQUEST,
         error: 'BadRequestError',
         message: 'Invalid input',
         details,
@@ -166,7 +166,7 @@ describe('HTTP Error Classes', () => {
       const json = error.toJSON();
 
       expect(json).toEqual({
-        statusCode: HttpErrorCodes.BAD_REQUEST,
+        statusCode: HttpStatusCodes.BAD_REQUEST,
         error: 'BadRequestError',
         message: 'Invalid input',
       });

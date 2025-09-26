@@ -107,7 +107,7 @@ const getNumberFromEnv = ({
   const parsedValue = Number(value);
 
   if (Number.isNaN(parsedValue)) {
-    throw new Error(`Environment variable ${key} must be a number`);
+    throw new TypeError(`Environment variable ${key} must be a number`);
   }
 
   return parsedValue;

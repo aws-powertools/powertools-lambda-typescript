@@ -104,7 +104,7 @@ class RouteHandlerRegistry {
 
     const compiled = compilePath(route.path);
 
-    if (/[^a-zA-Z0-9/-:]/.test(compiled.path)) {
+    if (/[\w/:-]/.test(compiled.path)) {
       if (this.#regexRoutes.has(route.id)) {
         this.#logger.warn(
           `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`

@@ -210,6 +210,7 @@ class RouteHandlerRegistry {
     const routes = [
       ...routeHandlerRegistry.#staticRoutes.values(),
       ...routeHandlerRegistry.#dynamicRoutes,
+      ...routeHandlerRegistry.#regexRoutes.values(),
     ];
     for (const route of routes) {
       this.register(

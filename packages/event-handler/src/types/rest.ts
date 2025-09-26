@@ -64,7 +64,7 @@ type HttpMethod = keyof typeof HttpVerbs;
 
 type HttpStatusCode = (typeof HttpStatusCodes)[keyof typeof HttpStatusCodes];
 
-type Path = `/${string}`;
+type Path = string;
 
 type RestRouteHandlerOptions = {
   handler: RouteHandler;
@@ -79,14 +79,15 @@ type RestRouteOptions = {
   middleware?: Middleware[];
 };
 
-// biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
-type NextFunction = () => Promise<HandlerResponse | void>;
+type NextFunction =
+  () => // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
+  Promise<HandlerResponse | void> | HandlerResponse | void;
 
 type Middleware = (args: {
   reqCtx: RequestContext;
   next: NextFunction;
   // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
-}) => Promise<HandlerResponse | void>;
+}) => Promise<HandlerResponse | void> | HandlerResponse | void;
 
 type RouteRegistryOptions = {
   /**

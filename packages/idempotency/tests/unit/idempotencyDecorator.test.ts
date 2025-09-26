@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
@@ -15,10 +16,8 @@ describe('Given a class with a function to decorate', () => {
       @idempotent({
         persistenceStore: new PersistenceLayerTestClass(),
       })
-      public async handler(
-        _event: unknown,
-        _context: Context
-      ): Promise<string> {
+      public async handler(_event: unknown, _context: Context) {
+        await setTimeout(0); // Simulate some async operation
         return this.privateMethod();
       }
 
@@ -37,7 +36,7 @@ describe('Given a class with a function to decorate', () => {
     expect(result).toBe('private foo');
   });
 
-  it('passes the custom keyPrefix to the persistenceStore', async () => {
+  it('passes the custom keyPrefix to the persistenceStore', () => {
     // Prepare
     const configureSpy = vi.spyOn(BasePersistenceLayer.prototype, 'configure');
     const idempotencyConfig = new IdempotencyConfig({});
@@ -48,10 +47,7 @@ describe('Given a class with a function to decorate', () => {
         config: idempotencyConfig,
         keyPrefix: 'my-custom-prefix',
       })
-      public async handler(
-        _event: unknown,
-        _context: Context
-      ): Promise<boolean> {
+      public handler(_event: unknown, _context: Context) {
         return true;
       }
     }
@@ -60,7 +56,7 @@ describe('Given a class with a function to decorate', () => {
     const handler = handlerClass.handler.bind(handlerClass);
 
     // Act
-    const result = await handler({}, context);
+    const result = handler({}, context);
 
     // Assess
     expect(result).toBeTruthy();

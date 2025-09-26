@@ -73,7 +73,7 @@ describe('Parser types', () => {
           envelope: SqsEnvelope,
         })
       )
-      .handler(async (event) => {
+      .handler((event) => {
         expectTypeOf(event).toEqualTypeOf<User[]>();
       });
   });

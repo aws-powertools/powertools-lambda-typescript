@@ -27,8 +27,8 @@ import { subscribe } from 'node:diagnostics_channel';
 import http from 'node:http';
 import https from 'node:https';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
-import type { DiagnosticsChannel } from 'undici-types';
 import { getXRayTraceIdFromEnv } from '@aws-lambda-powertools/commons/utils/env';
+import type { DiagnosticsChannel } from 'undici-types';
 import {
   findHeaderAndDecode,
   getRequestURL,
@@ -172,7 +172,7 @@ class ProviderService implements ProviderServiceInterface {
           response: {
             status,
             ...(contentLenght && {
-              content_length: Number.parseInt(contentLenght),
+              content_length: Number.parseInt(contentLenght, 10),
             }),
           },
         };

@@ -12,7 +12,8 @@
     "test:e2e": "echo 'Not Applicable'",
     "build": "echo 'Not Applicable'",
     "lint": "biome lint .",
-    "lint:fix": "biome check --write ."
+    "lint:fix": "biome check --write .",
+    "lint:ci": "biome ci ."
   },
   "license": "MIT-0",
   "repository": {

@@ -35,6 +35,7 @@ import {
  * }));
  * ```
  *
+ * @param options - Configuration options for CORS
  * @param options.origin - The origin to allow requests from
  * @param options.allowMethods - The HTTP methods to allow
  * @param options.allowHeaders - The headers to allow

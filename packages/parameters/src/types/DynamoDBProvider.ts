@@ -5,87 +5,101 @@ import type {
   GetItemCommandInput,
   QueryCommandInput,
 } from '@aws-sdk/client-dynamodb';
+import type { DynamoDBProvider } from '../dynamodb/DynamoDBProvider.js';
 import type {
   GetMultipleOptionsInterface,
   GetOptionsInterface,
 } from './BaseProvider.js';
 
 /**
- * Base interface for DynamoDBProviderOptions.
+ * Base interface for {@link DynamoDBProviderOptions | `DynamoDBProviderOptions`}.
  *
- * @interface
- * @property {string} tableName - The DynamoDB table name.
- * @property {string} [keyAttr] - The DynamoDB table key attribute name. Defaults to 'id'.
- * @property {string} [sortAttr] - The DynamoDB table sort attribute name. Defaults to 'sk'.
- * @property {string} [valueAttr] - The DynamoDB table value attribute name. Defaults to 'value'.
+ * @property tableName - The DynamoDB table name.
+ * @property keyAttr - Optional DynamoDB table key attribute name. Defaults to 'id'.
+ * @property sortAttr - Optional DynamoDB table sort attribute name. Defaults to 'sk'.
+ * @property valueAttr - Optional DynamoDB table value attribute name. Defaults to 'value'.
  */
 interface DynamoDBProviderOptionsBase {
+  /**
+   * The DynamoDB table name.
+   */
   tableName: string;
+  /**
+   * Optional DynamoDB table key attribute name. Defaults to 'id'.
+   */
   keyAttr?: string;
+  /**
+   * Optional DynamoDB table sort attribute name. Defaults to 'sk'.
+   */
   sortAttr?: string;
+  /**
+   * Optional DynamoDB table value attribute name. Defaults to 'value'.
+   */
   valueAttr?: string;
 }
 
 /**
- * Interface for DynamoDBProviderOptions with clientConfig property.
+ * Interface for {@link DynamoDBProviderOptions | `DynamoDBProviderOptions`} with `clientConfig` property.
  *
- * @interface
- * @extends DynamoDBProviderOptionsBase
- * @property {DynamoDBClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
- * @property {never} [awsSdkV3Client] - This property should never be passed.
+ * @property clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Accepts the same options as the AWS SDK v3 client ({@link DynamoDBClient | `DynamoDBClient`}).
+ * @property awsSdkV3Client - This property should never be passed when using `clientConfig`.
  */
 interface DynamoDBProviderOptionsWithClientConfig
   extends DynamoDBProviderOptionsBase {
   /**
-   * Optional configuration to pass during client initialization, e.g. AWS region. It accepts the same configuration object as the AWS SDK v3 client (`DynamoDBClient`).
+   * Optional configuration to pass during client initialization, e.g. AWS region. Accepts the same options as the AWS SDK v3 client ({@link DynamoDBClient | `DynamoDBClient`}).
    */
   clientConfig?: DynamoDBClientConfig;
+  /**
+   * This property should never be passed when using `clientConfig`.
+   */
   awsSdkV3Client?: never;
 }
 
 /**
- * Interface for DynamoDBProviderOptions with awsSdkV3Client property.
+ * Interface for {@link DynamoDBProviderOptions | `DynamoDBProviderOptions`} with `awsSdkV3Client` property.
  *
- * @interface
- * @extends DynamoDBProviderOptionsBase
- * @property {DynamoDBClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during DynamoDBProvider class instantiation
- * @property {never} [clientConfig] - This property should never be passed.
+ * @property awsSdkV3Client - Optional AWS SDK v3 client to pass during `DynamoDBProvider` class instantiation, should be an instance of {@link DynamoDBClient | `DynamoDBClient`}.
+ * @property clientConfig - This property should never be passed when using `awsSdkV3Client`.
  */
 interface DynamoDBProviderOptionsWithClientInstance
   extends DynamoDBProviderOptionsBase {
   /**
-   * Optional AWS SDK v3 client instance (`DynamoDBClient`) to use for DynamoDB operations. If not provided, we will create a new instance of `DynamoDBClient`.
+   * Optional AWS SDK v3 client instance ({@link DynamoDBClient | `DynamoDBClient`}) to use for DynamoDB operations. If not provided, we will create a new instance of the client.
    */
   awsSdkV3Client?: DynamoDBClient;
+  /**
+   * This property should never be passed when using `awsSdkV3Client`.
+   */
   clientConfig?: never;
 }
 
 /**
- * Options for the DynamoDBProvider class constructor.
+ * Options for the {@link DynamoDBProvider | `DynamoDBProvider`} class constructor.
  *
- * @type DynamoDBProviderOptions
- * @property {string} tableName - The DynamoDB table name.
- * @property {string} [keyAttr] - The DynamoDB table key attribute name. Defaults to 'id'.
- * @property {string} [sortAttr] - The DynamoDB table sort attribute name. Defaults to 'sk'.
- * @property {string} [valueAttr] - The DynamoDB table value attribute name. Defaults to 'value'.
- * @property {DynamoDBClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
- * @property {DynamoDBClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during DynamoDBProvider class instantiation. Mutually exclusive with clientConfig.
+ * @property tableName - The DynamoDB table name.
+ * @property keyAttr - Optional DynamoDB table key attribute name. Defaults to 'id'.
+ * @property sortAttr - Optional DynamoDB table sort attribute name. Defaults to 'sk'.
+ * @property valueAttr - Optional DynamoDB table value attribute name. Defaults to 'value'.
+ * @property clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with `awsSdkV3Client`, accepts the same options as the AWS SDK v3 client ({@link DynamoDBClient | `DynamoDBClient`}).
+ * @property awsSdkV3Client - Optional AWS SDK v3 client to pass during DynamoDBProvider class instantiation. Mutually exclusive with `clientConfig`, should be an instance of {@link DynamoDBClient | `DynamoDBClient`}.
  */
 type DynamoDBProviderOptions =
   | DynamoDBProviderOptionsWithClientConfig
   | DynamoDBProviderOptionsWithClientInstance;
 
 /**
- * Options for the DynamoDBProvider get method.
+ * Options for the {@link DynamoDBProvider.get | `DynamoDBProvider.get()`} get method.
  *
- * @interface DynamoDBGetOptionsBase
- * @extends {GetOptionsInterface}
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
- * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @property {GetItemCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client.
- * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
+ * @property maxAge - Maximum age of the value in the cache, in seconds.
+ * @property forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property sdkOptions - Additional options to pass to the AWS SDK v3 client, supports all options from {@link GetItemCommandInput | `GetItemCommandInput`} except `Key`, `TableName`, and `ProjectionExpression`.
+ * @property transform - Transform to be applied, can be 'json' or 'binary'.
  */
 interface DynamoDBGetOptionsBase extends GetOptionsInterface {
+  /**
+   * Additional options to pass to the AWS SDK v3 client, supports all options from {@link GetItemCommandInput | `GetItemCommandInput`} except `Key`, `TableName`, and `ProjectionExpression`.
+   */
   sdkOptions?: Omit<
     Partial<GetItemCommandInput>,
     'Key' | 'TableName' | 'ProjectionExpression'
@@ -104,6 +118,14 @@ interface DynamoDBGetOptionsTransformNone extends DynamoDBGetOptionsBase {
   transform?: never;
 }
 
+/**
+ * Options for the {@link DynamoDBProvider.get | `DynamoDBProvider.get()`} get method.
+ *
+ * @property maxAge - Maximum age of the value in the cache, in seconds.
+ * @property forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property sdkOptions - Additional options to pass to the AWS SDK v3 client, supports all options from {@link GetItemCommandInput | `GetItemCommandInput`} except `Key`, `TableName`, and `ProjectionExpression`.
+ * @property transform - Transform to be applied, can be 'json' or 'binary'.
+ */
 type DynamoDBGetOptions =
   | DynamoDBGetOptionsTransformNone
   | DynamoDBGetOptionsTransformJson
@@ -111,7 +133,7 @@ type DynamoDBGetOptions =
   | undefined;
 
 /**
- * Generic output type for DynamoDBProvider get method.
+ * Generic output type for {@link DynamoDBProvider.get | `DynamoDBProvider.get()`} method.
  */
 type DynamoDBGetOutput<
   ExplicitUserProvidedType = undefined,
@@ -129,15 +151,13 @@ type DynamoDBGetOutput<
   : ExplicitUserProvidedType;
 
 /**
- * Options for the DynamoDBProvider getMultiple method.
+ * Options for the {@link DynamoDBProvider.getMultiple | `DynamoDBProvider.getMultiple()`} method.
  *
- * @interface DynamoDBGetMultipleOptions
- * @extends {GetMultipleOptionsInterface}
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
- * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @property {QueryCommandInput} [sdkOptions] - Additional options to pass to the AWS SDK v3 client.
- * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
- * @property {boolean} throwOnTransformError - Whether to throw an error if the transform fails (default: `true`)
+ * @property maxAge - Maximum age of the value in the cache, in seconds.
+ * @property forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property sdkOptions - Additional options to pass to the AWS SDK v3 client, supports all options from {@link QueryCommandInput | `QueryCommandInput`} except `TableName` and `KeyConditionExpression`.
+ * @property transform - Transform to be applied, can be 'json' or 'binary'.
+ * @property throwOnTransformError - Whether to throw an error if the transform fails (default: `true`)
  */
 interface DynamoDBGetMultipleOptionsBase extends GetMultipleOptionsInterface {
   sdkOptions?: Partial<QueryCommandInput>;
@@ -170,7 +190,7 @@ type DynamoDBGetMultipleOptions =
   | DynamoDBGetMultipleOptionsTransformNone;
 
 /**
- * Generic output type for DynamoDBProvider getMultiple method.
+ * Generic output type for {@link DynamoDBProvider.getMultiple | `DynamoDBProvider.getMultiple()`} method.
  */
 type DynamoDBGetMultipleOutput<
   ExplicitUserProvidedType = undefined,

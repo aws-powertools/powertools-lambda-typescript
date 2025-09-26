@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
@@ -884,7 +885,7 @@ describe('Class: Tracer', () => {
       const lambda = getLambdaClass(tracer, { shouldThrow: true });
 
       // Act & Assess
-      expect(lambda.handler({}, context)).rejects.toThrow(Error);
+      await expect(lambda.handler({}, context)).rejects.toThrow(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
       expect(addErrorSpy).toHaveBeenCalledTimes(0);
@@ -905,7 +906,7 @@ describe('Class: Tracer', () => {
       const lambda = getLambdaClass(tracer, { shouldThrow: true });
 
       // Act & Assess
-      expect(lambda.handler({}, context)).rejects.toThrow(Error);
+      await expect(lambda.handler({}, context)).rejects.toThrow(Error);
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
       expect(addErrorAsMetadataSpy).toHaveBeenCalledTimes(1);
       expect(addErrorAsMetadataSpy).toHaveBeenCalledWith(expect.any(Error));
@@ -922,7 +923,7 @@ describe('Class: Tracer', () => {
       const lambda = getLambdaClass(tracer);
 
       // Act
-      lambda.handler(event, context);
+      await lambda.handler(event, context);
 
       // Assess
       expect(captureAsyncFuncSpy).toHaveBeenCalledTimes(1);
@@ -978,6 +979,7 @@ describe('Class: Tracer', () => {
         }
 
         public async dummyMethod(): Promise<string> {
+          await setTimeout(0); // Simulate some async operation
           return this.memberVariable;
         }
 
@@ -1057,6 +1059,7 @@ describe('Class: Tracer', () => {
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
         public async dummyMethod(some: string): Promise<string> {
+          await setTimeout(0); // Simulate some async operation
           return some;
         }
 
@@ -1087,6 +1090,7 @@ describe('Class: Tracer', () => {
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
         public async dummyMethod(some: string): Promise<string> {
+          await setTimeout(0); // Simulate some async operation
           return some;
         }
 
@@ -1126,6 +1130,7 @@ describe('Class: Tracer', () => {
       class Lambda implements LambdaInterface {
         @tracer.captureMethod({ captureResponse: false })
         public async dummyMethod(some: string): Promise<string> {
+          await setTimeout(0); // Simulate some async operation
           return some;
         }
 
@@ -1161,6 +1166,7 @@ describe('Class: Tracer', () => {
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
         public async dummyMethod(some: string): Promise<string> {
+          await setTimeout(0); // Simulate some async operation
           return some;
         }
 
@@ -1197,6 +1203,7 @@ describe('Class: Tracer', () => {
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
         public async dummyMethod(_some: string): Promise<string> {
+          await setTimeout(0); // Simulate some async operation
           throw new Error('Exception thrown!');
         }
 
@@ -1245,6 +1252,7 @@ describe('Class: Tracer', () => {
 
         @tracer.captureMethod()
         public async dummyMethod(): Promise<string> {
+          await setTimeout(0); // Simulate some async operation
           return `memberVariable:${this.memberVariable}`;
         }
 
@@ -1279,7 +1287,7 @@ describe('Class: Tracer', () => {
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
         public async dummyMethod(): Promise<void> {
-          return;
+          await setTimeout(0); // Simulate some async operation
         }
 
         public async handler(
@@ -1288,12 +1296,10 @@ describe('Class: Tracer', () => {
         ): Promise<void> {
           await this.dummyMethod();
           this.otherDummyMethod();
-
-          return;
         }
 
-        public otherDummyMethod(): void {
-          return;
+        public otherDummyMethod(): boolean {
+          return false;
         }
       }
 
@@ -1336,6 +1342,7 @@ describe('Class: Tracer', () => {
         @tracer.captureMethod()
         @passThrough()
         public async dummyMethod(): Promise<string> {
+          await setTimeout(0); // Simulate some async operation
           return 'foo';
         }
 
@@ -1374,6 +1381,7 @@ describe('Class: Tracer', () => {
       class Lambda implements LambdaInterface {
         @tracer.captureMethod({ subSegmentName: '#### myCustomMethod' })
         public async dummyMethod(some: string): Promise<string> {
+          await setTimeout(0); // Simulate some async operation
           return some;
         }
 
@@ -1419,6 +1427,7 @@ describe('Class: Tracer', () => {
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
         public async dummyMethod(some: string): Promise<string> {
+          await setTimeout(0); // Simulate some async operation
           return some;
         }
 

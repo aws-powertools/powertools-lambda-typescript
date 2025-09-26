@@ -6,21 +6,12 @@ import type {
 import { SSMProvider } from './SSMProvider.js';
 
 /**
- * ## Intro
- * The Parameters utility provides an SSMProvider that allows to retrieve parameters from AWS Systems Manager.
- *
- * ## Getting started
+ * The Parameters utility provides an `SSMProvider` that allows to retrieve parameters from AWS Systems Manager.
  *
  * This utility supports AWS SDK v3 for JavaScript only. This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
  *
- * To use the provider, you must install the Parameters utility and the AWS SDK v3 for JavaScript for AppConfig:
- *
- * ```sh
- * npm install @aws-lambda-powertools/parameters @aws-sdk/client-ssm
- * ```
- *
- * ## Basic usage
+ * **Basic usage**
  *
  * @example
  * ```typescript
@@ -35,9 +26,7 @@ import { SSMProvider } from './SSMProvider.js';
  * };
  * ```
  *
- * ## Advanced usage
- *
- * ### Decryption
+ * **Decryption**
  *
  * If you have encrypted parameters, you can use the `decrypt` option to automatically decrypt them.
  *
@@ -54,7 +43,7 @@ import { SSMProvider } from './SSMProvider.js';
  * };
  * ```
  *
- * ### Caching
+ * **Caching**
  *
  * By default, the provider will cache parameters retrieved in-memory for 5 seconds.
  * You can adjust how long values should be kept in cache by using the `maxAge` parameter.
@@ -102,7 +91,7 @@ import { SSMProvider } from './SSMProvider.js';
  * };
  * ```
  *
- * ### Transformations
+ * **Transformations**
  *
  * For parameters stored as JSON you can use the transform argument for deserialization. This will return a JavaScript objects instead of a strings.
  * For parameters that are instead stored as base64-encoded binary data, you can use the transform argument set to `binary` for decoding. This will return decoded strings for each parameter.
@@ -121,21 +110,9 @@ import { SSMProvider } from './SSMProvider.js';
  * };
  * ```
  *
- *
- * ### Built-in provider class
- *
  * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link SSMProvider} class.
  *
- * ### Options
- *
- * * You can customize the retrieval of the value by passing options to **both the function and the parameter**:
- * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
- * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
- * * `transform` - Whether to transform the value before returning it. Supported values: `json`, `binary`
- * * `sdkOptions` - Extra options to pass to the AWS SDK v3 for JavaScript client
- * * `decrypt` - Whether to decrypt the value before returning it
- *
- * `throwOnError` decides whether to throw an error if a parameter is not found:
+ * The `throwOnError` parameter decides whether to throw an error if a parameter is not found:
  * - A) Default fail-fast behavior: Throws a `GetParameterError` error upon any failure.
  * - B) Gracefully aggregate all parameters that failed under "_errors" key.
  *
@@ -156,15 +133,18 @@ import { SSMProvider } from './SSMProvider.js';
  *                                                                     └────────────────────┘
  * ```
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
- *
- * @param {Record<string, SSMGetParametersByNameOptions>} parameters - The path of the parameters to retrieve
- * @param {SSMGetParametersByNameOptions} options - Options to configure the provider
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+ *
+ * @param parameters - The path of the parameters to retrieve
+ * @param options - Options to configure the provider
+ * @param options.maxAge - Maximum age of the value in the cache, in seconds. Will be applied after the first API call.
+ * @param options.transform - Whether to transform the value before returning it. Supported values: `json`, `binary`
+ * @param options.decrypt - Whether to decrypt the values before returning them. If true, will use `GetParameter` API for each parameter. If false (default), will use `GetParametersByName` API.
+ * @param options.throwOnError - Whether to throw an error if any of the parameters' retrieval throws an error (default: `true`)
  */
-const getParametersByName = async <ExplicitUserProvidedType = undefined>(
+const getParametersByName = <ExplicitUserProvidedType = undefined>(
   parameters: Record<string, SSMGetParametersByNameOptions>,
-  options?: SSMGetParametersByNameOptions
+  options?: NonNullable<SSMGetParametersByNameOptions>
 ): Promise<SSMGetParametersByNameOutput<ExplicitUserProvidedType>> => {
   if (!Object.hasOwn(DEFAULT_PROVIDERS, 'ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();

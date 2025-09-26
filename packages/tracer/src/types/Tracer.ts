@@ -32,10 +32,8 @@ type TracerOptions = {
 /**
  * Options for handler decorators and middleware.
  *
- * Options supported:
- * * `captureResponse` - (_optional_) - Disable response serialization as subsegment metadata
+ * **Middleware usage**
  *
- * Middleware usage:
  * @example
  * ```typescript
  * import middy from '@middy/core';
@@ -48,7 +46,8 @@ type TracerOptions = {
  *  .use(captureLambdaHandler(tracer, { captureResponse: false }));
  * ```
  *
- * Decorator usage:
+ * **Decorator usage**
+ *
  * @example
  * ```typescript
  * const tracer = new Tracer();
@@ -61,6 +60,8 @@ type TracerOptions = {
  * const handlerClass = new Lambda();
  * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
+ *
+ * @property captureResponse - Whether to capture the Lambda handler response as subsegment metadata (default: true)
  */
 type CaptureLambdaHandlerOptions = {
   captureResponse?: boolean;
@@ -69,22 +70,18 @@ type CaptureLambdaHandlerOptions = {
 /**
  * Options for method decorators.
  *
- * Options supported:
- * * `subSegmentName` - (_optional_) - Set a custom name for the subsegment
- * * `captureResponse` - (_optional_) - Disable response serialization as subsegment metadata
- *
  * Usage:
  * @example
  * ```typescript
  * const tracer = new Tracer();
  *
  * class Lambda implements LambdaInterface {
- *   @tracer.captureMethod({ subSegmentName: 'gettingChargeId', captureResponse: false })
+ *   ⁣@tracer.captureMethod({ subSegmentName: 'gettingChargeId', captureResponse: false })
  *   private getChargeId(): string {
  *     return 'foo bar';
  *   }
  *
- *   @tracer.captureLambdaHandler({ captureResponse: false })
+ *   ⁣@tracer.captureLambdaHandler({ captureResponse: false })
  *   public async handler(_event: any, _context: any): Promise<void> {
  *     this.getChargeId();
  *   }
@@ -93,6 +90,9 @@ type CaptureLambdaHandlerOptions = {
  * const handlerClass = new Lambda();
  * export const handler = handlerClass.handler.bind(handlerClass);
  * ```
+ *
+ * @property subSegmentName - (_optional_) - Set a custom name for the subsegment
+ * @property captureResponse - (_optional_) - Disable response serialization as subsegment metadata (default: true)
  */
 type CaptureMethodOptions = {
   subSegmentName?: string;

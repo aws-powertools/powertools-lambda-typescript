@@ -89,7 +89,7 @@ describe('Class: Router - Basic Routing', () => {
     const app = new Router();
     const testEvent = createTestEvent('/test', 'GET');
 
-    app.get('/test', async (reqCtx) => {
+    app.get('/test', (reqCtx) => {
       return {
         hasRequest: reqCtx.req instanceof Request,
         hasEvent: reqCtx.event === testEvent,
@@ -107,7 +107,7 @@ describe('Class: Router - Basic Routing', () => {
     expect(actual.hasContext).toBe(true);
   });
 
-  it('throws an internal server error for non-API Gateway events', async () => {
+  it('throws an internal server error for non-API Gateway events', () => {
     // Prepare
     const app = new Router();
     const nonApiGatewayEvent = { Records: [] }; // SQS-like event
@@ -123,10 +123,10 @@ describe('Class: Router - Basic Routing', () => {
     const app = new Router({
       prefix: '/todos',
     });
-    app.post('/', async () => {
+    app.post('/', () => {
       return { actualPath: '/todos' };
     });
-    app.get('/:todoId', async (reqCtx) => {
+    app.get('/:todoId', (reqCtx) => {
       return { actualPath: `/todos/${reqCtx.params.todoId}` };
     });
 
@@ -153,11 +153,9 @@ describe('Class: Router - Basic Routing', () => {
       await next();
     });
     todoRouter.get('/', async () => ({ api: 'listTodos' }));
-    todoRouter.notFound(async () => {
-      return {
-        error: 'Route not found',
-      };
-    });
+    todoRouter.notFound(async () => ({
+      error: 'Route not found',
+    }));
     const consoleLogSpy = vi.spyOn(console, 'log');
     const consoleWarnSpy = vi.spyOn(console, 'warn');
 

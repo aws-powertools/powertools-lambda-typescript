@@ -171,7 +171,7 @@ describe('Parameters E2E tests, AppConfig provider', () => {
 
   describe('AppConfigProvider usage', () => {
     // Test 1 - get a single parameter as-is (no transformation - should return an Uint8Array)
-    it('should retrieve single parameter as-is', () => {
+    it('retrieves single parameter as-is', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
 
@@ -182,7 +182,7 @@ describe('Parameters E2E tests, AppConfig provider', () => {
     });
 
     // Test 2 - get a free-form JSON and apply json transformation (should return an object)
-    it('should retrieve a free-form JSON parameter with JSON transformation', () => {
+    it('retrieves a free-form JSON parameter with JSON transformation', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
 
@@ -194,7 +194,7 @@ describe('Parameters E2E tests, AppConfig provider', () => {
 
     // Test 3 - get a free-form base64-encoded plain text and apply binary transformation
     // (should return a decoded string)
-    it('should retrieve a base64-encoded plain text parameter with binary transformation', () => {
+    it('retrieves a base64-encoded plain text parameter with binary transformation', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
 
@@ -205,7 +205,7 @@ describe('Parameters E2E tests, AppConfig provider', () => {
     });
 
     // Test 4 - get a feature flag and apply json transformation (should return an object)
-    it('should retrieve a feature flag parameter with JSON transformation', () => {
+    it('retrieves a feature flag parameter with JSON transformation', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
 
@@ -217,7 +217,7 @@ describe('Parameters E2E tests, AppConfig provider', () => {
 
     // Test 5 - get parameter twice with middleware, which counts the number
     // of requests, we check later if we only called AppConfig API once
-    it('should retrieve single parameter cached', () => {
+    it('retrieves single parameter cached', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
 
@@ -229,7 +229,7 @@ describe('Parameters E2E tests, AppConfig provider', () => {
 
     // Test 6 - get parameter twice, but force fetch 2nd time,
     // we count number of SDK requests and  check that we made two API calls
-    it('should retrieve single parameter twice without caching', async () => {
+    it('retrieves single parameter twice without caching', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[5]);
 
@@ -242,7 +242,7 @@ describe('Parameters E2E tests, AppConfig provider', () => {
     // Test 7 - get parameter twice, using maxAge to avoid primary cache
     // we count number of SDK requests and check that we made two API calls
     // and check that the values match
-    it('should retrieve single parameter twice, with expiration between and matching values', async () => {
+    it('retrieves single parameter twice, with expiration between and matching values', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[6]);
       const result = freeFormPlainTextValue;

@@ -13,6 +13,7 @@
     "test": "npm run test:unit",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
+    "lint:ci": "biome ci .",
     "test:unit": "export POWERTOOLS_DEV=true && vitest --run --silent",
     "test:e2e": "echo 'To be implemented ...'",
     "cdk": "cdk"

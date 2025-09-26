@@ -4,34 +4,32 @@ import type {
   SecretsManagerClient,
   SecretsManagerClientConfig,
 } from '@aws-sdk/client-secrets-manager';
+import type { SecretsProvider } from '../secrets/SecretsProvider.js';
 import type { GetOptionsInterface, TransformOptions } from './BaseProvider.js';
 
 /**
- * Base interface for SecretsProviderOptions.
+ * Base interface for {@link SecretsProviderOptions | SecretsProviderOptions}.
  *
- *  @interface
- *  @property {SecretsManagerClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region.
- *  @property {never} [awsSdkV3Client] - This property should never be passed.
+ * @property clientConfig - Optional configuration to pass during client initialization, e.g. AWS region.
+ * @property awsSdkV3Client - This property should never be passed.
  */
 interface SecretsProviderOptionsWithClientConfig {
   /**
-   * Optional configuration to pass during client initialization, e.g. AWS region. It accepts the same configuration object as the AWS SDK v3 client (`SecretsManagerClient`).
+   * Optional configuration to pass during client initialization, e.g. AWS region. Accepts the same configuration object as the AWS SDK v3 client ({@link SecretsManagerClientConfig | `SecretsManagerClientConfig`}).
    */
   clientConfig?: SecretsManagerClientConfig;
   awsSdkV3Client?: never;
 }
 
 /**
- * Interface for SecretsProviderOptions with awsSdkV3Client property.
+ * Interface for {@link SecretsProviderOptions | SecretsProviderOptions} with `awsSdkV3Client` property.
  *
- *  @interface
- *  @extends SecretsProviderOptionsWithClientConfig
- *  @property {SecretsManagerClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during SecretsProvider class instantiation
- *  @property {never} [clientConfig] - This property should never be passed.
+ * @property awsSdkV3Client - Optional AWS SDK v3 client to pass during {@link SecretsProvider | `SecretsProvider`} class instantiation
+ * @property clientConfig - This property should never be passed.
  */
 interface SecretsProviderOptionsWithClientInstance {
   /**
-   * Optional AWS SDK v3 client instance (`SecretsManagerClient`) to use for Secrets Manager operations. If not provided, we will create a new instance of `SecretsManagerClient`.
+   * Optional AWS SDK v3 client instance ({@link SecretsManagerClient | `SecretsManagerClient`}) to use for Secrets Manager operations. If not provided, we will create a new instance of the client.
    */
   awsSdkV3Client?: SecretsManagerClient;
   clientConfig?: never;
@@ -40,9 +38,8 @@ interface SecretsProviderOptionsWithClientInstance {
 /**
  * Options for the SecretsProvider class constructor.
  *
- * @type SecretsProviderOptions
- * @property {SecretsManagerClientConfig} [clientConfig] - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with awsSdkV3Client.
- * @property {SecretsManagerClient} [awsSdkV3Client] - Optional AWS SDK v3 client to pass during SecretsProvider class instantiation. Mutually exclusive with clientConfig.
+ * @property clientConfig - Optional configuration to pass during client initialization, e.g. AWS region. Mutually exclusive with `awsSdkV3Client`.
+ * @property awsSdkV3Client - Optional AWS SDK v3 client to pass during {@link SecretsProvider | `SecretsProvider`} class instantiation. Mutually exclusive with `clientConfig`.
  */
 type SecretsProviderOptions =
   | SecretsProviderOptionsWithClientConfig
@@ -51,18 +48,19 @@ type SecretsProviderOptions =
 /**
  * Options to configure the retrieval of a secret.
  *
- * @interface SecretsGetOptionsBase
- * @extends {GetOptionsInterface}
- * @property {number} maxAge - Maximum age of the value in the cache, in seconds.
- * @property {boolean} forceFetch - Force fetch the value from the parameter store, ignoring the cache.
- * @property {GetSecretValueCommandInput} sdkOptions - Options to pass to the underlying SDK.
- * @property {TransformOptions} transform - Transform to be applied, can be 'json' or 'binary'.
+ * @property maxAge - Maximum age of the value in the cache, in seconds.
+ * @property forceFetch - Force fetch the value from the parameter store, ignoring the cache.
+ * @property sdkOptions - Options to pass to the underlying SDK, supports all options from {@link GetSecretValueCommandInput | `GetSecretValueCommandInput`} except `SecretId`.
+ * @property transform - Transform to be applied, can be 'json' or 'binary'.
  */
 interface SecretsGetOptionsBase extends GetOptionsInterface {
   /**
-   * Additional options to pass to the AWS SDK v3 client. Supports all options from `GetSecretValueCommandInput` except `SecretId`.
+   * Additional options to pass to the AWS SDK v3 client. Supports all options from {@link GetSecretValueCommandInput | `GetSecretValueCommandInput`} except `SecretId`.
    */
   sdkOptions?: Omit<Partial<GetSecretValueCommandInput>, 'SecretId'>;
+  /**
+   * Transform to be applied, can be `json` or `binary`.
+   */
   transform?: Exclude<TransformOptions, 'auto'>;
 }
 
@@ -85,7 +83,7 @@ type SecretsGetOptions =
   | undefined;
 
 /**
- * Generic output type for the SecretsProvider get method.
+ * Generic output type for the {@link SecretsProvider.get | `SecretsProvider.get()`} method.
  */
 type SecretsGetOutput<
   ExplicitUserProvidedType = undefined,

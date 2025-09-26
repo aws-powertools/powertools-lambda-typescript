@@ -31,13 +31,11 @@ class HashiCorpVaultProvider extends BaseProvider {
   /**
    * Retrieve a secret from HashiCorp Vault.
    *
-   * You can customize the retrieval of the secret by passing options to the function:
-   * * `maxAge` - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
-   * * `forceFetch` - Whether to always fetch a new value from the store regardless if already available in cache
-   * * `sdkOptions` - Extra options to pass to the HashiCorp Vault SDK, e.g. `mount` or `version`
-   *
    * @param name - The name of the secret
    * @param options - Options to customize the retrieval of the secret
+   * @param options.maxAge - The maximum age of the value in cache before fetching a new one (in seconds) (default: 5)
+   * @param options.forceFetch - Whether to always fetch a new value from the store regardless if already available in cache
+   * @param options.sdkOptions - Extra options to pass to the HashiCorp Vault SDK, e.g. `mount` or `version`
    */
   public async get<T extends Record<string, unknown>>(
     name: string,

@@ -263,7 +263,7 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
 
   describe('DynamoDBProvider usage', () => {
     // Test 1 - get a single parameter with default options (keyAttr: 'id', valueAttr: 'value')
-    it('should retrieve a single parameter', async () => {
+    it('retrieves a single parameter', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
 
@@ -274,7 +274,7 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
     });
 
     // Test 2 - get multiple parameters with default options (keyAttr: 'id', sortAttr: 'sk', valueAttr: 'value')
-    it('should retrieve multiple parameters', async () => {
+    it('retrieves multiple parameters', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
 
@@ -285,7 +285,7 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
     });
 
     // Test 3 - get a single parameter with custom options (keyAttr: 'key', valueAttr: 'val')
-    it('should retrieve a single parameter', async () => {
+    it('retrieves a single parameter', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
 
@@ -296,7 +296,7 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
     });
 
     // Test 4 - get multiple parameters with custom options (keyAttr: 'key', sortAttr: 'sort', valueAttr: 'val')
-    it('should retrieve multiple parameters', async () => {
+    it('retrieves multiple parameters', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
 
@@ -307,7 +307,7 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
     });
 
     // Test 5 - get a single parameter with json transform
-    it('should retrieve a single parameter with json transform', async () => {
+    it('retrieves a single parameter with json transform', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
 
@@ -318,7 +318,7 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
     });
 
     // Test 6 - get a single parameter with binary transform
-    it('should retrieve a single parameter with binary transform', async () => {
+    it('retrieves a single parameter with binary transform', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[5]);
 
@@ -329,7 +329,7 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
     });
 
     // Test 7 - get multiple parameters with auto transforms (json and binary)
-    it('should retrieve multiple parameters with auto transforms', async () => {
+    it('retrieves multiple parameters with auto transforms', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[6]);
 
@@ -343,7 +343,7 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
     });
 
     // Test 8 - Get a parameter twice and check that the value is cached.
-    it('should retrieve multiple parameters with auto transforms', async () => {
+    it('retrieves multiple parameters with auto transforms', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[7]);
 
@@ -354,7 +354,7 @@ describe('Parameters E2E tests, dynamoDB provider', () => {
     });
 
     // Test 9 - Get a cached parameter and force retrieval.
-    it('should retrieve multiple parameters with auto transforms', async () => {
+    it('retrieves multiple parameters with auto transforms', () => {
       const logs = invocationLogs.getFunctionLogs();
       const testLog = TestInvocationLogs.parseFunctionLog(logs[8]);
 

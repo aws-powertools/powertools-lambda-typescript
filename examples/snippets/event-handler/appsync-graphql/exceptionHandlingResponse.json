@@ -4,9 +4,7 @@
   },
   "errors": [
     {
-      "path": [
-        "createSomething"
-      ],
+      "path": ["createSomething"],
       "data": null,
       "errorType": "AssertionError",
       "errorInfo": null,

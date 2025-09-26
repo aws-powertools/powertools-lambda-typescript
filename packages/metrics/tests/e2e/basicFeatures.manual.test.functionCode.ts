@@ -25,14 +25,11 @@ const singleMetricValue = process.env.EXPECTED_SINGLE_METRIC_VALUE ?? '2';
 
 const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });
 
-export const handler = async (
-  _event: unknown,
-  _context: Context
-): Promise<void> => {
+export const handler = (_event: unknown, _context: Context) => {
   metrics.captureColdStartMetric();
   metrics.throwOnEmptyMetrics();
   metrics.setDefaultDimensions(JSON.parse(defaultDimensions));
-  metrics.addMetric(metricName, metricUnit, Number.parseInt(metricValue));
+  metrics.addMetric(metricName, metricUnit, Number.parseInt(metricValue, 10));
   metrics.addDimension(
     Object.entries(JSON.parse(extraDimension))[0][0],
     Object.entries(JSON.parse(extraDimension))[0][1] as string
@@ -46,7 +43,7 @@ export const handler = async (
   metricWithItsOwnDimensions.addMetric(
     singleMetricName,
     singleMetricUnit,
-    Number.parseInt(singleMetricValue)
+    Number.parseInt(singleMetricValue, 10)
   );
 
   metrics.publishStoredMetrics();

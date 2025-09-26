@@ -383,18 +383,18 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       if (error.name === 'IdempotencyItemAlreadyExistsError') {
         let idempotencyRecord = (error as IdempotencyItemAlreadyExistsError)
           .existingRecord;
-        if (idempotencyRecord !== undefined) {
+        if (idempotencyRecord === undefined) {
+          // If the error doesn't include the existing record, we need to fetch
+          // it from the persistence layer. In doing so, we also call the processExistingRecord
+          // method to validate the record and cache it in memory.
+          idempotencyRecord = await this.#persistenceStore.getRecord(
+            this.#functionPayloadToBeHashed
+          );
+        } else {
           // If the error includes the existing record, we can use it to validate
           // the record being processed and cache it in memory.
           idempotencyRecord = this.#persistenceStore.processExistingRecord(
             idempotencyRecord,
-            this.#functionPayloadToBeHashed
-          );
-          // If the error doesn't include the existing record, we need to fetch
-          // it from the persistence layer. In doing so, we also call the processExistingRecord
-          // method to validate the record and cache it in memory.
-        } else {
-          idempotencyRecord = await this.#persistenceStore.getRecord(
             this.#functionPayloadToBeHashed
           );
         }

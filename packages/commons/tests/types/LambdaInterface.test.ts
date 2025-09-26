@@ -21,11 +21,12 @@ describe('Type: LambdaInterface', () => {
     expectTypeOf(lambda.handler).toBeFunction();
   });
 
-  it('works with an async handler', async () => {
+  it('works with an async handler', () => {
     // Prepare
     class Lambda implements LambdaInterface {
       public async handler(_event: unknown, context: Context) {
         context.getRemainingTimeInMillis();
+        await new Promise((r) => setTimeout(r, 1));
         return 'Hello World';
       }
     }

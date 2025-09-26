@@ -19,7 +19,7 @@ export const createTestEvent = (
   requestContext: {
     httpMethod,
     path,
-    domainName: 'localhost',
+    domainName: 'api.example.com',
   } as APIGatewayProxyEvent['requestContext'],
   resource: '',
 });
@@ -40,7 +40,7 @@ export const createThrowingMiddleware = (
   executionOrder: string[],
   errorMessage: string
 ): Middleware => {
-  return async () => {
+  return () => {
     executionOrder.push(name);
     throw new Error(errorMessage);
   };
@@ -51,7 +51,7 @@ export const createReturningMiddleware = (
   executionOrder: string[],
   response: HandlerResponse
 ): Middleware => {
-  return async () => {
+  return () => {
     executionOrder.push(name);
     return response;
   };
@@ -61,7 +61,7 @@ export const createNoNextMiddleware = (
   name: string,
   executionOrder: string[]
 ): Middleware => {
-  return async () => {
+  return () => {
     executionOrder.push(name);
     // Intentionally doesn't call next()
   };

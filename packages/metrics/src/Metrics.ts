@@ -49,10 +49,10 @@ import type {
  * These metrics can be visualized through Amazon CloudWatch Console.
  *
  * **Key features**
- * * Aggregating up to 100 metrics using a single CloudWatch EMF object (large JSON blob).
- * * Validating your metrics against common metric definitions mistakes (for example, metric unit, values, max dimensions, max metrics).
- * * Metrics are created asynchronously by the CloudWatch service. You do not need any custom stacks, and there is no impact to Lambda function latency.
- * * Creating a one-off metric with different dimensions.
+ * - Aggregating up to 100 metrics using a single CloudWatch EMF object (large JSON blob).
+ * - Validating your metrics against common metric definitions mistakes (for example, metric unit, values, max dimensions, max metrics).
+ * - Metrics are created asynchronously by the CloudWatch service. You do not need any custom stacks, and there is no impact to Lambda function latency.
+ * - Creating a one-off metric with different dimensions.
  *
  * After initializing the Metrics class, you can add metrics using the {@link Metrics.addMetric | `addMetric()`} method.
  * The metrics are stored in a buffer and are flushed when calling {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`}.
@@ -1164,7 +1164,7 @@ class Metrics extends Utility implements MetricsInterface {
      * If this point is reached, it indicates timestamp was neither a valid number nor Date
      * Returning zero represents the initial date of epoch time,
      * which will be skipped by Amazon CloudWatch.
-     **/
+     */
     return 0;
   }
 

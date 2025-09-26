@@ -22,6 +22,7 @@
     "build": "npm run build:esm & npm run build:cjs",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
+    "lint:ci": "biome ci .",
     "prepack": "node ../../.github/scripts/release_patch_package_json.js .",
     "proto:gen": "npx pbjs -t static-module -w es6 -o $(pwd)/tests/protos/product.es6.generated.js $(pwd)/tests/protos/product.proto && npx pbts -o $(pwd)/tests/protos/product.es6.generated.d.ts $(pwd)/tests/protos/product.es6.generated.js && npx pbjs -t static-module -w commonjs -o $(pwd)/tests/protos/product.cjs.generated.js $(pwd)/tests/protos/product.proto && npx pbts -o $(pwd)/tests/protos/product.cjs.generated.d.ts $(pwd)/tests/protos/product.cjs.generated.js"
   },

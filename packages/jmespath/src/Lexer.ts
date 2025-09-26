@@ -55,7 +55,7 @@ class Lexer {
         const buff = this.#consumeNumber();
         yield {
           type: 'number',
-          value: Number.parseInt(buff),
+          value: Number.parseInt(buff, 10),
           start: start,
           end: start + buff.length,
         };
@@ -155,7 +155,7 @@ class Lexer {
     if (buff.length > 1) {
       return {
         type: 'number',
-        value: Number.parseInt(buff),
+        value: Number.parseInt(buff, 10),
         start: start,
         end: start + buff.length,
       };

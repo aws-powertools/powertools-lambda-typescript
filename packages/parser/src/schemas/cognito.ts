@@ -132,7 +132,7 @@ const PostConfirmationTriggerSchema = CognitoTriggerBaseSchema.extend({
  * }
  * ```
  *
- *  * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-authentication.html | Amazon Cognito Developer Guide}
+ *  @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-authentication.html | Amazon Cognito Developer Guide}
  */
 const PreAuthenticationTriggerSchema = CognitoTriggerBaseSchema.extend({
   triggerSource: z.literal('PreAuthentication_Authentication'),

@@ -473,7 +473,7 @@ describe('Path Utilities', () => {
       const composed = composeMiddleware(middleware);
       await composed({
         reqCtx: mockOptions,
-        next: async () => {
+        next: () => {
           executionOrder.push('handler');
         },
       });
@@ -492,7 +492,7 @@ describe('Path Utilities', () => {
         async ({ next }) => {
           await next();
         },
-        async () => {
+        () => {
           return { shortCircuit: true };
         },
       ];
@@ -500,7 +500,7 @@ describe('Path Utilities', () => {
       const composed = composeMiddleware(middleware);
       const result = await composed({
         reqCtx: mockOptions,
-        next: async () => {
+        next: () => {
           return { handler: true };
         },
       });
@@ -518,7 +518,7 @@ describe('Path Utilities', () => {
       const composed = composeMiddleware(middleware);
       const result = await composed({
         reqCtx: mockOptions,
-        next: async () => {
+        next: () => {
           return { handler: true };
         },
       });
@@ -545,7 +545,7 @@ describe('Path Utilities', () => {
       const composed = composeMiddleware([]);
       const result = await composed({
         reqCtx: mockOptions,
-        next: async () => {
+        next: () => {
           return { handler: true };
         },
       });
@@ -563,7 +563,7 @@ describe('Path Utilities', () => {
       const composed = composeMiddleware(middleware);
       const result = await composed({
         reqCtx: mockOptions,
-        next: async () => {
+        next: () => {
           return undefined;
         },
       });

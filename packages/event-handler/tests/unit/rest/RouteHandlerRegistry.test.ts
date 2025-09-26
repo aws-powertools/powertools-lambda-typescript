@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { HttpVerbs } from '../../../src/rest/index.js';
+import {
+  HttpVerbs,
+  ParameterValidationError,
+} from '../../../src/rest/index.js';
 import { Route } from '../../../src/rest/Route.js';
 import { RouteHandlerRegistry } from '../../../src/rest/RouteHandlerRegistry.js';
 import type { Path } from '../../../src/types/rest.js';
@@ -570,20 +573,20 @@ describe('Class: RouteHandlerRegistry', () => {
     it('throws ParameterValidationError with multiple error messages for multiple invalid parameters', () => {
       // Prepare
       const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = async () => ({ message: 'test' });
+      const handler = () => ({ message: 'test' });
       registry.register(
         new Route(HttpVerbs.GET, '/api/:version/:resource/:id', handler)
       );
 
       // Act & Assess
-      expect(async () => {
+      expect(() => {
         registry.resolve(HttpVerbs.GET, '/api/%20/users/%20');
-      }).rejects.toMatchObject({
-        issues: [
+      }).toThrow(
+        new ParameterValidationError([
           "Parameter 'version' cannot be empty",
           "Parameter 'id' cannot be empty",
-        ],
-      });
+        ])
+      );
     });
   });
 });

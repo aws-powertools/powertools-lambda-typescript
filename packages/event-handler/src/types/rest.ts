@@ -24,12 +24,13 @@ type ErrorHandler<T extends Error = Error> = (
 ) => Promise<HandlerResponse>;
 
 interface ErrorConstructor<T extends Error = Error> {
+  // biome-ignore lint/suspicious/noExplicitAny: this is a generic type that is intentionally open
   new (...args: any[]): T;
   prototype: T;
 }
 
 /**
- * Options for the {@link Router} class
+ * Options for the {@link Router | `Router``} class
  */
 type RestRouterOptions = {
   /**
@@ -57,7 +58,7 @@ type HandlerResponse = Response | JSONObject;
 
 type RouteHandler<TReturn = HandlerResponse> = (
   reqCtx: RequestContext
-) => Promise<TReturn>;
+) => Promise<TReturn> | TReturn;
 
 type HttpMethod = keyof typeof HttpVerbs;
 
@@ -78,12 +79,14 @@ type RestRouteOptions = {
   middleware?: Middleware[];
 };
 
+// biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
 type NextFunction = () => Promise<HandlerResponse | void>;
 
 type Middleware = (args: {
   reqCtx: RequestContext;
   next: NextFunction;
-}) => Promise<void | HandlerResponse>;
+  // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
+}) => Promise<HandlerResponse | void>;
 
 type RouteRegistryOptions = {
   /**
@@ -176,4 +179,5 @@ export type {
   RouteRegistryOptions,
   ValidationResult,
   CompressionOptions,
+  NextFunction,
 };

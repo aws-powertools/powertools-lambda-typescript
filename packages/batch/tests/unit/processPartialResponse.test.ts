@@ -36,10 +36,10 @@ describe('Function: processPartialResponse()', () => {
     context,
   };
 
-  const handlerWithSqsEvent = async (
+  const handlerWithSqsEvent = (
     event: SQSEvent,
     options: BatchProcessingOptions
-  ) => {
+  ): Promise<PartialItemFailureResponse> => {
     const processor = new BatchProcessor(EventType.SQS);
 
     const handler = async (
@@ -51,10 +51,10 @@ describe('Function: processPartialResponse()', () => {
     return handler(event, context);
   };
 
-  const handlerWithKinesisEvent = async (
+  const handlerWithKinesisEvent = (
     event: KinesisStreamEvent,
     options: BatchProcessingOptions
-  ) => {
+  ): Promise<PartialItemFailureResponse> => {
     const processor = new BatchProcessor(EventType.KinesisDataStreams);
 
     const handler = async (
@@ -71,10 +71,10 @@ describe('Function: processPartialResponse()', () => {
     return handler(event, context);
   };
 
-  const handlerWithDynamoDBEvent = async (
+  const handlerWithDynamoDBEvent = (
     event: DynamoDBStreamEvent,
     options: BatchProcessingOptions
-  ) => {
+  ): Promise<PartialItemFailureResponse> => {
     const processor = new BatchProcessor(EventType.DynamoDBStreams);
 
     const handler = async (

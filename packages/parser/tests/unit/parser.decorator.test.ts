@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
@@ -30,6 +31,7 @@ describe('Decorator: parser', () => {
   class TestClass implements LambdaInterface {
     @parser({ schema: extendedSchema })
     public async handler(event: event, _context: Context): Promise<event> {
+      await setTimeout(1); // simulate some processing time
       return event;
     }
 
@@ -38,6 +40,7 @@ describe('Decorator: parser', () => {
       event: z.infer<typeof schema>,
       _context: Context
     ): Promise<unknown> {
+      await setTimeout(1); // simulate some processing time
       return this.anotherMethod(event);
     }
 
@@ -49,6 +52,7 @@ describe('Decorator: parser', () => {
       event: ParsedResult<unknown, event>,
       _context: Context
     ): Promise<ParsedResult<unknown, event>> {
+      await setTimeout(1); // simulate some processing time
       return event;
     }
 
@@ -61,10 +65,11 @@ describe('Decorator: parser', () => {
       event: ParsedResult<event, event>,
       _context: Context
     ): Promise<ParsedResult> {
+      await setTimeout(1); // simulate some processing time
       return event;
     }
 
-    private async anotherMethod(event: unknown): Promise<unknown> {
+    private anotherMethod(event: unknown): unknown {
       return event;
     }
   }

@@ -51,7 +51,7 @@ const isOptionsWithDataIndexArgument = (
  *
  * By default, the entire first argument is hashed to create the idempotency key. You can customize this behavior:
  * - Use {@link IdempotencyConfig.eventKeyJmesPath | `eventKeyJmesPath`} to hash only a subset of the payload
- * - Use {@link ItempotentFunctionOptions.dataIndexArgument | `dataIndexArgument`} to hash a different function argument
+ * - Use {@link ItempotentFunctionOptions | `ItempotentFunctionOptions`}`.dataIndexArgument` to hash a different function argument
  *
  *
  * **Using a subset of the payload**

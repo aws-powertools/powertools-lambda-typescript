@@ -29,18 +29,16 @@ const createBody = (body: string | null, isBase64Encoded: boolean) => {
  * @param event - The API Gateway proxy event
  * @returns A Web API Request object
  */
-export const proxyEventToWebRequest = (
-  event: APIGatewayProxyEvent
-): Request => {
+const proxyEventToWebRequest = (event: APIGatewayProxyEvent): Request => {
   const { httpMethod, path } = event;
   const { domainName } = event.requestContext;
 
   const headers = new Headers();
-  for (const [name, value] of Object.entries(event.headers ?? {})) {
-    if (value != null) headers.set(name, value);
+  for (const [name, value] of Object.entries(event.headers)) {
+    if (value !== undefined) headers.set(name, value);
   }
 
-  for (const [name, values] of Object.entries(event.multiValueHeaders ?? {})) {
+  for (const [name, values] of Object.entries(event.multiValueHeaders)) {
     for (const value of values ?? []) {
       const headerValue = headers.get(name);
       if (!headerValue?.includes(value)) {
@@ -79,7 +77,7 @@ export const proxyEventToWebRequest = (
  * @param response - The Web API Response object
  * @returns An API Gateway proxy result
  */
-export const webResponseToProxyResult = async (
+const webResponseToProxyResult = async (
   response: Response
 ): Promise<APIGatewayProxyResult> => {
   const headers: Record<string, string> = {};
@@ -136,10 +134,9 @@ export const webResponseToProxyResult = async (
  * Handles APIGatewayProxyResult, Response objects, and plain objects.
  *
  * @param response - The handler response (APIGatewayProxyResult, Response, or plain object)
- * @param headers - Optional headers to be included in the response
- * @returns A Web API Response object
+ * @param resHeaders - Optional headers to be included in the response
  */
-export const handlerResultToWebResponse = (
+const handlerResultToWebResponse = (
   response: HandlerResponse,
   resHeaders?: Headers
 ): Response => {
@@ -188,7 +185,7 @@ export const handlerResultToWebResponse = (
  * @param statusCode - The response status code to return
  * @returns An API Gateway proxy result
  */
-export const handlerResultToProxyResult = async (
+const handlerResultToProxyResult = async (
   response: HandlerResponse,
   statusCode: HttpStatusCode = HttpStatusCodes.OK
 ): Promise<APIGatewayProxyResult> => {
@@ -204,4 +201,11 @@ export const handlerResultToProxyResult = async (
     headers: { 'content-type': 'application/json' },
     isBase64Encoded: false,
   };
+};
+
+export {
+  proxyEventToWebRequest,
+  webResponseToProxyResult,
+  handlerResultToWebResponse,
+  handlerResultToProxyResult,
 };

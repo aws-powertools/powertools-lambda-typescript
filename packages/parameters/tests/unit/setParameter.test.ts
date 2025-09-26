@@ -49,7 +49,7 @@ describe('Function: setParameter', () => {
     expect(DEFAULT_PROVIDERS.ssm).toBe(provider);
   });
 
-  it('rethrows the error thrown by the underlying sdk client', async () => {
+  it('rethrows the error thrown by the underlying sdk client', () => {
     // Prepare
     const options: SSMSetOptions = { value: 'my-value' };
     client.on(PutParameterCommand).rejects(new Error('Could not send command'));

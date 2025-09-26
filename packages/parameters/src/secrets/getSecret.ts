@@ -6,21 +6,12 @@ import type {
 import { SecretsProvider } from './SecretsProvider.js';
 
 /**
- * ## Intro
- * The Parameters utility provides a SecretsProvider that allows to retrieve secrets from AWS Secrets Manager.
- *
- * ## Getting started
+ * The Parameters utility provides a `SecretsProvider` that allows to retrieve secrets from AWS Secrets Manager.
  *
  * This utility supports AWS SDK v3 for JavaScript only. This allows the utility to be modular, and you to install only
  * the SDK packages you need and keep your bundle size small.
  *
- * To use the provider, you must install the Parameters utility and the AWS SDK v3 for JavaScript for Secrets Manager:
- *
- * ```sh
- * npm install @aws-lambda-powertools/parameters @aws-sdk/client-secrets-manager
- * ```
- *
- * ## Basic usage
+ * **Basic usage**
  *
  * @example
  * ```typescript
@@ -32,9 +23,7 @@ import { SecretsProvider } from './SecretsProvider.js';
  * };
  * ```
  *
- * ## Advanced usage
- *
- * ### Caching
+ * **Caching**
  *
  * By default, the provider will cache parameters retrieved in-memory for 5 seconds.
  * You can adjust how long values should be kept in cache by using the `maxAge` parameter.
@@ -61,7 +50,7 @@ import { SecretsProvider } from './SecretsProvider.js';
  * };
  * ```
  *
- * ### Transformations
+ * **Transformations**
  *
  * For parameters stored as JSON or base64-encoded strings, you can use the transform argument set to `json` or `binary` for deserialization.
  *
@@ -75,7 +64,7 @@ import { SecretsProvider } from './SecretsProvider.js';
  * };
  * ```
  *
- * ### Extra SDK options
+ * **Extra SDK options**
  *
  * When retrieving a secret, you can pass extra options to the AWS SDK v3 for JavaScript client by using the `sdkOptions` parameter.
  *
@@ -95,25 +84,27 @@ import { SecretsProvider } from './SecretsProvider.js';
  *
  * This object accepts the same options as the [AWS SDK v3 for JavaScript Secrets Manager client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-secrets-manager/interfaces/getsecretvaluecommandinput.html).
  *
- * ### Built-in provider class
+ * **Built-in provider class**
  *
  * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link SecretsProvider} class.
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
- *
- *
- * @param {string} name - The name of the secret to retrieve
- * @param {SecretsGetOptions} options - Options to configure the provider
  * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+ *
+ * @param name - The name of the secret to retrieve
+ * @param options - Optional options to configure the provider
+ * @param options.maxAge - Optional maximum age of the value in the cache, in seconds (default: `5`)
+ * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
+ * @param options.transform - Optional transform to be applied, can be `json` or `binary`
+ * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link GetSecretValueCommandInput | `GetSecretValueCommandInput`} except `SecretId`
  */
-const getSecret = async <
+const getSecret = <
   ExplicitUserProvidedType = undefined,
   InferredFromOptionsType extends
     | SecretsGetOptions
     | undefined = SecretsGetOptions,
 >(
   name: string,
-  options?: InferredFromOptionsType & SecretsGetOptions
+  options?: NonNullable<InferredFromOptionsType & SecretsGetOptions>
 ): Promise<
   | SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
   | undefined

@@ -85,17 +85,20 @@ jobs:
       run:
         working-directory: examples/${{ matrix.example }}
     steps:
-      - name: Checkout code
+      - &checkout_code
+        name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
-      - name: Setup NodeJS
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - &setup_node
+        name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v5.0.0
         with:
           node-version: 22
           cache: "npm"
-      - name: Setup dependencies
+      - &setup_dependencies
+        name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
       - name: Run linting
-        run: npm run lint
+        run: npm run lint:ci
       - name: Run tests
         run: npm t
   check-layer-publisher:
@@ -103,17 +106,11 @@ jobs:
     env:
       NODE_ENV: dev
     steps:
-      - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
-      - name: Setup NodeJS
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-        with:
-          node-version: 22
-          cache: "npm"
-      - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+      - *checkout_code
+      - *setup_node
+      - *setup_dependencies
       - name: Run linting
-        run: npm run lint -w layers
+        run: npm run lint:ci -w layers
       - name: Run tests
         run: npm run test:unit -w layers
   check-docs-snippets:
@@ -121,30 +118,18 @@ jobs:
     env:
       NODE_ENV: dev
     steps:
-      - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
-      - name: Setup NodeJS
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-        with:
-          node-version: 22
-          cache: "npm"
-      - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+      - *checkout_code
+      - *setup_node
+      - *setup_dependencies
       - name: Run linting
-        run: npm run lint -w examples/snippets
+        run: npm run lint:ci -w examples/snippets
   check-docs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
     steps:
-      - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
-      - name: Setup NodeJS
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-        with:
-          node-version: 22
-          cache: "npm"
-      - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+      - *checkout_code
+      - *setup_node
+      - *setup_dependencies
       - name: Run linting
         run: npm run lint:markdown

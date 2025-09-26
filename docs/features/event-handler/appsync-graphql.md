@@ -176,7 +176,7 @@ You can use an AppSync JavaScript resolver or a VTL response mapping template to
 
 === "Exception Handling response"
 
-    ```json hl_lines="11 20"
+    ```json hl_lines="9 18"
     --8<-- "examples/snippets/event-handler/appsync-graphql/exceptionHandlingResponse.json"
     ```
 

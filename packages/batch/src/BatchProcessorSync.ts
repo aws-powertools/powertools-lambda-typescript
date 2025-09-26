@@ -88,7 +88,7 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
    *
    * @param _record The record to be processed
    */
-  public async processRecord(
+  public processRecord(
     _record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
     throw new BatchProcessingError('Not implemented. Use process() instead.');

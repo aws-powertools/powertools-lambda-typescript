@@ -30,7 +30,7 @@ interface ErrorConstructor<T extends Error = Error> {
 }
 
 /**
- * Options for the {@link Router} class
+ * Options for the {@link Router | `Router``} class
  */
 type RestRouterOptions = {
   /**

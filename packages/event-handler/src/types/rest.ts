@@ -54,7 +54,7 @@ interface CompiledRoute {
 
 type DynamicRoute = Route & CompiledRoute;
 
-type HandlerResponse = Response | JSONObject | undefined;
+type HandlerResponse = Response | JSONObject;
 
 type RouteHandler<TReturn = HandlerResponse> = (
   reqCtx: RequestContext
@@ -79,16 +79,13 @@ type RestRouteOptions = {
   middleware?: Middleware[];
 };
 
-type NextFunction = () =>
-  | Promise<HandlerResponse>
-  | HandlerResponse
-  | Promise<void>
-  | void;
+type NextFunction = () => Promise<HandlerResponse | void>; // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
 
 type Middleware = (args: {
   reqCtx: RequestContext;
   next: NextFunction;
-}) => NextFunction;
+  // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
+}) => Promise<HandlerResponse | void>;
 
 type RouteRegistryOptions = {
   /**

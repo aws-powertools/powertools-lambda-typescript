@@ -205,6 +205,7 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
  */
 export const resolvePrefixedPath = (path: Path, prefix?: Path): Path => {
   if (prefix) {
+    if (!path.startsWith('/')) return `${prefix}/${path}`;
     return path === '/' ? prefix : `${prefix}${path}`;
   }
   return path;

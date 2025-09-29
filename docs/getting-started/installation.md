@@ -29,7 +29,7 @@ Some features use additional dependencies like the AWS SDK for JavaScript v3, wh
 | **[Parameters (SSM)](../features/parameters.md)**                    | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-ssm`**{.copyMe}                             |                     |
 | **[Parameters (Secrets Manager)](../features/parameters.md)**        | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-secrets-manager`**{.copyMe}                 |                     |
 | **[Parameters (AppConfig)](../features/parameters.md)**              | **`npm i @aws-lambda-powertools/parameters @aws-sdk/client-appconfigdata`**{.copyMe}                   |                     |
-| **[Parser](../features/parser.md)**                                  | **`npm i @aws-lambda-powertools/parser zod@~3`**{.copyMe}                                              |                     |
+| **[Parser](../features/parser.md)**                                  | **`npm i @aws-lambda-powertools/parser zod`**{.copyMe}                                              |                     |
 | **[Validation](../features/validation.md)**                          | **`npm i @aws-lambda-powertools/validation`**{.copyMe}                                                 | `ajv`               |
 | **[Kafka (Protocol Buffers)](../features/kafka.md)**                 | **`npm i @aws-lambda-powertools/kafka protobufjs`**{.copyMe}                                           |                     |
 | **[Kafka (Avro)](../features/kafka.md)**                             | **`npm i @aws-lambda-powertools/kafka avro-js`**{.copyMe}                                              |                     |

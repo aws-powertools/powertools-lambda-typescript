@@ -7,9 +7,27 @@ import {
   MethodNotAllowedError,
   type NotFoundError,
   Router,
+  UnauthorizedError,
 } from '../../../../src/rest/index.js';
 import type { RequestContext } from '../../../../src/types/rest.js';
-import { createTestEvent, createTrackingMiddleware } from '../helpers.js';
+import {
+  createTestEvent,
+  createTrackingMiddleware,
+  MockResponseStream,
+  parseStreamOutput,
+} from '../helpers.js';
+
+const createHandler = (app: Router) => (event: unknown, _context: Context) =>
+  app.resolve(event, _context);
+
+const createHandlerWithScope =
+  (app: Router, scope: unknown) => (event: unknown, _context: Context) =>
+    app.resolve(event, _context, { scope });
+
+const createStreamHandler =
+  (app: Router, scope: unknown) =>
+  (event: unknown, _context: Context, responseStream: MockResponseStream) =>
+    app.resolveStream(event, _context, { scope, responseStream });
 
 describe('Class: Router - Decorators', () => {
   describe('decorators', () => {
@@ -51,9 +69,7 @@ describe('Class: Router - Decorators', () => {
         return { result: 'options-test' };
       }
 
-      public handler(event: unknown, _context: Context) {
-        return app.resolve(event, _context);
-      }
+      public handler = createHandler(app);
     }
 
     it.each([
@@ -101,9 +117,7 @@ describe('Class: Router - Decorators', () => {
           return { result: `${this.scope}: decorator-with-middleware` };
         }
 
-        public handler(event: unknown, _context: Context) {
-          return app.resolve(event, _context, { scope: this });
-        }
+        public handler = createHandlerWithScope(app, this);
       }
 
       const lambda = new Lambda();
@@ -183,9 +197,7 @@ describe('Class: Router - Decorators', () => {
             return { result: 'options-decorator-middleware' };
           }
 
-          public handler(event: unknown, _context: Context) {
-            return app.resolve(event, _context);
-          }
+          public handler = createHandler(app);
         }
 
         const lambda = new Lambda();
@@ -231,9 +243,7 @@ describe('Class: Router - Decorators', () => {
           throw new BadRequestError('test error');
         }
 
-        public handler(event: unknown, _context: Context) {
-          return app.resolve(event, _context);
-        }
+        public handler = createHandler(app);
       }
 
       const lambda = new Lambda();
@@ -273,9 +283,7 @@ describe('Class: Router - Decorators', () => {
           };
         }
 
-        public handler(event: unknown, _context: Context) {
-          return app.resolve(event, _context, { scope: this });
-        }
+        public handler = createHandlerWithScope(app, this);
       }
 
       const lambda = new Lambda();
@@ -319,9 +327,7 @@ describe('Class: Router - Decorators', () => {
           throw new MethodNotAllowedError('POST not allowed');
         }
 
-        public handler(event: unknown, _context: Context) {
-          return app.resolve(event, _context);
-        }
+        public handler = createHandler(app);
       }
 
       const lambda = new Lambda();
@@ -366,9 +372,7 @@ describe('Class: Router - Decorators', () => {
           throw new BadRequestError('test error');
         }
 
-        public handler(event: unknown, _context: Context) {
-          return app.resolve(event, _context, { scope: this });
-        }
+        public handler = createHandlerWithScope(app, this);
       }
 
       const lambda = new Lambda();
@@ -407,9 +411,7 @@ describe('Class: Router - Decorators', () => {
           };
         }
 
-        public handler(event: unknown, _context: Context) {
-          return app.resolve(event, _context);
-        }
+        public handler = createHandler(app);
       }
 
       const lambda = new Lambda();
@@ -450,9 +452,7 @@ describe('Class: Router - Decorators', () => {
           throw new BadRequestError('test error');
         }
 
-        public handler(event: unknown, _context: Context) {
-          return app.resolve(event, _context);
-        }
+        public handler = createHandler(app);
       }
 
       const lambda = new Lambda();
@@ -481,9 +481,7 @@ describe('Class: Router - Decorators', () => {
           };
         }
 
-        public handler(event: unknown, _context: Context) {
-          return app.resolve(event, _context, { scope: this });
-        }
+        public handler = createHandlerWithScope(app, this);
       }
 
       const lambda = new Lambda();
@@ -500,6 +498,81 @@ describe('Class: Router - Decorators', () => {
         }),
         headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
+      });
+    });
+  });
+
+  describe('streaming with decorators', () => {
+    it('preserves scope when using resolveStream with decorators', async () => {
+      // Prepare
+      const app = new Router();
+
+      class Lambda {
+        public scope = 'streaming-scope';
+
+        @app.get('/test')
+        public getTest() {
+          return {
+            message: `${this.scope}: streaming success`,
+          };
+        }
+
+        public handler = createStreamHandler(app, this);
+      }
+
+      const lambda = new Lambda();
+      const responseStream = new MockResponseStream();
+      const handler = lambda.handler.bind(lambda);
+
+      // Act
+      await handler(createTestEvent('/test', 'GET'), context, responseStream);
+
+      // Assess
+      const { prelude, body } = parseStreamOutput(responseStream.chunks);
+      expect(prelude.statusCode).toBe(200);
+      expect(JSON.parse(body)).toEqual({
+        message: 'streaming-scope: streaming success',
+      });
+    });
+
+    it('preserves scope when handler throws error in streaming', async () => {
+      // Prepare
+      const app = new Router();
+
+      class Lambda {
+        public scope = 'error-scope';
+
+        @app.errorHandler(UnauthorizedError)
+        public handleUnauthorized(error: UnauthorizedError) {
+          return {
+            statusCode: HttpStatusCodes.UNAUTHORIZED,
+            error: 'Unauthorized',
+            message: `${this.scope}: ${error.message}`,
+          };
+        }
+
+        @app.get('/test')
+        public getTest() {
+          throw new UnauthorizedError('UnauthorizedError!');
+        }
+
+        public handler = createStreamHandler(app, this);
+      }
+
+      const lambda = new Lambda();
+      const responseStream = new MockResponseStream();
+      const handler = lambda.handler.bind(lambda);
+
+      // Act
+      await handler(createTestEvent('/test', 'GET'), context, responseStream);
+
+      // Assess
+      const { prelude, body } = parseStreamOutput(responseStream.chunks);
+      expect(prelude.statusCode).toBe(401);
+      expect(JSON.parse(body)).toEqual({
+        statusCode: HttpStatusCodes.UNAUTHORIZED,
+        error: 'Unauthorized',
+        message: 'error-scope: UnauthorizedError!',
       });
     });
   });

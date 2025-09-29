@@ -1,11 +1,16 @@
+import type { Readable } from 'node:stream';
 import type {
   GenericLogger,
   JSONObject,
 } from '@aws-lambda-powertools/commons/types';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
+import type { ResponseStream as LambdaResponseStream } from 'lambda-stream';
 import type { HttpStatusCodes, HttpVerbs } from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
-import type { Router } from '../rest/Router.js';
 import type { ResolveOptions } from './common.js';
 
 type RequestContext = {
@@ -54,7 +59,17 @@ interface CompiledRoute {
 
 type DynamicRoute = Route & CompiledRoute;
 
-type HandlerResponse = Response | JSONObject;
+type ExtendedAPIGatewayProxyResultBody = string | Readable | ReadableStream;
+
+type ExtendedAPIGatewayProxyResult = Omit<APIGatewayProxyResult, 'body'> & {
+  body: ExtendedAPIGatewayProxyResultBody;
+};
+
+type ResponseStream = LambdaResponseStream & {
+  _onBeforeFirstWrite?: (write: (data: Uint8Array | string) => void) => void;
+};
+
+type HandlerResponse = Response | JSONObject | ExtendedAPIGatewayProxyResult;
 
 type RouteHandler<TReturn = HandlerResponse> = (
   reqCtx: RequestContext
@@ -159,6 +174,8 @@ type CompressionOptions = {
 };
 
 export type {
+  ExtendedAPIGatewayProxyResult,
+  ExtendedAPIGatewayProxyResultBody,
   CompiledRoute,
   CorsOptions,
   DynamicRoute,
@@ -173,6 +190,7 @@ export type {
   Path,
   RequestContext,
   RestRouterOptions,
+  ResponseStream,
   RouteHandler,
   RestRouteOptions,
   RestRouteHandlerOptions,

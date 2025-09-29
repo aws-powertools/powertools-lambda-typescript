@@ -1,5 +1,6 @@
 import type { AppSyncEventsResolver } from '../appsync-events/AppSyncEventsResolver.js';
 import type { AppSyncGraphQLResolver } from '../appsync-graphql/AppSyncGraphQLResolver.js';
+import type { ResponseStream } from './rest.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: We intentionally use `any` here to represent any type of data and keep the logger is as flexible as possible.
 type Anything = any;
@@ -42,4 +43,9 @@ type ResolveOptions = {
   scope?: unknown;
 };
 
-export type { Anything, ResolveOptions };
+type ResolveStreamOptions = {
+  scope?: unknown;
+  responseStream: ResponseStream;
+};
+
+export type { Anything, ResolveOptions, ResolveStreamOptions };

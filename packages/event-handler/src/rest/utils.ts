@@ -1,4 +1,8 @@
-import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
+import {
+  isRecord,
+  isRegExp,
+  isString,
+} from '@aws-lambda-powertools/commons/typeutils';
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import type {
   CompiledRoute,
@@ -15,13 +19,21 @@ import {
   UNSAFE_CHARS,
 } from './constants.js';
 
+export function getPathString(path: Path): string {
+  return isString(path) ? path : path.source.replace(/\\\//g, '/');
+}
+
 export function compilePath(path: Path): CompiledRoute {
   const paramNames: string[] = [];
 
-  const regexPattern = path.replace(PARAM_PATTERN, (_match, paramName) => {
-    paramNames.push(paramName);
-    return `(?<${paramName}>[${SAFE_CHARS}${UNSAFE_CHARS}\\w]+)`;
-  });
+  const pathString = getPathString(path);
+  const regexPattern = pathString.replace(
+    PARAM_PATTERN,
+    (_match, paramName) => {
+      paramNames.push(paramName);
+      return `(?<${paramName}>[${SAFE_CHARS}${UNSAFE_CHARS}\\w]+)`;
+    }
+  );
 
   const finalPattern = `^${regexPattern}$`;
 
@@ -36,9 +48,10 @@ export function compilePath(path: Path): CompiledRoute {
 export function validatePathPattern(path: Path): ValidationResult {
   const issues: string[] = [];
 
-  const matches = [...path.matchAll(PARAM_PATTERN)];
-  if (path.includes(':')) {
-    const expectedParams = path.split(':').length;
+  const pathString = getPathString(path);
+  const matches = [...pathString.matchAll(PARAM_PATTERN)];
+  if (pathString.includes(':')) {
+    const expectedParams = pathString.split(':').length;
     if (matches.length !== expectedParams - 1) {
       issues.push('Malformed parameter syntax. Use :paramName format.');
     }
@@ -200,13 +213,22 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
 /**
  * Resolves a prefixed path by combining the provided path and prefix.
  *
+ * The function returns a RegExp if any of the path or prefix is a RegExp.
+ * Otherwise, it returns a `/${string}` type value.
+ *
  * @param path - The path to resolve
  * @param prefix - The prefix to prepend to the path
  */
 export const resolvePrefixedPath = (path: Path, prefix?: Path): Path => {
-  if (prefix) {
-    if (!path.startsWith('/')) return `${prefix}/${path}`;
-    return path === '/' ? prefix : `${prefix}${path}`;
+  if (!prefix) return path;
+  if (isRegExp(prefix)) {
+    if (isRegExp(path)) {
+      return new RegExp(`${getPathString(prefix)}/${getPathString(path)}`);
+    }
+    return new RegExp(`${getPathString(prefix)}${path}`);
   }
-  return path;
+  if (isRegExp(path)) {
+    return new RegExp(`${prefix}/${getPathString(path)}`);
+  }
+  return `${prefix}${path}`.replace(/\/$/, '') as Path;
 };

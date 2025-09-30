@@ -11,6 +11,7 @@ import { ParameterValidationError } from './errors.js';
 import { Route } from './Route.js';
 import {
   compilePath,
+  getPathString,
   resolvePrefixedPath,
   validatePathPattern,
 } from './utils.js';
@@ -45,8 +46,8 @@ class RouteHandlerRegistry {
     }
 
     // Routes with more path segments are more specific
-    const aSegments = a.path.split('/').length;
-    const bSegments = b.path.split('/').length;
+    const aSegments = getPathString(a.path).split('/').length;
+    const bSegments = getPathString(b.path).split('/').length;
 
     return bSegments - aSegments;
   }
@@ -104,7 +105,7 @@ class RouteHandlerRegistry {
 
     const compiled = compilePath(route.path);
 
-    if (!/^[\w+/:-]+$/.test(compiled.path)) {
+    if (route.path instanceof RegExp) {
       if (this.#regexRoutes.has(route.id)) {
         this.#logger.warn(
           `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
@@ -227,7 +228,7 @@ class RouteHandlerRegistry {
   #processRoute(route: DynamicRoute, method: HttpMethod, path: Path) {
     if (route.method !== method) return;
 
-    const match = route.regex.exec(path);
+    const match = route.regex.exec(getPathString(path));
     if (!match) return;
 
     const params = match.groups || {};

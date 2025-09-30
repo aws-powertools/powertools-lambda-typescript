@@ -200,15 +200,15 @@ describe('Class: Router - Basic Routing', () => {
   ])('routes %s %s to %s handler', async (path, method, expectedApi) => {
     // Prepare
     const app = new Router();
-    app.get('/files/.+', async () => ({ api: 'serveFile' }));
-    app.get('/files/.+', async () => ({ api: 'serveFileOverride' }));
-    app.get('/api/v\\d+/.*', async () => ({ api: 'apiVersioning' }));
-    app.get('/users/:userId/files/.+', async (reqCtx) => ({
+    app.get(/\/files\/.+/, async () => ({ api: 'serveFile' }));
+    app.get(/\/files\/.+/, async () => ({ api: 'serveFileOverride' }));
+    app.get(/\/api\/v\d+\/.*/, async () => ({ api: 'apiVersioning' }));
+    app.get(/\/users\/:userId\/files\/.+/, async (reqCtx) => ({
       api: `dynamicRegex${reqCtx.params.userId}`,
     }));
-    app.get('.+', async () => ({ api: 'getAnyRoute' }));
+    app.get(/.+/, async () => ({ api: 'getAnyRoute' }));
     app.route(async () => ({ api: 'catchAllUnmatched' }), {
-      path: '.*',
+      path: /.*/,
       method: [HttpVerbs.GET, HttpVerbs.POST],
     });
 

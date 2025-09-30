@@ -20,7 +20,7 @@ import {
 } from './constants.js';
 
 export function getPathString(path: Path): string {
-  return isString(path) ? path : path.source.replace(/\\\//g, '/');
+  return isString(path) ? path : path.source.replaceAll(/\\\//g, '/');
 }
 
 export function compilePath(path: Path): CompiledRoute {

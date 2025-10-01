@@ -1,4 +1,4 @@
-import { Readable } from 'node:stream';
+import { Readable, Writable } from 'node:stream';
 import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
 import type { APIGatewayProxyEvent } from 'aws-lambda';
 import type {
@@ -239,7 +239,13 @@ export const resolvePrefixedPath = (path: Path, prefix?: Path): Path => {
 
 export const HttpResponseStream =
   globalThis.awslambda?.HttpResponseStream ??
-  class HttpResponseStream {
+  class LocalHttpResponseStream extends Writable {
+    #contentType: string | undefined;
+
+    setContentType(contentType: string) {
+      this.#contentType = contentType;
+    }
+
     static from(
       underlyingStream: ResponseStream,
       prelude: Record<string, string>

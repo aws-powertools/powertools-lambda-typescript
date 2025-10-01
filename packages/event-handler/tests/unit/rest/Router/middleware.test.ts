@@ -191,9 +191,9 @@ describe('Class: Router - Middleware', () => {
         await next();
       });
 
-      app.use(({ next }) => {
+      // biome-ignore lint/suspicious/useAwait: This specifically tests a missing await call in an async function
+      app.use(async ({ next }) => {
         next();
-        return Promise.resolve();
       });
 
       // Act

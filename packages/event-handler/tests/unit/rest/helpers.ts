@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent } from 'aws-lambda';
-import { ResponseStream } from 'lambda-stream';
+import { HttpResponseStream } from '../../../src/rest/utils.js';
 import type { HandlerResponse, Middleware } from '../../../src/types/rest.js';
 
 export const createTestEvent = (
@@ -92,19 +92,19 @@ export const createHeaderCheckMiddleware = (headers: {
 };
 
 // Mock ResponseStream that extends the actual ResponseStream class
-export class MockResponseStream extends ResponseStream {
+export class MockResponseStream extends HttpResponseStream {
   public chunks: Buffer[] = [];
   public _onBeforeFirstWrite?: (
     write: (data: Uint8Array | string) => void
   ) => void;
-  private firstWrite = true;
+  #firstWrite = true;
 
   _write(chunk: Buffer, _encoding: string, callback: () => void): void {
-    if (this.firstWrite && this._onBeforeFirstWrite) {
+    if (this.#firstWrite && this._onBeforeFirstWrite) {
       this._onBeforeFirstWrite((data: Uint8Array | string) => {
         this.chunks.push(Buffer.from(data));
       });
-      this.firstWrite = false;
+      this.#firstWrite = false;
     }
     this.chunks.push(chunk);
     callback();

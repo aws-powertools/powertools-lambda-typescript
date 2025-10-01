@@ -7,7 +7,6 @@ import {
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
 import type { APIGatewayProxyResult, Context } from 'aws-lambda';
-import type { ResolveStreamOptions } from '../types/common.js';
 import type { HandlerResponse, ResolveOptions } from '../types/index.js';
 import type {
   ErrorConstructor,
@@ -17,6 +16,7 @@ import type {
   Middleware,
   Path,
   RequestContext,
+  ResolveStreamOptions,
   ResponseStream,
   RestRouteOptions,
   RestRouterOptions,

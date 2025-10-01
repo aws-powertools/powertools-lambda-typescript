@@ -109,7 +109,8 @@ jobs:
           set -euo pipefail
           aws s3 sync \
             site/ \
-            "s3://$AWS_DOCS_BUCKET/lambda-typescript/$VERSION/"
+            "s3://$AWS_DOCS_BUCKET/lambda-typescript/$VERSION/" \
+            --delete
       - name: Deploy Docs (Alias)
         env:
           VERSION: ${{ inputs.version }}
@@ -119,7 +120,8 @@ jobs:
           set -euo pipefail
           aws s3 sync \
             site/ \
-            "s3://$AWS_DOCS_BUCKET/lambda-typescript/$ALIAS/"
+            "s3://$AWS_DOCS_BUCKET/lambda-typescript/$ALIAS/" \
+            --delete
       - name: Deploy Docs (Version JSON)
         env:
           VERSION: ${{ inputs.version }}

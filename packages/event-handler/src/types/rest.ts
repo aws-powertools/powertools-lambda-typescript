@@ -79,16 +79,14 @@ type RestRouteOptions = {
   middleware?: Middleware[];
 };
 
-type NextFunction = () => // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
-  | Promise<HandlerResponse | void>
-  | HandlerResponse
-  | void;
+// biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
+type NextFunction = () => Promise<HandlerResponse | void>;
 
 type Middleware = (args: {
   reqCtx: RequestContext;
   next: NextFunction;
   // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
-}) => Promise<HandlerResponse | void> | HandlerResponse | void;
+}) => Promise<HandlerResponse | void>;
 
 type RouteRegistryOptions = {
   /**

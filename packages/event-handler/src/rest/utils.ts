@@ -1,11 +1,14 @@
+import { Readable, Writable } from 'node:stream';
 import { isRecord, isString } from '@aws-lambda-powertools/commons/typeutils';
-import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import type { APIGatewayProxyEvent } from 'aws-lambda';
 import type {
   CompiledRoute,
+  ExtendedAPIGatewayProxyResult,
   HandlerResponse,
   HttpMethod,
   Middleware,
   Path,
+  ResponseStream,
   ValidationResult,
 } from '../types/rest.js';
 import {
@@ -92,6 +95,28 @@ export const isHttpMethod = (method: string): method is HttpMethod => {
   return Object.keys(HttpVerbs).includes(method);
 };
 
+export const isNodeReadableStream = (value: unknown): value is Readable => {
+  return (
+    value != null &&
+    typeof value === 'object' &&
+    value instanceof Readable &&
+    'readable' in value &&
+    'read' in value &&
+    typeof value.read === 'function'
+  );
+};
+
+export const isWebReadableStream = (
+  value: unknown
+): value is ReadableStream => {
+  return (
+    value != null &&
+    typeof value === 'object' &&
+    'getReader' in value &&
+    typeof (value as Record<string, unknown>).getReader === 'function'
+  );
+};
+
 /**
  * Type guard to check if the provided result is an API Gateway Proxy result.
  *
@@ -100,13 +125,15 @@ export const isHttpMethod = (method: string): method is HttpMethod => {
  *
  * @param result - The result to check
  */
-export const isAPIGatewayProxyResult = (
+export const isExtendedAPIGatewayProxyResult = (
   result: unknown
-): result is APIGatewayProxyResult => {
+): result is ExtendedAPIGatewayProxyResult => {
   if (!isRecord(result)) return false;
   return (
     typeof result.statusCode === 'number' &&
-    isString(result.body) &&
+    (isString(result.body) ||
+      isNodeReadableStream(result.body) ||
+      isWebReadableStream(result.body)) &&
     (result.headers === undefined || isRecord(result.headers)) &&
     (result.multiValueHeaders === undefined ||
       isRecord(result.multiValueHeaders)) &&
@@ -209,3 +236,36 @@ export const resolvePrefixedPath = (path: Path, prefix?: Path): Path => {
   }
   return path;
 };
+
+export const HttpResponseStream =
+  globalThis.awslambda?.HttpResponseStream ??
+  class LocalHttpResponseStream extends Writable {
+    #contentType: string | undefined;
+
+    setContentType(contentType: string) {
+      this.#contentType = contentType;
+    }
+
+    static from(
+      underlyingStream: ResponseStream,
+      prelude: Record<string, string>
+    ) {
+      underlyingStream.setContentType(
+        "'application/vnd.awslambda.http-integration-response'"
+      );
+
+      // JSON.stringify is required. NULL byte is not allowed in metadataPrelude.
+      const metadataPrelude = JSON.stringify(prelude);
+
+      underlyingStream._onBeforeFirstWrite = (
+        write: (data: Uint8Array | string) => void
+      ) => {
+        write(metadataPrelude);
+
+        // Write 8 null bytes after the JSON prelude.
+        write(new Uint8Array(8));
+      };
+
+      return underlyingStream;
+    }
+  };

@@ -1,4 +1,5 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
+import { isRegExp } from '@aws-lambda-powertools/commons/typeutils';
 import type {
   DynamicRoute,
   HttpMethod,
@@ -105,7 +106,7 @@ class RouteHandlerRegistry {
 
     const compiled = compilePath(route.path);
 
-    if (route.path instanceof RegExp) {
+    if (isRegExp(route.path)) {
       if (this.#regexRoutes.has(route.id)) {
         this.#logger.warn(
           `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`

@@ -33,7 +33,7 @@ export const handler = async (
   tracer.putMetadata(customMetadataKey, customMetadataValue);
 
   try {
-    await fetch('https://docs.powertools.aws.dev/lambda/typescript/latest/');
+    await fetch('https://docs.aws.amazon.com/powertools/typescript/latest/');
 
     const res = customResponseValue;
     if (event.throw) {

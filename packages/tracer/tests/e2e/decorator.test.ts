@@ -76,7 +76,7 @@ describe('Tracer E2E tests, decorator instrumentation', () => {
        * 1. Lambda Context (AWS::Lambda)
        * 2. Lambda Function (AWS::Lambda::Function)
        * 4. DynamoDB (AWS::DynamoDB)
-       * 4. Remote call (docs.powertools.aws.dev)
+       * 4. Remote call (docs.aws.amazon.com)
        */
       expectedSegmentsCount: 4,
     });
@@ -100,11 +100,11 @@ describe('Tracer E2E tests, decorator instrumentation', () => {
     expect(subsegments.size).toBe(3);
 
     // Check remote call subsegment
-    expect(subsegments.has('docs.powertools.aws.dev')).toBe(true);
-    const httpSubsegment = subsegments.get('docs.powertools.aws.dev');
+    expect(subsegments.has('docs.aws.amazon.com')).toBe(true);
+    const httpSubsegment = subsegments.get('docs.aws.amazon.com');
     expect(httpSubsegment?.namespace).toBe('remote');
     expect(httpSubsegment?.http?.request?.url).toEqual(
-      'https://docs.powertools.aws.dev/lambda/typescript/latest/'
+      'https://docs.aws.amazon.com/powertools/typescript/latest/'
     );
     expect(httpSubsegment?.http?.request?.method).toBe('GET');
     expect(httpSubsegment?.http?.response?.status).toEqual(expect.any(Number));

@@ -34,7 +34,7 @@ export const handler = middy(
         },
       })
     );
-    await fetch('https://docs.powertools.aws.dev/lambda/typescript/latest/');
+    await fetch('https://docs.aws.amazon.com/powertools/typescript/latest/');
 
     if (event.throw) {
       throw new Error(customErrorMessage);

@@ -4,7 +4,7 @@ import { TestDynamodbTable } from '@aws-lambda-powertools/testing-utils/resource
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import type { EnrichedXRayTraceDocumentParsed } from '@aws-lambda-powertools/testing-utils/types';
 import { getTraces } from '@aws-lambda-powertools/testing-utils/utils/xray-traces';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { invokeAllTestCases } from '../helpers/invokeAllTests.js';
 import {
   EXPECTED_ANNOTATION_KEY as expectedCustomAnnotationKey,
@@ -16,10 +16,6 @@ import {
   EXPECTED_SUBSEGMENT_NAME as expectedCustomSubSegmentName,
   RESOURCE_NAME_PREFIX,
 } from './constants.js';
-
-vi.hoisted(() => {
-  process.env.AWS_PROFILE = 'aamorosi-Admin';
-});
 
 describe('Tracer E2E tests, decorator instrumentation', () => {
   const testStack = new TestStack({

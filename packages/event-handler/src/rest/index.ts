@@ -23,6 +23,6 @@ export { Router } from './Router.js';
 export {
   composeMiddleware,
   isAPIGatewayProxyEvent,
-  isAPIGatewayProxyResult,
+  isExtendedAPIGatewayProxyResult,
   isHttpMethod,
 } from './utils.js';

@@ -1,4 +1,6 @@
+import { Readable } from 'node:stream';
 import { describe, expect, it } from 'vitest';
+import { bodyToNodeStream } from '../../../src/rest/converters.js';
 import {
   handlerResultToProxyResult,
   handlerResultToWebResponse,
@@ -458,7 +460,7 @@ describe('Converters', () => {
   });
 
   describe('handlerResultToProxyResult', () => {
-    it('returns APIGatewayProxyResult as-is', async () => {
+    it('returns ExtendedAPIGatewayProxyResult with string body as-is', async () => {
       // Prepare
       const proxyResult = {
         statusCode: 200,
@@ -471,7 +473,88 @@ describe('Converters', () => {
       const result = await handlerResultToProxyResult(proxyResult);
 
       // Assess
-      expect(result).toBe(proxyResult);
+      expect(result).toEqual({
+        statusCode: 200,
+        body: 'test',
+        headers: { 'content-type': 'text/plain' },
+        isBase64Encoded: false,
+      });
+    });
+
+    it('converts ExtendedAPIGatewayProxyResult with Node.js Buffer stream body to base64', async () => {
+      // Prepare
+      const stream = Readable.from([
+        Buffer.from('Hello'),
+        Buffer.from(' '),
+        Buffer.from('World'),
+      ]);
+      const proxyResult = {
+        statusCode: 200,
+        body: stream,
+        headers: { 'content-type': 'application/octet-stream' },
+        isBase64Encoded: false,
+      };
+
+      // Act
+      const result = await handlerResultToProxyResult(proxyResult);
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toBe(Buffer.from('Hello World').toString('base64'));
+      expect(result.headers).toEqual({
+        'content-type': 'application/octet-stream',
+      });
+    });
+
+    it('converts ExtendedAPIGatewayProxyResult with Node.js string stream body to base64', async () => {
+      // Prepare
+      const stream = Readable.from(['Hello', ' ', 'World']);
+      const proxyResult = {
+        statusCode: 200,
+        body: stream,
+        headers: { 'content-type': 'application/octet-stream' },
+        isBase64Encoded: false,
+      };
+
+      // Act
+      const result = await handlerResultToProxyResult(proxyResult);
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toBe(Buffer.from('Hello World').toString('base64'));
+      expect(result.headers).toEqual({
+        'content-type': 'application/octet-stream',
+      });
+    });
+
+    it('converts ExtendedAPIGatewayProxyResult with web stream body to base64', async () => {
+      // Prepare
+      const webStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('Hello'));
+          controller.enqueue(new TextEncoder().encode(' World'));
+          controller.close();
+        },
+      });
+      const proxyResult = {
+        statusCode: 200,
+        body: webStream,
+        headers: { 'content-type': 'application/octet-stream' },
+        isBase64Encoded: false,
+      };
+
+      // Act
+      const result = await handlerResultToProxyResult(proxyResult);
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toBe(Buffer.from('Hello World').toString('base64'));
+      expect(result.headers).toEqual({
+        'content-type': 'application/octet-stream',
+      });
     });
 
     it('converts Response object', async () => {
@@ -640,6 +723,52 @@ describe('Converters', () => {
       expect(result.headers.get('x-custom')).toBe('value');
       expect(result.status).toBe(200);
       expect(result.text()).resolves.toBe('Hello');
+    });
+  });
+
+  describe('bodyToNodeStream', () => {
+    it('returns Node.js Readable stream as-is', () => {
+      // Prepare
+      const nodeStream = Readable.from(['Hello World']);
+
+      // Act
+      const result = bodyToNodeStream(nodeStream);
+
+      // Assess
+      expect(result).toBe(nodeStream);
+    });
+
+    it('converts Web ReadableStream to Node.js Readable stream', () => {
+      // Prepare
+      const webStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('Hello World'));
+          controller.close();
+        },
+      });
+
+      // Act
+      const result = bodyToNodeStream(webStream);
+
+      // Assess
+      expect(result).toBeInstanceOf(Readable);
+    });
+
+    it('converts string body to Node.js Readable stream', async () => {
+      // Prepare
+      const stringBody = 'Hello World';
+
+      // Act
+      const stream = bodyToNodeStream(stringBody);
+
+      // Assess
+      expect(stream).toBeInstanceOf(Readable);
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      const result = Buffer.concat(chunks).toString();
+      expect(result).toBe('Hello World');
     });
   });
 });

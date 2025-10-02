@@ -3,11 +3,11 @@ import type {
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   composeMiddleware,
   isAPIGatewayProxyEvent,
-  isAPIGatewayProxyResult,
+  isExtendedAPIGatewayProxyResult,
 } from '../../../src/rest/index.js';
 import {
   compilePath,
@@ -21,6 +21,9 @@ import type {
 } from '../../../src/types/rest.js';
 
 describe('Path Utilities', () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+  });
   describe('validatePathPattern', () => {
     it.each([
       { path: '/users/:id', expected: true, issues: [] },
@@ -390,7 +393,7 @@ describe('Path Utilities', () => {
         body: 'Hello World',
       };
 
-      expect(isAPIGatewayProxyResult(validResult)).toBe(true);
+      expect(isExtendedAPIGatewayProxyResult(validResult)).toBe(true);
     });
 
     it('should return true for valid result with all optional fields', () => {
@@ -402,7 +405,7 @@ describe('Path Utilities', () => {
         isBase64Encoded: false,
       };
 
-      expect(isAPIGatewayProxyResult(validResult)).toBe(true);
+      expect(isExtendedAPIGatewayProxyResult(validResult)).toBe(true);
     });
 
     it.each([
@@ -412,7 +415,7 @@ describe('Path Utilities', () => {
       { case: 'number', result: 123 },
       { case: 'array', result: [] },
     ])('should return false for $case', ({ result }) => {
-      expect(isAPIGatewayProxyResult(result)).toBe(false);
+      expect(isExtendedAPIGatewayProxyResult(result)).toBe(false);
     });
 
     it.each([
@@ -432,7 +435,7 @@ describe('Path Utilities', () => {
         };
 
         const invalidResult = { ...baseResult, [field]: value };
-        expect(isAPIGatewayProxyResult(invalidResult)).toBe(false);
+        expect(isExtendedAPIGatewayProxyResult(invalidResult)).toBe(false);
       }
     );
 
@@ -442,7 +445,7 @@ describe('Path Utilities', () => {
         // missing body
       };
 
-      expect(isAPIGatewayProxyResult(incompleteResult)).toBe(false);
+      expect(isExtendedAPIGatewayProxyResult(incompleteResult)).toBe(false);
     });
   });
 
@@ -475,6 +478,7 @@ describe('Path Utilities', () => {
         reqCtx: mockOptions,
         next: () => {
           executionOrder.push('handler');
+          return Promise.resolve();
         },
       });
 
@@ -493,7 +497,7 @@ describe('Path Utilities', () => {
           await next();
         },
         () => {
-          return { shortCircuit: true };
+          return Promise.resolve({ shortCircuit: true });
         },
       ];
 
@@ -501,7 +505,7 @@ describe('Path Utilities', () => {
       const result = await composed({
         reqCtx: mockOptions,
         next: () => {
-          return { handler: true };
+          return Promise.resolve({ handler: true });
         },
       });
 
@@ -519,7 +523,7 @@ describe('Path Utilities', () => {
       const result = await composed({
         reqCtx: mockOptions,
         next: () => {
-          return { handler: true };
+          return Promise.resolve({ handler: true });
         },
       });
 
@@ -546,7 +550,7 @@ describe('Path Utilities', () => {
       const result = await composed({
         reqCtx: mockOptions,
         next: () => {
-          return { handler: true };
+          return Promise.resolve({ handler: true });
         },
       });
 
@@ -564,7 +568,7 @@ describe('Path Utilities', () => {
       const result = await composed({
         reqCtx: mockOptions,
         next: () => {
-          return undefined;
+          return Promise.resolve(undefined);
         },
       });
 
@@ -583,6 +587,23 @@ describe('Path Utilities', () => {
 
       // Assert
       expect(resolvedPath).toBe(expected);
+    });
+  });
+
+  describe('HttpResponseStream', () => {
+    it('uses globalThis.awslambda.HttpResponseStream when available', async () => {
+      // Prepare
+      const mockHttpResponseStream = { from: vi.fn() };
+      vi.stubGlobal('awslambda', {
+        HttpResponseStream: mockHttpResponseStream,
+      });
+
+      // Clear module cache and dynamically import
+      vi.resetModules();
+      const { HttpResponseStream } = await import('../../../src/rest/utils.js');
+
+      // Assert
+      expect(HttpResponseStream).toBe(mockHttpResponseStream);
     });
   });
 });

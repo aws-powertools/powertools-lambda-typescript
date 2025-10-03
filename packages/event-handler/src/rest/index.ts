@@ -8,6 +8,7 @@ export {
 export {
   BadRequestError,
   ForbiddenError,
+  HttpError,
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
@@ -15,7 +16,6 @@ export {
   RequestEntityTooLargeError,
   RequestTimeoutError,
   RouteMatchingError,
-  ServiceError,
   ServiceUnavailableError,
   UnauthorizedError,
 } from './errors.js';

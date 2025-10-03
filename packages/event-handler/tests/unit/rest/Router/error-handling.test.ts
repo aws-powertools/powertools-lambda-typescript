@@ -182,7 +182,7 @@ describe('Class: Router - Error Handling', () => {
     });
   });
 
-  it('uses ServiceError toJSON method when no custom handler is registered', async () => {
+  it('uses HttpError toJSON method when no custom handler is registered', async () => {
     // Prepare
     const app = new Router();
 

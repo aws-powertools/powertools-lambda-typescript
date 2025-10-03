@@ -1,6 +1,3 @@
-import type { AppSyncEventsResolver } from '../appsync-events/AppSyncEventsResolver.js';
-import type { AppSyncGraphQLResolver } from '../appsync-graphql/AppSyncGraphQLResolver.js';
-
 // biome-ignore lint/suspicious/noExplicitAny: We intentionally use `any` here to represent any type of data and keep the logger is as flexible as possible.
 type Anything = any;
 

@@ -1,14 +1,13 @@
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+import type streamWeb from 'node:stream/web';
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import {
   getStringFromEnv,
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
 import type { APIGatewayProxyResult, Context } from 'aws-lambda';
-import type {
-  HandlerResponse,
-  HttpStatusCode,
-  ResolveOptions,
-} from '../types/index.js';
+import type { HandlerResponse, ResolveOptions } from '../types/index.js';
 import type {
   ErrorConstructor,
   ErrorHandler,
@@ -17,6 +16,8 @@ import type {
   Middleware,
   Path,
   RequestContext,
+  ResolveStreamOptions,
+  ResponseStream,
   RestRouteOptions,
   RestRouterOptions,
   RouteHandler,
@@ -26,6 +27,7 @@ import {
   handlerResultToProxyResult,
   handlerResultToWebResponse,
   proxyEventToWebRequest,
+  webHeadersToApiGatewayV1Headers,
 } from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import {
@@ -38,8 +40,9 @@ import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 import {
   composeMiddleware,
+  HttpResponseStream,
   isAPIGatewayProxyEvent,
-  isAPIGatewayProxyResult,
+  isExtendedAPIGatewayProxyResult,
   isHttpMethod,
   resolvePrefixedPath,
 } from './utils.js';
@@ -187,21 +190,19 @@ class Router {
   }
 
   /**
-   * Resolves an API Gateway event by routing it to the appropriate handler
-   * and converting the result to an API Gateway proxy result. Handles errors
-   * using registered error handlers or falls back to default error handling
-   * (500 Internal Server Error).
+   * Core resolution logic shared by both resolve and resolveStream methods.
+   * Validates the event, routes to handlers, executes middleware, and handles errors.
    *
    * @param event - The Lambda event to resolve
    * @param context - The Lambda context
    * @param options - Optional resolve options for scope binding
-   * @returns An API Gateway proxy result
+   * @returns A handler response (Response, JSONObject, or ExtendedAPIGatewayProxyResult)
    */
-  public async resolve(
+  async #resolve(
     event: unknown,
     context: Context,
     options?: ResolveOptions
-  ): Promise<APIGatewayProxyResult> {
+  ): Promise<HandlerResponse> {
     if (!isAPIGatewayProxyEvent(event)) {
       this.logger.error(
         'Received an event that is not compatible with this resolver'
@@ -276,18 +277,79 @@ class Router {
       });
 
       // middleware result takes precedence to allow short-circuiting
-      const result = middlewareResult ?? requestContext.res;
-
-      return handlerResultToProxyResult(result);
+      return middlewareResult ?? requestContext.res;
     } catch (error) {
       this.logger.debug(`There was an error processing the request: ${error}`);
-      const result = await this.handleError(error as Error, {
+      return this.handleError(error as Error, {
         ...requestContext,
         scope: options?.scope,
       });
-      const statusCode =
-        result instanceof Response ? result.status : result.statusCode;
-      return handlerResultToProxyResult(result, statusCode as HttpStatusCode);
+    }
+  }
+
+  /**
+   * Resolves an API Gateway event by routing it to the appropriate handler
+   * and converting the result to an API Gateway proxy result. Handles errors
+   * using registered error handlers or falls back to default error handling
+   * (500 Internal Server Error).
+   *
+   * @param event - The Lambda event to resolve
+   * @param context - The Lambda context
+   * @param options - Optional resolve options for scope binding
+   * @returns An API Gateway proxy result
+   */
+  public async resolve(
+    event: unknown,
+    context: Context,
+    options?: ResolveOptions
+  ): Promise<APIGatewayProxyResult> {
+    const result = await this.#resolve(event, context, options);
+    return handlerResultToProxyResult(result);
+  }
+
+  /**
+   * Resolves an API Gateway event by routing it to the appropriate handler
+   * and streaming the response directly to the provided response stream.
+   * Used for Lambda response streaming.
+   *
+   * @param event - The Lambda event to resolve
+   * @param context - The Lambda context
+   * @param options - Stream resolve options including the response stream
+   */
+  public async resolveStream(
+    event: unknown,
+    context: Context,
+    options: ResolveStreamOptions
+  ): Promise<void> {
+    const result = await this.#resolve(event, context, options);
+    await this.#streamHandlerResponse(result, options.responseStream);
+  }
+
+  /**
+   * Streams a handler response to the Lambda response stream.
+   * Converts the response to a web response and pipes it through the stream.
+   *
+   * @param response - The handler response to stream
+   * @param responseStream - The Lambda response stream to write to
+   */
+  async #streamHandlerResponse(
+    response: HandlerResponse,
+    responseStream: ResponseStream
+  ) {
+    const webResponse = handlerResultToWebResponse(response);
+    const { headers } = webHeadersToApiGatewayV1Headers(webResponse.headers);
+    const resStream = HttpResponseStream.from(responseStream, {
+      statusCode: webResponse.status,
+      headers,
+    });
+
+    if (webResponse.body) {
+      const nodeStream = Readable.fromWeb(
+        webResponse.body as streamWeb.ReadableStream
+      );
+      await pipeline(nodeStream, resStream);
+    } else {
+      resStream.write('');
     }
   }
 
@@ -320,7 +382,7 @@ class Router {
       try {
         const { scope, ...reqCtx } = options;
         const body = await handler.apply(scope ?? this, [error, reqCtx]);
-        if (body instanceof Response || isAPIGatewayProxyResult(body)) {
+        if (body instanceof Response || isExtendedAPIGatewayProxyResult(body)) {
           return body;
         }
         if (!body.statusCode) {

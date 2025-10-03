@@ -1,3 +1,4 @@
+import type { OutgoingHttpHeaders } from 'node:http';
 import https, { type RequestOptions } from 'node:https';
 
 /**
@@ -19,6 +20,32 @@ const httpRequest = (params: RequestOptions): Promise<unknown> =>
     if (!params.timeout) {
       params.timeout = 5000;
     }
+
+    // Ensure some common headers are present. Many sites (including AWS docs)
+    // block requests that don't include a User-Agent or typical Accept header,
+    // which is why the `fetch` call (which sets defaults) succeeds while a
+    // bare https.request may receive a 403.
+    const originalHeaders = (params.headers ?? {}) as OutgoingHttpHeaders;
+    // Create a quick lowercase map of header names to detect presence case-insensitively
+    const lowerMap = Object.keys(originalHeaders).reduce<
+      Record<string, string>
+    >((acc, k) => {
+      acc[k.toLowerCase()] = k;
+      return acc;
+    }, {});
+
+    // Only add defaults when not present (case-insensitive)
+    if (!lowerMap['user-agent']) {
+      // prefer a Node/undici-like UA to match what fetch/undici would send
+      (originalHeaders as Record<string, string>)['User-Agent'] =
+        'node-fetch/1.0 (+https://github.com/node-fetch/node-fetch)';
+    }
+    if (!lowerMap.accept) {
+      (originalHeaders as Record<string, string>).Accept =
+        'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
+    }
+
+    params.headers = originalHeaders;
 
     const req = https.request(params, (res) => {
       if (

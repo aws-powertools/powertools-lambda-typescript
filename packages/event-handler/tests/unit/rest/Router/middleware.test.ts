@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
@@ -190,7 +191,8 @@ describe('Class: Router - Middleware', () => {
         await next();
       });
 
-      app.use(({ next }) => {
+      // biome-ignore lint/suspicious/useAwait: This specifically tests a missing await call in an async function
+      app.use(async ({ next }) => {
         next();
       });
 
@@ -571,6 +573,60 @@ describe('Class: Router - Middleware', () => {
         headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });
+    });
+
+    it('handles middleware returning ExtendedAPIGatewayProxyResult with node stream body', async () => {
+      // Prepare
+      const app = new Router();
+      const testData = 'middleware stream data';
+
+      app.use(async () => ({
+        statusCode: 200,
+        body: Readable.from(Buffer.from(testData)),
+      }));
+
+      app.get('/test', () => ({ success: true }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toBe(Buffer.from(testData).toString('base64'));
+    });
+
+    it('handles middleware returning ExtendedAPIGatewayProxyResult with web stream body', async () => {
+      // Prepare
+      const app = new Router();
+      const testData = 'middleware web stream data';
+      const webStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(testData));
+          controller.close();
+        },
+      });
+
+      app.use(async () => ({
+        statusCode: 200,
+        body: webStream,
+      }));
+
+      app.get('/test', () => ({ success: true }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toBe(Buffer.from(testData).toString('base64'));
     });
   });
 

@@ -1,11 +1,16 @@
+import type { Readable } from 'node:stream';
 import type {
   GenericLogger,
   JSONObject,
 } from '@aws-lambda-powertools/commons/types';
-import type { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
 import type { HttpStatusCodes, HttpVerbs } from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
-import type { Router } from '../rest/Router.js';
+import type { HttpResponseStream } from '../rest/utils.js';
 import type { ResolveOptions } from './common.js';
 
 type RequestContext = {
@@ -54,7 +59,13 @@ interface CompiledRoute {
 
 type DynamicRoute = Route & CompiledRoute;
 
-type HandlerResponse = Response | JSONObject;
+type ExtendedAPIGatewayProxyResultBody = string | Readable | ReadableStream;
+
+type ExtendedAPIGatewayProxyResult = Omit<APIGatewayProxyResult, 'body'> & {
+  body: ExtendedAPIGatewayProxyResultBody;
+};
+
+type HandlerResponse = Response | JSONObject | ExtendedAPIGatewayProxyResult;
 
 type RouteHandler<TReturn = HandlerResponse> = (
   reqCtx: RequestContext
@@ -111,6 +122,51 @@ type ValidationResult = {
   issues: string[];
 };
 
+type ResponseStream = InstanceType<typeof HttpResponseStream> & {
+  _onBeforeFirstWrite?: (write: (data: Uint8Array | string) => void) => void;
+};
+
+/**
+ * Object to pass to the {@link Router.resolveStream | `Router.resolveStream()`} method.
+ */
+type ResolveStreamOptions = {
+  /**
+   * Reference to `this` instance of the class that is calling the `resolveStream` method.
+   *
+   * This parameter should be used only when using {@link Router} route decorators like
+   * {@link Router.get | `Router.get()`}, {@link Router.post | `Router.post()`}, etc. as class method decorators, and
+   * it's used to bind the decorated methods to your class instance.
+   *
+   * @example
+   * ```ts
+   * import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
+   *
+   * const app = new Router();
+   *
+   * class Lambda {
+   *   public scope = 'scoped';
+   *
+   *   @app.get('/test')
+   *   public async getTest() {
+   *     return { message: `${this.scope}: success` };
+   *   }
+   *
+   *   public async handler(event: unknown, context: Context, responseStream: ResponseStream) {
+   *     return app.resolveStream(event, context, { scope: this, responseStream });
+   *   }
+   * }
+   * const lambda = new Lambda();
+   * const handler = lambda.handler.bind(lambda);
+   * ```
+   */
+  scope?: unknown;
+  /**
+   * The Lambda response stream used for streaming responses directly to the client.
+   * This stream is provided by the AWS Lambda runtime for response streaming.
+   */
+  responseStream: ResponseStream;
+};
+
 /**
  * Configuration options for CORS middleware
  */
@@ -159,6 +215,8 @@ type CompressionOptions = {
 };
 
 export type {
+  ExtendedAPIGatewayProxyResult,
+  ExtendedAPIGatewayProxyResultBody,
   CompiledRoute,
   CorsOptions,
   DynamicRoute,
@@ -174,6 +232,8 @@ export type {
   RequestContext,
   RestRouterOptions,
   RouteHandler,
+  ResolveStreamOptions,
+  ResponseStream,
   RestRouteOptions,
   RestRouteHandlerOptions,
   RouteRegistryOptions,

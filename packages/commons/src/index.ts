@@ -22,6 +22,7 @@ export {
   isNullOrUndefined,
   isNumber,
   isRecord,
+  isRegExp,
   isStrictEqual,
   isString,
   isStringUndefinedNullEmpty,

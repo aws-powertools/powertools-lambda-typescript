@@ -581,12 +581,15 @@ describe('Path Utilities', () => {
       { path: '/test', prefix: '/prefix', expected: '/prefix/test' },
       { path: '/', prefix: '/prefix', expected: '/prefix' },
       { path: '/test', expected: '/test' },
+      { path: /.+/, prefix: '/prefix', expected: /\/prefix\/.+/ },
+      { path: '/test', prefix: /\/prefix/, expected: /\/prefix\/test/ },
+      { path: /.+/, prefix: /\/prefix/, expected: /\/prefix\/.+/ },
     ])('resolves prefixed path', ({ path, prefix, expected }) => {
       // Prepare & Act
       const resolvedPath = resolvePrefixedPath(path as Path, prefix as Path);
 
       // Assert
-      expect(resolvedPath).toBe(expected);
+      expect(resolvedPath).toEqual(expected);
     });
   });
 

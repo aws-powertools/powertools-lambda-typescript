@@ -177,6 +177,25 @@ const isStringUndefinedNullEmpty = (value: unknown) => {
 };
 
 /**
+ * Check if a Regular Expression
+ *
+ * @example
+ * ```typescript
+ * import { isRegExp } from '@aws-lambda-powertools/commons/typeUtils';
+ *
+ * const value = /^foo.+$/;
+ * if (isRegExp(value)) {
+ *   // value is a Regular Expression
+ * }
+ * ```
+ *
+ * @param value - The value to check
+ */
+const isRegExp = (value: unknown): value is RegExp => {
+  return value instanceof RegExp;
+};
+
+/**
  * Get the type of a value as a string.
  *
  * @example
@@ -337,6 +356,7 @@ export {
   isNull,
   isNullOrUndefined,
   isStringUndefinedNullEmpty,
+  isRegExp,
   getType,
   isStrictEqual,
 };

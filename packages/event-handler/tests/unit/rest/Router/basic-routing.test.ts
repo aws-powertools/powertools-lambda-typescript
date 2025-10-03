@@ -190,4 +190,32 @@ describe('Class: Router - Basic Routing', () => {
       'Handler for method: GET and path: /todos already exists. The previous handler will be replaced.'
     );
   });
+
+  it.each([
+    ['/files/test', 'GET', 'serveFileOverride'],
+    ['/api/v1/test', 'GET', 'apiVersioning'],
+    ['/users/1/files/test', 'GET', 'dynamicRegex1'],
+    ['/any-route', 'GET', 'getAnyRoute'],
+    ['/no-matches', 'POST', 'catchAllUnmatched'],
+  ])('routes %s %s to %s handler', async (path, method, expectedApi) => {
+    // Prepare
+    const app = new Router();
+    app.get(/\/files\/.+/, async () => ({ api: 'serveFile' }));
+    app.get(/\/files\/.+/, async () => ({ api: 'serveFileOverride' }));
+    app.get(/\/api\/v\d+\/.*/, async () => ({ api: 'apiVersioning' }));
+    app.get(/\/users\/:userId\/files\/.+/, async (reqCtx) => ({
+      api: `dynamicRegex${reqCtx.params.userId}`,
+    }));
+    app.get(/.+/, async () => ({ api: 'getAnyRoute' }));
+    app.route(async () => ({ api: 'catchAllUnmatched' }), {
+      path: /.*/,
+      method: [HttpVerbs.GET, HttpVerbs.POST],
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent(path, method), context);
+
+    // Assess
+    expect(JSON.parse(result.body).api).toEqual(expectedApi);
+  });
 });

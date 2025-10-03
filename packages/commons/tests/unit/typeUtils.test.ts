@@ -6,6 +6,7 @@ import {
   isNullOrUndefined,
   isNumber,
   isRecord,
+  isRegExp,
   isStrictEqual,
   isString,
   isStringUndefinedNullEmpty,
@@ -218,6 +219,30 @@ describe('Functions: typeUtils', () => {
 
       // Act
       const result = isNull(value);
+
+      // Assess
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('Function: isRegExp', () => {
+    it('returns true when the passed value is a Regular Expression', () => {
+      // Prepare
+      const value = /^hello.+$/;
+
+      // Act
+      const result = isRegExp(value);
+
+      // Assess
+      expect(result).toBe(true);
+    });
+
+    it('returns false when the passed value is not a Regular Expression', () => {
+      // Prepare
+      const value = 123;
+
+      // Act
+      const result = isRegExp(value);
 
       // Assess
       expect(result).toBe(false);

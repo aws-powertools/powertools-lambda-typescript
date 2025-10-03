@@ -75,7 +75,7 @@ type HttpMethod = keyof typeof HttpVerbs;
 
 type HttpStatusCode = (typeof HttpStatusCodes)[keyof typeof HttpStatusCodes];
 
-type Path = `/${string}`;
+type Path = `/${string}` | RegExp;
 
 type RestRouteHandlerOptions = {
   handler: RouteHandler;

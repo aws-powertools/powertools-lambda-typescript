@@ -1,4 +1,5 @@
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
+import { isRegExp } from '@aws-lambda-powertools/commons/typeutils';
 import type {
   DynamicRoute,
   HttpMethod,
@@ -11,11 +12,13 @@ import { ParameterValidationError } from './errors.js';
 import { Route } from './Route.js';
 import {
   compilePath,
+  getPathString,
   resolvePrefixedPath,
   validatePathPattern,
 } from './utils.js';
 
 class RouteHandlerRegistry {
+  readonly #regexRoutes: Map<string, DynamicRoute> = new Map();
   readonly #staticRoutes: Map<string, Route> = new Map();
   readonly #dynamicRoutesSet: Set<string> = new Set();
   readonly #dynamicRoutes: DynamicRoute[] = [];
@@ -44,8 +47,8 @@ class RouteHandlerRegistry {
     }
 
     // Routes with more path segments are more specific
-    const aSegments = a.path.split('/').length;
-    const bSegments = b.path.split('/').length;
+    const aSegments = getPathString(a.path).split('/').length;
+    const bSegments = getPathString(b.path).split('/').length;
 
     return bSegments - aSegments;
   }
@@ -103,6 +106,18 @@ class RouteHandlerRegistry {
 
     const compiled = compilePath(route.path);
 
+    if (isRegExp(route.path)) {
+      if (this.#regexRoutes.has(route.id)) {
+        this.#logger.warn(
+          `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
+        );
+      }
+      this.#regexRoutes.set(route.id, {
+        ...route,
+        ...compiled,
+      });
+      return;
+    }
     if (compiled.isDynamic) {
       const dynamicRoute = {
         ...route,
@@ -171,28 +186,10 @@ class RouteHandlerRegistry {
       };
     }
 
-    for (const route of this.#dynamicRoutes) {
-      if (route.method !== method) continue;
-
-      const match = route.regex.exec(path);
-      if (match?.groups) {
-        const params = match.groups;
-
-        const processedParams = this.#processParams(params);
-
-        const validation = this.#validateParams(processedParams);
-
-        if (!validation.isValid) {
-          throw new ParameterValidationError(validation.issues);
-        }
-
-        return {
-          handler: route.handler,
-          params: processedParams,
-          rawParams: params,
-          middleware: route.middleware,
-        };
-      }
+    const routes = [...this.#dynamicRoutes, ...this.#regexRoutes.values()];
+    for (const route of routes) {
+      const result = this.#processRoute(route, method, path);
+      if (result) return result;
     }
 
     return null;
@@ -215,6 +212,7 @@ class RouteHandlerRegistry {
     const routes = [
       ...routeHandlerRegistry.#staticRoutes.values(),
       ...routeHandlerRegistry.#dynamicRoutes,
+      ...routeHandlerRegistry.#regexRoutes.values(),
     ];
     for (const route of routes) {
       this.register(
@@ -226,6 +224,28 @@ class RouteHandlerRegistry {
         )
       );
     }
+  }
+
+  #processRoute(route: DynamicRoute, method: HttpMethod, path: Path) {
+    if (route.method !== method) return;
+
+    const match = route.regex.exec(getPathString(path));
+    if (!match) return;
+
+    const params = match.groups || {};
+    const processedParams = this.#processParams(params);
+    const validation = this.#validateParams(processedParams);
+
+    if (!validation.isValid) {
+      throw new ParameterValidationError(validation.issues);
+    }
+
+    return {
+      handler: route.handler,
+      params: processedParams,
+      rawParams: params,
+      middleware: route.middleware,
+    };
   }
 }
 

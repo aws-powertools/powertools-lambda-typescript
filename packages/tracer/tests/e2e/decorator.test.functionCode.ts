@@ -44,8 +44,8 @@ export class LambdaFunction {
 
     await this.methodNoResponse(event.invocation);
     await httpRequest({
-      hostname: 'docs.powertools.aws.dev',
-      path: '/lambda/typescript/latest/',
+      hostname: 'docs.aws.amazon.com',
+      path: '/powertools/typescript/latest/',
     });
 
     const res = this.myMethod();

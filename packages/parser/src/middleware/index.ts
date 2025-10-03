@@ -12,18 +12,18 @@ import type { ParserOptions, ParserOutput } from '../types/parser.js';
  * ```typescript
  * import { parser } from '@aws-lambda-powertools/parser/middleware';
  * import middy from '@middy/core';
- * import { sqsEnvelope } from '@aws-lambda-powertools/parser/envelopes/sqs;'
+ * import { SqsEnvelope } from '@aws-lambda-powertools/parser/envelopes/sqs';
  *
- * const oderSchema = z.object({
+ * const orderSchema = z.object({
  *   id: z.number(),
  *   description: z.string(),
  *   quantity: z.number(),
  * });
  *
- * type Order = z.infer<typeof oderSchema>;
+ * type Order = z.infer<typeof orderSchema>;
  *
  * export const handler = middy()
- *   .use(parser({ schema: oderSchema, envelope: sqsEnvelope }))
+ *   .use(parser({ schema: orderSchema, envelope: SqsEnvelope }))
  *   .handler(async (event) => {
  *            // ^ event is inferred as Order[]
  *   })

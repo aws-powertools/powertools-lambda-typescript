@@ -20,7 +20,7 @@ class ParameterValidationError extends RouteMatchingError {
   }
 }
 
-abstract class ServiceError extends Error {
+abstract class HttpError extends Error {
   abstract readonly statusCode: HttpStatusCode;
   abstract readonly errorType: string;
   public readonly details?: Record<string, unknown>;
@@ -31,7 +31,7 @@ abstract class ServiceError extends Error {
     details?: Record<string, unknown>
   ) {
     super(message, options);
-    this.name = 'ServiceError';
+    this.name = 'HttpError';
     this.details = details;
   }
 
@@ -47,7 +47,7 @@ abstract class ServiceError extends Error {
   }
 }
 
-class BadRequestError extends ServiceError {
+class BadRequestError extends HttpError {
   readonly statusCode = HttpStatusCodes.BAD_REQUEST;
   readonly errorType = 'BadRequestError';
 
@@ -61,7 +61,7 @@ class BadRequestError extends ServiceError {
   }
 }
 
-class UnauthorizedError extends ServiceError {
+class UnauthorizedError extends HttpError {
   readonly statusCode = HttpStatusCodes.UNAUTHORIZED;
   readonly errorType = 'UnauthorizedError';
 
@@ -75,7 +75,7 @@ class UnauthorizedError extends ServiceError {
   }
 }
 
-class ForbiddenError extends ServiceError {
+class ForbiddenError extends HttpError {
   readonly statusCode = HttpStatusCodes.FORBIDDEN;
   readonly errorType = 'ForbiddenError';
 
@@ -89,7 +89,7 @@ class ForbiddenError extends ServiceError {
   }
 }
 
-class NotFoundError extends ServiceError {
+class NotFoundError extends HttpError {
   readonly statusCode = HttpStatusCodes.NOT_FOUND;
   readonly errorType = 'NotFoundError';
 
@@ -103,7 +103,7 @@ class NotFoundError extends ServiceError {
   }
 }
 
-class MethodNotAllowedError extends ServiceError {
+class MethodNotAllowedError extends HttpError {
   readonly statusCode = HttpStatusCodes.METHOD_NOT_ALLOWED;
   readonly errorType = 'MethodNotAllowedError';
 
@@ -117,7 +117,7 @@ class MethodNotAllowedError extends ServiceError {
   }
 }
 
-class RequestTimeoutError extends ServiceError {
+class RequestTimeoutError extends HttpError {
   readonly statusCode = HttpStatusCodes.REQUEST_TIMEOUT;
   readonly errorType = 'RequestTimeoutError';
 
@@ -131,7 +131,7 @@ class RequestTimeoutError extends ServiceError {
   }
 }
 
-class RequestEntityTooLargeError extends ServiceError {
+class RequestEntityTooLargeError extends HttpError {
   readonly statusCode = HttpStatusCodes.REQUEST_ENTITY_TOO_LARGE;
   readonly errorType = 'RequestEntityTooLargeError';
 
@@ -145,7 +145,7 @@ class RequestEntityTooLargeError extends ServiceError {
   }
 }
 
-class InternalServerError extends ServiceError {
+class InternalServerError extends HttpError {
   readonly statusCode = HttpStatusCodes.INTERNAL_SERVER_ERROR;
   readonly errorType = 'InternalServerError';
 
@@ -159,7 +159,7 @@ class InternalServerError extends ServiceError {
   }
 }
 
-class ServiceUnavailableError extends ServiceError {
+class ServiceUnavailableError extends HttpError {
   readonly statusCode = HttpStatusCodes.SERVICE_UNAVAILABLE;
   readonly errorType = 'ServiceUnavailableError';
 
@@ -183,7 +183,7 @@ export {
   RequestEntityTooLargeError,
   RequestTimeoutError,
   RouteMatchingError,
-  ServiceError,
+  HttpError,
   ServiceUnavailableError,
   UnauthorizedError,
 };

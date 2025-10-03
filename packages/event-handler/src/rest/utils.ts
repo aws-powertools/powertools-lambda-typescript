@@ -4,7 +4,7 @@ import {
   isRegExp,
   isString,
 } from '@aws-lambda-powertools/commons/typeutils';
-import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import type { APIGatewayProxyEvent } from 'aws-lambda';
 import type {
   CompiledRoute,
   ExtendedAPIGatewayProxyResult,

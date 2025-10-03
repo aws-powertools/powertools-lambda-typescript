@@ -31,10 +31,10 @@ import {
 } from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import {
+  HttpError,
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
-  ServiceError,
 } from './errors.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
@@ -399,14 +399,14 @@ class Router {
           headers: { 'Content-Type': 'application/json' },
         });
       } catch (handlerError) {
-        if (handlerError instanceof ServiceError) {
+        if (handlerError instanceof HttpError) {
           return await this.handleError(handlerError, options);
         }
         return this.#defaultErrorHandler(handlerError as Error);
       }
     }
 
-    if (error instanceof ServiceError) {
+    if (error instanceof HttpError) {
       return new Response(JSON.stringify(error.toJSON()), {
         status: error.statusCode,
         headers: { 'Content-Type': 'application/json' },

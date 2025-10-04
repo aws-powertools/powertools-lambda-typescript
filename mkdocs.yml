@@ -201,6 +201,7 @@ plugins:
 extra_css:
   - stylesheets/extra.css
 extra_javascript:
+  - javascript/extra.js
   - https://docs.aws.amazon.com/powertools/shared/mermaid.min.js
   - https://docs.aws.amazon.com/assets/js/awsdocs-boot.js
 

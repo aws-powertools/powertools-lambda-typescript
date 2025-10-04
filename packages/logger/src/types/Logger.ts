@@ -89,7 +89,7 @@ type BaseConstructorOptions = {
   /**
    * The percentage rate at which the log level is `DEBUG`.
    *
-   * See {@link https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/#sampling-debug-logs | Sampling debug logs} for more information.
+   * See {@link https://docs.aws.amazon.com/powertools/typescript/latest/core/logger/#sampling-debug-logs | Sampling debug logs} for more information.
    */
   sampleRateValue?: number;
   /**
@@ -159,7 +159,7 @@ type LogFormatterOption = {
   /**
    * The custom log formatter to process log attributes.
    *
-   * See {@link https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/#custom-log-formatter-bring-your-own-formatter | Custom Log Formatters} for more information.
+   * See {@link https://docs.aws.amazon.com/powertools/typescript/latest/core/logger/#custom-log-formatter-bring-your-own-formatter | Custom Log Formatters} for more information.
    */
   logFormatter?: LogFormatter;
   /**

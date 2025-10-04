@@ -260,7 +260,7 @@ import type {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript SSM client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ssm/classes/ssmclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
+ * For more usage examples, see [our documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/).
  */
 class SSMProvider extends BaseProvider {
   public declare client: SSMClient;
@@ -289,7 +289,7 @@ class SSMProvider extends BaseProvider {
    * };
    * ```
 
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
    *
    * @param name - The name of the parameter to retrieve
    * @param options - Optional options to configure the provider
@@ -330,7 +330,7 @@ class SSMProvider extends BaseProvider {
    * };
    * ```
    *
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
    *
    * @param name - The name of the parameter
    * @param options - Options to configure the parameter
@@ -387,7 +387,7 @@ class SSMProvider extends BaseProvider {
    *
    * For usage examples check {@link SSMProvider | `SSMProvider`}.
    *
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
    *
    * @param path - The path of the parameters to retrieve
    * @param options - Optional options to configure the retrieval
@@ -456,7 +456,7 @@ class SSMProvider extends BaseProvider {
    *                                                                     └────────────────────┘
    * ```
    *
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
    *
    * @param parameters - Object containing parameter names and any optional overrides
    * @param options - Options to configure the retrieval

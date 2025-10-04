@@ -112,7 +112,7 @@ import { SSMProvider } from './SSMProvider.js';
  *
  * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link SSMProvider} class.
  *
- * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+ * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
  *
  * @param path - The path of the parameters to retrieve
  * @param options - Optional options to configure the provider

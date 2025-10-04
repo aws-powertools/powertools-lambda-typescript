@@ -54,7 +54,7 @@ type Environment = 'dev' | 'local' | 'staging' | 'prod' | AutocompletableString;
 /**
  * Standard keys that are included in every log item when using the default log formatter.
  *
- * See {@link https://docs.powertools.aws.dev/lambda/python/latest/core/logger/#standard-structured-keys | Standard structured keys} for more information.
+ * See {@link https://docs.aws.amazon.com/powertools/python/latest/core/logger/#standard-structured-keys | Standard structured keys} for more information.
  */
 type PowertoolsStandardKeys = {
   /**
@@ -72,7 +72,7 @@ type PowertoolsStandardKeys = {
   /**
    * The percentage rate at which the log level is `DEBUG`.
    *
-   * See {@link https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/#sampling-debug-logs | Sampling debug logs} for more information.
+   * See {@link https://docs.aws.amazon.com/powertools/typescript/latest/core/logger/#sampling-debug-logs | Sampling debug logs} for more information.
    *
    * @example 0.1
    */
@@ -107,7 +107,7 @@ type PowertoolsStandardKeys = {
  * Additional keys that are added to the log item when using the default log formatter and
  * having added AWS Lambda context.
  *
- * See {@link https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/#capturing-lambda-context-info | Capturing Lambda context info} for more information.
+ * See {@link https://docs.aws.amazon.com/powertools/typescript/latest/core/logger/#capturing-lambda-context-info | Capturing Lambda context info} for more information.
  */
 type PowertoolsLambdaContextKeys = {
   /**

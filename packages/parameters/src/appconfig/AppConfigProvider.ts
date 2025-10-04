@@ -175,7 +175,7 @@ import type {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript AppConfig Data client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-appconfigdata/classes/appconfigdataclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
+ * For more usage examples, see [our documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/).
  */
 class AppConfigProvider extends BaseProvider {
   public declare client: AppConfigDataClient;
@@ -229,7 +229,7 @@ class AppConfigProvider extends BaseProvider {
    * };
    * ```
    *
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
    *
    * @param name - The name of the configuration profile to retrieve
    * @param options - Optional options to configure the provider

@@ -1,6 +1,6 @@
 # Powertools for AWS Lambda (TypeScript) - Parser Utility <!-- omit in toc -->
 
-Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
+Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.aws.amazon.com/powertools/typescript/latest/#features).
 
 You can use the package in both TypeScript and JavaScript code bases.
 
@@ -43,7 +43,7 @@ npm install @aws-lambda-powertools/parser zod
 
 You can parse inbound events using the `parser` decorator, Middy.js middleware, or [manually](#manual-parsing) using built-in envelopes and schemas.
 
-When using the decorator or middleware, you can specify a schema to parse the event: this can be a [built-in Zod schema](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser/#built-in-schemas) or a custom schema you defined. Custom schemas can be defined using Zod or any other [Standard Schema compatible library](https://standardschema.dev/#what-schema-libraries-implement-the-spec).
+When using the decorator or middleware, you can specify a schema to parse the event: this can be a [built-in Zod schema](https://docs.aws.amazon.com/powertools/typescript/latest/features/parser/#built-in-schemas) or a custom schema you defined. Custom schemas can be defined using Zod or any other [Standard Schema compatible library](https://standardschema.dev/#what-schema-libraries-implement-the-spec).
 
 ### Middy.js Middleware
 
@@ -253,7 +253,7 @@ export const handler = middy(lambdaHandler).use(
 );
 ```
 
-See the [safe parsing](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser#safe-parsing) section in the documentation for more details.
+See the [safe parsing](https://docs.aws.amazon.com/powertools/typescript/latest/features/parser#safe-parsing) section in the documentation for more details.
 
 ### Built-in schemas and envelopes
 
@@ -298,7 +298,7 @@ const myFunction = new Lambda();
 export const handler = myFunction.handler.bind(myFunction);
 ```
 
-Check the utility documentation for a complete list of built-in [schemas](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser/#built-in-schemas) and [envelopes](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parser/#built-in-envelopes).
+Check the utility documentation for a complete list of built-in [schemas](https://docs.aws.amazon.com/powertools/typescript/latest/features/parser/#built-in-schemas) and [envelopes](https://docs.aws.amazon.com/powertools/typescript/latest/features/parser/#built-in-envelopes).
 
 ## Contribute
 
@@ -348,11 +348,11 @@ The following companies, among others, use Powertools:
 
 ### Sharing your work
 
-Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has [already shared](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this) about Powertools for AWS Lambda (TypeScript).
+Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has [already shared](https://docs.aws.amazon.com/powertools/typescript/latest/we_made_this) about Powertools for AWS Lambda (TypeScript).
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/getting-started/lambda-layers/), you can add Powertools as a dev dependency to not impact the development process.
+This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.aws.amazon.com/powertools/typescript/latest/getting-started/lambda-layers/), you can add Powertools as a dev dependency to not impact the development process.
 
 ## License
 

@@ -3,7 +3,7 @@ site_description: Powertools for AWS Lambda (TypeScript)
 site_author: Amazon Web Services
 repo_url: https://github.com/aws-powertools/powertools-lambda-typescript
 edit_uri: edit/main/docs
-site_url: https://docs.powertools.aws.dev/lambda/typescript/latest
+site_url: https://docs.aws.amazon.com/powertools/typescript/latest/
 watch: [
   docs,
   packages/batch/src,
@@ -179,7 +179,6 @@ plugins:
           - getting-started/typescript-settings.md
           - getting-started/lambda-layers.md
         Features:
-          - features/index.md
           - features/tracer.md
           - features/logger.md
           - features/metrics.md
@@ -202,9 +201,9 @@ plugins:
 extra_css:
   - stylesheets/extra.css
 extra_javascript:
-  - javascript/aws-amplify.min.js
   - javascript/extra.js
-  - https://docs.powertools.aws.dev/shared/mermaid.min.js
+  - https://docs.aws.amazon.com/powertools/shared/mermaid.min.js
+  - https://docs.aws.amazon.com/assets/js/awsdocs-boot.js
 
 extra:
   version:

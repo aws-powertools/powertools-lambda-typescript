@@ -88,7 +88,7 @@ import { SecretsProvider } from './SecretsProvider.js';
  *
  * For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use the {@link SecretsProvider} class.
  *
- * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+ * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
  *
  * @param name - The name of the secret to retrieve
  * @param options - Optional options to configure the provider

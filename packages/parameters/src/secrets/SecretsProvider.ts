@@ -133,9 +133,9 @@ import type {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript Secrets Manager client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-secrets-manager/classes/secretsmanagerclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
+ * For more usage examples, see [our documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/).
  *
- * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+ * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
  */
 class SecretsProvider extends BaseProvider {
   public declare client: SecretsManagerClient;
@@ -164,7 +164,7 @@ class SecretsProvider extends BaseProvider {
    * };
    * ```
    *
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
    *
    * @param name - The name of the secret to retrieve
    * @param options - Optional options to configure the provider

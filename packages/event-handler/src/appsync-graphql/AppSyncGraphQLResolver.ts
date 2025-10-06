@@ -173,7 +173,7 @@ class AppSyncGraphQLResolver extends Router {
       }
 
       try {
-        return await this.#withErrorHandling(
+        return this.#withErrorHandling(
           () => this.#executeBatchResolvers(event, context, options),
           event[0],
           options
@@ -193,7 +193,7 @@ class AppSyncGraphQLResolver extends Router {
     }
 
     try {
-      return await this.#withErrorHandling(
+      return this.#withErrorHandling(
         () => this.#executeSingleResolver(event, context, options),
         event,
         options

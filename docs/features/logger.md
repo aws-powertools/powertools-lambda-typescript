@@ -58,7 +58,7 @@ These settings will be used across all logs emitted:
 
 See all environment variables in the [Environment variables](../environment-variables.md) section.
 
-Check API docs to learn more about [Logger constructor options](https://docs.powertools.aws.dev/lambda/typescript/latest/api/types/_aws_lambda_powertools_logger.types.ConstructorOptions.html){target="_blank"}.
+Check API docs to learn more about [Logger constructor options](https://docs.aws.amazon.com/powertools/typescript/latest/api/types/_aws-lambda-powertools_logger.types.ConstructorOptions.html){target="_blank"}.
 
 #### Example using AWS Serverless Application Model (SAM)
 
@@ -625,7 +625,7 @@ Log buffering enables you to buffer logs for a specific request or invocation. E
 When configuring the buffer, you can set the following options to fine-tune how logs are captured, stored, and emitted. You can configure the following options in the `logBufferOptions` constructor parameter:
 
 | Parameter           | Description                                      | Configuration                       | Default |
-|-------------------- |------------------------------------------------- |------------------------------------ | ------- |
+| ------------------- | ------------------------------------------------ | ----------------------------------- | ------- |
 | `enabled`           | Enable or disable log buffering                  | `true`, `false`                     | `false` |
 | `maxBytes`          | Maximum size of the log buffer in bytes          | `number`                            | `20480` |
 | `bufferAtVerbosity` | Minimum log level to buffer                      | `TRACE`, `DEBUG`, `INFO`, `WARNING` | `DEBUG` |

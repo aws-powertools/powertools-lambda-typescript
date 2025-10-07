@@ -133,7 +133,7 @@ import { SSMProvider } from './SSMProvider.js';
  *                                                                     └────────────────────┘
  * ```
  *
- * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+ * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
  *
  * @param parameters - The path of the parameters to retrieve
  * @param options - Options to configure the provider

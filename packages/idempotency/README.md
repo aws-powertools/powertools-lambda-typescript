@@ -1,7 +1,7 @@
 # Powertools for AWS Lambda (TypeScript) - Idempotency Utility <!-- omit in toc -->
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement
-Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
+Serverless [best practices and increase developer velocity](https://docs.aws.amazon.com/powertools/typescript/latest/#features).
 
 You can use the package in both TypeScript and JavaScript code bases.
 
@@ -38,7 +38,7 @@ npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-d
 ```
 
 Next, review the IAM permissions attached to your AWS Lambda function and make sure you allow
-the [actions detailed](https://docs.powertools.aws.dev/lambda/typescript/latest/features/idempotency/#iam-permissions)
+the [actions detailed](https://docs.aws.amazon.com/powertools/typescript/latest/features/idempotency/#iam-permissions)
 in the documentation of the utility.
 
 ### Function wrapper
@@ -163,7 +163,7 @@ export const handler = makeIdempotent(myHandler, {
 ```
 
 Additionally, you can also use one of
-the [JMESPath built-in functions](https://docs.powertools.aws.dev/lambda/typescript/latest/features/jmespath/#built-in-jmespath-functions)
+the [JMESPath built-in functions](https://docs.aws.amazon.com/powertools/typescript/latest/features/jmespath/#built-in-jmespath-functions)
 like `powertools_json()` to decode keys and use parts of the payload as the idempotency key.
 
 ```ts
@@ -190,7 +190,7 @@ export const handler = makeIdempotent(myHandler, {
 });
 ```
 
-Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/features/idempotency/) for more examples.
+Check the [docs](https://docs.aws.amazon.com/powertools/typescript/latest/features/idempotency/) for more examples.
 
 ### Decorator
 
@@ -254,7 +254,7 @@ export const handler = handlerClass.handler.bind(handlerClass);
 ```
 
 The decorator configuration options are identical with the ones of the `makeIdempotent` function. Check
-the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/features/idempotency/) for more examples.
+the [docs](https://docs.aws.amazon.com/powertools/typescript/latest/features/idempotency/) for more examples.
 
 ### Middy middleware
 
@@ -297,7 +297,7 @@ export const handler = middy(
 );
 ```
 
-Check the [docs](https://docs.powertools.aws.dev/lambda/typescript/latest/features/idempotency/) for more examples.
+Check the [docs](https://docs.aws.amazon.com/powertools/typescript/latest/features/idempotency/) for more examples.
 
 ### DynamoDB persistence layer
 
@@ -306,7 +306,7 @@ payload, status for progress, expiration, and much more.
 
 You can customize most of the configuration options of the table, i.e the names of the attributes.
 See
-the [API documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/api/types/_aws_lambda_powertools_idempotency.types.DynamoDBPersistenceOptions.html)
+the [API documentation](https://docs.aws.amazon.com/powertools/typescript/latest/api/types/_aws-lambda-powertools_idempotency.types.DynamoDBPersistenceOptions.html)
 for more details.
 
 ## Contribute
@@ -357,11 +357,11 @@ The following companies, among others, use Powertools:
 
 ### Sharing your work
 
-Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has [already shared](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this) about Powertools for AWS Lambda (TypeScript).
+Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has [already shared](https://docs.aws.amazon.com/powertools/typescript/latest/we_made_this) about Powertools for AWS Lambda (TypeScript).
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/getting-started/lambda-layers/), you can add Powertools as a dev dependency to not impact the development process.
+This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.aws.amazon.com/powertools/typescript/latest/getting-started/lambda-layers/), you can add Powertools as a dev dependency to not impact the development process.
 
 ## License
 

@@ -9,7 +9,7 @@ Globals:
     Runtime: nodejs22.x
     Environment:
       Variables:
-        # Powertools for AWS Lambda (TypeScript) env vars: https://docs.powertools.aws.dev/lambda/typescript/latest/environment-variables/
+        # Powertools for AWS Lambda (TypeScript) env vars: https://docs.aws.amazon.com/powertools/typescript/latest/environment-variables/
         POWERTOOLS_LOG_LEVEL: INFO
         POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
         POWERTOOLS_LOGGER_LOG_EVENT: true

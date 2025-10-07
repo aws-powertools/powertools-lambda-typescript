@@ -1,7 +1,6 @@
 ---
 title: Kafka Consumer
 description: Utility
-status: new
 ---
 
 The Kafka Consumer utility transparently handles message deserialization, provides an intuitive developer experience, and integrates seamlessly with the rest of the Powertools for AWS Lambda ecosystem.
@@ -38,7 +37,7 @@ The Kafka Consumer utility transparently handles message deserialization, provid
 Lambda processes Kafka messages as discrete events rather than continuous streams, requiring a different approach to consumer development that Powertools for AWS helps standardize.
 
 | Aspect                | Traditional Kafka Consumers         | Lambda Kafka Consumer                                          |
-|-----------------------|-------------------------------------|----------------------------------------------------------------|
+| --------------------- | ----------------------------------- | -------------------------------------------------------------- |
 | **Model**             | Pull-based (you poll for messages)  | Push-based (Lambda invoked with messages)                      |
 | **Scaling**           | Manual scaling configuration        | Automatic scaling to partition count                           |
 | **State**             | Long-running application with state | Stateless, ephemeral executions                                |
@@ -201,7 +200,7 @@ The Kafka consumer utility supports multiple serialization formats to match your
 === "Supported Formats"
 
     | Format               | Schema Type  | Description                       | Required Parameters                  |
-    |----------------------|--------------|-----------------------------------|--------------------------------------|
+    | -------------------- | ------------ | --------------------------------- | ------------------------------------ |
     | **JSON**             | `"JSON"`     | Human-readable text format        | None                                 |
     | **Avro**             | `"AVRO"`     | Compact binary format with schema | `value.schema` (Avro schema string)  |
     | **Protocol Buffers** | `"PROTOBUF"` | Efficient binary format           | `value.schema` (Proto message class) |
@@ -209,7 +208,7 @@ The Kafka consumer utility supports multiple serialization formats to match your
 === "Format Comparison"
 
     | Feature                       | JSON     | Avro                 | Protocol Buffers        |
-    |-------------------------------|----------|----------------------|-------------------------|
+    | ----------------------------- | -------- | -------------------- | ----------------------- |
     | **Schema Definition**         | Optional | Required JSON schema | Required Protobuf class |
     | **Schema Evolution**          | None     | Strong support       | Strong support          |
     | **Size Efficiency**           | Low      | High                 | Highest                 |
@@ -241,7 +240,7 @@ For debugging purposes, you can also access the original key, value, and headers
 #### Available metadata properties
 
 | Property              | Description                                                      | Example Use Case                                                    |
-|-----------------------|------------------------------------------------------------------|---------------------------------------------------------------------|
+| --------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------- |
 | `topic`               | Topic name the record was published to                           | Routing logic in multi-topic consumers                              |
 | `partition`           | Kafka partition number                                           | Tracking message distribution                                       |
 | `offset`              | Position in the partition                                        | De-duplication, exactly-once processing                             |
@@ -304,7 +303,7 @@ Handle errors gracefully when processing Kafka messages to ensure your applicati
 #### Error types
 
 | Exception                            | Description                                   | Common Causes                                                               |
-|--------------------------------------|-----------------------------------------------|-----------------------------------------------------------------------------|
+| ------------------------------------ | --------------------------------------------- | --------------------------------------------------------------------------- |
 | `KafkaConsumerError`.                | Base class for all Kafka consumer errors      | General unhandled errors                                                    |
 | `KafkaConsumerDeserializationError`  | Thrown when message deserialization fails     | Corrupted message data, schema mismatch, or wrong schema type configuration |
 | `KafkaConsumerMissingSchemaError`    | Thrown when a required schema is not provided | Missing schema for AVRO or PROTOBUF formats (required parameter)            |

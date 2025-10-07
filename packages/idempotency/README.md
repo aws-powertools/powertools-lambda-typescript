@@ -306,7 +306,7 @@ payload, status for progress, expiration, and much more.
 
 You can customize most of the configuration options of the table, i.e the names of the attributes.
 See
-the [API documentation](https://docs.aws.amazon.com/powertools/typescript/latest/api/types/_aws_lambda_powertools_idempotency.types.DynamoDBPersistenceOptions.html)
+the [API documentation](https://docs.aws.amazon.com/powertools/typescript/latest/api/types/_aws-lambda-powertools_idempotency.types.DynamoDBPersistenceOptions.html)
 for more details.
 
 ## Contribute

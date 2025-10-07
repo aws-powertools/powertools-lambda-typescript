@@ -42,18 +42,7 @@ if (isTruthy(truthyValue)) {
 }
 ```
 
-Here's a full list of type utilities available in the package:
-
-- [`isInteger`](https://docs.aws.amazon.com/powertools/typescript/latest/api/functions/_aws_lambda_powertools_commons.isIntegerNumber.html)
-- [`isNull`](https://docs.aws.amazon.com/powertools/typescript/latest/api/functions/_aws_lambda_powertools_commons.isNull.html)
-- [`isNullOrUndefined`](https://docs.aws.amazon.com/powertools/typescript/latest/api/functions/_aws_lambda_powertools_commons.isNullOrUndefined.html)
-- [`isNumber`](https://docs.aws.amazon.com/powertools/typescript/latest/api/functions/_aws_lambda_powertools_commons.isNumber.html)
-- [`isRecord`](https://docs.aws.amazon.com/powertools/typescript/latest/api/functions/_aws_lambda_powertools_commons.isRecord.html)
-- [`isStrictEqual`](https://docs.aws.amazon.com/powertools/typescript/latest/api/functions/_aws_lambda_powertools_commons.isStrictEqual.html)
-- [`isString`](https://docs.aws.amazon.com/powertools/typescript/latest/api/functions/_aws_lambda_powertools_commons.isString.html)
-- [`isTruthy`](https://docs.aws.amazon.com/powertools/typescript/latest/api/functions/_aws_lambda_powertools_commons.isTruthy.html)
-
-Many of these utilities also double as type guards, which you can use to narrow down the type of an object or value.
+You can find a full list of type utilities available [in the API docs](https://docs.aws.amazon.com/powertools/typescript/latest/api/modules/_aws-lambda-powertools_commons.typeUtils.html). Many of these utilities also double as type guards, which you can use to narrow down the type of an object or value.
 
 ### Base64 utils
 

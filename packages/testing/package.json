@@ -99,7 +99,7 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
   "dependencies": {
     "@aws-cdk/toolkit-lib": "^1.9.0",
-    "@aws-sdk/client-lambda": "^3.896.0",
+    "@aws-sdk/client-lambda": "^3.901.0",
     "@smithy/util-utf8": "^4.0.0",
     "aws-cdk-lib": "^2.219.0",
     "esbuild": "^0.25.10",
@@ -107,6 +107,6 @@
   },
   "devDependencies": {
     "@types/promise-retry": "^1.1.6",
-    "aws-sdk-client-mock-vitest": "^6.2.0"
+    "aws-sdk-client-mock-vitest": "^6.2.1"
   }
 }

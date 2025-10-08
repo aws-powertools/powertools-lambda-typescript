@@ -369,7 +369,7 @@ Tracer exposes a `getRootXrayTraceId()` method that allows you to retrieve the [
 
 ### Escape hatch mechanism
 
-You can use `tracer.provider` attribute to access [a subset of the methods provided](https://docs.powertools.aws.dev/lambda/typescript/latest/api/classes/_aws_lambda_powertools_tracer.provider_ProviderService.ProviderService.html) by the [AWS X-Ray SDK](https://docs.aws.amazon.com/xray-sdk-for-nodejs/latest/reference/AWSXRay.html).
+You can use `tracer.provider` attribute to access [a subset of the methods provided](https://docs.aws.amazon.com/powertools/typescript/latest/api/classes/_aws-lambda-powertools_tracer.provider_ProviderService.ProviderService.html) by the [AWS X-Ray SDK](https://docs.aws.amazon.com/xray-sdk-for-nodejs/latest/reference/AWSXRay.html).
 
 This is useful when you need a feature available in X-Ray that is not available in the Tracer utility, for example [SQL queries tracing](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-sqlclients.html), or [a custom logger](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-configuration.html#xray-sdk-nodejs-configuration-logging).
 

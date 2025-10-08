@@ -179,7 +179,7 @@ If you need to send custom headers or a different response structure/code, you c
 The following HTTP error classes are available for use in your route handlers:
 
 | Error Class                  | HTTP Status Code | Description                                                                            |
-|------------------------------|------------------|----------------------------------------------------------------------------------------|
+| ---------------------------- | ---------------- | -------------------------------------------------------------------------------------- |
 | `BadRequestError`            | 400              | Bad Request - The request cannot be fulfilled due to bad syntax                        |
 | `UnauthorizedError`          | 401              | Unauthorized - Authentication is required and has failed or not been provided          |
 | `ForbiddenError`             | 403              | Forbidden - The request is valid but the server is refusing action                     |
@@ -436,14 +436,14 @@ For convenience, these are the default CORS settings applied when you register t
 !!! warning "Security consideration"
     Always set the `origin` option to a specific domain or list of domains in production environments to avoid security risks associated with allowing all origins.
 
-| Key              | Default Value                                                                | Description                                                                                                                                                               |
-|------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `origin`         | `*`                                                                          | Specifies the allowed origin(s) that can access the resource. Use `*` to allow all origins.                                                                               |
-| `methods`        | `GET,HEAD,PUT,PATCH,POST,DELETE`                                             | Specifies the allowed HTTP methods.                                                                                                                                       |
-| `allowHeaders`   | `[Authorization, Content-Type, X-Amz-Date, X-Api-Key, X-Amz-Security-Token]` | Specifies the allowed headers that can be used in the actual request.                                                                                                     |
-| `exposeHeaders`  | `[]`                                                                         | Any additional header beyond the [safe listed by CORS specification](https://developer.mozilla.org/en-US/docs/Glossary/CORS-safelisted_response_header){target="_blank"}. |
-| `credentials`    | `false`                                                                      | Only necessary when you need to expose cookies, authorization headers or TLS client certificates.                                                                         |
-| `maxAge`         | `0`                                                                          | Indicates how long the results of a preflight request can be cached. Value is in seconds.                                                                                 |
+| Key             | Default Value                                                                | Description                                                                                                                                                               |
+| --------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `origin`        | `*`                                                                          | Specifies the allowed origin(s) that can access the resource. Use `*` to allow all origins.                                                                               |
+| `methods`       | `GET,HEAD,PUT,PATCH,POST,DELETE`                                             | Specifies the allowed HTTP methods.                                                                                                                                       |
+| `allowHeaders`  | `[Authorization, Content-Type, X-Amz-Date, X-Api-Key, X-Amz-Security-Token]` | Specifies the allowed headers that can be used in the actual request.                                                                                                     |
+| `exposeHeaders` | `[]`                                                                         | Any additional header beyond the [safe listed by CORS specification](https://developer.mozilla.org/en-US/docs/Glossary/CORS-safelisted_response_header){target="_blank"}. |
+| `credentials`   | `false`                                                                      | Only necessary when you need to expose cookies, authorization headers or TLS client certificates.                                                                         |
+| `maxAge`        | `0`                                                                          | Indicates how long the results of a preflight request can be cached. Value is in seconds.                                                                                 |
 
 #### Per-route overrides
 
@@ -559,7 +559,7 @@ When an unhandled error occurs in your route handler or middleware, Event Handle
 
 Currently, Event Handler does not support automatic generation of OpenAPI documentation from your route definitions.
 
-We plan to add this feature in a future release with an experience similar to what described in the [utility's RFC](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3500){target="_blank"} and to what available in [Powertools for AWS Lambda (Python)](https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#openapi){target="_blank"}.
+We plan to add this feature in a future release with an experience similar to what described in the [utility's RFC](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3500){target="_blank"} and to what available in [Powertools for AWS Lambda (Python)](https://docs.aws.amazon.com/powertools/python/latest/core/event_handler/api_gateway/#openapi){target="_blank"}.
 
 Please [check this issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4515) for more details, and add 👍 if you would like us to prioritize it.
 

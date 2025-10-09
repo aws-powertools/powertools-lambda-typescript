@@ -1291,7 +1291,12 @@ class Logger extends Utility implements LoggerInterface {
       correlationIdSearchFn,
     } = options;
 
-    if (persistentLogAttributes && persistentKeys) {
+    if (
+      persistentLogAttributes &&
+      Object.keys(persistentLogAttributes).length > 0 &&
+      persistentKeys &&
+      Object.keys(persistentKeys).length > 0
+    ) {
       this.warn(
         'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases'
       );

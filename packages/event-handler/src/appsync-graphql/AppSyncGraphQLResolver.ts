@@ -2,6 +2,7 @@ import type { AppSyncResolverEvent, Context } from 'aws-lambda';
 import type {
   BatchResolverAggregateHandlerFn,
   BatchResolverHandlerFn,
+  GraphQlRouterOptions,
   ResolverHandler,
   RouteHandlerOptions,
 } from '../types/appsync-graphql.js';
@@ -42,6 +43,16 @@ import { isAppSyncGraphQLEvent } from './utils.js';
  * ```
  */
 class AppSyncGraphQLResolver extends Router {
+  /**
+   * A map to hold shared contextual data accessible to all resolver handlers.
+   */
+  public readonly sharedContext: Map<string, unknown>;
+
+  public constructor(options?: GraphQlRouterOptions) {
+    super(options);
+    this.sharedContext = new Map<string, unknown>();
+  }
+
   /**
    * Resolve the response based on the provided event and route handlers configured.
    *
@@ -160,11 +171,19 @@ class AppSyncGraphQLResolver extends Router {
         );
         return;
       }
-      return this.#withErrorHandling(
-        () => this.#executeBatchResolvers(event, context, options),
-        event[0],
-        options
-      );
+
+      try {
+        return this.#withErrorHandling(
+          () => this.#executeBatchResolvers(event, context, options),
+          event[0],
+          options
+        );
+      } finally {
+        /**
+         * Clear shared context after batch processing for safety
+         */
+        this.sharedContext.clear();
+      }
     }
     if (!isAppSyncGraphQLEvent(event)) {
       this.logger.warn(
@@ -173,11 +192,96 @@ class AppSyncGraphQLResolver extends Router {
       return;
     }
 
-    return this.#withErrorHandling(
-      () => this.#executeSingleResolver(event, context, options),
-      event,
-      options
-    );
+    try {
+      return this.#withErrorHandling(
+        () => this.#executeSingleResolver(event, context, options),
+        event,
+        options
+      );
+    } finally {
+      /**
+       * Clear shared context after batch processing for safety
+       */
+      this.sharedContext.clear();
+    }
+  }
+
+  /**
+   * Includes one or more routers and merges their registries into the current resolver.
+   *
+   * This method allows you to compose multiple routers by merging their
+   * route registries into the current AppSync GraphQL resolver instance.
+   * All resolver handlers, batch resolver handlers, and exception handlers
+   * from the included routers will be available in the current resolver.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver, Router } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const postRouter = new Router();
+   * postRouter.onQuery('getPosts', async () => [{ id: 1, title: 'Post 1' }]);
+   *
+   * const userRouter = new Router();
+   * userRouter.onQuery('getUsers', async () => [{ id: 1, name: 'John Doe' }]);
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * app.includeRouter([userRouter, postRouter]);
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * @param router - The router instance or array of router instances whose registries will be merged
+   */
+  public includeRouter(router: Router | Router[]): void {
+    const routers = Array.isArray(router) ? router : [router];
+
+    this.logger.debug('Including router');
+    for (const routerToBeIncluded of routers) {
+      this.mergeRegistriesFrom(routerToBeIncluded);
+    }
+    this.logger.debug('Router included successfully');
+  }
+
+  /**
+   * Appends contextual data to be shared with all resolver handlers.
+   *
+   * This method allows you to add key-value pairs to the shared context that will be
+   * accessible to all resolver handlers through the `sharedContext` parameter. The context
+   * is automatically cleared after each invocation for safety.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver, Router } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const postRouter = new Router();
+   * postRouter.onQuery('getPosts', async ({ sharedContext }) => {
+   *   const requestId = sharedContext?.get('requestId');
+   *   return [{ id: 1, title: 'Post 1', requestId }];
+   * });
+   *
+   * const userRouter = new Router();
+   * userRouter.onQuery('getUsers', async ({ sharedContext }) => {
+   *   const requestId = sharedContext?.get('requestId');
+   *   return [{ id: 1, name: 'John Doe', requestId }];
+   * });
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * app.includeRouter([userRouter, postRouter]);
+   * app.appendContext({ requestId: '12345' });
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * @param data - A record of key-value pairs to add to the shared context
+   */
+  public appendContext(data: Record<string, unknown>): void {
+    for (const [key, value] of Object.entries(data)) {
+      this.sharedContext.set(key, value);
+    }
   }
 
   /**
@@ -315,7 +419,11 @@ class AppSyncGraphQLResolver extends Router {
         options.handler as BatchResolverAggregateHandlerFn
       ).apply(resolveOptions?.scope ?? this, [
         events,
-        { event: events, context },
+        {
+          event: events,
+          context,
+          ...this.#getSharedContextOnlyIfNotEmpty(),
+        },
       ]);
 
       if (!Array.isArray(response)) {
@@ -334,7 +442,11 @@ class AppSyncGraphQLResolver extends Router {
       for (const event of events) {
         const result = await handler.apply(resolveOptions?.scope ?? this, [
           event.arguments,
-          { event, context },
+          {
+            event,
+            context,
+            ...this.#getSharedContextOnlyIfNotEmpty(),
+          },
         ]);
         results.push(result);
       }
@@ -345,7 +457,11 @@ class AppSyncGraphQLResolver extends Router {
       try {
         const result = await handler.apply(resolveOptions?.scope ?? this, [
           events[i].arguments,
-          { event: events[i], context },
+          {
+            event: events[i],
+            context,
+            ...this.#getSharedContextOnlyIfNotEmpty(),
+          },
         ]);
         results.push(result);
       } catch (error) {
@@ -387,7 +503,14 @@ class AppSyncGraphQLResolver extends Router {
     if (resolverHandlerOptions) {
       return (resolverHandlerOptions.handler as ResolverHandler).apply(
         options?.scope ?? this,
-        [event.arguments, { event, context }]
+        [
+          event.arguments,
+          {
+            event,
+            context,
+            ...this.#getSharedContextOnlyIfNotEmpty(),
+          },
+        ]
       );
     }
 
@@ -409,6 +532,19 @@ class AppSyncGraphQLResolver extends Router {
     }
     return {
       error: 'An unknown error occurred',
+    };
+  }
+
+  /**
+   * Returns an object containing the shared context only if it has entries.
+   * This helps avoid passing an empty map to handlers.
+   */
+  #getSharedContextOnlyIfNotEmpty(): {
+    sharedContext: Map<string, unknown> | undefined;
+  } {
+    return {
+      sharedContext:
+        this.sharedContext.size > 0 ? this.sharedContext : undefined,
     };
   }
 }

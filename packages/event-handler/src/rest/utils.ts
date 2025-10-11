@@ -1,4 +1,4 @@
-import { Readable, Writable } from 'node:stream';
+import { Duplex, Readable, Writable } from 'node:stream';
 import {
   isRecord,
   isRegExp,
@@ -112,7 +112,7 @@ export const isNodeReadableStream = (value: unknown): value is Readable => {
   return (
     value != null &&
     typeof value === 'object' &&
-    value instanceof Readable &&
+    (value instanceof Readable || value instanceof Duplex) &&
     'readable' in value &&
     'read' in value &&
     typeof value.read === 'function'

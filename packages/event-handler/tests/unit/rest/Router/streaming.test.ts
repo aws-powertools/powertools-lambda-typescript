@@ -1,4 +1,4 @@
-import { Readable } from 'node:stream';
+import { Duplex, PassThrough, Readable } from 'node:stream';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it, vi } from 'vitest';
 import { UnauthorizedError } from '../../../../src/rest/errors.js';
@@ -305,5 +305,30 @@ describe('Class: Router - Streaming', () => {
     await expect(
       app.resolveStream(invalidEvent, context, { responseStream })
     ).rejects.toThrow();
+  });
+
+  it('handles duplex stream body', async () => {
+    // Prepare
+    const app = new Router();
+    const passThrough = new PassThrough();
+    passThrough.write(Buffer.from('{"message":"duplex stream body"}'));
+    passThrough.end();
+
+    app.get('/test', () => ({
+      statusCode: 200,
+      body: Duplex.from(passThrough),
+    }));
+
+    const responseStream = new MockResponseStream();
+
+    // Act
+    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+      responseStream,
+    });
+
+    // Assess
+    const { prelude, body } = parseStreamOutput(responseStream.chunks);
+    expect(prelude.statusCode).toBe(200);
+    expect(JSON.parse(body)).toEqual({ message: 'duplex stream body' });
   });
 });

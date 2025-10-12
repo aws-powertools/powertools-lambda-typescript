@@ -160,7 +160,6 @@ class AppSyncGraphQLResolver extends Router {
         );
         return;
       }
-
       return this.#withErrorHandling(
         () => this.#executeBatchResolvers(event, context, options),
         event[0],

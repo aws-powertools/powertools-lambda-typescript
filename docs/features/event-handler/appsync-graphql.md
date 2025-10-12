@@ -144,34 +144,6 @@ Let's assume you have `app.ts` as your Lambda function entrypoint and routes in 
     --8<-- "examples/snippets/event-handler/appsync-graphql/splitRouter.ts"
     ```
 
-#### Sharing contextual data
-
-You can use `appendContext` when you want to share data between your App and Router instances. Any data you share will be available via the `sharedContext` parameter in your resolver handlers.
-
-???+ warning
-    For safety, we clear the context after each invocation.
-
-???+ tip
-    This can also be useful for injecting contextual information before a request is processed.
-
-=== "app.ts"
-
-    ```typescript hl_lines="10"
-    --8<-- "examples/snippets/event-handler/appsync-graphql/appendContext.ts"
-    ```
-
-=== "postRouter.ts"
-
-    ```typescript hl_lines="5-8"
-    --8<-- "examples/snippets/event-handler/appsync-graphql/postRouterWithContext.ts"
-    ```
-
-=== "userRouter.ts"
-
-    ```typescript hl_lines="5-8"
-    --8<-- "examples/snippets/event-handler/appsync-graphql/userRouterWithContext.ts"
-    ```
-
 ### Nested mappings
 
 !!! note

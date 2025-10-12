@@ -354,10 +354,7 @@ class AppSyncGraphQLResolver extends Router {
         options.handler as BatchResolverAggregateHandlerFn
       ).apply(resolveOptions?.scope ?? this, [
         events,
-        {
-          event: events,
-          context,
-        },
+        { event: events, context },
       ]);
 
       if (!Array.isArray(response)) {
@@ -376,10 +373,7 @@ class AppSyncGraphQLResolver extends Router {
       for (const event of events) {
         const result = await handler.apply(resolveOptions?.scope ?? this, [
           event.arguments,
-          {
-            event,
-            context,
-          },
+          { event, context },
         ]);
         results.push(result);
       }
@@ -390,10 +384,7 @@ class AppSyncGraphQLResolver extends Router {
       try {
         const result = await handler.apply(resolveOptions?.scope ?? this, [
           events[i].arguments,
-          {
-            event: events[i],
-            context,
-          },
+          { event: events[i], context },
         ]);
         results.push(result);
       } catch (error) {
@@ -435,13 +426,7 @@ class AppSyncGraphQLResolver extends Router {
     if (resolverHandlerOptions) {
       return (resolverHandlerOptions.handler as ResolverHandler).apply(
         options?.scope ?? this,
-        [
-          event.arguments,
-          {
-            event,
-            context,
-          },
-        ]
+        [event.arguments, { event, context }]
       );
     }
 

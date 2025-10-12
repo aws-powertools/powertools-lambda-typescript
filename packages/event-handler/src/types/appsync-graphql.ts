@@ -14,7 +14,6 @@ type BatchResolverSyncHandlerFn<
   options: {
     event: AppSyncResolverEvent<TParams, TSource>;
     context: Context;
-    sharedContext?: Map<string, unknown>;
   }
 ) => unknown;
 
@@ -26,7 +25,6 @@ type BatchResolverHandlerFn<
   options: {
     event: AppSyncResolverEvent<TParams, TSource>;
     context: Context;
-    sharedContext?: Map<string, unknown>;
   }
 ) => Promise<unknown>;
 
@@ -38,7 +36,6 @@ type BatchResolverAggregateHandlerFn<
   options: {
     event: AppSyncResolverEvent<TParams, TSource>[];
     context: Context;
-    sharedContext?: Map<string, unknown>;
   }
 ) => Promise<unknown>;
 
@@ -50,7 +47,6 @@ type BatchResolverSyncAggregateHandlerFn<
   options: {
     event: AppSyncResolverEvent<TParams, TSource>[];
     context: Context;
-    sharedContext?: Map<string, unknown>;
   }
 ) => unknown;
 
@@ -74,7 +70,6 @@ type ResolverSyncHandlerFn<TParams = Record<string, unknown>> = (
   options: {
     event: AppSyncResolverEvent<TParams>;
     context: Context;
-    sharedContext?: Map<string, unknown>;
   }
 ) => unknown;
 
@@ -83,7 +78,6 @@ type ResolverHandlerFn<TParams = Record<string, unknown>> = (
   options: {
     event: AppSyncResolverEvent<TParams>;
     context: Context;
-    sharedContext?: Map<string, unknown>;
   }
 ) => Promise<unknown>;
 

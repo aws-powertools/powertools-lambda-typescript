@@ -112,6 +112,28 @@ describe('Function: makeIdempotent', () => {
     expect(deleteRecordSpy).toHaveBeenCalledWith(event);
   });
 
+  it('handles an execution that throws an early middleware error (middleware)', async () => {
+    // Prepare
+    const handler = middy(fnSuccessfull)
+      .use({ before: fnError })
+      .use(makeHandlerIdempotent(mockIdempotencyOptions));
+    const saveInProgressSpy = vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveInProgress'
+    );
+    const deleteRecordSpy = vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'deleteRecord'
+    );
+
+    // Act && Assess
+    await expect(handler(event, context)).rejects.toThrowError(
+      'Something went wrong'
+    );
+    expect(saveInProgressSpy).toHaveBeenCalledTimes(0);
+    expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
+  });
+
   it.each([
     {
       type: 'wrapper',

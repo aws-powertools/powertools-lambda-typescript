@@ -37,34 +37,8 @@ class ExceptionHandlerRegistry {
     const errors = Array.isArray(error) ? error : [error];
 
     for (const err of errors) {
-      this.registerErrorHandler(err, handler);
+      this.#registerErrorHandler(err, handler);
     }
-  }
-
-  /**
-   * Registers a error handler for a specific error class.
-   *
-   * @param errorClass - The error class to register the handler for.
-   * @param handler - The exception handler function.
-   */
-  private registerErrorHandler(
-    errorClass: ErrorClass<Error>,
-    handler: ExceptionHandler
-  ): void {
-    const errorName = errorClass.name;
-
-    this.#logger.debug(`Adding exception handler for error class ${errorName}`);
-
-    if (this.handlers.has(errorName)) {
-      this.#logger.warn(
-        `An exception handler for error class '${errorName}' is already registered. The previous handler will be replaced.`
-      );
-    }
-
-    this.handlers.set(errorName, {
-      error: errorClass,
-      handler,
-    });
   }
 
   /**
@@ -87,6 +61,60 @@ class ExceptionHandlerRegistry {
 
     this.#logger.debug(`No exception handler found for error: ${errorName}`);
     return null;
+  }
+
+  /**
+   * Merges handlers from another ExceptionHandlerRegistry into this registry.
+   * Existing handlers for the same error class will be replaced and a warning will be logged.
+   *
+   * @param otherRegistry - The registry to merge handlers from.
+   */
+  public merge(otherRegistry: ExceptionHandlerRegistry): void {
+    for (const [errorName, handlerOptions] of otherRegistry.handlers) {
+      if (this.handlers.has(errorName)) {
+        this.#warnHandlerOverriding(errorName);
+      }
+      this.handlers.set(errorName, handlerOptions);
+    }
+  }
+
+  /**
+   * Registers a error handler for a specific error class.
+   *
+   * @param errorClass - The error class to register the handler for.
+   * @param handler - The exception handler function.
+   */
+  #registerErrorHandler(
+    errorClass: ErrorClass<Error>,
+    handler: ExceptionHandler
+  ): void {
+    const errorName = errorClass.name;
+
+    this.#logger.debug(`Adding exception handler for error class ${errorName}`);
+
+    if (this.handlers.has(errorName)) {
+      this.#warnHandlerOverriding(errorName);
+    }
+
+    this.handlers.set(errorName, {
+      error: errorClass,
+      handler,
+    });
+  }
+
+  /**
+   * Logs a warning message when an exception handler is being overridden.
+   *
+   * This method is called internally when registering a new exception handler
+   * for an error class that already has a handler registered. It warns the user
+   * that the previous handler will be replaced with the new one.
+   *
+   * @param errorName - The name of the error class for which a handler is being overridden
+   */
+  #warnHandlerOverriding(errorName: string): void {
+    this.#logger.warn(
+      `An exception handler for error class '${errorName}' is already registered. The previous handler will be replaced.`
+    );
   }
 }
 

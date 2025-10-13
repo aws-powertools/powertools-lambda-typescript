@@ -180,7 +180,7 @@ const makeHandlerIdempotent = (
     }
     const idempotencyHandler =
       getIdempotencyHandlerFromRequestInternal(request);
-    await idempotencyHandler.handleMiddyOnError();
+    await idempotencyHandler?.handleMiddyOnError();
   };
 
   return {

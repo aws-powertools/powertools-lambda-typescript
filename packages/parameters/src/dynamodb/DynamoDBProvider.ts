@@ -225,7 +225,7 @@ import type {
  *
  * This object must be an instance of the [AWS SDK v3 for JavaScript DynamoDB client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/dynamodbclient.html).
  *
- * For more usage examples, see [our documentation](https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/).
+ * For more usage examples, see [our documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/).
  */
 class DynamoDBProvider extends BaseProvider {
   public declare client: DynamoDBClient;
@@ -266,7 +266,7 @@ class DynamoDBProvider extends BaseProvider {
    * };
    * ```
    *
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
    *
    * @param name - The name of the value to retrieve (partition key)
    * @param options - Optional options to configure the provider
@@ -310,7 +310,7 @@ class DynamoDBProvider extends BaseProvider {
    * };
    * ```
    *
-   * @see https://docs.powertools.aws.dev/lambda/typescript/latest/features/parameters/
+   * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/
    *
    * @param path - The path of the values to retrieve (partition key)
    * @param options - Optional options to configure the provider

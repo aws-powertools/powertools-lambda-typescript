@@ -101,7 +101,7 @@ import type {
  *
  * If instead you use Middy.js middlewares, you use the {@link "middleware/middy".injectLambdaContext | `injectLambdaContext()`} middleware.
  *
- * @see https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/
+ * @see https://docs.aws.amazon.com/powertools/typescript/latest/core/logger/
  */
 class Logger extends Utility implements LoggerInterface {
   /**
@@ -1291,7 +1291,12 @@ class Logger extends Utility implements LoggerInterface {
       correlationIdSearchFn,
     } = options;
 
-    if (persistentLogAttributes && persistentKeys) {
+    if (
+      persistentLogAttributes &&
+      Object.keys(persistentLogAttributes).length > 0 &&
+      persistentKeys &&
+      Object.keys(persistentKeys).length > 0
+    ) {
       this.warn(
         'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases'
       );

@@ -622,6 +622,15 @@ describe('Working with keys', () => {
     );
   });
 
+  it('should pass persistentKeys to child with no warning', () => {
+    // Prepare
+    const logger = new Logger();
+    logger.createChild({ persistentKeys: { abc: 'xyz' } });
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledTimes(0);
+  });
+
   it("doesn't overwrite standard keys when appending keys", () => {
     // Prepare
     const logger = new Logger();

@@ -1,6 +1,6 @@
 # Powertools for AWS Lambda (TypeScript)
 
-Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.powertools.aws.dev/lambda/typescript/latest/#features).
+Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.aws.amazon.com/powertools/typescript/latest/#features).
 
 You can use the library in both TypeScript and JavaScript code bases.
 
@@ -28,7 +28,7 @@ To get started, install the library by running:
 npm i @aws-lambda-powertools/metrics
 ```
 
-After initializing the Metrics class, you can add metrics using the [https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics/#creating-metrics](`addMetric()`) method. The metrics are stored in a buffer and are flushed when calling [https://docs.powertools.aws.dev/lambda/typescript/latest/core/metrics/#flushing-metrics](`publishStoredMetrics()`).
+After initializing the Metrics class, you can add metrics using the [https://docs.aws.amazon.com/powertools/typescript/latest/core/metrics/#creating-metrics](`addMetric()`) method. The metrics are stored in a buffer and are flushed when calling [https://docs.aws.amazon.com/powertools/typescript/latest/core/metrics/#flushing-metrics](`publishStoredMetrics()`).
 
 Each metric can also have dimensions and metadata added to it.
 
@@ -178,11 +178,11 @@ The following companies, among others, use Powertools:
 
 ### Sharing your work
 
-Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has [already shared](https://docs.powertools.aws.dev/lambda/typescript/latest/we_made_this) about Powertools for AWS Lambda (TypeScript).
+Share what you did with Powertools for AWS Lambda (TypeScript) 💞💞. Blog post, workshops, presentation, sample apps and others. Check out what the community has [already shared](https://docs.aws.amazon.com/powertools/typescript/latest/we_made_this) about Powertools for AWS Lambda (TypeScript).
 
 ### Using Lambda Layer
 
-This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.powertools.aws.dev/lambda/typescript/latest/getting-started/lambda-layers/), you can add Powertools as a dev dependency to not impact the development process.
+This helps us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way, and helps us gain future investments for other Powertools for AWS Lambda languages. When [using Layers](https://docs.aws.amazon.com/powertools/typescript/latest/getting-started/lambda-layers/), you can add Powertools as a dev dependency to not impact the development process.
 
 ## License
 

@@ -181,6 +181,50 @@ class AppSyncGraphQLResolver extends Router {
   }
 
   /**
+   * Includes one or more routers and merges their registries into the current resolver.
+   *
+   * This method allows you to compose multiple routers by merging their
+   * route registries into the current AppSync GraphQL resolver instance.
+   * All resolver handlers, batch resolver handlers, and exception handlers
+   * from the included routers will be available in the current resolver.
+   *
+   * **Note:** When multiple routers register handlers for the same type and field combination
+   * (e.g., both `userRouter` and `postRouter` define `Query.getPost`), the handler from the
+   * last included router takes precedence and will override earlier registrations.
+   * This behavior also applies to exception handlers registered for the same error class.
+   * A warning is logged to help you identify potential conflicts when handlers are overridden.
+   *
+   * @example
+   * ```ts
+   * import { AppSyncGraphQLResolver, Router } from '@aws-lambda-powertools/event-handler/appsync-graphql';
+   *
+   * const postRouter = new Router();
+   * postRouter.onQuery('getPosts', async () => [{ id: 1, title: 'Post 1' }]);
+   *
+   * const userRouter = new Router();
+   * userRouter.onQuery('getUsers', async () => [{ id: 1, name: 'John Doe' }]);
+   *
+   * const app = new AppSyncGraphQLResolver();
+   *
+   * app.includeRouter([userRouter, postRouter]);
+   *
+   * export const handler = async (event, context) =>
+   *   app.resolve(event, context);
+   * ```
+   *
+   * @param router - The router instance or array of router instances whose registries will be merged
+   */
+  public includeRouter(router: Router | Router[]): void {
+    const routers = Array.isArray(router) ? router : [router];
+
+    this.logger.debug('Including router');
+    for (const routerToBeIncluded of routers) {
+      this.mergeRegistriesFrom(routerToBeIncluded);
+    }
+    this.logger.debug('Router included successfully');
+  }
+
+  /**
    * Executes the provided asynchronous function with error handling.
    * If the function throws an error, it delegates error processing to `#handleError`
    * and returns the formatted error response.

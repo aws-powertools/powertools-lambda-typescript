@@ -29,8 +29,8 @@
     "#errors": "./functions/commons/errors.js"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.155",
-    "@types/node": "24.7.1",
+    "@types/aws-lambda": "^8.10.156",
+    "@types/node": "24.8.0",
     "aws-cdk-lib": "^2.219.0",
     "constructs": "^10.4.2",
     "source-map-support": "^0.5.21",
@@ -45,14 +45,14 @@
     "@aws-lambda-powertools/metrics": "^2.27.0",
     "@aws-lambda-powertools/parameters": "^2.27.0",
     "@aws-lambda-powertools/tracer": "^2.27.0",
-    "@aws-sdk/client-ssm": "^3.901.0",
-    "@aws-sdk/lib-dynamodb": "^3.902.0",
+    "@aws-sdk/client-ssm": "^3.908.0",
+    "@aws-sdk/lib-dynamodb": "^3.908.0",
     "@middy/core": "^4.7.0",
-    "@types/aws-lambda": "^8.10.155",
-    "@types/node": "24.7.1",
-    "aws-cdk": "^2.1029.4",
+    "@types/aws-lambda": "^8.10.156",
+    "@types/node": "24.8.0",
+    "aws-cdk": "^2.1030.0",
     "constructs": "^10.4.2",
-    "esbuild": "^0.25.10",
+    "esbuild": "^0.25.11",
     "typescript": "^5.9.3"
   }
 }

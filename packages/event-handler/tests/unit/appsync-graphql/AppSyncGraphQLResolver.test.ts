@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppSyncGraphQLResolver } from '../../../src/appsync-graphql/AppSyncGraphQLResolver.js';
 import {
   InvalidBatchResponseException,
+  makeId,
   ResolverNotFoundException,
+  Router,
 } from '../../../src/appsync-graphql/index.js';
 import type { ErrorClass } from '../../../src/types/appsync-graphql.js';
 import { onGraphqlEventFactory } from '../../helpers/factories.js';
@@ -1327,4 +1329,362 @@ describe('Class: AppSyncGraphQLResolver', () => {
   });
 
   // #endregion Exception handling
+
+  // #region includeRouter
+
+  it('handles multiple routers and resolves their handlers correctly', async () => {
+    // Prepare
+    const userRouter = new Router();
+    userRouter.onQuery<{ id: string }>('getUser', async ({ id }) => ({
+      id,
+      name: 'John Doe',
+    }));
+
+    userRouter.onMutation<{ name: string; email: string }>(
+      'createUser',
+      async ({ name, email }) => ({
+        id: makeId(),
+        name,
+        email,
+      })
+    );
+
+    const todoRouter = new Router();
+    todoRouter.onQuery<{ id: string }>('getTodo', async ({ id }) => ({
+      id,
+      title: 'Sample Todo',
+      completed: false,
+    }));
+
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    app.includeRouter([userRouter, todoRouter]);
+
+    // Act
+    const getUserResult = await app.resolve(
+      onGraphqlEventFactory('getUser', 'Query', { id: '123' }),
+      context
+    );
+    const createUserResult = await app.resolve(
+      onGraphqlEventFactory('createUser', 'Mutation', {
+        name: 'Jane Doe',
+        email: 'jane.doe@example.com',
+      }),
+      context
+    );
+    const todoResult = await app.resolve(
+      onGraphqlEventFactory('getTodo', 'Query', { id: '456' }),
+      context
+    );
+
+    // Assess
+    expect(getUserResult).toEqual({ id: '123', name: 'John Doe' });
+    expect(createUserResult).toEqual({
+      id: expect.any(String),
+      name: 'Jane Doe',
+      email: 'jane.doe@example.com',
+    });
+    expect(todoResult).toEqual({
+      id: '456',
+      title: 'Sample Todo',
+      completed: false,
+    });
+  });
+
+  it('handles multiple routers with batch resolvers and resolves their handlers correctly', async () => {
+    // Prepare
+    const postRouter = new Router();
+    postRouter.onBatchQuery('getPosts', async (events) =>
+      events.map((event) => ({
+        id: event.arguments.id,
+        title: `Post ${event.arguments.id}`,
+      }))
+    );
+
+    const todoRouter = new Router();
+    todoRouter.onBatchQuery('getTodos', async (events) =>
+      events.map((event) => ({
+        id: event.arguments.id,
+        title: `Todo ${event.arguments.id}`,
+      }))
+    );
+
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    app.includeRouter(postRouter);
+    app.includeRouter(todoRouter);
+
+    // Act
+    const postResults = await app.resolve(
+      [
+        onGraphqlEventFactory('getPosts', 'Query', { id: '1' }),
+        onGraphqlEventFactory('getPosts', 'Query', { id: '2' }),
+      ],
+      context
+    );
+    const todoResults = await app.resolve(
+      [
+        onGraphqlEventFactory('getTodos', 'Query', { id: '1' }),
+        onGraphqlEventFactory('getTodos', 'Query', { id: '2' }),
+      ],
+      context
+    );
+
+    // Assess
+    expect(postResults).toEqual([
+      { id: '1', title: 'Post 1' },
+      { id: '2', title: 'Post 2' },
+    ]);
+    expect(todoResults).toEqual([
+      { id: '1', title: 'Todo 1' },
+      { id: '2', title: 'Todo 2' },
+    ]);
+  });
+
+  it('handles multiple routers with exception handlers', async () => {
+    // Prepare
+    const firstRouter = new Router();
+    firstRouter.exceptionHandler(ValidationError, async (error) => ({
+      error: `Handled: ${error.message}`,
+      type: 'validation',
+    }));
+    firstRouter.resolver(
+      () => {
+        throw new ValidationError('Test validation error');
+      },
+      { fieldName: 'firstHandler' }
+    );
+
+    const secondRouter = new Router();
+    secondRouter.exceptionHandler(EvalError, async (error) => ({
+      error: `Handled: ${error.message}`,
+      type: 'evaluation',
+    }));
+    secondRouter.resolver(
+      () => {
+        throw new EvalError('Test evaluation error');
+      },
+      { fieldName: 'secondHandler' }
+    );
+
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    app.includeRouter(firstRouter);
+    app.includeRouter(secondRouter);
+
+    // Act
+    const firstResult = await app.resolve(
+      onGraphqlEventFactory('firstHandler', 'Query', { shouldThrow: true }),
+      context
+    );
+    const secondResult = await app.resolve(
+      onGraphqlEventFactory('secondHandler', 'Query', { shouldThrow: true }),
+      context
+    );
+
+    // Assess
+    expect(firstResult).toEqual({
+      error: 'Handled: Test validation error',
+      type: 'validation',
+    });
+    expect(secondResult).toEqual({
+      error: 'Handled: Test evaluation error',
+      type: 'evaluation',
+    });
+  });
+
+  it('handles conflicts when including multiple routers with same resolver', async () => {
+    // Prepare
+    const firstRouter = new Router();
+    firstRouter.onQuery('getTest', () => ({
+      source: 'first',
+    }));
+
+    const secondRouter = new Router();
+    secondRouter.onQuery('getTest', () => ({
+      source: 'second',
+    }));
+
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    app.includeRouter(firstRouter);
+    app.includeRouter(secondRouter);
+
+    // Act
+    const result = await app.resolve(
+      onGraphqlEventFactory('getTest', 'Query', {}),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({ source: 'second' });
+    expect(console.warn).toHaveBeenCalledWith(
+      "A resolver for field 'getTest' is already registered for 'Query'. The previous resolver will be replaced."
+    );
+  });
+
+  it('handles conflicts when including multiple routers with same exception handler', async () => {
+    // Prepare
+    const firstRouter = new Router();
+    firstRouter.exceptionHandler(ValidationError, async (error) => ({
+      source: 'first',
+      message: error.message,
+      type: 'first_validation',
+    }));
+    firstRouter.onQuery('testError', () => {
+      throw new ValidationError('Test validation error');
+    });
+
+    const secondRouter = new Router();
+    secondRouter.exceptionHandler(ValidationError, async (error) => ({
+      source: 'second',
+      message: error.message,
+      type: 'second_validation',
+    }));
+    secondRouter.onQuery('testError', () => {
+      throw new ValidationError('Test validation error');
+    });
+
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    app.includeRouter(firstRouter);
+    app.includeRouter(secondRouter);
+
+    // Act
+    const result = await app.resolve(
+      onGraphqlEventFactory('testError', 'Query', {}),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      source: 'second',
+      message: 'Test validation error',
+      type: 'second_validation',
+    });
+    expect(console.warn).toHaveBeenCalledWith(
+      "An exception handler for error class 'ValidationError' is already registered. The previous handler will be replaced."
+    );
+  });
+
+  it('works as a method decorator for `includeRouter`', async () => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+
+    const userRouter = new Router();
+    const todoRouter = new Router();
+
+    class Lambda {
+      public scope = 'scoped';
+
+      @userRouter.onQuery('getUser')
+      getUserById({ id }: { id: string }) {
+        if (id.length === 0)
+          throw new ValidationError('User ID cannot be empty');
+        return { id, name: 'John Doe', scope: this.scope };
+      }
+
+      @userRouter.onMutation('createUser')
+      createUser({ name, email }: { name: string; email: string }) {
+        return { id: makeId(), name, email, scope: this.scope };
+      }
+
+      @userRouter.exceptionHandler(ValidationError)
+      handleValidationError(error: ValidationError) {
+        return {
+          message: 'UserRouter validation error',
+          details: error.message,
+          type: 'user_validation_error',
+          scope: this.scope,
+        };
+      }
+
+      @todoRouter.onQuery('getTodo')
+      getTodoById({ id }: { id: string }) {
+        if (id === 'eval-error') {
+          throw new EvalError('Todo evaluation error');
+        }
+        return {
+          id,
+          title: 'Sample Todo',
+          completed: false,
+          scope: this.scope,
+        };
+      }
+
+      @todoRouter.exceptionHandler(EvalError)
+      handleEvalError(error: EvalError) {
+        return {
+          message: 'TodoRouter evaluation error',
+          details: error.message,
+          type: 'todo_evaluation_error',
+          scope: this.scope,
+        };
+      }
+      handler(event: unknown, context: Context) {
+        app.includeRouter(userRouter);
+        app.includeRouter(todoRouter);
+        return app.resolve(event, context, {
+          scope: this,
+        });
+      }
+    }
+
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
+
+    // Act
+    const getUserResult = await handler(
+      onGraphqlEventFactory('getUser', 'Query', { id: '123' }),
+      context
+    );
+    const createUserResult = await handler(
+      onGraphqlEventFactory('createUser', 'Mutation', {
+        name: 'Jane Doe',
+        email: 'jane.doe@example.com',
+      }),
+      context
+    );
+    const userValidationError = await handler(
+      onGraphqlEventFactory('getUser', 'Query', { id: '' }),
+      context
+    );
+
+    const getTodoResult = await handler(
+      onGraphqlEventFactory('getTodo', 'Query', { id: '456' }),
+      context
+    );
+    const todoEvalError = await handler(
+      onGraphqlEventFactory('getTodo', 'Query', { id: 'eval-error' }),
+      context
+    );
+
+    // Assess
+    expect(getUserResult).toEqual({
+      id: '123',
+      name: 'John Doe',
+      scope: 'scoped',
+    });
+    expect(createUserResult).toEqual({
+      id: expect.any(String),
+      name: 'Jane Doe',
+      email: 'jane.doe@example.com',
+      scope: 'scoped',
+    });
+    expect(getTodoResult).toEqual({
+      id: '456',
+      title: 'Sample Todo',
+      completed: false,
+      scope: 'scoped',
+    });
+    expect(userValidationError).toEqual({
+      message: 'UserRouter validation error',
+      details: 'User ID cannot be empty',
+      type: 'user_validation_error',
+      scope: 'scoped',
+    });
+    expect(todoEvalError).toEqual({
+      details: 'Todo evaluation error',
+      message: 'TodoRouter evaluation error',
+      type: 'todo_evaluation_error',
+      scope: 'scoped',
+    });
+  });
+
+  // #endregion includeRouters
 });

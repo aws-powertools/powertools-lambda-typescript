@@ -3,6 +3,7 @@ export {
   InvalidBatchResponseException,
   ResolverNotFoundException,
 } from './errors.js';
+export { Router } from './Router.js';
 export {
   awsDate,
   awsDateTime,

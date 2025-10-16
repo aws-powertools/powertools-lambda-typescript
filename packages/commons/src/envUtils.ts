@@ -1,3 +1,4 @@
+import { InvokeStore } from '@aws/lambda-invoke-store';
 import {
   POWERTOOLS_DEV_ENV_VAR,
   POWERTOOLS_SERVICE_NAME_ENV_VAR,
@@ -249,15 +250,19 @@ const getServiceName = (): string => {
 };
 
 /**
- * Get the AWS X-Ray Trace data from the environment variable.
+ * Get the AWS X-Ray Trace data from the lambda RIC async context or the  `_X_AMZN_TRACE_ID` environment variable.
  *
- * The method parses the environment variable `_X_AMZN_TRACE_ID` and returns an object with the key-value pairs.
+ * Checks the async context first and if that returns undefined, falls back to the environment variable
+ *
+ * The method parses the value and returns an object with the key-value pairs.
  */
 const getXrayTraceDataFromEnv = (): Record<string, string> | undefined => {
-  const xRayTraceEnv = getStringFromEnv({
-    key: XRAY_TRACE_ID_ENV_VAR,
-    defaultValue: '',
-  });
+  const xRayTraceEnv =
+    InvokeStore.getXRayTraceId() ??
+    getStringFromEnv({
+      key: XRAY_TRACE_ID_ENV_VAR,
+      defaultValue: '',
+    });
   if (xRayTraceEnv === '') {
     return undefined;
   }
@@ -280,8 +285,10 @@ const getXrayTraceDataFromEnv = (): Record<string, string> | undefined => {
 /**
  * Determine if the current invocation is part of a sampled X-Ray trace.
  *
- * The AWS X-Ray Trace data available in the environment variable has this format:
+ * The AWS X-Ray Trace data is available in either the RIC async context or the `_X_AMZN_TRACE_ID` environment variable has this format:
  * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
+ *
+ * Checks the async context first and if that returns undefined, falls back to the environment variable
  */
 const isRequestXRaySampled = (): boolean => {
   const xRayTraceData = getXrayTraceDataFromEnv();
@@ -289,9 +296,11 @@ const isRequestXRaySampled = (): boolean => {
 };
 
 /**
- * Get the value of the `_X_AMZN_TRACE_ID` environment variable.
+ * AWS X-Ray Trace id from the lambda RIC async context or the  `_X_AMZN_TRACE_ID` environment variable.
  *
- * The AWS X-Ray Trace data available in the environment variable has this format:
+ * Checks the async context first and if that returns undefined, falls back to the environment variable
+ *
+ * The AWS X-Ray Trace data has this format:
  * `Root=1-5759e988-bd862e3fe1be46a994272793;Parent=557abcec3ee5a047;Sampled=1`,
  *
  * The actual Trace ID is: `1-5759e988-bd862e3fe1be46a994272793`.

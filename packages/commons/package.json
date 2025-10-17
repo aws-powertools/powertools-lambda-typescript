@@ -110,6 +110,9 @@
     "serverless",
     "nodejs"
   ],
+  "dependencies": {
+    "@aws/lambda-invoke-store": "0.1.0"
+  },
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing"
   }

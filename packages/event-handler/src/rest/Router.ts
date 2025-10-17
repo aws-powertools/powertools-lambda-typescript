@@ -350,6 +350,7 @@ class Router {
       await pipeline(nodeStream, resStream);
     } else {
       resStream.write('');
+      resStream.end();
     }
   }
 

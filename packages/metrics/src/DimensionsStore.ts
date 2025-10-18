@@ -45,25 +45,25 @@ class DimensionsStore {
     return stored;
   }
 
-  addDimension(name: string, value: string): string {
+  public addDimension(name: string, value: string): string {
     this.#getDimensions()[name] = value;
     return value;
   }
 
-  addDimensionSet(dimensionSet: Dimensions): Dimensions {
+  public addDimensionSet(dimensionSet: Dimensions): Dimensions {
     this.#getDimensionSets().push({ ...dimensionSet });
     return dimensionSet;
   }
 
-  getDimensions(): Dimensions {
+  public getDimensions(): Dimensions {
     return { ...this.#getDimensions() };
   }
 
-  getDimensionSets(): Dimensions[] {
+  public getDimensionSets(): Dimensions[] {
     return this.#getDimensionSets().map((set) => ({ ...set }));
   }
 
-  clearRequestDimensions(): void {
+  public clearRequestDimensions(): void {
     if (InvokeStore.getContext() === undefined) {
       this.#fallbackDimensions = {};
       this.#fallbackDimensionSets = [];
@@ -74,11 +74,11 @@ class DimensionsStore {
     InvokeStore.set(this.#dimensionSetsKey, []);
   }
 
-  clearDefaultDimensions(): void {
+  public clearDefaultDimensions(): void {
     this.#defaultDimensions = {};
   }
 
-  getDimensionCount(): number {
+  public getDimensionCount(): number {
     const dimensions = this.#getDimensions();
     const dimensionSets = this.#getDimensionSets();
     const dimensionSetsCount = dimensionSets.reduce(
@@ -92,11 +92,11 @@ class DimensionsStore {
     );
   }
 
-  setDefaultDimensions(dimensions: Dimensions): void {
+  public setDefaultDimensions(dimensions: Dimensions): void {
     this.#defaultDimensions = { ...dimensions };
   }
 
-  getDefaultDimensions(): Dimensions {
+  public getDefaultDimensions(): Dimensions {
     return { ...this.#defaultDimensions };
   }
 }

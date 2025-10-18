@@ -12,6 +12,10 @@ type Invocation = {
  * a more convenient way to create promises that can be resolved or rejected from
  * outside the Promise constructor.
  *
+ * We need this polyfill because this function is not available in Node 20. When we drop
+ * support for this version of Node, then we should remove this function and use the
+ * inbuilt `Promise.withResolvers` static methods.
+ *
  * @returns Object containing the promise and its resolve/reject functions
  *
  * @example

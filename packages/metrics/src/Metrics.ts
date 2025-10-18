@@ -733,7 +733,7 @@ class Metrics extends Utility implements MetricsInterface {
       dimensionNames.length === 0 &&
       Object.keys(defaultDimensions).length > 0
     ) {
-      dimensionNames.push([...Object.keys(defaultDimensions)]);
+      dimensionNames.push(Object.keys(defaultDimensions));
     }
 
     return {

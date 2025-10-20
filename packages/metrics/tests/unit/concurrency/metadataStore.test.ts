@@ -1,6 +1,6 @@
+import { sequence } from '@aws-lambda-powertools/testing-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MetadataStore } from '../../../src/MetadataStore.js';
-import { sequence } from '../helpers.js';
 
 describe('MetadataStore concurrent invocation isolation', () => {
   beforeEach(() => {

@@ -1,6 +1,6 @@
+import { sequence } from '@aws-lambda-powertools/testing-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DimensionsStore } from '../../../src/DimensionsStore.js';
-import { sequence } from '../helpers.js';
 
 describe('DimensionsStore concurrent invocation isolation', () => {
   beforeEach(() => {

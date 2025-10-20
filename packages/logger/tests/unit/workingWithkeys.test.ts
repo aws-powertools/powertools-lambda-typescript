@@ -527,6 +527,25 @@ describe('Working with keys', () => {
     });
   });
 
+  it('propagates the temporary keys to the child logger instances', () => {
+    // Prepare
+    const logger = new Logger();
+    logger.appendKeys({ temp: 'value' });
+
+    // Act
+    const childLogger = logger.createChild();
+    childLogger.info('Hello, world!');
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        temp: 'value',
+      })
+    );
+  });
+
   it('includes the X-Ray trace data in the log message', () => {
     // Prepare
     const logger = new Logger();

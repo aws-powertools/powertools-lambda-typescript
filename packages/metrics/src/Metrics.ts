@@ -30,6 +30,9 @@ import {
   MetricUnit as MetricUnits,
   MIN_METRIC_NAME_LENGTH,
 } from './constants.js';
+import { DimensionsStore } from './DimensionsStore.js';
+import { MetadataStore } from './MetadataStore.js';
+import { MetricsStore } from './MetricsStore.js';
 import type {
   ConfigServiceInterface,
   Dimensions,
@@ -40,7 +43,6 @@ import type {
   MetricsInterface,
   MetricsOptions,
   MetricUnit,
-  StoredMetrics,
 } from './types/index.js';
 
 /**
@@ -156,22 +158,9 @@ class Metrics extends Utility implements MetricsInterface {
   private customConfigService?: ConfigServiceInterface;
 
   /**
-   * Default dimensions to be added to all metrics
-   * @default {}
+   * Storage for dimensions
    */
-  private defaultDimensions: Dimensions = {};
-
-  /**
-   * Additional dimensions for the current metrics context
-   * @default {}
-   */
-  private dimensions: Dimensions = {};
-
-  /**
-   * Additional dimension sets for the current metrics context
-   * @default []
-   */
-  private dimensionSets: Dimensions[] = [];
+  readonly #dimensionsStore = new DimensionsStore();
 
   /**
    * Name of the Lambda function
@@ -193,9 +182,8 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Additional metadata to be included with metrics
-   * @default {}
    */
-  private metadata: Record<string, string> = {};
+  readonly #metadataStore = new MetadataStore();
 
   /**
    * Namespace for the metrics
@@ -210,9 +198,8 @@ class Metrics extends Utility implements MetricsInterface {
 
   /**
    * Storage for metrics before they are published
-   * @default {}
    */
-  private storedMetrics: StoredMetrics = {};
+  readonly #metricsStore = new MetricsStore();
 
   /**
    * Whether to disable metrics
@@ -231,15 +218,8 @@ class Metrics extends Utility implements MetricsInterface {
     devMode: false,
   };
 
-  /**
-   * Custom timestamp for the metrics
-   */
-  #timestamp?: number;
-
   public constructor(options: MetricsOptions = {}) {
     super();
-
-    this.dimensions = {};
     this.setEnvConfig();
     this.setConsole();
     this.#logger = options.logger || this.console;
@@ -266,20 +246,22 @@ class Metrics extends Utility implements MetricsInterface {
       );
       return;
     }
-    if (MAX_DIMENSION_COUNT <= this.getCurrentDimensionsCount()) {
+    if (MAX_DIMENSION_COUNT <= this.#dimensionsStore.getDimensionCount()) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
     }
+    const dimensions = this.#dimensionsStore.getDimensions();
+    const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
     if (
-      Object.hasOwn(this.dimensions, name) ||
-      Object.hasOwn(this.defaultDimensions, name)
+      Object.hasOwn(dimensions, name) ||
+      Object.hasOwn(defaultDimensions, name)
     ) {
       this.#logger.warn(
         `Dimension "${name}" has already been added. The previous value will be overwritten.`
       );
     }
-    this.dimensions[name] = value;
+    this.#dimensionsStore.addDimension(name, value);
   }
 
   /**
@@ -296,7 +278,7 @@ class Metrics extends Utility implements MetricsInterface {
    */
   public addDimensions(dimensions: Dimensions): void {
     const newDimensions = this.#sanitizeDimensions(dimensions);
-    const currentCount = this.getCurrentDimensionsCount();
+    const currentCount = this.#dimensionsStore.getDimensionCount();
     const newSetCount = Object.keys(newDimensions).length;
     if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
       throw new RangeError(
@@ -304,7 +286,7 @@ class Metrics extends Utility implements MetricsInterface {
       );
     }
 
-    this.dimensionSets.push(newDimensions);
+    this.#dimensionsStore.addDimensionSet(newDimensions);
   }
 
   /**
@@ -335,7 +317,7 @@ class Metrics extends Utility implements MetricsInterface {
    * @param value - The value of the metadata
    */
   public addMetadata(key: string, value: string): void {
-    this.metadata[key] = value;
+    this.#metadataStore.set(key, value);
   }
 
   /**
@@ -442,7 +424,7 @@ class Metrics extends Utility implements MetricsInterface {
    * ```
    */
   public clearDefaultDimensions(): void {
-    this.defaultDimensions = {};
+    this.#dimensionsStore.clearDefaultDimensions();
   }
 
   /**
@@ -475,8 +457,7 @@ class Metrics extends Utility implements MetricsInterface {
    * The method is primarily intended for internal use, but it is exposed for advanced use cases.
    */
   public clearDimensions(): void {
-    this.dimensions = {};
-    this.dimensionSets = [];
+    this.#dimensionsStore.clearRequestDimensions();
   }
 
   /**
@@ -488,7 +469,7 @@ class Metrics extends Utility implements MetricsInterface {
    * The method is primarily intended for internal use, but it is exposed for advanced use cases.
    */
   public clearMetadata(): void {
-    this.metadata = {};
+    this.#metadataStore.clear();
   }
 
   /**
@@ -499,14 +480,14 @@ class Metrics extends Utility implements MetricsInterface {
    * The method is primarily intended for internal use, but it is exposed for advanced use cases.
    */
   public clearMetrics(): void {
-    this.storedMetrics = {};
+    this.#metricsStore.clearMetrics();
   }
 
   /**
    * Check if there are stored metrics in the buffer.
    */
   public hasStoredMetrics(): boolean {
-    return Object.keys(this.storedMetrics).length > 0;
+    return this.#metricsStore.hasMetrics();
   }
 
   /**
@@ -670,7 +651,7 @@ class Metrics extends Utility implements MetricsInterface {
           'Ensure the timestamp is within 14 days in the past or up to 2 hours in the future and is also a valid number or Date object.'
       );
     }
-    this.#timestamp = this.#convertTimestampToEmfFormat(timestamp);
+    this.#metricsStore.setTimestamp(timestamp);
   }
 
   /**
@@ -686,16 +667,17 @@ class Metrics extends Utility implements MetricsInterface {
    * The object is then emitted to standard output, which in AWS Lambda is picked up by CloudWatch logs and processed asynchronously.
    */
   public serializeMetrics(): EmfOutput {
-    // Storage resolution is included only for High resolution metrics
-    const metricDefinitions: MetricDefinition[] = Object.values(
-      this.storedMetrics
-    ).map((metricDefinition) => ({
-      Name: metricDefinition.name,
-      Unit: metricDefinition.unit,
-      ...(metricDefinition.resolution === MetricResolutions.High
-        ? { StorageResolution: metricDefinition.resolution }
-        : {}),
-    }));
+    const metricDefinitions: MetricDefinition[] = this.#metricsStore
+      .getAllMetrics()
+      .map((metricDefinition) => {
+        return {
+          Name: metricDefinition.name,
+          Unit: metricDefinition.unit,
+          ...(metricDefinition.resolution === MetricResolutions.High
+            ? { StorageResolution: metricDefinition.resolution }
+            : {}),
+        };
+      });
 
     if (metricDefinitions.length === 0 && this.shouldThrowOnEmptyMetrics) {
       throw new RangeError(
@@ -708,32 +690,40 @@ class Metrics extends Utility implements MetricsInterface {
 
     // We reduce the stored metrics to a single object with the metric
     // name as the key and the value as the value.
-    const metricValues = Object.values(this.storedMetrics).reduce(
+    const metricValues = this.#metricsStore.getAllMetrics().reduce(
       (
         result: Record<string, number | number[]>,
-        { name, value }: { name: string; value: number | number[] }
+        {
+          name,
+          value,
+        }: {
+          name: string;
+          value: number | number[];
+        }
       ) => {
         result[name] = value;
-
         return result;
       },
       {}
     );
 
     const dimensionNames = [];
+    const dimensions = this.#dimensionsStore.getDimensions();
+    const dimensionSets = this.#dimensionsStore.getDimensionSets();
 
+    const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
     const allDimensionKeys = new Set([
-      ...Object.keys(this.defaultDimensions),
-      ...Object.keys(this.dimensions),
+      ...Object.keys(defaultDimensions),
+      ...Object.keys(dimensions),
     ]);
 
-    if (Object.keys(this.dimensions).length > 0) {
+    if (Object.keys(dimensions).length > 0) {
       dimensionNames.push([...allDimensionKeys]);
     }
 
-    for (const dimensionSet of this.dimensionSets) {
+    for (const dimensionSet of dimensionSets) {
       const dimensionSetKeys = new Set([
-        ...Object.keys(this.defaultDimensions),
+        ...Object.keys(defaultDimensions),
         ...Object.keys(dimensionSet),
       ]);
       dimensionNames.push([...dimensionSetKeys]);
@@ -741,14 +731,14 @@ class Metrics extends Utility implements MetricsInterface {
 
     if (
       dimensionNames.length === 0 &&
-      Object.keys(this.defaultDimensions).length > 0
+      Object.keys(defaultDimensions).length > 0
     ) {
-      dimensionNames.push([...Object.keys(this.defaultDimensions)]);
+      dimensionNames.push(Object.keys(defaultDimensions));
     }
 
     return {
       _aws: {
-        Timestamp: this.#timestamp ?? Date.now(),
+        Timestamp: this.#metricsStore.getTimestamp() ?? Date.now(),
         CloudWatchMetrics: [
           {
             Namespace: this.namespace || DEFAULT_NAMESPACE,
@@ -757,17 +747,17 @@ class Metrics extends Utility implements MetricsInterface {
           },
         ],
       },
-      ...this.defaultDimensions,
-      ...this.dimensions,
+      ...defaultDimensions,
+      ...dimensions,
       // Merge all dimension sets efficiently by mutating the accumulator
-      ...this.dimensionSets.reduce((acc, dims) => {
+      ...dimensionSets.reduce<Dimensions>((acc, dims) => {
         for (const [key, value] of Object.entries(dims)) {
           acc[key] = value;
         }
         return acc;
-      }, {} as Dimensions),
+      }, {}),
       ...metricValues,
-      ...this.metadata,
+      ...this.#metadataStore.getAll(),
     };
   }
 
@@ -797,7 +787,9 @@ class Metrics extends Utility implements MetricsInterface {
    */
   public setDefaultDimensions(dimensions: Dimensions): void {
     const newDimensions = this.#sanitizeDimensions(dimensions);
-    const currentCount = Object.keys(this.defaultDimensions).length;
+    const currentDefaultDimensions =
+      this.#dimensionsStore.getDefaultDimensions();
+    const currentCount = Object.keys(currentDefaultDimensions).length;
     const newSetCount = Object.keys(newDimensions).length;
     if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
       throw new RangeError(
@@ -805,10 +797,10 @@ class Metrics extends Utility implements MetricsInterface {
       );
     }
 
-    this.defaultDimensions = {
-      ...this.defaultDimensions,
+    this.#dimensionsStore.setDefaultDimensions({
+      ...currentDefaultDimensions,
       ...newDimensions,
-    };
+    });
   }
 
   /**
@@ -865,7 +857,7 @@ class Metrics extends Utility implements MetricsInterface {
   public singleMetric(): Metrics {
     return new Metrics({
       namespace: this.namespace,
-      defaultDimensions: this.defaultDimensions,
+      defaultDimensions: this.#dimensionsStore.getDefaultDimensions(),
       singleMetric: true,
       logger: this.#logger,
     });
@@ -879,51 +871,10 @@ class Metrics extends Utility implements MetricsInterface {
   } /* v8 ignore stop */
 
   /**
-   * Gets the current number of dimensions count.
-   */
-  private getCurrentDimensionsCount(): number {
-    const dimensionSetsCount = this.dimensionSets.reduce(
-      (total, dimensionSet) => total + Object.keys(dimensionSet).length,
-      0
-    );
-    return (
-      Object.keys(this.dimensions).length +
-      Object.keys(this.defaultDimensions).length +
-      dimensionSetsCount
-    );
-  }
-
-  /**
    * Get the custom config service if it exists.
    */
   private getCustomConfigService(): ConfigServiceInterface | undefined {
     return this.customConfigService;
-  }
-
-  /**
-   * Check if a metric is new or not.
-   *
-   * A metric is considered new if there is no metric with the same name already stored.
-   *
-   * When a metric is not new, we also check if the unit is consistent with the stored metric with
-   * the same name. If the units are inconsistent, we throw an error as this is likely a bug or typo.
-   * This can happen if a metric is added without using the `MetricUnit` helper in JavaScript codebases.
-   *
-   * @param name - The name of the metric
-   * @param unit - The unit of the metric
-   */
-  private isNewMetric(name: string, unit: MetricUnit): boolean {
-    if (this.storedMetrics[name]) {
-      if (this.storedMetrics[name].unit !== unit) {
-        const currentUnit = this.storedMetrics[name].unit;
-        throw new Error(
-          `Metric "${name}" has already been added with unit "${currentUnit}", but we received unit "${unit}". Did you mean to use metric unit "${currentUnit}"?`
-        );
-      }
-
-      return false;
-    }
-    return true;
   }
 
   /**
@@ -1099,26 +1050,21 @@ class Metrics extends Utility implements MetricsInterface {
         `Invalid metric resolution '${resolution}', expected either option: ${Object.values(MetricResolutions).join(',')}`
       );
 
-    if (Object.keys(this.storedMetrics).length >= MAX_METRICS_SIZE) {
+    if (this.#metricsStore.getMetricsCount() >= MAX_METRICS_SIZE) {
       this.publishStoredMetrics();
     }
 
-    if (this.isNewMetric(name, unit)) {
-      this.storedMetrics[name] = {
-        unit,
-        value,
-        name,
-        resolution,
-      };
-    } else {
-      const storedMetric = this.storedMetrics[name];
-      if (!Array.isArray(storedMetric.value)) {
-        storedMetric.value = [storedMetric.value];
-      }
-      storedMetric.value.push(value);
-      if (storedMetric.value.length === MAX_METRIC_VALUES_SIZE) {
-        this.publishStoredMetrics();
-      }
+    const storedMetric = this.#metricsStore.setMetric(
+      name,
+      unit,
+      value,
+      resolution
+    );
+    if (
+      Array.isArray(storedMetric.value) &&
+      storedMetric.value.length === MAX_METRIC_VALUES_SIZE
+    ) {
+      this.publishStoredMetrics();
     }
   }
 
@@ -1148,33 +1094,13 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
-   * Converts a given timestamp to EMF compatible format.
-   *
-   * @param timestamp - The timestamp to convert, which can be either a number (in milliseconds) or a Date object.
-   * @returns The timestamp in milliseconds. If the input is invalid, returns 0.
-   */
-  #convertTimestampToEmfFormat(timestamp: number | Date): number {
-    if (isIntegerNumber(timestamp)) {
-      return timestamp;
-    }
-    if (timestamp instanceof Date) {
-      return timestamp.getTime();
-    }
-    /**
-     * If this point is reached, it indicates timestamp was neither a valid number nor Date
-     * Returning zero represents the initial date of epoch time,
-     * which will be skipped by Amazon CloudWatch.
-     */
-    return 0;
-  }
-
-  /**
    * Sanitizes the dimensions by removing invalid entries and skipping duplicates.
    *
    * @param dimensions - The dimensions to sanitize.
    */
   #sanitizeDimensions(dimensions: Dimensions): Dimensions {
     const newDimensions: Dimensions = {};
+    const currentDimensions = this.#dimensionsStore.getDimensions();
     for (const [key, value] of Object.entries(dimensions)) {
       if (
         isStringUndefinedNullEmpty(key) ||
@@ -1185,9 +1111,10 @@ class Metrics extends Utility implements MetricsInterface {
         );
         continue;
       }
+      const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
       if (
-        Object.hasOwn(this.dimensions, key) ||
-        Object.hasOwn(this.defaultDimensions, key) ||
+        Object.hasOwn(currentDimensions, key) ||
+        Object.hasOwn(defaultDimensions, key) ||
         Object.hasOwn(newDimensions, key)
       ) {
         this.#logger.warn(

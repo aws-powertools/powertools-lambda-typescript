@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+### Maintenance
+
+- bump aws-xray-sdk-core from 3.10.3 to 3.11.0 ([#4656](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4656)) ([f00f7ed](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f00f7edcfd27788f8909d62a1519b317ee465a48))
 ## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
 
 **Note:** Version bump only for this package

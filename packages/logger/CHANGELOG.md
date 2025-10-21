@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+### Bug Fixes
+
+- correct persistentLogAttributes warning behavior ([#4627](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4627)) ([5cb6797](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5cb6797b66c18ddf8a266fce50b8c1dab4c25b29))
 ## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
 
 **Note:** Version bump only for this package

@@ -1,5 +1,22 @@
 # Change Log
 
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+### Improvements
+
+- ended response stream when body is null ([#4651](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4651)) ([a37a317](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a37a3173023439ee67cc328753cb2d292dc3854f))
+- rename ServiceError class to HttpError ([#4610](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4610)) ([33f7334](https://github.com/aws-powertools/powertools-lambda-typescript/commit/33f733471a54d528514e7bebcd863edc4e3781a9))
+
+### Bug Fixes
+
+- allow http handlers to return duplex streams ([#4629](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4629)) ([f46ae7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f46ae7c4b73a428b3a9aeb7e8858adede73637ed))
+
+### Features
+
+- Add `includeRouter` support to AppSync GraphQL resolver ([#4457](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4457)) ([ada48bb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ada48bbc20b61454586bbd853ee330800b6000d2))
+- added support for catch all route ([#4582](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4582)) ([19786bf](https://github.com/aws-powertools/powertools-lambda-typescript/commit/19786bf82019eaf29f35830c029f60f8c5e9573d))
+- add streaming functionality ([#4586](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4586)) ([e321526](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e3215263e369acb581e113f08aa3893a170d0cb9))
+- added `includeRouter` method to split routes ([#4573](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4573)) ([38b6e82](https://github.com/aws-powertools/powertools-lambda-typescript/commit/38b6e82a0d9f4f46bb5253ba5157487bbbb884df))
 ## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
 
 ### Improvements

@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+### Improvements
+
+- Make X-rRay trace ID access more robust ([#4658](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4658)) ([5199d3e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5199d3e3a5000d3b3b5f2906f3d62da5fc1c96ec))
 ## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
 
 **Note:** Version bump only for this package

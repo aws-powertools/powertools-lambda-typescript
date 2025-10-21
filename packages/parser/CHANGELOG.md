@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+### Bug Fixes
+
+- updated the SQSRecordSchema to make the md5OfMessageAttributes nullable ([#4632](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4632)) ([adc8f60](https://github.com/aws-powertools/powertools-lambda-typescript/commit/adc8f60bf3ffedbbb502aaf90b44bec9bea310dd))
 ## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
 
 **Note:** Version bump only for this package

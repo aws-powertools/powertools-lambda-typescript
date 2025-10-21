@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+### Features
+
+- use async local storage for metrics ([#4663](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4663)) ([3886af3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3886af3a275020ddae8d67cc9c5efaa74464db9c))
 ## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
 
 **Note:** Version bump only for this package

@@ -1,5 +1,33 @@
 # Change Log
 
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+### Improvements
+
+- **commons** Make X-rRay trace ID access more robust ([#4658](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4658)) ([5199d3e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5199d3e3a5000d3b3b5f2906f3d62da5fc1c96ec))
+- **event-handler** ended response stream when body is null ([#4651](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4651)) ([a37a317](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a37a3173023439ee67cc328753cb2d292dc3854f))
+- **event-handler** rename ServiceError class to HttpError ([#4610](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4610)) ([33f7334](https://github.com/aws-powertools/powertools-lambda-typescript/commit/33f733471a54d528514e7bebcd863edc4e3781a9))
+
+### Bug Fixes
+
+- **logger** correct persistentLogAttributes warning behavior ([#4627](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4627)) ([5cb6797](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5cb6797b66c18ddf8a266fce50b8c1dab4c25b29))
+- **idempotency** add null check for idempotencyHandler before calling handleMiddyOnError ([#4643](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4643)) ([5dab224](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5dab224fa5a341ff6e00b819690090594dbcd811))
+- **parser** updated the SQSRecordSchema to make the md5OfMessageAttributes nullable ([#4632](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4632)) ([adc8f60](https://github.com/aws-powertools/powertools-lambda-typescript/commit/adc8f60bf3ffedbbb502aaf90b44bec9bea310dd))
+- **event-handler** allow http handlers to return duplex streams ([#4629](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4629)) ([f46ae7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f46ae7c4b73a428b3a9aeb7e8858adede73637ed))
+
+### Features
+
+- **metrics** use async local storage for metrics ([#4663](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4663)) ([3886af3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3886af3a275020ddae8d67cc9c5efaa74464db9c))
+- **event-handler** Add `includeRouter` support to AppSync GraphQL resolver ([#4457](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4457)) ([ada48bb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ada48bbc20b61454586bbd853ee330800b6000d2))
+- **event-handler** added support for catch all route ([#4582](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4582)) ([19786bf](https://github.com/aws-powertools/powertools-lambda-typescript/commit/19786bf82019eaf29f35830c029f60f8c5e9573d))
+- **event-handler** add streaming functionality ([#4586](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4586)) ([e321526](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e3215263e369acb581e113f08aa3893a170d0cb9))
+- **event-handler** added `includeRouter` method to split routes ([#4573](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4573)) ([38b6e82](https://github.com/aws-powertools/powertools-lambda-typescript/commit/38b6e82a0d9f4f46bb5253ba5157487bbbb884df))
+
+### Maintenance
+
+- **tracer** bump aws-xray-sdk-core from 3.10.3 to 3.11.0 ([#4656](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4656)) ([f00f7ed](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f00f7edcfd27788f8909d62a1519b317ee465a48))
+
+
 ## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
 
 ### Bug Fixes

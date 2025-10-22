@@ -656,7 +656,8 @@ class Logger extends Utility implements LoggerInterface {
    * @deprecated This method is deprecated and will be removed in the future major versions, please use {@link appendPersistentKeys() `appendPersistentKeys()`} instead.
    */
   public setPersistentLogAttributes(attributes: LogKeys): void {
-    this.#attributesStore.setPersistentAttributes(attributes);
+    const filtered = this.#filterReservedAttributeKeys(attributes);
+    this.#attributesStore.setPersistentAttributes(filtered);
   }
 
   /**
@@ -779,6 +780,16 @@ class Logger extends Utility implements LoggerInterface {
     merge(this.powertoolsLogData, attributes);
   }
 
+  #filterReservedAttributeKeys(attributes: LogKeys) {
+    const filtered: LogKeys = {};
+    for (const [key, value] of Object.entries(attributes)) {
+      if (!this.#checkReservedKeyAndWarn(key)) {
+        filtered[key] = value;
+      }
+    }
+    return filtered;
+  }
+
   /**
    * Shared logic for adding keys to the logger instance.
    *
@@ -786,12 +797,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param type - The type of the attributes to add.
    */
   #appendKeys(attributes: LogKeys, type: 'temp' | 'persistent'): void {
-    const filtered: LogKeys = {};
-    for (const [key, value] of Object.entries(attributes)) {
-      if (!this.#checkReservedKeyAndWarn(key)) {
-        filtered[key] = value;
-      }
-    }
+    const filtered = this.#filterReservedAttributeKeys(attributes);
     if (type === 'temp') {
       this.#attributesStore.appendTemporaryKeys(filtered);
     } else {
@@ -834,7 +840,7 @@ class Logger extends Utility implements LoggerInterface {
       ...this.getPowertoolsLogData(),
       message: '',
     };
-    const additionalAttributes = this.#createAdditionalAttributes();
+    const additionalAttributes = this.#attributesStore.getAllAttributes();
 
     this.#processMainInput(
       input,
@@ -847,13 +853,6 @@ class Logger extends Utility implements LoggerInterface {
       unformattedBaseAttributes,
       additionalAttributes
     );
-  }
-
-  /**
-   * Create additional attributes from persistent and temporary keys
-   */
-  #createAdditionalAttributes(): LogAttributes {
-    return this.#attributesStore.getAllAttributes();
   }
 
   /**

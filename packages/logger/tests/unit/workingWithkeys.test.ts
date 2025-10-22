@@ -619,6 +619,34 @@ describe('Working with keys', () => {
     );
   });
 
+  it('does not allow reserved keys with the deprecated setPersistentLogAttributes() method', () => {
+    // Prepare
+    const logger = new Logger();
+
+    // Act
+    logger.setPersistentLogAttributes({
+      // @ts-expect-error - testing invalid key at runtime
+      level: 'bar',
+    });
+
+    logger.info('test');
+
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        level: 'INFO',
+      })
+    );
+
+    // Assess
+    expect(console.warn).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'The key "level" is a reserved key and will be dropped.',
+      })
+    );
+  });
+
   it('logs a warning when using both the deprecated persistentLogAttributes and persistentKeys options', () => {
     // Prepare
     new Logger({

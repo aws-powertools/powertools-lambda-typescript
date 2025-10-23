@@ -39,7 +39,7 @@ export class PowertoolsExampleStack extends Stack {
       'powertools-layer',
       `arn:aws:lambda:${
         Stack.of(this).region
-      }:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:39`
+      }:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:40`
     );
 
     // Items table

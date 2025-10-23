@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.28.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.0...v2.28.1) (2025-10-23)
+
+### Bug Fixes
+
+- fix esbuild ESM bundler error ([#4678](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4678)) ([8a13e8e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8a13e8ee2b2c2715f584f762b63c495ac849979f))
 ## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
 
 ### Bug Fixes

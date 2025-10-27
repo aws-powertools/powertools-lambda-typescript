@@ -370,3 +370,17 @@ This also works when using `safeParse` option.
     ```typescript
     --8<-- "examples/snippets/parser/schema.ts"
     ```
+
+## Should I use this or Validation?
+
+One of Powertools for AWS Lambda [tenets](../index.md#tenets) is to be progressive. This means that our utilities are designed to be incrementally adopted by customers at any stage of their serverless journey.
+
+For new projects, especially those using TypeScript, we recommend using the Parser utility. Thanks to its integration with [Zod](http://zod.dev), it provides an expressive and type-safe way to validate and parse payloads.
+
+If instead you are already using JSON Schema, or simply feel more comfortable with it, the [Validation](validation.md) utility is a great choice. It provides an opinionated thin layer on top of the popular [ajv](https://ajv.js.org) library, with built-in support for JMESPath and AWS service envelopes.
+
+When it comes to feature set, besides the type-safe parsing, the Parser utility also provides a rich collection of built-in schemas and envelopes for AWS services. The Validation utility, on the other hand, follows a more bring-your-own-schema approach, with built-in support for JMESPath and AWS service envelopes to help you unwrap events before validation.
+
+Additionally, while both utilities serve specific use cases, understanding your project requirements will help you choose the right tool for your validation needs.
+
+Finally, in terms of bundle size, the Validation utility is slightly heavier than the Parser utility primarily due to ajv not providing ESM builds. However, even with this, the Validation utility still clocks in at under ~100KB when minified and bundled.

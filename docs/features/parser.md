@@ -375,9 +375,9 @@ This also works when using `safeParse` option.
 
 One of Powertools for AWS Lambda [tenets](../index.md#tenets) is to be progressive. This means that our utilities are designed to be incrementally adopted by customers at any stage of their serverless journey.
 
-For new projects, especially those using TypeScript, we recommend using the [Parser](parser.md) utility. Thanks to its integration with [Zod](http://zod.dev), it provides an expressive and type-safe way to validate and parse payloads.
+For new projects, especially those using TypeScript, we recommend using the Parser utility. Thanks to its integration with [Zod](http://zod.dev), it provides an expressive and type-safe way to validate and parse payloads.
 
-If instead you are already using JSON Schema, or simply feel more comfortable with it, the Validation utility is a great choice. It provides an opinionated thin layer on top of the popular [ajv](https://ajv.js.org) library, with built-in support for JMESPath and AWS service envelopes.
+If instead you are already using JSON Schema, or simply feel more comfortable with it, the [Validation](validation.md) utility is a great choice. It provides an opinionated thin layer on top of the popular [ajv](https://ajv.js.org) library, with built-in support for JMESPath and AWS service envelopes.
 
 When it comes to feature set, besides the type-safe parsing, the Parser utility also provides a rich collection of built-in schemas and envelopes for AWS services. The Validation utility, on the other hand, follows a more bring-your-own-schema approach, with built-in support for JMESPath and AWS service envelopes to help you unwrap events before validation.
 

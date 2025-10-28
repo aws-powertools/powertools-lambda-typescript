@@ -1,8 +1,8 @@
+import { sequence } from '@aws-lambda-powertools/testing-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MetricUnit } from '../../../src/index.js';
 import { MetricsStore } from '../../../src/MetricsStore.js';
 import type { StoredMetric } from '../../../src/types/index.js';
-import { sequence } from '../helpers.js';
 
 describe('MetricsStore concurrent invocation isolation', () => {
   beforeEach(() => {

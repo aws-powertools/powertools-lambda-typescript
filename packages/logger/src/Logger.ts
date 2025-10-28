@@ -24,6 +24,7 @@ import {
 import type { LogFormatter } from './formatter/LogFormatter.js';
 import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
+import { LogAttributesStore } from './LogAttributesStore.js';
 import { CircularMap } from './logBuffer.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type {
@@ -143,19 +144,15 @@ class Logger extends Utility implements LoggerInterface {
    */
   #alcLogLevel?: Uppercase<LogLevel>;
   /**
-   * Persistent log attributes that will be logged in all log items.
-   */
-  private persistentLogAttributes: LogAttributes = {};
-  /**
    * Standard attributes managed by Powertools that will be logged in all log items.
    */
   private readonly powertoolsLogData: PowertoolsLogData = <PowertoolsLogData>{
     sampleRateValue: 0,
   };
   /**
-   * Temporary log attributes that can be appended with `appendKeys()` method.
+   * Store for managing temporary and persistent log attributes.
    */
-  private temporaryLogAttributes: LogKeys = {};
+  readonly #attributesStore = new LogAttributesStore();
   /**
    * Buffer used to store logs until the logger is initialized.
    *
@@ -170,13 +167,6 @@ class Logger extends Utility implements LoggerInterface {
    * Flag used to determine if the logger is initialized.
    */
   readonly #isInitialized: boolean = false;
-  /**
-   * Map used to hold the list of keys and their type.
-   *
-   * Because keys of different types can be overwritten, we keep a list of keys that were added and their last
-   * type. We then use this map at log preparation time to pick the last one.
-   */
-  readonly #keys: Map<string, 'temp' | 'persistent'> = new Map();
   /**
    * This is the initial log leval as set during the initialization of the logger.
    *
@@ -345,7 +335,8 @@ class Logger extends Utility implements LoggerInterface {
           logFormatter: this.getLogFormatter(),
           customConfigService: this.getCustomConfigService(),
           environment: this.powertoolsLogData.environment,
-          persistentLogAttributes: this.persistentLogAttributes,
+          persistentLogAttributes:
+            this.#attributesStore.getPersistentAttributes(),
           jsonReplacerFn: this.#jsonReplacerFn,
           correlationIdSearchFn: this.#correlationIdSearchFn,
           ...(this.#bufferConfig.enabled && {
@@ -365,8 +356,9 @@ class Logger extends Utility implements LoggerInterface {
       childLogger.addContext(
         this.powertoolsLogData.lambdaContext as unknown as Context
       );
-    if (this.temporaryLogAttributes) {
-      childLogger.appendKeys(this.temporaryLogAttributes);
+    const temporaryAttributes = this.#attributesStore.getTemporaryAttributes();
+    if (Object.keys(temporaryAttributes).length > 0) {
+      childLogger.appendKeys(temporaryAttributes);
     }
 
     return childLogger;
@@ -431,7 +423,7 @@ class Logger extends Utility implements LoggerInterface {
    * that will be logged in all log items.
    */
   public getPersistentLogAttributes(): LogAttributes {
-    return this.persistentLogAttributes;
+    return this.#attributesStore.getPersistentAttributes();
   }
 
   /**
@@ -604,15 +596,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param keys - The keys to remove.
    */
   public removeKeys(keys: string[]): void {
-    for (const key of keys) {
-      this.temporaryLogAttributes[key] = undefined;
-
-      if (this.persistentLogAttributes[key]) {
-        this.#keys.set(key, 'persistent');
-      } else {
-        this.#keys.delete(key);
-      }
-    }
+    this.#attributesStore.removeTemporaryKeys(keys);
   }
 
   /**
@@ -634,15 +618,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param keys - The keys to remove from the persistent attributes.
    */
   public removePersistentKeys(keys: string[]): void {
-    for (const key of keys) {
-      this.persistentLogAttributes[key] = undefined;
-
-      if (this.temporaryLogAttributes[key]) {
-        this.#keys.set(key, 'temp');
-      } else {
-        this.#keys.delete(key);
-      }
-    }
+    this.#attributesStore.removePersistentKeys(keys);
   }
 
   /**
@@ -656,14 +632,7 @@ class Logger extends Utility implements LoggerInterface {
    * Remove all temporary log attributes added with {@link appendKeys() `appendKeys()`} method.
    */
   public resetKeys(): void {
-    for (const key of Object.keys(this.temporaryLogAttributes)) {
-      if (this.persistentLogAttributes[key]) {
-        this.#keys.set(key, 'persistent');
-      } else {
-        this.#keys.delete(key);
-      }
-    }
-    this.temporaryLogAttributes = {};
+    this.#attributesStore.clearTemporaryAttributes();
   }
 
   /**
@@ -687,7 +656,15 @@ class Logger extends Utility implements LoggerInterface {
    * @deprecated This method is deprecated and will be removed in the future major versions, please use {@link appendPersistentKeys() `appendPersistentKeys()`} instead.
    */
   public setPersistentLogAttributes(attributes: LogKeys): void {
-    this.persistentLogAttributes = attributes;
+    const filtered = this.#filterReservedAttributeKeys(attributes);
+    this.#attributesStore.setPersistentAttributes(filtered);
+  }
+
+  /**
+   * @deprecated Use getPersistentLogAttributes() instead
+   */
+  public get persistentLogAttributes(): LogKeys {
+    return this.#attributesStore.getPersistentAttributes();
   }
 
   /**
@@ -803,6 +780,16 @@ class Logger extends Utility implements LoggerInterface {
     merge(this.powertoolsLogData, attributes);
   }
 
+  #filterReservedAttributeKeys(attributes: LogKeys) {
+    const filtered: LogKeys = {};
+    for (const [key, value] of Object.entries(attributes)) {
+      if (!this.#checkReservedKeyAndWarn(key)) {
+        filtered[key] = value;
+      }
+    }
+    return filtered;
+  }
+
   /**
    * Shared logic for adding keys to the logger instance.
    *
@@ -810,15 +797,12 @@ class Logger extends Utility implements LoggerInterface {
    * @param type - The type of the attributes to add.
    */
   #appendKeys(attributes: LogKeys, type: 'temp' | 'persistent'): void {
-    for (const attributeKey of Object.keys(attributes)) {
-      if (this.#checkReservedKeyAndWarn(attributeKey) === false) {
-        this.#keys.set(attributeKey, type);
-      }
-    }
+    const filtered = this.#filterReservedAttributeKeys(attributes);
     if (type === 'temp') {
-      merge(this.temporaryLogAttributes, attributes);
+      this.#attributesStore.appendTemporaryKeys(filtered);
     } else {
-      merge(this.persistentLogAttributes, attributes);
+      const current = this.#attributesStore.getPersistentAttributes();
+      this.#attributesStore.setPersistentAttributes(merge(current, filtered));
     }
   }
 
@@ -856,7 +840,7 @@ class Logger extends Utility implements LoggerInterface {
       ...this.getPowertoolsLogData(),
       message: '',
     };
-    const additionalAttributes = this.#createAdditionalAttributes();
+    const additionalAttributes = this.#attributesStore.getAllAttributes();
 
     this.#processMainInput(
       input,
@@ -869,24 +853,6 @@ class Logger extends Utility implements LoggerInterface {
       unformattedBaseAttributes,
       additionalAttributes
     );
-  }
-
-  /**
-   * Create additional attributes from persistent and temporary keys
-   */
-  #createAdditionalAttributes(): LogAttributes {
-    const attributes: LogAttributes = {};
-
-    for (const [key, type] of this.#keys) {
-      if (!this.#checkReservedKeyAndWarn(key)) {
-        attributes[key] =
-          type === 'persistent'
-            ? this.persistentLogAttributes[key]
-            : this.temporaryLogAttributes[key];
-      }
-    }
-
-    return attributes;
   }
 
   /**
@@ -1568,7 +1534,7 @@ class Logger extends Utility implements LoggerInterface {
    * Get the correlation ID from the log attributes.
    */
   public getCorrelationId(): unknown {
-    return this.temporaryLogAttributes.correlation_id;
+    return this.#attributesStore.getTemporaryAttributes().correlation_id;
   }
 }
 

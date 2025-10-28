@@ -527,6 +527,25 @@ describe('Working with keys', () => {
     });
   });
 
+  it('propagates the temporary keys to the child logger instances', () => {
+    // Prepare
+    const logger = new Logger();
+    logger.appendKeys({ temp: 'value' });
+
+    // Act
+    const childLogger = logger.createChild();
+    childLogger.info('Hello, world!');
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        temp: 'value',
+      })
+    );
+  });
+
   it('includes the X-Ray trace data in the log message', () => {
     // Prepare
     const logger = new Logger();
@@ -596,6 +615,34 @@ describe('Working with keys', () => {
         persistentLogAttributes: {
           foo: 'bar',
         },
+      })
+    );
+  });
+
+  it('does not allow reserved keys with the deprecated setPersistentLogAttributes() method', () => {
+    // Prepare
+    const logger = new Logger();
+
+    // Act
+    logger.setPersistentLogAttributes({
+      // @ts-expect-error - testing invalid key at runtime
+      level: 'bar',
+    });
+
+    logger.info('test');
+
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        level: 'INFO',
+      })
+    );
+
+    // Assess
+    expect(console.warn).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'The key "level" is a reserved key and will be dropped.',
       })
     );
   });

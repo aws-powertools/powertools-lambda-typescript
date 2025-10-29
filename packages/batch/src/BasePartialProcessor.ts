@@ -1,3 +1,4 @@
+import { BatchProcessingStore } from './BatchProcessingStore.js';
 import type {
   BaseRecord,
   BatchProcessingOptions,
@@ -21,42 +22,64 @@ import type {
  */
 abstract class BasePartialProcessor {
   /**
-   * List of errors that occurred during processing
+   * Store for managing invocation-specific state
    */
-  public errors: Error[];
+  readonly #store = new BatchProcessingStore();
 
-  /**
-   * List of records that failed processing
-   */
-  public failureMessages: EventSourceDataClassTypes[];
+  public get errors(): Error[] {
+    return this.#store.getErrors();
+  }
 
-  /**
-   * Record handler provided by customers to process records
-   */
-  public handler: CallableFunction;
+  protected set errors(errors: Error[]) {
+    this.#store.setErrors(errors);
+  }
 
-  /**
-   * Options to be used during processing (optional)
-   */
-  public options?: BatchProcessingOptions;
+  public get failureMessages(): EventSourceDataClassTypes[] {
+    return this.#store.getFailureMessages();
+  }
 
-  /**
-   * List of records to be processed
-   */
-  public records: BaseRecord[];
+  protected set failureMessages(messages: EventSourceDataClassTypes[]) {
+    this.#store.setFailureMessages(messages);
+  }
 
-  /**
-   * List of records that were processed successfully
-   */
-  public successMessages: EventSourceDataClassTypes[];
+  public get handler(): CallableFunction {
+    return this.#store.getHandler();
+  }
 
-  public constructor() {
-    this.successMessages = [];
-    this.failureMessages = [];
-    this.errors = [];
-    this.records = [];
-    // No-op function to avoid null checks, will be overridden by customer when using the class
-    this.handler = new Function();
+  protected set handler(handler: CallableFunction) {
+    this.#store.setHandler(handler);
+  }
+
+  public get options(): BatchProcessingOptions | undefined {
+    return this.#store.getOptions();
+  }
+
+  protected set options(options: BatchProcessingOptions | undefined) {
+    this.#store.setOptions(options);
+  }
+
+  public get records(): BaseRecord[] {
+    return this.#store.getRecords();
+  }
+
+  protected set records(records: BaseRecord[]) {
+    this.#store.setRecords(records);
+  }
+
+  public get successMessages(): EventSourceDataClassTypes[] {
+    return this.#store.getSuccessMessages();
+  }
+
+  protected set successMessages(messages: EventSourceDataClassTypes[]) {
+    this.#store.setSuccessMessages(messages);
+  }
+
+  protected get batchResponse() {
+    return this.#store.getBatchResponse();
+  }
+
+  protected set batchResponse(response) {
+    this.#store.setBatchResponse(response);
   }
 
   /**
@@ -196,7 +219,7 @@ abstract class BasePartialProcessor {
    *
    * We use a separate method to do this rather than the constructor
    * to allow for reusing the processor instance across multiple invocations
-   * by instantiating the processor outside of the Lambda function handler.
+   * by instantiating the processor outside the Lambda function handler.
    *
    * @param records - Array of records to be processed
    * @param handler - CallableFunction to process each record from the batch

@@ -99,9 +99,9 @@ const findAndGetStackOutputValue = (
   return outputs[value];
 };
 
-type Invocation = {
+type Invocation<T = unknown> = {
   sideEffects: (() => void)[];
-  return: () => unknown;
+  return: () => T;
 };
 
 /**
@@ -194,14 +194,13 @@ const withResolvers = <T>() => {
  * // Execution order: action1() → action2() → action3() → both return
  * ```
  */
-function sequence(
-  inv1: Invocation,
-  inv2: Invocation,
+function sequence<T1 = unknown, T2 = unknown>(
+  inv1: Invocation<T1>,
+  inv2: Invocation<T2>,
   options: { useInvokeStore?: boolean }
-) {
-  const executionEnv = options?.useInvokeStore
-    ? (f: () => unknown) => InvokeStore.run({}, f)
-    : (f: () => unknown) => f();
+): Promise<[T1, T2]> {
+  const executionEnv = <T>(f: () => T) =>
+    options?.useInvokeStore ? InvokeStore.run({}, f) : f();
 
   const inv1Barriers = inv1.sideEffects.map(() => withResolvers<void>());
   const inv2Barriers = inv2.sideEffects.map(() => withResolvers<void>());
@@ -226,7 +225,7 @@ function sequence(
     return inv2.return();
   });
 
-  return Promise.all([invocation1, invocation2]);
+  return Promise.all([invocation1, invocation2]) as Promise<[T1, T2]>;
 }
 
 export {

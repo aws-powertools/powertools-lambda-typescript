@@ -36,11 +36,6 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
   public COLLECTOR_MAPPING;
 
   /**
-   * Response to be returned after processing
-   */
-  public batchResponse: PartialItemFailureResponse;
-
-  /**
    * Type of event that the processor is handling
    */
   public eventType: keyof typeof EventType;
@@ -200,9 +195,9 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
    * Set up the processor with the initial state ready for processing
    */
   public prepare(): void {
-    this.successMessages.length = 0;
-    this.failureMessages.length = 0;
-    this.errors.length = 0;
+    this.successMessages = [];
+    this.failureMessages = [];
+    this.errors = [];
     this.batchResponse = DEFAULT_RESPONSE;
   }
 

@@ -240,6 +240,43 @@ describe('Class: AsyncBatchProcessor', () => {
           FullBatchFailureError
         );
       });
+
+      it('ignores the failed record in the collector response when the sequence number is not defined', async () => {
+        // Prepare
+        const firstRecord = {
+          eventID: '1',
+          eventVersion: '1.0',
+          dynamodb: {
+            Keys: { Id: { N: '101' } },
+            OldImage: { Message: { S: 'fail' } },
+            NewImage: { Message: { S: 'fail' } },
+            StreamViewType: 'NEW_AND_OLD_IMAGES',
+            SizeBytes: 26,
+          },
+          awsRegion: 'us-west-2',
+          eventName: 'INSERT',
+          eventSourceARN: 'eventsource_arn',
+          eventSource: 'aws:dynamodb',
+        };
+        const secondRecord = dynamodbRecordFactory('success');
+        const records = [firstRecord, secondRecord];
+        const processor = new BatchProcessor(EventType.DynamoDBStreams);
+
+        // Act
+        processor.register(records, asyncDynamodbRecordHandler, options);
+        const processedMessages = await processor.process();
+
+        // Assess
+        expect(processedMessages[1]).toStrictEqual([
+          'success',
+          secondRecord.dynamodb?.NewImage?.Message,
+          secondRecord,
+        ]);
+        expect(processor.failureMessages.length).toBe(1);
+        expect(processor.response()).toStrictEqual({
+          batchItemFailures: [],
+        });
+      });
     });
   });
 

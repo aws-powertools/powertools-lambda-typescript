@@ -1,9 +1,4 @@
 import { gzipSync } from 'node:zlib';
-import {
-  KinesisDataStreamRecord,
-  KinesisDataStreamRecordPayload,
-  KinesisDataStreamSchema,
-} from 'src/schemas/kinesis.js';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { DynamoDBMarshalled } from '../../src/helpers/dynamodb.js';
@@ -13,6 +8,11 @@ import {
   DynamoDBStreamRecord,
   DynamoDBStreamSchema,
 } from '../../src/schemas/dynamodb.js';
+import {
+  KinesisDataStreamRecord,
+  KinesisDataStreamRecordPayload,
+  KinesisDataStreamSchema,
+} from '../../src/schemas/kinesis.js';
 import {
   SnsNotificationSchema,
   SnsRecordSchema,
@@ -231,6 +231,10 @@ describe('Helper: DynamoDBMarshalled', () => {
               Message: 'This item has changed',
             },
           },
+        },
+        {
+          ...event.Records[2],
+          dynamodb: {},
         },
       ],
     });

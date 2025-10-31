@@ -106,6 +106,12 @@ describe('Envelope: DynamoDB Stream', () => {
               Id: 101,
             },
           },
+          {
+            OldImage: {
+              Message: 'New item!',
+              Id: 101,
+            },
+          },
         ],
       });
     });

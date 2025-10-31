@@ -515,7 +515,7 @@ class Logger extends Utility implements LoggerInterface {
             });
           }
           throw error;
-          /* v8 ignore next */
+          /* v8 ignore next -- @preserve */
         } finally {
           if (options?.clearState || options?.resetKeys) loggerRef.resetKeys();
           loggerRef.clearBuffer();
@@ -527,7 +527,8 @@ class Logger extends Utility implements LoggerInterface {
   /**
    * @deprecated This method is deprecated and will be removed in the future major versions. Use {@link resetKeys()} instead.
    */
-  /* v8 ignore start */ public static injectLambdaContextAfterOrOnError(
+  /* v8 ignore next -- @preserve */
+  public static injectLambdaContextAfterOrOnError(
     logger: Logger,
     _persistentAttributes: LogAttributes,
     options?: InjectLambdaContextOptions
@@ -535,12 +536,13 @@ class Logger extends Utility implements LoggerInterface {
     if (options && (options.clearState || options?.resetKeys)) {
       logger.resetKeys();
     }
-  } /* v8 ignore stop */
+  }
 
   /**
    * @deprecated - This method is deprecated and will be removed in the next major version.
    */
-  /* v8 ignore start */ public static injectLambdaContextBefore(
+  /* v8 ignore next -- @preserve */
+  public static injectLambdaContextBefore(
     logger: Logger,
     event: unknown,
     context: Context,
@@ -548,7 +550,7 @@ class Logger extends Utility implements LoggerInterface {
   ): void {
     logger.addContext(context);
     logger.logEventIfEnabled(event, options?.logEvent);
-  } /* v8 ignore stop */
+  }
 
   /**
    * Log the AWS Lambda event payload for the current invocation if the environment variable `POWERTOOLS_LOGGER_LOG_EVENT` is set to `true`.

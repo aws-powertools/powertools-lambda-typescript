@@ -139,12 +139,11 @@ const getDeserializer = async (type?: string) => {
  */
 const parseSchema = (value: unknown, schema: StandardSchemaV1) => {
   const result = schema['~standard'].validate(value);
-  /* v8 ignore start */
+  /* v8 ignore if -- @preserve */
   if (result instanceof Promise)
     throw new KafkaConsumerParserError(
       'Schema parsing supports only synchronous validation'
     );
-  /* v8 ignore stop */
   if (result.issues) {
     throw new KafkaConsumerParserError('Schema validation failed', {
       cause: result.issues,

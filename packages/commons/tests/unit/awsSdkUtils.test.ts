@@ -55,7 +55,7 @@ describe('Helpers: awsSdk', () => {
       // Prepare
       const client = {
         middlewareStack: {
-          identify: () => '',
+          identify: () => [''],
           addRelativeTo: vi.fn(),
         },
         send: vi.fn(),

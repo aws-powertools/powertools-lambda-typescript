@@ -7,7 +7,7 @@ import {
   Subsegment,
   setContextMissingStrategy,
 } from 'aws-xray-sdk-core';
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Tracer } from './../../src/index.js';
 import type { ConfigServiceInterface } from '../../src/types/ConfigServiceInterface.js';
 import type { CaptureLambdaHandlerOptions } from './../../src/types/index.js';
@@ -26,20 +26,15 @@ const createCaptureAsyncFuncMock = (
     });
 
 describe('Class: Tracer', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
   const event = {
     foo: 'bar',
     bar: 'baz',
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.unstubAllEnvs();
+    vi.resetAllMocks();
     vi.resetModules();
-    process.env = { ...ENVIRONMENT_VARIABLES };
-  });
-
-  afterAll(() => {
-    process.env = ENVIRONMENT_VARIABLES;
   });
 
   describe('Method: constructor', () => {
@@ -188,7 +183,7 @@ describe('Class: Tracer', () => {
   describe('Environment Variables configs', () => {
     it('disables tracing when AWS_EXECUTION_ENV environment variable is equal to AWS_Lambda_amplify-mock', () => {
       // Prepare
-      process.env.AWS_EXECUTION_ENV = 'AWS_Lambda_amplify-mock';
+      vi.stubEnv('AWS_EXECUTION_ENV', 'AWS_Lambda_amplify-mock');
 
       // Act
       const tracer = new Tracer();
@@ -203,7 +198,7 @@ describe('Class: Tracer', () => {
 
     it('disables tracing when AWS_SAM_LOCAL environment variable is set', () => {
       // Prepare
-      process.env.AWS_SAM_LOCAL = 'true';
+      vi.stubEnv('AWS_SAM_LOCAL', 'true');
 
       // Act
       const tracer = new Tracer();
@@ -218,7 +213,7 @@ describe('Class: Tracer', () => {
 
     it('leaves tracing enabled when AWS_EXECUTION_ENV environment variable is set', () => {
       // Prepare
-      process.env.AWS_EXECUTION_ENV = 'nodejs20.x';
+      vi.stubEnv('AWS_EXECUTION_ENV', 'nodejs20.x');
 
       // Act
       const tracer = new Tracer();
@@ -233,7 +228,7 @@ describe('Class: Tracer', () => {
 
     it('disables tracing when AWS_EXECUTION_ENV environment variable is NOT set', () => {
       // Prepare
-      process.env.AWS_EXECUTION_ENV = undefined;
+      vi.stubEnv('AWS_EXECUTION_ENV', undefined);
 
       // Act
       const tracer = new Tracer();
@@ -248,7 +243,7 @@ describe('Class: Tracer', () => {
 
     it('disables tracing when POWERTOOLS_TRACE_ENABLED environment variable is set to false', () => {
       // Prepare
-      process.env.POWERTOOLS_TRACE_ENABLED = 'false';
+      vi.stubEnv('POWERTOOLS_TRACE_ENABLED', 'false');
 
       // Act
       const tracer = new Tracer();
@@ -263,7 +258,7 @@ describe('Class: Tracer', () => {
 
     it('picks up the service name from the POWERTOOLS_SERVICE_NAME environment variable', () => {
       // Prepare
-      process.env.POWERTOOLS_SERVICE_NAME = 'my-backend-service';
+      vi.stubEnv('POWERTOOLS_SERVICE_NAME', 'my-backend-service');
 
       // Act
       const tracer = new Tracer();
@@ -278,7 +273,7 @@ describe('Class: Tracer', () => {
 
     it('configures the capture response feature from the POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable', () => {
       // Prepare
-      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_RESPONSE', 'false');
 
       // Act
       const tracer = new Tracer();
@@ -293,7 +288,7 @@ describe('Class: Tracer', () => {
 
     it('ignores invalid values for the POWERTOOLS_TRACER_CAPTURE_RESPONSE environment variable', () => {
       // Prepare
-      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = '';
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_RESPONSE', '');
 
       // Act
       const tracer = new Tracer();
@@ -308,7 +303,7 @@ describe('Class: Tracer', () => {
 
     it('configures the capture error feature using the POWERTOOLS_TRACER_CAPTURE_ERROR environment variable', () => {
       // Prepare
-      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_ERROR', 'false');
 
       // Act
       const tracer = new Tracer();
@@ -323,7 +318,7 @@ describe('Class: Tracer', () => {
 
     it('ignores invalid POWERTOOLS_TRACER_CAPTURE_ERROR environment variable values', () => {
       // Prepare
-      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = '';
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_ERROR', '');
 
       // Act
       const tracer = new Tracer();
@@ -338,7 +333,7 @@ describe('Class: Tracer', () => {
 
     it('configures the http instrumentation feature using the POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS environment variable', () => {
       // Prepare
-      process.env.POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS = 'false';
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS', 'false');
 
       // Act
       const tracer = new Tracer();
@@ -353,7 +348,7 @@ describe('Class: Tracer', () => {
 
     it('ignores invalid values for the POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS environment variable', () => {
       // Prepare
-      process.env.POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS = '';
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS', '');
 
       // Act
       const tracer = new Tracer();
@@ -434,7 +429,7 @@ describe('Class: Tracer', () => {
 
     it('uses the default service name when one is not provided', () => {
       // Prepare
-      process.env.POWERTOOLS_SERVICE_NAME = undefined;
+      vi.stubEnv('POWERTOOLS_SERVICE_NAME', undefined);
       const tracer: Tracer = new Tracer();
       const putAnnotation = vi
         .spyOn(tracer, 'putAnnotation')
@@ -464,7 +459,7 @@ describe('Class: Tracer', () => {
 
     it('does nothing when the feature is disabled via the POWERTOOLS_TRACER_CAPTURE_RESPONSE env variable', () => {
       // Prepare
-      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = 'false';
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_RESPONSE', 'false');
       const tracer: Tracer = new Tracer();
       const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
 
@@ -473,7 +468,7 @@ describe('Class: Tracer', () => {
 
       // Assess
       expect(putMetadataSpy).toBeCalledTimes(0);
-      process.env.POWERTOOLS_TRACER_CAPTURE_RESPONSE = undefined;
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_RESPONSE', undefined);
     });
 
     it('it does nothing when the response is undefined', () => {
@@ -522,7 +517,7 @@ describe('Class: Tracer', () => {
 
     it('does not capture the error when called while POWERTOOLS_TRACER_CAPTURE_ERROR is set to false', () => {
       // Prepare
-      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_ERROR', 'false');
       const tracer: Tracer = new Tracer();
       const subsegment = new Subsegment(`## ${context.functionName}`);
       vi.spyOn(tracer, 'getSegment').mockImplementation(() => subsegment);
@@ -535,7 +530,7 @@ describe('Class: Tracer', () => {
       // Assess
       expect(addErrorFlagSpy).toBeCalledTimes(1);
       expect(addErrorSpy).toBeCalledTimes(0);
-      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = undefined;
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_ERROR', undefined);
     });
 
     it('calls subsegment.addError correctly when called with default config', () => {
@@ -598,7 +593,7 @@ describe('Class: Tracer', () => {
 
     it('returns a dummy segment when called outside of a namespace or without parent segment, and tracing is disabled', () => {
       // Prepare
-      process.env.AWS_EXECUTION_ENV = undefined; // This will disable the tracer, simulating local execution
+      vi.stubEnv('AWS_EXECUTION_ENV', undefined); // This will disable the tracer, simulating local execution
       const tracer: Tracer = new Tracer();
 
       // Act
@@ -670,7 +665,7 @@ describe('Class: Tracer', () => {
 
     it('does nothing when called outside of a namespace or without parent segment, and tracing is disabled', () => {
       // Prepare
-      process.env.AWS_EXECUTION_ENV = undefined; // This will disable the tracer, simulating local execution
+      vi.stubEnv('AWS_EXECUTION_ENV', undefined); // This will disable the tracer, simulating local execution
       const tracer: Tracer = new Tracer();
       const setSegmentSpy = vi.spyOn(tracer.provider, 'setSegment');
 
@@ -875,7 +870,7 @@ describe('Class: Tracer', () => {
 
     it('does not capture exceptions when the feature is disabled', async () => {
       // Prepare
-      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = 'false';
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_ERROR', 'false');
       const tracer: Tracer = new Tracer();
       const captureAsyncFuncSpy = vi.spyOn(tracer.provider, 'captureAsyncFunc');
       const newSubsegment = new Subsegment('### dummyMethod');
@@ -891,7 +886,7 @@ describe('Class: Tracer', () => {
       expect(addErrorSpy).toHaveBeenCalledTimes(0);
       expect.assertions(4);
 
-      process.env.POWERTOOLS_TRACER_CAPTURE_ERROR = undefined;
+      vi.stubEnv('POWERTOOLS_TRACER_CAPTURE_ERROR', undefined);
     });
 
     it('captures exceptions as metadata by default', async () => {

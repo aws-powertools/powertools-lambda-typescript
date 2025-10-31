@@ -60,6 +60,32 @@
       "eventName": "MODIFY",
       "eventSourceARN": "source_arn",
       "eventSource": "aws:dynamodb"
+    },
+    {
+      "eventID": "3",
+      "eventVersion": "1.0",
+      "dynamodb": {
+        "OldImage": {
+          "Message": {
+            "S": "New item!"
+          },
+          "Id": {
+            "N": "101"
+          }
+        },
+        "SequenceNumber": "222",
+        "Keys": {
+          "Id": {
+            "N": "101"
+          }
+        },
+        "SizeBytes": 59,
+        "StreamViewType": "OLD_IMAGE"
+      },
+      "awsRegion": "us-west-2",
+      "eventName": "MODIFY",
+      "eventSourceARN": "source_arn",
+      "eventSource": "aws:dynamodb"
     }
   ]
 }

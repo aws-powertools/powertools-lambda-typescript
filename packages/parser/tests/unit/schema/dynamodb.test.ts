@@ -64,6 +64,26 @@ describe('Schema: DynamoDB', () => {
           eventSourceARN: 'source_arn',
           eventSource: 'aws:dynamodb',
         },
+        {
+          eventID: '3',
+          eventVersion: '1.0',
+          dynamodb: {
+            OldImage: {
+              Message: 'New item!',
+              Id: 101,
+            },
+            SequenceNumber: '222',
+            Keys: {
+              Id: 101,
+            },
+            SizeBytes: 59,
+            StreamViewType: 'OLD_IMAGE',
+          },
+          awsRegion: 'us-west-2',
+          eventName: 'MODIFY',
+          eventSourceARN: 'source_arn',
+          eventSource: 'aws:dynamodb',
+        },
       ],
     });
   });
@@ -173,6 +193,26 @@ describe('Schema: DynamoDB', () => {
               Id: 101,
             },
             StreamViewType: 'NEW_AND_OLD_IMAGES',
+          },
+          awsRegion: 'us-west-2',
+          eventName: 'MODIFY',
+          eventSourceARN: 'source_arn',
+          eventSource: 'aws:dynamodb',
+        },
+        {
+          eventID: '3',
+          eventVersion: '1.0',
+          dynamodb: {
+            OldImage: {
+              Message: 'New item!',
+              Id: 101,
+            },
+            SequenceNumber: '222',
+            Keys: {
+              Id: 101,
+            },
+            SizeBytes: 59,
+            StreamViewType: 'OLD_IMAGE',
           },
           awsRegion: 'us-west-2',
           eventName: 'MODIFY',

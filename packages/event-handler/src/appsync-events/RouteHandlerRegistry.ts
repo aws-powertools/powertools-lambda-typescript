@@ -115,6 +115,7 @@ class RouteHandlerRegistry {
       }
     }
     if (mostSpecificHandler === undefined) {
+      /* v8 ignore else -- @preserve */
       if (!this.#warningSet.has(path)) {
         this.#logger.warn(
           `No route handler found for path '${path}' registered for ${this.#eventType}.`

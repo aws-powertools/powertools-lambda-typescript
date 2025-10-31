@@ -49,13 +49,13 @@ describe('Function: setParameter', () => {
     expect(DEFAULT_PROVIDERS.ssm).toBe(provider);
   });
 
-  it('rethrows the error thrown by the underlying sdk client', () => {
+  it('rethrows the error thrown by the underlying sdk client', async () => {
     // Prepare
     const options: SSMSetOptions = { value: 'my-value' };
     client.on(PutParameterCommand).rejects(new Error('Could not send command'));
 
     // Assess
-    expect(async () => {
+    await expect(async () => {
       await setParameter(parameterName, options);
     }).rejects.toThrowError(
       `Unable to set parameter with name ${parameterName}`

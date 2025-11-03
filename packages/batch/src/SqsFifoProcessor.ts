@@ -1,3 +1,4 @@
+import { SqsFifoProcessorStore } from './SqsFifoProcessorStore.js';
 import type {
   BatchProcessingOptions,
   EventSourceDataClassTypes,
@@ -9,18 +10,14 @@ import type {
  * determining whether to short-circuit processing, and skipping groups based on processing options.
  */
 class SqsFifoProcessor {
-  /**
-   * The ID of the current message group being processed.
-   */
-  #currentGroupId?: string;
+  readonly #store = new SqsFifoProcessorStore();
 
-  /**
-   * A set of group IDs that have already encountered failures.
-   */
-  readonly #failedGroupIds: Set<string>;
+  private get currentGroupId(): string | undefined {
+    return this.#store.getCurrentGroupId();
+  }
 
-  public constructor() {
-    this.#failedGroupIds = new Set<string>();
+  private set currentGroupId(groupId: string | undefined) {
+    this.#store.setCurrentGroupId(groupId);
   }
 
   /**
@@ -29,15 +26,15 @@ class SqsFifoProcessor {
    * @param group - The group ID to be added to the set of failed group IDs.
    */
   public addToFailedGroup(group: string): void {
-    this.#failedGroupIds.add(group);
+    this.#store.addFailedGroupId(group);
   }
 
   /**
    * Prepares the processor for a new batch of messages.
    */
   public prepare(): void {
-    this.#currentGroupId = undefined;
-    this.#failedGroupIds.clear();
+    this.currentGroupId = undefined;
+    this.#store.clearFailedGroupIds();
   }
 
   /**
@@ -46,7 +43,7 @@ class SqsFifoProcessor {
    * @param group - The group ID of the current message being processed.
    */
   public setCurrentGroup(group?: string): void {
-    this.#currentGroupId = group;
+    this.currentGroupId = group;
   }
 
   /**
@@ -76,8 +73,8 @@ class SqsFifoProcessor {
   public shouldSkipCurrentGroup(options?: BatchProcessingOptions): boolean {
     return (
       (options?.skipGroupOnError ?? false) &&
-      this.#currentGroupId &&
-      this.#failedGroupIds.has(this.#currentGroupId)
+      this.currentGroupId !== undefined &&
+      this.#store.hasFailedGroupId(this.currentGroupId)
     );
   }
 
@@ -88,8 +85,8 @@ class SqsFifoProcessor {
    * @param options - The options for the batch processing.
    */
   public processFailureForCurrentGroup(options?: BatchProcessingOptions) {
-    if (options?.skipGroupOnError && this.#currentGroupId) {
-      this.addToFailedGroup(this.#currentGroupId);
+    if (options?.skipGroupOnError && this.currentGroupId) {
+      this.addToFailedGroup(this.currentGroupId);
     }
   }
 }

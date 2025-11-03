@@ -52,7 +52,7 @@
     "@types/node": "24.10.0",
     "aws-cdk": "^2.1031.0",
     "constructs": "^10.4.2",
-    "esbuild": "^0.25.11",
+    "esbuild": "^0.25.12",
     "typescript": "^5.9.3"
   }
 }

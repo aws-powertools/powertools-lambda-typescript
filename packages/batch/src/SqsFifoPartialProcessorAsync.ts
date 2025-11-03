@@ -141,11 +141,7 @@ class SqsFifoPartialProcessorAsync extends BatchProcessor {
     const remainingRecords = this.records.slice(firstFailureIndex);
 
     for (const record of remainingRecords) {
-      const result = this.#processFailRecord(
-        record,
-        new SqsFifoShortCircuitError()
-      );
-      processedRecords.push(result);
+      this.#processFailRecord(record, new SqsFifoShortCircuitError());
     }
 
     this.clean();

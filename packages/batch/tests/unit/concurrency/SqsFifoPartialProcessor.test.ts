@@ -8,6 +8,7 @@ import {
 import type {
   BatchProcessingOptions,
   FailureResponse,
+  PartialItemFailureResponse,
   SuccessResponse,
 } from '../../../src/types.js';
 import { sqsRecordFactory } from '../../helpers/factories.js';
@@ -189,45 +190,46 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
         {
           description: 'without InvokeStore',
           useInvokeStore: false,
-          expectedLengthA: 1,
-          expectedLengthB: 1,
-          expectedBodyA: 'body-B',
-          expectedBodyB: 'body-B',
+          expectedLengthA: 3,
+          expectedLengthASync: 2,
+          expectedLengthB: 3,
+          expectedLengthBSync: 2,
         },
         {
           description: 'with InvokeStore',
           useInvokeStore: true,
-          expectedLengthA: 2,
-          expectedLengthB: 1,
-          expectedBodyA: 'fail',
-          expectedBodyB: 'body-B',
+          expectedLengthA: 0,
+          expectedLengthASync: 0,
+          expectedLengthB: 2,
+          expectedLengthBSync: 2,
         },
       ])(
         'tracks failures and short-circuits independently per invocation $description',
         async ({
           useInvokeStore,
           expectedLengthA,
+          expectedLengthASync,
           expectedLengthB,
-          expectedBodyA,
-          expectedBodyB,
+          expectedLengthBSync,
         }) => {
           // Prepare
           const processor = new processorClass();
-          const recordsA = [
+          const recordsA = [sqsRecordFactory('body-A-2', '1')];
+          const recordsB = [
             sqsRecordFactory('fail', '1'),
-            sqsRecordFactory('body-A-2', '1'),
+            sqsRecordFactory('body-B', '1'),
           ];
-          const recordsB = [sqsRecordFactory('body-B', '1')];
-          const handlerA = vi.fn((record: SQSRecord) => {
+
+          const handlerA = vi.fn((record: SQSRecord) => record.body);
+          const handlerB = vi.fn((record: SQSRecord) => {
             if (record.body === 'fail') throw new Error('Processing failed');
             return record.body;
           });
-          const handlerB = vi.fn((record: SQSRecord) => record.body);
 
           // Act
           const [resultAPromise, resultBPromise] = await sequence<
-            Promise<ProcessResult>,
-            Promise<ProcessResult>
+            Promise<PartialItemFailureResponse>,
+            Promise<PartialItemFailureResponse>
           >(
             {
               sideEffects: [
@@ -239,10 +241,8 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
                 () => {}, // Wait for inv2 to register
               ],
               return: async () => {
-                const processed = isAsync
-                  ? await processor.process()
-                  : processor.processSync();
-                return processed.map(tupleToObject);
+                isAsync ? await processor.process() : processor.processSync();
+                return processor.response();
               },
             },
             {
@@ -255,10 +255,8 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
                 },
               ],
               return: async () => {
-                const processed = isAsync
-                  ? await processor.process()
-                  : processor.processSync();
-                return processed.map(tupleToObject);
+                isAsync ? await processor.process() : processor.processSync();
+                return processor.response();
               },
             },
             { useInvokeStore }
@@ -267,10 +265,12 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
           // Assess
           const resultA = await resultAPromise;
           const resultB = await resultBPromise;
-          expect(resultA).toHaveLength(expectedLengthA);
-          expect(resultB).toHaveLength(expectedLengthB);
-          expect(resultA[0].record.body).toBe(expectedBodyA);
-          expect(resultB[0].record.body).toBe(expectedBodyB);
+          expect(resultA.batchItemFailures).toHaveLength(
+            isAsync ? expectedLengthA : expectedLengthASync
+          );
+          expect(resultB.batchItemFailures).toHaveLength(
+            isAsync ? expectedLengthB : expectedLengthBSync
+          );
         }
       );
 

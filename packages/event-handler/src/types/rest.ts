@@ -5,6 +5,7 @@ import type {
 } from '@aws-lambda-powertools/commons/types';
 import type {
   APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda';
@@ -15,7 +16,7 @@ import type { ResolveOptions } from './common.js';
 
 type RequestContext = {
   req: Request;
-  event: APIGatewayProxyEvent;
+  event: APIGatewayProxyEvent | APIGatewayProxyEventV2;
   context: Context;
   res: Response;
   params: Record<string, string>;
@@ -63,6 +64,7 @@ type ExtendedAPIGatewayProxyResultBody = string | Readable | ReadableStream;
 
 type ExtendedAPIGatewayProxyResult = Omit<APIGatewayProxyResult, 'body'> & {
   body: ExtendedAPIGatewayProxyResultBody;
+  cookies?: string[];
 };
 
 type HandlerResponse = Response | JSONObject | ExtendedAPIGatewayProxyResult;
@@ -124,6 +126,11 @@ type ValidationResult = {
 
 type ResponseStream = InstanceType<typeof HttpResponseStream> & {
   _onBeforeFirstWrite?: (write: (data: Uint8Array | string) => void) => void;
+};
+
+type V1Headers = {
+  headers: Record<string, string>;
+  multiValueHeaders: Record<string, string[]>;
 };
 
 /**
@@ -240,4 +247,5 @@ export type {
   ValidationResult,
   CompressionOptions,
   NextFunction,
+  V1Headers,
 };

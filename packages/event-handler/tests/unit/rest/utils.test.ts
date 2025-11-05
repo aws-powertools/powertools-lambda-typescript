@@ -6,7 +6,8 @@ import type {
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   composeMiddleware,
-  isAPIGatewayProxyEvent,
+  isAPIGatewayProxyEventV1,
+  isAPIGatewayProxyEventV2,
   isExtendedAPIGatewayProxyResult,
 } from '../../../src/rest/index.js';
 import {
@@ -223,7 +224,7 @@ describe('Path Utilities', () => {
     );
   });
 
-  describe('isAPIGatewayProxyEvent', () => {
+  describe('isAPIGatewayProxyEventV1', () => {
     const baseValidEvent = {
       httpMethod: 'GET',
       path: '/test',
@@ -240,7 +241,7 @@ describe('Path Utilities', () => {
     };
 
     it('should return true for valid API Gateway Proxy event with all fields populated', () => {
-      expect(isAPIGatewayProxyEvent(baseValidEvent)).toBe(true);
+      expect(isAPIGatewayProxyEventV1(baseValidEvent)).toBe(true);
     });
 
     it('should return true for real API Gateway event with null fields', () => {
@@ -266,7 +267,7 @@ describe('Path Utilities', () => {
         isBase64Encoded: false,
       };
 
-      expect(isAPIGatewayProxyEvent(realEvent)).toBe(true);
+      expect(isAPIGatewayProxyEventV1(realEvent)).toBe(true);
     });
 
     it('should return true for event with string body', () => {
@@ -276,7 +277,7 @@ describe('Path Utilities', () => {
         body: '{"key":"value"}',
       };
 
-      expect(isAPIGatewayProxyEvent(eventWithBody)).toBe(true);
+      expect(isAPIGatewayProxyEventV1(eventWithBody)).toBe(true);
     });
 
     it.each([
@@ -293,7 +294,7 @@ describe('Path Utilities', () => {
       { field: 'stageVariables', value: null },
     ])('should return true when $field is $value', ({ field, value }) => {
       const event = { ...baseValidEvent, [field]: value };
-      expect(isAPIGatewayProxyEvent(event)).toBe(true);
+      expect(isAPIGatewayProxyEventV1(event)).toBe(true);
     });
 
     it.each([
@@ -319,7 +320,7 @@ describe('Path Utilities', () => {
       'should return true when $field contains undefined values',
       ({ field, value }) => {
         const event = { ...baseValidEvent, [field]: value };
-        expect(isAPIGatewayProxyEvent(event)).toBe(true);
+        expect(isAPIGatewayProxyEventV1(event)).toBe(true);
       }
     );
 
@@ -330,7 +331,7 @@ describe('Path Utilities', () => {
       { case: 'number', event: 123 },
       { case: 'array', event: [] },
     ])('should return false for $case', ({ event }) => {
-      expect(isAPIGatewayProxyEvent(event)).toBe(false);
+      expect(isAPIGatewayProxyEventV1(event)).toBe(false);
     });
 
     it.each([
@@ -369,7 +370,7 @@ describe('Path Utilities', () => {
       'should return false when $field is invalid ($value)',
       ({ field, value }) => {
         const invalidEvent = { ...baseValidEvent, [field]: value };
-        expect(isAPIGatewayProxyEvent(invalidEvent)).toBe(false);
+        expect(isAPIGatewayProxyEventV1(invalidEvent)).toBe(false);
       }
     );
 
@@ -382,7 +383,173 @@ describe('Path Utilities', () => {
     ])('should return false when required field %s is missing', (field) => {
       const incompleteEvent = { ...baseValidEvent };
       delete incompleteEvent[field as keyof typeof incompleteEvent];
-      expect(isAPIGatewayProxyEvent(incompleteEvent)).toBe(false);
+      expect(isAPIGatewayProxyEventV1(incompleteEvent)).toBe(false);
+    });
+  });
+
+  describe('isAPIGatewayProxyEventV2', () => {
+    const baseValidEvent = {
+      version: '2.0',
+      routeKey: 'GET /test',
+      rawPath: '/test',
+      rawQueryString: '',
+      headers: {},
+      requestContext: {
+        accountId: '123456789012',
+        apiId: 'api-id',
+        domainName: 'api.example.com',
+        domainPrefix: 'api',
+        http: {
+          method: 'GET',
+          path: '/test',
+          protocol: 'HTTP/1.1',
+          sourceIp: '192.0.2.1',
+          userAgent: 'agent',
+        },
+        requestId: 'id',
+        routeKey: 'GET /test',
+        stage: '$default',
+        time: '12/Mar/2020:19:03:58 +0000',
+        timeEpoch: 1583348638390,
+      },
+      isBase64Encoded: false,
+    };
+
+    it('should return true for valid API Gateway V2 event with all fields populated', () => {
+      expect(isAPIGatewayProxyEventV2(baseValidEvent)).toBe(true);
+    });
+
+    it('should return true for real API Gateway V2 event with optional fields', () => {
+      const realEvent = {
+        version: '2.0',
+        routeKey: 'POST /users',
+        rawPath: '/users',
+        rawQueryString: 'name=john&age=25',
+        cookies: ['session=abc123', 'theme=dark'],
+        headers: {
+          'content-type': 'application/json',
+          'user-agent': 'Mozilla/5.0',
+        },
+        queryStringParameters: {
+          name: 'john',
+          age: '25',
+        },
+        pathParameters: {
+          id: '123',
+        },
+        stageVariables: {
+          env: 'prod',
+        },
+        body: '{"key":"value"}',
+        isBase64Encoded: false,
+        requestContext: {
+          accountId: '123456789012',
+          apiId: 'api-id',
+          domainName: 'api.example.com',
+          domainPrefix: 'api',
+          http: {
+            method: 'POST',
+            path: '/users',
+            protocol: 'HTTP/1.1',
+            sourceIp: '192.0.2.1',
+            userAgent: 'Mozilla/5.0',
+          },
+          requestId: 'request-id',
+          routeKey: 'POST /users',
+          stage: '$default',
+          time: '12/Mar/2020:19:03:58 +0000',
+          timeEpoch: 1583348638390,
+        },
+      };
+
+      expect(isAPIGatewayProxyEventV2(realEvent)).toBe(true);
+    });
+
+    it.each([
+      { field: 'body', value: undefined },
+      { field: 'cookies', value: undefined },
+      { field: 'pathParameters', value: undefined },
+      { field: 'queryStringParameters', value: undefined },
+      { field: 'stageVariables', value: undefined },
+    ])(
+      'should return true when optional field $field is $value',
+      ({ field, value }) => {
+        const event = { ...baseValidEvent, [field]: value };
+        expect(isAPIGatewayProxyEventV2(event)).toBe(true);
+      }
+    );
+
+    it.each([
+      { case: 'null', event: null },
+      { case: 'undefined', event: undefined },
+      { case: 'string', event: 'not an object' },
+      { case: 'number', event: 123 },
+      { case: 'array', event: [] },
+    ])('should return false for $case', ({ event }) => {
+      expect(isAPIGatewayProxyEventV2(event)).toBe(false);
+    });
+
+    it.each([
+      { field: 'version', value: '1.0' },
+      { field: 'version', value: null },
+      { field: 'version', value: undefined },
+      { field: 'version', value: 123 },
+      { field: 'routeKey', value: 123 },
+      { field: 'routeKey', value: null },
+      { field: 'routeKey', value: undefined },
+      { field: 'rawPath', value: 123 },
+      { field: 'rawPath', value: null },
+      { field: 'rawPath', value: undefined },
+      { field: 'rawQueryString', value: 123 },
+      { field: 'rawQueryString', value: null },
+      { field: 'rawQueryString', value: undefined },
+      { field: 'headers', value: 'not an object' },
+      { field: 'headers', value: null },
+      { field: 'headers', value: undefined },
+      { field: 'headers', value: 123 },
+      { field: 'cookies', value: 'not an array' },
+      { field: 'cookies', value: null },
+      { field: 'cookies', value: 123 },
+      { field: 'queryStringParameters', value: 'not an object' },
+      { field: 'queryStringParameters', value: null },
+      { field: 'queryStringParameters', value: 123 },
+      { field: 'pathParameters', value: 'not an object' },
+      { field: 'pathParameters', value: null },
+      { field: 'pathParameters', value: 123 },
+      { field: 'stageVariables', value: 'not an object' },
+      { field: 'stageVariables', value: null },
+      { field: 'stageVariables', value: 123 },
+      { field: 'body', value: null },
+      { field: 'requestContext', value: 'not an object' },
+      { field: 'requestContext', value: null },
+      { field: 'requestContext', value: undefined },
+      { field: 'requestContext', value: 123 },
+      { field: 'isBase64Encoded', value: 'not a boolean' },
+      { field: 'isBase64Encoded', value: null },
+      { field: 'isBase64Encoded', value: undefined },
+      { field: 'isBase64Encoded', value: 123 },
+      { field: 'body', value: 123 },
+      { field: 'body', value: {} },
+    ])(
+      'should return false when $field is invalid ($value)',
+      ({ field, value }) => {
+        const invalidEvent = { ...baseValidEvent, [field]: value };
+        expect(isAPIGatewayProxyEventV2(invalidEvent)).toBe(false);
+      }
+    );
+
+    it.each([
+      'version',
+      'routeKey',
+      'rawPath',
+      'rawQueryString',
+      'headers',
+      'requestContext',
+      'isBase64Encoded',
+    ])('should return false when required field %s is missing', (field) => {
+      const incompleteEvent = { ...baseValidEvent };
+      delete incompleteEvent[field as keyof typeof incompleteEvent];
+      expect(isAPIGatewayProxyEventV2(incompleteEvent)).toBe(false);
     });
   });
 

@@ -173,10 +173,26 @@ class ServiceUnavailableError extends HttpError {
   }
 }
 
+class InvalidEventError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = 'InvalidEventError';
+  }
+}
+
+class InvalidHttpMethodError extends Error {
+  constructor(method: string) {
+    super(`HTTP method ${method} is not supported.`);
+    this.name = 'InvalidEventError';
+  }
+}
+
 export {
   BadRequestError,
   ForbiddenError,
   InternalServerError,
+  InvalidEventError,
+  InvalidHttpMethodError,
   MethodNotAllowedError,
   NotFoundError,
   ParameterValidationError,

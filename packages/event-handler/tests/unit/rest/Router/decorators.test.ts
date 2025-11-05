@@ -1,5 +1,11 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { Context } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResult,
+  APIGatewayProxyStructuredResultV2,
+  Context,
+} from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   BadRequestError,
@@ -12,24 +18,59 @@ import {
 import type { RequestContext } from '../../../../src/types/rest.js';
 import {
   createTestEvent,
+  createTestEventV2,
   createTrackingMiddleware,
   MockResponseStream,
   parseStreamOutput,
 } from '../helpers.js';
 
-const createHandler = (app: Router) => (event: unknown, _context: Context) =>
-  app.resolve(event, _context);
+const createHandler = (app: Router) => {
+  function handler(
+    event: APIGatewayProxyEvent,
+    context: Context
+  ): Promise<APIGatewayProxyResult>;
+  function handler(
+    event: APIGatewayProxyEventV2,
+    context: Context
+  ): Promise<APIGatewayProxyStructuredResultV2>;
+  function handler(
+    event: unknown,
+    context: Context
+  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
+  function handler(event: unknown, context: Context) {
+    return app.resolve(event, context);
+  }
+  return handler;
+};
 
-const createHandlerWithScope =
-  (app: Router, scope: unknown) => (event: unknown, _context: Context) =>
-    app.resolve(event, _context, { scope });
+const createHandlerWithScope = (app: Router, scope: unknown) => {
+  function handler(
+    event: APIGatewayProxyEvent,
+    context: Context
+  ): Promise<APIGatewayProxyResult>;
+  function handler(
+    event: APIGatewayProxyEventV2,
+    context: Context
+  ): Promise<APIGatewayProxyStructuredResultV2>;
+  function handler(
+    event: unknown,
+    context: Context
+  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
+  function handler(event: unknown, context: Context) {
+    return app.resolve(event, context, { scope });
+  }
+  return handler;
+};
 
 const createStreamHandler =
   (app: Router, scope: unknown) =>
   (event: unknown, _context: Context, responseStream: MockResponseStream) =>
     app.resolveStream(event, _context, { scope, responseStream });
 
-describe('Class: Router - Decorators', () => {
+describe.each([
+  { version: 'V1', createEvent: createTestEvent },
+  { version: 'V2', createEvent: createTestEventV2 },
+])('Class: Router - Decorators ($version)', ({ createEvent }) => {
   describe('decorators', () => {
     const app = new Router();
 
@@ -85,16 +126,14 @@ describe('Class: Router - Decorators', () => {
       const lambda = new Lambda();
       // Act
       const actual = await lambda.handler(
-        createTestEvent('/test', method),
+        createEvent('/test', method),
         context
       );
       // Assess
-      expect(actual).toEqual({
-        statusCode: 200,
-        body: JSON.stringify(expected),
-        headers: { 'content-type': 'application/json' },
-        isBase64Encoded: false,
-      });
+      expect(actual.statusCode).toBe(200);
+      expect(actual.body).toBe(JSON.stringify(expected));
+      expect(actual.headers?.['content-type']).toBe('application/json');
+      expect(actual.isBase64Encoded).toBe(false);
     });
   });
 
@@ -124,7 +163,7 @@ describe('Class: Router - Decorators', () => {
       const handler = lambda.handler.bind(lambda);
 
       // Act
-      const result = await handler(createTestEvent('/test', 'GET'), context);
+      const result = await handler(createEvent('/test', 'GET'), context);
 
       // Assess
       expect(executionOrder).toEqual([
@@ -204,7 +243,7 @@ describe('Class: Router - Decorators', () => {
 
         // Act
         const result = await lambda.handler(
-          createTestEvent('/test', method),
+          createEvent('/test', method),
           context
         );
 
@@ -249,10 +288,7 @@ describe('Class: Router - Decorators', () => {
       const lambda = new Lambda();
 
       // Act
-      const result = await lambda.handler(
-        createTestEvent('/test', 'GET'),
-        context
-      );
+      const result = await lambda.handler(createEvent('/test', 'GET'), context);
 
       // Assess
       expect(result).toEqual({
@@ -290,10 +326,7 @@ describe('Class: Router - Decorators', () => {
       const handler = lambda.handler.bind(lambda);
 
       // Act
-      const result = await handler(
-        createTestEvent('/nonexistent', 'GET'),
-        context
-      );
+      const result = await handler(createEvent('/nonexistent', 'GET'), context);
 
       // Assess
       expect(result).toEqual({
@@ -333,10 +366,7 @@ describe('Class: Router - Decorators', () => {
       const lambda = new Lambda();
 
       // Act
-      const result = await lambda.handler(
-        createTestEvent('/test', 'GET'),
-        context
-      );
+      const result = await lambda.handler(createEvent('/test', 'GET'), context);
 
       // Assess
       expect(result).toEqual({
@@ -379,7 +409,7 @@ describe('Class: Router - Decorators', () => {
       const handler = lambda.handler.bind(lambda);
 
       // Act
-      const result = await handler(createTestEvent('/test', 'GET'), context);
+      const result = await handler(createEvent('/test', 'GET'), context);
 
       // Assess
       expect(result).toEqual({
@@ -399,7 +429,7 @@ describe('Class: Router - Decorators', () => {
     it('passes request, event, and context to decorator route handlers', async () => {
       // Prepare
       const app = new Router();
-      const testEvent = createTestEvent('/test', 'GET');
+      const testEvent = createEvent('/test', 'GET');
 
       class Lambda {
         @app.get('/test')
@@ -418,7 +448,7 @@ describe('Class: Router - Decorators', () => {
 
       // Act
       const result = await lambda.handler(testEvent, context);
-      const actual = JSON.parse(result.body);
+      const actual = JSON.parse(result.body ?? '{}');
 
       // Assess
       expect(actual.hasRequest).toBe(true);

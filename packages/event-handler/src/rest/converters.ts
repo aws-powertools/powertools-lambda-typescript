@@ -11,12 +11,13 @@ import type {
   ExtendedAPIGatewayProxyResult,
   ExtendedAPIGatewayProxyResultBody,
   HandlerResponse,
+  ResponseType,
+  ResponseTypeMap,
   V1Headers,
 } from '../types/rest.js';
 import { COMPRESSION_ENCODING_TYPES } from './constants.js';
 import { InvalidHttpMethodError } from './errors.js';
 import {
-  isAPIGatewayProxyEventV1,
   isAPIGatewayProxyEventV2,
   isExtendedAPIGatewayProxyResult,
   isHttpMethod,
@@ -194,27 +195,19 @@ const webHeadersToApiGatewayV2Headers = (webHeaders: Headers) => {
   return { headers };
 };
 
-function webHeadersToApiGatewayHeaders(
+const webHeadersToApiGatewayHeaders = <T extends ResponseType>(
   webHeaders: Headers,
-  event: APIGatewayProxyEventV2
-): { headers: Record<string, string> };
-function webHeadersToApiGatewayHeaders(
-  webHeaders: Headers,
-  event: APIGatewayProxyEvent
-): V1Headers;
-function webHeadersToApiGatewayHeaders(
-  webHeaders: Headers,
-  event: APIGatewayProxyEvent | APIGatewayProxyEventV2
-): { headers: Record<string, string> } | V1Headers;
-function webHeadersToApiGatewayHeaders(
-  webHeaders: Headers,
-  event: APIGatewayProxyEvent | APIGatewayProxyEventV2
-): { headers: Record<string, string> } | V1Headers {
-  if (isAPIGatewayProxyEventV1(event)) {
-    return webHeadersToApiGatewayV1Headers(webHeaders);
+  responseType: T
+): T extends 'v1' ? V1Headers : { headers: Record<string, string> } => {
+  if (responseType === 'v1') {
+    return webHeadersToApiGatewayV1Headers(webHeaders) as T extends 'v1'
+      ? V1Headers
+      : { headers: Record<string, string> };
   }
-  return webHeadersToApiGatewayV2Headers(webHeaders);
-}
+  return webHeadersToApiGatewayV2Headers(webHeaders) as T extends 'v1'
+    ? V1Headers
+    : { headers: Record<string, string> };
+};
 
 /**
  * Converts a Web API Response object to an API Gateway V1 proxy result.
@@ -320,27 +313,15 @@ const webResponseToProxyResultV2 = async (
   return result;
 };
 
-function webResponseToProxyResult(
+const webResponseToProxyResult = <T extends ResponseType>(
   response: Response,
-  event: APIGatewayProxyEventV2
-): Promise<APIGatewayProxyStructuredResultV2>;
-function webResponseToProxyResult(
-  response: Response,
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult>;
-function webResponseToProxyResult(
-  response: Response,
-  event: APIGatewayProxyEvent | APIGatewayProxyEventV2
-): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
-function webResponseToProxyResult(
-  response: Response,
-  event: APIGatewayProxyEvent | APIGatewayProxyEventV2
-): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2> {
-  if (isAPIGatewayProxyEventV1(event)) {
-    return webResponseToProxyResultV1(response);
+  responseType: T
+): Promise<ResponseTypeMap[T]> => {
+  if (responseType === 'v1') {
+    return webResponseToProxyResultV1(response) as Promise<ResponseTypeMap[T]>;
   }
-  return webResponseToProxyResultV2(response);
-}
+  return webResponseToProxyResultV2(response) as Promise<ResponseTypeMap[T]>;
+};
 
 /**
  * Adds headers from an ExtendedAPIGatewayProxyResult to a Headers object.

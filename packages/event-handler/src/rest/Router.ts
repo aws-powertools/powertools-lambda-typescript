@@ -217,6 +217,8 @@ class Router {
       throw new InvalidEventError();
     }
 
+    const responseType = isAPIGatewayProxyEventV2(event) ? 'v2' : 'v1';
+
     let req: Request;
     try {
       req = proxyEventToWebRequest(event);
@@ -231,6 +233,7 @@ class Router {
           req: new Request('https://invalid'),
           res: new Response('', { status: HttpStatusCodes.METHOD_NOT_ALLOWED }),
           params: {},
+          responseType,
         };
       }
       throw err;
@@ -244,6 +247,7 @@ class Router {
       // it means something went wrong with the middleware chain
       res: new Response('', { status: HttpStatusCodes.INTERNAL_SERVER_ERROR }),
       params: {},
+      responseType,
     };
 
     try {
@@ -346,7 +350,7 @@ class Router {
     options?: ResolveOptions
   ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2> {
     const reqCtx = await this.#resolve(event, context, options);
-    return webResponseToProxyResult(reqCtx.res, reqCtx.event);
+    return webResponseToProxyResult(reqCtx.res, reqCtx.responseType);
   }
 
   /**
@@ -380,7 +384,7 @@ class Router {
   ) {
     const { headers } = webHeadersToApiGatewayHeaders(
       reqCtx.res.headers,
-      reqCtx.event
+      reqCtx.responseType
     );
     const resStream = HttpResponseStream.from(responseStream, {
       statusCode: reqCtx.res.status,

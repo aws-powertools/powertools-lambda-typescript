@@ -539,8 +539,6 @@ describe('Converters', () => {
   });
 
   describe('responseToProxyResult', () => {
-    const event = createTestEvent('/test', 'GET');
-
     it('converts basic Response to API Gateway result', async () => {
       // Prepare
       const response = new Response('Hello World', {
@@ -551,7 +549,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v1');
 
       // Assess
       expect(result.statusCode).toBe(200);
@@ -568,7 +566,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v1');
 
       // Assess
       expect(result.statusCode).toBe(201);
@@ -589,7 +587,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v1');
 
       // Assess
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
@@ -609,7 +607,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v1');
 
       // Assess
       expect(result.headers).toEqual({
@@ -625,7 +623,7 @@ describe('Converters', () => {
       const response = new Response('Not Found', { status: 404 });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v1');
 
       // Assess
       expect(result.statusCode).toBe(404);
@@ -636,7 +634,7 @@ describe('Converters', () => {
       const response = new Response(null, { status: 204 });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v1');
 
       // Assess
       expect(result.statusCode).toBe(204);
@@ -653,7 +651,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v1');
 
       // Assess
       expect(result.isBase64Encoded).toBe(true);
@@ -664,8 +662,6 @@ describe('Converters', () => {
   });
 
   describe('webResponseToProxyResult - V2', () => {
-    const event = createTestEventV2('/test', 'GET');
-
     it('converts basic Response to API Gateway V2 result', async () => {
       // Prepare
       const response = new Response('Hello World', {
@@ -676,7 +672,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v2');
 
       // Assess
       expect(result.statusCode).toBe(200);
@@ -694,7 +690,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v2');
 
       // Assess
       expect(result.statusCode).toBe(201);
@@ -715,7 +711,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v2');
 
       // Assess
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
@@ -732,7 +728,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v2');
 
       // Assess
       expect(result.cookies).toEqual([
@@ -748,7 +744,7 @@ describe('Converters', () => {
       const response = new Response('Not Found', { status: 404 });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v2');
 
       // Assess
       expect(result.statusCode).toBe(404);
@@ -760,7 +756,7 @@ describe('Converters', () => {
       const response = new Response(null, { status: 204 });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v2');
 
       // Assess
       expect(result.statusCode).toBe(204);
@@ -777,7 +773,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, event);
+      const result = await webResponseToProxyResult(response, 'v2');
 
       // Assess
       expect(result.isBase64Encoded).toBe(true);
@@ -947,10 +943,9 @@ describe('Converters', () => {
         'content-type': 'application/json',
         authorization: 'Bearer token123',
       });
-      const event = createTestEvent('/test', 'GET');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, event);
+      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
 
       // Assess
       expect(result).toEqual({
@@ -968,10 +963,9 @@ describe('Converters', () => {
         accept: 'application/json, text/html',
         'cache-control': 'no-cache, no-store',
       });
-      const event = createTestEvent('/test', 'GET');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, event);
+      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
 
       // Assess
       expect(result).toEqual({
@@ -988,10 +982,9 @@ describe('Converters', () => {
       const headers = new Headers({
         'set-cookie': 'session=abc123; theme=dark',
       });
-      const event = createTestEvent('/test', 'GET');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, event);
+      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
 
       // Assess
       expect(result).toEqual({
@@ -1008,10 +1001,9 @@ describe('Converters', () => {
         accept: 'application/json, text/html',
         'set-cookie': 'session=abc; theme=dark',
       });
-      const event = createTestEvent('/test', 'GET');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, event);
+      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
 
       // Assess
       expect(result).toEqual({
@@ -1028,10 +1020,9 @@ describe('Converters', () => {
       const headers = new Headers();
       headers.append('x-custom', 'value1');
       headers.append('x-custom', 'value2');
-      const event = createTestEvent('/test', 'GET');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, event);
+      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
 
       // Assess
       expect(result).toEqual({
@@ -1047,10 +1038,9 @@ describe('Converters', () => {
       const headers = new Headers();
       headers.set('x-custom', 'value1');
       headers.append('x-custom', 'value2');
-      const event = createTestEvent('/test', 'GET');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, event);
+      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
 
       // Assess
       expect(result).toEqual({
@@ -1067,10 +1057,9 @@ describe('Converters', () => {
       headers.append('accept', 'application/json');
       headers.append('accept', 'text/html');
       headers.append('accept', 'text/plain');
-      const event = createTestEvent('/test', 'GET');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, event);
+      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
 
       // Assess
       expect(result).toEqual({
@@ -1087,10 +1076,9 @@ describe('Converters', () => {
         accept: 'application/json,  text/html  ,text/plain',
         'set-cookie': 'session=abc;  theme=dark  ; user=john',
       });
-      const event = createTestEvent('/test', 'GET');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, event);
+      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
 
       // Assess
       expect(result).toEqual({
@@ -1105,10 +1093,9 @@ describe('Converters', () => {
     it('handles empty headers', () => {
       // Prepare
       const headers = new Headers();
-      const event = createTestEvent('/test', 'GET');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, event);
+      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
 
       // Assess
       expect(result).toEqual({
@@ -1125,10 +1112,9 @@ describe('Converters', () => {
         authorization: 'Bearer token123',
         'set-cookie': 'session=abc; theme=dark',
       });
-      const event = createTestEvent('/test', 'GET');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, event);
+      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
 
       // Assess
       expect(result).toEqual({

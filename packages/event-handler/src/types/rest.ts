@@ -7,6 +7,7 @@ import type {
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
   APIGatewayProxyResult,
+  APIGatewayProxyStructuredResultV2,
   Context,
 } from 'aws-lambda';
 import type { HttpStatusCodes, HttpVerbs } from '../rest/constants.js';
@@ -14,12 +15,20 @@ import type { Route } from '../rest/Route.js';
 import type { HttpResponseStream } from '../rest/utils.js';
 import type { ResolveOptions } from './common.js';
 
+type ResponseType = 'v1' | 'v2';
+
+type ResponseTypeMap = {
+  v1: APIGatewayProxyResult;
+  v2: APIGatewayProxyStructuredResultV2;
+};
+
 type RequestContext = {
   req: Request;
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2;
   context: Context;
   res: Response;
   params: Record<string, string>;
+  responseType: ResponseType;
 };
 
 type ErrorResolveOptions = RequestContext & ResolveOptions;
@@ -237,6 +246,8 @@ export type {
   Middleware,
   Path,
   RequestContext,
+  ResponseType,
+  ResponseTypeMap,
   RestRouterOptions,
   RouteHandler,
   ResolveStreamOptions,

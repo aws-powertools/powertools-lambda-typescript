@@ -111,6 +111,7 @@ type HttpRouteOptions = {
   method: HttpMethod | HttpMethod[];
   path: Path;
   middleware?: Middleware[];
+  validation?: ValidationConfig;
 };
 
 // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
@@ -252,6 +253,53 @@ type RouterResponse =
   | APIGatewayProxyResult
   | APIGatewayProxyStructuredResultV2
   | ALBResult;
+/**
+ * Standard Schema interface for validation
+ * @see https://github.com/standard-schema/standard-schema
+ */
+interface StandardSchema<Input = unknown, Output = Input> {
+  '~standard': {
+    version: 1;
+    vendor: string;
+    validate: (
+      value: unknown
+    ) => Promise<{ value: Output }> | { value: Output };
+  };
+}
+
+/**
+ * Configuration for request validation
+ */
+type RequestValidationConfig<T = unknown> = {
+  body?: StandardSchema<unknown, T>;
+  headers?: StandardSchema<unknown, Record<string, string>>;
+  path?: StandardSchema<unknown, Record<string, string>>;
+  query?: StandardSchema<unknown, Record<string, string>>;
+};
+
+/**
+ * Configuration for response validation
+ */
+type ResponseValidationConfig<T = unknown> = {
+  body?: StandardSchema<unknown, T>;
+  headers?: StandardSchema<unknown, Record<string, string>>;
+};
+
+/**
+ * Validation configuration for request and response
+ */
+type ValidationConfig<TReq = unknown, TRes = unknown> = {
+  req?: RequestValidationConfig<TReq>;
+  res?: ResponseValidationConfig<TRes>;
+};
+
+/**
+ * Validation error details
+ */
+type ValidationErrorDetail = {
+  component: 'body' | 'headers' | 'path' | 'query';
+  message: string;
+};
 
 export type {
   BinaryResult,
@@ -286,4 +334,9 @@ export type {
   NextFunction,
   V1Headers,
   WebResponseToProxyResultOptions,
+  StandardSchema,
+  RequestValidationConfig,
+  ResponseValidationConfig,
+  ValidationConfig,
+  ValidationErrorDetail,
 };

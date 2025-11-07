@@ -132,6 +132,14 @@
   "dependencies": {
     "@aws-lambda-powertools/commons": "2.29.0"
   },
+  "peerDependencies": {
+    "@standard-schema/spec": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@standard-schema/spec": {
+      "optional": true
+    }
+  },
   "keywords": [
     "aws",
     "lambda",

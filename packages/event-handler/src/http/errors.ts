@@ -193,6 +193,48 @@ class InvalidHttpMethodError extends Error {
   }
 }
 
+class RequestValidationError extends HttpError {
+  readonly statusCode = HttpStatusCodes.UNPROCESSABLE_ENTITY;
+  readonly errorType = 'RequestValidationError';
+
+  constructor(
+    message: string,
+    public readonly component: 'body' | 'headers' | 'path' | 'query',
+    public readonly originalError?: Error,
+    details?: Record<string, unknown>
+  ) {
+    const isDev = process.env.POWERTOOLS_DEV === 'true';
+    const errorDetails =
+      isDev && originalError
+        ? { ...details, validationError: originalError.message }
+        : details;
+
+    super(message, { cause: originalError }, errorDetails);
+    this.name = 'RequestValidationError';
+  }
+}
+
+class ResponseValidationError extends HttpError {
+  readonly statusCode = HttpStatusCodes.INTERNAL_SERVER_ERROR;
+  readonly errorType = 'ResponseValidationError';
+
+  constructor(
+    message: string,
+    public readonly component: 'body' | 'headers',
+    public readonly originalError?: Error,
+    details?: Record<string, unknown>
+  ) {
+    const isDev = process.env.POWERTOOLS_DEV === 'true';
+    const errorDetails =
+      isDev && originalError
+        ? { ...details, validationError: originalError.message }
+        : details;
+
+    super(message, { cause: originalError }, errorDetails);
+    this.name = 'ResponseValidationError';
+  }
+}
+
 export {
   BadRequestError,
   ForbiddenError,
@@ -204,6 +246,8 @@ export {
   ParameterValidationError,
   RequestEntityTooLargeError,
   RequestTimeoutError,
+  RequestValidationError,
+  ResponseValidationError,
   RouteMatchingError,
   HttpError,
   ServiceUnavailableError,

@@ -154,6 +154,14 @@
       "optional": true
     }
   },
+  "peerDependencies": {
+    "@standard-schema/spec": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@standard-schema/spec": {
+      "optional": true
+    }
+  },
   "keywords": [
     "aws",
     "lambda",

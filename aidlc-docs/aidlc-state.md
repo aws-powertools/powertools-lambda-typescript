@@ -20,10 +20,10 @@
 - [ ] Units Generation (CONDITIONAL) - **PENDING**
 
 ### 🟢 CONSTRUCTION PHASE
-- [ ] Per-Unit Loop - **PENDING**
-  - [ ] Functional Design (CONDITIONAL, per-unit) - **EXECUTE**
-  - [ ] NFR Requirements (CONDITIONAL, per-unit) - **EXECUTE**
-  - [ ] NFR Design (CONDITIONAL, per-unit) - **EXECUTE**
+- [x] Per-Unit Loop - **IN PROGRESS**
+  - [x] Functional Design (CONDITIONAL, per-unit) - **COMPLETED**
+  - [x] NFR Requirements (CONDITIONAL, per-unit) - **COMPLETED**
+  - [x] NFR Design (CONDITIONAL, per-unit) - **COMPLETED**
   - [ ] Infrastructure Design (CONDITIONAL, per-unit) - **SKIP**
   - [ ] Code Generation (ALWAYS, per-unit) - **EXECUTE**
 - [ ] Build and Test (ALWAYS) - **EXECUTE**

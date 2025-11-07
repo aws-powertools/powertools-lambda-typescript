@@ -17,7 +17,7 @@
 ```typescript
 function validation<TReq, TRes>(
   config: ValidationConfig<TReq, TRes>
-): MiddlewareFunction
+): Middleware
 ```
 
 **Purpose**: Factory function that validates configuration once and returns a middleware function for request/response validation.

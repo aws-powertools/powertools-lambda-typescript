@@ -6,7 +6,13 @@ import {
   getStringFromEnv,
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
-import type { APIGatewayProxyResult, Context } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResult,
+  APIGatewayProxyStructuredResultV2,
+  Context,
+} from 'aws-lambda';
 import type { HandlerResponse, ResolveOptions } from '../types/index.js';
 import type {
   ErrorConstructor,
@@ -18,21 +24,23 @@ import type {
   RequestContext,
   ResolveStreamOptions,
   ResponseStream,
+  ResponseType,
   RestRouteOptions,
   RestRouterOptions,
   RouteHandler,
 } from '../types/rest.js';
 import { HttpStatusCodes, HttpVerbs } from './constants.js';
 import {
-  handlerResultToProxyResult,
   handlerResultToWebResponse,
   proxyEventToWebRequest,
-  webHeadersToApiGatewayV1Headers,
+  webHeadersToApiGatewayHeaders,
+  webResponseToProxyResult,
 } from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import {
   HttpError,
-  InternalServerError,
+  InvalidEventError,
+  InvalidHttpMethodError,
   MethodNotAllowedError,
   NotFoundError,
 } from './errors.js';
@@ -41,9 +49,9 @@ import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 import {
   composeMiddleware,
   HttpResponseStream,
-  isAPIGatewayProxyEvent,
+  isAPIGatewayProxyEventV1,
+  isAPIGatewayProxyEventV2,
   isExtendedAPIGatewayProxyResult,
-  isHttpMethod,
   resolvePrefixedPath,
 } from './utils.js';
 
@@ -202,26 +210,37 @@ class Router {
     event: unknown,
     context: Context,
     options?: ResolveOptions
-  ): Promise<HandlerResponse> {
-    if (!isAPIGatewayProxyEvent(event)) {
+  ): Promise<RequestContext> {
+    if (!isAPIGatewayProxyEventV1(event) && !isAPIGatewayProxyEventV2(event)) {
       this.logger.error(
         'Received an event that is not compatible with this resolver'
       );
-      throw new InternalServerError();
+      throw new InvalidEventError();
     }
 
-    const method = event.requestContext.httpMethod.toUpperCase();
-    if (!isHttpMethod(method)) {
-      this.logger.error(`HTTP method ${method} is not supported.`);
-      // We can't throw a MethodNotAllowedError outside the try block as it
-      // will be converted to an internal server error by the API Gateway runtime
-      return {
-        statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
-        body: '',
-      };
-    }
+    const responseType: ResponseType = isAPIGatewayProxyEventV2(event)
+      ? 'ApiGatewayV2'
+      : 'ApiGatewayV1';
 
-    const req = proxyEventToWebRequest(event);
+    let req: Request;
+    try {
+      req = proxyEventToWebRequest(event);
+    } catch (err) {
+      if (err instanceof InvalidHttpMethodError) {
+        this.logger.error(err);
+        // We can't throw a MethodNotAllowedError outside the try block as it
+        // will be converted to an internal server error by the API Gateway runtime
+        return {
+          event,
+          context,
+          req: new Request('https://invalid'),
+          res: new Response('', { status: HttpStatusCodes.METHOD_NOT_ALLOWED }),
+          params: {},
+          responseType,
+        };
+      }
+      throw err;
+    }
 
     const requestContext: RequestContext = {
       event,
@@ -229,11 +248,13 @@ class Router {
       req,
       // this response should be overwritten by the handler, if it isn't
       // it means something went wrong with the middleware chain
-      res: new Response('', { status: 500 }),
+      res: new Response('', { status: HttpStatusCodes.INTERNAL_SERVER_ERROR }),
       params: {},
+      responseType,
     };
 
     try {
+      const method = req.method as HttpMethod;
       const path = new URL(req.url).pathname as Path;
 
       const route = this.routeRegistry.resolve(method, path);
@@ -255,6 +276,7 @@ class Router {
               : route.handler.bind(options.scope);
 
           const handlerResult = await handler(reqCtx);
+
           reqCtx.res = handlerResultToWebResponse(
             handlerResult,
             reqCtx.res.headers
@@ -277,13 +299,25 @@ class Router {
       });
 
       // middleware result takes precedence to allow short-circuiting
-      return middlewareResult ?? requestContext.res;
+      if (middlewareResult !== undefined) {
+        requestContext.res = handlerResultToWebResponse(
+          middlewareResult,
+          requestContext.res.headers
+        );
+      }
+
+      return requestContext;
     } catch (error) {
       this.logger.debug(`There was an error processing the request: ${error}`);
-      return this.handleError(error as Error, {
+      const res = await this.handleError(error as Error, {
         ...requestContext,
         scope: options?.scope,
       });
+      requestContext.res = handlerResultToWebResponse(
+        res,
+        requestContext.res.headers
+      );
+      return requestContext;
     }
   }
 
@@ -296,15 +330,30 @@ class Router {
    * @param event - The Lambda event to resolve
    * @param context - The Lambda context
    * @param options - Optional resolve options for scope binding
-   * @returns An API Gateway proxy result
+   * @returns An API Gateway proxy result (V1 or V2 format depending on event version)
    */
+  public async resolve(
+    event: APIGatewayProxyEvent,
+    context: Context,
+    options?: ResolveOptions
+  ): Promise<APIGatewayProxyResult>;
+  public async resolve(
+    event: APIGatewayProxyEventV2,
+    context: Context,
+    options?: ResolveOptions
+  ): Promise<APIGatewayProxyStructuredResultV2>;
   public async resolve(
     event: unknown,
     context: Context,
     options?: ResolveOptions
-  ): Promise<APIGatewayProxyResult> {
-    const result = await this.#resolve(event, context, options);
-    return handlerResultToProxyResult(result);
+  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
+  public async resolve(
+    event: unknown,
+    context: Context,
+    options?: ResolveOptions
+  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2> {
+    const reqCtx = await this.#resolve(event, context, options);
+    return webResponseToProxyResult(reqCtx.res, reqCtx.responseType);
   }
 
   /**
@@ -321,31 +370,33 @@ class Router {
     context: Context,
     options: ResolveStreamOptions
   ): Promise<void> {
-    const result = await this.#resolve(event, context, options);
-    await this.#streamHandlerResponse(result, options.responseStream);
+    const reqCtx = await this.#resolve(event, context, options);
+    await this.#streamHandlerResponse(reqCtx, options.responseStream);
   }
 
   /**
    * Streams a handler response to the Lambda response stream.
    * Converts the response to a web response and pipes it through the stream.
    *
-   * @param response - The handler response to stream
+   * @param reqCtx - The request context containing the response to stream
    * @param responseStream - The Lambda response stream to write to
    */
   async #streamHandlerResponse(
-    response: HandlerResponse,
+    reqCtx: RequestContext,
     responseStream: ResponseStream
   ) {
-    const webResponse = handlerResultToWebResponse(response);
-    const { headers } = webHeadersToApiGatewayV1Headers(webResponse.headers);
+    const { headers } = webHeadersToApiGatewayHeaders(
+      reqCtx.res.headers,
+      reqCtx.responseType
+    );
     const resStream = HttpResponseStream.from(responseStream, {
-      statusCode: webResponse.status,
+      statusCode: reqCtx.res.status,
       headers,
     });
 
-    if (webResponse.body) {
+    if (reqCtx.res.body) {
       const nodeStream = Readable.fromWeb(
-        webResponse.body as streamWeb.ReadableStream
+        reqCtx.res.body as streamWeb.ReadableStream
       );
       await pipeline(nodeStream, resStream);
     } else {

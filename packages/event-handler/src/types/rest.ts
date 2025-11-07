@@ -5,7 +5,9 @@ import type {
 } from '@aws-lambda-powertools/commons/types';
 import type {
   APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
   APIGatewayProxyResult,
+  APIGatewayProxyStructuredResultV2,
   Context,
 } from 'aws-lambda';
 import type { HttpStatusCodes, HttpVerbs } from '../rest/constants.js';
@@ -13,12 +15,20 @@ import type { Route } from '../rest/Route.js';
 import type { HttpResponseStream } from '../rest/utils.js';
 import type { ResolveOptions } from './common.js';
 
+type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2';
+
+type ResponseTypeMap = {
+  ApiGatewayV1: APIGatewayProxyResult;
+  ApiGatewayV2: APIGatewayProxyStructuredResultV2;
+};
+
 type RequestContext = {
   req: Request;
-  event: APIGatewayProxyEvent;
+  event: APIGatewayProxyEvent | APIGatewayProxyEventV2;
   context: Context;
   res: Response;
   params: Record<string, string>;
+  responseType: ResponseType;
 };
 
 type ErrorResolveOptions = RequestContext & ResolveOptions;
@@ -63,6 +73,7 @@ type ExtendedAPIGatewayProxyResultBody = string | Readable | ReadableStream;
 
 type ExtendedAPIGatewayProxyResult = Omit<APIGatewayProxyResult, 'body'> & {
   body: ExtendedAPIGatewayProxyResultBody;
+  cookies?: string[];
 };
 
 type HandlerResponse = Response | JSONObject | ExtendedAPIGatewayProxyResult;
@@ -124,6 +135,11 @@ type ValidationResult = {
 
 type ResponseStream = InstanceType<typeof HttpResponseStream> & {
   _onBeforeFirstWrite?: (write: (data: Uint8Array | string) => void) => void;
+};
+
+type V1Headers = {
+  headers: Record<string, string>;
+  multiValueHeaders: Record<string, string[]>;
 };
 
 /**
@@ -230,6 +246,8 @@ export type {
   Middleware,
   Path,
   RequestContext,
+  ResponseType,
+  ResponseTypeMap,
   RestRouterOptions,
   RouteHandler,
   ResolveStreamOptions,
@@ -240,4 +258,5 @@ export type {
   ValidationResult,
   CompressionOptions,
   NextFunction,
+  V1Headers,
 };

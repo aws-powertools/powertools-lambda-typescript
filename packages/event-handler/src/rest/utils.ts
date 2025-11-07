@@ -4,7 +4,7 @@ import {
   isRegExp,
   isString,
 } from '@aws-lambda-powertools/commons/typeutils';
-import type { APIGatewayProxyEvent } from 'aws-lambda';
+import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
 import type {
   CompiledRoute,
   ExtendedAPIGatewayProxyResult,
@@ -75,14 +75,14 @@ export function validatePathPattern(path: Path): ValidationResult {
 }
 
 /**
- * Type guard to check if the provided event is an API Gateway Proxy event.
+ * Type guard to check if the provided event is an API Gateway Proxy V1 event.
  *
  * We use this function to ensure that the event is an object and has the
  * required properties without adding a dependency.
  *
  * @param event - The incoming event to check
  */
-export const isAPIGatewayProxyEvent = (
+export const isAPIGatewayProxyEventV1 = (
   event: unknown
 ): event is APIGatewayProxyEvent => {
   if (!isRecord(event)) return false;
@@ -101,6 +101,32 @@ export const isAPIGatewayProxyEvent = (
     (event.multiValueQueryStringParameters === null ||
       isRecord(event.multiValueQueryStringParameters)) &&
     (event.stageVariables === null || isRecord(event.stageVariables))
+  );
+};
+
+/**
+ * Type guard to check if the provided event is an API Gateway Proxy V2 event.
+ *
+ * @param event - The incoming event to check
+ */
+export const isAPIGatewayProxyEventV2 = (
+  event: unknown
+): event is APIGatewayProxyEventV2 => {
+  if (!isRecord(event)) return false;
+  return (
+    event.version === '2.0' &&
+    isString(event.routeKey) &&
+    isString(event.rawPath) &&
+    isString(event.rawQueryString) &&
+    isRecord(event.headers) &&
+    isRecord(event.requestContext) &&
+    typeof event.isBase64Encoded === 'boolean' &&
+    (event.body === undefined || isString(event.body)) &&
+    (event.pathParameters === undefined || isRecord(event.pathParameters)) &&
+    (event.queryStringParameters === undefined ||
+      isRecord(event.queryStringParameters)) &&
+    (event.stageVariables === undefined || isRecord(event.stageVariables)) &&
+    (event.cookies === undefined || Array.isArray(event.cookies))
   );
 };
 

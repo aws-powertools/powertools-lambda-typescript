@@ -549,7 +549,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v1');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV1');
 
       // Assess
       expect(result.statusCode).toBe(200);
@@ -566,7 +566,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v1');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV1');
 
       // Assess
       expect(result.statusCode).toBe(201);
@@ -587,7 +587,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v1');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV1');
 
       // Assess
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
@@ -607,7 +607,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v1');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV1');
 
       // Assess
       expect(result.headers).toEqual({
@@ -623,7 +623,7 @@ describe('Converters', () => {
       const response = new Response('Not Found', { status: 404 });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v1');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV1');
 
       // Assess
       expect(result.statusCode).toBe(404);
@@ -634,7 +634,7 @@ describe('Converters', () => {
       const response = new Response(null, { status: 204 });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v1');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV1');
 
       // Assess
       expect(result.statusCode).toBe(204);
@@ -651,7 +651,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v1');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV1');
 
       // Assess
       expect(result.isBase64Encoded).toBe(true);
@@ -672,7 +672,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v2');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV2');
 
       // Assess
       expect(result.statusCode).toBe(200);
@@ -690,7 +690,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v2');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV2');
 
       // Assess
       expect(result.statusCode).toBe(201);
@@ -711,7 +711,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v2');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV2');
 
       // Assess
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
@@ -728,7 +728,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v2');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV2');
 
       // Assess
       expect(result.cookies).toEqual([
@@ -744,7 +744,7 @@ describe('Converters', () => {
       const response = new Response('Not Found', { status: 404 });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v2');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV2');
 
       // Assess
       expect(result.statusCode).toBe(404);
@@ -756,7 +756,7 @@ describe('Converters', () => {
       const response = new Response(null, { status: 204 });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v2');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV2');
 
       // Assess
       expect(result.statusCode).toBe(204);
@@ -773,7 +773,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'v2');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV2');
 
       // Assess
       expect(result.isBase64Encoded).toBe(true);
@@ -945,7 +945,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
       // Assess
       expect(result).toEqual({
@@ -965,7 +965,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
       // Assess
       expect(result).toEqual({
@@ -984,7 +984,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
       // Assess
       expect(result).toEqual({
@@ -1003,7 +1003,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
       // Assess
       expect(result).toEqual({
@@ -1022,7 +1022,7 @@ describe('Converters', () => {
       headers.append('x-custom', 'value2');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
       // Assess
       expect(result).toEqual({
@@ -1040,7 +1040,7 @@ describe('Converters', () => {
       headers.append('x-custom', 'value2');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
       // Assess
       expect(result).toEqual({
@@ -1059,7 +1059,7 @@ describe('Converters', () => {
       headers.append('accept', 'text/plain');
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
       // Assess
       expect(result).toEqual({
@@ -1078,7 +1078,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
       // Assess
       expect(result).toEqual({
@@ -1095,7 +1095,7 @@ describe('Converters', () => {
       const headers = new Headers();
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
       // Assess
       expect(result).toEqual({
@@ -1114,7 +1114,7 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'v1');
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
       // Assess
       expect(result).toEqual({

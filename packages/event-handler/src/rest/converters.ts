@@ -198,13 +198,17 @@ const webHeadersToApiGatewayV2Headers = (webHeaders: Headers) => {
 const webHeadersToApiGatewayHeaders = <T extends ResponseType>(
   webHeaders: Headers,
   responseType: T
-): T extends 'v1' ? V1Headers : { headers: Record<string, string> } => {
-  if (responseType === 'v1') {
-    return webHeadersToApiGatewayV1Headers(webHeaders) as T extends 'v1'
+): T extends 'ApiGatewayV1'
+  ? V1Headers
+  : { headers: Record<string, string> } => {
+  if (responseType === 'ApiGatewayV1') {
+    return webHeadersToApiGatewayV1Headers(
+      webHeaders
+    ) as T extends 'ApiGatewayV1'
       ? V1Headers
       : { headers: Record<string, string> };
   }
-  return webHeadersToApiGatewayV2Headers(webHeaders) as T extends 'v1'
+  return webHeadersToApiGatewayV2Headers(webHeaders) as T extends 'ApiGatewayV1'
     ? V1Headers
     : { headers: Record<string, string> };
 };
@@ -317,7 +321,7 @@ const webResponseToProxyResult = <T extends ResponseType>(
   response: Response,
   responseType: T
 ): Promise<ResponseTypeMap[T]> => {
-  if (responseType === 'v1') {
+  if (responseType === 'ApiGatewayV1') {
     return webResponseToProxyResultV1(response) as Promise<ResponseTypeMap[T]>;
   }
   return webResponseToProxyResultV2(response) as Promise<ResponseTypeMap[T]>;

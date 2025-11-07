@@ -15,11 +15,11 @@ import type { Route } from '../rest/Route.js';
 import type { HttpResponseStream } from '../rest/utils.js';
 import type { ResolveOptions } from './common.js';
 
-type ResponseType = 'v1' | 'v2';
+type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2';
 
 type ResponseTypeMap = {
-  v1: APIGatewayProxyResult;
-  v2: APIGatewayProxyStructuredResultV2;
+  ApiGatewayV1: APIGatewayProxyResult;
+  ApiGatewayV2: APIGatewayProxyStructuredResultV2;
 };
 
 type RequestContext = {

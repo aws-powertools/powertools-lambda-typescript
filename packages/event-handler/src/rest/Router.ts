@@ -24,6 +24,7 @@ import type {
   RequestContext,
   ResolveStreamOptions,
   ResponseStream,
+  ResponseType,
   RestRouteOptions,
   RestRouterOptions,
   RouteHandler,
@@ -217,7 +218,9 @@ class Router {
       throw new InvalidEventError();
     }
 
-    const responseType = isAPIGatewayProxyEventV2(event) ? 'v2' : 'v1';
+    const responseType: ResponseType = isAPIGatewayProxyEventV2(event)
+      ? 'ApiGatewayV2'
+      : 'ApiGatewayV1';
 
     let req: Request;
     try {

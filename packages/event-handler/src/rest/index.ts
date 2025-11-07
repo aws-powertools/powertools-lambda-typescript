@@ -15,6 +15,8 @@ export {
   ParameterValidationError,
   RequestEntityTooLargeError,
   RequestTimeoutError,
+  RequestValidationError,
+  ResponseValidationError,
   RouteMatchingError,
   ServiceUnavailableError,
   UnauthorizedError,

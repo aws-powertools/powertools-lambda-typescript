@@ -297,6 +297,109 @@ export const handler = async (event: unknown, context: Context) =>
 
 See the [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/event-handler/appsync-events) for more details on how to use the AppSync event handler.
 
+## REST API - Validation Middleware
+
+The validation middleware provides first-class support for request and response validation using schema libraries like Zod, Valibot, or ArkType through the Standard Schema specification.
+
+### Installation
+
+Install the validation middleware peer dependency:
+
+```sh
+npm i @standard-schema/spec
+```
+
+Then install your preferred schema library:
+
+```sh
+# Zod
+npm i zod
+
+# Or Valibot
+npm i valibot
+
+# Or ArkType
+npm i arktype
+```
+
+### Basic Usage
+
+```typescript
+import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
+import { validation } from '@aws-lambda-powertools/event-handler/experimental-rest/middleware';
+import { z } from 'zod';
+
+const app = new Router();
+
+const userSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+});
+
+app.post('/users', {
+  middleware: [validation({ req: { body: userSchema } })],
+}, async (reqCtx) => {
+  const body = reqCtx.req.body; // Fully typed from schema
+  return { statusCode: 201, body: { id: '123', ...body } };
+});
+
+export const handler = app.resolve.bind(app);
+```
+
+### Validation Options
+
+The validation middleware supports validating different parts of the request and response:
+
+```typescript
+validation({
+  req: {
+    body: bodySchema,      // Validate request body
+    headers: headerSchema, // Validate request headers
+    path: pathSchema,      // Validate path parameters
+    query: querySchema,    // Validate query parameters
+  },
+  res: {
+    body: responseSchema,  // Validate response body
+    headers: headerSchema, // Validate response headers
+  },
+})
+```
+
+### Error Handling
+
+Validation failures throw `RequestValidationError` (422) or `ResponseValidationError` (500):
+
+```typescript
+import { Router, RequestValidationError } from '@aws-lambda-powertools/event-handler/experimental-rest';
+
+const app = new Router();
+
+app.onError(RequestValidationError, (error) => {
+  return {
+    statusCode: 422,
+    body: {
+      error: 'Validation Failed',
+      message: error.message,
+      component: error.component, // 'body', 'headers', 'path', or 'query'
+    },
+  };
+});
+```
+
+### Development Mode
+
+Set `POWERTOOLS_DEV=true` to include detailed validation errors in responses for debugging.
+
+### Supported Schema Libraries
+
+Any library implementing the [Standard Schema](https://github.com/standard-schema/standard-schema) specification:
+
+* **Zod** (v3.x)
+* **Valibot** (v1.x)
+* **ArkType** (v2.x)
+
+See the [examples directory](../../examples/snippets/event-handler/rest/) for complete usage examples.
+
 ## Contribute
 
 If you are interested in contributing to this project, please refer to our [Contributing Guidelines](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md).

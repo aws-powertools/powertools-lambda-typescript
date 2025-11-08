@@ -7,18 +7,18 @@ import type {
   APIGatewayProxyStructuredResultV2,
 } from 'aws-lambda';
 import type {
-  CompressionOptions,
   ExtendedAPIGatewayProxyResult,
   ExtendedAPIGatewayProxyResultBody,
   HandlerResponse,
   ResponseType,
   ResponseTypeMap,
   V1Headers,
+  WebResponseToProxyResultOptions,
 } from '../types/rest.js';
-import { COMPRESSION_ENCODING_TYPES } from './constants.js';
 import { InvalidHttpMethodError } from './errors.js';
 import {
   isAPIGatewayProxyEventV2,
+  isBinaryResult,
   isExtendedAPIGatewayProxyResult,
   isHttpMethod,
   isNodeReadableStream,
@@ -213,41 +213,29 @@ const webHeadersToApiGatewayHeaders = <T extends ResponseType>(
     : { headers: Record<string, string> };
 };
 
+const responseBodyToBase64 = async (response: Response) => {
+  const buffer = await response.arrayBuffer();
+  return Buffer.from(buffer).toString('base64');
+};
+
 /**
  * Converts a Web API Response object to an API Gateway V1 proxy result.
  *
  * @param response - The Web API Response object
+ * @param isBase64Encoded - Whether the response body should be base64 encoded (e.g., for binary or compressed content)
  * @returns An API Gateway V1 proxy result
  */
 const webResponseToProxyResultV1 = async (
-  response: Response
+  response: Response,
+  isBase64Encoded?: boolean
 ): Promise<APIGatewayProxyResult> => {
   const { headers, multiValueHeaders } = webHeadersToApiGatewayV1Headers(
     response.headers
   );
 
-  // Check if response contains compressed/binary content
-  const contentEncoding = response.headers.get(
-    'content-encoding'
-  ) as CompressionOptions['encoding'];
-  let body: string;
-  let isBase64Encoded = false;
-
-  if (
-    contentEncoding &&
-    [
-      COMPRESSION_ENCODING_TYPES.GZIP,
-      COMPRESSION_ENCODING_TYPES.DEFLATE,
-    ].includes(contentEncoding)
-  ) {
-    // For compressed content, get as buffer and encode to base64
-    const buffer = await response.arrayBuffer();
-    body = Buffer.from(buffer).toString('base64');
-    isBase64Encoded = true;
-  } else {
-    // For text content, use text()
-    body = await response.text();
-  }
+  const body = isBase64Encoded
+    ? await responseBodyToBase64(response)
+    : await response.text();
 
   const result: APIGatewayProxyResult = {
     statusCode: response.status,
@@ -267,10 +255,12 @@ const webResponseToProxyResultV1 = async (
  * Converts a Web API Response object to an API Gateway V2 proxy result.
  *
  * @param response - The Web API Response object
+ * @param isBase64Encoded - Whether the response body should be base64 encoded (e.g., for binary or compressed content)
  * @returns An API Gateway V2 proxy result
  */
 const webResponseToProxyResultV2 = async (
-  response: Response
+  response: Response,
+  isBase64Encoded?: boolean
 ): Promise<APIGatewayProxyStructuredResultV2> => {
   const headers: Record<string, string> = {};
   const cookies: string[] = [];
@@ -283,25 +273,9 @@ const webResponseToProxyResultV2 = async (
     }
   }
 
-  const contentEncoding = response.headers.get(
-    'content-encoding'
-  ) as CompressionOptions['encoding'];
-  let body: string;
-  let isBase64Encoded = false;
-
-  if (
-    contentEncoding &&
-    [
-      COMPRESSION_ENCODING_TYPES.GZIP,
-      COMPRESSION_ENCODING_TYPES.DEFLATE,
-    ].includes(contentEncoding)
-  ) {
-    const buffer = await response.arrayBuffer();
-    body = Buffer.from(buffer).toString('base64');
-    isBase64Encoded = true;
-  } else {
-    body = await response.text();
-  }
+  const body = isBase64Encoded
+    ? await responseBodyToBase64(response)
+    : await response.text();
 
   const result: APIGatewayProxyStructuredResultV2 = {
     statusCode: response.status,
@@ -319,12 +293,18 @@ const webResponseToProxyResultV2 = async (
 
 const webResponseToProxyResult = <T extends ResponseType>(
   response: Response,
-  responseType: T
+  responseType: T,
+  options?: WebResponseToProxyResultOptions
 ): Promise<ResponseTypeMap[T]> => {
+  const isBase64Encoded = options?.isBase64Encoded ?? false;
   if (responseType === 'ApiGatewayV1') {
-    return webResponseToProxyResultV1(response) as Promise<ResponseTypeMap[T]>;
+    return webResponseToProxyResultV1(response, isBase64Encoded) as Promise<
+      ResponseTypeMap[T]
+    >;
   }
-  return webResponseToProxyResultV2(response) as Promise<ResponseTypeMap[T]>;
+  return webResponseToProxyResultV2(response, isBase64Encoded) as Promise<
+    ResponseTypeMap[T]
+  >;
 };
 
 /**
@@ -385,6 +365,19 @@ const handlerResultToWebResponse = (
   }
 
   const headers = new Headers(resHeaders);
+
+  if (isBinaryResult(response)) {
+    const body =
+      response instanceof Readable
+        ? (Readable.toWeb(response) as ReadableStream)
+        : response;
+
+    return new Response(body, {
+      status: 200,
+      headers,
+    });
+  }
+
   headers.set('Content-Type', 'application/json');
 
   if (isExtendedAPIGatewayProxyResult(response)) {

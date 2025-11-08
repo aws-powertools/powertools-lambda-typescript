@@ -48,9 +48,12 @@ import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 import {
   composeMiddleware,
+  getBase64EncodingFromHeaders,
+  getBase64EncodingFromResult,
   HttpResponseStream,
   isAPIGatewayProxyEventV1,
   isAPIGatewayProxyEventV2,
+  isBinaryResult,
   isExtendedAPIGatewayProxyResult,
   resolvePrefixedPath,
 } from './utils.js';
@@ -260,14 +263,11 @@ class Router {
       const route = this.routeRegistry.resolve(method, path);
 
       const handlerMiddleware: Middleware = async ({ reqCtx, next }) => {
+        let handlerRes: HandlerResponse;
         if (route === null) {
-          const notFoundRes = await this.handleError(
+          handlerRes = await this.handleError(
             new NotFoundError(`Route ${path} for method ${method} not found`),
             { ...reqCtx, scope: options?.scope }
-          );
-          reqCtx.res = handlerResultToWebResponse(
-            notFoundRes,
-            reqCtx.res.headers
           );
         } else {
           const handler =
@@ -275,13 +275,14 @@ class Router {
               ? route.handler
               : route.handler.bind(options.scope);
 
-          const handlerResult = await handler(reqCtx);
-
-          reqCtx.res = handlerResultToWebResponse(
-            handlerResult,
-            reqCtx.res.headers
-          );
+          handlerRes = await handler(reqCtx);
         }
+
+        if (getBase64EncodingFromResult(handlerRes)) {
+          reqCtx.isBase64Encoded = true;
+        }
+
+        reqCtx.res = handlerResultToWebResponse(handlerRes, reqCtx.res.headers);
 
         await next();
       };
@@ -313,10 +314,16 @@ class Router {
         ...requestContext,
         scope: options?.scope,
       });
+
+      if (getBase64EncodingFromResult(res)) {
+        requestContext.isBase64Encoded = true;
+      }
+
       requestContext.res = handlerResultToWebResponse(
         res,
         requestContext.res.headers
       );
+
       return requestContext;
     }
   }
@@ -353,7 +360,12 @@ class Router {
     options?: ResolveOptions
   ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2> {
     const reqCtx = await this.#resolve(event, context, options);
-    return webResponseToProxyResult(reqCtx.res, reqCtx.responseType);
+    const isBase64Encoded =
+      reqCtx.isBase64Encoded ??
+      getBase64EncodingFromHeaders(reqCtx.res.headers);
+    return webResponseToProxyResult(reqCtx.res, reqCtx.responseType, {
+      isBase64Encoded,
+    });
   }
 
   /**
@@ -434,7 +446,11 @@ class Router {
       try {
         const { scope, ...reqCtx } = options;
         const body = await handler.apply(scope ?? this, [error, reqCtx]);
-        if (body instanceof Response || isExtendedAPIGatewayProxyResult(body)) {
+        if (
+          body instanceof Response ||
+          isExtendedAPIGatewayProxyResult(body) ||
+          isBinaryResult(body)
+        ) {
           return body;
         }
         if (!body.statusCode) {

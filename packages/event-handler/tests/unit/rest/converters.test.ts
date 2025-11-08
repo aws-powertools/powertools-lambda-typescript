@@ -641,7 +641,7 @@ describe('Converters', () => {
       expect(result.body).toBe('');
     });
 
-    it('handles compressed response body', async () => {
+    it('respects isBase64Encoded option', async () => {
       // Prepare
       const response = new Response('Hello World', {
         status: 200,
@@ -651,7 +651,9 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'ApiGatewayV1');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV1', {
+        isBase64Encoded: true,
+      });
 
       // Assess
       expect(result.isBase64Encoded).toBe(true);
@@ -763,7 +765,7 @@ describe('Converters', () => {
       expect(result.body).toBe('');
     });
 
-    it('handles compressed response body', async () => {
+    it('respects isBase64Encoded option', async () => {
       // Prepare
       const response = new Response('Hello World', {
         status: 200,
@@ -773,7 +775,9 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'ApiGatewayV2');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV2', {
+        isBase64Encoded: true,
+      });
 
       // Assess
       expect(result.isBase64Encoded).toBe(true);

@@ -10,7 +10,7 @@ import type { HttpMethod, RouteHandler } from '../../../../src/types/rest.js';
 import { createTestEvent } from '../helpers.js';
 
 describe('Class: Router - Basic Routing', () => {
-  it.each([
+  const httpMethods = [
     ['GET', 'get'],
     ['POST', 'post'],
     ['PUT', 'put'],
@@ -18,25 +18,69 @@ describe('Class: Router - Basic Routing', () => {
     ['DELETE', 'delete'],
     ['HEAD', 'head'],
     ['OPTIONS', 'options'],
-  ])('routes %s requests', async (method, verb) => {
-    // Prepare
-    const app = new Router();
-    (
-      app[verb as Lowercase<HttpMethod>] as (
-        path: string,
-        handler: RouteHandler
-      ) => void
-    )('/test', async () => ({ result: `${verb}-test` }));
-    // Act
-    const actual = await app.resolve(createTestEvent('/test', method), context);
-    // Assess
-    expect(actual).toEqual({
-      statusCode: 200,
-      body: JSON.stringify({ result: `${verb}-test` }),
-      headers: { 'content-type': 'application/json' },
-      isBase64Encoded: false,
-    });
-  });
+  ];
+
+  it.each(httpMethods)(
+    'routes %s requests with object response',
+    async (method, verb) => {
+      // Prepare
+      const app = new Router();
+      (
+        app[verb as Lowercase<HttpMethod>] as (
+          path: string,
+          handler: RouteHandler
+        ) => void
+      )('/test', async () => ({ result: `${verb}-test` }));
+
+      // Act
+      const actual = await app.resolve(
+        createTestEvent('/test', method),
+        context
+      );
+
+      // Assess
+      expect(actual).toEqual({
+        statusCode: 200,
+        body: JSON.stringify({ result: `${verb}-test` }),
+        headers: { 'content-type': 'application/json' },
+        isBase64Encoded: false,
+      });
+    }
+  );
+
+  it.each(httpMethods)(
+    'routes %s requests with array response',
+    async (method, verb) => {
+      // Prepare
+      const app = new Router();
+      (
+        app[verb as Lowercase<HttpMethod>] as (
+          path: string,
+          handler: RouteHandler
+        ) => void
+      )('/test', async () => [
+        { id: 1, result: `${verb}-test-1` },
+        { id: 2, result: `${verb}-test-2` },
+      ]);
+
+      // Act
+      const actual = await app.resolve(
+        createTestEvent('/test', method),
+        context
+      );
+
+      // Assess
+      expect(actual).toEqual({
+        statusCode: 200,
+        body: JSON.stringify([
+          { id: 1, result: `${verb}-test-1` },
+          { id: 2, result: `${verb}-test-2` },
+        ]),
+        headers: { 'content-type': 'application/json' },
+        isBase64Encoded: false,
+      });
+    }
+  );
 
   it.each([['CONNECT'], ['TRACE']])(
     'throws MethodNotAllowedError for %s requests',

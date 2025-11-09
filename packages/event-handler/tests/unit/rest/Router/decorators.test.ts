@@ -30,58 +30,59 @@ const createStreamHandler =
     app.resolveStream(event, _context, { scope, responseStream });
 
 describe('Class: Router - Decorators', () => {
-  describe('decorators', () => {
-    const app = new Router();
-
-    class Lambda {
-      @app.get('/test')
-      public getTest() {
-        return { result: 'get-test' };
-      }
-
-      @app.post('/test')
-      public postTest() {
-        return { result: 'post-test' };
-      }
-
-      @app.put('/test')
-      public putTest() {
-        return { result: 'put-test' };
-      }
-
-      @app.patch('/test')
-      public patchTest() {
-        return { result: 'patch-test' };
-      }
-
-      @app.delete('/test')
-      public deleteTest() {
-        return { result: 'delete-test' };
-      }
-
-      @app.head('/test')
-      public headTest() {
-        return { result: 'head-test' };
-      }
-
-      @app.options('/test')
-      public optionsTest() {
-        return { result: 'options-test' };
-      }
-
-      public handler = createHandler(app);
-    }
-
-    it.each([
-      ['GET', { result: 'get-test' }],
-      ['POST', { result: 'post-test' }],
-      ['PUT', { result: 'put-test' }],
-      ['PATCH', { result: 'patch-test' }],
-      ['DELETE', { result: 'delete-test' }],
-      ['HEAD', { result: 'head-test' }],
-      ['OPTIONS', { result: 'options-test' }],
-    ])('routes %s requests with decorators', async (method, expected) => {
+  describe.each([
+    ['GET', 'get'],
+    ['POST', 'post'],
+    ['PUT', 'put'],
+    ['PATCH', 'patch'],
+    ['DELETE', 'delete'],
+    ['HEAD', 'head'],
+    ['OPTIONS', 'options'],
+  ])('routes %s requests', (method, verb) => {
+    it('with object response', async () => {
       // Prepare
+      const app = new Router();
+      const expectedResponse = { result: `${verb}-test` };
+
+      class Lambda {
+        @app.get('/test')
+        public getTest() {
+          return expectedResponse;
+        }
+
+        @app.post('/test')
+        public postTest() {
+          return expectedResponse;
+        }
+
+        @app.put('/test')
+        public putTest() {
+          return expectedResponse;
+        }
+
+        @app.patch('/test')
+        public patchTest() {
+          return expectedResponse;
+        }
+
+        @app.delete('/test')
+        public deleteTest() {
+          return expectedResponse;
+        }
+
+        @app.head('/test')
+        public headTest() {
+          return expectedResponse;
+        }
+
+        @app.options('/test')
+        public optionsTest() {
+          return expectedResponse;
+        }
+
+        public handler = createHandler(app);
+      }
+
       const lambda = new Lambda();
       // Act
       const actual = await lambda.handler(
@@ -91,7 +92,69 @@ describe('Class: Router - Decorators', () => {
       // Assess
       expect(actual).toEqual({
         statusCode: 200,
-        body: JSON.stringify(expected),
+        body: JSON.stringify(expectedResponse),
+        headers: { 'content-type': 'application/json' },
+        isBase64Encoded: false,
+      });
+    });
+
+    it('with array response', async () => {
+      // Prepare
+      const app = new Router();
+      const expectedResponse = [
+        { id: 1, result: `${verb}-test-1` },
+        { id: 2, result: `${verb}-test-2` },
+      ];
+
+      class Lambda {
+        @app.get('/test')
+        public getTest() {
+          return expectedResponse;
+        }
+
+        @app.post('/test')
+        public postTest() {
+          return expectedResponse;
+        }
+
+        @app.put('/test')
+        public putTest() {
+          return expectedResponse;
+        }
+
+        @app.patch('/test')
+        public patchTest() {
+          return expectedResponse;
+        }
+
+        @app.delete('/test')
+        public deleteTest() {
+          return expectedResponse;
+        }
+
+        @app.head('/test')
+        public headTest() {
+          return expectedResponse;
+        }
+
+        @app.options('/test')
+        public optionsTest() {
+          return expectedResponse;
+        }
+
+        public handler = createHandler(app);
+      }
+
+      const lambda = new Lambda();
+      // Act
+      const actual = await lambda.handler(
+        createTestEvent('/test', method),
+        context
+      );
+      // Assess
+      expect(actual).toEqual({
+        statusCode: 200,
+        body: JSON.stringify(expectedResponse),
         headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });

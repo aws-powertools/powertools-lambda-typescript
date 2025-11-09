@@ -1,7 +1,12 @@
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type streamWeb from 'node:stream/web';
-import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
+import type {
+  GenericLogger,
+  JSONObject,
+  JSONValue,
+} from '@aws-lambda-powertools/commons/types';
+import { isRecord } from '@aws-lambda-powertools/commons/typeutils';
 import {
   getStringFromEnv,
   isDevMode,
@@ -386,19 +391,7 @@ class Router {
         if (body instanceof Response || isExtendedAPIGatewayProxyResult(body)) {
           return body;
         }
-        if (!body.statusCode) {
-          if (error instanceof NotFoundError) {
-            body.statusCode = HttpStatusCodes.NOT_FOUND;
-          } else if (error instanceof MethodNotAllowedError) {
-            body.statusCode = HttpStatusCodes.METHOD_NOT_ALLOWED;
-          }
-        }
-        return new Response(JSON.stringify(body), {
-          status:
-            (body.statusCode as number) ??
-            HttpStatusCodes.INTERNAL_SERVER_ERROR,
-          headers: { 'Content-Type': 'application/json' },
-        });
+        return this.#errorBodyToResponse(body, error);
       } catch (handlerError) {
         if (handlerError instanceof HttpError) {
           return await this.handleError(handlerError, options);
@@ -415,6 +408,45 @@ class Router {
     }
 
     return this.#defaultErrorHandler(error);
+  }
+
+  /**
+   * Converts an error handler's response body to an HTTP Response object.
+   *
+   * If the body is a record object without a status code, sets the status code for
+   * NotFoundError (404) or MethodNotAllowedError (405). Uses the status code from
+   * the body if present, otherwise defaults to 500 Internal Server Error.
+   *
+   * @param body - The response body returned by the error handler, of type JSONValue
+   * @param error - The Error object associated with the response
+   */
+  #errorBodyToResponse(body: JSONValue, error: Error): Response {
+    let status: number = HttpStatusCodes.INTERNAL_SERVER_ERROR;
+
+    if (isRecord(body)) {
+      if (!body.statusCode) this.#tryAddErrorCodeToBody(body, error);
+      status = (body.statusCode as number) ?? status;
+    }
+
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  /**
+   * Attempts to add the appropriate HTTP status code to the response body based on the error type.
+   * Only sets status codes for known error types (NotFoundError, MethodNotAllowedError).
+   *
+   * @param body - The response body object to which the status code will be added
+   * @param error - The error instance to check and map to an HTTP status code
+   */
+  #tryAddErrorCodeToBody(body: JSONObject, error: Error): void {
+    if (error instanceof NotFoundError) {
+      body.statusCode = HttpStatusCodes.NOT_FOUND;
+    } else if (error instanceof MethodNotAllowedError) {
+      body.statusCode = HttpStatusCodes.METHOD_NOT_ALLOWED;
+    }
   }
 
   /**

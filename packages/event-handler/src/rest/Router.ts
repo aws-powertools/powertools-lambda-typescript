@@ -424,7 +424,7 @@ class Router {
     let status: number = HttpStatusCodes.INTERNAL_SERVER_ERROR;
 
     if (isRecord(body)) {
-      if (!body.statusCode) this.#tryAddErrorCodeToBody(body, error);
+      if (!body.statusCode) this.#tryAddingErrorCodeToBody(body, error);
       status = (body.statusCode as number) ?? status;
     }
 
@@ -441,7 +441,7 @@ class Router {
    * @param body - The response body object to which the status code will be added
    * @param error - The error instance to check and map to an HTTP status code
    */
-  #tryAddErrorCodeToBody(body: JSONObject, error: Error): void {
+  #tryAddingErrorCodeToBody(body: JSONObject, error: Error): void {
     if (error instanceof NotFoundError) {
       body.statusCode = HttpStatusCodes.NOT_FOUND;
     } else if (error instanceof MethodNotAllowedError) {

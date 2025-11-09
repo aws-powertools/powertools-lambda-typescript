@@ -10,7 +10,7 @@ import type { HttpMethod, RouteHandler } from '../../../../src/types/rest.js';
 import { createTestEvent } from '../helpers.js';
 
 describe('Class: Router - Basic Routing', () => {
-  const httpMethods = [
+  describe.each([
     ['GET', 'get'],
     ['POST', 'post'],
     ['PUT', 'put'],
@@ -18,11 +18,8 @@ describe('Class: Router - Basic Routing', () => {
     ['DELETE', 'delete'],
     ['HEAD', 'head'],
     ['OPTIONS', 'options'],
-  ];
-
-  it.each(httpMethods)(
-    'routes %s requests with object response',
-    async (method, verb) => {
+  ])('routes %s requests', (method, verb) => {
+    it('with object response', async () => {
       // Prepare
       const app = new Router();
       (
@@ -45,12 +42,9 @@ describe('Class: Router - Basic Routing', () => {
         headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });
-    }
-  );
+    });
 
-  it.each(httpMethods)(
-    'routes %s requests with array response',
-    async (method, verb) => {
+    it('with array response', async () => {
       // Prepare
       const app = new Router();
       (
@@ -79,8 +73,8 @@ describe('Class: Router - Basic Routing', () => {
         headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });
-    }
-  );
+    });
+  });
 
   it.each([['CONNECT'], ['TRACE']])(
     'throws MethodNotAllowedError for %s requests',

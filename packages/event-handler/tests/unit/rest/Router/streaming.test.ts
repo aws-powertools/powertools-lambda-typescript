@@ -5,11 +5,15 @@ import { UnauthorizedError } from '../../../../src/rest/errors.js';
 import { Router } from '../../../../src/rest/index.js';
 import {
   createTestEvent,
+  createTestEventV2,
   MockResponseStream,
   parseStreamOutput,
 } from '../helpers.js';
 
-describe('Class: Router - Streaming', () => {
+describe.each([
+  { version: 'V1', createEvent: createTestEvent },
+  { version: 'V2', createEvent: createTestEventV2 },
+])('Class: Router - Streaming ($version)', ({ createEvent }) => {
   it('streams a simple JSON response', async () => {
     // Prepare
     const app = new Router();
@@ -19,7 +23,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
       responseStream,
     });
 
@@ -43,7 +47,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
       responseStream,
     });
 
@@ -59,7 +63,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/nonexistent', 'GET'), context, {
+    await app.resolveStream(createEvent('/nonexistent', 'GET'), context, {
       responseStream,
     });
 
@@ -85,7 +89,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
       responseStream,
     });
 
@@ -106,7 +110,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
       responseStream,
     });
 
@@ -133,7 +137,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
       responseStream,
     });
 
@@ -179,7 +183,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
       responseStream,
     });
 
@@ -196,7 +200,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
       responseStream,
     });
 
@@ -213,7 +217,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
       responseStream,
     });
 
@@ -237,7 +241,7 @@ describe('Class: Router - Streaming', () => {
 
     // Act & Assess
     await expect(
-      app.resolveStream(createTestEvent('/test', 'GET'), context, {
+      app.resolveStream(createEvent('/test', 'GET'), context, {
         responseStream,
       })
     ).rejects.toThrow('Stream error');
@@ -257,7 +261,7 @@ describe('Class: Router - Streaming', () => {
 
     // Act
     await app.resolveStream(
-      createTestEvent('/users/123/posts/456', 'GET'),
+      createEvent('/users/123/posts/456', 'GET'),
       context,
       { responseStream }
     );
@@ -280,7 +284,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
       responseStream,
     });
 
@@ -322,7 +326,7 @@ describe('Class: Router - Streaming', () => {
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createTestEvent('/test', 'GET'), context, {
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
       responseStream,
     });
 

@@ -1,15 +1,19 @@
+import { Readable } from 'node:stream';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it, vi } from 'vitest';
+import { InvalidEventError } from '../../../../src/rest/errors.js';
 import {
   HttpStatusCodes,
   HttpVerbs,
-  InternalServerError,
   Router,
 } from '../../../../src/rest/index.js';
 import type { HttpMethod, RouteHandler } from '../../../../src/types/rest.js';
-import { createTestEvent } from '../helpers.js';
+import { createTestEvent, createTestEventV2 } from '../helpers.js';
 
-describe('Class: Router - Basic Routing', () => {
+describe.each([
+  { version: 'V1', createEvent: createTestEvent },
+  { version: 'V2', createEvent: createTestEventV2 },
+])('Class: Router - Basic Routing ($version)', ({ createEvent }) => {
   it.each([
     ['GET', 'get'],
     ['POST', 'post'],
@@ -28,14 +32,12 @@ describe('Class: Router - Basic Routing', () => {
       ) => void
     )('/test', async () => ({ result: `${verb}-test` }));
     // Act
-    const actual = await app.resolve(createTestEvent('/test', method), context);
+    const actual = await app.resolve(createEvent('/test', method), context);
     // Assess
-    expect(actual).toEqual({
-      statusCode: 200,
-      body: JSON.stringify({ result: `${verb}-test` }),
-      headers: { 'content-type': 'application/json' },
-      isBase64Encoded: false,
-    });
+    expect(actual.statusCode).toBe(200);
+    expect(actual.body).toBe(JSON.stringify({ result: `${verb}-test` }));
+    expect(actual.headers?.['content-type']).toBe('application/json');
+    expect(actual.isBase64Encoded).toBe(false);
   });
 
   it.each([['CONNECT'], ['TRACE']])(
@@ -45,13 +47,10 @@ describe('Class: Router - Basic Routing', () => {
       const app = new Router();
 
       // Act & Assess
-      const result = await app.resolve(
-        createTestEvent('/test', method),
-        context
-      );
+      const result = await app.resolve(createEvent('/test', method), context);
 
       expect(result.statusCode).toBe(HttpStatusCodes.METHOD_NOT_ALLOWED);
-      expect(result.body).toEqual('');
+      expect(result.body ?? '').toBe('');
     }
   );
 
@@ -65,29 +64,30 @@ describe('Class: Router - Basic Routing', () => {
 
     // Act
     const getResult = await app.resolve(
-      createTestEvent('/test', HttpVerbs.GET),
+      createEvent('/test', HttpVerbs.GET),
       context
     );
     const postResult = await app.resolve(
-      createTestEvent('/test', HttpVerbs.POST),
+      createEvent('/test', HttpVerbs.POST),
       context
     );
 
     // Assess
-    const expectedResult = {
-      statusCode: 200,
-      body: JSON.stringify({ result: 'route-test' }),
-      headers: { 'content-type': 'application/json' },
-      isBase64Encoded: false,
-    };
-    expect(getResult).toEqual(expectedResult);
-    expect(postResult).toEqual(expectedResult);
+    expect(getResult.statusCode).toBe(200);
+    expect(getResult.body).toBe(JSON.stringify({ result: 'route-test' }));
+    expect(getResult.headers?.['content-type']).toBe('application/json');
+    expect(getResult.isBase64Encoded).toBe(false);
+
+    expect(postResult.statusCode).toBe(200);
+    expect(postResult.body).toBe(JSON.stringify({ result: 'route-test' }));
+    expect(postResult.headers?.['content-type']).toBe('application/json');
+    expect(postResult.isBase64Encoded).toBe(false);
   });
 
   it('passes request, event, and context to functional route handlers', async () => {
     // Prepare
     const app = new Router();
-    const testEvent = createTestEvent('/test', 'GET');
+    const testEvent = createEvent('/test', 'GET');
 
     app.get('/test', (reqCtx) => {
       return {
@@ -99,7 +99,7 @@ describe('Class: Router - Basic Routing', () => {
 
     // Act
     const result = await app.resolve(testEvent, context);
-    const actual = JSON.parse(result.body);
+    const actual = JSON.parse(result.body ?? '{}');
 
     // Assess
     expect(actual.hasRequest).toBe(true);
@@ -107,14 +107,14 @@ describe('Class: Router - Basic Routing', () => {
     expect(actual.hasContext).toBe(true);
   });
 
-  it('throws an internal server error for non-API Gateway events', () => {
+  it('throws an invalid event error for non-API Gateway events', () => {
     // Prepare
     const app = new Router();
     const nonApiGatewayEvent = { Records: [] }; // SQS-like event
 
     // Act & Assess
     expect(app.resolve(nonApiGatewayEvent, context)).rejects.toThrowError(
-      InternalServerError
+      InvalidEventError
     );
   });
 
@@ -132,17 +132,17 @@ describe('Class: Router - Basic Routing', () => {
 
     // Act
     const createResult = await app.resolve(
-      createTestEvent('/todos', 'POST'),
+      createEvent('/todos', 'POST'),
       context
     );
     const getResult = await app.resolve(
-      createTestEvent('/todos/1', 'GET'),
+      createEvent('/todos/1', 'GET'),
       context
     );
 
     // Assess
-    expect(JSON.parse(createResult.body).actualPath).toBe('/todos');
-    expect(JSON.parse(getResult.body).actualPath).toBe('/todos/1');
+    expect(JSON.parse(createResult.body ?? '{}').actualPath).toBe('/todos');
+    expect(JSON.parse(getResult.body ?? '{}').actualPath).toBe('/todos/1');
   });
 
   it('routes to the included router when using split routers', async () => {
@@ -169,20 +169,22 @@ describe('Class: Router - Basic Routing', () => {
     app.includeRouter(todoRouter, { prefix: '/todos' });
 
     // Act
-    const rootResult = await app.resolve(createTestEvent('/', 'GET'), context);
+    const rootResult = await app.resolve(createEvent('/', 'GET'), context);
     const listTodosResult = await app.resolve(
-      createTestEvent('/todos', 'GET'),
+      createEvent('/todos', 'GET'),
       context
     );
     const notFoundResult = await app.resolve(
-      createTestEvent('/non-existent', 'GET'),
+      createEvent('/non-existent', 'GET'),
       context
     );
 
     // Assert
-    expect(JSON.parse(rootResult.body).api).toEqual('root');
-    expect(JSON.parse(listTodosResult.body).api).toEqual('listTodos');
-    expect(JSON.parse(notFoundResult.body).error).toEqual('Route not found');
+    expect(JSON.parse(rootResult.body ?? '{}').api).toEqual('root');
+    expect(JSON.parse(listTodosResult.body ?? '{}').api).toEqual('listTodos');
+    expect(JSON.parse(notFoundResult.body ?? '{}').error).toEqual(
+      'Route not found'
+    );
     expect(consoleLogSpy).toHaveBeenNthCalledWith(1, 'app middleware');
     expect(consoleLogSpy).toHaveBeenNthCalledWith(2, 'todoRouter middleware');
     expect(consoleWarnSpy).toHaveBeenNthCalledWith(
@@ -213,9 +215,168 @@ describe('Class: Router - Basic Routing', () => {
     });
 
     // Act
-    const result = await app.resolve(createTestEvent(path, method), context);
+    const result = await app.resolve(createEvent(path, method), context);
 
     // Assess
-    expect(JSON.parse(result.body).api).toEqual(expectedApi);
+    expect(JSON.parse(result.body ?? '{}').api).toEqual(expectedApi);
+  });
+});
+
+describe('Class: Router - V1 Multivalue Headers Support', () => {
+  it('handles ExtendedAPIGatewayProxyResult with multiValueHeaders field', async () => {
+    // Prepare
+    const app = new Router();
+    app.get('/test', () => ({
+      statusCode: 200,
+      body: JSON.stringify({ message: 'success' }),
+      headers: { 'content-type': 'application/json' },
+      multiValueHeaders: { 'set-cookie': ['session=abc123', 'theme=dark'] },
+    }));
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: 200,
+      body: JSON.stringify({ message: 'success' }),
+      headers: { 'content-type': 'application/json' },
+      multiValueHeaders: { 'set-cookie': ['session=abc123', 'theme=dark'] },
+      isBase64Encoded: false,
+    });
+  });
+});
+
+describe('Class: Router - V2 Cookies Support', () => {
+  it('handles ExtendedAPIGatewayProxyResult with cookies field', async () => {
+    // Prepare
+    const app = new Router();
+    app.get('/test', () => ({
+      statusCode: 200,
+      body: JSON.stringify({ message: 'success' }),
+      headers: { 'content-type': 'application/json' },
+      cookies: ['session=abc123', 'theme=dark'],
+    }));
+
+    // Act
+    const result = await app.resolve(
+      createTestEventV2('/test', 'GET'),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: 200,
+      body: JSON.stringify({ message: 'success' }),
+      headers: { 'content-type': 'application/json' },
+      cookies: ['session=abc123', 'theme=dark'],
+      isBase64Encoded: false,
+    });
+  });
+});
+
+describe.each([
+  { version: 'V1', createEvent: createTestEvent },
+  { version: 'V2', createEvent: createTestEventV2 },
+])('Class: Router - Binary Result ($version)', ({ createEvent }) => {
+  it('handles ArrayBuffer as direct return type', async () => {
+    // Prepare
+    const app = new Router();
+    const { buffer } = new TextEncoder().encode('binary data');
+    app.get('/binary', () => buffer);
+
+    // Act
+    const result = await app.resolve(createEvent('/binary', 'GET'), context);
+
+    // Assess
+    expect(result.body).toBe(Buffer.from(buffer).toString('base64'));
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it('handles Readable stream as direct return type', async () => {
+    // Prepare
+    const app = new Router();
+    const data = Buffer.concat([Buffer.from('chunk1'), Buffer.from('chunk2')]);
+    const stream = Readable.from([
+      Buffer.from('chunk1'),
+      Buffer.from('chunk2'),
+    ]);
+    app.get('/stream', () => stream);
+
+    // Act
+    const result = await app.resolve(createEvent('/stream', 'GET'), context);
+
+    // Assess
+    expect(result.body).toBe(data.toString('base64'));
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it('handles ReadableStream as direct return type', async () => {
+    // Prepare
+    const app = new Router();
+    const data = new TextEncoder().encode('data');
+    const webStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(data);
+        controller.close();
+      },
+    });
+    app.get('/webstream', () => webStream);
+
+    // Act
+    const result = await app.resolve(createEvent('/webstream', 'GET'), context);
+
+    // Assess
+    expect(result.body).toBe(Buffer.from(data).toString('base64'));
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it.each([['image/png'], ['image/jpeg'], ['audio/mpeg'], ['video/mp4']])(
+    'sets isBase64Encoded for %s content-type',
+    async (contentType) => {
+      // Prepare
+      const app = new Router();
+      app.get(
+        '/media',
+        () =>
+          new Response('binary data', {
+            headers: { 'content-type': contentType },
+          })
+      );
+
+      // Act
+      const result = await app.resolve(createEvent('/media', 'GET'), context);
+
+      // Assess
+      expect(result).toEqual({
+        statusCode: 200,
+        body: Buffer.from('binary data').toString('base64'),
+        headers: { 'content-type': contentType },
+        isBase64Encoded: true,
+      });
+    }
+  );
+
+  it('does not set isBase64Encoded for text content-types', async () => {
+    // Prepare
+    const app = new Router();
+    app.get(
+      '/text',
+      () =>
+        new Response('text data', {
+          headers: { 'content-type': 'text/plain' },
+        })
+    );
+
+    // Act
+    const result = await app.resolve(createEvent('/text', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: 200,
+      body: 'text data',
+      headers: { 'content-type': 'text/plain' },
+      isBase64Encoded: false,
+    });
   });
 });

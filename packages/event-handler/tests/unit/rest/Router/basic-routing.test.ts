@@ -13,7 +13,7 @@ describe.each([
   { version: 'V1', createEvent: createTestEvent },
   { version: 'V2', createEvent: createTestEventV2 },
 ])('Class: Router - Basic Routing ($version)', ({ createEvent }) => {
-  describe.each([
+  const httpMethods = [
     ['GET', 'get'],
     ['POST', 'post'],
     ['PUT', 'put'],
@@ -21,8 +21,10 @@ describe.each([
     ['DELETE', 'delete'],
     ['HEAD', 'head'],
     ['OPTIONS', 'options'],
-  ])('routes %s requests', (method, verb) => {
-    it('with object response', async () => {
+  ];
+  it.each(httpMethods)(
+    'routes %s requests with object response',
+    async (method, verb) => {
       // Prepare
       const app = new Router();
       (
@@ -40,9 +42,12 @@ describe.each([
       expect(actual.body).toBe(JSON.stringify({ result: `${verb}-test` }));
       expect(actual.headers?.['content-type']).toBe('application/json');
       expect(actual.isBase64Encoded).toBe(false);
-    });
+    }
+  );
 
-    it('with array response', async () => {
+  it.each(httpMethods)(
+    'routes %s requests with array response',
+    async (method, verb) => {
       // Prepare
       const app = new Router();
       (
@@ -68,8 +73,8 @@ describe.each([
       );
       expect(actual.headers?.['content-type']).toBe('application/json');
       expect(actual.isBase64Encoded).toBe(false);
-    });
-  });
+    }
+  );
 
   it.each([['CONNECT'], ['TRACE']])(
     'throws MethodNotAllowedError for %s requests',

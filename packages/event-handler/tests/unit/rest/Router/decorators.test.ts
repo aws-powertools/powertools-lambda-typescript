@@ -92,7 +92,7 @@ describe('Class: Router - Decorators', () => {
       // Assess
       expect(actual).toEqual({
         statusCode: 200,
-        body: JSON.stringify(expectedResponse),
+        body: JSON.stringify({ result: `${verb}-test` }),
         headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });
@@ -154,7 +154,10 @@ describe('Class: Router - Decorators', () => {
       // Assess
       expect(actual).toEqual({
         statusCode: 200,
-        body: JSON.stringify(expectedResponse),
+        body: JSON.stringify([
+          { id: 1, result: `${verb}-test-1` },
+          { id: 2, result: `${verb}-test-2` },
+        ]),
         headers: { 'content-type': 'application/json' },
         isBase64Encoded: false,
       });

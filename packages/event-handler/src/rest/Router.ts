@@ -3,7 +3,6 @@ import { pipeline } from 'node:stream/promises';
 import type streamWeb from 'node:stream/web';
 import type {
   GenericLogger,
-  JSONObject,
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
 import { isRecord } from '@aws-lambda-powertools/commons/typeutils';
@@ -424,7 +423,7 @@ class Router {
     let status: number = HttpStatusCodes.INTERNAL_SERVER_ERROR;
 
     if (isRecord(body)) {
-      if (!body.statusCode) this.#tryAddingErrorCodeToBody(body, error);
+      body.statusCode = body.statusCode ?? this.#getStatusCodeFromError(error);
       status = (body.statusCode as number) ?? status;
     }
 
@@ -435,17 +434,20 @@ class Router {
   }
 
   /**
-   * Attempts to add the appropriate HTTP status code to the response body based on the error type.
-   * Only sets status codes for known error types (NotFoundError, MethodNotAllowedError).
+   * Extracts the HTTP status code from an error instance.
    *
-   * @param body - The response body object to which the status code will be added
-   * @param error - The error instance to check and map to an HTTP status code
+   * Maps specific error types to their corresponding HTTP status codes:
+   * - `NotFoundError` maps to 404 (NOT_FOUND)
+   * - `MethodNotAllowedError` maps to 405 (METHOD_NOT_ALLOWED)
+   *
+   * @param error - The error instance to extract the status code from
    */
-  #tryAddingErrorCodeToBody(body: JSONObject, error: Error): void {
+  #getStatusCodeFromError(error: Error): number | undefined {
     if (error instanceof NotFoundError) {
-      body.statusCode = HttpStatusCodes.NOT_FOUND;
-    } else if (error instanceof MethodNotAllowedError) {
-      body.statusCode = HttpStatusCodes.METHOD_NOT_ALLOWED;
+      return HttpStatusCodes.NOT_FOUND;
+    }
+    if (error instanceof MethodNotAllowedError) {
+      return HttpStatusCodes.METHOD_NOT_ALLOWED;
     }
   }
 

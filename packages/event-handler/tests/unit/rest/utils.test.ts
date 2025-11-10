@@ -621,6 +621,7 @@ describe('Path Utilities', () => {
       params: {},
       event: {} as APIGatewayProxyEvent,
       context: {} as Context,
+      responseType: 'ApiGatewayV1',
       req: new Request('https://example.com'),
       res: new Response(),
     };

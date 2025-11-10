@@ -29,6 +29,7 @@ type RequestContext = {
   res: Response;
   params: Record<string, string>;
   responseType: ResponseType;
+  isBase64Encoded?: boolean;
 };
 
 type ErrorResolveOptions = RequestContext & ResolveOptions;
@@ -69,14 +70,20 @@ interface CompiledRoute {
 
 type DynamicRoute = Route & CompiledRoute;
 
-type ExtendedAPIGatewayProxyResultBody = string | Readable | ReadableStream;
+type BinaryResult = ArrayBuffer | Readable | ReadableStream;
+
+type ExtendedAPIGatewayProxyResultBody = BinaryResult | string;
 
 type ExtendedAPIGatewayProxyResult = Omit<APIGatewayProxyResult, 'body'> & {
   body: ExtendedAPIGatewayProxyResultBody;
   cookies?: string[];
 };
 
-type HandlerResponse = Response | JSONObject | ExtendedAPIGatewayProxyResult;
+type HandlerResponse =
+  | Response
+  | JSONObject
+  | ExtendedAPIGatewayProxyResult
+  | BinaryResult;
 
 type RouteHandler<TReturn = HandlerResponse> = (
   reqCtx: RequestContext
@@ -230,7 +237,12 @@ type CompressionOptions = {
   threshold?: number;
 };
 
+type WebResponseToProxyResultOptions = {
+  isBase64Encoded?: boolean;
+};
+
 export type {
+  BinaryResult,
   ExtendedAPIGatewayProxyResult,
   ExtendedAPIGatewayProxyResultBody,
   CompiledRoute,
@@ -259,4 +271,5 @@ export type {
   CompressionOptions,
   NextFunction,
   V1Headers,
+  WebResponseToProxyResultOptions,
 };

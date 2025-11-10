@@ -5,6 +5,7 @@ import {
   webHeadersToApiGatewayHeaders,
 } from '../../../src/rest/converters.js';
 import {
+  HttpStatusCodes,
   handlerResultToWebResponse,
   proxyEventToWebRequest,
   webResponseToProxyResult,
@@ -641,7 +642,7 @@ describe('Converters', () => {
       expect(result.body).toBe('');
     });
 
-    it('handles compressed response body', async () => {
+    it('respects isBase64Encoded option', async () => {
       // Prepare
       const response = new Response('Hello World', {
         status: 200,
@@ -651,7 +652,9 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'ApiGatewayV1');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV1', {
+        isBase64Encoded: true,
+      });
 
       // Assess
       expect(result.isBase64Encoded).toBe(true);
@@ -763,7 +766,7 @@ describe('Converters', () => {
       expect(result.body).toBe('');
     });
 
-    it('handles compressed response body', async () => {
+    it('respects isBase64Encoded option', async () => {
       // Prepare
       const response = new Response('Hello World', {
         status: 200,
@@ -773,7 +776,9 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = await webResponseToProxyResult(response, 'ApiGatewayV2');
+      const result = await webResponseToProxyResult(response, 'ApiGatewayV2', {
+        isBase64Encoded: true,
+      });
 
       // Assess
       expect(result.isBase64Encoded).toBe(true);
@@ -785,7 +790,7 @@ describe('Converters', () => {
     it('converts APIGatewayProxyResult to Response', async () => {
       // Prepare
       const proxyResult = {
-        statusCode: 201,
+        statusCode: HttpStatusCodes.CREATED,
         body: 'Hello World',
         headers: { 'content-type': 'text/plain' },
         isBase64Encoded: false,
@@ -796,7 +801,7 @@ describe('Converters', () => {
 
       // Assess
       expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(201);
+      expect(result.status).toBe(HttpStatusCodes.CREATED);
       expect(await result.text()).toBe('Hello World');
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
@@ -804,7 +809,7 @@ describe('Converters', () => {
     it('converts APIGatewayProxyResult with multiValueHeaders', () => {
       // Prepare
       const proxyResult = {
-        statusCode: 200,
+        statusCode: HttpStatusCodes.OK,
         body: 'test',
         headers: { 'content-type': 'application/json' },
         multiValueHeaders: {
@@ -817,6 +822,7 @@ describe('Converters', () => {
       const result = handlerResultToWebResponse(proxyResult);
 
       // Assess
+      expect(result.status).toBe(HttpStatusCodes.OK);
       expect(result.headers.get('content-type')).toBe('application/json');
       expect(result.headers.get('Set-Cookie')).toBe(
         'cookie1=value1, cookie2=value2'
@@ -832,7 +838,7 @@ describe('Converters', () => {
 
       // Assess
       expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(200);
+      expect(result.status).toBe(HttpStatusCodes.OK);
       expect(result.text()).resolves.toBe(JSON.stringify(obj));
       expect(result.headers.get('Content-Type')).toBe('application/json');
     });
@@ -843,7 +849,10 @@ describe('Converters', () => {
       const headers = new Headers({ 'x-custom': 'value' });
 
       // Act
-      const result = handlerResultToWebResponse(obj, headers);
+      const result = handlerResultToWebResponse(obj, {
+        statusCode: HttpStatusCodes.OK,
+        resHeaders: headers,
+      });
 
       // Assess
       expect(result.headers.get('Content-Type')).toBe('application/json');
@@ -853,7 +862,7 @@ describe('Converters', () => {
     it('handles APIGatewayProxyResult with undefined headers', () => {
       // Prepare
       const proxyResult = {
-        statusCode: 200,
+        statusCode: HttpStatusCodes.OK,
         body: 'test',
         headers: undefined,
         isBase64Encoded: false,
@@ -864,13 +873,13 @@ describe('Converters', () => {
 
       // Assess
       expect(result).toBeInstanceOf(Response);
-      expect(result.status).toBe(200);
+      expect(result.status).toBe(HttpStatusCodes.OK);
     });
 
     it('handles APIGatewayProxyResult with undefined multiValueHeaders', () => {
       // Prepare
       const proxyResult = {
-        statusCode: 200,
+        statusCode: HttpStatusCodes.OK,
         body: 'test',
         headers: { 'content-type': 'text/plain' },
         multiValueHeaders: undefined,
@@ -881,13 +890,14 @@ describe('Converters', () => {
       const result = handlerResultToWebResponse(proxyResult);
 
       // Assess
+      expect(result.status).toBe(HttpStatusCodes.OK);
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
 
     it('handles APIGatewayProxyResult with undefined values in multiValueHeaders', () => {
       // Prepare
       const proxyResult = {
-        statusCode: 200,
+        statusCode: HttpStatusCodes.OK,
         body: 'test',
         headers: { 'content-type': 'text/plain' },
         multiValueHeaders: { 'Set-Cookie': undefined },
@@ -898,6 +908,7 @@ describe('Converters', () => {
       const result = handlerResultToWebResponse(proxyResult);
 
       // Assess
+      expect(result.status).toBe(HttpStatusCodes.OK);
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
 
@@ -912,19 +923,22 @@ describe('Converters', () => {
       });
 
       // Act
-      const result = handlerResultToWebResponse(response, resHeaders);
+      const result = handlerResultToWebResponse(response, {
+        statusCode: HttpStatusCodes.OK,
+        resHeaders,
+      });
 
       // Assess
+      expect(result.status).toBe(HttpStatusCodes.OK);
       expect(result.headers.get('content-type')).toBe('text/plain');
       expect(result.headers.get('x-custom')).toBe('value');
-      expect(result.status).toBe(200);
       expect(result.text()).resolves.toBe('Hello');
     });
 
     it('returns Response object as-is when resHeaders is undefined', () => {
       // Prepare
       const response = new Response('Hello', {
-        status: 201,
+        status: HttpStatusCodes.CREATED,
         headers: { 'content-type': 'text/plain' },
       });
 
@@ -933,6 +947,7 @@ describe('Converters', () => {
 
       // Assess
       expect(result).toBe(response);
+      expect(result.status).toBe(HttpStatusCodes.CREATED);
     });
   });
 

@@ -587,6 +587,46 @@ describe.each([
       errorName: 'Error',
     });
   });
+
+  it('handles BinaryResult from error handlers', async () => {
+    // Prepare
+    const app = new Router();
+    const { buffer } = new TextEncoder().encode('error binary data');
+
+    class CustomError extends Error {}
+
+    app.errorHandler(CustomError, async () => buffer);
+    app.get('/error', () => {
+      throw new CustomError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createEvent('/error', 'GET'), context);
+
+    // Assess
+    expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(result.isBase64Encoded).toBe(true);
+    expect(result.body).toBe(Buffer.from(buffer).toString('base64'));
+  });
+
+  it('sets isBase64Encoded when notFound handler returns BinaryResult', async () => {
+    // Prepare
+    const app = new Router();
+    const buffer = new TextEncoder().encode('not found binary');
+
+    app.notFound(async () => buffer.buffer);
+
+    // Act
+    const result = await app.resolve(
+      createEvent('/nonexistent', 'GET'),
+      context
+    );
+
+    // Assess
+    expect(result.statusCode).toBe(HttpStatusCodes.OK);
+    expect(result.isBase64Encoded).toBe(true);
+    expect(result.body).toBe(Buffer.from(buffer.buffer).toString('base64'));
+  });
 });
 describe('Class: Router - proxyEventToWebRequest Error Handling', () => {
   beforeEach(() => {

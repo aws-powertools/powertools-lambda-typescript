@@ -7,15 +7,19 @@ import {
 import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
 import type {
   CompiledRoute,
+  CompressionOptions,
   ExtendedAPIGatewayProxyResult,
   HandlerResponse,
   HttpMethod,
+  HttpStatusCode,
   Middleware,
   Path,
   ResponseStream,
   ValidationResult,
 } from '../types/rest.js';
 import {
+  COMPRESSION_ENCODING_TYPES,
+  HttpStatusCodes,
   HttpVerbs,
   PARAM_PATTERN,
   SAFE_CHARS,
@@ -153,6 +157,16 @@ export const isWebReadableStream = (
     typeof value === 'object' &&
     'getReader' in value &&
     typeof (value as Record<string, unknown>).getReader === 'function'
+  );
+};
+
+export const isBinaryResult = (
+  value: unknown
+): value is ArrayBuffer | Readable | ReadableStream => {
+  return (
+    value instanceof ArrayBuffer ||
+    isNodeReadableStream(value) ||
+    isWebReadableStream(value)
   );
 };
 
@@ -318,3 +332,56 @@ export const HttpResponseStream =
       return underlyingStream;
     }
   };
+
+export const getBase64EncodingFromResult = (result: HandlerResponse) => {
+  if (isBinaryResult(result)) {
+    return true;
+  }
+  if (isExtendedAPIGatewayProxyResult(result)) {
+    return isBinaryResult(result);
+  }
+  return false;
+};
+
+export const getBase64EncodingFromHeaders = (headers: Headers): boolean => {
+  const contentEncoding = headers.get(
+    'content-encoding'
+  ) as CompressionOptions['encoding'];
+
+  if (
+    contentEncoding != null &&
+    [
+      COMPRESSION_ENCODING_TYPES.GZIP,
+      COMPRESSION_ENCODING_TYPES.DEFLATE,
+    ].includes(contentEncoding)
+  ) {
+    return true;
+  }
+
+  const contentType = headers.get('content-type');
+  if (contentType != null) {
+    const type = contentType.split(';')[0].trim();
+    if (
+      type.startsWith('image/') ||
+      type.startsWith('audio/') ||
+      type.startsWith('video/')
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+export const getStatusCode = (
+  result: HandlerResponse,
+  fallback: HttpStatusCode = HttpStatusCodes.OK
+): HttpStatusCode => {
+  if (result instanceof Response) {
+    return result.status as HttpStatusCode;
+  }
+  if (isExtendedAPIGatewayProxyResult(result)) {
+    return result.statusCode as HttpStatusCode;
+  }
+  return fallback;
+};

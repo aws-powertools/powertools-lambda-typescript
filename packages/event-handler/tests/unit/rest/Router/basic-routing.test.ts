@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it, vi } from 'vitest';
 import { InvalidEventError } from '../../../../src/rest/errors.js';
@@ -269,6 +270,112 @@ describe('Class: Router - V2 Cookies Support', () => {
       body: JSON.stringify({ message: 'success' }),
       headers: { 'content-type': 'application/json' },
       cookies: ['session=abc123', 'theme=dark'],
+      isBase64Encoded: false,
+    });
+  });
+});
+
+describe.each([
+  { version: 'V1', createEvent: createTestEvent },
+  { version: 'V2', createEvent: createTestEventV2 },
+])('Class: Router - Binary Result ($version)', ({ createEvent }) => {
+  it('handles ArrayBuffer as direct return type', async () => {
+    // Prepare
+    const app = new Router();
+    const { buffer } = new TextEncoder().encode('binary data');
+    app.get('/binary', () => buffer);
+
+    // Act
+    const result = await app.resolve(createEvent('/binary', 'GET'), context);
+
+    // Assess
+    expect(result.body).toBe(Buffer.from(buffer).toString('base64'));
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it('handles Readable stream as direct return type', async () => {
+    // Prepare
+    const app = new Router();
+    const data = Buffer.concat([Buffer.from('chunk1'), Buffer.from('chunk2')]);
+    const stream = Readable.from([
+      Buffer.from('chunk1'),
+      Buffer.from('chunk2'),
+    ]);
+    app.get('/stream', () => stream);
+
+    // Act
+    const result = await app.resolve(createEvent('/stream', 'GET'), context);
+
+    // Assess
+    expect(result.body).toBe(data.toString('base64'));
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it('handles ReadableStream as direct return type', async () => {
+    // Prepare
+    const app = new Router();
+    const data = new TextEncoder().encode('data');
+    const webStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(data);
+        controller.close();
+      },
+    });
+    app.get('/webstream', () => webStream);
+
+    // Act
+    const result = await app.resolve(createEvent('/webstream', 'GET'), context);
+
+    // Assess
+    expect(result.body).toBe(Buffer.from(data).toString('base64'));
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it.each([['image/png'], ['image/jpeg'], ['audio/mpeg'], ['video/mp4']])(
+    'sets isBase64Encoded for %s content-type',
+    async (contentType) => {
+      // Prepare
+      const app = new Router();
+      app.get(
+        '/media',
+        () =>
+          new Response('binary data', {
+            headers: { 'content-type': contentType },
+          })
+      );
+
+      // Act
+      const result = await app.resolve(createEvent('/media', 'GET'), context);
+
+      // Assess
+      expect(result).toEqual({
+        statusCode: 200,
+        body: Buffer.from('binary data').toString('base64'),
+        headers: { 'content-type': contentType },
+        isBase64Encoded: true,
+      });
+    }
+  );
+
+  it('does not set isBase64Encoded for text content-types', async () => {
+    // Prepare
+    const app = new Router();
+    app.get(
+      '/text',
+      () =>
+        new Response('text data', {
+          headers: { 'content-type': 'text/plain' },
+        })
+    );
+
+    // Act
+    const result = await app.resolve(createEvent('/text', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: 200,
+      body: 'text data',
+      headers: { 'content-type': 'text/plain' },
       isBase64Encoded: false,
     });
   });

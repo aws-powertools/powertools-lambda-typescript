@@ -13,7 +13,7 @@ describe.each([
   { version: 'V1', createEvent: createTestEvent },
   { version: 'V2', createEvent: createTestEventV2 },
 ])('Class: Router - Basic Routing ($version)', ({ createEvent }) => {
-  it.each([
+  describe.each([
     ['GET', 'get'],
     ['POST', 'post'],
     ['PUT', 'put'],
@@ -21,22 +21,54 @@ describe.each([
     ['DELETE', 'delete'],
     ['HEAD', 'head'],
     ['OPTIONS', 'options'],
-  ])('routes %s requests', async (method, verb) => {
-    // Prepare
-    const app = new Router();
-    (
-      app[verb as Lowercase<HttpMethod>] as (
-        path: string,
-        handler: RouteHandler
-      ) => void
-    )('/test', async () => ({ result: `${verb}-test` }));
-    // Act
-    const actual = await app.resolve(createEvent('/test', method), context);
-    // Assess
-    expect(actual.statusCode).toBe(200);
-    expect(actual.body).toBe(JSON.stringify({ result: `${verb}-test` }));
-    expect(actual.headers?.['content-type']).toBe('application/json');
-    expect(actual.isBase64Encoded).toBe(false);
+  ])('routes %s requests', (method, verb) => {
+    it('with object response', async () => {
+      // Prepare
+      const app = new Router();
+      (
+        app[verb as Lowercase<HttpMethod>] as (
+          path: string,
+          handler: RouteHandler
+        ) => void
+      )('/test', async () => ({ result: `${verb}-test` }));
+
+      // Act
+      const actual = await app.resolve(createEvent('/test', method), context);
+
+      // Assess
+      expect(actual.statusCode).toBe(200);
+      expect(actual.body).toBe(JSON.stringify({ result: `${verb}-test` }));
+      expect(actual.headers?.['content-type']).toBe('application/json');
+      expect(actual.isBase64Encoded).toBe(false);
+    });
+
+    it('with array response', async () => {
+      // Prepare
+      const app = new Router();
+      (
+        app[verb as Lowercase<HttpMethod>] as (
+          path: string,
+          handler: RouteHandler
+        ) => void
+      )('/test', async () => [
+        { id: 1, result: `${verb}-test-1` },
+        { id: 2, result: `${verb}-test-2` },
+      ]);
+
+      // Act
+      const actual = await app.resolve(createEvent('/test', method), context);
+
+      // Assess
+      expect(actual.statusCode).toBe(200);
+      expect(actual.body).toBe(
+        JSON.stringify([
+          { id: 1, result: `${verb}-test-1` },
+          { id: 2, result: `${verb}-test-2` },
+        ])
+      );
+      expect(actual.headers?.['content-type']).toBe('application/json');
+      expect(actual.isBase64Encoded).toBe(false);
+    });
   });
 
   it.each([['CONNECT'], ['TRACE']])(

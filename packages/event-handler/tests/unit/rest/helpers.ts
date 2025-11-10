@@ -1,4 +1,4 @@
-import type { APIGatewayProxyEvent } from 'aws-lambda';
+import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
 import { HttpResponseStream } from '../../../src/rest/utils.js';
 import type { HandlerResponse, Middleware } from '../../../src/types/rest.js';
 
@@ -23,6 +23,37 @@ export const createTestEvent = (
     domainName: 'api.example.com',
   } as APIGatewayProxyEvent['requestContext'],
   resource: '',
+});
+
+export const createTestEventV2 = (
+  rawPath: string,
+  method: string,
+  headers: Record<string, string> = {}
+): APIGatewayProxyEventV2 => ({
+  version: '2.0',
+  routeKey: `${method} ${rawPath}`,
+  rawPath,
+  rawQueryString: '',
+  headers,
+  requestContext: {
+    accountId: '123456789012',
+    apiId: 'api-id',
+    domainName: 'api.example.com',
+    domainPrefix: 'api',
+    http: {
+      method,
+      path: rawPath,
+      protocol: 'HTTP/1.1',
+      sourceIp: '127.0.0.1',
+      userAgent: 'test-agent',
+    },
+    requestId: 'test-request-id',
+    routeKey: `${method} ${rawPath}`,
+    stage: '$default',
+    time: '01/Jan/2024:00:00:00 +0000',
+    timeEpoch: 1704067200000,
+  },
+  isBase64Encoded: false,
 });
 
 export const createTrackingMiddleware = (

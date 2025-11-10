@@ -1,17 +1,26 @@
 import { Readable } from 'node:stream';
 import type streamWeb from 'node:stream/web';
-import { isString } from '@aws-lambda-powertools/commons/typeutils';
-import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResult,
+  APIGatewayProxyStructuredResultV2,
+} from 'aws-lambda';
 import type {
   CompressionOptions,
   ExtendedAPIGatewayProxyResult,
   ExtendedAPIGatewayProxyResultBody,
   HandlerResponse,
-  HttpStatusCode,
+  ResponseType,
+  ResponseTypeMap,
+  V1Headers,
 } from '../types/rest.js';
-import { COMPRESSION_ENCODING_TYPES, HttpStatusCodes } from './constants.js';
+import { COMPRESSION_ENCODING_TYPES } from './constants.js';
+import { InvalidHttpMethodError } from './errors.js';
 import {
+  isAPIGatewayProxyEventV2,
   isExtendedAPIGatewayProxyResult,
+  isHttpMethod,
   isNodeReadableStream,
   isWebReadableStream,
 } from './utils.js';
@@ -38,16 +47,16 @@ const createBody = (body: string | null, isBase64Encoded: boolean) => {
  * @param event - The API Gateway proxy event
  * @returns A Web API Request object
  */
-const proxyEventToWebRequest = (event: APIGatewayProxyEvent): Request => {
+const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
   const { httpMethod, path } = event;
   const { domainName } = event.requestContext;
 
   const headers = new Headers();
-  for (const [name, value] of Object.entries(event.headers)) {
+  for (const [name, value] of Object.entries(event.headers ?? {})) {
     if (value !== undefined) headers.set(name, value);
   }
 
-  for (const [name, values] of Object.entries(event.multiValueHeaders)) {
+  for (const [name, values] of Object.entries(event.multiValueHeaders ?? {})) {
     for (const value of values ?? []) {
       const headerValue = headers.get(name);
       if (!headerValue?.includes(value)) {
@@ -81,8 +90,68 @@ const proxyEventToWebRequest = (event: APIGatewayProxyEvent): Request => {
 };
 
 /**
- * Converts Web API Headers to API Gateway v1 headers format.
- * Splits multi-value headers by comma and organizes them into separate objects.
+ * Converts an API Gateway V2 proxy event to a Web API Request object.
+ *
+ * @param event - The API Gateway V2 proxy event
+ * @returns A Web API Request object
+ */
+const proxyEventV2ToWebRequest = (event: APIGatewayProxyEventV2): Request => {
+  const { rawPath, rawQueryString } = event;
+  const {
+    http: { method },
+    domainName,
+  } = event.requestContext;
+
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(event.headers)) {
+    if (value !== undefined) headers.set(name, value);
+  }
+
+  if (Array.isArray(event.cookies)) {
+    headers.set('Cookie', event.cookies.join('; '));
+  }
+
+  const hostname = headers.get('Host') ?? domainName;
+  const protocol = headers.get('X-Forwarded-Proto') ?? 'https';
+
+  const url = rawQueryString
+    ? `${protocol}://${hostname}${rawPath}?${rawQueryString}`
+    : `${protocol}://${hostname}${rawPath}`;
+
+  return new Request(url, {
+    method,
+    headers,
+    body: createBody(event.body ?? null, event.isBase64Encoded),
+  });
+};
+
+/**
+ * Converts an API Gateway proxy event (V1 or V2) to a Web API Request object.
+ * Automatically detects the event version and calls the appropriate converter.
+ *
+ * @param event - The API Gateway proxy event (V1 or V2)
+ * @returns A Web API Request object
+ */
+const proxyEventToWebRequest = (
+  event: APIGatewayProxyEvent | APIGatewayProxyEventV2
+): Request => {
+  if (isAPIGatewayProxyEventV2(event)) {
+    const method = event.requestContext.http.method.toUpperCase();
+    if (!isHttpMethod(method)) {
+      throw new InvalidHttpMethodError(method);
+    }
+    return proxyEventV2ToWebRequest(event);
+  }
+  const method = event.requestContext.httpMethod.toUpperCase();
+  if (!isHttpMethod(method)) {
+    throw new InvalidHttpMethodError(method);
+  }
+  return proxyEventV1ToWebRequest(event);
+};
+
+/**
+ * Converts Web API Headers to API Gateway V1 headers format.
+ * Splits multi-value headers by comma or semicolon and organizes them into separate objects.
  *
  * @param webHeaders - The Web API Headers object
  * @returns Object containing headers and multiValueHeaders
@@ -92,8 +161,12 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
   const multiValueHeaders: Record<string, Array<string>> = {};
 
   for (const [key, value] of webHeaders.entries()) {
-    const values = value.split(',').map((v) => v.trimStart());
-    if (values.length > 1) {
+    const values = value.split(/[;,]/).map((v) => v.trimStart());
+
+    if (headers[key]) {
+      multiValueHeaders[key] = [headers[key], ...values];
+      delete headers[key];
+    } else if (values.length > 1) {
       multiValueHeaders[key] = values;
     } else {
       headers[key] = value;
@@ -107,12 +180,46 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
 };
 
 /**
- * Converts a Web API Response object to an API Gateway proxy result.
+ * Converts Web API Headers to API Gateway V2 headers format.
+ *
+ * @param webHeaders - The Web API Headers object
+ * @returns Object containing headers
+ */
+const webHeadersToApiGatewayV2Headers = (webHeaders: Headers) => {
+  const headers: Record<string, string> = {};
+
+  for (const [key, value] of webHeaders.entries()) {
+    headers[key] = value;
+  }
+
+  return { headers };
+};
+
+const webHeadersToApiGatewayHeaders = <T extends ResponseType>(
+  webHeaders: Headers,
+  responseType: T
+): T extends 'ApiGatewayV1'
+  ? V1Headers
+  : { headers: Record<string, string> } => {
+  if (responseType === 'ApiGatewayV1') {
+    return webHeadersToApiGatewayV1Headers(
+      webHeaders
+    ) as T extends 'ApiGatewayV1'
+      ? V1Headers
+      : { headers: Record<string, string> };
+  }
+  return webHeadersToApiGatewayV2Headers(webHeaders) as T extends 'ApiGatewayV1'
+    ? V1Headers
+    : { headers: Record<string, string> };
+};
+
+/**
+ * Converts a Web API Response object to an API Gateway V1 proxy result.
  *
  * @param response - The Web API Response object
- * @returns An API Gateway proxy result
+ * @returns An API Gateway V1 proxy result
  */
-const webResponseToProxyResult = async (
+const webResponseToProxyResultV1 = async (
   response: Response
 ): Promise<APIGatewayProxyResult> => {
   const { headers, multiValueHeaders } = webHeadersToApiGatewayV1Headers(
@@ -157,12 +264,76 @@ const webResponseToProxyResult = async (
 };
 
 /**
+ * Converts a Web API Response object to an API Gateway V2 proxy result.
+ *
+ * @param response - The Web API Response object
+ * @returns An API Gateway V2 proxy result
+ */
+const webResponseToProxyResultV2 = async (
+  response: Response
+): Promise<APIGatewayProxyStructuredResultV2> => {
+  const headers: Record<string, string> = {};
+  const cookies: string[] = [];
+
+  for (const [key, value] of response.headers.entries()) {
+    if (key.toLowerCase() === 'set-cookie') {
+      cookies.push(...value.split(',').map((v) => v.trimStart()));
+    } else {
+      headers[key] = value;
+    }
+  }
+
+  const contentEncoding = response.headers.get(
+    'content-encoding'
+  ) as CompressionOptions['encoding'];
+  let body: string;
+  let isBase64Encoded = false;
+
+  if (
+    contentEncoding &&
+    [
+      COMPRESSION_ENCODING_TYPES.GZIP,
+      COMPRESSION_ENCODING_TYPES.DEFLATE,
+    ].includes(contentEncoding)
+  ) {
+    const buffer = await response.arrayBuffer();
+    body = Buffer.from(buffer).toString('base64');
+    isBase64Encoded = true;
+  } else {
+    body = await response.text();
+  }
+
+  const result: APIGatewayProxyStructuredResultV2 = {
+    statusCode: response.status,
+    headers,
+    body,
+    isBase64Encoded,
+  };
+
+  if (cookies.length > 0) {
+    result.cookies = cookies;
+  }
+
+  return result;
+};
+
+const webResponseToProxyResult = <T extends ResponseType>(
+  response: Response,
+  responseType: T
+): Promise<ResponseTypeMap[T]> => {
+  if (responseType === 'ApiGatewayV1') {
+    return webResponseToProxyResultV1(response) as Promise<ResponseTypeMap[T]>;
+  }
+  return webResponseToProxyResultV2(response) as Promise<ResponseTypeMap[T]>;
+};
+
+/**
  * Adds headers from an ExtendedAPIGatewayProxyResult to a Headers object.
  *
  * @param headers - The Headers object to mutate
  * @param response - The response containing headers to add
  * @remarks This function mutates the headers object by adding entries from
- * response.headers and response.multiValueHeaders
+ * response.headers, response.multiValueHeaders, and response.cookies
  */
 function addProxyEventHeaders(
   headers: Headers,
@@ -179,6 +350,12 @@ function addProxyEventHeaders(
   )) {
     for (const value of values ?? []) {
       headers.append(key, String(value));
+    }
+  }
+
+  if (response.cookies && response.cookies.length > 0) {
+    for (const cookie of response.cookies) {
+      headers.append('Set-Cookie', cookie);
     }
   }
 }
@@ -227,48 +404,6 @@ const handlerResultToWebResponse = (
 };
 
 /**
- * Converts a handler response to an API Gateway proxy result.
- * Handles APIGatewayProxyResult, Response objects, and plain objects.
- *
- * @param response - The handler response (APIGatewayProxyResult, Response, or plain object)
- * @param statusCode - The response status code to return
- * @returns An API Gateway proxy result
- */
-const handlerResultToProxyResult = async (
-  response: HandlerResponse,
-  statusCode: HttpStatusCode = HttpStatusCodes.OK
-): Promise<APIGatewayProxyResult> => {
-  if (isExtendedAPIGatewayProxyResult(response)) {
-    if (isString(response.body)) {
-      return {
-        ...response,
-        body: response.body,
-      };
-    }
-    if (
-      isNodeReadableStream(response.body) ||
-      isWebReadableStream(response.body)
-    ) {
-      const nodeStream = bodyToNodeStream(response.body);
-      return {
-        ...response,
-        isBase64Encoded: true,
-        body: await nodeStreamToBase64(nodeStream),
-      };
-    }
-  }
-  if (response instanceof Response) {
-    return await webResponseToProxyResult(response);
-  }
-  return {
-    statusCode,
-    body: JSON.stringify(response),
-    headers: { 'content-type': 'application/json' },
-    isBase64Encoded: false,
-  };
-};
-
-/**
  * Converts various body types to a Node.js Readable stream.
  * Handles Node.js streams, web streams, and string bodies.
  *
@@ -285,26 +420,10 @@ const bodyToNodeStream = (body: ExtendedAPIGatewayProxyResultBody) => {
   return Readable.from(Buffer.from(body as string));
 };
 
-/**
- * Converts a Node.js Readable stream to a base64 encoded string.
- * Handles both Buffer and string chunks by converting all to Buffers.
- *
- * @param stream - The Node.js Readable stream to convert
- * @returns A Promise that resolves to a base64 encoded string
- */
-async function nodeStreamToBase64(stream: Readable) {
-  const chunks: Buffer[] = [];
-  for await (const chunk of stream) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  }
-  return Buffer.concat(chunks).toString('base64');
-}
-
 export {
   proxyEventToWebRequest,
   webResponseToProxyResult,
   handlerResultToWebResponse,
-  handlerResultToProxyResult,
   bodyToNodeStream,
-  webHeadersToApiGatewayV1Headers,
+  webHeadersToApiGatewayHeaders,
 };

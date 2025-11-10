@@ -1,6 +1,5 @@
 export { HttpStatusCodes, HttpVerbs } from './constants.js';
 export {
-  handlerResultToProxyResult,
   handlerResultToWebResponse,
   proxyEventToWebRequest,
   webResponseToProxyResult,
@@ -22,7 +21,8 @@ export {
 export { Router } from './Router.js';
 export {
   composeMiddleware,
-  isAPIGatewayProxyEvent,
+  isAPIGatewayProxyEventV1,
+  isAPIGatewayProxyEventV2,
   isExtendedAPIGatewayProxyResult,
   isHttpMethod,
 } from './utils.js';

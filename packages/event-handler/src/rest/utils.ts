@@ -11,6 +11,7 @@ import type {
   ExtendedAPIGatewayProxyResult,
   HandlerResponse,
   HttpMethod,
+  HttpStatusCode,
   Middleware,
   Path,
   ResponseStream,
@@ -18,6 +19,7 @@ import type {
 } from '../types/rest.js';
 import {
   COMPRESSION_ENCODING_TYPES,
+  HttpStatusCodes,
   HttpVerbs,
   PARAM_PATTERN,
   SAFE_CHARS,
@@ -336,11 +338,7 @@ export const getBase64EncodingFromResult = (result: HandlerResponse) => {
     return true;
   }
   if (isExtendedAPIGatewayProxyResult(result)) {
-    return (
-      result.body instanceof ArrayBuffer ||
-      isNodeReadableStream(result.body) ||
-      isWebReadableStream(result.body)
-    );
+    return isBinaryResult(result);
   }
   return false;
 };
@@ -373,4 +371,17 @@ export const getBase64EncodingFromHeaders = (headers: Headers): boolean => {
   }
 
   return false;
+};
+
+export const getStatusCode = (
+  result: HandlerResponse,
+  fallback: HttpStatusCode = HttpStatusCodes.OK
+): HttpStatusCode => {
+  if (result instanceof Response) {
+    return result.status as HttpStatusCode;
+  }
+  if (isExtendedAPIGatewayProxyResult(result)) {
+    return result.statusCode as HttpStatusCode;
+  }
+  return fallback;
 };

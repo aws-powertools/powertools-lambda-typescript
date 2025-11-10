@@ -10,11 +10,13 @@ import type {
   ExtendedAPIGatewayProxyResult,
   ExtendedAPIGatewayProxyResultBody,
   HandlerResponse,
+  HttpStatusCode,
   ResponseType,
   ResponseTypeMap,
   V1Headers,
   WebResponseToProxyResultOptions,
 } from '../types/rest.js';
+import { HttpStatusCodes } from './constants.js';
 import { InvalidHttpMethodError } from './errors.js';
 import {
   isAPIGatewayProxyEventV2,
@@ -345,13 +347,15 @@ function addProxyEventHeaders(
  * Handles APIGatewayProxyResult, Response objects, and plain objects.
  *
  * @param response - The handler response (APIGatewayProxyResult, Response, or plain object)
- * @param resHeaders - Optional headers to be included in the response
+ * @param options - Optional configuration with statusCode and resHeaders
  * @returns A Web API Response object
  */
 const handlerResultToWebResponse = (
   response: HandlerResponse,
-  resHeaders?: Headers
+  options?: { statusCode?: HttpStatusCode; resHeaders?: Headers }
 ): Response => {
+  const statusCode = options?.statusCode ?? HttpStatusCodes.OK;
+  const resHeaders = options?.resHeaders;
   if (response instanceof Response) {
     if (resHeaders === undefined) return response;
     const headers = new Headers(resHeaders);
@@ -373,7 +377,7 @@ const handlerResultToWebResponse = (
         : response;
 
     return new Response(body, {
-      status: 200,
+      status: statusCode,
       headers,
     });
   }
@@ -393,7 +397,7 @@ const handlerResultToWebResponse = (
       headers,
     });
   }
-  return Response.json(response, { headers });
+  return Response.json(response, { headers, status: statusCode });
 };
 
 /**

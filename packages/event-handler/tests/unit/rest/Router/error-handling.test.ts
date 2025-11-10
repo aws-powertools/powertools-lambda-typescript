@@ -604,7 +604,7 @@ describe.each([
     const result = await app.resolve(createEvent('/error', 'GET'), context);
 
     // Assess
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(result.isBase64Encoded).toBe(true);
     expect(result.body).toBe(Buffer.from(buffer).toString('base64'));
   });
@@ -623,7 +623,7 @@ describe.each([
     );
 
     // Assess
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode).toBe(HttpStatusCodes.OK);
     expect(result.isBase64Encoded).toBe(true);
     expect(result.body).toBe(Buffer.from(buffer.buffer).toString('base64'));
   });

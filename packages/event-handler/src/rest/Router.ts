@@ -50,6 +50,7 @@ import {
   composeMiddleware,
   getBase64EncodingFromHeaders,
   getBase64EncodingFromResult,
+  getStatusCode,
   HttpResponseStream,
   isAPIGatewayProxyEventV1,
   isAPIGatewayProxyEventV2,
@@ -282,7 +283,10 @@ class Router {
           reqCtx.isBase64Encoded = true;
         }
 
-        reqCtx.res = handlerResultToWebResponse(handlerRes, reqCtx.res.headers);
+        reqCtx.res = handlerResultToWebResponse(handlerRes, {
+          statusCode: getStatusCode(handlerRes),
+          resHeaders: reqCtx.res.headers,
+        });
 
         await next();
       };
@@ -301,10 +305,10 @@ class Router {
 
       // middleware result takes precedence to allow short-circuiting
       if (middlewareResult !== undefined) {
-        requestContext.res = handlerResultToWebResponse(
-          middlewareResult,
-          requestContext.res.headers
-        );
+        requestContext.res = handlerResultToWebResponse(middlewareResult, {
+          statusCode: getStatusCode(middlewareResult),
+          resHeaders: requestContext.res.headers,
+        });
       }
 
       return requestContext;
@@ -319,10 +323,10 @@ class Router {
         requestContext.isBase64Encoded = true;
       }
 
-      requestContext.res = handlerResultToWebResponse(
-        res,
-        requestContext.res.headers
-      );
+      requestContext.res = handlerResultToWebResponse(res, {
+        statusCode: getStatusCode(res, HttpStatusCodes.INTERNAL_SERVER_ERROR),
+        resHeaders: requestContext.res.headers,
+      });
 
       return requestContext;
     }

@@ -500,6 +500,28 @@ describe.each([
     });
   });
 
+  it('handles returning an array from the error handler', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.errorHandler(BadRequestError, async () => ['error1', 'error2']);
+
+    app.get('/test', () => {
+      throw new BadRequestError('test error');
+    });
+
+    // Act
+    const result = await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      body: JSON.stringify(['error1', 'error2']),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
+
   it('handles throwing a built in NotFound error from the error handler', async () => {
     // Prepare
     const app = new Router();

@@ -1,11 +1,4 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type {
-  APIGatewayProxyEvent,
-  APIGatewayProxyEventV2,
-  APIGatewayProxyResult,
-  APIGatewayProxyStructuredResultV2,
-  Context,
-} from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   BadRequestError,
@@ -17,98 +10,16 @@ import {
 } from '../../../../src/rest/index.js';
 import type { RequestContext } from '../../../../src/types/rest.js';
 import {
+  createHandler,
+  createHandlerWithScope,
+  createStreamHandler,
   createTestEvent,
   createTestEventV2,
+  createTestLambdaClass,
   createTrackingMiddleware,
   MockResponseStream,
   parseStreamOutput,
 } from '../helpers.js';
-
-const createHandler = (app: Router) => {
-  function handler(
-    event: APIGatewayProxyEvent,
-    context: Context
-  ): Promise<APIGatewayProxyResult>;
-  function handler(
-    event: APIGatewayProxyEventV2,
-    context: Context
-  ): Promise<APIGatewayProxyStructuredResultV2>;
-  function handler(
-    event: unknown,
-    context: Context
-  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
-  function handler(event: unknown, context: Context) {
-    return app.resolve(event, context);
-  }
-  return handler;
-};
-
-const createHandlerWithScope = (app: Router, scope: unknown) => {
-  function handler(
-    event: APIGatewayProxyEvent,
-    context: Context
-  ): Promise<APIGatewayProxyResult>;
-  function handler(
-    event: APIGatewayProxyEventV2,
-    context: Context
-  ): Promise<APIGatewayProxyStructuredResultV2>;
-  function handler(
-    event: unknown,
-    context: Context
-  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
-  function handler(event: unknown, context: Context) {
-    return app.resolve(event, context, { scope });
-  }
-  return handler;
-};
-
-const createStreamHandler =
-  (app: Router, scope: unknown) =>
-  (event: unknown, _context: Context, responseStream: MockResponseStream) =>
-    app.resolveStream(event, _context, { scope, responseStream });
-
-const createTestLambdaClass = (app: Router, expectedResponse: unknown) => {
-  class Lambda {
-    @app.get('/test')
-    public getTest() {
-      return expectedResponse;
-    }
-
-    @app.post('/test')
-    public postTest() {
-      return expectedResponse;
-    }
-
-    @app.put('/test')
-    public putTest() {
-      return expectedResponse;
-    }
-
-    @app.patch('/test')
-    public patchTest() {
-      return expectedResponse;
-    }
-
-    @app.delete('/test')
-    public deleteTest() {
-      return expectedResponse;
-    }
-
-    @app.head('/test')
-    public headTest() {
-      return expectedResponse;
-    }
-
-    @app.options('/test')
-    public optionsTest() {
-      return expectedResponse;
-    }
-
-    public handler = createHandler(app);
-  }
-
-  return Lambda;
-};
 
 describe.each([
   { version: 'V1', createEvent: createTestEvent },

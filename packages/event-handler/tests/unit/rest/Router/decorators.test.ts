@@ -67,6 +67,49 @@ const createStreamHandler =
   (event: unknown, _context: Context, responseStream: MockResponseStream) =>
     app.resolveStream(event, _context, { scope, responseStream });
 
+const createTestLambdaClass = (app: Router, expectedResponse: unknown) => {
+  class Lambda {
+    @app.get('/test')
+    public getTest() {
+      return expectedResponse;
+    }
+
+    @app.post('/test')
+    public postTest() {
+      return expectedResponse;
+    }
+
+    @app.put('/test')
+    public putTest() {
+      return expectedResponse;
+    }
+
+    @app.patch('/test')
+    public patchTest() {
+      return expectedResponse;
+    }
+
+    @app.delete('/test')
+    public deleteTest() {
+      return expectedResponse;
+    }
+
+    @app.head('/test')
+    public headTest() {
+      return expectedResponse;
+    }
+
+    @app.options('/test')
+    public optionsTest() {
+      return expectedResponse;
+    }
+
+    public handler = createHandler(app);
+  }
+
+  return Lambda;
+};
+
 describe.each([
   { version: 'V1', createEvent: createTestEvent },
   { version: 'V2', createEvent: createTestEventV2 },
@@ -87,46 +130,7 @@ describe.each([
         // Prepare
         const app = new Router();
         const expected = { result: `${verb}-test` };
-
-        class Lambda {
-          @app.get('/test')
-          public getTest() {
-            return expected;
-          }
-
-          @app.post('/test')
-          public postTest() {
-            return expected;
-          }
-
-          @app.put('/test')
-          public putTest() {
-            return expected;
-          }
-
-          @app.patch('/test')
-          public patchTest() {
-            return expected;
-          }
-
-          @app.delete('/test')
-          public deleteTest() {
-            return expected;
-          }
-
-          @app.head('/test')
-          public headTest() {
-            return expected;
-          }
-
-          @app.options('/test')
-          public optionsTest() {
-            return expected;
-          }
-
-          public handler = createHandler(app);
-        }
-
+        const Lambda = createTestLambdaClass(app, expected);
         const lambda = new Lambda();
 
         // Act
@@ -152,52 +156,15 @@ describe.each([
           { id: 1, result: `${verb}-test-1` },
           { id: 2, result: `${verb}-test-2` },
         ];
-
-        class Lambda {
-          @app.get('/test')
-          public getTest() {
-            return expected;
-          }
-
-          @app.post('/test')
-          public postTest() {
-            return expected;
-          }
-
-          @app.put('/test')
-          public putTest() {
-            return expected;
-          }
-
-          @app.patch('/test')
-          public patchTest() {
-            return expected;
-          }
-
-          @app.delete('/test')
-          public deleteTest() {
-            return expected;
-          }
-
-          @app.head('/test')
-          public headTest() {
-            return expected;
-          }
-
-          @app.options('/test')
-          public optionsTest() {
-            return expected;
-          }
-
-          public handler = createHandler(app);
-        }
-
+        const Lambda = createTestLambdaClass(app, expected);
         const lambda = new Lambda();
+
         // Act
         const actual = await lambda.handler(
           createTestEvent('/test', method),
           context
         );
+
         // Assess
         expect(actual.statusCode).toBe(200);
         expect(actual.body).toBe(JSON.stringify(expected));

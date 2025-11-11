@@ -97,13 +97,9 @@ describe('Validation Middleware', () => {
     // Prepare
     const pathSchema = z.object({ id: z.string() });
     const validateSpy = vi.spyOn(pathSchema['~standard'], 'validate');
-    app.get(
-      '/users/:id',
-      async (reqCtx) => ({ id: reqCtx.params.id }),
-      {
-        validation: { req: { path: pathSchema } },
-      }
-    );
+    app.get('/users/:id', async (reqCtx) => ({ id: reqCtx.params.id }), {
+      validation: { req: { path: pathSchema } },
+    });
     const event = {
       ...createTestEvent('/users/123', 'GET'),
       pathParameters: { id: '123' },
@@ -154,7 +150,10 @@ describe('Validation Middleware', () => {
 
     // Assess
     expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({ page: '1', limit: '10' });
+    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({
+      page: '1',
+      limit: '10',
+    });
   });
 
   it('returns 422 on query parameters validation failure', async () => {
@@ -218,7 +217,9 @@ describe('Validation Middleware', () => {
     const unvalidatedResult = await app.resolve(unvalidatedEvent, context);
 
     // Assess
-    expect(validatedResult.statusCode).toBe(HttpStatusCodes.UNPROCESSABLE_ENTITY);
+    expect(validatedResult.statusCode).toBe(
+      HttpStatusCodes.UNPROCESSABLE_ENTITY
+    );
     expect(unvalidatedResult.statusCode).toBe(HttpStatusCodes.OK);
     expect(validateSpy).toHaveBeenCalledExactlyOnceWith({ invalid: 'data' });
   });
@@ -262,7 +263,10 @@ describe('Validation Middleware', () => {
 
     // Assess
     expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({ id: '123', name: 'John' });
+    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({
+      id: '123',
+      name: 'John',
+    });
   });
 
   it('validates response headers successfully', async () => {
@@ -286,13 +290,17 @@ describe('Validation Middleware', () => {
     // Prepare
     const responseSchema = z.string();
     const validateSpy = vi.spyOn(responseSchema['~standard'], 'validate');
-    app.get('/text', () => {
-      return new Response('plain text', {
-        headers: { 'content-type': 'text/plain' },
-      });
-    }, {
-      validation: { res: { body: responseSchema } },
-    });
+    app.get(
+      '/text',
+      () => {
+        return new Response('plain text', {
+          headers: { 'content-type': 'text/plain' },
+        });
+      },
+      {
+        validation: { res: { body: responseSchema } },
+      }
+    );
     const event = createTestEvent('/text', 'GET');
 
     // Act
@@ -330,7 +338,10 @@ describe('Validation Middleware', () => {
     const requestSchema = z.object({ name: z.string() });
     const responseSchema = z.object({ id: z.string(), name: z.string() });
     const requestValidateSpy = vi.spyOn(requestSchema['~standard'], 'validate');
-    const responseValidateSpy = vi.spyOn(responseSchema['~standard'], 'validate');
+    const responseValidateSpy = vi.spyOn(
+      responseSchema['~standard'],
+      'validate'
+    );
     app.post('/users', async () => ({ id: '123', name: 'John' }), {
       validation: {
         req: { body: requestSchema },
@@ -349,7 +360,12 @@ describe('Validation Middleware', () => {
 
     // Assess
     expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(requestValidateSpy).toHaveBeenCalledExactlyOnceWith({ name: 'John' });
-    expect(responseValidateSpy).toHaveBeenCalledExactlyOnceWith({ id: '123', name: 'John' });
+    expect(requestValidateSpy).toHaveBeenCalledExactlyOnceWith({
+      name: 'John',
+    });
+    expect(responseValidateSpy).toHaveBeenCalledExactlyOnceWith({
+      id: '123',
+      name: 'John',
+    });
   });
 });

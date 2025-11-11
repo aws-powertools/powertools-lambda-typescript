@@ -51,6 +51,7 @@ import {
   MethodNotAllowedError,
   NotFoundError,
 } from './errors.js';
+import { createValidationMiddleware } from './middleware/validation.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 import {
@@ -450,138 +451,12 @@ class Router {
 
     // Create validation middleware if validation config provided
     const allMiddleware = validation
-      ? [...middleware, this.#createValidationMiddleware(validation)]
+      ? [...middleware, createValidationMiddleware(validation)]
       : middleware;
 
     for (const method of methods) {
       this.routeRegistry.register(
         new Route(method, resolvedPath, handler, allMiddleware)
-      );
-    }
-  }
-
-  #createValidationMiddleware(
-    config: RestRouteOptions['validation']
-  ): Middleware {
-    if (!config) return async ({ next }) => next();
-
-    const reqSchemas = config.req;
-    const resSchemas = config.res;
-
-    return async ({ reqCtx, next }) => {
-      // Validate request
-      if (reqSchemas) {
-        if (reqSchemas.body) {
-          // Use event.body which is the raw string, parse if JSON
-          let bodyData: unknown = reqCtx.event.body;
-          const contentType = reqCtx.req.headers.get('content-type');
-          if (
-            contentType?.includes('application/json') &&
-            typeof bodyData === 'string'
-          ) {
-            try {
-              bodyData = JSON.parse(bodyData);
-            } catch {
-              // If parsing fails, validate the raw string
-            }
-          }
-          await this.#validateComponent(
-            reqSchemas.body,
-            bodyData,
-            'body',
-            true
-          );
-        }
-        if (reqSchemas.headers) {
-          const headers = Object.fromEntries(reqCtx.req.headers.entries());
-          await this.#validateComponent(
-            reqSchemas.headers,
-            headers,
-            'headers',
-            true
-          );
-        }
-        if (reqSchemas.path) {
-          await this.#validateComponent(
-            reqSchemas.path,
-            reqCtx.params,
-            'path',
-            true
-          );
-        }
-        if (reqSchemas.query) {
-          const query = Object.fromEntries(
-            new URL(reqCtx.req.url).searchParams.entries()
-          );
-          await this.#validateComponent(reqSchemas.query, query, 'query', true);
-        }
-      }
-
-      // Execute handler
-      const response = await next();
-
-      // Validate response
-      if (resSchemas && response && typeof response === 'object') {
-        if (resSchemas.body && 'body' in response) {
-          await this.#validateComponent(
-            resSchemas.body,
-            response.body,
-            'body',
-            false
-          );
-        }
-        if (resSchemas.headers && 'headers' in response) {
-          const headers =
-            response.headers instanceof Headers
-              ? Object.fromEntries(response.headers.entries())
-              : response.headers;
-          await this.#validateComponent(
-            resSchemas.headers,
-            headers,
-            'headers',
-            false
-          );
-        }
-      }
-
-      return response;
-    };
-  }
-
-  async #validateComponent(
-    schema: {
-      '~standard': {
-        version: 1;
-        vendor: string;
-        validate: (
-          value: unknown
-        ) => Promise<{ value: unknown }> | { value: unknown };
-      };
-    },
-    data: unknown,
-    component: 'body' | 'headers' | 'path' | 'query',
-    isRequest: boolean
-  ): Promise<void> {
-    try {
-      const result = await schema['~standard'].validate(data);
-      if (!('value' in result)) {
-        throw new Error('Validation failed');
-      }
-    } catch (error) {
-      const message = `Validation failed for ${isRequest ? 'request' : 'response'} ${component}`;
-      if (isRequest) {
-        const { RequestValidationError } = await import('./errors.js');
-        throw new RequestValidationError(
-          message,
-          component,
-          error instanceof Error ? error : undefined
-        );
-      }
-      const { ResponseValidationError } = await import('./errors.js');
-      throw new ResponseValidationError(
-        message,
-        component as 'body' | 'headers',
-        error instanceof Error ? error : undefined
       );
     }
   }

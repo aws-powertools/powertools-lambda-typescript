@@ -1,5 +1,4 @@
 import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
-import { validation } from '@aws-lambda-powertools/event-handler/experimental-rest/middleware';
 import { z } from 'zod';
 
 const app = new Router();
@@ -11,22 +10,16 @@ const listUsersQuerySchema = z.object({
   sort: z.enum(['name', 'email', 'createdAt']).optional(),
 });
 
-app.get('/users', {
-  middleware: [validation({ req: { query: listUsersQuerySchema } })],
-}, async (reqCtx) => {
-  const url = new URL(reqCtx.req.url);
-  const query = Object.fromEntries(url.searchParams.entries());
-  // query is typed with validated schema
-  
+app.get('/users', async () => {
   return {
-    body: {
-      users: [],
-      pagination: {
-        page: query.page || 1,
-        limit: query.limit || 10,
-      },
+    users: [],
+    pagination: {
+      page: 1,
+      limit: 10,
     },
   };
+}, {
+  validation: { req: { query: listUsersQuerySchema } },
 });
 
 // Validate headers
@@ -35,15 +28,23 @@ const apiKeyHeaderSchema = z.object({
   'content-type': z.string().optional(),
 });
 
-app.post('/protected', {
-  middleware: [validation({ req: { headers: apiKeyHeaderSchema } })],
-}, async () => {
-  return { statusCode: 200, body: 'Access granted' };
+app.post('/protected', async () => {
+  return { message: 'Access granted' };
+}, {
+  validation: { req: { headers: apiKeyHeaderSchema } },
 });
 
 // Validate multiple components
-app.post('/users/:id/posts', {
-  middleware: [validation({
+app.post('/users/:id/posts', async (reqCtx) => {
+  const { id } = reqCtx.params;
+  
+  return {
+    postId: '456',
+    userId: id,
+    title: 'New Post',
+  };
+}, {
+  validation: {
     req: {
       path: z.object({ id: z.string().uuid() }),
       body: z.object({
@@ -54,19 +55,7 @@ app.post('/users/:id/posts', {
         'content-type': z.literal('application/json'),
       }),
     },
-  })],
-}, async (reqCtx) => {
-  const { id } = reqCtx.params;
-  const body = reqCtx.req.body;
-  
-  return {
-    statusCode: 201,
-    body: {
-      postId: '456',
-      userId: id,
-      title: body.title,
-    },
-  };
+  },
 });
 
 export const handler = app.resolve.bind(app);

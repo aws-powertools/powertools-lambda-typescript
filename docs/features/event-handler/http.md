@@ -182,11 +182,42 @@ If you prefer to use the decorator syntax, you can use the same methods on a cla
 
 ### Data validation
 
-!!! note "Coming soon"
+You can validate incoming requests and outgoing responses using any schema library that implements the [Standard Schema](https://standardschema.dev){target="_blank"} specification, such as Zod, Valibot, or ArkType.
 
-We plan to add built-in support for request and response validation using [Standard Schema](https://standardschema.dev){target="_blank"} in a future release. For the time being, you can use any validation library of your choice in your route handlers or middleware.
+The validation feature automatically validates request components (body, headers, path parameters, query parameters) before your handler executes, and optionally validates responses after your handler completes.
 
-Please [check this issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4516) for more details and examples, and add 👍 if you would like us to prioritize it.
+#### Basic validation
+
+Use the `validation` option when defining routes to specify which components to validate:
+
+=== "validation_basic.ts"
+
+    ```typescript hl_lines="17 20-22 26-31"
+    --8<-- "examples/snippets/event-handler/rest/validation_basic.ts"
+    ```
+
+#### Validating multiple components
+
+You can validate multiple request components simultaneously:
+
+=== "validation_query_headers.ts"
+
+    ```typescript hl_lines="40-51"
+    --8<-- "examples/snippets/event-handler/rest/validation_query_headers.ts"
+    ```
+
+#### Error handling
+
+Validation errors are automatically handled by the router:
+
+- **Request validation failures** return HTTP 422 (Unprocessable Entity) with `RequestValidationError`
+- **Response validation failures** return HTTP 500 (Internal Server Error) with `ResponseValidationError`
+
+=== "validation_error_handling.ts"
+
+    ```typescript hl_lines="6-10"
+    --8<-- "examples/snippets/event-handler/rest/validation_error_handling.ts"
+    ```
 
 ### Accessing request details
 

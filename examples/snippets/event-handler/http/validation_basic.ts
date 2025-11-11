@@ -1,5 +1,4 @@
 import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
-import { validation } from '@aws-lambda-powertools/event-handler/experimental-rest/middleware';
 import { z } from 'zod';
 
 const app = new Router();
@@ -19,40 +18,32 @@ const userResponseSchema = z.object({
 });
 
 // Validate request body
-app.post('/users', {
-  middleware: [validation({ req: { body: createUserSchema } })],
-}, async (reqCtx) => {
-  const body = reqCtx.req.body;
-  // body is typed as { name: string; email: string; age?: number }
-  
+app.post('/users', async () => {
   return {
-    statusCode: 201,
-    body: {
-      id: '123',
-      name: body.name,
-      email: body.email,
-      createdAt: new Date().toISOString(),
-    },
+    id: '123',
+    name: 'John Doe',
+    email: 'john@example.com',
+    createdAt: new Date().toISOString(),
   };
+}, {
+  validation: { req: { body: createUserSchema } },
 });
 
 // Validate both request and response
-app.get('/users/:id', {
-  middleware: [validation({
-    req: { path: z.object({ id: z.string().uuid() }) },
-    res: { body: userResponseSchema },
-  })],
-}, async (reqCtx) => {
+app.get('/users/:id', async (reqCtx) => {
   const { id } = reqCtx.params;
   
   return {
-    body: {
-      id,
-      name: 'John Doe',
-      email: 'john@example.com',
-      createdAt: new Date().toISOString(),
-    },
+    id,
+    name: 'John Doe',
+    email: 'john@example.com',
+    createdAt: new Date().toISOString(),
   };
+}, {
+  validation: {
+    req: { path: z.object({ id: z.string().uuid() }) },
+    res: { body: userResponseSchema },
+  },
 });
 
 export const handler = app.resolve.bind(app);

@@ -1,24 +1,7 @@
-import { Router, RequestValidationError } from '@aws-lambda-powertools/event-handler/experimental-rest';
-import { validation } from '@aws-lambda-powertools/event-handler/experimental-rest/middleware';
+import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
 import { z } from 'zod';
 
 const app = new Router();
-
-// Custom error handler for validation errors
-app.onError(RequestValidationError, (error) => {
-  return {
-    statusCode: 422,
-    body: {
-      error: 'Validation Failed',
-      message: error.message,
-      component: error.component,
-      // In development, include detailed validation errors
-      ...(process.env.POWERTOOLS_DEV === 'true' && {
-        details: error.details,
-      }),
-    },
-  };
-});
 
 const userSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -26,15 +9,15 @@ const userSchema = z.object({
   age: z.number().int().positive('Age must be positive'),
 });
 
-app.post('/users', {
-  middleware: [validation({ req: { body: userSchema } })],
-}, async (reqCtx) => {
-  const body = reqCtx.req.body;
-  
+app.post('/users', async () => {
   return {
-    statusCode: 201,
-    body: { id: '123', ...body },
+    id: '123',
+    name: 'John Doe',
+    email: 'john@example.com',
+    age: 30,
   };
+}, {
+  validation: { req: { body: userSchema } },
 });
 
 export const handler = app.resolve.bind(app);

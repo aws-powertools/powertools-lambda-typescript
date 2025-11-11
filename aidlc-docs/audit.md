@@ -1537,3 +1537,60 @@ app.post('/users', handler, {
 **Status**: Complete - all tests use spies to verify validation execution
 
 ---
+
+## Update Examples and Documentation
+**Timestamp**: 2025-11-11T20:52:47.478Z
+**User Input**: "Update the changes made in examples/snippets/event-handler/rest with the latest. Update the docs in docs/features/event-handler/rest.md"
+**AI Response**: Updating examples and documentation for validation feature
+**Context**: Adding validation examples and documentation
+
+---
+
+## Examples and Documentation Updated
+**Timestamp**: 2025-11-11T20:55:00.000Z
+**AI Response**: Successfully updated examples and documentation for validation feature
+**Context**: Updated to use new validation option API instead of middleware
+
+**Changes Made**:
+1. ✅ Updated `validation_basic.ts` - Use validation option instead of middleware
+2. ✅ Updated `validation_query_headers.ts` - Use validation option
+3. ✅ Updated `validation_error_handling.ts` - Use validation option
+4. ✅ Updated `validation_README.md` - Document new API and configuration
+5. ✅ Updated `docs/features/event-handler/rest.md` - Replace "coming soon" with full documentation
+6. ✅ Added validation section with examples and supported libraries
+
+**Documentation Sections Added**:
+- Basic validation with Zod
+- Validating multiple components
+- Error handling
+- Supported schema libraries table
+- Development mode details
+
+**Status**: Complete - examples and documentation updated with new validation API
+
+---
+
+## Fix Examples - Use Experimental Import
+**Timestamp**: 2025-11-11T21:02:08.057Z
+**User Input**: "Still use '@aws-lambda-powertools/event-handler/experimental-rest' for imports. Remove the validation_README.md file, the snippets folder only contains code snippets. Remove the part about customizing error using `onError`, it doesn't exist. Remove the part about supported schema libraries, development mode."
+**AI Response**: Fixing examples to use experimental import and removing unnecessary content
+**Context**: Simplifying examples and documentation
+
+---
+
+## Examples and Docs Fixed
+**Timestamp**: 2025-11-11T21:03:00.000Z
+**AI Response**: Fixed examples to use experimental import and simplified documentation
+**Context**: Removed unnecessary content, kept only code snippets
+
+**Changes Made**:
+1. ✅ Updated all examples to use `@aws-lambda-powertools/event-handler/experimental-rest`
+2. ✅ Removed `validation_README.md` file
+3. ✅ Removed `onError` customization section from docs (doesn't exist)
+4. ✅ Removed supported schema libraries table from docs
+5. ✅ Removed development mode section from docs
+6. ✅ Simplified validation_error_handling.ts to just show schema usage
+
+**Status**: Complete - examples use experimental import, documentation simplified
+
+---

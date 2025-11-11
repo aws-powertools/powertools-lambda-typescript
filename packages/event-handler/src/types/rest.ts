@@ -3,6 +3,7 @@ import type {
   GenericLogger,
   JSONObject,
 } from '@aws-lambda-powertools/commons/types';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
@@ -216,35 +217,21 @@ type CompressionOptions = {
 };
 
 /**
- * Standard Schema interface for validation
- * @see https://github.com/standard-schema/standard-schema
- */
-interface StandardSchema<Input = unknown, Output = Input> {
-  '~standard': {
-    version: 1;
-    vendor: string;
-    validate: (
-      value: unknown
-    ) => Promise<{ value: Output }> | { value: Output };
-  };
-}
-
-/**
  * Configuration for request validation
  */
 type RequestValidationConfig<T = unknown> = {
-  body?: StandardSchema<unknown, T>;
-  headers?: StandardSchema<unknown, Record<string, string>>;
-  path?: StandardSchema<unknown, Record<string, string>>;
-  query?: StandardSchema<unknown, Record<string, string>>;
+  body?: StandardSchemaV1<unknown, T>;
+  headers?: StandardSchemaV1<unknown, Record<string, string>>;
+  path?: StandardSchemaV1<unknown, Record<string, string>>;
+  query?: StandardSchemaV1<unknown, Record<string, string>>;
 };
 
 /**
  * Configuration for response validation
  */
 type ResponseValidationConfig<T = unknown> = {
-  body?: StandardSchema<unknown, T>;
-  headers?: StandardSchema<unknown, Record<string, string>>;
+  body?: StandardSchemaV1<unknown, T>;
+  headers?: StandardSchemaV1<unknown, Record<string, string>>;
 };
 
 /**
@@ -289,7 +276,6 @@ export type {
   ValidationResult,
   CompressionOptions,
   NextFunction,
-  StandardSchema,
   RequestValidationConfig,
   ResponseValidationConfig,
   ValidationConfig,

@@ -461,7 +461,7 @@ class Router {
         ) {
           return body;
         }
-        return this.#errorBodyToResponse(body, error);
+        return this.#errorBodyToWebResponse(body, error);
       } catch (handlerError) {
         if (handlerError instanceof HttpError) {
           return await this.handleError(handlerError, options);
@@ -490,7 +490,7 @@ class Router {
    * @param body - The response body returned by the error handler, of type JSONValue
    * @param error - The Error object associated with the response
    */
-  #errorBodyToResponse(body: JSONValue, error: Error): Response {
+  #errorBodyToWebResponse(body: JSONValue, error: Error): Response {
     let status: number = HttpStatusCodes.INTERNAL_SERVER_ERROR;
 
     if (isRecord(body)) {

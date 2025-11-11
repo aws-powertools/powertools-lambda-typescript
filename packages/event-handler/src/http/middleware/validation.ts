@@ -53,21 +53,21 @@ export const createValidationMiddleware = (
     // Validate response
     if (resSchemas) {
       const response = reqCtx.res;
-      
+
       if (resSchemas.body) {
         const clonedResponse = response.clone();
         const contentType = response.headers.get('content-type');
-        
+
         let bodyData: unknown;
         if (contentType?.includes('application/json')) {
           bodyData = await clonedResponse.json();
         } else {
           bodyData = await clonedResponse.text();
         }
-        
+
         await validateComponent(resSchemas.body, bodyData, 'body', false);
       }
-      
+
       if (resSchemas.headers) {
         const headers = Object.fromEntries(response.headers.entries());
         await validateComponent(resSchemas.headers, headers, 'headers', false);
@@ -83,11 +83,11 @@ async function validateComponent(
   isRequest: boolean
 ): Promise<void> {
   const result = await schema['~standard'].validate(data);
-  
+
   if ('issues' in result) {
     const message = `Validation failed for ${isRequest ? 'request' : 'response'} ${component}`;
     const error = new Error('Validation failed');
-    
+
     if (isRequest) {
       throw new RequestValidationError(message, component, error);
     }

@@ -18,32 +18,40 @@ const userResponseSchema = z.object({
 });
 
 // Validate request body
-app.post('/users', async () => {
-  return {
-    id: '123',
-    name: 'John Doe',
-    email: 'john@example.com',
-    createdAt: new Date().toISOString(),
-  };
-}, {
-  validation: { req: { body: createUserSchema } },
-});
+app.post(
+  '/users',
+  async () => {
+    return {
+      id: '123',
+      name: 'John Doe',
+      email: 'john@example.com',
+      createdAt: new Date().toISOString(),
+    };
+  },
+  {
+    validation: { req: { body: createUserSchema } },
+  }
+);
 
 // Validate both request and response
-app.get('/users/:id', async (reqCtx) => {
-  const { id } = reqCtx.params;
-  
-  return {
-    id,
-    name: 'John Doe',
-    email: 'john@example.com',
-    createdAt: new Date().toISOString(),
-  };
-}, {
-  validation: {
-    req: { path: z.object({ id: z.string().uuid() }) },
-    res: { body: userResponseSchema },
+app.get(
+  '/users/:id',
+  async (reqCtx) => {
+    const { id } = reqCtx.params;
+
+    return {
+      id,
+      name: 'John Doe',
+      email: 'john@example.com',
+      createdAt: new Date().toISOString(),
+    };
   },
-});
+  {
+    validation: {
+      req: { path: z.object({ id: z.string().uuid() }) },
+      res: { body: userResponseSchema },
+    },
+  }
+);
 
 export const handler = app.resolve.bind(app);

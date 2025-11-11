@@ -12,6 +12,7 @@ import {
   createNoNextMiddleware,
   createReturningMiddleware,
   createTestEvent,
+  createTestEventV2,
   createThrowingMiddleware,
   createTrackingMiddleware,
 } from '../helpers.js';
@@ -595,8 +596,8 @@ describe('Class: Router - Middleware', () => {
 
       // Assess
       expect(result.statusCode).toBe(200);
-      expect(result.isBase64Encoded).toBe(true);
-      expect(result.body).toBe(Buffer.from(testData).toString('base64'));
+      expect(result.isBase64Encoded).toBe(false);
+      expect(result.body).toEqual(testData);
     });
 
     it('handles middleware returning ExtendedAPIGatewayProxyResult with web stream body', async () => {
@@ -625,8 +626,34 @@ describe('Class: Router - Middleware', () => {
 
       // Assess
       expect(result.statusCode).toBe(200);
-      expect(result.isBase64Encoded).toBe(true);
-      expect(result.body).toBe(Buffer.from(testData).toString('base64'));
+      expect(result.isBase64Encoded).toBe(false);
+      expect(result.body).toEqual(testData);
+    });
+
+    it('handles middleware returning v2 proxy event with cookies', async () => {
+      // Prepare
+      const app = new Router();
+
+      app.use(async () => ({
+        statusCode: 200,
+        body: JSON.stringify({ message: 'middleware response' }),
+        cookies: ['session=abc123', 'theme=dark'],
+      }));
+
+      app.get('/test', () => ({ success: true }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEventV2('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.body).toBe(
+        JSON.stringify({ message: 'middleware response' })
+      );
+      expect(result.cookies).toEqual(['session=abc123', 'theme=dark']);
     });
   });
 

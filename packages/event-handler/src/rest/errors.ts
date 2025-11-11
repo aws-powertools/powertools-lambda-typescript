@@ -172,6 +172,19 @@ class ServiceUnavailableError extends HttpError {
     this.name = 'ServiceUnavailableError';
   }
 }
+class InvalidEventError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = 'InvalidEventError';
+  }
+}
+
+class InvalidHttpMethodError extends Error {
+  constructor(method: string) {
+    super(`HTTP method ${method} is not supported.`);
+    this.name = 'InvalidEventError';
+  }
+}
 
 class RequestValidationError extends HttpError {
   readonly statusCode = HttpStatusCodes.UNPROCESSABLE_ENTITY;
@@ -219,6 +232,8 @@ export {
   BadRequestError,
   ForbiddenError,
   InternalServerError,
+  InvalidEventError,
+  InvalidHttpMethodError,
   MethodNotAllowedError,
   NotFoundError,
   ParameterValidationError,

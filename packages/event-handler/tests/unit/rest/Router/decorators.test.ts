@@ -1,5 +1,4 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { Context } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import {
   BadRequestError,
@@ -11,91 +10,79 @@ import {
 } from '../../../../src/rest/index.js';
 import type { RequestContext } from '../../../../src/types/rest.js';
 import {
+  createHandler,
+  createHandlerWithScope,
+  createStreamHandler,
   createTestEvent,
+  createTestEventV2,
+  createTestLambdaClass,
   createTrackingMiddleware,
   MockResponseStream,
   parseStreamOutput,
 } from '../helpers.js';
 
-const createHandler = (app: Router) => (event: unknown, _context: Context) =>
-  app.resolve(event, _context);
-
-const createHandlerWithScope =
-  (app: Router, scope: unknown) => (event: unknown, _context: Context) =>
-    app.resolve(event, _context, { scope });
-
-const createStreamHandler =
-  (app: Router, scope: unknown) =>
-  (event: unknown, _context: Context, responseStream: MockResponseStream) =>
-    app.resolveStream(event, _context, { scope, responseStream });
-
-describe('Class: Router - Decorators', () => {
+describe.each([
+  { version: 'V1', createEvent: createTestEvent },
+  { version: 'V2', createEvent: createTestEventV2 },
+])('Class: Router - Decorators ($version)', ({ createEvent }) => {
   describe('decorators', () => {
-    const app = new Router();
+    const httpMethods = [
+      ['GET', 'get'],
+      ['POST', 'post'],
+      ['PUT', 'put'],
+      ['PATCH', 'patch'],
+      ['DELETE', 'delete'],
+      ['HEAD', 'head'],
+      ['OPTIONS', 'options'],
+    ];
+    it.each(httpMethods)(
+      'routes %s requests with object response',
+      async (method, verb) => {
+        // Prepare
+        const app = new Router();
+        const expected = { result: `${verb}-test` };
+        const Lambda = createTestLambdaClass(app, expected);
+        const lambda = new Lambda();
 
-    class Lambda {
-      @app.get('/test')
-      public getTest() {
-        return { result: 'get-test' };
+        // Act
+        const actual = await lambda.handler(
+          createTestEvent('/test', method),
+          context
+        );
+
+        // Assess
+        expect(actual.statusCode).toBe(200);
+        expect(actual.body).toBe(JSON.stringify(expected));
+        expect(actual.headers?.['content-type']).toBe('application/json');
+        expect(actual.isBase64Encoded).toBe(false);
       }
+    );
 
-      @app.post('/test')
-      public postTest() {
-        return { result: 'post-test' };
+    it.each(httpMethods)(
+      'routes %s requests with array response',
+      async (method, verb) => {
+        // Prepare
+        const app = new Router();
+        const expected = [
+          { id: 1, result: `${verb}-test-1` },
+          { id: 2, result: `${verb}-test-2` },
+        ];
+        const Lambda = createTestLambdaClass(app, expected);
+        const lambda = new Lambda();
+
+        // Act
+        const actual = await lambda.handler(
+          createTestEvent('/test', method),
+          context
+        );
+
+        // Assess
+        expect(actual.statusCode).toBe(200);
+        expect(actual.body).toBe(JSON.stringify(expected));
+        expect(actual.headers?.['content-type']).toBe('application/json');
+        expect(actual.isBase64Encoded).toBe(false);
       }
-
-      @app.put('/test')
-      public putTest() {
-        return { result: 'put-test' };
-      }
-
-      @app.patch('/test')
-      public patchTest() {
-        return { result: 'patch-test' };
-      }
-
-      @app.delete('/test')
-      public deleteTest() {
-        return { result: 'delete-test' };
-      }
-
-      @app.head('/test')
-      public headTest() {
-        return { result: 'head-test' };
-      }
-
-      @app.options('/test')
-      public optionsTest() {
-        return { result: 'options-test' };
-      }
-
-      public handler = createHandler(app);
-    }
-
-    it.each([
-      ['GET', { result: 'get-test' }],
-      ['POST', { result: 'post-test' }],
-      ['PUT', { result: 'put-test' }],
-      ['PATCH', { result: 'patch-test' }],
-      ['DELETE', { result: 'delete-test' }],
-      ['HEAD', { result: 'head-test' }],
-      ['OPTIONS', { result: 'options-test' }],
-    ])('routes %s requests with decorators', async (method, expected) => {
-      // Prepare
-      const lambda = new Lambda();
-      // Act
-      const actual = await lambda.handler(
-        createTestEvent('/test', method),
-        context
-      );
-      // Assess
-      expect(actual).toEqual({
-        statusCode: 200,
-        body: JSON.stringify(expected),
-        headers: { 'content-type': 'application/json' },
-        isBase64Encoded: false,
-      });
-    });
+    );
   });
 
   describe('decorators with middleware', () => {
@@ -124,7 +111,7 @@ describe('Class: Router - Decorators', () => {
       const handler = lambda.handler.bind(lambda);
 
       // Act
-      const result = await handler(createTestEvent('/test', 'GET'), context);
+      const result = await handler(createEvent('/test', 'GET'), context);
 
       // Assess
       expect(executionOrder).toEqual([
@@ -204,7 +191,7 @@ describe('Class: Router - Decorators', () => {
 
         // Act
         const result = await lambda.handler(
-          createTestEvent('/test', method),
+          createEvent('/test', method),
           context
         );
 
@@ -249,10 +236,7 @@ describe('Class: Router - Decorators', () => {
       const lambda = new Lambda();
 
       // Act
-      const result = await lambda.handler(
-        createTestEvent('/test', 'GET'),
-        context
-      );
+      const result = await lambda.handler(createEvent('/test', 'GET'), context);
 
       // Assess
       expect(result).toEqual({
@@ -290,10 +274,7 @@ describe('Class: Router - Decorators', () => {
       const handler = lambda.handler.bind(lambda);
 
       // Act
-      const result = await handler(
-        createTestEvent('/nonexistent', 'GET'),
-        context
-      );
+      const result = await handler(createEvent('/nonexistent', 'GET'), context);
 
       // Assess
       expect(result).toEqual({
@@ -333,10 +314,7 @@ describe('Class: Router - Decorators', () => {
       const lambda = new Lambda();
 
       // Act
-      const result = await lambda.handler(
-        createTestEvent('/test', 'GET'),
-        context
-      );
+      const result = await lambda.handler(createEvent('/test', 'GET'), context);
 
       // Assess
       expect(result).toEqual({
@@ -379,7 +357,7 @@ describe('Class: Router - Decorators', () => {
       const handler = lambda.handler.bind(lambda);
 
       // Act
-      const result = await handler(createTestEvent('/test', 'GET'), context);
+      const result = await handler(createEvent('/test', 'GET'), context);
 
       // Assess
       expect(result).toEqual({
@@ -399,7 +377,7 @@ describe('Class: Router - Decorators', () => {
     it('passes request, event, and context to decorator route handlers', async () => {
       // Prepare
       const app = new Router();
-      const testEvent = createTestEvent('/test', 'GET');
+      const testEvent = createEvent('/test', 'GET');
 
       class Lambda {
         @app.get('/test')
@@ -418,7 +396,7 @@ describe('Class: Router - Decorators', () => {
 
       // Act
       const result = await lambda.handler(testEvent, context);
-      const actual = JSON.parse(result.body);
+      const actual = JSON.parse(result.body ?? '{}');
 
       // Assess
       expect(actual.hasRequest).toBe(true);

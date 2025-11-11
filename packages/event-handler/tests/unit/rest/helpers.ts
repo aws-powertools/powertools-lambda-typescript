@@ -1,4 +1,11 @@
-import type { APIGatewayProxyEvent } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResult,
+  APIGatewayProxyStructuredResultV2,
+  Context,
+} from 'aws-lambda';
+import type { Router } from '../../../src/rest/Router.js';
 import { HttpResponseStream } from '../../../src/rest/utils.js';
 import type { HandlerResponse, Middleware } from '../../../src/types/rest.js';
 
@@ -23,6 +30,37 @@ export const createTestEvent = (
     domainName: 'api.example.com',
   } as APIGatewayProxyEvent['requestContext'],
   resource: '',
+});
+
+export const createTestEventV2 = (
+  rawPath: string,
+  method: string,
+  headers: Record<string, string> = {}
+): APIGatewayProxyEventV2 => ({
+  version: '2.0',
+  routeKey: `${method} ${rawPath}`,
+  rawPath,
+  rawQueryString: '',
+  headers,
+  requestContext: {
+    accountId: '123456789012',
+    apiId: 'api-id',
+    domainName: 'api.example.com',
+    domainPrefix: 'api',
+    http: {
+      method,
+      path: rawPath,
+      protocol: 'HTTP/1.1',
+      sourceIp: '127.0.0.1',
+      userAgent: 'test-agent',
+    },
+    requestId: 'test-request-id',
+    routeKey: `${method} ${rawPath}`,
+    stage: '$default',
+    time: '01/Jan/2024:00:00:00 +0000',
+    timeEpoch: 1704067200000,
+  },
+  isBase64Encoded: false,
 });
 
 export const createTrackingMiddleware = (
@@ -129,3 +167,96 @@ export function parseStreamOutput(chunks: Buffer[]) {
     body: bodyBuffer.toString(),
   };
 }
+
+// Create a handler function from the Router instance
+export const createHandler = (app: Router) => {
+  function handler(
+    event: APIGatewayProxyEvent,
+    context: Context
+  ): Promise<APIGatewayProxyResult>;
+  function handler(
+    event: APIGatewayProxyEventV2,
+    context: Context
+  ): Promise<APIGatewayProxyStructuredResultV2>;
+  function handler(
+    event: unknown,
+    context: Context
+  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
+  function handler(event: unknown, context: Context) {
+    return app.resolve(event, context);
+  }
+  return handler;
+};
+
+// Create a handler function from the Router instance with a custom scope
+export const createHandlerWithScope = (app: Router, scope: unknown) => {
+  function handler(
+    event: APIGatewayProxyEvent,
+    context: Context
+  ): Promise<APIGatewayProxyResult>;
+  function handler(
+    event: APIGatewayProxyEventV2,
+    context: Context
+  ): Promise<APIGatewayProxyStructuredResultV2>;
+  function handler(
+    event: unknown,
+    context: Context
+  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
+  function handler(event: unknown, context: Context) {
+    return app.resolve(event, context, { scope });
+  }
+  return handler;
+};
+
+// Create a stream handler function from the Router instance with a custom scope
+export const createStreamHandler =
+  (app: Router, scope: unknown) =>
+  (event: unknown, _context: Context, responseStream: MockResponseStream) =>
+    app.resolveStream(event, _context, { scope, responseStream });
+
+// Create a test Lambda class with all HTTP method decorators
+export const createTestLambdaClass = (
+  app: Router,
+  expectedResponse: unknown
+) => {
+  class Lambda {
+    @app.get('/test')
+    public getTest() {
+      return expectedResponse;
+    }
+
+    @app.post('/test')
+    public postTest() {
+      return expectedResponse;
+    }
+
+    @app.put('/test')
+    public putTest() {
+      return expectedResponse;
+    }
+
+    @app.patch('/test')
+    public patchTest() {
+      return expectedResponse;
+    }
+
+    @app.delete('/test')
+    public deleteTest() {
+      return expectedResponse;
+    }
+
+    @app.head('/test')
+    public headTest() {
+      return expectedResponse;
+    }
+
+    @app.options('/test')
+    public optionsTest() {
+      return expectedResponse;
+    }
+
+    public handler = createHandler(app);
+  }
+
+  return Lambda;
+};

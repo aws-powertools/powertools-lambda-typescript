@@ -1,7 +1,7 @@
 import type { Readable } from 'node:stream';
 import type {
   GenericLogger,
-  JSONObject,
+  JSONValue,
 } from '@aws-lambda-powertools/commons/types';
 import type {
   APIGatewayProxyEvent,
@@ -81,7 +81,7 @@ type ExtendedAPIGatewayProxyResult = Omit<APIGatewayProxyResult, 'body'> & {
 
 type HandlerResponse =
   | Response
-  | JSONObject
+  | JSONValue
   | ExtendedAPIGatewayProxyResult
   | BinaryResult;
 

@@ -72,69 +72,136 @@ describe.each([
   { version: 'V2', createEvent: createTestEventV2 },
 ])('Class: Router - Decorators ($version)', ({ createEvent }) => {
   describe('decorators', () => {
-    const app = new Router();
-
-    class Lambda {
-      @app.get('/test')
-      public getTest() {
-        return { result: 'get-test' };
-      }
-
-      @app.post('/test')
-      public postTest() {
-        return { result: 'post-test' };
-      }
-
-      @app.put('/test')
-      public putTest() {
-        return { result: 'put-test' };
-      }
-
-      @app.patch('/test')
-      public patchTest() {
-        return { result: 'patch-test' };
-      }
-
-      @app.delete('/test')
-      public deleteTest() {
-        return { result: 'delete-test' };
-      }
-
-      @app.head('/test')
-      public headTest() {
-        return { result: 'head-test' };
-      }
-
-      @app.options('/test')
-      public optionsTest() {
-        return { result: 'options-test' };
-      }
-
-      public handler = createHandler(app);
-    }
-
-    it.each([
-      ['GET', { result: 'get-test' }],
-      ['POST', { result: 'post-test' }],
-      ['PUT', { result: 'put-test' }],
-      ['PATCH', { result: 'patch-test' }],
-      ['DELETE', { result: 'delete-test' }],
-      ['HEAD', { result: 'head-test' }],
-      ['OPTIONS', { result: 'options-test' }],
-    ])('routes %s requests with decorators', async (method, expected) => {
+    const httpMethods = [
+      ['GET', 'get'],
+      ['POST', 'post'],
+      ['PUT', 'put'],
+      ['PATCH', 'patch'],
+      ['DELETE', 'delete'],
+      ['HEAD', 'head'],
+      ['OPTIONS', 'options'],
+    ];
+    it.each(httpMethods)('routes %s requests', async (method, verb) => {
       // Prepare
+      const app = new Router();
+      const expected = { result: `${verb}-test` };
+
+      class Lambda {
+        @app.get('/test')
+        public getTest() {
+          return expected;
+        }
+
+        @app.post('/test')
+        public postTest() {
+          return expected;
+        }
+
+        @app.put('/test')
+        public putTest() {
+          return expected;
+        }
+
+        @app.patch('/test')
+        public patchTest() {
+          return expected;
+        }
+
+        @app.delete('/test')
+        public deleteTest() {
+          return expected;
+        }
+
+        @app.head('/test')
+        public headTest() {
+          return expected;
+        }
+
+        @app.options('/test')
+        public optionsTest() {
+          return expected;
+        }
+
+        public handler = createHandler(app);
+      }
+
       const lambda = new Lambda();
+
       // Act
       const actual = await lambda.handler(
-        createEvent('/test', method),
+        createTestEvent('/test', method),
         context
       );
+
       // Assess
       expect(actual.statusCode).toBe(200);
       expect(actual.body).toBe(JSON.stringify(expected));
       expect(actual.headers?.['content-type']).toBe('application/json');
       expect(actual.isBase64Encoded).toBe(false);
     });
+
+    it.each(httpMethods)(
+      'routes %s requests with array response',
+      async (method, verb) => {
+        // Prepare
+        const app = new Router();
+        const expected = [
+          { id: 1, result: `${verb}-test-1` },
+          { id: 2, result: `${verb}-test-2` },
+        ];
+
+        class Lambda {
+          @app.get('/test')
+          public getTest() {
+            return expected;
+          }
+
+          @app.post('/test')
+          public postTest() {
+            return expected;
+          }
+
+          @app.put('/test')
+          public putTest() {
+            return expected;
+          }
+
+          @app.patch('/test')
+          public patchTest() {
+            return expected;
+          }
+
+          @app.delete('/test')
+          public deleteTest() {
+            return expected;
+          }
+
+          @app.head('/test')
+          public headTest() {
+            return expected;
+          }
+
+          @app.options('/test')
+          public optionsTest() {
+            return expected;
+          }
+
+          public handler = createHandler(app);
+        }
+
+        const lambda = new Lambda();
+        // Act
+        const actual = await lambda.handler(
+          createTestEvent('/test', method),
+          context
+        );
+        // Assess
+        expect(actual.statusCode).toBe(200);
+        expect(actual.body).toBe(JSON.stringify(expected));
+        expect(actual.headers?.['content-type']).toBe('application/json');
+        expect(actual.isBase64Encoded).toBe(false);
+      }
+    );
   });
 
   describe('decorators with middleware', () => {

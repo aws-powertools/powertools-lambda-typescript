@@ -9,15 +9,19 @@ const userSchema = z.object({
   age: z.number().int().positive('Age must be positive'),
 });
 
-app.post('/users', async () => {
-  return {
-    id: '123',
-    name: 'John Doe',
-    email: 'john@example.com',
-    age: 30,
-  };
-}, {
-  validation: { req: { body: userSchema } },
-});
+app.post(
+  '/users',
+  async () => {
+    return {
+      id: '123',
+      name: 'John Doe',
+      email: 'john@example.com',
+      age: 30,
+    };
+  },
+  {
+    validation: { req: { body: userSchema } },
+  }
+);
 
 export const handler = app.resolve.bind(app);

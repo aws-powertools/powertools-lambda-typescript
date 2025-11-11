@@ -81,64 +81,67 @@ describe.each([
       ['HEAD', 'head'],
       ['OPTIONS', 'options'],
     ];
-    it.each(httpMethods)('routes %s requests', async (method, verb) => {
-      // Prepare
-      const app = new Router();
-      const expected = { result: `${verb}-test` };
+    it.each(httpMethods)(
+      'routes %s requests with object response',
+      async (method, verb) => {
+        // Prepare
+        const app = new Router();
+        const expected = { result: `${verb}-test` };
 
-      class Lambda {
-        @app.get('/test')
-        public getTest() {
-          return expected;
+        class Lambda {
+          @app.get('/test')
+          public getTest() {
+            return expected;
+          }
+
+          @app.post('/test')
+          public postTest() {
+            return expected;
+          }
+
+          @app.put('/test')
+          public putTest() {
+            return expected;
+          }
+
+          @app.patch('/test')
+          public patchTest() {
+            return expected;
+          }
+
+          @app.delete('/test')
+          public deleteTest() {
+            return expected;
+          }
+
+          @app.head('/test')
+          public headTest() {
+            return expected;
+          }
+
+          @app.options('/test')
+          public optionsTest() {
+            return expected;
+          }
+
+          public handler = createHandler(app);
         }
 
-        @app.post('/test')
-        public postTest() {
-          return expected;
-        }
+        const lambda = new Lambda();
 
-        @app.put('/test')
-        public putTest() {
-          return expected;
-        }
+        // Act
+        const actual = await lambda.handler(
+          createTestEvent('/test', method),
+          context
+        );
 
-        @app.patch('/test')
-        public patchTest() {
-          return expected;
-        }
-
-        @app.delete('/test')
-        public deleteTest() {
-          return expected;
-        }
-
-        @app.head('/test')
-        public headTest() {
-          return expected;
-        }
-
-        @app.options('/test')
-        public optionsTest() {
-          return expected;
-        }
-
-        public handler = createHandler(app);
+        // Assess
+        expect(actual.statusCode).toBe(200);
+        expect(actual.body).toBe(JSON.stringify(expected));
+        expect(actual.headers?.['content-type']).toBe('application/json');
+        expect(actual.isBase64Encoded).toBe(false);
       }
-
-      const lambda = new Lambda();
-
-      // Act
-      const actual = await lambda.handler(
-        createTestEvent('/test', method),
-        context
-      );
-
-      // Assess
-      expect(actual.statusCode).toBe(200);
-      expect(actual.body).toBe(JSON.stringify(expected));
-      expect(actual.headers?.['content-type']).toBe('application/json');
-      expect(actual.isBase64Encoded).toBe(false);
-    });
+    );
 
     it.each(httpMethods)(
       'routes %s requests with array response',

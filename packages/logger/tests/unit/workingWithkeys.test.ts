@@ -519,11 +519,16 @@ describe('Working with keys', () => {
     });
 
     // Act
-    const childLogger = logger.createChild();
+    const childLogger = logger.createChild({
+      persistentKeys: {
+        bar: 'foo',
+      },
+    });
 
     // Assess
     expect(childLogger.getPersistentLogAttributes()).toEqual({
       foo: 'bar',
+      bar: 'foo',
     });
   });
 
@@ -671,7 +676,11 @@ describe('Working with keys', () => {
 
   it('should pass persistentKeys to child with no warning', () => {
     // Prepare
-    const logger = new Logger();
+    const logger = new Logger({
+      persistentKeys: {
+        foo: 'bar',
+      },
+    });
     logger.createChild({ persistentKeys: { abc: 'xyz' } });
 
     // Assess
@@ -816,4 +825,200 @@ describe('Working with keys', () => {
       );
     }
   );
+
+  describe('deprecated persistentLogAttributes usage', () => {
+    it('sets #attributesStore on the logger', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentLogAttributes: {
+          foo: 'bar',
+        },
+      });
+
+      // Assess
+      expect(logger.getPersistentLogAttributes()).toEqual({
+        foo: 'bar',
+      });
+
+      expect(console.warn).not.toHaveLogged(
+        expect.objectContaining({
+          message:
+            'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases',
+        })
+      );
+    });
+
+    it('gets overridden by persistentKeys usage', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentKeys: {
+          foo: 'bar',
+        },
+        // @ts-expect-error
+        persistentLogAttributes: {
+          foo: 'not-bar',
+        },
+      });
+
+      // Assess
+      expect(logger.getPersistentLogAttributes()).toEqual({
+        foo: 'bar',
+      });
+
+      expect(console.warn).toHaveLogged(
+        expect.objectContaining({
+          message:
+            'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases',
+        })
+      );
+    });
+
+    it('persists for child loggers', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentLogAttributes: {
+          foo: 'bar',
+        },
+      });
+
+      // Act
+      const child = logger.createChild();
+
+      // Assess
+      expect(child.getPersistentLogAttributes()).toEqual({
+        foo: 'bar',
+      });
+
+      expect(console.warn).not.toHaveLogged(
+        expect.objectContaining({
+          message:
+            'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases',
+        })
+      );
+    });
+
+    it('persists for child loggers using persistentLogAttributes', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentLogAttributes: {
+          foo: 'bar',
+        },
+      });
+
+      // Act
+      const child = logger.createChild({
+        persistentLogAttributes: {
+          bar: 'foo',
+        },
+      });
+
+      // Assess
+      expect(child.getPersistentLogAttributes()).toEqual({
+        foo: 'bar',
+        bar: 'foo',
+      });
+
+      expect(console.warn).not.toHaveLogged(
+        expect.objectContaining({
+          message:
+            'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases',
+        })
+      );
+    });
+
+    it('persists for child loggers using persistKeys', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentLogAttributes: {
+          foo: 'bar',
+        },
+      });
+
+      // Act
+      const child = logger.createChild({
+        persistentKeys: {
+          bar: 'foo',
+        },
+      });
+
+      // Assess
+      expect(child.getPersistentLogAttributes()).toEqual({
+        foo: 'bar',
+        bar: 'foo',
+      });
+
+      expect(console.warn).not.toHaveLogged(
+        expect.objectContaining({
+          message:
+            'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases',
+        })
+      );
+    });
+
+    it('persists for child loggers using persistentLogAttributes when parent used persistentLogAttributes', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentLogAttributes: {
+          foo: 'bar',
+        },
+      });
+
+      // Act
+      const child = logger.createChild({
+        persistentKeys: {
+          bar: 'foo',
+        },
+        // @ts-expect-error
+        persistentLogAttributes: {
+          bar: 'not-foo',
+        },
+      });
+
+      // Assess
+      expect(child.getPersistentLogAttributes()).toEqual({
+        foo: 'bar',
+        bar: 'foo',
+      });
+
+      expect(console.warn).toHaveLogged(
+        expect.objectContaining({
+          message:
+            'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases',
+        })
+      );
+    });
+
+    it('persists for child loggers using persistentLogAttributes when parent used persistentKeys', () => {
+      // Prepare
+      const logger = new Logger({
+        persistentKeys: {
+          foo: 'bar',
+        },
+      });
+
+      // Act
+      const child = logger.createChild({
+        persistentKeys: {
+          bar: 'foo',
+        },
+        // @ts-expect-error
+        persistentLogAttributes: {
+          bar: 'not-foo',
+        },
+      });
+
+      // Assess
+      expect(child.getPersistentLogAttributes()).toEqual({
+        foo: 'bar',
+        bar: 'foo',
+      });
+
+      expect(console.warn).toHaveLogged(
+        expect.objectContaining({
+          message:
+            'Both persistentLogAttributes and persistentKeys options were provided. Using persistentKeys as persistentLogAttributes is deprecated and will be removed in future releases',
+        })
+      );
+    });
+  });
 });

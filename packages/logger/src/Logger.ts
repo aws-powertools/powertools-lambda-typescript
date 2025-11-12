@@ -323,6 +323,19 @@ class Logger extends Utility implements LoggerInterface {
    * @param options - The options to initialize the child logger with.
    */
   public createChild(options: ConstructorOptions = {}): Logger {
+    // Determine proper key to use when merging persistent options with
+    // parent. Preferring persistentKeys over persistentLogAttributes.
+    // NOTE: when both are passed in for options warning message in
+    // setOptions is still triggered
+    const persistentKeyName: keyof Pick<
+      // extra type safety since dealing with string values and merge does not care
+      ConstructorOptions,
+      'persistentKeys' | 'persistentLogAttributes'
+    > =
+      'persistentLogAttributes' in options && !('persistentKeys' in options)
+        ? 'persistentLogAttributes'
+        : 'persistentKeys';
+
     const childLogger = this.createLogger(
       // Merge parent logger options with options passed to createChild,
       // the latter having precedence.
@@ -335,8 +348,7 @@ class Logger extends Utility implements LoggerInterface {
           logFormatter: this.getLogFormatter(),
           customConfigService: this.getCustomConfigService(),
           environment: this.powertoolsLogData.environment,
-          persistentLogAttributes:
-            this.#attributesStore.getPersistentAttributes(),
+          [persistentKeyName]: this.#attributesStore.getPersistentAttributes(),
           jsonReplacerFn: this.#jsonReplacerFn,
           correlationIdSearchFn: this.#correlationIdSearchFn,
           ...(this.#bufferConfig.enabled && {

@@ -110,6 +110,88 @@ describe('Log levels', () => {
     );
   });
 
+  it('overrides the service name when creating a child logger', () => {
+    // Prepare
+    vi.stubEnv('POWERTOOLS_SERVICE_NAME', 'hello-world');
+    const logger = new Logger();
+    const childLogger = logger.createChild({ serviceName: 'child-service' });
+
+    // Act
+    childLogger.info('Hello, world!');
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({ service: 'child-service' })
+    );
+  });
+
+  it('maintains persistentKeys when creating a child logger', () => {
+    // Prepare
+    const mockDate = new Date(1466424490000);
+    vi.useFakeTimers().setSystemTime(mockDate);
+    const logger = new Logger({
+      persistentKeys: {
+        foo: 'hello',
+        overridable: 1,
+      },
+    });
+
+    logger.appendKeys({
+      resettableKey: 'some-id',
+    });
+
+    logger.appendPersistentKeys({
+      dynamic: 'stays',
+    });
+
+    const childLogger = logger.createChild({
+      serviceName: 'child-service',
+      persistentKeys: {
+        bar: 'world',
+        overridable: 2,
+      },
+    });
+
+    // Act
+    childLogger.info('Hello, world!');
+    childLogger.resetKeys();
+    childLogger.info('Hello again!');
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        service: 'child-service',
+        foo: 'hello',
+        bar: 'world',
+        dynamic: 'stays',
+        message: 'Hello, world!',
+        overridable: 2,
+        resettableKey: 'some-id',
+      })
+    );
+
+    expect(console.info).toHaveLoggedNth(
+      2,
+      // using direct match here to ensure removal of resetKeys
+      {
+        service: 'child-service',
+        foo: 'hello',
+        bar: 'world',
+        dynamic: 'stays',
+        message: 'Hello again!',
+        overridable: 2,
+        level: 'INFO',
+        sampling_rate: 0,
+        timestamp: '2016-06-20T12:08:10.000Z',
+        xray_trace_id: '1-abcdef12-3456abcdef123456abcdef12',
+      }
+    );
+  });
+
   it('`logRecordOrder` should be passed down to child logger', () => {
     // Prepare
     const expectedKeys = [

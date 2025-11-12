@@ -519,11 +519,16 @@ describe('Working with keys', () => {
     });
 
     // Act
-    const childLogger = logger.createChild();
+    const childLogger = logger.createChild({
+      persistentKeys: {
+        bar: 'foo',
+      },
+    });
 
     // Assess
     expect(childLogger.getPersistentLogAttributes()).toEqual({
       foo: 'bar',
+      bar: 'foo',
     });
   });
 
@@ -671,7 +676,11 @@ describe('Working with keys', () => {
 
   it('should pass persistentKeys to child with no warning', () => {
     // Prepare
-    const logger = new Logger();
+    const logger = new Logger({
+      persistentKeys: {
+        foo: 'bar',
+      },
+    });
     logger.createChild({ persistentKeys: { abc: 'xyz' } });
 
     // Assess

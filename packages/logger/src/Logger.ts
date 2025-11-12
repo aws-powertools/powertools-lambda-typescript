@@ -335,8 +335,7 @@ class Logger extends Utility implements LoggerInterface {
           logFormatter: this.getLogFormatter(),
           customConfigService: this.getCustomConfigService(),
           environment: this.powertoolsLogData.environment,
-          persistentLogAttributes:
-            this.#attributesStore.getPersistentAttributes(),
+          persistentKeys: this.#attributesStore.getPersistentAttributes(),
           jsonReplacerFn: this.#jsonReplacerFn,
           correlationIdSearchFn: this.#correlationIdSearchFn,
           ...(this.#bufferConfig.enabled && {

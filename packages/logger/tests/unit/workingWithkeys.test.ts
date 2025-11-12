@@ -1,4 +1,3 @@
-import { log } from 'node:console';
 import { setTimeout } from 'node:timers/promises';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
@@ -828,7 +827,7 @@ describe('Working with keys', () => {
   );
 
   describe('deprecated persistentLogAttributes usage', () => {
-    it('should set #attributesStore on the logger', () => {
+    it('sets #attributesStore on the logger', () => {
       // Prepare
       const logger = new Logger({
         persistentLogAttributes: {
@@ -849,7 +848,7 @@ describe('Working with keys', () => {
       );
     });
 
-    it('should get overridden by persistentKeys usage', () => {
+    it('gets overridden by persistentKeys usage', () => {
       // Prepare
       const logger = new Logger({
         persistentKeys: {
@@ -874,7 +873,7 @@ describe('Working with keys', () => {
       );
     });
 
-    it('should persist for child loggers', () => {
+    it('persists for child loggers', () => {
       // Prepare
       const logger = new Logger({
         persistentLogAttributes: {
@@ -898,7 +897,7 @@ describe('Working with keys', () => {
       );
     });
 
-    it('should persist for child loggers using persistentLogAttributes', () => {
+    it('persists for child loggers using persistentLogAttributes', () => {
       // Prepare
       const logger = new Logger({
         persistentLogAttributes: {
@@ -927,7 +926,7 @@ describe('Working with keys', () => {
       );
     });
 
-    it('should persist for child loggers using persistKeys', () => {
+    it('persists for child loggers using persistKeys', () => {
       // Prepare
       const logger = new Logger({
         persistentLogAttributes: {
@@ -956,7 +955,7 @@ describe('Working with keys', () => {
       );
     });
 
-    it('should persist for child loggers using persistentLogAttributes when parent used persistentLogAttributes', () => {
+    it('persists for child loggers using persistentLogAttributes when parent used persistentLogAttributes', () => {
       // Prepare
       const logger = new Logger({
         persistentLogAttributes: {
@@ -989,7 +988,7 @@ describe('Working with keys', () => {
       );
     });
 
-    it('should persist for child loggers using persistentLogAttributes when parent used persistentKeys', () => {
+    it('persists for child loggers using persistentLogAttributes when parent used persistentKeys', () => {
       // Prepare
       const logger = new Logger({
         persistentKeys: {

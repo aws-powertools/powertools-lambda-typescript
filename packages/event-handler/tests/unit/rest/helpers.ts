@@ -149,25 +149,6 @@ export class MockResponseStream extends HttpResponseStream {
   }
 }
 
-// Helper to parse streaming response format
-export function parseStreamOutput(chunks: Buffer[]) {
-  const output = Buffer.concat(chunks);
-  const nullBytes = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);
-  const separatorIndex = output.indexOf(nullBytes);
-
-  if (separatorIndex === -1) {
-    return { prelude: null, body: output.toString() };
-  }
-
-  const preludeBuffer = output.subarray(0, separatorIndex);
-  const bodyBuffer = output.subarray(separatorIndex + 8);
-
-  return {
-    prelude: JSON.parse(preludeBuffer.toString()),
-    body: bodyBuffer.toString(),
-  };
-}
-
 // Create a handler function from the Router instance
 export const createHandler = (app: Router) => {
   function handler(
@@ -207,12 +188,6 @@ export const createHandlerWithScope = (app: Router, scope: unknown) => {
   }
   return handler;
 };
-
-// Create a stream handler function from the Router instance with a custom scope
-export const createStreamHandler =
-  (app: Router, scope: unknown) =>
-  (event: unknown, _context: Context, responseStream: MockResponseStream) =>
-    app.resolveStream(event, _context, { scope, responseStream });
 
 // Create a test Lambda class with all HTTP method decorators
 export const createTestLambdaClass = (

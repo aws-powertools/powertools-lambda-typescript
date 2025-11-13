@@ -110,8 +110,12 @@ export class CircularMap<V> extends Map<string, SizedSet<V>> {
 
     const buffer = this.get(key) || new SizedSet<V>();
 
-    if (buffer.currentBytesSize + item.byteSize >= this.#maxBytesSize) {
+    if (
+      buffer.currentBytesSize !== 0 &&
+      buffer.currentBytesSize + item.byteSize >= this.#maxBytesSize
+    ) {
       this.#deleteFromBufferUntilSizeIsLessThanMax(buffer, item);
+
       if (this.#onBufferOverflow) {
         this.#onBufferOverflow();
       }
@@ -132,7 +136,10 @@ export class CircularMap<V> extends Map<string, SizedSet<V>> {
     buffer: SizedSet<V>,
     item: SizedItem<V>
   ) {
-    while (buffer.currentBytesSize + item.byteSize >= this.#maxBytesSize) {
+    while (
+      buffer.size !== 0 &&
+      buffer.currentBytesSize + item.byteSize >= this.#maxBytesSize
+    ) {
       buffer.shift();
       buffer.hasEvictedLog = true;
     }

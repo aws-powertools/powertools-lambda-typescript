@@ -144,4 +144,74 @@ describe('CircularMap', () => {
       options.maxBytesSize
     );
   });
+
+  it('stores item in buffer when item size is equal to maxBytesSize', () => {
+    // Prepare
+    const maxBytes = 10;
+    const onBufferOverflow = vi.fn();
+    const circularMap = new CircularMap<string>({
+      maxBytesSize: maxBytes,
+      onBufferOverflow,
+    });
+    const message = 'x'.repeat(maxBytes);
+
+    // Act
+    circularMap.setItem('trace-1', message, 1);
+
+    // Assess
+    const buffer = circularMap.get('trace-1');
+
+    expect(buffer).toBeDefined();
+    expect(buffer?.currentBytesSize).toBe(maxBytes);
+    expect(buffer?.size).toBe(1);
+    expect(onBufferOverflow).toHaveBeenCalledTimes(0);
+  });
+
+  it('evicts existing non-empty item from buffer when item size is equal to maxBytesSize', () => {
+    // Prepare
+    const maxBytes = 10;
+    const onBufferOverflow = vi.fn();
+    const circularMap = new CircularMap<string>({
+      maxBytesSize: maxBytes,
+      onBufferOverflow,
+    });
+
+    const message = 'x'.repeat(maxBytes);
+
+    // Act
+    circularMap.setItem('trace-1', message, 1);
+    circularMap.setItem('trace-1', message, 1);
+
+    // Assess
+    const buffer = circularMap.get('trace-1');
+
+    expect(buffer).toBeDefined();
+    expect(buffer?.currentBytesSize).toBe(maxBytes);
+    expect(buffer?.size).toBe(1);
+    expect(onBufferOverflow).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not evict existing empty item from buffer when new item size is equal to maxBytesSize', () => {
+    // Prepare
+    const maxBytes = 10;
+    const onBufferOverflow = vi.fn();
+    const circularMap = new CircularMap<string>({
+      maxBytesSize: maxBytes,
+      onBufferOverflow,
+    });
+
+    const message = 'x'.repeat(maxBytes);
+
+    // Act
+    circularMap.setItem('trace-1', '', 1);
+    circularMap.setItem('trace-1', message, 1);
+
+    // Assess
+    const buffer = circularMap.get('trace-1');
+
+    expect(buffer).toBeDefined();
+    expect(buffer?.currentBytesSize).toBe(maxBytes);
+    expect(buffer?.size).toBe(2);
+    expect(onBufferOverflow).toHaveBeenCalledTimes(0);
+  });
 });

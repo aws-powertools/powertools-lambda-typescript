@@ -1,13 +1,15 @@
 import { Duplex, PassThrough, Readable } from 'node:stream';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it, vi } from 'vitest';
-import { UnauthorizedError } from '../../../../src/rest/errors.js';
-import { Router } from '../../../../src/rest/index.js';
+import {
+  Router,
+  streamify,
+  UnauthorizedError,
+} from '../../../../src/rest/index.js';
 import {
   createTestEvent,
   createTestEventV2,
   MockResponseStream,
-  parseStreamOutput,
 } from '../helpers.js';
 
 describe.each([
@@ -19,18 +21,19 @@ describe.each([
     const app = new Router();
     app.get('/test', async () => ({ message: 'Hello, World!' }));
 
-    // Create a mock ResponseStream
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/test', 'GET'), context, {
+    const result = await handler(
+      createEvent('/test', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(200);
-    expect(JSON.parse(body)).toEqual({ message: 'Hello, World!' });
+    expect(result.statusCode).toBe(200);
+    expect(JSON.parse(result.body)).toEqual({ message: 'Hello, World!' });
   });
 
   it('streams a Response object', async () => {
@@ -43,34 +46,37 @@ describe.each([
       });
     });
 
-    // Create a mock ResponseStream
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/test', 'GET'), context, {
+    const result = await handler(
+      createEvent('/test', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(201);
-    expect(JSON.parse(body)).toEqual({ data: 'test' });
+    expect(result.statusCode).toBe(201);
+    expect(JSON.parse(result.body)).toEqual({ data: 'test' });
   });
 
   it('handles route not found', async () => {
     // Prepare
     const app = new Router();
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/nonexistent', 'GET'), context, {
+    const result = await handler(
+      createEvent('/nonexistent', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(404);
-    const parsedBody = JSON.parse(body);
+    expect(result.statusCode).toBe(404);
+    const parsedBody = JSON.parse(result.body);
     expect(parsedBody.statusCode).toBe(404);
   });
 
@@ -86,18 +92,20 @@ describe.each([
 
     app.get('/test', () => ({ message: 'middleware test' }));
 
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/test', 'GET'), context, {
+    const result = await handler(
+      createEvent('/test', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(200);
-    expect(prelude.headers['x-custom-header']).toBe('test-value');
-    expect(JSON.parse(body)).toEqual({ message: 'middleware test' });
+    expect(result.statusCode).toBe(200);
+    expect(result.headers['x-custom-header']).toBe('test-value');
+    expect(JSON.parse(result.body)).toEqual({ message: 'middleware test' });
   });
 
   it('handles thrown errors', async () => {
@@ -107,17 +115,19 @@ describe.each([
       throw new UnauthorizedError('Access denied');
     });
 
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/test', 'GET'), context, {
+    const result = await handler(
+      createEvent('/test', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(401);
-    const parsedBody = JSON.parse(body);
+    expect(result.statusCode).toBe(401);
+    const parsedBody = JSON.parse(result.body);
     expect(parsedBody.message).toBe('Access denied');
   });
 
@@ -134,17 +144,19 @@ describe.each([
       throw new UnauthorizedError('handler error');
     });
 
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/test', 'GET'), context, {
+    const result = await handler(
+      createEvent('/test', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(401);
-    expect(JSON.parse(body)).toEqual({
+    expect(result.statusCode).toBe(401);
+    expect(JSON.parse(result.body)).toEqual({
       statusCode: 401,
       message: 'Custom: handler error',
     });
@@ -180,51 +192,57 @@ describe.each([
     // Prepare
     const app = new Router();
     app.get('/test', handlerFn);
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/test', 'GET'), context, {
+    const result = await handler(
+      createEvent('/test', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(200);
-    expect(JSON.parse(body).message).toMatch(/body$/);
+    expect(result.statusCode).toBe(200);
+    expect(JSON.parse(result.body).message).toMatch(/body$/);
   });
 
   it('handles Response with no body', async () => {
     // Prepare
     const app = new Router();
     app.get('/test', () => new Response(null, { status: 204 }));
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/test', 'GET'), context, {
+    const result = await handler(
+      createEvent('/test', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(204);
-    expect(body).toBe('');
+    expect(result.statusCode).toBe(204);
+    expect(result.body).toBe('');
   });
 
   it('handles Response with undefined body', async () => {
     // Prepare
     const app = new Router();
     app.get('/test', () => new Response(undefined, { status: 200 }));
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/test', 'GET'), context, {
+    const result = await handler(
+      createEvent('/test', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(200);
-    expect(body).toBe('');
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toBe('');
   });
 
   it('handles pipeline errors during streaming', async () => {
@@ -237,13 +255,12 @@ describe.each([
     });
 
     app.get('/test', () => new Response(errorStream, { status: 200 }));
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act & Assess
     await expect(
-      app.resolveStream(createEvent('/test', 'GET'), context, {
-        responseStream,
-      })
+      handler(createEvent('/test', 'GET'), responseStream, context)
     ).rejects.toThrow('Stream error');
   });
 
@@ -257,20 +274,20 @@ describe.each([
       return { userId: params.userId, postId: params.postId };
     });
 
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(
+    const result = await handler(
       createEvent('/users/123/posts/456', 'GET'),
-      context,
-      { responseStream }
+      responseStream,
+      context
     );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(200);
+    expect(result.statusCode).toBe(200);
     expect(capturedParams).toEqual({ userId: '123', postId: '456' });
-    expect(JSON.parse(body)).toEqual({ userId: '123', postId: '456' });
+    expect(JSON.parse(result.body)).toEqual({ userId: '123', postId: '456' });
   });
 
   it('uses default error handler for unregistered errors', async () => {
@@ -281,17 +298,19 @@ describe.each([
       throw new Error('Unhandled error');
     });
 
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/test', 'GET'), context, {
+    const result = await handler(
+      createEvent('/test', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(500);
-    const parsedBody = JSON.parse(body);
+    expect(result.statusCode).toBe(500);
+    const parsedBody = JSON.parse(result.body);
     expect(parsedBody.statusCode).toBe(500);
     expect(parsedBody.error).toBe('Internal Server Error');
     expect(parsedBody.message).toBe('Unhandled error');
@@ -302,12 +321,13 @@ describe.each([
   it('throws InternalServerError for invalid events', async () => {
     // Prepare
     const app = new Router();
+    const handler = streamify(app);
     const invalidEvent = { invalid: 'event' };
     const responseStream = new MockResponseStream();
 
     // Act & Assess
     await expect(
-      app.resolveStream(invalidEvent, context, { responseStream })
+      handler(invalidEvent, responseStream, context)
     ).rejects.toThrow();
   });
 
@@ -323,16 +343,18 @@ describe.each([
       body: Duplex.from(passThrough),
     }));
 
+    const handler = streamify(app);
     const responseStream = new MockResponseStream();
 
     // Act
-    await app.resolveStream(createEvent('/test', 'GET'), context, {
+    const result = await handler(
+      createEvent('/test', 'GET'),
       responseStream,
-    });
+      context
+    );
 
     // Assess
-    const { prelude, body } = parseStreamOutput(responseStream.chunks);
-    expect(prelude.statusCode).toBe(200);
-    expect(JSON.parse(body)).toEqual({ message: 'duplex stream body' });
+    expect(result.statusCode).toBe(200);
+    expect(JSON.parse(result.body)).toEqual({ message: 'duplex stream body' });
   });
 });

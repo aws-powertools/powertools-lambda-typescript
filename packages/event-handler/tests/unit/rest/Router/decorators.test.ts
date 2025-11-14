@@ -6,19 +6,18 @@ import {
   MethodNotAllowedError,
   type NotFoundError,
   Router,
+  streamify,
   UnauthorizedError,
 } from '../../../../src/rest/index.js';
 import type { RequestContext } from '../../../../src/types/rest.js';
 import {
   createHandler,
   createHandlerWithScope,
-  createStreamHandler,
   createTestEvent,
   createTestEventV2,
   createTestLambdaClass,
   createTrackingMiddleware,
   MockResponseStream,
-  parseStreamOutput,
 } from '../helpers.js';
 
 describe.each([
@@ -481,7 +480,7 @@ describe.each([
   });
 
   describe('streaming with decorators', () => {
-    it('preserves scope when using resolveStream with decorators', async () => {
+    it('preserves scope when using streamify with decorators', async () => {
       // Prepare
       const app = new Router();
 
@@ -495,7 +494,7 @@ describe.each([
           };
         }
 
-        public handler = createStreamHandler(app, this);
+        public handler = streamify(app, { scope: this });
       }
 
       const lambda = new Lambda();
@@ -503,12 +502,15 @@ describe.each([
       const handler = lambda.handler.bind(lambda);
 
       // Act
-      await handler(createTestEvent('/test', 'GET'), context, responseStream);
+      const result = await handler(
+        createTestEvent('/test', 'GET'),
+        responseStream,
+        context
+      );
 
       // Assess
-      const { prelude, body } = parseStreamOutput(responseStream.chunks);
-      expect(prelude.statusCode).toBe(200);
-      expect(JSON.parse(body)).toEqual({
+      expect(result.statusCode).toBe(200);
+      expect(JSON.parse(result.body)).toEqual({
         message: 'streaming-scope: streaming success',
       });
     });
@@ -534,7 +536,7 @@ describe.each([
           throw new UnauthorizedError('UnauthorizedError!');
         }
 
-        public handler = createStreamHandler(app, this);
+        public handler = streamify(app, { scope: this });
       }
 
       const lambda = new Lambda();
@@ -542,12 +544,15 @@ describe.each([
       const handler = lambda.handler.bind(lambda);
 
       // Act
-      await handler(createTestEvent('/test', 'GET'), context, responseStream);
+      const result = await handler(
+        createTestEvent('/test', 'GET'),
+        responseStream,
+        context
+      );
 
       // Assess
-      const { prelude, body } = parseStreamOutput(responseStream.chunks);
-      expect(prelude.statusCode).toBe(401);
-      expect(JSON.parse(body)).toEqual({
+      expect(result.statusCode).toBe(401);
+      expect(JSON.parse(result.body)).toEqual({
         statusCode: HttpStatusCodes.UNAUTHORIZED,
         error: 'Unauthorized',
         message: 'error-scope: UnauthorizedError!',

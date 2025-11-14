@@ -4,7 +4,13 @@ import {
   isRegExp,
   isString,
 } from '@aws-lambda-powertools/commons/typeutils';
-import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from 'aws-lambda';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
+  StreamifyHandler,
+} from 'aws-lambda';
+import type { Router } from '../rest/Router.js';
+import type { ResolveOptions } from '../types/index.js';
 import type {
   CompiledRoute,
   CompressionOptions,
@@ -384,4 +390,77 @@ export const getStatusCode = (
     return result.statusCode as HttpStatusCode;
   }
   return fallback;
+};
+
+const streamifyResponse =
+  globalThis.awslambda?.streamifyResponse ??
+  (<TEvent = unknown, TResult = void>(
+    handler: StreamifyHandler<TEvent, TResult>
+  ): StreamifyHandler<TEvent, TResult> => {
+    return (async (event, responseStream, context) => {
+      await handler(event, responseStream, context);
+
+      if ('chunks' in responseStream && Array.isArray(responseStream.chunks)) {
+        const output = Buffer.concat(responseStream.chunks as Buffer[]);
+        const nullBytes = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);
+        const separatorIndex = output.indexOf(nullBytes);
+
+        const preludeBuffer = output.subarray(0, separatorIndex);
+        const bodyBuffer = output.subarray(separatorIndex + 8);
+        const prelude = JSON.parse(preludeBuffer.toString());
+
+        return {
+          body: bodyBuffer.toString(),
+          headers: prelude.headers,
+          statusCode: prelude.statusCode,
+        } as TResult;
+      }
+    }) as StreamifyHandler<TEvent, TResult>;
+  });
+
+/**
+ * Wraps a Router instance to create a Lambda handler that uses response streaming.
+ *
+ * In Lambda runtime, uses `awslambda.streamifyResponse` to enable streaming responses.
+ * In test/local environments, returns an unwrapped handler that works with mock streams.
+ *
+ * @param router - The Router instance to wrap
+ * @param options - Optional configuration including scope for decorator binding
+ * @returns A Lambda handler that streams responses
+ *
+ * @example
+ * ```typescript
+ * import { Router, streamify } from '@aws-lambda-powertools/event-handler/experimental-rest';
+ *
+ * const app = new Router();
+ * app.get('/test', () => ({ message: 'Hello' }));
+ *
+ * export const handler = streamify(app);
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // With scope for decorators
+ * class Lambda {
+ *   public scope = 'my-scope';
+ *
+ *   @app.get('/test')
+ *   public getTest() {
+ *     return { message: `${this.scope}: success` };
+ *   }
+ *
+ *   public handler = streamify(app, { scope: this });
+ * }
+ * ```
+ */
+export const streamify = (
+  router: Router,
+  options?: ResolveOptions
+): StreamifyHandler => {
+  return streamifyResponse(async (event, responseStream, context) => {
+    await router.resolveStream(event, context, {
+      responseStream,
+      scope: options?.scope,
+    });
+  });
 };

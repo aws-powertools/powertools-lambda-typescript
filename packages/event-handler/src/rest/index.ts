@@ -25,4 +25,5 @@ export {
   isAPIGatewayProxyEventV2,
   isExtendedAPIGatewayProxyResult,
   isHttpMethod,
+  streamify,
 } from './utils.js';

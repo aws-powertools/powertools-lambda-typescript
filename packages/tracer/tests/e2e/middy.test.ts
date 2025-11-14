@@ -50,6 +50,7 @@ describe('Tracer E2E tests, middy instrumentation', () => {
     {
       nameSuffix: 'Middy',
       outputFormat: 'ESM',
+      shouldPolyfillRequire: true,
     }
   );
   testTable.grantWriteData(fnMiddy);

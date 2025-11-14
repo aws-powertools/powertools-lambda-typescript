@@ -24,6 +24,7 @@ class TestNodejsFunction extends NodejsFunction {
     extraProps: ExtraTestProps
   ) {
     const isESM = extraProps.outputFormat === 'ESM';
+    const { shouldPolyfillRequire = false } = extraProps;
     const { bundling, ...restProps } = props;
     const functionName = concatenateResourceName({
       testName: stack.testName,
@@ -45,7 +46,7 @@ class TestNodejsFunction extends NodejsFunction {
         mainFields: isESM ? ['module', 'main'] : ['main', 'module'],
         sourceMap: false,
         format: isESM ? OutputFormat.ESM : OutputFormat.CJS,
-        banner: isESM
+        banner: shouldPolyfillRequire
           ? `import { createRequire } from 'module';const require = createRequire(import.meta.url);`
           : '',
       },

@@ -20,6 +20,13 @@ interface ExtraTestProps {
    */
   outputFormat?: 'CJS' | 'ESM';
   /**
+   * Determines whether to polyfil the `require` function, this is useful when the bundler
+   * output is ESM and you are using a package that only ships ESM
+   *
+   * @default 'false'
+   */
+  shouldPolyfillRequire?: boolean;
+  /**
    * Whether to create an alias for the function.
    *
    * @default false

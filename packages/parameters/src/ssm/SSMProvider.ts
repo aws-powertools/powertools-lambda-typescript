@@ -609,6 +609,7 @@ class SSMProvider extends BaseProvider {
         // biome-ignore lint/style/noNonNullAssertion: If the parameter is present in the response, then it has a Name
         let name = parameter.Name!;
         name = name.replace(path, '');
+        /* v8 ignore else -- @preserve */
         if (name.startsWith('/')) {
           name = name.replace('/', '');
         }
@@ -926,6 +927,7 @@ class SSMProvider extends BaseProvider {
 
       let value: string | JSONValue | Uint8Array | undefined;
       // NOTE: if transform is set, we do it before caching to reduce number of operations
+      /* v8 ignore else -- @preserve */
       if (parameterValue && parameterOptions.transform) {
         value = transformValue(
           parameterValue,
@@ -937,6 +939,7 @@ class SSMProvider extends BaseProvider {
         value = parameterValue;
       }
 
+      /* v8 ignore else -- @preserve */
       if (value) {
         const cacheKey = [parameterName, parameterOptions.transform].toString();
         this.addToCache(

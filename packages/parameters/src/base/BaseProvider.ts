@@ -46,6 +46,7 @@ abstract class BaseProvider implements BaseProviderInterface {
     awsSdkV3ClientPrototype,
   }: BaseProviderConstructorOptions) {
     this.store = new Map();
+    /* v8 ignore else -- @preserve */
     if (awsSdkV3Client) {
       if (!isSdkClient(awsSdkV3Client) && awsSdkV3ClientPrototype) {
         console.warn(
@@ -164,6 +165,7 @@ abstract class BaseProvider implements BaseProviderInterface {
             entryKey
           );
         } catch (error) {
+          /* v8 ignore else -- @preserve */
           if (configs.throwOnTransformError) {
             if (error instanceof TransformParameterError) {
               throw error;

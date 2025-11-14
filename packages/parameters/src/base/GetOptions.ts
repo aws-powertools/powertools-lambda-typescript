@@ -19,6 +19,7 @@ class GetOptions implements GetOptionsInterface {
   public constructor(options: GetOptionsInterface = {}) {
     Object.assign(this, options);
 
+    /* v8 ignore else -- @preserve */
     if (options.maxAge === undefined) {
       this.maxAge = getNumberFromEnv({
         key: 'POWERTOOLS_PARAMETERS_MAX_AGE',

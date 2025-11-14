@@ -117,6 +117,7 @@ abstract class BasePartialBatchProcessor extends BasePartialProcessor {
 
     for (const msg of this.failureMessages) {
       const msgId = (msg as DynamoDBRecord).dynamodb?.SequenceNumber;
+      /* v8 ignore else -- @preserve */
       if (msgId) {
         failures.push({ itemIdentifier: msgId });
       }

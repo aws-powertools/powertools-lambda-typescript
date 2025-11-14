@@ -144,6 +144,7 @@ class TreeInterpreter {
       if (comparator === 'ne') {
         return !isStrictEqual(left, right);
       }
+      /* v8 ignore else -- @preserve */
       if (typeof left === 'number' && typeof right === 'number') {
         // Ordering operators only work on numbers. Evaluating them on other
         // types will return null.
@@ -221,6 +222,7 @@ class TreeInterpreter {
       // @ts-expect-error
       return this.#functions[funcName](args);
     } catch (error) {
+      /* v8 ignore else -- @preserve */
       if (
         error instanceof JMESPathTypeError ||
         error instanceof VariadicArityError ||
@@ -372,6 +374,7 @@ class TreeInterpreter {
     }
     const collected: Record<string, JSONObject> = {};
     for (const child of node.children) {
+      /* v8 ignore else -- @preserve */
       if (typeof child.value === 'string') {
         collected[child.value] = this.visit(child, value);
       }

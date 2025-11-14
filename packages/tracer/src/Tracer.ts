@@ -4,6 +4,7 @@
  * This is to prevent the AWS X-Ray SDK from logging errors when using top-level await features that make HTTP requests.
  * For example, when using the Parameters utility to fetch parameters during the initialization of the Lambda handler - See #2046
  */
+/* v8 ignore else -- @preserve */
 if (
   process.env.AWS_XRAY_CONTEXT_MISSING === '' ||
   process.env.AWS_XRAY_CONTEXT_MISSING === undefined
@@ -304,11 +305,11 @@ class Tracer extends Utility implements TracerInterface {
    *
    * @param aws - AWS SDK v2 import
    */
-  /* v8 ignore start */ public captureAWS<T>(aws: T): T {
+  /* v8 ignore next -- @preserve */ public captureAWS<T>(aws: T): T {
     if (!this.isTracingEnabled()) return aws;
 
     return this.provider.captureAWS(aws);
-  } /* v8 ignore stop */
+  }
 
   /**
    * @deprecated Use {@link captureAWSv3Client | `captureAWSv3Client()`} instead.
@@ -334,7 +335,7 @@ class Tracer extends Utility implements TracerInterface {
    *
    * @param service - AWS SDK v2 client
    */
-  /* v8 ignore start */ public captureAWSClient<T>(service: T): T {
+  /* v8 ignore next -- @preserve */ public captureAWSClient<T>(service: T): T {
     if (!this.isTracingEnabled()) return service;
 
     try {
@@ -351,7 +352,7 @@ class Tracer extends Utility implements TracerInterface {
         throw error;
       }
     }
-  } /* v8 ignore stop */
+  }
 
   /**
    * Patch an AWS SDK v3 client and create traces when your application makes calls to that AWS service.

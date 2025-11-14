@@ -80,6 +80,7 @@ const customUserAgentMiddleware = (feature: string) => {
 const hasPowertools = (middlewareStack: string[]): boolean => {
   let found = false;
   for (const middleware of middlewareStack) {
+    /* v8 ignore else -- @preserve */
     if (middleware.includes('addPowertoolsToUserAgent')) {
       found = true;
     }

@@ -585,17 +585,17 @@ This persistence layer is built-in, and you can either use an existing DynamoDB 
 
 When using DynamoDB as a persistence layer, you can alter the attribute names by passing these parameters when initializing the persistence layer:
 
-| Parameter                | Required           | Default                              | Description                                                                                              |
+||Parameter                 |Required            |Default                               |Description                                                                                               ||
 | ------------------------ | ------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| **tableName**            | :heavy_check_mark: |                                      | Table name to store state                                                                                |
-| **keyAttr**              |                    | `id`                                 | Partition key of the table. Hashed representation of the payload (unless **sort_key_attr** is specified) |
-| **expiryAttr**           |                    | `expiration`                         | Unix timestamp of when record expires                                                                    |
-| **inProgressExpiryAttr** |                    | `in_progress_expiration`             | Unix timestamp of when record expires while in progress (in case of the invocation times out)            |
-| **statusAttr**           |                    | `status`                             | Stores status of the lambda execution during and after invocation                                        |
-| **dataAttr**             |                    | `data`                               | Stores results of successfully executed Lambda handlers                                                  |
-| **validationKeyAttr**    |                    | `validation`                         | Hashed representation of the parts of the event used for validation                                      |
-| **sortKeyAttr**          |                    |                                      | Sort key of the table (if table is configured with a sort key).                                          |
-| **staticPkValue**        |                    | `idempotency#{LAMBDA_FUNCTION_NAME}` | Static value to use as the partition key. Only used when **sort_key_attr** is set.                       |
+||**tableName**             |:heavy_check_mark:  |                                      |Table name to store state                                                                                 ||
+||**keyAttr**               |                    |`id`                                  |Partition key of the table. Hashed representation of the payload (unless **sort_key_attr** is specified)  ||
+||**expiryAttr**            |                    |`expiration`                          |Unix timestamp of when record expires                                                                     ||
+||**inProgressExpiryAttr**  |                    |`in_progress_expiration`              |Unix timestamp of when record expires while in progress (in case of the invocation times out)             ||
+||**statusAttr**            |                    |`status`                              |Stores status of the lambda execution during and after invocation                                         ||
+||**dataAttr**              |                    |`data`                                |Stores results of successfully executed Lambda handlers                                                   ||
+||**validationKeyAttr**     |                    |`validation`                          |Hashed representation of the parts of the event used for validation                                       ||
+||**sortKeyAttr**           |                    |                                      |Sort key of the table (if table is configured with a sort key).                                           ||
+||**staticPkValue**         |                    |`idempotency#{LAMBDA_FUNCTION_NAME}`  |Static value to use as the partition key. Only used when **sort_key_attr** is set.                        ||
 
 #### CachePersistenceLayer
 
@@ -618,14 +618,14 @@ We recommend using [`@valkey/valkey-glide`](https://www.npmjs.com/package/@valke
 
 When using Cache as a persistence layer, you can alter the attribute names by passing these parameters when initializing the persistence layer:
 
-| Parameter                | Required           | Default                              | Description                                                                                              |
+||Parameter                 |Required            |Default                               |Description                                                                                               ||
 | ------------------------ | ------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| **client**               | :heavy_check_mark: |                                      | A connected Redis-compatible client instance                                                             |
-| **expiryAttr**           |                    | `expiration`                         | Unix timestamp of when record expires                                                                    |
-| **inProgressExpiryAttr** |                    | `in_progress_expiration`             | Unix timestamp of when record expires while in progress (in case of the invocation times out)            |
-| **statusAttr**           |                    | `status`                             | Stores status of the lambda execution during and after invocation                                        |
-| **dataAttr**             |                    | `data`                               | Stores results of successfully executed Lambda handlers                                                  |
-| **validationKeyAttr**    |                    | `validation`                         | Hashed representation of the parts of the event used for validation                                      |
+||**client**                |:heavy_check_mark:  |                                      |A connected Redis-compatible client instance                                                              ||
+||**expiryAttr**            |                    |`expiration`                          |Unix timestamp of when record expires                                                                     ||
+||**inProgressExpiryAttr**  |                    |`in_progress_expiration`              |Unix timestamp of when record expires while in progress (in case of the invocation times out)             ||
+||**statusAttr**            |                    |`status`                              |Stores status of the lambda execution during and after invocation                                         ||
+||**dataAttr**              |                    |`data`                                |Stores results of successfully executed Lambda handlers                                                   ||
+||**validationKeyAttr**     |                    |`validation`                          |Hashed representation of the parts of the event used for validation                                       ||
 
 === "Customizing CachePersistenceLayer"
 
@@ -639,17 +639,17 @@ When using Cache as a persistence layer, you can alter the attribute names by pa
 
 Idempotent decorator can be further configured with **`IdempotencyConfig`** as seen in the previous examples. These are the available options for further configuration
 
-| Parameter                     | Default     | Description                                                                                                                                                                                                                                |
-| ----------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **eventKeyJmespath**          | `''`        | JMESPath expression to extract the idempotency key from the event record using [built-in functions](./jmespath.md#built-in-jmespath-functions){target="_blank"}                                                                            |
-| **payloadValidationJmespath** | `''`        | JMESPath expression to validate that the specified fields haven't changed across requests for the same idempotency key _e.g., payload tampering._                                                                                          |
-| **jmesPathOptions**           | `undefined` | Custom JMESPath functions to use when parsing the JMESPath expressions. See [Custom JMESPath Functions](idempotency.md#custom-jmespath-functions)                                                                                           |
-| **throwOnNoIdempotencyKey**   | `false`     | Throw an error if no idempotency key was found in the request                                                                                                                                                                              |
-| **expiresAfterSeconds**       | 3600        | The number of seconds to wait before a record is expired, allowing a new transaction with the same idempotency key                                                                                                                         |
-| **useLocalCache**             | `false`     | Whether to cache idempotency results in-memory to save on persistence storage latency and costs                                                                                                                                            |
-| **localCacheMaxItems**        | 256         | Max number of items to store in local cache                                                                                                                                                                                                |
-| **hashFunction**              | `md5`       | Function to use for calculating hashes, as provided by the [crypto](https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options){target="_blank"} module in the standard library.                                                 |
-| **responseHook**              | `undefined` | Function to use for processing the stored Idempotent response. This function hook is called when an existing idempotent response is found. See [Manipulating The Idempotent Response](idempotency.md#manipulating-the-idempotent-response) |
+||Parameter                      |Default      |Description                                                                                                                                                                                                                                                     ||
+| ----------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+||**eventKeyJmespath**           |`''`         |JMESPath expression to extract the idempotency key from the event record using [built-in functions](./jmespath.md#built-in-jmespath-functions){target="_blank"}                                                                                                 ||
+||**payloadValidationJmespath**  |`''`         |JMESPath expression to validate that the specified fields haven't changed across requests for the same idempotency key _e.g., payload tampering._                                                                                                               ||
+||**jmesPathOptions**            |`undefined`  |Custom JMESPath functions to use when parsing the JMESPath expressions. See [Custom JMESPath Functions](idempotency.md#custom-jmespath-functions)                                                                                                               ||
+||**throwOnNoIdempotencyKey**    |`false`      |Throw an error if no idempotency key was found in the request                                                                                                                                                                                                   ||
+||**expiresAfterSeconds**        |3600         |The number of seconds to wait before a record is expired, allowing a new transaction with the same idempotency key                                                                                                                                              ||
+||**useLocalCache**              |`false`      |Whether to cache idempotency results in-memory to save on persistence storage latency and costs                                                                                                                                                                 ||
+||**localCacheMaxItems**         |256          |Max number of items to store in local cache                                                                                                                                                                                                                     ||
+||**hashFunction**               |`md5`        |Function to use for calculating hashes, as provided by the [crypto](https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options){target="_blank"} module in the standard library.                                                                      ||
+||**responseHook**               |`undefined`  |Function to use for processing the stored Idempotent response. This function hook is called when an existing idempotent response is found. See [Manipulating The Idempotent Response](idempotency.md#manipulating-the-idempotent-response)                      ||
 
 ### Handling concurrent executions with the same payload
 
@@ -843,11 +843,11 @@ You can optionally set a static value for the partition key using the `staticPkV
 
 The example function above would cause data to be stored in DynamoDB like this:
 
-| id                           | sort_key                         | expiration | status      | data                                                             |
+||id                            |sort_key                          |expiration  |status       |data                                                              ||
 | ---------------------------- | -------------------------------- | ---------- | ----------- | ---------------------------------------------------------------- |
-| idempotency#MyLambdaFunction | 1e956ef7da78d0cb890be999aecc0c9e | 1636549553 | COMPLETED   | {"paymentId": "12345, "message": "success", "statusCode": 200}   |
-| idempotency#MyLambdaFunction | 2b2cdb5f86361e97b4383087c1ffdf27 | 1636549571 | COMPLETED   | {"paymentId": "527212", "message": "success", "statusCode": 200} |
-| idempotency#MyLambdaFunction | f091d2527ad1c78f05d54cc3f363be80 | 1636549585 | IN_PROGRESS |                                                                  |
+||idempotency#MyLambdaFunction  |1e956ef7da78d0cb890be999aecc0c9e  |1636549553  |COMPLETED    |{"paymentId": "12345, "message": "success", "statusCode": 200}    ||
+||idempotency#MyLambdaFunction  |2b2cdb5f86361e97b4383087c1ffdf27  |1636549571  |COMPLETED    |{"paymentId": "527212", "message": "success", "statusCode": 200}  ||
+||idempotency#MyLambdaFunction  |f091d2527ad1c78f05d54cc3f363be80  |1636549585  |IN_PROGRESS  |                                                                  ||
 
 ### Bring your own persistent store
 

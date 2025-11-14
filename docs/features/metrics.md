@@ -66,12 +66,12 @@ The library requires two settings. You can set them as environment variables, or
 
 These settings will be used across all metrics emitted:
 
-| Setting              | Description                                                      | Environment variable               | Default                                                  | Allowed Values | Example             | Constructor parameter |
-|----------------------|------------------------------------------------------------------|------------------------------------|----------------------------------------------------------|----------------|---------------------|-----------------------|
-| **Service**          | Optionally, sets **service** metric dimension across all metrics | `POWERTOOLS_SERVICE_NAME`          | `service_undefined`                                      | Any string     | `serverlessAirline` | `serviceName`         |
-| **Metric namespace** | Logical container where all metrics will be placed               | `POWERTOOLS_METRICS_NAMESPACE`     | `default_namespace`                                      | Any string     | `serverlessAirline` | `default_namespace`   |
-| **Function Name**    | Function name used as dimension for the `ColdStart` metric       | `POWERTOOLS_METRICS_FUNCTION_NAME` | [See docs](#capturing-a-cold-start-invocation-as-metric) | Any string     | `my-function-name`  | `functionName`        |
-| **Disabled**          | Whether to disable the log of metrics to standard output or not | `POWERTOOLS_METRICS_DISABLED`       | `false`                                                   | Boolean        | `true`             |                       |
+| Setting              | Description                                                      | Environment variable                | Default                                                  | Allowed Values | Example             | Constructor parameter |
+| -------------------- | ---------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------- | -------------- | ------------------- | --------------------- |
+| **Service**          | Optionally, sets **service** metric dimension across all metrics | `POWERTOOLS_SERVICE_NAME`           | `service_undefined`                                      | Any string     | `serverlessAirline` | `serviceName`         |
+| **Metric namespace** | Logical container where all metrics will be placed               | `POWERTOOLS_METRICS_NAMESPACE`      | `default_namespace`                                      | Any string     | `serverlessAirline` | `default_namespace`   |
+| **Function Name**    | Function name used as dimension for the `ColdStart` metric       | `POWERTOOLS_METRICS_FUNCTION_NAME`  | [See docs](#capturing-a-cold-start-invocation-as-metric) | Any string     | `my-function-name`  | `functionName`        |
+| **Disabled**         | Whether to disable the log of metrics to standard output or not  | `POWERTOOLS_METRICS_DISABLED`       | `false`                                                  | Boolean        | `true`              |                       |
 
 !!! tip
     Use your application name or main service as the metric namespace to easily group all metrics

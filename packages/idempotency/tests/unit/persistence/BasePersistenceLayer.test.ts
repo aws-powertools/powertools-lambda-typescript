@@ -28,8 +28,6 @@ vi.mock('node:crypto', () => ({
 }));
 
 describe('Class: BasePersistenceLayer', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
   beforeAll(() => {
     vi.useFakeTimers().setSystemTime(new Date());
   });
@@ -37,11 +35,10 @@ describe('Class: BasePersistenceLayer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
-    process.env = { ...ENVIRONMENT_VARIABLES };
+    vi.stubEnv('AWS_LAMBDA_FUNCTION_NAME', 'my-lambda-function');
   });
 
   afterAll(() => {
-    process.env = ENVIRONMENT_VARIABLES;
     vi.useRealTimers();
   });
 

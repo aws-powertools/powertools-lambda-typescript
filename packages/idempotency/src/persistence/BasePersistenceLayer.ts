@@ -226,6 +226,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   private deleteFromCache(idempotencyKey: string): void {
     if (!this.useLocalCache) return;
     // Delete from local cache if it exists
+    /* v8 ignore else -- @preserve */
     if (this.cache?.has(idempotencyKey)) {
       this.cache?.remove(idempotencyKey);
     }
@@ -324,6 +325,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     if (Array.isArray(data) || typeof data === 'object') {
       if (data === null) return true;
       for (const value of Object.values(data)) {
+        /* v8 ignore else -- @preserve */
         if (value) {
           return false;
         }

@@ -604,6 +604,7 @@ class Metrics extends Utility implements MetricsInterface {
       );
     }
 
+    /* v8 ignore else -- @preserve */
     if (!this.disabled) {
       const emfOutput = this.serializeMetrics();
       hasMetrics && this.console.log(JSON.stringify(emfOutput));
@@ -809,9 +810,9 @@ class Metrics extends Utility implements MetricsInterface {
    * - `POWERTOOLS_FUNCTION_NAME` environment variable
    * - {@link Metrics.captureColdStartMetric | `captureColdStartMetric('myFunctionName')`} method
    */
-  /* v8 ignore start */ public setFunctionName(name: string): void {
+  /* v8 ignore next -- @preserve */ public setFunctionName(name: string): void {
     this.functionName = name;
-  } /* v8 ignore end */
+  }
 
   /**
    * Set the flag to throw an error if no metrics are emitted.
@@ -866,9 +867,9 @@ class Metrics extends Utility implements MetricsInterface {
   /**
    * @deprecated Use {@link Metrics.setThrowOnEmptyMetrics | `setThrowOnEmptyMetrics()`} instead.
    */
-  /* v8 ignore start */ public throwOnEmptyMetrics(): void {
+  /* v8 ignore next -- @preserve */ public throwOnEmptyMetrics(): void {
     this.shouldThrowOnEmptyMetrics = true;
-  } /* v8 ignore stop */
+  }
 
   /**
    * Get the custom config service if it exists.

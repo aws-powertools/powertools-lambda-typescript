@@ -5,7 +5,7 @@ description: Versioning and maintenance policy for Powertools for AWS Lambda (Ty
 
 <!-- markdownlint-disable MD041 MD043 MD013 -->
 
-### Overview
+## Overview
 
 This document outlines the maintenance policy for Powertools for AWS Lambda and their underlying dependencies. AWS regularly provides Powertools for AWS Lambda with updates that may contain new features, enhancements, bug fixes, security patches, or documentation updates. Updates may also address changes with dependencies, language runtimes, and operating systems. Powertools for AWS Lambda is published to package managers (e.g. PyPi, NPM, Maven, NuGet), and are available as source code on GitHub.
 

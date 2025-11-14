@@ -82,13 +82,13 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
  * @param eventType The type of event to process (SQS, Kinesis, DynamoDB)
  * @deprecated Use {@link BasePartialBatchProcessor} instead, this class is deprecated and will be removed in the next major version.
  */
-/* v8 ignore start */ class BatchProcessorSync extends BasePartialBatchProcessor {
+/* v8 ignore next -- @preserve */ class BatchProcessorSync extends BasePartialBatchProcessor {
   /**
    * @throws {BatchProcessingError} This method is not implemented for asynchronous processing.
    *
    * @param _record The record to be processed
    */
-  public processRecord(
+  /* v8 ignore next -- @preserve */ public processRecord(
     _record: BaseRecord
   ): Promise<SuccessResponse | FailureResponse> {
     throw new BatchProcessingError('Not implemented. Use process() instead.');
@@ -120,6 +120,6 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
       return this.failureHandler(record, error as Error);
     }
   }
-} /* v8 ignore stop */
+}
 
 export { BatchProcessorSync };

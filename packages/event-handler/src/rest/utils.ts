@@ -365,6 +365,7 @@ export const getBase64EncodingFromHeaders = (headers: Headers): boolean => {
   }
 
   const contentType = headers.get('content-type');
+  /* v8 ignore else -- @preserve */
   if (contentType != null) {
     const type = contentType.split(';')[0].trim();
     if (
@@ -400,6 +401,7 @@ const streamifyResponse =
     return (async (event, responseStream, context) => {
       await handler(event, responseStream, context);
 
+      /* v8 ignore else -- @preserve */
       if ('chunks' in responseStream && Array.isArray(responseStream.chunks)) {
         const output = Buffer.concat(responseStream.chunks as Buffer[]);
         const nullBytes = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);

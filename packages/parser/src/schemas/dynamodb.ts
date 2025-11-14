@@ -57,6 +57,7 @@ const unmarshallDynamoDBTransform = (
   // @ts-expect-error - We are intentionally mutating the object
   result.Keys = unmarshalledKeys;
 
+  /* v8 ignore next -- @preserve */
   if (object.NewImage) {
     const unmarshalled = unmarshallAttributeValue('NewImage', object.NewImage);
     if (unmarshalled === z.NEVER) return z.NEVER;

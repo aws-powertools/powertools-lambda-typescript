@@ -194,12 +194,9 @@ class SecretsProvider extends BaseProvider {
   /**
    * Retrieving multiple secrets is not supported with AWS Secrets Manager.
    */
-  /* v8 ignore start */ public async getMultiple(
-    path: string,
-    _options?: unknown
-  ): Promise<void> {
+  public async getMultiple(path: string, _options?: unknown): Promise<void> {
     await super.getMultiple(path);
-  } /* v8 ignore stop */
+  }
 
   /**
    * Retrieve a secret from AWS Secrets Manager.

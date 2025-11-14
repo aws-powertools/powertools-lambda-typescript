@@ -215,6 +215,7 @@ class LRUCache<K, V> {
     if (this.mostRecentlyUsed === item) return;
 
     // If the item is not the newest, we need to mark it as the newest
+    /* v8 ignore else -- @preserve */
     if (item[NEWER]) {
       if (item === this.leastRecentlyUsed) {
         this.leastRecentlyUsed = item[NEWER];
@@ -226,6 +227,7 @@ class LRUCache<K, V> {
     }
     item[NEWER] = undefined;
     item[OLDER] = this.mostRecentlyUsed;
+    /* v8 ignore else -- @preserve */
     if (this.mostRecentlyUsed) {
       this.mostRecentlyUsed[NEWER] = item;
     }

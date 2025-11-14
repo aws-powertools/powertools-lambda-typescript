@@ -38,8 +38,8 @@ const isAppSyncEventsEvent = (event: unknown): event is AppSyncEventsEvent => {
     'name' in event.info.channelNamespace &&
     isString(event.info.channelNamespace.name) &&
     'operation' in event.info &&
-    /* v8 ignore next */
-    (event.info.operation === 'PUBLISH' || event.info.operation === 'SUBSCRIBE')
+    isString(event.info.operation) &&
+    ['PUBLISH', 'SUBSCRIBE'].includes(event.info.operation)
   );
 };
 

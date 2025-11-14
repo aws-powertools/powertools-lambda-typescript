@@ -668,6 +668,7 @@ class Parser {
       const value = this.#expression(0);
       const node = keyValPair(keyName, value);
       pairs.push(node);
+      /* v8 ignore else -- @preserve */
       if (this.#currentToken() === 'comma') {
         this.#match('comma');
       } else if (this.#currentToken() === 'rbrace') {

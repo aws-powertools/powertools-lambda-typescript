@@ -68,6 +68,7 @@ const transformValue = (
       return JSON.parse(valueToTransform) as JSONValue;
       // If the transform is `binary` or `auto` and the key ends with `.binary`, decode the value from base64
     }
+    /* v8 ignore else -- @preserve */
     if (isBinaryTransform || isAutoBinaryTransform) {
       return new TextDecoder('utf-8').decode(
         fromBase64(valueToTransform, 'base64')

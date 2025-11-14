@@ -144,13 +144,13 @@ describe.each([
     expect(actual.hasContext).toBe(true);
   });
 
-  it('throws an invalid event error for non-API Gateway events', () => {
+  it('throws an invalid event error for non-API Gateway events', async () => {
     // Prepare
     const app = new Router();
     const nonApiGatewayEvent = { Records: [] }; // SQS-like event
 
     // Act & Assess
-    expect(app.resolve(nonApiGatewayEvent, context)).rejects.toThrowError(
+    await expect(app.resolve(nonApiGatewayEvent, context)).rejects.toThrowError(
       InvalidEventError
     );
   });

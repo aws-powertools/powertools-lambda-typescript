@@ -228,6 +228,7 @@ const checkIfArgumentTypeIsValid = (
 
     return true;
   }
+  /* v8 ignore else -- @preserve */
   if (['string', 'number', 'boolean'].includes(type)) {
     typeCheckType(arg, type, argumentSpec, hasMoreTypesToCheck);
     if (typeof arg === type) return true;

@@ -50,16 +50,16 @@ class ProviderService implements ProviderServiceInterface {
   /**
    * @deprecated Use {@link captureAWSv3Client} instead.
    */
-  /* v8 ignore start */ public captureAWS<T>(awssdk: T): T {
+  /* v8 ignore next -- @preserve */ public captureAWS<T>(awssdk: T): T {
     return captureAWS(awssdk);
-  } /* v8 ignore stop */
+  }
 
   /**
    * @deprecated Use {@link captureAWSv3Client} instead.
    */
-  /* v8 ignore start */ public captureAWSClient<T>(service: T): T {
+  /* v8 ignore next -- @preserve */ public captureAWSClient<T>(service: T): T {
     return captureAWSClient(service);
-  } /* v8 ignore stop */
+  }
 
   public captureAWSv3Client<T>(service: T): T {
     addUserAgentMiddleware(service, 'tracer');

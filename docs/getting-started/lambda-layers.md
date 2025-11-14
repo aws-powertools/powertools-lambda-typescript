@@ -9,7 +9,7 @@ A [Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/configuration-laye
 
 You can add our layer both in the [AWS Lambda Console _(under `Layers`)_](https://docs.aws.amazon.com/lambda/latest/dg/adding-layers.html){target="_blank"}, or via your favorite infrastructure as code framework with the ARN value. You can use the Lambda Layer both with CommonJS and ESM (ECMAScript modules).
 
-### Layer ARNs
+## Layer ARNs
 
 We publish the Lambda Layer for Powertools for AWS Lambda in all commercial regions and AWS GovCloud (US) regions.
 

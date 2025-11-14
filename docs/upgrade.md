@@ -17,15 +17,15 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 
 ### Quick summary
 
-| Area                  | Change                                                                                                                         | Code change required |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
-| **ESM support**       | Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                             | -                    |
-| **Middy.js**          | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.    | Yes                  |
-| **Types imports**     | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.             | Yes                  |
-| **Logger**            | Changed [log sampling](./features/logger.md#sampling-debug-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
-| **Logger**            | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                          | Yes                  |
-| **Logger**            | Removed `ContextExamples` from `@aws-lambda-powertools/commons` package.                                                       | Yes                  |
-| **Logger and Tracer** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                        | Yes                  |
+||Area                   |Change                                                                                                                                                                                                   |Code change required  ||
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+||**ESM support**        |Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                                                                                                       |-                     ||
+||**Middy.js**           |Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.                                                                              |Yes                   ||
+||**Types imports**      |Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.                                                                                       |Yes                   ||
+||**Logger**             |Changed [log sampling](./features/logger.md#sampling-debug-logs) to dynamically switch log level to `DEBUG` on a percentage of requests.                                                                 |-                     ||
+||**Logger**             |Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                                                                                                    |Yes                   ||
+||**Logger**             |Removed `ContextExamples` from `@aws-lambda-powertools/commons` package.                                                                                                                                 |Yes                   ||
+||**Logger and Tracer**  |Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                                                                                                  |Yes                   ||
 
 ### First steps
 
@@ -204,10 +204,10 @@ In v1, log sampling implementation was inconsistent from other Powertools for AW
 
 In v2, we changed these behaviors for consistency across languages:
 
-| Behavior                | v1                                                           | v2                                            |
+||Behavior                 |v1                                                            |v2                                             ||
 | ----------------------- | ------------------------------------------------------------ | --------------------------------------------- |
-| Log Level               | Log level remains unchanged but any log statement is printed | Log level changes to `DEBUG`                  |
-| Log sampling indication | No indication                                                | Debug message indicates sampling is in effect |
+||Log Level                |Log level remains unchanged but any log statement is printed  |Log level changes to `DEBUG`                   ||
+||Log sampling indication  |No indication                                                 |Debug message indicates sampling is in effect  ||
 
 Logger `sampleRateValue` **continues** to determine the percentage of concurrent/cold start invocations that logs will be sampled, _e.g., log level set to `DEBUG`_.
 

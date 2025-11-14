@@ -6,7 +6,6 @@ import type {
   Context,
 } from 'aws-lambda';
 import type { Router } from '../../../src/rest/Router.js';
-import { HttpResponseStream } from '../../../src/rest/utils.js';
 import type { HandlerResponse, Middleware } from '../../../src/types/rest.js';
 
 export const createTestEvent = (
@@ -128,26 +127,6 @@ export const createHeaderCheckMiddleware = (headers: {
     await next();
   };
 };
-
-// Mock ResponseStream that extends the actual ResponseStream class
-export class MockResponseStream extends HttpResponseStream {
-  public chunks: Buffer[] = [];
-  public _onBeforeFirstWrite?: (
-    write: (data: Uint8Array | string) => void
-  ) => void;
-  #firstWrite = true;
-
-  _write(chunk: Buffer, _encoding: string, callback: () => void): void {
-    if (this.#firstWrite && this._onBeforeFirstWrite) {
-      this._onBeforeFirstWrite((data: Uint8Array | string) => {
-        this.chunks.push(Buffer.from(data));
-      });
-      this.#firstWrite = false;
-    }
-    this.chunks.push(chunk);
-    callback();
-  }
-}
 
 // Create a handler function from the Router instance
 export const createHandler = (app: Router) => {

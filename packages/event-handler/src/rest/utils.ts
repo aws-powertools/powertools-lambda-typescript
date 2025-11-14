@@ -18,9 +18,9 @@ import type {
   HandlerResponse,
   HttpMethod,
   HttpStatusCode,
+  ResponseStream as IResponseStream,
   Middleware,
   Path,
-  ResponseStream,
   ValidationResult,
 } from '../types/rest.js';
 import {
@@ -306,19 +306,44 @@ export const resolvePrefixedPath = (path: Path, prefix?: Path): Path => {
   return `${prefix}${path}`.replace(/\/$/, '') as Path;
 };
 
+export class ResponseStream extends Writable implements IResponseStream {
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: This is how the Lambda RIC implements it
+  #contentType: string | undefined;
+  readonly #chunks: Buffer[] = [];
+  public _onBeforeFirstWrite?: (
+    write: (data: Uint8Array | string) => void
+  ) => void;
+  #firstWrite = true;
+
+  setContentType(contentType: string) {
+    this.#contentType = contentType;
+  }
+
+  _write(chunk: Buffer, _encoding: string, callback: () => void): void {
+    /* v8 ignore else -- @preserve */
+    if (this.#firstWrite && this._onBeforeFirstWrite) {
+      this._onBeforeFirstWrite((data: Uint8Array | string) => {
+        this.#chunks.push(Buffer.from(data));
+      });
+      this.#firstWrite = false;
+    }
+    this.#chunks.push(chunk);
+    callback();
+  }
+
+  public getBuffer(): Buffer {
+    return Buffer.concat(this.#chunks);
+  }
+}
+
 export const HttpResponseStream =
   globalThis.awslambda?.HttpResponseStream ??
-  class LocalHttpResponseStream extends Writable {
-    #contentType: string | undefined;
-
-    setContentType(contentType: string) {
-      this.#contentType = contentType;
-    }
-
+  // biome-ignore lint/complexity/noStaticOnlyClass: This is how the Lambda RIC implements it
+  class LocalHttpResponseStream {
     static from(
       underlyingStream: ResponseStream,
       prelude: Record<string, string>
-    ) {
+    ): ResponseStream {
       underlyingStream.setContentType(
         "'application/vnd.awslambda.http-integration-response'"
       );
@@ -401,22 +426,21 @@ const streamifyResponse =
     return (async (event, responseStream, context) => {
       await handler(event, responseStream, context);
 
-      /* v8 ignore else -- @preserve */
-      if ('chunks' in responseStream && Array.isArray(responseStream.chunks)) {
-        const output = Buffer.concat(responseStream.chunks as Buffer[]);
-        const nullBytes = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);
-        const separatorIndex = output.indexOf(nullBytes);
+      /* v8 ignore next -- @preserve */
+      const output: Buffer =
+        (responseStream as IResponseStream).getBuffer?.() ?? Buffer.from([]);
+      const nullBytes = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);
+      const separatorIndex = output.indexOf(nullBytes);
 
-        const preludeBuffer = output.subarray(0, separatorIndex);
-        const bodyBuffer = output.subarray(separatorIndex + 8);
-        const prelude = JSON.parse(preludeBuffer.toString());
+      const preludeBuffer = output.subarray(0, separatorIndex);
+      const bodyBuffer = output.subarray(separatorIndex + 8);
+      const prelude = JSON.parse(preludeBuffer.toString());
 
-        return {
-          body: bodyBuffer.toString(),
-          headers: prelude.headers,
-          statusCode: prelude.statusCode,
-        } as TResult;
-      }
+      return {
+        body: bodyBuffer.toString(),
+        headers: prelude.headers,
+        statusCode: prelude.statusCode,
+      } as TResult;
     }) as StreamifyHandler<TEvent, TResult>;
   });
 

@@ -9,6 +9,7 @@ import {
   streamify,
   UnauthorizedError,
 } from '../../../../src/rest/index.js';
+import { ResponseStream } from '../../../../src/rest/utils.js';
 import type { RequestContext } from '../../../../src/types/rest.js';
 import {
   createHandler,
@@ -17,7 +18,6 @@ import {
   createTestEventV2,
   createTestLambdaClass,
   createTrackingMiddleware,
-  MockResponseStream,
 } from '../helpers.js';
 
 describe.each([
@@ -498,7 +498,7 @@ describe.each([
       }
 
       const lambda = new Lambda();
-      const responseStream = new MockResponseStream();
+      const responseStream = new ResponseStream();
       const handler = lambda.handler.bind(lambda);
 
       // Act
@@ -540,7 +540,7 @@ describe.each([
       }
 
       const lambda = new Lambda();
-      const responseStream = new MockResponseStream();
+      const responseStream = new ResponseStream();
       const handler = lambda.handler.bind(lambda);
 
       // Act

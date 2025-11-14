@@ -6,11 +6,8 @@ import {
   streamify,
   UnauthorizedError,
 } from '../../../../src/rest/index.js';
-import {
-  createTestEvent,
-  createTestEventV2,
-  MockResponseStream,
-} from '../helpers.js';
+import { ResponseStream } from '../../../../src/rest/utils.js';
+import { createTestEvent, createTestEventV2 } from '../helpers.js';
 
 describe.each([
   { version: 'V1', createEvent: createTestEvent },
@@ -22,7 +19,7 @@ describe.each([
     app.get('/test', async () => ({ message: 'Hello, World!' }));
 
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -47,7 +44,7 @@ describe.each([
     });
 
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -65,7 +62,7 @@ describe.each([
     // Prepare
     const app = new Router();
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -93,7 +90,7 @@ describe.each([
     app.get('/test', () => ({ message: 'middleware test' }));
 
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -116,7 +113,7 @@ describe.each([
     });
 
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -145,7 +142,7 @@ describe.each([
     });
 
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -193,7 +190,7 @@ describe.each([
     const app = new Router();
     app.get('/test', handlerFn);
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -212,7 +209,7 @@ describe.each([
     const app = new Router();
     app.get('/test', () => new Response(null, { status: 204 }));
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -231,7 +228,7 @@ describe.each([
     const app = new Router();
     app.get('/test', () => new Response(undefined, { status: 200 }));
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -256,7 +253,7 @@ describe.each([
 
     app.get('/test', () => new Response(errorStream, { status: 200 }));
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act & Assess
     await expect(
@@ -275,7 +272,7 @@ describe.each([
     });
 
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -299,7 +296,7 @@ describe.each([
     });
 
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(
@@ -323,7 +320,7 @@ describe.each([
     const app = new Router();
     const handler = streamify(app);
     const invalidEvent = { invalid: 'event' };
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act & Assess
     await expect(
@@ -344,7 +341,7 @@ describe.each([
     }));
 
     const handler = streamify(app);
-    const responseStream = new MockResponseStream();
+    const responseStream = new ResponseStream();
 
     // Act
     const result = await handler(

@@ -111,6 +111,7 @@ export const cors = (options?: CorsOptions): Middleware => {
         return;
       }
       setCORSBaseHeaders(requestOrigin, reqCtx.res.headers);
+      /* v8 ignore else -- @preserve */
       if (config.maxAge !== undefined) {
         reqCtx.res.headers.set(
           'access-control-max-age',

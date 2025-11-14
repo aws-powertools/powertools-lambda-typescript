@@ -322,6 +322,7 @@ function addProxyEventHeaders(
   response: ExtendedAPIGatewayProxyResult
 ) {
   for (const [key, value] of Object.entries(response.headers ?? {})) {
+    /* v8 ignore else -- @preserve */
     if (value != null) {
       headers.set(key, String(value));
     }

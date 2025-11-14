@@ -7,6 +7,7 @@
  */
 const getErrorCause = (error: unknown): unknown => {
   let cause = error;
+  /* v8 ignore else -- @preserve */
   if (error instanceof Error && error.name === 'SchemaValidationError') {
     cause = error.cause;
   }

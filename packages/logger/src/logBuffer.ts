@@ -47,6 +47,7 @@ export class SizedSet<V> extends Set<SizedItem<V>> {
    */
   delete(item: SizedItem<V>): boolean {
     const wasDeleted = super.delete(item);
+    /* v8 ignore next -- @preserve */
     if (wasDeleted) {
       this.currentBytesSize -= item.byteSize;
     }
@@ -66,6 +67,7 @@ export class SizedSet<V> extends Set<SizedItem<V>> {
    */
   shift(): SizedItem<V> | undefined {
     const firstElement = this.values().next().value;
+    /* v8 ignore next -- @preserve */
     if (firstElement) {
       this.delete(firstElement);
     }

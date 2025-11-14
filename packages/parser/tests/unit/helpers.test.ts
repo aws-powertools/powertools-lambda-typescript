@@ -1,9 +1,4 @@
 import { gzipSync } from 'node:zlib';
-import {
-  KinesisDataStreamRecord,
-  KinesisDataStreamRecordPayload,
-  KinesisDataStreamSchema,
-} from 'src/schemas/kinesis.js';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { DynamoDBMarshalled } from '../../src/helpers/dynamodb.js';
@@ -13,6 +8,11 @@ import {
   DynamoDBStreamRecord,
   DynamoDBStreamSchema,
 } from '../../src/schemas/dynamodb.js';
+import {
+  KinesisDataStreamRecord,
+  KinesisDataStreamRecordPayload,
+  KinesisDataStreamSchema,
+} from '../../src/schemas/kinesis.js';
 import {
   SnsNotificationSchema,
   SnsRecordSchema,
@@ -29,7 +29,7 @@ import { getTestEvent } from './helpers/utils.js';
 const bodySchema = z.object({
   id: z.number(),
   name: z.string(),
-  email: z.string().email(),
+  email: z.email(),
 });
 const envelopeSchema = z.object({
   body: z.string(),

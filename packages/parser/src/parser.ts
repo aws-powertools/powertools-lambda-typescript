@@ -119,11 +119,10 @@ function parse<T extends StandardSchemaV1, E extends Envelope>(
   }
 
   const result = schema['~standard'].validate(data);
-  /* v8 ignore start */
+  /* v8 ignore next -- @preserve */
   if (result instanceof Promise) {
     throw new ParseError('Schema parsing supports only synchronous validation');
   }
-  /* v8 ignore stop */
 
   if (result.issues) {
     const error = new ParseError('Failed to parse schema', {

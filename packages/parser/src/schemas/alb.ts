@@ -87,11 +87,9 @@ const AlbSchema = z.object({
  *
  * This schema will be removed in a future major release.
  */
-/* v8 ignore start */
 const AlbMultiValueHeadersSchema = AlbSchema.extend({
   multiValueHeaders: z.record(z.string(), z.array(z.string())),
   multiValueQueryStringParameters: z.record(z.string(), z.array(z.string())),
 });
-/* v8 ignore stop */
 
 export { AlbSchema, AlbMultiValueHeadersSchema };

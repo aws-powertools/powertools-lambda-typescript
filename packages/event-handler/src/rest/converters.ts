@@ -74,7 +74,9 @@ const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
   for (const [name, value] of Object.entries(
     event.queryStringParameters ?? {}
   )) {
-    if (value != null) url.searchParams.append(name, value);
+    if (value != null && !event.multiValueQueryStringParameters?.[name]) {
+      url.searchParams.append(name, value);
+    }
   }
 
   for (const [name, values] of Object.entries(

@@ -298,6 +298,53 @@ describe('Converters', () => {
       expect(url.searchParams.getAll('multi')).toEqual(['value1', 'value2']);
     });
 
+    it('handles same parameter in both queryStringParameters and multiValueQueryStringParameters without duplication', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        queryStringParameters: {
+          filter: 'published', // Last value (API Gateway behavior)
+        },
+        multiValueQueryStringParameters: {
+          filter: ['active', 'published'], // All values (API Gateway behavior)
+        },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      const url = new URL(request.url);
+      expect(url.searchParams.getAll('filter')).toEqual([
+        'active',
+        'published',
+      ]);
+    });
+
+    it('handles mixed single and multi-value query parameters correctly', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        queryStringParameters: {
+          single: 'value1', // Only in single-value
+          multi: 'last', // Also in multi-value (should be ignored)
+        },
+        multiValueQueryStringParameters: {
+          multi: ['first', 'last'], // Should take precedence
+        },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      const url = new URL(request.url);
+      expect(url.searchParams.get('single')).toBe('value1');
+      expect(url.searchParams.getAll('multi')).toEqual(['first', 'last']);
+    });
+
     it('skips undefined queryStringParameter values', () => {
       // Prepare
       const event = {

@@ -1,4 +1,4 @@
-npx vitest --run \
+vitest --run \
   --exclude tests/unit/layer-publisher.test.ts \
   --coverage --coverage.thresholds.100 \
   tests/unit

@@ -17,7 +17,7 @@ import {
   createTestEventV2,
   createTestLambdaClass,
   createTrackingMiddleware,
-  MockResponseStream,
+  ResponseStream,
 } from '../helpers.js';
 
 describe.each([
@@ -498,7 +498,7 @@ describe.each([
       }
 
       const lambda = new Lambda();
-      const responseStream = new MockResponseStream();
+      const responseStream = new ResponseStream();
       const handler = lambda.handler.bind(lambda);
 
       // Act
@@ -540,7 +540,7 @@ describe.each([
       }
 
       const lambda = new Lambda();
-      const responseStream = new MockResponseStream();
+      const responseStream = new ResponseStream();
       const handler = lambda.handler.bind(lambda);
 
       // Act

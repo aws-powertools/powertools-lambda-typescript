@@ -1,4 +1,4 @@
-import type { Readable } from 'node:stream';
+import type { Readable, Writable } from 'node:stream';
 import type {
   GenericLogger,
   JSONValue,
@@ -12,7 +12,6 @@ import type {
 } from 'aws-lambda';
 import type { HttpStatusCodes, HttpVerbs } from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
-import type { HttpResponseStream } from '../rest/utils.js';
 import type { ResolveOptions } from './common.js';
 
 type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2';
@@ -140,9 +139,11 @@ type ValidationResult = {
   issues: string[];
 };
 
-type ResponseStream = InstanceType<typeof HttpResponseStream> & {
-  _onBeforeFirstWrite?: (write: (data: Uint8Array | string) => void) => void;
-};
+interface ResponseStream extends Writable {
+  setContentType(contentType: string): void;
+  _onBeforeFirstWrite?: (writeFn: (chunk: unknown) => void) => void;
+  getBuffer?: () => Buffer;
+}
 
 type V1Headers = {
   headers: Record<string, string>;

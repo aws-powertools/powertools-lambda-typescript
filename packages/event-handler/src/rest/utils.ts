@@ -1,4 +1,4 @@
-import { Duplex, Readable, Writable } from 'node:stream';
+import { Duplex, Readable } from 'node:stream';
 import {
   isRecord,
   isRegExp,
@@ -308,17 +308,12 @@ export const resolvePrefixedPath = (path: Path, prefix?: Path): Path => {
 
 export const HttpResponseStream =
   globalThis.awslambda?.HttpResponseStream ??
-  class LocalHttpResponseStream extends Writable {
-    #contentType: string | undefined;
-
-    setContentType(contentType: string) {
-      this.#contentType = contentType;
-    }
-
+  // biome-ignore lint/complexity/noStaticOnlyClass: This is how the Lambda RIC implements it
+  class LocalHttpResponseStream {
     static from(
       underlyingStream: ResponseStream,
       prelude: Record<string, string>
-    ) {
+    ): ResponseStream {
       underlyingStream.setContentType(
         "'application/vnd.awslambda.http-integration-response'"
       );
@@ -401,22 +396,21 @@ const streamifyResponse =
     return (async (event, responseStream, context) => {
       await handler(event, responseStream, context);
 
-      /* v8 ignore else -- @preserve */
-      if ('chunks' in responseStream && Array.isArray(responseStream.chunks)) {
-        const output = Buffer.concat(responseStream.chunks as Buffer[]);
-        const nullBytes = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);
-        const separatorIndex = output.indexOf(nullBytes);
+      /* v8 ignore next -- @preserve */
+      const output: Buffer =
+        (responseStream as ResponseStream).getBuffer?.() ?? Buffer.from([]);
+      const nullBytes = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);
+      const separatorIndex = output.indexOf(nullBytes);
 
-        const preludeBuffer = output.subarray(0, separatorIndex);
-        const bodyBuffer = output.subarray(separatorIndex + 8);
-        const prelude = JSON.parse(preludeBuffer.toString());
+      const preludeBuffer = output.subarray(0, separatorIndex);
+      const bodyBuffer = output.subarray(separatorIndex + 8);
+      const prelude = JSON.parse(preludeBuffer.toString());
 
-        return {
-          body: bodyBuffer.toString(),
-          headers: prelude.headers,
-          statusCode: prelude.statusCode,
-        } as TResult;
-      }
+      return {
+        body: bodyBuffer.toString(),
+        headers: prelude.headers,
+        statusCode: prelude.statusCode,
+      } as TResult;
     }) as StreamifyHandler<TEvent, TResult>;
   });
 

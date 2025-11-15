@@ -227,14 +227,8 @@ describe('REST Event Handler E2E tests', () => {
       expect(data.limit).toBe(limit);
     });
 
-    it.skip('handles array query parameters', async () => {
-      // TODO: Bug in proxyEventV1ToWebRequest - duplicates multi-value query parameters
-      // Tracked in: https://github.com/aws-powertools/powertools-lambda-typescript/issues/4750
-      // API Gateway V1 puts same param in both queryStringParameters (last value) and
-      // multiValueQueryStringParameters (all values), causing duplication
-      // Expected: ['active', 'published']
-      // Actual: ['published', 'active', 'published']
-
+    it('handles array query parameters', async () => {
+      // Prepare
       const searchQuery = 'test';
       const filters = ['active', 'published'];
 
@@ -299,10 +293,7 @@ describe('REST Event Handler E2E tests', () => {
       expect(data.limit).toBe(limit);
     });
 
-    it.skip('handles single-value array parameter', async () => {
-      // TODO: Related to bug in proxyEventV1ToWebRequest - duplicates single-value query parameters
-      // Tracked in: https://github.com/aws-powertools/powertools-lambda-typescript/issues/4750
-
+    it('handles single-value array parameter', async () => {
       // Act
       const response = await fetch(`${apiUrl}/params/search?filter=active`);
       const data = await response.json();

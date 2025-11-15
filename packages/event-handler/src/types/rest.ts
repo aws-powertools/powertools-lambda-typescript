@@ -3,6 +3,7 @@ import type {
   GenericLogger,
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
@@ -105,6 +106,7 @@ type RestRouteOptions = {
   method: HttpMethod | HttpMethod[];
   path: Path;
   middleware?: Middleware[];
+  validation?: ValidationConfig;
 };
 
 // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
@@ -242,6 +244,40 @@ type WebResponseToProxyResultOptions = {
   isBase64Encoded?: boolean;
 };
 
+/**
+ * Configuration for request validation
+ */
+type RequestValidationConfig<T = unknown> = {
+  body?: StandardSchemaV1<unknown, T>;
+  headers?: StandardSchemaV1<unknown, Record<string, string>>;
+  path?: StandardSchemaV1<unknown, Record<string, string>>;
+  query?: StandardSchemaV1<unknown, Record<string, string>>;
+};
+
+/**
+ * Configuration for response validation
+ */
+type ResponseValidationConfig<T = unknown> = {
+  body?: StandardSchemaV1<unknown, T>;
+  headers?: StandardSchemaV1<unknown, Record<string, string>>;
+};
+
+/**
+ * Validation configuration for request and response
+ */
+type ValidationConfig<TReq = unknown, TRes = unknown> = {
+  req?: RequestValidationConfig<TReq>;
+  res?: ResponseValidationConfig<TRes>;
+};
+
+/**
+ * Validation error details
+ */
+type ValidationErrorDetail = {
+  component: 'body' | 'headers' | 'path' | 'query';
+  message: string;
+};
+
 export type {
   BinaryResult,
   ExtendedAPIGatewayProxyResult,
@@ -273,4 +309,8 @@ export type {
   NextFunction,
   V1Headers,
   WebResponseToProxyResultOptions,
+  RequestValidationConfig,
+  ResponseValidationConfig,
+  ValidationConfig,
+  ValidationErrorDetail,
 };

@@ -44,16 +44,15 @@ const createBody = (body: string | null, isBase64Encoded: boolean) => {
 };
 
 /**
- * Converts an API Gateway proxy event to a Web API Request object.
+ * Populates headers from single and multi-value header entries.
  *
+ * @param headers - The Headers object to populate
  * @param event - The API Gateway proxy event
- * @returns A Web API Request object
  */
-const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
-  const { httpMethod, path } = event;
-  const { domainName } = event.requestContext;
-
-  const headers = new Headers();
+const populateV1Headers = (
+  headers: Headers,
+  event: APIGatewayProxyEvent
+): void => {
   for (const [name, value] of Object.entries(event.headers ?? {})) {
     if (value !== undefined) headers.set(name, value);
   }
@@ -66,15 +65,21 @@ const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
       }
     }
   }
-  const hostname = headers.get('Host') ?? domainName;
-  const protocol = headers.get('X-Forwarded-Proto') ?? 'https';
+};
 
-  const url = new URL(path, `${protocol}://${hostname}/`);
-
+/**
+ * Populates URL search parameters from single and multi-value query string parameters.
+ *
+ * @param url - The URL object to populate
+ * @param event - The API Gateway proxy event
+ */
+const populateV1QueryParams = (url: URL, event: APIGatewayProxyEvent): void => {
   for (const [name, value] of Object.entries(
     event.queryStringParameters ?? {}
   )) {
-    if (value != null) url.searchParams.append(name, value);
+    if (value != null && !event.multiValueQueryStringParameters?.[name]) {
+      url.searchParams.append(name, value);
+    }
   }
 
   for (const [name, values] of Object.entries(
@@ -84,6 +89,27 @@ const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
       url.searchParams.append(name, value);
     }
   }
+};
+
+/**
+ * Converts an API Gateway proxy event to a Web API Request object.
+ *
+ * @param event - The API Gateway proxy event
+ * @returns A Web API Request object
+ */
+const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
+  const { httpMethod, path } = event;
+  const { domainName } = event.requestContext;
+
+  const headers = new Headers();
+  populateV1Headers(headers, event);
+
+  const hostname = headers.get('Host') ?? domainName;
+  const protocol = headers.get('X-Forwarded-Proto') ?? 'https';
+
+  const url = new URL(path, `${protocol}://${hostname}/`);
+  populateV1QueryParams(url, event);
+
   return new Request(url.toString(), {
     method: httpMethod,
     headers,

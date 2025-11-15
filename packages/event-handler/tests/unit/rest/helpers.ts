@@ -1,3 +1,4 @@
+import { Writable } from 'node:stream';
 import type {
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
@@ -6,7 +7,11 @@ import type {
   Context,
 } from 'aws-lambda';
 import type { Router } from '../../../src/rest/Router.js';
-import type { HandlerResponse, Middleware } from '../../../src/types/rest.js';
+import type {
+  HandlerResponse,
+  ResponseStream as IResponseStream,
+  Middleware,
+} from '../../../src/types/rest.js';
 
 export const createTestEvent = (
   path: string,
@@ -127,6 +132,36 @@ export const createHeaderCheckMiddleware = (headers: {
     await next();
   };
 };
+
+export class ResponseStream extends Writable implements IResponseStream {
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: This is how the Lambda RIC implements it
+  #contentType: string | undefined;
+  readonly #chunks: Buffer[] = [];
+  public _onBeforeFirstWrite?: (
+    write: (data: Uint8Array | string) => void
+  ) => void;
+  #firstWrite = true;
+
+  setContentType(contentType: string) {
+    this.#contentType = contentType;
+  }
+
+  _write(chunk: Buffer, _encoding: string, callback: () => void): void {
+    /* v8 ignore else -- @preserve */
+    if (this.#firstWrite && this._onBeforeFirstWrite) {
+      this._onBeforeFirstWrite((data: Uint8Array | string) => {
+        this.#chunks.push(Buffer.from(data));
+      });
+      this.#firstWrite = false;
+    }
+    this.#chunks.push(chunk);
+    callback();
+  }
+
+  public getBuffer(): Buffer {
+    return Buffer.concat(this.#chunks);
+  }
+}
 
 // Create a handler function from the Router instance
 export const createHandler = (app: Router) => {

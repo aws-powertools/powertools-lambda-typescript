@@ -6,8 +6,11 @@ import {
   streamify,
   UnauthorizedError,
 } from '../../../../src/rest/index.js';
-import { ResponseStream } from '../../../../src/rest/utils.js';
-import { createTestEvent, createTestEventV2 } from '../helpers.js';
+import {
+  createTestEvent,
+  createTestEventV2,
+  ResponseStream,
+} from '../helpers.js';
 
 describe.each([
   { version: 'V1', createEvent: createTestEvent },

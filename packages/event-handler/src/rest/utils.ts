@@ -1,4 +1,4 @@
-import { Duplex, Readable, Writable } from 'node:stream';
+import { Duplex, Readable } from 'node:stream';
 import {
   isRecord,
   isRegExp,
@@ -18,9 +18,9 @@ import type {
   HandlerResponse,
   HttpMethod,
   HttpStatusCode,
-  ResponseStream as IResponseStream,
   Middleware,
   Path,
+  ResponseStream,
   ValidationResult,
 } from '../types/rest.js';
 import {
@@ -306,36 +306,6 @@ export const resolvePrefixedPath = (path: Path, prefix?: Path): Path => {
   return `${prefix}${path}`.replace(/\/$/, '') as Path;
 };
 
-export class ResponseStream extends Writable implements IResponseStream {
-  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: This is how the Lambda RIC implements it
-  #contentType: string | undefined;
-  readonly #chunks: Buffer[] = [];
-  public _onBeforeFirstWrite?: (
-    write: (data: Uint8Array | string) => void
-  ) => void;
-  #firstWrite = true;
-
-  setContentType(contentType: string) {
-    this.#contentType = contentType;
-  }
-
-  _write(chunk: Buffer, _encoding: string, callback: () => void): void {
-    /* v8 ignore else -- @preserve */
-    if (this.#firstWrite && this._onBeforeFirstWrite) {
-      this._onBeforeFirstWrite((data: Uint8Array | string) => {
-        this.#chunks.push(Buffer.from(data));
-      });
-      this.#firstWrite = false;
-    }
-    this.#chunks.push(chunk);
-    callback();
-  }
-
-  public getBuffer(): Buffer {
-    return Buffer.concat(this.#chunks);
-  }
-}
-
 export const HttpResponseStream =
   globalThis.awslambda?.HttpResponseStream ??
   // biome-ignore lint/complexity/noStaticOnlyClass: This is how the Lambda RIC implements it
@@ -428,7 +398,7 @@ const streamifyResponse =
 
       /* v8 ignore next -- @preserve */
       const output: Buffer =
-        (responseStream as IResponseStream).getBuffer?.() ?? Buffer.from([]);
+        (responseStream as ResponseStream).getBuffer?.() ?? Buffer.from([]);
       const nullBytes = Buffer.from([0, 0, 0, 0, 0, 0, 0, 0]);
       const separatorIndex = output.indexOf(nullBytes);
 

@@ -9,7 +9,6 @@ import {
   streamify,
   UnauthorizedError,
 } from '../../../../src/rest/index.js';
-import { ResponseStream } from '../../../../src/rest/utils.js';
 import type { RequestContext } from '../../../../src/types/rest.js';
 import {
   createHandler,
@@ -18,6 +17,7 @@ import {
   createTestEventV2,
   createTestLambdaClass,
   createTrackingMiddleware,
+  ResponseStream,
 } from '../helpers.js';
 
 describe.each([

@@ -11,6 +11,8 @@ import {
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
 import type {
+  ALBEvent,
+  ALBResult,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
   APIGatewayProxyResult,
@@ -28,10 +30,10 @@ import type {
   RequestContext,
   ResolveStreamOptions,
   ResponseStream,
-  ResponseType,
   RestRouteOptions,
   RestRouterOptions,
   RouteHandler,
+  RouterResponse,
 } from '../types/rest.js';
 import { HttpStatusCodes, HttpVerbs } from './constants.js';
 import {
@@ -54,8 +56,10 @@ import {
   composeMiddleware,
   getBase64EncodingFromHeaders,
   getBase64EncodingFromResult,
+  getResponseType,
   getStatusCode,
   HttpResponseStream,
+  isALBEvent,
   isAPIGatewayProxyEventV1,
   isAPIGatewayProxyEventV2,
   isBinaryResult,
@@ -219,16 +223,18 @@ class Router {
     context: Context,
     options?: ResolveOptions
   ): Promise<RequestContext> {
-    if (!isAPIGatewayProxyEventV1(event) && !isAPIGatewayProxyEventV2(event)) {
+    if (
+      !isAPIGatewayProxyEventV1(event) &&
+      !isAPIGatewayProxyEventV2(event) &&
+      !isALBEvent(event)
+    ) {
       this.logger.error(
         'Received an event that is not compatible with this resolver'
       );
       throw new InvalidEventError();
     }
 
-    const responseType: ResponseType = isAPIGatewayProxyEventV2(event)
-      ? 'ApiGatewayV2'
-      : 'ApiGatewayV1';
+    const responseType = getResponseType(event);
 
     let req: Request;
     try {
@@ -358,15 +364,20 @@ class Router {
     options?: ResolveOptions
   ): Promise<APIGatewayProxyStructuredResultV2>;
   public async resolve(
-    event: unknown,
+    event: ALBEvent,
     context: Context,
     options?: ResolveOptions
-  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
+  ): Promise<ALBResult>;
   public async resolve(
     event: unknown,
     context: Context,
     options?: ResolveOptions
-  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2> {
+  ): Promise<RouterResponse>;
+  public async resolve(
+    event: unknown,
+    context: Context,
+    options?: ResolveOptions
+  ): Promise<RouterResponse> {
     const reqCtx = await this.#resolve(event, context, options);
     const isBase64Encoded =
       reqCtx.isBase64Encoded ??

@@ -1,5 +1,7 @@
 import { Writable } from 'node:stream';
 import type {
+  ALBEvent,
+  ALBResult,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
   APIGatewayProxyResult,
@@ -11,6 +13,7 @@ import type {
   HandlerResponse,
   ResponseStream as IResponseStream,
   Middleware,
+  RouterResponse,
 } from '../../../src/types/rest.js';
 
 export const createTestEvent = (
@@ -65,6 +68,27 @@ export const createTestEventV2 = (
     timeEpoch: 1704067200000,
   },
   isBase64Encoded: false,
+});
+
+export const createTestALBEvent = (
+  path: string,
+  httpMethod: string,
+  headers: Record<string, string> = {}
+): ALBEvent => ({
+  path,
+  httpMethod,
+  headers,
+  body: null,
+  multiValueHeaders: {},
+  isBase64Encoded: false,
+  queryStringParameters: undefined,
+  multiValueQueryStringParameters: undefined,
+  requestContext: {
+    elb: {
+      targetGroupArn:
+        'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/test/50dc6c495c0c9188',
+    },
+  },
 });
 
 export const createTrackingMiddleware = (
@@ -173,10 +197,8 @@ export const createHandler = (app: Router) => {
     event: APIGatewayProxyEventV2,
     context: Context
   ): Promise<APIGatewayProxyStructuredResultV2>;
-  function handler(
-    event: unknown,
-    context: Context
-  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
+  function handler(event: ALBEvent, context: Context): Promise<ALBResult>;
+  function handler(event: unknown, context: Context): Promise<RouterResponse>;
   function handler(event: unknown, context: Context) {
     return app.resolve(event, context);
   }
@@ -193,10 +215,8 @@ export const createHandlerWithScope = (app: Router, scope: unknown) => {
     event: APIGatewayProxyEventV2,
     context: Context
   ): Promise<APIGatewayProxyStructuredResultV2>;
-  function handler(
-    event: unknown,
-    context: Context
-  ): Promise<APIGatewayProxyResult | APIGatewayProxyStructuredResultV2>;
+  function handler(event: ALBEvent, context: Context): Promise<ALBResult>;
+  function handler(event: unknown, context: Context): Promise<RouterResponse>;
   function handler(event: unknown, context: Context) {
     return app.resolve(event, context, { scope });
   }

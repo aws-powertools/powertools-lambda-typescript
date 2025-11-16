@@ -10,7 +10,11 @@ import {
   proxyEventToWebRequest,
   webResponseToProxyResult,
 } from '../../../src/rest/index.js';
-import { createTestEvent, createTestEventV2 } from './helpers.js';
+import {
+  createTestALBEvent,
+  createTestEvent,
+  createTestEventV2,
+} from './helpers.js';
 
 describe('Converters', () => {
   describe('proxyEventToWebRequest (V1)', () => {
@@ -404,6 +408,146 @@ describe('Converters', () => {
     });
   });
 
+  describe('proxyEventToWebRequest (ALB)', () => {
+    const baseEvent = createTestALBEvent('/test', 'GET');
+    it('converts basic GET request', () => {
+      // Prepare & Act
+      const request = proxyEventToWebRequest(baseEvent);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('GET');
+      expect(request.url).toBe('https://localhost/test');
+      expect(request.body).toBe(null);
+    });
+
+    it('uses Host header over default', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        headers: { Host: 'custom.example.com' },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.url).toBe('https://custom.example.com/test');
+    });
+
+    it('uses X-Forwarded-Proto header for protocol', () => {
+      // Prepare
+      const event = createTestALBEvent('/test', 'GET', {
+        'X-Forwarded-Proto': 'http',
+      });
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.url).toBe('http://localhost/test');
+    });
+
+    it('handles POST request with string body', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        httpMethod: 'POST',
+        body: '{"key":"value"}',
+        headers: { 'Content-Type': 'application/json' },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('POST');
+      expect(request.text()).resolves.toBe('{"key":"value"}');
+      expect(request.headers.get('Content-Type')).toBe('application/json');
+    });
+
+    it('decodes base64 encoded body', () => {
+      // Prepare
+      const originalText = 'Hello World';
+      const base64Text = Buffer.from(originalText).toString('base64');
+      const event = {
+        ...baseEvent,
+        httpMethod: 'POST',
+        body: base64Text,
+        isBase64Encoded: true,
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.text()).resolves.toBe(originalText);
+    });
+
+    it('handles multiValueHeaders', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        multiValueHeaders: {
+          Accept: ['application/json', 'text/html'],
+          'Custom-Header': ['value1', 'value2'],
+        },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.headers.get('Accept')).toBe('application/json, text/html');
+      expect(request.headers.get('Custom-Header')).toBe('value1, value2');
+    });
+
+    it('handles queryStringParameters', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        queryStringParameters: {
+          name: 'john',
+          age: '25',
+        },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      const url = new URL(request.url);
+      expect(url.searchParams.get('name')).toBe('john');
+      expect(url.searchParams.get('age')).toBe('25');
+    });
+
+    it('handles multiValueQueryStringParameters', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        multiValueQueryStringParameters: {
+          filter: ['name', 'age'],
+          sort: ['desc'],
+        },
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      const url = new URL(request.url);
+      expect(url.searchParams.getAll('filter')).toEqual(['name', 'age']);
+      expect(url.searchParams.get('sort')).toBe('desc');
+    });
+  });
+
   describe('proxyEventToWebRequest (V2)', () => {
     it('converts basic GET request', () => {
       // Prepare
@@ -708,6 +852,67 @@ describe('Converters', () => {
       expect(result.body).toEqual(
         Buffer.from('Hello World').toString('base64')
       );
+    });
+  });
+
+  describe('webResponseToProxyResult - ALB', () => {
+    it('converts basic Response to ALB result', async () => {
+      // Prepare
+      const response = new Response('Hello World', {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      });
+
+      // Act
+      const result = await webResponseToProxyResult(response, 'ALB');
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.statusDescription).toBe('200 OK');
+      expect(result.body).toBe('Hello World');
+      expect(result.isBase64Encoded).toBe(false);
+      expect(result.headers).toEqual({ 'content-type': 'application/json' });
+    });
+
+    it('handles multi-value headers', async () => {
+      // Prepare
+      const response = new Response('Hello', {
+        status: 200,
+        headers: {
+          'Set-Cookie': 'cookie1=value1; cookie2=value2',
+          'Content-type': 'application/json',
+        },
+      });
+
+      // Act
+      const result = await webResponseToProxyResult(response, 'ALB');
+
+      // Assess
+      expect(result.headers).toEqual({ 'content-type': 'application/json' });
+      expect(result.multiValueHeaders).toEqual({
+        'set-cookie': ['cookie1=value1', 'cookie2=value2'],
+      });
+    });
+
+    it('respects isBase64Encoded option', async () => {
+      // Prepare
+      const response = new Response('Hello World', {
+        status: 200,
+        headers: {
+          'content-encoding': 'gzip',
+        },
+      });
+
+      // Act
+      const result = await webResponseToProxyResult(response, 'ALB', {
+        isBase64Encoded: true,
+      });
+
+      // Assess
+      expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toBe(Buffer.from('Hello World').toString('base64'));
     });
   });
 

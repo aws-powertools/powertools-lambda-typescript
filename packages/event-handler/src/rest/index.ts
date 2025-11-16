@@ -21,6 +21,7 @@ export {
 export { Router } from './Router.js';
 export {
   composeMiddleware,
+  isALBEvent,
   isAPIGatewayProxyEventV1,
   isAPIGatewayProxyEventV2,
   isExtendedAPIGatewayProxyResult,

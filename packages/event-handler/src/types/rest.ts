@@ -4,6 +4,8 @@ import type {
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
 import type {
+  ALBEvent,
+  ALBResult,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
   APIGatewayProxyResult,
@@ -14,16 +16,17 @@ import type { HttpStatusCodes, HttpVerbs } from '../rest/constants.js';
 import type { Route } from '../rest/Route.js';
 import type { ResolveOptions } from './common.js';
 
-type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2';
+type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2' | 'ALB';
 
 type ResponseTypeMap = {
   ApiGatewayV1: APIGatewayProxyResult;
   ApiGatewayV2: APIGatewayProxyStructuredResultV2;
+  ALB: ALBResult;
 };
 
 type RequestContext = {
   req: Request;
-  event: APIGatewayProxyEvent | APIGatewayProxyEventV2;
+  event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent;
   context: Context;
   res: Response;
   params: Record<string, string>;
@@ -76,6 +79,7 @@ type ExtendedAPIGatewayProxyResultBody = BinaryResult | string;
 type ExtendedAPIGatewayProxyResult = Omit<APIGatewayProxyResult, 'body'> & {
   body: ExtendedAPIGatewayProxyResultBody;
   cookies?: string[];
+  statusDescription?: string;
 };
 
 type HandlerResponse =
@@ -242,6 +246,11 @@ type WebResponseToProxyResultOptions = {
   isBase64Encoded?: boolean;
 };
 
+type RouterResponse =
+  | APIGatewayProxyResult
+  | APIGatewayProxyStructuredResultV2
+  | ALBResult;
+
 export type {
   BinaryResult,
   ExtendedAPIGatewayProxyResult,
@@ -268,6 +277,7 @@ export type {
   RestRouteOptions,
   RestRouteHandlerOptions,
   RouteRegistryOptions,
+  RouterResponse,
   ValidationResult,
   CompressionOptions,
   NextFunction,

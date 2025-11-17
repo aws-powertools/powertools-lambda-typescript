@@ -367,6 +367,25 @@ describe('Class: Router - ALB Support', () => {
     });
   });
 
+  it('handles ALB POST request with body', async () => {
+    // Prepare
+    const app = new Router();
+    app.post('/test', async ({ req }) => {
+      const body = await req.json();
+      return { received: body };
+    });
+
+    // Act
+    const result = await app.resolve(
+      createTestALBEvent('/test', 'POST', {}, { data: 'test' }),
+      context
+    );
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toBe(JSON.stringify({ received: { data: 'test' } }));
+  });
+
   it.each(
     Object.entries(HttpStatusText).map(([code, text]) => ({
       statusCode: Number(code),

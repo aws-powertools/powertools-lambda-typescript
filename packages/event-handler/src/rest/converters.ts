@@ -18,7 +18,7 @@ import type {
   V1Headers,
   WebResponseToProxyResultOptions,
 } from '../types/rest.js';
-import { HttpStatusCodes, HttpStatusText } from './constants.js';
+import { HttpStatusCodes, HttpStatusText, HttpVerbs } from './constants.js';
 import { InvalidHttpMethodError } from './errors.js';
 import {
   isALBEvent,
@@ -177,10 +177,16 @@ const albEventToWebRequest = (event: ALBEvent): Request => {
   const url = new URL(path, `${protocol}://${hostname}/`);
   populateV1QueryParams(url, event);
 
+  // ALB events represent GET and PATCH request bodies as empty strings
+  const body =
+    httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.PATCH
+      ? null
+      : createBody(event.body ?? null, event.isBase64Encoded);
+
   return new Request(url.toString(), {
     method: httpMethod,
     headers,
-    body: createBody(event.body ?? null, event.isBase64Encoded),
+    body: body,
   });
 };
 

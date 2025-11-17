@@ -1,4 +1,5 @@
 import { Writable } from 'node:stream';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type {
   ALBEvent,
   ALBResult,
@@ -8,6 +9,7 @@ import type {
   APIGatewayProxyStructuredResultV2,
   Context,
 } from 'aws-lambda';
+import { HttpVerbs } from '../../../src/rest/constants.js';
 import type { Router } from '../../../src/rest/Router.js';
 import type {
   HandlerResponse,
@@ -73,23 +75,37 @@ export const createTestEventV2 = (
 export const createTestALBEvent = (
   path: string,
   httpMethod: string,
-  headers: Record<string, string> = {}
-): ALBEvent => ({
-  path,
-  httpMethod,
-  headers,
-  body: null,
-  multiValueHeaders: {},
-  isBase64Encoded: false,
-  queryStringParameters: undefined,
-  multiValueQueryStringParameters: undefined,
-  requestContext: {
-    elb: {
-      targetGroupArn:
-        'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/test/50dc6c495c0c9188',
+  headers: Record<string, string> = {},
+  body: string | JSONValue = null
+): ALBEvent => {
+  const stringBody =
+    typeof body === 'string'
+      ? body
+      : body !== null
+        ? JSON.stringify(body)
+        : null;
+
+  return {
+    path,
+    httpMethod,
+    headers,
+    // ALB events represent GET and PATCH request bodies as empty strings
+    body:
+      httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.PATCH
+        ? ''
+        : stringBody,
+    multiValueHeaders: {},
+    isBase64Encoded: false,
+    queryStringParameters: undefined,
+    multiValueQueryStringParameters: undefined,
+    requestContext: {
+      elb: {
+        targetGroupArn:
+          'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/test/50dc6c495c0c9188',
+      },
     },
-  },
-});
+  };
+};
 
 export const createTrackingMiddleware = (
   name: string,

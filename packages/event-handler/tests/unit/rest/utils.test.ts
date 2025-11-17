@@ -6,6 +6,7 @@ import type {
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   composeMiddleware,
+  isALBEvent,
   isAPIGatewayProxyEventV1,
   isAPIGatewayProxyEventV2,
   isExtendedAPIGatewayProxyResult,
@@ -551,6 +552,83 @@ describe('Path Utilities', () => {
       delete incompleteEvent[field as keyof typeof incompleteEvent];
       expect(isAPIGatewayProxyEventV2(incompleteEvent)).toBe(false);
     });
+  });
+
+  describe('isALBEvent', () => {
+    const baseValidEvent = {
+      httpMethod: 'GET',
+      path: '/test',
+      headers: {},
+      requestContext: {
+        elb: {
+          targetGroupArn:
+            'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-target-group/50dc6c495c0c9188',
+        },
+      },
+      isBase64Encoded: false,
+      body: null,
+    };
+
+    it('should return true for valid ALB event', () => {
+      expect(isALBEvent(baseValidEvent)).toBe(true);
+    });
+
+    it('should return true for ALB event with body', () => {
+      const eventWithBody = {
+        ...baseValidEvent,
+        body: '{"key":"value"}',
+      };
+
+      expect(isALBEvent(eventWithBody)).toBe(true);
+    });
+
+    it.each([
+      { case: 'null', event: null },
+      { case: 'undefined', event: undefined },
+      { case: 'string', event: 'not an object' },
+      { case: 'number', event: 123 },
+      { case: 'array', event: [] },
+    ])('should return false for $case', ({ event }) => {
+      expect(isALBEvent(event)).toBe(false);
+    });
+
+    it.each([
+      { field: 'requestContext', value: null },
+      { field: 'requestContext', value: undefined },
+      { field: 'requestContext', value: 'not an object' },
+      { field: 'requestContext', value: 123 },
+    ])(
+      'should return false when $field is invalid ($value)',
+      ({ field, value }) => {
+        const invalidEvent = { ...baseValidEvent, [field]: value };
+        expect(isALBEvent(invalidEvent)).toBe(false);
+      }
+    );
+
+    it('should return false when requestContext.elb is missing', () => {
+      const eventWithoutElb = {
+        ...baseValidEvent,
+        requestContext: {},
+      };
+
+      expect(isALBEvent(eventWithoutElb)).toBe(false);
+    });
+
+    it.each([
+      { value: null },
+      { value: undefined },
+      { value: 'not an object' },
+      { value: 123 },
+    ])(
+      'should return false when requestContext.elb is invalid ($value)',
+      ({ value }) => {
+        const invalidEvent = {
+          ...baseValidEvent,
+          requestContext: { elb: value },
+        };
+        expect(isALBEvent(invalidEvent)).toBe(false);
+      }
+    );
   });
 
   describe('isAPIGatewayProxyResult', () => {

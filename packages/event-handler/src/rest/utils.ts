@@ -5,6 +5,7 @@ import {
   isString,
 } from '@aws-lambda-powertools/commons/typeutils';
 import type {
+  ALBEvent,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
   StreamifyHandler,
@@ -21,6 +22,7 @@ import type {
   Middleware,
   Path,
   ResponseStream,
+  ResponseType,
   ValidationResult,
 } from '../types/rest.js';
 import {
@@ -44,7 +46,7 @@ export function compilePath(path: Path): CompiledRoute {
     PARAM_PATTERN,
     (_match, paramName) => {
       paramNames.push(paramName);
-      return `(?<${paramName}>[${SAFE_CHARS}${UNSAFE_CHARS}\\w]+)`;
+      return String.raw`(?<${paramName}>[${SAFE_CHARS}${UNSAFE_CHARS}\w]+)`;
     }
   );
 
@@ -138,6 +140,25 @@ export const isAPIGatewayProxyEventV2 = (
     (event.stageVariables === undefined || isRecord(event.stageVariables)) &&
     (event.cookies === undefined || Array.isArray(event.cookies))
   );
+};
+
+/**
+ * Type guard to check if the provided event is an ALB event.
+ *
+ * @param event - The incoming event to check
+ */
+export const isALBEvent = (event: unknown): event is ALBEvent => {
+  if (!isRecord(event)) return false;
+  if (!isRecord(event.requestContext)) return false;
+  return isRecord(event.requestContext.elb);
+};
+
+export const getResponseType = (
+  event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent
+): ResponseType => {
+  if (isAPIGatewayProxyEventV2(event)) return 'ApiGatewayV2';
+  if (isALBEvent(event)) return 'ALB';
+  return 'ApiGatewayV1';
 };
 
 export const isHttpMethod = (method: string): method is HttpMethod => {

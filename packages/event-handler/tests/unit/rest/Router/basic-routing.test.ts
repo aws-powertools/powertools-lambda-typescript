@@ -1,6 +1,7 @@
 import { Readable } from 'node:stream';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it, vi } from 'vitest';
+import { HttpStatusText } from '../../../../src/rest/constants.js';
 import { InvalidEventError } from '../../../../src/rest/errors.js';
 import {
   HttpStatusCodes,
@@ -8,11 +9,16 @@ import {
   Router,
 } from '../../../../src/rest/index.js';
 import type { HttpMethod, RouteHandler } from '../../../../src/types/rest.js';
-import { createTestEvent, createTestEventV2 } from '../helpers.js';
+import {
+  createTestALBEvent,
+  createTestEvent,
+  createTestEventV2,
+} from '../helpers.js';
 
 describe.each([
   { version: 'V1', createEvent: createTestEvent },
   { version: 'V2', createEvent: createTestEventV2 },
+  { version: 'ALB', createEvent: createTestALBEvent },
 ])('Class: Router - Basic Routing ($version)', ({ createEvent }) => {
   const httpMethods = [
     ['GET', 'get'],
@@ -312,9 +318,110 @@ describe('Class: Router - V2 Cookies Support', () => {
   });
 });
 
+describe('Class: Router - ALB Support', () => {
+  it('handles ALB event with statusDescription', async () => {
+    // Prepare
+    const app = new Router();
+    app.get('/test', () => ({ message: 'success' }));
+
+    // Act
+    const result = await app.resolve(
+      createTestALBEvent('/test', 'GET'),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: 200,
+      statusDescription: '200 OK',
+      body: JSON.stringify({ message: 'success' }),
+      headers: { 'content-type': 'application/json' },
+      isBase64Encoded: false,
+    });
+  });
+
+  it('handles ALB event with multiValueHeaders', async () => {
+    // Prepare
+    const app = new Router();
+    app.get('/test', () => ({
+      statusCode: 200,
+      body: JSON.stringify({ message: 'success' }),
+      headers: { 'content-type': 'application/json' },
+      multiValueHeaders: { 'set-cookie': ['session=abc123', 'theme=dark'] },
+    }));
+
+    // Act
+    const result = await app.resolve(
+      createTestALBEvent('/test', 'GET'),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: 200,
+      statusDescription: '200 OK',
+      body: JSON.stringify({ message: 'success' }),
+      headers: { 'content-type': 'application/json' },
+      multiValueHeaders: { 'set-cookie': ['session=abc123', 'theme=dark'] },
+      isBase64Encoded: false,
+    });
+  });
+
+  it('handles ALB POST request with body', async () => {
+    // Prepare
+    const app = new Router();
+    app.post('/test', async ({ req }) => {
+      const body = await req.json();
+      return { received: body };
+    });
+
+    // Act
+    const result = await app.resolve(
+      createTestALBEvent('/test', 'POST', {}, { data: 'test' }),
+      context
+    );
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toBe(JSON.stringify({ received: { data: 'test' } }));
+  });
+
+  it.each(
+    Object.entries(HttpStatusText).map(([code, text]) => ({
+      statusCode: Number(code),
+      expectedDescription: `${code} ${text}`,
+    }))
+  )(
+    'returns statusDescription "$expectedDescription" for status code $statusCode',
+    async ({ statusCode, expectedDescription }) => {
+      // Prepare
+      const app = new Router();
+      const noBodyStatuses = new Set([201, 204, 205, 304]);
+      const body = noBodyStatuses.has(statusCode)
+        ? null
+        : JSON.stringify({ status: statusCode });
+      app.get('/test', () => new Response(body, { status: statusCode }));
+
+      // Act
+      const result = await app.resolve(
+        createTestALBEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(statusCode);
+      expect(result).toHaveProperty('statusDescription', expectedDescription);
+      if (!noBodyStatuses.has(statusCode)) {
+        expect(result.body).toBe(JSON.stringify({ status: statusCode }));
+      }
+    }
+  );
+});
+
 describe.each([
   { version: 'V1', createEvent: createTestEvent },
   { version: 'V2', createEvent: createTestEventV2 },
+  { version: 'ALB', createEvent: createTestALBEvent },
 ])('Class: Router - Binary Result ($version)', ({ createEvent }) => {
   it('handles ArrayBuffer as direct return type', async () => {
     // Prepare
@@ -385,12 +492,10 @@ describe.each([
       const result = await app.resolve(createEvent('/media', 'GET'), context);
 
       // Assess
-      expect(result).toEqual({
-        statusCode: 200,
-        body: Buffer.from('binary data').toString('base64'),
-        headers: { 'content-type': contentType },
-        isBase64Encoded: true,
-      });
+      expect(result.statusCode).toBe(200);
+      expect(result.body).toBe(Buffer.from('binary data').toString('base64'));
+      expect(result.headers?.['content-type']).toBe(contentType);
+      expect(result.isBase64Encoded).toBe(true);
     }
   );
 
@@ -409,11 +514,9 @@ describe.each([
     const result = await app.resolve(createEvent('/text', 'GET'), context);
 
     // Assess
-    expect(result).toEqual({
-      statusCode: 200,
-      body: 'text data',
-      headers: { 'content-type': 'text/plain' },
-      isBase64Encoded: false,
-    });
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toBe('text data');
+    expect(result.headers?.['content-type']).toBe('text/plain');
+    expect(result.isBase64Encoded).toBe(false);
   });
 });

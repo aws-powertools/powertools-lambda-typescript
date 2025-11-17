@@ -1,6 +1,8 @@
 import { Readable } from 'node:stream';
 import type streamWeb from 'node:stream/web';
 import type {
+  ALBEvent,
+  ALBResult,
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
   APIGatewayProxyResult,
@@ -16,9 +18,10 @@ import type {
   V1Headers,
   WebResponseToProxyResultOptions,
 } from '../types/rest.js';
-import { HttpStatusCodes } from './constants.js';
+import { HttpStatusCodes, HttpStatusText, HttpVerbs } from './constants.js';
 import { InvalidHttpMethodError } from './errors.js';
 import {
+  isALBEvent,
   isAPIGatewayProxyEventV2,
   isBinaryResult,
   isExtendedAPIGatewayProxyResult,
@@ -47,11 +50,11 @@ const createBody = (body: string | null, isBase64Encoded: boolean) => {
  * Populates headers from single and multi-value header entries.
  *
  * @param headers - The Headers object to populate
- * @param event - The API Gateway proxy event
+ * @param event - The API Gateway proxy event or ALB event
  */
 const populateV1Headers = (
   headers: Headers,
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent | ALBEvent
 ): void => {
   for (const [name, value] of Object.entries(event.headers ?? {})) {
     if (value !== undefined) headers.set(name, value);
@@ -71,9 +74,12 @@ const populateV1Headers = (
  * Populates URL search parameters from single and multi-value query string parameters.
  *
  * @param url - The URL object to populate
- * @param event - The API Gateway proxy event
+ * @param event - The API Gateway proxy event or ALB event
  */
-const populateV1QueryParams = (url: URL, event: APIGatewayProxyEvent): void => {
+const populateV1QueryParams = (
+  url: URL,
+  event: APIGatewayProxyEvent | ALBEvent
+): void => {
   for (const [name, value] of Object.entries(
     event.queryStringParameters ?? {}
   )) {
@@ -154,14 +160,45 @@ const proxyEventV2ToWebRequest = (event: APIGatewayProxyEventV2): Request => {
 };
 
 /**
- * Converts an API Gateway proxy event (V1 or V2) to a Web API Request object.
+ * Converts an ALB event to a Web API Request object.
+ *
+ * @param event - The ALB event
+ * @returns A Web API Request object
+ */
+const albEventToWebRequest = (event: ALBEvent): Request => {
+  const { httpMethod, path } = event;
+
+  const headers = new Headers();
+  populateV1Headers(headers, event);
+
+  const hostname = headers.get('Host') ?? 'localhost';
+  const protocol = headers.get('X-Forwarded-Proto') ?? 'https';
+
+  const url = new URL(path, `${protocol}://${hostname}/`);
+  populateV1QueryParams(url, event);
+
+  // ALB events represent GET and PATCH request bodies as empty strings
+  const body =
+    httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.PATCH
+      ? null
+      : createBody(event.body ?? null, event.isBase64Encoded);
+
+  return new Request(url.toString(), {
+    method: httpMethod,
+    headers,
+    body: body,
+  });
+};
+
+/**
+ * Converts an API Gateway proxy event (V1 or V2) or ALB event to a Web API Request object.
  * Automatically detects the event version and calls the appropriate converter.
  *
- * @param event - The API Gateway proxy event (V1 or V2)
+ * @param event - The API Gateway proxy event (V1 or V2) or ALB event
  * @returns A Web API Request object
  */
 const proxyEventToWebRequest = (
-  event: APIGatewayProxyEvent | APIGatewayProxyEventV2
+  event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent
 ): Request => {
   if (isAPIGatewayProxyEventV2(event)) {
     const method = event.requestContext.http.method.toUpperCase();
@@ -170,9 +207,12 @@ const proxyEventToWebRequest = (
     }
     return proxyEventV2ToWebRequest(event);
   }
-  const method = event.requestContext.httpMethod.toUpperCase();
+  const method = event.httpMethod.toUpperCase();
   if (!isHttpMethod(method)) {
     throw new InvalidHttpMethodError(method);
+  }
+  if (isALBEvent(event)) {
+    return albEventToWebRequest(event);
   }
   return proxyEventV1ToWebRequest(event);
 };
@@ -319,6 +359,42 @@ const webResponseToProxyResultV2 = async (
   return result;
 };
 
+/**
+ * Converts a Web API Response object to an ALB result.
+ *
+ * @param response - The Web API Response object
+ * @param isBase64Encoded - Whether the response body should be base64 encoded (e.g., for binary or compressed content)
+ * @returns An ALB result
+ */
+const webResponseToALBResult = async (
+  response: Response,
+  isBase64Encoded?: boolean
+): Promise<ALBResult> => {
+  const { headers, multiValueHeaders } = webHeadersToApiGatewayV1Headers(
+    response.headers
+  );
+
+  const body = isBase64Encoded
+    ? await responseBodyToBase64(response)
+    : await response.text();
+
+  const statusText = response.statusText || HttpStatusText[response.status];
+
+  const result: ALBResult = {
+    statusCode: response.status,
+    statusDescription: `${response.status} ${statusText}`,
+    headers,
+    body,
+    isBase64Encoded,
+  };
+
+  if (Object.keys(multiValueHeaders).length > 0) {
+    result.multiValueHeaders = multiValueHeaders;
+  }
+
+  return result;
+};
+
 const webResponseToProxyResult = <T extends ResponseType>(
   response: Response,
   responseType: T,
@@ -327,6 +403,11 @@ const webResponseToProxyResult = <T extends ResponseType>(
   const isBase64Encoded = options?.isBase64Encoded ?? false;
   if (responseType === 'ApiGatewayV1') {
     return webResponseToProxyResultV1(response, isBase64Encoded) as Promise<
+      ResponseTypeMap[T]
+    >;
+  }
+  if (responseType === 'ALB') {
+    return webResponseToALBResult(response, isBase64Encoded) as Promise<
       ResponseTypeMap[T]
     >;
   }

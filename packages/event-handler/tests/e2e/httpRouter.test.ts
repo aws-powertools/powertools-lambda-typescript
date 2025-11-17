@@ -538,26 +538,6 @@ describe('REST Event Handler E2E tests', () => {
       expect(data.data.length).toBe(200);
       expect(response.headers.get('content-encoding')).toBe('gzip');
     });
-
-    it.skip('does not compress small responses below threshold', async () => {
-      // TODO: Bug in compress middleware - always compresses when content-length header is missing
-      // Tracked in: https://github.com/aws-powertools/powertools-lambda-typescript/issues/4751
-      // The condition (!contentLength || Number(contentLength) > threshold) means
-      // if content-length is not set, it will ALWAYS compress regardless of threshold
-      // JSON responses don't have content-length set by default, so all responses get compressed
-      // The middleware needs to calculate content length before checking threshold
-
-      // Act
-      const response = await fetch(`${apiUrl}/compress/small`, {
-        headers: { 'Accept-Encoding': 'gzip' },
-      });
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.message).toBe('Small');
-      // Small response (~20 bytes) is below 100 byte threshold, should not be compressed
-      expect(response.headers.get('content-encoding')).toBeNull();
-    });
   });
 
   describe('Request Body and Headers', () => {

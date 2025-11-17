@@ -46,7 +46,7 @@ export function compilePath(path: Path): CompiledRoute {
     PARAM_PATTERN,
     (_match, paramName) => {
       paramNames.push(paramName);
-      return `(?<${paramName}>[${SAFE_CHARS}${UNSAFE_CHARS}\\w]+)`;
+      return String.raw`(?<${paramName}>[${SAFE_CHARS}${UNSAFE_CHARS}\w]+)`;
     }
   );
 

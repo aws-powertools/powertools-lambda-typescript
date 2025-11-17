@@ -41,6 +41,17 @@ export const createTestEvent = (
   resource: '',
 });
 
+const createAlbBody = (httpMethod: string, body: JSONValue): string | null => {
+  // ALB events represent GET and PATCH request bodies as empty strings
+  if (httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.PATCH) {
+    return '';
+  }
+  if (body === null) {
+    return null;
+  }
+  return JSON.stringify(body);
+};
+
 export const createTestEventV2 = (
   rawPath: string,
   method: string,
@@ -76,36 +87,23 @@ export const createTestALBEvent = (
   path: string,
   httpMethod: string,
   headers: Record<string, string> = {},
-  body: string | JSONValue = null
-): ALBEvent => {
-  const stringBody =
-    typeof body === 'string'
-      ? body
-      : body !== null
-        ? JSON.stringify(body)
-        : null;
-
-  return {
-    path,
-    httpMethod,
-    headers,
-    // ALB events represent GET and PATCH request bodies as empty strings
-    body:
-      httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.PATCH
-        ? ''
-        : stringBody,
-    multiValueHeaders: {},
-    isBase64Encoded: false,
-    queryStringParameters: undefined,
-    multiValueQueryStringParameters: undefined,
-    requestContext: {
-      elb: {
-        targetGroupArn:
-          'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/test/50dc6c495c0c9188',
-      },
+  body: JSONValue = null
+): ALBEvent => ({
+  path,
+  httpMethod,
+  headers,
+  body: createAlbBody(httpMethod, body),
+  multiValueHeaders: {},
+  isBase64Encoded: false,
+  queryStringParameters: undefined,
+  multiValueQueryStringParameters: undefined,
+  requestContext: {
+    elb: {
+      targetGroupArn:
+        'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/test/50dc6c495c0c9188',
     },
-  };
-};
+  },
+});
 
 export const createTrackingMiddleware = (
   name: string,

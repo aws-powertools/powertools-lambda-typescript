@@ -99,7 +99,7 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "2.28.1",
-    "@aws/lambda-invoke-store": "0.1.1",
+    "@aws/lambda-invoke-store": "0.2.0",
     "lodash.merge": "^4.6.2"
   },
   "keywords": [

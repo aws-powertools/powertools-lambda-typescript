@@ -15,6 +15,7 @@ export type {
 } from './DynamoDBPersistence.js';
 export type {
   AnyFunction,
+  DurableMode,
   IdempotencyConfigOptions,
   IdempotencyHandlerOptions,
   IdempotencyLambdaHandlerOptions,

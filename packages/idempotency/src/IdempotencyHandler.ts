@@ -17,6 +17,7 @@ import type { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js
 import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 import type {
   AnyFunction,
+  DurableMode,
   IdempotencyHandlerOptions,
 } from './types/IdempotencyOptions.js';
 
@@ -177,7 +178,11 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * window, we might get an `IdempotencyInconsistentStateError`. In such
    * cases we can safely retry the handling a few times.
    */
-  public async handle(): Promise<ReturnType<Func>> {
+  public async handle({
+    durableMode,
+  }: {
+    durableMode: DurableMode;
+  }): Promise<ReturnType<Func>> {
     // early return if we should skip idempotency completely
     if (this.shouldSkipIdempotency()) {
       return await this.#functionToMakeIdempotent.apply(
@@ -190,7 +195,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
     for (let retryNo = 0; retryNo <= MAX_RETRIES; retryNo++) {
       try {
         const { isIdempotent, result } =
-          await this.#saveInProgressOrReturnExistingResult();
+          await this.#saveInProgressOrReturnExistingResult({ durableMode });
         if (isIdempotent) return result as ReturnType<Func>;
 
         return await this.getFunctionResult();
@@ -356,7 +361,11 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * Before returning a result, we might neede to look up the idempotency record
    * and validate it to ensure that it is consistent with the payload to be hashed.
    */
-  readonly #saveInProgressOrReturnExistingResult = async (): Promise<{
+  readonly #saveInProgressOrReturnExistingResult = async ({
+    durableMode,
+  }: {
+    durableMode?: DurableMode;
+  } = {}): Promise<{
     isIdempotent: boolean;
     result: JSONValue;
   }> => {
@@ -381,6 +390,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
           { cause: error }
         );
       if (error.name === 'IdempotencyItemAlreadyExistsError') {
+        if (durableMode === 'ReplayMode') {
+          return returnValue;
+        }
+
         let idempotencyRecord = (error as IdempotencyItemAlreadyExistsError)
           .existingRecord;
         if (idempotencyRecord === undefined) {

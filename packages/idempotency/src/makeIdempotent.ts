@@ -134,16 +134,23 @@ function makeIdempotent<Func extends AnyFunction>(
         functionPayloadToBeHashed = args[0];
       }
     }
-
+    // 'arn:aws:lambda:eu-south-1:801530346538:function:test-aamorosi:$LATEST/durable-execution/8893c114-49cc-4a35-9b17-32a40e9a8cf1/a11e1ae0-266a-33e6-ac46-d72f543cd215'
+    const durableArn = args[1]?.executionContext?.durableExecutionArn;
+    // const durableMode: 'ExecutionMode' | 'ReplayMode' = 'ExecutionMode';
+    const durableMode = args[1]?.durableExecutionMode;
+    const durableSuffix = `${durableArn.split('/').slice(-2).join('/')}`;
     return new IdempotencyHandler({
       functionToMakeIdempotent: fn,
       idempotencyConfig: idempotencyConfig,
       persistenceStore: persistenceStore,
       keyPrefix: keyPrefix,
       functionArguments: args,
-      functionPayloadToBeHashed,
+      functionPayloadToBeHashed: {
+        cx: functionPayloadToBeHashed,
+        d: durableSuffix,
+      },
       thisArg: this,
-    }).handle() as ReturnType<Func>;
+    }).handle({ durableMode }) as ReturnType<Func>;
   };
 }
 

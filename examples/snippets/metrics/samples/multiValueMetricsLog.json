@@ -1,0 +1,19 @@
+{
+  "performedActionA": [2, 1],
+  "_aws": {
+    "Timestamp": 1592234975665,
+    "CloudWatchMetrics": [
+      {
+        "Namespace": "serverlessAirline",
+        "Dimensions": [["service"]],
+        "Metrics": [
+          {
+            "Name": "performedActionA",
+            "Unit": "Count"
+          }
+        ]
+      }
+    ]
+  },
+  "service": "orders"
+}

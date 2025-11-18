@@ -105,7 +105,7 @@ You can initialize Metrics anywhere in your code - It'll keep track of your aggr
 
 ### Creating metrics
 
-You can create metrics using the `addMetric` method, and you can create dimensions for all your aggregate metrics using the `addDimension` method.
+You can create metrics using the `addMetric` method. Metrics are automatically associated with your configured namespace and dimensions.
 
 === "Metrics"
 
@@ -113,22 +113,129 @@ You can create metrics using the `addMetric` method, and you can create dimensio
     --8<-- "examples/snippets/metrics/createMetrics.ts"
     ```
 
+=== "Cloudwatch Log"
+
+    ```json
+    {
+        "_aws": {
+            "Timestamp": 1763409658885,
+            "CloudWatchMetrics": [
+            {
+                "Namespace": "serverlessAirline",
+                "Dimensions": [
+                [
+                    "service",
+                ]
+                ],
+                "Metrics": [
+                {
+                    "Name": "successfulBooking",
+                    "Unit": "Count"
+                }
+                ]
+            }
+            ]
+        },
+        "service": "orders",
+        "successfulBooking": 1
+    }
+    ```
+
+### Adding dimensions
+
+By default, Powertools adds a `service` dimension in a [DimensionSet](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html){target="_blank"}. You can append additional dimensions for all your aggregate metrics using the `addDimension` method.
+
+!!! note
+    `addDimension` method appends the dimension to the first `DimensionSet` in the `DimensionSet` array. To create a new `DimensionSet`, use the `addDimensions` method.
+
 === "Metrics with custom dimensions"
 
     ```typescript hl_lines="12-13"
     --8<-- "examples/snippets/metrics/customDimensions.ts"
     ```
 
-### Creating dimension sets
+=== "Cloudwatch Log"
 
-You can create separate dimension sets for your metrics using the `addDimensions` method. This allows you to group metrics by different dimension combinations.
+    ```json
+    {
+        "_aws": {
+            "Timestamp": 1763409658885,
+            "CloudWatchMetrics": [
+            {
+                "Namespace": "serverlessAirline",
+                "Dimensions": [
+                [
+                    "service",
+                    "environment"
+                ]
+                ],
+                "Metrics": [
+                {
+                    "Name": "successfulBooking",
+                    "Unit": "Count"
+                }
+                ]
+            }
+            ]
+        },
+        "service": "orders",
+        "environment": "prod",
+        "successfulBooking": 1
+    }
+    ```
 
-When you call `addDimensions()`, it creates a new dimension set rather than adding to the existing dimensions. This is useful when you want to track the same metric across different dimension combinations.
+### Creating a `DimensionSet`
+
+You can create a separate `DimensionSet` for your metrics using the `addDimensions` method. This allows you to group metrics by different dimension combinations.
+
+When you call `addDimensions()`, it creates a new `DimensionSet` rather than adding to the first set. This is useful when you want to track the same metric across different dimension combinations.
 
 === "handler.ts"
 
-    ```typescript hl_lines="9 12-15 18-21"
+    ```typescript hl_lines="9 15-19 21-25"
     --8<-- "examples/snippets/metrics/dimensionSets.ts"
+    ```
+
+=== "Cloudwatch Log"
+
+    ```json
+    {
+        "_aws": {
+            "Timestamp": 1763409658885,
+            "CloudWatchMetrics": [
+            {
+                "Namespace": "serverlessAirline",
+                "Dimensions": [
+                [
+                    "service",
+                    "environment"
+                ],
+                [
+                    "dimension1",
+                    "dimension2"
+                ],
+                [
+                    "region",
+                    "category"
+                ]
+                ],
+                "Metrics": [
+                {
+                    "Name": "successfulBooking",
+                    "Unit": "Count"
+                }
+                ]
+            }
+            ]
+        },
+        "service": "orders",
+        "environment": "prod",
+        "dimension1": "1",
+        "dimension1": "2",
+        "region": "us-east-1",
+        "category": "books",
+        "successfulBooking": 1
+    }
     ```
 
 !!! tip "Autocomplete Metric Units"

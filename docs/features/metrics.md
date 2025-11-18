@@ -124,7 +124,7 @@ You can create metrics using the `addMetric` method. Metrics are automatically a
 By default, Powertools adds a `service` dimension in a [DimensionSet](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html){target="_blank"}. You can append additional dimensions for all your aggregate metrics using the `addDimension` method.
 
 !!! note
-    `addDimension` method appends the dimension to the first `DimensionSet` in the `DimensionSet` array. To create a new `DimensionSet`, use the `addDimensions` method.
+    The `addDimension` method appends the dimension to the first `DimensionSet` in the `DimensionSet` array. To create a new `DimensionSet`, use the `addDimensions` method.
 
 === "Metrics with custom dimensions"
 

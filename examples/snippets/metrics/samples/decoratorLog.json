@@ -1,0 +1,19 @@
+{
+  "successfulBooking": 1.0,
+  "_aws": {
+    "Timestamp": 1592234975665,
+    "CloudWatchMetrics": [
+      {
+        "Namespace": "successfulBooking",
+        "Dimensions": [["service"]],
+        "Metrics": [
+          {
+            "Name": "successfulBooking",
+            "Unit": "Count"
+          }
+        ]
+      }
+    ]
+  },
+  "service": "orders"
+}

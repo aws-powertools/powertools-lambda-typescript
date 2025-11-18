@@ -116,29 +116,7 @@ You can create metrics using the `addMetric` method. Metrics are automatically a
 === "Cloudwatch Log"
 
     ```json
-    {
-        "_aws": {
-            "Timestamp": 1763409658885,
-            "CloudWatchMetrics": [
-            {
-                "Namespace": "serverlessAirline",
-                "Dimensions": [
-                [
-                    "service",
-                ]
-                ],
-                "Metrics": [
-                {
-                    "Name": "successfulBooking",
-                    "Unit": "Count"
-                }
-                ]
-            }
-            ]
-        },
-        "service": "orders",
-        "successfulBooking": 1
-    }
+    --8<-- "examples/snippets/metrics/samples/createMetricsLog.json"
     ```
 
 ### Adding dimensions
@@ -157,31 +135,7 @@ By default, Powertools adds a `service` dimension in a [DimensionSet](https://do
 === "Cloudwatch Log"
 
     ```json
-    {
-        "_aws": {
-            "Timestamp": 1763409658885,
-            "CloudWatchMetrics": [
-            {
-                "Namespace": "serverlessAirline",
-                "Dimensions": [
-                [
-                    "service",
-                    "environment"
-                ]
-                ],
-                "Metrics": [
-                {
-                    "Name": "successfulBooking",
-                    "Unit": "Count"
-                }
-                ]
-            }
-            ]
-        },
-        "service": "orders",
-        "environment": "prod",
-        "successfulBooking": 1
-    }
+    --8<-- "examples/snippets/metrics/samples/customDimensionsLog.json"
     ```
 
 ### Creating a `DimensionSet`
@@ -199,43 +153,7 @@ When you call `addDimensions()`, it creates a new `DimensionSet` rather than add
 === "Cloudwatch Log"
 
     ```json
-    {
-        "_aws": {
-            "Timestamp": 1763409658885,
-            "CloudWatchMetrics": [
-            {
-                "Namespace": "serverlessAirline",
-                "Dimensions": [
-                [
-                    "service",
-                    "environment"
-                ],
-                [
-                    "dimension1",
-                    "dimension2"
-                ],
-                [
-                    "region",
-                    "category"
-                ]
-                ],
-                "Metrics": [
-                {
-                    "Name": "successfulBooking",
-                    "Unit": "Count"
-                }
-                ]
-            }
-            ]
-        },
-        "service": "orders",
-        "environment": "prod",
-        "dimension1": "1",
-        "dimension1": "2",
-        "region": "us-east-1",
-        "category": "books",
-        "successfulBooking": 1
-    }
+    --8<-- "examples/snippets/metrics/samples/dimensionSetsLog.json"
     ```
 
 !!! tip "Autocomplete Metric Units"
@@ -275,32 +193,7 @@ You can call `addMetric()` with the same name multiple times. The values will be
 === "Example CloudWatch Logs excerpt"
 
     ```json hl_lines="2-5 18-19"
-    {
-        "performedActionA": [
-            2,
-            1
-        ],
-        "_aws": {
-            "Timestamp": 1592234975665,
-            "CloudWatchMetrics": [
-                {
-                "Namespace": "serverlessAirline",
-                "Dimensions": [
-                    [
-                    "service"
-                    ]
-                ],
-                "Metrics": [
-                    {
-                    "Name": "performedActionA",
-                    "Unit": "Count"
-                    }
-                ]
-                }
-            ]
-        },
-        "service": "orders"
-    }
+    --8<-- "examples/snippets/metrics/samples/multiValueMetricsLog.json"
     ```
 
 ### Adding default dimensions
@@ -385,23 +278,7 @@ See below an example of how to automatically flush metrics with the Middy-compat
 === "Example CloudWatch Logs excerpt"
 
     ```json
-    {
-        "successfulBooking": 1.0,
-        "_aws": {
-            "Timestamp": 1592234975665,
-            "CloudWatchMetrics": [{
-                "Namespace": "serverlessAirline",
-                "Dimensions": [
-                    [ "service" ]
-                ],
-                "Metrics": [{
-                    "Name": "successfulBooking",
-                    "Unit": "Count"
-                }]
-            }]
-        },
-        "service": "orders"
-    }
+    --8<-- "examples/snippets/metrics/samples/middyLog.json"
     ```
 
 #### Using the class decorator
@@ -426,23 +303,7 @@ The `logMetrics` decorator of the metrics utility can be used when your Lambda h
 === "Example CloudWatch Logs excerpt"
 
     ```json
-    {
-        "successfulBooking": 1.0,
-        "_aws": {
-            "Timestamp": 1592234975665,
-            "CloudWatchMetrics": [{
-                "Namespace": "successfulBooking",
-                "Dimensions": [
-                    [ "service" ]
-                ],
-                "Metrics": [{
-                    "Name": "successfulBooking",
-                    "Unit": "Count"
-                }]
-            }]
-        },
-        "service": "orders"
-    }
+    --8<-- "examples/snippets/metrics/samples/decoratorLog.json"
     ```
 
 #### Manually
@@ -461,23 +322,7 @@ You can manually flush the metrics with `publishStoredMetrics` as follows:
 === "Example CloudWatch Logs excerpt"
 
     ```json
-    {
-        "successfulBooking": 1.0,
-        "_aws": {
-            "Timestamp": 1592234975665,
-            "CloudWatchMetrics": [{
-                "Namespace": "successfulBooking",
-                "Dimensions": [
-                    [ "service" ]
-                ],
-                "Metrics": [{
-                    "Name": "successfulBooking",
-                    "Unit": "Count"
-                }]
-            }]
-        },
-        "service": "orders"
-    }
+    --8<-- "examples/snippets/metrics/samples/manualLog.json"
     ```
 
 #### Throwing a RangeError when no metrics are emitted
@@ -555,30 +400,7 @@ You can add high-cardinality data as part of your Metrics log with the `addMetad
 === "Example CloudWatch Logs excerpt"
 
     ```json hl_lines="31"
-    {
-        "successfulBooking": 1.0,
-        "_aws": {
-            "Timestamp": 1592234975665,
-            "CloudWatchMetrics": [{
-                "Namespace": "serverlessAirline",
-                "Dimensions": [
-                    [ "service" ]
-                ],
-                "Metrics": [{
-                    "Namespace": "exampleApplication",
-                    "Dimensions": [
-                        [ "service" ]
-                    ],
-                    "Metrics": [{
-                        "Name": "successfulBooking",
-                        "Unit": "Count"
-                    }]
-                }]
-            }]
-        },
-        "service": "orders",
-        "bookingId": "7051cd10-6283-11ec-90d6-0242ac120003"
-    }
+    --8<-- "examples/snippets/metrics/samples/addMetadataLog.json"
     ```
 
 ### Single metric with different dimensions

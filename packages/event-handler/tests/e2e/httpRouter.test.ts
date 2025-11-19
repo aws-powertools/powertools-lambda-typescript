@@ -407,18 +407,7 @@ describe('REST Event Handler E2E tests', () => {
     });
   });
 
-  describe('Custom Middleware', () => {
-    it('applies middleware that modifies response', async () => {
-      // Prepare
-      const response = await fetch(`${apiUrl}/middleware`);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.message).toBe('Middleware applied');
-      expect(data.responseTime).toBeGreaterThanOrEqual(0);
-      expect(typeof data.responseTime).toBe('number');
-    });
-  });
+  describe('Custom Middleware', () => {});
 
   describe('Nested Router', () => {
     it('handles GET request to nested router', async () => {

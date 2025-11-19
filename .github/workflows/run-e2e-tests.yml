@@ -31,6 +31,7 @@ jobs:
             packages/logger,
             packages/metrics,
             packages/parameters,
+            packages/event-handler,
             packages/tracer,
             layers,
           ]

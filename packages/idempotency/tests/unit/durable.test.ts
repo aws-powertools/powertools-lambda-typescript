@@ -9,18 +9,33 @@ import { describe, beforeAll, afterAll, it, expect, vi } from "vitest"
 import { IdempotencyHandler } from "src/IdempotencyHandler.js";
 import { IdempotencyConfig } from "src/IdempotencyConfig.js";
 
+beforeAll(()=> {
+  vi.clearAllMocks();
+  vi.restoreAllMocks();
+  LocalDurableTestRunner.setupTestEnvironment()})
+
+afterAll(()=> LocalDurableTestRunner.teardownTestEnvironment())
+
+
+const persistenceStore = new PersistenceLayerTestClass();
+const mockFunctionToMakeIdempotent = vi.fn();
+const mockFunctionPayloadToBeHashed = {};
 const mockIdempotencyOptions = {
-  persistenceStore: new PersistenceLayerTestClass(),
+  persistenceStore,
+  config: new IdempotencyConfig({}),
 };
 
-beforeAll(()=> LocalDurableTestRunner.setupTestEnvironment())
-afterAll(()=> LocalDurableTestRunner.teardownTestEnvironment())
+const idempotentHandler = new IdempotencyHandler({
+  functionToMakeIdempotent: mockFunctionToMakeIdempotent,
+  functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
+  persistenceStore: mockIdempotencyOptions.persistenceStore,
+  functionArguments: [],
+  idempotencyConfig: mockIdempotencyOptions.config,
+});
 
 describe("Given a durable function using the idempotency utility", ()=> {
   it("allows execution when the DurableMode is Replay and there is IN PROGRESS record", async ()=> {
     // Arrange
-    const persistenceStore = new PersistenceLayerTestClass();
-
     // Mock saveInProgress to simulate an existing IN_PROGRESS record
     vi.spyOn(persistenceStore, 'saveInProgress')
       .mockRejectedValueOnce(
@@ -34,21 +49,6 @@ describe("Given a durable function using the idempotency utility", ()=> {
         )
       );
 
-    const mockFunctionToMakeIdempotent = vi.fn();
-    const mockFunctionPayloadToBeHashed = {};
-    const mockIdempotencyOptions = {
-      persistenceStore,
-      config: new IdempotencyConfig({}),
-    };
-
-    const idempotentHandler = new IdempotencyHandler({
-      functionToMakeIdempotent: mockFunctionToMakeIdempotent,
-      functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
-      persistenceStore: mockIdempotencyOptions.persistenceStore,
-      functionArguments: [],
-      idempotencyConfig: mockIdempotencyOptions.config,
-    });
-
     // Act
     await idempotentHandler.handle({durableMode: "ReplayMode"})
 
@@ -61,8 +61,6 @@ describe("Given a durable function using the idempotency utility", ()=> {
   it("raises an IdempotencyAlreadyInProgressError error when the DurableMode is Execution and there is an IN PROGRESS record", async ()=> {
 
       // Arrange
-      const persistenceStore = new PersistenceLayerTestClass();
-
       // Mock saveInProgress to simulate an existing IN_PROGRESS record
       vi.spyOn(persistenceStore, 'saveInProgress')
         .mockRejectedValueOnce(
@@ -76,31 +74,13 @@ describe("Given a durable function using the idempotency utility", ()=> {
           )
         );
 
-      const mockFunctionToMakeIdempotent = vi.fn();
-      const mockFunctionPayloadToBeHashed = {};
-      const mockIdempotencyOptions = {
-        persistenceStore,
-        config: new IdempotencyConfig({}),
-      };
-
-      const idempotentHandler = new IdempotencyHandler({
-        functionToMakeIdempotent: mockFunctionToMakeIdempotent,
-        functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
-        persistenceStore: mockIdempotencyOptions.persistenceStore,
-        functionArguments: [],
-        idempotencyConfig: mockIdempotencyOptions.config,
-      });
       // Act & Assess
       await expect(idempotentHandler.handle({ durableMode: "ExecutionMode" })).rejects.toThrow(IdempotencyAlreadyInProgressError);
   })
 
-
-
   it("returns the result of the original durable execution when another durable execution with the same payload is invoked", async () => {
 
     // Arrange
-    const persistenceStore = new PersistenceLayerTestClass();
-
     vi.spyOn(
       persistenceStore,
       'saveInProgress'
@@ -118,21 +98,6 @@ describe("Given a durable function using the idempotency utility", ()=> {
       .spyOn(persistenceStore, 'getRecord')
       .mockResolvedValue(stubRecord);
 
-    const mockFunctionToMakeIdempotent = vi.fn();
-    const mockFunctionPayloadToBeHashed = {};
-    const mockIdempotencyOptions = {
-      persistenceStore,
-      config: new IdempotencyConfig({}),
-    };
-
-    const idempotentHandler = new IdempotencyHandler({
-      functionToMakeIdempotent: mockFunctionToMakeIdempotent,
-      functionPayloadToBeHashed: mockFunctionPayloadToBeHashed,
-      persistenceStore: mockIdempotencyOptions.persistenceStore,
-      functionArguments: [{"key":"value"}],
-      idempotencyConfig: mockIdempotencyOptions.config,
-    });
-
     // Act
     const result = await idempotentHandler.handle({durableMode: "ExecutionMode"})
 
@@ -142,17 +107,4 @@ describe("Given a durable function using the idempotency utility", ()=> {
     expect(getRecordSpy).toHaveBeenCalledWith(mockFunctionPayloadToBeHashed);
 
   })
-
-  // it("registers the lambda context when a durable context is passed to the makeIdempotent function", () => {
-
-  //   const registerLambdaContextSpy = vi.spyOn(IdempotencyConfig.prototype, "registerLambdaContext")
-  //   const persistenceStore = new PersistenceLayerTestClass();
-  //   const inner = makeIdempotent(async (event, context) => { }, {persistenceStore})
-
-  //   const handler = withDurableExecution(inner)
-  //   handler({ DurableExecutionArn: "", CheckpointToken: "", InitialExecutionState: { Operations: [],NextMarker:""} }, {})
-
-  //   expect(registerLambdaContextSpy).toHaveBeenCalledOnce()
-
-  // })
 })

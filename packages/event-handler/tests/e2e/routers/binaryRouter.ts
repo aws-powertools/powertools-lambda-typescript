@@ -10,7 +10,7 @@ binaryRouter.post('/upload', async ({ req }) => {
     received: true,
     contentType,
     bodyLength: body.length,
-    isBase64Encoded: /^[A-Za-z0-9+/]+=*$/.test(body.replace(/\s/g, '')),
+    isBase64Encoded: /^[A-Za-z0-9+/]+=*$/.test(body.replaceAll(/\s/g, '')),
   };
 });
 

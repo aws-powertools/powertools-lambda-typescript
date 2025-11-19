@@ -407,8 +407,6 @@ describe('REST Event Handler E2E tests', () => {
     });
   });
 
-  describe('Custom Middleware', () => {});
-
   describe('Nested Router', () => {
     it('handles GET request to nested router', async () => {
       // Prepare

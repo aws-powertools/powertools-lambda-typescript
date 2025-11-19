@@ -41,7 +41,6 @@ describe("Given a durable function using the idempotency utility", ()=> {
     const execution = await runner.run({payload})
 
     const result = execution.getResult()
-    console.log({result})
     expect(result).toEqual({statusCode: 200})
   })
 

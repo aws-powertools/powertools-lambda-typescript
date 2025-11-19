@@ -181,8 +181,8 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   public async handle({
     durableMode,
   }: {
-    durableMode: DurableMode;
-  }): Promise<ReturnType<Func>> {
+    durableMode?: DurableMode;
+  } = {}): Promise<ReturnType<Func>> {
     // early return if we should skip idempotency completely
     if (this.shouldSkipIdempotency()) {
       return await this.#functionToMakeIdempotent.apply(

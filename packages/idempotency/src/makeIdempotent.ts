@@ -145,12 +145,7 @@ function makeIdempotent<Func extends AnyFunction>(
       persistenceStore: persistenceStore,
       keyPrefix: keyPrefix,
       functionArguments: args,
-      functionPayloadToBeHashed: durableMode
-        ? {
-            cx: functionPayloadToBeHashed,
-            d: durableSuffix,
-          }
-        : functionPayloadToBeHashed,
+      functionPayloadToBeHashed,
       thisArg: this,
     }).handle({ durableMode }) as ReturnType<Func>;
   };

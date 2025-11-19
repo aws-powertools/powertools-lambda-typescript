@@ -1,20 +1,17 @@
-import { DurableContext, withDurableExecution } from "@aws/durable-execution-sdk-js"
-import { LocalDurableTestRunner } from "@aws/durable-execution-sdk-js-testing"
-import { makeIdempotent } from "src/makeIdempotent.js"
 import { PersistenceLayerTestClass } from "tests/helpers/idempotencyUtils.js";
 import { IdempotencyAlreadyInProgressError, IdempotencyItemAlreadyExistsError } from "../../src/errors.js";
 import { IdempotencyRecord } from "../../src/persistence/index.js";
 import { IdempotencyRecordStatus } from "../../src/constants.js";
-import { describe, beforeAll, afterAll, it, expect, vi } from "vitest"
+import { describe, beforeAll, it, expect, vi } from "vitest"
 import { IdempotencyHandler } from "src/IdempotencyHandler.js";
 import { IdempotencyConfig } from "src/IdempotencyConfig.js";
 
-beforeAll(()=> {
+beforeAll(() => {
   vi.clearAllMocks();
   vi.restoreAllMocks();
-  LocalDurableTestRunner.setupTestEnvironment()})
+})
 
-afterAll(()=> LocalDurableTestRunner.teardownTestEnvironment())
+
 
 
 const persistenceStore = new PersistenceLayerTestClass();
@@ -59,7 +56,6 @@ describe("Given a durable function using the idempotency utility", ()=> {
   })
 
   it("raises an IdempotencyAlreadyInProgressError error when the DurableMode is Execution and there is an IN PROGRESS record", async ()=> {
-
       // Arrange
       // Mock saveInProgress to simulate an existing IN_PROGRESS record
       vi.spyOn(persistenceStore, 'saveInProgress')

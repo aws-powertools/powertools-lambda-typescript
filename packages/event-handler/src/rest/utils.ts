@@ -33,6 +33,7 @@ import {
   SAFE_CHARS,
   UNSAFE_CHARS,
 } from './constants.js';
+import { handlerResultToWebResponse } from './converters.js';
 
 export function getPathString(path: Path): string {
   return isString(path) ? path : path.source.replaceAll(/\\\//g, '/');
@@ -294,8 +295,13 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
         );
       }
 
+      // middleware result takes precedence to allow short-circuiting
       if (middlewareResult !== undefined) {
         result = middlewareResult;
+        reqCtx.res = handlerResultToWebResponse(middlewareResult, {
+          statusCode: getStatusCode(middlewareResult),
+          resHeaders: reqCtx.res.headers,
+        });
       }
     };
 

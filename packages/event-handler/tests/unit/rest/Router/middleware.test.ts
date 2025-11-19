@@ -778,7 +778,7 @@ describe('Class: Router - Middleware', () => {
       expect(result.body).toBe('Route middleware response');
     });
 
-    it('allows post processing middleware to access the response returned early by a pre- processing middleware', async () => {
+    it('allows post processing middleware to access the response returned early by a pre-processing middleware', async () => {
       // Prepare
       const app = new Router();
       let message = '';

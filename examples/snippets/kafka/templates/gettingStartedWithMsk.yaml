@@ -4,7 +4,7 @@ Resources:
   KafkaConsumerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Handler: index.js
       Timeout: 30
       Events:

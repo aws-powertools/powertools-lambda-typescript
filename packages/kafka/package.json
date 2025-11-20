@@ -16,6 +16,7 @@
     "test:unit:types": "echo 'Not Implemented'",
     "test:e2e:nodejs20x": "echo \"Not implemented\"",
     "test:e2e:nodejs22x": "echo \"Not implemented\"",
+    "test:e2e:nodejs24x": "echo \"Not implemented\"",
     "test:e2e": "echo \"Not implemented\"",
     "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",

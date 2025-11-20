@@ -91,6 +91,35 @@ All dynamic route parameters will be available as typed object properties in the
 
 You can also nest dynamic paths, for example `/todos/:todoId/comments/:commentId`, where both `:todoId` and `:commentId` will be resolved at runtime.
 
+#### Catch-all routes
+
+For scenarios where you need to handle arbitrary or deeply nested paths, you can use regex patterns directly in your route definitions. These are particularly useful for proxy routes or when dealing with file paths.
+
+**We recommend** having explicit routes whenever possible; use catch-all routes sparingly.
+
+##### Using Regex Patterns
+
+You can use standard [Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions){target="_blank" rel="nofollow"} in your route definitions, for example:
+
+| Pattern   | Description                              | Examples                                                    |
+|-----------|------------------------------------------|-------------------------------------------------------------|
+| `/.+/`    | Matches one or more characters (greedy)  | `/\/proxy\/.+/` matches `/proxy/any/deep/path`              |
+| `/.*/`    | Matches zero or more characters (greedy) | `/\/files\/.*/` matches `/files/` and `/files/deep/path`    |
+| `/[^/]+/` | Matches one or more non-slash characters | `/\/api\/[^\/]+/` matches `/api/v1` but not `/api/v1/users` |
+| `/\w+/`   | Matches one or more word characters      | `/\/users\/\w+/` matches `/users/john123`                   |
+
+=== "gettingStarted_dynamic_routes_catch_all.ts"
+
+    ```python hl_lines="7 10 13 20"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_dynamic_routes_catch_all.ts"
+    ```
+
+???+ warning "Route Matching Priority"
+    - Routes are matched in **order of specificity**, not registration order
+    - More specific routes (exact matches) take precedence over regex patterns
+    - Among regex routes, the first registered matching route wins
+    - Always place catch-all routes (`.*`) last
+
 ### HTTP Methods
 
 You can use dedicated methods to specify the HTTP method that should be handled in each resolver. That is, `app.<httpMethod>()`, where the HTTP method could be `delete`, `get`, `head`, `patch`, `post`, `put`, `options`.

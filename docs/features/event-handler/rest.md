@@ -99,7 +99,7 @@ For scenarios where you need to handle arbitrary or deeply nested paths, you can
 
 ##### Using Regex Patterns
 
-You can use standard [Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions){target="_blank" rel="nofollow"} in your route definitions, for example:
+You can use standard [regular expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions){target="_blank" rel="nofollow"} in your route definitions, for example:
 
 | Pattern   | Description                              | Examples                                                    |
 |-----------|------------------------------------------|-------------------------------------------------------------|
@@ -115,10 +115,9 @@ You can use standard [Regular Expressions](https://developer.mozilla.org/en-US/d
     ```
 
 ???+ warning "Route Matching Priority"
-    - Routes are matched in **order of specificity**, not registration order
+    - For non-regex routes, routes are matched in **order of specificity**, not registration order
     - More specific routes (exact matches) take precedence over regex patterns
-    - Among regex routes, the first registered matching route wins
-    - Always place catch-all routes (`.*`) last
+    - Among regex routes, registration order determines matching precedence, therefore, always place catch-all routes `/.*/` last
 
 ### HTTP Methods
 
@@ -620,7 +619,7 @@ Let's assume you have `index.ts` as your Lambda function entrypoint and routes i
 
 In the previous example, `split_route.ts` routes had a `/todos` prefix. This might grow over time and become repetitive.
 
-When necessary, you can set a prefix when including a `Router` instance. This means you could remove `/todos` prefix altogether.
+When necessary, you can set a prefix when including a `Router` instance. This means you can remove `/todos` prefix altogether.
 
 === "split_route_prefix.ts"
 

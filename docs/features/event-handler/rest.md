@@ -130,18 +130,6 @@ Please [check this issue](https://github.com/aws-powertools/powertools-lambda-ty
 
 You can access request details such as headers, query parameters, and body using the `Request` object provided to your route handlers and middleware functions via `reqCtx.req`.
 
-### Handling not found routes
-
-By default, we return a `404 Not Found` response for any unmatched routes.
-
-You can use the `notFound()` method as a higher-order function or class method decorator to override this behavior, and return a custom response.
-
-=== "index.ts"
-
-    ```ts hl_lines="11"
-    --8<-- "examples/snippets/event-handler/rest/gettingStarted_handle_not_found.ts"
-    ```
-
 ### Error handling
 
 You can use the `errorHandler()` method as a higher-order function or class method decorator to define a custom error handler for errors thrown in your route handlers or middleware.
@@ -156,6 +144,20 @@ Error handlers receive the error object and the request context as arguments, an
 
     ```ts hl_lines="11"
     --8<-- "examples/snippets/event-handler/rest/gettingStarted_error_handling.ts:4"
+    ```
+
+### Built-in Error Handlers
+
+We provide built-in error handlers for common routing errors so you don't have to specify the Error type explicitly.
+
+You can use the `notFound()` and `methodNotAllowed()` methods as higher-order functions or class method decorators to customize error responses for unmatched routes and unsupported HTTP methods.
+
+By default, we return a `404 Not Found` response for unmatched routes.
+
+=== "index.ts"
+
+    ```ts hl_lines="11 23"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_built_in_error_handler.ts"
     ```
 
 ### Throwing HTTP errors
@@ -439,11 +441,10 @@ For convenience, these are the default CORS settings applied when you register t
 | Key             | Default Value                                                                | Description                                                                                                                                                               |
 | --------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `origin`        | `*`                                                                          | Specifies the allowed origin(s) that can access the resource. Use `*` to allow all origins.                                                                               |
-| `methods`       | `GET,HEAD,PUT,PATCH,POST,DELETE`                                             | Specifies the allowed HTTP methods.                                                                                                                                       |
+| `methods`       | `['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']`                          | Specifies the allowed HTTP methods.                                                                                                                                       |
 | `allowHeaders`  | `[Authorization, Content-Type, X-Amz-Date, X-Api-Key, X-Amz-Security-Token]` | Specifies the allowed headers that can be used in the actual request.                                                                                                     |
 | `exposeHeaders` | `[]`                                                                         | Any additional header beyond the [safe listed by CORS specification](https://developer.mozilla.org/en-US/docs/Glossary/CORS-safelisted_response_header){target="_blank"}. |
 | `credentials`   | `false`                                                                      | Only necessary when you need to expose cookies, authorization headers or TLS client certificates.                                                                         |
-| `maxAge`        | `0`                                                                          | Indicates how long the results of a preflight request can be cached. Value is in seconds.                                                                                 |
 
 #### Per-route overrides
 

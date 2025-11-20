@@ -55,7 +55,7 @@
     "@types/node": "^24.10.1",
     "@vitest/coverage-v8": "^4.0.12",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.5",
+    "lint-staged": "^16.2.7",
     "markdownlint-cli2": "^0.19.0",
     "middy5": "npm:@middy/core@^5.4.3",
     "middy6": "npm:@middy/core@^6.0.0",

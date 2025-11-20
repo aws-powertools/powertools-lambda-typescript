@@ -565,15 +565,43 @@ Please [check this issue](https://github.com/aws-powertools/powertools-lambda-ty
 
 ### Split routers
 
-!!! note "Coming soon"
-
 As applications grow and the number of routes a Lambda function handles increases, it becomes natural to either break it into smaller Lambda functions or split routes into separate files to ease maintenance.
 
-Currently, the TypeScript event-handler's Router class doesn't provide a way to compose multiple router instances, forcing developers to define all routes in a single file or manually merge route definitions.
+The `Router` class provide an `includeRouter` method to compose multiple router instances allowing developers to define routes in multiple files and merge route definitions. You will be able to define routes in separate files and import them into a main router file, improving code organization and maintainability.
 
-Once this feature is available, you will be able to define routes in separate files and import them into a main router file, improving code organization and maintainability.
+!!! note "Merging with Global Middleware"
+    When merging two `Router` instances together, if you have a global middleware defined in one of your instances, the global middleware gets applied to the all the merged routes.
 
-Please [check this issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4481) for more details and examples, and add 👍 if you would like us to prioritize it.
+Let's assume you have `index.ts` as your Lambda function entrypoint and routes in `split_route.ts`. This is how you'd use the `includeRouter` feature.
+
+=== "split_route.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/event-handler/rest/split_route.ts"
+    ```
+
+=== "index.ts"
+
+    ```typescript hl_lines="8"
+    --8<-- "examples/snippets/event-handler/rest/split_route_index.ts"
+    ```
+
+#### Route Prefix
+
+In the previous example, `split_route.ts` routes had a `/todos` prefix. This might grow over time and become repetitive.
+
+When necessary, you can set a prefix when including a `Router` instance. This means you could remove `/todos` prefix altogether.
+
+=== "split_route_prefix.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/event-handler/rest/split_route_prefix.ts"
+    ```
+=== "index.ts"
+
+    ```typescript hl_lines="8"
+    --8<-- "examples/snippets/event-handler/rest/split_route_prefix_index.ts"
+    ```
 
 ### Considerations
 

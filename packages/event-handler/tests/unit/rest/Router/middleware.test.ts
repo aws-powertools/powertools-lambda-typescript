@@ -777,5 +777,33 @@ describe('Class: Router - Middleware', () => {
       expect(result.statusCode).toBe(403);
       expect(result.body).toBe('Route middleware response');
     });
+
+    it('allows post processing middleware to access the response returned early by a pre-processing middleware', async () => {
+      // Prepare
+      const app = new Router();
+      let message = '';
+      app.get(
+        '/test',
+        [
+          async ({ reqCtx, next }) => {
+            await next();
+            const clonedRes = reqCtx.res.clone();
+            message = (await clonedRes.json()).message;
+          },
+          () => {
+            return Promise.resolve({ message: 'Middleware applied' });
+          },
+        ],
+        () => {
+          return { message: 'Handler applied' };
+        }
+      );
+
+      // Act
+      await app.resolve(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(message).toEqual('Middleware applied');
+    });
   });
 });

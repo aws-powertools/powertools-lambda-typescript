@@ -308,18 +308,10 @@ class Router {
       ]);
 
       requestContext.params = route?.params ?? {};
-      const middlewareResult = await middleware({
+      await middleware({
         reqCtx: requestContext,
         next: () => Promise.resolve(),
       });
-
-      // middleware result takes precedence to allow short-circuiting
-      if (middlewareResult !== undefined) {
-        requestContext.res = handlerResultToWebResponse(middlewareResult, {
-          statusCode: getStatusCode(middlewareResult),
-          resHeaders: requestContext.res.headers,
-        });
-      }
 
       return requestContext;
     } catch (error) {

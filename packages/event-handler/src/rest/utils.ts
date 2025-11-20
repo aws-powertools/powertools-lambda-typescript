@@ -33,6 +33,7 @@ import {
   SAFE_CHARS,
   UNSAFE_CHARS,
 } from './constants.js';
+import { handlerResultToWebResponse } from './converters.js';
 
 export function getPathString(path: Path): string {
   return isString(path) ? path : path.source.replaceAll(/\\\//g, '/');
@@ -230,6 +231,11 @@ export const isExtendedAPIGatewayProxyResult = (
  * follows the onion model where middleware executes in order before `next()` and in
  * reverse order after `next()`.
  *
+ * When a middleware returns a value(short-circuits), that result becomes the response
+ * and the `res` object in the `RequestContext` is mutated with that result converted
+ * to a Web Response preserving any existing headers while applying the status code
+ * from the middleware result.
+ *
  * @param middleware - Array of middleware functions to compose
  * @returns A single middleware function that executes all provided middleware in sequence
  *
@@ -294,8 +300,13 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
         );
       }
 
+      // middleware result takes precedence to allow short-circuiting
       if (middlewareResult !== undefined) {
         result = middlewareResult;
+        reqCtx.res = handlerResultToWebResponse(middlewareResult, {
+          statusCode: getStatusCode(middlewareResult),
+          resHeaders: reqCtx.res.headers,
+        });
       }
     };
 

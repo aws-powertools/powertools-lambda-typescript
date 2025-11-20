@@ -91,6 +91,34 @@ All dynamic route parameters will be available as typed object properties in the
 
 You can also nest dynamic paths, for example `/todos/:todoId/comments/:commentId`, where both `:todoId` and `:commentId` will be resolved at runtime.
 
+#### Catch-all routes
+
+For scenarios where you need to handle arbitrary or deeply nested paths, you can use regex patterns directly in your route definitions. These are particularly useful for proxy routes or when dealing with file paths.
+
+**We recommend** having explicit routes whenever possible; use catch-all routes sparingly.
+
+##### Using Regex Patterns
+
+You can use standard [regular expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions){target="_blank" rel="nofollow"} in your route definitions, for example:
+
+| Pattern   | Description                              | Examples                                                    |
+|-----------|------------------------------------------|-------------------------------------------------------------|
+| `/.+/`    | Matches one or more characters (greedy)  | `/\/proxy\/.+/` matches `/proxy/any/deep/path`              |
+| `/.*/`    | Matches zero or more characters (greedy) | `/\/files\/.*/` matches `/files/` and `/files/deep/path`    |
+| `/[^/]+/` | Matches one or more non-slash characters | `/\/api\/[^\/]+/` matches `/api/v1` but not `/api/v1/users` |
+| `/\w+/`   | Matches one or more word characters      | `/\/users\/\w+/` matches `/users/john123`                   |
+
+=== "gettingStarted_dynamic_routes_catch_all.ts"
+
+    ```python hl_lines="7 10 13 20"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_dynamic_routes_catch_all.ts"
+    ```
+
+???+ warning "Route Matching Priority"
+    - For non-regex routes, routes are matched in **order of specificity**, not registration order
+    - More specific routes (exact matches) take precedence over regex patterns
+    - Among regex routes, registration order determines matching precedence, therefore, always place catch-all routes `/.*/` last
+
 ### HTTP Methods
 
 You can use dedicated methods to specify the HTTP method that should be handled in each resolver. That is, `app.<httpMethod>()`, where the HTTP method could be `delete`, `get`, `head`, `patch`, `post`, `put`, `options`.
@@ -130,18 +158,6 @@ Please [check this issue](https://github.com/aws-powertools/powertools-lambda-ty
 
 You can access request details such as headers, query parameters, and body using the `Request` object provided to your route handlers and middleware functions via `reqCtx.req`.
 
-### Handling not found routes
-
-By default, we return a `404 Not Found` response for any unmatched routes.
-
-You can use the `notFound()` method as a higher-order function or class method decorator to override this behavior, and return a custom response.
-
-=== "index.ts"
-
-    ```ts hl_lines="11"
-    --8<-- "examples/snippets/event-handler/rest/gettingStarted_handle_not_found.ts"
-    ```
-
 ### Error handling
 
 You can use the `errorHandler()` method as a higher-order function or class method decorator to define a custom error handler for errors thrown in your route handlers or middleware.
@@ -156,6 +172,20 @@ Error handlers receive the error object and the request context as arguments, an
 
     ```ts hl_lines="11"
     --8<-- "examples/snippets/event-handler/rest/gettingStarted_error_handling.ts:4"
+    ```
+
+### Built-in Error Handlers
+
+We provide built-in error handlers for common routing errors so you don't have to specify the Error type explicitly.
+
+You can use the `notFound()` and `methodNotAllowed()` methods as higher-order functions or class method decorators to customize error responses for unmatched routes and unsupported HTTP methods.
+
+By default, we return a `404 Not Found` response for unmatched routes.
+
+=== "index.ts"
+
+    ```ts hl_lines="11 23"
+    --8<-- "examples/snippets/event-handler/rest/gettingStarted_built_in_error_handler.ts"
     ```
 
 ### Throwing HTTP errors
@@ -439,11 +469,10 @@ For convenience, these are the default CORS settings applied when you register t
 | Key             | Default Value                                                                | Description                                                                                                                                                               |
 | --------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `origin`        | `*`                                                                          | Specifies the allowed origin(s) that can access the resource. Use `*` to allow all origins.                                                                               |
-| `methods`       | `GET,HEAD,PUT,PATCH,POST,DELETE`                                             | Specifies the allowed HTTP methods.                                                                                                                                       |
+| `methods`       | `['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']`                          | Specifies the allowed HTTP methods.                                                                                                                                       |
 | `allowHeaders`  | `[Authorization, Content-Type, X-Amz-Date, X-Api-Key, X-Amz-Security-Token]` | Specifies the allowed headers that can be used in the actual request.                                                                                                     |
 | `exposeHeaders` | `[]`                                                                         | Any additional header beyond the [safe listed by CORS specification](https://developer.mozilla.org/en-US/docs/Glossary/CORS-safelisted_response_header){target="_blank"}. |
 | `credentials`   | `false`                                                                      | Only necessary when you need to expose cookies, authorization headers or TLS client certificates.                                                                         |
-| `maxAge`        | `0`                                                                          | Indicates how long the results of a preflight request can be cached. Value is in seconds.                                                                                 |
 
 #### Per-route overrides
 
@@ -565,15 +594,43 @@ Please [check this issue](https://github.com/aws-powertools/powertools-lambda-ty
 
 ### Split routers
 
-!!! note "Coming soon"
-
 As applications grow and the number of routes a Lambda function handles increases, it becomes natural to either break it into smaller Lambda functions or split routes into separate files to ease maintenance.
 
-Currently, the TypeScript event-handler's Router class doesn't provide a way to compose multiple router instances, forcing developers to define all routes in a single file or manually merge route definitions.
+The `Router` class provide an `includeRouter` method to compose multiple router instances allowing developers to define routes in multiple files and merge route definitions. You will be able to define routes in separate files and import them into a main router file, improving code organization and maintainability.
 
-Once this feature is available, you will be able to define routes in separate files and import them into a main router file, improving code organization and maintainability.
+!!! note "Merging with Global Middleware"
+    When merging two `Router` instances together, if you have a global middleware defined in one of your instances, the global middleware gets applied to the all the merged routes.
 
-Please [check this issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4481) for more details and examples, and add 👍 if you would like us to prioritize it.
+Let's assume you have `index.ts` as your Lambda function entrypoint and routes in `split_route.ts`. This is how you'd use the `includeRouter` feature.
+
+=== "split_route.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/event-handler/rest/split_route.ts"
+    ```
+
+=== "index.ts"
+
+    ```typescript hl_lines="8"
+    --8<-- "examples/snippets/event-handler/rest/split_route_index.ts"
+    ```
+
+#### Route Prefix
+
+In the previous example, `split_route.ts` routes had a `/todos` prefix. This might grow over time and become repetitive.
+
+When necessary, you can set a prefix when including a `Router` instance. This means you can remove `/todos` prefix altogether.
+
+=== "split_route_prefix.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/event-handler/rest/split_route_prefix.ts"
+    ```
+=== "index.ts"
+
+    ```typescript hl_lines="8"
+    --8<-- "examples/snippets/event-handler/rest/split_route_prefix_index.ts"
+    ```
 
 ### Considerations
 

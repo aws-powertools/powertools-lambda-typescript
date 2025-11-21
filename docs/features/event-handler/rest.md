@@ -492,17 +492,17 @@ If you need to return binary data, there are several ways you can do so based on
 As described in the [response auto serialization](#response-auto-serialization) section, when you return a JavaScript object from your route handler, we automatically serialize it to JSON and set the `Content-Type` header to `application/json`.
 
 A similar pattern applies to binary data where you can return an `ArrayBuffer`,
-a [Nodejs stream](https://nodejs.org/api/stream.html), or
-a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API#browser_compatibility)
+a [Nodejs stream](https://nodejs.org/api/stream.html){target="_blank"}, or
+a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API#browser_compatibility){target="_blank"}
 directly from your handler. We will automatically serialize the response by setting the `isBase64Encoded` flag to `true` and `base64` encoding the binary data.
 
 !!! note "Content types"
-    The default header will be set to `application/json`: if you wish to change this,
-    e.g., in the case of images, PDFs, videos, etc, the you should use the `reqCtx.res.headers` object to set the appropriate header.
+    The default header will be set to `application/json`. If you wish to change this,
+    e.g., in the case of images, PDFs, videos, etc, then you should use the `reqCtx.res.headers` object to set the appropriate header.
 
 === "index.ts"
 
-    ```ts hl_lines="9-10"
+    ```ts hl_lines="8-9"
     --8<-- "examples/snippets/event-handler/rest/advanced_binary_response_auto.ts"
     ```
 
@@ -524,7 +524,7 @@ You can indicate that you wish to `base64` encode any response, regardless of ty
 
 === "index.ts"
 
-    ```ts hl_lines="9"
+    ```ts hl_lines="7"
     --8<-- "examples/snippets/event-handler/rest/advanced_binary_response_reqCtx.ts"
     ```
 
@@ -546,7 +546,7 @@ For complete control you can return an `APIGatewayProxyEvent` (`v1` or `v2`) and
 
 === "index.ts"
 
-    ```ts hl_lines="10-17"
+    ```ts hl_lines="8-16"
     --8<-- "examples/snippets/event-handler/rest/advanced_binary_response_manual.ts"
     ```
 

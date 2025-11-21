@@ -1,5 +1,5 @@
-import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
-import { compress } from '@aws-lambda-powertools/event-handler/experimental-rest/middleware';
+import { Router } from '@aws-lambda-powertools/event-handler/http';
+import { compress } from '@aws-lambda-powertools/event-handler/http/middleware';
 
 const compressRouter = new Router();
 

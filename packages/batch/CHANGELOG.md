@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
+
+### Features
+
+- use async local storage for batch processing ([#4700](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4700)) ([67a8de7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/67a8de7baec4a240bc5f22493a13c75289397d7c))
 ## [2.28.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.0...v2.28.1) (2025-10-23)
 
 **Note:** Version bump only for this package

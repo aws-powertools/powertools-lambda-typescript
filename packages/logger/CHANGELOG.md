@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
+
+### Bug Fixes
+
+- infinite loop on log buffer when item size is max bytes ([#4741](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4741)) ([f0677d4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f0677d4f1220df6f68f9fd8ece221306fdd9b154))
+- not passing persistent keys to children ([#4740](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4740)) ([eafbe13](https://github.com/aws-powertools/powertools-lambda-typescript/commit/eafbe13aa6ca7067c2c8329150fdf600ebca12a7))
+
+### Features
+
+- use async local storage for logger ([#4668](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4668)) ([4507fcc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4507fccb8872975f4a3e683ec9034e7f71e67d30))
 ## [2.28.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.0...v2.28.1) (2025-10-23)
 
 ### Bug Fixes

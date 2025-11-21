@@ -1,4 +1,4 @@
-import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
+import { Router } from '@aws-lambda-powertools/event-handler/http';
 import type { Context } from 'aws-lambda';
 import { binaryRouter } from './routers/binaryRouter.js';
 import { compressRouter } from './routers/compressRouter.js';

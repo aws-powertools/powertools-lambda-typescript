@@ -1,4 +1,4 @@
-import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
+import { Router } from '@aws-lambda-powertools/event-handler/http';
 
 const paramsRouter = new Router();
 

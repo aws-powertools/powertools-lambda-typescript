@@ -70,24 +70,24 @@
         "default": "./lib/esm/types/index.js"
       }
     },
-    "./experimental-rest": {
+    "./http": {
       "require": {
-        "types": "./lib/cjs/rest/index.d.ts",
-        "default": "./lib/cjs/rest/index.js"
+        "types": "./lib/cjs/http/index.d.ts",
+        "default": "./lib/cjs/http/index.js"
       },
       "import": {
-        "types": "./lib/esm/rest/index.d.ts",
-        "default": "./lib/esm/rest/index.js"
+        "types": "./lib/esm/http/index.d.ts",
+        "default": "./lib/esm/http/index.js"
       }
     },
-    "./experimental-rest/middleware": {
+    "./http/middleware": {
       "require": {
-        "types": "./lib/cjs/rest/middleware/index.d.ts",
-        "default": "./lib/cjs/rest/middleware/index.js"
+        "types": "./lib/cjs/http/middleware/index.d.ts",
+        "default": "./lib/cjs/http/middleware/index.js"
       },
       "import": {
-        "types": "./lib/esm/rest/middleware/index.d.ts",
-        "default": "./lib/esm/rest/middleware/index.js"
+        "types": "./lib/esm/http/middleware/index.d.ts",
+        "default": "./lib/esm/http/middleware/index.js"
       }
     }
   },
@@ -109,9 +109,9 @@
         "./lib/cjs/types/index.d.ts",
         "./lib/esm/types/index.d.ts"
       ],
-      "experimental-rest": [
-        "./lib/cjs/rest/index.d.ts",
-        "./lib/esm/rest/index.d.ts"
+      "http": [
+        "./lib/cjs/http/index.d.ts",
+        "./lib/esm/http/index.d.ts"
       ]
     }
   },

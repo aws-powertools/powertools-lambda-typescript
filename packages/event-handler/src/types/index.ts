@@ -37,12 +37,12 @@ export type {
   ErrorResolveOptions,
   HandlerResponse,
   HttpMethod,
+  HttpRouteHandlerOptions,
+  HttpRouteOptions,
+  HttpRouterOptions,
   HttpStatusCode,
   Middleware,
   Path,
   RequestContext,
-  RestRouteHandlerOptions,
-  RestRouteOptions,
-  RestRouterOptions,
   RouteHandler,
-} from './rest.js';
+} from './http.js';

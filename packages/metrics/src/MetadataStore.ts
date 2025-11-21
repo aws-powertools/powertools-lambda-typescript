@@ -1,4 +1,5 @@
 import '@aws/lambda-invoke-store';
+import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
 
 /**
  * Manages storage of metrics #metadata with automatic context detection.
@@ -14,17 +15,21 @@ class MetadataStore {
   #fallbackStorage: Record<string, string> = {};
 
   #getStorage(): Record<string, string> {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackStorage;
     }
 
-    let stored = invokeStore.get(this.#metadataKey) as
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    let stored = store.get(this.#metadataKey) as
       | Record<string, string>
       | undefined;
     if (stored == null) {
       stored = {};
-      invokeStore.set(this.#metadataKey, stored);
+      store.set(this.#metadataKey, stored);
     }
     return stored;
   }
@@ -39,13 +44,17 @@ class MetadataStore {
   }
 
   public clear(): void {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackStorage = {};
       return;
     }
 
-    invokeStore.set(this.#metadataKey, {});
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    store.set(this.#metadataKey, {});
   }
 }
 

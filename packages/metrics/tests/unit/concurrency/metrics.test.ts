@@ -1,5 +1,5 @@
 import { sequence } from '@aws-lambda-powertools/testing-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Metrics, MetricUnit } from '../../../src/index.js';
 
 describe('Metrics concurrent invocation isolation', () => {
@@ -7,6 +7,10 @@ describe('Metrics concurrent invocation isolation', () => {
     vi.stubEnv('POWERTOOLS_DEV', 'true');
     vi.stubEnv('POWERTOOLS_METRICS_DISABLED', 'false');
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it.each([
@@ -34,6 +38,9 @@ describe('Metrics concurrent invocation isolation', () => {
   ])(
     'handles metrics, metadata, and dimensions $description',
     async ({ useInvokeStore, expectedCallCount, expectedOutputs }) => {
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const metrics = new Metrics({ singleMetric: false });
 
       await sequence(
@@ -93,6 +100,9 @@ describe('Metrics concurrent invocation isolation', () => {
   ])(
     'handles timestamps $description',
     async ({ useInvokeStore, expectedCallCount, expectedOutputs }) => {
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const metrics = new Metrics({ singleMetric: false });
       const timestamp1 = 1000;
       const timestamp2 = 2000;

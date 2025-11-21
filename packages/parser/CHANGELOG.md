@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
+
+### Features
+
+- add type for values parsed by DynamoDBStreamRecord ([#4793](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4793)) ([c2bd849](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c2bd8499c38f2e9048782d717613a721b3e8ccc8))
 ## [2.28.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.0...v2.28.1) (2025-10-23)
 
 **Note:** Version bump only for this package

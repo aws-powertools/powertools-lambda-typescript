@@ -1,5 +1,36 @@
 # Change Log
 
+## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
+
+### Improvements
+
+- **commons** Make trace ID access more robust ([#4693](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4693)) ([b26cd2c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b26cd2c7395e55fb33a6ce719bc69b1a11004446))
+
+### Bug Fixes
+
+- **logger** infinite loop on log buffer when item size is max bytes ([#4741](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4741)) ([f0677d4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f0677d4f1220df6f68f9fd8ece221306fdd9b154))
+- **logger** not passing persistent keys to children ([#4740](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4740)) ([eafbe13](https://github.com/aws-powertools/powertools-lambda-typescript/commit/eafbe13aa6ca7067c2c8329150fdf600ebca12a7))
+- **event-handler** moved the response mutation logic to the `composeMiddleware` function ([#4773](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4773)) ([2fe04e3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2fe04e351aa4f8a104a145d3fcef7bb6d856506f))
+- **event-handler** handle repeated queryString values ([#4755](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4755)) ([5d3cf2d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5d3cf2de5821171e968577fcb1c74d5198e153d6))
+- **event-handler** allow event handler response to return array ([#4725](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4725)) ([eef92ca](https://github.com/aws-powertools/powertools-lambda-typescript/commit/eef92ca929cd7a2551e228b20deae3b59044a0ee))
+
+### Features
+
+- **logger** use async local storage for logger ([#4668](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4668)) ([4507fcc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4507fccb8872975f4a3e683ec9034e7f71e67d30))
+- **metrics** use async local storage for metrics ([#4663](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4663)) ([#4694](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4694)) ([2e08f74](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2e08f74cfe86571ef7f2388d3a028763561c11e9))
+- **parser** add type for values parsed by DynamoDBStreamRecord ([#4793](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4793)) ([c2bd849](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c2bd8499c38f2e9048782d717613a721b3e8ccc8))
+- **batch** use async local storage for batch processing ([#4700](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4700)) ([67a8de7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/67a8de7baec4a240bc5f22493a13c75289397d7c))
+- **event-handler** add support for ALB ([#4759](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4759)) ([a470892](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a4708925fb08da09044ea1592ea7df58e46f383d))
+- **event-handler** expose response streaming in public API ([#4743](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4743)) ([be4e4e2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/be4e4e2b9f0a39210f972f22d03a382aea304f60))
+- **event-handler** add first-class support for binary responses ([#4723](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4723)) ([13dbcdc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/13dbcdccc3626d442f66c6037af7df88626dd9c2))
+- **event-handler** Add support for HTTP APIs (API Gateway v2) ([#4714](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4714)) ([2f70018](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2f700189aef42445a229da8a0d1446e1d63423fa))
+
+### Maintenance
+
+- **tracer** bump aws-xray-sdk-core from 3.11.0 to 3.12.0 ([#4792](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4792)) ([afb5678](https://github.com/aws-powertools/powertools-lambda-typescript/commit/afb5678ed6176d9d2e0a759993af0054a2c80b05))
+- **event-handler** unflag http handler from experimental ([#4801](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4801)) ([a2deb8d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a2deb8d702bb305bbf017882ce16beb6b3c809aa))
+
+
 ## [2.28.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.0...v2.28.1) (2025-10-23)
 
 ### Bug Fixes

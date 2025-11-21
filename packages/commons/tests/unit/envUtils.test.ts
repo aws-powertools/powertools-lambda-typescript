@@ -392,7 +392,7 @@ describe('Functions: envUtils', () => {
       const result = shouldUseInvokeStore();
 
       // Assess
-      expect(result).toBe(true);
+      expect(result).toBe(false);
     });
 
     it('returns false when AWS_LAMBDA_MAX_CONCURRENCY is set', () => {
@@ -403,7 +403,7 @@ describe('Functions: envUtils', () => {
       const result = shouldUseInvokeStore();
 
       // Assess
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
   });
 });

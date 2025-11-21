@@ -560,7 +560,7 @@ For complete control you can return an `APIGatewayProxyEvent` (`v1` or `v2`) and
 
     ```json
     --8<-- "examples/snippets/event-handler/rest/samples/advanced_binary_res_logo_image.json"
-
+    ```
 !!! note "Compression"
     If you wish to use binary responses together with the [`compress`](#compress) feature, the client must send the `Accept` header with the correct media type.
 

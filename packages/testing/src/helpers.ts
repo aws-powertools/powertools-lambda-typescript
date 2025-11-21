@@ -194,13 +194,14 @@ const withResolvers = <T>() => {
  * // Execution order: action1() → action2() → action3() → both return
  * ```
  */
-function sequence<T1 = unknown, T2 = unknown>(
+async function sequence<T1 = unknown, T2 = unknown>(
   inv1: Invocation<T1>,
   inv2: Invocation<T2>,
   options: { useInvokeStore?: boolean }
 ): Promise<[T1, T2]> {
+  const invokeStore = await InvokeStore.getInstanceAsync();
   const executionEnv = <T>(f: () => T) =>
-    options?.useInvokeStore ? InvokeStore.run({}, f) : f();
+    options?.useInvokeStore ? invokeStore.run({}, f) : f();
 
   const inv1Barriers = inv1.sideEffects.map(() => withResolvers<void>());
   const inv2Barriers = inv2.sideEffects.map(() => withResolvers<void>());

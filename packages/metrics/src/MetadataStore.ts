@@ -1,4 +1,4 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
 
 /**
  * Manages storage of metrics #metadata with automatic context detection.
@@ -14,16 +14,17 @@ class MetadataStore {
   #fallbackStorage: Record<string, string> = {};
 
   #getStorage(): Record<string, string> {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackStorage;
     }
 
-    let stored = InvokeStore.get(this.#metadataKey) as
+    let stored = invokeStore.get(this.#metadataKey) as
       | Record<string, string>
       | undefined;
     if (stored == null) {
       stored = {};
-      InvokeStore.set(this.#metadataKey, stored);
+      invokeStore.set(this.#metadataKey, stored);
     }
     return stored;
   }
@@ -38,12 +39,13 @@ class MetadataStore {
   }
 
   public clear(): void {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackStorage = {};
       return;
     }
 
-    InvokeStore.set(this.#metadataKey, {});
+    invokeStore.set(this.#metadataKey, {});
   }
 }
 

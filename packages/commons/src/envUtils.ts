@@ -1,4 +1,4 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
 import {
   POWERTOOLS_DEV_ENV_VAR,
   POWERTOOLS_SERVICE_NAME_ENV_VAR,
@@ -258,7 +258,7 @@ const getServiceName = (): string => {
  */
 const getXrayTraceDataFromEnv = (): Record<string, string> | undefined => {
   const xRayTraceEnv =
-    InvokeStore.getXRayTraceId() ??
+    globalThis.awslambda?.InvokeStore?.getXRayTraceId() ??
     getStringFromEnv({
       key: XRAY_TRACE_ID_ENV_VAR,
       defaultValue: '',

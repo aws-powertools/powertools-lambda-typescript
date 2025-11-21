@@ -1,4 +1,4 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
 import type { Dimensions } from './types/Metrics.js';
 
 /**
@@ -18,29 +18,31 @@ class DimensionsStore {
   #defaultDimensions: Dimensions = {};
 
   #getDimensions(): Dimensions {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackDimensions;
     }
 
-    let stored = InvokeStore.get(this.#dimensionsKey) as Dimensions | undefined;
+    let stored = invokeStore.get(this.#dimensionsKey) as Dimensions | undefined;
     if (stored == null) {
       stored = {};
-      InvokeStore.set(this.#dimensionsKey, stored);
+      invokeStore.set(this.#dimensionsKey, stored);
     }
     return stored;
   }
 
   #getDimensionSets(): Dimensions[] {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackDimensionSets;
     }
 
-    let stored = InvokeStore.get(this.#dimensionSetsKey) as
+    let stored = invokeStore.get(this.#dimensionSetsKey) as
       | Dimensions[]
       | undefined;
     if (stored == null) {
       stored = [];
-      InvokeStore.set(this.#dimensionSetsKey, stored);
+      invokeStore.set(this.#dimensionSetsKey, stored);
     }
     return stored;
   }
@@ -64,14 +66,15 @@ class DimensionsStore {
   }
 
   public clearRequestDimensions(): void {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackDimensions = {};
       this.#fallbackDimensionSets = [];
       return;
     }
 
-    InvokeStore.set(this.#dimensionsKey, {});
-    InvokeStore.set(this.#dimensionSetsKey, []);
+    invokeStore.set(this.#dimensionsKey, {});
+    invokeStore.set(this.#dimensionSetsKey, []);
   }
 
   public clearDefaultDimensions(): void {

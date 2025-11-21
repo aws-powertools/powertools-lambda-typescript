@@ -1,4 +1,4 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
 import type {
   BaseRecord,
   BatchProcessingOptions,
@@ -35,124 +35,138 @@ class BatchProcessingStore {
   #fallbackErrors: Error[] = [];
 
   public getRecords(): BaseRecord[] {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackRecords;
     }
-    return (InvokeStore.get(this.#recordsKey) as BaseRecord[]) ?? [];
+    return (invokeStore.get(this.#recordsKey) as BaseRecord[]) ?? [];
   }
 
   public setRecords(records: BaseRecord[]): void {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackRecords = records;
       return;
     }
-    InvokeStore.set(this.#recordsKey, records);
+    invokeStore.set(this.#recordsKey, records);
   }
 
   public getHandler(): CallableFunction {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackHandler;
     }
     return (
-      (InvokeStore.get(this.#handlerKey) as CallableFunction) ?? (() => {})
+      (invokeStore.get(this.#handlerKey) as CallableFunction) ?? (() => {})
     );
   }
 
   public setHandler(handler: CallableFunction): void {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackHandler = handler;
       return;
     }
-    InvokeStore.set(this.#handlerKey, handler);
+    invokeStore.set(this.#handlerKey, handler);
   }
 
   public getOptions(): BatchProcessingOptions | undefined {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackOptions;
     }
-    return InvokeStore.get(this.#optionsKey) as
+    return invokeStore.get(this.#optionsKey) as
       | BatchProcessingOptions
       | undefined;
   }
 
   public setOptions(options: BatchProcessingOptions | undefined): void {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackOptions = options;
       return;
     }
-    InvokeStore.set(this.#optionsKey, options);
+    invokeStore.set(this.#optionsKey, options);
   }
 
   public getFailureMessages(): EventSourceDataClassTypes[] {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackFailureMessages;
     }
     return (
-      (InvokeStore.get(
+      (invokeStore.get(
         this.#failureMessagesKey
       ) as EventSourceDataClassTypes[]) ?? []
     );
   }
 
   public setFailureMessages(messages: EventSourceDataClassTypes[]): void {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackFailureMessages = messages;
       return;
     }
-    InvokeStore.set(this.#failureMessagesKey, messages);
+    invokeStore.set(this.#failureMessagesKey, messages);
   }
 
   public getSuccessMessages(): EventSourceDataClassTypes[] {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackSuccessMessages;
     }
     return (
-      (InvokeStore.get(
+      (invokeStore.get(
         this.#successMessagesKey
       ) as EventSourceDataClassTypes[]) ?? []
     );
   }
 
   public setSuccessMessages(messages: EventSourceDataClassTypes[]): void {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackSuccessMessages = messages;
       return;
     }
-    InvokeStore.set(this.#successMessagesKey, messages);
+    invokeStore.set(this.#successMessagesKey, messages);
   }
 
   public getBatchResponse(): PartialItemFailureResponse {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackBatchResponse;
     }
     return (
-      (InvokeStore.get(
+      (invokeStore.get(
         this.#batchResponseKey
       ) as PartialItemFailureResponse) ?? { batchItemFailures: [] }
     );
   }
 
   public setBatchResponse(response: PartialItemFailureResponse): void {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackBatchResponse = response;
       return;
     }
-    InvokeStore.set(this.#batchResponseKey, response);
+    invokeStore.set(this.#batchResponseKey, response);
   }
 
   public getErrors(): Error[] {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackErrors;
     }
-    return (InvokeStore.get(this.#errorsKey) as Error[]) ?? [];
+    return (invokeStore.get(this.#errorsKey) as Error[]) ?? [];
   }
 
   public setErrors(errors: Error[]): void {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackErrors = errors;
       return;
     }
-    InvokeStore.set(this.#errorsKey, errors);
+    invokeStore.set(this.#errorsKey, errors);
   }
 }
 

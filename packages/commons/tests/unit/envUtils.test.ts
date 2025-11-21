@@ -1,4 +1,4 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import { InvokeStore, InvokeStoreBase } from '@aws/lambda-invoke-store';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getBooleanFromEnv,
@@ -289,10 +289,11 @@ describe('Functions: envUtils', () => {
           'Root=1-6849f099-ce973f4ea2c57e4f9a382904;Parent=668bfc7d9aa5b120;Sampled=0',
         expected: '1-6849f099-ce973f4ea2c57e4f9a382904',
       },
-    ])('$description', ({ traceData, expected }) => {
-      InvokeStore.run(
+    ])('$description', async ({ traceData, expected }) => {
+      const invokeStore = await InvokeStore.getInstanceAsync();
+      invokeStore.run(
         {
-          [InvokeStore.PROTECTED_KEYS.X_RAY_TRACE_ID]: traceData,
+          [InvokeStoreBase.PROTECTED_KEYS.X_RAY_TRACE_ID]: traceData,
         },
         () => {
           // Act
@@ -367,10 +368,11 @@ describe('Functions: envUtils', () => {
         traceData: undefined,
         expected: false,
       },
-    ])('$description', ({ traceData, expected }) => {
-      InvokeStore.run(
+    ])('$description', async ({ traceData, expected }) => {
+      const invokeStore = await InvokeStore.getInstanceAsync();
+      invokeStore.run(
         {
-          [InvokeStore.PROTECTED_KEYS.X_RAY_TRACE_ID]: traceData,
+          [InvokeStoreBase.PROTECTED_KEYS.X_RAY_TRACE_ID]: traceData,
         },
         () => {
           // Act

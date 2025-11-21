@@ -1,4 +1,4 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
 import type { LogAttributes } from './types/logKeys.js';
 
 /**
@@ -20,31 +20,34 @@ class LogAttributesStore {
   #persistentAttributes: LogAttributes = {};
 
   #getTemporaryAttributes(): LogAttributes {
-    if (InvokeStore.getContext() === undefined) {
+    if (globalThis.awslambda?.InvokeStore?.getContext() === undefined) {
       return this.#fallbackTemporaryAttributes;
     }
 
-    let stored = InvokeStore.get(this.#temporaryAttributesKey) as
-      | LogAttributes
-      | undefined;
+    let stored = globalThis.awslambda.InvokeStore.get(
+      this.#temporaryAttributesKey
+    ) as LogAttributes | undefined;
     if (stored == null) {
       stored = {};
-      InvokeStore.set(this.#temporaryAttributesKey, stored);
+      globalThis.awslambda.InvokeStore.set(
+        this.#temporaryAttributesKey,
+        stored
+      );
     }
     return stored;
   }
 
   #getKeys(): Map<string, 'temp' | 'persistent'> {
-    if (InvokeStore.getContext() === undefined) {
+    if (globalThis.awslambda?.InvokeStore?.getContext() === undefined) {
       return this.#fallbackKeys;
     }
 
-    let stored = InvokeStore.get(this.#keysKey) as
+    let stored = globalThis.awslambda.InvokeStore.get(this.#keysKey) as
       | Map<string, 'temp' | 'persistent'>
       | undefined;
     if (stored == null) {
       stored = new Map();
-      InvokeStore.set(this.#keysKey, stored);
+      globalThis.awslambda.InvokeStore.set(this.#keysKey, stored);
     }
     return stored;
   }
@@ -90,12 +93,12 @@ class LogAttributesStore {
       }
     }
 
-    if (InvokeStore.getContext() === undefined) {
+    if (globalThis.awslambda?.InvokeStore?.getContext() === undefined) {
       this.#fallbackTemporaryAttributes = {};
       return;
     }
 
-    InvokeStore.set(this.#temporaryAttributesKey, {});
+    globalThis.awslambda.InvokeStore.set(this.#temporaryAttributesKey, {});
   }
 
   public setPersistentAttributes(attributes: LogAttributes): void {

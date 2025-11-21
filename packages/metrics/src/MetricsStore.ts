@@ -1,4 +1,4 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
 import { isIntegerNumber } from '@aws-lambda-powertools/commons/typeutils';
 import { MetricResolution as MetricResolutions } from './constants.js';
 import type {
@@ -24,16 +24,17 @@ class MetricsStore {
   #fallbackTimestamp?: number;
 
   #getStorage(): StoredMetrics {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackStorage;
     }
 
-    let stored = InvokeStore.get(this.#storedMetricsKey) as
+    let stored = invokeStore.get(this.#storedMetricsKey) as
       | StoredMetrics
       | undefined;
     if (stored == null) {
       stored = {};
-      InvokeStore.set(this.#storedMetricsKey, stored);
+      invokeStore.set(this.#storedMetricsKey, stored);
     }
     return stored;
   }
@@ -105,14 +106,15 @@ class MetricsStore {
   }
 
   public clearMetrics(): void {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackStorage = {};
       this.#fallbackTimestamp = undefined;
       return;
     }
 
-    InvokeStore.set(this.#storedMetricsKey, {});
-    InvokeStore.set(this.#timestampKey, undefined);
+    invokeStore.set(this.#storedMetricsKey, {});
+    invokeStore.set(this.#timestampKey, undefined);
   }
 
   public hasMetrics(): boolean {
@@ -124,22 +126,24 @@ class MetricsStore {
   }
 
   public getTimestamp(): number | undefined {
-    if (InvokeStore.getContext() === undefined) {
+    const invokeStore = globalThis.awslambda?.InvokeStore;
+    if (invokeStore?.getContext() === undefined) {
       return this.#fallbackTimestamp;
     }
 
-    return InvokeStore.get(this.#timestampKey) as number | undefined;
+    return invokeStore.get(this.#timestampKey) as number | undefined;
   }
 
   public setTimestamp(timestamp: number | Date): number {
     const timestampMs = this.#convertTimestampToEmfFormat(timestamp);
+    const invokeStore = globalThis.awslambda?.InvokeStore;
 
-    if (InvokeStore.getContext() === undefined) {
+    if (invokeStore?.getContext() === undefined) {
       this.#fallbackTimestamp = timestampMs;
       return timestampMs;
     }
 
-    InvokeStore.set(this.#timestampKey, timestampMs);
+    invokeStore.set(this.#timestampKey, timestampMs);
     return timestampMs;
   }
 

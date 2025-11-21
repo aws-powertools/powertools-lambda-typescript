@@ -49,6 +49,7 @@ export {
   VerifyAuthChallengeTriggerSchema,
 } from './cognito.js';
 export {
+  DynamoDBStreamRecord,
   DynamoDBStreamSchema,
   DynamoDBStreamToKinesisRecord,
 } from './dynamodb.js';

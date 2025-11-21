@@ -33,6 +33,7 @@ export type {
   CloudWatchLogsDecode,
   CloudWatchLogsEvent,
   DynamoDBStreamEvent,
+  DynamoDBStreamRecord,
   DynamoDBStreamToKinesisRecordEvent,
   EventBridgeEvent,
   KafkaMskEvent,

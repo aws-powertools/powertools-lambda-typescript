@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
@@ -34,7 +35,7 @@ class DefaultLambda implements LambdaInterface {
   ): Promise<void> {
     logger.info(`${this.message} ${JSON.stringify(_event)}`);
     // sleep to enforce error with parallel execution
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await setTimeout(1000);
   }
 
   @idempotent({
@@ -74,7 +75,7 @@ class DefaultLambda implements LambdaInterface {
   public async handlerParallel(event: { foo: string }, context: Context) {
     logger.addContext(context);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await setTimeout(1500);
 
     logger.info('Processed event', { details: event.foo });
 
@@ -94,7 +95,7 @@ class DefaultLambda implements LambdaInterface {
     logger.addContext(context);
 
     if (event.invocation === 0) {
-      await new Promise((resolve) => setTimeout(resolve, 4000));
+      await setTimeout(4000);
     }
 
     logger.info('Processed event', {
@@ -121,9 +122,9 @@ const handlerExpired = defaultLambda.handlerExpired.bind(defaultLambda);
 const logger = new Logger();
 
 class LambdaWithKeywordArgument implements LambdaInterface {
-  public handler(event: { id: string }, _context: Context) {
-    config.registerLambdaContext(_context);
-    this.process(event.id, 'bar');
+  public async handler(event: { id: string }, context: Context) {
+    config.registerLambdaContext(context);
+    await this.process(event.id, 'bar');
 
     return 'Hello World Keyword Argument';
   }
@@ -133,7 +134,8 @@ class LambdaWithKeywordArgument implements LambdaInterface {
     config: config,
     dataIndexArgument: 1,
   })
-  public process(id: string, foo: string) {
+  public async process(id: string, foo: string) {
+    await setTimeout(1);
     logger.info('Got test event', { id, foo });
 
     return `idempotent result: ${foo}`;

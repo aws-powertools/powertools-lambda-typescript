@@ -110,7 +110,8 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
         "Version": 24,
         "CompatibleRuntimes": [
             "nodejs20.x",
-            "nodejs22.x"
+            "nodejs22.x",
+            "nodejs24.x"
         ],
         "LicenseInfo": "MIT-0",
         "CompatibleArchitectures": [
@@ -142,7 +143,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
         );
         
         new NodejsFunction(this, 'Function', {
-          runtime: Runtime.NODEJS_22_X,
+          runtime: Runtime.NODEJS_24_X,
           // Add the Layer to a Lambda function
           layers: [powertoolsLayer],
           code: Code.fromInline(`...`),
@@ -191,7 +192,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
         );
         
         new NodejsFunction(this, 'Function', {
-          runtime: Runtime.NODEJS_22_X,
+          runtime: Runtime.NODEJS_24_X,
           // Add the Layer to a Lambda function
           layers: [powertoolsLayer],
           code: Code.fromInline(`...`),
@@ -281,7 +282,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
       function_name = "lambda_function_name"
       role          = ...
       handler       = "index.handler"
-      runtime 		= "nodejs22.x"
+      runtime 		= "nodejs24.x"
       layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:40"]
       source_code_hash = filebase64sha256("lambda_function_payload.zip")
     }
@@ -298,7 +299,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
       resource "aws_lambda_function" "test_lambda" {
         ...
 
-        runtime = "nodejs22.x"
+        runtime = "nodejs24.x"
 
         layers = [data.aws_ssm_parameter.powertools_version.value]
       }
@@ -323,7 +324,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
         tracingConfig: {
             mode: 'Active'
         },
-        runtime: aws.lambda.Runtime.NodeJS22dX,
+        runtime: aws.lambda.Runtime.NodeJS24dX,
         handler: 'index.handler',
         role: role.arn,
         architectures: ['x86_64']

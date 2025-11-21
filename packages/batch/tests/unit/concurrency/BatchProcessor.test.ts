@@ -1,12 +1,16 @@
 import { sequence } from '@aws-lambda-powertools/testing-utils';
 import type { SQSRecord } from 'aws-lambda';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BatchProcessor, EventType } from '../../../src/index.js';
 import { sqsRecordFactory } from '../../helpers/factories.js';
 
 describe('BatchProcessor concurrent invocation isolation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it.each([
@@ -24,6 +28,9 @@ describe('BatchProcessor concurrent invocation isolation', () => {
     'processes correct records per invocation $description',
     async ({ useInvokeStore, expectedResults }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const processor = new BatchProcessor(EventType.SQS);
       const recordsA = [sqsRecordFactory('record-A')];
       const recordsB = [sqsRecordFactory('record-B')];
@@ -86,6 +93,9 @@ describe('BatchProcessor concurrent invocation isolation', () => {
     'calls correct handler per invocation $description',
     async ({ useInvokeStore, expectedCalls }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const processor = new BatchProcessor(EventType.SQS);
       const recordsA = [sqsRecordFactory('record-A')];
       const recordsB = [sqsRecordFactory('record-B')];
@@ -138,6 +148,9 @@ describe('BatchProcessor concurrent invocation isolation', () => {
     'tracks failures independently per invocation $description',
     async ({ useInvokeStore }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const processor = new BatchProcessor(EventType.SQS);
       const recordsA = [sqsRecordFactory('fail')];
       const recordsB = [sqsRecordFactory('success')];
@@ -208,6 +221,9 @@ describe('BatchProcessor concurrent invocation isolation', () => {
     'isolates use of prepare method across invocations $description',
     async ({ useInvokeStore, expectedErrorCountA, expectedErrorCountB }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const processor = new BatchProcessor(EventType.SQS);
       const recordsA = [sqsRecordFactory('fail-1'), sqsRecordFactory('fail-2')];
       const recordsB = [sqsRecordFactory('fail-3')];

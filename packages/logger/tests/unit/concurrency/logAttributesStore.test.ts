@@ -5,6 +5,7 @@ import { LogAttributesStore } from '../../../src/LogAttributesStore.js';
 describe('LogAttributesStore concurrent invocation isolation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
   });
 
   it.each([
@@ -24,6 +25,9 @@ describe('LogAttributesStore concurrent invocation isolation', () => {
     'handles storing temporary attributes $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new LogAttributesStore();
 
       // Act
@@ -62,6 +66,9 @@ describe('LogAttributesStore concurrent invocation isolation', () => {
     'handles clearing temporary attributes $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new LogAttributesStore();
 
       // Act
@@ -93,6 +100,7 @@ describe('LogAttributesStore concurrent invocation isolation', () => {
 
   it('persistent attributes are shared across invocations', async () => {
     // Prepare
+    vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     const store = new LogAttributesStore();
     store.setPersistentAttributes({ service: 'my-service' });
 
@@ -131,6 +139,9 @@ describe('LogAttributesStore concurrent invocation isolation', () => {
     'isolates temporary keys $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new LogAttributesStore();
 
       // Act

@@ -1,10 +1,71 @@
 import { sequence } from '@aws-lambda-powertools/testing-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DimensionsStore } from '../../../src/DimensionsStore.js';
 
 describe('DimensionsStore concurrent invocation isolation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  describe('InvokeStore error handling', () => {
+    beforeEach(() => {
+      vi.stubGlobal('awslambda', undefined);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('throws error when AWS_LAMBDA_MAX_CONCURRENCY is set but InvokeStore is not available', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new DimensionsStore();
+
+      // Act & Assess
+      expect(() => {
+        store.addDimension('env', 'prod');
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when clearing dimensions with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new DimensionsStore();
+
+      // Act & Assess
+      expect(() => {
+        store.clearRequestDimensions();
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when clearing dimensions after adding with InvokeStore unavailable', () => {
+      // Prepare
+      vi.unstubAllGlobals();
+      const store = new DimensionsStore();
+      store.addDimension('env', 'prod');
+      vi.stubGlobal('awslambda', undefined);
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+
+      // Act & Assess
+      expect(() => {
+        store.clearRequestDimensions();
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when getting dimension sets with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new DimensionsStore();
+
+      // Act & Assess
+      expect(() => {
+        store.getDimensionSets();
+      }).toThrow('InvokeStore is not available');
+    });
   });
 
   it.each([
@@ -24,6 +85,9 @@ describe('DimensionsStore concurrent invocation isolation', () => {
     'handles storing dimensions $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new DimensionsStore();
 
       // Act
@@ -68,6 +132,9 @@ describe('DimensionsStore concurrent invocation isolation', () => {
     'handles storing dimension sets $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new DimensionsStore();
 
       // Act
@@ -113,6 +180,9 @@ describe('DimensionsStore concurrent invocation isolation', () => {
     'handles clearing the store $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new DimensionsStore();
 
       // Act

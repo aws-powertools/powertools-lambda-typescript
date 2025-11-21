@@ -1,12 +1,16 @@
 import { sequence } from '@aws-lambda-powertools/testing-utils';
 import type { SQSRecord } from 'aws-lambda';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BatchProcessingStore } from '../../../src/BatchProcessingStore.js';
 import { sqsRecordFactory } from '../../helpers/factories.js';
 
 describe('BatchProcessingStore concurrent invocation isolation', () => {
   beforeEach(() => {
     // No mocks needed
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it.each([
@@ -22,6 +26,9 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
     'returns empty defaults when not initialized $description',
     async ({ useInvokeStore }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new BatchProcessingStore();
 
       // Act
@@ -84,6 +91,9 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
     'isolates records per invocation $description',
     async ({ useInvokeStore, expectedResultA, expectedResultB }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new BatchProcessingStore();
       const recordsA = [sqsRecordFactory('record-A')];
       const recordsB = [sqsRecordFactory('record-B')];
@@ -134,6 +144,9 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
     'isolates failure messages per invocation $description',
     async ({ useInvokeStore, expectedResultA, expectedResultB }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new BatchProcessingStore();
       const recordA = sqsRecordFactory('fail-A');
       const recordB = sqsRecordFactory('fail-B');
@@ -186,6 +199,9 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
     'isolates errors per invocation $description',
     async ({ useInvokeStore, expectedResultA, expectedResultB }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new BatchProcessingStore();
       const errorA = new Error('error-A');
       const errorB = new Error('error-B');
@@ -218,4 +234,36 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
       expect(resultB).toEqual(expectedResultB);
     }
   );
+
+  describe('InvokeStore error handling', () => {
+    beforeEach(() => {
+      vi.stubGlobal('awslambda', undefined);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('throws error when getRecords is called with AWS_LAMBDA_MAX_CONCURRENCY set but InvokeStore is not available', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new BatchProcessingStore();
+
+      // Act & Assess
+      expect(() => {
+        store.getRecords();
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when setRecords is called with AWS_LAMBDA_MAX_CONCURRENCY set but InvokeStore is not available', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new BatchProcessingStore();
+
+      // Act & Assess
+      expect(() => {
+        store.setRecords([]);
+      }).toThrow('InvokeStore is not available');
+    });
+  });
 });

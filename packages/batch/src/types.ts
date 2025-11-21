@@ -1,3 +1,4 @@
+import type { InvokeStoreBase } from '@aws/lambda-invoke-store';
 import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
@@ -12,6 +13,12 @@ import type { BatchProcessor } from './BatchProcessor.js';
 import type { parser } from './parser.js';
 import type { SqsFifoPartialProcessor } from './SqsFifoPartialProcessor.js';
 import type { SqsFifoPartialProcessorAsync } from './SqsFifoPartialProcessorAsync.js';
+
+declare global {
+  namespace awslambda {
+    let InvokeStore: InvokeStoreBase | undefined;
+  }
+}
 
 /**
  * Options for batch processing

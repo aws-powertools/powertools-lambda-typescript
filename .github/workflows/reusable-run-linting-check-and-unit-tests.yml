@@ -39,7 +39,7 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        version: [20, 22]
+        version: [20, 22, 24]
         workspace: [
           "packages/batch",
           "packages/commons",
@@ -92,7 +92,7 @@ jobs:
         name: Setup Node.js
         uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903  # v6.0.0
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
       - &setup_dependencies
         name: Setup dependencies

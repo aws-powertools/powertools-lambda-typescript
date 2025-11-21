@@ -545,19 +545,19 @@ We plan to add first-class support for binary responses in a future release. Ple
 ### Response streaming
 
 !!! note "Compatibility"
-    Response streaming is only available for [API Gateway REST APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html)
-    and [Lambda function URLs](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html).
+    Response streaming is only available for [API Gateway REST APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html){target="_blank"}
+    and [Lambda function URLs](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html){target="_blank"}.
 
 You can send responses to the client using HTTP streaming by wrapping your router with the `streamify` function to turn all the associated route handlers into stream compatible handlers. This is useful when you need to send large payloads or want to start sending data before the entire response is ready.
 
-In order to gain the most benefit, you should return either a readable [Nodejs stream](https://nodejs.org/api/stream.html#readable-streams),
-a duplex [Nodejs stream](https://nodejs.org/api/stream.html#class-streamduplex), or
-a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API#browser_compatibility) from your handlers. However, you can also return
+In order to gain the most benefit, you should return either a readable [Nodejs stream](https://nodejs.org/api/stream.html#readable-streams){target="_blank"},
+a duplex [Nodejs stream](https://nodejs.org/api/stream.html#class-streamduplex){target="_blank"}, or
+a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API){target="_blank"} from your handlers. However, you can also return
 other types and these will also be delivered via HTTP streaming.
 
 === "index.ts"
 
-    ```ts hl_lines="7 11"
+    ```ts hl_lines="3 17"
     --8<-- "examples/snippets/event-handler/rest/advanced_response_streaming.ts:4"
     ```
 

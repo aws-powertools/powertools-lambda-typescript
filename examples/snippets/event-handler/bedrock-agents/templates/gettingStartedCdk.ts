@@ -24,7 +24,7 @@ export class BedrockAgentsStack extends Stack {
     const fn = new NodejsFunction(this, 'AirlineAgentFunction', {
       functionName: fnName,
       logGroup,
-      runtime: Runtime.NODEJS_22_X,
+      runtime: Runtime.NODEJS_24_X,
       entry: './src/index.ts',
       handler: 'handler',
       bundling: {

@@ -1,10 +1,46 @@
 import { sequence } from '@aws-lambda-powertools/testing-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MetadataStore } from '../../../src/MetadataStore.js';
 
 describe('MetadataStore concurrent invocation isolation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  describe('InvokeStore error handling', () => {
+    beforeEach(() => {
+      vi.stubGlobal('awslambda', undefined);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('throws error when AWS_LAMBDA_MAX_CONCURRENCY is set but InvokeStore is not available', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new MetadataStore();
+
+      // Act & Assess
+      expect(() => {
+        store.set('env', 'prod');
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when clearing metadata with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new MetadataStore();
+
+      // Act & Assess
+      expect(() => {
+        store.clear();
+      }).toThrow('InvokeStore is not available');
+    });
   });
 
   it.each([
@@ -24,6 +60,9 @@ describe('MetadataStore concurrent invocation isolation', () => {
     'handles storing metadata $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new MetadataStore();
 
       // Act
@@ -62,6 +101,9 @@ describe('MetadataStore concurrent invocation isolation', () => {
     'handles storing multiple metadata keys $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new MetadataStore();
 
       // Act
@@ -110,6 +152,9 @@ describe('MetadataStore concurrent invocation isolation', () => {
     'handles clearing the store $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new MetadataStore();
 
       // Act
@@ -162,6 +207,9 @@ describe('MetadataStore concurrent invocation isolation', () => {
     'handles overwriting same key $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new MetadataStore();
 
       // Act

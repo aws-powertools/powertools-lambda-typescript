@@ -1,5 +1,6 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
 import {
+  AWS_LAMBDA_MAX_CONCURRENCY,
   POWERTOOLS_DEV_ENV_VAR,
   POWERTOOLS_SERVICE_NAME_ENV_VAR,
   XRAY_TRACE_ID_ENV_VAR,
@@ -258,7 +259,7 @@ const getServiceName = (): string => {
  */
 const getXrayTraceDataFromEnv = (): Record<string, string> | undefined => {
   const xRayTraceEnv =
-    InvokeStore.getXRayTraceId() ??
+    globalThis.awslambda?.InvokeStore?.getXRayTraceId() ??
     getStringFromEnv({
       key: XRAY_TRACE_ID_ENV_VAR,
       defaultValue: '',
@@ -295,6 +296,14 @@ const isRequestXRaySampled = (): boolean => {
   return xRayTraceData?.Sampled === '1';
 };
 
+const shouldUseInvokeStore = (): boolean => {
+  const res = getStringFromEnv({
+    key: AWS_LAMBDA_MAX_CONCURRENCY,
+    defaultValue: '',
+  });
+  return res !== '';
+};
+
 /**
  * AWS X-Ray Trace id from the lambda RIC async context or the  `_X_AMZN_TRACE_ID` environment variable.
  *
@@ -319,4 +328,5 @@ export {
   getXrayTraceDataFromEnv,
   isRequestXRaySampled,
   getXRayTraceIdFromEnv,
+  shouldUseInvokeStore,
 };

@@ -1,11 +1,72 @@
 import { sequence } from '@aws-lambda-powertools/testing-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../../src/index.js';
 
 describe('Logger concurrent invocation isolation', () => {
   beforeEach(() => {
     vi.stubEnv('POWERTOOLS_DEV', 'true');
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  describe('InvokeStore error handling', () => {
+    beforeEach(() => {
+      vi.stubGlobal('awslambda', undefined);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('throws error when AWS_LAMBDA_MAX_CONCURRENCY is set but InvokeStore is not available', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const logger = new Logger({ serviceName: 'test' });
+
+      // Act & Assess
+      expect(() => {
+        logger.appendKeys({ requestId: 'req-1' });
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when clearing attributes with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const logger = new Logger({ serviceName: 'test' });
+
+      // Act & Assess
+      expect(() => {
+        logger.resetKeys();
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when clearing attributes after adding keys with InvokeStore unavailable', () => {
+      // Prepare
+      vi.unstubAllGlobals();
+      const logger = new Logger({ serviceName: 'test' });
+      logger.appendKeys({ requestId: 'req-1' });
+      vi.stubGlobal('awslambda', undefined);
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+
+      // Act & Assess
+      expect(() => {
+        logger.resetKeys();
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when setting persistent attributes with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const logger = new Logger({ serviceName: 'test' });
+
+      // Act & Assess
+      expect(() => {
+        logger.appendPersistentKeys({ env: 'prod' });
+      }).toThrow('InvokeStore is not available');
+    });
   });
 
   it.each([
@@ -26,6 +87,9 @@ describe('Logger concurrent invocation isolation', () => {
     'handles temporary attributes $description',
     async ({ useInvokeStore, expectedKeys }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const logger = new Logger({ serviceName: 'test' });
 
       // Act
@@ -78,6 +142,9 @@ describe('Logger concurrent invocation isolation', () => {
     'handles persistent attributes $description',
     async ({ useInvokeStore, expectedKeys }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const logger = new Logger({
         serviceName: 'test',
         persistentKeys: { app: 'test' },
@@ -139,6 +206,9 @@ describe('Logger concurrent invocation isolation', () => {
     'handles mixed temporary and persistent attributes $description',
     async ({ useInvokeStore, expectedKeys }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const logger = new Logger({
         serviceName: 'test',
         persistentKeys: { app: 'test' },
@@ -193,6 +263,9 @@ describe('Logger concurrent invocation isolation', () => {
     'handles clearing temporary attributes $description',
     async ({ useInvokeStore, shouldContain }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const logger = new Logger({ serviceName: 'test' });
 
       // Act
@@ -249,6 +322,9 @@ describe('Logger concurrent invocation isolation', () => {
     'handles removing specific temporary keys $description',
     async ({ useInvokeStore, expectedKeys }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const logger = new Logger({ serviceName: 'test' });
 
       // Act
@@ -303,6 +379,9 @@ describe('Logger concurrent invocation isolation', () => {
     'handles correlation IDs $description',
     async ({ useInvokeStore, expectedKeys }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const logger = new Logger({ serviceName: 'test' });
 
       // Act

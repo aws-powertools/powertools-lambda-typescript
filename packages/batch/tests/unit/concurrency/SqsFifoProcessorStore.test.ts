@@ -1,10 +1,68 @@
 import { sequence } from '@aws-lambda-powertools/testing-utils';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SqsFifoProcessorStore } from '../../../src/SqsFifoProcessorStore.js';
 
 describe('SqsFifoProcessorStore concurrent invocation isolation', () => {
   beforeEach(() => {
-    // No mocks needed
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  describe('InvokeStore error handling', () => {
+    beforeEach(() => {
+      vi.stubGlobal('awslambda', undefined);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('throws error when AWS_LAMBDA_MAX_CONCURRENCY is set but InvokeStore is not available', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new SqsFifoProcessorStore();
+
+      // Act & Assess
+      expect(() => {
+        store.addFailedGroupId('group-A');
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when getting current group id with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new SqsFifoProcessorStore();
+
+      // Act & Assess
+      expect(() => {
+        store.getCurrentGroupId();
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when setting current group id with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new SqsFifoProcessorStore();
+
+      // Act & Assess
+      expect(() => {
+        store.setCurrentGroupId('group-A');
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when clearing failed group ids with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new SqsFifoProcessorStore();
+
+      // Act & Assess
+      expect(() => {
+        store.clearFailedGroupIds();
+      }).toThrow('InvokeStore is not available');
+    });
   });
 
   it.each([
@@ -24,6 +82,9 @@ describe('SqsFifoProcessorStore concurrent invocation isolation', () => {
     'lazily initializes failedGroupIds independently $description',
     async ({ useInvokeStore, expectedResultA, expectedResultB }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new SqsFifoProcessorStore();
 
       // Act
@@ -72,6 +133,9 @@ describe('SqsFifoProcessorStore concurrent invocation isolation', () => {
     'isolates currentGroupId per invocation $description',
     async ({ useInvokeStore, expectedResultA, expectedResultB }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new SqsFifoProcessorStore();
 
       // Act
@@ -120,6 +184,9 @@ describe('SqsFifoProcessorStore concurrent invocation isolation', () => {
     'clears failedGroupIds independently per invocation $description',
     async ({ useInvokeStore, expectedResultA, expectedResultB }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new SqsFifoProcessorStore();
 
       // Act

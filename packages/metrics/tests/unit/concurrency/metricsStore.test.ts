@@ -1,5 +1,5 @@
 import { sequence } from '@aws-lambda-powertools/testing-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MetricUnit } from '../../../src/index.js';
 import { MetricsStore } from '../../../src/MetricsStore.js';
 import type { StoredMetric } from '../../../src/types/index.js';
@@ -7,6 +7,64 @@ import type { StoredMetric } from '../../../src/types/index.js';
 describe('MetricsStore concurrent invocation isolation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  describe('InvokeStore error handling', () => {
+    beforeEach(() => {
+      vi.stubGlobal('awslambda', undefined);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('throws error when AWS_LAMBDA_MAX_CONCURRENCY is set but InvokeStore is not available', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new MetricsStore();
+
+      // Act & Assess
+      expect(() => {
+        store.setMetric('count', MetricUnit.Count, 1, 60);
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when clearing metrics with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new MetricsStore();
+
+      // Act & Assess
+      expect(() => {
+        store.clearMetrics();
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when getting timestamp with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new MetricsStore();
+
+      // Act & Assess
+      expect(() => {
+        store.getTimestamp();
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when setting timestamp with InvokeStore unavailable', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new MetricsStore();
+
+      // Act & Assess
+      expect(() => {
+        store.setTimestamp(1000);
+      }).toThrow('InvokeStore is not available');
+    });
   });
 
   it.each([
@@ -46,6 +104,9 @@ describe('MetricsStore concurrent invocation isolation', () => {
     'getMetric() $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new MetricsStore();
 
       // Act
@@ -107,6 +168,9 @@ describe('MetricsStore concurrent invocation isolation', () => {
     'getAllMetrics() $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new MetricsStore();
 
       // Act
@@ -154,6 +218,9 @@ describe('MetricsStore concurrent invocation isolation', () => {
     'timestamp $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new MetricsStore();
       const timestamp1 = 1000;
       const timestamp2 = 2000;
@@ -194,6 +261,9 @@ describe('MetricsStore concurrent invocation isolation', () => {
     'clearMetrics() $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new MetricsStore();
 
       // Act
@@ -252,6 +322,9 @@ describe('MetricsStore concurrent invocation isolation', () => {
     'hasMetrics() $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new MetricsStore();
 
       // Act
@@ -292,6 +365,9 @@ describe('MetricsStore concurrent invocation isolation', () => {
     'getMetricsCount() $description',
     async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
       // Prepare
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
       const store = new MetricsStore();
 
       // Act

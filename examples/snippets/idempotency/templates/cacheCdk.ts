@@ -54,7 +54,7 @@ export class ValkeyStack extends Stack {
     const valkeyLayer = new LayerVersion(this, 'ValkeyLayer', {
       removalPolicy: RemovalPolicy.DESTROY,
       compatibleArchitectures: [Architecture.ARM_64],
-      compatibleRuntimes: [Runtime.NODEJS_22_X],
+      compatibleRuntimes: [Runtime.NODEJS_22_X, Runtime.NODEJS_24_X],
       code: Code.fromAsset('./lib/layers/valkey-glide'),
     });
 
@@ -67,7 +67,7 @@ export class ValkeyStack extends Stack {
     const fn = new NodejsFunction(this, 'MyFunction', {
       functionName: fnName,
       logGroup,
-      runtime: Runtime.NODEJS_22_X,
+      runtime: Runtime.NODEJS_24_X,
       architecture: Architecture.ARM_64,
       memorySize: 512,
       timeout: Duration.seconds(30),

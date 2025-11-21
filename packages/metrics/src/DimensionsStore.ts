@@ -1,4 +1,5 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
+import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
 import type { Dimensions } from './types/Metrics.js';
 
 /**
@@ -18,29 +19,37 @@ class DimensionsStore {
   #defaultDimensions: Dimensions = {};
 
   #getDimensions(): Dimensions {
-    if (InvokeStore.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackDimensions;
     }
 
-    let stored = InvokeStore.get(this.#dimensionsKey) as Dimensions | undefined;
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    let stored = store.get(this.#dimensionsKey) as Dimensions | undefined;
     if (stored == null) {
       stored = {};
-      InvokeStore.set(this.#dimensionsKey, stored);
+      store.set(this.#dimensionsKey, stored);
     }
     return stored;
   }
 
   #getDimensionSets(): Dimensions[] {
-    if (InvokeStore.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackDimensionSets;
     }
 
-    let stored = InvokeStore.get(this.#dimensionSetsKey) as
-      | Dimensions[]
-      | undefined;
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    let stored = store.get(this.#dimensionSetsKey) as Dimensions[] | undefined;
     if (stored == null) {
       stored = [];
-      InvokeStore.set(this.#dimensionSetsKey, stored);
+      store.set(this.#dimensionSetsKey, stored);
     }
     return stored;
   }
@@ -64,14 +73,19 @@ class DimensionsStore {
   }
 
   public clearRequestDimensions(): void {
-    if (InvokeStore.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackDimensions = {};
       this.#fallbackDimensionSets = [];
       return;
     }
 
-    InvokeStore.set(this.#dimensionsKey, {});
-    InvokeStore.set(this.#dimensionSetsKey, []);
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    store.set(this.#dimensionsKey, {});
+    store.set(this.#dimensionSetsKey, []);
   }
 
   public clearDefaultDimensions(): void {

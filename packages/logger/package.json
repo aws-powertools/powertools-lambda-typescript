@@ -17,6 +17,7 @@
     "test:unit:watch": "vitest tests/unit",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x vitest --run tests/e2e",
     "test:e2e:nodejs22x": "RUNTIME=nodejs22x vitest --run tests/e2e",
+    "test:e2e:nodejs24x": "RUNTIME=nodejs24x vitest --run tests/e2e",
     "test:e2e": "vitest --run tests/e2e",
     "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
@@ -98,8 +99,8 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
+    "@aws/lambda-invoke-store": "0.2.1",
     "@aws-lambda-powertools/commons": "2.28.1",
-    "@aws/lambda-invoke-store": "0.1.1",
     "lodash.merge": "^4.6.2"
   },
   "keywords": [

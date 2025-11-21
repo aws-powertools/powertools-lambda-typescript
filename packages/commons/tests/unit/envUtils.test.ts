@@ -8,6 +8,7 @@ import {
   getXRayTraceIdFromEnv,
   isDevMode,
   isRequestXRaySampled,
+  shouldUseInvokeStore,
 } from '../../src/envUtils.js';
 
 describe('Functions: envUtils', () => {
@@ -382,6 +383,27 @@ describe('Functions: envUtils', () => {
           expect(value).toEqual(expected);
         }
       );
+    });
+  });
+
+  describe('Function: shouldUseInvokeStore', () => {
+    it('returns true when AWS_LAMBDA_MAX_CONCURRENCY is not set', () => {
+      // Act
+      const result = shouldUseInvokeStore();
+
+      // Assess
+      expect(result).toBe(true);
+    });
+
+    it('returns false when AWS_LAMBDA_MAX_CONCURRENCY is set', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+
+      // Act
+      const result = shouldUseInvokeStore();
+
+      // Assess
+      expect(result).toBe(false);
     });
   });
 });

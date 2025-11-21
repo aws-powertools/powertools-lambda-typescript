@@ -6,7 +6,7 @@ import {
   NotFoundError,
   Router,
   UnauthorizedError,
-} from '@aws-lambda-powertools/event-handler/experimental-rest';
+} from '@aws-lambda-powertools/event-handler/http';
 
 const errorsRouter = new Router();
 

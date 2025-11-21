@@ -1,4 +1,4 @@
-import { Router } from '@aws-lambda-powertools/event-handler/experimental-rest';
+import { Router } from '@aws-lambda-powertools/event-handler/http';
 import type { Middleware } from '@aws-lambda-powertools/event-handler/types';
 
 const middlewareRouter = new Router();

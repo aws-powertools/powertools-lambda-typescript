@@ -1,6 +1,6 @@
 import { sequence } from '@aws-lambda-powertools/testing-utils';
 import type { SQSRecord } from 'aws-lambda';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   SqsFifoPartialProcessor,
   SqsFifoPartialProcessorAsync,
@@ -47,6 +47,10 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   for (const { name, processorClass, isAsync } of processors) {
     describe(`${name}`, () => {
       it.each([
@@ -66,6 +70,9 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
         'processes correct records per invocation $description',
         async ({ useInvokeStore, expectedBodyA, expectedBodyB }) => {
           // Prepare
+          if (useInvokeStore) {
+            vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+          }
           const processor = new processorClass();
           const recordsA = [sqsRecordFactory('record-A', '1')];
           const recordsB = [sqsRecordFactory('record-B', '2')];
@@ -139,6 +146,9 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
         'calls correct handler per invocation $description',
         async ({ useInvokeStore, expectedCalls }) => {
           // Prepare
+          if (useInvokeStore) {
+            vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+          }
           const processor = new processorClass();
           const recordsA = [sqsRecordFactory('record-A', '1')];
           const recordsB = [sqsRecordFactory('record-B', '2')];
@@ -213,6 +223,9 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
           expectedLengthBSync,
         }) => {
           // Prepare
+          if (useInvokeStore) {
+            vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+          }
           const processor = new processorClass();
           const recordsA = [sqsRecordFactory('body-A-2', '1')];
           const recordsB = [
@@ -291,6 +304,9 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
         'skips failed group but processes other groups independently $description',
         async ({ useInvokeStore, expectedLengthA, expectedLengthB }) => {
           // Prepare
+          if (useInvokeStore) {
+            vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+          }
           const processor = new processorClass();
           const recordsA = [
             sqsRecordFactory('fail', '1'),

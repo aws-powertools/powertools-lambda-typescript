@@ -1,4 +1,5 @@
 import '@aws/lambda-invoke-store';
+import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
 import type {
   BaseRecord,
   BatchProcessingOptions,
@@ -35,138 +36,152 @@ class BatchProcessingStore {
   #fallbackErrors: Error[] = [];
 
   public getRecords(): BaseRecord[] {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackRecords;
     }
-    return (invokeStore.get(this.#recordsKey) as BaseRecord[]) ?? [];
+
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    return (store.get(this.#recordsKey) as BaseRecord[]) ?? [];
   }
 
   public setRecords(records: BaseRecord[]): void {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackRecords = records;
       return;
     }
-    invokeStore.set(this.#recordsKey, records);
+
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    store.set(this.#recordsKey, records);
   }
 
   public getHandler(): CallableFunction {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackHandler;
     }
+
     return (
-      (invokeStore.get(this.#handlerKey) as CallableFunction) ?? (() => {})
+      (globalThis.awslambda?.InvokeStore?.get(
+        this.#handlerKey
+      ) as CallableFunction) ?? (() => {})
     );
   }
 
   public setHandler(handler: CallableFunction): void {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackHandler = handler;
       return;
     }
-    invokeStore.set(this.#handlerKey, handler);
+
+    globalThis.awslambda?.InvokeStore?.set(this.#handlerKey, handler);
   }
 
   public getOptions(): BatchProcessingOptions | undefined {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackOptions;
     }
-    return invokeStore.get(this.#optionsKey) as
+
+    return globalThis.awslambda?.InvokeStore?.get(this.#optionsKey) as
       | BatchProcessingOptions
       | undefined;
   }
 
   public setOptions(options: BatchProcessingOptions | undefined): void {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackOptions = options;
       return;
     }
-    invokeStore.set(this.#optionsKey, options);
+
+    globalThis.awslambda?.InvokeStore?.set(this.#optionsKey, options);
   }
 
   public getFailureMessages(): EventSourceDataClassTypes[] {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackFailureMessages;
     }
+
     return (
-      (invokeStore.get(
+      (globalThis.awslambda?.InvokeStore?.get(
         this.#failureMessagesKey
       ) as EventSourceDataClassTypes[]) ?? []
     );
   }
 
   public setFailureMessages(messages: EventSourceDataClassTypes[]): void {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackFailureMessages = messages;
       return;
     }
-    invokeStore.set(this.#failureMessagesKey, messages);
+
+    globalThis.awslambda?.InvokeStore?.set(this.#failureMessagesKey, messages);
   }
 
   public getSuccessMessages(): EventSourceDataClassTypes[] {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackSuccessMessages;
     }
+
     return (
-      (invokeStore.get(
+      (globalThis.awslambda?.InvokeStore?.get(
         this.#successMessagesKey
       ) as EventSourceDataClassTypes[]) ?? []
     );
   }
 
   public setSuccessMessages(messages: EventSourceDataClassTypes[]): void {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackSuccessMessages = messages;
       return;
     }
-    invokeStore.set(this.#successMessagesKey, messages);
+
+    globalThis.awslambda?.InvokeStore?.set(this.#successMessagesKey, messages);
   }
 
   public getBatchResponse(): PartialItemFailureResponse {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackBatchResponse;
     }
+
     return (
-      (invokeStore.get(
+      (globalThis.awslambda?.InvokeStore?.get(
         this.#batchResponseKey
       ) as PartialItemFailureResponse) ?? { batchItemFailures: [] }
     );
   }
 
   public setBatchResponse(response: PartialItemFailureResponse): void {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackBatchResponse = response;
       return;
     }
-    invokeStore.set(this.#batchResponseKey, response);
+
+    globalThis.awslambda?.InvokeStore?.set(this.#batchResponseKey, response);
   }
 
   public getErrors(): Error[] {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackErrors;
     }
-    return (invokeStore.get(this.#errorsKey) as Error[]) ?? [];
+
+    return (
+      (globalThis.awslambda?.InvokeStore?.get(this.#errorsKey) as Error[]) ?? []
+    );
   }
 
   public setErrors(errors: Error[]): void {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackErrors = errors;
       return;
     }
-    invokeStore.set(this.#errorsKey, errors);
+
+    globalThis.awslambda?.InvokeStore?.set(this.#errorsKey, errors);
   }
 }
 

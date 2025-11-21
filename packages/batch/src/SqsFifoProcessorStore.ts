@@ -1,4 +1,5 @@
 import '@aws/lambda-invoke-store';
+import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
 
 /**
  * Manages storage of SQS FIFO processor state with automatic context detection.
@@ -21,22 +22,30 @@ class SqsFifoProcessorStore {
   #fallbackFailedGroupIds = new Set<string>();
 
   public getCurrentGroupId(): string | undefined {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackCurrentGroupId;
     }
 
-    return invokeStore.get(this.#currentGroupIdKey) as string | undefined;
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    return store.get(this.#currentGroupIdKey) as string | undefined;
   }
 
   public setCurrentGroupId(groupId: string | undefined): void {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackCurrentGroupId = groupId;
       return;
     }
 
-    invokeStore.set(this.#currentGroupIdKey, groupId);
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    store.set(this.#currentGroupIdKey, groupId);
   }
 
   public addFailedGroupId(groupId: string): void {
@@ -48,30 +57,38 @@ class SqsFifoProcessorStore {
   }
 
   public getFailedGroupIds(): Set<string> {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackFailedGroupIds;
     }
 
-    let failedGroupIds = invokeStore.get(this.#failedGroupIdsKey) as
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    let failedGroupIds = store.get(this.#failedGroupIdsKey) as
       | Set<string>
       | undefined;
     if (failedGroupIds == null) {
       failedGroupIds = new Set<string>();
-      invokeStore.set(this.#failedGroupIdsKey, failedGroupIds);
+      store.set(this.#failedGroupIdsKey, failedGroupIds);
     }
 
     return failedGroupIds;
   }
 
   public clearFailedGroupIds(): void {
-    const invokeStore = globalThis.awslambda?.InvokeStore;
-    if (invokeStore?.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackFailedGroupIds = new Set<string>();
       return;
     }
 
-    invokeStore.set(this.#failedGroupIdsKey, new Set<string>());
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    store.set(this.#failedGroupIdsKey, new Set<string>());
   }
 }
 

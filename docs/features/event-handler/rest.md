@@ -514,33 +514,84 @@ You can enable response compression by using the `compress` middleware. This wil
 
 ### Binary responses
 
-!!! note "Coming soon"
+If you need to return binary data, there are several ways you can do so based on how much control you require.
+
+#### Auto serialization
 
 As described in the [response auto serialization](#response-auto-serialization) section, when you return a JavaScript object from your route handler, we automatically serialize it to JSON and set the `Content-Type` header to `application/json`.
 
-If you need to return binary data (e.g. images, PDFs, etc), you will need to return an API Gateway Proxy result directly, setting the `isBase64Encoded` flag to `true` and base64 encoding the binary data, as well as setting the appropriate `Content-Type` header.
+A similar pattern applies to binary data where you can return an `ArrayBuffer`,
+a [Nodejs stream](https://nodejs.org/api/stream.html){target="_blank"}, or
+a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API#browser_compatibility){target="_blank"}
+directly from your handler. We will automatically serialize the response by setting the `isBase64Encoded` flag to `true` and `base64` encoding the binary data.
+
+!!! note "Content types"
+    The default header will be set to `application/json`. If you wish to change this,
+    e.g., in the case of images, PDFs, videos, etc, then you should use the `reqCtx.res.headers` object to set the appropriate header.
 
 === "index.ts"
 
-    ```ts hl_lines="10-17"
-    --8<-- "examples/snippets/event-handler/rest/advanced_binary_responses.ts"
+    ```ts hl_lines="8-9"
+    --8<-- "examples/snippets/event-handler/rest/advanced_binary_response_auto.ts"
     ```
 
 === "Request"
 
     ```json
-    --8<-- "examples/snippets/event-handler/rest/samples/advanced_binary_req.json"
+    --8<-- "examples/snippets/event-handler/rest/samples/advanced_binary_req_logo_image.json"
     ```
 
 === "Response"
 
     ```json
-    --8<-- "examples/snippets/event-handler/rest/samples/advanced_binary_res.json"
+    --8<-- "examples/snippets/event-handler/rest/samples/advanced_binary_res_logo_image.json"
     ```
 
-You can use binary responses together with the [`compress`](#compress) feature, and the client must send the `Accept` header with the correct media type.
+#### Set `isBase64Encoded` parameter
 
-We plan to add first-class support for binary responses in a future release. Please [check this issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4514) for more details and examples, and add 👍 if you would like us to prioritize it.
+You can indicate that you wish to `base64` encode any response, regardless of type, by setting the `isBase64Encoded` field in `reqCtx` to `true`.
+
+=== "index.ts"
+
+    ```ts hl_lines="7"
+    --8<-- "examples/snippets/event-handler/rest/advanced_binary_response_reqCtx.ts"
+    ```
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/rest/samples/advanced_binary_req_json64.json"
+    ```
+
+=== "Response"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/rest/samples/advanced_binary_res_json64.json"
+    ```
+
+#### Manual serialization
+
+For complete control you can return an `APIGatewayProxyEvent` (`v1` or `v2`) and this will be handled transparently by the resolver.
+
+=== "index.ts"
+
+    ```ts hl_lines="8-16"
+    --8<-- "examples/snippets/event-handler/rest/advanced_binary_response_manual.ts"
+    ```
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/rest/samples/advanced_binary_req_logo_image.json"
+    ```
+
+=== "Response"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/rest/samples/advanced_binary_res_logo_image.json"
+    ```
+!!! note "Compression"
+    If you wish to use binary responses together with the [`compress`](#compress) feature, the client must send the `Accept` header with the correct media type.
 
 ### Response streaming
 

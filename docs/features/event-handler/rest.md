@@ -93,7 +93,7 @@ For your convenience, when you return a JavaScript object from your route handle
     ```
 
 !!! tip "Automatic response format transformation"
-    The event handler automatically ensures the correct response format is returned based on the event type received. For example, if your handler returns an API Gateway v1 proxy response but processes an ALB event, we'll automatically transform it into an ALB-compatible response. This allows you to swap integrations (e.g., from API Gateway to ALB) with little to no code changes.
+    The event handler automatically ensures the correct response format is returned based on the event type received. For example, if your handler returns an API Gateway v1 proxy response but processes an ALB event, we'll automatically transform it into an ALB-compatible response. This allows you to swap integrations with little to no code changes.
 
 ### Dynamic routes
 

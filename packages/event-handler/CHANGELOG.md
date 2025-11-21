@@ -1,5 +1,23 @@
 # Change Log
 
+## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
+
+### Maintenance
+
+- unflag http handler from experimental ([#4801](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4801)) ([a2deb8d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a2deb8d702bb305bbf017882ce16beb6b3c809aa))
+
+### Bug Fixes
+
+- moved the response mutation logic to the `composeMiddleware` function ([#4773](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4773)) ([2fe04e3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2fe04e351aa4f8a104a145d3fcef7bb6d856506f))
+- handle repeated queryString values ([#4755](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4755)) ([5d3cf2d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5d3cf2de5821171e968577fcb1c74d5198e153d6))
+- allow event handler response to return array ([#4725](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4725)) ([eef92ca](https://github.com/aws-powertools/powertools-lambda-typescript/commit/eef92ca929cd7a2551e228b20deae3b59044a0ee))
+
+### Features
+
+- add support for ALB ([#4759](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4759)) ([a470892](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a4708925fb08da09044ea1592ea7df58e46f383d))
+- expose response streaming in public API ([#4743](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4743)) ([be4e4e2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/be4e4e2b9f0a39210f972f22d03a382aea304f60))
+- add first-class support for binary responses ([#4723](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4723)) ([13dbcdc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/13dbcdccc3626d442f66c6037af7df88626dd9c2))
+- Add support for HTTP APIs (API Gateway v2) ([#4714](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4714)) ([2f70018](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2f700189aef42445a229da8a0d1446e1d63423fa))
 ## [2.28.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.0...v2.28.1) (2025-10-23)
 
 **Note:** Version bump only for this package

@@ -92,6 +92,9 @@ For your convenience, when you return a JavaScript object from your route handle
     --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_serialization.json"
     ```
 
+!!! tip "Automatic response format transformation"
+    The event handler automatically ensures the correct response format is returned based on the event type received. For example, if your handler returns an API Gateway v1 proxy response but processes an ALB event, we'll automatically transform it into an ALB-compatible response. This allows you to swap integrations (e.g., from API Gateway to ALB) with little to no code changes.
+
 ### Dynamic routes
 
 You can use `/todos/:todoId` to configure dynamic URL paths, where `:todoId` will be resolved at runtime.

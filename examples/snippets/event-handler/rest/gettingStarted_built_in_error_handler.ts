@@ -20,5 +20,13 @@ app.notFound(async (error, reqCtx) => {
   };
 });
 
+app.methodNotAllowed(async (error) => {
+  logger.error('Method not allowed', { error });
+
+  return {
+    body: 'This method is not allowed',
+  };
+});
+
 export const handler = async (event: unknown, context: Context) =>
   app.resolve(event, context);

@@ -18,6 +18,7 @@ import type {
   CloudWatchLogEventSchema,
   CloudWatchLogsDecodeSchema,
   CloudWatchLogsSchema,
+  DynamoDBStreamRecord as DynamoDBStreamRecordSchema,
   DynamoDBStreamSchema,
   DynamoDBStreamToKinesisRecord,
   EventBridgeSchema,
@@ -103,6 +104,8 @@ type CloudWatchLogsEvent = z.infer<typeof CloudWatchLogsSchema>;
 
 type DynamoDBStreamEvent = z.infer<typeof DynamoDBStreamSchema>;
 
+type DynamoDBStreamRecord = z.infer<typeof DynamoDBStreamRecordSchema>;
+
 type DynamoDBStreamToKinesisRecordEvent = z.infer<
   typeof DynamoDBStreamToKinesisRecord
 >;
@@ -183,6 +186,7 @@ export type {
   CloudWatchLogsDecode,
   CloudWatchLogsEvent,
   DynamoDBStreamEvent,
+  DynamoDBStreamRecord,
   DynamoDBStreamToKinesisRecordEvent,
   EventBridgeEvent,
   KafkaMskEvent,

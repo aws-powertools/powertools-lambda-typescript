@@ -10,7 +10,7 @@ import {
 const isValidRuntimeKey = (
   runtime: string
 ): runtime is keyof typeof TEST_RUNTIMES =>
-  runtime in TEST_RUNTIMES || runtime === 'nodejs22x';
+  runtime in TEST_RUNTIMES || runtime === 'nodejs24x';
 
 const getRuntimeKey = (): keyof typeof TEST_RUNTIMES => {
   const runtime: string = process.env.RUNTIME || defaultRuntime;

@@ -2,7 +2,7 @@ Resources:
 OrderProcessingFunction:
     Type: AWS::Serverless::Function
     Properties:
-    Runtime: nodejs22.x
+    Runtime: nodejs24.x
     Handler: index.js
     Events:
         KafkaEvent:

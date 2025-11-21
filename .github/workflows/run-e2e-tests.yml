@@ -35,7 +35,7 @@ jobs:
             packages/tracer,
             layers,
           ]
-        version: [20, 22]
+        version: [20, 22, 24]
         arch: [x86_64, arm64]
       fail-fast: false
     steps:
@@ -53,11 +53,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
-          node-version: '22'
+          node-version: 24
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
         with:
-          node-version: '22'
+          node-version: 24
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@00943011d9042930efac3dcd3a170e4273319bc8 # v5.1.0
         with:

@@ -86,7 +86,7 @@ const PARAM_PATTERN = /:([a-zA-Z_]\w*)(?=\/|$)/g;
 
 const SAFE_CHARS = "-._~()'!*:@,;=+&$";
 
-const UNSAFE_CHARS = '%<> \\[\\]{}|^';
+const UNSAFE_CHARS = String.raw`%<> \[\]{}|^`;
 
 /**
  * Default CORS configuration

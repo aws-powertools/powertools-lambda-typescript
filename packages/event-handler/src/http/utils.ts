@@ -36,7 +36,7 @@ import { handlerResultToWebResponse } from './converters.js';
 import type { Router } from './Router.js';
 
 export function getPathString(path: Path): string {
-  return isString(path) ? path : path.source.replaceAll(/\\\//g, '/');
+  return isString(path) ? path : path.source.replaceAll(String.raw`\/`, '/');
 }
 
 export function compilePath(path: Path): CompiledRoute {

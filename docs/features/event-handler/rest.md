@@ -595,11 +595,31 @@ For complete control you can return an `APIGatewayProxyEvent` (`v1` or `v2`) and
 
 ### Response streaming
 
-!!! note "Coming soon"
+!!! note "Compatibility"
+    Response streaming is only available for [API Gateway REST APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html){target="_blank"}
+    and [Lambda function URLs](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html){target="_blank"}.
 
-At the moment, Event Handler does not support streaming responses. This means that the entire response must be generated and returned by the route handler before it can be sent to the client.
+You can send responses to the client using HTTP streaming by wrapping your router with the `streamify` function to turn all the associated route handlers into stream compatible handlers. This is useful when you need to send large payloads or want to start sending data before the entire response is ready.
 
-Please [check this issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4476) for more details and add 👍 if you would like us to prioritize it.
+In order to gain the most benefit, you should return either a readable [Nodejs stream](https://nodejs.org/api/stream.html#readable-streams){target="_blank"},
+a duplex [Nodejs stream](https://nodejs.org/api/stream.html#class-streamduplex){target="_blank"}, or
+a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API){target="_blank"} from your handlers. However, you can also return
+other types and these will also be delivered via HTTP streaming.
+
+=== "index.ts"
+
+    ```ts hl_lines="3 17"
+    --8<-- "examples/snippets/event-handler/rest/advanced_response_streaming.ts:4"
+    ```
+
+!!! tip "When to use streaming"
+    Consider response streaming when:
+
+    - Returning large payloads (> 6MB)
+    - Processing data that can be sent incrementally
+    - Reducing time-to-first-byte for long-running operations is a requirement
+
+    For most use cases, the standard `resolve` method is sufficient.
 
 ### Debug mode
 

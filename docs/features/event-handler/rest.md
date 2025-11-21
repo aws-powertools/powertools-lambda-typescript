@@ -7,11 +7,11 @@ status: new
 !!! warning "Feature status"
      This feature is under active development and may undergo significant changes. We recommend using it in non-critical workloads and [providing feedback](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose){target="_blank"} to help us improve it.
 
-Event handler for Amazon API Gateway REST <!-- and HTTP APIs, Application Loader Balancer (ALB), Lambda Function URLs, and VPC Lattice -->.
+Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), and Lambda Function URLs<!--, and VPC Lattice -->.
 
 ## Key Features
 
-* Lightweight routing to reduce boilerplate for API Gateway REST (HTTP API, ALB and Lambda Function URLs coming soon)
+* Lightweight routing to reduce boilerplate for API Gateway REST/HTTP API, ALB and Lambda Function URLs.
 * Built-in middleware engine for request/response transformation (validation coming soon).
 * Works with micro function (one or a few routes) and monolithic functions (see [Considerations](#considerations)).
 
@@ -27,24 +27,45 @@ npm install @aws-lambda-powertools/event-handler
 
 ### Required resources
 
-If you're using any API Gateway integration, you must have an existing [API Gateway Proxy integration](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html){target="_blank"}<!--  or [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html){target="_blank"} --> configured to invoke your Lambda function.
+The event handler works with different types of events. It can process events from API Gateway REST APIs, HTTP APIs, ALB, Lambda Function URLs, and will soon support VPC Lattice as well.
+
+You must have an existing integration configured to invoke your Lambda function depending on what you are using:
+
+| Integration               | Documentation                                                                                                                                |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| API Gateway REST API      | [Proxy integration](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html){target="_blank"}     |
+| API Gateway HTTP API      | [Proxy integration](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html){target="_blank"} |
+| Application Load Balancer | [ALB configuration](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html){target="_blank"}              |
+| Lambda Function URL       | [Function URL configuration](https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html){target="_blank"}                          |
 
 <!-- In case of using [VPC Lattice](https://docs.aws.amazon.com/lambda/latest/dg/services-vpc-lattice.html){target="_blank"}, you must have a service network configured to invoke your Lambda function. -->
 
-This is the sample infrastructure for API Gateway <!-- and Lambda Function URLs --> we are using for the examples in this documentation. There is no additional permissions or dependencies required to use this utility.
+This is the sample infrastructure for the different integrations we are using for the examples in this documentation. There is no additional permissions or dependencies required to use this utility.
 
 ??? "See Infrastructure as Code (IaC) examples"
-    === "API Gateway SAM Template"
+    === "API Gateway REST API SAM Template"
 
         ```yaml title="AWS Serverless Application Model (SAM) example"
-        --8<-- "examples/snippets/event-handler/rest/templates/api_gateway.yml"
+        --8<-- "examples/snippets/event-handler/rest/templates/api_gateway_rest_api.yml"
+        ```
+    
+    === "API Gateway HTTP API SAM Template"
+
+        ```yaml title="AWS Serverless Application Model (SAM) example"
+        --8<-- "examples/snippets/event-handler/rest/templates/api_gateway_http_api.yml"
+        ```
+    
+    === "Lambda Function URL SAM Template"
+
+        ```yaml title="AWS Serverless Application Model (SAM) example"
+        --8<-- "examples/snippets/event-handler/rest/templates/lambda_furl.yml"
         ```
 
 ### Route events
 
-Before you start defining your routes, it's important to understand how the event handler works with different types of events. The event handler can process events from API Gateway REST APIs, and will soon support HTTP APIs, ALB, Lambda Function URLs, and VPC Lattice as well.
+When a request is received, the event handler automatically detects the event type and converts it into a [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request){target="_blank"} object.
 
-When a request is received, the event handler will automatically convert the event into a [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) object and give you access to the current request context, including headers, query parameters, and request body, as well as path parameters via typed arguments.
+You get access to headers, query parameters, request body, and path parameters via typed arguments. The response type is determined automatically based on the event.
 
 #### Response auto-serialization
 
@@ -70,6 +91,9 @@ For your convenience, when you return a JavaScript object from your route handle
     ```json hl_lines="6"
     --8<-- "examples/snippets/event-handler/rest/samples/gettingStarted_serialization.json"
     ```
+
+!!! tip "Automatic response format transformation"
+    The event handler automatically ensures the correct response format is returned based on the event type received. For example, if your handler returns an API Gateway v1 proxy response but processes an ALB event, we'll automatically transform it into an ALB-compatible response. This allows you to swap integrations with little to no code changes.
 
 ### Dynamic routes
 

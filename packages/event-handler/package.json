@@ -112,6 +112,10 @@
       "http": [
         "./lib/cjs/http/index.d.ts",
         "./lib/esm/http/index.d.ts"
+      ],
+      "http/middleware": [
+        "./lib/cjs/http/middleware/index.d.ts",
+        "./lib/esm/http/middleware/index.d.ts"
       ]
     }
   },

@@ -119,32 +119,30 @@ describe('Layers E2E tests', () => {
     }
   });
 
-  it.each(cases)(
-    'imports and instantiates all utilities (%s)',
-    (outputFormat) => {
-      const invocationLogs = invocationLogsMap.get(
-        outputFormat
-      ) as TestInvocationLogs;
+  it.each(
+    cases
+  )('imports and instantiates all utilities (%s)', (outputFormat) => {
+    const invocationLogs = invocationLogsMap.get(
+      outputFormat
+    ) as TestInvocationLogs;
 
-      expect(invocationLogs.doesAnyFunctionLogsContains('ERROR')).toBe(false);
-    }
-  );
+    expect(invocationLogs.doesAnyFunctionLogsContains('ERROR')).toBe(false);
+  });
 
-  it.each(cases)(
-    'emits a warning log for missing Metrics namespace (%s)',
-    (outputFormat) => {
-      const invocationLogs = invocationLogsMap.get(
-        outputFormat
-      ) as TestInvocationLogs;
-      const logs = invocationLogs.getFunctionLogs('WARN');
+  it.each(
+    cases
+  )('emits a warning log for missing Metrics namespace (%s)', (outputFormat) => {
+    const invocationLogs = invocationLogsMap.get(
+      outputFormat
+    ) as TestInvocationLogs;
+    const logs = invocationLogs.getFunctionLogs('WARN');
 
-      expect(logs.length).toBe(1);
-      const logEntry = TestInvocationLogs.parseFunctionLog(logs[0]);
-      expect(logEntry.message).toEqual(
-        'Namespace should be defined, default used'
-      );
-    }
-  );
+    expect(logs.length).toBe(1);
+    const logEntry = TestInvocationLogs.parseFunctionLog(logs[0]);
+    expect(logEntry.message).toEqual(
+      'Namespace should be defined, default used'
+    );
+  });
 
   it.each(cases)('emits an EMF log (%s)', (outputFormat) => {
     const invocationLogs = invocationLogsMap.get(
@@ -158,36 +156,35 @@ describe('Layers E2E tests', () => {
     ).toBe(true);
   });
 
-  it.each(cases)(
-    'emits a debug log with tracer subsegment info (%s)',
-    (outputFormat) => {
-      const invocationLogs = invocationLogsMap.get(
-        outputFormat
-      ) as TestInvocationLogs;
-      const logs = invocationLogs.getFunctionLogs('DEBUG');
+  it.each(
+    cases
+  )('emits a debug log with tracer subsegment info (%s)', (outputFormat) => {
+    const invocationLogs = invocationLogsMap.get(
+      outputFormat
+    ) as TestInvocationLogs;
+    const logs = invocationLogs.getFunctionLogs('DEBUG');
 
-      expect(logs.length).toBe(1);
-      const logEntry = TestInvocationLogs.parseFunctionLog(logs[0]);
-      expect(logEntry.message).toContain('subsegment');
-      expect(logEntry.subsegment).toBeDefined();
-      const subsegment = JSON.parse(logEntry.subsegment as string);
-      const traceIdFromLog = subsegment.trace_id;
-      expect(subsegment).toEqual(
-        expect.objectContaining({
-          id: expect.any(String),
-          name: '### index.handler',
-          start_time: expect.any(Number),
-          end_time: expect.any(Number),
-          type: 'subsegment',
-          annotations: {
-            ColdStart: true,
-          },
-          parent_id: expect.any(String),
-          trace_id: traceIdFromLog,
-        })
-      );
-    }
-  );
+    expect(logs.length).toBe(1);
+    const logEntry = TestInvocationLogs.parseFunctionLog(logs[0]);
+    expect(logEntry.message).toContain('subsegment');
+    expect(logEntry.subsegment).toBeDefined();
+    const subsegment = JSON.parse(logEntry.subsegment as string);
+    const traceIdFromLog = subsegment.trace_id;
+    expect(subsegment).toEqual(
+      expect.objectContaining({
+        id: expect.any(String),
+        name: '### index.handler',
+        start_time: expect.any(Number),
+        end_time: expect.any(Number),
+        type: 'subsegment',
+        annotations: {
+          ColdStart: true,
+        },
+        parent_id: expect.any(String),
+        trace_id: traceIdFromLog,
+      })
+    );
+  });
 
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {

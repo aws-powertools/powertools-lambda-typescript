@@ -240,7 +240,7 @@ describe('Class IdempotencyHandler', () => {
       expect(mockProcessIdempotency).toHaveBeenCalledTimes(MAX_RETRIES + 1);
     });
 
-    it("allows execution when the DurableMode is Replay and there is IN PROGRESS record", async ()=> {
+    it("allows execution when isReplay is true and there is IN PROGRESS record", async ()=> {
       // Arrange
       // Mock saveInProgress to simulate an existing IN_PROGRESS record
       vi.spyOn(persistenceStore, 'saveInProgress')
@@ -256,7 +256,7 @@ describe('Class IdempotencyHandler', () => {
         );
 
       // Act
-      await idempotentHandler.handle({durableMode: "ReplayMode"})
+      await idempotentHandler.handle({isReplay: true})
 
       // Assess
       expect(mockFunctionToMakeIdempotent).toBeCalled()
@@ -264,7 +264,7 @@ describe('Class IdempotencyHandler', () => {
 
     })
 
-    it("raises an IdempotencyAlreadyInProgressError error when the DurableMode is Execution and there is an IN PROGRESS record", async ()=> {
+    it("raises an IdempotencyAlreadyInProgressError error when isReplay is false and there is an IN PROGRESS record", async ()=> {
         // Arrange
         // Mock saveInProgress to simulate an existing IN_PROGRESS record
         vi.spyOn(persistenceStore, 'saveInProgress')
@@ -280,7 +280,7 @@ describe('Class IdempotencyHandler', () => {
           );
 
         // Act & Assess
-        await expect(idempotentHandler.handle({ durableMode: "ExecutionMode" })).rejects.toThrow(IdempotencyAlreadyInProgressError);
+        await expect(idempotentHandler.handle({ isReplay: false })).rejects.toThrow(IdempotencyAlreadyInProgressError);
     })
 
     it("returns the result of the original durable execution when another durable execution with the same payload is invoked", async () => {
@@ -304,7 +304,7 @@ describe('Class IdempotencyHandler', () => {
         .mockResolvedValue(stubRecord);
 
       // Act
-      const result = await idempotentHandler.handle({durableMode: "ExecutionMode"})
+      const result = await idempotentHandler.handle({isReplay: false})
 
       // Assess
       expect(result).toStrictEqual({ response: false });

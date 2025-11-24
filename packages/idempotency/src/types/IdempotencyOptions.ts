@@ -206,8 +206,6 @@ type IdempotencyConfigOptions = {
   responseHook?: ResponseHook;
 };
 
-type DurableMode = 'ExecutionMode' | 'ReplayMode';
-
 export type {
   AnyFunction,
   IdempotencyConfigOptions,
@@ -215,5 +213,4 @@ export type {
   IdempotencyLambdaHandlerOptions,
   IdempotencyHandlerOptions,
   ResponseHook,
-  DurableMode,
 };

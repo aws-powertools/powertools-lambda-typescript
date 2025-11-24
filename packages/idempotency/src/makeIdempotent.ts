@@ -146,7 +146,7 @@ function makeIdempotent<Func extends AnyFunction>(
       }
     }
 
-    const durableMode = args[1]?.durableExecutionMode;
+    const isReplay = args[1]?.durableExecutionMode === "REPLAY_MODE"
 
     return new IdempotencyHandler({
       functionToMakeIdempotent: fn,
@@ -156,7 +156,7 @@ function makeIdempotent<Func extends AnyFunction>(
       functionArguments: args,
       functionPayloadToBeHashed,
       thisArg: this,
-    }).handle({ durableMode }) as ReturnType<Func>;
+    }).handle({ isReplay }) as ReturnType<Func>
   };
 }
 

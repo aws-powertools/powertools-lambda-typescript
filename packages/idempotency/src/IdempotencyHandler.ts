@@ -17,7 +17,6 @@ import type { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js
 import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
 import type {
   AnyFunction,
-  DurableMode,
   IdempotencyHandlerOptions,
 } from './types/IdempotencyOptions.js';
 
@@ -179,9 +178,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * cases we can safely retry the handling a few times.
    */
   public async handle({
-    durableMode,
+    isReplay,
   }: {
-    durableMode?: DurableMode;
+    isReplay?: boolean;
   } = {}): Promise<ReturnType<Func>> {
     // early return if we should skip idempotency completely
     if (this.shouldSkipIdempotency()) {
@@ -195,7 +194,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
     for (let retryNo = 0; retryNo <= MAX_RETRIES; retryNo++) {
       try {
         const { isIdempotent, result } =
-          await this.#saveInProgressOrReturnExistingResult({ durableMode });
+          await this.#saveInProgressOrReturnExistingResult({ isReplay });
         if (isIdempotent) return result as ReturnType<Func>;
 
         return await this.getFunctionResult();
@@ -362,9 +361,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    * and validate it to ensure that it is consistent with the payload to be hashed.
    */
   readonly #saveInProgressOrReturnExistingResult = async ({
-    durableMode,
+    isReplay,
   }: {
-    durableMode?: DurableMode;
+    isReplay?: boolean;
   } = {}): Promise<{
     isIdempotent: boolean;
     result: JSONValue;
@@ -390,7 +389,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
           { cause: error }
         );
       if (error.name === 'IdempotencyItemAlreadyExistsError') {
-        if (durableMode === 'ReplayMode') {
+        if (isReplay) {
           return returnValue;
         }
 

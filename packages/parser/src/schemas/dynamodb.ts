@@ -4,7 +4,7 @@ import type { KinesisEnvelope } from '../envelopes/kinesis.js';
 import type { DynamoDBMarshalled } from '../helpers/dynamodb.js';
 import type { DynamoDBStreamEvent } from '../types/schema.js';
 
-const DynamoDBStreamChangeRecordBase = z.object({
+const DynamoDBStreamChangeRecordBaseSchema = z.object({
   ApproximateCreationDateTime: z.number().optional(),
   Keys: z.record(z.string(), z.record(z.string(), z.any())),
   NewImage: z.record(z.string(), z.any()).optional(),
@@ -19,17 +19,16 @@ const DynamoDBStreamChangeRecordBase = z.object({
   ]),
 });
 
-const DynamoDBStreamToKinesisChangeRecord = DynamoDBStreamChangeRecordBase.omit(
-  {
+const DynamoDBStreamToKinesisChangeRecordSchema =
+  DynamoDBStreamChangeRecordBaseSchema.omit({
     SequenceNumber: true,
     StreamViewType: true,
-  }
-);
+  });
 
 const unmarshallDynamoDBTransform = (
   object:
-    | z.infer<typeof DynamoDBStreamChangeRecordBase>
-    | z.infer<typeof DynamoDBStreamToKinesisChangeRecord>,
+    | z.infer<typeof DynamoDBStreamChangeRecordBaseSchema>
+    | z.infer<typeof DynamoDBStreamToKinesisChangeRecordSchema>,
   ctx: z.RefinementCtx
 ) => {
   const result = { ...object };
@@ -73,24 +72,23 @@ const unmarshallDynamoDBTransform = (
   return result;
 };
 
-const DynamoDBStreamChangeRecord = DynamoDBStreamChangeRecordBase.transform(
-  unmarshallDynamoDBTransform
-);
+const DynamoDBStreamChangeRecordSchema =
+  DynamoDBStreamChangeRecordBaseSchema.transform(unmarshallDynamoDBTransform);
 
-const UserIdentity = z.object({
+const UserIdentitySchema = z.object({
   type: z.enum(['Service']),
   principalId: z.literal('dynamodb.amazonaws.com'),
 });
 
-const DynamoDBStreamRecord = z.object({
+const DynamoDBStreamRecordSchema = z.object({
   eventID: z.string(),
   eventName: z.enum(['INSERT', 'MODIFY', 'REMOVE']),
   eventVersion: z.string(),
   eventSource: z.literal('aws:dynamodb'),
   awsRegion: z.string(),
   eventSourceARN: z.string(),
-  dynamodb: DynamoDBStreamChangeRecord,
-  userIdentity: UserIdentity.optional(),
+  dynamodb: DynamoDBStreamChangeRecordSchema,
+  userIdentity: UserIdentitySchema.optional(),
 });
 
 /**
@@ -135,11 +133,11 @@ const DynamoDBStreamRecord = z.object({
  * type CustomEvent = z.infer<typeof CustomSchema>;
  * ```
  */
-const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
+const DynamoDBStreamToKinesisRecordSchema = DynamoDBStreamRecordSchema.extend({
   recordFormat: z.literal('application/json'),
   tableName: z.string(),
-  userIdentity: UserIdentity.nullish(),
-  dynamodb: DynamoDBStreamToKinesisChangeRecord.transform(
+  userIdentity: UserIdentitySchema.nullish(),
+  dynamodb: DynamoDBStreamToKinesisChangeRecordSchema.transform(
     unmarshallDynamoDBTransform
   ),
 }).omit({
@@ -256,8 +254,8 @@ const DynamoDBStreamToKinesisRecord = DynamoDBStreamRecord.extend({
  * @see {@link DynamoDBStreamEvent | DynamoDBStreamEvent}
  * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html}
  */
-const DynamoDBStreamSchema = z.object({
-  Records: z.array(DynamoDBStreamRecord).nonempty(),
+const DynamoDBStreamSchemaSchema = z.object({
+  Records: z.array(DynamoDBStreamRecordSchema).nonempty(),
   window: z
     .object({
       start: z.iso.datetime(),
@@ -272,11 +270,11 @@ const DynamoDBStreamSchema = z.object({
 });
 
 export {
-  DynamoDBStreamToKinesisRecord,
-  DynamoDBStreamToKinesisChangeRecord,
-  DynamoDBStreamSchema,
-  DynamoDBStreamRecord,
-  DynamoDBStreamChangeRecord,
-  DynamoDBStreamChangeRecordBase,
-  UserIdentity,
+  DynamoDBStreamToKinesisRecordSchema as DynamoDBStreamToKinesisRecord,
+  DynamoDBStreamToKinesisChangeRecordSchema as DynamoDBStreamToKinesisChangeRecord,
+  DynamoDBStreamSchemaSchema as DynamoDBStreamSchema,
+  DynamoDBStreamRecordSchema as DynamoDBStreamRecord,
+  DynamoDBStreamChangeRecordSchema as DynamoDBStreamChangeRecord,
+  DynamoDBStreamChangeRecordBaseSchema as DynamoDBStreamChangeRecordBase,
+  UserIdentitySchema as UserIdentity,
 };

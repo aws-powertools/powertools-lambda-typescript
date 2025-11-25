@@ -118,6 +118,6 @@
   "devDependencies": {
     "avro-js": "^1.12.1",
     "protobufjs": "^7.5.4",
-    "zod": "^4.1.12"
+    "zod": "^4.1.13"
   }
 }

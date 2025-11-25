@@ -45,7 +45,7 @@ jobs:
     steps:
       - id: credentials
         name: AWS Credentials
-        uses: aws-actions/configure-aws-credentials@00943011d9042930efac3dcd3a170e4273319bc8
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.REGION_IAM_ROLE }}

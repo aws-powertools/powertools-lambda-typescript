@@ -1,3 +1,4 @@
+import { InvokeStore } from '@aws/lambda-invoke-store';
 import { sequence } from '@aws-lambda-powertools/testing-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MetricUnit } from '../../../src/index.js';
@@ -6,6 +7,7 @@ import type { StoredMetric } from '../../../src/types/index.js';
 
 describe('MetricsStore concurrent invocation isolation', () => {
   beforeEach(() => {
+    InvokeStore._testing?.reset();
     vi.clearAllMocks();
   });
 
@@ -100,37 +102,34 @@ describe('MetricsStore concurrent invocation isolation', () => {
         resolution: 60,
       },
     },
-  ])(
-    'getMetric() $description',
-    async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
-      // Prepare
-      if (useInvokeStore) {
-        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
-      }
-      const store = new MetricsStore();
-
-      // Act
-      const [result1, result2] = await sequence(
-        {
-          sideEffects: [
-            () => store.setMetric('count', MetricUnit.Count, 1, 60),
-          ],
-          return: () => store.getMetric('count'),
-        },
-        {
-          sideEffects: [
-            () => store.setMetric('count', MetricUnit.Count, 2, 60),
-          ],
-          return: () => store.getMetric('count'),
-        },
-        { useInvokeStore }
-      );
-
-      // Assess
-      expect(result1).toEqual(expectedResult1);
-      expect(result2).toEqual(expectedResult2);
+  ])('getMetric() $description', async ({
+    useInvokeStore,
+    expectedResult1,
+    expectedResult2,
+  }) => {
+    // Prepare
+    if (useInvokeStore) {
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     }
-  );
+    const store = new MetricsStore();
+
+    // Act
+    const [result1, result2] = await sequence(
+      {
+        sideEffects: [() => store.setMetric('count', MetricUnit.Count, 1, 60)],
+        return: () => store.getMetric('count'),
+      },
+      {
+        sideEffects: [() => store.setMetric('count', MetricUnit.Count, 2, 60)],
+        return: () => store.getMetric('count'),
+      },
+      { useInvokeStore }
+    );
+
+    // Assess
+    expect(result1).toEqual(expectedResult1);
+    expect(result2).toEqual(expectedResult2);
+  });
 
   const countMetric: StoredMetric = {
     name: 'count',
@@ -164,42 +163,43 @@ describe('MetricsStore concurrent invocation isolation', () => {
       expectedResult1: [countMetric, latencyMetric],
       expectedResult2: [errorMetric],
     },
-  ])(
-    'getAllMetrics() $description',
-    async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
-      // Prepare
-      if (useInvokeStore) {
-        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
-      }
-      const store = new MetricsStore();
-
-      // Act
-      const [result1, result2] = await sequence(
-        {
-          sideEffects: [
-            () => {
-              store.setMetric('count', MetricUnit.Count, 1, 60);
-              store.setMetric('latency', MetricUnit.Milliseconds, 100, 60);
-            },
-          ],
-          return: () => store.getAllMetrics(),
-        },
-        {
-          sideEffects: [
-            () => {
-              store.setMetric('errors', MetricUnit.Count, 1, 60);
-            },
-          ],
-          return: () => store.getAllMetrics(),
-        },
-        { useInvokeStore }
-      );
-
-      // Assess
-      expect(result1).toEqual(expectedResult1);
-      expect(result2).toEqual(expectedResult2);
+  ])('getAllMetrics() $description', async ({
+    useInvokeStore,
+    expectedResult1,
+    expectedResult2,
+  }) => {
+    // Prepare
+    if (useInvokeStore) {
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     }
-  );
+    const store = new MetricsStore();
+
+    // Act
+    const [result1, result2] = await sequence(
+      {
+        sideEffects: [
+          () => {
+            store.setMetric('count', MetricUnit.Count, 1, 60);
+            store.setMetric('latency', MetricUnit.Milliseconds, 100, 60);
+          },
+        ],
+        return: () => store.getAllMetrics(),
+      },
+      {
+        sideEffects: [
+          () => {
+            store.setMetric('errors', MetricUnit.Count, 1, 60);
+          },
+        ],
+        return: () => store.getAllMetrics(),
+      },
+      { useInvokeStore }
+    );
+
+    // Assess
+    expect(result1).toEqual(expectedResult1);
+    expect(result2).toEqual(expectedResult2);
+  });
 
   it.each([
     {
@@ -214,35 +214,36 @@ describe('MetricsStore concurrent invocation isolation', () => {
       expectedResult1: 1000,
       expectedResult2: 2000,
     },
-  ])(
-    'timestamp $description',
-    async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
-      // Prepare
-      if (useInvokeStore) {
-        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
-      }
-      const store = new MetricsStore();
-      const timestamp1 = 1000;
-      const timestamp2 = 2000;
-
-      // Act
-      const [result1, result2] = await sequence(
-        {
-          sideEffects: [() => store.setTimestamp(timestamp1)],
-          return: () => store.getTimestamp(),
-        },
-        {
-          sideEffects: [() => store.setTimestamp(timestamp2)],
-          return: () => store.getTimestamp(),
-        },
-        { useInvokeStore }
-      );
-
-      // Assess
-      expect(result1).toBe(expectedResult1);
-      expect(result2).toBe(expectedResult2);
+  ])('timestamp $description', async ({
+    useInvokeStore,
+    expectedResult1,
+    expectedResult2,
+  }) => {
+    // Prepare
+    if (useInvokeStore) {
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     }
-  );
+    const store = new MetricsStore();
+    const timestamp1 = 1000;
+    const timestamp2 = 2000;
+
+    // Act
+    const [result1, result2] = await sequence(
+      {
+        sideEffects: [() => store.setTimestamp(timestamp1)],
+        return: () => store.getTimestamp(),
+      },
+      {
+        sideEffects: [() => store.setTimestamp(timestamp2)],
+        return: () => store.getTimestamp(),
+      },
+      { useInvokeStore }
+    );
+
+    // Assess
+    expect(result1).toBe(expectedResult1);
+    expect(result2).toBe(expectedResult2);
+  });
 
   it.each([
     {
@@ -257,53 +258,54 @@ describe('MetricsStore concurrent invocation isolation', () => {
       expectedResult1: { metrics: [], timestamp: undefined },
       expectedResult2: { metrics: [errorMetric], timestamp: 2000 },
     },
-  ])(
-    'clearMetrics() $description',
-    async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
-      // Prepare
-      if (useInvokeStore) {
-        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
-      }
-      const store = new MetricsStore();
-
-      // Act
-      const [result1, result2] = await sequence(
-        {
-          sideEffects: [
-            () => {
-              store.setMetric('count', MetricUnit.Count, 1, 60);
-              store.setTimestamp(1000);
-            },
-            () => {}, // Wait for inv2 to add
-            () => store.clearMetrics(),
-          ],
-          return: () => ({
-            metrics: store.getAllMetrics(),
-            timestamp: store.getTimestamp(),
-          }),
-        },
-        {
-          sideEffects: [
-            () => {}, // Wait for inv1 to add
-            () => {
-              store.setMetric('errors', MetricUnit.Count, 1, 60);
-              store.setTimestamp(2000);
-            },
-            () => {}, // Wait for clear
-          ],
-          return: () => ({
-            metrics: store.getAllMetrics(),
-            timestamp: store.getTimestamp(),
-          }),
-        },
-        { useInvokeStore }
-      );
-
-      // Assess
-      expect(result1).toEqual(expectedResult1);
-      expect(result2).toEqual(expectedResult2);
+  ])('clearMetrics() $description', async ({
+    useInvokeStore,
+    expectedResult1,
+    expectedResult2,
+  }) => {
+    // Prepare
+    if (useInvokeStore) {
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     }
-  );
+    const store = new MetricsStore();
+
+    // Act
+    const [result1, result2] = await sequence(
+      {
+        sideEffects: [
+          () => {
+            store.setMetric('count', MetricUnit.Count, 1, 60);
+            store.setTimestamp(1000);
+          },
+          () => {}, // Wait for inv2 to add
+          () => store.clearMetrics(),
+        ],
+        return: () => ({
+          metrics: store.getAllMetrics(),
+          timestamp: store.getTimestamp(),
+        }),
+      },
+      {
+        sideEffects: [
+          () => {}, // Wait for inv1 to add
+          () => {
+            store.setMetric('errors', MetricUnit.Count, 1, 60);
+            store.setTimestamp(2000);
+          },
+          () => {}, // Wait for clear
+        ],
+        return: () => ({
+          metrics: store.getAllMetrics(),
+          timestamp: store.getTimestamp(),
+        }),
+      },
+      { useInvokeStore }
+    );
+
+    // Assess
+    expect(result1).toEqual(expectedResult1);
+    expect(result2).toEqual(expectedResult2);
+  });
 
   it.each([
     {
@@ -318,35 +320,34 @@ describe('MetricsStore concurrent invocation isolation', () => {
       expectedResult1: true,
       expectedResult2: false,
     },
-  ])(
-    'hasMetrics() $description',
-    async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
-      // Prepare
-      if (useInvokeStore) {
-        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
-      }
-      const store = new MetricsStore();
-
-      // Act
-      const [result1, result2] = await sequence(
-        {
-          sideEffects: [
-            () => store.setMetric('count', MetricUnit.Count, 1, 60),
-          ],
-          return: () => store.hasMetrics(),
-        },
-        {
-          sideEffects: [() => {}], // No-op
-          return: () => store.hasMetrics(),
-        },
-        { useInvokeStore }
-      );
-
-      // Assess
-      expect(result1).toBe(expectedResult1);
-      expect(result2).toBe(expectedResult2);
+  ])('hasMetrics() $description', async ({
+    useInvokeStore,
+    expectedResult1,
+    expectedResult2,
+  }) => {
+    // Prepare
+    if (useInvokeStore) {
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     }
-  );
+    const store = new MetricsStore();
+
+    // Act
+    const [result1, result2] = await sequence(
+      {
+        sideEffects: [() => store.setMetric('count', MetricUnit.Count, 1, 60)],
+        return: () => store.hasMetrics(),
+      },
+      {
+        sideEffects: [() => {}], // No-op
+        return: () => store.hasMetrics(),
+      },
+      { useInvokeStore }
+    );
+
+    // Assess
+    expect(result1).toBe(expectedResult1);
+    expect(result2).toBe(expectedResult2);
+  });
 
   it.each([
     {
@@ -361,35 +362,32 @@ describe('MetricsStore concurrent invocation isolation', () => {
       expectedResult1: 1,
       expectedResult2: 1,
     },
-  ])(
-    'getMetricsCount() $description',
-    async ({ useInvokeStore, expectedResult1, expectedResult2 }) => {
-      // Prepare
-      if (useInvokeStore) {
-        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
-      }
-      const store = new MetricsStore();
-
-      // Act
-      const [result1, result2] = await sequence(
-        {
-          sideEffects: [
-            () => store.setMetric('count', MetricUnit.Count, 1, 60),
-          ],
-          return: () => store.getMetricsCount(),
-        },
-        {
-          sideEffects: [
-            () => store.setMetric('errors', MetricUnit.Count, 1, 60),
-          ],
-          return: () => store.getMetricsCount(),
-        },
-        { useInvokeStore }
-      );
-
-      // Assess
-      expect(result1).toBe(expectedResult1);
-      expect(result2).toBe(expectedResult2);
+  ])('getMetricsCount() $description', async ({
+    useInvokeStore,
+    expectedResult1,
+    expectedResult2,
+  }) => {
+    // Prepare
+    if (useInvokeStore) {
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     }
-  );
+    const store = new MetricsStore();
+
+    // Act
+    const [result1, result2] = await sequence(
+      {
+        sideEffects: [() => store.setMetric('count', MetricUnit.Count, 1, 60)],
+        return: () => store.getMetricsCount(),
+      },
+      {
+        sideEffects: [() => store.setMetric('errors', MetricUnit.Count, 1, 60)],
+        return: () => store.getMetricsCount(),
+      },
+      { useInvokeStore }
+    );
+
+    // Assess
+    expect(result1).toBe(expectedResult1);
+    expect(result2).toBe(expectedResult2);
+  });
 });

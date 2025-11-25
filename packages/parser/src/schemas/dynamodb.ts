@@ -19,18 +19,28 @@ const DynamoDBStreamChangeRecordBaseSchema = z.object({
   ]),
 });
 
+type DynamoDBStreamChangeRecordBase = z.infer<
+  typeof DynamoDBStreamChangeRecordBaseSchema
+>;
+
 const DynamoDBStreamToKinesisChangeRecordSchema =
   DynamoDBStreamChangeRecordBaseSchema.omit({
     SequenceNumber: true,
     StreamViewType: true,
   });
 
-const unmarshallDynamoDBTransform = (
-  object:
-    | z.infer<typeof DynamoDBStreamChangeRecordBaseSchema>
-    | z.infer<typeof DynamoDBStreamToKinesisChangeRecordSchema>,
+type DynamoDBStreamToKinesisChangeRecord = z.infer<
+  typeof DynamoDBStreamToKinesisChangeRecordSchema
+>;
+
+const unmarshallDynamoDBTransform = <
+  T extends
+    | DynamoDBStreamChangeRecordBase
+    | DynamoDBStreamToKinesisChangeRecord,
+>(
+  object: T,
   ctx: z.RefinementCtx
-) => {
+): T => {
   const result = { ...object };
 
   const unmarshallAttributeValue = (
@@ -73,7 +83,11 @@ const unmarshallDynamoDBTransform = (
 };
 
 const DynamoDBStreamChangeRecordSchema =
-  DynamoDBStreamChangeRecordBaseSchema.transform(unmarshallDynamoDBTransform);
+  DynamoDBStreamChangeRecordBaseSchema.transform(
+    unmarshallDynamoDBTransform<
+      DynamoDBStreamChangeRecordBase | DynamoDBStreamToKinesisChangeRecord
+    >
+  );
 
 const UserIdentitySchema = z.object({
   type: z.enum(['Service']),
@@ -138,7 +152,7 @@ const DynamoDBStreamToKinesisRecordSchema = DynamoDBStreamRecordSchema.extend({
   tableName: z.string(),
   userIdentity: UserIdentitySchema.nullish(),
   dynamodb: DynamoDBStreamToKinesisChangeRecordSchema.transform(
-    unmarshallDynamoDBTransform
+    unmarshallDynamoDBTransform<DynamoDBStreamToKinesisChangeRecord>
   ),
 }).omit({
   eventVersion: true,

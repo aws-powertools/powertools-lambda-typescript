@@ -1,4 +1,4 @@
-import { deflateSync, gzipSync } from 'node:zlib';
+import { deflateSync, gunzipSync, gzipSync } from 'node:zlib';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { streamify } from '../../../../src/http/index.js';
@@ -153,6 +153,43 @@ describe('Compress Middleware', () => {
     // Assess
     expect(result.headers?.['content-encoding']).toBeUndefined();
     expect(result.isBase64Encoded).toBe(false);
+  });
+
+  it('compresses early return middleware', async () => {
+    // Prepare
+    const application = new Router();
+    const largeMwBody = { test: 'y'.repeat(2000) };
+
+    application.get(
+      '/test',
+      [
+        compress({
+          encoding: 'gzip',
+        }),
+        async () => {
+          await 10;
+          // return {message: 'Middleware applied'}
+          return largeMwBody;
+        },
+      ],
+      () => {
+        return body;
+      }
+    );
+
+    // Act
+    const result = await application.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.isBase64Encoded).toBe(true);
+    expect(result.headers).toEqual({
+      'content-encoding': 'gzip',
+      'content-type': 'application/json',
+    });
+    expect(
+      gunzipSync(Buffer.from(result.body, 'base64')).toString('utf8')
+    ).toEqual(JSON.stringify(largeMwBody));
   });
 
   it('uses specified encoding when provided', async () => {

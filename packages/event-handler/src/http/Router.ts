@@ -24,6 +24,7 @@ import type {
   ErrorHandler,
   ErrorResolveOptions,
   HttpMethod,
+  HttpResolveOptions,
   HttpRouteOptions,
   HttpRouterOptions,
   Middleware,
@@ -221,7 +222,7 @@ class Router {
   async #resolve(
     event: unknown,
     context: Context,
-    options?: ResolveOptions
+    options?: HttpResolveOptions
   ): Promise<RequestContext> {
     if (
       !isAPIGatewayProxyEventV1(event) &&
@@ -248,7 +249,12 @@ class Router {
           event,
           context,
           req: new Request('https://invalid'),
-          res: new Response('', { status: HttpStatusCodes.METHOD_NOT_ALLOWED }),
+          res: new Response(null, {
+            status: HttpStatusCodes.METHOD_NOT_ALLOWED,
+            ...(options?.isHttpStreaming && {
+              headers: { 'transfer-encoding': 'chunked' },
+            }),
+          }),
           params: {},
           responseType,
         };
@@ -262,7 +268,12 @@ class Router {
       req,
       // this response should be overwritten by the handler, if it isn't
       // it means something went wrong with the middleware chain
-      res: new Response('', { status: HttpStatusCodes.INTERNAL_SERVER_ERROR }),
+      res: new Response('', {
+        status: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+        ...(options?.isHttpStreaming && {
+          headers: { 'transfer-encoding': 'chunked' },
+        }),
+      }),
       params: {},
       responseType,
     };
@@ -393,7 +404,10 @@ class Router {
     context: Context,
     options: ResolveStreamOptions
   ): Promise<void> {
-    const reqCtx = await this.#resolve(event, context, options);
+    const reqCtx = await this.#resolve(event, context, {
+      ...options,
+      isHttpStreaming: true,
+    });
     await this.#streamHandlerResponse(reqCtx, options.responseStream);
   }
 

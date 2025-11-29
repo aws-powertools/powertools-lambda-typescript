@@ -357,4 +357,19 @@ describe.each([
     expect(result.statusCode).toBe(200);
     expect(JSON.parse(result.body)).toEqual({ message: 'duplex stream body' });
   });
+
+  it('handles invalid HTTP method', async () => {
+    // Prepare
+    const app = new Router();
+    const handler = streamify(app);
+    const responseStream = new ResponseStream();
+    const event = createEvent('/test', 'TRACE');
+
+    // Act
+    const result = await handler(event, responseStream, context);
+
+    // Assess
+    expect(result.statusCode).toBe(405);
+    expect(result.body).toBe('');
+  });
 });

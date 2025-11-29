@@ -34,6 +34,8 @@ type RequestContext = {
   isBase64Encoded?: boolean;
 };
 
+type HttpResolveOptions = ResolveOptions & { isHttpStreaming?: boolean };
+
 type ErrorResolveOptions = RequestContext & ResolveOptions;
 
 type ErrorHandler<T extends Error = Error> = (
@@ -263,6 +265,7 @@ export type {
   ErrorHandler,
   ErrorResolveOptions,
   HandlerResponse,
+  HttpResolveOptions,
   HttpStatusCode,
   HttpMethod,
   Middleware,

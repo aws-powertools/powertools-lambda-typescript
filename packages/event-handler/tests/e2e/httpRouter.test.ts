@@ -525,6 +525,21 @@ describe('REST Event Handler E2E tests', () => {
       expect(data.data.length).toBe(200);
       expect(response.headers.get('content-encoding')).toBe('gzip');
     });
+
+    it('does not compress small responses below threshold', async () => {
+      // Act
+      const response = await fetch(`${apiUrl}/compress/small`, {
+        headers: { 'Accept-Encoding': 'gzip' },
+      });
+      // Act
+      const data = await response.json();
+
+      // Assess
+      expect(response.status).toBe(200);
+      expect(data.message).toBe('Small');
+      // Small response (~20 bytes) is below 100 byte threshold, should not be compressed
+      expect(response.headers.get('content-encoding')).toBeNull();
+    });
   });
 
   describe('Request Body and Headers', () => {

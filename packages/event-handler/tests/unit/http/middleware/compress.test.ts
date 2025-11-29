@@ -166,10 +166,8 @@ describe('Compress Middleware', () => {
         compress({
           encoding: 'gzip',
         }),
-        async () => {
-          await 10;
-          // return {message: 'Middleware applied'}
-          return largeMwBody;
+        () => {
+          return Promise.resolve(largeMwBody);
         },
       ],
       () => {

@@ -260,8 +260,6 @@ describe('Class IdempotencyHandler', () => {
 
       // Assess
       expect(mockFunctionToMakeIdempotent).toBeCalled()
-
-
     })
 
     it("raises an IdempotencyAlreadyInProgressError error when isReplay is false and there is an IN PROGRESS record", async ()=> {

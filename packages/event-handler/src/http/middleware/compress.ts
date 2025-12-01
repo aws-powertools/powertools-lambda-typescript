@@ -70,6 +70,14 @@ const compress = (options?: CompressionOptions): Middleware => {
   return async ({ reqCtx, next }) => {
     await next();
 
+    const transferEncoding = reqCtx.res.headers.get('transfer-encoding');
+    if (transferEncoding === 'chunked') return;
+
+    if (reqCtx.res.body !== null && !reqCtx.res.headers.has('content-length')) {
+      const body = await reqCtx.res.clone().arrayBuffer();
+      reqCtx.res.headers.set('content-length', body.byteLength.toString());
+    }
+
     if (!shouldCompress(reqCtx.req, reqCtx.res, preferredEncoding, threshold)) {
       return;
     }

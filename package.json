@@ -59,7 +59,7 @@
     "markdownlint-cli2": "^0.19.1",
     "middy5": "npm:@middy/core@^5.4.3",
     "middy6": "npm:@middy/core@^6.0.0",
-    "typedoc": "^0.28.14",
+    "typedoc": "^0.28.15",
     "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.10"

@@ -597,4 +597,18 @@ describe('Function: makeIdempotent', () => {
     );
     expect(getRecordSpy).toHaveBeenCalledTimes(0);
   });
+
+  it("registers the LambdaContext when provided a durable context", async ()=> {
+    // Prepare
+    const registerLambdaContextSpy = vi.spyOn(IdempotencyConfig.prototype, "registerLambdaContext")
+    const fn = async (_event: any, _context: any) => { }
+    const handler = makeIdempotent(fn, mockIdempotencyOptions)
+    const mockDurableContext = {step: vi.fn(), lambdaContext: context}
+
+    // Act
+    await handler(event, mockDurableContext)
+
+    // Assess
+    expect(registerLambdaContextSpy).toHaveBeenCalledOnce()
+  })
 });

@@ -17,6 +17,15 @@ const isContext = (arg: unknown): arg is Context => {
   );
 };
 
+const isDurableContext = (arg: unknown): boolean => {
+  return (
+    arg !== undefined &&
+    arg !== null &&
+    typeof arg === 'object' &&
+    'step' in arg
+  );
+}
+
 const isFnHandler = (
   fn: AnyFunction,
   args: Parameters<AnyFunction>
@@ -26,7 +35,7 @@ const isFnHandler = (
     fn !== undefined &&
     fn !== null &&
     typeof fn === 'function' &&
-    isContext(args[1])
+    (isContext(args[1])|| isDurableContext(args[1]))
   );
 };
 
@@ -125,7 +134,9 @@ function makeIdempotent<Func extends AnyFunction>(
     let functionPayloadToBeHashed: JSONValue;
 
     if (isFnHandler(fn, args)) {
-      idempotencyConfig.registerLambdaContext(args[1]);
+      // If it's a durable context, retrieve the lambdaContext property
+      // Otherwise use the context
+      idempotencyConfig.registerLambdaContext(args[1]?.lambdaContext || args[1]);
       functionPayloadToBeHashed = args[0];
     } else {
       if (isOptionsWithDataIndexArgument(options)) {
@@ -135,6 +146,8 @@ function makeIdempotent<Func extends AnyFunction>(
       }
     }
 
+    const isReplay = args[1]?.durableExecutionMode === "REPLAY_MODE"
+
     return new IdempotencyHandler({
       functionToMakeIdempotent: fn,
       idempotencyConfig: idempotencyConfig,
@@ -143,7 +156,7 @@ function makeIdempotent<Func extends AnyFunction>(
       functionArguments: args,
       functionPayloadToBeHashed,
       thisArg: this,
-    }).handle() as ReturnType<Func>;
+    }).handle({ isReplay }) as ReturnType<Func>
   };
 }
 

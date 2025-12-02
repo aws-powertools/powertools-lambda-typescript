@@ -241,7 +241,7 @@ describe('Class IdempotencyHandler', () => {
     });
 
     it("allows execution when isReplay is true and there is IN PROGRESS record", async ()=> {
-      // Arrange
+      // Prepare
       // Mock saveInProgress to simulate an existing IN_PROGRESS record
       vi.spyOn(persistenceStore, 'saveInProgress')
         .mockRejectedValueOnce(
@@ -263,7 +263,7 @@ describe('Class IdempotencyHandler', () => {
     })
 
     it("raises an IdempotencyAlreadyInProgressError error when isReplay is false and there is an IN PROGRESS record", async ()=> {
-        // Arrange
+        // Prepare
         // Mock saveInProgress to simulate an existing IN_PROGRESS record
         vi.spyOn(persistenceStore, 'saveInProgress')
           .mockRejectedValueOnce(
@@ -283,7 +283,7 @@ describe('Class IdempotencyHandler', () => {
 
     it("returns the result of the original durable execution when another durable execution with the same payload is invoked", async () => {
 
-      // Arrange
+      // Prepare
       vi.spyOn(
         persistenceStore,
         'saveInProgress'

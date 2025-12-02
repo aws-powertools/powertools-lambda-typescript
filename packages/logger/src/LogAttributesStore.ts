@@ -1,4 +1,5 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
+import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
 import type { LogAttributes } from './types/logKeys.js';
 
 /**
@@ -20,31 +21,41 @@ class LogAttributesStore {
   #persistentAttributes: LogAttributes = {};
 
   #getTemporaryAttributes(): LogAttributes {
-    if (InvokeStore.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackTemporaryAttributes;
     }
 
-    let stored = InvokeStore.get(this.#temporaryAttributesKey) as
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    let stored = store.get(this.#temporaryAttributesKey) as
       | LogAttributes
       | undefined;
     if (stored == null) {
       stored = {};
-      InvokeStore.set(this.#temporaryAttributesKey, stored);
+      store.set(this.#temporaryAttributesKey, stored);
     }
     return stored;
   }
 
   #getKeys(): Map<string, 'temp' | 'persistent'> {
-    if (InvokeStore.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackKeys;
     }
 
-    let stored = InvokeStore.get(this.#keysKey) as
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    let stored = store.get(this.#keysKey) as
       | Map<string, 'temp' | 'persistent'>
       | undefined;
     if (stored == null) {
       stored = new Map();
-      InvokeStore.set(this.#keysKey, stored);
+      store.set(this.#keysKey, stored);
     }
     return stored;
   }
@@ -90,12 +101,12 @@ class LogAttributesStore {
       }
     }
 
-    if (InvokeStore.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackTemporaryAttributes = {};
       return;
     }
 
-    InvokeStore.set(this.#temporaryAttributesKey, {});
+    globalThis.awslambda.InvokeStore?.set(this.#temporaryAttributesKey, {});
   }
 
   public setPersistentAttributes(attributes: LogAttributes): void {

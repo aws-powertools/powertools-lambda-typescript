@@ -10,7 +10,7 @@ Transform: AWS::Serverless-2016-10-31
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy-globals.html
 Globals:
   Function:
-    Runtime: nodejs22.x
+    Runtime: nodejs24.x
     Tracing: Active
     Architectures:
       - arm64
@@ -130,7 +130,7 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: !Ref itemsTable
       Layers:
-        - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:40
+        - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:41
       Environment:
         Variables:
           TABLE_NAME: !Ref itemsTable

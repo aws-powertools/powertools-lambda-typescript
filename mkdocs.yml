@@ -47,7 +47,7 @@ nav:
           - features/metrics.md
           - Event Handler:
             - features/event-handler/index.md
-            - features/event-handler/rest.md
+            - features/event-handler/http.md
             - features/event-handler/appsync-events.md
             - features/event-handler/appsync-graphql.md
             - features/event-handler/bedrock-agents.md
@@ -182,7 +182,7 @@ plugins:
           - features/tracer.md
           - features/logger.md
           - features/metrics.md
-          - features/event-handler/rest.md
+          - features/event-handler/http.md
           - features/event-handler/appsync-events.md
           - features/event-handler/appsync-graphql.md
           - features/event-handler/bedrock-agents.md

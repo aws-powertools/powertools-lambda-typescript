@@ -13,7 +13,7 @@ description: Simplify routing and processing of events in AWS Lambda functions
 
     Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), Lambda Function URLs, and VPC Lattice.
 
-    [:octicons-arrow-right-24: Read more](./rest.md)
+    [:octicons-arrow-right-24: Read more](./http.md)
 
 - __AppSync Events API__
 

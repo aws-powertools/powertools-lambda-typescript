@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/tracer",
-  "version": "2.28.1",
+  "version": "2.29.0",
   "description": "The tracer package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -17,6 +17,7 @@
     "test:unit:watch": "vitest tests/unit",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x vitest --run tests/e2e",
     "test:e2e:nodejs22x": "RUNTIME=nodejs22x vitest --run tests/e2e",
+    "test:e2e:nodejs24x": "RUNTIME=nodejs24x vitest --run tests/e2e",
     "test:e2e": "vitest --run tests/e2e",
     "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
@@ -30,8 +31,8 @@
   "license": "MIT-0",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.928.0",
-    "@aws-sdk/client-xray": "^3.928.0"
+    "@aws-sdk/client-dynamodb": "^3.939.0",
+    "@aws-sdk/client-xray": "^3.939.0"
   },
   "peerDependencies": {
     "@middy/core": "4.x || 5.x || 6.x"
@@ -87,8 +88,8 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "2.28.1",
-    "aws-xray-sdk-core": "^3.11.0"
+    "@aws-lambda-powertools/commons": "2.29.0",
+    "aws-xray-sdk-core": "^3.12.0"
   },
   "keywords": [
     "aws",

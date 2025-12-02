@@ -1,5 +1,6 @@
-import { InvokeStore } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
 import { isIntegerNumber } from '@aws-lambda-powertools/commons/typeutils';
+import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
 import { MetricResolution as MetricResolutions } from './constants.js';
 import type {
   MetricResolution,
@@ -24,16 +25,19 @@ class MetricsStore {
   #fallbackTimestamp?: number;
 
   #getStorage(): StoredMetrics {
-    if (InvokeStore.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackStorage;
     }
 
-    let stored = InvokeStore.get(this.#storedMetricsKey) as
-      | StoredMetrics
-      | undefined;
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    let stored = store.get(this.#storedMetricsKey) as StoredMetrics | undefined;
     if (stored == null) {
       stored = {};
-      InvokeStore.set(this.#storedMetricsKey, stored);
+      store.set(this.#storedMetricsKey, stored);
     }
     return stored;
   }
@@ -105,14 +109,19 @@ class MetricsStore {
   }
 
   public clearMetrics(): void {
-    if (InvokeStore.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackStorage = {};
       this.#fallbackTimestamp = undefined;
       return;
     }
 
-    InvokeStore.set(this.#storedMetricsKey, {});
-    InvokeStore.set(this.#timestampKey, undefined);
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    store.set(this.#storedMetricsKey, {});
+    store.set(this.#timestampKey, undefined);
   }
 
   public hasMetrics(): boolean {
@@ -124,22 +133,32 @@ class MetricsStore {
   }
 
   public getTimestamp(): number | undefined {
-    if (InvokeStore.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       return this.#fallbackTimestamp;
     }
 
-    return InvokeStore.get(this.#timestampKey) as number | undefined;
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    return store.get(this.#timestampKey) as number | undefined;
   }
 
   public setTimestamp(timestamp: number | Date): number {
     const timestampMs = this.#convertTimestampToEmfFormat(timestamp);
 
-    if (InvokeStore.getContext() === undefined) {
+    if (!shouldUseInvokeStore()) {
       this.#fallbackTimestamp = timestampMs;
       return timestampMs;
     }
 
-    InvokeStore.set(this.#timestampKey, timestampMs);
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    const store = globalThis.awslambda.InvokeStore;
+    store.set(this.#timestampKey, timestampMs);
     return timestampMs;
   }
 

@@ -39,7 +39,7 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        version: [20, 22]
+        version: [20, 22, 24]
         workspace: [
           "packages/batch",
           "packages/commons",
@@ -57,7 +57,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3  # v6.0.0
       - name: Setup NodeJS
         uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
@@ -87,12 +87,12 @@ jobs:
     steps:
       - &checkout_code
         name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3  # v6.0.0
       - &setup_node
         name: Setup Node.js
         uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903  # v6.0.0
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
       - &setup_dependencies
         name: Setup dependencies

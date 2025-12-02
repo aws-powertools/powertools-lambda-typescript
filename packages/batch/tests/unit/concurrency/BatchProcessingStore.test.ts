@@ -1,12 +1,17 @@
+import { InvokeStore } from '@aws/lambda-invoke-store';
 import { sequence } from '@aws-lambda-powertools/testing-utils';
 import type { SQSRecord } from 'aws-lambda';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BatchProcessingStore } from '../../../src/BatchProcessingStore.js';
 import { sqsRecordFactory } from '../../helpers/factories.js';
 
 describe('BatchProcessingStore concurrent invocation isolation', () => {
   beforeEach(() => {
-    // No mocks needed
+    InvokeStore._testing?.reset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it.each([
@@ -18,54 +23,56 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
       description: 'with InvokeStore',
       useInvokeStore: true,
     },
-  ])(
-    'returns empty defaults when not initialized $description',
-    async ({ useInvokeStore }) => {
-      // Prepare
-      const store = new BatchProcessingStore();
-
-      // Act
-      const [resultA, resultB] = await sequence(
-        {
-          sideEffects: [() => {}, () => {}],
-          return: () => ({
-            records: store.getRecords(),
-            errors: store.getErrors(),
-            failureMessages: store.getFailureMessages(),
-            successMessages: store.getSuccessMessages(),
-            batchResponse: store.getBatchResponse(),
-            handler: store.getHandler(),
-          }),
-        },
-        {
-          sideEffects: [() => {}, () => {}],
-          return: () => ({
-            records: store.getRecords(),
-            errors: store.getErrors(),
-            failureMessages: store.getFailureMessages(),
-            successMessages: store.getSuccessMessages(),
-            batchResponse: store.getBatchResponse(),
-            handler: store.getHandler(),
-          }),
-        },
-        { useInvokeStore }
-      );
-
-      // Assess
-      expect(resultA.records).toEqual([]);
-      expect(resultA.errors).toEqual([]);
-      expect(resultA.failureMessages).toEqual([]);
-      expect(resultA.successMessages).toEqual([]);
-      expect(resultA.batchResponse).toEqual({ batchItemFailures: [] });
-      expect(resultA.handler()).toBeUndefined();
-      expect(resultB.records).toEqual([]);
-      expect(resultB.errors).toEqual([]);
-      expect(resultB.failureMessages).toEqual([]);
-      expect(resultB.successMessages).toEqual([]);
-      expect(resultB.batchResponse).toEqual({ batchItemFailures: [] });
-      expect(resultB.handler()).toBeUndefined();
+  ])('returns empty defaults when not initialized $description', async ({
+    useInvokeStore,
+  }) => {
+    // Prepare
+    if (useInvokeStore) {
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     }
-  );
+    const store = new BatchProcessingStore();
+
+    // Act
+    const [resultA, resultB] = await sequence(
+      {
+        sideEffects: [() => {}, () => {}],
+        return: () => ({
+          records: store.getRecords(),
+          errors: store.getErrors(),
+          failureMessages: store.getFailureMessages(),
+          successMessages: store.getSuccessMessages(),
+          batchResponse: store.getBatchResponse(),
+          handler: store.getHandler(),
+        }),
+      },
+      {
+        sideEffects: [() => {}, () => {}],
+        return: () => ({
+          records: store.getRecords(),
+          errors: store.getErrors(),
+          failureMessages: store.getFailureMessages(),
+          successMessages: store.getSuccessMessages(),
+          batchResponse: store.getBatchResponse(),
+          handler: store.getHandler(),
+        }),
+      },
+      { useInvokeStore }
+    );
+
+    // Assess
+    expect(resultA.records).toEqual([]);
+    expect(resultA.errors).toEqual([]);
+    expect(resultA.failureMessages).toEqual([]);
+    expect(resultA.successMessages).toEqual([]);
+    expect(resultA.batchResponse).toEqual({ batchItemFailures: [] });
+    expect(resultA.handler()).toBeUndefined();
+    expect(resultB.records).toEqual([]);
+    expect(resultB.errors).toEqual([]);
+    expect(resultB.failureMessages).toEqual([]);
+    expect(resultB.successMessages).toEqual([]);
+    expect(resultB.batchResponse).toEqual({ batchItemFailures: [] });
+    expect(resultB.handler()).toBeUndefined();
+  });
 
   it.each([
     {
@@ -80,42 +87,46 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
       expectedResultA: ['record-A'],
       expectedResultB: ['record-B'],
     },
-  ])(
-    'isolates records per invocation $description',
-    async ({ useInvokeStore, expectedResultA, expectedResultB }) => {
-      // Prepare
-      const store = new BatchProcessingStore();
-      const recordsA = [sqsRecordFactory('record-A')];
-      const recordsB = [sqsRecordFactory('record-B')];
-
-      // Act
-      const [resultA, resultB] = await sequence(
-        {
-          sideEffects: [
-            () => {
-              store.setRecords(recordsA);
-            },
-            () => {},
-          ],
-          return: () => store.getRecords().map((r) => (r as SQSRecord).body),
-        },
-        {
-          sideEffects: [
-            () => {},
-            () => {
-              store.setRecords(recordsB);
-            },
-          ],
-          return: () => store.getRecords().map((r) => (r as SQSRecord).body),
-        },
-        { useInvokeStore }
-      );
-
-      // Assess
-      expect(resultA).toEqual(expectedResultA);
-      expect(resultB).toEqual(expectedResultB);
+  ])('isolates records per invocation $description', async ({
+    useInvokeStore,
+    expectedResultA,
+    expectedResultB,
+  }) => {
+    // Prepare
+    if (useInvokeStore) {
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     }
-  );
+    const store = new BatchProcessingStore();
+    const recordsA = [sqsRecordFactory('record-A')];
+    const recordsB = [sqsRecordFactory('record-B')];
+
+    // Act
+    const [resultA, resultB] = await sequence(
+      {
+        sideEffects: [
+          () => {
+            store.setRecords(recordsA);
+          },
+          () => {},
+        ],
+        return: () => store.getRecords().map((r) => (r as SQSRecord).body),
+      },
+      {
+        sideEffects: [
+          () => {},
+          () => {
+            store.setRecords(recordsB);
+          },
+        ],
+        return: () => store.getRecords().map((r) => (r as SQSRecord).body),
+      },
+      { useInvokeStore }
+    );
+
+    // Assess
+    expect(resultA).toEqual(expectedResultA);
+    expect(resultB).toEqual(expectedResultB);
+  });
 
   it.each([
     {
@@ -130,44 +141,48 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
       expectedResultA: ['fail-A'],
       expectedResultB: ['fail-B'],
     },
-  ])(
-    'isolates failure messages per invocation $description',
-    async ({ useInvokeStore, expectedResultA, expectedResultB }) => {
-      // Prepare
-      const store = new BatchProcessingStore();
-      const recordA = sqsRecordFactory('fail-A');
-      const recordB = sqsRecordFactory('fail-B');
-
-      // Act
-      const [resultA, resultB] = await sequence(
-        {
-          sideEffects: [
-            () => {
-              store.setFailureMessages([recordA]);
-            },
-            () => {},
-          ],
-          return: () =>
-            store.getFailureMessages().map((r) => (r as SQSRecord).body),
-        },
-        {
-          sideEffects: [
-            () => {},
-            () => {
-              store.setFailureMessages([recordB]);
-            },
-          ],
-          return: () =>
-            store.getFailureMessages().map((r) => (r as SQSRecord).body),
-        },
-        { useInvokeStore }
-      );
-
-      // Assess
-      expect(resultA).toEqual(expectedResultA);
-      expect(resultB).toEqual(expectedResultB);
+  ])('isolates failure messages per invocation $description', async ({
+    useInvokeStore,
+    expectedResultA,
+    expectedResultB,
+  }) => {
+    // Prepare
+    if (useInvokeStore) {
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     }
-  );
+    const store = new BatchProcessingStore();
+    const recordA = sqsRecordFactory('fail-A');
+    const recordB = sqsRecordFactory('fail-B');
+
+    // Act
+    const [resultA, resultB] = await sequence(
+      {
+        sideEffects: [
+          () => {
+            store.setFailureMessages([recordA]);
+          },
+          () => {},
+        ],
+        return: () =>
+          store.getFailureMessages().map((r) => (r as SQSRecord).body),
+      },
+      {
+        sideEffects: [
+          () => {},
+          () => {
+            store.setFailureMessages([recordB]);
+          },
+        ],
+        return: () =>
+          store.getFailureMessages().map((r) => (r as SQSRecord).body),
+      },
+      { useInvokeStore }
+    );
+
+    // Assess
+    expect(resultA).toEqual(expectedResultA);
+    expect(resultB).toEqual(expectedResultB);
+  });
 
   it.each([
     {
@@ -182,40 +197,76 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
       expectedResultA: ['error-A'],
       expectedResultB: ['error-B'],
     },
-  ])(
-    'isolates errors per invocation $description',
-    async ({ useInvokeStore, expectedResultA, expectedResultB }) => {
-      // Prepare
-      const store = new BatchProcessingStore();
-      const errorA = new Error('error-A');
-      const errorB = new Error('error-B');
-
-      // Act
-      const [resultA, resultB] = await sequence(
-        {
-          sideEffects: [
-            () => {
-              store.setErrors([errorA]);
-            },
-            () => {},
-          ],
-          return: () => store.getErrors().map((e) => e.message),
-        },
-        {
-          sideEffects: [
-            () => {},
-            () => {
-              store.setErrors([errorB]);
-            },
-          ],
-          return: () => store.getErrors().map((e) => e.message),
-        },
-        { useInvokeStore }
-      );
-
-      // Assess
-      expect(resultA).toEqual(expectedResultA);
-      expect(resultB).toEqual(expectedResultB);
+  ])('isolates errors per invocation $description', async ({
+    useInvokeStore,
+    expectedResultA,
+    expectedResultB,
+  }) => {
+    // Prepare
+    if (useInvokeStore) {
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
     }
-  );
+    const store = new BatchProcessingStore();
+    const errorA = new Error('error-A');
+    const errorB = new Error('error-B');
+
+    // Act
+    const [resultA, resultB] = await sequence(
+      {
+        sideEffects: [
+          () => {
+            store.setErrors([errorA]);
+          },
+          () => {},
+        ],
+        return: () => store.getErrors().map((e) => e.message),
+      },
+      {
+        sideEffects: [
+          () => {},
+          () => {
+            store.setErrors([errorB]);
+          },
+        ],
+        return: () => store.getErrors().map((e) => e.message),
+      },
+      { useInvokeStore }
+    );
+
+    // Assess
+    expect(resultA).toEqual(expectedResultA);
+    expect(resultB).toEqual(expectedResultB);
+  });
+
+  describe('InvokeStore error handling', () => {
+    beforeEach(() => {
+      vi.stubGlobal('awslambda', undefined);
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('throws error when getRecords is called with AWS_LAMBDA_MAX_CONCURRENCY set but InvokeStore is not available', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new BatchProcessingStore();
+
+      // Act & Assess
+      expect(() => {
+        store.getRecords();
+      }).toThrow('InvokeStore is not available');
+    });
+
+    it('throws error when setRecords is called with AWS_LAMBDA_MAX_CONCURRENCY set but InvokeStore is not available', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      const store = new BatchProcessingStore();
+
+      // Act & Assess
+      expect(() => {
+        store.setRecords([]);
+      }).toThrow('InvokeStore is not available');
+    });
+  });
 });

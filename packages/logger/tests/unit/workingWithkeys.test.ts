@@ -185,6 +185,38 @@ describe('Working with keys', () => {
     );
   });
 
+  it('merges temporary keys with object values when the same key is added', () => {
+    // Prepare
+    const logger = new Logger();
+
+    // Act
+    logger.appendKeys({
+      foo: { key1: 'bar' },
+    });
+    logger.info('Hello, world!');
+    logger.appendKeys({
+      foo: { key2: 'baz' },
+    });
+    logger.info('Hello, world!');
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Hello, world!',
+        foo: { key1: 'bar' },
+      })
+    );
+    expect(console.info).toHaveLoggedNth(
+      2,
+      expect.objectContaining({
+        message: 'Hello, world!',
+        foo: { key1: 'bar', key2: 'baz' },
+      })
+    );
+  });
+
   it('adds the temporary keys and clears them when calling resetKeys()', () => {
     // Prepare
     const logger = new Logger();
@@ -279,6 +311,31 @@ describe('Working with keys', () => {
       expect.objectContaining({
         message: 'Hello, world!',
         foo: 'baz',
+      })
+    );
+  });
+
+  it('merges persistent keys with object values when the same key is added', () => {
+    // Prepare
+    const logger = new Logger({
+      persistentKeys: {
+        foo: { key1: 'bar' },
+      },
+    });
+
+    // Act
+    logger.appendPersistentKeys({
+      foo: { key2: 'baz' },
+    });
+    logger.info('Hello, world!');
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Hello, world!',
+        foo: { key1: 'bar', key2: 'baz' },
       })
     );
   });
@@ -806,25 +863,27 @@ describe('Working with keys', () => {
     );
   });
 
-  it.each([{ value: null }, { value: undefined }])(
-    'handles null and undefined values when passing them to the log method ($value)',
-    ({ value }) => {
-      // Prepare
-      const logger = new Logger();
+  it.each([
+    { value: null },
+    { value: undefined },
+  ])('handles null and undefined values when passing them to the log method ($value)', ({
+    value,
+  }) => {
+    // Prepare
+    const logger = new Logger();
 
-      // Act
-      // @ts-expect-error - these values are already forbidden by TypeScript, but JavaScript-only customers might pass them
-      logger.info('foo', value);
+    // Act
+    // @ts-expect-error - these values are already forbidden by TypeScript, but JavaScript-only customers might pass them
+    logger.info('foo', value);
 
-      // Assess
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'foo',
-        })
-      );
-    }
-  );
+    // Assess
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'foo',
+      })
+    );
+  });
 
   describe('deprecated persistentLogAttributes usage', () => {
     it('sets #attributesStore on the logger', () => {

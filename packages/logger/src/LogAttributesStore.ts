@@ -1,5 +1,6 @@
 import '@aws/lambda-invoke-store';
 import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
+import merge from 'lodash.merge';
 import type { LogAttributes } from './types/logKeys.js';
 
 /**
@@ -62,11 +63,11 @@ class LogAttributesStore {
 
   public appendTemporaryKeys(attributes: LogAttributes): void {
     const tempAttrs = this.#getTemporaryAttributes();
-    const keys = this.#getKeys();
+    merge(tempAttrs, attributes);
 
-    for (const [key, value] of Object.entries(attributes)) {
-      tempAttrs[key] = value;
-      keys.set(key, 'temp');
+    const keysMap = this.#getKeys();
+    for (const key of Object.keys(attributes)) {
+      keysMap.set(key, 'temp');
     }
   }
 

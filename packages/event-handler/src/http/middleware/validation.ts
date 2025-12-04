@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type { Middleware, RestRouteOptions } from '../../types/rest.js';
+import type { HttpRouteOptions, Middleware } from '../../types/http.js';
 import { RequestValidationError, ResponseValidationError } from '../errors.js';
 
 /**
@@ -9,7 +9,7 @@ import { RequestValidationError, ResponseValidationError } from '../errors.js';
  * @returns Middleware function that validates request/response
  */
 export const createValidationMiddleware = (
-  config: RestRouteOptions['validation']
+  config: HttpRouteOptions['validation']
 ): Middleware => {
   const reqSchemas = config?.req;
   const resSchemas = config?.res;
@@ -18,32 +18,35 @@ export const createValidationMiddleware = (
     // Validate request
     if (reqSchemas) {
       if (reqSchemas.body) {
-        let bodyData: unknown = reqCtx.event.body;
+        const clonedRequest = reqCtx.req.clone();
         const contentType = reqCtx.req.headers.get('content-type');
-        if (
-          contentType?.includes('application/json') &&
-          typeof bodyData === 'string'
-        ) {
+        let bodyData: unknown;
+
+        if (contentType?.includes('application/json')) {
           try {
-            bodyData = JSON.parse(bodyData);
+            bodyData = await clonedRequest.json();
           } catch {
-            // If parsing fails, validate the raw string
+            // If JSON parsing fails, get as text and let validator handle it
+            bodyData = await reqCtx.req.clone().text();
           }
+        } else {
+          bodyData = await clonedRequest.text();
         }
-        await validateComponent(reqSchemas.body, bodyData, 'body', true);
+
+        await validateRequest(reqSchemas.body, bodyData, 'body');
       }
       if (reqSchemas.headers) {
         const headers = Object.fromEntries(reqCtx.req.headers.entries());
-        await validateComponent(reqSchemas.headers, headers, 'headers', true);
+        await validateRequest(reqSchemas.headers, headers, 'headers');
       }
       if (reqSchemas.path) {
-        await validateComponent(reqSchemas.path, reqCtx.params, 'path', true);
+        await validateRequest(reqSchemas.path, reqCtx.params, 'path');
       }
       if (reqSchemas.query) {
         const query = Object.fromEntries(
           new URL(reqCtx.req.url).searchParams.entries()
         );
-        await validateComponent(reqSchemas.query, query, 'query', true);
+        await validateRequest(reqSchemas.query, query, 'query');
       }
     }
 
@@ -54,47 +57,74 @@ export const createValidationMiddleware = (
     if (resSchemas) {
       const response = reqCtx.res;
 
-      if (resSchemas.body) {
+      if (resSchemas.body && response.body) {
         const clonedResponse = response.clone();
         const contentType = response.headers.get('content-type');
+        const bodyData = contentType?.includes('application/json')
+          ? await clonedResponse.json()
+          : await clonedResponse.text();
 
-        let bodyData: unknown;
-        if (contentType?.includes('application/json')) {
-          bodyData = await clonedResponse.json();
-        } else {
-          bodyData = await clonedResponse.text();
-        }
-
-        await validateComponent(resSchemas.body, bodyData, 'body', false);
+        await validateResponse(resSchemas.body, bodyData, 'body');
       }
 
       if (resSchemas.headers) {
         const headers = Object.fromEntries(response.headers.entries());
-        await validateComponent(resSchemas.headers, headers, 'headers', false);
+        await validateResponse(resSchemas.headers, headers, 'headers');
       }
     }
   };
 };
 
-async function validateComponent(
+async function validateRequest(
   schema: StandardSchemaV1,
   data: unknown,
-  component: 'body' | 'headers' | 'path' | 'query',
-  isRequest: boolean
+  component: 'body' | 'headers' | 'path' | 'query'
 ): Promise<void> {
-  const result = await schema['~standard'].validate(data);
+  try {
+    const result = await schema['~standard'].validate(data);
 
-  if ('issues' in result) {
-    const message = `Validation failed for ${isRequest ? 'request' : 'response'} ${component}`;
-    const error = new Error('Validation failed');
-
-    if (isRequest) {
+    if ('issues' in result) {
+      const message = `Validation failed for request ${component}`;
+      const error = new Error('Validation failed');
       throw new RequestValidationError(message, component, error);
     }
+  } catch (error) {
+    // Handle schemas that throw errors instead of returning issues
+    if (error instanceof RequestValidationError) {
+      throw error;
+    }
+    const message = `Validation failed for request ${component}`;
+    throw new RequestValidationError(
+      message,
+      component,
+      error instanceof Error ? error : new Error(String(error))
+    );
+  }
+}
+
+async function validateResponse(
+  schema: StandardSchemaV1,
+  data: unknown,
+  component: 'body' | 'headers'
+): Promise<void> {
+  try {
+    const result = await schema['~standard'].validate(data);
+
+    if ('issues' in result) {
+      const message = `Validation failed for response ${component}`;
+      const error = new Error('Validation failed');
+      throw new ResponseValidationError(message, component, error);
+    }
+  } catch (error) {
+    // Handle schemas that throw errors instead of returning issues
+    if (error instanceof ResponseValidationError) {
+      throw error;
+    }
+    const message = `Validation failed for response ${component}`;
     throw new ResponseValidationError(
       message,
-      component as 'body' | 'headers',
-      error
+      component,
+      error instanceof Error ? error : new Error(String(error))
     );
   }
 }

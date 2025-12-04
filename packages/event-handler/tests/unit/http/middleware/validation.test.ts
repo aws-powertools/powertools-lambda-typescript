@@ -1,7 +1,7 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { HttpStatusCodes, Router } from '../../../../src/rest/index.js';
+import { HttpStatusCodes, Router } from '../../../../src/http/index.js';
 import { createTestEvent } from '../helpers.js';
 
 describe('Validation Middleware', () => {

@@ -285,17 +285,21 @@ type RequestValidationConfig<T = unknown> = {
 /**
  * Configuration for response validation
  */
-type ResponseValidationConfig<T = unknown> = {
-  body?: StandardSchemaV1<unknown, T>;
-  headers?: StandardSchemaV1<unknown, Record<string, string>>;
+type ResponseValidationConfig<T extends HandlerResponse = HandlerResponse> = {
+  body?: StandardSchemaV1<HandlerResponse, T>;
+  headers?: StandardSchemaV1<Record<string, string>, Record<string, string>>;
 };
 
 /**
- * Validation configuration for request and response
+ * Validation configuration for request and response.
+ * At least one of req or res should be provided.
  */
-type ValidationConfig<TReq = unknown, TRes = unknown> = {
-  req?: RequestValidationConfig<TReq>;
-  res?: ResponseValidationConfig<TRes>;
+type ValidationConfig<
+  TReqBody = unknown,
+  TResBody extends HandlerResponse = HandlerResponse,
+> = {
+  req?: RequestValidationConfig<TReqBody>;
+  res?: ResponseValidationConfig<TResBody>;
 };
 
 /**

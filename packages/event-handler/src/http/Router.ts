@@ -572,8 +572,8 @@ class Router {
     method: HttpMethod,
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<RestRouteOptions, 'method' | 'path'>,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
     // Case 1: post(path, [middleware], handler, { validation })
     if (Array.isArray(middlewareOrHandler)) {
@@ -623,21 +623,21 @@ class Router {
   public get(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public get(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public get(path: Path): MethodDecorator;
   public get(path: Path, middleware: Middleware[]): MethodDecorator;
   public get(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<RestRouteOptions, 'method' | 'path'>,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
       HttpVerbs.GET,
@@ -651,21 +651,21 @@ class Router {
   public post(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public post(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public post(path: Path): MethodDecorator;
   public post(path: Path, middleware: Middleware[]): MethodDecorator;
   public post(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<RestRouteOptions, 'method' | 'path'>,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
       HttpVerbs.POST,
@@ -679,21 +679,21 @@ class Router {
   public put(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public put(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public put(path: Path): MethodDecorator;
   public put(path: Path, middleware: Middleware[]): MethodDecorator;
   public put(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<RestRouteOptions, 'method' | 'path'>,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
       HttpVerbs.PUT,
@@ -707,21 +707,21 @@ class Router {
   public patch(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public patch(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public patch(path: Path): MethodDecorator;
   public patch(path: Path, middleware: Middleware[]): MethodDecorator;
   public patch(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<RestRouteOptions, 'method' | 'path'>,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
       HttpVerbs.PATCH,
@@ -735,21 +735,21 @@ class Router {
   public delete(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public delete(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public delete(path: Path): MethodDecorator;
   public delete(path: Path, middleware: Middleware[]): MethodDecorator;
   public delete(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<RestRouteOptions, 'method' | 'path'>,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
       HttpVerbs.DELETE,
@@ -763,21 +763,21 @@ class Router {
   public head(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public head(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public head(path: Path): MethodDecorator;
   public head(path: Path, middleware: Middleware[]): MethodDecorator;
   public head(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<RestRouteOptions, 'method' | 'path'>,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
       HttpVerbs.HEAD,
@@ -791,21 +791,21 @@ class Router {
   public options(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public options(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public options(path: Path): MethodDecorator;
   public options(path: Path, middleware: Middleware[]): MethodDecorator;
   public options(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<RestRouteOptions, 'method' | 'path'>,
-    options?: Omit<RestRouteOptions, 'method' | 'path' | 'middleware'>
+    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
       HttpVerbs.OPTIONS,

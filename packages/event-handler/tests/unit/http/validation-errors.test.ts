@@ -3,7 +3,7 @@ import {
   HttpStatusCodes,
   RequestValidationError,
   ResponseValidationError,
-} from '../../../src/rest/index.js';
+} from '../../../src/http/index.js';
 
 describe('Validation Error Classes', () => {
   describe('RequestValidationError', () => {

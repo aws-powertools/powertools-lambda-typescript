@@ -89,7 +89,7 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws/lambda-invoke-store": "0.2.1",
+    "@aws/lambda-invoke-store": "0.2.2",
     "@aws-lambda-powertools/commons": "2.29.0"
   },
   "keywords": [

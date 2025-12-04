@@ -111,7 +111,7 @@
     "nodejs"
   ],
   "dependencies": {
-    "@aws/lambda-invoke-store": "0.2.1"
+    "@aws/lambda-invoke-store": "0.2.2"
   },
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing"

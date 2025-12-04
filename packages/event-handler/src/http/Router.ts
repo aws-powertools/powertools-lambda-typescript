@@ -568,7 +568,10 @@ class Router {
     );
   }
 
-  #handleHttpMethod(
+  #handleHttpMethod<
+    TReqBody = never,
+    TResBody extends HandlerResponse = HandlerResponse
+  >(
     method: HttpMethod,
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
@@ -633,13 +636,13 @@ class Router {
   ): void;
   public get(path: Path): MethodDecorator;
   public get(path: Path, middleware: Middleware[]): MethodDecorator;
-  public get(
+  public get<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
     handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
     options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(
+    return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.GET,
       path,
       middlewareOrHandler,
@@ -661,13 +664,13 @@ class Router {
   ): void;
   public post(path: Path): MethodDecorator;
   public post(path: Path, middleware: Middleware[]): MethodDecorator;
-  public post(
+  public post<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
     handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
     options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(
+    return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.POST,
       path,
       middlewareOrHandler,
@@ -689,13 +692,13 @@ class Router {
   ): void;
   public put(path: Path): MethodDecorator;
   public put(path: Path, middleware: Middleware[]): MethodDecorator;
-  public put(
+  public put<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
     handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
     options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(
+    return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.PUT,
       path,
       middlewareOrHandler,
@@ -717,13 +720,13 @@ class Router {
   ): void;
   public patch(path: Path): MethodDecorator;
   public patch(path: Path, middleware: Middleware[]): MethodDecorator;
-  public patch(
+  public patch<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
     handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
     options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(
+    return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.PATCH,
       path,
       middlewareOrHandler,
@@ -745,13 +748,13 @@ class Router {
   ): void;
   public delete(path: Path): MethodDecorator;
   public delete(path: Path, middleware: Middleware[]): MethodDecorator;
-  public delete(
+  public delete<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
     handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
     options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(
+    return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.DELETE,
       path,
       middlewareOrHandler,
@@ -773,13 +776,13 @@ class Router {
   ): void;
   public head(path: Path): MethodDecorator;
   public head(path: Path, middleware: Middleware[]): MethodDecorator;
-  public head(
+  public head<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
     handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
     options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(
+    return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.HEAD,
       path,
       middlewareOrHandler,
@@ -801,13 +804,13 @@ class Router {
   ): void;
   public options(path: Path): MethodDecorator;
   public options(path: Path, middleware: Middleware[]): MethodDecorator;
-  public options(
+  public options<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
     handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
     options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): MethodDecorator | undefined {
-    return this.#handleHttpMethod(
+    return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.OPTIONS,
       path,
       middlewareOrHandler,

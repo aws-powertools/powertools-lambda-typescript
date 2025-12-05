@@ -13,6 +13,7 @@ import {
 
 describe('Functions: envUtils', () => {
   beforeEach(() => {
+    InvokeStore._testing?.reset();
     vi.unstubAllEnvs();
   });
 
@@ -153,22 +154,19 @@ describe('Functions: envUtils', () => {
       ['t', true],
       ['TRUE', true],
       ['on', true],
-    ])(
-      'returns true if the environment variable is set to a truthy value: %s',
-      (value, expected) => {
-        // Prepare
-        vi.stubEnv('TEST_ENV', value);
+    ])('returns true if the environment variable is set to a truthy value: %s', (value, expected) => {
+      // Prepare
+      vi.stubEnv('TEST_ENV', value);
 
-        // Act
-        const result = getBooleanFromEnv({
-          key: 'TEST_ENV',
-          extendedParsing: true,
-        });
+      // Act
+      const result = getBooleanFromEnv({
+        key: 'TEST_ENV',
+        extendedParsing: true,
+      });
 
-        // Assess
-        expect(result).toBe(expected);
-      }
-    );
+      // Assess
+      expect(result).toBe(expected);
+    });
 
     it.each([
       ['0', false],
@@ -177,22 +175,19 @@ describe('Functions: envUtils', () => {
       ['f', false],
       ['FALSE', false],
       ['off', false],
-    ])(
-      'returns false if the environment variable is set to a falsy value: %s',
-      (value, expected) => {
-        // Prepare
-        vi.stubEnv('TEST_ENV', value);
+    ])('returns false if the environment variable is set to a falsy value: %s', (value, expected) => {
+      // Prepare
+      vi.stubEnv('TEST_ENV', value);
 
-        // Act
-        const result = getBooleanFromEnv({
-          key: 'TEST_ENV',
-          extendedParsing: true,
-        });
+      // Act
+      const result = getBooleanFromEnv({
+        key: 'TEST_ENV',
+        extendedParsing: true,
+      });
 
-        // Assess
-        expect(result).toBe(expected);
-      }
-    );
+      // Assess
+      expect(result).toBe(expected);
+    });
   });
 
   describe('Function: isDevMode', () => {

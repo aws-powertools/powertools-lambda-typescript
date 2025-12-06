@@ -155,7 +155,7 @@ type HttpRouteOptions = {
 type NextFunction = () => Promise<HandlerResponse | void>;
 
 type Middleware = (args: {
-  reqCtx: RequestContext;
+  reqCtx: RequestContext | TypedRequestContext;
   next: NextFunction;
   // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
 }) => Promise<HandlerResponse | void>;
@@ -364,6 +364,7 @@ export type {
   Middleware,
   Path,
   RequestContext,
+  TypedRequestContext,
   ResponseType,
   ResponseTypeMap,
   HttpRouterOptions,

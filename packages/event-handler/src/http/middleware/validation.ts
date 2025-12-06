@@ -2,6 +2,7 @@ import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   HandlerResponse,
   Middleware,
+  TypedRequestContext,
   ValidatedRequest,
   ValidatedResponse,
   ValidationConfig,
@@ -24,8 +25,8 @@ export const createValidationMiddleware = <
   const resSchemas = config?.res;
 
   return async ({ reqCtx, next }) => {
-    // Initialize valid object
-    (reqCtx as any).valid = {
+    const typedReqCtx = reqCtx as TypedRequestContext<TReqBody, TResBody>;
+    typedReqCtx.valid = {
       req: {} as ValidatedRequest<TReqBody>,
       res: {} as ValidatedResponse<TResBody>,
     };
@@ -53,19 +54,19 @@ export const createValidationMiddleware = <
           bodyData,
           'body'
         );
-        ((reqCtx as any).valid.req as ValidatedRequest<TReqBody>).body =
+        (typedReqCtx.valid.req as ValidatedRequest<TReqBody>).body =
           validatedBody as TReqBody;
       }
       if (reqSchemas.headers) {
         const headers = Object.fromEntries(reqCtx.req.headers.entries());
-        (reqCtx as any).valid.req.headers = (await validateRequest(
+        typedReqCtx.valid.req.headers = (await validateRequest(
           reqSchemas.headers,
           headers,
           'headers'
         )) as Record<string, string>;
       }
       if (reqSchemas.path) {
-        (reqCtx as any).valid.req.path = (await validateRequest(
+        typedReqCtx.valid.req.path = (await validateRequest(
           reqSchemas.path,
           reqCtx.params,
           'path'
@@ -75,7 +76,7 @@ export const createValidationMiddleware = <
         const query = Object.fromEntries(
           new URL(reqCtx.req.url).searchParams.entries()
         );
-        (reqCtx as any).valid.req.query = (await validateRequest(
+        typedReqCtx.valid.req.query = (await validateRequest(
           reqSchemas.query,
           query,
           'query'
@@ -97,7 +98,7 @@ export const createValidationMiddleware = <
           ? await clonedResponse.json()
           : await clonedResponse.text();
 
-        (reqCtx as any).valid.res.body = (await validateResponse(
+        typedReqCtx.valid.res.body = (await validateResponse(
           resSchemas.body,
           bodyData,
           'body'
@@ -106,7 +107,7 @@ export const createValidationMiddleware = <
 
       if (resSchemas.headers) {
         const headers = Object.fromEntries(response.headers.entries());
-        (reqCtx as any).valid.res.headers = (await validateResponse(
+        typedReqCtx.valid.res.headers = (await validateResponse(
           resSchemas.headers,
           headers,
           'headers'

@@ -28,12 +28,14 @@ import type {
   HttpRouteOptions,
   HttpRouterOptions,
   Middleware,
+  ValidationConfig,
   Path,
   RequestContext,
   ResolveStreamOptions,
   ResponseStream,
   RouteHandler,
   RouterResponse,
+  TypedRouteHandler,
 } from '../types/http.js';
 import type { HandlerResponse, ResolveOptions } from '../types/index.js';
 import { HttpStatusCodes, HttpVerbs } from './constants.js';
@@ -444,14 +446,17 @@ class Router {
     }
   }
 
-  public route(handler: RouteHandler, options: HttpRouteOptions): void {
+  public route<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    handler: RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    options: HttpRouteOptions
+  ): void {
     const { method, path, middleware = [], validation } = options;
     const methods = Array.isArray(method) ? method : [method];
     const resolvedPath = resolvePrefixedPath(path, this.prefix);
 
     // Create validation middleware if validation config provided
     const allMiddleware = validation
-      ? [...middleware, createValidationMiddleware(validation)]
+      ? [...middleware, createValidationMiddleware<TReqBody, TResBody>(validation as ValidationConfig<TReqBody, TResBody>)]
       : middleware;
 
     for (const method of methods) {
@@ -568,15 +573,12 @@ class Router {
     );
   }
 
-  #handleHttpMethod<
-    TReqBody = never,
-    TResBody extends HandlerResponse = HandlerResponse
-  >(
+  #handleHttpMethod<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     method: HttpMethod,
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
+    handlerOrOptions?: RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     // Case 1: post(path, [middleware], handler, { validation })
     if (Array.isArray(middlewareOrHandler)) {
@@ -626,27 +628,31 @@ class Router {
   public get(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public get(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public get(path: Path): MethodDecorator;
   public get(path: Path, middleware: Middleware[]): MethodDecorator;
   public get<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
+    middleware: Middleware[],
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public get<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
+    handler?: RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.GET,
       path,
       middlewareOrHandler,
-      handlerOrOptions,
+      handler,
       options
     );
   }
@@ -664,6 +670,12 @@ class Router {
   ): void;
   public post(path: Path): MethodDecorator;
   public post(path: Path, middleware: Middleware[]): MethodDecorator;
+  public post<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler,
+    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
+    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
+  ): MethodDecorator | undefined;
   public post<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
     middlewareOrHandler?: Middleware[] | RouteHandler,

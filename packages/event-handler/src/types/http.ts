@@ -25,7 +25,25 @@ type ResponseTypeMap = {
   ALB: ALBResult;
 };
 
-type RequestContext = {
+/**
+ * Validated request data
+ */
+type ValidatedRequest<TBody = unknown> = {
+  body: TBody;
+  headers?: Record<string, string>;
+  path?: Record<string, string>;
+  query?: Record<string, string>;
+};
+
+/**
+ * Validated response data
+ */
+type ValidatedResponse<TBody extends HandlerResponse = HandlerResponse> = {
+  body?: TBody;
+  headers?: Record<string, string>;
+};
+
+type RequestContext<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse> = {
   req: Request;
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent;
   context: Context;
@@ -34,6 +52,10 @@ type RequestContext = {
   responseType: ResponseType;
   isBase64Encoded?: boolean;
   isHttpStreaming?: boolean;
+  valid?: {
+    req: ValidatedRequest<TReqBody>;
+    res: ValidatedResponse<TResBody>;
+  };
 };
 
 type HttpResolveOptions = ResolveOptions & { isHttpStreaming?: boolean };
@@ -47,7 +69,7 @@ type ErrorHandler<T extends Error = Error> = (
 
 interface ErrorConstructor<T extends Error = Error> {
   // biome-ignore lint/suspicious/noExplicitAny: this is a generic type that is intentionally open
-  new (...args: any[]): T;
+  new(...args: any[]): T;
   prototype: T;
 }
 
@@ -94,6 +116,10 @@ type HandlerResponse =
 
 type RouteHandler<TReturn = HandlerResponse> = (
   reqCtx: RequestContext
+) => Promise<TReturn> | TReturn;
+
+type TypedRouteHandler<TReqBody, TResBody extends HandlerResponse = HandlerResponse, TReturn = HandlerResponse> = (
+  reqCtx: RequestContext<TReqBody, TResBody>
 ) => Promise<TReturn> | TReturn;
 
 type HttpMethod = keyof typeof HttpVerbs;
@@ -272,6 +298,7 @@ type RouterResponse =
   | APIGatewayProxyResult
   | APIGatewayProxyStructuredResultV2
   | ALBResult;
+
 /**
  * Configuration for request validation
  */
@@ -348,4 +375,7 @@ export type {
   ResponseValidationConfig,
   ValidationConfig,
   ValidationErrorDetail,
+  ValidatedRequest,
+  ValidatedResponse,
+  TypedRouteHandler
 };

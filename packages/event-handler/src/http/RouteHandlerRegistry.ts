@@ -2,6 +2,7 @@ import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { isRegExp } from '@aws-lambda-powertools/commons/typeutils';
 import type {
   DynamicRoute,
+  HandlerResponse,
   HttpMethod,
   HttpRouteHandlerOptions,
   Path,
@@ -94,7 +95,7 @@ class RouteHandlerRegistry {
    *
    * @param route - The route to register
    */
-  public register(route: Route): void {
+  public register<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(route: Route<TReqBody, TResBody>): void {
     this.#shouldSort = true;
     const { isValid, issues } = validatePathPattern(route.path);
     if (!isValid) {

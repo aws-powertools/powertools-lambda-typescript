@@ -2,9 +2,11 @@ import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { isRegExp } from '@aws-lambda-powertools/commons/typeutils';
 import type {
   DynamicRoute,
+  HandlerResponse,
   HttpMethod,
   HttpRouteHandlerOptions,
   Path,
+  RouteHandler,
   RouteRegistryOptions,
   ValidationResult,
 } from '../types/http.js';
@@ -94,7 +96,10 @@ class RouteHandlerRegistry {
    *
    * @param route - The route to register
    */
-  public register(route: Route): void {
+  public register<
+    TReqBody = never,
+    TResBody extends HandlerResponse = HandlerResponse,
+  >(route: Route<TReqBody, TResBody>): void {
     this.#shouldSort = true;
     const { isValid, issues } = validatePathPattern(route.path);
     if (!isValid) {
@@ -115,14 +120,14 @@ class RouteHandlerRegistry {
       this.#regexRoutes.set(route.id, {
         ...route,
         ...compiled,
-      });
+      } as DynamicRoute);
       return;
     }
     if (compiled.isDynamic) {
       const dynamicRoute = {
         ...route,
         ...compiled,
-      };
+      } as DynamicRoute;
       if (this.#dynamicRoutesSet.has(route.id)) {
         this.#logger.warn(
           `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
@@ -144,7 +149,7 @@ class RouteHandlerRegistry {
           `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
         );
       }
-      this.#staticRoutes.set(route.id, route);
+      this.#staticRoutes.set(route.id, route as unknown as Route);
     }
   }
   /**
@@ -179,7 +184,7 @@ class RouteHandlerRegistry {
     const staticRoute = this.#staticRoutes.get(routeId);
     if (staticRoute != null) {
       return {
-        handler: staticRoute.handler,
+        handler: staticRoute.handler as RouteHandler,
         rawParams: {},
         params: {},
         middleware: staticRoute.middleware,
@@ -241,7 +246,7 @@ class RouteHandlerRegistry {
     }
 
     return {
-      handler: route.handler,
+      handler: route.handler as RouteHandler,
       params: processedParams,
       rawParams: params,
       middleware: route.middleware,

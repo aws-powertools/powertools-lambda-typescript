@@ -6,6 +6,7 @@ import type {
   HttpMethod,
   HttpRouteHandlerOptions,
   Path,
+  RouteHandler,
   RouteRegistryOptions,
   ValidationResult,
 } from '../types/http.js';
@@ -95,7 +96,10 @@ class RouteHandlerRegistry {
    *
    * @param route - The route to register
    */
-  public register<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(route: Route<TReqBody, TResBody>): void {
+  public register<
+    TReqBody = never,
+    TResBody extends HandlerResponse = HandlerResponse,
+  >(route: Route<TReqBody, TResBody>): void {
     this.#shouldSort = true;
     const { isValid, issues } = validatePathPattern(route.path);
     if (!isValid) {
@@ -180,7 +184,7 @@ class RouteHandlerRegistry {
     const staticRoute = this.#staticRoutes.get(routeId);
     if (staticRoute != null) {
       return {
-        handler: staticRoute.handler,
+        handler: staticRoute.handler as RouteHandler,
         rawParams: {},
         params: {},
         middleware: staticRoute.middleware,
@@ -242,7 +246,7 @@ class RouteHandlerRegistry {
     }
 
     return {
-      handler: route.handler,
+      handler: route.handler as RouteHandler,
       params: processedParams,
       rawParams: params,
       middleware: route.middleware,

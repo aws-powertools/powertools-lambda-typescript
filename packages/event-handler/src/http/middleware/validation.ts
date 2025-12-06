@@ -122,28 +122,15 @@ async function validateRequest(
   data: unknown,
   component: 'body' | 'headers' | 'path' | 'query'
 ): Promise<unknown> {
-  try {
-    const result = await schema['~standard'].validate(data);
+  const result = await schema['~standard'].validate(data);
 
-    if ('issues' in result) {
-      const message = `Validation failed for request ${component}`;
-      const error = new Error('Validation failed');
-      throw new RequestValidationError(message, component, error);
-    }
-
-    return result.value;
-  } catch (error) {
-    // Handle schemas that throw errors instead of returning issues
-    if (error instanceof RequestValidationError) {
-      throw error;
-    }
+  if ('issues' in result) {
     const message = `Validation failed for request ${component}`;
-    throw new RequestValidationError(
-      message,
-      component,
-      error instanceof Error ? error : new Error(String(error))
-    );
+    const error = new Error('Validation failed');
+    throw new RequestValidationError(message, component, error);
   }
+
+  return result.value;
 }
 
 async function validateResponse(
@@ -151,26 +138,13 @@ async function validateResponse(
   data: unknown,
   component: 'body' | 'headers'
 ): Promise<unknown> {
-  try {
-    const result = await schema['~standard'].validate(data);
+  const result = await schema['~standard'].validate(data);
 
-    if ('issues' in result) {
-      const message = `Validation failed for response ${component}`;
-      const error = new Error('Validation failed');
-      throw new ResponseValidationError(message, component, error);
-    }
-
-    return result.value;
-  } catch (error) {
-    // Handle schemas that throw errors instead of returning issues
-    if (error instanceof ResponseValidationError) {
-      throw error;
-    }
+  if ('issues' in result) {
     const message = `Validation failed for response ${component}`;
-    throw new ResponseValidationError(
-      message,
-      component,
-      error instanceof Error ? error : new Error(String(error))
-    );
+    const error = new Error('Validation failed');
+    throw new ResponseValidationError(message, component, error);
   }
+
+  return result.value;
 }

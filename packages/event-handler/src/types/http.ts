@@ -309,34 +309,68 @@ type RouterResponse =
   | ALBResult;
 
 /**
- * Configuration for request validation
+ * Configuration for request validation.
+ * At least one of body, headers, path, or query must be provided.
  */
-type RequestValidationConfig<T = unknown> = {
-  body?: StandardSchemaV1<unknown, T>;
-  headers?: StandardSchemaV1<unknown, Record<string, string>>;
-  path?: StandardSchemaV1<unknown, Record<string, string>>;
-  query?: StandardSchemaV1<unknown, Record<string, string>>;
-};
+type RequestValidationConfig<T = unknown> =
+  | {
+      body: StandardSchemaV1<unknown, T>;
+      headers?: StandardSchemaV1<unknown, Record<string, string>>;
+      path?: StandardSchemaV1<unknown, Record<string, string>>;
+      query?: StandardSchemaV1<unknown, Record<string, string>>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, T>;
+      headers: StandardSchemaV1<unknown, Record<string, string>>;
+      path?: StandardSchemaV1<unknown, Record<string, string>>;
+      query?: StandardSchemaV1<unknown, Record<string, string>>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, T>;
+      headers?: StandardSchemaV1<unknown, Record<string, string>>;
+      path: StandardSchemaV1<unknown, Record<string, string>>;
+      query?: StandardSchemaV1<unknown, Record<string, string>>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, T>;
+      headers?: StandardSchemaV1<unknown, Record<string, string>>;
+      path?: StandardSchemaV1<unknown, Record<string, string>>;
+      query: StandardSchemaV1<unknown, Record<string, string>>;
+    };
 
 /**
- * Configuration for response validation
+ * Configuration for response validation.
+ * At least one of body or headers must be provided.
  */
-type ResponseValidationConfig<T extends HandlerResponse = HandlerResponse> = {
-  body?: StandardSchemaV1<HandlerResponse, T>;
-  headers?: StandardSchemaV1<Record<string, string>, Record<string, string>>;
-};
+type ResponseValidationConfig<T extends HandlerResponse = HandlerResponse> =
+  | {
+      body: StandardSchemaV1<HandlerResponse, T>;
+      headers?: StandardSchemaV1<
+        Record<string, string>,
+        Record<string, string>
+      >;
+    }
+  | {
+      body?: StandardSchemaV1<HandlerResponse, T>;
+      headers: StandardSchemaV1<Record<string, string>, Record<string, string>>;
+    };
 
 /**
  * Validation configuration for request and response.
- * At least one of req or res should be provided.
+ * At least one of req or res must be provided.
  */
 type ValidationConfig<
   TReqBody = unknown,
   TResBody extends HandlerResponse = HandlerResponse,
-> = {
-  req?: RequestValidationConfig<TReqBody>;
-  res?: ResponseValidationConfig<TResBody>;
-};
+> =
+  | {
+      req: RequestValidationConfig<TReqBody>;
+      res?: ResponseValidationConfig<TResBody>;
+    }
+  | {
+      req?: RequestValidationConfig<TReqBody>;
+      res: ResponseValidationConfig<TResBody>;
+    };
 
 /**
  * Validation error details

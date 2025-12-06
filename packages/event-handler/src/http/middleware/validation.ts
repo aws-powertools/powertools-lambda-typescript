@@ -36,18 +36,9 @@ export const createValidationMiddleware = <
       if (reqSchemas.body) {
         const clonedRequest = reqCtx.req.clone();
         const contentType = reqCtx.req.headers.get('content-type');
-        let bodyData: unknown;
-
-        if (contentType?.includes('application/json')) {
-          try {
-            bodyData = await clonedRequest.json();
-          } catch {
-            // If JSON parsing fails, get as text and let validator handle it
-            bodyData = await reqCtx.req.clone().text();
-          }
-        } else {
-          bodyData = await clonedRequest.text();
-        }
+        const bodyData = contentType?.includes('application/json')
+          ? await clonedRequest.json()
+          : await clonedRequest.text();
 
         const validatedBody = await validateRequest(
           reqSchemas.body,

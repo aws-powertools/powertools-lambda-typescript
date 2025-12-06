@@ -220,4 +220,99 @@ describe('Router Validation Integration', () => {
       expect(unvalidatedResult.statusCode).toBe(200);
     });
   });
+
+  describe('Validated Data Access', () => {
+    it('populates reqCtx.valid with validated request data', async () => {
+      const bodySchema = z.object({ name: z.string(), email: z.string() });
+      const headersSchema = z.object({ 'x-api-key': z.string() });
+      const pathSchema = z.object({ id: z.string() });
+      const querySchema = z.object({ filter: z.string() });
+
+      let capturedValid: any;
+
+      app.post(
+        '/users/:id',
+        async (reqCtx) => {
+          capturedValid = reqCtx.valid;
+          const body = reqCtx.valid?.req.body as { name: string; email: string };
+          return { id: body?.name || 'unknown' };
+        },
+        {
+          validation: {
+            req: {
+              body: bodySchema,
+              headers: headersSchema,
+              path: pathSchema,
+              query: querySchema,
+            },
+          },
+        }
+      );
+
+      const event = createTestEvent('/users/123', 'POST', {
+        'content-type': 'application/json',
+        'x-api-key': 'test-key',
+      });
+      event.body = JSON.stringify({ name: 'John', email: 'john@example.com' });
+      event.pathParameters = { id: '123' };
+      event.queryStringParameters = { filter: 'active' };
+
+      const result = await app.resolve(event, context);
+
+      expect(result.statusCode).toBe(200);
+      expect(capturedValid).toBeDefined();
+      expect(capturedValid.req.body).toEqual({ name: 'John', email: 'john@example.com' });
+      expect(capturedValid.req.headers).toHaveProperty('x-api-key', 'test-key');
+      expect(capturedValid.req.path).toEqual({ id: '123' });
+      expect(capturedValid.req.query).toEqual({ filter: 'active' });
+    });
+
+    it('uses generic type parameters for type-safe validation', async () => {
+      const createUserRequestSchema = z.object({
+        name: z.string(),
+        email: z.string().email(),
+      });
+
+      const createUserResponseSchema = z.object({
+        id: z.string(),
+        name: z.string(),
+        email: z.string(),
+      });
+
+      type CreateUserRequest = z.infer<typeof createUserRequestSchema>;
+      type CreateUserResponse = z.infer<typeof createUserResponseSchema>;
+
+      app.post<CreateUserRequest, CreateUserResponse>(
+        '/users',
+        (reqCtx) => {
+          // Type-safe access to validated data with type assertion
+          const { name, email } = reqCtx.valid!.req.body as CreateUserRequest;
+          return { id: '123', name, email };
+        },
+        {
+          validation: {
+            req: {
+              body: createUserRequestSchema,
+              headers: z.object({ 'x-api-key': z.string() }),
+            },
+            res: {
+              body: createUserResponseSchema,
+            },
+          },
+        }
+      );
+
+      const event = createTestEvent('/users', 'POST', {
+        'content-type': 'application/json',
+        'x-api-key': 'test-key',
+      });
+      event.body = JSON.stringify({ name: 'John', email: 'john@example.com' });
+
+      const result = await app.resolve(event, context);
+
+      expect(result.statusCode).toBe(200);
+      const body = JSON.parse(result.body);
+      expect(body).toEqual({ id: '123', name: 'John', email: 'john@example.com' });
+    });
+  });
 });

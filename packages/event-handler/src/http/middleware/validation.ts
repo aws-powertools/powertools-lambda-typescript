@@ -1,5 +1,11 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type { HttpRouteOptions, Middleware } from '../../types/http.js';
+import type {
+  HandlerResponse,
+  Middleware,
+  ValidatedRequest,
+  ValidatedResponse,
+  ValidationConfig,
+} from '../../types/http.js';
 import { RequestValidationError, ResponseValidationError } from '../errors.js';
 
 /**
@@ -8,13 +14,22 @@ import { RequestValidationError, ResponseValidationError } from '../errors.js';
  * @param config - Validation configuration for request and response
  * @returns Middleware function that validates request/response
  */
-export const createValidationMiddleware = (
-  config: HttpRouteOptions['validation']
+export const createValidationMiddleware = <
+  TReqBody = unknown,
+  TResBody extends HandlerResponse = HandlerResponse
+>(
+  config: ValidationConfig<TReqBody, TResBody>
 ): Middleware => {
   const reqSchemas = config?.req;
   const resSchemas = config?.res;
 
   return async ({ reqCtx, next }) => {
+    // Initialize valid object
+    reqCtx.valid = {
+      req: {} as ValidatedRequest<TReqBody>,
+      res: {} as ValidatedResponse<TResBody>,
+    };
+
     // Validate request
     if (reqSchemas) {
       if (reqSchemas.body) {
@@ -33,20 +48,20 @@ export const createValidationMiddleware = (
           bodyData = await clonedRequest.text();
         }
 
-        await validateRequest(reqSchemas.body, bodyData, 'body');
+        reqCtx.valid.req.body = await validateRequest(reqSchemas.body, bodyData, 'body') as TReqBody;
       }
       if (reqSchemas.headers) {
         const headers = Object.fromEntries(reqCtx.req.headers.entries());
-        await validateRequest(reqSchemas.headers, headers, 'headers');
+        reqCtx.valid.req.headers = await validateRequest(reqSchemas.headers, headers, 'headers') as Record<string, string>;
       }
       if (reqSchemas.path) {
-        await validateRequest(reqSchemas.path, reqCtx.params, 'path');
+        reqCtx.valid.req.path = await validateRequest(reqSchemas.path, reqCtx.params, 'path') as Record<string, string>;
       }
       if (reqSchemas.query) {
         const query = Object.fromEntries(
           new URL(reqCtx.req.url).searchParams.entries()
         );
-        await validateRequest(reqSchemas.query, query, 'query');
+        reqCtx.valid.req.query = await validateRequest(reqSchemas.query, query, 'query') as Record<string, string>;
       }
     }
 
@@ -64,12 +79,12 @@ export const createValidationMiddleware = (
           ? await clonedResponse.json()
           : await clonedResponse.text();
 
-        await validateResponse(resSchemas.body, bodyData, 'body');
+        reqCtx.valid.res.body = await validateResponse(resSchemas.body, bodyData, 'body') as TResBody;
       }
 
       if (resSchemas.headers) {
         const headers = Object.fromEntries(response.headers.entries());
-        await validateResponse(resSchemas.headers, headers, 'headers');
+        reqCtx.valid.res.headers = await validateResponse(resSchemas.headers, headers, 'headers') as Record<string, string>;
       }
     }
   };
@@ -79,7 +94,7 @@ async function validateRequest(
   schema: StandardSchemaV1,
   data: unknown,
   component: 'body' | 'headers' | 'path' | 'query'
-): Promise<void> {
+): Promise<unknown> {
   try {
     const result = await schema['~standard'].validate(data);
 
@@ -88,6 +103,8 @@ async function validateRequest(
       const error = new Error('Validation failed');
       throw new RequestValidationError(message, component, error);
     }
+    
+    return result.value;
   } catch (error) {
     // Handle schemas that throw errors instead of returning issues
     if (error instanceof RequestValidationError) {
@@ -106,7 +123,7 @@ async function validateResponse(
   schema: StandardSchemaV1,
   data: unknown,
   component: 'body' | 'headers'
-): Promise<void> {
+): Promise<unknown> {
   try {
     const result = await schema['~standard'].validate(data);
 
@@ -115,6 +132,8 @@ async function validateResponse(
       const error = new Error('Validation failed');
       throw new ResponseValidationError(message, component, error);
     }
+    
+    return result.value;
   } catch (error) {
     // Handle schemas that throw errors instead of returning issues
     if (error instanceof ResponseValidationError) {

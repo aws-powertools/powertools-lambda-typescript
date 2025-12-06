@@ -368,4 +368,24 @@ describe('Validation Middleware', () => {
       name: 'John',
     });
   });
+
+  it('validates non-JSON request body (text/plain)', async () => {
+    // Prepare
+    const textSchema = z.string();
+    app.post('/text', async () => ({ statusCode: 200, body: 'OK' }), {
+      validation: { req: { body: textSchema } },
+    });
+    const event = {
+      ...createTestEvent('/text', 'POST', {
+        'content-type': 'text/plain',
+      }),
+      body: 'plain text content',
+    };
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(HttpStatusCodes.OK);
+  });
 });

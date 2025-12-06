@@ -7,7 +7,10 @@ import type {
   TypedRouteHandler,
 } from '../types/http.js';
 
-class Route<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse> {
+class Route<
+  TReqBody = never,
+  TResBody extends HandlerResponse = HandlerResponse,
+> {
   readonly id: string;
   readonly method: string;
   readonly path: Path;

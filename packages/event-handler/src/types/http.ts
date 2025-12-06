@@ -43,7 +43,7 @@ type ValidatedResponse<TBody extends HandlerResponse = HandlerResponse> = {
   headers?: Record<string, string>;
 };
 
-type RequestContext<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse> = {
+type RequestContext = {
   req: Request;
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent;
   context: Context;
@@ -51,11 +51,14 @@ type RequestContext<TReqBody = never, TResBody extends HandlerResponse = Handler
   params: Record<string, string>;
   responseType: ResponseType;
   isBase64Encoded?: boolean;
-  valid?: {
+};
+
+type TypedRequestContext<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse> = RequestContext & {
+  valid: {
     req: ValidatedRequest<TReqBody>;
     res: ValidatedResponse<TResBody>;
   };
-};
+}
 
 type HttpResolveOptions = ResolveOptions & { isHttpStreaming?: boolean };
 
@@ -118,7 +121,7 @@ type RouteHandler<TReturn = HandlerResponse> = (
 ) => Promise<TReturn> | TReturn;
 
 type TypedRouteHandler<TReqBody, TResBody extends HandlerResponse = HandlerResponse, TReturn = HandlerResponse> = (
-  reqCtx: RequestContext<TReqBody, TResBody>
+  reqCtx: TypedRequestContext<TReqBody, TResBody>
 ) => Promise<TReturn> | TReturn;
 
 type HttpMethod = keyof typeof HttpVerbs;

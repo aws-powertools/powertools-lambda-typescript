@@ -116,14 +116,14 @@ class RouteHandlerRegistry {
       this.#regexRoutes.set(route.id, {
         ...route,
         ...compiled,
-      });
+      } as DynamicRoute);
       return;
     }
     if (compiled.isDynamic) {
       const dynamicRoute = {
         ...route,
         ...compiled,
-      };
+      } as DynamicRoute;
       if (this.#dynamicRoutesSet.has(route.id)) {
         this.#logger.warn(
           `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
@@ -145,7 +145,7 @@ class RouteHandlerRegistry {
           `Handler for method: ${route.method} and path: ${route.path} already exists. The previous handler will be replaced.`
         );
       }
-      this.#staticRoutes.set(route.id, route);
+      this.#staticRoutes.set(route.id, route as unknown as Route);
     }
   }
   /**

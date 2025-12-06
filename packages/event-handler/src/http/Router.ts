@@ -578,11 +578,11 @@ class Router {
   #handleHttpMethod<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     method: HttpMethod,
     path: Path,
-    middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    middlewareOrHandler?: Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    handlerOrOptions?: RouteHandler | TypedRouteHandler<TReqBody, TResBody> | { validation: ValidationConfig<TReqBody, TResBody> },
     options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
-    // Case 1: post(path, [middleware], handler, { validation })
+    // Case 1: method(path, [middleware], handler, { validation })
     if (Array.isArray(middlewareOrHandler)) {
       if (handlerOrOptions && typeof handlerOrOptions === 'function') {
         this.route(handlerOrOptions, {
@@ -604,7 +604,7 @@ class Router {
       };
     }
 
-    // Case 2: post(path, handler, { validation })
+    // Case 2: method(path, handler, { validation }) or method(path, handler)
     if (middlewareOrHandler && typeof middlewareOrHandler === 'function') {
       // Check if handlerOrOptions is an options object (not a function)
       if (
@@ -640,21 +640,26 @@ class Router {
   public get(path: Path, middleware: Middleware[]): MethodDecorator;
   public get<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public get<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<TReqBody, TResBody>,
     options: { validation: ValidationConfig<TReqBody, TResBody> }
   ): void;
   public get<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
-    middlewareOrHandler?: Middleware[] | RouteHandler,
-    handler?: RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    middlewareOrHandler?: Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    handlerOrOptions?: RouteHandler | TypedRouteHandler<TReqBody, TResBody> | { validation: ValidationConfig<TReqBody, TResBody> },
     options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.GET,
       path,
       middlewareOrHandler,
-      handler,
+      handlerOrOptions,
       options
     );
   }
@@ -662,27 +667,30 @@ class Router {
   public post(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public post(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public post(path: Path): MethodDecorator;
   public post(path: Path, middleware: Middleware[]): MethodDecorator;
   public post<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
-    middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
-  ): MethodDecorator | undefined;
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
   public post<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
-    middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
+    middleware: Middleware[],
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public post<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    handlerOrOptions?: RouteHandler | TypedRouteHandler<TReqBody, TResBody> | { validation: ValidationConfig<TReqBody, TResBody> },
+    options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.POST,
@@ -696,21 +704,30 @@ class Router {
   public put(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public put(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public put(path: Path): MethodDecorator;
   public put(path: Path, middleware: Middleware[]): MethodDecorator;
   public put<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
-    middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public put<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middleware: Middleware[],
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public put<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    handlerOrOptions?: RouteHandler | TypedRouteHandler<TReqBody, TResBody> | { validation: ValidationConfig<TReqBody, TResBody> },
+    options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.PUT,
@@ -724,21 +741,30 @@ class Router {
   public patch(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public patch(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public patch(path: Path): MethodDecorator;
   public patch(path: Path, middleware: Middleware[]): MethodDecorator;
   public patch<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
-    middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public patch<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middleware: Middleware[],
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public patch<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    handlerOrOptions?: RouteHandler | TypedRouteHandler<TReqBody, TResBody> | { validation: ValidationConfig<TReqBody, TResBody> },
+    options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.PATCH,
@@ -752,21 +778,30 @@ class Router {
   public delete(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public delete(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public delete(path: Path): MethodDecorator;
   public delete(path: Path, middleware: Middleware[]): MethodDecorator;
   public delete<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
-    middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public delete<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middleware: Middleware[],
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public delete<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    handlerOrOptions?: RouteHandler | TypedRouteHandler<TReqBody, TResBody> | { validation: ValidationConfig<TReqBody, TResBody> },
+    options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.DELETE,
@@ -780,21 +815,30 @@ class Router {
   public head(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public head(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public head(path: Path): MethodDecorator;
   public head(path: Path, middleware: Middleware[]): MethodDecorator;
   public head<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
-    middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public head<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middleware: Middleware[],
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public head<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    handlerOrOptions?: RouteHandler | TypedRouteHandler<TReqBody, TResBody> | { validation: ValidationConfig<TReqBody, TResBody> },
+    options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.HEAD,
@@ -808,21 +852,30 @@ class Router {
   public options(
     path: Path,
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path'>
   ): void;
   public options(
     path: Path,
     middleware: Middleware[],
     handler: RouteHandler,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
   ): void;
   public options(path: Path): MethodDecorator;
   public options(path: Path, middleware: Middleware[]): MethodDecorator;
   public options<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
     path: Path,
-    middlewareOrHandler?: Middleware[] | RouteHandler,
-    handlerOrOptions?: RouteHandler | Omit<HttpRouteOptions, 'method' | 'path'>,
-    options?: Omit<HttpRouteOptions, 'method' | 'path' | 'middleware'>
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public options<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middleware: Middleware[],
+    handler: TypedRouteHandler<TReqBody, TResBody>,
+    options: { validation: ValidationConfig<TReqBody, TResBody> }
+  ): void;
+  public options<TReqBody = never, TResBody extends HandlerResponse = HandlerResponse>(
+    path: Path,
+    middlewareOrHandler?: Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>,
+    handlerOrOptions?: RouteHandler | TypedRouteHandler<TReqBody, TResBody> | { validation: ValidationConfig<TReqBody, TResBody> },
+    options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
       HttpVerbs.OPTIONS,

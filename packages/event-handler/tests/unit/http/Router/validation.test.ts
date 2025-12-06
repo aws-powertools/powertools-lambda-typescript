@@ -286,8 +286,7 @@ describe('Router Validation Integration', () => {
         '/users',
         (reqCtx) => {
           // Type-safe access to validated data with type assertion
-          const { name, email } = reqCtx.valid!.req.body as CreateUserRequest;
-          return { id: '123', name, email };
+          return { id: '123', name: reqCtx.valid.req.body.name, email: reqCtx.valid.req.body.email };
         },
         {
           validation: {

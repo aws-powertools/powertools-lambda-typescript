@@ -2,6 +2,7 @@ import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   HandlerResponse,
   Middleware,
+  RequestContext,
   ValidatedRequest,
   ValidatedResponse,
   ValidationConfig,
@@ -24,8 +25,8 @@ export const createValidationMiddleware = <
   const resSchemas = config?.res;
 
   return async ({ reqCtx, next }) => {
-    // Initialize valid object
-    reqCtx.valid = {
+    // Initialize valid object with proper typing
+    (reqCtx as unknown as RequestContext<TReqBody, TResBody>).valid = {
       req: {} as ValidatedRequest<TReqBody>,
       res: {} as ValidatedResponse<TResBody>,
     };
@@ -48,20 +49,21 @@ export const createValidationMiddleware = <
           bodyData = await clonedRequest.text();
         }
 
-        reqCtx.valid.req.body = await validateRequest(reqSchemas.body, bodyData, 'body') as TReqBody;
+        const validatedBody = await validateRequest(reqSchemas.body, bodyData, 'body');
+        (reqCtx.valid!.req as ValidatedRequest<TReqBody>).body = validatedBody as TReqBody;
       }
       if (reqSchemas.headers) {
         const headers = Object.fromEntries(reqCtx.req.headers.entries());
-        reqCtx.valid.req.headers = await validateRequest(reqSchemas.headers, headers, 'headers') as Record<string, string>;
+        reqCtx.valid!.req.headers = await validateRequest(reqSchemas.headers, headers, 'headers') as Record<string, string>;
       }
       if (reqSchemas.path) {
-        reqCtx.valid.req.path = await validateRequest(reqSchemas.path, reqCtx.params, 'path') as Record<string, string>;
+        reqCtx.valid!.req.path = await validateRequest(reqSchemas.path, reqCtx.params, 'path') as Record<string, string>;
       }
       if (reqSchemas.query) {
         const query = Object.fromEntries(
           new URL(reqCtx.req.url).searchParams.entries()
         );
-        reqCtx.valid.req.query = await validateRequest(reqSchemas.query, query, 'query') as Record<string, string>;
+        reqCtx.valid!.req.query = await validateRequest(reqSchemas.query, query, 'query') as Record<string, string>;
       }
     }
 
@@ -79,12 +81,12 @@ export const createValidationMiddleware = <
           ? await clonedResponse.json()
           : await clonedResponse.text();
 
-        reqCtx.valid.res.body = await validateResponse(resSchemas.body, bodyData, 'body') as TResBody;
+        reqCtx.valid!.res.body = await validateResponse(resSchemas.body, bodyData, 'body') as TResBody;
       }
 
       if (resSchemas.headers) {
         const headers = Object.fromEntries(response.headers.entries());
-        reqCtx.valid.res.headers = await validateResponse(resSchemas.headers, headers, 'headers') as Record<string, string>;
+        reqCtx.valid!.res.headers = await validateResponse(resSchemas.headers, headers, 'headers') as Record<string, string>;
       }
     }
   };

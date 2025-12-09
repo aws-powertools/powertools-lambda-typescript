@@ -1,3 +1,4 @@
+<!-- markdownlint-disable-next-line MD013 -->
 # Powertools for AWS Lambda (TypeScript) - Idempotency Utility <!-- omit in toc -->
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement

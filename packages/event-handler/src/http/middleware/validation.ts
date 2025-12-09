@@ -31,91 +31,109 @@ export const createValidationMiddleware = <
       res: {} as ValidatedResponse<TResBody>,
     };
 
-    // Validate request
     if (reqSchemas) {
-      if (reqSchemas.body) {
-        const clonedRequest = reqCtx.req.clone();
-        const contentType = reqCtx.req.headers.get('content-type');
-        let bodyData: unknown;
-
-        if (contentType?.includes('application/json')) {
-          try {
-            bodyData = await clonedRequest.json();
-          } catch {
-            // If JSON parsing fails, get as text and let validator handle it
-            bodyData = await reqCtx.req.clone().text();
-          }
-        } else {
-          bodyData = await clonedRequest.text();
-        }
-
-        const validatedBody = await validateRequest(
-          reqSchemas.body,
-          bodyData,
-          'body'
-        );
-        (typedReqCtx.valid.req as ValidatedRequest<TReqBody>).body =
-          validatedBody as TReqBody;
-      }
-      if (reqSchemas.headers) {
-        const headers = Object.fromEntries(reqCtx.req.headers.entries());
-        typedReqCtx.valid.req.headers = (await validateRequest(
-          reqSchemas.headers,
-          headers,
-          'headers'
-        )) as Record<string, string>;
-      }
-      if (reqSchemas.path) {
-        typedReqCtx.valid.req.path = (await validateRequest(
-          reqSchemas.path,
-          reqCtx.params,
-          'path'
-        )) as Record<string, string>;
-      }
-      if (reqSchemas.query) {
-        const query = Object.fromEntries(
-          new URL(reqCtx.req.url).searchParams.entries()
-        );
-        typedReqCtx.valid.req.query = (await validateRequest(
-          reqSchemas.query,
-          query,
-          'query'
-        )) as Record<string, string>;
-      }
+      await validateRequestData(typedReqCtx, reqSchemas);
     }
 
-    // Execute handler
     await next();
 
-    // Validate response
     if (resSchemas) {
-      const response = reqCtx.res;
-
-      if (resSchemas.body && response.body) {
-        const clonedResponse = response.clone();
-        const contentType = response.headers.get('content-type');
-        const bodyData = contentType?.includes('application/json')
-          ? await clonedResponse.json()
-          : await clonedResponse.text();
-
-        typedReqCtx.valid.res.body = (await validateResponse(
-          resSchemas.body,
-          bodyData,
-          'body'
-        )) as TResBody;
-      }
-
-      if (resSchemas.headers) {
-        const headers = Object.fromEntries(response.headers.entries());
-        typedReqCtx.valid.res.headers = (await validateResponse(
-          resSchemas.headers,
-          headers,
-          'headers'
-        )) as Record<string, string>;
-      }
+      await validateResponseData(typedReqCtx, resSchemas);
     }
   };
 };
+
+async function validateRequestData<TReqBody>(
+  typedReqCtx: TypedRequestContext<TReqBody, HandlerResponse>,
+  reqSchemas: NonNullable<ValidationConfig<TReqBody, HandlerResponse>['req']>
+): Promise<void> {
+  if (reqSchemas.body) {
+    const bodyData = await extractRequestBody(typedReqCtx.req);
+    const validatedBody = await validateRequest(
+      reqSchemas.body,
+      bodyData,
+      'body'
+    );
+    typedReqCtx.valid.req.body = validatedBody as TReqBody;
+  }
+
+  if (reqSchemas.headers) {
+    const headers = Object.fromEntries(typedReqCtx.req.headers.entries());
+    typedReqCtx.valid.req.headers = (await validateRequest(
+      reqSchemas.headers,
+      headers,
+      'headers'
+    )) as Record<string, string>;
+  }
+
+  if (reqSchemas.path) {
+    typedReqCtx.valid.req.path = (await validateRequest(
+      reqSchemas.path,
+      typedReqCtx.params,
+      'path'
+    )) as Record<string, string>;
+  }
+
+  if (reqSchemas.query) {
+    const query = Object.fromEntries(
+      new URL(typedReqCtx.req.url).searchParams.entries()
+    );
+    typedReqCtx.valid.req.query = (await validateRequest(
+      reqSchemas.query,
+      query,
+      'query'
+    )) as Record<string, string>;
+  }
+}
+
+async function validateResponseData<TResBody extends HandlerResponse>(
+  typedReqCtx: TypedRequestContext<unknown, TResBody>,
+  resSchemas: NonNullable<ValidationConfig<unknown, TResBody>['res']>
+): Promise<void> {
+  const response = typedReqCtx.res;
+
+  if (resSchemas.body && response.body) {
+    const bodyData = await extractResponseBody(response);
+    typedReqCtx.valid.res.body = (await validateResponse(
+      resSchemas.body,
+      bodyData,
+      'body'
+    )) as TResBody;
+  }
+
+  if (resSchemas.headers) {
+    const headers = Object.fromEntries(response.headers.entries());
+    typedReqCtx.valid.res.headers = (await validateResponse(
+      resSchemas.headers,
+      headers,
+      'headers'
+    )) as Record<string, string>;
+  }
+}
+
+async function extractRequestBody(req: Request): Promise<unknown> {
+  const clonedRequest = req.clone();
+  const contentType = req.headers.get('content-type');
+
+  if (contentType?.includes('application/json')) {
+    try {
+      return await clonedRequest.json();
+    } catch {
+      return await req.clone().text();
+    }
+  }
+
+  return await clonedRequest.text();
+}
+
+async function extractResponseBody(response: Response): Promise<unknown> {
+  const clonedResponse = response.clone();
+  const contentType = response.headers.get('content-type');
+
+  return contentType?.includes('application/json')
+    ? await clonedResponse.json()
+    : await clonedResponse.text();
+}
 
 async function validateRequest(
   schema: StandardSchemaV1,

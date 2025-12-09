@@ -71,6 +71,19 @@ import {
   resolvePrefixedPath,
 } from './utils.js';
 
+type MiddlewareOrHandler<
+  TReqBody = never,
+  TResBody extends HandlerResponse = HandlerResponse,
+> = Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>;
+
+type HandlerOrOptions<
+  TReqBody = never,
+  TResBody extends HandlerResponse = HandlerResponse,
+> =
+  | RouteHandler
+  | TypedRouteHandler<TReqBody, TResBody>
+  | { validation: ValidationConfig<TReqBody, TResBody> };
+
 class Router {
   protected context: Record<string, unknown>;
 
@@ -589,14 +602,8 @@ class Router {
   >(
     method: HttpMethod,
     path: Path,
-    middlewareOrHandler?:
-      | Middleware[]
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>,
-    handlerOrOptions?:
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>
-      | { validation: ValidationConfig<TReqBody, TResBody> },
+    middlewareOrHandler?: MiddlewareOrHandler<TReqBody, TResBody>,
+    handlerOrOptions?: HandlerOrOptions<TReqBody, TResBody>,
     options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     // Case 1: method(path, [middleware], handler, { validation })
@@ -670,14 +677,8 @@ class Router {
     TResBody extends HandlerResponse = HandlerResponse,
   >(
     path: Path,
-    middlewareOrHandler?:
-      | Middleware[]
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>,
-    handlerOrOptions?:
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>
-      | { validation: ValidationConfig<TReqBody, TResBody> },
+    middlewareOrHandler?: MiddlewareOrHandler<TReqBody, TResBody>,
+    handlerOrOptions?: HandlerOrOptions<TReqBody, TResBody>,
     options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
@@ -719,14 +720,8 @@ class Router {
     TResBody extends HandlerResponse = HandlerResponse,
   >(
     path: Path,
-    middlewareOrHandler?:
-      | Middleware[]
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>,
-    handlerOrOptions?:
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>
-      | { validation: ValidationConfig<TReqBody, TResBody> },
+    middlewareOrHandler?: MiddlewareOrHandler<TReqBody, TResBody>,
+    handlerOrOptions?: HandlerOrOptions<TReqBody, TResBody>,
     options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
@@ -764,14 +759,8 @@ class Router {
     TResBody extends HandlerResponse = HandlerResponse,
   >(
     path: Path,
-    middlewareOrHandler?:
-      | Middleware[]
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>,
-    handlerOrOptions?:
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>
-      | { validation: ValidationConfig<TReqBody, TResBody> },
+    middlewareOrHandler?: MiddlewareOrHandler<TReqBody, TResBody>,
+    handlerOrOptions?: HandlerOrOptions<TReqBody, TResBody>,
     options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
@@ -813,14 +802,8 @@ class Router {
     TResBody extends HandlerResponse = HandlerResponse,
   >(
     path: Path,
-    middlewareOrHandler?:
-      | Middleware[]
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>,
-    handlerOrOptions?:
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>
-      | { validation: ValidationConfig<TReqBody, TResBody> },
+    middlewareOrHandler?: MiddlewareOrHandler<TReqBody, TResBody>,
+    handlerOrOptions?: HandlerOrOptions<TReqBody, TResBody>,
     options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
@@ -862,14 +845,8 @@ class Router {
     TResBody extends HandlerResponse = HandlerResponse,
   >(
     path: Path,
-    middlewareOrHandler?:
-      | Middleware[]
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>,
-    handlerOrOptions?:
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>
-      | { validation: ValidationConfig<TReqBody, TResBody> },
+    middlewareOrHandler?: MiddlewareOrHandler<TReqBody, TResBody>,
+    handlerOrOptions?: HandlerOrOptions<TReqBody, TResBody>,
     options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
@@ -911,14 +888,8 @@ class Router {
     TResBody extends HandlerResponse = HandlerResponse,
   >(
     path: Path,
-    middlewareOrHandler?:
-      | Middleware[]
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>,
-    handlerOrOptions?:
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>
-      | { validation: ValidationConfig<TReqBody, TResBody> },
+    middlewareOrHandler?: MiddlewareOrHandler<TReqBody, TResBody>,
+    handlerOrOptions?: HandlerOrOptions<TReqBody, TResBody>,
     options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(
@@ -960,14 +931,8 @@ class Router {
     TResBody extends HandlerResponse = HandlerResponse,
   >(
     path: Path,
-    middlewareOrHandler?:
-      | Middleware[]
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>,
-    handlerOrOptions?:
-      | RouteHandler
-      | TypedRouteHandler<TReqBody, TResBody>
-      | { validation: ValidationConfig<TReqBody, TResBody> },
+    middlewareOrHandler?: MiddlewareOrHandler<TReqBody, TResBody>,
+    handlerOrOptions?: HandlerOrOptions<TReqBody, TResBody>,
     options?: { validation: ValidationConfig<TReqBody, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod<TReqBody, TResBody>(

@@ -342,9 +342,9 @@ describe('Router Validation Integration', () => {
     const responseSchema = z.object({ name: z.string() });
     type ResponseType = z.infer<typeof responseSchema>;
 
-    //@ts-expect-error testing for validation failure
     app.get<never, ResponseType>(
       '/invalid',
+      //@ts-expect-error testing for validation failure
       () => {
         return new Response('{"name": "John"', {
           headers: {

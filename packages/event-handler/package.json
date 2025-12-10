@@ -147,18 +147,11 @@
     "@aws-lambda-powertools/commons": "2.31.0"
   },
   "peerDependencies": {
-    "@aws-lambda-powertools/tracer": ">=2.31.0"
-  },
-  "peerDependenciesMeta": {
-    "@aws-lambda-powertools/tracer": {
-      "optional": true
-    }
-  },
-  "peerDependencies": {
+    "@aws-lambda-powertools/tracer": ">=2.31.0",
     "@standard-schema/spec": "^1.0.0"
   },
   "peerDependenciesMeta": {
-    "@standard-schema/spec": {
+    "@aws-lambda-powertools/tracer": {
       "optional": true
     }
   },

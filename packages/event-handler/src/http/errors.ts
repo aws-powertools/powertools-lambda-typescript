@@ -1,4 +1,5 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import { isDevMode } from '@aws-lambda-powertools/commons/utils/env';
 import type { HttpStatusCode } from '../types/http.js';
 import { HttpStatusCodes } from './constants.js';
 
@@ -203,9 +204,8 @@ class RequestValidationError extends HttpError {
     public readonly originalError?: Error,
     details?: Record<string, unknown>
   ) {
-    const isDev = process.env.POWERTOOLS_DEV === 'true';
     const errorDetails =
-      isDev && originalError
+      isDevMode() && originalError
         ? { ...details, validationError: originalError.message }
         : details;
 
@@ -224,9 +224,8 @@ class ResponseValidationError extends HttpError {
     public readonly originalError?: Error,
     details?: Record<string, unknown>
   ) {
-    const isDev = process.env.POWERTOOLS_DEV === 'true';
     const errorDetails =
-      isDev && originalError
+      isDevMode() && originalError
         ? { ...details, validationError: originalError.message }
         : details;
 

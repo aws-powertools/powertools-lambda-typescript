@@ -48,41 +48,40 @@ async function validateRequestData<TReqBody>(
   reqSchemas: NonNullable<ValidationConfig<TReqBody, HandlerResponse>['req']>
 ): Promise<void> {
   if (reqSchemas.body) {
-    const bodyData = await extractRequestBody(typedReqCtx.req);
-    const validatedBody = await validateRequest(
+    const bodyData = await extractBody(typedReqCtx.req);
+    typedReqCtx.valid.req.body = await validateRequest<TReqBody>(
       reqSchemas.body,
       bodyData,
       'body'
     );
-    typedReqCtx.valid.req.body = validatedBody as TReqBody;
   }
 
   if (reqSchemas.headers) {
     const headers = Object.fromEntries(typedReqCtx.req.headers.entries());
-    typedReqCtx.valid.req.headers = (await validateRequest(
+    typedReqCtx.valid.req.headers = await validateRequest(
       reqSchemas.headers,
       headers,
       'headers'
-    )) as Record<string, string>;
+    );
   }
 
   if (reqSchemas.path) {
-    typedReqCtx.valid.req.path = (await validateRequest(
+    typedReqCtx.valid.req.path = await validateRequest(
       reqSchemas.path,
       typedReqCtx.params,
       'path'
-    )) as Record<string, string>;
+    );
   }
 
   if (reqSchemas.query) {
     const query = Object.fromEntries(
       new URL(typedReqCtx.req.url).searchParams.entries()
     );
-    typedReqCtx.valid.req.query = (await validateRequest(
+    typedReqCtx.valid.req.query = await validateRequest(
       reqSchemas.query,
       query,
       'query'
-    )) as Record<string, string>;
+    );
   }
 }
 
@@ -93,53 +92,65 @@ async function validateResponseData<TResBody extends HandlerResponse>(
   const response = typedReqCtx.res;
 
   if (resSchemas.body && response.body) {
-    const bodyData = await extractResponseBody(response);
-    typedReqCtx.valid.res.body = (await validateResponse(
+    const bodyData = await extractBody(response);
+    typedReqCtx.valid.res.body = await validateResponse<TResBody>(
       resSchemas.body,
       bodyData,
       'body'
-    )) as TResBody;
+    );
   }
 
   if (resSchemas.headers) {
     const headers = Object.fromEntries(response.headers.entries());
-    typedReqCtx.valid.res.headers = (await validateResponse(
+    typedReqCtx.valid.res.headers = await validateResponse(
       resSchemas.headers,
       headers,
       'headers'
-    )) as Record<string, string>;
+    );
   }
 }
 
-async function extractRequestBody(req: Request): Promise<unknown> {
-  const clonedRequest = req.clone();
-  const contentType = req.headers.get('content-type');
+async function extractBody(source: Request | Response): Promise<unknown> {
+  const cloned = source.clone();
+  const contentType = source.headers.get('content-type');
 
   if (contentType?.includes('application/json')) {
     try {
-      return await clonedRequest.json();
+      return await cloned.json();
     } catch {
-      return await req.clone().text();
+      if (source instanceof Request) {
+        throw new RequestValidationError(
+          'Validation failed for request body',
+          'body',
+          new Error('Invalid JSON')
+        );
+      }
+      throw new ResponseValidationError(
+        'Validation failed for response body',
+        'body',
+        new Error('Invalid JSON')
+      );
     }
   }
 
-  return await clonedRequest.text();
+  return await cloned.text();
 }
 
-async function extractResponseBody(response: Response): Promise<unknown> {
-  const clonedResponse = response.clone();
-  const contentType = response.headers.get('content-type');
-
-  return contentType?.includes('application/json')
-    ? await clonedResponse.json()
-    : await clonedResponse.text();
-}
-
+async function validateRequest<T>(
+  schema: StandardSchemaV1,
+  data: unknown,
+  component: 'body'
+): Promise<T>;
 async function validateRequest(
   schema: StandardSchemaV1,
   data: unknown,
+  component: 'headers' | 'path' | 'query'
+): Promise<Record<string, string>>;
+async function validateRequest<T>(
+  schema: StandardSchemaV1,
+  data: unknown,
   component: 'body' | 'headers' | 'path' | 'query'
-): Promise<unknown> {
+): Promise<T | Record<string, string>> {
   const result = await schema['~standard'].validate(data);
 
   if ('issues' in result) {
@@ -148,14 +159,24 @@ async function validateRequest(
     throw new RequestValidationError(message, component, error);
   }
 
-  return result.value;
+  return result.value as T | Record<string, string>;
 }
 
+async function validateResponse<T>(
+  schema: StandardSchemaV1,
+  data: unknown,
+  component: 'body'
+): Promise<T>;
 async function validateResponse(
   schema: StandardSchemaV1,
   data: unknown,
+  component: 'headers'
+): Promise<Record<string, string>>;
+async function validateResponse<T>(
+  schema: StandardSchemaV1,
+  data: unknown,
   component: 'body' | 'headers'
-): Promise<unknown> {
+): Promise<T | Record<string, string>> {
   const result = await schema['~standard'].validate(data);
 
   if ('issues' in result) {
@@ -164,5 +185,5 @@ async function validateResponse(
     throw new ResponseValidationError(message, component, error);
   }
 
-  return result.value;
+  return result.value as T | Record<string, string>;
 }

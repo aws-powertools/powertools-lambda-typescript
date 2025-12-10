@@ -121,14 +121,18 @@ async function extractBody(source: Request | Response): Promise<unknown> {
       if (source instanceof Request) {
         throw new RequestValidationError(
           'Validation failed for request body',
-          'body',
-          new Error('Invalid JSON')
+          [],
+          {
+            cause: new Error('Invalid JSON body'),
+          }
         );
       }
       throw new ResponseValidationError(
         'Validation failed for response body',
-        'body',
-        new Error('Invalid JSON')
+        [],
+        {
+          cause: new Error('Invalid JSON body'),
+        }
       );
     }
   }
@@ -155,8 +159,7 @@ async function validateRequest<T>(
 
   if ('issues' in result) {
     const message = `Validation failed for request ${component}`;
-    const error = new Error('Validation failed');
-    throw new RequestValidationError(message, component, error);
+    throw new RequestValidationError(message, result.issues);
   }
 
   return result.value as T | Record<string, string>;
@@ -181,8 +184,7 @@ async function validateResponse<T>(
 
   if ('issues' in result) {
     const message = `Validation failed for response ${component}`;
-    const error = new Error('Validation failed');
-    throw new ResponseValidationError(message, component, error);
+    throw new ResponseValidationError(message, result.issues);
   }
 
   return result.value as T | Record<string, string>;

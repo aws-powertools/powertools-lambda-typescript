@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   BadRequestError,
   ForbiddenError,
@@ -380,14 +380,6 @@ describe('HTTP Error Classes', () => {
   });
 
   describe('ResponseValidationError', () => {
-    beforeEach(() => {
-      delete process.env.POWERTOOLS_DEV;
-    });
-
-    afterEach(() => {
-      delete process.env.POWERTOOLS_DEV;
-    });
-
     it('creates error with correct statusCode', () => {
       const error = new ResponseValidationError(
         'Validation failed for response body'

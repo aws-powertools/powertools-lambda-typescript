@@ -23,11 +23,13 @@ import type {
   ErrorConstructor,
   ErrorHandler,
   ErrorResolveOptions,
+  HandlerOrOptions,
   HttpMethod,
   HttpResolveOptions,
   HttpRouteOptions,
   HttpRouterOptions,
   Middleware,
+  MiddlewareOrHandler,
   Path,
   RequestContext,
   ResolveStreamOptions,
@@ -70,19 +72,6 @@ import {
   isExtendedAPIGatewayProxyResult,
   resolvePrefixedPath,
 } from './utils.js';
-
-type MiddlewareOrHandler<
-  TReqBody = never,
-  TResBody extends HandlerResponse = HandlerResponse,
-> = Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>;
-
-type HandlerOrOptions<
-  TReqBody = never,
-  TResBody extends HandlerResponse = HandlerResponse,
-> =
-  | RouteHandler
-  | TypedRouteHandler<TReqBody, TResBody>
-  | { validation: ValidationConfig<TReqBody, TResBody> };
 
 class Router {
   protected context: Record<string, unknown>;

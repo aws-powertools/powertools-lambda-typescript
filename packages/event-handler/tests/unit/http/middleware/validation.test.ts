@@ -1,10 +1,10 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { HttpStatusCodes, Router } from '../../../../src/http/index.js';
+import { Router } from '../../../../src/http/index.js';
 import { createTestEvent } from '../helpers.js';
 
-describe('Validation Middleware', () => {
+describe('Router Validation Integration', () => {
   let app: Router;
 
   beforeEach(() => {
@@ -13,57 +13,135 @@ describe('Validation Middleware', () => {
 
   it('validates request body successfully', async () => {
     // Prepare
-    const bodySchema = z.object({ name: z.string() });
-    const validateSpy = vi.spyOn(bodySchema['~standard'], 'validate');
-    app.post('/users', async () => ({}), {
-      validation: { req: { body: bodySchema } },
+    const requestBodySchema = z.object({ name: z.string() });
+    type RequestBodyType = z.infer<typeof requestBodySchema>;
+
+    app.post<RequestBodyType>(
+      '/users',
+      (reqCtx) => {
+        const { name } = reqCtx.valid.req.body;
+        return { statusCode: 201, body: `Created ${name}` };
+      },
+      {
+        validation: { req: { body: requestBodySchema } },
+      }
+    );
+
+    const event = createTestEvent('/users', 'POST', {
+      'content-type': 'application/json',
     });
-    const event = {
-      ...createTestEvent('/users', 'POST', {
-        'content-type': 'application/json',
-      }),
-      body: JSON.stringify({ name: 'John' }),
-    };
+    event.body = JSON.stringify({ name: 'John' });
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({ name: 'John' });
+    expect(result.statusCode).toBe(201);
+    expect(result.body).toBe('Created John');
   });
 
   it('returns 422 on request body validation failure', async () => {
     // Prepare
-    const bodySchema = z.object({ name: z.string() });
-    const validateSpy = vi.spyOn(bodySchema['~standard'], 'validate');
-    app.post('/users', async () => ({}), {
-      validation: { req: { body: bodySchema } },
+    const requestBodySchema = z.object({ name: z.string() });
+    type RequestBodyType = z.infer<typeof requestBodySchema>;
+
+    app.post<RequestBodyType>(
+      '/users',
+      () => ({ statusCode: 201, body: 'Created' }),
+      {
+        validation: { req: { body: requestBodySchema } },
+      }
+    );
+
+    const event = createTestEvent('/users', 'POST', {
+      'content-type': 'application/json',
     });
-    const event = {
-      ...createTestEvent('/users', 'POST', {
-        'content-type': 'application/json',
-      }),
-      body: JSON.stringify({ invalid: 'data' }),
-    };
+    event.body = JSON.stringify({ invalid: 'data' });
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.UNPROCESSABLE_ENTITY);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({ invalid: 'data' });
+    expect(result.statusCode).toBe(422);
     const body = JSON.parse(result.body);
     expect(body.error).toBe('RequestValidationError');
+  });
+
+  it('validates request body successfully when it is non-JSON', async () => {
+    // Prepare
+    const requestBodySchema = z.string();
+    type RequestBodyType = z.infer<typeof requestBodySchema>;
+
+    app.post<RequestBodyType>(
+      '/users',
+      (reqCtx) => {
+        const name = reqCtx.valid.req.body;
+        return { statusCode: 201, body: `Created ${name}` };
+      },
+      {
+        validation: { req: { body: requestBodySchema } },
+      }
+    );
+
+    const event = createTestEvent('/users', 'POST', {
+      'content-type': 'text/plain',
+    });
+    event.body = 'John';
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(201);
+    expect(result.body).toBe('Created John');
+  });
+
+  it('returns 422 when the request is a malformed JSON', async () => {
+    // Prepare
+    const requestBodySchema = z.object({
+      name: z.string(),
+    });
+    type RequestBodyType = z.infer<typeof requestBodySchema>;
+
+    app.post<RequestBodyType>(
+      '/users',
+      (reqCtx) => {
+        const name = reqCtx.valid.req.body;
+        return { statusCode: 201, body: `Created ${name}` };
+      },
+      {
+        validation: { req: { body: requestBodySchema } },
+      }
+    );
+
+    const event = createTestEvent('/users', 'POST', {
+      'Content-Type': 'application/json',
+    });
+    event.body = "{'name': 'John'";
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(422);
+    expect(result.body).toContain('RequestValidationError');
   });
 
   it('validates request headers successfully', async () => {
     // Prepare
     const headerSchema = z.object({ 'x-api-key': z.string() });
-    const validateSpy = vi.spyOn(headerSchema['~standard'], 'validate');
-    app.get('/protected', async () => ({}), {
-      validation: { req: { headers: headerSchema } },
-    });
+
+    app.get(
+      '/protected',
+      (reqCtx) => {
+        const apiKey = reqCtx.valid.req.headers['x-api-key'];
+        return { statusCode: 200, body: `Authenticated with ${apiKey}` };
+      },
+      {
+        validation: { req: { headers: headerSchema } },
+      }
+    );
+
     const event = createTestEvent('/protected', 'GET', {
       'x-api-key': 'test-key',
     });
@@ -72,320 +150,339 @@ describe('Validation Middleware', () => {
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(validateSpy).toHaveBeenCalledOnce();
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toBe('Authenticated with test-key');
   });
 
   it('returns 422 on request headers validation failure', async () => {
     // Prepare
     const headerSchema = z.object({ 'x-api-key': z.string() });
-    const validateSpy = vi.spyOn(headerSchema['~standard'], 'validate');
-    app.get('/protected', async () => ({}), {
+
+    app.get('/protected', () => ({ statusCode: 200, body: 'OK' }), {
       validation: { req: { headers: headerSchema } },
     });
+
     const event = createTestEvent('/protected', 'GET', {});
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.UNPROCESSABLE_ENTITY);
-    expect(validateSpy).toHaveBeenCalledOnce();
+    expect(result.statusCode).toBe(422);
   });
 
   it('validates path parameters successfully', async () => {
     // Prepare
     const pathSchema = z.object({ id: z.string() });
-    const validateSpy = vi.spyOn(pathSchema['~standard'], 'validate');
-    app.get('/users/:id', async (reqCtx) => ({ id: reqCtx.params.id }), {
-      validation: { req: { path: pathSchema } },
-    });
-    const event = {
-      ...createTestEvent('/users/123', 'GET'),
-      pathParameters: { id: '123' },
-    };
+
+    app.get(
+      '/users/:id',
+      (reqCtx) => {
+        const { id } = reqCtx.valid.req.path;
+        return { id, validated: true };
+      },
+      {
+        validation: { req: { path: pathSchema } },
+      }
+    );
+
+    const event = createTestEvent('/users/123', 'GET', {});
+    event.pathParameters = { id: '123' };
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({ id: '123' });
+    expect(result.statusCode).toBe(200);
+    const body = JSON.parse(result.body);
+    expect(body.id).toBe('123');
+    expect(body.validated).toBe(true);
   });
 
   it('returns 422 on path parameters validation failure', async () => {
     // Prepare
     const pathSchema = z.object({ id: z.string().uuid() });
-    const validateSpy = vi.spyOn(pathSchema['~standard'], 'validate');
-    app.get('/users/:id', async () => ({}), {
+
+    app.get('/users/:id', () => ({ body: { id: '123' } }), {
       validation: { req: { path: pathSchema } },
     });
-    const event = {
-      ...createTestEvent('/users/123', 'GET'),
-      pathParameters: { id: '123' },
-    };
+
+    const event = createTestEvent('/users/123', 'GET', {});
+    event.pathParameters = { id: '123' };
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.UNPROCESSABLE_ENTITY);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({ id: '123' });
+    expect(result.statusCode).toBe(422);
   });
 
   it('validates query parameters successfully', async () => {
     // Prepare
     const querySchema = z.object({ page: z.string(), limit: z.string() });
-    const validateSpy = vi.spyOn(querySchema['~standard'], 'validate');
-    app.get('/users', async () => ({ users: [] }), {
-      validation: { req: { query: querySchema } },
-    });
-    const event = {
-      ...createTestEvent('/users', 'GET'),
-      queryStringParameters: { page: '1', limit: '10' },
-    };
+
+    app.get(
+      '/users',
+      (reqCtx) => {
+        const { page, limit } = reqCtx.valid.req.query;
+        return {
+          users: [],
+          page: Number.parseInt(page, 10),
+          limit: Number.parseInt(limit, 10),
+        };
+      },
+      {
+        validation: { req: { query: querySchema } },
+      }
+    );
+
+    const event = createTestEvent('/users', 'GET', {});
+    event.queryStringParameters = { page: '1', limit: '10' };
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({
-      page: '1',
-      limit: '10',
-    });
+    expect(result.statusCode).toBe(200);
+    const body = JSON.parse(result.body);
+    expect(body.page).toBe(1);
+    expect(body.limit).toBe(10);
   });
 
   it('returns 422 on query parameters validation failure', async () => {
     // Prepare
-    const querySchema = z.object({
-      page: z.string(),
-      limit: z.string(),
-    });
-    const validateSpy = vi.spyOn(querySchema['~standard'], 'validate');
-    app.get('/users', async () => ({ users: [] }), {
+    const querySchema = z.object({ page: z.string(), limit: z.string() });
+
+    app.get('/users', () => ({ body: { users: [] } }), {
       validation: { req: { query: querySchema } },
     });
-    const event = {
-      ...createTestEvent('/users', 'GET'),
-      queryStringParameters: { page: '1' },
-    };
+
+    const event = createTestEvent('/users', 'GET', {});
+    event.queryStringParameters = { page: '1' };
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.UNPROCESSABLE_ENTITY);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({ page: '1' });
-  });
-
-  it('skips validation when no config provided', async () => {
-    // Prepare
-    app.get('/test', async () => ({ body: 'test' }));
-    const event = createTestEvent('/test', 'GET');
-
-    // Act
-    const result = await app.resolve(event, context);
-
-    // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.OK);
-  });
-
-  it('applies validation only to configured routes', async () => {
-    // Prepare
-    const bodySchema = z.object({ name: z.string() });
-    const validateSpy = vi.spyOn(bodySchema['~standard'], 'validate');
-    app.post('/validated', async () => ({}), {
-      validation: { req: { body: bodySchema } },
-    });
-    app.post('/unvalidated', async () => ({}));
-    const validatedEvent = {
-      ...createTestEvent('/validated', 'POST', {
-        'content-type': 'application/json',
-      }),
-      body: JSON.stringify({ invalid: 'data' }),
-    };
-    const unvalidatedEvent = {
-      ...createTestEvent('/unvalidated', 'POST', {
-        'content-type': 'application/json',
-      }),
-      body: JSON.stringify({ data: 'test' }),
-    };
-
-    // Act
-    const validatedResult = await app.resolve(validatedEvent, context);
-    const unvalidatedResult = await app.resolve(unvalidatedEvent, context);
-
-    // Assess
-    expect(validatedResult.statusCode).toBe(
-      HttpStatusCodes.UNPROCESSABLE_ENTITY
-    );
-    expect(unvalidatedResult.statusCode).toBe(HttpStatusCodes.OK);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({ invalid: 'data' });
-  });
-
-  it('handles invalid JSON in request body', async () => {
-    // Prepare
-    const bodySchema = z.object({ name: z.string() });
-    const validateSpy = vi.spyOn(bodySchema['~standard'], 'validate');
-    app.post('/users', async () => ({}), {
-      validation: { req: { body: bodySchema } },
-    });
-    const event = {
-      ...createTestEvent('/users', 'POST', {
-        'content-type': 'application/json',
-      }),
-      body: 'invalid json{',
-    };
-
-    // Act
-    const result = await app.resolve(event, context);
-
-    // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.UNPROCESSABLE_ENTITY);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith('invalid json{');
+    expect(result.statusCode).toBe(422);
   });
 
   it('validates response body successfully', async () => {
     // Prepare
     const responseSchema = z.object({ id: z.string(), name: z.string() });
-    const validateSpy = vi.spyOn(responseSchema['~standard'], 'validate');
-    app.get('/users/:id', async () => ({ id: '123', name: 'John' }), {
+    type ResponseType = z.infer<typeof responseSchema>;
+
+    app.get<never, ResponseType>(
+      '/users/:id',
+      () => {
+        return { id: '123', name: 'John' };
+      },
+      {
+        validation: { res: { body: responseSchema } },
+      }
+    );
+
+    const event = createTestEvent('/users/123', 'GET', {});
+    event.pathParameters = { id: '123' };
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+  });
+
+  it('returns 500 on response body validation failure', async () => {
+    // Prepare
+    const responseSchema = z.object({ id: z.string(), name: z.string() });
+    type ResponseType = z.infer<typeof responseSchema>;
+
+    //@ts-expect-error testing for validation failure
+    app.get<never, ResponseType>('/users/:id', () => ({ id: '123' }), {
       validation: { res: { body: responseSchema } },
     });
-    const event = {
-      ...createTestEvent('/users/123', 'GET'),
-      pathParameters: { id: '123' },
-    };
+
+    const event = createTestEvent('/users/123', 'GET', {});
+    event.pathParameters = { id: '123' };
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({
-      id: '123',
-      name: 'John',
-    });
+    expect(result.statusCode).toBe(500);
   });
 
-  it('validates response headers successfully', async () => {
+  it('validates response body successfully when it is non-JSON', async () => {
     // Prepare
-    const responseSchema = z.object({ 'content-type': z.string() });
-    const validateSpy = vi.spyOn(responseSchema['~standard'], 'validate');
-    app.get('/test', async () => ({ body: 'test' }), {
-      validation: { res: { headers: responseSchema } },
-    });
-    const event = createTestEvent('/test', 'GET');
+    const responseBodySchema = z.string();
+    type ResponseBodyType = z.infer<typeof responseBodySchema>;
 
-    // Act
-    const result = await app.resolve(event, context);
-
-    // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(validateSpy).toHaveBeenCalledOnce();
-  });
-
-  it('validates non-JSON response body successfully', async () => {
-    // Prepare
-    const responseSchema = z.string();
-    const validateSpy = vi.spyOn(responseSchema['~standard'], 'validate');
-    app.get(
-      '/text',
+    app.post<never, ResponseBodyType>(
+      '/users',
       () => {
-        return new Response('plain text', {
-          headers: { 'content-type': 'text/plain' },
+        return 'Plain text response';
+      },
+      {
+        validation: { res: { body: responseBodySchema } },
+      }
+    );
+
+    const event = createTestEvent('/users', 'POST');
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toBe('"Plain text response"');
+  });
+
+  it('returns 500 when the response is an invalid JSON', async () => {
+    // Prepare
+    const responseSchema = z.object({ name: z.string() });
+    type ResponseType = z.infer<typeof responseSchema>;
+
+    //@ts-expect-error testing for validation failure
+    app.get<never, ResponseType>(
+      '/invalid',
+      () => {
+        return new Response('{"name": "John"', {
+          headers: {
+            'content-type': 'application/json',
+          },
         });
       },
       {
         validation: { res: { body: responseSchema } },
       }
     );
-    const event = createTestEvent('/text', 'GET');
+
+    const event = createTestEvent('/invalid', 'GET');
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith('plain text');
+    expect(result.statusCode).toBe(500);
   });
 
-  it('returns 500 on response body validation failure', async () => {
+  it('validates response headers successfully', async () => {
     // Prepare
-    const responseSchema = z.object({ id: z.string(), name: z.string() });
-    const validateSpy = vi.spyOn(responseSchema['~standard'], 'validate');
-    app.get('/users/:id', async () => ({ id: '123' }), {
-      validation: { res: { body: responseSchema } },
-    });
-    const event = {
-      ...createTestEvent('/users/123', 'GET'),
-      pathParameters: { id: '123' },
-    };
+    const responseHeaderSchema = z.object({ 'x-custom-header': z.string() });
+
+    app.get(
+      '/test',
+      () => {
+        return new Response('OK', {
+          headers: { 'x-custom-header': 'test-value' },
+        });
+      },
+      {
+        validation: { res: { headers: responseHeaderSchema } },
+      }
+    );
+
+    const event = createTestEvent('/test', 'GET', {});
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
-    expect(validateSpy).toHaveBeenCalledExactlyOnceWith({ id: '123' });
-    const body = JSON.parse(result.body);
-    expect(body.error).toBe('ResponseValidationError');
+    expect(result.statusCode).toBe(200);
+  });
+
+  it('returns 500 on response headers validation failure', async () => {
+    // Prepare
+    const responseHeaderSchema = z.object({ 'x-required': z.string() });
+
+    app.get(
+      '/test',
+      () => {
+        return new Response('OK', {
+          headers: { 'x-other': 'value' },
+        });
+      },
+      {
+        validation: { res: { headers: responseHeaderSchema } },
+      }
+    );
+
+    const event = createTestEvent('/test', 'GET', {});
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(500);
   });
 
   it('validates both request and response', async () => {
     // Prepare
-    const requestSchema = z.object({ name: z.string() });
-    const responseSchema = z.object({ id: z.string(), name: z.string() });
-    const requestValidateSpy = vi.spyOn(requestSchema['~standard'], 'validate');
-    const responseValidateSpy = vi.spyOn(
-      responseSchema['~standard'],
-      'validate'
-    );
-    app.post('/users', async () => ({ id: '123', name: 'John' }), {
-      validation: {
-        req: { body: requestSchema },
-        res: { body: responseSchema },
-      },
+    const requestSchema = z.object({ name: z.string(), email: z.string() });
+    const responseSchema = z.object({
+      id: z.string(),
+      name: z.string(),
+      email: z.string(),
     });
-    const event = {
-      ...createTestEvent('/users', 'POST', {
-        'content-type': 'application/json',
-      }),
-      body: JSON.stringify({ name: 'John' }),
-    };
+    type RequestType = z.infer<typeof requestSchema>;
+    type ResponseType = z.infer<typeof responseSchema>;
+
+    app.post<RequestType, ResponseType>(
+      '/users',
+      (reqCtx) => {
+        const { name, email } = reqCtx.valid.req.body;
+        return { id: '123', name, email };
+      },
+      {
+        validation: {
+          req: { body: requestSchema },
+          res: { body: responseSchema },
+        },
+      }
+    );
+
+    const event = createTestEvent('/users', 'POST', {
+      'content-type': 'application/json',
+    });
+    event.body = JSON.stringify({ name: 'John', email: 'john@example.com' });
 
     // Act
     const result = await app.resolve(event, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.OK);
-    expect(requestValidateSpy).toHaveBeenCalledExactlyOnceWith({
-      name: 'John',
-    });
-    expect(responseValidateSpy).toHaveBeenCalledExactlyOnceWith({
-      id: '123',
-      name: 'John',
-    });
+    expect(result.statusCode).toBe(200);
+    const body = JSON.parse(result.body);
+    expect(body.name).toBe('John');
+    expect(body.email).toBe('john@example.com');
   });
 
-  it('validates non-JSON request body (text/plain)', async () => {
+  it('applies validation only to configured routes', async () => {
     // Prepare
-    const textSchema = z.string();
-    app.post('/text', async () => ({ statusCode: 200, body: 'OK' }), {
-      validation: { req: { body: textSchema } },
+    const bodySchema = z.object({ name: z.string() });
+    type BodyType = z.infer<typeof bodySchema>;
+
+    app.post<BodyType>('/validated', () => ({ statusCode: 201 }), {
+      validation: { req: { body: bodySchema } },
     });
-    const event = {
-      ...createTestEvent('/text', 'POST', {
-        'content-type': 'text/plain',
-      }),
-      body: 'plain text content',
-    };
+
+    app.post('/unvalidated', () => ({ statusCode: 201 }));
+
+    const validatedEvent = createTestEvent('/validated', 'POST', {
+      'content-type': 'application/json',
+    });
+    validatedEvent.body = JSON.stringify({ data: 'test' });
+
+    const unvalidatedEvent = createTestEvent('/unvalidated', 'POST', {
+      'content-type': 'application/json',
+    });
+    unvalidatedEvent.body = JSON.stringify({ data: 'test' });
 
     // Act
-    const result = await app.resolve(event, context);
+    const validatedResult = await app.resolve(validatedEvent, context);
+    const unvalidatedResult = await app.resolve(unvalidatedEvent, context);
 
     // Assess
-    expect(result.statusCode).toBe(HttpStatusCodes.OK);
+    expect(validatedResult.statusCode).toBe(422);
+    expect(unvalidatedResult.statusCode).toBe(200);
   });
 });

@@ -362,6 +362,25 @@ type ValidationErrorDetail = {
   message: string;
 };
 
+/**
+ * Union type for middleware array or route handler
+ */
+type MiddlewareOrHandler<
+  TReqBody = never,
+  TResBody extends HandlerResponse = HandlerResponse,
+> = Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>;
+
+/**
+ * Union type for route handler or validation options
+ */
+type HandlerOrOptions<
+  TReqBody = never,
+  TResBody extends HandlerResponse = HandlerResponse,
+> =
+  | RouteHandler
+  | TypedRouteHandler<TReqBody, TResBody>
+  | { validation: ValidationConfig<TReqBody, TResBody> };
+
 export type {
   BinaryResult,
   ExtendedAPIGatewayProxyResult,
@@ -403,4 +422,6 @@ export type {
   ValidatedRequest,
   ValidatedResponse,
   TypedRouteHandler,
+  MiddlewareOrHandler,
+  HandlerOrOptions,
 };

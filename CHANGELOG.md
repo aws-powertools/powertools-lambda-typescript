@@ -1,5 +1,31 @@
 # Change Log
 
+## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
+
+### Maintenance
+
+- **commons** bump @aws/lambda-invoke-store from 0.2.1 to 0.2.2 ([#4847](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4847)) ([47c6545](https://github.com/aws-powertools/powertools-lambda-typescript/commit/47c6545953d68dd2933123ea31197f2e608cf501))
+- **logger** bump @aws/lambda-invoke-store from 0.2.1 to 0.2.2 ([#4847](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4847)) ([47c6545](https://github.com/aws-powertools/powertools-lambda-typescript/commit/47c6545953d68dd2933123ea31197f2e608cf501))
+- **metrics** bump @aws/lambda-invoke-store from 0.2.1 to 0.2.2 ([#4847](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4847)) ([47c6545](https://github.com/aws-powertools/powertools-lambda-typescript/commit/47c6545953d68dd2933123ea31197f2e608cf501))
+- **batch** bump @aws/lambda-invoke-store from 0.2.1 to 0.2.2 ([#4847](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4847)) ([47c6545](https://github.com/aws-powertools/powertools-lambda-typescript/commit/47c6545953d68dd2933123ea31197f2e608cf501))
+- **event-handler** export types for event handler middleware ([#4807](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4807)) ([c46974c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c46974c67b0d061b6cf873c0f756553bf25f20d4))
+
+### Bug Fixes
+
+- **commons** revert @aws/lambda-invoke-store to dependency ([#4833](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4833)) ([5e728e1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5e728e1669c5a3fa6c8912b206e85d400c89ee40))
+- **logger** merged temp keys with same keys when appending to the logger  ([#4840](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4840)) ([b30c9c4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b30c9c458afeff79cccb6cbd7d16466c07a39455))
+- **logger** revert @aws/lambda-invoke-store to dependency ([#4833](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4833)) ([5e728e1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5e728e1669c5a3fa6c8912b206e85d400c89ee40))
+- **metrics** revert @aws/lambda-invoke-store to dependency ([#4833](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4833)) ([5e728e1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5e728e1669c5a3fa6c8912b206e85d400c89ee40))
+- **idempotency** Update durableExecutionMode string ([#4837](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4837)) ([919c26d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/919c26dc8a09a3ce2af42e6d68728710e21afd38))
+- **batch** revert @aws/lambda-invoke-store to dependency ([#4833](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4833)) ([5e728e1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5e728e1669c5a3fa6c8912b206e85d400c89ee40))
+- **event-handler** threshold limit for compression not respected when content-length not set ([#4827](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4827)) ([ad14e18](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ad14e183329801c3a866b08c6e31e722e5eb902e))
+
+### Features
+
+- **idempotency** Allow durable function to replay ([#4834](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4834)) ([4dc0798](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4dc079824b57a3f6f4577e03905e3a02d055f009))
+- **parser** fix DynamoDBStreamChangeRecordSchema.dynamodb type  ([#4817](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4817)) ([bf522f8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/bf522f8af15e0d66f0dac6bd14e08d16c6b8a3b9))
+
+
 ## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
 
 ### Improvements

@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
+
+### Bug Fixes
+
+- Update durableExecutionMode string ([#4837](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4837)) ([919c26d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/919c26dc8a09a3ce2af42e6d68728710e21afd38))
+
+### Features
+
+- Allow durable function to replay ([#4834](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4834)) ([4dc0798](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4dc079824b57a3f6f4577e03905e3a02d055f009))
 ## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
 
 **Note:** Version bump only for this package

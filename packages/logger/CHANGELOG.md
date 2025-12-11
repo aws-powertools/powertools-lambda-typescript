@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
+
+### Maintenance
+
+- bump @aws/lambda-invoke-store from 0.2.1 to 0.2.2 ([#4847](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4847)) ([47c6545](https://github.com/aws-powertools/powertools-lambda-typescript/commit/47c6545953d68dd2933123ea31197f2e608cf501))
+
+### Bug Fixes
+
+- merged temp keys with same keys when appending to the logger  ([#4840](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4840)) ([b30c9c4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b30c9c458afeff79cccb6cbd7d16466c07a39455))
+- revert @aws/lambda-invoke-store to dependency ([#4833](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4833)) ([5e728e1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5e728e1669c5a3fa6c8912b206e85d400c89ee40))
 ## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
 
 ### Bug Fixes

@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
+
+### Bug Fixes
+
+- threshold limit for compression not respected when content-length not set ([#4827](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4827)) ([ad14e18](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ad14e183329801c3a866b08c6e31e722e5eb902e))
+
+### Maintenance
+
+- export types for event handler middleware ([#4807](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4807)) ([c46974c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c46974c67b0d061b6cf873c0f756553bf25f20d4))
 ## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
 
 ### Maintenance

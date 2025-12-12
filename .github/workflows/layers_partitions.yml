@@ -2,7 +2,7 @@
 # ---
 # This workflow publishes a specific layer version in an AWS account based on the partition input.
 #
-# We pull the version of the layer and store them as artifacts, the we upload them to each of the Partitioned AWS accounts.
+# We pull the version of the layer and store them as artifacts, then we upload them to each of the Partitioned AWS accounts.
 #
 # A number of safety checks are performed to ensure safety.
 #
@@ -112,10 +112,11 @@ jobs:
     with:
       environment: Gamma
       partition: ${{ inputs.partition }}
+      arn_partition: ${{ needs.setup.outputs.partition }}
       regions: ${{ needs.setup.outputs.regions }}
       aud: ${{ needs.setup.outputs.aud }}
     secrets: inherit
-  # Copies the Layer to the Gamma Environment in the selected partition
+  # Copies the Layer to the Prod Environment in the selected partition
   deploy-prod:
     name: Deploy Prod Layer
     needs: [setup, download, deploy-gamma]
@@ -123,6 +124,7 @@ jobs:
     with:
       environment: Prod
       partition: ${{ inputs.partition }}
+      arn_partition: ${{ needs.setup.outputs.partition }}
       regions: ${{ needs.setup.outputs.regions }}
       aud: ${{ needs.setup.outputs.aud }}
     secrets: inherit

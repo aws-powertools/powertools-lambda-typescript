@@ -1,0 +1,121 @@
+name: Copy Layer
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      partition:
+        required: true
+        type: string
+      arn_partition:
+        required: true
+        type: string
+      regions:
+        required: true
+        type: string
+      aud:
+        required: true
+        type: string
+
+jobs:
+  # This job deploys the layer to all regions in the target partition using a matrix strategy. It performs integrity checks, publishes the layer, sets public permissions, and validates deployment.
+  deploy:
+    name: Deploy ${{ inputs.partition }} - ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    environment: ${{ inputs.partition }} ${{ inputs.environment }}
+    strategy:
+      matrix:
+        region: ${{ fromJson(inputs.regions) }}
+    steps:
+      - name: Download Zip
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: AWSLambdaPowertoolsTypeScriptV2.zip
+      
+      - name: Download Metadata
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: AWSLambdaPowertoolsTypeScriptV2.json
+      
+      - name: Verify Layer Signature
+        run: |
+          SHA=$(jq -r '.Content.CodeSha256' 'AWSLambdaPowertoolsTypeScriptV2.json')
+          test "$(openssl dgst -sha256 -binary AWSLambdaPowertoolsTypeScriptV2.zip | openssl enc -base64)" == "$SHA" && echo "SHA OK: ${SHA}" || exit 1
+      
+      - id: transform
+        run: |
+          echo 'CONVERTED_REGION=${{ matrix.region }}' | tr 'a-z\-' 'A-Z_' >> "$GITHUB_OUTPUT"
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          role-to-assume: ${{ secrets[format('IAM_ROLE_{0}', steps.transform.outputs.CONVERTED_REGION)] }}
+          aws-region: ${{ matrix.region }}
+          mask-aws-account-id: true
+          audience: ${{ inputs.aud }}
+      
+      - name: Create Layer
+        id: create-layer
+        run: |
+          set -euo pipefail
+          cat AWSLambdaPowertoolsTypeScriptV2.json | jq '{"LayerName": "AWSLambdaPowertoolsTypeScriptV2", "Description": .Description, "CompatibleRuntimes": .CompatibleRuntimes, "LicenseInfo": .LicenseInfo}' > input.json
+          
+          LAYER_VERSION=$(aws --region "${{ matrix.region }}" lambda publish-layer-version \
+            --zip-file fileb://./AWSLambdaPowertoolsTypeScriptV2.zip \
+            --cli-input-json file://./input.json \
+            --query 'Version' \
+            --output text)
+          
+          echo "LAYER_VERSION=$LAYER_VERSION" >> "$GITHUB_OUTPUT"
+          
+          aws --region "${{ matrix.region }}" lambda add-layer-version-permission \
+            --layer-name 'AWSLambdaPowertoolsTypeScriptV2' \
+            --statement-id 'PublicLayer' \
+            --action lambda:GetLayerVersion \
+            --principal '*' \
+            --version-number "$LAYER_VERSION"
+      
+      # This step retrieves the newly deployed layer metadata and compares it against the original source layer:
+      # 1. SHA256 hash verification - ensures the layer content is identical to the source
+      # 2. Description validation - confirms the version number in the description matches the source
+      # 3. Layer Version number verification - validates that the layer version numbers match between source and target
+      # 4. Tabular comparison output - displays side-by-side comparison of key layer properties
+      - name: Verify Layer
+        env:
+          LAYER_VERSION: ${{ steps.create-layer.outputs.LAYER_VERSION }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          PARTITION: ${{ inputs.arn_partition }}
+        run: |
+          set -euo pipefail
+          export layer_output="AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json"
+          # Dynamic secret access is safe here - secrets are scoped per environment
+          aws --region "${{ matrix.region }}" lambda get-layer-version-by-arn --arn "arn:${PARTITION}:lambda:${{ matrix.region }}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${LAYER_VERSION}" > "$layer_output"
+          
+          REMOTE_SHA=$(jq -r '.Content.CodeSha256' "$layer_output")
+          LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)
+          test "$REMOTE_SHA" == "$LOCAL_SHA" && echo "SHA OK: ${LOCAL_SHA}" || exit 1
+          
+          REMOTE_DESCRIPTION=$(jq -r '.Description' "$layer_output")
+          LOCAL_DESCRIPTION=$(jq -r '.Description' AWSLambdaPowertoolsTypeScriptV2.json)
+          test "$REMOTE_DESCRIPTION" == "$LOCAL_DESCRIPTION" && echo "Description OK: ${LOCAL_DESCRIPTION}" || exit 1
+          
+          if [ "$ENVIRONMENT" == "Prod" ]; then
+            REMOTE_LAYER_VERSION=$(jq -r '.LayerVersionArn' "$layer_output" | sed 's/.*://')
+            LOCAL_LAYER_VERSION=$(jq -r '.LayerVersionArn' AWSLambdaPowertoolsTypeScriptV2.json | sed 's/.*://')
+            test "$REMOTE_LAYER_VERSION" == "$LOCAL_LAYER_VERSION" && echo "Layer Version number OK: ${LOCAL_LAYER_VERSION}" || exit 1
+          fi
+          
+          jq -s -r '["Layer Arn", "Runtimes", "Version", "Description", "SHA256"], ([.[0], .[1]] | .[] | [.LayerArn, (.CompatibleRuntimes | join("/")), .Version, .Description, .Content.CodeSha256]) |@tsv' AWSLambdaPowertoolsTypeScriptV2.json "$layer_output" | column -t -s $'\t'
+
+      - name: Store Metadata - ${{ matrix.region }}
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json
+          path: AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json
+          retention-days: 1
+          if-no-files-found: error

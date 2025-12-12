@@ -1,8 +1,8 @@
 # Partitioned Layer Publish
 # ---
-# This workflow publishes a specific layer version in an AWS account based on the environment input.
+# This workflow publishes a specific layer version in an AWS account based on the partition input.
 #
-# We pull each the version of the layer and store them as artifacts, the we upload them to each of the Partitioned AWS accounts.
+# We pull the version of the layer and store them as artifacts, the we upload them to each of the Partitioned AWS accounts.
 #
 # A number of safety checks are performed to ensure safety.
 #
@@ -12,7 +12,7 @@
 # 3. [Copy & Verify] deploy the layer to all regions in the target partition and validate layer deployment by comparing SHA256, description, and version numbers
 #
 # === Manual activities ===
-# 1. After the `make-release` workflow finishes and the PR for the documentation update gets created, trigger this workflow manually via `workflow_dispatch` with environment, version, and partition inputs for each Gamma and Prod environment in the China and GovCloud partitions
+# 1. After the `make-release` workflow finishes and the PR for the documentation update gets created, trigger this workflow manually via `workflow_dispatch` with partition inputs for each China and GovCloud partitions
 # 2. Monitor deployment progress and verify successful layer publication across all target regions
 # 3. Once this workflow is completed, the PR for the documentation update can me merged
 #

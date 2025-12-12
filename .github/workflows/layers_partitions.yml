@@ -81,7 +81,7 @@ jobs:
         id: get_latest_layer_version
         run: |
           set -euo pipefail
-          LAYER_VERSION=$(aws lambda list-layer-versions --layer-name AWSLambdaPowertoolsTypeScriptV2 --query 'LayerVersions[0].Version' --output text)
+          LAYER_VERSION=$(aws lambda list-layer-versions --layer-name AWSLambdaPowertoolsTypeScriptV2 --query 'LayerVersions[0].Version' --output text --region us-east-1)
           echo "LAYER_VERSION=$LAYER_VERSION" >> $GITHUB_OUTPUT
       - name: Grab Zip
         env:

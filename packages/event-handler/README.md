@@ -325,6 +325,8 @@ The following companies, among others, use Powertools:
 * [Banxware](https://www.banxware.com)
 * [Caylent](https://caylent.com/)
 * [Certible](https://www.certible.com/)
+* [Codeac](https://www.codeac.io/)
+* [EF Education First](https://www.ef.com/)
 * [Elva](https://elva-group.com)
 * [Flyweight](https://flyweight.io/)
 * [FraudFalcon](https://fraudfalcon.app)

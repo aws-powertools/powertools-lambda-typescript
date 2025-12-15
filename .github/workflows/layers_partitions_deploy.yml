@@ -113,7 +113,7 @@ jobs:
           jq -s -r '["Layer Arn", "Runtimes", "Version", "Description", "SHA256"], ([.[0], .[1]] | .[] | [.LayerArn, (.CompatibleRuntimes | join("/")), .Version, .Description, .Content.CodeSha256]) |@tsv' AWSLambdaPowertoolsTypeScriptV2.json "$layer_output" | column -t -s $'\t'
 
       - name: Store Metadata - ${{ matrix.region }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json
           path: AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json

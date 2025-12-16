@@ -85,7 +85,7 @@
   "dependencies": {
     "@aws/lambda-invoke-store": "0.2.2",
     "@aws-lambda-powertools/commons": "2.30.0",
-    "@standard-schema/spec": "^1.0.0"
+    "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
     "@aws-lambda-powertools/parser": "2.30.0",

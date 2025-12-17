@@ -61,6 +61,10 @@
     "./types": {
       "import": "./lib/esm/types/index.js",
       "require": "./lib/cjs/types/index.js"
+    },
+    "./utils/deep-merge": {
+      "import": "./lib/esm/deepMerge.js",
+      "require": "./lib/cjs/deepMerge.js"
     }
   },
   "typesVersions": {
@@ -88,6 +92,10 @@
       "types": [
         "lib/cjs/types/index.d.ts",
         "lib/esm/types/index.d.ts"
+      ],
+      "utils/deep-merge": [
+        "lib/cjs/deepMerge.d.ts",
+        "lib/esm/deepMerge.d.ts"
       ]
     }
   },

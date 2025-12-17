@@ -1,4 +1,4 @@
-import merge from 'lodash.merge';
+import { deepMerge } from '@aws-lambda-powertools/commons';
 import type { LogAttributes } from '../types/Logger.js';
 
 /**
@@ -32,7 +32,7 @@ class LogItem {
    * @param attributes - The attributes to add to the log item.
    */
   public addAttributes(attributes: LogAttributes): this {
-    merge(this.attributes, attributes);
+    deepMerge(this.attributes, attributes);
 
     return this;
   }

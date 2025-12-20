@@ -14,6 +14,81 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
 };
 
 /**
+ * Merge source array into target array by index.
+ *
+ * @internal
+ */
+const mergeArraysByIndex = (
+  targetArray: unknown[],
+  sourceArray: unknown[],
+  seen: WeakSet<object>
+): void => {
+  for (let i = 0; i < sourceArray.length; i++) {
+    const srcItem = sourceArray[i];
+    const tgtItem = targetArray[i];
+
+    const isSrcPlainObject = isPlainObject(srcItem);
+
+    // Skip already-seen objects to prevent circular references
+    if (isSrcPlainObject && seen.has(srcItem)) {
+      continue;
+    }
+
+    // Merge nested plain objects recursively
+    if (isSrcPlainObject && isPlainObject(tgtItem)) {
+      seen.add(srcItem);
+      mergeRecursive(tgtItem, srcItem, seen);
+      continue;
+    }
+
+    // Otherwise, replace the target item with source item
+    targetArray[i] = srcItem;
+  }
+};
+
+/**
+ * Handle merging when source value is an array.
+ *
+ * @internal
+ */
+const handleArrayMerge = (
+  target: Record<string, unknown>,
+  key: string,
+  sourceArray: unknown[],
+  targetValue: unknown,
+  seen: WeakSet<object>
+): void => {
+  if (!Array.isArray(targetValue)) {
+    target[key] = [...sourceArray];
+    return;
+  }
+
+  mergeArraysByIndex(targetValue, sourceArray, seen);
+};
+
+/**
+ * Handle merging when source value is a plain object.
+ *
+ * @internal
+ */
+const handleObjectMerge = (
+  target: Record<string, unknown>,
+  key: string,
+  sourceObject: Record<string, unknown>,
+  targetValue: unknown,
+  seen: WeakSet<object>
+): void => {
+  if (isPlainObject(targetValue)) {
+    mergeRecursive(targetValue, sourceObject, seen);
+    return;
+  }
+
+  const newTarget: Record<string, unknown> = {};
+  mergeRecursive(newTarget, sourceObject, seen);
+  target[key] = newTarget;
+};
+
+/**
  * Recursively merge source into target.
  *
  * @internal
@@ -32,44 +107,20 @@ const mergeRecursive = (
     const targetValue = target[key];
 
     if (Array.isArray(sourceValue)) {
-      if (seen.has(sourceValue)) {
-        continue;
-      }
+      if (seen.has(sourceValue)) continue;
       seen.add(sourceValue);
-
-      if (Array.isArray(targetValue)) {
-        for (let i = 0; i < sourceValue.length; i++) {
-          const srcItem = sourceValue[i];
-          const tgtItem = targetValue[i];
-
-          if (isPlainObject(srcItem) && isPlainObject(tgtItem)) {
-            if (!seen.has(srcItem)) {
-              seen.add(srcItem);
-              mergeRecursive(tgtItem, srcItem, seen);
-            }
-          } else {
-            targetValue[i] = srcItem;
-          }
-        }
-      } else {
-        target[key] = [...sourceValue];
-      }
-    } else if (isPlainObject(sourceValue)) {
-      if (seen.has(sourceValue)) {
-        continue;
-      }
-      seen.add(sourceValue);
-
-      if (isPlainObject(targetValue)) {
-        mergeRecursive(targetValue, sourceValue, seen);
-      } else {
-        const newTarget: Record<string, unknown> = {};
-        mergeRecursive(newTarget, sourceValue, seen);
-        target[key] = newTarget;
-      }
-    } else {
-      target[key] = sourceValue;
+      handleArrayMerge(target, key, sourceValue, targetValue, seen);
+      continue;
     }
+
+    if (isPlainObject(sourceValue)) {
+      if (seen.has(sourceValue)) continue;
+      seen.add(sourceValue);
+      handleObjectMerge(target, key, sourceValue, targetValue, seen);
+      continue;
+    }
+
+    target[key] = sourceValue;
   }
 };
 

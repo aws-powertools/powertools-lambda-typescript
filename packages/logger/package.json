@@ -73,8 +73,7 @@
   "types": "./lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
   "devDependencies": {
-    "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@types/lodash.merge": "^4.6.9"
+    "@aws-lambda-powertools/testing-utils": "file:../testing"
   },
   "peerDependencies": {
     "@aws-lambda-powertools/jmespath": "2.30.0",
@@ -100,8 +99,7 @@
   },
   "dependencies": {
     "@aws/lambda-invoke-store": "0.2.2",
-    "@aws-lambda-powertools/commons": "2.30.0",
-    "lodash.merge": "^4.6.2"
+    "@aws-lambda-powertools/commons": "2.30.0"
   },
   "keywords": [
     "aws",

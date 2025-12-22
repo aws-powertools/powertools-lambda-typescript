@@ -14,11 +14,14 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
 };
 
 /**
- * Merge source array into target array by index.
+ * Merge source array items into target array by index.
+ *
+ * When both source and target items at the same index are plain objects,
+ * they are merged recursively. Otherwise, the source item replaces the target.
  *
  * @internal
  */
-const mergeArraysByIndex = (
+const mergeArrayItemsByIndex = (
   targetArray: unknown[],
   sourceArray: unknown[],
   seen: WeakSet<object>
@@ -63,7 +66,7 @@ const handleArrayMerge = (
     return;
   }
 
-  mergeArraysByIndex(targetValue, sourceArray, seen);
+  mergeArrayItemsByIndex(targetValue, sourceArray, seen);
 };
 
 /**

@@ -48,7 +48,9 @@ jobs:
         id: version-n-changelog
         uses: aws-powertools/actions/.github/actions/version-n-changelog@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
         with:
-          release-type: ${{ github.event.inputs.release-type }}
+          release-type: ${{ env.RELEASE_TYPE }}
+        env:
+          RELEASE_TYPE: ${{ github.event.inputs.release-type }}
       - name: Update user agent version
         run: |
           echo -e "// this file is auto generated, do not modify\nexport const PT_VERSION = '${{ steps.version-n-changelog.outputs.new-version }}';" > packages/commons/src/version.ts

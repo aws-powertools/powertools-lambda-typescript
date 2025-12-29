@@ -22,7 +22,7 @@ graph LR
 !!! question "First time contributing to an open-source project ever?"
     Read this [introduction on how to fork and clone a project on GitHub](https://docs.github.com/en/get-started/quickstart/contributing-to-projects){target="_blank" rel="nofollow"}.
 
-Unless you're using the pre-configured Cloud environment, you'll need the following installed:
+You'll need the following installed:
 
 * [GitHub account](https://github.com/join){target="_blank" rel="nofollow"}. You'll need to be able to fork, clone, and contribute via pull request.
 * [Node.js 24.x](https://nodejs.org/download/release/latest-v24.x/){target="_blank" rel="nofollow"}. The repository contains an `.nvmrc` file, so if you use tools like [nvm](https://github.com/nvm-sh/nvm#nvmrc), [fnm](https://github.com/Schniz/fnm) you can switch version quickly.
@@ -35,31 +35,7 @@ Unless you're using the pre-configured Cloud environment, you'll need the follow
     * [AWS Account bootstrapped with CDK](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html){target="_blank"}
     * [AWS CLI installed and configured](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 
-## Cloud environment
-
-!!! warning "A word of caution"
-    Before using one of the services below check out their pricing.
-    You can find more information about each service pricing respectively on [Gitpod](https://www.gitpod.io/pricing){target="_blank" rel="nofollow"} and [GitHub Codespaces](https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces){target="_blank" rel="nofollow"} pages.
-
-Once provisioned, each Cloud environment will come with all development dependencies and tools you'll need to contribute already installed.
-
-### Gitpod
-
-To use a pre-configured Gitpod environment, create or login to a Gitpod account, then replace `YOUR_USERNAME` with your GitHub username or organization.
-
-```bash
-https://gitpod.io/#https://github.com/YOUR_USERNAME/powertools-lambda-typescript  #(1)!
-```
-
-1. For example, if your username is `octocat`, then the final URL should be `https://gitpod.io/#https://github.com/octocat/powertools-lambda-typescript`
-
-### GitHub Codespaces
-
-To use a pre-configured GitHub Codespaces environment, navigate to your fork of the repository, then click on the green `Code` button, and select `Create codespace on <branch_name>` under the `Codespaces` tab (where `<branch_name>` is the branch you want to work on).
-
 ## Local environment
-
-> Assuming you've got all [requirements](#requirements).
 
 You can use `npm run setup-local` to install all dependencies locally and setup pre-commit hooks.
 

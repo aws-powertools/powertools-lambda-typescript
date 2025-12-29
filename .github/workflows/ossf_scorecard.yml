@@ -9,7 +9,7 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions: read-all
+permissions: {}
 
 jobs:
   analysis:
@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     # environment: scorecard
     permissions:
+      contents: read  # checkout repository
       security-events: write  # update code-scanning dashboard
       id-token: write  # confirm org+repo identity before publish results
 

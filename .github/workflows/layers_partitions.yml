@@ -37,8 +37,7 @@ on:
 name: Layer Deployment (Partitions)
 run-name: Layer Deployment (${{ inputs.partition }})
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   # This job configures partition-specific settings including regions, partition names, and STS audience based on the target partition (China or GovCloud) selected in the workflow inputs.
@@ -108,6 +107,9 @@ jobs:
   deploy-gamma:
     name: Deploy Gamma Layer
     needs: [setup, download]
+    permissions:
+      id-token: write
+      contents: read
     uses: ./.github/workflows/layers_partitions_deploy.yml
     with:
       environment: Gamma
@@ -120,6 +122,9 @@ jobs:
   deploy-prod:
     name: Deploy Prod Layer
     needs: [setup, download, deploy-gamma]
+    permissions:
+      id-token: write
+      contents: read
     uses: ./.github/workflows/layers_partitions_deploy.yml
     with:
       environment: Prod

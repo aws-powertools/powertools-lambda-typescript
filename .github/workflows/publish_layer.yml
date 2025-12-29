@@ -1,7 +1,6 @@
 name: Deploy layer to all regions
 
-permissions:
-  contents: read
+permissions: {}
 
 on:
   # Manual trigger
@@ -32,6 +31,8 @@ on:
 jobs:
   # Build layer by running cdk synth in layer-publisher directory and uploading cdk.out for deployment
   build-layer:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     if: ${{ (github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch') }}
     steps:

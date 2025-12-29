@@ -1,5 +1,7 @@
 name: Copy Layer
 
+permissions: {}
+
 on:
   workflow_call:
     inputs:

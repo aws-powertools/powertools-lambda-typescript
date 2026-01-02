@@ -26,44 +26,44 @@ describe('Wildcard tests', () => {
       expression: 'foo.*.notbaz[-1]',
       expected: ['c', 'c'],
     },
-  ])(
-    'should parse the wildcard operator with an object containing multiple keys at different levels: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: {
-          bar: {
-            baz: 'val',
-          },
+  ])('should parse the wildcard operator with an object containing multiple keys at different levels: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: {
+        bar: {
+          baz: 'val',
+        },
+        other: {
+          baz: 'val',
+        },
+        other2: {
+          baz: 'val',
+        },
+        other3: {
+          notbaz: ['a', 'b', 'c'],
+        },
+        other4: {
+          notbaz: ['a', 'b', 'c'],
+        },
+        other5: {
           other: {
-            baz: 'val',
-          },
-          other2: {
-            baz: 'val',
-          },
-          other3: {
-            notbaz: ['a', 'b', 'c'],
-          },
-          other4: {
-            notbaz: ['a', 'b', 'c'],
-          },
-          other5: {
-            other: {
-              a: 1,
-              b: 1,
-              c: 1,
-            },
+            a: 1,
+            b: 1,
+            c: 1,
           },
         },
-      };
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -86,60 +86,60 @@ describe('Wildcard tests', () => {
       expression: 'foo.*.*.*.*',
       expected: [[], [], []],
     },
-  ])(
-    'should parse the wildcard operator with an object containing keys with hyphens: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: {
-          'first-1': {
-            'second-1': 'val',
-          },
-          'first-2': {
-            'second-1': 'val',
-          },
-          'first-3': {
-            'second-1': 'val',
-          },
+  ])('should parse the wildcard operator with an object containing keys with hyphens: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: {
+        'first-1': {
+          'second-1': 'val',
         },
-      };
+        'first-2': {
+          'second-1': 'val',
+        },
+        'first-3': {
+          'second-1': 'val',
+        },
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
       expression: '*.bar',
       expected: ['one', 'one'],
     },
-  ])(
-    'should parse the wildcard operator with an object containing multiple keys: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: {
-          bar: 'one',
-        },
-        other: {
-          bar: 'one',
-        },
-        nomatch: {
-          notbar: 'three',
-        },
-      };
+  ])('should parse the wildcard operator with an object containing multiple keys: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: {
+        bar: 'one',
+      },
+      other: {
+        bar: 'one',
+      },
+      nomatch: {
+        notbar: 'three',
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -162,26 +162,26 @@ describe('Wildcard tests', () => {
       expression: '*.sub1.foo',
       expected: ['one', 'one'],
     },
-  ])(
-    'should parse the wildcard operator with an object containing nested objects: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        top1: {
-          sub1: { foo: 'one' },
-        },
-        top2: {
-          sub1: { foo: 'one' },
-        },
-      };
+  ])('should parse the wildcard operator with an object containing nested objects: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      top1: {
+        sub1: { foo: 'one' },
+      },
+      top2: {
+        sub1: { foo: 'one' },
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -192,26 +192,26 @@ describe('Wildcard tests', () => {
       expression: 'foo[*].notbar',
       expected: ['four'],
     },
-  ])(
-    'should parse the wildcard operator with an object containing an array of objects: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { bar: 'one' },
-          { bar: 'two' },
-          { bar: 'three' },
-          { notbar: 'four' },
-        ],
-      };
+  ])('should parse the wildcard operator with an object containing an array of objects: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { bar: 'one' },
+        { bar: 'two' },
+        { bar: 'three' },
+        { notbar: 'four' },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -231,24 +231,24 @@ describe('Wildcard tests', () => {
       expression: '[*].notbar',
       expected: ['four'],
     },
-  ])(
-    'should parse the wildcard operator with an array of objects: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = [
-        { bar: 'one' },
-        { bar: 'two' },
-        { bar: 'three' },
-        { notbar: 'four' },
-      ];
+  ])('should parse the wildcard operator with an array of objects: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = [
+      { bar: 'one' },
+      { bar: 'two' },
+      { bar: 'three' },
+      { notbar: 'four' },
+    ];
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -275,27 +275,27 @@ describe('Wildcard tests', () => {
       expression: 'foo.bar[*].baz[3]',
       expected: [],
     },
-  ])(
-    'should parse the wildcard operator with an object with nested objects containing arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: {
-          bar: [
-            { baz: ['one', 'two', 'three'] },
-            { baz: ['four', 'five', 'six'] },
-            { baz: ['seven', 'eight', 'nine'] },
-          ],
-        },
-      };
+  ])('should parse the wildcard operator with an object with nested objects containing arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: {
+        bar: [
+          { baz: ['one', 'two', 'three'] },
+          { baz: ['four', 'five', 'six'] },
+          { baz: ['seven', 'eight', 'nine'] },
+        ],
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -325,26 +325,26 @@ describe('Wildcard tests', () => {
       expression: 'foo[0][0]',
       expected: null,
     },
-  ])(
-    'should parse the wildcard operator with an object with nested arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: {
-          bar: [
-            ['one', 'two'],
-            ['three', 'four'],
-          ],
-        },
-      };
+  ])('should parse the wildcard operator with an object with nested arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: {
+        bar: [
+          ['one', 'two'],
+          ['three', 'four'],
+        ],
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -358,52 +358,52 @@ describe('Wildcard tests', () => {
       expression: 'foo[*].bar[0].kind',
       expected: ['basic', 'advanced'],
     },
-  ])(
-    'should parse the wildcard operator with an array of objects with nested arrays or strings: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { bar: [{ kind: 'basic' }, { kind: 'intermediate' }] },
-          { bar: [{ kind: 'advanced' }, { kind: 'expert' }] },
-          { bar: 'string' },
-        ],
-      };
+  ])('should parse the wildcard operator with an array of objects with nested arrays or strings: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { bar: [{ kind: 'basic' }, { kind: 'intermediate' }] },
+        { bar: [{ kind: 'advanced' }, { kind: 'expert' }] },
+        { bar: 'string' },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
       expression: 'foo[*].bar.kind',
       expected: ['basic', 'intermediate', 'advanced', 'expert'],
     },
-  ])(
-    'should parse the wildcard operator with an array of objects: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { bar: { kind: 'basic' } },
-          { bar: { kind: 'intermediate' } },
-          { bar: { kind: 'advanced' } },
-          { bar: { kind: 'expert' } },
-          { bar: 'string' },
-        ],
-      };
+  ])('should parse the wildcard operator with an array of objects: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { bar: { kind: 'basic' } },
+        { bar: { kind: 'intermediate' } },
+        { bar: { kind: 'advanced' } },
+        { bar: { kind: 'expert' } },
+        { bar: 'string' },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -418,46 +418,46 @@ describe('Wildcard tests', () => {
       expression: 'foo[*].bar[2]',
       expected: [],
     },
-  ])(
-    'should parse the wildcard operator with an array of objects with arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { bar: ['one', 'two'] },
-          { bar: ['three', 'four'] },
-          { bar: ['five'] },
-        ],
-      };
+  ])('should parse the wildcard operator with an array of objects with arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { bar: ['one', 'two'] },
+        { bar: ['three', 'four'] },
+        { bar: ['five'] },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
       expression: 'foo[*].bar[0]',
       expected: [],
     },
-  ])(
-    'should parse the wildcard operator with an array of objects with empty arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [{ bar: [] }, { bar: [] }, { bar: [] }],
-      };
+  ])('should parse the wildcard operator with an array of objects with empty arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [{ bar: [] }, { bar: [] }, { bar: [] }],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -468,21 +468,21 @@ describe('Wildcard tests', () => {
       expression: 'foo[*][1]',
       expected: ['two', 'four'],
     },
-  ])(
-    'should parse the wildcard operator with an array of arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [['one', 'two'], ['three', 'four'], ['five']],
-      };
+  ])('should parse the wildcard operator with an array of arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [['one', 'two'], ['three', 'four'], ['five']],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -525,31 +525,31 @@ describe('Wildcard tests', () => {
       expression: 'bar[*].baz[*]',
       expected: null,
     },
-  ])(
-    'should parse a nested array of arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          [
-            ['one', 'two'],
-            ['three', 'four'],
-          ],
-          [
-            ['five', 'six'],
-            ['seven', 'eight'],
-          ],
-          [['nine'], ['ten']],
+  ])('should parse a nested array of arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        [
+          ['one', 'two'],
+          ['three', 'four'],
         ],
-      };
+        [
+          ['five', 'six'],
+          ['seven', 'eight'],
+        ],
+        [['nine'], ['ten']],
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -588,24 +588,24 @@ describe('Wildcard tests', () => {
       expression: 'nullvalue[*].foo[*].bar',
       expected: null,
     },
-  ])(
-    'should parse an object with different value types: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        string: 'string',
-        hash: { foo: 'bar', bar: 'baz' },
-        number: 23,
-        nullvalue: null,
-      };
+  ])('should parse an object with different value types: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      string: 'string',
+      hash: { foo: 'bar', bar: 'baz' },
+      number: 23,
+      nullvalue: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -628,39 +628,41 @@ describe('Wildcard tests', () => {
       expression: 'nullvalue.*',
       expected: null,
     },
-  ])(
-    'should parse an object with different value types: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        string: 'string',
-        hash: { foo: 'val', bar: 'val' },
-        number: 23,
-        array: [1, 2, 3],
-        nullvalue: null,
-      };
+  ])('should parse an object with different value types: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      string: 'string',
+      hash: { foo: 'val', bar: 'val' },
+      number: 23,
+      array: [1, 2, 3],
+      nullvalue: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
-  it.each([{ expression: '*[0]', expected: [0, 0] }])(
-    'should get the first element of each array: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        a: [0, 1, 2],
-        b: [0, 1, 2],
-      };
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
+  it.each([
+    { expression: '*[0]', expected: [0, 0] },
+  ])('should get the first element of each array: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      a: [0, 1, 2],
+      b: [0, 1, 2],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 });

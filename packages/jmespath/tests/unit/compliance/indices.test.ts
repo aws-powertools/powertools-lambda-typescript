@@ -35,19 +35,19 @@ describe('Indices tests', () => {
       expression: 'foo.bar[-4]',
       expected: null,
     },
-  ])(
-    'should support indices on arrays in a nested object: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = { foo: { bar: ['zero', 'one', 'two'] } };
+  ])('should support indices on arrays in a nested object: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = { foo: { bar: ['zero', 'one', 'two'] } };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -94,26 +94,26 @@ describe('Indices tests', () => {
       expression: 'foo[4]',
       expected: null,
     },
-  ])(
-    'should support indices in an array with objects inside: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { bar: 'one' },
-          { bar: 'two' },
-          { bar: 'three' },
-          { notbar: 'four' },
-        ],
-      };
+  ])('should support indices in an array with objects inside: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { bar: 'one' },
+        { bar: 'two' },
+        { bar: 'three' },
+        { notbar: 'four' },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -140,19 +140,19 @@ describe('Indices tests', () => {
       expression: '[-3]',
       expected: 'one',
     },
-  ])(
-    'should support indices in an array: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = ['one', 'two', 'three'];
+  ])('should support indices in an array: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = ['one', 'two', 'three'];
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -171,19 +171,19 @@ describe('Indices tests', () => {
       expression: 'reservations[].notinstances[].foo',
       expected: [],
     },
-  ])(
-    'should support indices in multi-level nested arrays & objects: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = { reservations: [{ instances: [{ foo: 1 }, { foo: 2 }] }] };
+  ])('should support indices in multi-level nested arrays & objects: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = { reservations: [{ instances: [{ foo: 1 }, { foo: 2 }] }] };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -226,83 +226,58 @@ describe('Indices tests', () => {
       expression: 'reservations[].instances[].qux[].baz[]',
       expected: [1, 2, 3, 4, 1, 2, 3, 4],
     },
-  ])(
-    'should support indices in large mixed objects and arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        reservations: [
-          {
-            instances: [
-              { foo: [{ bar: 1 }, { bar: 2 }, { notbar: 3 }, { bar: 4 }] },
-              { foo: [{ bar: 5 }, { bar: 6 }, { notbar: [7] }, { bar: 8 }] },
-              { foo: 'bar' },
-              {
-                notfoo: [
-                  { bar: 20 },
-                  { bar: 21 },
-                  { notbar: [7] },
-                  { bar: 22 },
-                ],
-              },
-              { bar: [{ baz: [1] }, { baz: [2] }, { baz: [3] }, { baz: [4] }] },
-              {
-                baz: [
-                  { baz: [1, 2] },
-                  { baz: [] },
-                  { baz: [] },
-                  { baz: [3, 4] },
-                ],
-              },
-              {
-                qux: [
-                  { baz: [] },
-                  { baz: [1, 2, 3] },
-                  { baz: [4] },
-                  { baz: [] },
-                ],
-              },
-            ],
-            otherkey: {
-              foo: [{ bar: 1 }, { bar: 2 }, { notbar: 3 }, { bar: 4 }],
+  ])('should support indices in large mixed objects and arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      reservations: [
+        {
+          instances: [
+            { foo: [{ bar: 1 }, { bar: 2 }, { notbar: 3 }, { bar: 4 }] },
+            { foo: [{ bar: 5 }, { bar: 6 }, { notbar: [7] }, { bar: 8 }] },
+            { foo: 'bar' },
+            {
+              notfoo: [{ bar: 20 }, { bar: 21 }, { notbar: [7] }, { bar: 22 }],
             },
-          },
-          {
-            instances: [
-              { a: [{ bar: 1 }, { bar: 2 }, { notbar: 3 }, { bar: 4 }] },
-              { b: [{ bar: 5 }, { bar: 6 }, { notbar: [7] }, { bar: 8 }] },
-              { c: 'bar' },
-              {
-                notfoo: [
-                  { bar: 23 },
-                  { bar: 24 },
-                  { notbar: [7] },
-                  { bar: 25 },
-                ],
-              },
-              {
-                qux: [
-                  { baz: [] },
-                  { baz: [1, 2, 3] },
-                  { baz: [4] },
-                  { baz: [] },
-                ],
-              },
-            ],
-            otherkey: {
-              foo: [{ bar: 1 }, { bar: 2 }, { notbar: 3 }, { bar: 4 }],
+            { bar: [{ baz: [1] }, { baz: [2] }, { baz: [3] }, { baz: [4] }] },
+            {
+              baz: [{ baz: [1, 2] }, { baz: [] }, { baz: [] }, { baz: [3, 4] }],
             },
+            {
+              qux: [{ baz: [] }, { baz: [1, 2, 3] }, { baz: [4] }, { baz: [] }],
+            },
+          ],
+          otherkey: {
+            foo: [{ bar: 1 }, { bar: 2 }, { notbar: 3 }, { bar: 4 }],
           },
-        ],
-      };
+        },
+        {
+          instances: [
+            { a: [{ bar: 1 }, { bar: 2 }, { notbar: 3 }, { bar: 4 }] },
+            { b: [{ bar: 5 }, { bar: 6 }, { notbar: [7] }, { bar: 8 }] },
+            { c: 'bar' },
+            {
+              notfoo: [{ bar: 23 }, { bar: 24 }, { notbar: [7] }, { bar: 25 }],
+            },
+            {
+              qux: [{ baz: [] }, { baz: [1, 2, 3] }, { baz: [4] }, { baz: [] }],
+            },
+          ],
+          otherkey: {
+            foo: [{ bar: 1 }, { bar: 2 }, { notbar: 3 }, { bar: 4 }],
+          },
+        },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -336,31 +311,31 @@ describe('Indices tests', () => {
       expression: 'foo[][0][0][100]',
       expected: [],
     },
-  ])(
-    'should support indices in objects containing an array of matrixes: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          [
-            ['one', 'two'],
-            ['three', 'four'],
-          ],
-          [
-            ['five', 'six'],
-            ['seven', 'eight'],
-          ],
-          [['nine'], ['ten']],
+  ])('should support indices in objects containing an array of matrixes: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        [
+          ['one', 'two'],
+          ['three', 'four'],
         ],
-      };
+        [
+          ['five', 'six'],
+          ['seven', 'eight'],
+        ],
+        [['nine'], ['ten']],
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -423,46 +398,46 @@ describe('Indices tests', () => {
       expression: 'foo[].bar[].baz',
       expected: [1, 3, 5, 7],
     },
-  ])(
-    'should support indices with nested arrays and objects at different levels: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          {
-            bar: [
-              {
-                qux: 2,
-                baz: 1,
-              },
-              {
-                qux: 4,
-                baz: 3,
-              },
-            ],
-          },
-          {
-            bar: [
-              {
-                qux: 6,
-                baz: 5,
-              },
-              {
-                qux: 8,
-                baz: 7,
-              },
-            ],
-          },
-        ],
-      };
+  ])('should support indices with nested arrays and objects at different levels: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        {
+          bar: [
+            {
+              qux: 2,
+              baz: 1,
+            },
+            {
+              qux: 4,
+              baz: 3,
+            },
+          ],
+        },
+        {
+          bar: [
+            {
+              qux: 6,
+              baz: 5,
+            },
+            {
+              qux: 8,
+              baz: 7,
+            },
+          ],
+        },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -501,22 +476,22 @@ describe('Indices tests', () => {
       expression: 'nullvalue[].foo[].bar',
       expected: null,
     },
-  ])(
-    'should support indices in objects having special names as keys: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        string: 'string',
-        hash: { foo: 'bar', bar: 'baz' },
-        number: 23,
-        nullvalue: null,
-      };
+  ])('should support indices in objects having special names as keys: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      string: 'string',
+      hash: { foo: 'bar', bar: 'baz' },
+      number: 23,
+      nullvalue: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 });

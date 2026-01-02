@@ -30,37 +30,37 @@ describe('Pipe expressions tests', () => {
       expression: '{"a": foo.bar, "b": foo.other} | *.baz',
       expected: ['subkey', 'subkey'],
     },
-  ])(
-    'should support piping a multi-level nested object with arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: {
-          bar: {
-            baz: 'subkey',
-          },
-          other: {
-            baz: 'subkey',
-          },
-          other2: {
-            baz: 'subkey',
-          },
-          other3: {
-            notbaz: ['a', 'b', 'c'],
-          },
-          other4: {
-            notbaz: ['a', 'b', 'c'],
-          },
+  ])('should support piping a multi-level nested object with arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: {
+        bar: {
+          baz: 'subkey',
         },
-      };
+        other: {
+          baz: 'subkey',
+        },
+        other2: {
+          baz: 'subkey',
+        },
+        other3: {
+          notbaz: ['a', 'b', 'c'],
+        },
+        other4: {
+          notbaz: ['a', 'b', 'c'],
+        },
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -103,37 +103,37 @@ describe('Pipe expressions tests', () => {
       expression: 'foo | not_there || bar',
       expected: { baz: 'one' },
     },
-  ])(
-    'should support piping with boolean conditions: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: {
-          bar: {
-            baz: 'one',
-          },
-          other: {
-            baz: 'two',
-          },
-          other2: {
-            baz: 'three',
-          },
-          other3: {
-            notbaz: ['a', 'b', 'c'],
-          },
-          other4: {
-            notbaz: ['d', 'e', 'f'],
-          },
+  ])('should support piping with boolean conditions: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: {
+        bar: {
+          baz: 'one',
         },
-      };
+        other: {
+          baz: 'two',
+        },
+        other2: {
+          baz: 'three',
+        },
+        other3: {
+          notbaz: ['a', 'b', 'c'],
+        },
+        other4: {
+          notbaz: ['d', 'e', 'f'],
+        },
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -144,40 +144,40 @@ describe('Pipe expressions tests', () => {
       expression: '`null`|[@]',
       expected: null,
     },
-  ])(
-    'should support piping with wildcard and current operators: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          {
-            bar: [
-              {
-                baz: 'one',
-              },
-              {
-                baz: 'two',
-              },
-            ],
-          },
-          {
-            bar: [
-              {
-                baz: 'three',
-              },
-              {
-                baz: 'four',
-              },
-            ],
-          },
-        ],
-      };
+  ])('should support piping with wildcard and current operators: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        {
+          bar: [
+            {
+              baz: 'one',
+            },
+            {
+              baz: 'two',
+            },
+          ],
+        },
+        {
+          bar: [
+            {
+              baz: 'three',
+            },
+            {
+              baz: 'four',
+            },
+          ],
+        },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 });

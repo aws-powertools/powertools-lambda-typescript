@@ -155,7 +155,7 @@ class RouteHandlerRegistry {
       /([.*+?^=!:${}()|[\]/\\])/g,
       String.raw`\$1`
     );
-    return `^${escapedPath.replaceAll('\\*', '.*')}$`;
+    return `^${escapedPath.replaceAll('\\*', '.*')}$`; // NOSONAR - Need literal backslash to match escaped asterisks
   }
 }
 

@@ -463,7 +463,7 @@ describe('Syntax tests', () => {
         },
       },
     },
-  ])('should support multy-select hash syntax: $expression', ({
+  ])('should support multi-select hash syntax: $expression', ({
     expression,
     expected,
   }) => {

@@ -122,12 +122,12 @@ export class LayerPublisherStack extends Stack {
 
               if (buildFromLocal) {
                 for (const util of utilities) {
-                  // Build latest version of the package
-                  buildCommands.push(`npm run build -w packages/${util}`);
-                  // Pack the package to a .tgz file
-                  buildCommands.push(`npm pack -w packages/${util}`);
-                  // Move the .tgz file to the tmp folder
                   buildCommands.push(
+                    // Build latest version of the package
+                    `npm run build -w packages/${util}`,
+                    // Pack the package to a .tgz file
+                    `npm pack -w packages/${util}`,
+                    // Move the .tgz file to the tmp folder
                     `mv aws-lambda-powertools-${util}-*.tgz ${tmpBuildDir}`
                   );
                 }

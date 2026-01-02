@@ -11,6 +11,8 @@ import type {
   LogKeys,
 } from './logKeys.js';
 
+export type { Environment, LogAttributes } from './logKeys.js';
+
 /**
  * Type definition for the log level.
  *
@@ -276,9 +278,7 @@ type LoggerInterface = {
 export type {
   ConstructorOptions,
   CustomJsonReplacerFn,
-  Environment,
   InjectLambdaContextOptions,
-  LogAttributes,
   LogFunction,
   LoggerInterface,
   LogItemExtraInput,

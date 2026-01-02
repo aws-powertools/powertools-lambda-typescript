@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
 import { IdempotencyConfig } from '../../src/IdempotencyConfig.js';
@@ -31,7 +32,8 @@ const logger = new Logger();
  */
 const idempotencyConfig = new IdempotencyConfig({});
 const processIdempotently = makeIdempotent(
-  (record: Record<string, unknown>): string => {
+  async (record: Record<string, unknown>): Promise<string> => {
+    await setTimeout(0);
     logger.info('Got test event', { record });
 
     return `Processing done: ${record.foo}`;
@@ -62,7 +64,11 @@ const idempotencyConfigWithSelection = new IdempotencyConfig({
   payloadValidationJmesPath: 'foo',
 });
 const processIdempotentlyCustomized = makeIdempotent(
-  (baz: number, record: Record<string, unknown>): Record<string, unknown> => {
+  async (
+    baz: number,
+    record: Record<string, unknown>
+  ): Promise<Record<string, unknown>> => {
+    await setTimeout(0);
     logger.info('Got test event', { baz, record });
 
     return record;

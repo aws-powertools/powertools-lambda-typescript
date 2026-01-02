@@ -62,7 +62,7 @@ const generateTestUniqueName = ({
   [
     testPrefix,
     getRuntimeKey().replace(/[nodejsx]/g, ''),
-    getArchitectureKey().replace(/_64/g, ''),
+    getArchitectureKey().replaceAll('_64', ''),
     randomUUID().toString().substring(0, 5),
     testName,
   ]

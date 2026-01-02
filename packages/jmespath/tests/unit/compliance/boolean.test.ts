@@ -43,25 +43,25 @@ describe('Boolean tests', () => {
       expression: 'outer.bad||outer.alsobad',
       expected: null,
     },
-  ])(
-    'should support boolean OR comparison: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        outer: {
-          foo: 'foo',
-          bar: 'bar',
-          baz: 'baz',
-        },
-      };
+  ])('should support boolean OR comparison: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      outer: {
+        foo: 'foo',
+        bar: 'bar',
+        baz: 'baz',
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -73,26 +73,26 @@ describe('Boolean tests', () => {
         'outer.nokey || outer.bool || outer.empty_list || outer.empty_string || outer.foo',
       expected: 'foo',
     },
-  ])(
-    'should support multiple boolean OR comparisons: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        outer: {
-          foo: 'foo',
-          bool: false,
-          empty_list: [],
-          empty_string: '',
-        },
-      };
+  ])('should support multiple boolean OR comparisons: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      outer: {
+        foo: 'foo',
+        bool: false,
+        empty_list: [],
+        empty_string: '',
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -215,25 +215,25 @@ describe('Boolean tests', () => {
       expression: '!!Zero',
       expected: true,
     },
-  ])(
-    'should support boolean AND comparison: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        True: true,
-        False: false,
-        Number: 5,
-        EmptyList: [],
-        Zero: 0,
-      };
+  ])('should support boolean AND comparison: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      True: true,
+      False: false,
+      Number: 5,
+      EmptyList: [],
+      Zero: 0,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -280,21 +280,21 @@ describe('Boolean tests', () => {
       expression: 'two < one || three < one',
       expected: false,
     },
-  ])(
-    'should support lesser and equal comparison: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        one: 1,
-        two: 2,
-        three: 3,
-      };
+  ])('should support lesser and equal comparison: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      one: 1,
+      two: 2,
+      three: 3,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 });

@@ -39,19 +39,19 @@ describe('Base tests', () => {
       expression: 'bad.morebad.morebad',
       expected: null,
     },
-  ])(
-    'should parse a multi-level nested object: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = { foo: { bar: { baz: 'correct' } } };
+  ])('should parse a multi-level nested object: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = { foo: { bar: { baz: 'correct' } } };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -62,19 +62,19 @@ describe('Base tests', () => {
       expression: 'foo.bar',
       expected: ['one', 'two', 'three'],
     },
-  ])(
-    'should parse multi-level objects with arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = { foo: { bar: ['one', 'two', 'three'] } };
+  ])('should parse multi-level objects with arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = { foo: { bar: ['one', 'two', 'three'] } };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -117,17 +117,17 @@ describe('Base tests', () => {
       expression: 'foo."-1"',
       expected: 'bar',
     },
-  ])(
-    'should parse an object with arrays and numeric values as keys: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = { foo: { '1': ['one', 'two', 'three'], '-1': 'bar' } };
+  ])('should parse an object with arrays and numeric values as keys: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = { foo: { '1': ['one', 'two', 'three'], '-1': 'bar' } };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 });

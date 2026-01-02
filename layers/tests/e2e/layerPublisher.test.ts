@@ -107,7 +107,7 @@ describe('Layers E2E tests', () => {
     await testStack.deploy();
 
     // Invoke the lambda function once for each output format and collect the logs
-    for await (const outputFormat of cases) {
+    for (const outputFormat of cases) {
       invocationLogsMap.set(
         outputFormat,
         await invokeFunctionOnce({

@@ -253,9 +253,7 @@ class Logger extends Utility implements LoggerInterface {
   public constructor(options: ConstructorOptions = {}) {
     super();
     const { customConfigService, ...rest } = options;
-    this.customConfigService = customConfigService
-      ? customConfigService
-      : undefined;
+    this.customConfigService = customConfigService;
     // all logs are buffered until the logger is initialized
     this.setOptions(rest);
     this.#isInitialized = true;
@@ -1098,13 +1096,13 @@ class Logger extends Utility implements LoggerInterface {
    * or as the global node console if the `POWERTOOLS_DEV' env variable is set and has truthy value.
    */
   private setConsole(): void {
-    if (!isDevMode()) {
+    if (isDevMode()) {
+      this.console = console;
+    } else {
       this.console = new Console({
         stdout: process.stdout,
         stderr: process.stderr,
       });
-    } else {
-      this.console = console;
     }
 
     /**
@@ -1159,8 +1157,7 @@ class Logger extends Utility implements LoggerInterface {
       defaultValue: '',
     });
 
-    const logLevelValue =
-      logLevelVariable !== '' ? logLevelVariable : logLevelVariableAlias;
+    const logLevelValue = logLevelVariable || logLevelVariableAlias;
 
     if (this.isValidLogLevel(logLevelValue)) {
       this.logLevel = LogLevelThreshold[logLevelValue];

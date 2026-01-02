@@ -151,8 +151,11 @@ class RouteHandlerRegistry {
    * @param path - The path to be converted to a regex string
    */
   static pathToRegexString(path: string): string {
-    const escapedPath = path.replace(/([.*+?^=!:${}()|[\]/\\])/g, '\\$1');
-    return `^${escapedPath.replace(/\\\*/g, '.*')}$`;
+    const escapedPath = path.replace(
+      /([.*+?^=!:${}()|[\]/\\])/g,
+      String.raw`\$1`
+    );
+    return `^${escapedPath.replaceAll('\\*', '.*')}$`; // NOSONAR - Need literal backslash to match escaped asterisks
   }
 }
 

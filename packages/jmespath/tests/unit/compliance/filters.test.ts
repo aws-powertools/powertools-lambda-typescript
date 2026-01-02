@@ -24,19 +24,19 @@ describe('Filer operator tests', () => {
       expression: '*[?[0] == `0`]',
       expected: [[], []],
     },
-  ])(
-    'should match a literal in arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = { foo: [0, 1], bar: [2, 3] };
+  ])('should match a literal in arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = { foo: [0, 1], bar: [2, 3] };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -103,19 +103,19 @@ describe('Filer operator tests', () => {
       expression: 'foo[?age != `20`]',
       expected: [{ age: 25 }, { age: 30 }],
     },
-  ])(
-    'should match an expression with operators: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = { foo: [{ age: 20 }, { age: 25 }, { age: 30 }] };
+  ])('should match an expression with operators: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = { foo: [{ age: 20 }, { age: 25 }, { age: 30 }] };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -155,40 +155,40 @@ describe('Filer operator tests', () => {
       expression: 'foo[?weight != `33.3`]',
       expected: [{ weight: 44.4 }, { weight: 55.5 }],
     },
-  ])(
-    'should match an expression with comparisons: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [{ weight: 33.3 }, { weight: 44.4 }, { weight: 55.5 }],
-      };
+  ])('should match an expression with comparisons: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [{ weight: 33.3 }, { weight: 44.4 }, { weight: 55.5 }],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
       expression: `foo[?top.name == 'a']`,
       expected: [{ top: { name: 'a' } }],
     },
-  ])(
-    'should match with subexpression: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = { foo: [{ top: { name: 'a' } }, { top: { name: 'b' } }] };
+  ])('should match with subexpression: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = { foo: [{ top: { name: 'a' } }, { top: { name: 'b' } }] };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -473,31 +473,31 @@ describe('Filer operator tests', () => {
         { key: [1] },
       ],
     },
-  ])(
-    'should match with object that have mixed types as values: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { key: true },
-          { key: false },
-          { key: 0 },
-          { key: 1 },
-          { key: [0] },
-          { key: { bar: [0] } },
-          { key: null },
-          { key: [1] },
-          { key: { a: 2 } },
-        ],
-      };
+  ])('should match with object that have mixed types as values: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { key: true },
+        { key: false },
+        { key: 0 },
+        { key: 1 },
+        { key: [0] },
+        { key: { bar: [0] } },
+        { key: null },
+        { key: [1] },
+        { key: { a: 2 } },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -559,34 +559,34 @@ describe('Filer operator tests', () => {
       expression: 'foo[? `false`]',
       expected: [],
     },
-  ])(
-    'should match with falsy values: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { key: true },
-          { key: false },
-          { key: 0 },
-          { key: 0.0 },
-          { key: 1 },
-          { key: 1.0 },
-          { key: [0] },
-          { key: null },
-          { key: [1] },
-          { key: [] },
-          { key: {} },
-          { key: { a: 2 } },
-        ],
-      };
+  ])('should match with falsy values: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { key: true },
+        { key: false },
+        { key: 0 },
+        { key: 0.0 },
+        { key: 1 },
+        { key: 1.0 },
+        { key: [0] },
+        { key: null },
+        { key: [1] },
+        { key: [] },
+        { key: {} },
+        { key: { a: 2 } },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -601,85 +601,79 @@ describe('Filer operator tests', () => {
       expression: 'reservations[].instances[?bar==`1`][]',
       expected: [{ foo: 2, bar: 1 }],
     },
-  ])(
-    'should match with nested objects and arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        reservations: [
-          {
-            instances: [
-              { foo: 1, bar: 2 },
-              { foo: 1, bar: 3 },
-              { foo: 1, bar: 2 },
-              { foo: 2, bar: 1 },
-            ],
-          },
-        ],
-      };
+  ])('should match with nested objects and arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      reservations: [
+        {
+          instances: [
+            { foo: 1, bar: 2 },
+            { foo: 1, bar: 3 },
+            { foo: 1, bar: 2 },
+            { foo: 2, bar: 1 },
+          ],
+        },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
       expression: 'foo[?bar==`1`].bar[0]',
       expected: [],
     },
-  ])(
-    'should match with nested objects and arrays with different structures: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        baz: 'other',
-        foo: [
-          { bar: 1 },
-          { bar: 2 },
-          { bar: 3 },
-          { bar: 4 },
-          { bar: 1, baz: 2 },
-        ],
-      };
+  ])('should match with nested objects and arrays with different structures: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      baz: 'other',
+      foo: [{ bar: 1 }, { bar: 2 }, { bar: 3 }, { bar: 4 }, { bar: 1, baz: 2 }],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
       expression: 'foo[?a==`1`].b.c',
       expected: ['x', 'y', 'z'],
     },
-  ])(
-    'should support filter in indexes: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { a: 1, b: { c: 'x' } },
-          { a: 1, b: { c: 'y' } },
-          { a: 1, b: { c: 'z' } },
-          { a: 2, b: { c: 'z' } },
-          { a: 1, baz: 2 },
-        ],
-      };
+  ])('should support filter in indexes: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { a: 1, b: { c: 'x' } },
+        { a: 1, b: { c: 'y' } },
+        { a: 1, b: { c: 'z' } },
+        { a: 2, b: { c: 'z' } },
+        { a: 1, baz: 2 },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -695,19 +689,19 @@ describe('Filer operator tests', () => {
       expression: `foo[?name == 'a' || name == 'b' || name == 'c']`,
       expected: [{ name: 'a' }, { name: 'b' }, { name: 'c' }],
     },
-  ])(
-    'should support filter with or expressions: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = { foo: [{ name: 'a' }, { name: 'b' }, { name: 'c' }] };
+  ])('should support filter with or expressions: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = { foo: [{ name: 'a' }, { name: 'b' }, { name: 'c' }] };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -719,24 +713,24 @@ describe('Filer operator tests', () => {
       expression: 'foo[?a == `1` && b == `4`]',
       expected: [],
     },
-  ])(
-    'should support filter and expressions: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { a: 1, b: 2 },
-          { a: 1, b: 3 },
-        ],
-      };
+  ])('should support filter and expressions: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { a: 1, b: 2 },
+        { a: 1, b: 3 },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -780,24 +774,24 @@ describe('Filer operator tests', () => {
       expression: 'foo[?a == `3` && ((b == `4` || b == `2`))]',
       expected: [{ a: 3, b: 4 }],
     },
-  ])(
-    'should support filter with or & and expressions',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { a: 1, b: 2, c: 3 },
-          { a: 3, b: 4 },
-        ],
-      };
+  ])('should support filter with or & and expressions', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { a: 1, b: 2, c: 3 },
+        { a: 3, b: 4 },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -815,24 +809,24 @@ describe('Filer operator tests', () => {
       expression: 'foo[?!(a == `1` || b ==`2`)]',
       expected: [{ a: 3, b: 4 }],
     },
-  ])(
-    'should support filter with expressions and respect precedence: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { a: 1, b: 2, c: 3 },
-          { a: 3, b: 4 },
-        ],
-      };
+  ])('should support filter with expressions and respect precedence: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { a: 1, b: 2, c: 3 },
+        { a: 3, b: 4 },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -862,32 +856,32 @@ describe('Filer operator tests', () => {
       expression: 'foo[?key == `null`]',
       expected: [{ key: null }, { notkey: true }],
     },
-  ])(
-    'should support unary expressions: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          { key: true },
-          { key: false },
-          { key: [] },
-          { key: {} },
-          { key: [0] },
-          { key: { a: 'b' } },
-          { key: 0 },
-          { key: 1 },
-          { key: null },
-          { notkey: true },
-        ],
-      };
+  ])('should support unary expressions: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        { key: true },
+        { key: false },
+        { key: [] },
+        { key: {} },
+        { key: [0] },
+        { key: { a: 'b' } },
+        { key: 0 },
+        { key: 1 },
+        { key: null },
+        { notkey: true },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -905,19 +899,19 @@ describe('Filer operator tests', () => {
       expression: 'foo[?@ == @]',
       expected: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
     },
-  ])(
-    'should support using current in a filter: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-      };
+  ])('should support using current in a filter: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 });

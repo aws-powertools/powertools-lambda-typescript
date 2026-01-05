@@ -16,7 +16,7 @@ describe('Router Validation Integration', () => {
     const requestBodySchema = z.object({ name: z.string() });
     type RequestBodyType = z.infer<typeof requestBodySchema>;
 
-    app.post<RequestBodyType>(
+    app.post<{ body: RequestBodyType }>(
       '/users',
       (reqCtx) => {
         const { name } = reqCtx.valid.req.body;
@@ -45,7 +45,7 @@ describe('Router Validation Integration', () => {
     const requestBodySchema = z.object({ name: z.string() });
     type RequestBodyType = z.infer<typeof requestBodySchema>;
 
-    app.post<RequestBodyType>(
+    app.post<{ body: RequestBodyType }>(
       '/users',
       () => ({ statusCode: 201, body: 'Created' }),
       {
@@ -72,7 +72,7 @@ describe('Router Validation Integration', () => {
     const requestBodySchema = z.string();
     type RequestBodyType = z.infer<typeof requestBodySchema>;
 
-    app.post<RequestBodyType>(
+    app.post<{ body: RequestBodyType }>(
       '/users',
       (reqCtx) => {
         const name = reqCtx.valid.req.body;
@@ -103,7 +103,7 @@ describe('Router Validation Integration', () => {
     });
     type RequestBodyType = z.infer<typeof requestBodySchema>;
 
-    app.post<RequestBodyType>(
+    app.post<{ body: RequestBodyType }>(
       '/users',
       (reqCtx) => {
         const name = reqCtx.valid.req.body;
@@ -130,8 +130,9 @@ describe('Router Validation Integration', () => {
   it('validates request headers successfully', async () => {
     // Prepare
     const headerSchema = z.object({ 'x-api-key': z.string() });
+    type HeaderType = z.infer<typeof headerSchema>;
 
-    app.get(
+    app.get<{ headers: HeaderType }>(
       '/protected',
       (reqCtx) => {
         const apiKey = reqCtx.valid.req.headers['x-api-key'];
@@ -174,8 +175,9 @@ describe('Router Validation Integration', () => {
   it('validates path parameters successfully', async () => {
     // Prepare
     const pathSchema = z.object({ id: z.string() });
+    type PathType = z.infer<typeof pathSchema>;
 
-    app.get(
+    app.get<{ path: PathType }>(
       '/users/:id',
       (reqCtx) => {
         const { id } = reqCtx.valid.req.path;
@@ -201,7 +203,7 @@ describe('Router Validation Integration', () => {
 
   it('returns 422 on path parameters validation failure', async () => {
     // Prepare
-    const pathSchema = z.object({ id: z.string().uuid() });
+    const pathSchema = z.object({ id: z.uuid() });
 
     app.get('/users/:id', () => ({ body: { id: '123' } }), {
       validation: { req: { path: pathSchema } },
@@ -220,8 +222,9 @@ describe('Router Validation Integration', () => {
   it('validates query parameters successfully', async () => {
     // Prepare
     const querySchema = z.object({ page: z.string(), limit: z.string() });
+    type QueryType = z.infer<typeof querySchema>;
 
-    app.get(
+    app.get<{ query: QueryType }>(
       '/users',
       (reqCtx) => {
         const { page, limit } = reqCtx.valid.req.query;
@@ -427,7 +430,7 @@ describe('Router Validation Integration', () => {
     type RequestType = z.infer<typeof requestSchema>;
     type ResponseType = z.infer<typeof responseSchema>;
 
-    app.post<RequestType, ResponseType>(
+    app.post<{ body: RequestType }, ResponseType>(
       '/users',
       (reqCtx) => {
         const { name, email } = reqCtx.valid.req.body;
@@ -461,7 +464,7 @@ describe('Router Validation Integration', () => {
     const bodySchema = z.object({ name: z.string() });
     type BodyType = z.infer<typeof bodySchema>;
 
-    app.post<BodyType>('/validated', () => ({ statusCode: 201 }), {
+    app.post<{ body: BodyType }>('/validated', () => ({ statusCode: 201 }), {
       validation: { req: { body: bodySchema } },
     });
 

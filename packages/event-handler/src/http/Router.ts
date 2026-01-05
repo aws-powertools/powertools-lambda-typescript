@@ -56,7 +56,7 @@ import {
   MethodNotAllowedError,
   NotFoundError,
 } from './errors.js';
-import { createValidationMiddleware } from './middleware/validation.js';
+import { validate } from './middleware/validation.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 import {
@@ -464,7 +464,7 @@ class Router {
     const allMiddleware = validation
       ? [
           ...middleware,
-          createValidationMiddleware<TReq, TResBody>(
+          validate<TReq, TResBody>(
             validation as ValidationConfig<TReq, TResBody>
           ),
         ]

@@ -109,22 +109,32 @@ describe('Logger E2E - Advanced uses', () => {
         }
       });
 
+      // Group logs by level and message for order-independent assertions
+      const parsedLogs = logs.map((log) =>
+        TestInvocationLogs.parseFunctionLog(log)
+      );
+      const correlationId = i + 1;
+
       if (isFirstInvocation) {
         // Logs outside of the function handler are only present on the first invocation
-        expect(TestInvocationLogs.parseFunctionLog(logs[0])).toEqual(
+        const neverBufferedLog = parsedLogs.find(
+          (log) =>
+            log.level === 'DEBUG' &&
+            log.message === 'a never buffered debug log'
+        );
+        expect(neverBufferedLog).toEqual(
           expect.objectContaining({
             level: 'DEBUG',
             message: 'a never buffered debug log',
           })
         );
       }
-      // Since we have an extra log (above) on the first invocation, we need to
-      // adjust the index of the logs we are checking
-      const logIndexOffset = isFirstInvocation ? 1 : 0;
-      const correlationId = i + 1;
-      expect(
-        TestInvocationLogs.parseFunctionLog(logs[0 + logIndexOffset])
-      ).toEqual(
+
+      // Find specific logs by content rather than position
+      const infoLog = parsedLogs.find(
+        (log) => log.level === 'INFO' && log.message === 'an info log'
+      );
+      expect(infoLog).toEqual(
         expect.objectContaining({
           level: 'INFO',
           message: 'an info log',
@@ -132,9 +142,11 @@ describe('Logger E2E - Advanced uses', () => {
           correlation_id: correlationId,
         })
       );
-      expect(
-        TestInvocationLogs.parseFunctionLog(logs[1 + logIndexOffset])
-      ).toEqual(
+
+      const bufferedDebugLog = parsedLogs.find(
+        (log) => log.level === 'DEBUG' && log.message === 'a buffered debug log'
+      );
+      expect(bufferedDebugLog).toEqual(
         expect.objectContaining({
           level: 'DEBUG',
           message: 'a buffered debug log',
@@ -142,9 +154,14 @@ describe('Logger E2E - Advanced uses', () => {
           correlation_id: correlationId,
         })
       );
-      expect(
-        TestInvocationLogs.parseFunctionLog(logs.at(-1) as string)
-      ).toEqual(
+
+      const errorLog = parsedLogs.find(
+        (log) =>
+          log.level === 'ERROR' &&
+          log.message ===
+            'Uncaught error detected, flushing log buffer before exit'
+      );
+      expect(errorLog).toEqual(
         expect.objectContaining({
           level: 'ERROR',
           message: 'Uncaught error detected, flushing log buffer before exit',

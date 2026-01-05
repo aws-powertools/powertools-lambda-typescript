@@ -16,7 +16,7 @@ import { RequestValidationError, ResponseValidationError } from '../errors.js';
  * @param config - Validation configuration for request and response
  * @returns Middleware function that validates request/response
  */
-export const createValidationMiddleware = <
+export const validate = <
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
 >(

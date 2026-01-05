@@ -26,13 +26,23 @@ type ResponseTypeMap = {
 };
 
 /**
+ * Request validation type parameters
+ */
+type ReqSchema = {
+  body?: unknown;
+  headers?: Record<string, string>;
+  path?: Record<string, string>;
+  query?: Record<string, string>;
+};
+
+/**
  * Validated request data
  */
-type ValidatedRequest<TBody = unknown> = {
-  body: TBody;
-  headers: Record<string, string>;
-  path: Record<string, string>;
-  query: Record<string, string>;
+type ValidatedRequest<TReq extends ReqSchema = ReqSchema> = {
+  body: TReq['body'];
+  headers: TReq['headers'];
+  path: TReq['path'];
+  query: TReq['query'];
 };
 
 /**
@@ -55,11 +65,11 @@ type RequestContext = {
 };
 
 type TypedRequestContext<
-  TReqBody = never,
+  TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
 > = RequestContext & {
   valid: {
-    req: ValidatedRequest<TReqBody>;
+    req: ValidatedRequest<TReq>;
     res: ValidatedResponse<TResBody>;
   };
 };
@@ -125,10 +135,10 @@ type RouteHandler<TReturn = HandlerResponse> = (
 ) => Promise<TReturn> | TReturn;
 
 type TypedRouteHandler<
-  TReqBody,
+  TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
 > = (
-  reqCtx: TypedRequestContext<TReqBody, TResBody>
+  reqCtx: TypedRequestContext<TReq, TResBody>
 ) => Promise<TResBody> | TResBody;
 
 type HttpMethod = keyof typeof HttpVerbs;
@@ -312,30 +322,30 @@ type RouterResponse =
  * Configuration for request validation.
  * At least one of body, headers, path, or query must be provided.
  */
-type RequestValidationConfig<T = unknown> =
+type RequestValidationConfig<TReq extends ReqSchema = ReqSchema> =
   | {
-      body: StandardSchemaV1<unknown, T>;
-      headers?: StandardSchemaV1<unknown, Record<string, string>>;
-      path?: StandardSchemaV1<unknown, Record<string, string>>;
-      query?: StandardSchemaV1<unknown, Record<string, string>>;
+      body: StandardSchemaV1<unknown, TReq['body']>;
+      headers?: StandardSchemaV1<unknown, TReq['headers']>;
+      path?: StandardSchemaV1<unknown, TReq['path']>;
+      query?: StandardSchemaV1<unknown, TReq['query']>;
     }
   | {
-      body?: StandardSchemaV1<unknown, T>;
-      headers: StandardSchemaV1<unknown, Record<string, string>>;
-      path?: StandardSchemaV1<unknown, Record<string, string>>;
-      query?: StandardSchemaV1<unknown, Record<string, string>>;
+      body?: StandardSchemaV1<unknown, TReq['body']>;
+      headers: StandardSchemaV1<unknown, TReq['headers']>;
+      path?: StandardSchemaV1<unknown, TReq['path']>;
+      query?: StandardSchemaV1<unknown, TReq['query']>;
     }
   | {
-      body?: StandardSchemaV1<unknown, T>;
-      headers?: StandardSchemaV1<unknown, Record<string, string>>;
-      path: StandardSchemaV1<unknown, Record<string, string>>;
-      query?: StandardSchemaV1<unknown, Record<string, string>>;
+      body?: StandardSchemaV1<unknown, TReq['body']>;
+      headers?: StandardSchemaV1<unknown, TReq['headers']>;
+      path: StandardSchemaV1<unknown, TReq['path']>;
+      query?: StandardSchemaV1<unknown, TReq['query']>;
     }
   | {
-      body?: StandardSchemaV1<unknown, T>;
-      headers?: StandardSchemaV1<unknown, Record<string, string>>;
-      path?: StandardSchemaV1<unknown, Record<string, string>>;
-      query: StandardSchemaV1<unknown, Record<string, string>>;
+      body?: StandardSchemaV1<unknown, TReq['body']>;
+      headers?: StandardSchemaV1<unknown, TReq['headers']>;
+      path?: StandardSchemaV1<unknown, TReq['path']>;
+      query: StandardSchemaV1<unknown, TReq['query']>;
     };
 
 /**
@@ -360,15 +370,15 @@ type ResponseValidationConfig<T extends HandlerResponse = HandlerResponse> =
  * At least one of req or res must be provided.
  */
 type ValidationConfig<
-  TReqBody = unknown,
+  TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
 > =
   | {
-      req: RequestValidationConfig<TReqBody>;
+      req: RequestValidationConfig<TReq>;
       res?: ResponseValidationConfig<TResBody>;
     }
   | {
-      req?: RequestValidationConfig<TReqBody>;
+      req?: RequestValidationConfig<TReq>;
       res: ResponseValidationConfig<TResBody>;
     };
 
@@ -384,20 +394,20 @@ type ValidationErrorDetail = {
  * Union type for middleware array or route handler
  */
 type MiddlewareOrHandler<
-  TReqBody = never,
+  TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
-> = Middleware[] | RouteHandler | TypedRouteHandler<TReqBody, TResBody>;
+> = Middleware[] | RouteHandler | TypedRouteHandler<TReq, TResBody>;
 
 /**
  * Union type for route handler or validation options
  */
 type HandlerOrOptions<
-  TReqBody = never,
+  TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
 > =
   | RouteHandler
-  | TypedRouteHandler<TReqBody, TResBody>
-  | { validation: ValidationConfig<TReqBody, TResBody> };
+  | TypedRouteHandler<TReq, TResBody>
+  | { validation: ValidationConfig<TReq, TResBody> };
 
 export type {
   BinaryResult,
@@ -443,4 +453,5 @@ export type {
   TypedRouteHandler,
   MiddlewareOrHandler,
   HandlerOrOptions,
+  ReqSchema,
 };

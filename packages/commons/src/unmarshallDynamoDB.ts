@@ -14,7 +14,7 @@ const typeHandlers: Record<string, (value: any) => unknown> = {
   B: (value) => value,
   BS: (value) => new Set(value),
   SS: (value) => new Set(value),
-  BOOL: (value) => Boolean(value),
+  BOOL: Boolean,
   N: (value) => convertNumber(value),
   NS: (value) => new Set((value as Array<string>).map(convertNumber)),
   L: (value) => (value as Array<AttributeValue>).map(convertAttributeValue),

@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
+
+### Features
+
+- fix DynamoDBStreamChangeRecordSchema.dynamodb type  ([#4817](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4817)) ([bf522f8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/bf522f8af15e0d66f0dac6bd14e08d16c6b8a3b9))
 ## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
 
 ### Features

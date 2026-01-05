@@ -9,11 +9,12 @@ on:
     branches:
       - main
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   code-quality:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
@@ -52,6 +53,8 @@ jobs:
           npm run test:unit:coverage -w ${{ matrix.workspace }}
           npm run test:unit:types -w ${{ matrix.workspace }}
   check-examples:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
@@ -77,6 +80,8 @@ jobs:
       - name: Run tests
         run: npm t
   check-layer-publisher:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
@@ -95,6 +100,8 @@ jobs:
       - name: Run tests
         run: npm run test:unit -w layers
   check-docs-snippets:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
@@ -111,6 +118,8 @@ jobs:
       - name: Run linting
         run: npm run lint -w examples/snippets
   check-docs:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev

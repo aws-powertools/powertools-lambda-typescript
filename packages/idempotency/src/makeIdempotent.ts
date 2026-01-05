@@ -126,7 +126,7 @@ function makeIdempotent<Func extends AnyFunction>(
   options: ItempotentFunctionOptions<Parameters<Func>>
 ): (...args: Parameters<Func>) => ReturnType<Func> {
   const { persistenceStore, config, keyPrefix } = options;
-  const idempotencyConfig = config ? config : new IdempotencyConfig({});
+  const idempotencyConfig = config ?? new IdempotencyConfig({});
 
   if (!idempotencyConfig.isEnabled()) return fn;
 
@@ -140,12 +140,10 @@ function makeIdempotent<Func extends AnyFunction>(
         args[1]?.lambdaContext || args[1]
       );
       functionPayloadToBeHashed = args[0];
+    } else if (isOptionsWithDataIndexArgument(options)) {
+      functionPayloadToBeHashed = args[options.dataIndexArgument];
     } else {
-      if (isOptionsWithDataIndexArgument(options)) {
-        functionPayloadToBeHashed = args[options.dataIndexArgument];
-      } else {
-        functionPayloadToBeHashed = args[0];
-      }
+      functionPayloadToBeHashed = args[0];
     }
 
     const isReplay = args[1]?.durableExecutionMode === 'ReplayMode';

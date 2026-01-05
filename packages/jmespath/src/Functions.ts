@@ -197,8 +197,8 @@ class Functions {
     if (isNumber(arg[0])) {
       return Math.max(...(arg as number[]));
     }
-    // local compare function to handle string comparison
-    return arg.reduce((a, b) => (a > b ? a : b));
+    // Math.max doesn't work with strings (returns NaN), so we use reduce for lexicographic comparison
+    return arg.reduce((a, b) => (a > b ? a : b)); // NOSONAR - Math.max only works with numbers
   }
 
   /**
@@ -279,7 +279,8 @@ class Functions {
     if (isNumber(arg[0])) {
       return Math.min(...arg);
     }
-    return arg.reduce((a, b) => (a < b ? a : b));
+    // Math.min doesn't work with strings (returns NaN), so we use reduce for lexicographic comparison
+    return arg.reduce((a, b) => (a < b ? a : b)); // NOSONAR - Math.min only works with numbers
   }
 
   /**

@@ -885,13 +885,13 @@ class Metrics extends Utility implements MetricsInterface {
    * @private
    */
   private setConsole(): void {
-    if (!this.#envConfig.devMode) {
+    if (this.#envConfig.devMode) {
+      this.console = console;
+    } else {
       this.console = new Console({
         stdout: process.stdout,
         stderr: process.stderr,
       });
-    } else {
-      this.console = console;
     }
   }
 
@@ -903,9 +903,7 @@ class Metrics extends Utility implements MetricsInterface {
   private setCustomConfigService(
     customConfigService?: ConfigServiceInterface
   ): void {
-    this.customConfigService = customConfigService
-      ? customConfigService
-      : undefined;
+    this.customConfigService = customConfigService;
   }
 
   /**
@@ -976,7 +974,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param options - The options to be used
    */
-  private setOptions(options: MetricsOptions): Metrics {
+  private setOptions(options: MetricsOptions): this {
     const {
       customConfigService,
       namespace,

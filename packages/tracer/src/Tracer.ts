@@ -851,9 +851,7 @@ class Tracer extends Utility implements TracerInterface {
   private setCustomConfigService(
     customConfigService?: ConfigServiceInterface
   ): void {
-    this.customConfigService = customConfigService
-      ? customConfigService
-      : undefined;
+    this.customConfigService = customConfigService;
   }
 
   /**

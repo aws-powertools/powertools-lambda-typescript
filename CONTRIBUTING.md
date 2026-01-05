@@ -5,9 +5,6 @@
 - [Reporting Bugs/Feature Requests](#reporting-bugsfeature-requests)
 - [Contributing via Pull Requests](#contributing-via-pull-requests)
     - [Dev setup](#dev-setup)
-        - [Gitpod](#gitpod)
-        - [GitHub Codespaces](#github-codespaces)
-        - [Local environment](#local-environment)
     - [Sending a pull request](#sending-a-pull-request)
     - [Local documentation](#local-documentation)
 - [Conventions](#conventions)
@@ -80,27 +77,7 @@ timeline
 
 ### Dev setup
 
-Firstly, [fork the repository](https://github.com/aws-powertools/powertools-lambda-typescript/fork).
-
-To setup your development environment, we recommend using our pre-configured Cloud environment like Gitpod or GitHub Codespaces.
-
-#### Gitpod
-
-To start using Gitpod, copy the following URL and replace `YOUR_USERNAME` with your GitHub username or organization:
-
-```text
-https://gitpod.io/#https://github.com/YOUR_USERNAME/aws-lambda-powertools-typescript
-```
-
-This will allow the Cloud environment to target your fork correctly.
-
-#### GitHub Codespaces
-
-To start using GitHub Codespaces, navigate to your fork of the repository, then click on the green `Code` button, and select `Create codespace on <branch_name>` under the `Codespaces` tab (where `<branch_name>` is the branch you want to work on).
-
-#### Local environment
-
-Alternatively, you can use `npm run setup-local` on your local machine.
+Firstly, [fork the repository](https://github.com/aws-powertools/powertools-lambda-typescript/fork), then use `npm run setup-local` on your local machine to install all dependencies and setup pre-commit hooks.
 
 ### Sending a pull request
 

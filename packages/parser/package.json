@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/parser",
-  "version": "2.29.0",
+  "version": "2.30.0",
   "description": "The parser package for the Powertools for AWS Lambda (TypeScript) library.",
   "author": {
     "name": "Amazon Web Services",
@@ -201,8 +201,8 @@
     "nodejs"
   ],
   "dependencies": {
-    "@aws-lambda-powertools/commons": "2.29.0",
-    "@standard-schema/spec": "^1.0.0"
+    "@aws-lambda-powertools/commons": "2.30.0",
+    "@standard-schema/spec": "^1.1.0"
   },
   "peerDependencies": {
     "@middy/core": "4.x || 5.x || 6.x",
@@ -217,6 +217,6 @@
     }
   },
   "devDependencies": {
-    "zod": "^4.1.13"
+    "zod": "^4.3.5"
   }
 }

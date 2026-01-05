@@ -113,9 +113,7 @@ const makeHandlerIdempotent = (
    * @param request - The Middy request object
    */
   const before = (request: MiddyLikeRequest): unknown => {
-    const idempotencyConfig = options.config
-      ? options.config
-      : new IdempotencyConfig({});
+    const idempotencyConfig = options.config ?? new IdempotencyConfig({});
     const persistenceStore = options.persistenceStore;
     const keyPrefix = options.keyPrefix;
     persistenceStore.configure({

@@ -155,7 +155,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
 
     if (this.isPayloadValidationEnabled() && record.payloadHash !== undefined) {
       item[this.validationKeyAttr] = {
-        S: record.payloadHash as string,
+        S: record.payloadHash,
       };
     }
 

@@ -111,24 +111,24 @@ describe('Slices tests', () => {
       expression: 'foo[:-5:-1]',
       expected: [9, 8, 7, 6],
     },
-  ])(
-    'should support slicing arrays: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-        bar: {
-          baz: 1,
-        },
-      };
+  ])('should support slicing arrays: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      bar: {
+        baz: 1,
+      },
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -150,18 +150,18 @@ describe('Slices tests', () => {
       error:
         'Invalid jmespath expression: parse error at column 6, found unexpected token "a" (unquoted_identifier) in expression: foo[2:a:3]',
     },
-  ])(
-    'slicing objects with arrays errors: $expression',
-    ({ expression, error }) => {
-      // Prepare
-      const data = {
-        type: 'object',
-      };
+  ])('slicing objects with arrays errors: $expression', ({
+    expression,
+    error,
+  }) => {
+    // Prepare
+    const data = {
+      type: 'object',
+    };
 
-      // Act & Assess
-      expect(() => search(expression, data)).toThrow(error);
-    }
-  );
+    // Act & Assess
+    expect(() => search(expression, data)).toThrow(error);
+  });
 
   it.each([
     {
@@ -188,23 +188,23 @@ describe('Slices tests', () => {
       expression: 'baz[:2].a',
       expected: null,
     },
-  ])(
-    'should support slicing an object with nested arrays with objects in them: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [{ a: 1 }, { a: 2 }, { a: 3 }],
-        bar: [{ a: { b: 1 } }, { a: { b: 2 } }, { a: { b: 3 } }],
-        baz: 50,
-      };
+  ])('should support slicing an object with nested arrays with objects in them: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [{ a: 1 }, { a: 2 }, { a: 3 }],
+      bar: [{ a: { b: 1 } }, { a: { b: 2 } }, { a: { b: 3 } }],
+      baz: 50,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -223,17 +223,17 @@ describe('Slices tests', () => {
       expression: '[:2].b',
       expected: [],
     },
-  ])(
-    'should support slicing an array with objects in it: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = [{ a: 1 }, { a: 2 }, { a: 3 }];
+  ])('should support slicing an array with objects in it: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = [{ a: 1 }, { a: 2 }, { a: 3 }];
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 });

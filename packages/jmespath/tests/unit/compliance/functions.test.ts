@@ -27,35 +27,35 @@ describe('Functions tests', () => {
       expression: 'abs(`-24`)',
       expected: 24,
     },
-  ])(
-    'should support the abs() function: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the abs() function: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -137,35 +137,35 @@ describe('Functions tests', () => {
       expression: 'avg(numbers)',
       expected: 2.75,
     },
-  ])(
-    'should support the avg() function: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the avg() function: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -233,35 +233,35 @@ describe('Functions tests', () => {
       expression: 'ceil(decimals[2])',
       expected: -1,
     },
-  ])(
-    'should support the ceil() function: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the ceil() function: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -313,35 +313,35 @@ describe('Functions tests', () => {
       expression: 'contains(decimals, `false`)',
       expected: false,
     },
-  ])(
-    'should support the contains() function: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the contains() function: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -394,35 +394,35 @@ describe('Functions tests', () => {
       expression: `ends_with(str, 'foo')`,
       expected: false,
     },
-  ])(
-    'should support the ends_with() function: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the ends_with() function: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -467,35 +467,35 @@ describe('Functions tests', () => {
       expression: 'floor(foo)',
       expected: -1,
     },
-  ])(
-    'should support the floor() function: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the floor() function: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -568,35 +568,35 @@ describe('Functions tests', () => {
       expression: 'length(strings[0])',
       expected: 1,
     },
-  ])(
-    'should support the length() function: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the length() function: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -654,35 +654,35 @@ describe('Functions tests', () => {
       expression: 'max(empty_list)',
       expected: null,
     },
-  ])(
-    'should support the max() function: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the max() function: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -750,35 +750,35 @@ describe('Functions tests', () => {
         d: 4,
       },
     },
-  ])(
-    'should support the merge() function: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the merge() function: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -801,35 +801,35 @@ describe('Functions tests', () => {
       expression: 'min(strings)',
       expected: 'a',
     },
-  ])(
-    'should support the min() function: $expression',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the min() function: $expression', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -959,35 +959,35 @@ describe('Functions tests', () => {
       expression: 'sort(empty_list)',
       expected: [],
     },
-  ])(
-    'should support the sort(), key(), and values() functions',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the sort(), key(), and values() functions', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -1025,32 +1025,32 @@ describe('Functions tests', () => {
       error:
         'Invalid argument type for function sort(), expected one of "array-number", "array-string" but found "object" in expression: sort(@)',
     },
-  ])(
-    'sort(), keys(), and values() function errors',
-    ({ expression, error }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('sort(), keys(), and values() function errors', ({
+    expression,
+    error,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act & Assess
-      expect(() => search(expression, data)).toThrow(error);
-    }
-  );
+    // Act & Assess
+    expect(() => search(expression, data)).toThrow(error);
+  });
 
   it.each([
     {
@@ -1213,35 +1213,35 @@ describe('Functions tests', () => {
       expression: `starts_with(str, 'String')`,
       expected: false,
     },
-  ])(
-    'should support the starts_with() function',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: -1,
-        zero: 0,
-        numbers: [-1, 3, 4, 5],
-        array: [-1, 3, 4, 5, 'a', '100'],
-        strings: ['a', 'b', 'c'],
-        decimals: [1.01, 1.2, -1.5],
-        str: 'Str',
-        false: false,
-        empty_list: [],
-        empty_hash: {},
-        objects: {
-          foo: 'bar',
-          bar: 'baz',
-        },
-        null_key: null,
-      };
+  ])('should support the starts_with() function', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: -1,
+      zero: 0,
+      numbers: [-1, 3, 4, 5],
+      array: [-1, 3, 4, 5, 'a', '100'],
+      strings: ['a', 'b', 'c'],
+      decimals: [1.01, 1.2, -1.5],
+      str: 'Str',
+      false: false,
+      empty_list: [],
+      empty_hash: {},
+      objects: {
+        foo: 'bar',
+        bar: 'baz',
+      },
+      null_key: null,
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -1564,42 +1564,42 @@ describe('Functions tests', () => {
       expression: 'foo[].not_null(f, e, d, c, b, a)',
       expected: ['b', 'c', 'd', 'e', 'f'],
     },
-  ])(
-    'should support function projection on variadic function',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        foo: [
-          {
-            b: 'b',
-            a: 'a',
-          },
-          {
-            c: 'c',
-            b: 'b',
-          },
-          {
-            d: 'd',
-            c: 'c',
-          },
-          {
-            e: 'e',
-            d: 'd',
-          },
-          {
-            f: 'f',
-            e: 'e',
-          },
-        ],
-      };
+  ])('should support function projection on variadic function', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      foo: [
+        {
+          b: 'b',
+          a: 'a',
+        },
+        {
+          c: 'c',
+          b: 'b',
+        },
+        {
+          d: 'd',
+          c: 'c',
+        },
+        {
+          e: 'e',
+          d: 'd',
+        },
+        {
+          f: 'f',
+          e: 'e',
+        },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {
@@ -2352,37 +2352,37 @@ describe('Functions tests', () => {
       expression: 'map(&foo.bar.baz, array)',
       expected: [null, null, null],
     },
-  ])(
-    'should support map() with the `&` expression cases',
-    ({ expression, expected }) => {
-      // Prepare
-      const data = {
-        array: [
-          {
-            foo: {
-              bar: 'yes1',
-            },
+  ])('should support map() with the `&` expression cases', ({
+    expression,
+    expected,
+  }) => {
+    // Prepare
+    const data = {
+      array: [
+        {
+          foo: {
+            bar: 'yes1',
           },
-          {
-            foo: {
-              bar: 'yes2',
-            },
+        },
+        {
+          foo: {
+            bar: 'yes2',
           },
-          {
-            foo1: {
-              bar: 'no',
-            },
+        },
+        {
+          foo1: {
+            bar: 'no',
           },
-        ],
-      };
+        },
+      ],
+    };
 
-      // Act
-      const result = search(expression, data);
+    // Act
+    const result = search(expression, data);
 
-      // Assess
-      expect(result).toStrictEqual(expected);
-    }
-  );
+    // Assess
+    expect(result).toStrictEqual(expected);
+  });
 
   it.each([
     {

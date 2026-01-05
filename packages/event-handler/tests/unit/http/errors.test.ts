@@ -8,6 +8,8 @@ import {
   NotFoundError,
   RequestEntityTooLargeError,
   RequestTimeoutError,
+  RequestValidationError,
+  ResponseValidationError,
   ServiceUnavailableError,
   UnauthorizedError,
 } from '../../../src/http/index.js';
@@ -68,15 +70,17 @@ describe('HTTP Error Classes', () => {
       statusCode: HttpStatusCodes.SERVICE_UNAVAILABLE,
       customMessage: 'Maintenance mode',
     },
-  ])(
-    '$errorType uses custom message when provided',
-    ({ ErrorClass, errorType, statusCode, customMessage }) => {
-      const error = new ErrorClass(customMessage);
-      expect(error.message).toBe(customMessage);
-      expect(error.statusCode).toBe(statusCode);
-      expect(error.errorType).toBe(errorType);
-    }
-  );
+  ])('$errorType uses custom message when provided', ({
+    ErrorClass,
+    errorType,
+    statusCode,
+    customMessage,
+  }) => {
+    const error = new ErrorClass(customMessage);
+    expect(error.message).toBe(customMessage);
+    expect(error.statusCode).toBe(statusCode);
+    expect(error.errorType).toBe(errorType);
+  });
 
   describe('toJSON', () => {
     it.each([
@@ -134,19 +138,21 @@ describe('HTTP Error Classes', () => {
         statusCode: HttpStatusCodes.SERVICE_UNAVAILABLE,
         message: 'Maintenance mode',
       },
-    ])(
-      '$errorType serializes to JSON format',
-      ({ ErrorClass, errorType, statusCode, message }) => {
-        const error = new ErrorClass(message);
-        const json = error.toJSON();
+    ])('$errorType serializes to JSON format', ({
+      ErrorClass,
+      errorType,
+      statusCode,
+      message,
+    }) => {
+      const error = new ErrorClass(message);
+      const json = error.toJSON();
 
-        expect(json).toEqual({
-          statusCode,
-          error: errorType,
-          message,
-        });
-      }
-    );
+      expect(json).toEqual({
+        statusCode,
+        error: errorType,
+        message,
+      });
+    });
 
     it('includes details in JSON when provided', () => {
       const details = { field: 'value', code: 'VALIDATION_ERROR' };
@@ -179,5 +185,179 @@ describe('HTTP Error Classes', () => {
     const error = new BadRequestError('Invalid input', { cause });
 
     expect(error.cause).toBe(cause);
+  });
+
+  describe('RequestValidationError', () => {
+    it('creates error with correct statusCode', () => {
+      const error = new RequestValidationError(
+        'Validation failed for request body'
+      );
+
+      expect(error.statusCode).toBe(HttpStatusCodes.UNPROCESSABLE_ENTITY);
+      expect(error.statusCode).toBe(422);
+    });
+
+    it('creates error with correct errorType', () => {
+      const error = new RequestValidationError(
+        'Validation failed for request body'
+      );
+
+      expect(error.errorType).toBe('RequestValidationError');
+      expect(error.name).toBe('RequestValidationError');
+    });
+
+    it('stores validation issues', () => {
+      const issues = [
+        { message: 'Required field missing', path: ['name'] },
+        { message: 'Invalid type', path: ['age'] },
+      ];
+      const error = new RequestValidationError(
+        'Validation failed for request body',
+        issues
+      );
+
+      expect(error.details?.issues).toEqual([
+        { message: 'Required field missing', path: ['name'] },
+        { message: 'Invalid type', path: ['age'] },
+      ]);
+    });
+
+    it('passes options to Error superclass', () => {
+      const cause = new Error('Root cause');
+      const error = new RequestValidationError(
+        'Validation failed for request body',
+        undefined,
+        { cause }
+      );
+
+      expect(error.cause).toBe(cause);
+    });
+
+    it('converts to JSON response', () => {
+      const error = new RequestValidationError(
+        'Validation failed for request body'
+      );
+
+      const json = error.toJSON();
+      expect(json).toEqual({
+        statusCode: 422,
+        error: 'RequestValidationError',
+        message: 'Validation failed for request body',
+        details: {
+          issues: undefined,
+        },
+      });
+    });
+
+    it('includes issues in JSON when provided', () => {
+      const issues = [
+        { message: 'Required field missing', path: ['name'] },
+        { message: 'Invalid type', path: ['age'] },
+      ];
+      const error = new RequestValidationError(
+        'Validation failed for request body',
+        issues
+      );
+
+      const json = error.toJSON();
+      expect(json).toEqual({
+        statusCode: 422,
+        error: 'RequestValidationError',
+        message: 'Validation failed for request body',
+        details: {
+          issues: [
+            { message: 'Required field missing', path: ['name'] },
+            { message: 'Invalid type', path: ['age'] },
+          ],
+        },
+      });
+    });
+  });
+
+  describe('ResponseValidationError', () => {
+    it('creates error with correct statusCode', () => {
+      const error = new ResponseValidationError(
+        'Validation failed for response body'
+      );
+
+      expect(error.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(error.statusCode).toBe(500);
+    });
+
+    it('creates error with correct errorType', () => {
+      const error = new ResponseValidationError(
+        'Validation failed for response body'
+      );
+
+      expect(error.errorType).toBe('ResponseValidationError');
+      expect(error.name).toBe('ResponseValidationError');
+    });
+
+    it('stores validation issues', () => {
+      const issues = [
+        { message: 'Required field missing', path: ['id'] },
+        { message: 'Invalid format', path: ['email'] },
+      ];
+      const error = new ResponseValidationError(
+        'Validation failed for response body',
+        issues
+      );
+
+      expect(error.details?.issues).toEqual([
+        { message: 'Required field missing', path: ['id'] },
+        { message: 'Invalid format', path: ['email'] },
+      ]);
+    });
+
+    it('passes options to Error superclass', () => {
+      const cause = new Error('Root cause');
+      const error = new ResponseValidationError(
+        'Validation failed for response body',
+        undefined,
+        { cause }
+      );
+
+      expect(error.cause).toBe(cause);
+    });
+
+    it('converts to JSON response', () => {
+      const error = new ResponseValidationError(
+        'Validation failed for response body'
+      );
+
+      const json = error.toJSON();
+      expect(json).toEqual({
+        statusCode: 500,
+        error: 'ResponseValidationError',
+        message: 'Validation failed for response body',
+        details: {
+          issues: undefined,
+        },
+      });
+    });
+
+    it('includes issues in JSON when provided', () => {
+      const issues = [
+        { message: 'Required field missing', path: ['id'] },
+        { message: 'Invalid format', path: ['email'] },
+      ];
+      const error = new ResponseValidationError(
+        'Validation failed for response body',
+        issues
+      );
+
+      const json = error.toJSON();
+      expect(json).toEqual({
+        statusCode: 500,
+        error: 'ResponseValidationError',
+        message: 'Validation failed for response body',
+        details: {
+          issues: [
+            { message: 'Required field missing', path: ['id'] },
+            { message: 'Invalid format', path: ['email'] },
+          ],
+        },
+      });
+    });
   });
 });

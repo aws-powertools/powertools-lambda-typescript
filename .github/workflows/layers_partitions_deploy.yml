@@ -117,7 +117,7 @@ jobs:
       - name: Store Metadata - ${{ matrix.region }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
-          name: AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json
+          name: AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}-${{ inputs.environment }}.json
           path: AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json
           retention-days: 1
           if-no-files-found: error

@@ -1,5 +1,22 @@
 # Change Log
 
+## [2.30.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.0...v2.30.1) (2026-01-06)
+
+### Improvements
+
+- **logger** replace lodash.merge with internal deepMerge utility ([#4892](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4892)) ([db21896](https://github.com/aws-powertools/powertools-lambda-typescript/commit/db21896ee25f9903148cb6467cc6cdc382eb84fc))
+
+### Bug Fixes
+
+- **logger** improve e2e test resilience by grouping logs by level ([#4909](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4909)) ([5f06f21](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5f06f21515da276901e5ee8c547e2a1d1a596def))
+
+### Maintenance
+
+- **parser** bump @standard-schema/spec from 1.0.0 to 1.1.0 ([#4880](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4880)) ([79a236d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/79a236df12e15398e8e1cdbf803bc81d51e50866))
+- **batch** bump @standard-schema/spec from 1.0.0 to 1.1.0 ([#4880](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4880)) ([79a236d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/79a236df12e15398e8e1cdbf803bc81d51e50866))
+- **kafka** bump @standard-schema/spec from 1.0.0 to 1.1.0 ([#4880](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4880)) ([79a236d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/79a236df12e15398e8e1cdbf803bc81d51e50866))
+
+
 ## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
 
 ### Maintenance

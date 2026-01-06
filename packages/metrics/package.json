@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/metrics",
-  "version": "2.30.0",
+  "version": "2.30.1",
   "description": "The metrics package for the Powertools for AWS Lambda (TypeScript) library",
   "author": {
     "name": "Amazon Web Services",
@@ -90,7 +90,7 @@
   },
   "dependencies": {
     "@aws/lambda-invoke-store": "0.2.2",
-    "@aws-lambda-powertools/commons": "2.30.0"
+    "@aws-lambda-powertools/commons": "2.30.1"
   },
   "keywords": [
     "aws",

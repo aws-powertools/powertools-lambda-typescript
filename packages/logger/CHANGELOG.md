@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.30.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.0...v2.30.1) (2026-01-06)
+
+### Improvements
+
+- replace lodash.merge with internal deepMerge utility ([#4892](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4892)) ([db21896](https://github.com/aws-powertools/powertools-lambda-typescript/commit/db21896ee25f9903148cb6467cc6cdc382eb84fc))
+
+### Bug Fixes
+
+- improve e2e test resilience by grouping logs by level ([#4909](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4909)) ([5f06f21](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5f06f21515da276901e5ee8c547e2a1d1a596def))
 ## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
 
 ### Maintenance

@@ -1,0 +1,97 @@
+{
+  "timestamp": "2024-12-19T20:30:00.000Z",
+  "repository": "aws-lambda-powertools-typescript",
+  "systemInfo": {
+    "nodeVersion": "v24.11.1",
+    "typescriptVersion": "Version 5.9.3",
+    "platform": "Darwin arm64",
+    "cpus": 12,
+    "testPackage": "commons",
+    "sourceFiles": 22
+  },
+  "buildConfiguration": {
+    "incremental": true,
+    "composite": true,
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  },
+  "benchmarkResults": {
+    "esmCleanBuilds": {
+      "name": "Commons ESM Clean Builds",
+      "command": "npx tsc --build packages/commons/tsconfig.json",
+      "iterations": 5,
+      "times": [1754, 1498, 1486, 1602, 1952],
+      "stats": {
+        "mean": 1658,
+        "min": 1486,
+        "max": 1952,
+        "stdDev": 186
+      }
+    },
+    "esmIncrementalBuilds": {
+      "name": "Commons ESM Incremental Builds",
+      "command": "npx tsc --build packages/commons/tsconfig.json",
+      "iterations": 5,
+      "times": [689, 594, 625, 674, 623],
+      "stats": {
+        "mean": 641,
+        "min": 594,
+        "max": 689,
+        "stdDev": 37
+      }
+    },
+    "cjsCleanBuilds": {
+      "name": "Commons CJS Clean Builds",
+      "command": "npx tsc --build packages/commons/tsconfig.cjs.json",
+      "iterations": 5,
+      "times": [1504, 2197, 1613, 1525, 1576],
+      "stats": {
+        "mean": 1683,
+        "min": 1504,
+        "max": 2197,
+        "stdDev": 267
+      }
+    },
+    "cjsIncrementalBuilds": {
+      "name": "Commons CJS Incremental Builds",
+      "command": "npx tsc --build packages/commons/tsconfig.cjs.json",
+      "iterations": 5,
+      "times": [867, 602, 590, 620, 575],
+      "stats": {
+        "mean": 651,
+        "min": 575,
+        "max": 867,
+        "stdDev": 115
+      }
+    }
+  },
+  "analysis": {
+    "incrementalSpeedup": {
+      "esm": 2.59,
+      "cjs": 2.58,
+      "average": 2.58
+    },
+    "buildTypeComparison": {
+      "cleanBuilds": {
+        "esmVsCjs": "ESM slightly faster by 25ms (1.5%)"
+      },
+      "incrementalBuilds": {
+        "esmVsCjs": "ESM slightly faster by 10ms (1.5%)"
+      }
+    },
+    "variance": {
+      "cleanBuilds": "Higher variance, especially CJS (±267ms)",
+      "incrementalBuilds": "Lower variance, more consistent (±37-115ms)"
+    }
+  },
+  "recommendations": {
+    "forNativeCompilerComparison": [
+      "Focus on clean build performance improvements",
+      "Measure startup time reduction",
+      "Track memory usage differences",
+      "Test with larger packages for better signal",
+      "Run 50-100 iterations for statistical significance"
+    ]
+  }
+}

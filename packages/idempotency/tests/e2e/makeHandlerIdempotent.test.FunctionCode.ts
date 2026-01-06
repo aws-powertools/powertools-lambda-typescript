@@ -1,6 +1,6 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
-import middy from 'middy6';
+import middy from 'middy7';
 import { IdempotencyConfig } from '../../src/IdempotencyConfig.js';
 import { makeHandlerIdempotent } from '../../src/middleware/makeHandlerIdempotent.js';
 import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';

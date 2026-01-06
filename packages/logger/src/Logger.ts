@@ -510,7 +510,7 @@ class Logger extends Utility implements LoggerInterface {
         }
 
         try {
-          return await originalMethod.apply(this, args);
+          return await (originalMethod as any).apply(this, args);
         } catch (error) {
           if (options?.flushBufferOnUncaughtError) {
             loggerRef.flushBuffer();

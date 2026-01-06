@@ -429,7 +429,7 @@ class Tracer extends Utility implements TracerInterface {
         ...args: Parameters<Handler>
       ) {
         if (!tracerRef.isTracingEnabled()) {
-          return originalMethod.apply(this, args);
+          return (originalMethod as any).apply(this, args);
         }
 
         return tracerRef.provider.captureAsyncFunc(
@@ -439,7 +439,7 @@ class Tracer extends Utility implements TracerInterface {
             tracerRef.addServiceNameAnnotation();
             let result: unknown;
             try {
-              result = await originalMethod.apply(this, args);
+              result = await (originalMethod as any).apply(this, args);
               if (options?.captureResponse ?? true) {
                 tracerRef.addResponseAsMetadata(result, process.env._HANDLER);
               }

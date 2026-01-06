@@ -561,7 +561,7 @@ class Metrics extends Utility implements MetricsInterface {
 
         let result: unknown;
         try {
-          result = await originalMethod.apply(this, args);
+          result = await (originalMethod as any).apply(this, args);
         } finally {
           metricsRef.publishStoredMetrics();
         }

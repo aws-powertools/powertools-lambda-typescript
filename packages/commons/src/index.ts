@@ -8,6 +8,7 @@ if (process.env.AWS_SDK_UA_APP_ID) {
 }
 
 export { addUserAgentMiddleware, isSdkClient } from './awsSdkUtils.js';
+export { deepMerge } from './deepMerge.js';
 export { cleanupMiddlewares } from './middleware/cleanupMiddlewares.js';
 export {
   IDEMPOTENCY_KEY,

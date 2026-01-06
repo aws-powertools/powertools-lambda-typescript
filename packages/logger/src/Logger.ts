@@ -1,6 +1,10 @@
 import { Console } from 'node:console';
 import { randomInt } from 'node:crypto';
-import { isNullOrUndefined, Utility } from '@aws-lambda-powertools/commons';
+import {
+  deepMerge,
+  isNullOrUndefined,
+  Utility,
+} from '@aws-lambda-powertools/commons';
 import type {
   AsyncHandler,
   HandlerMethodDecorator,
@@ -14,7 +18,6 @@ import {
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
 import type { Callback, Context, Handler } from 'aws-lambda';
-import merge from 'lodash.merge';
 import {
   LogJsonIndent,
   LogLevelThreshold,
@@ -337,7 +340,7 @@ class Logger extends Utility implements LoggerInterface {
     const childLogger = this.createLogger(
       // Merge parent logger options with options passed to createChild,
       // the latter having precedence.
-      merge(
+      deepMerge(
         {},
         {
           logLevel: this.getLevelName(),
@@ -771,6 +774,7 @@ class Logger extends Utility implements LoggerInterface {
         return replacedValue.toString();
       }
       if (typeof replacedValue === 'object' && replacedValue !== null) {
+        /* v8 ignore next -- @preserve */
         if (references.has(replacedValue)) {
           return;
         }
@@ -787,7 +791,7 @@ class Logger extends Utility implements LoggerInterface {
    * @param attributes - The attributes to add to all log items.
    */
   private addToPowertoolsLogData(attributes: Partial<PowertoolsLogData>): void {
-    merge(this.powertoolsLogData, attributes);
+    deepMerge(this.powertoolsLogData, attributes);
   }
 
   #filterReservedAttributeKeys(attributes: LogKeys) {
@@ -812,7 +816,9 @@ class Logger extends Utility implements LoggerInterface {
       this.#attributesStore.appendTemporaryKeys(filtered);
     } else {
       const current = this.#attributesStore.getPersistentAttributes();
-      this.#attributesStore.setPersistentAttributes(merge(current, filtered));
+      this.#attributesStore.setPersistentAttributes(
+        deepMerge(current, filtered)
+      );
     }
   }
 

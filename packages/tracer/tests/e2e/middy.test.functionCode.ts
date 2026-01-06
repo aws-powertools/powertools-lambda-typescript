@@ -1,6 +1,6 @@
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import type { Context } from 'aws-lambda';
-import middy from 'middy5';
+import middy from 'middy6';
 import { Tracer } from '../../src/index.js';
 import { captureLambdaHandler } from '../../src/middleware/middy.js';
 import {

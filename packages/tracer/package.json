@@ -35,7 +35,7 @@
     "@aws-sdk/client-xray": "^3.962.0"
   },
   "peerDependencies": {
-    "@middy/core": "4.x || 5.x || 6.x"
+    "@middy/core": "4.x || 5.x || 6.x || 7.x"
   },
   "peerDependenciesMeta": {
     "@middy/core": {

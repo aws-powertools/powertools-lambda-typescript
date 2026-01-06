@@ -100,7 +100,7 @@ Be aware of recurring ambiguous situations and [document them](#common-scenarios
 
 ### Uphold Code of Conduct
 
-Model the behavior set forward by the [Code of Conduct](https://github.com/aws-powertools/powertools-lambda-typescript/blob/develop/CODE_OF_CONDUCT.md){target="_blank"} and raise any violations to other maintainers and admins. There could be unusual circumstances where inappropriate behavior does not immediately fall within the [Code of Conduct](https://github.com/aws-powertools/powertools-lambda-typescript/blob/develop/CODE_OF_CONDUCT.md){target="_blank"}.
+Model the behavior set forward by the [Code of Conduct](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CODE_OF_CONDUCT.md){target="_blank"} and raise any violations to other maintainers and admins. There could be unusual circumstances where inappropriate behavior does not immediately fall within the [Code of Conduct](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CODE_OF_CONDUCT.md){target="_blank"}.
 
 These might be nuanced and should be handled with extra care - when in doubt, do not engage and reach out to other maintainers and admins.
 
@@ -176,21 +176,11 @@ tests, 5/ update the documentation with the new version.
 4. **Review and approve docs PR**: Once the `Make Release` workflow is complete, a PR will be created to update the
 documentation with the new version. Review and approve this PR **but do not merge it yet**. Take note of the Lambda
 layer version that was deployed, as this will be used in the next steps.
-5. **Publish GovCloud Layers (Gamma)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch,
-targeting the `Gamma` deployment environment and the GovCloud partition, using the Lambda layer version from the
-step 4. This will publish the Lambda layers to the AWS GovCloud (US-East) and AWS GovCloud (US-West) Regions.
-6. **Publish GovCloud Layers (Prod)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch,
-targeting the `Prod` deployment environment and the GovCloud partition, using the Lambda layer version from step 4.
-This will publish the Lambda layers to the AWS GovCloud (US-East) and AWS GovCloud (US-West) Regions.
-7. **Publish China Layer (Gamma)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting
-the `Gamma` deployment environment and the China partition, using the Lambda layer version from step 4. This will
-publish the Lambda layer to the AWS China (Beijing) Region.
-8. **Publish China Layer (Prod)**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch,
-targeting the `Prod` deployment environment and the China partition, and using the Lambda layer version from step 4.
-This will publish the Lambda layer to the AWS China (Beijing) Region.
-9. **Merge docs PR**: Once the `Layer Deployment (Partition)` workflow for the production China partition is complete,
+5. **Publish GovCloud Layers**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting the `GovCloud` partition. This will publish the Lambda layers to the AWS GovCloud (US-East) and AWS GovCloud (US-West) Regions.
+6. **Publish China Layer**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting the `China` partition. This will publish the Lambda layer to the AWS China (Beijing) Region.
+7. **Merge docs PR**: Once the `Layer Deployment (Partition)` workflow for the production China partition is complete,
 merge the PR from step 4 to update the documentation with the new version.
-10. **Update Docs**: Run the `Rebuild latest docs` workflow with the `main` branch using the package version from
+8. **Update Docs**: Run the `Rebuild latest docs` workflow with the `main` branch using the package version from
 npm (i.e. `2.20.0`). This will update the documentation with the new version.
 
 Once complete, you can start drafting the release notes to let customers know **what changed and what's in it for them (a.k.a why they should care)**. We have guidelines in the release notes section so you know what good looks like.
@@ -349,7 +339,7 @@ Finally, add the new region to the [`region` matrix](https://github.com/aws-powe
 ### Negative Impact on the Project
 
 <!-- markdownlint-disable MD013 -->
-Actions that negatively impact the project will be handled by the admins, in coordination with other maintainers, in balance with the urgency of the issue. Examples would be [Code of Conduct](https://github.com/aws-powertools/powertools-lambda-typescript/blob/develop/CODE_OF_CONDUCT.md){target="_blank"} violations, deliberate harmful or malicious actions, spam, monopolization, and security risks.
+Actions that negatively impact the project will be handled by the admins, in coordination with other maintainers, in balance with the urgency of the issue. Examples would be [Code of Conduct](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CODE_OF_CONDUCT.md){target="_blank"} violations, deliberate harmful or malicious actions, spam, monopolization, and security risks.
 <!-- markdownlint-enable MD013 -->
 
 ### Becoming a maintainer

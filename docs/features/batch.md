@@ -86,6 +86,9 @@ Processing batches from SQS works in three stages:
 !!! note
     By default, the batch processor will process messages in parallel, which does not guarantee the order of processing. If you need to process messages in order, set the [`processInParallel` option to `false`](#sequential-processing), or use [`SqsFifoPartialProcessor` for SQS FIFO queues](#fifo-queues).
 
+!!! note
+    If you're migrating from `BatchProcessorSync` to `BatchProcessor`, note that `processPartialResponse` is async and returns a promise.
+
 === "index.ts"
 
     ```typescript hl_lines="1-5 9 12 21-23"

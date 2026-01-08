@@ -240,7 +240,7 @@ class Metrics extends Utility implements MetricsInterface {
    * @param name - The name of the dimension
    * @param value - The value of the dimension
    */
-  public addDimension(name: string, value: string): Metrics {
+  public addDimension(name: string, value: string): this {
     if (isStringUndefinedNullEmpty(name) || isStringUndefinedNullEmpty(value)) {
       this.#logger.warn(
         `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
@@ -278,7 +278,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param dimensions - An object with key-value pairs of dimensions
    */
-  public addDimensions(dimensions: Dimensions): Metrics {
+  public addDimensions(dimensions: Dimensions): this {
     const newDimensions = this.#sanitizeDimensions(dimensions);
     const currentCount = this.#dimensionsStore.getDimensionCount();
     const newSetCount = Object.keys(newDimensions).length;
@@ -319,7 +319,7 @@ class Metrics extends Utility implements MetricsInterface {
    * @param key - The key of the metadata
    * @param value - The value of the metadata
    */
-  public addMetadata(key: string, value: string): Metrics {
+  public addMetadata(key: string, value: string): this {
     this.#metadataStore.set(key, value);
     return this;
   }
@@ -363,7 +363,7 @@ class Metrics extends Utility implements MetricsInterface {
     unit: MetricUnit,
     value: number,
     resolution: MetricResolution = MetricResolutions.Standard
-  ): Metrics {
+  ): this {
     this.storeMetric(name, unit, value, resolution);
     if (this.isSingleMetric) this.publishStoredMetrics();
     return this;
@@ -455,7 +455,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    *   // ...
    *
-   *   metrics.clearDimensions(); // olnly the region dimension is removed
+   *   metrics.clearDimensions(); // only the region dimension is removed
    * };
    * ```
    *
@@ -600,7 +600,7 @@ class Metrics extends Utility implements MetricsInterface {
    * };
    * ```
    */
-  public publishStoredMetrics(): Metrics {
+  public publishStoredMetrics(): this {
     const hasMetrics = this.hasStoredMetrics();
     if (!this.shouldThrowOnEmptyMetrics && !hasMetrics) {
       this.#logger.warn(
@@ -651,7 +651,7 @@ class Metrics extends Utility implements MetricsInterface {
    * ```
    * @param timestamp - The timestamp to set, which can be a number or a Date object.
    */
-  public setTimestamp(timestamp: number | Date): Metrics {
+  public setTimestamp(timestamp: number | Date): this {
     if (!this.#validateEmfTimestamp(timestamp)) {
       this.#logger.warn(
         "This metric doesn't meet the requirements and will be skipped by Amazon CloudWatch. " +
@@ -793,7 +793,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param dimensions - The dimensions to be added to the default dimensions object
    */
-  public setDefaultDimensions(dimensions: Dimensions): Metrics {
+  public setDefaultDimensions(dimensions: Dimensions): this {
     const newDimensions = this.#sanitizeDimensions(dimensions);
     const currentDefaultDimensions =
       this.#dimensionsStore.getDefaultDimensions();
@@ -831,7 +831,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param enabled - Whether to throw an error if no metrics are emitted
    */
-  public setThrowOnEmptyMetrics(enabled: boolean): Metrics {
+  public setThrowOnEmptyMetrics(enabled: boolean): this {
     this.shouldThrowOnEmptyMetrics = enabled;
     return this;
   }

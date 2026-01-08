@@ -179,7 +179,7 @@ interface MetricsInterface {
    * @param name - The name of the dimension
    * @param value - The value of the dimension
    */
-  addDimension(name: string, value: string): MetricsInterface; // Unsure if this should be Metrics or MetricsInterface?
+  addDimension(name: string, value: string): MetricsInterface;
   /**
    * Add multiple dimensions to the metrics.
    *

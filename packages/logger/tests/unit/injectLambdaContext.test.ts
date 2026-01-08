@@ -16,6 +16,7 @@ const getContextLogEntries = (overrides?: Record<string, unknown>) => ({
   function_memory_size: context.memoryLimitInMB,
   function_name: context.functionName,
   function_request_id: context.awsRequestId,
+  tenant_id: context.tenantId,
   cold_start: true,
   ...overrides,
 });
@@ -72,6 +73,39 @@ describe('Inject Lambda Context', () => {
           function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345679',
           cold_start: false,
         }),
+      })
+    );
+  });
+
+  it('does not include tenant_id when context does not have tenantId', () => {
+    // Prepare
+    const logger = new Logger();
+    const contextWithoutTenantId = {
+      ...context,
+      tenantId: undefined,
+    };
+
+    // Act
+    logger.addContext(contextWithoutTenantId);
+    logger.info('Hello, world!');
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Hello, world!',
+        function_arn: context.invokedFunctionArn,
+        function_memory_size: context.memoryLimitInMB,
+        function_name: context.functionName,
+        function_request_id: context.awsRequestId,
+        cold_start: true,
+      })
+    );
+    expect(console.info).not.toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        tenant_id: expect.anything(),
       })
     );
   });

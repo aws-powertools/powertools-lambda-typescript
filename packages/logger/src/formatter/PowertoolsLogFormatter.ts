@@ -55,6 +55,7 @@ class PowertoolsLogFormatter extends LogFormatter {
       function_request_id: attributes.lambdaContext?.awsRequestId,
       sampling_rate: attributes.sampleRateValue,
       xray_trace_id: attributes.xRayTraceId,
+      tenant_id: attributes.lambdaContext?.tenantId,
     };
 
     // If logRecordOrder is not set, return the log item with the attributes in the order they were added

@@ -84,8 +84,7 @@ describe('Setting custom timestamp', () => {
     });
 
     // Act
-    metrics.setTimestamp(Number.NaN);
-    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics.setTimestamp(Number.NaN).addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.warn).toHaveBeenCalledTimes(1);
@@ -111,8 +110,9 @@ describe('Setting custom timestamp', () => {
     });
 
     // Act
-    metrics.setTimestamp(Date.now() + 0.5);
-    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics
+      .setTimestamp(Date.now() + 0.5)
+      .addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.warn).toHaveBeenCalledTimes(1);

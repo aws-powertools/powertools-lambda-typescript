@@ -77,6 +77,7 @@ describe('Log event', () => {
         function_memory_size: '128',
         function_name: 'foo-bar-function',
         function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+        tenant_id: 'cff02b3a-0e12-4be2-b3e0-758b49c4cd9b'
       })
     );
   });
@@ -107,6 +108,7 @@ describe('Log event', () => {
         function_memory_size: '128',
         function_name: 'foo-bar-function',
         function_request_id: 'c6af9ac6-7b61-11e6-9a41-93e812345678',
+        tenant_id: 'cff02b3a-0e12-4be2-b3e0-758b49c4cd9b'
       })
     );
   });

@@ -16,6 +16,7 @@ const getContextLogEntries = (overrides?: Record<string, unknown>) => ({
   function_memory_size: context.memoryLimitInMB,
   function_name: context.functionName,
   function_request_id: context.awsRequestId,
+  tenant_id: context.tenantId,
   cold_start: true,
   ...overrides,
 });
@@ -76,6 +77,39 @@ describe('Inject Lambda Context', () => {
     );
   });
 
+  it('does not include tenant_id when context does not have tenantId', () => {
+    // Prepare
+    const logger = new Logger();
+    const contextWithoutTenantId = {
+      ...context,
+      tenantId: undefined,
+    };
+
+    // Act
+    logger.addContext(contextWithoutTenantId);
+    logger.info('Hello, world!');
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Hello, world!',
+        function_arn: context.invokedFunctionArn,
+        function_memory_size: context.memoryLimitInMB,
+        function_name: context.functionName,
+        function_request_id: context.awsRequestId,
+        cold_start: true,
+      })
+    );
+    expect(console.info).not.toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        tenant_id: expect.anything(),
+      })
+    );
+  });
+
   it('adds the context to log messages when the feature is enabled in the Middy.js middleware', async () => {
     // Prepare
     const logger = new Logger();
@@ -93,6 +127,30 @@ describe('Inject Lambda Context', () => {
       expect.objectContaining({
         message: 'Hello, world!',
         ...getContextLogEntries(),
+      })
+    );
+  });
+
+  it('does not include tenant_id when using Middy.js middleware without tenantId in context', async () => {
+    // Prepare
+    const logger = new Logger();
+    const contextWithoutTenantId = {
+      ...context,
+      tenantId: undefined,
+    };
+    const handler = middy(() => {
+      logger.info('Hello, world!');
+    }).use(injectLambdaContext(logger));
+
+    // Act
+    await handler(event, contextWithoutTenantId);
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).not.toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        tenant_id: expect.anything(),
       })
     );
   });

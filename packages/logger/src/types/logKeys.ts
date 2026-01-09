@@ -140,6 +140,12 @@ type PowertoolsLambdaContextKeys = {
    * @example "899856cb-83d1-40d7-8611-9e78f15f32f4"
    */
   function_request_id: string;
+  /**
+   * The tenant ID from AWS Lambda Tenant Isolation feature.
+   *
+   * @example "cff02b3a-0e12-4be2-b3e0-758b49c4cd9b"
+   */
+  tenant_id?: string;
 };
 
 /**
@@ -159,6 +165,7 @@ type LambdaFunctionContext = Pick<
   | 'functionVersion'
   | 'invokedFunctionArn'
   | 'awsRequestId'
+  | 'tenantId'
 > & {
   coldStart: boolean;
 };

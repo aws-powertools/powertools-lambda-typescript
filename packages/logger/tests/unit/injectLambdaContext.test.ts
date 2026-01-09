@@ -131,6 +131,30 @@ describe('Inject Lambda Context', () => {
     );
   });
 
+  it('does not include tenant_id when using Middy.js middleware without tenantId in context', async () => {
+    // Prepare
+    const logger = new Logger();
+    const contextWithoutTenantId = {
+      ...context,
+      tenantId: undefined,
+    };
+    const handler = middy(() => {
+      logger.info('Hello, world!');
+    }).use(injectLambdaContext(logger));
+
+    // Act
+    await handler(event, contextWithoutTenantId);
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).not.toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        tenant_id: expect.anything(),
+      })
+    );
+  });
+
   it('adds the context to the messages of each logger instance', async () => {
     // Prepare
     const logger1 = new Logger({ serviceName: 'parent' });

@@ -2,6 +2,7 @@ import { PutParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DEFAULT_PROVIDERS } from '../../src/base/index.js';
+import { SetParameterError } from '../../src/errors.js';
 import { setParameter } from '../../src/ssm/index.js';
 import { SSMProvider } from '../../src/ssm/SSMProvider.js';
 import type { SSMSetOptions } from '../../src/types/SSMProvider.js';
@@ -58,7 +59,12 @@ describe('Function: setParameter', () => {
     expect(async () => {
       await setParameter(parameterName, options);
     }).rejects.toThrowError(
-      `Unable to set parameter with name ${parameterName}`
+      new SetParameterError(
+        `Unable to set parameter with name ${parameterName}`,
+        {
+          cause: new Error('Could not send command'),
+        }
+      )
     );
   });
 
@@ -88,23 +94,20 @@ describe('Function: setParameter', () => {
     ['parameterType', 'SecureString', 'Type'],
     ['tier', 'Advanced', 'Tier'],
     ['kmsKeyId', 'my-key-id', 'KeyId'],
-  ])(
-    'sets the parameter with the option when called with %s option',
-    async (option, value, sdkOption) => {
-      //Prepare
-      const options: SSMSetOptions = { value: 'my-value', [option]: value };
-      client.on(PutParameterCommand).resolves({ Version: 1 });
+  ])('sets the parameter with the option when called with %s option', async (option, value, sdkOption) => {
+    //Prepare
+    const options: SSMSetOptions = { value: 'my-value', [option]: value };
+    client.on(PutParameterCommand).resolves({ Version: 1 });
 
-      // Act
-      const version = await setParameter(parameterName, options);
+    // Act
+    const version = await setParameter(parameterName, options);
 
-      // Assess
-      expect(client).toReceiveCommandWith(PutParameterCommand, {
-        Name: parameterName,
-        Value: options.value,
-        [sdkOption]: value,
-      });
-      expect(version).toBe(1);
-    }
-  );
+    // Assess
+    expect(client).toReceiveCommandWith(PutParameterCommand, {
+      Name: parameterName,
+      Value: options.value,
+      [sdkOption]: value,
+    });
+    expect(version).toBe(1);
+  });
 });

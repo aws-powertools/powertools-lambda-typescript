@@ -118,7 +118,9 @@ abstract class BaseProvider implements BaseProviderInterface {
       return value;
     } catch (error) {
       if (error instanceof TransformParameterError) throw error;
-      throw new GetParameterError((error as Error).message);
+      throw new GetParameterError((error as Error).message, {
+        cause: error,
+      });
     }
   }
 
@@ -150,7 +152,9 @@ abstract class BaseProvider implements BaseProviderInterface {
         );
       }
     } catch (error) {
-      throw new GetParameterError((error as Error).message);
+      throw new GetParameterError((error as Error).message, {
+        cause: error,
+      });
     }
 
     if (configs.transform) {

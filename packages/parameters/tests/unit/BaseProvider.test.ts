@@ -96,7 +96,9 @@ describe('Class: BaseProvider', () => {
 
       // Act & Assess
       await expect(provider.get('my-parameter')).rejects.toThrowError(
-        GetParameterError
+        new GetParameterError('Not implemented.', {
+          cause: new Error('Not implemented.'),
+        })
       );
     });
 
@@ -258,7 +260,9 @@ describe('Class: BaseProvider', () => {
 
       // Act & Assess
       await expect(provider.getMultiple('my-parameter')).rejects.toThrowError(
-        GetParameterError
+        new GetParameterError('Some error.', {
+          cause: new Error('Some error.'),
+        })
       );
     });
 

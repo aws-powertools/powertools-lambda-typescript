@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
+
+### Maintenance
+
+- remove invoke store global namespace workaround ([#4932](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4932)) ([8e93ec3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8e93ec3badf4b5043748ad67f5f3b944d97a3fcb))
 ## [2.30.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.0...v2.30.1) (2026-01-06)
 
 ### Maintenance

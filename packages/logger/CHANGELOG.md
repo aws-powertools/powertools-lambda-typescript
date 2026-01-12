@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
+
+### Features
+
+- add tenantId to logger default properties ([#4931](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4931)) ([2e3e867](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2e3e867ba15eb5221c780bdaec388ab2c892f721))
 ## [2.30.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.0...v2.30.1) (2026-01-06)
 
 ### Improvements

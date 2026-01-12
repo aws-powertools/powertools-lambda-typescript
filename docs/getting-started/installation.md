@@ -23,7 +23,7 @@ See the [Features](../features/index.md) page for a complete list of available u
 Some features use additional dependencies like the AWS SDK for JavaScript v3, which might you need to install separately. Below is a list of utilities that use external dependencies, and the packages you need to install to use them.
 
 ||Feature                                                               |Install                                                                                                   |Default dependency   ||
-| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------- |
+|| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------- ||
 ||**[Tracer](../features/tracer.md)**                                   |**`npm i @aws-lambda-powertools/tracer`**{.copyMe}                                                        |`aws-xray-sdk-core`  ||
 ||**[Idempotency](../features/idempotency.md)**                         |**`npm i @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb`**{.copyMe}    |                     ||
 ||**[Parameters (SSM)](../features/parameters.md)**                     |**`npm i @aws-lambda-powertools/parameters @aws-sdk/client-ssm`**{.copyMe}                                |                     ||

@@ -53,7 +53,8 @@ describe('Function: setParameter', () => {
   it('rethrows the error thrown by the underlying sdk client', () => {
     // Prepare
     const options: SSMSetOptions = { value: 'my-value' };
-    client.on(PutParameterCommand).rejects(new Error('Could not send command'));
+    const cause = new Error('Could not send command');
+    client.on(PutParameterCommand).rejects(cause);
 
     // Assess
     expect(async () => {
@@ -62,7 +63,7 @@ describe('Function: setParameter', () => {
       new SetParameterError(
         `Unable to set parameter with name ${parameterName}`,
         {
-          cause: new Error('Could not send command'),
+          cause,
         }
       )
     );

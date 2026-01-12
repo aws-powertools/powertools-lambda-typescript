@@ -38,7 +38,7 @@ class TestProvider extends BaseProvider {
   }
 
   public _get(_name: string): Promise<string> {
-    throw Error('Not implemented.');
+    throw new Error('Not implemented.');
   }
 
   public _getKeyTest(key: string): ExpirableValue | undefined {
@@ -48,7 +48,7 @@ class TestProvider extends BaseProvider {
   public _getMultiple(
     _path: string
   ): Promise<Record<string, string | undefined>> {
-    throw Error('Not implemented.');
+    throw new Error('Not implemented.');
   }
 
   public _getStoreSize(): number {
@@ -93,10 +93,13 @@ describe('Class: BaseProvider', () => {
     it('throws a GetParameterError when the underlying _get method throws an error', async () => {
       // Prepare
       const provider = new TestProvider();
+      const cause = new Error('Not implemented.');
 
       // Act & Assess
       await expect(provider.get('my-parameter')).rejects.toThrowError(
-        GetParameterError
+        new GetParameterError(cause.message, {
+          cause,
+        })
       );
     });
 
@@ -252,13 +255,14 @@ describe('Class: BaseProvider', () => {
     it('throws a GetParameterError when the underlying _getMultiple throws', async () => {
       // Prepare
       const provider = new TestProvider();
-      vi.spyOn(provider, '_getMultiple').mockRejectedValue(
-        new Error('Some error.')
-      );
+      const cause = new Error('Some error.');
+      vi.spyOn(provider, '_getMultiple').mockRejectedValue(cause);
 
       // Act & Assess
       await expect(provider.getMultiple('my-parameter')).rejects.toThrowError(
-        GetParameterError
+        new GetParameterError(cause.message, {
+          cause,
+        })
       );
     });
 

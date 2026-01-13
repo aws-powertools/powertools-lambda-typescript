@@ -164,8 +164,36 @@ If you need to accept multiple HTTP methods in a single function, or support an 
     --8<-- "examples/snippets/event-handler/http/gettingStarted_multi_methods.ts:3"
     ```
 
+=== "Using decorators"
+
+    ```ts hl_lines="10-18"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_route.ts"
+    ```
+
+    1. Use `@app.route(path, methods)` to accept multiple HTTP methods in a single handler.
+
 !!! tip
     We recommend defining separate route handlers for each HTTP method within your Lambda function, as the functionality typically differs between operations such as `GET`, `POST`, `PUT`, `DELETE` etc
+
+#### Using decorators
+
+If you prefer to use the decorator syntax, you can use the same methods on a class method to register your route handlers. Learn more about how Powertools for TypeScript supports [decorators](../../getting-started/usage-patterns.md).
+
+=== "Decorator syntax"
+
+    ```ts hl_lines="9-12 15-22 25-31 34"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_basic.ts"
+    ```
+
+    1. It's recommended to pass a reference of `this` to ensure the correct class scope is propagated to the route handler functions.
+
+=== "Decorators with middleware"
+
+    ```ts hl_lines="45-54 56-63"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_middleware.ts"
+    ```
+
+    1. Middleware can be applied to specific routes by passing them as an array.
 
 ### Data validation
 
@@ -195,6 +223,16 @@ Error handlers receive the error object and the request context as arguments, an
     --8<-- "examples/snippets/event-handler/http/gettingStarted_error_handling.ts:4"
     ```
 
+=== "Using decorators"
+
+    ```ts hl_lines="21-29 32-40 64-70 75-83"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_errors.ts"
+    ```
+
+    1. Use `@app.errorHandler(ErrorClass)` to register error handlers with decorator syntax.
+    2. Use `@app.notFound()` to customize 404 responses.
+    3. Use `@app.methodNotAllowed()` to customize 405 responses.
+
 ### Built-in Error Handlers
 
 We provide built-in error handlers for common routing errors so you don't have to specify the Error type explicitly.
@@ -207,6 +245,12 @@ By default, we return a `404 Not Found` response for unmatched routes.
 
     ```ts hl_lines="11 23"
     --8<-- "examples/snippets/event-handler/http/gettingStarted_built_in_error_handler.ts"
+    ```
+
+=== "Using decorators"
+
+    ```ts hl_lines="42-49 51-58"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_errors.ts"
     ```
 
 ### Throwing HTTP errors

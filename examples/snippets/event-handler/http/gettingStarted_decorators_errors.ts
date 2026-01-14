@@ -2,10 +2,10 @@ import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import {
   BadRequestError,
   HttpStatusCodes,
+  type MethodNotAllowedError,
   type NotFoundError,
   Router,
   UnauthorizedError,
-  type MethodNotAllowedError,
 } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';

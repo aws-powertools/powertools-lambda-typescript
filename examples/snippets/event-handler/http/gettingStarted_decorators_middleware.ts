@@ -1,7 +1,7 @@
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import {
-  Router,
   type MiddlewareFunction,
+  Router,
 } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';

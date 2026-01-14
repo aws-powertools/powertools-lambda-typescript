@@ -282,6 +282,7 @@ class Logger extends Utility implements LoggerInterface {
         memoryLimitInMB: context.memoryLimitInMB,
         functionName: context.functionName,
         functionVersion: context.functionVersion,
+        tenantId: context.tenantId,
       },
     });
   }

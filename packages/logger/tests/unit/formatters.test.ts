@@ -58,6 +58,7 @@ const unformattedAttributes: UnformattedAttributes = {
     invokedFunctionArn:
       'arn:aws:lambda:eu-west-1:123456789012:function:Example',
     awsRequestId: 'abcdefg123456789',
+    tenantId: 'cff02b3a-0e12-4be2-b3e0-758b49c4cd9b',
   },
 };
 
@@ -155,6 +156,7 @@ describe('Formatters', () => {
       service: 'hello-world',
       timestamp: '2016-06-20T12:08:10.000Z',
       xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      tenant_id: undefined,
     });
     expect(value).toBeInstanceOf(LogItem);
   });
@@ -184,6 +186,7 @@ describe('Formatters', () => {
       service: 'hello-world',
       timestamp: '2016-06-20T12:08:10.000Z',
       xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      tenant_id: 'cff02b3a-0e12-4be2-b3e0-758b49c4cd9b',
     });
   });
 
@@ -215,6 +218,7 @@ describe('Formatters', () => {
       function_request_id: 'abcdefg123456789',
       sampling_rate: 0.25,
       xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      tenant_id: 'cff02b3a-0e12-4be2-b3e0-758b49c4cd9b',
     });
   });
 
@@ -256,6 +260,7 @@ describe('Formatters', () => {
       function_request_id: 'abcdefg123456789',
       sampling_rate: 0.25,
       xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      tenant_id: 'cff02b3a-0e12-4be2-b3e0-758b49c4cd9b',
       another_key: 'another_value',
     });
   });
@@ -297,6 +302,7 @@ describe('Formatters', () => {
       function_request_id: 'abcdefg123456789',
       sampling_rate: 0.25,
       xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      tenant_id: 'cff02b3a-0e12-4be2-b3e0-758b49c4cd9b',
     });
   });
 
@@ -328,6 +334,7 @@ describe('Formatters', () => {
       function_request_id: 'abcdefg123456789',
       sampling_rate: 0.25,
       xray_trace_id: '1-5759e988-bd862e3fe1be46a994272793',
+      tenant_id: 'cff02b3a-0e12-4be2-b3e0-758b49c4cd9b',
       additional_key: 'additional_value',
     });
   });

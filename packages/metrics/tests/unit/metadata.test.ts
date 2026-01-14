@@ -72,10 +72,9 @@ describe('Working with metadata', () => {
     });
 
     // Act
-    metrics
-      .addMetadata('cost-center', '1234')
-      .addMetric('test', MetricUnit.Count, 1)
-      .addMetric('test', MetricUnit.Count, 1);
+    metrics.addMetadata('cost-center', '1234');
+    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.log).toHaveEmittedNthEMFWith(

@@ -31,11 +31,10 @@ describe('Creating metrics', () => {
     const timestamp = Date.now() + 1000;
 
     // Act
-    metrics
-      .setTimestamp(timestamp)
-      .addMetadata('cost-center', '1234')
-      .addDimension('commit', '1234')
-      .addMetric('test', MetricUnit.Count, 1);
+    metrics.setTimestamp(timestamp);
+    metrics.addMetadata('cost-center', '1234');
+    metrics.addDimension('commit', '1234');
+    metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith({
@@ -100,10 +99,9 @@ describe('Creating metrics', () => {
     const metrics = new Metrics({ singleMetric: false });
 
     // Act
-    metrics
-      .addMetric('test', MetricUnit.Count, 1)
-      .addMetric('test', MetricUnit.Count, 2)
-      .clearMetrics();
+    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics.addMetric('test', MetricUnit.Count, 2);
+    metrics.clearMetrics();
     metrics.addMetric('another', MetricUnit.Count, 3).publishStoredMetrics();
 
     // Assess

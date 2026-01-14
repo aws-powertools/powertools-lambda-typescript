@@ -82,9 +82,8 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics
-      .setDefaultDimensions({ environment: 'test', commit: '1234' })
-      .addMetric('test', MetricUnit.Count, 1);
+    metrics.setDefaultDimensions({ environment: 'test', commit: '1234' });
+    metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
@@ -118,8 +117,8 @@ describe('Working with dimensions', () => {
         environment: 'staging', // This should override the default 'prod' value
         feature: 'search',
       })
-      .addMetric('api_calls', MetricUnit.Count, 1)
-      .publishStoredMetrics();
+      .addMetric('api_calls', MetricUnit.Count, 1);
+    metrics.publishStoredMetrics();
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
@@ -169,9 +168,8 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics
-      .addDimensions({ environment: 'test', commit: '1234' })
-      .addMetric('test', MetricUnit.Count, 1);
+    metrics.addDimensions({ environment: 'test', commit: '1234' });
+    metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
@@ -293,10 +291,9 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics
-      .addDimension('commit', '1234')
-      .addMetric('test', MetricUnit.Count, 1)
-      .addMetric('test', MetricUnit.Count, 1);
+    metrics.addDimension('commit', '1234');
+    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.log).toHaveEmittedNthEMFWith(

@@ -64,10 +64,9 @@ describe('Metrics concurrent invocation isolation', () => {
       {
         sideEffects: [
           () => {
-            metrics
-              .addDimension('env', 'dev')
-              .addMetric('count', MetricUnit.Count, 2)
-              .addMetadata('key', 'value2');
+            metrics.addDimension('env', 'dev');
+            metrics.addMetric('count', MetricUnit.Count, 2);
+            metrics.addMetadata('key', 'value2');
           },
         ],
         return: () => metrics.publishStoredMetrics(),

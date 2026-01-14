@@ -27,13 +27,17 @@ const metrics = new Metrics({ namespace: namespace, serviceName: serviceName });
 
 export const handler = (_event: unknown, _context: Context) => {
   metrics.captureColdStartMetric();
-  metrics.throwOnEmptyMetrics();
-  metrics.setDefaultDimensions(JSON.parse(defaultDimensions));
-  metrics.addMetric(metricName, metricUnit, Number.parseInt(metricValue, 10));
-  metrics.addDimension(
-    Object.entries(JSON.parse(extraDimension))[0][0],
-    Object.entries(JSON.parse(extraDimension))[0][1] as string
-  );
+
+  metrics
+    .setThrowOnEmptyMetrics(true)
+    .setDefaultDimensions(JSON.parse(defaultDimensions));
+
+  metrics
+    .addMetric(metricName, metricUnit, Number.parseInt(metricValue, 10))
+    .addDimension(
+      Object.entries(JSON.parse(extraDimension))[0][0],
+      Object.entries(JSON.parse(extraDimension))[0][1] as string
+    );
 
   const metricWithItsOwnDimensions = metrics.singleMetric();
   metricWithItsOwnDimensions.addDimension(

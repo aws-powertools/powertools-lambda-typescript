@@ -156,7 +156,7 @@ You can use dedicated methods to specify the HTTP method that should be handled 
     --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_methods.json"
     ```
 
-If you need to accept multiple HTTP methods in a single function, or support an HTTP method for which no dedicated method exists (i.e. [`TRACE`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/TRACE){target="_blank"}), you can use the `route()` method and pass a list of HTTP methods.
+If you need to accept multiple HTTP methods in a single function, or support an HTTP method for which no dedicated method exists (i.e. [`TRACE`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/TRACE){target="_blank"}), you can use the `route()` method or `@app.route()` class method decorator and pass a list of HTTP methods.
 
 === "index.ts"
 
@@ -166,11 +166,9 @@ If you need to accept multiple HTTP methods in a single function, or support an 
 
 === "Using decorators"
 
-    ```ts hl_lines="10-18"
+    ```ts hl_lines="10"
     --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_route.ts"
     ```
-
-    1. Use `@app.route(path, methods)` to accept multiple HTTP methods in a single handler.
 
 !!! tip
     We recommend defining separate route handlers for each HTTP method within your Lambda function, as the functionality typically differs between operations such as `GET`, `POST`, `PUT`, `DELETE` etc
@@ -181,19 +179,12 @@ If you prefer to use the decorator syntax, you can use the same methods on a cla
 
 === "Decorator syntax"
 
-    ```ts hl_lines="9-12 15-22 25-31 34"
+    ```ts hl_lines="10 21 32"
     --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_basic.ts"
     ```
 
-    1. It's recommended to pass a reference of `this` to ensure the correct class scope is propagated to the route handler functions.
-
-=== "Decorators with middleware"
-
-    ```ts hl_lines="45-54 56-63"
-    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_middleware.ts"
-    ```
-
-    1. Middleware can be applied to specific routes by passing them as an array.
+    !!! tip
+        We recommend passing a reference to `this` to ensure the correct class scope is propagated to the route handler functions.
 
 ### Data validation
 
@@ -225,13 +216,9 @@ Error handlers receive the error object and the request context as arguments, an
 
 === "Using decorators"
 
-    ```ts hl_lines="21-29 32-40 64-70 75-83"
-    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_errors.ts"
+    ```ts hl_lines="16"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_error_handling_decorators.ts"
     ```
-
-    1. Use `@app.errorHandler(ErrorClass)` to register error handlers with decorator syntax.
-    2. Use `@app.notFound()` to customize 404 responses.
-    3. Use `@app.methodNotAllowed()` to customize 405 responses.
 
 ### Built-in Error Handlers
 
@@ -249,8 +236,8 @@ By default, we return a `404 Not Found` response for unmatched routes.
 
 === "Using decorators"
 
-    ```ts hl_lines="42-49 51-58"
-    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_errors.ts"
+    ```ts hl_lines="15 31"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_built_in_error_handler_decorators.ts"
     ```
 
 ### Throwing HTTP errors

@@ -156,18 +156,12 @@ You can use dedicated methods to specify the HTTP method that should be handled 
     --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_methods.json"
     ```
 
-If you need to accept multiple HTTP methods in a single function, or support an HTTP method for which no dedicated method exists (i.e. [`TRACE`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/TRACE){target="_blank"}), you can use the `route()` method or `@app.route()` class method decorator and pass a list of HTTP methods.
+If you need to accept multiple HTTP methods in a single function, or support an HTTP method for which no dedicated method exists (i.e. [`TRACE`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/TRACE){target="_blank"}), you can use the `route()` method and pass a list of HTTP methods.
 
 === "index.ts"
 
     ```ts hl_lines="21-24"
     --8<-- "examples/snippets/event-handler/http/gettingStarted_multi_methods.ts:3"
-    ```
-
-=== "Using decorators"
-
-    ```ts hl_lines="10"
-    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_route.ts"
     ```
 
 !!! tip

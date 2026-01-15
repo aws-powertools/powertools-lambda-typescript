@@ -14,9 +14,12 @@ const app = new Router({ logger });
 
 class Lambda implements LambdaInterface {
   @app.errorHandler(GetTodoError)
-  public async handleGetTodoError(error: GetTodoError, reqCtx: {
-    req: { headers: { get: (key: string) => string | null } };
-  }) {
+  public async handleGetTodoError(
+    error: GetTodoError,
+    reqCtx: {
+      req: { headers: { get: (key: string) => string | null } };
+    }
+  ) {
     logger.error('Unable to get todo', { error });
 
     return {

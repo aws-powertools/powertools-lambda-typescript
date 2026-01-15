@@ -326,12 +326,18 @@ executes last in post-processing wins.
 
 You can use `app.use()` to register middleware that should always run regardless of the route
 and you can apply middleware to specific routes by passing them as arguments before the route
-handler.
+handler or as a second argument to the route decorator.
 
 === "index.ts"
 
     ```ts hl_lines="9-14 16-21 31"
     --8<-- "examples/snippets/event-handler/http/advanced_mw_middleware_order.ts:3"
+    ```
+
+=== "Using decorators"
+
+    ```ts hl_lines="18-22 34"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_middleware_order_decorators.ts:3"
     ```
 
 === "Response"

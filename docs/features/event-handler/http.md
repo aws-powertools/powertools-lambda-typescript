@@ -167,6 +167,19 @@ If you need to accept multiple HTTP methods in a single function, or support an 
 !!! tip
     We recommend defining separate route handlers for each HTTP method within your Lambda function, as the functionality typically differs between operations such as `GET`, `POST`, `PUT`, `DELETE` etc
 
+#### Using decorators
+
+If you prefer to use the decorator syntax, you can use the same methods on a class method to register your route handlers. Learn more about how Powertools for TypeScript supports [decorators](../../getting-started/usage-patterns.md).
+
+=== "Decorator syntax"
+
+    ```ts hl_lines="10 21 32"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_basic.ts"
+    ```
+
+    !!! tip
+        We recommend passing a reference to `this` to ensure the correct class scope is propagated to the route handler functions.
+
 ### Data validation
 
 !!! note "Coming soon"
@@ -195,6 +208,12 @@ Error handlers receive the error object and the request context as arguments, an
     --8<-- "examples/snippets/event-handler/http/gettingStarted_error_handling.ts:4"
     ```
 
+=== "Using decorators"
+
+    ```ts hl_lines="16"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_error_handling_decorators.ts"
+    ```
+
 ### Built-in Error Handlers
 
 We provide built-in error handlers for common routing errors so you don't have to specify the Error type explicitly.
@@ -207,6 +226,12 @@ By default, we return a `404 Not Found` response for unmatched routes.
 
     ```ts hl_lines="11 23"
     --8<-- "examples/snippets/event-handler/http/gettingStarted_built_in_error_handler.ts"
+    ```
+
+=== "Using decorators"
+
+    ```ts hl_lines="15 31"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_built_in_error_handler_decorators.ts"
     ```
 
 ### Throwing HTTP errors
@@ -295,12 +320,18 @@ executes last in post-processing wins.
 
 You can use `app.use()` to register middleware that should always run regardless of the route
 and you can apply middleware to specific routes by passing them as arguments before the route
-handler.
+handler or as a second argument to the route decorator.
 
 === "index.ts"
 
     ```ts hl_lines="9-14 16-21 31"
     --8<-- "examples/snippets/event-handler/http/advanced_mw_middleware_order.ts:3"
+    ```
+
+=== "Using decorators"
+
+    ```ts hl_lines="18-22 34"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_middleware_order_decorators.ts:3"
     ```
 
 === "Response"

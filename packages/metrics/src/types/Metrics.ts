@@ -179,7 +179,7 @@ interface MetricsInterface {
    * @param name - The name of the dimension
    * @param value - The value of the dimension
    */
-  addDimension(name: string, value: string): void;
+  addDimension(name: string, value: string): MetricsInterface;
   /**
    * Add multiple dimensions to the metrics.
    *
@@ -191,7 +191,7 @@ interface MetricsInterface {
    *
    * @param dimensions - An object with key-value pairs of dimensions
    */
-  addDimensions(dimensions: Dimensions): void;
+  addDimensions(dimensions: Dimensions): MetricsInterface;
   /**
    * A metadata key-value pair to be included with metrics.
    *
@@ -219,7 +219,7 @@ interface MetricsInterface {
    * @param key - The key of the metadata
    * @param value - The value of the metadata
    */
-  addMetadata(key: string, value: string): void;
+  addMetadata(key: string, value: string): MetricsInterface;
   /**
    * Add a metric to the metrics buffer.
    *
@@ -260,7 +260,7 @@ interface MetricsInterface {
     unit: MetricUnit,
     value: number,
     resolution?: MetricResolution
-  ): void;
+  ): MetricsInterface;
   /**
    * Immediately emit a `ColdStart` metric if this is a cold start invocation.
    *
@@ -335,7 +335,7 @@ interface MetricsInterface {
    *
    *   // ...
    *
-   *   metrics.clearDimensions(); // olnly the region dimension is removed
+   *   metrics.clearDimensions(); // only the region dimension is removed
    * };
    * ```
    *
@@ -506,7 +506,7 @@ interface MetricsInterface {
    * ```
    * @param timestamp - The timestamp to set, which can be a number or a Date object.
    */
-  setTimestamp(timestamp: number | Date): void;
+  setTimestamp(timestamp: number | Date): MetricsInterface;
   /**
    * Create a new Metrics instance configured to immediately flush a single metric.
    *
@@ -539,14 +539,14 @@ interface MetricsInterface {
 }
 
 export type {
-  MetricsOptions,
   Dimensions,
   EmfOutput,
   ExtraOptions,
-  StoredMetrics,
-  StoredMetric,
   MetricDefinition,
   MetricResolution,
-  MetricUnit,
   MetricsInterface,
+  MetricsOptions,
+  MetricUnit,
+  StoredMetric,
+  StoredMetrics,
 };

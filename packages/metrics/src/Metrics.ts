@@ -71,9 +71,10 @@ import type {
  * });
  *
  * export const handler = async (event: { requestId: string }) => {
- *   metrics.addMetadata('request_id', event.requestId);
- *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
- *   metrics.publishStoredMetrics();
+ *   metrics
+ *     .addMetadata('request_id', event.requestId)
+ *     .addMetric('successfulBooking', MetricUnit.Count, 1)
+ *     .publishStoredMetrics();
  * };
  * ```
  *
@@ -110,7 +111,7 @@ import type {
  * ```
  *
  * Note that decorators are a Stage 3 proposal for JavaScript and are not yet part of the ECMAScript standard.
- * The current implmementation in this library is based on the legacy TypeScript decorator syntax enabled by the [`experimentalDecorators` flag](https://www.typescriptlang.org/tsconfig/#experimentalDecorators)
+ * The current implementation in this library is based on the legacy TypeScript decorator syntax enabled by the [`experimentalDecorators` flag](https://www.typescriptlang.org/tsconfig/#experimentalDecorators)
  * set to `true` in the `tsconfig.json` file.
  *
  * **Middy.js middleware**
@@ -239,12 +240,12 @@ class Metrics extends Utility implements MetricsInterface {
    * @param name - The name of the dimension
    * @param value - The value of the dimension
    */
-  public addDimension(name: string, value: string): void {
+  public addDimension(name: string, value: string): this {
     if (isStringUndefinedNullEmpty(name) || isStringUndefinedNullEmpty(value)) {
       this.#logger.warn(
         `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
       );
-      return;
+      return this;
     }
     if (MAX_DIMENSION_COUNT <= this.#dimensionsStore.getDimensionCount()) {
       throw new RangeError(
@@ -262,6 +263,7 @@ class Metrics extends Utility implements MetricsInterface {
       );
     }
     this.#dimensionsStore.addDimension(name, value);
+    return this;
   }
 
   /**
@@ -276,7 +278,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param dimensions - An object with key-value pairs of dimensions
    */
-  public addDimensions(dimensions: Dimensions): void {
+  public addDimensions(dimensions: Dimensions): this {
     const newDimensions = this.#sanitizeDimensions(dimensions);
     const currentCount = this.#dimensionsStore.getDimensionCount();
     const newSetCount = Object.keys(newDimensions).length;
@@ -287,6 +289,7 @@ class Metrics extends Utility implements MetricsInterface {
     }
 
     this.#dimensionsStore.addDimensionSet(newDimensions);
+    return this;
   }
 
   /**
@@ -316,8 +319,9 @@ class Metrics extends Utility implements MetricsInterface {
    * @param key - The key of the metadata
    * @param value - The value of the metadata
    */
-  public addMetadata(key: string, value: string): void {
+  public addMetadata(key: string, value: string): this {
     this.#metadataStore.set(key, value);
+    return this;
   }
 
   /**
@@ -359,9 +363,10 @@ class Metrics extends Utility implements MetricsInterface {
     unit: MetricUnit,
     value: number,
     resolution: MetricResolution = MetricResolutions.Standard
-  ): void {
+  ): this {
     this.storeMetric(name, unit, value, resolution);
     if (this.isSingleMetric) this.publishStoredMetrics();
+    return this;
   }
 
   /**
@@ -450,7 +455,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    *   // ...
    *
-   *   metrics.clearDimensions(); // olnly the region dimension is removed
+   *   metrics.clearDimensions(); // only the region dimension is removed
    * };
    * ```
    *
@@ -595,7 +600,7 @@ class Metrics extends Utility implements MetricsInterface {
    * };
    * ```
    */
-  public publishStoredMetrics(): void {
+  public publishStoredMetrics(): this {
     const hasMetrics = this.hasStoredMetrics();
     if (!this.shouldThrowOnEmptyMetrics && !hasMetrics) {
       this.#logger.warn(
@@ -613,6 +618,7 @@ class Metrics extends Utility implements MetricsInterface {
     this.clearMetrics();
     this.clearDimensions();
     this.clearMetadata();
+    return this;
   }
 
   /**
@@ -645,7 +651,7 @@ class Metrics extends Utility implements MetricsInterface {
    * ```
    * @param timestamp - The timestamp to set, which can be a number or a Date object.
    */
-  public setTimestamp(timestamp: number | Date): void {
+  public setTimestamp(timestamp: number | Date): this {
     if (!this.#validateEmfTimestamp(timestamp)) {
       this.#logger.warn(
         "This metric doesn't meet the requirements and will be skipped by Amazon CloudWatch. " +
@@ -653,6 +659,7 @@ class Metrics extends Utility implements MetricsInterface {
       );
     }
     this.#metricsStore.setTimestamp(timestamp);
+    return this;
   }
 
   /**
@@ -786,7 +793,7 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param dimensions - The dimensions to be added to the default dimensions object
    */
-  public setDefaultDimensions(dimensions: Dimensions): void {
+  public setDefaultDimensions(dimensions: Dimensions): this {
     const newDimensions = this.#sanitizeDimensions(dimensions);
     const currentDefaultDimensions =
       this.#dimensionsStore.getDefaultDimensions();
@@ -802,6 +809,7 @@ class Metrics extends Utility implements MetricsInterface {
       ...currentDefaultDimensions,
       ...newDimensions,
     });
+    return this;
   }
 
   /**
@@ -823,8 +831,9 @@ class Metrics extends Utility implements MetricsInterface {
    *
    * @param enabled - Whether to throw an error if no metrics are emitted
    */
-  public setThrowOnEmptyMetrics(enabled: boolean): void {
+  public setThrowOnEmptyMetrics(enabled: boolean): this {
     this.shouldThrowOnEmptyMetrics = enabled;
+    return this;
   }
 
   /**
@@ -1042,11 +1051,15 @@ class Metrics extends Utility implements MetricsInterface {
       throw new RangeError(`${value} is not a valid number`);
     if (!Object.values(MetricUnits).includes(unit))
       throw new RangeError(
-        `Invalid metric unit '${unit}', expected either option: ${Object.values(MetricUnits).join(',')}`
+        `Invalid metric unit '${unit}', expected either option: ${Object.values(
+          MetricUnits
+        ).join(',')}`
       );
     if (!Object.values(MetricResolutions).includes(resolution))
       throw new RangeError(
-        `Invalid metric resolution '${resolution}', expected either option: ${Object.values(MetricResolutions).join(',')}`
+        `Invalid metric resolution '${resolution}', expected either option: ${Object.values(
+          MetricResolutions
+        ).join(',')}`
       );
 
     if (this.#metricsStore.getMetricsCount() >= MAX_METRICS_SIZE) {

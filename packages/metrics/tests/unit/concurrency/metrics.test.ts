@@ -53,9 +53,10 @@ describe('Metrics concurrent invocation isolation', () => {
           () => {
             // Metrics must be created inside ALS context because reset() clears InvokeStore
             metrics = new Metrics({ singleMetric: false });
-            metrics.addDimension('env', 'prod');
-            metrics.addMetric('count', MetricUnit.Count, 1);
-            metrics.addMetadata('key', 'value1');
+            metrics
+              .addDimension('env', 'prod')
+              .addMetric('count', MetricUnit.Count, 1)
+              .addMetadata('key', 'value1');
           },
         ],
         return: () => metrics.publishStoredMetrics(),
@@ -132,8 +133,9 @@ describe('Metrics concurrent invocation isolation', () => {
         sideEffects: [
           () => {},
           () => {
-            metrics.setTimestamp(timestamp2);
-            metrics.addMetric('count', MetricUnit.Count, 2);
+            metrics
+              .setTimestamp(timestamp2)
+              .addMetric('count', MetricUnit.Count, 2);
           },
           () => metrics.publishStoredMetrics(),
         ],

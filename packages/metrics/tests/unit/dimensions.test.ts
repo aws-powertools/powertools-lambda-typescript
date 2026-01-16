@@ -21,15 +21,14 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics.addDimension('environment', 'prod');
-
-    metrics.addDimensions({
-      dimension1: '1',
-      dimension2: '2',
-    });
-
-    metrics.addMetric('foo', MetricUnit.Count, 1);
-    metrics.publishStoredMetrics();
+    metrics
+      .addDimension('environment', 'prod')
+      .addDimensions({
+        dimension1: '1',
+        dimension2: '2',
+      })
+      .addMetric('foo', MetricUnit.Count, 1)
+      .publishStoredMetrics();
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
@@ -113,12 +112,12 @@ describe('Working with dimensions', () => {
 
     // Act
     // Add a dimension set that overrides one of the default dimensions
-    metrics.addDimensions({
-      environment: 'staging', // This should override the default 'prod' value
-      feature: 'search',
-    });
-
-    metrics.addMetric('api_calls', MetricUnit.Count, 1);
+    metrics
+      .addDimensions({
+        environment: 'staging', // This should override the default 'prod' value
+        feature: 'search',
+      })
+      .addMetric('api_calls', MetricUnit.Count, 1);
     metrics.publishStoredMetrics();
 
     // Assess
@@ -147,8 +146,9 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics.addDimension('environment', 'test');
-    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics
+      .addDimension('environment', 'test')
+      .addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
@@ -196,10 +196,11 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics.addDimension('environment', 'prod');
-    metrics.addDimension('commit', '1234');
-    metrics.addDimension('commit', '5678');
-    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics
+      .addDimension('environment', 'prod')
+      .addDimension('commit', '1234')
+      .addDimension('commit', '5678')
+      .addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
@@ -226,8 +227,7 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics.addDimension('commit', '1234');
-    metrics.clearDefaultDimensions();
+    metrics.addDimension('commit', '1234').clearDefaultDimensions();
     metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Assess
@@ -259,8 +259,7 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics.addDimension('commit', '1234');
-    metrics.clearDimensions();
+    metrics.addDimension('commit', '1234').clearDimensions();
     metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Assess
@@ -465,8 +464,9 @@ describe('Working with dimensions', () => {
     });
 
     // Act & Assess
-    metrics.addDimension(name as string, value as string);
-    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics
+      .addDimension(name as string, value as string)
+      .addMetric('test', MetricUnit.Count, 1);
 
     expect(console.warn).toHaveBeenCalledTimes(1);
     expect(console.warn).toHaveBeenCalledWith(
@@ -491,34 +491,35 @@ describe('Working with dimensions', () => {
       value: 'valid-value',
       name: '',
     },
-  ])(
-    'skips invalid dimension values in addDimensions ($name)',
-    ({ value, name }) => {
-      // Prepare
-      const metrics = new Metrics({
-        singleMetric: true,
-        namespace: DEFAULT_NAMESPACE,
-      });
+  ])('skips invalid dimension values in addDimensions ($name)', ({
+    value,
+    name,
+  }) => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      namespace: DEFAULT_NAMESPACE,
+    });
 
-      // Act & Assess
-      metrics.addDimensions({
+    // Act & Assess
+    metrics
+      .addDimensions({
         validDimension: 'valid',
         [name as string]: value as string,
-      });
-      metrics.addMetric('test', MetricUnit.Count, 1);
-      metrics.publishStoredMetrics();
+      })
+      .addMetric('test', MetricUnit.Count, 1)
+      .publishStoredMetrics();
 
-      expect(console.warn).toHaveBeenCalledWith(
-        `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
-      );
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.objectContaining({ validDimension: 'valid' })
-      );
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.not.objectContaining({ invalidDimension: value })
-      );
-    }
-  );
+    expect(console.warn).toHaveBeenCalledWith(
+      `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({ validDimension: 'valid' })
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({ invalidDimension: value })
+    );
+  });
 
   it('warns when addDimensions overwrites existing dimensions', () => {
     // Prepare
@@ -528,14 +529,15 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics.addDimension('region', 'us-east-1');
-    metrics.addDimensions({
-      environment: 'staging', // overwrites default dimension
-      region: 'us-west-2', // overwrites regular dimension
-      newDim: 'value',
-    });
-    metrics.addMetric('test', MetricUnit.Count, 1);
-    metrics.publishStoredMetrics();
+    metrics
+      .addDimension('region', 'us-east-1')
+      .addDimensions({
+        environment: 'staging', // overwrites default dimension
+        region: 'us-west-2', // overwrites regular dimension
+        newDim: 'value',
+      })
+      .addMetric('test', MetricUnit.Count, 1)
+      .publishStoredMetrics();
 
     // Assess
     expect(console.warn).toHaveBeenCalledWith(
@@ -561,8 +563,7 @@ describe('Working with dimensions', () => {
     });
 
     // Act
-    metrics.setDefaultDimensions({ region: 'us-east-1' });
-    metrics.setDefaultDimensions({
+    metrics.setDefaultDimensions({ region: 'us-east-1' }).setDefaultDimensions({
       environment: 'staging', // overwrites default dimension
     });
 
@@ -578,36 +579,36 @@ describe('Working with dimensions', () => {
     { value: null, name: 'valid-name' },
     { value: '', name: 'valid-name' },
     { value: 'valid-value', name: '' },
-  ])(
-    'skips invalid default dimension values in setDefaultDimensions ($name)',
-    ({ value, name }) => {
-      // Arrange
-      const metrics = new Metrics({
-        singleMetric: true,
-        namespace: DEFAULT_NAMESPACE,
-      });
+  ])('skips invalid default dimension values in setDefaultDimensions ($name)', ({
+    value,
+    name,
+  }) => {
+    // Arrange
+    const metrics = new Metrics({
+      singleMetric: true,
+      namespace: DEFAULT_NAMESPACE,
+    });
 
-      // Act
-      metrics.setDefaultDimensions({
+    // Act
+    metrics
+      .setDefaultDimensions({
         validDimension: 'valid',
         [name as string]: value as string,
-      });
+      })
+      .addMetric('test', MetricUnit.Count, 1)
+      .publishStoredMetrics();
 
-      metrics.addMetric('test', MetricUnit.Count, 1);
-      metrics.publishStoredMetrics();
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+    );
 
-      // Assess
-      expect(console.warn).toHaveBeenCalledWith(
-        `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
-      );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({ validDimension: 'valid' })
+    );
 
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.objectContaining({ validDimension: 'valid' })
-      );
-
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.not.objectContaining({ [name]: value })
-      );
-    }
-  );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({ [name]: value })
+    );
+  });
 });

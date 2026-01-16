@@ -20,8 +20,9 @@ describe('Working with metadata', () => {
     });
 
     // Act
-    metrics.addMetadata('cost-center', '1234');
-    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics
+      .addMetadata('cost-center', '1234')
+      .addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
@@ -36,9 +37,10 @@ describe('Working with metadata', () => {
     });
 
     // Act
-    metrics.addMetadata('cost-center', '1234');
-    metrics.addMetadata('cost-center', '5678');
-    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics
+      .addMetadata('cost-center', '1234')
+      .addMetadata('cost-center', '5678')
+      .addMetric('test', MetricUnit.Count, 1);
 
     // Assess
     expect(console.log).toHaveEmittedEMFWith(
@@ -53,8 +55,8 @@ describe('Working with metadata', () => {
     });
 
     // Act
-    metrics.addMetadata('cost-center', '1234');
-    metrics.clearMetadata();
+    metrics.addMetadata('cost-center', '1234').clearMetadata();
+
     metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Assess

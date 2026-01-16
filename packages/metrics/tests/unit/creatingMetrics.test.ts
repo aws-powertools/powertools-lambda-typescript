@@ -61,10 +61,11 @@ describe('Creating metrics', () => {
     const metrics = new Metrics({ singleMetric: false });
 
     // Act
-    metrics.addMetric('test', MetricUnit.Count, 1);
-    metrics.addMetric('test', MetricUnit.Count, 2);
-    metrics.addMetric('another', MetricUnit.Bytes, 3);
-    metrics.publishStoredMetrics();
+    metrics
+      .addMetric('test', MetricUnit.Count, 1)
+      .addMetric('test', MetricUnit.Count, 2)
+      .addMetric('another', MetricUnit.Bytes, 3)
+      .publishStoredMetrics();
 
     // Assess
     expect(console.log).toHaveBeenCalledTimes(1);
@@ -101,8 +102,7 @@ describe('Creating metrics', () => {
     metrics.addMetric('test', MetricUnit.Count, 1);
     metrics.addMetric('test', MetricUnit.Count, 2);
     metrics.clearMetrics();
-    metrics.addMetric('another', MetricUnit.Count, 3);
-    metrics.publishStoredMetrics();
+    metrics.addMetric('another', MetricUnit.Count, 3).publishStoredMetrics();
 
     // Assess
     expect(console.log).toHaveBeenCalledTimes(1);
@@ -126,11 +126,11 @@ describe('Creating metrics', () => {
     const metrics = new Metrics({ singleMetric: false });
 
     // Act
-    metrics.addMetric('test', MetricUnit.Count, 1);
-    metrics.addMetric('test', MetricUnit.Count, 2);
-    metrics.publishStoredMetrics();
-    metrics.addMetric('another', MetricUnit.Count, 3);
-    metrics.publishStoredMetrics();
+    metrics
+      .addMetric('test', MetricUnit.Count, 1)
+      .addMetric('test', MetricUnit.Count, 2)
+      .publishStoredMetrics();
+    metrics.addMetric('another', MetricUnit.Count, 3).publishStoredMetrics();
 
     // Assess
     expect(console.log).toHaveBeenCalledTimes(2);
@@ -328,7 +328,9 @@ describe('Creating metrics', () => {
     // @ts-expect-error - Testing runtime behavior with invalid metric unit
     expect(() => metrics.addMetric('test', 'invalid-unit', 1)).toThrowError(
       new RangeError(
-        `Invalid metric unit 'invalid-unit', expected either option: ${Object.values(MetricUnit).join(',')}`
+        `Invalid metric unit 'invalid-unit', expected either option: ${Object.values(
+          MetricUnit
+        ).join(',')}`
       )
     );
   });
@@ -343,7 +345,9 @@ describe('Creating metrics', () => {
       metrics.addMetric('test', MetricUnit.Count, 1, 'invalid-resolution')
     ).toThrowError(
       new RangeError(
-        `Invalid metric resolution 'invalid-resolution', expected either option: ${Object.values(MetricResolution).join(',')}`
+        `Invalid metric resolution 'invalid-resolution', expected either option: ${Object.values(
+          MetricResolution
+        ).join(',')}`
       )
     );
   });

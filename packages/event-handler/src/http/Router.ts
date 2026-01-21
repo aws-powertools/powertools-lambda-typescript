@@ -276,6 +276,7 @@ class Router {
       }),
       params: {},
       responseType,
+      isHttpStreaming: options?.isHttpStreaming,
     };
 
     try {

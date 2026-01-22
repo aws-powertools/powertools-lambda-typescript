@@ -248,13 +248,12 @@ type CompressionOptions = {
 /**
  * Configuration options for Tracer middleware
  */
-type TracerOptions<T extends boolean = true> = {
+type TracerOptions = {
   /**
    * Whether to capture the response body as metadata.
-   * Only applies to non-streaming JSON responses.
    * @default true
    */
-  captureResponse?: T;
+  captureResponse?: boolean;
 };
 
 type WebResponseToProxyResultOptions = {

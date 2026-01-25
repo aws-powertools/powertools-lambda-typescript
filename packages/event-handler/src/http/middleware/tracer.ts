@@ -2,6 +2,39 @@ import type { Tracer } from '@aws-lambda-powertools/tracer';
 import type { Subsegment } from 'aws-xray-sdk-core';
 import type { Middleware, TracerOptions } from '../../types/http.js';
 
+/**
+ * A middleware for tracing HTTP routes using AWS X-Ray.
+ *
+ * This middleware automatically:
+ * - Creates a subsegment for each HTTP route
+ * - Adds `ColdStart` annotation
+ * - Adds service name annotation
+ * - Captures the response as metadata (for non-streaming JSON responses)
+ * - Captures errors as metadata
+ *
+ * **Note:** This middleware is completely disabled when the request is in HTTP streaming mode.
+ *
+ * @example
+ * ```typescript
+ * import { Router } from '@aws-lambda-powertools/event-handler/http';
+ * import { tracerMiddleware } from '@aws-lambda-powertools/event-handler/http/middleware/tracer';
+ * import { Tracer } from '@aws-lambda-powertools/tracer';
+ *
+ * const tracer = new Tracer({ serviceName: 'my-service' });
+ * const app = new Router();
+ *
+ * // Apply globally
+ * app.use(tracerMiddleware(tracer));
+ *
+ * // Or apply per-route
+ * app.get('/users', async ({ reqCtx }) => {
+ *   return { users: [] };
+ * }, { middleware: [tracerMiddleware(tracer)] });
+ * ```
+ *
+ * @param tracer - The Tracer instance to use for tracing
+ * @param options - Optional configuration for the middleware
+ */
 const tracerMiddleware = (
   tracer: Tracer,
   options?: TracerOptions

@@ -89,6 +89,16 @@
         "types": "./lib/esm/http/middleware/index.d.ts",
         "default": "./lib/esm/http/middleware/index.js"
       }
+    },
+    "./http/middleware/tracer": {
+      "require": {
+        "types": "./lib/cjs/http/middleware/tracer.d.ts",
+        "default": "./lib/cjs/http/middleware/tracer.js"
+      },
+      "import": {
+        "types": "./lib/esm/http/middleware/tracer.d.ts",
+        "default": "./lib/esm/http/middleware/tracer.js"
+      }
     }
   },
   "typesVersions": {
@@ -116,6 +126,10 @@
       "http/middleware": [
         "./lib/cjs/http/middleware/index.d.ts",
         "./lib/esm/http/middleware/index.d.ts"
+      ],
+      "http/middleware/tracer": [
+        "./lib/cjs/http/middleware/tracer.d.ts",
+        "./lib/esm/http/middleware/tracer.d.ts"
       ]
     }
   },
@@ -131,6 +145,14 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "2.30.2"
+  },
+  "peerDependencies": {
+    "@aws-lambda-powertools/tracer": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@aws-lambda-powertools/tracer": {
+      "optional": true
+    }
   },
   "keywords": [
     "aws",

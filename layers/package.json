@@ -42,8 +42,8 @@
     "source-map-support": "^0.5.21"
   },
   "dependencies": {
-    "aws-cdk": "^2.1102.0",
-    "aws-cdk-lib": "^2.235.1",
+    "aws-cdk": "^2.1103.0",
+    "aws-cdk-lib": "^2.236.0",
     "esbuild": "^0.27.2",
     "tsx": "^4.21.0"
   }

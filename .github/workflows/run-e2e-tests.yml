@@ -33,6 +33,7 @@ jobs:
             packages/parameters,
             packages/event-handler,
             packages/tracer,
+            packages/batch,
             layers,
           ]
         version: [20, 22, 24]

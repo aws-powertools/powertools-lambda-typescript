@@ -6,7 +6,7 @@ import { CfnOutput, Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { LoggingFormat } from 'aws-cdk-lib/aws-lambda';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { sendMessagesToQueue } from '../helpers/publishers.js';
 import { RESOURCE_NAME_PREFIX } from './constants.js';
 
@@ -14,10 +14,6 @@ const lambdaFunctionCodeFilePath = join(
   __dirname,
   'sqsStandard.test.FunctionCode.ts'
 );
-
-vi.hoisted(() => {
-  process.env.AWS_PROFILE = 'aws-powertools+typescript-e2e-Admin';
-});
 
 describe('SQS Standard Queue Batch Processing', () => {
   const testName = 'SqsStandard';

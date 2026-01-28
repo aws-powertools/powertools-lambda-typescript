@@ -34,9 +34,9 @@ import type { LogTailerOptions, ParsedLog, SessionResult } from './types.js';
  * ```
  */
 class LogTailer {
-  #client: CloudWatchLogsClient;
-  #logGroupIdentifier: string;
-  #options: Required<LogTailerOptions>;
+  readonly #client: CloudWatchLogsClient;
+  readonly #logGroupIdentifier: string;
+  readonly #options: Required<LogTailerOptions>;
   #response?: StartLiveTailCommandOutput;
   #tailPromise?: Promise<Map<string, ParsedLog[]>>;
 
@@ -218,6 +218,71 @@ class LogTailer {
     });
   }
 
+  #resetIdleTimer(
+    idleTimer: NodeJS.Timeout | undefined,
+    setIdleTimer: (timer: NodeJS.Timeout | undefined) => void,
+    onTimeout: () => void
+  ): void {
+    if (idleTimer) clearTimeout(idleTimer);
+    const timer = setTimeout(() => {
+      onTimeout();
+    }, this.#options.maxIdleMs);
+    setIdleTimer(timer);
+  }
+
+  #collectSessionResults(
+    sessionResults: SessionResult[] | undefined,
+    requestLogs: Map<string, ParsedLog[]>
+  ): boolean {
+    if (!sessionResults?.length) return false;
+
+    for (const logEvent of sessionResults) {
+      const { requestId, logObj } = this.#parseLogEvent(logEvent);
+      if (!requestId || !logObj) continue;
+
+      if (!requestLogs.has(requestId)) {
+        requestLogs.set(requestId, []);
+      }
+      requestLogs.get(requestId)?.push(logObj);
+    }
+
+    return true;
+  }
+
+  #shouldAutoStop(
+    requestLogs: Map<string, ParsedLog[]>,
+    cooldownState: { active: boolean; counter: number }
+  ): boolean {
+    if (
+      !this.#options.expectedInvocations ||
+      requestLogs.size < this.#options.expectedInvocations
+    ) {
+      cooldownState.active = false;
+      cooldownState.counter = 0;
+      return false;
+    }
+
+    let completeCount = 0;
+    for (const logs of requestLogs.values()) {
+      if (this.#isRequestComplete(logs)) completeCount++;
+    }
+
+    if (completeCount < this.#options.expectedInvocations) {
+      cooldownState.active = false;
+      cooldownState.counter = 0;
+      return false;
+    }
+
+    if (!cooldownState.active) {
+      cooldownState.active = true;
+      cooldownState.counter = 0;
+      return false;
+    }
+
+    cooldownState.counter++;
+    return cooldownState.counter >= this.#options.cooldownTicks;
+  }
+
   /**
    * Handles the live tail response stream, collecting and organizing logs by request ID.
    * Implements idle timeout and cooldown logic for automatic completion detection.
@@ -228,66 +293,42 @@ class LogTailer {
     }
 
     const requestLogs: Map<string, ParsedLog[]> = new Map();
-    let cooldownCounter = 0;
-    let cooldownActive = false;
     let aborted = false;
     let idleTimer: NodeJS.Timeout | undefined;
 
-    const resetIdleTimer = () => {
-      if (idleTimer) clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => {
-        this.#client.destroy();
-        aborted = true;
-      }, this.#options.maxIdleMs);
+    const cooldownState = { active: false, counter: 0 };
+
+    const markAborted = () => {
+      this.#client.destroy();
+      aborted = true;
     };
 
-    resetIdleTimer();
+    const refreshIdleTimer = () => {
+      this.#resetIdleTimer(
+        idleTimer,
+        (timer) => {
+          idleTimer = timer;
+        },
+        markAborted
+      );
+    };
+
+    refreshIdleTimer();
 
     try {
       for await (const event of this.#response.responseStream || []) {
         if (aborted) break;
 
-        let hadLogData = false;
-        if (event.sessionUpdate?.sessionResults?.length) {
-          hadLogData = true;
-          for (const logEvent of event.sessionUpdate.sessionResults) {
-            const { requestId, logObj } = this.#parseLogEvent(logEvent);
-            if (!requestId || !logObj) continue;
+        const hadLogData = this.#collectSessionResults(
+          event.sessionUpdate?.sessionResults,
+          requestLogs
+        );
 
-            if (!requestLogs.has(requestId)) {
-              requestLogs.set(requestId, []);
-            }
-            requestLogs.get(requestId)?.push(logObj);
-          }
-        }
+        if (hadLogData) refreshIdleTimer();
 
-        if (hadLogData) resetIdleTimer();
-
-        if (
-          this.#options.expectedInvocations &&
-          requestLogs.size >= this.#options.expectedInvocations
-        ) {
-          let completeCount = 0;
-          for (const logs of requestLogs.values()) {
-            if (this.#isRequestComplete(logs)) completeCount++;
-          }
-
-          if (completeCount >= this.#options.expectedInvocations) {
-            if (!cooldownActive) {
-              cooldownActive = true;
-              cooldownCounter = 0;
-            } else {
-              cooldownCounter++;
-              if (cooldownCounter >= this.#options.cooldownTicks) {
-                this.#client.destroy();
-                aborted = true;
-                break;
-              }
-            }
-          } else {
-            cooldownActive = false;
-            cooldownCounter = 0;
-          }
+        if (this.#shouldAutoStop(requestLogs, cooldownState)) {
+          markAborted();
+          break;
         }
       }
 

@@ -100,6 +100,7 @@
   "dependencies": {
     "@aws-cdk/toolkit-lib": "^1.14.1",
     "@aws-sdk/client-lambda": "^3.975.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.975.0",
     "@aws/lambda-invoke-store": "0.2.3",
     "@smithy/util-utf8": "^4.0.0",
     "aws-cdk-lib": "^2.236.0",

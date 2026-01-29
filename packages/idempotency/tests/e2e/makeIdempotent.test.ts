@@ -7,6 +7,7 @@ import {
 } from '@aws-lambda-powertools/testing-utils';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { Duration } from 'aws-cdk-lib';
 import { AttributeType } from 'aws-cdk-lib/aws-dynamodb';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
@@ -77,6 +78,25 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     }
   );
 
+  let functionNameDurable: string;
+  let tableNameDurable: string;
+  new IdempotencyTestNodejsFunctionAndDynamoTable(
+    testStack,
+    {
+      function: {
+        entry: lambdaFunctionCodeFilePath,
+        handler: 'handlerDurable',
+        durableConfig: {
+          executionTimeout: Duration.minutes(5),
+          retentionPeriod: Duration.days(1),
+        },
+      },
+    },
+    {
+      nameSuffix: 'durable',
+    }
+  );
+
   const ddb = new DynamoDBClient({});
 
   beforeAll(async () => {
@@ -94,6 +114,8 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
       testStack.findAndGetStackOutputValue('handlerFn');
     tableNameLambdaHandler =
       testStack.findAndGetStackOutputValue('handlerTable');
+    functionNameDurable = testStack.findAndGetStackOutputValue('durableFn');
+    tableNameDurable = testStack.findAndGetStackOutputValue('durableTable');
   });
 
   it('when called twice with the same payload, it returns the same result', async () => {
@@ -307,6 +329,35 @@ describe('Idempotency E2E tests, wrapper function usage', () => {
     );
     // During the second invocation the handler should not be called, so the logs should be empty
     expect(functionLogs[1]).toHaveLength(0);
+  });
+
+  it('calls an idempotent durable function and always returns the same result when called multiple times', async () => {
+    // Prepare
+    const payload = {
+      foo: 'bar',
+    };
+    const payloadHash = createHash('md5')
+      .update(JSON.stringify(payload))
+      .digest('base64');
+
+    // Act
+    await invokeFunction({
+      functionName: `${functionNameDurable}:$LATEST`,
+      times: 2,
+      invocationMode: 'SEQUENTIAL',
+      payload,
+    });
+
+    // Assess
+    const idempotencyRecords = await ddb.send(
+      new ScanCommand({
+        TableName: tableNameDurable,
+      })
+    );
+    expect(idempotencyRecords.Items?.length).toEqual(1);
+    expect(idempotencyRecords.Items?.[0].id).toEqual(
+      `${functionNameDurable}#${payloadHash}`
+    );
   });
 
   afterAll(async () => {

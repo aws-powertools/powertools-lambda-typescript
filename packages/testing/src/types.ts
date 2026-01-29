@@ -198,6 +198,38 @@ type EnrichedXRayTraceDocumentParsed = Omit<
   subsegments: Map<string, XRayTraceDocumentParsed>;
 };
 
+// #endregion
+// #region LogTailer
+
+/**
+ * Configuration options for the LogTailer.
+ */
+type LogTailerOptions = {
+  /** Maximum time to wait without receiving log data before timing out (default: 60000ms) */
+  maxIdleMs?: number;
+  /** Number of ticks to wait after all expected invocations complete before stopping (default: 3) */
+  cooldownTicks?: number;
+  /** Expected number of Lambda invocations - enables auto-stop when all complete (default: 0 = manual stop) */
+  expectedInvocations?: number;
+};
+
+type ParsedLog = {
+  requestId?: string;
+  function_request_id?: string;
+  type?: string;
+  record?: { requestId?: string };
+  timestamp?: string;
+  time?: string;
+  [key: string]: unknown;
+};
+
+type SessionResult = {
+  timestamp?: number | string;
+  message?: string | object;
+};
+
+// #endregion
+
 export type {
   ExtraTestProps,
   TestDynamodbTableProps,
@@ -213,4 +245,7 @@ export type {
   XRaySegmentParsed,
   XRayTraceParsed,
   EnrichedXRayTraceDocumentParsed,
+  LogTailerOptions,
+  SessionResult,
+  ParsedLog,
 };

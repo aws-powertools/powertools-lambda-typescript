@@ -1,3 +1,4 @@
+import type { DurableContext } from '@aws/durable-execution-sdk-js';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
@@ -596,18 +597,20 @@ describe('Function: makeIdempotent', () => {
     expect(getRecordSpy).toHaveBeenCalledTimes(0);
   });
 
-  it('registers the LambdaContext when provided a durable context', async () => {
+  it('registers the durable context when provided a durable context', async () => {
     // Prepare
     const registerLambdaContextSpy = vi.spyOn(
       IdempotencyConfig.prototype,
       'registerLambdaContext'
     );
-    const fn = async (_event: any, _context: any) => {};
-    const handler = makeIdempotent(fn, mockIdempotencyOptions);
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: DurableContext) => {},
+      mockIdempotencyOptions
+    );
     const mockDurableContext = { step: vi.fn(), lambdaContext: context };
 
     // Act
-    await handler(event, mockDurableContext);
+    await handler(event, mockDurableContext as unknown as DurableContext);
 
     // Assess
     expect(registerLambdaContextSpy).toHaveBeenCalledOnce();
@@ -616,8 +619,10 @@ describe('Function: makeIdempotent', () => {
   it('passes isReplay=true to handler when durable context is in ReplayMode', async () => {
     // Prepare
     const handleSpy = vi.spyOn(IdempotencyHandler.prototype, 'handle');
-    const fn = async (_event: any, _context: any) => {};
-    const handler = makeIdempotent(fn, mockIdempotencyOptions);
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: DurableContext) => {},
+      mockIdempotencyOptions
+    );
     const mockDurableContext = {
       step: vi.fn(),
       lambdaContext: context,
@@ -625,7 +630,7 @@ describe('Function: makeIdempotent', () => {
     };
 
     // Act
-    await handler(event, mockDurableContext);
+    await handler(event, mockDurableContext as unknown as DurableContext);
 
     // Assess
     expect(handleSpy).toHaveBeenCalledWith({ isReplay: true });
@@ -634,8 +639,10 @@ describe('Function: makeIdempotent', () => {
   it('passes isReplay=fale to handler when durable context is in ExecutionMode', async () => {
     // Prepare
     const handleSpy = vi.spyOn(IdempotencyHandler.prototype, 'handle');
-    const fn = async (_event: any, _context: any) => {};
-    const handler = makeIdempotent(fn, mockIdempotencyOptions);
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: DurableContext) => {},
+      mockIdempotencyOptions
+    );
     const mockDurableContext = {
       step: vi.fn(),
       lambdaContext: context,
@@ -643,7 +650,7 @@ describe('Function: makeIdempotent', () => {
     };
 
     // Act
-    await handler(event, mockDurableContext);
+    await handler(event, mockDurableContext as unknown as DurableContext);
 
     // Assess
     expect(handleSpy).toHaveBeenCalledWith({ isReplay: false });

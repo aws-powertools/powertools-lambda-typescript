@@ -360,61 +360,60 @@ describe('Class: DynamoDBPersistenceLayer', () => {
         },
         case: 'single key',
       },
-    ])(
-      'throws when called with a record that fails any condition ($case)',
-      async ({ keys }) => {
-        // Prepare
-        const { id, sortKey } = keys;
+    ])('throws when called with a record that fails any condition ($case)', async ({
+      keys,
+    }) => {
+      // Prepare
+      const { id, sortKey } = keys;
 
-        const record = new IdempotencyRecord({
-          idempotencyKey: id,
-          sortKey,
-          status: IdempotencyRecordStatus.EXPIRED,
-          expiryTimestamp: 0,
-        });
-        const expiration = Date.now();
-        client.on(PutItemCommand).rejects(
-          new ConditionalCheckFailedException({
-            $metadata: {
-              httpStatusCode: 400,
-              requestId: 'someRequestId',
-            },
-            message: 'Conditional check failed',
-            Item: {
-              id: { S: 'test-key' },
-              ...(sortKey ? { sortKey: { S: sortKey } } : {}),
-              status: { S: 'INPROGRESS' },
-              expiration: { N: expiration.toString() },
-            },
+      const record = new IdempotencyRecord({
+        idempotencyKey: id,
+        sortKey,
+        status: IdempotencyRecordStatus.EXPIRED,
+        expiryTimestamp: 0,
+      });
+      const expiration = Date.now();
+      client.on(PutItemCommand).rejects(
+        new ConditionalCheckFailedException({
+          $metadata: {
+            httpStatusCode: 400,
+            requestId: 'someRequestId',
+          },
+          message: 'Conditional check failed',
+          Item: {
+            id: { S: 'test-key' },
+            ...(sortKey ? { sortKey: { S: sortKey } } : {}),
+            status: { S: 'INPROGRESS' },
+            expiration: { N: expiration.toString() },
+          },
+        })
+      );
+      const testPersistenceLayer = sortKey
+        ? new DynamoDBPersistenceLayerTestClass({
+            tableName: dummyTableName,
+            sortKeyAttr: 'sortKey',
           })
-        );
-        const testPersistenceLayer = sortKey
-          ? new DynamoDBPersistenceLayerTestClass({
-              tableName: dummyTableName,
-              sortKeyAttr: 'sortKey',
-            })
-          : persistenceLayer;
+        : persistenceLayer;
 
-        // Act & Assess
-        await expect(
-          testPersistenceLayer._putRecord(record)
-        ).rejects.toThrowError(
-          new IdempotencyItemAlreadyExistsError(
-            `Failed to put record for already existing idempotency key: ${
-              sortKey
-                ? `${record.idempotencyKey} and sort key: ${sortKey}`
-                : record.idempotencyKey
-            }`,
-            new IdempotencyRecord({
-              idempotencyKey: 'test-key',
-              sortKey,
-              status: IdempotencyRecordStatus.INPROGRESS,
-              expiryTimestamp: expiration,
-            })
-          )
-        );
-      }
-    );
+      // Act & Assess
+      await expect(
+        testPersistenceLayer._putRecord(record)
+      ).rejects.toThrowError(
+        new IdempotencyItemAlreadyExistsError(
+          `Failed to put record for already existing idempotency key: ${
+            sortKey
+              ? `${record.idempotencyKey} and sort key: ${sortKey}`
+              : record.idempotencyKey
+          }`,
+          new IdempotencyRecord({
+            idempotencyKey: 'test-key',
+            sortKey,
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiryTimestamp: expiration,
+          })
+        )
+      );
+    });
 
     it('throws when encountering an unknown error', async () => {
       // Prepare

@@ -1,4 +1,8 @@
 import { setTimeout } from 'node:timers/promises';
+import {
+  type DurableContext,
+  withDurableExecution,
+} from '@aws/durable-execution-sdk-js';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
 import { IdempotencyConfig } from '../../src/IdempotencyConfig.js';
@@ -110,4 +114,23 @@ export const handlerLambda = makeIdempotent(
       useLocalCache: true,
     }),
   }
+);
+
+export const handlerDurable = withDurableExecution(
+  makeIdempotent(
+    async (event: { foo: string }, context: DurableContext) => {
+      context.configureLogger({ customLogger: logger });
+
+      logger.info('Processing event', { foo: event.foo });
+
+      await context.wait({ seconds: 1 });
+
+      logger.info('After wait');
+
+      return event.foo;
+    },
+    {
+      persistenceStore: dynamoDBPersistenceLayer,
+    }
+  )
 );

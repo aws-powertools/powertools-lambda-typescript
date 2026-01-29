@@ -231,22 +231,31 @@ class LogTailer {
   }
 
   #collectSessionResults(
-    sessionResults: SessionResult[] | undefined,
+    sessionResults: SessionResult[],
     requestLogs: Map<string, ParsedLog[]>
-  ): boolean {
-    if (!sessionResults?.length) return false;
+  ): Map<string, ParsedLog[]> {
+    const mergedLogs = new Map<string, ParsedLog[]>();
+    for (const [requestId, logs] of requestLogs.entries()) {
+      mergedLogs.set(requestId, [...logs]);
+    }
+
+    if (!sessionResults.length) return mergedLogs;
 
     for (const logEvent of sessionResults) {
       const { requestId, logObj } = this.#parseLogEvent(logEvent);
       if (!requestId || !logObj) continue;
 
-      if (!requestLogs.has(requestId)) {
-        requestLogs.set(requestId, []);
+      if (!mergedLogs.has(requestId)) {
+        mergedLogs.set(requestId, []);
       }
-      requestLogs.get(requestId)?.push(logObj);
+      mergedLogs.get(requestId)?.push(logObj);
     }
 
-    return true;
+    for (const logs of mergedLogs.values()) {
+      this.#sortLogs(logs);
+    }
+
+    return mergedLogs;
   }
 
   #shouldAutoStop(
@@ -292,7 +301,7 @@ class LogTailer {
       throw new Error('No response available');
     }
 
-    const requestLogs: Map<string, ParsedLog[]> = new Map();
+    let requestLogs: Map<string, ParsedLog[]> = new Map();
     let aborted = false;
     let idleTimer: NodeJS.Timeout | undefined;
 
@@ -319,12 +328,12 @@ class LogTailer {
       for await (const event of this.#response.responseStream || []) {
         if (aborted) break;
 
-        const hadLogData = this.#collectSessionResults(
-          event.sessionUpdate?.sessionResults,
-          requestLogs
-        );
+        const sessionResults = event.sessionUpdate?.sessionResults ?? [];
+        if (sessionResults.length > 0) {
+          refreshIdleTimer();
+        }
 
-        if (hadLogData) refreshIdleTimer();
+        requestLogs = this.#collectSessionResults(sessionResults, requestLogs);
 
         if (this.#shouldAutoStop(requestLogs, cooldownState)) {
           markAborted();
@@ -333,10 +342,6 @@ class LogTailer {
       }
 
       if (idleTimer) clearTimeout(idleTimer);
-
-      for (const logs of requestLogs.values()) {
-        this.#sortLogs(logs);
-      }
 
       return requestLogs;
     } catch {

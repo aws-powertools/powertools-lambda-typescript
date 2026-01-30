@@ -17,19 +17,19 @@ import type { Middleware, TracerOptions } from '../../types/http.js';
  * @example
  * ```typescript
  * import { Router } from '@aws-lambda-powertools/event-handler/http';
- * import { tracer } from '@aws-lambda-powertools/event-handler/http/middleware/tracer';
+ * import { tracer as tracerMiddleware } from '@aws-lambda-powertools/event-handler/http/middleware/tracer';
  * import { Tracer } from '@aws-lambda-powertools/tracer';
  *
  * const tracer = new Tracer({ serviceName: 'my-service' });
  * const app = new Router();
  *
  * // Apply globally
- * app.use(tracer(tracer));
+ * app.use(tracerMiddleware(tracer));
  *
  * // Or apply per-route
- * app.get('/users', async ({ reqCtx }) => {
+ * app.get('/users', [tracerMiddleware(tracer)], async ({ reqCtx }) => {
  *   return { users: [] };
- * }, { middleware: [tracer(tracer)] });
+ * });
  * ```
  *
  * @param tracer - The Tracer instance to use for tracing

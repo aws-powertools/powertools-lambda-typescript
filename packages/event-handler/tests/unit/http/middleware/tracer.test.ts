@@ -2,7 +2,7 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { tracerMiddleware } from '../../../../src/http/middleware/tracer.js';
+import { tracer as tracerMiddleware } from '../../../../src/http/middleware/tracer.js';
 import { Router } from '../../../../src/http/Router.js';
 import { createTestEvent, ResponseStream } from '../helpers.js';
 

@@ -289,6 +289,10 @@ describe('Tracer Middleware', () => {
         handlerSubsegment
       );
       vi.spyOn(tracer, 'getSegment').mockReturnValue(mainSegment);
+      vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+      vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(
+        () => ({})
+      );
       vi.spyOn(tracer, 'addResponseAsMetadata').mockImplementation(() => ({}));
       const setSegmentSpy = vi
         .spyOn(tracer, 'setSegment')

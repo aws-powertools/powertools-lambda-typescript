@@ -566,7 +566,7 @@ You can enable response compression by using the `compress` middleware. This wil
 
 ### Tracer
 
-You can enable distributed tracing for your HTTP routes by using the `tracer`. This middleware integrates with [AWS X-Ray](https://aws.amazon.com/xray/){target="_blank"} through the [Tracer utility](../tracer.md) to automatically trace each route invocation.
+You can enable distributed tracing for your HTTP routes by using the `tracer`. This middleware integrates with [AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html){target="_blank"} through the [Tracer utility](../tracer.md) to automatically trace each route invocation.
 
 !!! note "Installation"
     The `tracer` requires the `@aws-lambda-powertools/tracer` package as a peer dependency. Install it separately:
@@ -585,7 +585,7 @@ The middleware automatically:
 
 === "index.ts"
 
-    ```ts hl_lines="2 3 8 12"
+    ```ts hl_lines="2 3 6 10"
     --8<-- "examples/snippets/event-handler/http/advanced_mw_tracer.ts"
     ```
 
@@ -599,14 +599,14 @@ For routes that return sensitive data, you can disable response capture by setti
 
 === "index.ts"
 
-    ```ts hl_lines="13"
+    ```ts hl_lines="2 3 6 11"
     --8<-- "examples/snippets/event-handler/http/advanced_mw_tracer_per_route.ts"
     ```
 
 #### Streaming limitation
 
 !!! warning "Tracer middleware is disabled for streaming responses"
-    When using HTTP response streaming, the Tracer middleware is automatically disabled to prevent buffering the entire response, which would defeat the purpose of streaming. You can still use the Tracer utility manually within your route handler to create subsegments and add annotations.
+    When using HTTP response streaming, the Tracer middleware is automatically disabled to prevent buffering the entire response. In streaming mode the middleware exits early and does not create a subsegment. You can still use the Tracer utility manually within your route handler to create subsegments and add annotations.
 
 ### Binary responses
 

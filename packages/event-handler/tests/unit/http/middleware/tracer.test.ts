@@ -92,9 +92,9 @@ describe('Tracer Middleware', () => {
       // Prepare
       const tracer = new Tracer();
       vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
-      vi.spyOn(tracer, 'getSegment')
-        .mockImplementationOnce(() => new Segment('main'))
-        .mockImplementation(() => new Subsegment('GET /test'));
+      vi.spyOn(tracer, 'getSegment').mockImplementation(
+        () => new Segment('main')
+      );
       vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
       vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(
         () => ({})
@@ -118,7 +118,7 @@ describe('Tracer Middleware', () => {
       vi.spyOn(tracer, 'getSegment')
         .mockImplementationOnce(() => new Segment('main'))
         .mockImplementation(() => new Subsegment('GET /test'));
-      const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
+      const addResponseSpy = vi.spyOn(tracer, 'addResponseAsMetadata');
 
       app.use(tracerMiddleware(tracer));
       app.get('/test', () => ({ foo: 'bar' }));
@@ -127,10 +127,13 @@ describe('Tracer Middleware', () => {
       await app.resolve(createTestEvent('/test', 'GET'), context);
 
       // Assess
-      expect(putMetadataSpy).toHaveBeenCalledTimes(1);
-      expect(putMetadataSpy).toHaveBeenCalledWith('GET /test response', {
-        foo: 'bar',
-      });
+      expect(addResponseSpy).toHaveBeenCalledTimes(1);
+      expect(addResponseSpy).toHaveBeenCalledWith(
+        {
+          foo: 'bar',
+        },
+        'GET /test'
+      );
     });
 
     it('does not capture response when `captureResponse` is false', async () => {
@@ -140,7 +143,7 @@ describe('Tracer Middleware', () => {
       vi.spyOn(tracer, 'getSegment')
         .mockImplementationOnce(() => new Segment('main'))
         .mockImplementation(() => new Subsegment('GET /test'));
-      const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
+      const addResponseSpy = vi.spyOn(tracer, 'addResponseAsMetadata');
 
       app.use(tracerMiddleware(tracer, { captureResponse: false }));
       app.get('/test', () => ({ foo: 'bar' }));
@@ -149,7 +152,7 @@ describe('Tracer Middleware', () => {
       await app.resolve(createTestEvent('/test', 'GET'), context);
 
       // Assess
-      expect(putMetadataSpy).toHaveBeenCalledTimes(0);
+      expect(addResponseSpy).toHaveBeenCalledTimes(0);
     });
 
     it('does not capture non-JSON responses', async () => {
@@ -159,7 +162,7 @@ describe('Tracer Middleware', () => {
       vi.spyOn(tracer, 'getSegment')
         .mockImplementationOnce(() => new Segment('main'))
         .mockImplementation(() => new Subsegment('GET /test'));
-      const putMetadataSpy = vi.spyOn(tracer, 'putMetadata');
+      const addResponseSpy = vi.spyOn(tracer, 'addResponseAsMetadata');
 
       app.use(tracerMiddleware(tracer));
       app.get(
@@ -174,7 +177,7 @@ describe('Tracer Middleware', () => {
       await app.resolve(createTestEvent('/test', 'GET'), context);
 
       // Assess
-      expect(putMetadataSpy).toHaveBeenCalledTimes(0);
+      expect(addResponseSpy).toHaveBeenCalledTimes(0);
     });
 
     it('closes subsegment and restores parent segment after successful request', async () => {
@@ -209,7 +212,7 @@ describe('Tracer Middleware', () => {
       const newSubsegment = new Subsegment('GET /test');
       vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
       vi.spyOn(tracer, 'getSegment').mockReturnValue(newSubsegment);
-      const addErrorSpy = vi.spyOn(newSubsegment, 'addError');
+      const addErrorSpy = vi.spyOn(tracer, 'addErrorAsMetadata');
       const testError = new Error('Test error');
 
       app.use(tracerMiddleware(tracer));
@@ -226,21 +229,21 @@ describe('Tracer Middleware', () => {
       // Assess
       expect(result.statusCode).toBe(500);
       expect(addErrorSpy).toHaveBeenCalledTimes(1);
-      expect(addErrorSpy).toHaveBeenCalledWith(testError, false);
+      expect(addErrorSpy).toHaveBeenCalledWith(testError);
     });
 
     it('closes subsegment even when handler throws', async () => {
       // Prepare
       const tracer = new Tracer();
-      const facadeSegment = new Segment('facade');
+      const mainSegment = new Segment('main');
       const handlerSubsegment = new Subsegment('GET /test');
-      vi.spyOn(facadeSegment, 'addNewSubsegment').mockReturnValue(
+      vi.spyOn(mainSegment, 'addNewSubsegment').mockReturnValue(
         handlerSubsegment
       );
       const setSegmentSpy = vi
         .spyOn(tracer, 'setSegment')
         .mockImplementation(() => null);
-      vi.spyOn(tracer, 'getSegment').mockReturnValue(facadeSegment);
+      vi.spyOn(tracer, 'getSegment').mockReturnValue(mainSegment);
 
       app.use(tracerMiddleware(tracer));
       app.get('/test', () => {
@@ -252,7 +255,9 @@ describe('Tracer Middleware', () => {
 
       // Assess
       expect(handlerSubsegment.isClosed()).toBe(true);
-      expect(setSegmentSpy).toHaveBeenLastCalledWith(facadeSegment);
+      expect(setSegmentSpy).toHaveBeenCalledTimes(2);
+      expect(setSegmentSpy).toHaveBeenNthCalledWith(1, handlerSubsegment);
+      expect(setSegmentSpy).toHaveBeenNthCalledWith(2, mainSegment);
     });
 
     it('calls annotations but does not create subsegment when no parent segment exists', async () => {
@@ -298,10 +303,11 @@ describe('Tracer Middleware', () => {
         .spyOn(tracer, 'setSegment')
         .mockImplementation(() => null);
       const logWarningSpy = vi.spyOn(console, 'warn');
+      const closeError = new Error('dummy error');
       const closeSpy = vi
         .spyOn(handlerSubsegment, 'close')
         .mockImplementation(() => {
-          throw new Error('dummy error');
+          throw closeError;
         });
 
       app.use(tracerMiddleware(tracer));
@@ -316,7 +322,7 @@ describe('Tracer Middleware', () => {
         1,
         'Failed to close or serialize segment %s. Data might be lost.',
         handlerSubsegment.name,
-        new Error('dummy error')
+        closeError
       );
       // Check that the segment is restored
       expect(setSegmentSpy).toHaveBeenNthCalledWith(2, mainSegment);
@@ -352,6 +358,11 @@ describe('Tracer Middleware', () => {
       const tracer = new Tracer();
       const setSegmentSpy = vi.spyOn(tracer, 'setSegment');
       const getSegmentSpy = vi.spyOn(tracer, 'getSegment');
+      const annotateColdStartSpy = vi.spyOn(tracer, 'annotateColdStart');
+      const addServiceNameAnnotationSpy = vi.spyOn(
+        tracer,
+        'addServiceNameAnnotation'
+      );
 
       app.use(tracerMiddleware(tracer));
       app.get('/test', async () => ({ success: true }));
@@ -365,6 +376,8 @@ describe('Tracer Middleware', () => {
       // Assess
       expect(setSegmentSpy).toHaveBeenCalledTimes(0);
       expect(getSegmentSpy).toHaveBeenCalledTimes(0);
+      expect(annotateColdStartSpy).toHaveBeenCalledTimes(0);
+      expect(addServiceNameAnnotationSpy).toHaveBeenCalledTimes(0);
     });
   });
 });

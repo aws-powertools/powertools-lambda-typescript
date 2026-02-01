@@ -583,6 +583,9 @@ The middleware automatically:
 * Captures JSON response bodies as metadata (configurable)
 * Captures errors as metadata when exceptions occur
 
+!!! note "Response capture behavior"
+    Only JSON responses are captured as metadata.
+
 === "index.ts"
 
     ```ts hl_lines="2 3 6 10"

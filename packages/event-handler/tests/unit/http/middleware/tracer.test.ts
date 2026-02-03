@@ -321,6 +321,49 @@ describe('Tracer Middleware', () => {
       expect(setSegmentSpy).toHaveBeenNthCalledWith(2, mainSegment);
     });
 
+    it('uses the provided logger option to log a warning when the segment closing fails', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      const mainSegment = new Segment('main');
+      const handlerSubsegment = new Subsegment('GET /test');
+      vi.spyOn(mainSegment, 'addNewSubsegment').mockReturnValue(
+        handlerSubsegment
+      );
+      vi.spyOn(tracer, 'getSegment').mockReturnValue(mainSegment);
+      vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+      vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(
+        () => ({})
+      );
+      vi.spyOn(tracer, 'addResponseAsMetadata').mockImplementation(() => ({}));
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      const logger = {
+        warn: vi.fn(),
+        debug: vi.fn(),
+        error: vi.fn(),
+        info: vi.fn(),
+      };
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
+      const closeError = new Error('dummy error');
+      vi.spyOn(handlerSubsegment, 'close').mockImplementation(() => {
+        throw closeError;
+      });
+
+      app.use(tracerMiddleware(tracer, { logger }));
+      app.get('/test', async () => ({ success: true }));
+
+      // Act
+      await app.resolve(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(logger.warn).toHaveBeenNthCalledWith(
+        1,
+        'Failed to close or serialize segment %s. Data might be lost.',
+        handlerSubsegment.name,
+        closeError
+      );
+      expect(consoleWarnSpy).toHaveBeenCalledTimes(0);
+    });
+
     it('does not trace untraced routes', async () => {
       // Prepare
       const tracer = new Tracer();

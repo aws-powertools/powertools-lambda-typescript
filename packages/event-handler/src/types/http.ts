@@ -254,6 +254,12 @@ type TracerOptions = {
    * @default true
    */
   captureResponse?: boolean;
+  /**
+   * A logger instance to be used for logging.
+   *
+   * When no logger is provided, we'll only log using the global `console` object.
+   */
+  logger?: GenericLogger;
 };
 
 type WebResponseToProxyResultOptions = {

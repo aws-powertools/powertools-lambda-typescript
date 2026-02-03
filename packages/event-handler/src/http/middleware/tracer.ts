@@ -36,7 +36,12 @@ import type { Middleware, TracerOptions } from '../../types/http.js';
  * @param options - Optional configuration for the middleware
  */
 const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
-  const { captureResponse = true } = options ?? {};
+  const {
+    captureResponse = true,
+    logger = {
+      warn: console.warn,
+    },
+  } = options ?? {};
 
   return async ({ reqCtx, next }) => {
     if (!tracer.isTracingEnabled() || reqCtx.isHttpStreaming) {
@@ -76,7 +81,7 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
         try {
           subSegment.close();
         } catch (error) {
-          console.warn(
+          logger.warn(
             'Failed to close or serialize segment %s. Data might be lost.',
             subSegment.name,
             error

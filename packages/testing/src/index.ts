@@ -17,5 +17,6 @@ export {
   withResolvers,
 } from './helpers.js';
 export { invokeFunction, invokeFunctionOnce } from './invokeTestFunction.js';
+export { LogTailer } from './LogTailer.js';
 export { TestInvocationLogs } from './TestInvocationLogs.js';
 export { TestStack } from './TestStack.js';

@@ -66,6 +66,7 @@ export class LayerPublisherStack extends Stack {
               // the name is the same as the npm workspace name
               const utilities = [
                 'commons',
+                'event-handler',
                 'jmespath',
                 'logger',
                 'metrics',

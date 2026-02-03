@@ -66,28 +66,28 @@ describe('Class IdempotencyHandler', () => {
           'There is already an execution in progress with idempotency key: idempotencyKey',
         case: 'pk only',
       },
-    ])(
-      'throws when the record is in progress and within expiry window ($case)',
-      ({ keys, expectedErrorMsg }) => {
-        // Prepare
-        const stubRecord = new IdempotencyRecord({
-          ...keys,
-          expiryTimestamp: Date.now() + 1000, // should be in the future
-          inProgressExpiryTimestamp: 0, // less than current time in milliseconds
-          responseData: { responseData: 'responseData' },
-          payloadHash: 'payloadHash',
-          status: IdempotencyRecordStatus.INPROGRESS,
-        });
+    ])('throws when the record is in progress and within expiry window ($case)', ({
+      keys,
+      expectedErrorMsg,
+    }) => {
+      // Prepare
+      const stubRecord = new IdempotencyRecord({
+        ...keys,
+        expiryTimestamp: Date.now() + 1000, // should be in the future
+        inProgressExpiryTimestamp: 0, // less than current time in milliseconds
+        responseData: { responseData: 'responseData' },
+        payloadHash: 'payloadHash',
+        status: IdempotencyRecordStatus.INPROGRESS,
+      });
 
-        // Act & Assess
-        expect(stubRecord.isExpired()).toBe(false);
-        expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
-        expect(() =>
-          idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
-        ).toThrow(new IdempotencyAlreadyInProgressError(expectedErrorMsg));
-        expect(mockResponseHook).not.toHaveBeenCalled();
-      }
-    );
+      // Act & Assess
+      expect(stubRecord.isExpired()).toBe(false);
+      expect(stubRecord.getStatus()).toBe(IdempotencyRecordStatus.INPROGRESS);
+      expect(() =>
+        idempotentHandler.determineResultFromIdempotencyRecord(stubRecord)
+      ).toThrow(new IdempotencyAlreadyInProgressError(expectedErrorMsg));
+      expect(mockResponseHook).not.toHaveBeenCalled();
+    });
 
     it('throws when the record is in progress and outside expiry window', () => {
       // Prepare
@@ -240,54 +240,52 @@ describe('Class IdempotencyHandler', () => {
       expect(mockProcessIdempotency).toHaveBeenCalledTimes(MAX_RETRIES + 1);
     });
 
-    it("allows execution when isReplay is true and there is IN PROGRESS record", async ()=> {
+    it('allows execution when isReplay is true and there is IN PROGRESS record', async () => {
       // Prepare
       // Mock saveInProgress to simulate an existing IN_PROGRESS record
-      vi.spyOn(persistenceStore, 'saveInProgress')
-        .mockRejectedValueOnce(
-          new IdempotencyItemAlreadyExistsError(
-            'Record exists',
-            new IdempotencyRecord({
-              idempotencyKey: 'test-key',
-              status: IdempotencyRecordStatus.INPROGRESS,
-              expiryTimestamp: Date.now() + 10000,
-            })
-          )
-        );
+      vi.spyOn(persistenceStore, 'saveInProgress').mockRejectedValueOnce(
+        new IdempotencyItemAlreadyExistsError(
+          'Record exists',
+          new IdempotencyRecord({
+            idempotencyKey: 'test-key',
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiryTimestamp: Date.now() + 10000,
+          })
+        )
+      );
 
       // Act
-      await idempotentHandler.handle({isReplay: true})
+      await idempotentHandler.handle({ isReplay: true });
 
       // Assess
-      expect(mockFunctionToMakeIdempotent).toBeCalled()
-    })
+      expect(mockFunctionToMakeIdempotent).toBeCalled();
+    });
 
-    it("raises an IdempotencyAlreadyInProgressError error when isReplay is false and there is an IN PROGRESS record", async ()=> {
-        // Prepare
-        // Mock saveInProgress to simulate an existing IN_PROGRESS record
-        vi.spyOn(persistenceStore, 'saveInProgress')
-          .mockRejectedValueOnce(
-            new IdempotencyItemAlreadyExistsError(
-              'Record exists',
-              new IdempotencyRecord({
-                idempotencyKey: 'test-key',
-                status: IdempotencyRecordStatus.INPROGRESS,
-                expiryTimestamp: Date.now() + 10000,
-              })
-            )
-          );
-
-        // Act & Assess
-        await expect(idempotentHandler.handle({ isReplay: false })).rejects.toThrow(IdempotencyAlreadyInProgressError);
-    })
-
-    it("returns the result of the original durable execution when another durable execution with the same payload is invoked", async () => {
-
+    it('raises an IdempotencyAlreadyInProgressError error when isReplay is false and there is an IN PROGRESS record', async () => {
       // Prepare
-      vi.spyOn(
-        persistenceStore,
-        'saveInProgress'
-      ).mockRejectedValue(new IdempotencyItemAlreadyExistsError());
+      // Mock saveInProgress to simulate an existing IN_PROGRESS record
+      vi.spyOn(persistenceStore, 'saveInProgress').mockRejectedValueOnce(
+        new IdempotencyItemAlreadyExistsError(
+          'Record exists',
+          new IdempotencyRecord({
+            idempotencyKey: 'test-key',
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiryTimestamp: Date.now() + 10000,
+          })
+        )
+      );
+
+      // Act & Assess
+      await expect(
+        idempotentHandler.handle({ isReplay: false })
+      ).rejects.toThrow(IdempotencyAlreadyInProgressError);
+    });
+
+    it('returns the result of the original durable execution when another durable execution with the same payload is invoked', async () => {
+      // Prepare
+      vi.spyOn(persistenceStore, 'saveInProgress').mockRejectedValue(
+        new IdempotencyItemAlreadyExistsError()
+      );
 
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
@@ -302,13 +300,13 @@ describe('Class IdempotencyHandler', () => {
         .mockResolvedValue(stubRecord);
 
       // Act
-      const result = await idempotentHandler.handle({isReplay: false})
+      const result = await idempotentHandler.handle({ isReplay: false });
 
       // Assess
       expect(result).toStrictEqual({ response: false });
       expect(getRecordSpy).toHaveBeenCalledTimes(1);
       expect(getRecordSpy).toHaveBeenCalledWith(mockFunctionPayloadToBeHashed);
-    })
+    });
   });
 
   describe('Method: getFunctionResult', () => {

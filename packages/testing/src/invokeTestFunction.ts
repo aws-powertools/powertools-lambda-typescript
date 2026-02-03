@@ -27,9 +27,7 @@ const invokeFunctionOnce = async ({
   if (result?.LogResult) {
     return new TestInvocationLogs(result?.LogResult);
   }
-  throw new Error(
-    'No LogResult field returned in the response of Lambda invocation. This should not happen.'
-  );
+  return new TestInvocationLogs('');
 };
 
 /**

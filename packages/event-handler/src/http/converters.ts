@@ -229,18 +229,18 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
   const multiValueHeaders: Record<string, Array<string>> = {};
 
   // Handle set-cookie headers specially using getSetCookie()
-  const setCookies = webHeaders.getSetCookie();
-  // Some implementations may concatenate multiple set-cookie values with commas
+  const cookies = webHeaders.getSetCookie();
+  // Some legacy implementations may concatenate multiple set-cookie values with commas
   // Split them out while preserving the cookie attributes (which use semicolons)
-  const allSetCookies: string[] = [];
-  for (const cookie of setCookies) {
-    allSetCookies.push(...cookie.split(',').map((v) => v.trimStart()));
+  const allCookies: string[] = [];
+  for (const cookie of cookies) {
+    allCookies.push(...cookie.split(',').map((v) => v.trimStart()));
   }
 
-  if (allSetCookies.length > 1) {
-    multiValueHeaders['set-cookie'] = allSetCookies;
-  } else if (allSetCookies.length === 1) {
-    headers['set-cookie'] = allSetCookies[0];
+  if (allCookies.length > 1) {
+    multiValueHeaders['set-cookie'] = allCookies;
+  } else if (allCookies.length === 1) {
+    headers['set-cookie'] = allCookies[0];
   }
 
   for (const [key, value] of webHeaders.entries()) {
@@ -251,10 +251,7 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
 
     const values = value.split(/[;,]/).map((v) => v.trimStart());
 
-    if (headers[key]) {
-      multiValueHeaders[key] = [headers[key], ...values];
-      delete headers[key];
-    } else if (values.length > 1) {
+    if (values.length > 1) {
       multiValueHeaders[key] = values;
     } else {
       headers[key] = value;

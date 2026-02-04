@@ -228,7 +228,27 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
   const headers: Record<string, string> = {};
   const multiValueHeaders: Record<string, Array<string>> = {};
 
+  // Handle set-cookie headers specially using getSetCookie()
+  const setCookies = webHeaders.getSetCookie();
+  // Some implementations may concatenate multiple set-cookie values with commas
+  // Split them out while preserving the cookie attributes (which use semicolons)
+  const allSetCookies: string[] = [];
+  for (const cookie of setCookies) {
+    allSetCookies.push(...cookie.split(',').map((v) => v.trimStart()));
+  }
+
+  if (allSetCookies.length > 1) {
+    multiValueHeaders['set-cookie'] = allSetCookies;
+  } else if (allSetCookies.length === 1) {
+    headers['set-cookie'] = allSetCookies[0];
+  }
+
   for (const [key, value] of webHeaders.entries()) {
+    // Skip set-cookie as it's already handled above
+    if (key.toLowerCase() === 'set-cookie') {
+      continue;
+    }
+
     const values = value.split(/[;,]/).map((v) => v.trimStart());
 
     if (headers[key]) {

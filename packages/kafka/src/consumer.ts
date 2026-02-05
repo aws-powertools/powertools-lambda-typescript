@@ -196,6 +196,10 @@ const deserializeRecord = async (
     },
     originalKey: key,
     get value() {
+      if (value === undefined || value === '') {
+        return undefined;
+      }
+      if (isNull(value)) return null;
       const deserializedValue = deserialize({
         value: value,
         deserializer: deserializerValue,

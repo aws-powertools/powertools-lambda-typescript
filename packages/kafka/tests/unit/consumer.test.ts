@@ -582,7 +582,7 @@ describe('Kafka consumer', () => {
     );
   });
 
-  it.fails('handles tombstone events with null as message value', async () => {
+  it('handles tombstone events with null as message value', async () => {
     // Prepare
     const event = structuredClone(jsonTestEvent);
     event.records['mytopic-0'][0].value = null;

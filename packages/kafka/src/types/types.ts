@@ -201,7 +201,7 @@ type Record = {
   /**
    * Base64-encoded value of the record
    */
-  value: string;
+  value: string | null;
   /**
    * Array of record headers
    */
@@ -246,13 +246,13 @@ type ProtobufMessage<T = unknown> = {
 };
 
 type Deserializer = (
-  input: string,
+  input: string | null,
   schema?: unknown,
   schemaMetadata?: SchemaMetadata
 ) => unknown;
 
 type DeserializeOptions = {
-  value: string;
+  value: string | null;
   deserializer: Deserializer;
   config?: SchemaConfigValue;
   schemaMetadata: SchemaMetadata;

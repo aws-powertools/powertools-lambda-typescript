@@ -136,43 +136,44 @@ describe('Kafka consumer', () => {
       event: structuredClone(avroTestEvent),
       error: KafkaConsumerMissingSchemaError,
     },
-  ])(
-    'throws when schemaStr not passed for $type event',
-    async ({ type, error, event }) => {
-      // Prepare
-      const handler = kafkaConsumer(
-        async (event) => {
-          const results = [];
-          for (const record of event.records) {
-            try {
-              results.push(record.value);
-              await setTimeout(1); // simulate some processing time
-            } catch (error) {
-              return error;
-            }
+  ])('throws when schemaStr not passed for $type event', async ({
+    type,
+    error,
+    event,
+  }) => {
+    // Prepare
+    const handler = kafkaConsumer(
+      async (event) => {
+        const results = [];
+        for (const record of event.records) {
+          try {
+            results.push(record.value);
+            await setTimeout(1); // simulate some processing time
+          } catch (error) {
+            return error;
           }
-          return results;
-        },
-        {
-          // @ts-expect-error - testing missing schemaStr
-          value: { type },
         }
-      );
+        return results;
+      },
+      {
+        // @ts-expect-error - testing missing schemaStr
+        value: { type },
+      }
+    );
 
-      // Act
-      const result = await handler(event, context);
+    // Act
+    const result = await handler(event, context);
 
-      // Assess
-      expect(result).toEqual(
-        expect.objectContaining({
-          message: expect.stringContaining(
-            `Schema string is required for ${type} deserialization`
-          ),
-          name: error.name,
-        })
-      );
-    }
-  );
+    // Assess
+    expect(result).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining(
+          `Schema string is required for ${type} deserialization`
+        ),
+        name: error.name,
+      })
+    );
+  });
 
   it('throws if using an unsupported schema type', async () => {
     // Prepare
@@ -239,59 +240,58 @@ describe('Kafka consumer', () => {
         return event;
       })(),
     },
-  ])(
-    'throws when parser schema validation fails for $type',
-    async ({ event }) => {
-      // Prepare
-      const handler = kafkaConsumer(
-        async (event) => {
-          const results = [];
-          for (const record of event.records) {
-            try {
-              const { value, key } = record;
-              await setTimeout(1); // simulate some processing time
-              results.push([value, key]);
-            } catch (error) {
-              return error;
-            }
+  ])('throws when parser schema validation fails for $type', async ({
+    event,
+  }) => {
+    // Prepare
+    const handler = kafkaConsumer(
+      async (event) => {
+        const results = [];
+        for (const record of event.records) {
+          try {
+            const { value, key } = record;
+            await setTimeout(1); // simulate some processing time
+            results.push([value, key]);
+          } catch (error) {
+            return error;
           }
-          return results;
-        },
-        {
-          value: {
-            type: SchemaType.JSON,
-            parserSchema: z.object({
-              id: z.number(),
-              name: z.string(),
-              price: z.number().positive({
-                message: "Price can't be negative",
-              }),
-            }),
-          },
-          key: {
-            type: SchemaType.JSON,
-            parserSchema: z.string(),
-          },
         }
-      );
-
-      // Act & Assess
-      const result = await handler(event, context);
-
-      expect(result).toEqual(
-        expect.objectContaining({
-          message: expect.stringContaining('Schema validation failed'),
-          name: 'KafkaConsumerParserError',
-          cause: expect.arrayContaining([
-            expect.objectContaining({
-              code: expect.any(String),
-              message: expect.any(String),
+        return results;
+      },
+      {
+        value: {
+          type: SchemaType.JSON,
+          parserSchema: z.object({
+            id: z.number(),
+            name: z.string(),
+            price: z.number().positive({
+              message: "Price can't be negative",
             }),
-          ]),
-        })
-      );
-    }
-  );
+          }),
+        },
+        key: {
+          type: SchemaType.JSON,
+          parserSchema: z.string(),
+        },
+      }
+    );
+
+    // Act & Assess
+    const result = await handler(event, context);
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining('Schema validation failed'),
+        name: 'KafkaConsumerParserError',
+        cause: expect.arrayContaining([
+          expect.objectContaining({
+            code: expect.any(String),
+            message: expect.any(String),
+          }),
+        ]),
+      })
+    );
+  });
 
   it('throws when non MSK event passed kafka consumer', async () => {
     // Prepare
@@ -580,5 +580,33 @@ describe('Kafka consumer', () => {
         ),
       })
     );
+  });
+
+  it.fails('handles tombstone events with null as message value', async () => {
+    // Prepare
+    const event = structuredClone(jsonTestEvent);
+    event.records['mytopic-0'][0].value = null;
+
+    const handler = kafkaConsumer<string, unknown>(
+      async (event) => {
+        await setTimeout(1); // simulate some processing time
+        const firstRecord = event.records[0];
+        if (firstRecord) {
+          return firstRecord.value;
+        }
+        return undefined;
+      },
+      {
+        value: {
+          type: SchemaType.JSON,
+        },
+      }
+    );
+
+    // Act
+    const result = await handler(event, context);
+
+    // Assess
+    expect(result).toBeNull();
   });
 });

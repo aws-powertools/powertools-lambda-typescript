@@ -564,6 +564,53 @@ You can enable response compression by using the `compress` middleware. This wil
     --8<-- "examples/snippets/event-handler/http/samples/advanced_compress_res.json"
     ```
 
+### Tracer
+
+You can enable distributed tracing for your HTTP routes by using the `tracer`. This middleware integrates with [AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html){target="_blank"} through the [Tracer utility](../tracer.md) to automatically trace each route invocation.
+
+!!! note "Installation"
+    The `tracer` requires the `@aws-lambda-powertools/tracer` package as a peer dependency. Install it separately:
+
+    ```shell
+    npm install @aws-lambda-powertools/tracer
+    ```
+
+The middleware automatically:
+
+* Creates a subsegment for each HTTP route with the format `METHOD /path` (e.g., `GET /users`)
+* Adds `ColdStart` annotation to easily filter cold start traces
+* Adds `Service` annotation for filtering by service name
+* Captures JSON response bodies as metadata (configurable)
+* Captures errors as metadata when exceptions occur
+
+!!! note "Response capture behavior"
+    Only JSON responses are captured as metadata.
+
+=== "index.ts"
+
+    ```ts hl_lines="2 3 6 10"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_tracer.ts"
+    ```
+
+    ```json hl_lines="11 18-25"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_tracer.json"
+    ```
+
+#### Disabling response capture
+
+For routes that return sensitive data, you can disable response capture by setting `captureResponse: false`:
+
+=== "index.ts"
+
+    ```ts hl_lines="2 3 6 11"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_tracer_per_route.ts"
+    ```
+
+#### Streaming limitation
+
+!!! warning "Tracer middleware is disabled for streaming responses"
+    When using HTTP response streaming, the Tracer middleware is automatically disabled to prevent buffering the entire response. In streaming mode the middleware exits early and does not create a subsegment. You can still use the Tracer utility manually within your route handler to create subsegments and add annotations.
+
 ### Binary responses
 
 If you need to return binary data, there are several ways you can do so based on how much control you require.

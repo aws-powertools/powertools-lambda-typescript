@@ -12,23 +12,24 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { IdempotencyTestNodejsFunctionAndDynamoTable } from '../helpers/resources.js';
 import { RESOURCE_NAME_PREFIX } from './constants.js';
 
-describe('Idempotency E2E tests, durable functions', () => {
-  const testStack = new TestStack({
-    stackNameProps: {
-      stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'durable',
-    },
-  });
+describe.skipIf(getRuntimeKey() === 'nodejs20x')(
+  'Idempotency E2E tests, durable functions',
+  () => {
+    const testStack = new TestStack({
+      stackNameProps: {
+        stackNamePrefix: RESOURCE_NAME_PREFIX,
+        testName: 'durable',
+      },
+    });
 
-  // Location of the lambda function code
-  const lambdaFunctionCodeFilePath = join(
-    __dirname,
-    'durableIdempotent.FunctionCode.ts'
-  );
+    // Location of the lambda function code
+    const lambdaFunctionCodeFilePath = join(
+      __dirname,
+      'durableIdempotent.FunctionCode.ts'
+    );
 
-  let functionNameDurable: string;
-  let tableNameDurable: string;
-  if (getRuntimeKey() !== 'nodejs20x') {
+    let functionNameDurable: string;
+    let tableNameDurable: string;
     new IdempotencyTestNodejsFunctionAndDynamoTable(
       testStack,
       {
@@ -45,24 +46,19 @@ describe('Idempotency E2E tests, durable functions', () => {
         nameSuffix: 'durable',
       }
     );
-  }
 
-  const ddb = new DynamoDBClient({});
+    const ddb = new DynamoDBClient({});
 
-  beforeAll(async () => {
-    // Deploy the stack
-    await testStack.deploy();
+    beforeAll(async () => {
+      // Deploy the stack
+      await testStack.deploy();
 
-    // Get the actual function names from the stack outputs
-    if (getRuntimeKey() !== 'nodejs20x') {
+      // Get the actual function names from the stack outputs
       functionNameDurable = testStack.findAndGetStackOutputValue('durableFn');
       tableNameDurable = testStack.findAndGetStackOutputValue('durableTable');
-    }
-  });
+    });
 
-  it.skipIf(getRuntimeKey() === 'nodejs20x')(
-    'calls an idempotent durable function and always returns the same result when called multiple times',
-    async () => {
+    it('calls an idempotent durable function and always returns the same result when called multiple times', async () => {
       // Prepare
       const payload = {
         foo: 'bar',
@@ -89,12 +85,12 @@ describe('Idempotency E2E tests, durable functions', () => {
       expect(idempotencyRecords.Items?.[0].id).toEqual(
         `${functionNameDurable}#${payloadHash}`
       );
-    }
-  );
+    });
 
-  afterAll(async () => {
-    if (!process.env.DISABLE_TEARDOWN) {
-      await testStack.destroy();
-    }
-  });
-});
+    afterAll(async () => {
+      if (!process.env.DISABLE_TEARDOWN) {
+        await testStack.destroy();
+      }
+    });
+  }
+);

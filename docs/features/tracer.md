@@ -238,34 +238,12 @@ You can trace other class methods using the `captureMethod` decorator or any arb
 
 Tracer can patch any [AWS SDK clients](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs-awssdkclients.html) and create traces when your application makes calls to AWS services.
 
-!!! info
-    The following snippet assumes you are using the [**AWS SDK v3** for JavaScript](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/)
-
 You can patch any AWS SDK clients by calling the `captureAWSv3Client` method:
 
 === "index.ts"
 
     ```typescript hl_lines="6"
     --8<-- "examples/snippets/tracer/captureAWSv3.ts"
-    ```
-
-!!! info
-    The following two snippets assume you are using the [**AWS SDK v2** for JavaScript](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/welcome.html)
-
-You can patch all AWS SDK v2 clients by calling the `captureAWS` method:
-
-=== "index.ts"
-
-    ```typescript hl_lines="7"
-    --8<-- "examples/snippets/tracer/captureAWSAll.ts"
-    ```
-
-If you're looking to shave a few microseconds, or milliseconds depending on your function memory configuration, you can patch only specific AWS SDK v2 clients using `captureAWSClient`:
-
-=== "index.ts"
-
-    ```typescript hl_lines="6"
-    --8<-- "examples/snippets/tracer/captureAWS.ts"
     ```
 
 ### Tracing HTTP requests

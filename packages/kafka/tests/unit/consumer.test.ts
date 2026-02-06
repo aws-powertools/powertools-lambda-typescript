@@ -585,7 +585,7 @@ describe('Kafka consumer', () => {
   it('handles tombstone events with null as message value', async () => {
     // Prepare
     const event = structuredClone(jsonTestEvent);
-    event.records['mytopic-0'][0].value = null as unknown as string;
+    event.records['mytopic-0'][0].value = null;
 
     const handler = kafkaConsumer<string, unknown>(
       async (event) => {
@@ -608,33 +608,5 @@ describe('Kafka consumer', () => {
 
     // Assess
     expect(result).toBeNull();
-  });
-
-  it('handles undefined value gracefully', async () => {
-    // Prepare
-    const event = structuredClone(jsonTestEvent);
-    event.records['mytopic-0'][0].value = undefined as unknown as string;
-
-    const handler = kafkaConsumer<string, unknown>(
-      async (event) => {
-        await setTimeout(1); // simulate some processing time
-        const firstRecord = event.records[0];
-        if (firstRecord) {
-          return firstRecord.value;
-        }
-        return undefined;
-      },
-      {
-        value: {
-          type: SchemaType.JSON,
-        },
-      }
-    );
-
-    // Act
-    const result = await handler(event, context);
-
-    // Assess
-    expect(result).toBeUndefined();
   });
 });

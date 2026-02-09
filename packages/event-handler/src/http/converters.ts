@@ -245,7 +245,7 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
       continue;
     }
 
-    const values = value.split(/[;,]/).map((v) => v.trimStart());
+    const values = value.split(/[,]/).map((v) => v.trimStart());
 
     if (values.length > 1) {
       multiValueHeaders[key] = values;

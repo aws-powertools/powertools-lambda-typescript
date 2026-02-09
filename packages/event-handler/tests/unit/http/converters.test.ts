@@ -1246,7 +1246,7 @@ describe('Converters', () => {
     it('handles multi-value headers split by semicolon', () => {
       // Prepare
       const headers = new Headers({
-        'cache-control': 'no-cache; no-store',
+        'cache-control': 'no-cache, no-store',
       });
 
       // Act
@@ -1261,11 +1261,11 @@ describe('Converters', () => {
       });
     });
 
-    it('handles mixed comma and semicolon delimiters', () => {
+    it('handles comma delimiter with semicolon parameters', () => {
       // Prepare
       const headers = new Headers({
-        accept: 'application/json, text/html',
-        'cache-control': 'no-cache; no-store',
+        accept: 'application/json; charset=UTF-8, text/html',
+        'cache-control': 'no-cache, no-store',
       });
 
       // Act
@@ -1275,7 +1275,7 @@ describe('Converters', () => {
       expect(result).toEqual({
         headers: {},
         multiValueHeaders: {
-          accept: ['application/json', 'text/html'],
+          accept: ['application/json; charset=UTF-8', 'text/html'],
           'cache-control': ['no-cache', 'no-store'],
         },
       });
@@ -1340,7 +1340,7 @@ describe('Converters', () => {
       // Prepare
       const headers = new Headers({
         accept: 'application/json,  text/html  ,text/plain',
-        'cache-control': 'no-cache  ;   no-store',
+        'cache-control': 'no-cache  ,   no-store',
       });
 
       // Act

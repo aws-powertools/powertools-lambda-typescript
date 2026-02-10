@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
+
+### Features
+
+- return metrics instance from metrics functions ([#4930](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4930)) ([e7aa2e2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e7aa2e2b5efbdca197602ef5611ac14e58519d6b))
 ## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
 
 **Note:** Version bump only for this package

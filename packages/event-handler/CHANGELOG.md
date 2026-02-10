@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
+
+### Bug Fixes
+
+- handle set-cookie header values with multiple attributes ([#4990](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4990)) ([42317fe](https://github.com/aws-powertools/powertools-lambda-typescript/commit/42317fe15b90536fab40c15a70f967faf116011a))
+
+### Features
+
+- add tracer middleware for HTTP routes ([#4982](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4982)) ([8be6157](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8be61577451c32fdea2db8bcb93f8acba9e44423))
 ## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
 
 **Note:** Version bump only for this package

@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
+
+### Bug Fixes
+
+- handle tombstone events ([#4991](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4991)) ([04c3236](https://github.com/aws-powertools/powertools-lambda-typescript/commit/04c32360c972aff984c69cce3eae6e95007e79b7))
 ## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
 
 **Note:** Version bump only for this package

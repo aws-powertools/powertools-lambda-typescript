@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
+
+### Features
+
+- pass underlying SDK error as cause to `GetParameterError` ([#4936](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4936)) ([b3499db](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b3499dbfe29adc8f7fa07e5b8f3b4718e4525fa7))
 ## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
 
 **Note:** Version bump only for this package

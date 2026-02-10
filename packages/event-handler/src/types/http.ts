@@ -32,6 +32,7 @@ type RequestContext = {
   params: Record<string, string>;
   responseType: ResponseType;
   isBase64Encoded?: boolean;
+  isHttpStreaming?: boolean;
 };
 
 type HttpResolveOptions = ResolveOptions & { isHttpStreaming?: boolean };
@@ -244,6 +245,23 @@ type CompressionOptions = {
   threshold?: number;
 };
 
+/**
+ * Configuration options for Tracer middleware
+ */
+type TracerOptions = {
+  /**
+   * Whether to capture the response body as metadata.
+   * @default true
+   */
+  captureResponse?: boolean;
+  /**
+   * A logger instance to be used for logging.
+   *
+   * When no logger is provided, we'll only log using the global `console` object.
+   */
+  logger?: GenericLogger;
+};
+
 type WebResponseToProxyResultOptions = {
   isBase64Encoded?: boolean;
 };
@@ -281,6 +299,7 @@ export type {
   HttpRouteHandlerOptions,
   RouteRegistryOptions,
   RouterResponse,
+  TracerOptions,
   ValidationResult,
   CompressionOptions,
   NextFunction,

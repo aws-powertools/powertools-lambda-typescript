@@ -4,7 +4,7 @@ name: Make Release
 #
 # === Automated activities ===
 # 1. [Quality check] run unit tests, linting, examples, layer, doc snippets
-# 2. [Release] publish all packages to npmjs.org using the latest git commit, ensure provenance with NPM_CONFIG_PROVENANCE=true
+# 2. [Release] publish all packages to npmjs.org using the latest git commit using OIDC authentication with automatic provenance attestations
 # 3. [Create tag] create a new git tag using released version, i.e. v1.13.1
 # 4. [Publish layer] build and package layer, kick off the workflow for beta and prod deployment, including canary tests
 # 5. [Publish layer] update documentation with the latest layer ARN version of the prod deployment
@@ -30,14 +30,14 @@ jobs:
   run-unit-tests:
     uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml
   # This job publishes the packages to npm.
-  # It uses the latest git commit sha as the version and ensures provenance with NPM_CONFIG_PROVENANCE flag.
+  # It uses the latest git commit sha as the version and uses OIDC authentication for secure
+  # and passwordless publishing to npmjs.org with automatic provenance attestations.
   # We don't bump the version because we do that in the `make-version` workflow.
   # It also sets the RELEASE_VERSION output to be used by the next job to create a git tag.
   publish-npm:
     needs: run-unit-tests
-    # Needed as recommended by npm docs on publishing with provenance https://docs.npmjs.com/generating-provenance-statements
     permissions:
-      id-token: write
+      id-token: write # Needed for OIDC authentication & provenance with npm trusted publishing
     environment: Release
     runs-on: ubuntu-latest
     outputs:
@@ -47,22 +47,17 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           ref: ${{ github.sha }}
-      - name: Setup NodeJS
+      - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
           cache: "npm"
           registry-url: 'https://registry.npmjs.org'
-      - name: Setup auth tokens
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          npm set "//registry.npmjs.org/:_authToken=$NPM_TOKEN"
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
       - name: Publish to npm
         run: |
-          npm publish --workspaces --provenance
+          npm publish --workspaces
       - name: Set release version
         id: set-release-version
         run: |

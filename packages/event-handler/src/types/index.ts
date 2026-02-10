@@ -45,4 +45,5 @@ export type {
   Path,
   RequestContext,
   RouteHandler,
+  TracerOptions,
 } from './http.js';

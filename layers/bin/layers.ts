@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import 'source-map-support/register';
+import 'source-map-support/register.js';
 import { App } from 'aws-cdk-lib';
 import { CanaryStack } from '../src/canary-stack.js';
 import { LayerPublisherStack } from '../src/layer-publisher-stack.js';

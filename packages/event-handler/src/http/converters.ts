@@ -228,13 +228,26 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
   const headers: Record<string, string> = {};
   const multiValueHeaders: Record<string, Array<string>> = {};
 
-  for (const [key, value] of webHeaders.entries()) {
-    const values = value.split(/[;,]/).map((v) => v.trimStart());
+  const cookies = webHeaders.getSetCookie();
+  const allCookies: string[] = [];
+  for (const cookie of cookies) {
+    allCookies.push(...cookie.split(',').map((v) => v.trimStart()));
+  }
 
-    if (headers[key]) {
-      multiValueHeaders[key] = [headers[key], ...values];
-      delete headers[key];
-    } else if (values.length > 1) {
+  if (allCookies.length > 1) {
+    multiValueHeaders['set-cookie'] = allCookies;
+  } else if (allCookies.length === 1) {
+    headers['set-cookie'] = allCookies[0];
+  }
+
+  for (const [key, value] of webHeaders.entries()) {
+    if (key.toLowerCase() === 'set-cookie') {
+      continue;
+    }
+
+    const values = value.split(',').map((v) => v.trimStart());
+
+    if (values.length > 1) {
       multiValueHeaders[key] = values;
     } else {
       headers[key] = value;

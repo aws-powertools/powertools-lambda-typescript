@@ -29,73 +29,71 @@ describe.each([
     ['HEAD', 'head'],
     ['OPTIONS', 'options'],
   ];
-  it.each(httpMethods)(
-    'routes %s requests with object response',
-    async (method, verb) => {
-      // Prepare
-      const app = new Router();
-      (
-        app[verb as Lowercase<HttpMethod>] as (
-          path: string,
-          handler: RouteHandler
-        ) => void
-      )('/test', async () => ({ result: `${verb}-test` }));
+  it.each(
+    httpMethods
+  )('routes %s requests with object response', async (method, verb) => {
+    // Prepare
+    const app = new Router();
+    (
+      app[verb as Lowercase<HttpMethod>] as (
+        path: string,
+        handler: RouteHandler
+      ) => void
+    )('/test', async () => ({ result: `${verb}-test` }));
 
-      // Act
-      const actual = await app.resolve(createEvent('/test', method), context);
+    // Act
+    const actual = await app.resolve(createEvent('/test', method), context);
 
-      // Assess
-      expect(actual.statusCode).toBe(200);
-      expect(actual.body).toBe(JSON.stringify({ result: `${verb}-test` }));
-      expect(actual.headers?.['content-type']).toBe('application/json');
-      expect(actual.isBase64Encoded).toBe(false);
-    }
-  );
+    // Assess
+    expect(actual.statusCode).toBe(200);
+    expect(actual.body).toBe(JSON.stringify({ result: `${verb}-test` }));
+    expect(actual.headers?.['content-type']).toBe('application/json');
+    expect(actual.isBase64Encoded).toBe(false);
+  });
 
-  it.each(httpMethods)(
-    'routes %s requests with array response',
-    async (method, verb) => {
-      // Prepare
-      const app = new Router();
-      (
-        app[verb as Lowercase<HttpMethod>] as (
-          path: string,
-          handler: RouteHandler
-        ) => void
-      )('/test', async () => [
+  it.each(
+    httpMethods
+  )('routes %s requests with array response', async (method, verb) => {
+    // Prepare
+    const app = new Router();
+    (
+      app[verb as Lowercase<HttpMethod>] as (
+        path: string,
+        handler: RouteHandler
+      ) => void
+    )('/test', async () => [
+      { id: 1, result: `${verb}-test-1` },
+      { id: 2, result: `${verb}-test-2` },
+    ]);
+
+    // Act
+    const actual = await app.resolve(createEvent('/test', method), context);
+
+    // Assess
+    expect(actual.statusCode).toBe(200);
+    expect(actual.body).toBe(
+      JSON.stringify([
         { id: 1, result: `${verb}-test-1` },
         { id: 2, result: `${verb}-test-2` },
-      ]);
+      ])
+    );
+    expect(actual.headers?.['content-type']).toBe('application/json');
+    expect(actual.isBase64Encoded).toBe(false);
+  });
 
-      // Act
-      const actual = await app.resolve(createEvent('/test', method), context);
+  it.each([
+    ['CONNECT'],
+    ['TRACE'],
+  ])('throws MethodNotAllowedError for %s requests', async (method) => {
+    // Prepare
+    const app = new Router();
 
-      // Assess
-      expect(actual.statusCode).toBe(200);
-      expect(actual.body).toBe(
-        JSON.stringify([
-          { id: 1, result: `${verb}-test-1` },
-          { id: 2, result: `${verb}-test-2` },
-        ])
-      );
-      expect(actual.headers?.['content-type']).toBe('application/json');
-      expect(actual.isBase64Encoded).toBe(false);
-    }
-  );
+    // Act & Assess
+    const result = await app.resolve(createEvent('/test', method), context);
 
-  it.each([['CONNECT'], ['TRACE']])(
-    'throws MethodNotAllowedError for %s requests',
-    async (method) => {
-      // Prepare
-      const app = new Router();
-
-      // Act & Assess
-      const result = await app.resolve(createEvent('/test', method), context);
-
-      expect(result.statusCode).toBe(HttpStatusCodes.METHOD_NOT_ALLOWED);
-      expect(result.body ?? '').toBe('');
-    }
-  );
+    expect(result.statusCode).toBe(HttpStatusCodes.METHOD_NOT_ALLOWED);
+    expect(result.body ?? '').toBe('');
+  });
 
   it('accepts multiple HTTP methods', async () => {
     // Act
@@ -273,7 +271,10 @@ describe('Class: Router - V1 Multivalue Headers Support', () => {
       statusCode: 200,
       body: JSON.stringify({ message: 'success' }),
       headers: { 'content-type': 'application/json' },
-      multiValueHeaders: { 'set-cookie': ['session=abc123', 'theme=dark'] },
+      multiValueHeaders: {
+        'cache-control': ['no-cache', 'no-store'],
+        'set-cookie': ['session=abc123; Max-Age=3600', 'theme=dark'],
+      },
     }));
 
     // Act
@@ -284,7 +285,10 @@ describe('Class: Router - V1 Multivalue Headers Support', () => {
       statusCode: 200,
       body: JSON.stringify({ message: 'success' }),
       headers: { 'content-type': 'application/json' },
-      multiValueHeaders: { 'set-cookie': ['session=abc123', 'theme=dark'] },
+      multiValueHeaders: {
+        'cache-control': ['no-cache', 'no-store'],
+        'set-cookie': ['session=abc123; Max-Age=3600', 'theme=dark'],
+      },
       isBase64Encoded: false,
     });
   });
@@ -298,7 +302,7 @@ describe('Class: Router - V2 Cookies Support', () => {
       statusCode: 200,
       body: JSON.stringify({ message: 'success' }),
       headers: { 'content-type': 'application/json' },
-      cookies: ['session=abc123', 'theme=dark'],
+      cookies: ['session=abc123; Max-Age=3600', 'theme=dark'],
     }));
 
     // Act
@@ -312,7 +316,7 @@ describe('Class: Router - V2 Cookies Support', () => {
       statusCode: 200,
       body: JSON.stringify({ message: 'success' }),
       headers: { 'content-type': 'application/json' },
-      cookies: ['session=abc123', 'theme=dark'],
+      cookies: ['session=abc123; Max-Age=3600', 'theme=dark'],
       isBase64Encoded: false,
     });
   });
@@ -347,7 +351,10 @@ describe('Class: Router - ALB Support', () => {
       statusCode: 200,
       body: JSON.stringify({ message: 'success' }),
       headers: { 'content-type': 'application/json' },
-      multiValueHeaders: { 'set-cookie': ['session=abc123', 'theme=dark'] },
+      multiValueHeaders: {
+        'cache-control': ['no-cache', 'no-store'],
+        'set-cookie': ['session=abc123; Max-Age=3600', 'theme=dark'],
+      },
     }));
 
     // Act
@@ -362,7 +369,10 @@ describe('Class: Router - ALB Support', () => {
       statusDescription: '200 OK',
       body: JSON.stringify({ message: 'success' }),
       headers: { 'content-type': 'application/json' },
-      multiValueHeaders: { 'set-cookie': ['session=abc123', 'theme=dark'] },
+      multiValueHeaders: {
+        'cache-control': ['no-cache', 'no-store'],
+        'set-cookie': ['session=abc123; Max-Age=3600', 'theme=dark'],
+      },
       isBase64Encoded: false,
     });
   });
@@ -391,31 +401,31 @@ describe('Class: Router - ALB Support', () => {
       statusCode: Number(code),
       expectedDescription: `${code} ${text}`,
     }))
-  )(
-    'returns statusDescription "$expectedDescription" for status code $statusCode',
-    async ({ statusCode, expectedDescription }) => {
-      // Prepare
-      const app = new Router();
-      const noBodyStatuses = new Set([201, 204, 205, 304]);
-      const body = noBodyStatuses.has(statusCode)
-        ? null
-        : JSON.stringify({ status: statusCode });
-      app.get('/test', () => new Response(body, { status: statusCode }));
+  )('returns statusDescription "$expectedDescription" for status code $statusCode', async ({
+    statusCode,
+    expectedDescription,
+  }) => {
+    // Prepare
+    const app = new Router();
+    const noBodyStatuses = new Set([201, 204, 205, 304]);
+    const body = noBodyStatuses.has(statusCode)
+      ? null
+      : JSON.stringify({ status: statusCode });
+    app.get('/test', () => new Response(body, { status: statusCode }));
 
-      // Act
-      const result = await app.resolve(
-        createTestALBEvent('/test', 'GET'),
-        context
-      );
+    // Act
+    const result = await app.resolve(
+      createTestALBEvent('/test', 'GET'),
+      context
+    );
 
-      // Assess
-      expect(result.statusCode).toBe(statusCode);
-      expect(result).toHaveProperty('statusDescription', expectedDescription);
-      if (!noBodyStatuses.has(statusCode)) {
-        expect(result.body).toBe(JSON.stringify({ status: statusCode }));
-      }
+    // Assess
+    expect(result.statusCode).toBe(statusCode);
+    expect(result).toHaveProperty('statusDescription', expectedDescription);
+    if (!noBodyStatuses.has(statusCode)) {
+      expect(result.body).toBe(JSON.stringify({ status: statusCode }));
     }
-  );
+  });
 });
 
 describe.each([
@@ -475,29 +485,31 @@ describe.each([
     expect(result.isBase64Encoded).toBe(true);
   });
 
-  it.each([['image/png'], ['image/jpeg'], ['audio/mpeg'], ['video/mp4']])(
-    'sets isBase64Encoded for %s content-type',
-    async (contentType) => {
-      // Prepare
-      const app = new Router();
-      app.get(
-        '/media',
-        () =>
-          new Response('binary data', {
-            headers: { 'content-type': contentType },
-          })
-      );
+  it.each([
+    ['image/png'],
+    ['image/jpeg'],
+    ['audio/mpeg'],
+    ['video/mp4'],
+  ])('sets isBase64Encoded for %s content-type', async (contentType) => {
+    // Prepare
+    const app = new Router();
+    app.get(
+      '/media',
+      () =>
+        new Response('binary data', {
+          headers: { 'content-type': contentType },
+        })
+    );
 
-      // Act
-      const result = await app.resolve(createEvent('/media', 'GET'), context);
+    // Act
+    const result = await app.resolve(createEvent('/media', 'GET'), context);
 
-      // Assess
-      expect(result.statusCode).toBe(200);
-      expect(result.body).toBe(Buffer.from('binary data').toString('base64'));
-      expect(result.headers?.['content-type']).toBe(contentType);
-      expect(result.isBase64Encoded).toBe(true);
-    }
-  );
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toBe(Buffer.from('binary data').toString('base64'));
+    expect(result.headers?.['content-type']).toBe(contentType);
+    expect(result.isBase64Encoded).toBe(true);
+  });
 
   it('does not set isBase64Encoded for text content-types', async () => {
     // Prepare

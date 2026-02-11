@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import 'source-map-support/register.js';
 import { App } from 'aws-cdk-lib';
-import { CanaryStack } from '../src/canary-stack.js';
-import { LayerPublisherStack } from '../src/layer-publisher-stack.js';
+import { CanaryStack } from '../src/canary-stack.ts';
+import { LayerPublisherStack } from '../src/layer-publisher-stack.ts';
 
 const SSM_PARAM_LAYER_ARN = '/layers/powertools-layer-arn';
 

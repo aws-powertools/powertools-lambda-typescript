@@ -354,15 +354,12 @@ type RequestValidationConfig<TReq extends ReqSchema = ReqSchema> =
  */
 type ResponseValidationConfig<T extends HandlerResponse = HandlerResponse> =
   | {
-      body: StandardSchemaV1<HandlerResponse, T>;
-      headers?: StandardSchemaV1<
-        Record<string, string>,
-        Record<string, string>
-      >;
+      body: StandardSchemaV1<unknown, T>;
+      headers?: StandardSchemaV1<unknown, Record<string, string>>;
     }
   | {
-      body?: StandardSchemaV1<HandlerResponse, T>;
-      headers: StandardSchemaV1<Record<string, string>, Record<string, string>>;
+      body?: StandardSchemaV1<unknown, T>;
+      headers: StandardSchemaV1<unknown, Record<string, string>>;
     };
 
 /**
@@ -381,6 +378,39 @@ type ValidationConfig<
       req?: RequestValidationConfig<TReq>;
       res: ResponseValidationConfig<TResBody>;
     };
+
+/**
+ * Infers the `ReqSchema` type from a `ValidationConfig` by extracting the output types
+ * from each request schema (body, headers, path, query).
+ */
+type InferReqSchema<V extends ValidationConfig> = V extends {
+  req: infer R;
+}
+  ? {
+      body: R extends { body: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      headers: R extends { headers: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      path: R extends { path: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      query: R extends { query: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+    }
+  : ReqSchema;
+
+/**
+ * Infers the response body type from a `ValidationConfig` by extracting the output type
+ * from the response body schema.
+ */
+type InferResBody<V extends ValidationConfig> = V extends {
+  res: { body: StandardSchemaV1<infer _I, infer O> };
+}
+  ? O
+  : HandlerResponse;
 
 /**
  * Validation error details
@@ -454,4 +484,6 @@ export type {
   MiddlewareOrHandler,
   HandlerOrOptions,
   ReqSchema,
+  InferReqSchema,
+  InferResBody,
 };

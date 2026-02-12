@@ -32,7 +32,7 @@ type ReqSchema = {
   body?: unknown;
   headers?: Record<string, string>;
   path?: Record<string, string>;
-  query?: Record<string, string>;
+  query?: Record<string, unknown>;
 };
 
 /**

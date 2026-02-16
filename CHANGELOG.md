@@ -1,5 +1,19 @@
 # Change Log
 
+## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
+
+### Features
+
+- **metrics** return metrics instance from metrics functions ([#4930](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4930)) ([e7aa2e2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e7aa2e2b5efbdca197602ef5611ac14e58519d6b))
+- **parameters** pass underlying SDK error as cause to `GetParameterError` ([#4936](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4936)) ([b3499db](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b3499dbfe29adc8f7fa07e5b8f3b4718e4525fa7))
+- **event-handler** add tracer middleware for HTTP routes ([#4982](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4982)) ([8be6157](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8be61577451c32fdea2db8bcb93f8acba9e44423))
+
+### Bug Fixes
+
+- **event-handler** handle set-cookie header values with multiple attributes ([#4990](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4990)) ([42317fe](https://github.com/aws-powertools/powertools-lambda-typescript/commit/42317fe15b90536fab40c15a70f967faf116011a))
+- **kafka** handle tombstone events ([#4991](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4991)) ([04c3236](https://github.com/aws-powertools/powertools-lambda-typescript/commit/04c32360c972aff984c69cce3eae6e95007e79b7))
+
+
 ## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
 
 ### Features

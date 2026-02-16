@@ -773,7 +773,7 @@ describe('Converters', () => {
       const response = new Response('Hello', {
         status: 200,
         headers: {
-          'Set-Cookie': 'cookie1=value1; cookie2=value2',
+          'Set-Cookie': 'cookie1=value1; HttpOnly, cookie2=value2',
           'Content-type': 'application/json',
         },
       });
@@ -784,7 +784,7 @@ describe('Converters', () => {
       // Assess
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
       expect(result.multiValueHeaders).toEqual({
-        'set-cookie': ['cookie1=value1', 'cookie2=value2'],
+        'set-cookie': ['cookie1=value1; HttpOnly', 'cookie2=value2'],
       });
     });
 
@@ -881,7 +881,7 @@ describe('Converters', () => {
       const response = new Response('Hello', {
         status: 200,
         headers: {
-          'Set-Cookie': 'cookie1=value1; cookie2=value2',
+          'Set-Cookie': 'cookie1=value1; HttpOnly, cookie2=value2',
           'Content-type': 'application/json',
         },
       });
@@ -892,7 +892,7 @@ describe('Converters', () => {
       // Assess
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
       expect(result.multiValueHeaders).toEqual({
-        'set-cookie': ['cookie1=value1', 'cookie2=value2'],
+        'set-cookie': ['cookie1=value1; HttpOnly', 'cookie2=value2'],
       });
     });
 
@@ -960,7 +960,7 @@ describe('Converters', () => {
       const response = new Response('Hello', {
         status: 200,
         headers: {
-          'Set-Cookie': 'session=abc, theme=dark',
+          'Set-Cookie': 'session=abc; HttpOnly, theme=dark',
           'content-type': 'application/json',
         },
       });
@@ -970,7 +970,7 @@ describe('Converters', () => {
 
       // Assess
       expect(result.headers).toEqual({ 'content-type': 'application/json' });
-      expect(result.cookies).toEqual(['session=abc', 'theme=dark']);
+      expect(result.cookies).toEqual(['session=abc; HttpOnly', 'theme=dark']);
     });
 
     it('handles multiple Set-Cookie headers', async () => {
@@ -978,7 +978,8 @@ describe('Converters', () => {
       const response = new Response('Hello', {
         status: 200,
         headers: {
-          'Set-Cookie': 'cookie1=value1, cookie2=value2, cookie3=value3',
+          'Set-Cookie':
+            'cookie1=value1; HttpOnly; Max-Age=3600, cookie2=value2, cookie3=value3',
         },
       });
 
@@ -987,7 +988,7 @@ describe('Converters', () => {
 
       // Assess
       expect(result.cookies).toEqual([
-        'cookie1=value1',
+        'cookie1=value1; HttpOnly; Max-Age=3600',
         'cookie2=value2',
         'cookie3=value3',
       ]);
@@ -1065,7 +1066,7 @@ describe('Converters', () => {
         body: 'test',
         headers: { 'content-type': 'application/json' },
         multiValueHeaders: {
-          'Set-Cookie': ['cookie1=value1', 'cookie2=value2'],
+          'Cache-Control': ['no-cache', 'no-store'],
         },
         isBase64Encoded: false,
       };
@@ -1076,9 +1077,7 @@ describe('Converters', () => {
       // Assess
       expect(result.status).toBe(HttpStatusCodes.OK);
       expect(result.headers.get('content-type')).toBe('application/json');
-      expect(result.headers.get('Set-Cookie')).toBe(
-        'cookie1=value1, cookie2=value2'
-      );
+      expect(result.headers.get('Cache-Control')).toBe('no-cache, no-store');
     });
 
     it('converts plain object to JSON Response with default headers', () => {
@@ -1247,7 +1246,7 @@ describe('Converters', () => {
     it('handles multi-value headers split by semicolon', () => {
       // Prepare
       const headers = new Headers({
-        'set-cookie': 'session=abc123; theme=dark',
+        'cache-control': 'no-cache, no-store',
       });
 
       // Act
@@ -1257,16 +1256,16 @@ describe('Converters', () => {
       expect(result).toEqual({
         headers: {},
         multiValueHeaders: {
-          'set-cookie': ['session=abc123', 'theme=dark'],
+          'cache-control': ['no-cache', 'no-store'],
         },
       });
     });
 
-    it('handles mixed comma and semicolon delimiters', () => {
+    it('handles comma delimiter with semicolon parameters', () => {
       // Prepare
       const headers = new Headers({
-        accept: 'application/json, text/html',
-        'set-cookie': 'session=abc; theme=dark',
+        accept: 'application/json; charset=UTF-8, text/html',
+        'cache-control': 'no-cache, no-store',
       });
 
       // Act
@@ -1276,8 +1275,8 @@ describe('Converters', () => {
       expect(result).toEqual({
         headers: {},
         multiValueHeaders: {
-          accept: ['application/json', 'text/html'],
-          'set-cookie': ['session=abc', 'theme=dark'],
+          accept: ['application/json; charset=UTF-8', 'text/html'],
+          'cache-control': ['no-cache', 'no-store'],
         },
       });
     });
@@ -1341,7 +1340,7 @@ describe('Converters', () => {
       // Prepare
       const headers = new Headers({
         accept: 'application/json,  text/html  ,text/plain',
-        'set-cookie': 'session=abc;  theme=dark  ; user=john',
+        'cache-control': 'no-cache  ,   no-store',
       });
 
       // Act
@@ -1352,7 +1351,7 @@ describe('Converters', () => {
         headers: {},
         multiValueHeaders: {
           accept: ['application/json', 'text/html  ', 'text/plain'],
-          'set-cookie': ['session=abc', 'theme=dark  ', 'user=john'],
+          'cache-control': ['no-cache  ', 'no-store'],
         },
       });
     });
@@ -1377,7 +1376,7 @@ describe('Converters', () => {
         'content-type': 'application/json',
         accept: 'application/json, text/html',
         authorization: 'Bearer token123',
-        'set-cookie': 'session=abc; theme=dark',
+        'set-cookie': 'session=abc; HttpOnly, theme=dark',
       });
 
       // Act
@@ -1391,7 +1390,49 @@ describe('Converters', () => {
         },
         multiValueHeaders: {
           accept: ['application/json', 'text/html'],
-          'set-cookie': ['session=abc', 'theme=dark'],
+          'set-cookie': ['session=abc; HttpOnly', 'theme=dark'],
+        },
+      });
+    });
+
+    it('handles single set-cookie header with multiple attributes', () => {
+      // Prepare
+      const headers = new Headers({
+        'set-cookie': 'session=abc; HttpOnly',
+      });
+
+      // Act
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
+
+      // Assess
+      expect(result).toEqual({
+        headers: {
+          'set-cookie': 'session=abc; HttpOnly',
+        },
+        multiValueHeaders: {},
+      });
+    });
+
+    it('handles set-cookie headers with multiple attributes', () => {
+      // Prepare
+      const headers = new Headers({
+        'set-cookie': 'session=abc; HttpOnly, foo=bar; HttpOnly',
+      });
+
+      headers.append('set-cookie', 'theme=dark; Max-Age=3600');
+
+      // Act
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
+
+      // Assess
+      expect(result).toEqual({
+        headers: {},
+        multiValueHeaders: {
+          'set-cookie': [
+            'session=abc; HttpOnly',
+            'foo=bar; HttpOnly',
+            'theme=dark; Max-Age=3600',
+          ],
         },
       });
     });

@@ -201,7 +201,7 @@ type Record = {
   /**
    * Base64-encoded value of the record
    */
-  value: string | null;
+  value?: string | null;
   /**
    * Array of record headers
    */

@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
@@ -468,5 +469,132 @@ describe('Router Validation Integration', () => {
     // Assess
     expect(validatedResult.statusCode).toBe(422);
     expect(unvalidatedResult.statusCode).toBe(200);
+  });
+
+  it('validates with async schema refinement', async () => {
+    // Prepare
+    const requestBodySchema = z.object({ email: z.string().email() }).refine(
+      async (data) => {
+        // Simulate async validation (e.g., checking if email exists)
+        await setTimeout(10);
+        return !data.email.includes('blocked');
+      },
+      { message: 'Email is blocked' }
+    );
+
+    app.post(
+      '/register',
+      (reqCtx) => {
+        const { email } = reqCtx.valid.req.body;
+        return { statusCode: 201, body: `Registered ${email}` };
+      },
+      {
+        validation: { req: { body: requestBodySchema } },
+      }
+    );
+
+    const validEvent = createTestEvent('/register', 'POST', {
+      'content-type': 'application/json',
+    });
+    validEvent.body = JSON.stringify({ email: 'user@example.com' });
+
+    const blockedEvent = createTestEvent('/register', 'POST', {
+      'content-type': 'application/json',
+    });
+    blockedEvent.body = JSON.stringify({ email: 'blocked@example.com' });
+
+    // Act
+    const validResult = await app.resolve(validEvent, context);
+    const blockedResult = await app.resolve(blockedEvent, context);
+
+    // Assess
+    expect(validResult.statusCode).toBe(201);
+    expect(validResult.body).toBe('Registered user@example.com');
+    expect(blockedResult.statusCode).toBe(422);
+  });
+
+  it('includes correct path in validation errors', async () => {
+    // Prepare
+    const bodySchema = z.object({ name: z.string() });
+    const querySchema = z.object({ page: z.string() });
+    const pathSchema = z.object({ id: z.string().uuid() });
+
+    app.post('/users/:id', () => ({ statusCode: 200 }), {
+      validation: {
+        req: { body: bodySchema, query: querySchema, path: pathSchema },
+      },
+    });
+
+    const event = createTestEvent('/users/invalid-id', 'POST', {
+      'content-type': 'application/json',
+    });
+    event.body = JSON.stringify({ invalid: 'field' });
+    event.queryStringParameters = { wrong: 'param' };
+    event.pathParameters = { id: 'invalid-id' };
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(422);
+    const body = JSON.parse(result.body);
+    expect(body.details?.issues).toBeDefined();
+
+    const paths = body.details.issues.map(
+      (issue: { path: unknown[] }) => issue.path
+    );
+    expect(paths.some((p: unknown[]) => p[0] === 'body')).toBe(true);
+    expect(paths.some((p: unknown[]) => p[0] === 'query')).toBe(true);
+    expect(paths.some((p: unknown[]) => p[0] === 'path')).toBe(true);
+  });
+
+  it('returns 422 when request body is null with object schema', async () => {
+    // Prepare
+    const requestBodySchema = z.object({ name: z.string() });
+
+    app.post('/users', () => ({ statusCode: 201 }), {
+      validation: { req: { body: requestBodySchema } },
+    });
+
+    const event = createTestEvent('/users', 'POST', {
+      'content-type': 'application/json',
+    });
+    event.body = 'null';
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(422);
+    const body = JSON.parse(result.body);
+    expect(body.error).toBe('RequestValidationError');
+  });
+
+  it('handles validation error with missing path in issue', async () => {
+    // Prepare
+    const customSchema = {
+      '~standard': {
+        version: 1,
+        vendor: 'custom',
+        validate: async () => ({
+          issues: [{ message: 'Error without path' }],
+        }),
+      },
+    } as const;
+
+    app.post('/test', () => ({ statusCode: 200 }), {
+      validation: { req: { body: customSchema } },
+    });
+
+    const event = createTestEvent('/test', 'POST', {
+      'content-type': 'application/json',
+    });
+    event.body = '{}';
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(422);
   });
 });

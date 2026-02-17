@@ -48,42 +48,55 @@ async function validateRequestData<TReq extends ReqSchema>(
   typedReqCtx: TypedRequestContext<TReq, HandlerResponse>,
   reqSchemas: NonNullable<ValidationConfig<TReq, HandlerResponse>['req']>
 ): Promise<void> {
+  const schemaEntries: [string, StandardSchemaV1][] = [];
+  const dataEntries: [string, unknown][] = [];
+
   if (reqSchemas.body) {
     const bodyData = await extractBody(typedReqCtx.req);
-    typedReqCtx.valid.req.body = await validateRequest<TReq['body']>(
-      reqSchemas.body,
-      bodyData,
-      'body'
-    );
+    schemaEntries.push(['body', reqSchemas.body]);
+    dataEntries.push(['body', bodyData]);
   }
 
   if (reqSchemas.headers) {
     const headers = Object.fromEntries(typedReqCtx.req.headers.entries());
-    typedReqCtx.valid.req.headers = await validateRequest<TReq['headers']>(
-      reqSchemas.headers,
-      headers,
-      'headers'
-    );
+    schemaEntries.push(['headers', reqSchemas.headers]);
+    dataEntries.push(['headers', headers]);
   }
 
   if (reqSchemas.path) {
-    typedReqCtx.valid.req.path = await validateRequest<TReq['path']>(
-      reqSchemas.path,
-      typedReqCtx.params,
-      'path'
-    );
+    schemaEntries.push(['path', reqSchemas.path]);
+    dataEntries.push(['path', typedReqCtx.params]);
   }
 
   if (reqSchemas.query) {
     const query = Object.fromEntries(
       new URL(typedReqCtx.req.url).searchParams.entries()
     );
-    typedReqCtx.valid.req.query = await validateRequest<TReq['query']>(
-      reqSchemas.query,
-      query,
-      'query'
+    schemaEntries.push(['query', reqSchemas.query]);
+    dataEntries.push(['query', query]);
+  }
+
+  const stitchedSchema = createObjectSchema(schemaEntries);
+  const stitchedData = Object.fromEntries(dataEntries);
+
+  const result = await stitchedSchema['~standard'].validate(stitchedData);
+
+  if ('issues' in result) {
+    throw new RequestValidationError(
+      'Validation failed for request',
+      result.issues
     );
   }
+
+  const validated = result.value as Record<string, unknown>;
+  if (reqSchemas.body)
+    typedReqCtx.valid.req.body = validated.body as TReq['body'];
+  if (reqSchemas.headers)
+    typedReqCtx.valid.req.headers = validated.headers as TReq['headers'];
+  if (reqSchemas.path)
+    typedReqCtx.valid.req.path = validated.path as TReq['path'];
+  if (reqSchemas.query)
+    typedReqCtx.valid.req.query = validated.query as TReq['query'];
 }
 
 async function validateResponseData<TResBody extends HandlerResponse>(
@@ -91,24 +104,77 @@ async function validateResponseData<TResBody extends HandlerResponse>(
   resSchemas: NonNullable<ValidationConfig<ReqSchema, TResBody>['res']>
 ): Promise<void> {
   const response = typedReqCtx.res;
+  const schemaEntries: [string, StandardSchemaV1][] = [];
+  const dataEntries: [string, unknown][] = [];
 
   if (resSchemas.body && response.body) {
     const bodyData = await extractBody(response);
-    typedReqCtx.valid.res.body = await validateResponse<TResBody>(
-      resSchemas.body,
-      bodyData,
-      'body'
-    );
+    schemaEntries.push(['body', resSchemas.body]);
+    dataEntries.push(['body', bodyData]);
   }
 
   if (resSchemas.headers) {
     const headers = Object.fromEntries(response.headers.entries());
-    typedReqCtx.valid.res.headers = await validateResponse(
-      resSchemas.headers,
-      headers,
-      'headers'
+    schemaEntries.push(['headers', resSchemas.headers]);
+    dataEntries.push(['headers', headers]);
+  }
+
+  const stitchedSchema = createObjectSchema(schemaEntries);
+  const stitchedData = Object.fromEntries(dataEntries);
+
+  const result = await stitchedSchema['~standard'].validate(stitchedData);
+
+  if ('issues' in result) {
+    throw new ResponseValidationError(
+      'Validation failed for response',
+      result.issues
     );
   }
+
+  const validated = result.value as Record<string, unknown>;
+  if (resSchemas.body) {
+    typedReqCtx.valid.res.body = validated.body as TResBody;
+  }
+  if (resSchemas.headers) {
+    typedReqCtx.valid.res.headers = validated.headers as Record<string, string>;
+  }
+}
+
+function createObjectSchema(
+  entries: [string, StandardSchemaV1][]
+): StandardSchemaV1 {
+  return {
+    '~standard': {
+      version: 1,
+      vendor: 'powertools',
+      validate: async (data): Promise<StandardSchemaV1.Result<unknown>> => {
+        const dataObj = data as Record<string, unknown>;
+        const validated: Record<string, unknown> = {};
+        const allIssues: StandardSchemaV1.Issue[] = [];
+
+        for (const [key, schema] of entries) {
+          const result = await schema['~standard'].validate(dataObj[key]);
+
+          for (const issue of result.issues ?? []) {
+            allIssues.push({
+              message: issue.message,
+              path: [key, ...(issue.path || [])],
+            });
+          }
+
+          if ('value' in result) {
+            validated[key] = result.value;
+          }
+        }
+
+        if (allIssues.length > 0) {
+          return { issues: allIssues };
+        }
+
+        return { value: validated };
+      },
+    },
+  };
 }
 
 async function extractBody(source: Request | Response): Promise<unknown> {
@@ -139,34 +205,4 @@ async function extractBody(source: Request | Response): Promise<unknown> {
   }
 
   return await cloned.text();
-}
-
-async function validateRequest<T>(
-  schema: StandardSchemaV1,
-  data: unknown,
-  component: 'body' | 'headers' | 'path' | 'query'
-): Promise<T> {
-  const result = await schema['~standard'].validate(data);
-
-  if ('issues' in result) {
-    const message = `Validation failed for request ${component}`;
-    throw new RequestValidationError(message, result.issues);
-  }
-
-  return result.value as T;
-}
-
-async function validateResponse<T>(
-  schema: StandardSchemaV1,
-  data: unknown,
-  component: 'body' | 'headers'
-): Promise<T> {
-  const result = await schema['~standard'].validate(data);
-
-  if ('issues' in result) {
-    const message = `Validation failed for response ${component}`;
-    throw new ResponseValidationError(message, result.issues);
-  }
-
-  return result.value as T;
 }

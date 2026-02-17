@@ -246,7 +246,7 @@ describe('HTTP Error Classes', () => {
       expect(response.status).toEqual(statusCode);
       expect(response.headers.get('Content-Type')).toEqual('application/json');
 
-      expect(await response.json()).toEqual({
+      await expect(response.json()).resolves.toEqual({
         statusCode,
         error: errorType,
         message,
@@ -260,7 +260,7 @@ describe('HTTP Error Classes', () => {
 
       expect(response.status).toEqual(HttpStatusCodes.BAD_REQUEST);
 
-      expect(await response.json()).toEqual({
+      await expect(response.json()).resolves.toEqual({
         statusCode: HttpStatusCodes.BAD_REQUEST,
         error: 'BadRequestError',
         message: 'Invalid input',
@@ -274,7 +274,7 @@ describe('HTTP Error Classes', () => {
 
       expect(response.status).toEqual(HttpStatusCodes.BAD_REQUEST);
 
-      expect(await response.json()).toEqual({
+      await expect(response.json()).resolves.toEqual({
         statusCode: HttpStatusCodes.BAD_REQUEST,
         error: 'BadRequestError',
         message: 'Invalid input',

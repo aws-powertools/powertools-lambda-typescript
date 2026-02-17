@@ -47,9 +47,8 @@ abstract class HttpError extends Error {
   }
 
   toWebResponse(): Response {
-    return new Response(JSON.stringify(this.toJSON()), {
+    return Response.json(this.toJSON(), {
       status: this.statusCode,
-      headers: { 'Content-Type': 'application/json' },
     });
   }
 }

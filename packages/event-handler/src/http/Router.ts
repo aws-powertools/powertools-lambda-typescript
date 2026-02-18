@@ -489,10 +489,7 @@ class Router {
     }
 
     if (error instanceof HttpError) {
-      return new Response(JSON.stringify(error.toJSON()), {
-        status: error.statusCode,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return error.toWebResponse();
     }
 
     return this.#defaultErrorHandler(error);

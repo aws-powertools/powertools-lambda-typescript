@@ -1563,6 +1563,24 @@ describe('Converters', () => {
       expect(result).toBe('Hello World');
     });
 
+    it('converts ArrayBuffer body to Node.js Readable stream', async () => {
+      // Prepare
+      const payload = 'Hello World';
+      const buffer = new TextEncoder().encode(payload).buffer;
+
+      // Act
+      const stream = bodyToNodeStream(buffer);
+
+      // Assess
+      expect(stream).toBeInstanceOf(Readable);
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      const result = Buffer.concat(chunks).toString();
+      expect(result).toBe(payload);
+    });
+
     it('serializes JSON object body to Node.js Readable stream', async () => {
       // Prepare
       const jsonBody = { message: 'hello' };

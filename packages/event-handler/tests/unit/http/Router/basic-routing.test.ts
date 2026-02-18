@@ -543,6 +543,30 @@ describe.each([
     expect(result.isBase64Encoded).toBe(true);
   });
 
+  it('enforces return type when RouteHandler generic is provided', async () => {
+    // Prepare
+    const app = new Router();
+
+    app.get<{ id: number; name: string }>('/users', () => ({
+      id: 1,
+      name: 'Alice',
+    }));
+
+    // Act
+    const result = await app.resolve(createEvent('/users', 'GET'), context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(JSON.parse(result.body)).toEqual({ id: 1, name: 'Alice' });
+  });
+
+  it('rejects a handler returning the wrong shape when RouteHandler generic is provided', () => {
+    const app = new Router();
+
+    // @ts-expect-error — missing name property
+    app.get<{ id: number; name: string }>('/users', () => ({ id: 1 }));
+  });
+
   it('does not set isBase64Encoded for text content-types', async () => {
     // Prepare
     const app = new Router();

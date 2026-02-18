@@ -623,4 +623,44 @@ describe('Router Validation Integration', () => {
     // Assess
     expect(result.statusCode).toBe(422);
   });
+
+  it('enforces return type annotation alongside request validation', async () => {
+    // Prepare
+    const bodySchema = z.object({ name: z.string() });
+
+    app.post(
+      '/users',
+      (reqCtx): { id: number; name: string } => {
+        const { name } = reqCtx.valid.req.body;
+        return { id: 1, name };
+      },
+      { validation: { req: { body: bodySchema } } }
+    );
+
+    const event = createTestEvent('/users', 'POST', {
+      'content-type': 'application/json',
+    });
+    event.body = JSON.stringify({ name: 'Alice' });
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(JSON.parse(result.body)).toEqual({ id: 1, name: 'Alice' });
+  });
+
+  it('rejects a handler with an incorrect return type annotation alongside request validation', () => {
+    const bodySchema = z.object({ name: z.string() });
+
+    app.post(
+      '/users',
+      (reqCtx): { id: number; name: string } => {
+        const { name } = reqCtx.valid.req.body;
+        // @ts-expect-error — missing id property
+        return { name };
+      },
+      { validation: { req: { body: bodySchema } } }
+    );
+  });
 });

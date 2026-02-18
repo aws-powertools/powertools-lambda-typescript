@@ -1186,6 +1186,86 @@ describe('Converters', () => {
       expect(result.text()).resolves.toBe('Hello');
     });
 
+    it('serializes JSON object body in APIGatewayProxyResult', async () => {
+      // Prepare
+      const proxyResult = {
+        statusCode: HttpStatusCodes.OK,
+        body: { message: 'hello' },
+      };
+
+      // Act
+      const result = handlerResultToWebResponse(proxyResult);
+
+      // Assess
+      expect(result).toBeInstanceOf(Response);
+      expect(result.status).toBe(HttpStatusCodes.OK);
+      expect(await result.text()).toBe(JSON.stringify({ message: 'hello' }));
+      expect(result.headers.get('content-type')).toContain('application/json');
+    });
+
+    it('serializes JSON array body in APIGatewayProxyResult', async () => {
+      // Prepare
+      const proxyResult = {
+        statusCode: HttpStatusCodes.OK,
+        body: [1, 2, 3],
+      };
+
+      // Act
+      const result = handlerResultToWebResponse(proxyResult);
+
+      // Assess
+      expect(await result.text()).toBe('[1,2,3]');
+    });
+
+    it.each([
+      { case: 'number', body: 42 },
+      { case: 'boolean', body: true },
+      { case: 'null', body: null },
+    ])('serializes $case body as JSON in APIGatewayProxyResult', async ({
+      body,
+    }) => {
+      // Prepare
+      const proxyResult = { statusCode: HttpStatusCodes.OK, body };
+
+      // Act
+      const result = handlerResultToWebResponse(proxyResult);
+
+      // Assess
+      expect(await result.text()).toBe(JSON.stringify(body));
+    });
+
+    it('does not double-encode a pre-serialized string body in APIGatewayProxyResult', async () => {
+      // Prepare
+      const proxyResult = {
+        statusCode: HttpStatusCodes.OK,
+        body: '{"message":"hello"}',
+      };
+
+      // Act
+      const result = handlerResultToWebResponse(proxyResult);
+
+      // Assess
+      expect(await result.text()).toBe('{"message":"hello"}');
+    });
+
+    it('preserves user-provided Content-Type when body is a JSON object', async () => {
+      // Prepare
+      const proxyResult = {
+        statusCode: HttpStatusCodes.OK,
+        body: { message: 'hello' },
+        headers: { 'content-type': 'application/vnd.api+json' },
+      };
+
+      // Act
+      const result = handlerResultToWebResponse(proxyResult);
+
+      // Assess
+      expect(result.headers.get('content-type')).toBe(
+        'application/vnd.api+json'
+      );
+      expect(await result.text()).toBe(JSON.stringify({ message: 'hello' }));
+    });
+
     it('returns Response object as-is when resHeaders is undefined', () => {
       // Prepare
       const response = new Response('Hello', {
@@ -1481,6 +1561,23 @@ describe('Converters', () => {
       }
       const result = Buffer.concat(chunks).toString();
       expect(result).toBe('Hello World');
+    });
+
+    it('serializes JSON object body to Node.js Readable stream', async () => {
+      // Prepare
+      const jsonBody = { message: 'hello' };
+
+      // Act
+      const stream = bodyToNodeStream(jsonBody);
+
+      // Assess
+      expect(stream).toBeInstanceOf(Readable);
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      const result = Buffer.concat(chunks).toString();
+      expect(result).toBe(JSON.stringify(jsonBody));
     });
   });
 });

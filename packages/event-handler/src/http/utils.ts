@@ -210,11 +210,13 @@ export const isExtendedAPIGatewayProxyResult = (
   result: unknown
 ): result is ExtendedAPIGatewayProxyResult => {
   if (!isRecord(result)) return false;
+  const isValidBody =
+    result.body !== undefined &&
+    typeof result.body !== 'function' &&
+    typeof result.body !== 'symbol';
   return (
     typeof result.statusCode === 'number' &&
-    (isString(result.body) ||
-      isNodeReadableStream(result.body) ||
-      isWebReadableStream(result.body)) &&
+    isValidBody &&
     (result.headers === undefined || isRecord(result.headers)) &&
     (result.multiValueHeaders === undefined ||
       isRecord(result.multiValueHeaders)) &&

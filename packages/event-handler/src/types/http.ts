@@ -116,7 +116,7 @@ type DynamicRoute = Route & CompiledRoute;
 
 type BinaryResult = ArrayBuffer | Readable | ReadableStream;
 
-type ExtendedAPIGatewayProxyResultBody = BinaryResult | string;
+type ExtendedAPIGatewayProxyResultBody = BinaryResult | JSONValue;
 
 type ExtendedAPIGatewayProxyResult = Omit<APIGatewayProxyResult, 'body'> & {
   body: ExtendedAPIGatewayProxyResultBody;

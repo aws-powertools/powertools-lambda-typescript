@@ -118,11 +118,12 @@ type BinaryResult = ArrayBuffer | Readable | ReadableStream;
 
 type ExtendedAPIGatewayProxyResultBody = BinaryResult | JSONValue;
 
-type ExtendedAPIGatewayProxyResult = Omit<APIGatewayProxyResult, 'body'> & {
-  body: ExtendedAPIGatewayProxyResultBody;
-  cookies?: string[];
-  statusDescription?: string;
-};
+type ExtendedAPIGatewayProxyResult<TBody = ExtendedAPIGatewayProxyResultBody> =
+  Omit<APIGatewayProxyResult, 'body'> & {
+    body: TBody;
+    cookies?: string[];
+    statusDescription?: string;
+  };
 
 type HandlerResponse =
   | Response
@@ -139,7 +140,10 @@ type TypedRouteHandler<
   TResBody extends HandlerResponse = HandlerResponse,
 > = (
   reqCtx: TypedRequestContext<TReq, TResBody>
-) => Promise<TResBody> | TResBody;
+) =>
+  | Promise<TResBody | ExtendedAPIGatewayProxyResult<TResBody>>
+  | TResBody
+  | ExtendedAPIGatewayProxyResult<TResBody>;
 
 type HttpMethod = keyof typeof HttpVerbs;
 

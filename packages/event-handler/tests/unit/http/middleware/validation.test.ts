@@ -260,6 +260,32 @@ describe('Router Validation Integration', () => {
     expect(result.statusCode).toBe(422);
   });
 
+  it('validates and serializes a JSON object body in ExtendedAPIGatewayProxyResult', async () => {
+    // Prepare
+    const responseSchema = z.object({ id: z.string(), name: z.string() });
+
+    app.get(
+      '/users/:id',
+      () => ({
+        statusCode: 200,
+        body: { id: '123', name: 'John' },
+      }),
+      {
+        validation: { res: { body: responseSchema } },
+      }
+    );
+
+    const event = createTestEvent('/users/123', 'GET', {});
+    event.pathParameters = { id: '123' };
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toBe(JSON.stringify({ id: '123', name: 'John' }));
+  });
+
   it('validates response body successfully', async () => {
     // Prepare
     const responseSchema = z.object({ id: z.string(), name: z.string() });

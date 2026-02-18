@@ -32,7 +32,7 @@
     "@types/aws-lambda": "^8.10.160",
     "@types/node": "25.2.3",
     "aws-cdk-lib": "^2.238.0",
-    "constructs": "^10.4.5",
+    "constructs": "^10.5.0",
     "source-map-support": "^0.5.21",
     "typescript": "^5.9.3",
     "vitest": "^4.0.10"
@@ -50,7 +50,7 @@
     "@types/aws-lambda": "^8.10.160",
     "@types/node": "25.2.3",
     "aws-cdk": "^2.1106.0",
-    "constructs": "^10.4.5",
+    "constructs": "^10.5.0",
     "esbuild": "^0.27.2",
     "typescript": "^5.9.3"
   }

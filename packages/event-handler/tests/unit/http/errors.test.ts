@@ -68,15 +68,17 @@ describe('HTTP Error Classes', () => {
       statusCode: HttpStatusCodes.SERVICE_UNAVAILABLE,
       customMessage: 'Maintenance mode',
     },
-  ])(
-    '$errorType uses custom message when provided',
-    ({ ErrorClass, errorType, statusCode, customMessage }) => {
-      const error = new ErrorClass(customMessage);
-      expect(error.message).toBe(customMessage);
-      expect(error.statusCode).toBe(statusCode);
-      expect(error.errorType).toBe(errorType);
-    }
-  );
+  ])('$errorType uses custom message when provided', ({
+    ErrorClass,
+    errorType,
+    statusCode,
+    customMessage,
+  }) => {
+    const error = new ErrorClass(customMessage);
+    expect(error.message).toBe(customMessage);
+    expect(error.statusCode).toBe(statusCode);
+    expect(error.errorType).toBe(errorType);
+  });
 
   describe('toJSON', () => {
     it.each([
@@ -134,19 +136,21 @@ describe('HTTP Error Classes', () => {
         statusCode: HttpStatusCodes.SERVICE_UNAVAILABLE,
         message: 'Maintenance mode',
       },
-    ])(
-      '$errorType serializes to JSON format',
-      ({ ErrorClass, errorType, statusCode, message }) => {
-        const error = new ErrorClass(message);
-        const json = error.toJSON();
+    ])('$errorType serializes to JSON format', ({
+      ErrorClass,
+      errorType,
+      statusCode,
+      message,
+    }) => {
+      const error = new ErrorClass(message);
+      const json = error.toJSON();
 
-        expect(json).toEqual({
-          statusCode,
-          error: errorType,
-          message,
-        });
-      }
-    );
+      expect(json).toEqual({
+        statusCode,
+        error: errorType,
+        message,
+      });
+    });
 
     it('includes details in JSON when provided', () => {
       const details = { field: 'value', code: 'VALIDATION_ERROR' };
@@ -171,6 +175,111 @@ describe('HTTP Error Classes', () => {
         message: 'Invalid input',
       });
       expect(json).not.toHaveProperty('details');
+    });
+  });
+
+  describe('toWebResponse', () => {
+    it.each([
+      {
+        ErrorClass: BadRequestError,
+        errorType: 'BadRequestError',
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+        message: 'Invalid input',
+      },
+      {
+        ErrorClass: UnauthorizedError,
+        errorType: 'UnauthorizedError',
+        statusCode: HttpStatusCodes.UNAUTHORIZED,
+        message: 'Token expired',
+      },
+      {
+        ErrorClass: ForbiddenError,
+        errorType: 'ForbiddenError',
+        statusCode: HttpStatusCodes.FORBIDDEN,
+        message: 'Access denied',
+      },
+      {
+        ErrorClass: NotFoundError,
+        errorType: 'NotFoundError',
+        statusCode: HttpStatusCodes.NOT_FOUND,
+        message: 'Resource not found',
+      },
+      {
+        ErrorClass: MethodNotAllowedError,
+        errorType: 'MethodNotAllowedError',
+        statusCode: HttpStatusCodes.METHOD_NOT_ALLOWED,
+        message: 'POST not allowed',
+      },
+      {
+        ErrorClass: RequestTimeoutError,
+        errorType: 'RequestTimeoutError',
+        statusCode: HttpStatusCodes.REQUEST_TIMEOUT,
+        message: 'Operation timed out',
+      },
+      {
+        ErrorClass: RequestEntityTooLargeError,
+        errorType: 'RequestEntityTooLargeError',
+        statusCode: HttpStatusCodes.REQUEST_ENTITY_TOO_LARGE,
+        message: 'File too large',
+      },
+      {
+        ErrorClass: InternalServerError,
+        errorType: 'InternalServerError',
+        statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'Database connection failed',
+      },
+      {
+        ErrorClass: ServiceUnavailableError,
+        errorType: 'ServiceUnavailableError',
+        statusCode: HttpStatusCodes.SERVICE_UNAVAILABLE,
+        message: 'Maintenance mode',
+      },
+    ])('$errorType creates Response object', async ({
+      ErrorClass,
+      errorType,
+      statusCode,
+      message,
+    }) => {
+      const error = new ErrorClass(message);
+      const response = error.toWebResponse();
+
+      expect(response.status).toEqual(statusCode);
+      expect(response.headers.get('Content-Type')).toEqual('application/json');
+
+      await expect(response.json()).resolves.toEqual({
+        statusCode,
+        error: errorType,
+        message,
+      });
+    });
+
+    it('includes details in Response body when provided', async () => {
+      const details = { field: 'value', code: 'VALIDATION_ERROR' };
+      const error = new BadRequestError('Invalid input', undefined, details);
+      const response = error.toWebResponse();
+
+      expect(response.status).toEqual(HttpStatusCodes.BAD_REQUEST);
+
+      await expect(response.json()).resolves.toEqual({
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+        error: 'BadRequestError',
+        message: 'Invalid input',
+        details,
+      });
+    });
+
+    it('excludes details from JSON when not provided', async () => {
+      const error = new BadRequestError('Invalid input');
+      const response = error.toWebResponse();
+
+      expect(response.status).toEqual(HttpStatusCodes.BAD_REQUEST);
+
+      await expect(response.json()).resolves.toEqual({
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+        error: 'BadRequestError',
+        message: 'Invalid input',
+      });
+      expect(response).not.toHaveProperty('details');
     });
   });
 

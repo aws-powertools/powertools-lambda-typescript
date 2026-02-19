@@ -206,13 +206,28 @@ export const isBinaryResult = (
  *
  * @param result - The result to check
  */
+const PROXY_RESULT_KEYS = new Set([
+  'statusCode',
+  'body',
+  'headers',
+  'multiValueHeaders',
+  'isBase64Encoded',
+  'cookies',
+  'statusDescription',
+]);
+
 export const isExtendedAPIGatewayProxyResult = (
   result: unknown
 ): result is ExtendedAPIGatewayProxyResult => {
   if (!isRecord(result)) return false;
+  const hasOnlyProxyResultKeys = Object.keys(result).every((k) =>
+    PROXY_RESULT_KEYS.has(k)
+  );
   const isValidBody =
-    result.body === undefined ||
-    (typeof result.body !== 'function' && typeof result.body !== 'symbol');
+    (result.body === undefined && hasOnlyProxyResultKeys) ||
+    (result.body !== undefined &&
+      typeof result.body !== 'function' &&
+      typeof result.body !== 'symbol');
   return (
     typeof result.statusCode === 'number' &&
     isValidBody &&

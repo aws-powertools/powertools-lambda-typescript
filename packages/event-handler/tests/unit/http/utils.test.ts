@@ -689,14 +689,14 @@ describe('Path Utilities', () => {
       { case: 'number', body: 42 },
       { case: 'boolean', body: true },
       { case: 'null', body: null },
-    ])('should return true when body is a $case', ({ body }) => {
-      expect(isExtendedAPIGatewayProxyResult({ statusCode: 200, body })).toBe(
-        true
-      );
+      { case: 'undefined', body: undefined },
+      { case: 'absent (no-body response)', body: undefined, omitBody: true },
+    ])('should return true when body is a $case', ({ body, omitBody }) => {
+      const result = omitBody ? { statusCode: 200 } : { statusCode: 200, body };
+      expect(isExtendedAPIGatewayProxyResult(result)).toBe(true);
     });
 
     it.each([
-      { case: 'undefined', body: undefined },
       { case: 'function', body: () => {} },
       { case: 'symbol', body: Symbol('test') },
     ])('should return false when body is $case', ({ body }) => {
@@ -705,13 +705,13 @@ describe('Path Utilities', () => {
       );
     });
 
-    it('should return false when required fields are missing', () => {
-      const incompleteResult = {
-        statusCode: 200,
-        // missing body
-      };
-
-      expect(isExtendedAPIGatewayProxyResult(incompleteResult)).toBe(false);
+    it('should return false when the object has unrecognised keys', () => {
+      expect(
+        isExtendedAPIGatewayProxyResult({
+          statusCode: 401,
+          message: 'Custom error',
+        })
+      ).toBe(false);
     });
   });
 

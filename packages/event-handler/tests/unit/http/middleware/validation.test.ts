@@ -494,7 +494,7 @@ describe('Router Validation Integration', () => {
 
     // Assess
     expect(validatedResult.statusCode).toBe(422);
-    expect(unvalidatedResult.statusCode).toBe(200);
+    expect(unvalidatedResult.statusCode).toBe(201);
   });
 
   it('validates with async schema refinement', async () => {

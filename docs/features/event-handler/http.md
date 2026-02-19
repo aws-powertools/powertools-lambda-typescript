@@ -200,18 +200,6 @@ If you prefer to use the decorator syntax, you can use the same methods on a cla
     !!! tip
         We recommend passing a reference to `this` to ensure the correct class scope is propagated to the route handler functions.
 
-#### Typing the response
-
-You can pass a type argument to any route method to have TypeScript enforce the handler's return shape at compile time. Returning a value that doesn't match the type is a compile-time error with no runtime overhead.
-
-=== "index.ts"
-
-    ```ts hl_lines="6 8"
-    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_type_argument.ts"
-    ```
-
-    1. TypeScript enforces `Todo` as the return type — returning the wrong shape is a compile-time error
-
 ### Data validation
 
 Event Handler supports built-in request and response validation using [Standard Schema](https://standardschema.dev){target="_blank"}, a common specification supported by popular TypeScript validation libraries including [Zod](https://zod.dev){target="_blank"}, [Valibot](https://valibot.dev){target="_blank"}, and [ArkType](https://arktype.io){target="_blank"}.
@@ -309,16 +297,12 @@ You can combine both request and response validation in a single route by provid
 !!! tip
     If you need request validation but want to skip runtime response validation, annotate your handler's return type directly and TypeScript will enforce the return shape at compile time:
 
-    ```ts hl_lines="9 13 18"
+    ```ts hl_lines="9 13 19"
     --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_response_types.ts"
     ```
 
     1. TypeScript enforces `Todo` as the return type at compile time
     2. Only request validation runs at runtime — no response validation
-
-    For compile-time only type checking without any validation at all, see [Typing the response](#typing-the-response).
-    Note that the `validation` option and route method type arguments (`app.get<User>()`) are mutually exclusive —
-    when using `validation`, response types are inferred automatically from your schemas.
 
 ### Accessing request details
 

@@ -211,9 +211,8 @@ export const isExtendedAPIGatewayProxyResult = (
 ): result is ExtendedAPIGatewayProxyResult => {
   if (!isRecord(result)) return false;
   const isValidBody =
-    result.body !== undefined &&
-    typeof result.body !== 'function' &&
-    typeof result.body !== 'symbol';
+    result.body === undefined ||
+    (typeof result.body !== 'function' && typeof result.body !== 'symbol');
   return (
     typeof result.statusCode === 'number' &&
     isValidBody &&

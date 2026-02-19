@@ -1055,7 +1055,7 @@ describe('Converters', () => {
       // Assess
       expect(result).toBeInstanceOf(Response);
       expect(result.status).toBe(HttpStatusCodes.CREATED);
-      expect(await result.text()).toBe('Hello World');
+      await expect(result.text()).resolves.toBe('Hello World');
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
 
@@ -1199,7 +1199,9 @@ describe('Converters', () => {
       // Assess
       expect(result).toBeInstanceOf(Response);
       expect(result.status).toBe(HttpStatusCodes.OK);
-      expect(await result.text()).toBe(JSON.stringify({ message: 'hello' }));
+      await expect(result.text()).resolves.toBe(
+        JSON.stringify({ message: 'hello' })
+      );
       expect(result.headers.get('content-type')).toContain('application/json');
     });
 
@@ -1214,13 +1216,12 @@ describe('Converters', () => {
       const result = handlerResultToWebResponse(proxyResult);
 
       // Assess
-      expect(await result.text()).toBe('[1,2,3]');
+      await expect(result.text()).resolves.toBe('[1,2,3]');
     });
 
     it.each([
       { case: 'number', body: 42 },
       { case: 'boolean', body: true },
-      { case: 'null', body: null },
     ])('serializes $case body as JSON in APIGatewayProxyResult', async ({
       body,
     }) => {
@@ -1231,7 +1232,18 @@ describe('Converters', () => {
       const result = handlerResultToWebResponse(proxyResult);
 
       // Assess
-      expect(await result.text()).toBe(JSON.stringify(body));
+      await expect(result.text()).resolves.toBe(JSON.stringify(body));
+    });
+
+    it('returns empty body when body is null in APIGatewayProxyResult', async () => {
+      // Prepare
+      const proxyResult = { statusCode: HttpStatusCodes.OK, body: null };
+
+      // Act
+      const result = handlerResultToWebResponse(proxyResult);
+
+      // Assess
+      await expect(result.text()).resolves.toBe('');
     });
 
     it('does not double-encode a pre-serialized string body in APIGatewayProxyResult', async () => {
@@ -1245,7 +1257,7 @@ describe('Converters', () => {
       const result = handlerResultToWebResponse(proxyResult);
 
       // Assess
-      expect(await result.text()).toBe('{"message":"hello"}');
+      await expect(result.text()).resolves.toBe('{"message":"hello"}');
     });
 
     it('preserves user-provided Content-Type when body is a JSON object', async () => {
@@ -1263,7 +1275,21 @@ describe('Converters', () => {
       expect(result.headers.get('content-type')).toBe(
         'application/vnd.api+json'
       );
-      expect(await result.text()).toBe(JSON.stringify({ message: 'hello' }));
+      await expect(result.text()).resolves.toBe(
+        JSON.stringify({ message: 'hello' })
+      );
+    });
+
+    it('returns empty body with correct status code when body is omitted', async () => {
+      // Prepare
+      const proxyResult = { statusCode: 204 };
+
+      // Act
+      const result = handlerResultToWebResponse(proxyResult);
+
+      // Assess
+      expect(result.status).toBe(204);
+      await expect(result.text()).resolves.toBe('');
     });
 
     it('returns Response object as-is when resHeaders is undefined', () => {

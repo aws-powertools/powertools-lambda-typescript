@@ -509,7 +509,9 @@ const handlerResultToWebResponse = (
     addProxyEventHeaders(headers, response);
 
     let body: BodyInit | null;
-    if (isNodeReadableStream(response.body)) {
+    if (response.body === undefined || response.body === null) {
+      body = null;
+    } else if (isNodeReadableStream(response.body)) {
       body = Readable.toWeb(response.body) as ReadableStream;
     } else if (
       isWebReadableStream(response.body) ||

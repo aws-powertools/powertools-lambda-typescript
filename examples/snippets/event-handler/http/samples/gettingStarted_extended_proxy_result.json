@@ -1,0 +1,9 @@
+{
+  "statusCode": 201,
+  "headers": {
+    "Content-Type": "application/json",
+    "x-todo-id": "123"
+  },
+  "body": "{\"id\":\"123\",\"title\":\"Buy milk\"}",
+  "isBase64Encoded": false
+}

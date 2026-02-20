@@ -36,13 +36,11 @@ type ReqSchema = {
 };
 
 /**
- * Validated request data
+ * Validated request data - only includes fields that were actually validated
+ * (i.e., fields whose type is not `undefined` in the schema inference result)
  */
 type ValidatedRequest<TReq extends ReqSchema = ReqSchema> = {
-  body: TReq['body'];
-  headers: TReq['headers'];
-  path: TReq['path'];
-  query: TReq['query'];
+  [K in keyof TReq as TReq[K] extends undefined ? never : K]: TReq[K];
 };
 
 /**
@@ -68,10 +66,9 @@ type TypedRequestContext<
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
 > = RequestContext & {
-  valid: {
-    req: ValidatedRequest<TReq>;
-    res: ValidatedResponse<TResBody>;
-  };
+  valid: { req: ValidatedRequest<TReq> } & ([HandlerResponse] extends [TResBody]
+    ? {}
+    : { res: ValidatedResponse<TResBody> });
 };
 
 type HttpResolveOptions = ResolveOptions & { isHttpStreaming?: boolean };

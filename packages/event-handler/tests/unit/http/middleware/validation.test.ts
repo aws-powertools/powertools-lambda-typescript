@@ -663,4 +663,71 @@ describe('Router Validation Integration', () => {
       { validation: { req: { body: bodySchema } } }
     );
   });
+
+  it('disallows access to unvalidated fields when only body is validated', () => {
+    const bodySchema = z.object({ name: z.string() });
+
+    app.post(
+      '/type-check/body-only',
+      (reqCtx) => {
+        const { name } = reqCtx.valid.req.body;
+
+        // @ts-expect-error — 'headers' does not exist on valid.req when not validated
+        void reqCtx.valid.req.headers;
+        // @ts-expect-error — 'path' does not exist on valid.req when not validated
+        void reqCtx.valid.req.path;
+        // @ts-expect-error — 'query' does not exist on valid.req when not validated
+        void reqCtx.valid.req.query;
+
+        return { name };
+      },
+      { validation: { req: { body: bodySchema } } }
+    );
+  });
+
+  it('disallows access to unvalidated fields when only headers are validated', () => {
+    const headersSchema = z.object({ 'x-api-key': z.string() });
+
+    app.get(
+      '/type-check/headers-only',
+      (reqCtx) => {
+        const key = reqCtx.valid.req.headers['x-api-key'];
+
+        // @ts-expect-error — 'body' does not exist on valid.req when not validated
+        void reqCtx.valid.req.body;
+        // @ts-expect-error — 'path' does not exist on valid.req when not validated
+        void reqCtx.valid.req.path;
+        // @ts-expect-error — 'query' does not exist on valid.req when not validated
+        void reqCtx.valid.req.query;
+
+        return key;
+      },
+      { validation: { req: { headers: headersSchema } } }
+    );
+  });
+
+  it('disallows access to valid.res when no res schema is configured', () => {
+    const bodySchema = z.object({ name: z.string() });
+
+    app.post(
+      '/type-check/req-only',
+      (reqCtx) => {
+        const { name } = reqCtx.valid.req.body;
+
+        // @ts-expect-error — 'res' does not exist on valid when no res schema configured
+        void reqCtx.valid.res;
+
+        return { name };
+      },
+      { validation: { req: { body: bodySchema } } }
+    );
+  });
+
+  it('disallows access to valid on an untyped handler', () => {
+    app.get('/type-check/no-validation', (reqCtx) => {
+      // @ts-expect-error — 'valid' does not exist on RequestContext
+      void reqCtx.valid;
+      return {};
+    });
+  });
 });

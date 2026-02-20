@@ -29,8 +29,8 @@ export const validate = <
     const typedReqCtx = reqCtx as TypedRequestContext<TReq, TResBody>;
     typedReqCtx.valid = {
       req: {} as ValidatedRequest<TReq>,
-      res: {} as ValidatedResponse<TResBody>,
-    };
+      ...(resSchemas && { res: {} as ValidatedResponse<TResBody> }),
+    } as TypedRequestContext<TReq, TResBody>['valid'];
 
     if (reqSchemas) {
       await validateRequestData(typedReqCtx, reqSchemas);
@@ -89,14 +89,11 @@ async function validateRequestData<TReq extends ReqSchema>(
   }
 
   const validated = result.value as Record<string, unknown>;
-  if (reqSchemas.body)
-    typedReqCtx.valid.req.body = validated.body as TReq['body'];
-  if (reqSchemas.headers)
-    typedReqCtx.valid.req.headers = validated.headers as TReq['headers'];
-  if (reqSchemas.path)
-    typedReqCtx.valid.req.path = validated.path as TReq['path'];
-  if (reqSchemas.query)
-    typedReqCtx.valid.req.query = validated.query as TReq['query'];
+  const mutableReq = typedReqCtx.valid.req as Record<string, unknown>;
+  if (reqSchemas.body) mutableReq.body = validated.body;
+  if (reqSchemas.headers) mutableReq.headers = validated.headers;
+  if (reqSchemas.path) mutableReq.path = validated.path;
+  if (reqSchemas.query) mutableReq.query = validated.query;
 }
 
 async function validateResponseData<TResBody extends HandlerResponse>(
@@ -132,12 +129,12 @@ async function validateResponseData<TResBody extends HandlerResponse>(
   }
 
   const validated = result.value as Record<string, unknown>;
-  if (resSchemas.body) {
-    typedReqCtx.valid.res.body = validated.body as TResBody;
-  }
-  if (resSchemas.headers) {
-    typedReqCtx.valid.res.headers = validated.headers as Record<string, string>;
-  }
+  const mutableValid = typedReqCtx.valid as {
+    res: { body: unknown; headers: Record<string, string> };
+  };
+  if (resSchemas.body) mutableValid.res.body = validated.body;
+  if (resSchemas.headers)
+    mutableValid.res.headers = validated.headers as Record<string, string>;
 }
 
 function createObjectSchema(

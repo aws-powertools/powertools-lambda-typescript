@@ -89,7 +89,8 @@ async function validateRequestData<TReq extends ReqSchema>(
   }
 
   const validated = result.value as Record<string, unknown>;
-  const mutableReq = typedReqCtx.valid.req as Record<string, unknown>;
+  const mutableReq = (typedReqCtx.valid as { req: Record<string, unknown> })
+    .req;
   if (reqSchemas.body) mutableReq.body = validated.body;
   if (reqSchemas.headers) mutableReq.headers = validated.headers;
   if (reqSchemas.path) mutableReq.path = validated.path;

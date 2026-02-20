@@ -3,6 +3,7 @@ import type {
   HandlerResponse,
   Middleware,
   ReqSchema,
+  ResSchema,
   TypedRequestContext,
   ValidatedRequest,
   ValidatedResponse,
@@ -19,6 +20,7 @@ import { RequestValidationError, ResponseValidationError } from '../errors.js';
 export const validate = <
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
 >(
   config: ValidationConfig<TReq, TResBody>
 ): Middleware => {
@@ -26,11 +28,11 @@ export const validate = <
   const resSchemas = config?.res;
 
   return async ({ reqCtx, next }) => {
-    const typedReqCtx = reqCtx as TypedRequestContext<TReq, TResBody>;
+    const typedReqCtx = reqCtx as TypedRequestContext<TReq, TRes>;
     typedReqCtx.valid = {
       ...(reqSchemas && { req: {} as ValidatedRequest<TReq> }),
-      ...(resSchemas && { res: {} as ValidatedResponse<TResBody> }),
-    } as TypedRequestContext<TReq, TResBody>['valid'];
+      ...(resSchemas && { res: {} as ValidatedResponse<TRes> }),
+    } as TypedRequestContext<TReq, TRes>['valid'];
 
     if (reqSchemas) {
       await validateRequestData(typedReqCtx, reqSchemas);
@@ -39,13 +41,16 @@ export const validate = <
     await next();
 
     if (resSchemas) {
-      await validateResponseData(typedReqCtx, resSchemas);
+      await validateResponseData<TResBody, TRes>(
+        typedReqCtx as TypedRequestContext<ReqSchema, TRes>,
+        resSchemas
+      );
     }
   };
 };
 
 async function validateRequestData<TReq extends ReqSchema>(
-  typedReqCtx: TypedRequestContext<TReq, HandlerResponse>,
+  typedReqCtx: TypedRequestContext<TReq>,
   reqSchemas: NonNullable<ValidationConfig<TReq, HandlerResponse>['req']>
 ): Promise<void> {
   const schemaEntries: [string, StandardSchemaV1][] = [];
@@ -97,8 +102,11 @@ async function validateRequestData<TReq extends ReqSchema>(
   if (reqSchemas.query) mutableReq.query = validated.query;
 }
 
-async function validateResponseData<TResBody extends HandlerResponse>(
-  typedReqCtx: TypedRequestContext<ReqSchema, TResBody>,
+async function validateResponseData<
+  TResBody extends HandlerResponse,
+  TRes extends ResSchema,
+>(
+  typedReqCtx: TypedRequestContext<ReqSchema, TRes>,
   resSchemas: NonNullable<ValidationConfig<ReqSchema, TResBody>['res']>
 ): Promise<void> {
   const response = typedReqCtx.res;
@@ -130,9 +138,7 @@ async function validateResponseData<TResBody extends HandlerResponse>(
   }
 
   const validated = result.value as Record<string, unknown>;
-  const mutableValid = typedReqCtx.valid as {
-    res: { body: unknown; headers: Record<string, string> };
-  };
+  const mutableValid = typedReqCtx.valid as { res: Record<string, unknown> };
   if (resSchemas.body) mutableValid.res.body = validated.body;
   if (resSchemas.headers)
     mutableValid.res.headers = validated.headers as Record<string, string>;

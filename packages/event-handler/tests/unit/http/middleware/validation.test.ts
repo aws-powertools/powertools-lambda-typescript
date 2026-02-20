@@ -314,7 +314,7 @@ describe('Router Validation Integration', () => {
     // Prepare
     const responseSchema = z.object({ id: z.string(), name: z.string() });
 
-    // @ts-expect-error testing for validation failure
+    // @ts-expect-error TS2345 testing for validation failure
     app.get('/users/:id', () => ({ id: '123' }), {
       validation: { res: { body: responseSchema } },
     });
@@ -358,7 +358,7 @@ describe('Router Validation Integration', () => {
     const responseSchema = z.object({ name: z.string() });
     app.get(
       '/invalid',
-      // @ts-expect-error testing for validation failure
+      // @ts-expect-error TS2345 testing for validation failure
       () => {
         return new Response('{"name": "John"', {
           headers: {
@@ -657,7 +657,7 @@ describe('Router Validation Integration', () => {
       '/users',
       (reqCtx): { id: number; name: string } => {
         const { name } = reqCtx.valid.req.body;
-        // @ts-expect-error — missing id property
+        // @ts-expect-error TS2741 — missing id property
         return { name };
       },
       { validation: { req: { body: bodySchema } } }
@@ -672,12 +672,12 @@ describe('Router Validation Integration', () => {
       (reqCtx) => {
         const { name } = reqCtx.valid.req.body;
 
-        // @ts-expect-error — 'headers' does not exist on valid.req when not validated
-        reqCtx.valid.req.headers;
-        // @ts-expect-error — 'path' does not exist on valid.req when not validated
-        reqCtx.valid.req.path;
-        // @ts-expect-error — 'query' does not exist on valid.req when not validated
-        reqCtx.valid.req.query;
+        // @ts-expect-error TS2339 — 'headers' does not exist on valid.req when not validated
+        expect(reqCtx.valid.req.headers).toBeUndefined();
+        // @ts-expect-error TS2339 — 'path' does not exist on valid.req when not validated
+        expect(reqCtx.valid.req.path).toBeUndefined();
+        // @ts-expect-error TS2339 — 'query' does not exist on valid.req when not validated
+        expect(reqCtx.valid.req.query).toBeUndefined();
 
         return { name };
       },
@@ -693,12 +693,12 @@ describe('Router Validation Integration', () => {
       (reqCtx) => {
         const key = reqCtx.valid.req.headers['x-api-key'];
 
-        // @ts-expect-error — 'body' does not exist on valid.req when not validated
-        reqCtx.valid.req.body;
-        // @ts-expect-error — 'path' does not exist on valid.req when not validated
-        reqCtx.valid.req.path;
-        // @ts-expect-error — 'query' does not exist on valid.req when not validated
-        reqCtx.valid.req.query;
+        // @ts-expect-error TS2339 — 'body' does not exist on valid.req when not validated
+        expect(reqCtx.valid.req.body).toBeUndefined();
+        // @ts-expect-error TS2339 — 'path' does not exist on valid.req when not validated
+        expect(reqCtx.valid.req.path).toBeUndefined();
+        // @ts-expect-error TS2339 — 'query' does not exist on valid.req when not validated
+        expect(reqCtx.valid.req.query).toBeUndefined();
 
         return key;
       },
@@ -714,8 +714,8 @@ describe('Router Validation Integration', () => {
       (reqCtx) => {
         const { name } = reqCtx.valid.req.body;
 
-        // @ts-expect-error — 'res' does not exist on valid when no res schema configured
-        reqCtx.valid.res;
+        // @ts-expect-error TS2339 — 'res' does not exist on valid when no res schema configured
+        expect(reqCtx.valid.res).toBeUndefined();
 
         return { name };
       },
@@ -729,8 +729,8 @@ describe('Router Validation Integration', () => {
     app.get(
       '/type-check/res-only',
       (reqCtx) => {
-        // @ts-expect-error — 'req' does not exist on valid when no req schema configured
-        reqCtx.valid.req;
+        // @ts-expect-error TS2339 — 'req' does not exist on valid when no req schema configured
+        expect(reqCtx.valid.req).toBeUndefined();
 
         return { id: '1' };
       },
@@ -738,10 +738,44 @@ describe('Router Validation Integration', () => {
     );
   });
 
+  it('disallows access to valid.res.headers when only body is validated', () => {
+    const bodySchema = z.object({ id: z.string() });
+
+    app.get(
+      '/type-check/res-body-only',
+      (reqCtx) => {
+        const { id } = reqCtx.valid.res.body;
+
+        // @ts-expect-error TS2339 — 'headers' does not exist on valid.res when not validated
+        expect(reqCtx.valid.res.headers).toBeUndefined();
+
+        return { id };
+      },
+      { validation: { res: { body: bodySchema } } }
+    );
+  });
+
+  it('disallows access to valid.res.body when only headers are validated', () => {
+    const headersSchema = z.object({ 'x-api-key': z.string() });
+
+    app.get(
+      '/type-check/res-headers-only',
+      (reqCtx) => {
+        const key = reqCtx.valid.res.headers['x-api-key'];
+
+        // @ts-expect-error TS2339 — 'body' does not exist on valid.res when not validated
+        expect(reqCtx.valid.res.body).toBeUndefined();
+
+        return key;
+      },
+      { validation: { res: { headers: headersSchema } } }
+    );
+  });
+
   it('disallows access to valid on an untyped handler', () => {
     app.get('/type-check/no-validation', (reqCtx) => {
-      // @ts-expect-error — 'valid' does not exist on RequestContext
-      reqCtx.valid;
+      // @ts-expect-error TS2339 — 'valid' does not exist on RequestContext
+      expect(reqCtx.valid).toBeUndefined();
       return {};
     });
   });

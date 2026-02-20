@@ -36,6 +36,14 @@ type ReqSchema = {
 };
 
 /**
+ * Response validation type parameters
+ */
+type ResSchema = {
+  body?: unknown;
+  headers?: Record<string, string>;
+};
+
+/**
  * Validated request data - only includes fields that were actually validated
  * (i.e., fields whose type is not `undefined` in the schema inference result)
  */
@@ -44,11 +52,11 @@ type ValidatedRequest<TReq extends ReqSchema = ReqSchema> = {
 };
 
 /**
- * Validated response data
+ * Validated response data - only includes fields that were actually validated
+ * (i.e., fields whose type is not `undefined` in the schema inference result)
  */
-type ValidatedResponse<TBody extends HandlerResponse = HandlerResponse> = {
-  body: TBody;
-  headers: Record<string, string>;
+type ValidatedResponse<TRes extends ResSchema = ResSchema> = {
+  [K in keyof TRes as TRes[K] extends undefined ? never : K]: TRes[K];
 };
 
 type RequestContext = {
@@ -64,12 +72,12 @@ type RequestContext = {
 
 type TypedRequestContext<
   TReq extends ReqSchema = ReqSchema,
-  TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
 > = RequestContext & {
+  // biome-ignore lint/complexity/noBannedTypes: {} is intentional — means "no additional properties" in conditional type
   valid: ([ReqSchema] extends [TReq] ? {} : { req: ValidatedRequest<TReq> }) &
-    ([HandlerResponse] extends [TResBody]
-      ? {}
-      : { res: ValidatedResponse<TResBody> });
+    // biome-ignore lint/complexity/noBannedTypes: {} is intentional — means "no additional properties" in conditional type
+    ([ResSchema] extends [TRes] ? {} : { res: ValidatedResponse<TRes> });
 };
 
 type HttpResolveOptions = ResolveOptions & { isHttpStreaming?: boolean };
@@ -136,8 +144,9 @@ type RouteHandler<TReturn = HandlerResponse> = (
 type TypedRouteHandler<
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
 > = (
-  reqCtx: TypedRequestContext<TReq, TResBody>
+  reqCtx: TypedRequestContext<TReq, TRes>
 ) =>
   | Promise<TResBody | ExtendedAPIGatewayProxyResult<TResBody>>
   | TResBody
@@ -415,6 +424,21 @@ type InferResBody<V extends ValidationConfig> = V extends {
   : HandlerResponse;
 
 /**
+ * Infers the `ResSchema` type from a `ValidationConfig` by extracting the output types
+ * from each response schema (body, headers).
+ */
+type InferResSchema<V extends ValidationConfig> = V extends { res: infer R }
+  ? {
+      body: R extends { body: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      headers: R extends { headers: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+    }
+  : ResSchema;
+
+/**
  * Validation error details
  */
 type ValidationErrorDetail = {
@@ -428,7 +452,8 @@ type ValidationErrorDetail = {
 type MiddlewareOrHandler<
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
-> = Middleware[] | RouteHandler | TypedRouteHandler<TReq, TResBody>;
+  TRes extends ResSchema = ResSchema,
+> = Middleware[] | RouteHandler | TypedRouteHandler<TReq, TResBody, TRes>;
 
 /**
  * Union type for route handler or validation options
@@ -436,9 +461,10 @@ type MiddlewareOrHandler<
 type HandlerOrOptions<
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
 > =
   | RouteHandler
-  | TypedRouteHandler<TReq, TResBody>
+  | TypedRouteHandler<TReq, TResBody, TRes>
   | { validation: ValidationConfig<TReq, TResBody> };
 
 export type {
@@ -486,6 +512,8 @@ export type {
   MiddlewareOrHandler,
   HandlerOrOptions,
   ReqSchema,
+  ResSchema,
   InferReqSchema,
   InferResBody,
+  InferResSchema,
 };

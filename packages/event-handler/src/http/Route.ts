@@ -4,6 +4,7 @@ import type {
   Middleware,
   Path,
   ReqSchema,
+  ResSchema,
   RouteHandler,
   TypedRouteHandler,
 } from '../types/http.js';
@@ -11,17 +12,18 @@ import type {
 class Route<
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
 > {
   readonly id: string;
   readonly method: string;
   readonly path: Path;
-  readonly handler: RouteHandler | TypedRouteHandler<TReq, TResBody>;
+  readonly handler: RouteHandler | TypedRouteHandler<TReq, TResBody, TRes>;
   readonly middleware: Middleware[];
 
   constructor(
     method: HttpMethod,
     path: Path,
-    handler: RouteHandler | TypedRouteHandler<TReq, TResBody>,
+    handler: RouteHandler | TypedRouteHandler<TReq, TResBody, TRes>,
     middleware: Middleware[] = []
   ) {
     this.id = `${method}:${path}`;

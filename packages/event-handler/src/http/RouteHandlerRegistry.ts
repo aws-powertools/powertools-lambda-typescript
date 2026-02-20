@@ -7,6 +7,7 @@ import type {
   HttpRouteHandlerOptions,
   Path,
   ReqSchema,
+  ResSchema,
   RouteHandler,
   RouteRegistryOptions,
   ValidationResult,
@@ -100,7 +101,8 @@ class RouteHandlerRegistry {
   public register<
     TReq extends ReqSchema = ReqSchema,
     TResBody extends HandlerResponse = HandlerResponse,
-  >(route: Route<TReq, TResBody>): void {
+    TRes extends ResSchema = ResSchema,
+  >(route: Route<TReq, TResBody, TRes>): void {
     this.#shouldSort = true;
     const { isValid, issues } = validatePathPattern(route.path);
     if (!isValid) {

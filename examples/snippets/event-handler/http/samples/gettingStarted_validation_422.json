@@ -1,0 +1,13 @@
+{
+  "statusCode": 422,
+  "error": "RequestValidationError",
+  "message": "Validation failed for request",
+  "details": {
+    "issues": [
+      {
+        "message": "Invalid type: expected string, received undefined",
+        "path": ["body", "title"]
+      }
+    ]
+  }
+}

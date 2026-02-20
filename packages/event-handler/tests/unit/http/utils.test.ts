@@ -90,17 +90,18 @@ describe('Path Utilities', () => {
         expected: false,
         issues: ['Malformed parameter syntax. Use :paramName format.'],
       },
-    ])(
-      'should validate path "$path" correctly',
-      ({ path, expected, issues }) => {
-        // Act
-        const result = validatePathPattern(path as Path);
+    ])('should validate path "$path" correctly', ({
+      path,
+      expected,
+      issues,
+    }) => {
+      // Act
+      const result = validatePathPattern(path as Path);
 
-        // Assert
-        expect(result.isValid).toBe(expected);
-        expect(result.issues).toEqual(issues);
-      }
-    );
+      // Assert
+      expect(result.isValid).toBe(expected);
+      expect(result.issues).toEqual(issues);
+    });
   });
 
   describe('compilePath', () => {
@@ -196,33 +197,34 @@ describe('Path Utilities', () => {
           { url: '/api/v1/users', shouldMatch: false, params: {} },
         ],
       },
-    ])(
-      'should compile path "$path" correctly',
-      ({ path, expectedParams, testMatches }) => {
-        // Act
-        const compiled = compilePath(path as Path);
+    ])('should compile path "$path" correctly', ({
+      path,
+      expectedParams,
+      testMatches,
+    }) => {
+      // Act
+      const compiled = compilePath(path as Path);
 
-        // Assert
-        expect(compiled.path).toBe(path);
-        expect(compiled.paramNames).toEqual(expectedParams);
-        expect(compiled.isDynamic).toBe(expectedParams.length > 0);
+      // Assert
+      expect(compiled.path).toBe(path);
+      expect(compiled.paramNames).toEqual(expectedParams);
+      expect(compiled.isDynamic).toBe(expectedParams.length > 0);
 
-        // Test regex matching
-        for (const testCase of testMatches) {
-          if (testCase.shouldMatch) {
-            expect(testCase.url).toMatch(compiled.regex);
+      // Test regex matching
+      for (const testCase of testMatches) {
+        if (testCase.shouldMatch) {
+          expect(testCase.url).toMatch(compiled.regex);
 
-            // Test extracted parameters
-            const match = compiled.regex.exec(testCase.url);
-            if (match?.groups) {
-              expect(match.groups).toEqual(testCase.params);
-            }
-          } else {
-            expect(testCase.url).not.toMatch(compiled.regex);
+          // Test extracted parameters
+          const match = compiled.regex.exec(testCase.url);
+          if (match?.groups) {
+            expect(match.groups).toEqual(testCase.params);
           }
+        } else {
+          expect(testCase.url).not.toMatch(compiled.regex);
         }
       }
-    );
+    });
   });
 
   describe('isAPIGatewayProxyEventV1', () => {
@@ -317,13 +319,13 @@ describe('Path Utilities', () => {
         value: { tags: undefined, categories: ['a', 'b'] },
       },
       { field: 'stageVariables', value: { env: undefined, version: 'v1' } },
-    ])(
-      'should return true when $field contains undefined values',
-      ({ field, value }) => {
-        const event = { ...baseValidEvent, [field]: value };
-        expect(isAPIGatewayProxyEventV1(event)).toBe(true);
-      }
-    );
+    ])('should return true when $field contains undefined values', ({
+      field,
+      value,
+    }) => {
+      const event = { ...baseValidEvent, [field]: value };
+      expect(isAPIGatewayProxyEventV1(event)).toBe(true);
+    });
 
     it.each([
       { case: 'null', event: null },
@@ -367,13 +369,13 @@ describe('Path Utilities', () => {
       { field: 'isBase64Encoded', value: 123 },
       { field: 'body', value: 123 },
       { field: 'body', value: {} },
-    ])(
-      'should return false when $field is invalid ($value)',
-      ({ field, value }) => {
-        const invalidEvent = { ...baseValidEvent, [field]: value };
-        expect(isAPIGatewayProxyEventV1(invalidEvent)).toBe(false);
-      }
-    );
+    ])('should return false when $field is invalid ($value)', ({
+      field,
+      value,
+    }) => {
+      const invalidEvent = { ...baseValidEvent, [field]: value };
+      expect(isAPIGatewayProxyEventV1(invalidEvent)).toBe(false);
+    });
 
     it.each([
       'httpMethod',
@@ -472,13 +474,13 @@ describe('Path Utilities', () => {
       { field: 'pathParameters', value: undefined },
       { field: 'queryStringParameters', value: undefined },
       { field: 'stageVariables', value: undefined },
-    ])(
-      'should return true when optional field $field is $value',
-      ({ field, value }) => {
-        const event = { ...baseValidEvent, [field]: value };
-        expect(isAPIGatewayProxyEventV2(event)).toBe(true);
-      }
-    );
+    ])('should return true when optional field $field is $value', ({
+      field,
+      value,
+    }) => {
+      const event = { ...baseValidEvent, [field]: value };
+      expect(isAPIGatewayProxyEventV2(event)).toBe(true);
+    });
 
     it.each([
       { case: 'null', event: null },
@@ -531,13 +533,13 @@ describe('Path Utilities', () => {
       { field: 'isBase64Encoded', value: 123 },
       { field: 'body', value: 123 },
       { field: 'body', value: {} },
-    ])(
-      'should return false when $field is invalid ($value)',
-      ({ field, value }) => {
-        const invalidEvent = { ...baseValidEvent, [field]: value };
-        expect(isAPIGatewayProxyEventV2(invalidEvent)).toBe(false);
-      }
-    );
+    ])('should return false when $field is invalid ($value)', ({
+      field,
+      value,
+    }) => {
+      const invalidEvent = { ...baseValidEvent, [field]: value };
+      expect(isAPIGatewayProxyEventV2(invalidEvent)).toBe(false);
+    });
 
     it.each([
       'version',
@@ -597,13 +599,13 @@ describe('Path Utilities', () => {
       { field: 'requestContext', value: undefined },
       { field: 'requestContext', value: 'not an object' },
       { field: 'requestContext', value: 123 },
-    ])(
-      'should return false when $field is invalid ($value)',
-      ({ field, value }) => {
-        const invalidEvent = { ...baseValidEvent, [field]: value };
-        expect(isALBEvent(invalidEvent)).toBe(false);
-      }
-    );
+    ])('should return false when $field is invalid ($value)', ({
+      field,
+      value,
+    }) => {
+      const invalidEvent = { ...baseValidEvent, [field]: value };
+      expect(isALBEvent(invalidEvent)).toBe(false);
+    });
 
     it('should return false when requestContext.elb is missing', () => {
       const eventWithoutElb = {
@@ -619,16 +621,15 @@ describe('Path Utilities', () => {
       { value: undefined },
       { value: 'not an object' },
       { value: 123 },
-    ])(
-      'should return false when requestContext.elb is invalid ($value)',
-      ({ value }) => {
-        const invalidEvent = {
-          ...baseValidEvent,
-          requestContext: { elb: value },
-        };
-        expect(isALBEvent(invalidEvent)).toBe(false);
-      }
-    );
+    ])('should return false when requestContext.elb is invalid ($value)', ({
+      value,
+    }) => {
+      const invalidEvent = {
+        ...baseValidEvent,
+        requestContext: { elb: value },
+      };
+      expect(isALBEvent(invalidEvent)).toBe(false);
+    });
   });
 
   describe('isAPIGatewayProxyResult', () => {
@@ -666,31 +667,51 @@ describe('Path Utilities', () => {
     it.each([
       { field: 'statusCode', value: 'not a number' },
       { field: 'statusCode', value: null },
-      { field: 'body', value: 123 },
-      { field: 'body', value: null },
       { field: 'headers', value: 'not an object' },
       { field: 'multiValueHeaders', value: 'not an object' },
       { field: 'isBase64Encoded', value: 'not a boolean' },
-    ])(
-      'should return false when $field is invalid ($value)',
-      ({ field, value }) => {
-        const baseResult = {
-          statusCode: 200,
-          body: 'Hello World',
-        };
-
-        const invalidResult = { ...baseResult, [field]: value };
-        expect(isExtendedAPIGatewayProxyResult(invalidResult)).toBe(false);
-      }
-    );
-
-    it('should return false when required fields are missing', () => {
-      const incompleteResult = {
+    ])('should return false when $field is invalid ($value)', ({
+      field,
+      value,
+    }) => {
+      const baseResult = {
         statusCode: 200,
-        // missing body
+        body: 'Hello World',
       };
 
-      expect(isExtendedAPIGatewayProxyResult(incompleteResult)).toBe(false);
+      const invalidResult = { ...baseResult, [field]: value };
+      expect(isExtendedAPIGatewayProxyResult(invalidResult)).toBe(false);
+    });
+
+    it.each([
+      { case: 'JSON object', body: { message: 'hello' } },
+      { case: 'JSON array', body: [1, 2, 3] },
+      { case: 'number', body: 42 },
+      { case: 'boolean', body: true },
+      { case: 'null', body: null },
+      { case: 'undefined', body: undefined },
+      { case: 'absent (no-body response)', body: undefined, omitBody: true },
+    ])('should return true when body is a $case', ({ body, omitBody }) => {
+      const result = omitBody ? { statusCode: 200 } : { statusCode: 200, body };
+      expect(isExtendedAPIGatewayProxyResult(result)).toBe(true);
+    });
+
+    it.each([
+      { case: 'function', body: () => {} },
+      { case: 'symbol', body: Symbol('test') },
+    ])('should return false when body is $case', ({ body }) => {
+      expect(isExtendedAPIGatewayProxyResult({ statusCode: 200, body })).toBe(
+        false
+      );
+    });
+
+    it('should return false when the object has unrecognised keys', () => {
+      expect(
+        isExtendedAPIGatewayProxyResult({
+          statusCode: 401,
+          message: 'Custom error',
+        })
+      ).toBe(false);
     });
   });
 

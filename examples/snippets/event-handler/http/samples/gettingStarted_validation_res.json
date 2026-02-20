@@ -1,0 +1,8 @@
+{
+  "statusCode": 200,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"id\":\"123\",\"title\":\"Buy milk\",\"completed\":false}",
+  "isBase64Encoded": false
+}

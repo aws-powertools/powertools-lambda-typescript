@@ -1,0 +1,13 @@
+{
+  "statusCode": 500,
+  "error": "ResponseValidationError",
+  "message": "Validation failed for response",
+  "details": {
+    "issues": [
+      {
+        "message": "Invalid type: expected boolean, received undefined",
+        "path": ["body", "completed"]
+      }
+    ]
+  }
+}

@@ -81,6 +81,38 @@ describe.each([
     expect(actual.isBase64Encoded).toBe(false);
   });
 
+  it('auto-serializes a JSON object body in ExtendedAPIGatewayProxyResult', async () => {
+    // Prepare
+    const app = new Router();
+    app.get('/test', () => ({
+      statusCode: HttpStatusCodes.OK,
+      body: { message: 'hello' },
+    }));
+
+    // Act
+    const result = await app.resolve(createEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result.statusCode).toBe(HttpStatusCodes.OK);
+    expect(result.body).toBe(JSON.stringify({ message: 'hello' }));
+    expect(result.headers?.['content-type']).toContain('application/json');
+  });
+
+  it('does not double-encode a pre-serialized string body in ExtendedAPIGatewayProxyResult', async () => {
+    // Prepare
+    const app = new Router();
+    app.get('/test', () => ({
+      statusCode: HttpStatusCodes.OK,
+      body: JSON.stringify({ message: 'hello' }),
+    }));
+
+    // Act
+    const result = await app.resolve(createEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(result.body).toBe('{"message":"hello"}');
+  });
+
   it.each([
     ['CONNECT'],
     ['TRACE'],

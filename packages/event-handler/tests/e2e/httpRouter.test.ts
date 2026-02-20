@@ -804,6 +804,68 @@ describe('REST Event Handler E2E tests', () => {
     });
   });
 
+  describe('ExtendedAPIGatewayProxyResult', () => {
+    it('serialises a JSON object body', async () => {
+      // Act
+      const response = await fetch(`${apiUrl}/proxy-result/object`);
+      const data = await response.json();
+
+      // Assess
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toContain(
+        'application/json'
+      );
+      expect(data).toEqual({ id: 1, name: 'Alice' });
+    });
+
+    it('serialises a JSON array body', async () => {
+      // Act
+      const response = await fetch(`${apiUrl}/proxy-result/array`);
+      const data = await response.json();
+
+      // Assess
+      expect(response.status).toBe(200);
+      expect(data).toEqual([1, 2, 3]);
+    });
+
+    it('returns a plain string body without double-encoding', async () => {
+      // Act
+      const response = await fetch(`${apiUrl}/proxy-result/string`);
+      const text = await response.text();
+
+      // Assess
+      expect(response.status).toBe(200);
+      expect(text).toBe('hello');
+    });
+
+    it('returns 201 with a JSON body', async () => {
+      // Act
+      const response = await fetch(`${apiUrl}/proxy-result/created`, {
+        method: 'POST',
+      });
+      const data = await response.json();
+
+      // Assess
+      expect(response.status).toBe(201);
+      expect(response.headers.get('content-type')).toContain(
+        'application/json'
+      );
+      expect(data).toEqual({ created: true });
+    });
+
+    it('returns 204 with no body', async () => {
+      // Act
+      const response = await fetch(`${apiUrl}/proxy-result/deleted`, {
+        method: 'DELETE',
+      });
+      const text = await response.text();
+
+      // Assess
+      expect(response.status).toBe(204);
+      expect(text).toBe('');
+    });
+  });
+
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
       await testStack.destroy();

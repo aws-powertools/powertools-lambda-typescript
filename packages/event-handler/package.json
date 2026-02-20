@@ -11,7 +11,7 @@
   },
   "scripts": {
     "test": "vitest --run",
-    "test:unit": "vitest --run",
+    "test:unit": "vitest --run tests/unit",
     "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
     "test:unit:types": "echo 'Not Implemented'",
     "test:e2e:nodejs20x": "RUNTIME=nodejs20x vitest run tests/e2e",

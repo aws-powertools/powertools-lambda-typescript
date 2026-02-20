@@ -258,7 +258,7 @@ Pass a `validation` option to your route handler with a `res` configuration to v
 
 Response validation is useful for ensuring your handler returns the expected shape and catching contract violations early.
 Validated data is available via `reqCtx.valid.res` and is fully typed based on your schema. Only the fields you provide schemas
-for are accessible: accessing an unvalidated field (e.g., `reqCtx.valid.res` when no `res` schema was configured) is a compile-time error.
+for are accessible: accessing an unvalidated field (e.g., `reqCtx.valid.res.headers` when no headers schema was configured) is a compile-time error.
 
 === "index.ts"
 

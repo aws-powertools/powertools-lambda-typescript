@@ -673,11 +673,11 @@ describe('Router Validation Integration', () => {
         const { name } = reqCtx.valid.req.body;
 
         // @ts-expect-error — 'headers' does not exist on valid.req when not validated
-        void reqCtx.valid.req.headers;
+        reqCtx.valid.req.headers;
         // @ts-expect-error — 'path' does not exist on valid.req when not validated
-        void reqCtx.valid.req.path;
+        reqCtx.valid.req.path;
         // @ts-expect-error — 'query' does not exist on valid.req when not validated
-        void reqCtx.valid.req.query;
+        reqCtx.valid.req.query;
 
         return { name };
       },
@@ -694,11 +694,11 @@ describe('Router Validation Integration', () => {
         const key = reqCtx.valid.req.headers['x-api-key'];
 
         // @ts-expect-error — 'body' does not exist on valid.req when not validated
-        void reqCtx.valid.req.body;
+        reqCtx.valid.req.body;
         // @ts-expect-error — 'path' does not exist on valid.req when not validated
-        void reqCtx.valid.req.path;
+        reqCtx.valid.req.path;
         // @ts-expect-error — 'query' does not exist on valid.req when not validated
-        void reqCtx.valid.req.query;
+        reqCtx.valid.req.query;
 
         return key;
       },
@@ -715,7 +715,7 @@ describe('Router Validation Integration', () => {
         const { name } = reqCtx.valid.req.body;
 
         // @ts-expect-error — 'res' does not exist on valid when no res schema configured
-        void reqCtx.valid.res;
+        reqCtx.valid.res;
 
         return { name };
       },
@@ -730,7 +730,7 @@ describe('Router Validation Integration', () => {
       '/type-check/res-only',
       (reqCtx) => {
         // @ts-expect-error — 'req' does not exist on valid when no req schema configured
-        void reqCtx.valid.req;
+        reqCtx.valid.req;
 
         return { id: '1' };
       },
@@ -741,7 +741,7 @@ describe('Router Validation Integration', () => {
   it('disallows access to valid on an untyped handler', () => {
     app.get('/type-check/no-validation', (reqCtx) => {
       // @ts-expect-error — 'valid' does not exist on RequestContext
-      void reqCtx.valid;
+      reqCtx.valid;
       return {};
     });
   });

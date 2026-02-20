@@ -723,6 +723,21 @@ describe('Router Validation Integration', () => {
     );
   });
 
+  it('disallows access to valid.req when no req schema is configured', () => {
+    const resSchema = z.object({ id: z.string() });
+
+    app.get(
+      '/type-check/res-only',
+      (reqCtx) => {
+        // @ts-expect-error — 'req' does not exist on valid when no req schema configured
+        void reqCtx.valid.req;
+
+        return { id: '1' };
+      },
+      { validation: { res: { body: resSchema } } }
+    );
+  });
+
   it('disallows access to valid on an untyped handler', () => {
     app.get('/type-check/no-validation', (reqCtx) => {
       // @ts-expect-error — 'valid' does not exist on RequestContext

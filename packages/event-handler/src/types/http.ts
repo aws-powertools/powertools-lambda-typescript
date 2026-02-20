@@ -66,9 +66,10 @@ type TypedRequestContext<
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
 > = RequestContext & {
-  valid: { req: ValidatedRequest<TReq> } & ([HandlerResponse] extends [TResBody]
-    ? {}
-    : { res: ValidatedResponse<TResBody> });
+  valid: ([ReqSchema] extends [TReq] ? {} : { req: ValidatedRequest<TReq> }) &
+    ([HandlerResponse] extends [TResBody]
+      ? {}
+      : { res: ValidatedResponse<TResBody> });
 };
 
 type HttpResolveOptions = ResolveOptions & { isHttpStreaming?: boolean };

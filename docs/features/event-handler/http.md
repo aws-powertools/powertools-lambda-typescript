@@ -211,7 +211,7 @@ Event Handler supports built-in request and response validation using [Standard 
 
 Pass a `validation` option to your route handler with a `req` configuration to validate the incoming request. Validation runs before your handler, and if it fails, Event Handler automatically returns a **422 Unprocessable Entity** response with structured error details.
 
-Validated data is available via `reqCtx.valid.req` and is fully typed based on your schema.
+Validated data is available via `reqCtx.valid.req` and is fully typed based on your schema. Only the fields you provide schemas for are accessible: accessing an unvalidated field (e.g., `reqCtx.valid.req.headers` when no headers schema was configured) is a compile-time error.
 
 === "index.ts"
 
@@ -257,6 +257,8 @@ You can validate any combination of `body`, `headers`, `path` parameters, and `q
 Pass a `validation` option to your route handler with a `res` configuration to validate the outgoing response body and headers after your handler executes. If validation fails, Event Handler returns a **500 Internal Server Error**.
 
 Response validation is useful for ensuring your handler returns the expected shape and catching contract violations early.
+Validated data is available via `reqCtx.valid.res` and is fully typed based on your schema. Only the fields you provide schemas
+for are accessible: accessing an unvalidated field (e.g., `reqCtx.valid.res` when no `res` schema was configured) is a compile-time error.
 
 === "index.ts"
 

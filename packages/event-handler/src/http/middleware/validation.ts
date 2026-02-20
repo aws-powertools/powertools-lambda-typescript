@@ -28,7 +28,7 @@ export const validate = <
   return async ({ reqCtx, next }) => {
     const typedReqCtx = reqCtx as TypedRequestContext<TReq, TResBody>;
     typedReqCtx.valid = {
-      req: {} as ValidatedRequest<TReq>,
+      ...(reqSchemas && { req: {} as ValidatedRequest<TReq> }),
       ...(resSchemas && { res: {} as ValidatedResponse<TResBody> }),
     } as TypedRequestContext<TReq, TResBody>['valid'];
 

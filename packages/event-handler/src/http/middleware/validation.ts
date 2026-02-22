@@ -1,6 +1,7 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   HandlerResponse,
+  Headers,
   Middleware,
   ReqSchema,
   ResSchema,
@@ -141,7 +142,7 @@ async function validateResponseData<
   const mutableValid = typedReqCtx.valid as { res: Record<string, unknown> };
   if (resSchemas.body) mutableValid.res.body = validated.body;
   if (resSchemas.headers)
-    mutableValid.res.headers = validated.headers as Record<string, string>;
+    mutableValid.res.headers = validated.headers as Headers;
 }
 
 function createObjectSchema(

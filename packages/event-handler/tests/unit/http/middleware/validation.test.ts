@@ -430,6 +430,34 @@ describe('Router Validation Integration', () => {
     expect(result.statusCode).toBe(500);
   });
 
+  it('validates response headers with coerced types', async () => {
+    // Prepare
+    const responseHeaderSchema = z.object({
+      'x-count': z.coerce.number(),
+      'x-active': z.coerce.boolean(),
+    });
+
+    app.get(
+      '/test',
+      () => {
+        return new Response('OK', {
+          headers: { 'x-count': '42', 'x-active': 'true' },
+        });
+      },
+      {
+        validation: { res: { headers: responseHeaderSchema } },
+      }
+    );
+
+    const event = createTestEvent('/test', 'GET', {});
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+  });
+
   it('validates both request and response', async () => {
     // Prepare
     const requestSchema = z.object({ name: z.string(), email: z.string() });

@@ -6,7 +6,7 @@ const app = new Router();
 
 const responseHeaderSchema = z.object({
   'x-correlation-id': z.string().uuid(), // (1)!
-  'cache-control': z.string(),
+  'x-max-age': z.coerce.number().int().nonnegative(), // (3)!
 });
 
 app.get(
@@ -17,7 +17,7 @@ app.get(
       headers: {
         'content-type': 'application/json',
         'x-correlation-id': crypto.randomUUID(),
-        'cache-control': 'max-age=300',
+        'x-max-age': 300,
       },
       body: { id: params.id, title: 'Buy milk' },
     };

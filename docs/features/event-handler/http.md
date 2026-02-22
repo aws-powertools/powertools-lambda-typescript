@@ -251,6 +251,7 @@ You can validate any combination of `body`, `headers`, `path` parameters, and `q
     2. Validated path parameters available via `reqCtx.valid.req.path`
     3. `page` and `limit` are typed as `number` — no manual casting needed
     4. Validated headers available via `reqCtx.valid.req.headers`
+    5. Headers are always strings — `z.coerce.number()` coerces and validates the value, typing it as `number`
 
 #### Validating responses
 
@@ -284,6 +285,7 @@ You can also validate response headers by providing a `headers` schema in the `r
 
     1. Enforce that the correlation ID is a valid UUID
     2. If either required header is absent or invalid, a 500 is returned
+    3. Headers are always strings — `z.coerce.number()` coerces and validates the value, typing it as `number`
 
 You can combine both request and response validation in a single route by providing both `req` and `res`:
 

@@ -25,12 +25,14 @@ type ResponseTypeMap = {
   ALB: ALBResult;
 };
 
+type Headers = Record<string, string | number | boolean>;
+
 /**
  * Request validation type parameters
  */
 type ReqSchema = {
   body?: unknown;
-  headers?: Record<string, string>;
+  headers?: Headers;
   path?: Record<string, string>;
   query?: Record<string, unknown>;
 };
@@ -40,7 +42,7 @@ type ReqSchema = {
  */
 type ResSchema = {
   body?: unknown;
-  headers?: Record<string, string>;
+  headers?: Headers;
 };
 
 /**
@@ -366,11 +368,11 @@ type RequestValidationConfig<TReq extends ReqSchema = ReqSchema> =
 type ResponseValidationConfig<T extends HandlerResponse = HandlerResponse> =
   | {
       body: StandardSchemaV1<unknown, T>;
-      headers?: StandardSchemaV1<unknown, Record<string, string>>;
+      headers?: StandardSchemaV1<unknown, Headers>;
     }
   | {
       body?: StandardSchemaV1<unknown, T>;
-      headers: StandardSchemaV1<unknown, Record<string, string>>;
+      headers: StandardSchemaV1<unknown, Headers>;
     };
 
 /**
@@ -468,6 +470,7 @@ type HandlerOrOptions<
   | { validation: ValidationConfig<TReq, TResBody> };
 
 export type {
+  Headers,
   BinaryResult,
   ExtendedAPIGatewayProxyResult,
   ExtendedAPIGatewayProxyResultBody,

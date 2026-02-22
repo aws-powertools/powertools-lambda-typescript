@@ -9,7 +9,10 @@ const querySchema = z.object({
   page: z.coerce.number().int().positive(), // (1)!
   limit: z.coerce.number().int().positive().max(100),
 });
-const headerSchema = z.object({ 'x-api-key': z.string() });
+const headerSchema = z.object({
+  'x-api-key': z.string(),
+  'x-max-age': z.coerce.number().int().nonnegative(), // (5)!
+});
 
 app.get(
   '/todos/:todoId',

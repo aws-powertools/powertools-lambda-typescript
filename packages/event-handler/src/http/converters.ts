@@ -508,10 +508,20 @@ const handlerResultToWebResponse = (
   if (isExtendedAPIGatewayProxyResult(response)) {
     addProxyEventHeaders(headers, response);
 
-    const body =
-      response.body instanceof Readable
-        ? (Readable.toWeb(response.body) as ReadableStream)
-        : response.body;
+    let body: BodyInit | null;
+    if (response.body === undefined || response.body === null) {
+      body = null;
+    } else if (isNodeReadableStream(response.body)) {
+      body = Readable.toWeb(response.body) as ReadableStream;
+    } else if (
+      isWebReadableStream(response.body) ||
+      response.body instanceof ArrayBuffer ||
+      typeof response.body === 'string'
+    ) {
+      body = response.body;
+    } else {
+      body = JSON.stringify(response.body);
+    }
 
     return new Response(body, {
       status: response.statusCode,
@@ -535,7 +545,11 @@ const bodyToNodeStream = (body: ExtendedAPIGatewayProxyResultBody) => {
   if (isWebReadableStream(body)) {
     return Readable.fromWeb(body as streamWeb.ReadableStream);
   }
-  return Readable.from(Buffer.from(body as string));
+  if (body instanceof ArrayBuffer) {
+    return Readable.from(Buffer.from(body));
+  }
+  const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
+  return Readable.from(Buffer.from(bodyStr));
 };
 
 export {

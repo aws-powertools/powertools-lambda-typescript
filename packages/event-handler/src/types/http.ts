@@ -3,6 +3,7 @@ import type {
   GenericLogger,
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
   ALBEvent,
   ALBResult,
@@ -24,6 +25,42 @@ type ResponseTypeMap = {
   ALB: ALBResult;
 };
 
+type Headers = Record<string, string | number | boolean>;
+
+/**
+ * Request validation type parameters
+ */
+type ReqSchema = {
+  body?: unknown;
+  headers?: Headers;
+  path?: Record<string, string>;
+  query?: Record<string, unknown>;
+};
+
+/**
+ * Response validation type parameters
+ */
+type ResSchema = {
+  body?: unknown;
+  headers?: Headers;
+};
+
+/**
+ * Validated request data - only includes fields that were actually validated
+ * (i.e., fields whose type is not `undefined` in the schema inference result)
+ */
+type ValidatedRequest<TReq extends ReqSchema = ReqSchema> = {
+  [K in keyof TReq as TReq[K] extends undefined ? never : K]: TReq[K];
+};
+
+/**
+ * Validated response data - only includes fields that were actually validated
+ * (i.e., fields whose type is not `undefined` in the schema inference result)
+ */
+type ValidatedResponse<TRes extends ResSchema = ResSchema> = {
+  [K in keyof TRes as TRes[K] extends undefined ? never : K]: TRes[K];
+};
+
 type RequestContext = {
   req: Request;
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent;
@@ -33,6 +70,16 @@ type RequestContext = {
   responseType: ResponseType;
   isBase64Encoded?: boolean;
   isHttpStreaming?: boolean;
+};
+
+type TypedRequestContext<
+  TReq extends ReqSchema = ReqSchema,
+  TRes extends ResSchema = ResSchema,
+> = RequestContext & {
+  // biome-ignore lint/complexity/noBannedTypes: {} is intentional — means "no additional properties" in conditional type
+  valid: ([ReqSchema] extends [TReq] ? {} : { req: ValidatedRequest<TReq> }) &
+    // biome-ignore lint/complexity/noBannedTypes: {} is intentional — means "no additional properties" in conditional type
+    ([ResSchema] extends [TRes] ? {} : { res: ValidatedResponse<TRes> });
 };
 
 type HttpResolveOptions = ResolveOptions & { isHttpStreaming?: boolean };
@@ -77,13 +124,14 @@ type DynamicRoute = Route & CompiledRoute;
 
 type BinaryResult = ArrayBuffer | Readable | ReadableStream;
 
-type ExtendedAPIGatewayProxyResultBody = BinaryResult | string;
+type ExtendedAPIGatewayProxyResultBody = BinaryResult | JSONValue;
 
-type ExtendedAPIGatewayProxyResult = Omit<APIGatewayProxyResult, 'body'> & {
-  body: ExtendedAPIGatewayProxyResultBody;
-  cookies?: string[];
-  statusDescription?: string;
-};
+type ExtendedAPIGatewayProxyResult<TBody = ExtendedAPIGatewayProxyResultBody> =
+  Omit<APIGatewayProxyResult, 'body'> & {
+    body: TBody;
+    cookies?: string[];
+    statusDescription?: string;
+  };
 
 type HandlerResponse =
   | Response
@@ -94,6 +142,17 @@ type HandlerResponse =
 type RouteHandler<TReturn = HandlerResponse> = (
   reqCtx: RequestContext
 ) => Promise<TReturn> | TReturn;
+
+type TypedRouteHandler<
+  TReq extends ReqSchema = ReqSchema,
+  TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
+> = (
+  reqCtx: TypedRequestContext<TReq, TRes>
+) =>
+  | Promise<TResBody | ExtendedAPIGatewayProxyResult<TResBody>>
+  | TResBody
+  | ExtendedAPIGatewayProxyResult<TResBody>;
 
 type HttpMethod = keyof typeof HttpVerbs;
 
@@ -112,13 +171,14 @@ type HttpRouteOptions = {
   method: HttpMethod | HttpMethod[];
   path: Path;
   middleware?: Middleware[];
+  validation?: ValidationConfig;
 };
 
 // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
 type NextFunction = () => Promise<HandlerResponse | void>;
 
 type Middleware = (args: {
-  reqCtx: RequestContext;
+  reqCtx: RequestContext | TypedRequestContext;
   next: NextFunction;
   // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
 }) => Promise<HandlerResponse | void>;
@@ -271,7 +331,146 @@ type RouterResponse =
   | APIGatewayProxyStructuredResultV2
   | ALBResult;
 
+/**
+ * Configuration for request validation.
+ * At least one of body, headers, path, or query must be provided.
+ */
+type RequestValidationConfig<TReq extends ReqSchema = ReqSchema> =
+  | {
+      body: StandardSchemaV1<unknown, TReq['body']>;
+      headers?: StandardSchemaV1<unknown, TReq['headers']>;
+      path?: StandardSchemaV1<unknown, TReq['path']>;
+      query?: StandardSchemaV1<unknown, TReq['query']>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, TReq['body']>;
+      headers: StandardSchemaV1<unknown, TReq['headers']>;
+      path?: StandardSchemaV1<unknown, TReq['path']>;
+      query?: StandardSchemaV1<unknown, TReq['query']>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, TReq['body']>;
+      headers?: StandardSchemaV1<unknown, TReq['headers']>;
+      path: StandardSchemaV1<unknown, TReq['path']>;
+      query?: StandardSchemaV1<unknown, TReq['query']>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, TReq['body']>;
+      headers?: StandardSchemaV1<unknown, TReq['headers']>;
+      path?: StandardSchemaV1<unknown, TReq['path']>;
+      query: StandardSchemaV1<unknown, TReq['query']>;
+    };
+
+/**
+ * Configuration for response validation.
+ * At least one of body or headers must be provided.
+ */
+type ResponseValidationConfig<T extends HandlerResponse = HandlerResponse> =
+  | {
+      body: StandardSchemaV1<unknown, T>;
+      headers?: StandardSchemaV1<unknown, Headers>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, T>;
+      headers: StandardSchemaV1<unknown, Headers>;
+    };
+
+/**
+ * Validation configuration for request and response.
+ * At least one of req or res must be provided.
+ */
+type ValidationConfig<
+  TReq extends ReqSchema = ReqSchema,
+  TResBody extends HandlerResponse = HandlerResponse,
+> =
+  | {
+      req: RequestValidationConfig<TReq>;
+      res?: ResponseValidationConfig<TResBody>;
+    }
+  | {
+      req?: RequestValidationConfig<TReq>;
+      res: ResponseValidationConfig<TResBody>;
+    };
+
+/**
+ * Infers the `ReqSchema` type from a `ValidationConfig` by extracting the output types
+ * from each request schema (body, headers, path, query).
+ */
+type InferReqSchema<V extends ValidationConfig> = V extends {
+  req: infer R;
+}
+  ? {
+      body: R extends { body: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      headers: R extends { headers: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      path: R extends { path: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      query: R extends { query: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+    }
+  : ReqSchema;
+
+/**
+ * Infers the response body type from a `ValidationConfig` by extracting the output type
+ * from the response body schema.
+ */
+type InferResBody<V extends ValidationConfig> = V extends {
+  res: { body: StandardSchemaV1<infer _I, infer O> };
+}
+  ? O
+  : HandlerResponse;
+
+/**
+ * Infers the `ResSchema` type from a `ValidationConfig` by extracting the output types
+ * from each response schema (body, headers).
+ */
+type InferResSchema<V extends ValidationConfig> = V extends { res: infer R }
+  ? {
+      body: R extends { body: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      headers: R extends { headers: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+    }
+  : ResSchema;
+
+/**
+ * Validation error details
+ */
+type ValidationErrorDetail = {
+  component: 'body' | 'headers' | 'path' | 'query';
+  message: string;
+};
+
+/**
+ * Union type for middleware array or route handler
+ */
+type MiddlewareOrHandler<
+  TReq extends ReqSchema = ReqSchema,
+  TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
+> = Middleware[] | RouteHandler | TypedRouteHandler<TReq, TResBody, TRes>;
+
+/**
+ * Union type for route handler or validation options
+ */
+type HandlerOrOptions<
+  TReq extends ReqSchema = ReqSchema,
+  TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
+> =
+  | RouteHandler
+  | TypedRouteHandler<TReq, TResBody, TRes>
+  | { validation: ValidationConfig<TReq, TResBody> };
+
 export type {
+  Headers,
   BinaryResult,
   ExtendedAPIGatewayProxyResult,
   ExtendedAPIGatewayProxyResultBody,
@@ -289,6 +488,7 @@ export type {
   Middleware,
   Path,
   RequestContext,
+  TypedRequestContext,
   ResponseType,
   ResponseTypeMap,
   HttpRouterOptions,
@@ -305,4 +505,18 @@ export type {
   NextFunction,
   V1Headers,
   WebResponseToProxyResultOptions,
+  RequestValidationConfig,
+  ResponseValidationConfig,
+  ValidationConfig,
+  ValidationErrorDetail,
+  ValidatedRequest,
+  ValidatedResponse,
+  TypedRouteHandler,
+  MiddlewareOrHandler,
+  HandlerOrOptions,
+  ReqSchema,
+  ResSchema,
+  InferReqSchema,
+  InferResBody,
+  InferResSchema,
 };

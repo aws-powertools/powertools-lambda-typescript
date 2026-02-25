@@ -9,6 +9,7 @@ import { middlewareRouter } from './routers/middlewareRouter.js';
 import { multiValueHeadersRouter } from './routers/multiValueHeadersRouter.js';
 import { nestedRouter } from './routers/nestedRouter.js';
 import { paramsRouter } from './routers/paramsRouter.js';
+import { proxyResultRouter } from './routers/proxyResultRouter.js';
 
 const app = new Router();
 
@@ -22,6 +23,7 @@ app.includeRouter(corsRouter, { prefix: '/cors' });
 app.includeRouter(compressRouter, { prefix: '/compress' });
 app.includeRouter(multiValueHeadersRouter, { prefix: '/multi-headers' });
 app.includeRouter(binaryRouter, { prefix: '/binary' });
+app.includeRouter(proxyResultRouter, { prefix: '/proxy-result' });
 
 // Request body parsing and headers
 app.post('/echo', async ({ req }) => {

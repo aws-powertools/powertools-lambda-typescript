@@ -9,7 +9,7 @@ Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Bala
 ## Key Features
 
 * Lightweight routing to reduce boilerplate for API Gateway REST/HTTP API, ALB and Lambda Function URLs.
-* Built-in middleware engine for request/response transformation (validation coming soon).
+* Built-in middleware engine for request/response transformation and validation.
 * Works with micro function (one or a few routes) and monolithic functions (see [Considerations](#considerations)).
 
 ## Getting started
@@ -91,6 +91,26 @@ For your convenience, when you return a JavaScript object from your route handle
 
 !!! tip "Automatic response format transformation"
     The event handler automatically ensures the correct response format is returned based on the event type received. For example, if your handler returns an API Gateway v1 proxy response but processes an ALB event, we'll automatically transform it into an ALB-compatible response. This allows you to swap integrations with little to no code changes.
+
+If you need to control the status code or headers alongside auto-serialization, return an object with `statusCode` and `headers` fields. The `body` field accepts any JSON-serializable value — object or array — and is automatically serialized. Omitting `body` produces an empty response body, which is useful for responses like `204 No Content`.
+
+=== "index.ts"
+
+    ```ts hl_lines="7-9 14 18"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_extended_proxy_result.ts"
+    ```
+
+    1. Set a custom status code alongside JSON auto-serialization
+    2. Set custom response headers
+    3. Object body is automatically serialized to JSON
+    4. Array body is automatically serialized to JSON
+    5. Omitting `body` produces an empty response body
+
+=== "Response"
+
+    ```json hl_lines="2"
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_extended_proxy_result.json"
+    ```
 
 ### Dynamic routes
 
@@ -182,11 +202,111 @@ If you prefer to use the decorator syntax, you can use the same methods on a cla
 
 ### Data validation
 
-!!! note "Coming soon"
+Event Handler supports built-in request and response validation using [Standard Schema](https://standardschema.dev){target="_blank"}, a common specification supported by popular TypeScript validation libraries including [Zod](https://zod.dev){target="_blank"}, [Valibot](https://valibot.dev){target="_blank"}, and [ArkType](https://arktype.io){target="_blank"}.
 
-We plan to add built-in support for request and response validation using [Standard Schema](https://standardschema.dev){target="_blank"} in a future release. For the time being, you can use any validation library of your choice in your route handlers or middleware.
+!!! note "Body validation is limited to JSON-serializable values"
+    Standard Schema validators operate on JavaScript values, not raw bytes. For body validation, Event Handler deserializes the body before passing it to your schema: `application/json` content is parsed as an object, all other content types are passed as a plain string. Binary data, streams, and other non-serializable response types cannot be validated.
 
-Please [check this issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4516) for more details and examples, and add 👍 if you would like us to prioritize it.
+#### Validating requests
+
+Pass a `validation` option to your route handler with a `req` configuration to validate the incoming request. Validation runs before your handler, and if it fails, Event Handler automatically returns a **422 Unprocessable Entity** response with structured error details.
+
+Validated data is available via `reqCtx.valid.req` and is fully typed based on your schema. Only the fields you provide schemas for are accessible: accessing an unvalidated field (e.g., `reqCtx.valid.req.headers` when no headers schema was configured) is a compile-time error.
+
+=== "index.ts"
+
+    ```ts hl_lines="3 7-10 15 19"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_request.ts"
+    ```
+
+    1. Access the validated and typed request body via `reqCtx.valid.req.body`
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_validation_req.json"
+    ```
+
+=== "Response"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_validation_res.json"
+    ```
+
+=== "Validation error (422)"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_validation_422.json"
+    ```
+
+You can validate any combination of `body`, `headers`, `path` parameters, and `query` parameters — at least one must be specified:
+
+=== "index.ts"
+
+    ```ts hl_lines="8-11 17-19"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_request_parts.ts"
+    ```
+
+    1. Query params are always strings — `z.coerce.number()` coerces and validates the value, typing it as `number`
+    2. Validated path parameters available via `reqCtx.valid.req.path`
+    3. `page` and `limit` are typed as `number` — no manual casting needed
+    4. Validated headers available via `reqCtx.valid.req.headers`
+    5. Headers are always strings — `z.coerce.number()` coerces and validates the value, typing it as `number`
+
+#### Validating responses
+
+Pass a `validation` option to your route handler with a `res` configuration to validate the outgoing response body and headers after your handler executes. If validation fails, Event Handler returns a **500 Internal Server Error**.
+
+Response validation is useful for ensuring your handler returns the expected shape and catching contract violations early.
+Validated data is available via `reqCtx.valid.res` and is fully typed based on your schema. Only the fields you provide schemas
+for are accessible: accessing an unvalidated field (e.g., `reqCtx.valid.res.headers` when no headers schema was configured) is a compile-time error.
+
+=== "index.ts"
+
+    ```ts hl_lines="3 7-11 19"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_response.ts"
+    ```
+
+    1. If the response doesn't match the schema, a 500 is returned
+
+=== "Validation error (500)"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_validation_500.json"
+    ```
+
+You can also validate response headers by providing a `headers` schema in the `res` configuration. This is useful for enforcing that required headers — such as correlation IDs or cache directives — are always present:
+
+=== "index.ts"
+
+    ```ts hl_lines="7-10 26"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_response_headers.ts"
+    ```
+
+    1. Enforce that the correlation ID is a valid UUID
+    2. If either required header is absent or invalid, a 500 is returned
+    3. Headers are always strings — `z.coerce.number()` coerces and validates the value, typing it as `number`
+
+You can combine both request and response validation in a single route by providing both `req` and `res`:
+
+=== "index.ts"
+
+    ```ts hl_lines="7-13 18 23-24"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_combined.ts"
+    ```
+
+    1. Access the validated and typed request body via `reqCtx.valid.req.body`
+    2. If the response doesn't match the schema, a 500 is returned
+
+!!! tip
+    If you need request validation but want to skip runtime response validation, annotate your handler's return type directly and TypeScript will enforce the return shape at compile time:
+
+    ```ts hl_lines="9 13 19"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_response_types.ts"
+    ```
+
+    1. TypeScript enforces `Todo` as the return type at compile time
+    2. Only request validation runs at runtime — no response validation
 
 ### Accessing request details
 

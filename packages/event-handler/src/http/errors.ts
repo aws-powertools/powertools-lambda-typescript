@@ -1,4 +1,5 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { HttpStatusCode } from '../types/http.js';
 import { HttpStatusCodes } from './constants.js';
 
@@ -179,6 +180,44 @@ class ServiceUnavailableError extends HttpError {
   }
 }
 
+class RequestValidationError extends HttpError {
+  readonly statusCode = HttpStatusCodes.UNPROCESSABLE_ENTITY;
+  readonly errorType = 'RequestValidationError';
+
+  constructor(
+    message?: string,
+    issues?: StandardSchemaV1.FailureResult['issues'],
+    options?: ErrorOptions
+  ) {
+    super(message, options, {
+      issues: issues?.map((issue) => ({
+        message: issue.message,
+        path: issue.path,
+      })),
+    });
+    this.name = 'RequestValidationError';
+  }
+}
+
+class ResponseValidationError extends HttpError {
+  readonly statusCode = HttpStatusCodes.INTERNAL_SERVER_ERROR;
+  readonly errorType = 'ResponseValidationError';
+
+  constructor(
+    message?: string,
+    issues?: StandardSchemaV1.FailureResult['issues'],
+    options?: ErrorOptions
+  ) {
+    super(message, options, {
+      issues: issues?.map((issue) => ({
+        message: issue.message,
+        path: issue.path,
+      })),
+    });
+    this.name = 'ResponseValidationError';
+  }
+}
+
 class InvalidEventError extends Error {
   constructor(message?: string) {
     super(message);
@@ -204,6 +243,8 @@ export {
   ParameterValidationError,
   RequestEntityTooLargeError,
   RequestTimeoutError,
+  RequestValidationError,
+  ResponseValidationError,
   RouteMatchingError,
   HttpError,
   ServiceUnavailableError,

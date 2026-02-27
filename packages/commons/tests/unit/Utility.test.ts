@@ -74,18 +74,18 @@ describe('Class: Utility', () => {
     { value: 'on-demand', expected: 'on-demand' },
     { value: 'provisioned-concurrency', expected: 'provisioned-concurrency' },
     { value: '', expected: 'unknown' },
-  ])(
-    'returns the correct initialization type ($value)',
-    ({ value, expected }) => {
-      // Prepare
-      process.env.AWS_LAMBDA_INITIALIZATION_TYPE = value;
-      const utility = new TestUtility();
+  ])('returns the correct initialization type ($value)', ({
+    value,
+    expected,
+  }) => {
+    // Prepare
+    process.env.AWS_LAMBDA_INITIALIZATION_TYPE = value;
+    const utility = new TestUtility();
 
-      // Act
-      const initializationType = utility.getInitializationType();
+    // Act
+    const initializationType = utility.getInitializationType();
 
-      // Assess
-      expect(initializationType).toBe(expected);
-    }
-  );
+    // Assess
+    expect(initializationType).toBe(expected);
+  });
 });

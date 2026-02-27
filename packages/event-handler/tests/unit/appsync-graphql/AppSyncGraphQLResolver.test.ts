@@ -334,56 +334,55 @@ describe('Class: AppSyncGraphQLResolver', () => {
       throwOnError: false,
       description: 'throwOnError=false',
     },
-  ])(
-    'preserves the scope when using `batchResolver` decorator when aggregate=false and $description',
-    async ({ throwOnError }) => {
-      // Prepare
-      const app = new AppSyncGraphQLResolver({ logger: console });
+  ])('preserves the scope when using `batchResolver` decorator when aggregate=false and $description', async ({
+    throwOnError,
+  }) => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
 
-      class Lambda {
-        public scope = 'scoped';
+    class Lambda {
+      public scope = 'scoped';
 
-        @app.batchResolver({
-          fieldName: 'batchGet',
-          throwOnError,
-          aggregate: false,
-        })
-        public handleBatchGet({ id }: { id: string }) {
-          return {
-            id,
-            scope: `${this.scope} id=${id} throwOnError=${throwOnError} aggregate=false`,
-          };
-        }
-
-        public handler(event: unknown, context: Context) {
-          return app.resolve(event, context, { scope: this });
-        }
+      @app.batchResolver({
+        fieldName: 'batchGet',
+        throwOnError,
+        aggregate: false,
+      })
+      public handleBatchGet({ id }: { id: string }) {
+        return {
+          id,
+          scope: `${this.scope} id=${id} throwOnError=${throwOnError} aggregate=false`,
+        };
       }
-      const lambda = new Lambda();
-      const handler = lambda.handler.bind(lambda);
 
-      // Act
-      const result = await handler(
-        [
-          onGraphqlEventFactory('batchGet', 'Query', { id: 1 }),
-          onGraphqlEventFactory('batchGet', 'Query', { id: 2 }),
-        ],
-        context
-      );
-
-      // Assess
-      expect(result).toEqual([
-        {
-          id: 1,
-          scope: `scoped id=1 throwOnError=${throwOnError} aggregate=false`,
-        },
-        {
-          id: 2,
-          scope: `scoped id=2 throwOnError=${throwOnError} aggregate=false`,
-        },
-      ]);
+      public handler(event: unknown, context: Context) {
+        return app.resolve(event, context, { scope: this });
+      }
     }
-  );
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
+
+    // Act
+    const result = await handler(
+      [
+        onGraphqlEventFactory('batchGet', 'Query', { id: 1 }),
+        onGraphqlEventFactory('batchGet', 'Query', { id: 2 }),
+      ],
+      context
+    );
+
+    // Assess
+    expect(result).toEqual([
+      {
+        id: 1,
+        scope: `scoped id=1 throwOnError=${throwOnError} aggregate=false`,
+      },
+      {
+        id: 2,
+        scope: `scoped id=2 throwOnError=${throwOnError} aggregate=false`,
+      },
+    ]);
+  });
 
   it('emits debug message when AWS_LAMBDA_LOG_LEVEL is set to DEBUG', async () => {
     // Prepare
@@ -436,36 +435,36 @@ describe('Class: AppSyncGraphQLResolver', () => {
       error: 'foo',
       message: 'An unknown error occurred',
     },
-  ])(
-    'formats the error thrown by the onSubscribe handler $type',
-    async ({ error, message }) => {
-      // Prepare
-      const app = new AppSyncGraphQLResolver({ logger: console });
-      app.resolver(
-        () => {
-          throw error;
-        },
-        {
-          fieldName: 'addPost',
-          typeName: 'Mutation',
-        }
-      );
+  ])('formats the error thrown by the onSubscribe handler $type', async ({
+    error,
+    message,
+  }) => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    app.resolver(
+      () => {
+        throw error;
+      },
+      {
+        fieldName: 'addPost',
+        typeName: 'Mutation',
+      }
+    );
 
-      // Act
-      const result = await app.resolve(
-        onGraphqlEventFactory('addPost', 'Mutation', {
-          title: 'Post Title',
-          content: 'Post Content',
-        }),
-        context
-      );
+    // Act
+    const result = await app.resolve(
+      onGraphqlEventFactory('addPost', 'Mutation', {
+        title: 'Post Title',
+        content: 'Post Content',
+      }),
+      context
+    );
 
-      // Assess
-      expect(result).toEqual({
-        error: message,
-      });
-    }
-  );
+    // Assess
+    expect(result).toEqual({
+      error: message,
+    });
+  });
 
   it('logs a warning and returns early if one of the batch events is not compatible', async () => {
     // Prepare
@@ -515,57 +514,57 @@ describe('Class: AppSyncGraphQLResolver', () => {
           .mockResolvedValueOnce({ id: '2', value: 'B' });
       },
     },
-  ])(
-    'registers a batch resolver via direct function call and invokes it ($description)',
-    async ({ aggregate, setupHandler }) => {
-      // Prepare
-      const app = new AppSyncGraphQLResolver({ logger: console });
-      const handler = vi.fn();
-      setupHandler(handler);
+  ])('registers a batch resolver via direct function call and invokes it ($description)', async ({
+    aggregate,
+    setupHandler,
+  }) => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
+    const handler = vi.fn();
+    setupHandler(handler);
 
-      if (aggregate) {
-        app.onBatchQuery('batchGet', handler, {
-          aggregate: true,
-        });
-      } else {
-        app.onBatchQuery('batchGet', handler, {
-          aggregate: false,
-          throwOnError: true,
-        });
-      }
-
-      const events = [
-        onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
-        onGraphqlEventFactory('batchGet', 'Query', { id: '2' }),
-      ];
-
-      // Act
-      const result = await app.resolve(events, context);
-
-      // Assess
-      if (aggregate) {
-        expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith(events, {
-          event: events,
-          context,
-        });
-      } else {
-        expect(handler).toHaveBeenCalledTimes(2);
-        expect(handler).toHaveBeenNthCalledWith(1, events[0].arguments, {
-          event: events[0],
-          context,
-        });
-        expect(handler).toHaveBeenNthCalledWith(2, events[1].arguments, {
-          event: events[1],
-          context,
-        });
-      }
-      expect(result).toEqual([
-        { id: '1', value: 'A' },
-        { id: '2', value: 'B' },
-      ]);
+    if (aggregate) {
+      app.onBatchQuery('batchGet', handler, {
+        aggregate: true,
+      });
+    } else {
+      app.onBatchQuery('batchGet', handler, {
+        aggregate: false,
+        throwOnError: true,
+      });
     }
-  );
+
+    const events = [
+      onGraphqlEventFactory('batchGet', 'Query', { id: '1' }),
+      onGraphqlEventFactory('batchGet', 'Query', { id: '2' }),
+    ];
+
+    // Act
+    const result = await app.resolve(events, context);
+
+    // Assess
+    if (aggregate) {
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledWith(events, {
+        event: events,
+        context,
+      });
+    } else {
+      expect(handler).toHaveBeenCalledTimes(2);
+      expect(handler).toHaveBeenNthCalledWith(1, events[0].arguments, {
+        event: events[0],
+        context,
+      });
+      expect(handler).toHaveBeenNthCalledWith(2, events[1].arguments, {
+        event: events[1],
+        context,
+      });
+    }
+    expect(result).toEqual([
+      { id: '1', value: 'A' },
+      { id: '2', value: 'B' },
+    ]);
+  });
 
   it('returns null for failed records when aggregate=false', async () => {
     // Prepare
@@ -662,64 +661,63 @@ describe('Class: AppSyncGraphQLResolver', () => {
       throwOnError: false,
       description: 'throwOnError=false',
     },
-  ])(
-    'preserves the scope when using `onBatchQuery` & `onBatchMutation` decorators when aggregate=false and $description',
-    async ({ throwOnError }) => {
-      // Prepare
-      const app = new AppSyncGraphQLResolver({ logger: console });
+  ])('preserves the scope when using `onBatchQuery` & `onBatchMutation` decorators when aggregate=false and $description', async ({
+    throwOnError,
+  }) => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver({ logger: console });
 
-      class Lambda {
-        public readonly scope = 'scoped';
+    class Lambda {
+      public readonly scope = 'scoped';
 
-        @app.onBatchQuery('batchGet', {
-          throwOnError,
-        })
-        public handleBatchGet(events: AppSyncResolverEvent<{ id: number }>[]) {
-          const ids = events.map((event) => event.arguments.id);
-          return ids.map((id) => ({
-            id,
-            scope: this.scope,
-          }));
-        }
-
-        @app.onBatchMutation('batchPut', {
-          throwOnError,
-        })
-        public handleBatchPut(_events: AppSyncResolverEvent<{ id: number }>[]) {
-          return [this.scope, this.scope];
-        }
-
-        public handler(event: unknown, context: Context) {
-          return app.resolve(event, context, { scope: this });
-        }
+      @app.onBatchQuery('batchGet', {
+        throwOnError,
+      })
+      public handleBatchGet(events: AppSyncResolverEvent<{ id: number }>[]) {
+        const ids = events.map((event) => event.arguments.id);
+        return ids.map((id) => ({
+          id,
+          scope: this.scope,
+        }));
       }
-      const lambda = new Lambda();
-      const handler = lambda.handler.bind(lambda);
 
-      // Act
-      const resultQuery = await handler(
-        [
-          onGraphqlEventFactory('batchGet', 'Query', { id: 1 }),
-          onGraphqlEventFactory('batchGet', 'Query', { id: 2 }),
-        ],
-        context
-      );
-      const resultMutation = await handler(
-        [
-          onGraphqlEventFactory('batchPut', 'Mutation', { id: 1 }),
-          onGraphqlEventFactory('batchPut', 'Mutation', { id: 2 }),
-        ],
-        context
-      );
+      @app.onBatchMutation('batchPut', {
+        throwOnError,
+      })
+      public handleBatchPut(_events: AppSyncResolverEvent<{ id: number }>[]) {
+        return [this.scope, this.scope];
+      }
 
-      // Assess
-      expect(resultQuery).toEqual([
-        { id: 1, scope: 'scoped' },
-        { id: 2, scope: 'scoped' },
-      ]);
-      expect(resultMutation).toEqual(['scoped', 'scoped']);
+      public handler(event: unknown, context: Context) {
+        return app.resolve(event, context, { scope: this });
+      }
     }
-  );
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
+
+    // Act
+    const resultQuery = await handler(
+      [
+        onGraphqlEventFactory('batchGet', 'Query', { id: 1 }),
+        onGraphqlEventFactory('batchGet', 'Query', { id: 2 }),
+      ],
+      context
+    );
+    const resultMutation = await handler(
+      [
+        onGraphqlEventFactory('batchPut', 'Mutation', { id: 1 }),
+        onGraphqlEventFactory('batchPut', 'Mutation', { id: 2 }),
+      ],
+      context
+    );
+
+    // Assess
+    expect(resultQuery).toEqual([
+      { id: 1, scope: 'scoped' },
+      { id: 2, scope: 'scoped' },
+    ]);
+    expect(resultMutation).toEqual(['scoped', 'scoped']);
+  });
 
   // #region Exception Handling
 
@@ -752,42 +750,39 @@ describe('Class: AppSyncGraphQLResolver', () => {
       errorClass: AggregateError,
       message: 'Aggregation failed',
     },
-  ])(
-    'invokes exception handler for %s',
-    async ({
-      errorClass,
+  ])('invokes exception handler for %s', async ({
+    errorClass,
+    message,
+  }: {
+    errorClass: ErrorClass<Error>;
+    message: string;
+  }) => {
+    // Prepare
+    const app = new AppSyncGraphQLResolver();
+
+    app.exceptionHandler(errorClass, async (err) => ({
       message,
-    }: {
-      errorClass: ErrorClass<Error>;
-      message: string;
-    }) => {
-      // Prepare
-      const app = new AppSyncGraphQLResolver();
+      errorName: err.constructor.name,
+    }));
 
-      app.exceptionHandler(errorClass, async (err) => ({
-        message,
-        errorName: err.constructor.name,
-      }));
+    app.onQuery('getUser', () => {
+      throw errorClass === AggregateError
+        ? new errorClass([new Error('test error')], message)
+        : new errorClass(message);
+    });
 
-      app.onQuery('getUser', () => {
-        throw errorClass === AggregateError
-          ? new errorClass([new Error('test error')], message)
-          : new errorClass(message);
-      });
+    // Act
+    const result = await app.resolve(
+      onGraphqlEventFactory('getUser', 'Query', {}),
+      context
+    );
 
-      // Act
-      const result = await app.resolve(
-        onGraphqlEventFactory('getUser', 'Query', {}),
-        context
-      );
-
-      // Assess
-      expect(result).toEqual({
-        message,
-        errorName: errorClass.name,
-      });
-    }
-  );
+    // Assess
+    expect(result).toEqual({
+      message,
+      errorName: errorClass.name,
+    });
+  });
 
   it('handles multiple different error types with specific exception handlers', async () => {
     // Prepare

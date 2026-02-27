@@ -165,33 +165,32 @@ describe('Initialize Metrics', () => {
       case: 'undefined',
       functionName: undefined,
     },
-  ])(
-    'does not set the function name from env when is $case',
-    ({ functionName }) => {
-      // Prepare
-      process.env.POWERTOOLS_METRICS_FUNCTION_NAME = functionName;
-      const metrics = new Metrics({
-        namespace: DEFAULT_NAMESPACE,
-      });
+  ])('does not set the function name from env when is $case', ({
+    functionName,
+  }) => {
+    // Prepare
+    process.env.POWERTOOLS_METRICS_FUNCTION_NAME = functionName;
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+    });
 
-      // Act
-      metrics.captureColdStartMetric();
+    // Act
+    metrics.captureColdStartMetric();
 
-      // Assess
-      expect(console.log).toHaveBeenCalledTimes(1);
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.objectContaining({
-          service: 'hello-world',
-          [COLD_START_METRIC]: 1,
-        })
-      );
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.not.objectContaining({
-          function_name: expect.anything(),
-        })
-      );
-    }
-  );
+    // Assess
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        [COLD_START_METRIC]: 1,
+      })
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({
+        function_name: expect.anything(),
+      })
+    );
+  });
 
   it.each([
     {
@@ -202,33 +201,32 @@ describe('Initialize Metrics', () => {
       case: 'undefined',
       functionName: undefined,
     },
-  ])(
-    'does not set the function name from constructor when is $case',
-    ({ functionName }) => {
-      // Prepare
-      const metrics = new Metrics({
-        namespace: DEFAULT_NAMESPACE,
-        functionName,
-      });
+  ])('does not set the function name from constructor when is $case', ({
+    functionName,
+  }) => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+      functionName,
+    });
 
-      // Act
-      metrics.captureColdStartMetric();
+    // Act
+    metrics.captureColdStartMetric();
 
-      // Assess
-      expect(console.log).toHaveBeenCalledTimes(1);
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.objectContaining({
-          service: 'hello-world',
-          [COLD_START_METRIC]: 1,
-        })
-      );
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.not.objectContaining({
-          function_name: expect.anything(),
-        })
-      );
-    }
-  );
+    // Assess
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        [COLD_START_METRIC]: 1,
+      })
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({
+        function_name: expect.anything(),
+      })
+    );
+  });
 
   it('uses the custom config service provided', () => {
     // Prepare

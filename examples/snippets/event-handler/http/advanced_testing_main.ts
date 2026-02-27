@@ -1,4 +1,4 @@
-import type { Context } from 'aws-lambda';
+import type { APIGatewayProxyResult, Context } from 'aws-lambda';
 import { expect, test } from 'vitest';
 import { handler } from './advanced_cors_simple.js';
 import { createTestEvent } from './advanced_testing_helper.js';
@@ -14,7 +14,7 @@ test('returns CORS headers', async () => {
   });
 
   // Act
-  const result = await handler(event, {} as Context);
+  const result = (await handler(event, {} as Context)) as APIGatewayProxyResult;
 
   // Assess
   expect(result.statusCode).toEqual(200);
@@ -23,10 +23,22 @@ test('returns CORS headers', async () => {
     'https://example.com'
   );
   expect(
-    result.multiValueHeaders?.['access-control-allow-methods'].sort()
-  ).toEqual(['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT'].sort());
+    (
+      result.multiValueHeaders?.[
+        'access-control-allow-methods'
+      ] as Array<string>
+    ).sort((a, b) => a.localeCompare(b))
+  ).toEqual(
+    ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT'].sort((a, b) =>
+      a.localeCompare(b)
+    )
+  );
   expect(
-    result.multiValueHeaders?.['access-control-allow-headers'].sort()
+    (
+      result.multiValueHeaders?.[
+        'access-control-allow-headers'
+      ] as Array<string>
+    ).sort((a, b) => a.localeCompare(b))
   ).toEqual(
     [
       'Authorization',
@@ -34,6 +46,6 @@ test('returns CORS headers', async () => {
       'X-Amz-Date',
       'X-Amz-Security-Token',
       'X-Api-Key',
-    ].sort()
+    ].sort((a, b) => a.localeCompare(b))
   );
 });

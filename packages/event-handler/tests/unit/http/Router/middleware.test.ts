@@ -39,38 +39,39 @@ describe('Class: Router - Middleware', () => {
       middlewareNames: [],
       expectedOrder: ['global-middleware', 'handler'],
     },
-  ])(
-    'different routes can have different middleware: $path',
-    async ({ path, middlewareNames, expectedOrder }) => {
-      // Prepare
-      const app = new Router();
-      const executionOrder: string[] = [];
+  ])('different routes can have different middleware: $path', async ({
+    path,
+    middlewareNames,
+    expectedOrder,
+  }) => {
+    // Prepare
+    const app = new Router();
+    const executionOrder: string[] = [];
 
-      app.use(async ({ next }) => {
-        executionOrder.push('global-middleware');
-        await next();
-      });
+    app.use(async ({ next }) => {
+      executionOrder.push('global-middleware');
+      await next();
+    });
 
-      const middleware: Middleware[] = middlewareNames.map(
-        (name) =>
-          async ({ next }) => {
-            executionOrder.push(name);
-            await next();
-          }
-      );
+    const middleware: Middleware[] = middlewareNames.map(
+      (name) =>
+        async ({ next }) => {
+          executionOrder.push(name);
+          await next();
+        }
+    );
 
-      app.get(path as Path, middleware, () => {
-        executionOrder.push('handler');
-        return { success: true };
-      });
+    app.get(path as Path, middleware, () => {
+      executionOrder.push('handler');
+      return { success: true };
+    });
 
-      // Act
-      await app.resolve(createTestEvent(path, 'GET'), context);
+    // Act
+    await app.resolve(createTestEvent(path, 'GET'), context);
 
-      // Assess
-      expect(executionOrder).toEqual(expectedOrder);
-    }
-  );
+    // Assess
+    expect(executionOrder).toEqual(expectedOrder);
+  });
 
   describe('middleware - global', () => {
     it('executes middleware in order before route handler', async () => {

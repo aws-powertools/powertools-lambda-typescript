@@ -270,36 +270,35 @@ describe('Inject Lambda Context', () => {
         return lambda.handler.bind(lambda);
       },
     },
-  ])(
-    'refreshes sample rate calculation before only during warm starts ($case)',
-    async ({ getHandler }) => {
-      // Prepare
-      const logger = new Logger({ sampleRateValue: 1 });
-      const setLogLevelSpy = vi.spyOn(logger, 'setLogLevel');
+  ])('refreshes sample rate calculation before only during warm starts ($case)', async ({
+    getHandler,
+  }) => {
+    // Prepare
+    const logger = new Logger({ sampleRateValue: 1 });
+    const setLogLevelSpy = vi.spyOn(logger, 'setLogLevel');
 
-      const handler = getHandler(logger);
+    const handler = getHandler(logger);
 
-      // Act
-      await handler(event, context); // cold start
-      await handler(event, context); // warm start
+    // Act
+    await handler(event, context); // cold start
+    await handler(event, context); // warm start
 
-      // Assess
-      expect(setLogLevelSpy).toHaveBeenCalledTimes(1);
-      expect(console.debug).toHaveBeenCalledTimes(2);
-      expect(console.debug).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Setting log level to DEBUG due to sampling rate',
-        })
-      );
-      expect(console.debug).toHaveLoggedNth(
-        2,
-        expect.objectContaining({
-          message: 'Setting log level to DEBUG due to sampling rate',
-        })
-      );
-    }
-  );
+    // Assess
+    expect(setLogLevelSpy).toHaveBeenCalledTimes(1);
+    expect(console.debug).toHaveBeenCalledTimes(2);
+    expect(console.debug).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Setting log level to DEBUG due to sampling rate',
+      })
+    );
+    expect(console.debug).toHaveLoggedNth(
+      2,
+      expect.objectContaining({
+        message: 'Setting log level to DEBUG due to sampling rate',
+      })
+    );
+  });
 
   it.each([
     {
@@ -513,32 +512,31 @@ describe('Inject Lambda Context', () => {
         return lambda.handler.bind(lambda);
       },
     },
-  ])(
-    'resets keys when the handler throws an error $case',
-    async ({ getHandler }) => {
-      // Prepare
-      const logger = new Logger();
-      const handler = getHandler(logger);
+  ])('resets keys when the handler throws an error $case', async ({
+    getHandler,
+  }) => {
+    // Prepare
+    const logger = new Logger();
+    const handler = getHandler(logger);
 
-      // Act & Assess
-      await expect(handler({ id: 1 }, context)).rejects.toThrow('Test error');
-      await expect(handler({ id: 2 }, context)).rejects.toThrow('Test error');
-      expect(console.info).toHaveBeenCalledTimes(2);
-      expect(console.info).toHaveLoggedNth(
-        1,
-        expect.objectContaining({
-          message: 'Processing event',
-        })
-      );
-      expect(console.info).toHaveLoggedNth(
-        2,
-        expect.not.objectContaining({
-          message: 'Processing event',
-          id: 1,
-        })
-      );
-    }
-  );
+    // Act & Assess
+    await expect(handler({ id: 1 }, context)).rejects.toThrow('Test error');
+    await expect(handler({ id: 2 }, context)).rejects.toThrow('Test error');
+    expect(console.info).toHaveBeenCalledTimes(2);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        message: 'Processing event',
+      })
+    );
+    expect(console.info).toHaveLoggedNth(
+      2,
+      expect.not.objectContaining({
+        message: 'Processing event',
+        id: 1,
+      })
+    );
+  });
 
   it.each([
     {

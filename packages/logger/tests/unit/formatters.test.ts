@@ -451,22 +451,23 @@ describe('Formatters', () => {
         cause: 'bar',
       },
     },
-  ])(
-    'formats standard errors correctly ($name)',
-    ({ error, name, expectedFields }) => {
-      // Act
-      const formattedError = formatter.formatError(error);
+  ])('formats standard errors correctly ($name)', ({
+    error,
+    name,
+    expectedFields,
+  }) => {
+    // Act
+    const formattedError = formatter.formatError(error);
 
-      // Assess
-      expect(formattedError).toEqual({
-        stack: expect.arrayContaining([
-          expect.stringMatching(fileNameRegexpWithLine),
-        ]),
-        name,
-        ...expectedFields,
-      });
-    }
-  );
+    // Assess
+    expect(formattedError).toEqual({
+      stack: expect.arrayContaining([
+        expect.stringMatching(fileNameRegexpWithLine),
+      ]),
+      name,
+      ...expectedFields,
+    });
+  });
 
   it('formats stack as string when not in dev mode', () => {
     // Prepare

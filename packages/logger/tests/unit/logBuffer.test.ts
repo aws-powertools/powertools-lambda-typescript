@@ -307,35 +307,34 @@ describe('Buffer logs', () => {
       },
       case: 'decorator',
     },
-  ])(
-    'flushes the buffer when an uncaught error is thrown ($case)',
-    async ({ handlerFactory }) => {
-      // Prepare
-      const logger = new Logger({ logBufferOptions: { enabled: true } });
-      const handler = handlerFactory(logger);
+  ])('flushes the buffer when an uncaught error is thrown ($case)', async ({
+    handlerFactory,
+  }) => {
+    // Prepare
+    const logger = new Logger({ logBufferOptions: { enabled: true } });
+    const handler = handlerFactory(logger);
 
-      // Act & Assess
-      await expect(() =>
-        handler(
-          {
-            foo: 'bar',
-          },
-          context
-        )
-      ).rejects.toThrow(new Error('This is an error'));
-      expect(console.debug).toBeCalledTimes(1);
-      expect(console.info).toBeCalledTimes(1);
-      expect(console.error).toHaveLogged(
-        expect.objectContaining({
-          message: UncaughtErrorLogMessage,
-        })
-      );
-      // If debug is called after info, it means it was buffered and then flushed
-      expect(console.debug).toHaveBeenCalledAfter(console.info as Mock);
-      // If error is called after debug, it means the buffer was flushed before the error log
-      expect(console.debug).toHaveBeenCalledBefore(console.error as Mock);
-    }
-  );
+    // Act & Assess
+    await expect(() =>
+      handler(
+        {
+          foo: 'bar',
+        },
+        context
+      )
+    ).rejects.toThrow(new Error('This is an error'));
+    expect(console.debug).toBeCalledTimes(1);
+    expect(console.info).toBeCalledTimes(1);
+    expect(console.error).toHaveLogged(
+      expect.objectContaining({
+        message: UncaughtErrorLogMessage,
+      })
+    );
+    // If debug is called after info, it means it was buffered and then flushed
+    expect(console.debug).toHaveBeenCalledAfter(console.info as Mock);
+    // If error is called after debug, it means the buffer was flushed before the error log
+    expect(console.debug).toHaveBeenCalledBefore(console.error as Mock);
+  });
 
   it.each([
     {
@@ -367,26 +366,25 @@ describe('Buffer logs', () => {
       },
       case: 'decorator',
     },
-  ])(
-    'clears the buffer when an uncaught error is thrown and flushBufferOnUncaughtError is false ($case)',
-    async ({ handlerFactory }) => {
-      // Prepare
-      const logger = new Logger({ logBufferOptions: { enabled: true } });
-      const handler = handlerFactory(logger);
+  ])('clears the buffer when an uncaught error is thrown and flushBufferOnUncaughtError is false ($case)', async ({
+    handlerFactory,
+  }) => {
+    // Prepare
+    const logger = new Logger({ logBufferOptions: { enabled: true } });
+    const handler = handlerFactory(logger);
 
-      // Act & Assess
-      await expect(() =>
-        handler(
-          {
-            foo: 'bar',
-          },
-          context
-        )
-      ).rejects.toThrow(new Error('This is an error'));
+    // Act & Assess
+    await expect(() =>
+      handler(
+        {
+          foo: 'bar',
+        },
+        context
+      )
+    ).rejects.toThrow(new Error('This is an error'));
 
-      // Assess
-      expect(console.debug).not.toBeCalled;
-      expect(console.info).not.toBeCalled;
-    }
-  );
+    // Assess
+    expect(console.debug).not.toBeCalled;
+    expect(console.info).not.toBeCalled;
+  });
 });

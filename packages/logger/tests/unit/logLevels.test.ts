@@ -163,20 +163,20 @@ describe('Log levels', () => {
     { level: LogLevel.WARN, moreVerboseLevel: LogLevel.INFO },
     { level: LogLevel.ERROR, moreVerboseLevel: LogLevel.WARN },
     { level: LogLevel.CRITICAL, moreVerboseLevel: LogLevel.ERROR },
-  ])(
-    "doesn't log when calling a level more verbose than the current log level ($level vs $moreVerboseLevel)",
-    ({ level, moreVerboseLevel }) => {
-      // Prepare
-      const consoleMethod = getConsoleMethod(moreVerboseLevel);
-      const logger = new Logger({ logLevel: level });
+  ])("doesn't log when calling a level more verbose than the current log level ($level vs $moreVerboseLevel)", ({
+    level,
+    moreVerboseLevel,
+  }) => {
+    // Prepare
+    const consoleMethod = getConsoleMethod(moreVerboseLevel);
+    const logger = new Logger({ logLevel: level });
 
-      // Act
-      logger[moreVerboseLevel.toLowerCase() as keyof LogFunction]('foo');
+    // Act
+    logger[moreVerboseLevel.toLowerCase() as keyof LogFunction]('foo');
 
-      // Assess
-      expect(console[consoleMethod]).not.toHaveBeenCalled();
-    }
-  );
+    // Assess
+    expect(console[consoleMethod]).not.toHaveBeenCalled();
+  });
 
   it.each([
     { level: LogLevel.TRACE, lessVerboseLevel: LogLevel.DEBUG },
@@ -184,20 +184,20 @@ describe('Log levels', () => {
     { level: LogLevel.INFO, lessVerboseLevel: LogLevel.WARN },
     { level: LogLevel.WARN, lessVerboseLevel: LogLevel.ERROR },
     { level: LogLevel.ERROR, lessVerboseLevel: LogLevel.CRITICAL },
-  ])(
-    'logs when calling a level less verbose than the current log level ($level vs $lessVerboseLevel)',
-    ({ level, lessVerboseLevel }) => {
-      // Prepare
-      const consoleMethod = getConsoleMethod(lessVerboseLevel);
-      const logger = new Logger({ logLevel: level });
+  ])('logs when calling a level less verbose than the current log level ($level vs $lessVerboseLevel)', ({
+    level,
+    lessVerboseLevel,
+  }) => {
+    // Prepare
+    const consoleMethod = getConsoleMethod(lessVerboseLevel);
+    const logger = new Logger({ logLevel: level });
 
-      // Act
-      logger[lessVerboseLevel.toLowerCase() as keyof LogFunction]('foo');
+    // Act
+    logger[lessVerboseLevel.toLowerCase() as keyof LogFunction]('foo');
 
-      // Assess
-      expect(console[consoleMethod]).toHaveBeenCalledTimes(1);
-    }
-  );
+    // Assess
+    expect(console[consoleMethod]).toHaveBeenCalledTimes(1);
+  });
 
   it('emits a warning and falls back to the ALC level when trying to set a more verbose log level than the one set in ALC', () => {
     // Prepare

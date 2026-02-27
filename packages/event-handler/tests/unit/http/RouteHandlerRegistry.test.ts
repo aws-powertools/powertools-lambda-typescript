@@ -11,32 +11,32 @@ describe('Class: RouteHandlerRegistry', () => {
   it.each([
     { path: '/test', resolvePath: '/test', type: 'static' },
     { path: '/users/:id', resolvePath: '/users/123', type: 'dynamic' },
-  ])(
-    'logs a warning when registering a duplicate $type route',
-    ({ path, resolvePath }) => {
-      // Prepare
-      const registry = new RouteHandlerRegistry({ logger: console });
-      const handler1 = async () => ({ message: 'first' });
-      const handler2 = async () => ({ message: 'second' });
-      const method = HttpVerbs.GET;
+  ])('logs a warning when registering a duplicate $type route', ({
+    path,
+    resolvePath,
+  }) => {
+    // Prepare
+    const registry = new RouteHandlerRegistry({ logger: console });
+    const handler1 = async () => ({ message: 'first' });
+    const handler2 = async () => ({ message: 'second' });
+    const method = HttpVerbs.GET;
 
-      // Act
-      const route1 = new Route(method, path as Path, handler1);
-      registry.register(route1);
+    // Act
+    const route1 = new Route(method, path as Path, handler1);
+    registry.register(route1);
 
-      const route2 = new Route(method, path as Path, handler2);
-      registry.register(route2);
+    const route2 = new Route(method, path as Path, handler2);
+    registry.register(route2);
 
-      // Assess
-      expect(console.warn).toHaveBeenCalledWith(
-        `Handler for method: ${method} and path: ${path} already exists. The previous handler will be replaced.`
-      );
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      `Handler for method: ${method} and path: ${path} already exists. The previous handler will be replaced.`
+    );
 
-      const result = registry.resolve(method, resolvePath as Path);
-      expect(result).not.toBeNull();
-      expect(result?.handler).toBe(handler2);
-    }
-  );
+    const result = registry.resolve(method, resolvePath as Path);
+    expect(result).not.toBeNull();
+    expect(result?.handler).toBe(handler2);
+  });
 
   it.each([
     { path: '/users/:id:', description: 'malformed parameter syntax' },
@@ -48,25 +48,24 @@ describe('Class: RouteHandlerRegistry', () => {
       path: '/users/:id:name',
       description: 'consecutive parameters without separator',
     },
-  ])(
-    "doesn't register routes with invalid path pattern: $description",
-    ({ path }) => {
-      // Prepare
-      const registry = new RouteHandlerRegistry({ logger: console });
-      const handler = async () => ({ message: 'test' });
+  ])("doesn't register routes with invalid path pattern: $description", ({
+    path,
+  }) => {
+    // Prepare
+    const registry = new RouteHandlerRegistry({ logger: console });
+    const handler = async () => ({ message: 'test' });
 
-      const route = new Route(HttpVerbs.GET, path as Path, handler);
+    const route = new Route(HttpVerbs.GET, path as Path, handler);
 
-      // Act
-      registry.register(route);
+    // Act
+    registry.register(route);
 
-      // Assess
-      expect(console.warn).toHaveBeenCalledWith(
-        'Malformed parameter syntax. Use :paramName format.'
-      );
-      expect(registry.resolve(HttpVerbs.GET, '/users/123')).toBeNull();
-    }
-  );
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'Malformed parameter syntax. Use :paramName format.'
+    );
+    expect(registry.resolve(HttpVerbs.GET, '/users/123')).toBeNull();
+  });
 
   it("doesn't register routes with duplicate parameter names", () => {
     // Prepare

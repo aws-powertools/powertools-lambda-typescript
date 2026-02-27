@@ -77,66 +77,66 @@ describe('Class: AppSyncEventsResolver', () => {
         segments: ['bar'],
       },
     },
-  ])(
-    'preserves the scope when decorating with onPublish aggregate=$aggregate',
-    async ({ aggregate, channel }) => {
-      // Prepare
-      const app = new AppSyncEventsResolver({ logger: console });
+  ])('preserves the scope when decorating with onPublish aggregate=$aggregate', async ({
+    aggregate,
+    channel,
+  }) => {
+    // Prepare
+    const app = new AppSyncEventsResolver({ logger: console });
 
-      class Lambda {
-        public scope = 'scoped';
+    class Lambda {
+      public scope = 'scoped';
 
-        @app.onPublish('/foo', { aggregate })
-        public handleFoo(payloads: OnPublishAggregatePayload) {
-          return payloads.map((payload) => {
-            return {
-              id: payload.id,
-              payload: `${this.scope} ${payload.payload}`,
-            };
-          });
-        }
-
-        @app.onPublish('/bar')
-        public handleBar(payload: string) {
-          return `${this.scope} ${payload}`;
-        }
-
-        public handler(event: unknown, context: Context) {
-          return this.stuff(event, context);
-        }
-
-        stuff(event: unknown, context: Context) {
-          return app.resolve(event, context, { scope: this });
-        }
+      @app.onPublish('/foo', { aggregate })
+      public handleFoo(payloads: OnPublishAggregatePayload) {
+        return payloads.map((payload) => {
+          return {
+            id: payload.id,
+            payload: `${this.scope} ${payload.payload}`,
+          };
+        });
       }
-      const lambda = new Lambda();
-      const handler = lambda.handler.bind(lambda);
 
-      // Act
-      const result = await handler(
-        onPublishEventFactory(
-          [
-            {
-              id: '1',
-              payload: 'foo',
-            },
-          ],
-          channel
-        ),
-        context
-      );
+      @app.onPublish('/bar')
+      public handleBar(payload: string) {
+        return `${this.scope} ${payload}`;
+      }
 
-      // Assess
-      expect(result).toEqual({
-        events: [
+      public handler(event: unknown, context: Context) {
+        return this.stuff(event, context);
+      }
+
+      stuff(event: unknown, context: Context) {
+        return app.resolve(event, context, { scope: this });
+      }
+    }
+    const lambda = new Lambda();
+    const handler = lambda.handler.bind(lambda);
+
+    // Act
+    const result = await handler(
+      onPublishEventFactory(
+        [
           {
             id: '1',
-            payload: 'scoped foo',
+            payload: 'foo',
           },
         ],
-      });
-    }
-  );
+        channel
+      ),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      events: [
+        {
+          id: '1',
+          payload: 'scoped foo',
+        },
+      ],
+    });
+  });
 
   it('preserves the scope when decorating with onSubscribe', async () => {
     // Prepare
@@ -217,27 +217,27 @@ describe('Class: AppSyncEventsResolver', () => {
       error: 'foo',
       message: 'An unknown error occurred',
     },
-  ])(
-    'formats the error thrown by the onSubscribe handler $type',
-    async ({ error, message }) => {
-      // Prepare
-      const app = new AppSyncEventsResolver({ logger: console });
-      app.onSubscribe('/foo', () => {
-        throw error;
-      });
+  ])('formats the error thrown by the onSubscribe handler $type', async ({
+    error,
+    message,
+  }) => {
+    // Prepare
+    const app = new AppSyncEventsResolver({ logger: console });
+    app.onSubscribe('/foo', () => {
+      throw error;
+    });
 
-      // Act
-      const result = await app.resolve(
-        onSubscribeEventFactory({ path: '/foo', segments: ['foo'] }),
-        context
-      );
+    // Act
+    const result = await app.resolve(
+      onSubscribeEventFactory({ path: '/foo', segments: ['foo'] }),
+      context
+    );
 
-      // Assess
-      expect(result).toEqual({
-        error: message,
-      });
-    }
-  );
+    // Assess
+    expect(result).toEqual({
+      error: message,
+    });
+  });
 
   it('throws an UnauthorizedException when thrown by the handler', async () => {
     // Prepare

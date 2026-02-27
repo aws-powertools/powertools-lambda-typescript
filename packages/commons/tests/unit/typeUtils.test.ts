@@ -44,33 +44,40 @@ describe('Functions: typeUtils', () => {
   });
 
   describe('Function: isTruthy', () => {
-    it.each(['hello', 1, true, [1], { foo: 1 }])(
-      'returns true when the passed value is truthy',
-      (testValue) => {
-        // Prepare
-        const value = testValue;
+    it.each([
+      'hello',
+      1,
+      true,
+      [1],
+      { foo: 1 },
+    ])('returns true when the passed value is truthy', (testValue) => {
+      // Prepare
+      const value = testValue;
 
-        // Act
-        const result = isTruthy(value);
+      // Act
+      const result = isTruthy(value);
 
-        // Assess
-        expect(result).toBe(true);
-      }
-    );
+      // Assess
+      expect(result).toBe(true);
+    });
 
-    it.each(['', 0, false, [], {}, Symbol])(
-      'returns false when the passed value is falsy',
-      (testValue) => {
-        // Prepare
-        const value = testValue;
+    it.each([
+      '',
+      0,
+      false,
+      [],
+      {},
+      Symbol,
+    ])('returns false when the passed value is falsy', (testValue) => {
+      // Prepare
+      const value = testValue;
 
-        // Act
-        const result = isTruthy(value);
+      // Act
+      const result = isTruthy(value);
 
-        // Assess
-        expect(result).toBe(false);
-      }
-    );
+      // Assess
+      expect(result).toBe(false);
+    });
   });
 
   describe('Function: isNullOrUndefined', () => {
@@ -279,16 +286,16 @@ describe('Functions: typeUtils', () => {
         value: undefined,
         expected: 'unknown',
       },
-    ])(
-      'returns the correct type when passed type $expected',
-      ({ value, expected }) => {
-        // Act
-        const result = getType(value);
+    ])('returns the correct type when passed type $expected', ({
+      value,
+      expected,
+    }) => {
+      // Act
+      const result = getType(value);
 
-        // Assess
-        expect(result).toBe(expected);
-      }
-    );
+      // Assess
+      expect(result).toBe(expected);
+    });
   });
 
   describe('Function: isStrictEqual', () => {
@@ -349,16 +356,16 @@ describe('Functions: typeUtils', () => {
         value1: [1, 2, 3],
         value2: [1, 2],
       },
-    ])(
-      'returns false when the passed arrays are not strictly equal',
-      ({ value1, value2 }) => {
-        // Act
-        const result = isStrictEqual(value1, value2);
+    ])('returns false when the passed arrays are not strictly equal', ({
+      value1,
+      value2,
+    }) => {
+      // Act
+      const result = isStrictEqual(value1, value2);
 
-        // Assess
-        expect(result).toBe(false);
-      }
-    );
+      // Assess
+      expect(result).toBe(false);
+    });
 
     it.each([
       {
@@ -369,15 +376,15 @@ describe('Functions: typeUtils', () => {
         value1: { a: 1, b: 2, c: 3 },
         value2: { a: 1, b: 2 },
       },
-    ])(
-      'returns false when the passed objects are not strictly equal',
-      ({ value1, value2 }) => {
-        // Act
-        const result = isStrictEqual(value1, value2);
+    ])('returns false when the passed objects are not strictly equal', ({
+      value1,
+      value2,
+    }) => {
+      // Act
+      const result = isStrictEqual(value1, value2);
 
-        // Assess
-        expect(result).toBe(false);
-      }
-    );
+      // Assess
+      expect(result).toBe(false);
+    });
   });
 });

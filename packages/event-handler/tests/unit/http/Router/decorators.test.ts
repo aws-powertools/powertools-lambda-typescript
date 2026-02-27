@@ -34,54 +34,52 @@ describe.each([
       ['HEAD', 'head'],
       ['OPTIONS', 'options'],
     ];
-    it.each(httpMethods)(
-      'routes %s requests with object response',
-      async (method, verb) => {
-        // Prepare
-        const app = new Router();
-        const expected = { result: `${verb}-test` };
-        const Lambda = createTestLambdaClass(app, expected);
-        const lambda = new Lambda();
+    it.each(
+      httpMethods
+    )('routes %s requests with object response', async (method, verb) => {
+      // Prepare
+      const app = new Router();
+      const expected = { result: `${verb}-test` };
+      const Lambda = createTestLambdaClass(app, expected);
+      const lambda = new Lambda();
 
-        // Act
-        const actual = await lambda.handler(
-          createTestEvent('/test', method),
-          context
-        );
+      // Act
+      const actual = await lambda.handler(
+        createTestEvent('/test', method),
+        context
+      );
 
-        // Assess
-        expect(actual.statusCode).toBe(200);
-        expect(actual.body).toBe(JSON.stringify(expected));
-        expect(actual.headers?.['content-type']).toBe('application/json');
-        expect(actual.isBase64Encoded).toBe(false);
-      }
-    );
+      // Assess
+      expect(actual.statusCode).toBe(200);
+      expect(actual.body).toBe(JSON.stringify(expected));
+      expect(actual.headers?.['content-type']).toBe('application/json');
+      expect(actual.isBase64Encoded).toBe(false);
+    });
 
-    it.each(httpMethods)(
-      'routes %s requests with array response',
-      async (method, verb) => {
-        // Prepare
-        const app = new Router();
-        const expected = [
-          { id: 1, result: `${verb}-test-1` },
-          { id: 2, result: `${verb}-test-2` },
-        ];
-        const Lambda = createTestLambdaClass(app, expected);
-        const lambda = new Lambda();
+    it.each(
+      httpMethods
+    )('routes %s requests with array response', async (method, verb) => {
+      // Prepare
+      const app = new Router();
+      const expected = [
+        { id: 1, result: `${verb}-test-1` },
+        { id: 2, result: `${verb}-test-2` },
+      ];
+      const Lambda = createTestLambdaClass(app, expected);
+      const lambda = new Lambda();
 
-        // Act
-        const actual = await lambda.handler(
-          createTestEvent('/test', method),
-          context
-        );
+      // Act
+      const actual = await lambda.handler(
+        createTestEvent('/test', method),
+        context
+      );
 
-        // Assess
-        expect(actual.statusCode).toBe(200);
-        expect(actual.body).toBe(JSON.stringify(expected));
-        expect(actual.headers?.['content-type']).toBe('application/json');
-        expect(actual.isBase64Encoded).toBe(false);
-      }
-    );
+      // Assess
+      expect(actual.statusCode).toBe(200);
+      expect(actual.body).toBe(JSON.stringify(expected));
+      expect(actual.headers?.['content-type']).toBe('application/json');
+      expect(actual.isBase64Encoded).toBe(false);
+    });
   });
 
   describe('decorators with middleware', () => {
@@ -136,77 +134,74 @@ describe.each([
       ['DELETE', { result: 'delete-decorator-middleware' }],
       ['HEAD', { result: 'head-decorator-middleware' }],
       ['OPTIONS', { result: 'options-decorator-middleware' }],
-    ])(
-      'routes %s requests with decorator middleware',
-      async (method, expected) => {
-        // Prepare
-        const app = new Router();
-        const executionOrder: string[] = [];
-        const middleware = createTrackingMiddleware(
-          `${method.toLowerCase()}-middleware`,
-          executionOrder
-        );
+    ])('routes %s requests with decorator middleware', async (method, expected) => {
+      // Prepare
+      const app = new Router();
+      const executionOrder: string[] = [];
+      const middleware = createTrackingMiddleware(
+        `${method.toLowerCase()}-middleware`,
+        executionOrder
+      );
 
-        class Lambda {
-          @app.get('/test', [middleware])
-          public getTest() {
-            return { result: 'get-decorator-middleware' };
-          }
-
-          @app.post('/test', [middleware])
-          public postTest() {
-            return { result: 'post-decorator-middleware' };
-          }
-
-          @app.put('/test', [middleware])
-          public putTest() {
-            return { result: 'put-decorator-middleware' };
-          }
-
-          @app.patch('/test', [middleware])
-          public patchTest() {
-            return { result: 'patch-decorator-middleware' };
-          }
-
-          @app.delete('/test', [middleware])
-          public deleteTest() {
-            return { result: 'delete-decorator-middleware' };
-          }
-
-          @app.head('/test', [middleware])
-          public headTest() {
-            return { result: 'head-decorator-middleware' };
-          }
-
-          @app.options('/test', [middleware])
-          public optionsTest() {
-            return { result: 'options-decorator-middleware' };
-          }
-
-          public handler = createHandler(app);
+      class Lambda {
+        @app.get('/test', [middleware])
+        public getTest() {
+          return { result: 'get-decorator-middleware' };
         }
 
-        const lambda = new Lambda();
+        @app.post('/test', [middleware])
+        public postTest() {
+          return { result: 'post-decorator-middleware' };
+        }
 
-        // Act
-        const result = await lambda.handler(
-          createEvent('/test', method),
-          context
-        );
+        @app.put('/test', [middleware])
+        public putTest() {
+          return { result: 'put-decorator-middleware' };
+        }
 
-        // Assess
-        expect(executionOrder).toEqual([
-          `${method.toLowerCase()}-middleware-start`,
-          `${method.toLowerCase()}-middleware-end`,
-        ]);
-        expect(result).toEqual({
-          statusCode: 200,
-          body: JSON.stringify(expected),
-          headers: { 'content-type': 'application/json' },
-          isBase64Encoded: false,
-        });
+        @app.patch('/test', [middleware])
+        public patchTest() {
+          return { result: 'patch-decorator-middleware' };
+        }
+
+        @app.delete('/test', [middleware])
+        public deleteTest() {
+          return { result: 'delete-decorator-middleware' };
+        }
+
+        @app.head('/test', [middleware])
+        public headTest() {
+          return { result: 'head-decorator-middleware' };
+        }
+
+        @app.options('/test', [middleware])
+        public optionsTest() {
+          return { result: 'options-decorator-middleware' };
+        }
+
+        public handler = createHandler(app);
       }
-    );
+
+      const lambda = new Lambda();
+
+      // Act
+      const result = await lambda.handler(
+        createEvent('/test', method),
+        context
+      );
+
+      // Assess
+      expect(executionOrder).toEqual([
+        `${method.toLowerCase()}-middleware-start`,
+        `${method.toLowerCase()}-middleware-end`,
+      ]);
+      expect(result).toEqual({
+        statusCode: 200,
+        body: JSON.stringify(expected),
+        headers: { 'content-type': 'application/json' },
+        isBase64Encoded: false,
+      });
+    });
   });
 
   describe('decorators error handling', () => {

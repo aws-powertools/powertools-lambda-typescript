@@ -95,31 +95,30 @@ describe('ColdStart metric', () => {
       case: 'undefined',
       functionName: undefined,
     },
-  ])(
-    'does not include the function name if not set or invalid ($case)',
-    ({ functionName }) => {
-      // Prepare
-      const metrics = new Metrics({
-        namespace: DEFAULT_NAMESPACE,
-      });
+  ])('does not include the function name if not set or invalid ($case)', ({
+    functionName,
+  }) => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+    });
 
-      // Act
-      metrics.captureColdStartMetric(functionName);
+    // Act
+    metrics.captureColdStartMetric(functionName);
 
-      // Assess
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.objectContaining({
-          service: 'hello-world',
-          [COLD_START_METRIC]: 1,
-        })
-      );
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.not.objectContaining({
-          function_name: 'my-function',
-        })
-      );
-    }
-  );
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        [COLD_START_METRIC]: 1,
+      })
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({
+        function_name: 'my-function',
+      })
+    );
+  });
 
   it('emits the metric only once', () => {
     // Prepare

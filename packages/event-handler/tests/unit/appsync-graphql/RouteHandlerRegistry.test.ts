@@ -19,24 +19,24 @@ describe('Class: RouteHandlerRegistry', () => {
   it.each([
     { fieldName: 'getPost', typeName: 'Query' },
     { fieldName: 'addPost', typeName: 'Mutation' },
-  ])(
-    'registers a route handler for a field $fieldName',
-    ({ fieldName, typeName }) => {
-      // Prepare
-      const registry = getRegistry();
+  ])('registers a route handler for a field $fieldName', ({
+    fieldName,
+    typeName,
+  }) => {
+    // Prepare
+    const registry = getRegistry();
 
-      // Act
-      registry.register({
-        fieldName,
-        typeName,
-        handler: vi.fn(),
-      });
+    // Act
+    registry.register({
+      fieldName,
+      typeName,
+      handler: vi.fn(),
+    });
 
-      // Assess
-      expect(registry.resolvers.size).toBe(1);
-      expect(registry.resolvers.get(`${typeName}.${fieldName}`)).toBeDefined();
-    }
-  );
+    // Assess
+    expect(registry.resolvers.size).toBe(1);
+    expect(registry.resolvers.get(`${typeName}.${fieldName}`)).toBeDefined();
+  });
 
   it('logs a warning and replaces the previous resolver if the field & type is already registered', () => {
     // Prepare

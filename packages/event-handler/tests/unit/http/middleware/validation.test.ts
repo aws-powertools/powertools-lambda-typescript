@@ -2,7 +2,7 @@ import { setTimeout } from 'node:timers/promises';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { Router } from '../../../../src/http/index.js';
+import { HttpVerbs, Router } from '../../../../src/http/index.js';
 import { createTestEvent } from '../helpers.js';
 
 describe('Router Validation Integration', () => {
@@ -806,5 +806,205 @@ describe('Router Validation Integration', () => {
       expect(reqCtx.valid).toBeUndefined();
       return {};
     });
+  });
+});
+
+describe('Router.route() Validation Integration', () => {
+  let app: Router;
+
+  beforeEach(() => {
+    app = new Router();
+  });
+
+  it('validates request body successfully', async () => {
+    // Prepare
+    const requestBodySchema = z.object({ name: z.string() });
+
+    app.route(
+      (reqCtx) => {
+        const { name } = reqCtx.valid.req.body;
+        return { statusCode: 201, body: `Created ${name}` };
+      },
+      {
+        method: HttpVerbs.POST,
+        path: '/users',
+        validation: { req: { body: requestBodySchema } },
+      }
+    );
+
+    const event = createTestEvent('/users', 'POST', {
+      'content-type': 'application/json',
+    });
+    event.body = JSON.stringify({ name: 'John' });
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(201);
+    expect(result.body).toBe('Created John');
+  });
+
+  it('returns 422 on request body validation failure', async () => {
+    // Prepare
+    const requestBodySchema = z.object({ name: z.string() });
+
+    app.route(() => ({ statusCode: 201, body: 'Created' }), {
+      method: HttpVerbs.POST,
+      path: '/users',
+      validation: { req: { body: requestBodySchema } },
+    });
+
+    const event = createTestEvent('/users', 'POST', {
+      'content-type': 'application/json',
+    });
+    event.body = JSON.stringify({ invalid: 'data' });
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(422);
+    const body = JSON.parse(result.body);
+    expect(body.error).toBe('RequestValidationError');
+  });
+
+  it('validates request headers successfully', async () => {
+    // Prepare
+    const headerSchema = z.object({ 'x-api-key': z.string() });
+
+    app.route(
+      (reqCtx) => {
+        const apiKey = reqCtx.valid.req.headers['x-api-key'];
+        return { statusCode: 200, body: `Authenticated with ${apiKey}` };
+      },
+      {
+        method: HttpVerbs.GET,
+        path: '/protected',
+        validation: { req: { headers: headerSchema } },
+      }
+    );
+
+    const event = createTestEvent('/protected', 'GET', {
+      'x-api-key': 'test-key',
+    });
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toBe('Authenticated with test-key');
+  });
+
+  it('validates both request and response', async () => {
+    // Prepare
+    const requestSchema = z.object({ name: z.string(), email: z.string() });
+    const responseSchema = z.object({
+      id: z.string(),
+      name: z.string(),
+      email: z.string(),
+    });
+
+    app.route(
+      (reqCtx) => {
+        const { name, email } = reqCtx.valid.req.body;
+        return { id: '123', name, email };
+      },
+      {
+        method: HttpVerbs.POST,
+        path: '/users',
+        validation: {
+          req: { body: requestSchema },
+          res: { body: responseSchema },
+        },
+      }
+    );
+
+    const event = createTestEvent('/users', 'POST', {
+      'content-type': 'application/json',
+    });
+    event.body = JSON.stringify({ name: 'John', email: 'john@example.com' });
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    const body = JSON.parse(result.body);
+    expect(body.name).toBe('John');
+    expect(body.email).toBe('john@example.com');
+  });
+
+  it('accepts multiple HTTP methods with validation', async () => {
+    // Prepare
+    const bodySchema = z.object({ name: z.string() });
+
+    app.route(
+      (reqCtx) => {
+        const { name } = reqCtx.valid.req.body;
+        return { name };
+      },
+      {
+        method: [HttpVerbs.POST, HttpVerbs.PUT],
+        path: '/users',
+        validation: { req: { body: bodySchema } },
+      }
+    );
+
+    const postEvent = createTestEvent('/users', 'POST', {
+      'content-type': 'application/json',
+    });
+    postEvent.body = JSON.stringify({ name: 'John' });
+
+    const putEvent = createTestEvent('/users', 'PUT', {
+      'content-type': 'application/json',
+    });
+    putEvent.body = JSON.stringify({ name: 'Jane' });
+
+    // Act
+    const postResult = await app.resolve(postEvent, context);
+    const putResult = await app.resolve(putEvent, context);
+
+    // Assess
+    expect(postResult.statusCode).toBe(200);
+    expect(JSON.parse(postResult.body).name).toBe('John');
+    expect(putResult.statusCode).toBe(200);
+    expect(JSON.parse(putResult.body).name).toBe('Jane');
+  });
+
+  it('disallows access to valid on an untyped handler', () => {
+    app.route(
+      (reqCtx) => {
+        // @ts-expect-error TS2339 — 'valid' does not exist on RequestContext
+        expect(reqCtx.valid).toBeUndefined();
+        return {};
+      },
+      { method: HttpVerbs.GET, path: '/no-validation' }
+    );
+  });
+
+  it('disallows access to unvalidated fields when only body is validated', () => {
+    const bodySchema = z.object({ name: z.string() });
+
+    app.route(
+      (reqCtx) => {
+        const { name } = reqCtx.valid.req.body;
+
+        // @ts-expect-error TS2339 — 'headers' does not exist on valid.req when not validated
+        expect(reqCtx.valid.req.headers).toBeUndefined();
+        // @ts-expect-error TS2339 — 'path' does not exist on valid.req when not validated
+        expect(reqCtx.valid.req.path).toBeUndefined();
+        // @ts-expect-error TS2339 — 'query' does not exist on valid.req when not validated
+        expect(reqCtx.valid.req.query).toBeUndefined();
+
+        return { name };
+      },
+      {
+        method: HttpVerbs.POST,
+        path: '/body-only',
+        validation: { req: { body: bodySchema } },
+      }
+    );
   });
 });

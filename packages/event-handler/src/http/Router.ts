@@ -453,7 +453,26 @@ class Router {
     }
   }
 
-  public route<
+  public route(
+    handler: RouteHandler,
+    options: Omit<HttpRouteOptions, 'validation'> & { validation?: never }
+  ): void;
+  public route<V extends ValidationConfig>(
+    handler: TypedRouteHandler<
+      InferReqSchema<V>,
+      InferResBody<V>,
+      InferResSchema<V>
+    >,
+    options: Omit<HttpRouteOptions, 'validation'> & { validation: V }
+  ): void;
+  public route(
+    handler: RouteHandler | TypedRouteHandler,
+    options: HttpRouteOptions
+  ): void {
+    this.#registerRoute(handler, options);
+  }
+
+  #registerRoute<
     TReq extends ReqSchema = ReqSchema,
     TResBody extends HandlerResponse = HandlerResponse,
     TRes extends ResSchema = ResSchema,
@@ -603,7 +622,7 @@ class Router {
     // Case 1: method(path, [middleware], handler, { validation })
     if (Array.isArray(middlewareOrHandler)) {
       if (handlerOrOptions && typeof handlerOrOptions === 'function') {
-        this.route(handlerOrOptions, {
+        this.#registerRoute(handlerOrOptions, {
           method,
           path,
           middleware: middlewareOrHandler,
@@ -612,7 +631,7 @@ class Router {
         return;
       }
       return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-        this.route(descriptor.value, {
+        this.#registerRoute(descriptor.value, {
           method,
           path,
           middleware: middlewareOrHandler,
@@ -630,17 +649,21 @@ class Router {
         typeof handlerOrOptions === 'object' &&
         !Array.isArray(handlerOrOptions)
       ) {
-        this.route(middlewareOrHandler, { method, path, ...handlerOrOptions });
+        this.#registerRoute(middlewareOrHandler, {
+          method,
+          path,
+          ...handlerOrOptions,
+        });
         return;
       }
       // No options provided
-      this.route(middlewareOrHandler, { method, path });
+      this.#registerRoute(middlewareOrHandler, { method, path });
       return;
     }
 
     // Case 3: Decorator usage
     return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
-      this.route(descriptor.value, { method, path });
+      this.#registerRoute(descriptor.value, { method, path });
       return descriptor;
     };
   }

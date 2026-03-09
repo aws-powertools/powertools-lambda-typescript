@@ -79,12 +79,12 @@ import {
   resolvePrefixedPath,
 } from './utils.js';
 
-class Router {
+class Router<TEnv extends Env = Env> {
   protected context: Record<string, unknown>;
 
   protected readonly routeRegistry: RouteHandlerRegistry;
   protected readonly errorHandlerRegistry: ErrorHandlerRegistry;
-  protected readonly middleware: Middleware[] = [];
+  protected readonly middleware: Middleware<TEnv>[] = [];
 
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
@@ -217,7 +217,7 @@ class Router {
    * router.use(authMiddleware);
    * ```
    */
-  public use(middleware: Middleware): void {
+  public use(middleware: Middleware<TEnv>): void {
     this.middleware.push(middleware);
   }
 
@@ -460,7 +460,7 @@ class Router {
   ): void;
   public route<V extends ValidationConfig>(
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -479,7 +479,7 @@ class Router {
     TResBody extends HandlerResponse = HandlerResponse,
     TRes extends ResSchema = ResSchema,
   >(
-    handler: RouteHandler | TypedRouteHandler<Env, TReq, TResBody, TRes>,
+    handler: RouteHandler<TEnv> | TypedRouteHandler<TEnv, TReq, TResBody, TRes>,
     options: HttpRouteOptions
   ): void {
     const { method, path, middleware = [], validation } = options;
@@ -490,7 +490,7 @@ class Router {
     const allMiddleware = validation
       ? [
           ...middleware,
-          validate<Env, TReq, TResBody, TRes>(
+          validate<TEnv, TReq, TResBody, TRes>(
             validation as ValidationConfig<TReq, TResBody>
           ),
         ]
@@ -617,8 +617,8 @@ class Router {
   >(
     method: HttpMethod,
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<Env, TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<Env, TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     // Case 1: method(path, [middleware], handler, { validation })
@@ -677,7 +677,7 @@ class Router {
   public get<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -688,7 +688,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -701,8 +701,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<Env, TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<Env, TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -725,7 +725,7 @@ class Router {
   public post<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -736,7 +736,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -749,8 +749,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<Env, TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<Env, TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -769,7 +769,7 @@ class Router {
   public put<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -780,7 +780,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -793,8 +793,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<Env, TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<Env, TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -817,7 +817,7 @@ class Router {
   public patch<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -828,7 +828,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -841,8 +841,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<Env, TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<Env, TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -865,7 +865,7 @@ class Router {
   public delete<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -876,7 +876,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -889,8 +889,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<Env, TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<Env, TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -913,7 +913,7 @@ class Router {
   public head<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -924,7 +924,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -937,8 +937,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<Env, TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<Env, TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -961,7 +961,7 @@ class Router {
   public options<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -972,7 +972,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
-      Env,
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -985,8 +985,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<Env, TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<Env, TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(

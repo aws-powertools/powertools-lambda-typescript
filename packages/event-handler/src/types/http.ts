@@ -19,6 +19,36 @@ import type { ResolveOptions } from './common.js';
 
 type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2' | 'ALB';
 
+/**
+ * Environment configuration for the Router.
+ *
+ * Use this to define the shape of your request-scoped and shared stores.
+ */
+type Env = {
+  store?: {
+    request?: Record<string, unknown>;
+    shared?: Record<string, unknown>;
+  };
+};
+
+/**
+ * Extracts the request store type from an Env.
+ */
+type RequestStoreOf<TEnv extends Env> = TEnv extends {
+  store: { request: infer R extends Record<string, unknown> };
+}
+  ? R
+  : Record<string, unknown>;
+
+/**
+ * Extracts the shared store type from an Env.
+ */
+type SharedStoreOf<TEnv extends Env> = TEnv extends {
+  store: { shared: infer S extends Record<string, unknown> };
+}
+  ? S
+  : Record<string, unknown>;
+
 type ResponseTypeMap = {
   ApiGatewayV1: APIGatewayProxyResult;
   ApiGatewayV2: APIGatewayProxyStructuredResultV2;
@@ -61,7 +91,7 @@ type ValidatedResponse<TRes extends ResSchema = ResSchema> = {
   [K in keyof TRes as TRes[K] extends undefined ? never : K]: TRes[K];
 };
 
-type RequestContext = {
+type RequestContext<_TEnv extends Env = Env> = {
   req: Request;
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent;
   context: Context;
@@ -73,9 +103,10 @@ type RequestContext = {
 };
 
 type TypedRequestContext<
+  TEnv extends Env = Env,
   TReq extends ReqSchema = ReqSchema,
   TRes extends ResSchema = ResSchema,
-> = RequestContext & {
+> = RequestContext<TEnv> & {
   // biome-ignore lint/complexity/noBannedTypes: {} is intentional — means "no additional properties" in conditional type
   valid: ([ReqSchema] extends [TReq] ? {} : { req: ValidatedRequest<TReq> }) &
     // biome-ignore lint/complexity/noBannedTypes: {} is intentional — means "no additional properties" in conditional type
@@ -139,16 +170,17 @@ type HandlerResponse =
   | ExtendedAPIGatewayProxyResult
   | BinaryResult;
 
-type RouteHandler<TReturn = HandlerResponse> = (
-  reqCtx: RequestContext
+type RouteHandler<TEnv extends Env = Env, TReturn = HandlerResponse> = (
+  reqCtx: RequestContext<TEnv>
 ) => Promise<TReturn> | TReturn;
 
 type TypedRouteHandler<
+  TEnv extends Env = Env,
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
   TRes extends ResSchema = ResSchema,
 > = (
-  reqCtx: TypedRequestContext<TReq, TRes>
+  reqCtx: TypedRequestContext<TEnv, TReq, TRes>
 ) =>
   | Promise<TResBody | ExtendedAPIGatewayProxyResult<TResBody>>
   | TResBody
@@ -177,8 +209,8 @@ type HttpRouteOptions = {
 // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
 type NextFunction = () => Promise<HandlerResponse | void>;
 
-type Middleware = (args: {
-  reqCtx: RequestContext | TypedRequestContext;
+type Middleware<TEnv extends Env = Env> = (args: {
+  reqCtx: RequestContext<TEnv> | TypedRequestContext<TEnv>;
   next: NextFunction;
   // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
 }) => Promise<HandlerResponse | void>;
@@ -452,24 +484,32 @@ type ValidationErrorDetail = {
  * Union type for middleware array or route handler
  */
 type MiddlewareOrHandler<
+  TEnv extends Env = Env,
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
   TRes extends ResSchema = ResSchema,
-> = Middleware[] | RouteHandler | TypedRouteHandler<TReq, TResBody, TRes>;
+> =
+  | Middleware<TEnv>[]
+  | RouteHandler<TEnv>
+  | TypedRouteHandler<TEnv, TReq, TResBody, TRes>;
 
 /**
  * Union type for route handler or validation options
  */
 type HandlerOrOptions<
+  TEnv extends Env = Env,
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
   TRes extends ResSchema = ResSchema,
 > =
-  | RouteHandler
-  | TypedRouteHandler<TReq, TResBody, TRes>
+  | RouteHandler<TEnv>
+  | TypedRouteHandler<TEnv, TReq, TResBody, TRes>
   | { validation: ValidationConfig<TReq, TResBody> };
 
 export type {
+  Env,
+  RequestStoreOf,
+  SharedStoreOf,
   Headers,
   BinaryResult,
   ExtendedAPIGatewayProxyResult,

@@ -1,4 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest';
+import type { IStore } from '../../src/Store.js';
 import type {
   Env,
   Middleware,
@@ -60,5 +61,26 @@ describe('Store types', () => {
   it('preserves backwards compatibility for RouteHandler without generics', () => {
     type Rh = RouteHandler;
     expectTypeOf<Rh>().toEqualTypeOf<RouteHandler<Env>>();
+  });
+});
+
+describe('RequestContext store properties', () => {
+  type AppEnv = {
+    store: {
+      request: { userId: string; isAdmin: boolean };
+      shared: { db: string };
+    };
+  };
+
+  it('exposes shared as IStore typed to SharedStoreOf<TEnv>', () => {
+    type Ctx = RequestContext<AppEnv>;
+    expectTypeOf<Ctx['shared']>().toEqualTypeOf<IStore<{ db: string }>>();
+  });
+
+  it('defaults shared to IStore<Record<string, unknown>> without TEnv', () => {
+    type Ctx = RequestContext;
+    expectTypeOf<Ctx['shared']>().toEqualTypeOf<
+      IStore<Record<string, unknown>>
+    >();
   });
 });

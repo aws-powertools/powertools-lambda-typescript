@@ -15,6 +15,7 @@ import type {
 } from 'aws-lambda';
 import type { HttpStatusCodes, HttpVerbs } from '../http/constants.js';
 import type { Route } from '../http/Route.js';
+import type { IStore } from '../Store.js';
 import type { ResolveOptions } from './common.js';
 
 type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2' | 'ALB';
@@ -48,6 +49,15 @@ type SharedStoreOf<TEnv extends Env> = TEnv extends {
 }
   ? S
   : Record<string, unknown>;
+
+/**
+ * Convenience methods for interacting with the request-scoped store.
+ * These are exposed directly on `RequestContext` as closure-backed methods.
+ */
+type RequestStoreMethods<TEnv extends Env = Env> = Pick<
+  IStore<RequestStoreOf<TEnv>>,
+  'set' | 'get' | 'has' | 'delete'
+>;
 
 type ResponseTypeMap = {
   ApiGatewayV1: APIGatewayProxyResult;
@@ -91,7 +101,7 @@ type ValidatedResponse<TRes extends ResSchema = ResSchema> = {
   [K in keyof TRes as TRes[K] extends undefined ? never : K]: TRes[K];
 };
 
-type RequestContext<_TEnv extends Env = Env> = {
+type RequestContext<TEnv extends Env = Env> = {
   req: Request;
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent;
   context: Context;
@@ -100,7 +110,8 @@ type RequestContext<_TEnv extends Env = Env> = {
   responseType: ResponseType;
   isBase64Encoded?: boolean;
   isHttpStreaming?: boolean;
-};
+  shared: IStore<SharedStoreOf<TEnv>>;
+} & RequestStoreMethods<TEnv>;
 
 type TypedRequestContext<
   TEnv extends Env = Env,
@@ -509,6 +520,7 @@ type HandlerOrOptions<
 export type {
   Env,
   RequestStoreOf,
+  RequestStoreMethods,
   SharedStoreOf,
   Headers,
   BinaryResult,

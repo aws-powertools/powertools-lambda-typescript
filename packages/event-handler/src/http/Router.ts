@@ -19,6 +19,8 @@ import type {
   APIGatewayProxyStructuredResultV2,
   Context,
 } from 'aws-lambda';
+import type { IStore } from '../Store.js';
+import { Store } from '../Store.js';
 import type {
   Env,
   ErrorConstructor,
@@ -37,11 +39,13 @@ import type {
   Path,
   ReqSchema,
   RequestContext,
+  RequestStoreOf,
   ResolveStreamOptions,
   ResponseStream,
   ResSchema,
   RouteHandler,
   RouterResponse,
+  SharedStoreOf,
   TypedRouteHandler,
   ValidationConfig,
 } from '../types/http.js';
@@ -87,6 +91,11 @@ class Router<TEnv extends Env = Env> {
   protected readonly middleware: Middleware<TEnv>[] = [];
 
   /**
+   * A shared store that persists across requests for the lifetime of the Router instance.
+   */
+  public readonly shared: IStore<SharedStoreOf<TEnv>>;
+
+  /**
    * A logger instance to be used for logging debug, warning, and error messages.
    *
    * When no logger is provided, we'll only log warnings and errors using the global `console` object.
@@ -118,6 +127,7 @@ class Router<TEnv extends Env = Env> {
     });
     this.isDev = isDevMode();
     this.prefix = options?.prefix;
+    this.shared = new Store<SharedStoreOf<TEnv>>();
   }
 
   /**
@@ -234,7 +244,7 @@ class Router<TEnv extends Env = Env> {
     event: unknown,
     context: Context,
     options?: HttpResolveOptions
-  ): Promise<RequestContext> {
+  ): Promise<RequestContext<TEnv>> {
     if (
       !isAPIGatewayProxyEventV1(event) &&
       !isAPIGatewayProxyEventV2(event) &&
@@ -247,6 +257,7 @@ class Router<TEnv extends Env = Env> {
     }
 
     const responseType = getResponseType(event);
+    const requestStore = new Store<RequestStoreOf<TEnv>>();
 
     let req: Request;
     try {
@@ -268,12 +279,25 @@ class Router<TEnv extends Env = Env> {
           }),
           params: {},
           responseType,
+          set(key, value) {
+            requestStore.set(key, value);
+          },
+          get(key) {
+            return requestStore.get(key);
+          },
+          has(key) {
+            return requestStore.has(key);
+          },
+          delete(key) {
+            return requestStore.delete(key);
+          },
+          shared: this.shared,
         };
       }
       throw err;
     }
 
-    const requestContext: RequestContext = {
+    const requestContext: RequestContext<TEnv> = {
       event,
       context,
       req,
@@ -288,6 +312,19 @@ class Router<TEnv extends Env = Env> {
       params: {},
       responseType,
       isHttpStreaming: options?.isHttpStreaming,
+      set(key, value) {
+        requestStore.set(key, value);
+      },
+      get(key) {
+        return requestStore.get(key);
+      },
+      has(key) {
+        return requestStore.has(key);
+      },
+      delete(key) {
+        return requestStore.delete(key);
+      },
+      shared: this.shared,
     };
 
     try {

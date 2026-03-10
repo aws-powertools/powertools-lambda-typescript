@@ -42,6 +42,7 @@ export type {
   HttpRouteOptions,
   HttpRouterOptions,
   HttpStatusCode,
+  MergeEnv,
   Middleware,
   Path,
   RequestContext,

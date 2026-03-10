@@ -191,4 +191,27 @@ describe('includeRouter typing', () => {
       return { ok: true };
     });
   });
+
+  it('accepts MergeEnv as upfront type on parent router', () => {
+    type AppEnv = MergeEnv<[AuthEnv, FeatureEnv]>;
+
+    const authRouter = new Router<AuthEnv>();
+    const featureRouter = new Router<FeatureEnv>();
+
+    const app = new Router<AppEnv>();
+    app.includeRouter(authRouter);
+    app.includeRouter(featureRouter);
+
+    app.get('/test', (ctx) => {
+      expectTypeOf(ctx.get('userId')).toEqualTypeOf<string | undefined>();
+      expectTypeOf(ctx.get('featureFlags')).toEqualTypeOf<
+        string[] | undefined
+      >();
+      expectTypeOf(ctx.shared.get('db')).toEqualTypeOf<string | undefined>();
+      expectTypeOf(ctx.shared.get('cache')).toEqualTypeOf<
+        Map<string, unknown> | undefined
+      >();
+      return { ok: true };
+    });
+  });
 });

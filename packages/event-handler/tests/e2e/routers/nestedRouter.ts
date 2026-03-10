@@ -2,9 +2,9 @@ import { Router } from '@aws-lambda-powertools/event-handler/http';
 
 const nestedRouter = new Router();
 
-nestedRouter.get('/info', ({ event }) => ({
+nestedRouter.get('/info', ({ req }) => ({
   nested: true,
-  path: event.path,
+  path: new URL(req.url).pathname,
 }));
 
 nestedRouter.post('/create', async ({ req }) => {

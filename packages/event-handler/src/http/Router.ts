@@ -34,6 +34,7 @@ import type {
   InferReqSchema,
   InferResBody,
   InferResSchema,
+  MergeEnv,
   Middleware,
   MiddlewareOrHandler,
   Path,
@@ -88,7 +89,7 @@ class Router<TEnv extends Env = Env> {
 
   protected readonly routeRegistry: RouteHandlerRegistry;
   protected readonly errorHandlerRegistry: ErrorHandlerRegistry;
-  protected readonly middleware: Middleware<TEnv>[] = [];
+  protected readonly middleware: Middleware[] = [];
 
   /**
    * A shared store that persists across requests for the lifetime of the Router instance.
@@ -707,8 +708,12 @@ class Router<TEnv extends Env = Env> {
     };
   }
 
-  public get(path: Path, handler: RouteHandler): void;
-  public get(path: Path, middleware: Middleware[], handler: RouteHandler): void;
+  public get(path: Path, handler: RouteHandler<TEnv>): void;
+  public get(
+    path: Path,
+    middleware: Middleware[],
+    handler: RouteHandler<TEnv>
+  ): void;
   public get(path: Path): MethodDecorator;
   public get(path: Path, middleware: Middleware[]): MethodDecorator;
   public get<V extends ValidationConfig>(
@@ -751,11 +756,11 @@ class Router<TEnv extends Env = Env> {
     );
   }
 
-  public post(path: Path, handler: RouteHandler): void;
+  public post(path: Path, handler: RouteHandler<TEnv>): void;
   public post(
     path: Path,
     middleware: Middleware[],
-    handler: RouteHandler
+    handler: RouteHandler<TEnv>
   ): void;
   public post(path: Path): MethodDecorator;
   public post(path: Path, middleware: Middleware[]): MethodDecorator;
@@ -799,8 +804,12 @@ class Router<TEnv extends Env = Env> {
     );
   }
 
-  public put(path: Path, handler: RouteHandler): void;
-  public put(path: Path, middleware: Middleware[], handler: RouteHandler): void;
+  public put(path: Path, handler: RouteHandler<TEnv>): void;
+  public put(
+    path: Path,
+    middleware: Middleware[],
+    handler: RouteHandler<TEnv>
+  ): void;
   public put(path: Path): MethodDecorator;
   public put(path: Path, middleware: Middleware[]): MethodDecorator;
   public put<V extends ValidationConfig>(
@@ -843,11 +852,11 @@ class Router<TEnv extends Env = Env> {
     );
   }
 
-  public patch(path: Path, handler: RouteHandler): void;
+  public patch(path: Path, handler: RouteHandler<TEnv>): void;
   public patch(
     path: Path,
     middleware: Middleware[],
-    handler: RouteHandler
+    handler: RouteHandler<TEnv>
   ): void;
   public patch(path: Path): MethodDecorator;
   public patch(path: Path, middleware: Middleware[]): MethodDecorator;
@@ -891,11 +900,11 @@ class Router<TEnv extends Env = Env> {
     );
   }
 
-  public delete(path: Path, handler: RouteHandler): void;
+  public delete(path: Path, handler: RouteHandler<TEnv>): void;
   public delete(
     path: Path,
     middleware: Middleware[],
-    handler: RouteHandler
+    handler: RouteHandler<TEnv>
   ): void;
   public delete(path: Path): MethodDecorator;
   public delete(path: Path, middleware: Middleware[]): MethodDecorator;
@@ -939,11 +948,11 @@ class Router<TEnv extends Env = Env> {
     );
   }
 
-  public head(path: Path, handler: RouteHandler): void;
+  public head(path: Path, handler: RouteHandler<TEnv>): void;
   public head(
     path: Path,
     middleware: Middleware[],
-    handler: RouteHandler
+    handler: RouteHandler<TEnv>
   ): void;
   public head(path: Path): MethodDecorator;
   public head(path: Path, middleware: Middleware[]): MethodDecorator;
@@ -987,11 +996,11 @@ class Router<TEnv extends Env = Env> {
     );
   }
 
-  public options(path: Path, handler: RouteHandler): void;
+  public options(path: Path, handler: RouteHandler<TEnv>): void;
   public options(
     path: Path,
     middleware: Middleware[],
-    handler: RouteHandler
+    handler: RouteHandler<TEnv>
   ): void;
   public options(path: Path): MethodDecorator;
   public options(path: Path, middleware: Middleware[]): MethodDecorator;
@@ -1069,7 +1078,11 @@ class Router<TEnv extends Env = Env> {
    * @param options - Configuration options for merging the router
    * @param options.prefix - An optional prefix to be added to the paths defined in the router
    */
-  public includeRouter(router: Router, options?: { prefix: Path }): void {
+  public includeRouter<TOther extends Env>(
+    router: Router<TOther>,
+    options?: { prefix: Path }
+  ): Router<MergeEnv<[TEnv, TOther]>>;
+  public includeRouter(router: Router, options?: { prefix: Path }): Router {
     this.context = {
       ...this.context,
       ...router.context,
@@ -1077,6 +1090,8 @@ class Router<TEnv extends Env = Env> {
     this.routeRegistry.merge(router.routeRegistry, options);
     this.errorHandlerRegistry.merge(router.errorHandlerRegistry);
     this.middleware.push(...router.middleware);
+
+    return this;
   }
 }
 

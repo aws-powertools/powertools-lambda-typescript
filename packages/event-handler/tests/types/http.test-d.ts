@@ -1,7 +1,10 @@
 import { describe, expectTypeOf, it } from 'vitest';
+import { Router } from '../../src/http/index.js';
 import type { IStore } from '../../src/Store.js';
 import type {
   Env,
+  IntersectAll,
+  MergeEnv,
   Middleware,
   RequestContext,
   RequestStoreOf,
@@ -82,5 +85,114 @@ describe('RequestContext store properties', () => {
     expectTypeOf<Ctx['shared']>().toEqualTypeOf<
       IStore<Record<string, unknown>>
     >();
+  });
+});
+
+describe('MergeEnv', () => {
+  type AuthEnv = {
+    store: {
+      request: { userId: string };
+      shared: { db: string };
+    };
+  };
+
+  type FeatureEnv = {
+    store: {
+      request: { featureFlags: string[] };
+      shared: { cache: Map<string, unknown> };
+    };
+  };
+
+  it('intersects request and shared stores from two envs', () => {
+    type Merged = MergeEnv<[AuthEnv, FeatureEnv]>;
+    expectTypeOf<Merged>().toEqualTypeOf<{
+      store: {
+        request: { userId: string } & {
+          featureFlags: string[];
+        } & Record<string, unknown>;
+        shared: { db: string } & {
+          cache: Map<string, unknown>;
+        } & Record<string, unknown>;
+      };
+    }>();
+  });
+
+  it('produces Record<string, unknown> for a single bare Env', () => {
+    type Merged = MergeEnv<[Env]>;
+    expectTypeOf<Merged>().toEqualTypeOf<{
+      store: {
+        request: Record<string, unknown> & Record<string, unknown>;
+        shared: Record<string, unknown> & Record<string, unknown>;
+      };
+    }>();
+  });
+});
+
+describe('IntersectAll', () => {
+  it('intersects a tuple of record types', () => {
+    type Result = IntersectAll<[{ a: number }, { b: string }, { c: boolean }]>;
+    expectTypeOf<Result>().toEqualTypeOf<
+      { a: number } & { b: string } & { c: boolean } & Record<string, unknown>
+    >();
+  });
+
+  it('returns Record<string, unknown> for an empty tuple', () => {
+    type Result = IntersectAll<[]>;
+    expectTypeOf<Result>().toEqualTypeOf<Record<string, unknown>>();
+  });
+});
+
+describe('includeRouter typing', () => {
+  type AuthEnv = {
+    store: {
+      request: { userId: string };
+      shared: { db: string };
+    };
+  };
+
+  type FeatureEnv = {
+    store: {
+      request: { featureFlags: string[] };
+      shared: { cache: Map<string, unknown> };
+    };
+  };
+
+  it('accepts a sub-router whose Env is a subset of the parent', () => {
+    type ParentEnv = {
+      store: {
+        request: { userId: string; featureFlags: string[] };
+        shared: { db: string; cache: Map<string, unknown> };
+      };
+    };
+    const app = new Router<ParentEnv>();
+    const authRouter = new Router<AuthEnv>();
+    app.includeRouter(authRouter);
+  });
+
+  it('accepts an untyped Router (backward compat)', () => {
+    const app = new Router();
+    const legacyRouter = new Router();
+    app.includeRouter(legacyRouter);
+  });
+
+  it('chains includeRouter to merge disjoint envs', () => {
+    const authRouter = new Router<AuthEnv>();
+    const featureRouter = new Router<FeatureEnv>();
+
+    const app = new Router()
+      .includeRouter(authRouter)
+      .includeRouter(featureRouter);
+
+    app.get('/test', (ctx) => {
+      expectTypeOf(ctx.get('userId')).toEqualTypeOf<string | undefined>();
+      expectTypeOf(ctx.get('featureFlags')).toEqualTypeOf<
+        string[] | undefined
+      >();
+      expectTypeOf(ctx.shared.get('db')).toEqualTypeOf<string | undefined>();
+      expectTypeOf(ctx.shared.get('cache')).toEqualTypeOf<
+        Map<string, unknown> | undefined
+      >();
+      return { ok: true };
+    });
   });
 });

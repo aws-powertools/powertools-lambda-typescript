@@ -21,6 +21,31 @@ import type { ResolveOptions } from './common.js';
 type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2' | 'ALB';
 
 /**
+ * Recursively intersects a tuple of record types into a single type.
+ */
+type IntersectAll<T extends Record<string, unknown>[]> = T extends [
+  infer First extends Record<string, unknown>,
+  ...infer Rest extends Record<string, unknown>[],
+]
+  ? First & IntersectAll<Rest>
+  : Record<string, unknown>;
+
+/**
+ * Merges multiple `Env` types into a single `Env` whose request and shared
+ * stores are the intersection of all input stores.
+ */
+type MergeEnv<TEnvs extends Env[]> = {
+  store: {
+    request: IntersectAll<{
+      [K in keyof TEnvs]: RequestStoreOf<TEnvs[K]>;
+    }>;
+    shared: IntersectAll<{
+      [K in keyof TEnvs]: SharedStoreOf<TEnvs[K]>;
+    }>;
+  };
+};
+
+/**
  * Environment configuration for the Router.
  *
  * Use this to define the shape of your request-scoped and shared stores.
@@ -519,6 +544,8 @@ type HandlerOrOptions<
 
 export type {
   Env,
+  IntersectAll,
+  MergeEnv,
   RequestStoreOf,
   RequestStoreMethods,
   SharedStoreOf,

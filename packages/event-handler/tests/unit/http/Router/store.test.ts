@@ -109,6 +109,28 @@ describe.each([
     });
   });
 
+  describe('includeRouter store', () => {
+    it('sub-router handlers can access the parent shared store', async () => {
+      // Prepare
+      const app = new Router();
+      app.shared.set('parentKey', 'parentValue');
+
+      const subRouter = new Router();
+      subRouter.get('/sub', (reqCtx) => {
+        return { value: reqCtx.shared.get('parentKey') };
+      });
+
+      app.includeRouter(subRouter);
+
+      // Act
+      const result = await app.resolve(createEvent('/sub', 'GET'), context);
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(JSON.parse(result.body)).toEqual({ value: 'parentValue' });
+    });
+  });
+
   describe('shared store', () => {
     it('persists data across requests', async () => {
       // Prepare

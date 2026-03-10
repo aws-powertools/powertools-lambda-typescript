@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
 import { Router } from '../../src/http/index.js';
-import type { IStore } from '../../src/Store.js';
+import type { IStore } from '../../src/store/Store.js';
 import type {
   Env,
   IntersectAll,

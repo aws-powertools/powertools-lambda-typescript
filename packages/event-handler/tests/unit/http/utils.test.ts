@@ -16,7 +16,7 @@ import {
   resolvePrefixedPath,
   validatePathPattern,
 } from '../../../src/http/utils.js';
-import { Store } from '../../../src/Store.js';
+import { Store } from '../../../src/store/Store.js';
 import type {
   Middleware,
   Path,

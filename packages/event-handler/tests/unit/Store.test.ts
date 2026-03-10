@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { Store } from '../../src/Store.js';
+import { Store } from '../../src/store/Store.js';
 
 describe('Class: Store', () => {
   it('sets and gets a value', () => {

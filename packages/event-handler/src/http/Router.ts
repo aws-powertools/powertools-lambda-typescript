@@ -19,8 +19,8 @@ import type {
   APIGatewayProxyStructuredResultV2,
   Context,
 } from 'aws-lambda';
-import type { IStore } from '../Store.js';
-import { Store } from '../Store.js';
+import type { IStore } from '../store/Store.js';
+import { Store } from '../store/Store.js';
 import type {
   Env,
   ErrorConstructor,

@@ -15,7 +15,7 @@ import type {
 } from 'aws-lambda';
 import type { HttpStatusCodes, HttpVerbs } from '../http/constants.js';
 import type { Route } from '../http/Route.js';
-import type { IStore } from '../Store.js';
+import type { IStore } from '../store/Store.js';
 import type { ResolveOptions } from './common.js';
 
 type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2' | 'ALB';

@@ -190,6 +190,29 @@ describe.each([
       expect(JSON.parse(result.body ?? '')).toEqual({ token: 'abc' });
     });
 
+    it('merges shared store entries from included router', async () => {
+      // Prepare
+      type ChildEnv = { store: { shared: { appName: string } } };
+      const child = new Router<ChildEnv>();
+      child.shared.set('appName', 'my-app');
+
+      child.get('/info', (reqCtx) => {
+        const appName: string = reqCtx.shared.get('appName') ?? '';
+        return { appName };
+      });
+
+      const app = new Router().includeRouter(child, { prefix: '/child' });
+
+      // Act
+      const result = await app.resolve(
+        createEvent('/child/info', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(JSON.parse(result.body ?? '')).toEqual({ appName: 'my-app' });
+    });
+
     it('is accessible in middleware', async () => {
       // Prepare
       type AppEnv = { store: { shared: { requestCount: number } } };

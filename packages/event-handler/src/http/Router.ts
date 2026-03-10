@@ -1086,6 +1086,11 @@ class Router<TEnv extends Env = Env> {
     this.errorHandlerRegistry.merge(router.errorHandlerRegistry);
     this.middleware.push(...router.middleware);
 
+    const shared = this.shared as IStore;
+    for (const [key, value] of router.shared.entries()) {
+      shared.set(key, value);
+    }
+
     return this;
   }
 }

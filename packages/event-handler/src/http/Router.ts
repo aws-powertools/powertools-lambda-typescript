@@ -232,6 +232,18 @@ class Router<TEnv extends Env = Env> {
     this.middleware.push(middleware);
   }
 
+  #createStoreAccessors(
+    requestStore: Store<RequestStoreOf<TEnv>>
+  ): Pick<RequestContext<TEnv>, 'set' | 'get' | 'has' | 'delete' | 'shared'> {
+    return {
+      set: (key, value) => requestStore.set(key, value),
+      get: (key) => requestStore.get(key),
+      has: (key) => requestStore.has(key),
+      delete: (key) => requestStore.delete(key),
+      shared: this.shared,
+    };
+  }
+
   /**
    * Core resolution logic shared by both resolve and resolveStream methods.
    * Validates the event, routes to handlers, executes middleware, and handles errors.
@@ -280,19 +292,7 @@ class Router<TEnv extends Env = Env> {
           }),
           params: {},
           responseType,
-          set(key, value) {
-            requestStore.set(key, value);
-          },
-          get(key) {
-            return requestStore.get(key);
-          },
-          has(key) {
-            return requestStore.has(key);
-          },
-          delete(key) {
-            return requestStore.delete(key);
-          },
-          shared: this.shared,
+          ...this.#createStoreAccessors(requestStore),
         };
       }
       throw err;
@@ -313,19 +313,7 @@ class Router<TEnv extends Env = Env> {
       params: {},
       responseType,
       isHttpStreaming: options?.isHttpStreaming,
-      set(key, value) {
-        requestStore.set(key, value);
-      },
-      get(key) {
-        return requestStore.get(key);
-      },
-      has(key) {
-        return requestStore.has(key);
-      },
-      delete(key) {
-        return requestStore.delete(key);
-      },
-      shared: this.shared,
+      ...this.#createStoreAccessors(requestStore),
     };
 
     try {

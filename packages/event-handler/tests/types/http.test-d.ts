@@ -107,12 +107,8 @@ describe('MergeEnv', () => {
     type Merged = MergeEnv<[AuthEnv, FeatureEnv]>;
     expectTypeOf<Merged>().toEqualTypeOf<{
       store: {
-        request: { userId: string } & {
-          featureFlags: string[];
-        } & Record<string, unknown>;
-        shared: { db: string } & {
-          cache: Map<string, unknown>;
-        } & Record<string, unknown>;
+        request: { userId: string } & { featureFlags: string[] };
+        shared: { db: string } & { cache: Map<string, unknown> };
       };
     }>();
   });
@@ -121,8 +117,8 @@ describe('MergeEnv', () => {
     type Merged = MergeEnv<[Env]>;
     expectTypeOf<Merged>().toEqualTypeOf<{
       store: {
-        request: Record<string, unknown> & Record<string, unknown>;
-        shared: Record<string, unknown> & Record<string, unknown>;
+        request: Record<string, unknown>;
+        shared: Record<string, unknown>;
       };
     }>();
   });
@@ -132,13 +128,13 @@ describe('IntersectAll', () => {
   it('intersects a tuple of record types', () => {
     type Result = IntersectAll<[{ a: number }, { b: string }, { c: boolean }]>;
     expectTypeOf<Result>().toEqualTypeOf<
-      { a: number } & { b: string } & { c: boolean } & Record<string, unknown>
+      { a: number } & { b: string } & { c: boolean }
     >();
   });
 
-  it('returns Record<string, unknown> for an empty tuple', () => {
+  it('returns unknown for an empty tuple', () => {
     type Result = IntersectAll<[]>;
-    expectTypeOf<Result>().toEqualTypeOf<Record<string, unknown>>();
+    expectTypeOf<Result>().toEqualTypeOf<unknown>();
   });
 });
 

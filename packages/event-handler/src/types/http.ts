@@ -28,7 +28,7 @@ type IntersectAll<T extends Record<string, unknown>[]> = T extends [
   ...infer Rest extends Record<string, unknown>[],
 ]
   ? First & IntersectAll<Rest>
-  : Record<string, unknown>;
+  : unknown;
 
 /**
  * Merges multiple `Env` types into a single `Env` whose request and shared

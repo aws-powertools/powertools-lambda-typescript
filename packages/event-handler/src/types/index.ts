@@ -33,6 +33,7 @@ export type {
 
 export type {
   CorsOptions,
+  Env,
   ErrorHandler,
   ErrorResolveOptions,
   HandlerResponse,

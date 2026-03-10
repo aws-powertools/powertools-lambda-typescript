@@ -70,6 +70,16 @@
         "default": "./lib/esm/types/index.js"
       }
     },
+    "./store": {
+      "require": {
+        "types": "./lib/cjs/store/index.d.ts",
+        "default": "./lib/cjs/store/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/store/index.d.ts",
+        "default": "./lib/esm/store/index.js"
+      }
+    },
     "./http": {
       "require": {
         "types": "./lib/cjs/http/index.d.ts",

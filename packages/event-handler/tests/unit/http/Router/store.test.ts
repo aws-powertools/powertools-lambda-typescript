@@ -10,10 +10,12 @@ describe.each([
   describe('request-scoped store', () => {
     it('allows setting and getting values within a handler', async () => {
       // Prepare
-      const app = new Router();
+      type AppEnv = { store: { request: { userId: string } } };
+      const app = new Router<AppEnv>();
       app.get('/test', (reqCtx) => {
         reqCtx.set('userId', '123');
-        return { userId: reqCtx.get('userId') };
+        const userId: string = reqCtx.get('userId') ?? '';
+        return { userId };
       });
 
       // Act
@@ -21,12 +23,13 @@ describe.each([
 
       // Assess
       expect(result.statusCode).toBe(200);
-      expect(JSON.parse(result.body)).toEqual({ userId: '123' });
+      expect(JSON.parse(result.body ?? '')).toEqual({ userId: '123' });
     });
 
     it('isolates store data between requests', async () => {
       // Prepare
-      const app = new Router();
+      type AppEnv = { store: { request: { key: string } } };
+      const app = new Router<AppEnv>();
 
       app.get('/first', (reqCtx) => {
         reqCtx.set('key', 'first-value');
@@ -34,7 +37,8 @@ describe.each([
       });
 
       app.get('/second', (reqCtx) => {
-        return { value: reqCtx.get('key') };
+        const value: string = reqCtx.get('key') ?? '';
+        return { value: value || null };
       });
 
       // Act
@@ -42,12 +46,13 @@ describe.each([
       const result = await app.resolve(createEvent('/second', 'GET'), context);
 
       // Assess
-      expect(JSON.parse(result.body)).toEqual({ value: undefined });
+      expect(JSON.parse(result.body ?? '')).toEqual({ value: null });
     });
 
     it('supports has and delete operations', async () => {
       // Prepare
-      const app = new Router();
+      type AppEnv = { store: { request: { key: string } } };
+      const app = new Router<AppEnv>();
       app.get('/test', (reqCtx) => {
         reqCtx.set('key', 'value');
         const hasBefore = reqCtx.has('key');
@@ -60,7 +65,7 @@ describe.each([
       const result = await app.resolve(createEvent('/test', 'GET'), context);
 
       // Assess
-      expect(JSON.parse(result.body)).toEqual({
+      expect(JSON.parse(result.body ?? '')).toEqual({
         hasBefore: true,
         hasAfter: false,
       });
@@ -68,14 +73,16 @@ describe.each([
 
     it('shares store data between middleware and handler', async () => {
       // Prepare
-      const app = new Router();
+      type AppEnv = { store: { request: { fromMiddleware: string } } };
+      const app = new Router<AppEnv>();
       app.use(async ({ reqCtx, next }) => {
         reqCtx.set('fromMiddleware', 'hello');
         await next();
       });
 
       app.get('/test', (reqCtx) => {
-        return { value: reqCtx.get('fromMiddleware') };
+        const value: string = reqCtx.get('fromMiddleware') ?? '';
+        return { value };
       });
 
       // Act
@@ -83,12 +90,13 @@ describe.each([
 
       // Assess
       expect(result.statusCode).toBe(200);
-      expect(JSON.parse(result.body)).toEqual({ value: 'hello' });
+      expect(JSON.parse(result.body ?? '')).toEqual({ value: 'hello' });
     });
 
     it('allows middleware to read store data set by handler after next()', async () => {
       // Prepare
-      const app = new Router();
+      type AppEnv = { store: { request: { fromHandler: string } } };
+      const app = new Router<AppEnv>();
       let valueAfterNext: unknown;
 
       app.use(async ({ reqCtx, next }) => {
@@ -112,12 +120,14 @@ describe.each([
   describe('includeRouter store', () => {
     it('sub-router handlers can access the parent shared store', async () => {
       // Prepare
-      const app = new Router();
+      type AppEnv = { store: { shared: { parentKey: string } } };
+      const app = new Router<AppEnv>();
       app.shared.set('parentKey', 'parentValue');
 
-      const subRouter = new Router();
+      const subRouter = new Router<AppEnv>();
       subRouter.get('/sub', (reqCtx) => {
-        return { value: reqCtx.shared.get('parentKey') };
+        const value: string = reqCtx.shared.get('parentKey') ?? '';
+        return { value };
       });
 
       app.includeRouter(subRouter);
@@ -127,20 +137,22 @@ describe.each([
 
       // Assess
       expect(result.statusCode).toBe(200);
-      expect(JSON.parse(result.body)).toEqual({ value: 'parentValue' });
+      expect(JSON.parse(result.body ?? '')).toEqual({ value: 'parentValue' });
     });
   });
 
   describe('shared store', () => {
     it('persists data across requests', async () => {
       // Prepare
-      const app = new Router();
+      type AppEnv = { store: { shared: { counter: number } } };
+      const app = new Router<AppEnv>();
       app.shared.set('counter', 0);
 
       app.get('/increment', (reqCtx) => {
-        const current = reqCtx.shared.get('counter') ?? 0;
+        const current: number = reqCtx.shared.get('counter') ?? 0;
         reqCtx.shared.set('counter', current + 1);
-        return { counter: reqCtx.shared.get('counter') };
+        const counter: number = reqCtx.shared.get('counter') ?? 0;
+        return { counter };
       });
 
       // Act
@@ -152,12 +164,13 @@ describe.each([
 
       // Assess
       expect(result.statusCode).toBe(200);
-      expect(JSON.parse(result.body)).toEqual({ counter: 2 });
+      expect(JSON.parse(result.body ?? '')).toEqual({ counter: 2 });
     });
 
     it('shares data between different routes', async () => {
       // Prepare
-      const app = new Router();
+      type AppEnv = { store: { shared: { token: string } } };
+      const app = new Router<AppEnv>();
 
       app.get('/write', (reqCtx) => {
         reqCtx.shared.set('token', 'abc');
@@ -165,7 +178,8 @@ describe.each([
       });
 
       app.get('/read', (reqCtx) => {
-        return { token: reqCtx.shared.get('token') };
+        const token: string = reqCtx.shared.get('token') ?? '';
+        return { token };
       });
 
       // Act
@@ -173,22 +187,24 @@ describe.each([
       const result = await app.resolve(createEvent('/read', 'GET'), context);
 
       // Assess
-      expect(JSON.parse(result.body)).toEqual({ token: 'abc' });
+      expect(JSON.parse(result.body ?? '')).toEqual({ token: 'abc' });
     });
 
     it('is accessible in middleware', async () => {
       // Prepare
-      const app = new Router();
+      type AppEnv = { store: { shared: { requestCount: number } } };
+      const app = new Router<AppEnv>();
       app.shared.set('requestCount', 0);
 
       app.use(async ({ reqCtx, next }) => {
-        const count = reqCtx.shared.get('requestCount') ?? 0;
+        const count: number = reqCtx.shared.get('requestCount') ?? 0;
         reqCtx.shared.set('requestCount', count + 1);
         await next();
       });
 
       app.get('/test', (reqCtx) => {
-        return { requestCount: reqCtx.shared.get('requestCount') };
+        const requestCount: number = reqCtx.shared.get('requestCount') ?? 0;
+        return { requestCount };
       });
 
       // Act
@@ -196,7 +212,7 @@ describe.each([
       const result = await app.resolve(createEvent('/test', 'GET'), context);
 
       // Assess
-      expect(JSON.parse(result.body)).toEqual({ requestCount: 2 });
+      expect(JSON.parse(result.body ?? '')).toEqual({ requestCount: 2 });
     });
   });
 });

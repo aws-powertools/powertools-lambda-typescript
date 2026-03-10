@@ -1035,6 +1035,11 @@ class Router<TEnv extends Env = Env> {
   /**
    * Merges the routes, context and middleware from the passed router instance into this router instance.
    *
+   * Returns `this` with a widened type that includes the included router's store types,
+   * allowing calls to be chained in a fluent style. When chaining multiple `includeRouter`
+   * calls, the resulting type is the intersection of all store environments — giving
+   * handlers type-safe access to every sub-router's store keys.
+   *
    * **Override Behaviors:**
    * - **Context**: Properties from the included router override existing properties with the same key in the current router. A warning is logged when conflicts occur.
    * - **Routes**: Routes from the included router are added to the current router's registry. If a route with the same method and path already exists, the included router's route takes precedence.
@@ -1045,26 +1050,28 @@ class Router<TEnv extends Env = Env> {
    * ```typescript
    * import { Router } from '@aws-lambda-powertools/event-handler/http';
    *
-   * const todosRouter = new Router();
+   * type AuthEnv = { store: { request: { userId: string } } };
+   * type FeatureEnv = { store: { shared: { maxResults: number } } };
    *
-   * todosRouter.get('/todos', async () => {
-   *   // List API
+   * const authRouter = new Router<AuthEnv>();
+   * const featureRouter = new Router<FeatureEnv>();
+   *
+   * // Chained calls merge store types automatically
+   * const app = new Router()
+   *   .includeRouter(authRouter)
+   *   .includeRouter(featureRouter);
+   *
+   * // Handlers on `app` can now access both `userId` and `maxResults`
+   * app.get('/profile', (reqCtx) => {
+   *   const userId = reqCtx.get('userId');
+   *   const maxResults = reqCtx.shared.get('maxResults');
+   *   return { userId, maxResults };
    * });
-   *
-   * todosRouter.get('/todos/{todoId}', async () => {
-   *   // Get API
-   * });
-   *
-   * const app = new Router();
-   * app.includeRouter(todosRouter);
-   *
-   * export const handler = async (event: unknown, context: Context) => {
-   *   return app.resolve(event, context);
-   * };
    * ```
    * @param router - The `Router` from which to merge the routes, context and middleware
    * @param options - Configuration options for merging the router
    * @param options.prefix - An optional prefix to be added to the paths defined in the router
+   * @returns The current router instance, typed as `Router<MergeEnv<[TEnv, TOther]>>`
    */
   public includeRouter<TOther extends Env>(
     router: Router<TOther>,

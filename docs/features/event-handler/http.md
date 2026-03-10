@@ -986,7 +986,7 @@ When using [split routers](#split-routers), each sub-router can declare its own 
 
 === "index.ts"
 
-    ```ts hl_lines="5-9 12-16 32-34 37-38 41"
+    ```ts hl_lines="5-9 12-16 32 35-36 38-39"
     --8<-- "examples/snippets/event-handler/http/advanced_store_include_router.ts"
     ```
 

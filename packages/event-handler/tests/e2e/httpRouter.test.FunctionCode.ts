@@ -10,10 +10,9 @@ import { multiValueHeadersRouter } from './routers/multiValueHeadersRouter.js';
 import { nestedRouter } from './routers/nestedRouter.js';
 import { paramsRouter } from './routers/paramsRouter.js';
 import { proxyResultRouter } from './routers/proxyResultRouter.js';
-import { type StoreEnv, storeRouter } from './routers/storeRouter.js';
+import { storeRouter } from './routers/storeRouter.js';
 
-// Chain includeRouter to merge store types from storeRouter
-const app = new Router<StoreEnv>()
+const app = new Router()
   .includeRouter(methodsRouter, { prefix: '/methods' })
   .includeRouter(paramsRouter, { prefix: '/params' })
   .includeRouter(errorsRouter, { prefix: '/errors' })

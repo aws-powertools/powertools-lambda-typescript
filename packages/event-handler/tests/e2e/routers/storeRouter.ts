@@ -21,23 +21,24 @@ storeRouter.use(async ({ reqCtx, next }) => {
 
 // Route that reads from request store
 storeRouter.get('/request', (reqCtx) => {
-  const requestId: string = reqCtx.get('requestId') ?? '';
-  return { requestId };
+  return { requestId: reqCtx.get('requestId') };
 });
 
 // Route that reads from shared store
 storeRouter.get('/shared', (reqCtx) => {
-  const appName: string = reqCtx.shared.get('appName') ?? '';
-  const version: number = reqCtx.shared.get('version') ?? 0;
-  return { appName, version };
+  return {
+    appName: reqCtx.shared.get('appName'),
+    version: reqCtx.shared.get('version'),
+  };
 });
 
 // Route that reads from both stores
 storeRouter.get('/both', (reqCtx) => {
-  const requestId: string = reqCtx.get('requestId') ?? '';
-  const appName: string = reqCtx.shared.get('appName') ?? '';
-  const version: number = reqCtx.shared.get('version') ?? 0;
-  return { requestId, appName, version };
+  return {
+    requestId: reqCtx.get('requestId'),
+    appName: reqCtx.shared.get('appName'),
+    version: reqCtx.shared.get('version'),
+  };
 });
 
 export { storeRouter, type StoreEnv };

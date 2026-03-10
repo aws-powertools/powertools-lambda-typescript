@@ -14,8 +14,7 @@ describe.each([
       const app = new Router<AppEnv>();
       app.get('/test', (reqCtx) => {
         reqCtx.set('userId', '123');
-        const userId: string = reqCtx.get('userId') ?? '';
-        return { userId };
+        return { userId: reqCtx.get('userId') };
       });
 
       // Act
@@ -37,8 +36,7 @@ describe.each([
       });
 
       app.get('/second', (reqCtx) => {
-        const value: string = reqCtx.get('key') ?? '';
-        return { value: value || null };
+        return { value: reqCtx.get('key') ?? null };
       });
 
       // Act
@@ -81,8 +79,7 @@ describe.each([
       });
 
       app.get('/test', (reqCtx) => {
-        const value: string = reqCtx.get('fromMiddleware') ?? '';
-        return { value };
+        return { value: reqCtx.get('fromMiddleware') };
       });
 
       // Act
@@ -126,8 +123,7 @@ describe.each([
 
       const subRouter = new Router<AppEnv>();
       subRouter.get('/sub', (reqCtx) => {
-        const value: string = reqCtx.shared.get('parentKey') ?? '';
-        return { value };
+        return { value: reqCtx.shared.get('parentKey') };
       });
 
       app.includeRouter(subRouter);
@@ -149,10 +145,9 @@ describe.each([
       app.shared.set('counter', 0);
 
       app.get('/increment', (reqCtx) => {
-        const current: number = reqCtx.shared.get('counter') ?? 0;
+        const current = reqCtx.shared.get('counter') ?? 0;
         reqCtx.shared.set('counter', current + 1);
-        const counter: number = reqCtx.shared.get('counter') ?? 0;
-        return { counter };
+        return { counter: reqCtx.shared.get('counter') };
       });
 
       // Act
@@ -178,8 +173,7 @@ describe.each([
       });
 
       app.get('/read', (reqCtx) => {
-        const token: string = reqCtx.shared.get('token') ?? '';
-        return { token };
+        return { token: reqCtx.shared.get('token') };
       });
 
       // Act
@@ -197,8 +191,7 @@ describe.each([
       child.shared.set('appName', 'my-app');
 
       child.get('/info', (reqCtx) => {
-        const appName: string = reqCtx.shared.get('appName') ?? '';
-        return { appName };
+        return { appName: reqCtx.shared.get('appName') };
       });
 
       const app = new Router().includeRouter(child, { prefix: '/child' });
@@ -220,14 +213,13 @@ describe.each([
       app.shared.set('requestCount', 0);
 
       app.use(async ({ reqCtx, next }) => {
-        const count: number = reqCtx.shared.get('requestCount') ?? 0;
+        const count = reqCtx.shared.get('requestCount') ?? 0;
         reqCtx.shared.set('requestCount', count + 1);
         await next();
       });
 
       app.get('/test', (reqCtx) => {
-        const requestCount: number = reqCtx.shared.get('requestCount') ?? 0;
-        return { requestCount };
+        return { requestCount: reqCtx.shared.get('requestCount') };
       });
 
       // Act

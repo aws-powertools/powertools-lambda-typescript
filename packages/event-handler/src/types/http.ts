@@ -163,6 +163,7 @@ type RequestContext<TEnv extends Env = Env> = {
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent;
   context: Context;
   res: Response;
+  route: string;
   params: Record<string, string>;
   responseType: ResponseType;
   isBase64Encoded?: boolean;
@@ -262,6 +263,7 @@ type Path = `/${string}` | RegExp;
 
 type HttpRouteHandlerOptions = {
   handler: RouteHandler;
+  route: string;
   params: Record<string, string>;
   rawParams: Record<string, string>;
   middleware: Middleware[];

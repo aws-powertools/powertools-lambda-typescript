@@ -293,6 +293,7 @@ class Router<TEnv extends Env = Env> {
               headers: { 'transfer-encoding': 'chunked' },
             }),
           }),
+          route: '',
           params: {},
           responseType,
           ...this.#createStoreAccessors(requestStore),
@@ -313,6 +314,7 @@ class Router<TEnv extends Env = Env> {
           headers: { 'transfer-encoding': 'chunked' },
         }),
       }),
+      route: '',
       params: {},
       responseType,
       isHttpStreaming: options?.isHttpStreaming,
@@ -324,6 +326,8 @@ class Router<TEnv extends Env = Env> {
       const path = new URL(req.url).pathname as Path;
 
       const route = this.routeRegistry.resolve(method, path);
+
+      requestContext.route = route?.route ?? `${method} ${path}`;
 
       const handlerMiddleware: Middleware = async ({ reqCtx, next }) => {
         let handlerRes: HandlerResponse;

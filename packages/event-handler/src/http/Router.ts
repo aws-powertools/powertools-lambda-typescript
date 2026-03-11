@@ -265,6 +265,7 @@ class Router {
               headers: { 'transfer-encoding': 'chunked' },
             }),
           }),
+          route: '',
           params: {},
           responseType,
         };
@@ -284,6 +285,7 @@ class Router {
           headers: { 'transfer-encoding': 'chunked' },
         }),
       }),
+      route: '',
       params: {},
       responseType,
       isHttpStreaming: options?.isHttpStreaming,
@@ -294,6 +296,8 @@ class Router {
       const path = new URL(req.url).pathname as Path;
 
       const route = this.routeRegistry.resolve(method, path);
+
+      requestContext.route = route?.route ?? `${method} ${path}`;
 
       const handlerMiddleware: Middleware = async ({ reqCtx, next }) => {
         let handlerRes: HandlerResponse;

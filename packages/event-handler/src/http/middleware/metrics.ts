@@ -41,6 +41,9 @@ const getEventMetadata = (reqCtx: RequestContext): Record<string, string> => {
  * This middleware automatically:
  * - Adds the matched route as a metric dimension
  * - Emits `latency` (Milliseconds), `fault` (Count), and `error` (Count) metrics
+ * - Adds `ipAddress` and `userAgent` metadata from request headers when available
+ * - Adds `apiGwRequestId` and `apiGwApiId` metadata for API Gateway V1 and V2 events
+ * - Adds `apiGwExtendedRequestId` metadata for API Gateway V1 events when available
  * - Publishes stored metrics after each request
  *
  * @example

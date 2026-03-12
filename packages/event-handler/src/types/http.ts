@@ -19,6 +19,12 @@ import type { ResolveOptions } from './common.js';
 
 type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2' | 'ALB';
 
+type EventTypeMap = {
+  ApiGatewayV1: APIGatewayProxyEvent;
+  ApiGatewayV2: APIGatewayProxyEventV2;
+  ALB: ALBEvent;
+};
+
 type ResponseTypeMap = {
   ApiGatewayV1: APIGatewayProxyResult;
   ApiGatewayV2: APIGatewayProxyStructuredResultV2;
@@ -62,16 +68,18 @@ type ValidatedResponse<TRes extends ResSchema = ResSchema> = {
 };
 
 type RequestContext = {
-  req: Request;
-  event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent;
-  context: Context;
-  res: Response;
-  route: string;
-  params: Record<string, string>;
-  responseType: ResponseType;
-  isBase64Encoded?: boolean;
-  isHttpStreaming?: boolean;
-};
+  [T in ResponseType]: {
+    req: Request;
+    event: EventTypeMap[T];
+    context: Context;
+    res: Response;
+    route: string;
+    params: Record<string, string>;
+    responseType: T;
+    isBase64Encoded?: boolean;
+    isHttpStreaming?: boolean;
+  };
+}[ResponseType];
 
 type TypedRequestContext<
   TReq extends ReqSchema = ReqSchema,
@@ -492,6 +500,7 @@ export type {
   RequestContext,
   TypedRequestContext,
   ResponseType,
+  EventTypeMap,
   ResponseTypeMap,
   HttpRouterOptions,
   RouteHandler,

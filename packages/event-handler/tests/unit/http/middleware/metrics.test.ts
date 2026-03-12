@@ -4,7 +4,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BadRequestError } from '../../../../src/http/errors.js';
 import { metrics as metricsMiddleware } from '../../../../src/http/middleware/metrics.js';
 import { Router } from '../../../../src/http/Router.js';
-import { createTestEvent } from '../helpers.js';
+import {
+  createTestALBEvent,
+  createTestEvent,
+  createTestEventV2,
+} from '../helpers.js';
 
 describe('Metrics Middleware', () => {
   let app: Router;
@@ -130,6 +134,143 @@ describe('Metrics Middleware', () => {
           { Name: 'fault', Unit: 'Count' },
           { Name: 'error', Unit: 'Count' },
         ]),
+      })
+    );
+  });
+
+  it('adds ipAddress and userAgent metadata from request headers', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(
+      createTestEvent('/test', 'GET', {
+        'X-Forwarded-For': '203.0.113.50, 70.41.3.18',
+        'User-Agent': 'test-agent/1.0',
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        ipAddress: '203.0.113.50',
+        userAgent: 'test-agent/1.0',
+      })
+    );
+  });
+
+  it('adds apiGwRequestId, apiGwApiId, and apiGwExtendedRequestId metadata for API Gateway V1 events', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        apiGwRequestId: 'test-request-id-v1',
+        apiGwApiId: 'api-id-v1',
+        apiGwExtendedRequestId: 'test-extended-request-id',
+      })
+    );
+  });
+
+  it('adds apiGwRequestId and apiGwApiId metadata for API Gateway V2 events', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(createTestEventV2('/test', 'GET'), context);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        apiGwRequestId: 'test-request-id',
+        apiGwApiId: 'api-id',
+      })
+    );
+    expect(console.log).not.toHaveEmittedEMFWith(
+      expect.objectContaining({
+        apiGwExtendedRequestId: 'test-extended-request-id',
+      })
+    );
+  });
+
+  it('does not add API Gateway metadata for ALB events', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(createTestALBEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(console.log).not.toHaveEmittedEMFWith(
+      expect.objectContaining({
+        apiGwRequestId: 'test-request-id',
+      })
+    );
+    expect(console.log).not.toHaveEmittedEMFWith(
+      expect.objectContaining({
+        apiGwApiId: 'api-id',
+      })
+    );
+    expect(console.log).not.toHaveEmittedEMFWith(
+      expect.objectContaining({
+        apiGwExtendedRequestId: 'test-extended-request-id',
+      })
+    );
+  });
+
+  it('extracts client IP from X-Forwarded-For with single IPv6 address', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(
+      createTestEvent('/test', 'GET', {
+        'X-Forwarded-For': '2001:db8:85a3::8a2e:370:7334',
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        ipAddress: '2001:db8:85a3::8a2e:370:7334',
+      })
+    );
+  });
+
+  it('does not add ipAddress or userAgent metadata when headers are missing', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(console.log).not.toHaveEmittedEMFWith(
+      expect.objectContaining({
+        ipAddress: '127.0.0.1',
+      })
+    );
+    expect(console.log).not.toHaveEmittedEMFWith(
+      expect.objectContaining({
+        userAgent: 'test-agent/1.0',
       })
     );
   });

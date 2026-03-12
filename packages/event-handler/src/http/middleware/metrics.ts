@@ -37,19 +37,20 @@ const metrics = (metrics: Metrics): Middleware => {
       status = error instanceof HttpError ? error.statusCode : 500;
       throw error;
     } finally {
-      metrics.addDimension('route', reqCtx.route);
-      metrics.addMetric(
-        'latency',
-        MetricUnit.Milliseconds,
-        performance.now() - start
-      );
-      metrics.addMetric('fault', MetricUnit.Count, status >= 500 ? 1 : 0);
-      metrics.addMetric(
-        'error',
-        MetricUnit.Count,
-        status >= 400 && status < 500 ? 1 : 0
-      );
-      metrics.publishStoredMetrics();
+      metrics
+        .addDimension('route', reqCtx.route)
+        .addMetric(
+          'latency',
+          MetricUnit.Milliseconds,
+          performance.now() - start
+        )
+        .addMetric('fault', MetricUnit.Count, status >= 500 ? 1 : 0)
+        .addMetric(
+          'error',
+          MetricUnit.Count,
+          status >= 400 && status < 500 ? 1 : 0
+        )
+        .publishStoredMetrics();
     }
   };
 };

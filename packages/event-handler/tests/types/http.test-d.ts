@@ -113,12 +113,45 @@ describe('MergeEnv', () => {
     }>();
   });
 
-  it('produces Record<string, unknown> for a single bare Env', () => {
-    type Merged = MergeEnv<[Env]>;
+  it('requires at least two Env types', () => {
+    // @ts-expect-error TS2344 — single-element tuple does not satisfy [Env, Env, ...Env[]]
+    type _Invalid = MergeEnv<[Env]>;
+  });
+
+  it('produces Record<string, unknown> when all envs are untyped', () => {
+    type Merged = MergeEnv<[Env, Env]>;
     expectTypeOf<Merged>().toEqualTypeOf<{
       store: {
         request: Record<string, unknown>;
         shared: Record<string, unknown>;
+      };
+    }>();
+  });
+
+  it('preserves typed store when merged with an untyped Env', () => {
+    type TypedEnv = {
+      store: {
+        request: { id: string };
+        shared: { appName: string };
+      };
+    };
+    type Merged = MergeEnv<[Env, TypedEnv]>;
+    expectTypeOf<Merged>().toEqualTypeOf<{
+      store: {
+        request: { id: string };
+        shared: { appName: string };
+      };
+    }>();
+  });
+
+  it('preserves typed request store when merged with shared-only Env', () => {
+    type SharedOnlyEnv = { store: { shared: { appName: string } } };
+    type RequestOnlyEnv = { store: { request: { id: string } } };
+    type Merged = MergeEnv<[SharedOnlyEnv, RequestOnlyEnv]>;
+    expectTypeOf<Merged>().toEqualTypeOf<{
+      store: {
+        request: { id: string };
+        shared: { appName: string };
       };
     }>();
   });

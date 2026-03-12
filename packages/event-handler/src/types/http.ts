@@ -34,14 +34,24 @@ type IntersectAll<T extends Record<string, unknown>[]> = T extends [
  * Merges multiple `Env` types into a single `Env` whose request and shared
  * stores are the intersection of all input stores.
  */
-type MergeEnv<TEnvs extends Env[]> = {
+/**
+ * Widens `{}` back to `Record<string, unknown>` so that fully-untyped
+ * merges remain open for arbitrary key access.
+ */
+type DefaultIfEmpty<T> = keyof T extends never ? Record<string, unknown> : T;
+
+type MergeEnv<TEnvs extends [Env, Env, ...Env[]]> = {
   store: {
-    request: IntersectAll<{
-      [K in keyof TEnvs]: RequestStoreOf<TEnvs[K]>;
-    }>;
-    shared: IntersectAll<{
-      [K in keyof TEnvs]: SharedStoreOf<TEnvs[K]>;
-    }>;
+    request: DefaultIfEmpty<
+      IntersectAll<{
+        [K in keyof TEnvs]: RequestStoreOfForMerge<TEnvs[K]>;
+      }>
+    >;
+    shared: DefaultIfEmpty<
+      IntersectAll<{
+        [K in keyof TEnvs]: SharedStoreOfForMerge<TEnvs[K]>;
+      }>
+    >;
   };
 };
 
@@ -74,6 +84,28 @@ type SharedStoreOf<TEnv extends Env> = TEnv extends {
 }
   ? S
   : Record<string, unknown>;
+
+/**
+ * Like {@link RequestStoreOf} but falls back to `{}` instead of
+ * `Record<string, unknown>`, so it acts as an identity element
+ * when intersected inside {@link MergeEnv}.
+ */
+type RequestStoreOfForMerge<TEnv extends Env> = TEnv extends {
+  store: { request: infer R extends Record<string, unknown> };
+}
+  ? R
+  : {};
+
+/**
+ * Like {@link SharedStoreOf} but falls back to `{}` instead of
+ * `Record<string, unknown>`, so it acts as an identity element
+ * when intersected inside {@link MergeEnv}.
+ */
+type SharedStoreOfForMerge<TEnv extends Env> = TEnv extends {
+  store: { shared: infer S extends Record<string, unknown> };
+}
+  ? S
+  : {};
 
 /**
  * Convenience methods for interacting with the request-scoped store.

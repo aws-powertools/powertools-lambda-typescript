@@ -37,6 +37,9 @@ export const createTestEvent = (
     httpMethod,
     path,
     domainName: 'api.example.com',
+    requestId: 'test-request-id-v1',
+    apiId: 'api-id-v1',
+    extendedRequestId: 'test-extended-request-id',
   } as APIGatewayProxyEvent['requestContext'],
   resource: '',
 });

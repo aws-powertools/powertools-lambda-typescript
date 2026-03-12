@@ -1,7 +1,39 @@
 import type { Metrics } from '@aws-lambda-powertools/metrics';
 import { MetricUnit } from '@aws-lambda-powertools/metrics';
-import type { Middleware } from '../../types/http.js';
+import type { Middleware, RequestContext } from '../../types/http.js';
 import { HttpError } from '../errors.js';
+
+const getHeaderMetadata = (req: Request): Record<string, string> => {
+  const metadata: Record<string, string> = {};
+
+  const xForwardedFor = req.headers.get('X-Forwarded-For');
+  if (xForwardedFor) {
+    metadata.ipAddress = xForwardedFor.split(',')[0].trim();
+  }
+  const userAgent = req.headers.get('User-Agent');
+  if (userAgent) {
+    metadata.userAgent = userAgent;
+  }
+
+  return metadata;
+};
+
+const getEventMetadata = (reqCtx: RequestContext): Record<string, string> => {
+  const metadata: Record<string, string> = {};
+
+  if (reqCtx.responseType !== 'ALB') {
+    metadata.apiGwRequestId = reqCtx.event.requestContext.requestId;
+    metadata.apiGwApiId = reqCtx.event.requestContext.apiId;
+  }
+  if (reqCtx.responseType === 'ApiGatewayV1') {
+    const extendedRequestId = reqCtx.event.requestContext.extendedRequestId;
+    if (extendedRequestId) {
+      metadata.apiGwExtendedRequestId = extendedRequestId;
+    }
+  }
+
+  return metadata;
+};
 
 /**
  * A middleware for emitting per-request metrics using Powertools Metrics.
@@ -37,6 +69,13 @@ const metrics = (metrics: Metrics): Middleware => {
       status = error instanceof HttpError ? error.statusCode : 500;
       throw error;
     } finally {
+      const metadata = {
+        ...getHeaderMetadata(reqCtx.req),
+        ...getEventMetadata(reqCtx),
+      };
+      for (const [key, value] of Object.entries(metadata)) {
+        metrics.addMetadata(key, value);
+      }
       metrics
         .addDimension('route', reqCtx.route)
         .addMetric(

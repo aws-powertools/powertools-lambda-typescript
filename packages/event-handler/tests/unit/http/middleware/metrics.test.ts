@@ -181,6 +181,31 @@ describe('Metrics Middleware', () => {
     );
   });
 
+  it('does not add apiGwExtendedRequestId metadata when extendedRequestId is undefined for V1 events', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+    const event = createTestEvent('/test', 'GET');
+    event.requestContext.extendedRequestId = undefined;
+
+    // Act
+    await app.resolve(event, context);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        apiGwRequestId: 'test-request-id-v1',
+        apiGwApiId: 'api-id-v1',
+      })
+    );
+    expect(console.log).not.toHaveEmittedEMFWith(
+      expect.objectContaining({
+        apiGwExtendedRequestId: 'test-extended-request-id',
+      })
+    );
+  });
+
   it('adds apiGwRequestId and apiGwApiId metadata for API Gateway V2 events', async () => {
     // Prepare
     const metrics = new Metrics({ namespace: 'test' });

@@ -33,6 +33,7 @@ describe('Metrics Middleware', () => {
     expect(console.log).toHaveEmittedEMFWith(
       expect.objectContaining({
         route: 'GET /test',
+        statusCode: '200',
         fault: 0,
         error: 0,
       })
@@ -64,6 +65,7 @@ describe('Metrics Middleware', () => {
     expect(console.log).toHaveEmittedEMFWith(
       expect.objectContaining({
         route: 'GET /error',
+        statusCode: '400',
         fault: 0,
         error: 1,
       })
@@ -95,6 +97,7 @@ describe('Metrics Middleware', () => {
     expect(console.log).toHaveEmittedEMFWith(
       expect.objectContaining({
         route: 'GET /fault',
+        statusCode: '500',
         fault: 1,
         error: 0,
       })
@@ -138,7 +141,79 @@ describe('Metrics Middleware', () => {
     );
   });
 
-  it('adds ipAddress and userAgent metadata from request headers', async () => {
+  it('adds httpMethod and path metadata for all requests', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        httpMethod: 'GET',
+        path: '/test',
+      })
+    );
+  });
+
+  it('uses NOT_FOUND as route dimension for 404 responses', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+
+    // Act
+    await app.resolve(createTestEvent('/nonexistent', 'GET'), context);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        route: 'NOT_FOUND',
+        statusCode: '404',
+        httpMethod: 'GET',
+        path: '/nonexistent',
+        error: 1,
+      })
+    );
+  });
+
+  it('adds ipAddress from identity.sourceIp for API Gateway V1 events', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(createTestEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        ipAddress: '192.0.2.1',
+      })
+    );
+  });
+
+  it('adds ipAddress from http.sourceIp for API Gateway V2 events', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(createTestEventV2('/test', 'GET'), context);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        ipAddress: '127.0.0.1',
+      })
+    );
+  });
+
+  it('falls back to X-Forwarded-For for ALB events', async () => {
     // Prepare
     const metrics = new Metrics({ namespace: 'test' });
     app.use(metricsMiddleware(metrics));
@@ -146,9 +221,8 @@ describe('Metrics Middleware', () => {
 
     // Act
     await app.resolve(
-      createTestEvent('/test', 'GET', {
+      createTestALBEvent('/test', 'GET', {
         'X-Forwarded-For': '203.0.113.50, 70.41.3.18',
-        'User-Agent': 'test-agent/1.0',
       }),
       context
     );
@@ -157,6 +231,27 @@ describe('Metrics Middleware', () => {
     expect(console.log).toHaveEmittedEMFWith(
       expect.objectContaining({
         ipAddress: '203.0.113.50',
+      })
+    );
+  });
+
+  it('adds userAgent metadata from request headers', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(
+      createTestEvent('/test', 'GET', {
+        'User-Agent': 'test-agent/1.0',
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
         userAgent: 'test-agent/1.0',
       })
     );
@@ -256,7 +351,7 @@ describe('Metrics Middleware', () => {
     );
   });
 
-  it('extracts client IP from X-Forwarded-For with single IPv6 address', async () => {
+  it('extracts client IP from X-Forwarded-For with IPv6 address for ALB events', async () => {
     // Prepare
     const metrics = new Metrics({ namespace: 'test' });
     app.use(metricsMiddleware(metrics));
@@ -264,7 +359,7 @@ describe('Metrics Middleware', () => {
 
     // Act
     await app.resolve(
-      createTestEvent('/test', 'GET', {
+      createTestALBEvent('/test', 'GET', {
         'X-Forwarded-For': '2001:db8:85a3::8a2e:370:7334',
       }),
       context
@@ -278,24 +373,19 @@ describe('Metrics Middleware', () => {
     );
   });
 
-  it('does not add ipAddress or userAgent metadata when headers are missing', async () => {
+  it('does not add ipAddress for ALB events when X-Forwarded-For is missing', async () => {
     // Prepare
     const metrics = new Metrics({ namespace: 'test' });
     app.use(metricsMiddleware(metrics));
     app.get('/test', async () => ({ ok: true }));
 
     // Act
-    await app.resolve(createTestEvent('/test', 'GET'), context);
+    await app.resolve(createTestALBEvent('/test', 'GET'), context);
 
     // Assess
     expect(console.log).not.toHaveEmittedEMFWith(
       expect.objectContaining({
         ipAddress: '127.0.0.1',
-      })
-    );
-    expect(console.log).not.toHaveEmittedEMFWith(
-      expect.objectContaining({
-        userAgent: 'test-agent/1.0',
       })
     );
   });

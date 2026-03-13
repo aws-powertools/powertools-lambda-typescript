@@ -232,7 +232,7 @@ class Router {
       context,
       req: options.req,
       res: options.res,
-      route: '',
+      route: null as string | null,
       params: {} as Record<string, string>,
       isHttpStreaming: options.isHttpStreaming,
     };
@@ -309,7 +309,9 @@ class Router {
 
       const route = this.routeRegistry.resolve(method, path);
 
-      requestContext.route = route?.route ?? `${method} ${path}`;
+      if (route !== null) {
+        requestContext.route = route.route;
+      }
 
       const handlerMiddleware: Middleware = async ({ reqCtx, next }) => {
         let handlerRes: HandlerResponse;

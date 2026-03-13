@@ -54,7 +54,7 @@ const getEventMetadata = (reqCtx: RequestContext): Record<string, string> => {
  * A middleware for emitting per-request metrics using Powertools Metrics.
  *
  * This middleware automatically:
- * - Adds the matched route as a metric dimension (uses `NOT_FOUND` for 404 responses to prevent dimension explosion)
+ * - Adds the matched route as a metric dimension (uses `NOT_FOUND` when no route matches to prevent dimension explosion)
  * - Emits `latency` (Milliseconds), `fault` (Count), and `error` (Count) metrics
  * - Adds `httpMethod` and `path` metadata for all requests
  * - Adds `ipAddress` and `userAgent` metadata from request headers when available
@@ -89,7 +89,6 @@ const metrics = (metrics: Metrics): Middleware => {
       throw error;
     } finally {
       const url = new URL(reqCtx.req.url);
-      const is404 = status === 404;
       const metadata = {
         httpMethod: reqCtx.req.method,
         path: url.pathname,
@@ -101,7 +100,7 @@ const metrics = (metrics: Metrics): Middleware => {
         metrics.addMetadata(key, value);
       }
       metrics
-        .addDimension('route', is404 ? 'NOT_FOUND' : reqCtx.route)
+        .addDimension('route', reqCtx.route ?? 'NOT_FOUND')
         .addMetric(
           'latency',
           MetricUnit.Milliseconds,

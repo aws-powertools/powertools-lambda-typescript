@@ -170,7 +170,7 @@ type RequestContext<TEnv extends Env = Env> = {
     event: EventTypeMap[T];
     context: Context;
     res: Response;
-    route: string;
+    route: string | null;
     params: Record<string, string>;
     responseType: T;
     isBase64Encoded?: boolean;

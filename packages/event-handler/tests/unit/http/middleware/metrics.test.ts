@@ -1,7 +1,7 @@
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BadRequestError } from '../../../../src/http/errors.js';
+import { BadRequestError, NotFoundError } from '../../../../src/http/errors.js';
 import { metrics as metricsMiddleware } from '../../../../src/http/middleware/metrics.js';
 import { Router } from '../../../../src/http/Router.js';
 import {
@@ -159,7 +159,7 @@ describe('Metrics Middleware', () => {
     );
   });
 
-  it('uses NOT_FOUND as route dimension for 404 responses', async () => {
+  it('uses NOT_FOUND as route dimension when no route matches', async () => {
     // Prepare
     const metrics = new Metrics({ namespace: 'test' });
     app.use(metricsMiddleware(metrics));
@@ -174,6 +174,27 @@ describe('Metrics Middleware', () => {
         statusCode: '404',
         httpMethod: 'GET',
         path: '/nonexistent',
+        error: 1,
+      })
+    );
+  });
+
+  it('uses the matched route pattern when a handler returns 404', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    app.use(metricsMiddleware(metrics));
+    app.get('/users/:id', () => {
+      throw new NotFoundError('User not found');
+    });
+
+    // Act
+    await app.resolve(createTestEvent('/users/123', 'GET'), context);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        route: 'GET /users/:id',
+        statusCode: '404',
         error: 1,
       })
     );

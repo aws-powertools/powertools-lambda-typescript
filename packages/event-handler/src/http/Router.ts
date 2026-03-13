@@ -259,7 +259,7 @@ class Router<TEnv extends Env = Env> {
       context,
       req: options.req,
       res: options.res,
-      route: '',
+      route: null as string | null,
       params: {} as Record<string, string>,
       isHttpStreaming: options.isHttpStreaming,
       set: options.set,
@@ -346,7 +346,9 @@ class Router<TEnv extends Env = Env> {
 
       const route = this.routeRegistry.resolve(method, path);
 
-      requestContext.route = route?.route ?? `${method} ${path}`;
+      if (route !== null) {
+        requestContext.route = route.route;
+      }
 
       const handlerMiddleware: Middleware = async ({ reqCtx, next }) => {
         let handlerRes: HandlerResponse;

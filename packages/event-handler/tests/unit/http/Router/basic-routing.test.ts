@@ -567,7 +567,7 @@ describe.each([
   it('sets reqCtx.route to METHOD and path for static routes', async () => {
     // Prepare
     const app = new Router();
-    let capturedRoute = '';
+    let capturedRoute: string | null = null;
     app.use(async ({ reqCtx, next }) => {
       await next();
       capturedRoute = reqCtx.route;
@@ -584,7 +584,7 @@ describe.each([
   it('sets reqCtx.route to METHOD and pattern for dynamic routes', async () => {
     // Prepare
     const app = new Router();
-    let capturedRoute = '';
+    let capturedRoute: string | null = null;
     app.use(async ({ reqCtx, next }) => {
       await next();
       capturedRoute = reqCtx.route;
@@ -598,10 +598,10 @@ describe.each([
     expect(capturedRoute).toBe('GET /users/:id');
   });
 
-  it('sets reqCtx.route to METHOD and requested path for unmatched routes', async () => {
+  it('sets reqCtx.route to null for unmatched routes', async () => {
     // Prepare
     const app = new Router();
-    let capturedRoute = '';
+    let capturedRoute: string | null = '';
     app.use(async ({ reqCtx, next }) => {
       await next();
       capturedRoute = reqCtx.route;
@@ -612,6 +612,6 @@ describe.each([
     await app.resolve(createEvent('/nonexistent', 'GET'), context);
 
     // Assess
-    expect(capturedRoute).toBe('GET /nonexistent');
+    expect(capturedRoute).toBeNull();
   });
 });

@@ -99,6 +99,16 @@
         "types": "./lib/esm/http/middleware/tracer.d.ts",
         "default": "./lib/esm/http/middleware/tracer.js"
       }
+    },
+    "./http/middleware/metrics": {
+      "require": {
+        "types": "./lib/cjs/http/middleware/metrics.d.ts",
+        "default": "./lib/cjs/http/middleware/metrics.js"
+      },
+      "import": {
+        "types": "./lib/esm/http/middleware/metrics.d.ts",
+        "default": "./lib/esm/http/middleware/metrics.js"
+      }
     }
   },
   "typesVersions": {
@@ -130,6 +140,10 @@
       "http/middleware/tracer": [
         "./lib/cjs/http/middleware/tracer.d.ts",
         "./lib/esm/http/middleware/tracer.d.ts"
+      ],
+      "http/middleware/metrics": [
+        "./lib/cjs/http/middleware/metrics.d.ts",
+        "./lib/esm/http/middleware/metrics.d.ts"
       ]
     }
   },
@@ -148,10 +162,14 @@
   },
   "peerDependencies": {
     "@aws-lambda-powertools/tracer": ">=2.31.0",
+    "@aws-lambda-powertools/metrics": ">=2.31.0",
     "@standard-schema/spec": "^1.0.0"
   },
   "peerDependenciesMeta": {
     "@aws-lambda-powertools/tracer": {
+      "optional": true
+    },
+    "@aws-lambda-powertools/metrics": {
       "optional": true
     }
   },

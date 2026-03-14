@@ -19,7 +19,10 @@ import type {
   APIGatewayProxyStructuredResultV2,
   Context,
 } from 'aws-lambda';
+import type { IStore } from '../store/Store.js';
+import { Store } from '../store/Store.js';
 import type {
+  Env,
   ErrorConstructor,
   ErrorHandler,
   ErrorResolveOptions,
@@ -31,16 +34,19 @@ import type {
   InferReqSchema,
   InferResBody,
   InferResSchema,
+  MergeEnv,
   Middleware,
   MiddlewareOrHandler,
   Path,
   ReqSchema,
   RequestContext,
+  RequestStoreOf,
   ResolveStreamOptions,
   ResponseStream,
   ResSchema,
   RouteHandler,
   RouterResponse,
+  SharedStoreOf,
   TypedRouteHandler,
   ValidationConfig,
 } from '../types/http.js';
@@ -78,12 +84,17 @@ import {
   resolvePrefixedPath,
 } from './utils.js';
 
-class Router {
+class Router<TEnv extends Env = Env> {
   protected context: Record<string, unknown>;
 
   protected readonly routeRegistry: RouteHandlerRegistry;
   protected readonly errorHandlerRegistry: ErrorHandlerRegistry;
   protected readonly middleware: Middleware[] = [];
+
+  /**
+   * A shared store that persists across requests for the lifetime of the Router instance.
+   */
+  public readonly shared: IStore<SharedStoreOf<TEnv>>;
 
   /**
    * A logger instance to be used for logging debug, warning, and error messages.
@@ -117,6 +128,7 @@ class Router {
     });
     this.isDev = isDevMode();
     this.prefix = options?.prefix;
+    this.shared = new Store<SharedStoreOf<TEnv>>();
   }
 
   /**
@@ -216,8 +228,20 @@ class Router {
    * router.use(authMiddleware);
    * ```
    */
-  public use(middleware: Middleware): void {
+  public use(middleware: Middleware<TEnv>): void {
     this.middleware.push(middleware);
+  }
+
+  #createStoreAccessors(
+    requestStore: Store<RequestStoreOf<TEnv>>
+  ): Pick<RequestContext<TEnv>, 'set' | 'get' | 'has' | 'delete' | 'shared'> {
+    return {
+      set: (key, value) => requestStore.set(key, value),
+      get: (key) => requestStore.get(key),
+      has: (key) => requestStore.has(key),
+      delete: (key) => requestStore.delete(key),
+      shared: this.shared,
+    };
   }
 
   /**
@@ -233,7 +257,7 @@ class Router {
     event: unknown,
     context: Context,
     options?: HttpResolveOptions
-  ): Promise<RequestContext> {
+  ): Promise<RequestContext<TEnv>> {
     if (
       !isAPIGatewayProxyEventV1(event) &&
       !isAPIGatewayProxyEventV2(event) &&
@@ -246,6 +270,7 @@ class Router {
     }
 
     const responseType = getResponseType(event);
+    const requestStore = new Store<RequestStoreOf<TEnv>>();
 
     let req: Request;
     try {
@@ -267,12 +292,13 @@ class Router {
           }),
           params: {},
           responseType,
+          ...this.#createStoreAccessors(requestStore),
         };
       }
       throw err;
     }
 
-    const requestContext: RequestContext = {
+    const requestContext: RequestContext<TEnv> = {
       event,
       context,
       req,
@@ -287,6 +313,7 @@ class Router {
       params: {},
       responseType,
       isHttpStreaming: options?.isHttpStreaming,
+      ...this.#createStoreAccessors(requestStore),
     };
 
     try {
@@ -459,6 +486,7 @@ class Router {
   ): void;
   public route<V extends ValidationConfig>(
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -477,7 +505,7 @@ class Router {
     TResBody extends HandlerResponse = HandlerResponse,
     TRes extends ResSchema = ResSchema,
   >(
-    handler: RouteHandler | TypedRouteHandler<TReq, TResBody, TRes>,
+    handler: RouteHandler<TEnv> | TypedRouteHandler<TEnv, TReq, TResBody, TRes>,
     options: HttpRouteOptions
   ): void {
     const { method, path, middleware = [], validation } = options;
@@ -488,7 +516,7 @@ class Router {
     const allMiddleware = validation
       ? [
           ...middleware,
-          validate<TReq, TResBody, TRes>(
+          validate<TEnv, TReq, TResBody, TRes>(
             validation as ValidationConfig<TReq, TResBody>
           ),
         ]
@@ -615,8 +643,8 @@ class Router {
   >(
     method: HttpMethod,
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     // Case 1: method(path, [middleware], handler, { validation })
@@ -668,13 +696,18 @@ class Router {
     };
   }
 
-  public get(path: Path, handler: RouteHandler): void;
-  public get(path: Path, middleware: Middleware[], handler: RouteHandler): void;
+  public get(path: Path, handler: RouteHandler<TEnv>): void;
+  public get(
+    path: Path,
+    middleware: Middleware[],
+    handler: RouteHandler<TEnv>
+  ): void;
   public get(path: Path): MethodDecorator;
   public get(path: Path, middleware: Middleware[]): MethodDecorator;
   public get<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -685,6 +718,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -697,8 +731,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -710,17 +744,18 @@ class Router {
     );
   }
 
-  public post(path: Path, handler: RouteHandler): void;
+  public post(path: Path, handler: RouteHandler<TEnv>): void;
   public post(
     path: Path,
     middleware: Middleware[],
-    handler: RouteHandler
+    handler: RouteHandler<TEnv>
   ): void;
   public post(path: Path): MethodDecorator;
   public post(path: Path, middleware: Middleware[]): MethodDecorator;
   public post<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -731,6 +766,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -743,8 +779,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -756,13 +792,18 @@ class Router {
     );
   }
 
-  public put(path: Path, handler: RouteHandler): void;
-  public put(path: Path, middleware: Middleware[], handler: RouteHandler): void;
+  public put(path: Path, handler: RouteHandler<TEnv>): void;
+  public put(
+    path: Path,
+    middleware: Middleware[],
+    handler: RouteHandler<TEnv>
+  ): void;
   public put(path: Path): MethodDecorator;
   public put(path: Path, middleware: Middleware[]): MethodDecorator;
   public put<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -773,6 +814,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -785,8 +827,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -798,17 +840,18 @@ class Router {
     );
   }
 
-  public patch(path: Path, handler: RouteHandler): void;
+  public patch(path: Path, handler: RouteHandler<TEnv>): void;
   public patch(
     path: Path,
     middleware: Middleware[],
-    handler: RouteHandler
+    handler: RouteHandler<TEnv>
   ): void;
   public patch(path: Path): MethodDecorator;
   public patch(path: Path, middleware: Middleware[]): MethodDecorator;
   public patch<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -819,6 +862,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -831,8 +875,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -844,17 +888,18 @@ class Router {
     );
   }
 
-  public delete(path: Path, handler: RouteHandler): void;
+  public delete(path: Path, handler: RouteHandler<TEnv>): void;
   public delete(
     path: Path,
     middleware: Middleware[],
-    handler: RouteHandler
+    handler: RouteHandler<TEnv>
   ): void;
   public delete(path: Path): MethodDecorator;
   public delete(path: Path, middleware: Middleware[]): MethodDecorator;
   public delete<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -865,6 +910,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -877,8 +923,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -890,17 +936,18 @@ class Router {
     );
   }
 
-  public head(path: Path, handler: RouteHandler): void;
+  public head(path: Path, handler: RouteHandler<TEnv>): void;
   public head(
     path: Path,
     middleware: Middleware[],
-    handler: RouteHandler
+    handler: RouteHandler<TEnv>
   ): void;
   public head(path: Path): MethodDecorator;
   public head(path: Path, middleware: Middleware[]): MethodDecorator;
   public head<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -911,6 +958,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -923,8 +971,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -936,17 +984,18 @@ class Router {
     );
   }
 
-  public options(path: Path, handler: RouteHandler): void;
+  public options(path: Path, handler: RouteHandler<TEnv>): void;
   public options(
     path: Path,
     middleware: Middleware[],
-    handler: RouteHandler
+    handler: RouteHandler<TEnv>
   ): void;
   public options(path: Path): MethodDecorator;
   public options(path: Path, middleware: Middleware[]): MethodDecorator;
   public options<V extends ValidationConfig>(
     path: Path,
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -957,6 +1006,7 @@ class Router {
     path: Path,
     middleware: Middleware[],
     handler: TypedRouteHandler<
+      TEnv,
       InferReqSchema<V>,
       InferResBody<V>,
       InferResSchema<V>
@@ -969,8 +1019,8 @@ class Router {
     TRes extends ResSchema = ResSchema,
   >(
     path: Path,
-    middlewareOrHandler?: MiddlewareOrHandler<TReq, TResBody, TRes>,
-    handlerOrOptions?: HandlerOrOptions<TReq, TResBody, TRes>,
+    middlewareOrHandler?: MiddlewareOrHandler<TEnv, TReq, TResBody, TRes>,
+    handlerOrOptions?: HandlerOrOptions<TEnv, TReq, TResBody, TRes>,
     options?: { validation: ValidationConfig<TReq, TResBody> }
   ): MethodDecorator | undefined {
     return this.#handleHttpMethod(
@@ -985,6 +1035,11 @@ class Router {
   /**
    * Merges the routes, context and middleware from the passed router instance into this router instance.
    *
+   * Returns `this` with a widened type that includes the included router's store types,
+   * allowing calls to be chained in a fluent style. When chaining multiple `includeRouter`
+   * calls, the resulting type is the intersection of all store environments — giving
+   * handlers type-safe access to every sub-router's store keys.
+   *
    * **Override Behaviors:**
    * - **Context**: Properties from the included router override existing properties with the same key in the current router. A warning is logged when conflicts occur.
    * - **Routes**: Routes from the included router are added to the current router's registry. If a route with the same method and path already exists, the included router's route takes precedence.
@@ -995,28 +1050,34 @@ class Router {
    * ```typescript
    * import { Router } from '@aws-lambda-powertools/event-handler/http';
    *
-   * const todosRouter = new Router();
+   * type AuthEnv = { store: { request: { userId: string } } };
+   * type FeatureEnv = { store: { shared: { maxResults: number } } };
    *
-   * todosRouter.get('/todos', async () => {
-   *   // List API
+   * const authRouter = new Router<AuthEnv>();
+   * const featureRouter = new Router<FeatureEnv>();
+   *
+   * // Chained calls merge store types automatically
+   * const app = new Router()
+   *   .includeRouter(authRouter)
+   *   .includeRouter(featureRouter);
+   *
+   * // Handlers on `app` can now access both `userId` and `maxResults`
+   * app.get('/profile', (reqCtx) => {
+   *   const userId = reqCtx.get('userId');
+   *   const maxResults = reqCtx.shared.get('maxResults');
+   *   return { userId, maxResults };
    * });
-   *
-   * todosRouter.get('/todos/{todoId}', async () => {
-   *   // Get API
-   * });
-   *
-   * const app = new Router();
-   * app.includeRouter(todosRouter);
-   *
-   * export const handler = async (event: unknown, context: Context) => {
-   *   return app.resolve(event, context);
-   * };
    * ```
    * @param router - The `Router` from which to merge the routes, context and middleware
    * @param options - Configuration options for merging the router
    * @param options.prefix - An optional prefix to be added to the paths defined in the router
+   * @returns The current router instance, typed as `Router<MergeEnv<[TEnv, TOther]>>`
    */
-  public includeRouter(router: Router, options?: { prefix: Path }): void {
+  public includeRouter<TOther extends Env>(
+    router: Router<TOther>,
+    options?: { prefix: Path }
+  ): Router<MergeEnv<[TEnv, TOther]>>;
+  public includeRouter(router: Router, options?: { prefix: Path }): Router {
     this.context = {
       ...this.context,
       ...router.context,
@@ -1024,6 +1085,13 @@ class Router {
     this.routeRegistry.merge(router.routeRegistry, options);
     this.errorHandlerRegistry.merge(router.errorHandlerRegistry);
     this.middleware.push(...router.middleware);
+
+    const shared = this.shared as IStore;
+    for (const [key, value] of router.shared.entries()) {
+      shared.set(key, value);
+    }
+
+    return this;
   }
 }
 

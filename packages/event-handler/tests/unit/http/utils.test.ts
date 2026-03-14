@@ -16,6 +16,7 @@ import {
   resolvePrefixedPath,
   validatePathPattern,
 } from '../../../src/http/utils.js';
+import { Store } from '../../../src/store/Store.js';
 import type {
   Middleware,
   Path,
@@ -716,6 +717,8 @@ describe('Path Utilities', () => {
   });
 
   describe('composeMiddleware', () => {
+    const requestStore = new Store();
+    const sharedStore = new Store();
     const mockOptions: RequestContext = {
       params: {},
       event: {} as APIGatewayProxyEvent,
@@ -723,6 +726,11 @@ describe('Path Utilities', () => {
       responseType: 'ApiGatewayV1',
       req: new Request('https://example.com'),
       res: new Response(),
+      set: (key, value) => requestStore.set(key, value),
+      get: (key) => requestStore.get(key),
+      has: (key) => requestStore.has(key),
+      delete: (key) => requestStore.delete(key),
+      shared: sharedStore,
     };
 
     it('executes middleware in order', async () => {

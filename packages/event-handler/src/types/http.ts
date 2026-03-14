@@ -15,9 +15,106 @@ import type {
 } from 'aws-lambda';
 import type { HttpStatusCodes, HttpVerbs } from '../http/constants.js';
 import type { Route } from '../http/Route.js';
+import type { IStore } from '../store/Store.js';
 import type { ResolveOptions } from './common.js';
 
 type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2' | 'ALB';
+
+/**
+ * Recursively intersects a tuple of record types into a single type.
+ */
+type IntersectAll<T extends Record<string, unknown>[]> = T extends [
+  infer First extends Record<string, unknown>,
+  ...infer Rest extends Record<string, unknown>[],
+]
+  ? First & IntersectAll<Rest>
+  : unknown;
+
+/**
+ * Merges multiple `Env` types into a single `Env` whose request and shared
+ * stores are the intersection of all input stores.
+ */
+/**
+ * Widens `{}` back to `Record<string, unknown>` so that fully-untyped
+ * merges remain open for arbitrary key access.
+ */
+type DefaultIfEmpty<T> = keyof T extends never ? Record<string, unknown> : T;
+
+type MergeEnv<TEnvs extends [Env, Env, ...Env[]]> = {
+  store: {
+    request: DefaultIfEmpty<
+      IntersectAll<{
+        [K in keyof TEnvs]: RequestStoreOfForMerge<TEnvs[K]>;
+      }>
+    >;
+    shared: DefaultIfEmpty<
+      IntersectAll<{
+        [K in keyof TEnvs]: SharedStoreOfForMerge<TEnvs[K]>;
+      }>
+    >;
+  };
+};
+
+/**
+ * Environment configuration for the Router.
+ *
+ * Use this to define the shape of your request-scoped and shared stores.
+ */
+type Env = {
+  store?: {
+    request?: Record<string, unknown>;
+    shared?: Record<string, unknown>;
+  };
+};
+
+/**
+ * Extracts the request store type from an Env.
+ */
+type RequestStoreOf<TEnv extends Env> = TEnv extends {
+  store: { request: infer R extends Record<string, unknown> };
+}
+  ? R
+  : Record<string, unknown>;
+
+/**
+ * Extracts the shared store type from an Env.
+ */
+type SharedStoreOf<TEnv extends Env> = TEnv extends {
+  store: { shared: infer S extends Record<string, unknown> };
+}
+  ? S
+  : Record<string, unknown>;
+
+/**
+ * Like {@link RequestStoreOf} but falls back to `{}` instead of
+ * `Record<string, unknown>`, so it acts as an identity element
+ * when intersected inside {@link MergeEnv}.
+ */
+type RequestStoreOfForMerge<TEnv extends Env> = TEnv extends {
+  store: { request: infer R extends Record<string, unknown> };
+}
+  ? R
+  : {};
+
+/**
+ * Like {@link SharedStoreOf} but falls back to `{}` instead of
+ * `Record<string, unknown>`, so it acts as an identity element
+ * when intersected inside {@link MergeEnv}.
+ */
+type SharedStoreOfForMerge<TEnv extends Env> = TEnv extends {
+  store: { shared: infer S extends Record<string, unknown> };
+}
+  ? S
+  : {};
+
+/**
+ * Convenience methods for interacting with the request-scoped store.
+ * These are exposed directly on `RequestContext` as closure-backed methods.
+ */
+type RequestStoreMethods<TEnv extends Env = Env> = Pick<
+  IStore<RequestStoreOf<TEnv>>,
+  'set' | 'get' | 'has' | 'delete'
+>;
 
 type ResponseTypeMap = {
   ApiGatewayV1: APIGatewayProxyResult;
@@ -61,7 +158,7 @@ type ValidatedResponse<TRes extends ResSchema = ResSchema> = {
   [K in keyof TRes as TRes[K] extends undefined ? never : K]: TRes[K];
 };
 
-type RequestContext = {
+type RequestContext<TEnv extends Env = Env> = {
   req: Request;
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent;
   context: Context;
@@ -70,12 +167,14 @@ type RequestContext = {
   responseType: ResponseType;
   isBase64Encoded?: boolean;
   isHttpStreaming?: boolean;
-};
+  shared: IStore<SharedStoreOf<TEnv>>;
+} & RequestStoreMethods<TEnv>;
 
 type TypedRequestContext<
+  TEnv extends Env = Env,
   TReq extends ReqSchema = ReqSchema,
   TRes extends ResSchema = ResSchema,
-> = RequestContext & {
+> = RequestContext<TEnv> & {
   // biome-ignore lint/complexity/noBannedTypes: {} is intentional — means "no additional properties" in conditional type
   valid: ([ReqSchema] extends [TReq] ? {} : { req: ValidatedRequest<TReq> }) &
     // biome-ignore lint/complexity/noBannedTypes: {} is intentional — means "no additional properties" in conditional type
@@ -139,16 +238,17 @@ type HandlerResponse =
   | ExtendedAPIGatewayProxyResult
   | BinaryResult;
 
-type RouteHandler<TReturn = HandlerResponse> = (
-  reqCtx: RequestContext
+type RouteHandler<TEnv extends Env = Env, TReturn = HandlerResponse> = (
+  reqCtx: RequestContext<TEnv>
 ) => Promise<TReturn> | TReturn;
 
 type TypedRouteHandler<
+  TEnv extends Env = Env,
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
   TRes extends ResSchema = ResSchema,
 > = (
-  reqCtx: TypedRequestContext<TReq, TRes>
+  reqCtx: TypedRequestContext<TEnv, TReq, TRes>
 ) =>
   | Promise<TResBody | ExtendedAPIGatewayProxyResult<TResBody>>
   | TResBody
@@ -177,8 +277,8 @@ type HttpRouteOptions = {
 // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
 type NextFunction = () => Promise<HandlerResponse | void>;
 
-type Middleware = (args: {
-  reqCtx: RequestContext | TypedRequestContext;
+type Middleware<TEnv extends Env = Env> = (args: {
+  reqCtx: RequestContext<TEnv> | TypedRequestContext<TEnv>;
   next: NextFunction;
   // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
 }) => Promise<HandlerResponse | void>;
@@ -452,24 +552,35 @@ type ValidationErrorDetail = {
  * Union type for middleware array or route handler
  */
 type MiddlewareOrHandler<
+  TEnv extends Env = Env,
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
   TRes extends ResSchema = ResSchema,
-> = Middleware[] | RouteHandler | TypedRouteHandler<TReq, TResBody, TRes>;
+> =
+  | Middleware<TEnv>[]
+  | RouteHandler<TEnv>
+  | TypedRouteHandler<TEnv, TReq, TResBody, TRes>;
 
 /**
  * Union type for route handler or validation options
  */
 type HandlerOrOptions<
+  TEnv extends Env = Env,
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
   TRes extends ResSchema = ResSchema,
 > =
-  | RouteHandler
-  | TypedRouteHandler<TReq, TResBody, TRes>
+  | RouteHandler<TEnv>
+  | TypedRouteHandler<TEnv, TReq, TResBody, TRes>
   | { validation: ValidationConfig<TReq, TResBody> };
 
 export type {
+  Env,
+  IntersectAll,
+  MergeEnv,
+  RequestStoreOf,
+  RequestStoreMethods,
+  SharedStoreOf,
   Headers,
   BinaryResult,
   ExtendedAPIGatewayProxyResult,

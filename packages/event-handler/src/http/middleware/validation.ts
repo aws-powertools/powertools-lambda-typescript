@@ -1,5 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type {
+  Env,
   HandlerResponse,
   Headers,
   Middleware,
@@ -19,39 +20,40 @@ import { RequestValidationError, ResponseValidationError } from '../errors.js';
  * @returns Middleware function that validates request/response
  */
 export const validate = <
+  TEnv extends Env = Env,
   TReq extends ReqSchema = ReqSchema,
   TResBody extends HandlerResponse = HandlerResponse,
   TRes extends ResSchema = ResSchema,
 >(
   config: ValidationConfig<TReq, TResBody>
-): Middleware => {
+): Middleware<TEnv> => {
   const reqSchemas = config?.req;
   const resSchemas = config?.res;
 
   return async ({ reqCtx, next }) => {
-    const typedReqCtx = reqCtx as TypedRequestContext<TReq, TRes>;
+    const typedReqCtx = reqCtx as TypedRequestContext<TEnv, TReq, TRes>;
     typedReqCtx.valid = {
       ...(reqSchemas && { req: {} as ValidatedRequest<TReq> }),
       ...(resSchemas && { res: {} as ValidatedResponse<TRes> }),
-    } as TypedRequestContext<TReq, TRes>['valid'];
+    } as TypedRequestContext<TEnv, TReq, TRes>['valid'];
 
     if (reqSchemas) {
-      await validateRequestData(typedReqCtx, reqSchemas);
+      await validateRequestData<TEnv, TReq>(typedReqCtx, reqSchemas);
     }
 
     await next();
 
     if (resSchemas) {
-      await validateResponseData<TResBody, TRes>(
-        typedReqCtx as TypedRequestContext<ReqSchema, TRes>,
+      await validateResponseData<TEnv, TResBody, TRes>(
+        typedReqCtx as TypedRequestContext<TEnv, ReqSchema, TRes>,
         resSchemas
       );
     }
   };
 };
 
-async function validateRequestData<TReq extends ReqSchema>(
-  typedReqCtx: TypedRequestContext<TReq>,
+async function validateRequestData<TEnv extends Env, TReq extends ReqSchema>(
+  typedReqCtx: TypedRequestContext<TEnv, TReq>,
   reqSchemas: NonNullable<ValidationConfig<TReq, HandlerResponse>['req']>
 ): Promise<void> {
   const schemaEntries: [string, StandardSchemaV1][] = [];
@@ -104,10 +106,11 @@ async function validateRequestData<TReq extends ReqSchema>(
 }
 
 async function validateResponseData<
+  TEnv extends Env,
   TResBody extends HandlerResponse,
   TRes extends ResSchema,
 >(
-  typedReqCtx: TypedRequestContext<ReqSchema, TRes>,
+  typedReqCtx: TypedRequestContext<TEnv, ReqSchema, TRes>,
   resSchemas: NonNullable<ValidationConfig<ReqSchema, TResBody>['res']>
 ): Promise<void> {
   const response = typedReqCtx.res;

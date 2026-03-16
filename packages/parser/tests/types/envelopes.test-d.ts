@@ -18,6 +18,7 @@ import type { DynamoDBStreamEnvelopeResponse } from '../../src/types/envelope.js
 import type { ParserOutput } from '../../src/types/parser.js';
 
 describe('Types ', () => {
+  // biome-ignore lint/correctness/noUnusedVariables: used in typeof expressions for type tests
   const userSchema = z.object({
     name: z.string(),
     age: z.number(),
@@ -30,6 +31,7 @@ describe('Types ', () => {
     { envelope: LambdaFunctionUrlEnvelope, name: 'LambdaFunctionUrl' },
     { envelope: VpcLatticeEnvelope, name: 'VpcLattice' },
     { envelope: VpcLatticeV2Envelope, name: 'VpcLatticeV2' },
+    // biome-ignore lint/correctness/noUnusedFunctionParameters: used in typeof expressions for type tests
   ])('infers object types for $name envelope', ({ envelope }) => {
     // Prepare
     type Result = ParserOutput<typeof userSchema, typeof envelope>;
@@ -49,6 +51,7 @@ describe('Types ', () => {
     { envelope: SqsEnvelope, name: 'Sqs' },
     { envelope: SnsEnvelope, name: 'Sns' },
     { envelope: SnsSqsEnvelope, name: 'SnsSqs' },
+    // biome-ignore lint/correctness/noUnusedFunctionParameters: used in typeof expressions for type tests
   ])('infers array types with $name envelope', ({ envelope }) => {
     // Prepare
     type Result = ParserOutput<typeof userSchema, typeof envelope>;

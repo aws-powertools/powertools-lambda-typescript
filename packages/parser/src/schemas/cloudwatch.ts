@@ -86,7 +86,7 @@ const CloudWatchLogsSchema = z.object({
 });
 
 export {
-  CloudWatchLogsSchema,
-  CloudWatchLogsDecodeSchema,
   CloudWatchLogEventSchema,
+  CloudWatchLogsDecodeSchema,
+  CloudWatchLogsSchema,
 };

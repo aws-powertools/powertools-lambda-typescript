@@ -310,8 +310,8 @@ const S3ObjectLambdaEventSchema = z.object({
 });
 
 export {
-  S3Schema,
   S3EventNotificationEventBridgeSchema,
-  S3SqsEventNotificationSchema,
   S3ObjectLambdaEventSchema,
+  S3Schema,
+  S3SqsEventNotificationSchema,
 };

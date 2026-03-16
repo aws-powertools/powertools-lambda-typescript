@@ -105,9 +105,9 @@ const SqsSchema = z.object({
 });
 
 export {
-  SqsSchema,
-  SqsRecordSchema,
-  SqsMsgAttributeSchema,
-  SqsMsgAttributeDataTypeSchema,
   SqsAttributesSchema,
+  SqsMsgAttributeDataTypeSchema,
+  SqsMsgAttributeSchema,
+  SqsRecordSchema,
+  SqsSchema,
 };

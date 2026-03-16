@@ -133,11 +133,11 @@ type InferOutput<Schema extends StandardSchemaV1> = NonNullable<
 >['output'];
 
 export type {
-  ParseFunction,
   InferOutput,
   ParsedResult,
   ParsedResultError,
   ParsedResultSuccess,
+  ParseFunction,
   ParserOptions,
   ParserOutput,
 };

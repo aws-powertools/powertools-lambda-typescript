@@ -118,8 +118,8 @@ const SnsSchema = z.object({
 });
 
 export {
+  SnsNotificationSchema,
+  SnsRecordSchema,
   SnsSchema,
   SnsSqsNotificationSchema,
-  SnsRecordSchema,
-  SnsNotificationSchema,
 };

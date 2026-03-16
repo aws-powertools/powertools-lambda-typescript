@@ -20,4 +20,4 @@ const idempotentHandler = makeIdempotent(handler, {
   persistenceStore: ddbPersistenceStore,
 });
 
-export { idempotentHandler, handler };
+export { handler, idempotentHandler };

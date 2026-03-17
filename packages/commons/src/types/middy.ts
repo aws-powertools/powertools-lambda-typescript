@@ -60,7 +60,7 @@ type MiddlewareLikeObj<
 type MiddyLikeRequest = {
   event: unknown;
   context: Context;
-  response: unknown | undefined;
+  response: unknown;
   error: Error | null | undefined;
   internal: {
     [key: string]: unknown;

@@ -922,6 +922,94 @@ When necessary, you can set a prefix when including a `Router` instance. This me
     --8<-- "examples/snippets/event-handler/http/split_route_prefix_index.ts"
     ```
 
+### Store
+
+The Store API provides a way to share data between middleware and route handlers without relying on closures or module-level variables. There are two types of store: **request** and **shared**.
+
+#### Request store
+
+The request store is scoped to a single invocation. Each time your Lambda function handles a request, a fresh store is created. This is ideal for passing values like authenticated user IDs or parsed tokens from middleware to route handlers.
+
+You can interact with the request store directly on the request context using `set`, `get`, `has`, and `delete`.
+
+=== "index.ts"
+
+    ```ts hl_lines="12 18"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_request.ts:8"
+    ```
+
+    1. Middleware stores the authenticated user ID in the request store.
+    2. Route handler retrieves the user ID set by middleware.
+
+!!! note "Request store lifecycle"
+    The request store is created at the beginning of each invocation and is not shared across concurrent or subsequent requests. You don't need to clean up after yourself — the store is discarded when the invocation completes.
+
+#### Shared store
+
+The shared store lives on the `Router` instance and persists across invocations for the lifetime of the execution environment. This makes it suitable for values that are expensive to compute and don't change between requests, such as database clients, configuration, or feature flags.
+
+You can access the shared store via `app.shared` at the module level (e.g., during cold start), or via `reqCtx.shared` inside middleware and route handlers.
+
+=== "index.ts"
+
+    ```ts hl_lines="7-8 11-12"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_shared.ts"
+    ```
+
+    1. Set shared values at the module level during cold start.
+    2. Access shared values inside route handlers via `reqCtx.shared`.
+
+#### Typed stores
+
+By default, both stores accept any string key and return `unknown` values. When you know the shape of your data ahead of time, you can define an `Env` type to get full type safety on store keys and values.
+
+=== "index.ts"
+
+    ```ts hl_lines="4-9 14 20-21 27-28 31"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_typed.ts:8"
+    ```
+
+    1. Define the shape of the request store — keys and their value types.
+    2. Define the shape of the shared store.
+    3. `app.shared.set` only accepts keys defined in `AppEnv['store']['shared']` with matching value types.
+    4. `reqCtx.set` only accepts keys defined in `AppEnv['store']['request']` with matching value types.
+    5. `reqCtx.get('userId')` returns `string | undefined` instead of `unknown`.
+    6. `reqCtx.shared.get('db')` returns the typed database client or `undefined`.
+    7. Accessing a key not defined in `AppEnv` is a type error — the compiler only allows `'userId'` and `'isAdmin'`.
+
+!!! tip "Store values are always `T | undefined`"
+    Even with typed stores, `get` returns `T[K] | undefined`. This ensures you handle the case where a value hasn't been set yet, for example if a middleware hasn't run or a shared value wasn't initialized during cold start.
+
+#### Typed stores with split routers
+
+When using [split routers](#split-routers), each sub-router can declare its own `Env` type with only the store keys it needs. You can then chain `includeRouter` calls to merge the store types together, so the parent router sees all keys from all sub-routers.
+
+=== "index.ts"
+
+    ```ts hl_lines="5-9 12-16 32 35-36 38-39"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_include_router.ts"
+    ```
+
+    1. Chaining `includeRouter` calls merges the store types from each sub-router.
+    2. Inferred as `string | undefined` — from `AuthEnv`.
+    3. Inferred as `number | undefined` — from `FeatureEnv`.
+    4. Assigning `maxResults` to a `string` variable produces a type error — the compiler knows it's a `number`.
+
+Alternatively, you can declare the full environment type upfront on the parent router using the `MergeEnv` utility type.
+`MergeEnv` takes a tuple of `Env` types and intersects their request and shared stores into a single `Env`,
+so you don't have to manually write out the combined type.
+This is useful when you prefer to define the parent's type in one place rather than relying on chaining to infer it.
+
+=== "index.ts"
+
+    ```ts hl_lines="18 32-34"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_declare_upfront.ts"
+    ```
+
+    1. `MergeEnv` computes the intersection of the sub-router store types into a single `Env`.
+    2. The parent router is created with the merged `AppEnv` type — all store keys are known upfront.
+    3. `includeRouter` accepts any sub-router whose `Env` is a subset of the parent's.
+
 ### Considerations
 
 This utility is optimized for AWS Lambda computing model and prioritizes fast startup, minimal feature set, and quick onboarding for triggers supported by Lambda.

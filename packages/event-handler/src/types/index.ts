@@ -33,6 +33,7 @@ export type {
 
 export type {
   CorsOptions,
+  Env,
   ErrorHandler,
   ErrorResolveOptions,
   HandlerResponse,
@@ -41,6 +42,7 @@ export type {
   HttpRouteOptions,
   HttpRouterOptions,
   HttpStatusCode,
+  MergeEnv,
   Middleware,
   Path,
   RequestContext,

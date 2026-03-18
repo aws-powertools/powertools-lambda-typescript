@@ -10,20 +10,20 @@ import { multiValueHeadersRouter } from './routers/multiValueHeadersRouter.js';
 import { nestedRouter } from './routers/nestedRouter.js';
 import { paramsRouter } from './routers/paramsRouter.js';
 import { proxyResultRouter } from './routers/proxyResultRouter.js';
+import { storeRouter } from './routers/storeRouter.js';
 
-const app = new Router();
-
-// Include all routers with prefixes
-app.includeRouter(methodsRouter, { prefix: '/methods' });
-app.includeRouter(paramsRouter, { prefix: '/params' });
-app.includeRouter(errorsRouter, { prefix: '/errors' });
-app.includeRouter(middlewareRouter, { prefix: '/middleware' });
-app.includeRouter(nestedRouter, { prefix: '/nested' });
-app.includeRouter(corsRouter, { prefix: '/cors' });
-app.includeRouter(compressRouter, { prefix: '/compress' });
-app.includeRouter(multiValueHeadersRouter, { prefix: '/multi-headers' });
-app.includeRouter(binaryRouter, { prefix: '/binary' });
-app.includeRouter(proxyResultRouter, { prefix: '/proxy-result' });
+const app = new Router()
+  .includeRouter(methodsRouter, { prefix: '/methods' })
+  .includeRouter(paramsRouter, { prefix: '/params' })
+  .includeRouter(errorsRouter, { prefix: '/errors' })
+  .includeRouter(middlewareRouter, { prefix: '/middleware' })
+  .includeRouter(nestedRouter, { prefix: '/nested' })
+  .includeRouter(corsRouter, { prefix: '/cors' })
+  .includeRouter(compressRouter, { prefix: '/compress' })
+  .includeRouter(multiValueHeadersRouter, { prefix: '/multi-headers' })
+  .includeRouter(binaryRouter, { prefix: '/binary' })
+  .includeRouter(proxyResultRouter, { prefix: '/proxy-result' })
+  .includeRouter(storeRouter, { prefix: '/store' });
 
 // Request body parsing and headers
 app.post('/echo', async ({ req }) => {

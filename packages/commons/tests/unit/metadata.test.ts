@@ -46,7 +46,7 @@ describe('Function: getMetadata', () => {
     vi.stubEnv('AWS_LAMBDA_METADATA_API', '127.0.0.1:1234');
     vi.stubEnv('AWS_LAMBDA_METADATA_TOKEN', 'test-token');
 
-    const payload = { runtime: 'nodejs20.x' };
+    const payload = { AvailabilityZoneId: 'use1-az1' };
     fetchMock.mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue(payload),
@@ -69,6 +69,32 @@ describe('Function: getMetadata', () => {
         signal: expect.any(AbortSignal),
       })
     );
+  });
+
+  it('uses a custom timeout when provided', async () => {
+    // Prepare
+    vi.stubEnv('POWERTOOLS_DEV', 'false');
+    vi.stubEnv('AWS_LAMBDA_INITIALIZATION_TYPE', 'on-demand');
+    vi.stubEnv('AWS_LAMBDA_METADATA_API', '127.0.0.1:1234');
+    vi.stubEnv('AWS_LAMBDA_METADATA_TOKEN', 'test-token');
+
+    const timeoutSpy = vi
+      .spyOn(AbortSignal, 'timeout')
+      .mockReturnValue(new AbortController().signal);
+
+    const payload = { AvailabilityZoneId: 'use1-az1' };
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue(payload),
+    });
+
+    // Act
+    await getMetadata({ timeout: 500 });
+
+    // Assess
+    expect(timeoutSpy).toHaveBeenCalledWith(500);
+
+    timeoutSpy.mockRestore();
   });
 
   it('throws an error when the metadata endpoint responds with an error', async () => {

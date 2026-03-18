@@ -13,7 +13,11 @@ const clearMetadataCache = () => {
  *
  * When not running in a Lambda environment (e.g., during local development), it returns an empty object.
  */
-const getMetadata = async () => {
+type GetMetadataOptions = {
+  timeout?: number;
+};
+
+const getMetadata = async (options?: GetMetadataOptions) => {
   const initType = getStringFromEnv({
     key: 'AWS_LAMBDA_INITIALIZATION_TYPE',
     defaultValue: 'unknown',
@@ -36,7 +40,7 @@ const getMetadata = async () => {
       headers: {
         Authorization: `Bearer ${metadataToken}`,
       },
-      signal: AbortSignal.timeout(1000),
+      signal: AbortSignal.timeout(options?.timeout ?? 1000),
     }
   );
   if (!res.ok) {
@@ -49,4 +53,4 @@ const getMetadata = async () => {
   return metadataCache;
 };
 
-export { clearMetadataCache, getMetadata };
+export { clearMetadataCache, getMetadata, type GetMetadataOptions };

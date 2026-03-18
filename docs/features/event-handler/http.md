@@ -966,7 +966,7 @@ By default, both stores accept any string key and return `unknown` values. When 
 === "index.ts"
 
     ```ts hl_lines="4-9 14 20-21 27-28 31"
-    --8<-- "examples/snippets/event-handler/http/advanced_store_typed.ts:5"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_typed.ts:8"
     ```
 
     1. Define the shape of the request store — keys and their value types.

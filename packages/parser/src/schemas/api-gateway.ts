@@ -261,8 +261,8 @@ const APIGatewayTokenAuthorizerEventSchema = z.object({
 });
 
 export {
+  APIGatewayEventRequestContextSchema,
   APIGatewayProxyEventSchema,
   APIGatewayRequestAuthorizerEventSchema,
   APIGatewayTokenAuthorizerEventSchema,
-  APIGatewayEventRequestContextSchema,
 };

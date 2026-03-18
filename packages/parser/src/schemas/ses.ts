@@ -177,4 +177,4 @@ const SesSchema = z.object({
   Records: z.array(SesRecordSchema).nonempty(),
 });
 
-export { SesSchema, SesRecordSchema };
+export { SesRecordSchema, SesSchema };

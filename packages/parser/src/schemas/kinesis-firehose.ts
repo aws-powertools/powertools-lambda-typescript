@@ -128,8 +128,8 @@ const KinesisFirehoseSqsSchema = KinesisFireHoseBaseSchema.extend({
 });
 
 export {
-  KinesisFirehoseSchema,
-  KinesisFirehoseSqsSchema,
   KinesisFirehoseRecordSchema,
+  KinesisFirehoseSchema,
   KinesisFirehoseSqsRecordSchema,
+  KinesisFirehoseSqsSchema,
 };

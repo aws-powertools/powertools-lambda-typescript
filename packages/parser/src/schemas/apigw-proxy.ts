@@ -39,7 +39,7 @@ const APIGatewayHttpMethod = z.enum([
 
 export {
   APIGatewayCert,
+  APIGatewayHttpMethod,
   APIGatewayRecord,
   APIGatewayStringArray,
-  APIGatewayHttpMethod,
 };

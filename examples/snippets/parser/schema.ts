@@ -15,4 +15,4 @@ const orderSchema = z.object({
 
 type Order = z.infer<typeof orderSchema>;
 
-export { orderSchema, type Order };
+export { type Order, orderSchema };

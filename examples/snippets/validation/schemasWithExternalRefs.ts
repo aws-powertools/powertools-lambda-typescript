@@ -36,8 +36,8 @@ type OutboundSchema = {
 
 export {
   defsSchema,
-  inboundSchema,
-  outboundSchema,
   type InboundSchema,
+  inboundSchema,
   type OutboundSchema,
+  outboundSchema,
 };

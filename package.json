@@ -52,10 +52,10 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.6",
     "@types/aws-lambda": "^8.10.161",
-    "@types/node": "^25.4.0",
-    "@vitest/coverage-v8": "^4.0.18",
+    "@types/node": "^25.5.0",
+    "@vitest/coverage-v8": "^4.1.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.3.3",
+    "lint-staged": "^16.4.0",
     "markdownlint-cli2": "^0.21.0",
     "middy5": "npm:@middy/core@^5.5.1",
     "middy6": "npm:@middy/core@^6.4.5",

@@ -83,14 +83,14 @@
     "nodejs"
   ],
   "dependencies": {
-    "@aws/lambda-invoke-store": "0.2.3",
+    "@aws/lambda-invoke-store": "0.2.4",
     "@aws-lambda-powertools/commons": "2.31.0",
     "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
     "@aws-lambda-powertools/parser": "2.31.0",
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-sqs": "^3.1004.0",
+    "@aws-sdk/client-sqs": "^3.1009.0",
     "zod": "^4.3.6"
   }
 }

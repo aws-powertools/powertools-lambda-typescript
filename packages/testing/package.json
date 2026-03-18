@@ -98,13 +98,13 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
   "dependencies": {
-    "@aws-cdk/toolkit-lib": "^1.18.0",
-    "@aws-sdk/client-lambda": "^3.1004.0",
-    "@aws-sdk/client-cloudwatch-logs": "^3.1004.0",
-    "@aws/lambda-invoke-store": "0.2.3",
+    "@aws-cdk/toolkit-lib": "^1.18.1",
+    "@aws-sdk/client-lambda": "^3.1009.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.1009.0",
+    "@aws/lambda-invoke-store": "0.2.4",
     "@smithy/util-utf8": "^4.2.0",
-    "aws-cdk-lib": "^2.241.0",
-    "esbuild": "^0.27.2",
+    "aws-cdk-lib": "^2.243.0",
+    "esbuild": "^0.27.4",
     "promise-retry": "^2.0.1"
   },
   "devDependencies": {

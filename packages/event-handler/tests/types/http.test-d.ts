@@ -21,6 +21,7 @@ describe('Store types', () => {
   };
 
   it('extracts request store type from Env', () => {
+    // Assess
     expectTypeOf<RequestStoreOf<AppEnv>>().toEqualTypeOf<{
       userId: string;
       isAdmin: boolean;
@@ -28,6 +29,7 @@ describe('Store types', () => {
   });
 
   it('extracts shared store type from Env', () => {
+    // Assess
     expectTypeOf<SharedStoreOf<AppEnv>>().toEqualTypeOf<{
       db: string;
       config: { timeout: number };
@@ -35,6 +37,7 @@ describe('Store types', () => {
   });
 
   it('defaults to Record<string, unknown> when no store is defined', () => {
+    // Assess
     expectTypeOf<RequestStoreOf<Env>>().toEqualTypeOf<
       Record<string, unknown>
     >();
@@ -42,7 +45,10 @@ describe('Store types', () => {
   });
 
   it('defaults to Record<string, unknown> when store is partial', () => {
+    // Prepare
     type PartialEnv = { store: { request: { userId: string } } };
+
+    // Assess
     expectTypeOf<RequestStoreOf<PartialEnv>>().toEqualTypeOf<{
       userId: string;
     }>();
@@ -52,17 +58,26 @@ describe('Store types', () => {
   });
 
   it('preserves backwards compatibility for RequestContext without generics', () => {
+    // Prepare
     type Ctx = RequestContext;
+
+    // Assess
     expectTypeOf<Ctx>().toEqualTypeOf<RequestContext<Env>>();
   });
 
   it('preserves backwards compatibility for Middleware without generics', () => {
+    // Prepare
     type Mw = Middleware;
+
+    // Assess
     expectTypeOf<Mw>().toEqualTypeOf<Middleware<Env>>();
   });
 
   it('preserves backwards compatibility for RouteHandler without generics', () => {
+    // Prepare
     type Rh = RouteHandler;
+
+    // Assess
     expectTypeOf<Rh>().toEqualTypeOf<RouteHandler<Env>>();
   });
 });
@@ -76,12 +91,18 @@ describe('RequestContext store properties', () => {
   };
 
   it('exposes shared as IStore typed to SharedStoreOf<TEnv>', () => {
+    // Prepare
     type Ctx = RequestContext<AppEnv>;
+
+    // Assess
     expectTypeOf<Ctx['shared']>().toEqualTypeOf<IStore<{ db: string }>>();
   });
 
   it('defaults shared to IStore<Record<string, unknown>> without TEnv', () => {
+    // Prepare
     type Ctx = RequestContext;
+
+    // Assess
     expectTypeOf<Ctx['shared']>().toEqualTypeOf<
       IStore<Record<string, unknown>>
     >();
@@ -104,7 +125,10 @@ describe('MergeEnv', () => {
   };
 
   it('intersects request and shared stores from two envs', () => {
+    // Prepare
     type Merged = MergeEnv<[AuthEnv, FeatureEnv]>;
+
+    // Assess
     expectTypeOf<Merged>().toEqualTypeOf<{
       store: {
         request: { userId: string } & { featureFlags: string[] };
@@ -114,12 +138,16 @@ describe('MergeEnv', () => {
   });
 
   it('requires at least two Env types', () => {
+    // Assess
     // @ts-expect-error TS2344 — single-element tuple does not satisfy [Env, Env, ...Env[]]
     type _Invalid = MergeEnv<[Env]>;
   });
 
   it('produces Record<string, unknown> when all envs are untyped', () => {
+    // Prepare
     type Merged = MergeEnv<[Env, Env]>;
+
+    // Assess
     expectTypeOf<Merged>().toEqualTypeOf<{
       store: {
         request: Record<string, unknown>;
@@ -129,6 +157,7 @@ describe('MergeEnv', () => {
   });
 
   it('preserves typed store when merged with an untyped Env', () => {
+    // Prepare
     type TypedEnv = {
       store: {
         request: { id: string };
@@ -136,6 +165,8 @@ describe('MergeEnv', () => {
       };
     };
     type Merged = MergeEnv<[Env, TypedEnv]>;
+
+    // Assess
     expectTypeOf<Merged>().toEqualTypeOf<{
       store: {
         request: { id: string };
@@ -145,9 +176,12 @@ describe('MergeEnv', () => {
   });
 
   it('preserves typed request store when merged with shared-only Env', () => {
+    // Prepare
     type SharedOnlyEnv = { store: { shared: { appName: string } } };
     type RequestOnlyEnv = { store: { request: { id: string } } };
     type Merged = MergeEnv<[SharedOnlyEnv, RequestOnlyEnv]>;
+
+    // Assess
     expectTypeOf<Merged>().toEqualTypeOf<{
       store: {
         request: { id: string };
@@ -159,14 +193,20 @@ describe('MergeEnv', () => {
 
 describe('IntersectAll', () => {
   it('intersects a tuple of record types', () => {
+    // Prepare
     type Result = IntersectAll<[{ a: number }, { b: string }, { c: boolean }]>;
+
+    // Assess
     expectTypeOf<Result>().toEqualTypeOf<
       { a: number } & { b: string } & { c: boolean }
     >();
   });
 
   it('returns unknown for an empty tuple', () => {
+    // Prepare
     type Result = IntersectAll<[]>;
+
+    // Assess
     expectTypeOf<Result>().toEqualTypeOf<unknown>();
   });
 });
@@ -187,6 +227,7 @@ describe('includeRouter typing', () => {
   };
 
   it('accepts a sub-router whose Env is a subset of the parent', () => {
+    // Prepare
     type ParentEnv = {
       store: {
         request: { userId: string; featureFlags: string[] };
@@ -195,23 +236,39 @@ describe('includeRouter typing', () => {
     };
     const app = new Router<ParentEnv>();
     const authRouter = new Router<AuthEnv>();
+
+    // Act
     app.includeRouter(authRouter);
+
+    // Assess
+    expectTypeOf(app).toEqualTypeOf<Router<ParentEnv>>();
+    expectTypeOf(authRouter).toEqualTypeOf<Router<AuthEnv>>();
   });
 
   it('accepts an untyped Router (backward compat)', () => {
+    // Prepare
     const app = new Router();
     const legacyRouter = new Router();
+
+    // Act
     app.includeRouter(legacyRouter);
+
+    // Assess
+    expectTypeOf(app).toEqualTypeOf<Router<Env>>();
+    expectTypeOf(legacyRouter).toEqualTypeOf<Router<Env>>();
   });
 
   it('chains includeRouter to merge disjoint envs', () => {
+    // Prepare
     const authRouter = new Router<AuthEnv>();
     const featureRouter = new Router<FeatureEnv>();
 
+    // Act
     const app = new Router()
       .includeRouter(authRouter)
       .includeRouter(featureRouter);
 
+    // Assess
     app.get('/test', (ctx) => {
       expectTypeOf(ctx.get('userId')).toEqualTypeOf<string | undefined>();
       expectTypeOf(ctx.get('featureFlags')).toEqualTypeOf<
@@ -226,15 +283,17 @@ describe('includeRouter typing', () => {
   });
 
   it('accepts MergeEnv as upfront type on parent router', () => {
+    // Prepare
     type AppEnv = MergeEnv<[AuthEnv, FeatureEnv]>;
-
     const authRouter = new Router<AuthEnv>();
     const featureRouter = new Router<FeatureEnv>();
 
+    // Act
     const app = new Router<AppEnv>();
     app.includeRouter(authRouter);
     app.includeRouter(featureRouter);
 
+    // Assess
     app.get('/test', (ctx) => {
       expectTypeOf(ctx.get('userId')).toEqualTypeOf<string | undefined>();
       expectTypeOf(ctx.get('featureFlags')).toEqualTypeOf<

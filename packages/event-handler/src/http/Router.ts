@@ -85,6 +85,9 @@ import {
 } from './utils.js';
 
 class Router<TEnv extends Env = Env> {
+  /**
+   * @deprecated This property is deprecated and will be removed in a future major version, please use {@link RequestContext.shared | `requestContext.shared`} instead.
+   */
   protected context: Record<string, unknown>;
 
   protected readonly routeRegistry: RouteHandlerRegistry;

@@ -866,6 +866,43 @@ describe('REST Event Handler E2E tests', () => {
     });
   });
 
+  describe('Store', () => {
+    it('returns a unique request-scoped value per invocation', async () => {
+      // Act
+      const response1 = await fetch(`${apiUrl}/store/request`);
+      const data1 = await response1.json();
+      const response2 = await fetch(`${apiUrl}/store/request`);
+      const data2 = await response2.json();
+
+      // Assess
+      expect(response1.status).toBe(200);
+      expect(response2.status).toBe(200);
+      expect(data1.requestId).not.toBe(data2.requestId);
+    });
+
+    it('returns shared store values set at cold start', async () => {
+      // Act
+      const response = await fetch(`${apiUrl}/store/shared`);
+      const data = await response.json();
+
+      // Assess
+      expect(response.status).toBe(200);
+      expect(data).toEqual({ appName: 'powertools-e2e', version: 42 });
+    });
+
+    it('returns both request and shared store values', async () => {
+      // Act
+      const response = await fetch(`${apiUrl}/store/both`);
+      const data = await response.json();
+
+      // Assess
+      expect(response.status).toBe(200);
+      expect(data.requestId).toBeDefined();
+      expect(data.appName).toBe('powertools-e2e');
+      expect(data.version).toBe(42);
+    });
+  });
+
   afterAll(async () => {
     if (!process.env.DISABLE_TEARDOWN) {
       await testStack.destroy();

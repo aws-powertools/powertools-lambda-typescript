@@ -1,4 +1,5 @@
 import type {
+  Env,
   HandlerResponse,
   HttpMethod,
   Middleware,
@@ -17,13 +18,13 @@ class Route<
   readonly id: string;
   readonly method: string;
   readonly path: Path;
-  readonly handler: RouteHandler | TypedRouteHandler<TReq, TResBody, TRes>;
+  readonly handler: RouteHandler | TypedRouteHandler<Env, TReq, TResBody, TRes>;
   readonly middleware: Middleware[];
 
   constructor(
     method: HttpMethod,
     path: Path,
-    handler: RouteHandler | TypedRouteHandler<TReq, TResBody, TRes>,
+    handler: RouteHandler | TypedRouteHandler<Env, TReq, TResBody, TRes>,
     middleware: Middleware[] = []
   ) {
     this.id = `${method}:${path}`;

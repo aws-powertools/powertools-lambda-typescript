@@ -284,11 +284,11 @@ const DynamoDBStreamSchemaSchema = z.object({
 });
 
 export {
-  DynamoDBStreamToKinesisRecordSchema as DynamoDBStreamToKinesisRecord,
-  DynamoDBStreamToKinesisChangeRecordSchema as DynamoDBStreamToKinesisChangeRecord,
-  DynamoDBStreamSchemaSchema as DynamoDBStreamSchema,
-  DynamoDBStreamRecordSchema as DynamoDBStreamRecord,
-  DynamoDBStreamChangeRecordSchema as DynamoDBStreamChangeRecord,
   DynamoDBStreamChangeRecordBaseSchema as DynamoDBStreamChangeRecordBase,
+  DynamoDBStreamChangeRecordSchema as DynamoDBStreamChangeRecord,
+  DynamoDBStreamRecordSchema as DynamoDBStreamRecord,
+  DynamoDBStreamSchemaSchema as DynamoDBStreamSchema,
+  DynamoDBStreamToKinesisChangeRecordSchema as DynamoDBStreamToKinesisChangeRecord,
+  DynamoDBStreamToKinesisRecordSchema as DynamoDBStreamToKinesisRecord,
   UserIdentitySchema as UserIdentity,
 };

@@ -92,4 +92,4 @@ const AlbMultiValueHeadersSchema = AlbSchema.extend({
   multiValueQueryStringParameters: z.record(z.string(), z.array(z.string())),
 });
 
-export { AlbSchema, AlbMultiValueHeadersSchema };
+export { AlbMultiValueHeadersSchema, AlbSchema };

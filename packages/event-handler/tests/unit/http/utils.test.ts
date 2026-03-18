@@ -721,7 +721,7 @@ describe('Path Utilities', () => {
     const sharedStore = new Store();
     const mockOptions: RequestContext = {
       params: {},
-      route: '',
+      route: null,
       event: {} as APIGatewayProxyEvent,
       context: {} as Context,
       responseType: 'ApiGatewayV1',

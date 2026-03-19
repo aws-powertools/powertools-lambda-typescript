@@ -5,6 +5,6 @@ const logger = new Logger({ serviceName: 'serverlessAirline' });
 const metadata = await getMetadata();
 
 export const handler = async () => {
-  const { AvailabilityZoneId: azId } = metadata;
+  const { AvailabilityZoneID: azId } = metadata;
   logger.appendKeys({ azId });
 };

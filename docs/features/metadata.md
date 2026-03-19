@@ -34,7 +34,7 @@ You can fetch data from the LMDS using the `getMetadata` function. For example, 
 
 | Property             | Type     | Description                                             |
 | -------------------- | -------- | ------------------------------------------------------- |
-| `AvailabilityZoneId` | `string` | The AZ where the function is running (e.g., `use1-az1`) |
+| `AvailabilityZoneID` | `string` | The AZ where the function is running (e.g., `use1-az1`) |
 
 ## Testing your code
 

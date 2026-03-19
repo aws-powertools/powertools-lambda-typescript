@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
+
+### Features
+
+- add type-safe Store API for request and shared state  ([#5081](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5081)) ([03034db](https://github.com/aws-powertools/powertools-lambda-typescript/commit/03034db1b8d6bb4208c657de4e47b298dd72ebfc))
+- add validation support for REST router ([#4736](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4736)) ([3617c8c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3617c8c1aaed53f9146189ef83ea4ac248250c14))
+
+### Bug Fixes
+
+- add overloads to route() for typed validation context ([#5052](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5052)) ([dae12e4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dae12e4c0c84aee1e9d2373c198b7628c26ee32d))
+- default error handler returns a web Response correctly ([#5024](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5024)) ([f8100e8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f8100e88fdfb46415b357726fcfffdde40116061))
 ## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
 
 ### Bug Fixes

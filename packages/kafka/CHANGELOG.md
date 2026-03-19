@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
+
+### Bug Fixes
+
+- handle tombstone events without value ([#5017](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5017)) ([79553c9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/79553c96a404df96f57268309c4468fe6c92b470))
 ## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
 
 ### Bug Fixes

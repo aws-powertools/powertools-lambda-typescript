@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
+
+### Maintenance
+
+- bump ajv from 8.17.1 to 8.18.0  ([#5021](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5021)) ([a7791e1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a7791e17b13120c6fff81f6fc2f12f44cc1b504a))
 ## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
 
 **Note:** Version bump only for this package

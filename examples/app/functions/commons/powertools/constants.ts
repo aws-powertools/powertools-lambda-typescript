@@ -17,4 +17,4 @@ const defaultValues = {
   executionEnv: process.env.AWS_EXECUTION_ENV || 'N/A',
 };
 
-export { serviceName, metricsNamespace, defaultValues };
+export { defaultValues, metricsNamespace, serviceName };

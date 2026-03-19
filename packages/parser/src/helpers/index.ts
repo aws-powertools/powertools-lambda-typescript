@@ -115,4 +115,4 @@ const Base64Encoded = <T extends ZodType>(schema: T) =>
     })
     .pipe(schema);
 
-export { JSONStringified, Base64Encoded };
+export { Base64Encoded, JSONStringified };

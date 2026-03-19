@@ -50,4 +50,4 @@ interface HashiCorpVaultGetOptions extends GetOptionsInterface {
   sdkOptions?: HashiCorpVaultReadKVSecretOptions;
 }
 
-export type { HashiCorpVaultProviderOptions, HashiCorpVaultGetOptions };
+export type { HashiCorpVaultGetOptions, HashiCorpVaultProviderOptions };

@@ -31,8 +31,8 @@ type OutboundSchema = {
 };
 
 export {
-  inboundSchema,
-  outboundSchema,
   type InboundSchema,
+  inboundSchema,
   type OutboundSchema,
+  outboundSchema,
 };

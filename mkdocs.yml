@@ -58,6 +58,7 @@ nav:
           - features/parser.md
           - features/validation.md
           - features/kafka.md
+          - features/metadata.md
       - Environment variables: environment-variables.md
       - Upgrade guide: upgrade.md
       - Community Content: we_made_this.md
@@ -193,6 +194,7 @@ plugins:
           - features/parser.md
           - features/validation.md
           - features/kafka.md
+          - features/metadata.md
         Environment variables: 
           - environment-variables.md
         Upgrade guide: 

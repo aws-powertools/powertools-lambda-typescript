@@ -1,11 +1,12 @@
 {
   "name": "@aws-lambda-powertools/commons",
-  "version": "2.31.0",
+  "version": "2.32.0",
   "description": "A shared utility package for Powertools for AWS Lambda (TypeScript) libraries",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
   },
+  "license": "MIT-0",
   "publishConfig": {
     "access": "public"
   },
@@ -25,7 +26,31 @@
     "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/commons#readme",
-  "license": "MIT-0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "serverless",
+    "nodejs"
+  ],
+  "dependencies": {
+    "@aws/lambda-invoke-store": "0.2.4"
+  },
+  "devDependencies": {
+    "@aws-lambda-powertools/testing-utils": "file:../testing"
+  },
+  "main": "./lib/cjs/index.js",
+  "types": "./lib/cjs/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -58,6 +83,10 @@
       "import": "./lib/esm/envUtils.js",
       "require": "./lib/cjs/envUtils.js"
     },
+    "./utils/metadata": {
+      "import": "./lib/esm/metadata.js",
+      "require": "./lib/cjs/metadata.js"
+    },
     "./types": {
       "import": "./lib/esm/types/index.js",
       "require": "./lib/cjs/types/index.js"
@@ -89,6 +118,10 @@
         "lib/cjs/envUtils.d.ts",
         "lib/esm/envUtils.d.ts"
       ],
+      "utils/metadata": [
+        "lib/cjs/metadata.d.ts",
+        "lib/esm/metadata.d.ts"
+      ],
       "types": [
         "lib/cjs/types/index.d.ts",
         "lib/esm/types/index.d.ts"
@@ -98,30 +131,5 @@
         "lib/esm/deepMerge.d.ts"
       ]
     }
-  },
-  "types": "./lib/cjs/index.d.ts",
-  "main": "./lib/cjs/index.js",
-  "files": [
-    "lib"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
-  },
-  "bugs": {
-    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
-  },
-  "keywords": [
-    "aws",
-    "lambda",
-    "powertools",
-    "serverless",
-    "nodejs"
-  ],
-  "dependencies": {
-    "@aws/lambda-invoke-store": "0.2.4"
-  },
-  "devDependencies": {
-    "@aws-lambda-powertools/testing-utils": "file:../testing"
   }
 }

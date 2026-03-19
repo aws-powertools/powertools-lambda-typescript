@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
+
+### Features
+
+- add Lambda Metadata Service support ([#5109](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5109)) ([46ffc2a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/46ffc2ad062d57678030834c8e1d2755f848cc7b))
+- add Lambda Metadata Service support ([#5106](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5106)) ([bdfa583](https://github.com/aws-powertools/powertools-lambda-typescript/commit/bdfa5830ec5a315b5f5e687b2cac876bc2e2a748))
+
+### Maintenance
+
+- bump @aws/lambda-invoke-store from 0.2.3 to 0.2.4 ([#5089](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5089)) ([fe519ab](https://github.com/aws-powertools/powertools-lambda-typescript/commit/fe519abf01c152eca16b93e42b48d77ce1d67c10))
 ## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
 
 **Note:** Version bump only for this package

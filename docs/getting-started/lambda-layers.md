@@ -19,41 +19,41 @@ We publish the Lambda Layer for Powertools for AWS Lambda in all commercial regi
 
 | Region           | Layer ARN                                                                                                  |
 | ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| `us-east-1`      | [arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}             |
-| `us-east-2`      | [arn:aws:lambda:us-east-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}             |
-| `us-west-1`      | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}             |
-| `us-west-2`      | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}             |
-| `ap-south-1`     | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}            |
-| `ap-south-2`     | [arn:aws:lambda:ap-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}            |
-| `ap-east-1`      | [arn:aws:lambda:ap-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}             |
-| `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}        |
-| `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}        |
-| `ap-northeast-3` | [arn:aws:lambda:ap-northeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}        |
-| `ap-southeast-1` | [arn:aws:lambda:ap-southeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}        |
-| `ap-southeast-2` | [arn:aws:lambda:ap-southeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}        |
-| `ap-southeast-3` | [arn:aws:lambda:ap-southeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}        |
-| `ap-southeast-4` | [arn:aws:lambda:ap-southeast-4:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}        |
-| `ap-southeast-5` | [arn:aws:lambda:ap-southeast-5:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}        |
-| `ap-southeast-7` | [arn:aws:lambda:ap-southeast-7:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}        |
-| `eu-central-1`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}          |
-| `eu-central-2`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}          |
-| `eu-west-1`      | [arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}             |
-| `eu-west-2`      | [arn:aws:lambda:eu-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}             |
-| `eu-west-3`      | [arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}             |
-| `eu-north-1`     | [arn:aws:lambda:eu-north-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}            |
-| `eu-south-1`     | [arn:aws:lambda:eu-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}            |
-| `eu-south-2`     | [arn:aws:lambda:eu-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}            |
-| `ca-central-1`   | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}          |
-| `ca-west-1`      | [arn:aws:lambda:ca-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}             |
-| `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}             |
-| `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}            |
-| `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}            |
+| `us-east-1`      | [arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}             |
+| `us-east-2`      | [arn:aws:lambda:us-east-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}             |
+| `us-west-1`      | [arn:aws:lambda:us-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}             |
+| `us-west-2`      | [arn:aws:lambda:us-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}             |
+| `ap-south-1`     | [arn:aws:lambda:ap-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}            |
+| `ap-south-2`     | [arn:aws:lambda:ap-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}            |
+| `ap-east-1`      | [arn:aws:lambda:ap-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}             |
+| `ap-northeast-1` | [arn:aws:lambda:ap-northeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}        |
+| `ap-northeast-2` | [arn:aws:lambda:ap-northeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}        |
+| `ap-northeast-3` | [arn:aws:lambda:ap-northeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}        |
+| `ap-southeast-1` | [arn:aws:lambda:ap-southeast-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}        |
+| `ap-southeast-2` | [arn:aws:lambda:ap-southeast-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}        |
+| `ap-southeast-3` | [arn:aws:lambda:ap-southeast-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}        |
+| `ap-southeast-4` | [arn:aws:lambda:ap-southeast-4:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}        |
+| `ap-southeast-5` | [arn:aws:lambda:ap-southeast-5:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}        |
+| `ap-southeast-7` | [arn:aws:lambda:ap-southeast-7:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}        |
+| `eu-central-1`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}          |
+| `eu-central-2`   | [arn:aws:lambda:eu-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}          |
+| `eu-west-1`      | [arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}             |
+| `eu-west-2`      | [arn:aws:lambda:eu-west-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}             |
+| `eu-west-3`      | [arn:aws:lambda:eu-west-3:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}             |
+| `eu-north-1`     | [arn:aws:lambda:eu-north-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}            |
+| `eu-south-1`     | [arn:aws:lambda:eu-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}            |
+| `eu-south-2`     | [arn:aws:lambda:eu-south-2:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}            |
+| `ca-central-1`   | [arn:aws:lambda:ca-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}          |
+| `ca-west-1`      | [arn:aws:lambda:ca-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}             |
+| `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}             |
+| `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}            |
+| `me-south-1`     | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}            |
 | `me-central-1`*  | [arn:aws:lambda:me-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}          |
-| `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}          |
-| `mx-central-1`   | [arn:aws:lambda:mx-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}          |
-| `us-gov-west-1`  | [arn:aws-us-gov:lambda:us-gov-west-1:165093116878:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}  |
-| `us-gov-east-1`  | [arn:aws-us-gov:lambda:us-gov-east-1:165087284144:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}  |
-| `cn-north-1`     | [arn:aws-cn:lambda:cn-north-1:498634801083:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}         |
+| `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}          |
+| `mx-central-1`   | [arn:aws:lambda:mx-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}          |
+| `us-gov-west-1`  | [arn:aws-us-gov:lambda:us-gov-west-1:165093116878:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}  |
+| `us-gov-east-1`  | [arn:aws-us-gov:lambda:us-gov-east-1:165087284144:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}  |
+| `cn-north-1`     | [arn:aws-cn:lambda:cn-north-1:498634801083:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}         |
 
 _\* New layer versions for `me-central-1` are temporarily paused due to service disruptions._
 
@@ -73,7 +73,7 @@ Parameter:
   LastModifiedDate: '2025-02-11T11:08:45.070000+01:00'
   Name: /aws/service/powertools/typescript/generic/all/2.14.0
   Type: String
-  Value: arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45
+  Value: arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46
   Version: 1
 ```
 
@@ -93,7 +93,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
 === "AWS CLI command to download Lambda Layer content"
 
     ```bash
-    aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45 --region {aws::region}
+    aws lambda get-layer-version-by-arn --arn arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46 --region {aws::region}
     ```
 
 === "AWS CLI output"
@@ -106,7 +106,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
             "CodeSize": 3548324
         },
         "LayerArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2",
-        "LayerVersionArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45",
+        "LayerVersionArn": "arn:aws:lambda:eu-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46",
         "Description": "Powertools for AWS Lambda (TypeScript) version 2.18.0",
         "CreatedDate": "2025-04-08T07:38:30.424+0000",
         "Version": 24,
@@ -141,7 +141,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
         const powertoolsLayer = LayerVersion.fromLayerVersionArn(
           this,
           'PowertoolsLayer',
-          `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45`
+          `arn:aws:lambda:${Stack.of(this).region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46`
         );
         
         new NodejsFunction(this, 'Function', {
@@ -211,7 +211,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
       Type: AWS::Serverless::Function
         Properties:
           Layers:
-            - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45
+            - !Sub arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46
     ```
 
     You can also use AWS SSM Parameter Store to dynamically add Powertools for AWS Lambda and resolve the Layer ARN from SSM Parameter Store in your code, allowing you to pin to `latest` or a specific Powertools for AWS Lambda version.
@@ -250,7 +250,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
       hello:
         handler: lambda_function.lambda_handler
         layers:
-          - arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45
+          - arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46
     ```
 
     If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
@@ -285,7 +285,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
       role          = ...
       handler       = "index.handler"
       runtime 		= "nodejs24.x"
-      layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45"]
+      layers 		= ["arn:aws:lambda:{aws::region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46"]
       source_code_hash = filebase64sha256("lambda_function_payload.zip")
     }
     ```
@@ -320,7 +320,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
 
     const lambdaFunction = new aws.lambda.Function('function', {
         layers: [
-            pulumi.interpolate`arn:aws:lambda:${aws.getRegionOutput().name}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45`
+            pulumi.interpolate`arn:aws:lambda:${aws.getRegionOutput().name}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46`
         ],
         code: new pulumi.asset.FileArchive('lambda_function_payload.zip'),
         tracingConfig: {
@@ -344,7 +344,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
       name: "my-function",
       layers: {
         "@aws-lambda-powertools/*":
-          "arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45",
+          "arn:aws:lambda:${AWS::Region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46",
       },
     });
     ```

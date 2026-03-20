@@ -563,4 +563,55 @@ describe.each([
     expect(result.headers?.['content-type']).toBe('text/plain');
     expect(result.isBase64Encoded).toBe(false);
   });
+
+  it('sets reqCtx.route to METHOD and path for static routes', async () => {
+    // Prepare
+    const app = new Router();
+    let capturedRoute: string | null = null;
+    app.use(async ({ reqCtx, next }) => {
+      await next();
+      capturedRoute = reqCtx.route;
+    });
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(createEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(capturedRoute).toBe('GET /test');
+  });
+
+  it('sets reqCtx.route to METHOD and pattern for dynamic routes', async () => {
+    // Prepare
+    const app = new Router();
+    let capturedRoute: string | null = null;
+    app.use(async ({ reqCtx, next }) => {
+      await next();
+      capturedRoute = reqCtx.route;
+    });
+    app.get('/users/:id', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(createEvent('/users/123', 'GET'), context);
+
+    // Assess
+    expect(capturedRoute).toBe('GET /users/:id');
+  });
+
+  it('sets reqCtx.route to null for unmatched routes', async () => {
+    // Prepare
+    const app = new Router();
+    let capturedRoute: string | null = '';
+    app.use(async ({ reqCtx, next }) => {
+      await next();
+      capturedRoute = reqCtx.route;
+    });
+    app.get('/test', async () => ({ ok: true }));
+
+    // Act
+    await app.resolve(createEvent('/nonexistent', 'GET'), context);
+
+    // Assess
+    expect(capturedRoute).toBeNull();
+  });
 });

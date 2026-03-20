@@ -73,7 +73,6 @@ import {
   composeMiddleware,
   getBase64EncodingFromHeaders,
   getBase64EncodingFromResult,
-  getResponseType,
   getStatusCode,
   HttpResponseStream,
   isALBEvent,
@@ -247,6 +246,38 @@ class Router<TEnv extends Env = Env> {
     };
   }
 
+  #buildRequestContext(
+    event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent,
+    context: Context,
+    options: {
+      req: Request;
+      res: Response;
+      isHttpStreaming?: boolean;
+    } & Pick<RequestContext<TEnv>, 'set' | 'get' | 'has' | 'delete' | 'shared'>
+  ): RequestContext<TEnv> {
+    const common = {
+      context,
+      req: options.req,
+      res: options.res,
+      route: null as string | null,
+      params: {} as Record<string, string>,
+      isHttpStreaming: options.isHttpStreaming,
+      set: options.set,
+      get: options.get,
+      has: options.has,
+      delete: options.delete,
+      shared: options.shared,
+    };
+
+    if (isAPIGatewayProxyEventV2(event)) {
+      return { ...common, event, responseType: 'ApiGatewayV2' };
+    }
+    if (isALBEvent(event)) {
+      return { ...common, event, responseType: 'ALB' };
+    }
+    return { ...common, event, responseType: 'ApiGatewayV1' };
+  }
+
   /**
    * Core resolution logic shared by both resolve and resolveStream methods.
    * Validates the event, routes to handlers, executes middleware, and handles errors.
@@ -272,8 +303,8 @@ class Router<TEnv extends Env = Env> {
       throw new InvalidEventError();
     }
 
-    const responseType = getResponseType(event);
     const requestStore = new Store<RequestStoreOf<TEnv>>();
+    const storeAccessors = this.#createStoreAccessors(requestStore);
 
     let req: Request;
     try {
@@ -283,9 +314,7 @@ class Router<TEnv extends Env = Env> {
         this.logger.error(err);
         // We can't throw a MethodNotAllowedError outside the try block as it
         // will be converted to an internal server error by the API Gateway runtime
-        return {
-          event,
-          context,
+        return this.#buildRequestContext(event, context, {
           req: new Request('https://invalid'),
           res: new Response(null, {
             status: HttpStatusCodes.METHOD_NOT_ALLOWED,
@@ -293,37 +322,33 @@ class Router<TEnv extends Env = Env> {
               headers: { 'transfer-encoding': 'chunked' },
             }),
           }),
-          params: {},
-          responseType,
-          ...this.#createStoreAccessors(requestStore),
-        };
+          ...storeAccessors,
+        });
       }
       throw err;
     }
 
-    const requestContext: RequestContext<TEnv> = {
-      event,
-      context,
+    const requestContext = this.#buildRequestContext(event, context, {
       req,
-      // this response should be overwritten by the handler, if it isn't
-      // it means something went wrong with the middleware chain
       res: new Response('', {
         status: HttpStatusCodes.INTERNAL_SERVER_ERROR,
         ...(options?.isHttpStreaming && {
           headers: { 'transfer-encoding': 'chunked' },
         }),
       }),
-      params: {},
-      responseType,
       isHttpStreaming: options?.isHttpStreaming,
-      ...this.#createStoreAccessors(requestStore),
-    };
+      ...storeAccessors,
+    });
 
     try {
       const method = req.method as HttpMethod;
       const path = new URL(req.url).pathname as Path;
 
       const route = this.routeRegistry.resolve(method, path);
+
+      if (route !== null) {
+        requestContext.route = route.route;
+      }
 
       const handlerMiddleware: Middleware = async ({ reqCtx, next }) => {
         let handlerRes: HandlerResponse;

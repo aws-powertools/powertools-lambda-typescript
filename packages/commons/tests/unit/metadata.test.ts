@@ -46,7 +46,7 @@ describe('Function: getMetadata', () => {
     vi.stubEnv('AWS_LAMBDA_METADATA_API', '127.0.0.1:1234');
     vi.stubEnv('AWS_LAMBDA_METADATA_TOKEN', 'test-token');
 
-    const payload = { AvailabilityZoneId: 'use1-az1' };
+    const payload = { AvailabilityZoneID: 'use1-az1' };
     fetchMock.mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue(payload),
@@ -82,7 +82,7 @@ describe('Function: getMetadata', () => {
       .spyOn(AbortSignal, 'timeout')
       .mockReturnValue(new AbortController().signal);
 
-    const payload = { AvailabilityZoneId: 'use1-az1' };
+    const payload = { AvailabilityZoneID: 'use1-az1' };
     fetchMock.mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue(payload),

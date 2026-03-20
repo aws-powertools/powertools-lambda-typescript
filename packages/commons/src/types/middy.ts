@@ -21,8 +21,8 @@ type Request<
 > = {
   event: TEvent;
   context: TContext;
-  response: TResult | null;
-  error: TErr | null;
+  response: TResult | null | undefined;
+  error: TErr | null | undefined;
   internal: {
     [key: string]: unknown;
   };
@@ -61,7 +61,7 @@ type MiddyLikeRequest = {
   event: unknown;
   context: Context;
   response: unknown;
-  error: Error | null;
+  error: Error | null | undefined;
   internal: {
     [key: string]: unknown;
   };

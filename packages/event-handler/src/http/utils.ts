@@ -20,7 +20,6 @@ import type {
   Middleware,
   Path,
   ResponseStream,
-  ResponseType,
   ValidationResult,
 } from '../types/http.js';
 import type { ResolveOptions } from '../types/index.js';
@@ -152,14 +151,6 @@ export const isALBEvent = (event: unknown): event is ALBEvent => {
   if (!isRecord(event)) return false;
   if (!isRecord(event.requestContext)) return false;
   return isRecord(event.requestContext.elb);
-};
-
-export const getResponseType = (
-  event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent
-): ResponseType => {
-  if (isAPIGatewayProxyEventV2(event)) return 'ApiGatewayV2';
-  if (isALBEvent(event)) return 'ALB';
-  return 'ApiGatewayV1';
 };
 
 export const isHttpMethod = (method: string): method is HttpMethod => {

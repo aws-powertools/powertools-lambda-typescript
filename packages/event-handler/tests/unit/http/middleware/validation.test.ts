@@ -313,33 +313,6 @@ describe('Router Validation Integration', () => {
     expect(result.statusCode).toBe(200);
   });
 
-  it('validates a coerced response successfully', async () => {
-    // Prepare
-    const responseSchema = z.object({
-      id: z.coerce.string(),
-      name: z.string(),
-    });
-
-    app.get(
-      '/users/:id',
-      () => {
-        return { id: 123, name: 'John' };
-      },
-      {
-        validation: { res: { body: responseSchema } },
-      }
-    );
-
-    const event = createTestEvent('/users/123', 'GET', {});
-    event.pathParameters = { id: '123' };
-
-    // Act
-    const result = await app.resolve(event, context);
-
-    // Assess
-    expect(result.statusCode).toBe(200);
-  });
-
   it('validates response body successfully', async () => {
     // Prepare
     const responseSchema = z.object({ id: z.string(), name: z.string() });

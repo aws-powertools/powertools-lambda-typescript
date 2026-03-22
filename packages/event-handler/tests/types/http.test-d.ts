@@ -1,8 +1,11 @@
 import { describe, expectTypeOf, it } from 'vitest';
+import { z } from 'zod';
 import { Router } from '../../src/http/index.js';
 import type { IStore } from '../../src/store/Store.js';
 import type {
   Env,
+  InferResBody,
+  InferResSchema,
   IntersectAll,
   MergeEnv,
   Middleware,
@@ -305,5 +308,118 @@ describe('includeRouter typing', () => {
       >();
       return { ok: true };
     });
+  });
+});
+
+describe('Response validation typing', () => {
+  it('infers the output type for a standard response schema', () => {
+    const responseSchema = z.object({ id: z.string(), name: z.string() });
+    type Config = { res: { body: typeof responseSchema } };
+
+    expectTypeOf<InferResBody<Config>>().toEqualTypeOf<{
+      id: string;
+      name: string;
+    }>();
+  });
+
+  // passes on main, fails on your branch
+  it('infers the output type for a coerced response schema', () => {
+    const responseSchema = z.object({
+      id: z.coerce.string(),
+      name: z.string(),
+    });
+    type Config = { res: { body: typeof responseSchema } };
+
+    expectTypeOf<InferResBody<Config>>().toEqualTypeOf<{
+      id: unknown;
+      name: string;
+    }>();
+  });
+
+  it('infers the output type for a transformed response schema', () => {
+    const responseSchema = z
+      .object({
+        id: z.number(),
+        name: z.string(),
+      })
+      .transform((r) => ({
+        ...r,
+        id: String(r.id),
+      }));
+
+    type Config = { res: { body: typeof responseSchema } };
+
+    expectTypeOf<InferResBody<Config>>().toEqualTypeOf<{
+      id: number;
+      name: string;
+    }>();
+  });
+
+  it('rejects handler returning wrong types with a standard schema', () => {
+    const app = new Router();
+    const responseSchema = z.object({ id: z.string(), name: z.string() });
+
+    app.get(
+      '/users/:id',
+      // @ts-expect-error - number is not assignable to string for id
+      () => {
+        return { id: 123, name: 'John' };
+      },
+      { validation: { res: { body: responseSchema } } }
+    );
+  });
+
+  // fails on main, passes on your branch
+  it('accepts handler returning pre-coercion types with z.coerce', () => {
+    const app = new Router();
+    const responseSchema = z.object({
+      id: z.coerce.string(),
+      name: z.string(),
+    });
+
+    app.get(
+      '/users/:id',
+      () => {
+        return { id: 123, name: 'John' };
+      },
+      { validation: { res: { body: responseSchema } } }
+    );
+  });
+
+  // fails on main, passes on your branch
+  it('accepts handler returning a Response object with response validation', () => {
+    const app = new Router();
+    const responseSchema = z.object({ id: z.string(), name: z.string() });
+
+    app.get(
+      '/users/:id',
+      () => {
+        return Response.json({ id: '123', name: 'John' });
+      },
+      { validation: { res: { body: responseSchema } } }
+    );
+  });
+
+  it('infers validated response body as output type for a standard schema', () => {
+    const responseSchema = z.object({ id: z.string(), name: z.string() });
+    type Config = { res: { body: typeof responseSchema } };
+
+    expectTypeOf<InferResSchema<Config>>().toEqualTypeOf<{
+      body: { id: string; name: string };
+      headers: undefined;
+    }>();
+  });
+
+  it('infers validated response body as output type for a coerced schema', () => {
+    const responseSchema = z.object({
+      id: z.coerce.string(),
+      name: z.string(),
+    });
+    type Config = { res: { body: typeof responseSchema } };
+
+    expectTypeOf<InferResSchema<Config>>().toEqualTypeOf<{
+      body: { id: string; name: string };
+      headers: undefined;
+    }>();
   });
 });

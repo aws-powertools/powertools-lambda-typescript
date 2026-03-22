@@ -188,6 +188,7 @@ class RouteHandlerRegistry {
     if (staticRoute != null) {
       return {
         handler: staticRoute.handler as RouteHandler,
+        route: `${method} ${getPathString(staticRoute.path)}`,
         rawParams: {},
         params: {},
         middleware: staticRoute.middleware,
@@ -250,6 +251,7 @@ class RouteHandlerRegistry {
 
     return {
       handler: route.handler as RouteHandler,
+      route: `${method} ${getPathString(route.path)}`,
       params: processedParams,
       rawParams: params,
       middleware: route.middleware,

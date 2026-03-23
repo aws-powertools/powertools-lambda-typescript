@@ -369,7 +369,6 @@ describe('Response validation typing', () => {
     );
   });
 
-  // fails on main, passes on your branch
   it('accepts handler returning pre-coercion types with z.coerce', () => {
     const app = new Router();
     const responseSchema = z.object({
@@ -386,7 +385,6 @@ describe('Response validation typing', () => {
     );
   });
 
-  // fails on main, passes on your branch
   it('accepts handler returning a Response object with response validation', () => {
     const app = new Router();
     const responseSchema = z.object({ id: z.string(), name: z.string() });

@@ -322,7 +322,6 @@ describe('Response validation typing', () => {
     }>();
   });
 
-  // passes on main, fails on your branch
   it('infers the output type for a coerced response schema', () => {
     const responseSchema = z.object({
       id: z.coerce.string(),

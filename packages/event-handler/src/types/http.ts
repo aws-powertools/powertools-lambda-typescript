@@ -259,9 +259,10 @@ type TypedRouteHandler<
 > = (
   reqCtx: TypedRequestContext<TEnv, TReq, TRes>
 ) =>
-  | Promise<TResBody | ExtendedAPIGatewayProxyResult<TResBody>>
+  | Promise<TResBody | ExtendedAPIGatewayProxyResult<TResBody> | Response>
   | TResBody
-  | ExtendedAPIGatewayProxyResult<TResBody>;
+  | ExtendedAPIGatewayProxyResult<TResBody>
+  | Response;
 
 type HttpMethod = keyof typeof HttpVerbs;
 
@@ -526,13 +527,13 @@ type InferReqSchema<V extends ValidationConfig> = V extends {
   : ReqSchema;
 
 /**
- * Infers the response body type from a `ValidationConfig` by extracting the output type
+ * Infers the response body type from a `ValidationConfig` by extracting the input type
  * from the response body schema.
  */
 type InferResBody<V extends ValidationConfig> = V extends {
-  res: { body: StandardSchemaV1<infer _I, infer O> };
+  res: { body: infer S extends StandardSchemaV1 };
 }
-  ? O
+  ? StandardSchemaV1.InferInput<S>
   : HandlerResponse;
 
 /**

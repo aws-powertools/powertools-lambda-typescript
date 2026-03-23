@@ -286,6 +286,33 @@ describe('Router Validation Integration', () => {
     expect(result.body).toBe(JSON.stringify({ id: '123', name: 'John' }));
   });
 
+  it('validates response object successfully', async () => {
+    // Prepare
+    const responseSchema = z.object({
+      id: z.coerce.string(),
+      name: z.string(),
+    });
+
+    app.get(
+      '/users/:id',
+      () => {
+        return Response.json({ id: 123, name: 'John' });
+      },
+      {
+        validation: { res: { body: responseSchema } },
+      }
+    );
+
+    const event = createTestEvent('/users/123', 'GET', {});
+    event.pathParameters = { id: '123' };
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+  });
+
   it('validates response body successfully', async () => {
     // Prepare
     const responseSchema = z.object({ id: z.string(), name: z.string() });
@@ -358,7 +385,6 @@ describe('Router Validation Integration', () => {
     const responseSchema = z.object({ name: z.string() });
     app.get(
       '/invalid',
-      // @ts-expect-error TS2345 testing for validation failure
       () => {
         return new Response('{"name": "John"', {
           headers: {

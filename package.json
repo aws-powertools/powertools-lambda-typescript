@@ -63,7 +63,7 @@
     "typedoc": "^0.28.18",
     "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "^6.0.2",
-    "vitest": "^4.0.10"
+    "vitest": "^4.1.2"
   },
   "lint-staged": {
     "*.{js,ts,json}": "biome check --write --no-errors-on-unmatched",

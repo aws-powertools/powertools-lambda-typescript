@@ -456,7 +456,7 @@ describe('Function: deepMerge', () => {
     it('handles missing values in array of source (does not overwrite existing value with `undefined`)', () => {
       // Prepare
       const target = { arr: [4, 5, 6] };
-      const source = { arr: Array(4) };
+      const source = { arr: new Array(4) };
       source.arr[0] = 1;
       source.arr[2] = 3;
 

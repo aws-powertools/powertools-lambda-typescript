@@ -45,7 +45,9 @@ const mergeArrayItemsByIndex = (
     }
 
     // Otherwise, replace the target item with source item
-    targetArray[i] = srcItem;
+    if (srcItem !== undefined || tgtItem === undefined) {
+      targetArray[i] = srcItem;
+    }
   }
 };
 
@@ -123,7 +125,9 @@ const mergeRecursive = (
       continue;
     }
 
-    target[key] = sourceValue;
+    if (sourceValue !== undefined || targetValue === undefined) {
+      target[key] = sourceValue;
+    }
   }
 };
 

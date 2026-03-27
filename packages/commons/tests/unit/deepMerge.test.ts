@@ -428,16 +428,43 @@ describe('Function: deepMerge', () => {
       expect(result).toEqual({ a: null });
     });
 
-    it('handles undefined values in source', () => {
+    it('handles undefined values in source (does not overwrite existing value with `undefined`)', () => {
       // Prepare
       const target = { a: 1, b: 2 };
-      const source = { a: undefined };
+      const source = { a: undefined, c: undefined };
 
       // Act
       const result = deepMerge(target, source);
 
       // Assess
-      expect(result).toEqual({ a: undefined, b: 2 });
+      expect(result).toStrictEqual({ a: 1, b: 2, c: undefined });
+    });
+
+    it('handles undefined values in array of source (does not overwrite existing value with `undefined`)', () => {
+      // Prepare
+      const target = { arr: [4, 5, 6] };
+      const source = { arr: [1, undefined, 3, undefined] };
+      source.arr[1] = undefined;
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toStrictEqual({ arr: [1, 5, 3, undefined] });
+    });
+
+    it('handles missing values in array of source (does not overwrite existing value with `undefined`)', () => {
+      // Prepare
+      const target = { arr: [4, 5, 6] };
+      const source = { arr: new Array(4) };
+      source.arr[0] = 1;
+      source.arr[2] = 3;
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toStrictEqual({ arr: [1, 5, 3, undefined] });
     });
 
     it('handles Symbol keys (ignores them)', () => {

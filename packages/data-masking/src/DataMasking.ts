@@ -51,25 +51,33 @@ export class DataMasking {
     const copy = this.#deepCopy(data);
 
     if (options.maskingRules) {
-      for (const [field, rule] of Object.entries(options.maskingRules)) {
-        for (const path of this.#resolveFieldPaths(
-          copy as Record<string, unknown>,
-          field
-        )) {
-          const value = getAtPath(copy, path);
-          if (typeof value !== 'string') {
-            throw new DataMaskingUnsupportedTypeError(
-              `Masking rules only support string values, got ${typeof value} at path '${field}'`
-            );
-          }
-          setAtPath(copy, path, applyMaskingRule(value, rule));
-        }
-      }
-
-      return copy;
+      this.#applyMaskingRules(copy, options.maskingRules);
+    } else {
+      this.#eraseFields(copy, options.fields ?? []);
     }
 
-    for (const field of options.fields ?? []) {
+    return copy;
+  }
+
+  #applyMaskingRules<T>(copy: T, rules: Record<string, MaskingRule>): void {
+    for (const [field, rule] of Object.entries(rules)) {
+      for (const path of this.#resolveFieldPaths(
+        copy as Record<string, unknown>,
+        field
+      )) {
+        const value = getAtPath(copy, path);
+        if (typeof value !== 'string') {
+          throw new DataMaskingUnsupportedTypeError(
+            `Masking rules only support string values, got ${typeof value} at path '${field}'`
+          );
+        }
+        setAtPath(copy, path, applyMaskingRule(value, rule));
+      }
+    }
+  }
+
+  #eraseFields<T>(copy: T, fields: string[]): void {
+    for (const field of fields) {
       const paths = this.#resolveFieldPaths(
         copy as Record<string, unknown>,
         field
@@ -81,8 +89,6 @@ export class DataMasking {
         setAtPath(copy, path, DEFAULT_MASK_VALUE);
       }
     }
-
-    return copy;
   }
 
   /**

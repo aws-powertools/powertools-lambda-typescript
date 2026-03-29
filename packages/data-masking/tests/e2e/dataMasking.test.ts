@@ -52,7 +52,7 @@ describe('DataMasking E2E tests', () => {
   );
 
   let functionNameFieldEncrypt: string;
-  new TestNodejsFunction(
+  const fieldEncryptFn = new TestNodejsFunction(
     testStack,
     {
       entry: lambdaFunctionCodeFilePath,
@@ -63,9 +63,10 @@ describe('DataMasking E2E tests', () => {
     },
     { nameSuffix: 'fieldEncrypt' }
   );
+  kmsKey.grantEncryptDecrypt(fieldEncryptFn);
 
   let functionNameFullEncrypt: string;
-  new TestNodejsFunction(
+  const fullEncryptFn = new TestNodejsFunction(
     testStack,
     {
       entry: lambdaFunctionCodeFilePath,
@@ -76,6 +77,7 @@ describe('DataMasking E2E tests', () => {
     },
     { nameSuffix: 'fullEncrypt' }
   );
+  kmsKey.grantEncryptDecrypt(fullEncryptFn);
 
   beforeAll(async () => {
     await testStack.deploy();

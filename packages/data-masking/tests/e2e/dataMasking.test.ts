@@ -21,7 +21,15 @@ const invoke = async (
     })
   );
 
-  return JSON.parse(toUtf8(result.Payload ?? new Uint8Array()));
+  const raw = toUtf8(result.Payload ?? new Uint8Array());
+  console.log('invoke response', {
+    functionName,
+    statusCode: result.StatusCode,
+    functionError: result.FunctionError,
+    raw,
+  });
+
+  return JSON.parse(raw);
 };
 
 describe('DataMasking E2E tests', () => {

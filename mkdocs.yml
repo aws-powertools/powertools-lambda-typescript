@@ -57,6 +57,7 @@ nav:
           - features/jmespath.md
           - features/parser.md
           - features/validation.md
+          - features/data-masking.md
           - features/kafka.md
           - features/metadata.md
       - Environment variables: environment-variables.md

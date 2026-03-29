@@ -11,3 +11,6 @@ LICENSE
 .github/**
 **node_modules/** */
 .venv
+# generated spec artifacts
+specs/**
+.specify/**

@@ -1,8 +1,8 @@
 import { join } from 'node:path';
-import { fromUtf8, toUtf8 } from '@smithy/util-utf8';
-import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
+import { fromUtf8, toUtf8 } from '@smithy/util-utf8';
 import { Key } from 'aws-cdk-lib/aws-kms';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { RESOURCE_NAME_PREFIX } from './constants.js';

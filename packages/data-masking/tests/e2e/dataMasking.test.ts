@@ -79,11 +79,11 @@ describe('DataMasking E2E tests', () => {
 
   beforeAll(async () => {
     await testStack.deploy();
-    functionNameErase = testStack.findAndGetStackOutputValue('eraseFn');
+    functionNameErase = testStack.findAndGetStackOutputValue('erase');
     functionNameFieldEncrypt =
-      testStack.findAndGetStackOutputValue('fieldEncryptFn');
+      testStack.findAndGetStackOutputValue('fieldEncrypt');
     functionNameFullEncrypt =
-      testStack.findAndGetStackOutputValue('fullEncryptFn');
+      testStack.findAndGetStackOutputValue('fullEncrypt');
   }, 300_000);
 
   afterAll(async () => {

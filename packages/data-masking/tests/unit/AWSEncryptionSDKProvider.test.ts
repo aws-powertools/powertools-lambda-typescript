@@ -5,15 +5,13 @@ vi.mock('@aws-crypto/client-node', () => {
   const mockEncrypt = vi.fn(async (_cmm: unknown, plaintext: Uint8Array) => ({
     result: plaintext,
   }));
-  const mockDecrypt = vi.fn(
-    async (_cmm: unknown, ciphertext: Uint8Array) => ({
-      plaintext: ciphertext,
-      messageHeader: { encryptionContext: {} },
-    })
-  );
+  const mockDecrypt = vi.fn(async (_cmm: unknown, ciphertext: Uint8Array) => ({
+    plaintext: ciphertext,
+    messageHeader: { encryptionContext: {} },
+  }));
 
-  class MockKmsKeyringNode {}
-  class MockNodeCachingMaterialsManager {}
+  const MockKmsKeyringNode = vi.fn();
+  const MockNodeCachingMaterialsManager = vi.fn();
 
   return {
     buildEncrypt: () => ({ encrypt: mockEncrypt }),

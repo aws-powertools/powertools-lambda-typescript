@@ -8,8 +8,8 @@ import {
 import type {
   DataMaskingConstructorOptions,
   DecryptOptions,
-  EncryptOptions,
   EncryptionProvider,
+  EncryptOptions,
   EraseOptions,
   MaskingRule,
 } from './types.js';
@@ -52,7 +52,10 @@ export class DataMasking {
 
     if (options.maskingRules) {
       for (const [field, rule] of Object.entries(options.maskingRules)) {
-        for (const path of this.#resolveFieldPaths(copy as Record<string, unknown>, field)) {
+        for (const path of this.#resolveFieldPaths(
+          copy as Record<string, unknown>,
+          field
+        )) {
           const value = getAtPath(copy, path);
           if (typeof value !== 'string') {
             throw new DataMaskingUnsupportedTypeError(
@@ -67,7 +70,10 @@ export class DataMasking {
     }
 
     for (const field of options.fields ?? []) {
-      const paths = this.#resolveFieldPaths(copy as Record<string, unknown>, field);
+      const paths = this.#resolveFieldPaths(
+        copy as Record<string, unknown>,
+        field
+      );
       if (paths.length === 0 && this.#throwOnMissingField) {
         throw new DataMaskingFieldNotFoundError(`Field not found: '${field}'`);
       }
@@ -164,7 +170,10 @@ export class DataMasking {
     const operations: Promise<void>[] = [];
 
     for (const field of fields) {
-      for (const path of this.#resolveFieldPaths(data as Record<string, unknown>, field)) {
+      for (const path of this.#resolveFieldPaths(
+        data as Record<string, unknown>,
+        field
+      )) {
         operations.push(
           transform(getAtPath(data, path)).then((result) =>
             setAtPath(data, path, result)
@@ -176,7 +185,10 @@ export class DataMasking {
     await Promise.all(operations);
   }
 
-  #resolveFieldPaths(data: Record<string, unknown>, expression: string): string[][] {
+  #resolveFieldPaths(
+    data: Record<string, unknown>,
+    expression: string
+  ): string[][] {
     // JMESPath validates the expression and checks if it matches anything
     const matched = search(expression, data);
     if (matched == null || (Array.isArray(matched) && matched.length === 0)) {
@@ -234,8 +246,8 @@ function setAtPath(data: unknown, path: string[], value: unknown): void {
     if (current == null || typeof current !== 'object') return;
     current = (current as Record<string, unknown>)[path[i]];
   }
-  const lastKey = path[path.length - 1];
-  if (RESERVED_KEYS.has(lastKey)) return;
+  const lastKey = path.at(-1);
+  if (!lastKey || RESERVED_KEYS.has(lastKey)) return;
   if (current != null && typeof current === 'object') {
     (current as Record<string, unknown>)[lastKey] = value;
   }

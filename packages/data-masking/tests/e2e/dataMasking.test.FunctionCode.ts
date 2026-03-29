@@ -10,9 +10,13 @@ const maskerNoProvider = new DataMasking();
 export const handlerErase = (
   event: Record<string, unknown>
 ): Record<string, unknown> => {
-  return maskerNoProvider.erase(event, {
+  console.log('handlerErase invoked', JSON.stringify(event));
+  const result = maskerNoProvider.erase(event, {
     fields: ['customer.ssn', 'payment.card'],
   });
+  console.log('handlerErase result', JSON.stringify(result));
+
+  return result;
 };
 
 export const handlerFieldEncrypt = async (

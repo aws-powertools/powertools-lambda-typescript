@@ -1,56 +1,42 @@
-declare const getUserTodos: (
-  userId: string
-) => Promise<Record<string, string>[]>;
-declare const jwt: {
-  verify(token: string, secret: string): { sub: string; roles: string[] };
-};
+declare const processOrder: (
+  orderId: string,
+  correlationId: string
+) => Promise<{ status: string }>;
 
-import { getStringFromEnv } from '@aws-lambda-powertools/commons/utils/env';
-import {
-  Router,
-  UnauthorizedError,
-} from '@aws-lambda-powertools/event-handler/http';
+import { randomUUID } from 'node:crypto';
+import { Router } from '@aws-lambda-powertools/event-handler/http';
 import type { Middleware } from '@aws-lambda-powertools/event-handler/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
 
-const jwtSecret = getStringFromEnv({
-  key: 'JWT_SECRET',
-  errorMessage: 'JWT_SECRET is not set',
-});
+type AppEnv = {
+  store: {
+    request: { correlationId: string };
+  };
+};
 
 const logger = new Logger({});
-const app = new Router();
-const store: { userId: string; roles: string[] } = { userId: '', roles: [] };
+const app = new Router<AppEnv>();
 
 // Factory function that returns middleware
-const verifyToken = (options: { jwtSecret: string }): Middleware => {
-  return async ({ reqCtx: { req }, next }) => {
-    const auth = req.headers.get('Authorization');
-    if (!auth || !auth.startsWith('Bearer '))
-      throw new UnauthorizedError('Missing or invalid Authorization header');
+const correlationId = (options: { header: string }): Middleware<AppEnv> => {
+  return async ({ reqCtx, next }) => {
+    const id = reqCtx.req.headers.get(options.header) ?? randomUUID();
 
-    const token = auth.slice(7);
-    try {
-      const payload = jwt.verify(token, options.jwtSecret);
-      store.userId = payload.sub;
-      store.roles = payload.roles;
-    } catch (error) {
-      logger.error('Token verification failed', { error });
-      throw new UnauthorizedError('Invalid token');
-    }
+    reqCtx.set('correlationId', id);
+    logger.appendKeys({ correlationId: id });
 
     await next();
   };
 };
 
 // Use custom middleware globally
-app.use(verifyToken({ jwtSecret }));
+app.use(correlationId({ header: 'X-Correlation-Id' }));
 
-app.post('/todos', async () => {
-  const { userId } = store;
-  const todos = await getUserTodos(userId);
-  return { todos };
+app.post('/orders', async (reqCtx) => {
+  const id = reqCtx.get('correlationId') ?? randomUUID();
+  const result = await processOrder('order-123', id);
+  return { correlationId: id, ...result };
 });
 
 export const handler = async (event: unknown, context: Context) =>

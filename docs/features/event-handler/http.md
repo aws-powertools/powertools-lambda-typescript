@@ -530,13 +530,14 @@ accepts configuration options and returns a middleware function.
 
 === "index.ts"
 
-    ```ts hl_lines="20-21 36 41"
-    --8<-- "examples/snippets/event-handler/http/advanced_mw_custom_middleware.ts:8"
+    ```ts hl_lines="23"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_custom_middleware.ts:7"
     ```
 
-In this example we have a middleware that acts only in the post-processing stage as all
-the logic occurs after the `next` function has been called. This is so as to ensure that
-the handler has run and we have access to request body.
+In this example we have a middleware that extracts a correlation ID from a request header
+or generates a new one if absent. It stores the ID in the request context using
+`reqCtx.set()` so that route handlers can retrieve it with `reqCtx.get()`. This ensures
+each invocation has its own isolated state without relying on module-level variables.
 
 #### Avoiding destructuring pitfalls
 

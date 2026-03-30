@@ -37,7 +37,6 @@
         "noUnassignedVariables": "error",
         "noVar": "error",
         "useAdjacentOverloadSignatures": "error",
-        "useAwait": "error",
         "useErrorMessage": "error",
         "useIsArray": "error",
         "useStaticResponseMethods": "error"

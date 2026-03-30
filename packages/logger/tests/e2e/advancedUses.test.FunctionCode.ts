@@ -1,4 +1,3 @@
-import { setTimeout } from 'node:timers/promises';
 import { Logger } from '@aws-lambda-powertools/logger';
 import {
   correlationPaths,
@@ -57,7 +56,6 @@ class Lambda {
   public async handler(_event: unknown, _context: Context) {
     logger.debug('a buffered debug log');
     logger.info('an info log');
-    await setTimeout(1); // simulate async work
     throw new Error('ops');
   }
 }

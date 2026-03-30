@@ -33,4 +33,4 @@ class TransformParameterError extends Error {
   }
 }
 
-export { GetParameterError, TransformParameterError, SetParameterError };
+export { GetParameterError, SetParameterError, TransformParameterError };

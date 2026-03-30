@@ -41,4 +41,4 @@ storeRouter.get('/both', (reqCtx) => {
   };
 });
 
-export { storeRouter, type StoreEnv };
+export { type StoreEnv, storeRouter };

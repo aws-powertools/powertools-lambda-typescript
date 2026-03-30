@@ -146,8 +146,8 @@ type GetAppConfigOptions = Omit<
   AppConfigGetOptions;
 
 export type {
-  AppConfigProviderOptions,
   AppConfigGetOptions,
   AppConfigGetOutput,
+  AppConfigProviderOptions,
   GetAppConfigOptions,
 };

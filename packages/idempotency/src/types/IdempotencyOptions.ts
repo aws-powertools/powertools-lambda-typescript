@@ -209,8 +209,8 @@ type IdempotencyConfigOptions = {
 export type {
   AnyFunction,
   IdempotencyConfigOptions,
-  ItempotentFunctionOptions,
-  IdempotencyLambdaHandlerOptions,
   IdempotencyHandlerOptions,
+  IdempotencyLambdaHandlerOptions,
+  ItempotentFunctionOptions,
   ResponseHook,
 };

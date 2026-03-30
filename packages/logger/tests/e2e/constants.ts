@@ -23,8 +23,8 @@ const commonEnvironmentVars = {
 };
 
 export {
+  commonEnvironmentVars,
   RESOURCE_NAME_PREFIX,
   STACK_OUTPUT_LOG_GROUP,
   XRAY_TRACE_ID_REGEX,
-  commonEnvironmentVars,
 };

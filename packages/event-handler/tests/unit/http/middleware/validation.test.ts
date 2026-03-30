@@ -556,7 +556,7 @@ describe('Router Validation Integration', () => {
     const requestBodySchema = z.object({ email: z.string().email() }).refine(
       async (data) => {
         // Simulate async validation (e.g., checking if email exists)
-        await setTimeout(10);
+        await setTimeout(1);
         return !data.email.includes('blocked');
       },
       { message: 'Email is blocked' }

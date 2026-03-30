@@ -135,7 +135,6 @@ class LambdaWithKeywordArgument implements LambdaInterface {
     dataIndexArgument: 1,
   })
   public async process(id: string, foo: string) {
-    await setTimeout(1);
     logger.info('Got test event', { id, foo });
 
     return `idempotent result: ${foo}`;
@@ -151,7 +150,7 @@ export {
   handler,
   handlerCustomized,
   handlerExpired,
-  handlerWithKeywordArgument,
-  handlerTimeout,
   handlerParallel,
+  handlerTimeout,
+  handlerWithKeywordArgument,
 };

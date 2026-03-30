@@ -267,13 +267,13 @@ type LogKeys = { [key: string]: unknown } & {
 };
 
 export type {
-  LogKeys,
+  Environment,
   LogAttributes,
   LogAttributesWithMessage,
-  Environment,
+  LogKey,
+  LogKeys,
+  PowertoolsLambdaContextKeys,
   PowertoolsLogData,
   PowertoolsStandardKeys,
-  PowertoolsLambdaContextKeys,
   UnformattedAttributes,
-  LogKey,
 };

@@ -97,4 +97,4 @@ const awsTime = (timezoneOffset = 0) =>
 const awsDateTime = (timezoneOffset = 0) =>
   formattedTime(new Date(), '%Y-%m-%dT%H:%M:%S.%f', timezoneOffset);
 
-export { makeId, awsTimestamp, awsDate, awsTime, awsDateTime };
+export { awsDate, awsDateTime, awsTime, awsTimestamp, makeId };

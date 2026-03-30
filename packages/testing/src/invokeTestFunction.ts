@@ -82,4 +82,4 @@ const invokeFunction = async ({
   return invocationLogs;
 };
 
-export { invokeFunctionOnce, invokeFunction };
+export { invokeFunction, invokeFunctionOnce };

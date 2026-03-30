@@ -74,4 +74,4 @@ const dynamodbRecordFactory = (body: string): DynamoDBRecord => {
   };
 };
 
-export { sqsRecordFactory, kinesisRecordFactory, dynamodbRecordFactory };
+export { dynamodbRecordFactory, kinesisRecordFactory, sqsRecordFactory };

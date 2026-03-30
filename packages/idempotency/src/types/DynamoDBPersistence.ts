@@ -73,8 +73,8 @@ type DynamoDBPersistenceOptions =
   | DynamoDBPersistenceOptionsWithClientInstance;
 
 export type {
+  DynamoDBPersistenceOptions,
   DynamoDBPersistenceOptionsBase,
   DynamoDBPersistenceOptionsWithClientConfig,
   DynamoDBPersistenceOptionsWithClientInstance,
-  DynamoDBPersistenceOptions,
 };

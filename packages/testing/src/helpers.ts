@@ -229,14 +229,14 @@ async function sequence<T1 = unknown, T2 = unknown>(
   return Promise.all([invocation1, invocation2]) as Promise<[T1, T2]>;
 }
 
+export type { Invocation };
 export {
-  isValidRuntimeKey,
-  getRuntimeKey,
-  generateTestUniqueName,
   concatenateResourceName,
   findAndGetStackOutputValue,
+  generateTestUniqueName,
   getArchitectureKey,
-  withResolvers,
+  getRuntimeKey,
+  isValidRuntimeKey,
   sequence,
+  withResolvers,
 };
-export type { Invocation };

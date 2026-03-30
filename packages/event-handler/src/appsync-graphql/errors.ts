@@ -18,4 +18,4 @@ class InvalidBatchResponseException extends Error {
   }
 }
 
-export { ResolverNotFoundException, InvalidBatchResponseException };
+export { InvalidBatchResponseException, ResolverNotFoundException };

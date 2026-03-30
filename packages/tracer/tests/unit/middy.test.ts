@@ -1,4 +1,3 @@
-import { setTimeout } from 'node:timers/promises';
 import { cleanupMiddlewares } from '@aws-lambda-powertools/commons';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
@@ -15,7 +14,6 @@ import { captureLambdaHandler } from '../../src/middleware/middy.js';
 describe('Middy middleware', () => {
   const ENVIRONMENT_VARIABLES = process.env;
   const lambdaHandler: Handler = async (_event: unknown, _context: Context) => {
-    await setTimeout(0); // Simulate some async operation
     throw new Error('Exception thrown!');
   };
 

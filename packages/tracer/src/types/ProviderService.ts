@@ -68,7 +68,7 @@ interface HttpSubsegment extends Subsegment {
 }
 
 export type {
-  ProviderServiceInterface,
   ContextMissingStrategy,
   HttpSubsegment,
+  ProviderServiceInterface,
 };

@@ -80,4 +80,4 @@ const unmarshallDynamoDB = (
   // @ts-expect-error - We intentionally wrap the data into a Map to allow for nested structures
 ) => convertAttributeValue({ M: data });
 
-export { unmarshallDynamoDB, UnmarshallDynamoDBAttributeError };
+export { UnmarshallDynamoDBAttributeError, unmarshallDynamoDB };

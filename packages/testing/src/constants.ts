@@ -38,9 +38,9 @@ const LogLevel = {
 } as const;
 
 export {
-  TEST_RUNTIMES,
-  defaultRuntime,
-  TEST_ARCHITECTURES,
   defaultArchitecture,
+  defaultRuntime,
   LogLevel,
+  TEST_ARCHITECTURES,
+  TEST_RUNTIMES,
 };

@@ -40,8 +40,8 @@ class KafkaConsumerParserError extends KafkaConsumerError {
 }
 
 export {
+  KafkaConsumerDeserializationError,
   KafkaConsumerError,
   KafkaConsumerMissingSchemaError,
-  KafkaConsumerDeserializationError,
   KafkaConsumerParserError,
 };

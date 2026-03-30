@@ -63,7 +63,7 @@ class CachePersistenceLayerTestClass extends CachePersistenceLayer {
 }
 
 export {
-  PersistenceLayerTestClass,
-  DynamoDBPersistenceLayerTestClass,
   CachePersistenceLayerTestClass,
+  DynamoDBPersistenceLayerTestClass,
+  PersistenceLayerTestClass,
 };

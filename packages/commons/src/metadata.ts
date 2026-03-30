@@ -53,4 +53,4 @@ const getMetadata = async (options?: GetMetadataOptions) => {
   return metadataCache;
 };
 
-export { clearMetadataCache, getMetadata, type GetMetadataOptions };
+export { clearMetadataCache, type GetMetadataOptions, getMetadata };

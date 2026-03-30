@@ -235,6 +235,7 @@ class InvalidHttpMethodError extends Error {
 export {
   BadRequestError,
   ForbiddenError,
+  HttpError,
   InternalServerError,
   InvalidEventError,
   InvalidHttpMethodError,
@@ -246,7 +247,6 @@ export {
   RequestValidationError,
   ResponseValidationError,
   RouteMatchingError,
-  HttpError,
   ServiceUnavailableError,
   UnauthorizedError,
 };

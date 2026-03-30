@@ -97,8 +97,8 @@ type JSONObject = JSONArray | JSONValue | object;
 export type {
   FunctionSignatureDecorator,
   FunctionSignatureOptions,
-  Node,
   JMESPathParsingOptions,
-  Token,
   JSONObject,
+  Node,
+  Token,
 };

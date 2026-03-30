@@ -21,4 +21,4 @@ interface SdkClient {
  */
 type MiddlewareArgsLike = { request: { headers: { [key: string]: string } } };
 
-export type { SdkClient, MiddlewareArgsLike };
+export type { MiddlewareArgsLike, SdkClient };

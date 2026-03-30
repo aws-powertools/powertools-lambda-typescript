@@ -54,7 +54,7 @@ type HandlerMethodDecorator = (
 
 export type {
   AsyncHandler,
-  SyncHandler,
-  LambdaInterface,
   HandlerMethodDecorator,
+  LambdaInterface,
+  SyncHandler,
 };

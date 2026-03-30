@@ -348,15 +348,15 @@ const isStrictEqual = (left: unknown, right: unknown): boolean => {
 };
 
 export {
-  isRecord,
-  isString,
-  isNumber,
+  getType,
   isIntegerNumber,
-  isTruthy,
   isNull,
   isNullOrUndefined,
-  isStringUndefinedNullEmpty,
+  isNumber,
+  isRecord,
   isRegExp,
-  getType,
   isStrictEqual,
+  isString,
+  isStringUndefinedNullEmpty,
+  isTruthy,
 };

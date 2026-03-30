@@ -78,9 +78,9 @@ type MiddyLikeRequest = {
 type CleanupFunction = (request: MiddyLikeRequest) => Promise<void>;
 
 export type {
-  Request,
+  CleanupFunction,
   MiddlewareFn,
   MiddlewareLikeObj,
   MiddyLikeRequest,
-  CleanupFunction,
+  Request,
 };

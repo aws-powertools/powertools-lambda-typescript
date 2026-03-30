@@ -73,4 +73,4 @@ const getRequestURL = (
   return undefined;
 };
 
-export { findHeaderAndDecode, isHttpSubsegment, getRequestURL };
+export { findHeaderAndDecode, getRequestURL, isHttpSubsegment };

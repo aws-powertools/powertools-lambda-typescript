@@ -209,9 +209,9 @@ type DynamoDBGetMultipleOutput<
   : ExplicitUserProvidedType;
 
 export type {
-  DynamoDBProviderOptions,
-  DynamoDBGetOptions,
-  DynamoDBGetOutput,
   DynamoDBGetMultipleOptions,
   DynamoDBGetMultipleOutput,
+  DynamoDBGetOptions,
+  DynamoDBGetOutput,
+  DynamoDBProviderOptions,
 };

@@ -261,14 +261,14 @@ type DeserializeOptions = {
 export type {
   ConsumerRecord,
   ConsumerRecords,
+  DeserializeOptions,
   Deserializer,
   MSKEvent,
   ProtobufMessage,
   Record,
   RecordHeader,
-  SchemaType,
   SchemaConfig,
   SchemaConfigValue,
   SchemaMetadata,
-  DeserializeOptions,
+  SchemaType,
 };

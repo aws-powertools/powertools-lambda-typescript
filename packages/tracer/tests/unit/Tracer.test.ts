@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
@@ -1278,7 +1279,9 @@ describe('Class: Tracer', () => {
 
       class Lambda implements LambdaInterface {
         @tracer.captureMethod()
-        public async dummyMethod(): Promise<void> {}
+        public async dummyMethod(): Promise<void> {
+          setTimeout(1);
+        }
 
         public async handler(
           _event: unknown,

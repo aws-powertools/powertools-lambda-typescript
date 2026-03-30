@@ -355,11 +355,11 @@ const getTraces = async (
 };
 
 export {
-  getTraceIds,
-  retriableGetTraceIds,
-  getTraceDetails,
-  retriableGetTraceDetails,
   findPowertoolsFunctionSegment,
+  getTraceDetails,
+  getTraceIds,
   getTraces,
   parseSubsegmentsByName,
+  retriableGetTraceDetails,
+  retriableGetTraceIds,
 };

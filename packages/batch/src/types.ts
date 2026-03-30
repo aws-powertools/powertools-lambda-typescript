@@ -243,13 +243,13 @@ type ParsedRecord<TRecord, TPayload, TOldPayload = TPayload> = TRecord extends {
       : TRecord;
 
 export type {
-  BatchProcessingOptions,
   BaseRecord,
-  EventSourceDataClassTypes,
-  SuccessResponse,
-  FailureResponse,
-  PartialItemFailures,
-  PartialItemFailureResponse,
+  BatchProcessingOptions,
   BatchProcessorConfig,
+  EventSourceDataClassTypes,
+  FailureResponse,
   ParsedRecord,
+  PartialItemFailureResponse,
+  PartialItemFailures,
+  SuccessResponse,
 };

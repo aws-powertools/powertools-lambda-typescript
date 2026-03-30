@@ -138,12 +138,12 @@ interface TracerInterface {
 }
 
 export type {
-  TracerOptions,
+  AnyClass,
+  AnyClassMethod,
   CaptureLambdaHandlerOptions,
   CaptureMethodOptions,
   HandlerMethodDecorator,
-  AnyClass,
-  AnyClassMethod,
   MethodDecorator,
   TracerInterface,
+  TracerOptions,
 };

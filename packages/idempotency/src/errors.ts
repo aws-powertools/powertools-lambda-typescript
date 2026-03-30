@@ -124,14 +124,14 @@ class IdempotencyPersistenceConsistencyError extends IdempotencyUnknownError {
 }
 
 export {
-  IdempotencyUnknownError,
+  IdempotencyAlreadyInProgressError,
+  IdempotencyInconsistentStateError,
+  IdempotencyInvalidStatusError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
-  IdempotencyAlreadyInProgressError,
-  IdempotencyInvalidStatusError,
-  IdempotencyValidationError,
-  IdempotencyInconsistentStateError,
-  IdempotencyPersistenceLayerError,
-  IdempotencyPersistenceConsistencyError,
   IdempotencyKeyError,
+  IdempotencyPersistenceConsistencyError,
+  IdempotencyPersistenceLayerError,
+  IdempotencyUnknownError,
+  IdempotencyValidationError,
 };

@@ -17,4 +17,4 @@ const clearCaches = (): void => {
   }
 };
 
-export { DEFAULT_PROVIDERS, clearCaches };
+export { clearCaches, DEFAULT_PROVIDERS };

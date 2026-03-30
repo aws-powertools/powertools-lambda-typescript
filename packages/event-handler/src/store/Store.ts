@@ -44,5 +44,5 @@ class Store<T extends Record<string, unknown> = Record<string, unknown>>
   }
 }
 
-export { Store };
 export type { IStore };
+export { Store };

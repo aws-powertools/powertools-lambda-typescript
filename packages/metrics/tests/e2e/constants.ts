@@ -17,4 +17,4 @@ const commonEnvironmentVars = {
   POWERTOOLS_SERVICE_NAME: 'metrics-e2e-testing',
 };
 
-export { RESOURCE_NAME_PREFIX, commonEnvironmentVars };
+export { commonEnvironmentVars, RESOURCE_NAME_PREFIX };

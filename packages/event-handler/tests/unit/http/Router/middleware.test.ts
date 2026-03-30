@@ -193,7 +193,6 @@ describe('Class: Router - Middleware', () => {
         await next();
       });
 
-      // biome-ignore lint/suspicious/useAwait: This specifically tests a missing await call in an async function
       app.use(async ({ next }) => {
         next();
       });
@@ -791,8 +790,8 @@ describe('Class: Router - Middleware', () => {
             const clonedRes = reqCtx.res.clone();
             message = (await clonedRes.json()).message;
           },
-          () => {
-            return Promise.resolve({ message: 'Middleware applied' });
+          async () => {
+            return { message: 'Middleware applied' };
           },
         ],
         () => {

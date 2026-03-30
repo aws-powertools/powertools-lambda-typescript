@@ -35,7 +35,7 @@ interface BasePersistenceAttributes {
 }
 
 export type {
-  BasePersistenceLayerOptions,
-  BasePersistenceLayerInterface,
   BasePersistenceAttributes,
+  BasePersistenceLayerInterface,
+  BasePersistenceLayerOptions,
 };

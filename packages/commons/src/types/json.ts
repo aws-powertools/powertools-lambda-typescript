@@ -15,4 +15,4 @@ type JSONObject = { [key: number | string]: JSONValue };
  */
 type JSONArray = Array<JSONValue>;
 
-export type { JSONPrimitive, JSONValue, JSONObject, JSONArray };
+export type { JSONArray, JSONObject, JSONPrimitive, JSONValue };

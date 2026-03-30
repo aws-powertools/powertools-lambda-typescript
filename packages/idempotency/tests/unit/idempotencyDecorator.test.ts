@@ -1,4 +1,3 @@
-import { setTimeout } from 'node:timers/promises';
 import type { LambdaInterface } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
@@ -17,7 +16,6 @@ describe('Given a class with a function to decorate', () => {
         persistenceStore: new PersistenceLayerTestClass(),
       })
       public async handler(_event: unknown, _context: Context) {
-        await setTimeout(0); // Simulate some async operation
         return this.privateMethod();
       }
 

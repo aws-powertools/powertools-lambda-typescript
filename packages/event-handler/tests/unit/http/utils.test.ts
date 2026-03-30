@@ -752,9 +752,8 @@ describe('Path Utilities', () => {
       const composed = composeMiddleware(middleware);
       await composed({
         reqCtx: mockOptions,
-        next: () => {
+        next: async () => {
           executionOrder.push('handler');
-          return Promise.resolve();
         },
       });
 
@@ -772,16 +771,16 @@ describe('Path Utilities', () => {
         async ({ next }) => {
           await next();
         },
-        () => {
-          return Promise.resolve({ shortCircuit: true });
+        async () => {
+          return { shortCircuit: true };
         },
       ];
 
       const composed = composeMiddleware(middleware);
       const result = await composed({
         reqCtx: mockOptions,
-        next: () => {
-          return Promise.resolve({ handler: true });
+        next: async () => {
+          return { handler: true };
         },
       });
 
@@ -798,8 +797,8 @@ describe('Path Utilities', () => {
       const composed = composeMiddleware(middleware);
       const result = await composed({
         reqCtx: mockOptions,
-        next: () => {
-          return Promise.resolve({ handler: true });
+        next: async () => {
+          return { handler: true };
         },
       });
 
@@ -825,8 +824,8 @@ describe('Path Utilities', () => {
       const composed = composeMiddleware([]);
       const result = await composed({
         reqCtx: mockOptions,
-        next: () => {
-          return Promise.resolve({ handler: true });
+        next: async () => {
+          return { handler: true };
         },
       });
 
@@ -843,8 +842,8 @@ describe('Path Utilities', () => {
       const composed = composeMiddleware(middleware);
       const result = await composed({
         reqCtx: mockOptions,
-        next: () => {
-          return Promise.resolve(undefined);
+        next: async () => {
+          return undefined;
         },
       });
 

@@ -1,4 +1,3 @@
-import { setTimeout } from 'node:timers/promises';
 import { describe, expect, it } from 'vitest';
 import { validator } from '../../src/decorator.js';
 import { SchemaValidationError } from '../../src/errors.js';
@@ -27,7 +26,6 @@ describe('Decorator: validator', () => {
     class TestClass {
       @validator({ inboundSchema, outboundSchema })
       async multiply(input: { value: number }): Promise<{ result: number }> {
-        await setTimeout(1); // simulate some processing time
         return { result: input.value * 2 };
       }
     }
@@ -46,7 +44,6 @@ describe('Decorator: validator', () => {
     class TestClass {
       @validator({ inboundSchema, outboundSchema })
       async multiply(input: { value: number }): Promise<{ result: number }> {
-        await setTimeout(1); // simulate some processing time
         return { result: input.value * 2 };
       }
     }
@@ -66,7 +63,6 @@ describe('Decorator: validator', () => {
     class TestClassInvalid {
       @validator({ inboundSchema, outboundSchema })
       async multiply(_input: { value: number }) {
-        await setTimeout(1); // simulate some processing time
         return { result: 'invalid' };
       }
     }
@@ -83,7 +79,6 @@ describe('Decorator: validator', () => {
     class TestClassNoOp {
       @validator({})
       async echo(input: unknown): Promise<unknown> {
-        await setTimeout(1); // simulate some processing time
         return input;
       }
     }
@@ -102,7 +97,6 @@ describe('Decorator: validator', () => {
     class TestClassInbound {
       @validator({ inboundSchema })
       async process(input: { value: number }): Promise<{ data: string }> {
-        await setTimeout(1); // simulate some processing time
         return { data: JSON.stringify(input) };
       }
     }
@@ -121,7 +115,6 @@ describe('Decorator: validator', () => {
     class TestClassOutbound {
       @validator({ outboundSchema })
       async process(_input: { text: string }): Promise<{ result: number }> {
-        await setTimeout(1); // simulate some processing time
         return { result: 42 };
       }
     }

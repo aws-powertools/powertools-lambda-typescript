@@ -333,4 +333,4 @@ const checkObjectType = (
   }
 };
 
-export { isTruthy, arityCheck, sliceArray, typeCheck, typeCheckArgument };
+export { arityCheck, isTruthy, sliceArray, typeCheck, typeCheckArgument };

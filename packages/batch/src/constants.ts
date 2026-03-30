@@ -42,4 +42,4 @@ const DATA_CLASS_MAPPING = {
     record as DynamoDBRecord,
 };
 
-export { EventType, SchemaVendor, DEFAULT_RESPONSE, DATA_CLASS_MAPPING };
+export { DATA_CLASS_MAPPING, DEFAULT_RESPONSE, EventType, SchemaVendor };

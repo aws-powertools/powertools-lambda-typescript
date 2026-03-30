@@ -230,17 +230,17 @@ type ExceptionHandlerRegistryOptions = {
 //#endregion
 
 export type {
-  RouteHandlerRegistryOptions,
-  RouteHandlerOptions,
-  GraphQlRouterOptions,
-  GraphQlRouteOptions,
-  GraphQlBatchRouteOptions,
-  ResolverHandler,
+  BatchResolverAggregateHandlerFn,
   BatchResolverHandler,
   BatchResolverHandlerFn,
-  BatchResolverAggregateHandlerFn,
-  ExceptionHandler,
   ErrorClass,
+  ExceptionHandler,
   ExceptionHandlerOptions,
   ExceptionHandlerRegistryOptions,
+  GraphQlBatchRouteOptions,
+  GraphQlRouteOptions,
+  GraphQlRouterOptions,
+  ResolverHandler,
+  RouteHandlerOptions,
+  RouteHandlerRegistryOptions,
 };

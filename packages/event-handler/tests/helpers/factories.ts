@@ -104,7 +104,7 @@ const onGraphqlEventFactory = (
 ) => createEventFactory(fieldName, args, typeName);
 
 export {
+  onGraphqlEventFactory,
   onPublishEventFactory,
   onSubscribeEventFactory,
-  onGraphqlEventFactory,
 };

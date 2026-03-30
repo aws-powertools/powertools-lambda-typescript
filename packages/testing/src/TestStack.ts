@@ -80,8 +80,6 @@ class TestStack {
          * Otherwise, we log messages that are either warnings or errors as well as periodic
          * updates on the stack creation and destruction process.
          *
-         * biome-ignore lint/suspicious/useAwait: The CDK interface requires this to be async
-         *
          * @param msg - Message to log sent by the CDK CLI
          */
         async notify(msg) {
@@ -117,7 +115,6 @@ class TestStack {
             testConsole.log(msg);
           }
         },
-        // biome-ignore lint/suspicious/useAwait: The CDK interface requires this to be async
         async requestResponse(msg) {
           if (
             process.env.RUNNER_DEBUG === '1' ||

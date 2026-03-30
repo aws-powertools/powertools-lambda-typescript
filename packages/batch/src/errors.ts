@@ -76,8 +76,8 @@ class ParsingError extends BatchProcessingError {
 export {
   BatchProcessingError,
   FullBatchFailureError,
-  SqsFifoShortCircuitError,
-  SqsFifoMessageGroupShortCircuitError,
-  UnexpectedBatchTypeError,
   ParsingError,
+  SqsFifoMessageGroupShortCircuitError,
+  SqsFifoShortCircuitError,
+  UnexpectedBatchTypeError,
 };

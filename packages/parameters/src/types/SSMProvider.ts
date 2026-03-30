@@ -273,15 +273,15 @@ type SSMGetParametersByNameOutput<InferredFromOptionsType = undefined> =
     : Record<string, InferredFromOptionsType> & { _errors?: string[] };
 
 export type {
-  SSMProviderOptions,
-  SSMGetOptions,
-  SSMSetOptions,
-  SSMGetOutput,
   SSMGetMultipleOptions,
   SSMGetMultipleOutput,
-  SSMGetParametersByNameOptions,
-  SSMSplitBatchAndDecryptParametersOutputType,
-  SSMGetParametersByNameOutputInterface,
+  SSMGetOptions,
+  SSMGetOutput,
   SSMGetParametersByNameFromCacheOutputType,
+  SSMGetParametersByNameOptions,
   SSMGetParametersByNameOutput,
+  SSMGetParametersByNameOutputInterface,
+  SSMProviderOptions,
+  SSMSetOptions,
+  SSMSplitBatchAndDecryptParametersOutputType,
 };

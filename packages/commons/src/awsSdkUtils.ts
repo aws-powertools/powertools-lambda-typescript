@@ -119,4 +119,4 @@ const addUserAgentMiddleware = (client: unknown, feature: string): void => {
   }
 };
 
-export { customUserAgentMiddleware, addUserAgentMiddleware, isSdkClient };
+export { addUserAgentMiddleware, customUserAgentMiddleware, isSdkClient };

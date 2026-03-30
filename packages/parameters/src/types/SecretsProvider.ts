@@ -100,4 +100,4 @@ type SecretsGetOutput<
           : never
   : ExplicitUserProvidedType;
 
-export type { SecretsProviderOptions, SecretsGetOptions, SecretsGetOutput };
+export type { SecretsGetOptions, SecretsGetOutput, SecretsProviderOptions };

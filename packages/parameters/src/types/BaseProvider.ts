@@ -102,9 +102,9 @@ interface BaseProviderInterface {
 
 export type {
   BaseProviderConstructorOptions,
-  GetOptionsInterface,
-  GetMultipleOptionsInterface,
   BaseProviderInterface,
   ExpirableValueInterface,
+  GetMultipleOptionsInterface,
+  GetOptionsInterface,
   TransformOptions,
 };

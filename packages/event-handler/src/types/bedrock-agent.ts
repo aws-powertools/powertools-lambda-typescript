@@ -166,14 +166,14 @@ type ResolverOptions = {
 };
 
 export type {
-  Configuration,
-  Tool,
-  ToolFunction,
-  Parameter,
-  ParameterValue,
-  FunctionInvocation,
   BedrockAgentFunctionEvent,
   BedrockAgentFunctionResponse,
+  Configuration,
+  FunctionInvocation,
+  Parameter,
+  ParameterValue,
   ResolverOptions,
   ResponseState,
+  Tool,
+  ToolFunction,
 };

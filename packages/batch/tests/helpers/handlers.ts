@@ -97,12 +97,12 @@ const asyncHandlerWithContext = async (
 };
 
 export {
-  sqsRecordHandler,
-  asyncSqsRecordHandler,
-  kinesisRecordHandler,
-  asyncKinesisRecordHandler,
-  dynamodbRecordHandler,
   asyncDynamodbRecordHandler,
-  handlerWithContext,
   asyncHandlerWithContext,
+  asyncKinesisRecordHandler,
+  asyncSqsRecordHandler,
+  dynamodbRecordHandler,
+  handlerWithContext,
+  kinesisRecordHandler,
+  sqsRecordHandler,
 };

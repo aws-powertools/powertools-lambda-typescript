@@ -94,7 +94,8 @@ type RequestStoreOfForMerge<TEnv extends Env> = TEnv extends {
   store: { request: infer R extends Record<string, unknown> };
 }
   ? R
-  : {};
+  : // biome-ignore lint/complexity/noBannedTypes: we want to allow this for type merging
+    {};
 
 /**
  * Like {@link SharedStoreOf} but falls back to `{}` instead of
@@ -105,7 +106,8 @@ type SharedStoreOfForMerge<TEnv extends Env> = TEnv extends {
   store: { shared: infer S extends Record<string, unknown> };
 }
   ? S
-  : {};
+  : // biome-ignore lint/complexity/noBannedTypes: we want to allow this for type merging
+    {};
 
 /**
  * Convenience methods for interacting with the request-scoped store.
@@ -586,60 +588,60 @@ type HandlerOrOptions<
   | { validation: ValidationConfig<TReq, TResBody> };
 
 export type {
-  Env,
-  IntersectAll,
-  MergeEnv,
-  RequestStoreOf,
-  RequestStoreMethods,
-  SharedStoreOf,
-  Headers,
   BinaryResult,
-  ExtendedAPIGatewayProxyResult,
-  ExtendedAPIGatewayProxyResultBody,
   CompiledRoute,
+  CompressionOptions,
   CorsOptions,
   DynamicRoute,
+  Env,
   ErrorConstructor,
-  ErrorHandlerRegistryOptions,
   ErrorHandler,
+  ErrorHandlerRegistryOptions,
   ErrorResolveOptions,
-  HandlerResponse,
-  HttpResolveOptions,
-  HttpStatusCode,
-  HttpMethod,
-  Middleware,
-  Path,
-  RequestContext,
-  TypedRequestContext,
-  ResponseType,
   EventTypeMap,
-  ResponseTypeMap,
-  HttpRouterOptions,
-  RouteHandler,
-  ResolveStreamOptions,
-  ResponseStream,
-  HttpRouteOptions,
-  HttpRouteHandlerOptions,
-  RouteRegistryOptions,
-  RouterResponse,
-  TracerOptions,
-  ValidationResult,
-  CompressionOptions,
-  NextFunction,
-  V1Headers,
-  WebResponseToProxyResultOptions,
-  RequestValidationConfig,
-  ResponseValidationConfig,
-  ValidationConfig,
-  ValidationErrorDetail,
-  ValidatedRequest,
-  ValidatedResponse,
-  TypedRouteHandler,
-  MiddlewareOrHandler,
+  ExtendedAPIGatewayProxyResult,
+  ExtendedAPIGatewayProxyResultBody,
   HandlerOrOptions,
-  ReqSchema,
-  ResSchema,
+  HandlerResponse,
+  Headers,
+  HttpMethod,
+  HttpResolveOptions,
+  HttpRouteHandlerOptions,
+  HttpRouteOptions,
+  HttpRouterOptions,
+  HttpStatusCode,
   InferReqSchema,
   InferResBody,
   InferResSchema,
+  IntersectAll,
+  MergeEnv,
+  Middleware,
+  MiddlewareOrHandler,
+  NextFunction,
+  Path,
+  ReqSchema,
+  RequestContext,
+  RequestStoreMethods,
+  RequestStoreOf,
+  RequestValidationConfig,
+  ResolveStreamOptions,
+  ResponseStream,
+  ResponseType,
+  ResponseTypeMap,
+  ResponseValidationConfig,
+  ResSchema,
+  RouteHandler,
+  RouteRegistryOptions,
+  RouterResponse,
+  SharedStoreOf,
+  TracerOptions,
+  TypedRequestContext,
+  TypedRouteHandler,
+  V1Headers,
+  ValidatedRequest,
+  ValidatedResponse,
+  ValidationConfig,
+  ValidationErrorDetail,
+  ValidationResult,
+  WebResponseToProxyResultOptions,
 };

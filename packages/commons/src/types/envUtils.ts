@@ -70,7 +70,7 @@ type GetBooleanFromEnvOptions = {
 };
 
 export type {
-  GetStringFromEnvOptions,
-  GetNumberFromEnvOptions,
   GetBooleanFromEnvOptions,
+  GetNumberFromEnvOptions,
+  GetStringFromEnvOptions,
 };

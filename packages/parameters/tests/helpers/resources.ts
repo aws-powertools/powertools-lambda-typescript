@@ -353,9 +353,9 @@ class TestAppConfigWithProfiles extends Construct {
 }
 
 export {
+  TestAppConfigWithProfiles,
+  TestDynamodbTableWithItems,
+  TestSecret,
   TestSecureStringParameter,
   TestStringParameter,
-  TestSecret,
-  TestDynamodbTableWithItems,
-  TestAppConfigWithProfiles,
 };

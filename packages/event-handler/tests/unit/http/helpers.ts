@@ -138,9 +138,9 @@ export const createReturningMiddleware = (
   executionOrder: string[],
   response: HandlerResponse
 ): Middleware => {
-  return () => {
+  return async () => {
     executionOrder.push(name);
-    return Promise.resolve(response);
+    return response;
   };
 };
 
@@ -148,9 +148,8 @@ export const createNoNextMiddleware = (
   name: string,
   executionOrder: string[]
 ): Middleware => {
-  return () => {
+  return async () => {
     executionOrder.push(name);
-    return Promise.resolve();
     // Intentionally doesn't call next()
   };
 };

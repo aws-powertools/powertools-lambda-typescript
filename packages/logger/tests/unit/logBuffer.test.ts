@@ -1,4 +1,3 @@
-import { setTimeout } from 'node:timers/promises';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import type { Context } from 'aws-lambda';
 import middy from 'middy5';
@@ -298,7 +297,6 @@ describe('Buffer logs', () => {
           async handler(_event: unknown, _context: Context) {
             logger.debug('This is a log message');
             logger.info('This is an info message');
-            await setTimeout(1); // simulate some async operation
             throw new Error('This is an error');
           }
         }
@@ -357,7 +355,6 @@ describe('Buffer logs', () => {
           async handler(_event: unknown, _context: Context) {
             logger.debug('This is a log message');
             logger.info('This is an info message');
-            await setTimeout(1); // simulate some async operation
             throw new Error('This is an error');
           }
         }

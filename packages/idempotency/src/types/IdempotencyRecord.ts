@@ -44,4 +44,4 @@ type IdempotencyRecordOptions = {
   payloadHash?: string;
 };
 
-export type { IdempotencyRecordStatusValue, IdempotencyRecordOptions };
+export type { IdempotencyRecordOptions, IdempotencyRecordStatusValue };

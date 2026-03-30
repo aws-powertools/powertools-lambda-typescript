@@ -320,13 +320,13 @@ const getXRayTraceIdFromEnv = (): string | undefined => {
 };
 
 export {
-  getStringFromEnv,
-  getNumberFromEnv,
   getBooleanFromEnv,
-  isDevMode,
+  getNumberFromEnv,
   getServiceName,
-  getXrayTraceDataFromEnv,
-  isRequestXRaySampled,
+  getStringFromEnv,
   getXRayTraceIdFromEnv,
+  getXrayTraceDataFromEnv,
+  isDevMode,
+  isRequestXRaySampled,
   shouldUseInvokeStore,
 };

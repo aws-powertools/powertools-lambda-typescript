@@ -4,14 +4,14 @@ type Anything = any;
 // #region resolve options
 
 /**
- * Optional object to pass to the {@link AppSyncEventsResolver.resolve | `AppSyncEventsResolver.resolve()`} or {@link AppSyncGraphQLResolver.resolve | `AppSyncGraphQLResolver.resolve()`} methods.
+ * Optional object to pass to the `AppSyncEventsResolver.resolve()` or `AppSyncGraphQLResolver.resolve()` methods.
  */
 type ResolveOptions = {
   /**
    * Reference to `this` instance of the class that is calling the `resolve` method.
    *
-   * This parameter should be used only when using {@link AppSyncEventsResolver.onPublish | `AppSyncEventsResolver.onPublish()`},
-   * {@link AppSyncEventsResolver.onSubscribe | `AppSyncEventsResolver.onSubscribe()`}, and {@link AppSyncGraphQLResolver.resolve | `AppSyncGraphQLResolver.resolve()`} as class method decorators, and
+   * This parameter should be used only when using `AppSyncEventsResolver.onPublish()`,
+   * `AppSyncEventsResolver.onSubscribe()`, and `AppSyncGraphQLResolver.resolve()` as class method decorators, and
    * it's used to bind the decorated methods to your class instance.
    *
    * @example

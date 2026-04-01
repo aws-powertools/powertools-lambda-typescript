@@ -208,7 +208,7 @@ interface ErrorConstructor<T extends Error = Error> {
 }
 
 /**
- * Options for the {@link Router | `Router``} class
+ * Options for the `Router` class
  */
 type HttpRouterOptions = {
   /**

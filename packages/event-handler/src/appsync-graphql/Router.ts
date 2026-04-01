@@ -514,11 +514,7 @@ class Router {
    * ```
    *
    * @param handler - The batch handler function to be called when events are received.
-   * @param options - Batch route options including the required fieldName and optional configuration.
-   * @param options.fieldName - The name of the field to register the handler for.
-   * @param options.typeName - The name of the GraphQL type to use for the resolver, defaults to `Query`.
-   * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
-   * @param options.throwOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
+   * @param options - Batch route options including the required `fieldName`, optional `typeName` (defaults to `Query`), `aggregate` (defaults to `true`), and `throwOnError` (defaults to `false`).
    */
   public batchResolver<
     TParams extends Record<string, unknown>,
@@ -697,9 +693,7 @@ class Router {
    *
    * @param fieldName - The name of the Query field to register the batch handler for.
    * @param handler - The batch handler function to be called when events are received.
-   * @param options - Optional batch configuration including aggregate and throwOnError settings.
-   * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
-   * @param options.throwOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
+   * @param options - Optional batch configuration including `aggregate` (defaults to `true`) and `throwOnError` (defaults to `false`).
    */
   public onBatchQuery<
     TParams extends Record<string, unknown>,
@@ -894,9 +888,7 @@ class Router {
    *
    * @param fieldName - The name of the Mutation field to register the batch handler for.
    * @param handler - The batch handler function to be called when events are received.
-   * @param options - Optional batch configuration including aggregate and throwOnError settings.
-   * @param options.aggregate - Whether to aggregate multiple requests into a single handler call, defaults to `true`.
-   * @param options.throwOnError - Whether to raise errors when processing individual requests (only available when aggregate is false), defaults to `false`.
+   * @param options - Optional batch configuration including `aggregate` (defaults to `true`) and `throwOnError` (defaults to `false`).
    */
   public onBatchMutation<
     TParams extends Record<string, unknown>,

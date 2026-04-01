@@ -85,7 +85,7 @@ import {
 
 class Router<TEnv extends Env = Env> {
   /**
-   * @deprecated This property is deprecated and will be removed in a future major version, please use {@link RequestContext.shared | `requestContext.shared`} instead.
+   * @deprecated This property is deprecated and will be removed in a future major version, please use `requestContext.shared` instead.
    */
   protected context: Record<string, unknown>;
 

@@ -67,7 +67,7 @@ nav:
       - Resources:
           - "llms.txt": ./llms.txt
           - "llms.txt (full version)": ./llms-full.txt
-  - API reference: api/" target="_blank
+  - API reference: api/
   - Processes:
       - Roadmap: roadmap.md
       - Versioning policy: versioning.md

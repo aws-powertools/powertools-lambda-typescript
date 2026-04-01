@@ -17,15 +17,15 @@ V2 is focused on official support for ESM (ECMAScript modules). We've made other
 
 ### Quick summary
 
-||Area                   |Change                                                                                                                                                                                                   |Code change required  ||
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-||**ESM support**        |Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                                                                                                       |-                     ||
-||**Middy.js**           |Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.                                                                              |Yes                   ||
-||**Types imports**      |Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.                                                                                       |Yes                   ||
-||**Logger**             |Changed [log sampling](./features/logger.md#sampling-debug-logs) to dynamically switch log level to `DEBUG` on a percentage of requests.                                                                 |-                     ||
-||**Logger**             |Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                                                                                                    |Yes                   ||
-||**Logger**             |Removed `ContextExamples` from `@aws-lambda-powertools/commons` package.                                                                                                                                 |Yes                   ||
-||**Logger and Tracer**  |Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                                                                                                  |Yes                   ||
+| Area                  | Change                                                                                                                                   | Code change required |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| **ESM support**       | Added ESM support via dual CommonJS and ESM bundling, enabling top-level `await` and tree-shaking.                                       | -                    |
+| **Middy.js**          | Updated import path for Middy.js middlewares to leverage subpath exports - i.e. `@aws-lambda-powertools/tracer/middleware`.              | Yes                  |
+| **Types imports**     | Updated import path for TypeScript types to leverage subpath exports - i.e. `@aws-lambda-powertools/logger/types`.                       | Yes                  |
+| **Logger**            | Changed [log sampling](./features/logger.md#sampling-debug-logs) to dynamically switch log level to `DEBUG` on a percentage of requests. | -                    |
+| **Logger**            | Updated [custom log formatter](#custom-log-formatter) to include standard as well as persistent keys.                                    | Yes                  |
+| **Logger**            | Removed `ContextExamples` from `@aws-lambda-powertools/commons` package.                                                                 | Yes                  |
+| **Logger and Tracer** | Removed deprecated `createLogger` and `createTracer` helper functions in favor of direct instantiation.                                  | Yes                  |
 
 ### First steps
 
@@ -87,14 +87,14 @@ Here is an example using `esbuild` bundler.
             esbuildArgs: {
               "--tree-shaking": "true",
             },
-            banner: 
+            banner:
               "import { createRequire } from 'module';const require = createRequire(import.meta.url);", // (1)!
           },
         });
       }
     }
     ```
-    
+
     1. `esbuild` will include this arbitrary code at the top of your bundle to maximize CommonJS compatibility _(`require` keyword)_.
 
 === "With AWS SAM"
@@ -118,7 +118,7 @@ Here is an example using `esbuild` bundler.
               - src/index.ts
             Banner:
               js: "import { createRequire } from 'module';const require = createRequire(import.meta.url);"  # (1)!
- 
+
     ```
 
     1. `esbuild` will include this arbitrary code at the top of your bundle to maximize CommonJS compatibility _(`require` keyword)_.
@@ -147,10 +147,10 @@ In v2, you can now import only the Middy.js middlewares you want to use from a s
     ```typescript hl_lines="2 5 8"
     import { Logger } from '@aws-lambda-powertools/logger';
     import { injectLambdaContext } from '@aws-lambda-powertools/logger/middleware';
-    
+
     import { Tracer } from '@aws-lambda-powertools/tracer';
     import { captureLambdaHandler } from '@aws-lambda-powertools/tracer/middleware';
-    
+
     import { Metrics } from '@aws-lambda-powertools/metrics';
     import { logMetrics } from '@aws-lambda-powertools/metrics/middleware';
     ```
@@ -204,10 +204,10 @@ In v1, log sampling implementation was inconsistent from other Powertools for AW
 
 In v2, we changed these behaviors for consistency across languages:
 
-||Behavior                 |v1                                                            |v2                                             ||
+| Behavior                | v1                                                           | v2                                            |
 | ----------------------- | ------------------------------------------------------------ | --------------------------------------------- |
-||Log Level                |Log level remains unchanged but any log statement is printed  |Log level changes to `DEBUG`                   ||
-||Log sampling indication  |No indication                                                 |Debug message indicates sampling is in effect  ||
+| Log Level               | Log level remains unchanged but any log statement is printed | Log level changes to `DEBUG`                  |
+| Log sampling indication | No indication                                                | Debug message indicates sampling is in effect |
 
 Logger `sampleRateValue` **continues** to determine the percentage of concurrent/cold start invocations that logs will be sampled, _e.g., log level set to `DEBUG`_.
 
@@ -319,7 +319,7 @@ In v2, we have removed the `ContextExamples` from the `@aws-lambda-powertools/co
 
     ```typescript
     import { ContextExamples as dummyContext } from '@aws-lambda-powertools/commons';
-    
+
     describe('MyUnitTest', () => {
       test('Lambda invoked successfully', async () => {
         const testEvent = { test: 'test' };
@@ -332,7 +332,7 @@ In v2, we have removed the `ContextExamples` from the `@aws-lambda-powertools/co
 
     ```typescript
     declare const handler: (event: unknown, context: unknown) => Promise<void>;
-    
+
     const context = {
       callbackWaitsForEmptyEventLoop: true,
       functionVersion: '$LATEST',
@@ -348,7 +348,7 @@ In v2, we have removed the `ContextExamples` from the `@aws-lambda-powertools/co
       fail: () => console.log('Failed!'),
       succeed: () => console.log('Succeeded!'),
     };
-    
+
     describe('MyUnitTest', () => {
       test('Lambda invoked successfully', async () => {
         const testEvent = { test: 'test' };

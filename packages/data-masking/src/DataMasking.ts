@@ -206,25 +206,8 @@ export class DataMasking {
       }
       if (obj == null || typeof obj !== 'object') return;
 
-      if (segments[i] === '*') {
-        if (Array.isArray(obj)) {
-          for (let j = 0; j < obj.length; j++) {
-            walk(obj[j], i + 1, [...current, String(j)]);
-          }
-        } else {
-          for (const key of Object.keys(obj as Record<string, unknown>)) {
-            if (RESERVED_KEYS.has(key)) continue;
-            walk((obj as Record<string, unknown>)[key], i + 1, [
-              ...current,
-              key,
-            ]);
-          }
-        }
-      } else {
-        const next = (obj as Record<string, unknown>)[segments[i]];
-        if (next !== undefined) {
-          walk(next, i + 1, [...current, segments[i]]);
-        }
+      for (const [key, child] of resolveWildcardEntries(obj, segments[i])) {
+        walk(child, i + 1, [...current, key]);
       }
     };
 
@@ -236,7 +219,25 @@ export class DataMasking {
 
 const RESERVED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
-function getAtPath(data: unknown, path: string[]): unknown {
+const resolveWildcardEntries = (
+  obj: object,
+  segment: string
+): [string, unknown][] => {
+  if (segment !== '*') {
+    const next = (obj as Record<string, unknown>)[segment];
+
+    return next !== undefined ? [[segment, next]] : [];
+  }
+  if (Array.isArray(obj)) {
+    return obj.map((v, i) => [String(i), v]);
+  }
+
+  return Object.keys(obj)
+    .filter((k) => !RESERVED_KEYS.has(k))
+    .map((k) => [k, (obj as Record<string, unknown>)[k]]);
+};
+
+const getAtPath = (data: unknown, path: string[]): unknown => {
   let current = data as Record<string, unknown>;
   for (const key of path) {
     if (RESERVED_KEYS.has(key)) return undefined;
@@ -244,9 +245,9 @@ function getAtPath(data: unknown, path: string[]): unknown {
   }
 
   return current;
-}
+};
 
-function setAtPath(data: unknown, path: string[], value: unknown): void {
+const setAtPath = (data: unknown, path: string[], value: unknown): void => {
   let current = data as Record<string, unknown>;
   for (let i = 0; i < path.length - 1; i++) {
     current = current[path[i]] as Record<string, unknown>;
@@ -254,9 +255,9 @@ function setAtPath(data: unknown, path: string[], value: unknown): void {
   const lastKey = path.at(-1);
   if (!lastKey || RESERVED_KEYS.has(lastKey)) return;
   current[lastKey] = value;
-}
+};
 
-function applyMaskingRule(value: string, rule: MaskingRule): string {
+const applyMaskingRule = (value: string, rule: MaskingRule): string => {
   if (rule.regexPattern && rule.maskFormat) {
     return value.replace(rule.regexPattern, rule.maskFormat);
   }
@@ -264,4 +265,4 @@ function applyMaskingRule(value: string, rule: MaskingRule): string {
   if (rule.customMask !== undefined) return rule.customMask;
 
   return DEFAULT_MASK_VALUE;
-}
+};

@@ -89,6 +89,32 @@ describe('Helpers: awsSdk', () => {
     );
   });
 
+  it('does not append PT no-op marker more than once', async () => {
+    // Prepare
+    process.env.AWS_SDK_UA_APP_ID = `test/PT/NO-OP/${version}/PTEnv/NA`;
+
+    // Act
+    vi.resetModules();
+    await import('../../src/index.js');
+
+    // Assess
+    expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+      `test/PT/NO-OP/${version}/PTEnv/NA`
+    );
+  });
+
+  it('keeps AWS_SDK_UA_APP_ID within the 50-char SDK limit', async () => {
+    // Prepare
+    process.env.AWS_SDK_UA_APP_ID = 'MyCompany-ECommerce-Ordering-Service';
+
+    // Act
+    vi.resetModules();
+    await import('../../src/index.js');
+
+    // Assess
+    expect(process.env.AWS_SDK_UA_APP_ID?.length).toBeLessThanOrEqual(50);
+  });
+
   describe('Function: customUserAgentMiddleware', () => {
     it('returns a middleware function', () => {
       // Prepare

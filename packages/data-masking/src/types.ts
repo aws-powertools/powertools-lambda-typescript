@@ -29,7 +29,7 @@ export interface MaskingRule {
 
 /** Options for {@link DataMasking.erase}. */
 export interface EraseOptions {
-  /** JMESPath expressions for fields to mask. */
+  /** Dot-notation path expressions for fields to mask (supports `.*` and `[*]` wildcards). */
   fields?: string[];
   /** Per-field custom masking rules keyed by dot-notation path. */
   maskingRules?: Record<string, MaskingRule>;
@@ -37,7 +37,7 @@ export interface EraseOptions {
 
 /** Options for {@link DataMasking.encrypt}. */
 export interface EncryptOptions {
-  /** JMESPath expressions for fields to encrypt. If omitted, entire payload is encrypted. */
+  /** Dot-notation path expressions for fields to encrypt (supports `.*` and `[*]` wildcards). If omitted, entire payload is encrypted. */
   fields?: string[];
   /** Encryption context (additional authenticated data). */
   context?: Record<string, string>;
@@ -47,7 +47,7 @@ export interface EncryptOptions {
 
 /** Options for {@link DataMasking.decrypt}. */
 export interface DecryptOptions {
-  /** JMESPath expressions for fields to decrypt. */
+  /** Dot-notation path expressions for fields to decrypt (supports `.*` and `[*]` wildcards). */
   fields?: string[];
   /** Encryption context for verification. */
   context?: Record<string, string>;

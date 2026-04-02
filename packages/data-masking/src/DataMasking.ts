@@ -226,7 +226,9 @@ const resolveWildcardEntries = (
   if (segment !== '*') {
     const next = (obj as Record<string, unknown>)[segment];
 
-    return next !== undefined ? [[segment, next]] : [];
+    if (next === undefined) return [];
+
+    return [[segment, next]];
   }
   if (Array.isArray(obj)) {
     return obj.map((v, i) => [String(i), v]);

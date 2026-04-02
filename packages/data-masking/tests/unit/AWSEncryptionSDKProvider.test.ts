@@ -50,4 +50,35 @@ describe('AWSEncryptionSDKProvider', () => {
     const decrypted = await provider.decrypt(encrypted);
     expect(decrypted).toBe('hello world');
   });
+
+  it('decrypt throws on encryption context mismatch', async () => {
+    const provider = new AWSEncryptionSDKProvider({
+      keys: ['arn:aws:kms:us-east-1:123456789012:key/test-key'],
+    });
+
+    const encrypted = await provider.encrypt('secret');
+
+    await expect(
+      provider.decrypt(encrypted, { tenantId: 'acme' })
+    ).rejects.toThrow("Encryption context mismatch for key 'tenantId'");
+  });
+
+  it('decrypt succeeds when encryption context matches', async () => {
+    const { buildDecrypt } = await import('@aws-crypto/client-node');
+    const { decrypt: mockDecrypt } = buildDecrypt();
+    (mockDecrypt as ReturnType<typeof vi.fn>).mockImplementationOnce(
+      async (_cmm: unknown, ciphertext: Uint8Array) => ({
+        plaintext: ciphertext,
+        messageHeader: { encryptionContext: { tenantId: 'acme' } },
+      })
+    );
+
+    const provider = new AWSEncryptionSDKProvider({
+      keys: ['arn:aws:kms:us-east-1:123456789012:key/test-key'],
+    });
+
+    const encrypted = await provider.encrypt('secret');
+    const decrypted = await provider.decrypt(encrypted, { tenantId: 'acme' });
+    expect(decrypted).toBe('secret');
+  });
 });

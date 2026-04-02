@@ -123,6 +123,90 @@ describe('DataMasking.erase()', () => {
 
     expect(result.name).toBe('*****');
   });
+
+  it('throws DataMaskingUnsupportedTypeError for non-cloneable data', () => {
+    const data = { fn: () => {} };
+
+    expect(() => masker.erase(data, { fields: ['fn'] })).toThrow(
+      DataMaskingUnsupportedTypeError
+    );
+  });
+
+  it('masks all properties of an object with .* wildcard', () => {
+    const data = {
+      credentials: { username: 'admin', password: 's3cret', token: 'abc123' },
+    };
+
+    const result = masker.erase(data, { fields: ['credentials.*'] });
+
+    expect(result.credentials.username).toBe('*****');
+    expect(result.credentials.password).toBe('*****');
+    expect(result.credentials.token).toBe('*****');
+  });
+
+  it('masks nested fields via .* on an intermediate object', () => {
+    const data = {
+      users: {
+        alice: { ssn: '111', name: 'Alice' },
+        bob: { ssn: '222', name: 'Bob' },
+      },
+    };
+
+    const result = masker.erase(data, { fields: ['users.*.ssn'] });
+
+    expect(result.users.alice.ssn).toBe('*****');
+    expect(result.users.bob.ssn).toBe('*****');
+    expect(result.users.alice.name).toBe('Alice');
+    expect(result.users.bob.name).toBe('Bob');
+  });
+
+  it('ignores __proto__ keys during .* object wildcard traversal', () => {
+    const data = JSON.parse(
+      '{"secrets": {"__proto__": "injected", "safe": "value"}}'
+    );
+
+    const result = masker.erase(data, { fields: ['secrets.*'] });
+
+    expect(result.secrets.safe).toBe('*****');
+    expect(result.secrets.__proto__).toBe('injected');
+  });
+
+  it('prevents prototype pollution when __proto__ is used as a direct field path', () => {
+    const lenientMasker = new DataMasking({ throwOnMissingField: false });
+    const data = { safe: 'value' };
+
+    const result = lenientMasker.erase(data, {
+      fields: ['__proto__', 'constructor', 'safe'],
+    });
+
+    expect(result.safe).toBe('*****');
+    expect(Object.getPrototypeOf(result)).toEqual(Object.getPrototypeOf({}));
+  });
+
+  it('prevents prototype pollution on nested paths like foo.__proto__', () => {
+    const lenientMasker = new DataMasking({ throwOnMissingField: false });
+    const data = { foo: { bar: 'value' } };
+
+    const result = lenientMasker.erase(data, {
+      fields: ['foo.__proto__', 'foo.bar'],
+    });
+
+    expect(result.foo.bar).toBe('*****');
+    expect(Object.getPrototypeOf(result.foo)).toEqual(
+      Object.getPrototypeOf({})
+    );
+  });
+
+  it('skips primitives inside array wildcard paths', () => {
+    const lenientMasker = new DataMasking({ throwOnMissingField: false });
+    const data = { items: ['a', 'b', 'c'] };
+
+    const result = lenientMasker.erase(data, {
+      fields: ['items[*].nested'],
+    });
+
+    expect(result.items).toEqual(['a', 'b', 'c']);
+  });
 });
 
 describe('DataMasking.erase() - custom masking rules', () => {
@@ -193,7 +277,7 @@ describe('DataMasking.erase() - custom masking rules', () => {
   });
 });
 
-const jmesPathKey = fc.stringMatching(/^[a-z][a-z0-9_]{0,10}$/);
+const pathKey = fc.stringMatching(/^[a-z][a-z0-9_]{0,10}$/);
 
 describe('DataMasking.erase() - property tests', () => {
   const masker = new DataMasking();
@@ -201,7 +285,7 @@ describe('DataMasking.erase() - property tests', () => {
   it('never mutates the original input', () => {
     const lenientMasker = new DataMasking({ throwOnMissingField: false });
     fc.assert(
-      fc.property(fc.dictionary(jmesPathKey, fc.jsonValue()), (data) => {
+      fc.property(fc.dictionary(pathKey, fc.jsonValue()), (data) => {
         const original = structuredClone(data);
         lenientMasker.erase(data, { fields: Object.keys(data) });
 
@@ -221,10 +305,113 @@ describe('DataMasking.erase() - property tests', () => {
     );
   });
 
+  it('replaces every value under parent.* with the mask', () => {
+    fc.assert(
+      fc.property(
+        pathKey,
+        fc.dictionary(pathKey, fc.string(), { minKeys: 1 }),
+        (parent, nested) => {
+          const data = { [parent]: nested };
+          const result = masker.erase(data, {
+            fields: [`${parent}.*`],
+          });
+
+          for (const key of Object.keys(nested)) {
+            expect((result[parent] as Record<string, unknown>)[key]).toBe(
+              '*****'
+            );
+          }
+        }
+      )
+    );
+  });
+
+  it('masks nested field under each key with parent.*.child', () => {
+    fc.assert(
+      fc.property(
+        pathKey,
+        pathKey,
+        fc.dictionary(
+          pathKey,
+          fc.record({ secret: fc.string(), keep: fc.string() }),
+          { minKeys: 1 }
+        ),
+        (parent, child, nested) => {
+          const inner = Object.fromEntries(
+            Object.entries(nested).map(([k, v]) => [
+              k,
+              { [child]: v.secret, keep: v.keep },
+            ])
+          );
+          const data = { [parent]: inner };
+          const result = masker.erase(data, {
+            fields: [`${parent}.*.${child}`],
+          }) as Record<string, Record<string, Record<string, unknown>>>;
+
+          for (const key of Object.keys(inner)) {
+            expect(result[parent][key][child]).toBe('*****');
+            expect(result[parent][key].keep).toBe(inner[key].keep);
+          }
+        }
+      )
+    );
+  });
+
+  it('replaces every element field under parent[*].child with the mask', () => {
+    fc.assert(
+      fc.property(
+        pathKey,
+        pathKey,
+        fc.array(fc.string(), { minLength: 1, maxLength: 10 }),
+        (parent, child, values) => {
+          const data = {
+            [parent]: values.map((v) => ({ [child]: v, keep: 'visible' })),
+          };
+          const result = masker.erase(data, {
+            fields: [`${parent}[*].${child}`],
+          }) as Record<string, Record<string, unknown>[]>;
+
+          for (let i = 0; i < values.length; i++) {
+            expect(result[parent][i][child]).toBe('*****');
+            expect(result[parent][i].keep).toBe('visible');
+          }
+        }
+      )
+    );
+  });
+
+  it('[*] skips array elements missing the targeted field', () => {
+    fc.assert(
+      fc.property(
+        pathKey,
+        pathKey,
+        fc.array(fc.string(), { minLength: 1, maxLength: 10 }),
+        (parent, child, values) => {
+          const items = values.map((v, i) =>
+            i % 2 === 0 ? { [child]: v, id: i } : { id: i }
+          );
+          const data = { [parent]: items };
+          const result = masker.erase(data, {
+            fields: [`${parent}[*].${child}`],
+          }) as Record<string, Record<string, unknown>[]>;
+
+          for (let i = 0; i < items.length; i++) {
+            if (i % 2 === 0) {
+              expect(result[parent][i][child]).toBe('*****');
+            } else {
+              expect(result[parent][i][child]).toBeUndefined();
+            }
+            expect(result[parent][i].id).toBe(i);
+          }
+        }
+      )
+    );
+  });
+
   it('replaces every targeted top-level field with the mask', () => {
     fc.assert(
       fc.property(
-        fc.dictionary(jmesPathKey, fc.string(), { minKeys: 1 }),
+        fc.dictionary(pathKey, fc.string(), { minKeys: 1 }),
         (data) => {
           const fields = Object.keys(data);
           const result = masker.erase(data, { fields });

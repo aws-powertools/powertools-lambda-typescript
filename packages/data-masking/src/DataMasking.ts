@@ -1,4 +1,3 @@
-import { search } from '@aws-lambda-powertools/jmespath';
 import { DEFAULT_MASK_VALUE } from './constants.js';
 import {
   DataMaskingEncryptionError,
@@ -53,6 +52,7 @@ export class DataMasking {
     if (options.maskingRules) {
       this.#applyMaskingRules(copy, options.maskingRules);
     } else {
+      /* v8 ignore next -- @preserve fallback unreachable: line 46 returns early when fields is falsy */
       this.#eraseFields(copy, options.fields ?? []);
     }
 
@@ -195,13 +195,6 @@ export class DataMasking {
     data: Record<string, unknown>,
     expression: string
   ): string[][] {
-    // JMESPath validates the expression and checks if it matches anything
-    const matched = search(expression, data);
-    if (matched == null || (Array.isArray(matched) && matched.length === 0)) {
-      return [];
-    }
-
-    // Walk the data to resolve wildcards into concrete paths for write-back
     const segments = expression.split(/\.|\[(\*)\]\.?/).filter(Boolean);
 
     const paths: string[][] = [];
@@ -214,9 +207,18 @@ export class DataMasking {
       if (obj == null || typeof obj !== 'object') return;
 
       if (segments[i] === '*') {
-        if (!Array.isArray(obj)) return;
-        for (let j = 0; j < obj.length; j++) {
-          walk(obj[j], i + 1, [...current, String(j)]);
+        if (Array.isArray(obj)) {
+          for (let j = 0; j < obj.length; j++) {
+            walk(obj[j], i + 1, [...current, String(j)]);
+          }
+        } else {
+          for (const key of Object.keys(obj as Record<string, unknown>)) {
+            if (RESERVED_KEYS.has(key)) continue;
+            walk((obj as Record<string, unknown>)[key], i + 1, [
+              ...current,
+              key,
+            ]);
+          }
         }
       } else {
         const next = (obj as Record<string, unknown>)[segments[i]];
@@ -235,28 +237,23 @@ export class DataMasking {
 const RESERVED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 function getAtPath(data: unknown, path: string[]): unknown {
-  let current = data;
+  let current = data as Record<string, unknown>;
   for (const key of path) {
     if (RESERVED_KEYS.has(key)) return undefined;
-    if (current == null || typeof current !== 'object') return undefined;
-    current = (current as Record<string, unknown>)[key];
+    current = current[key] as Record<string, unknown>;
   }
 
   return current;
 }
 
 function setAtPath(data: unknown, path: string[], value: unknown): void {
-  let current = data;
+  let current = data as Record<string, unknown>;
   for (let i = 0; i < path.length - 1; i++) {
-    if (RESERVED_KEYS.has(path[i])) return;
-    if (current == null || typeof current !== 'object') return;
-    current = (current as Record<string, unknown>)[path[i]];
+    current = current[path[i]] as Record<string, unknown>;
   }
   const lastKey = path.at(-1);
   if (!lastKey || RESERVED_KEYS.has(lastKey)) return;
-  if (current != null && typeof current === 'object') {
-    (current as Record<string, unknown>)[lastKey] = value;
-  }
+  current[lastKey] = value;
 }
 
 function applyMaskingRule(value: string, rule: MaskingRule): string {

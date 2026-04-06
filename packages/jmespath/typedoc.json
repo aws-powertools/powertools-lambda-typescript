@@ -7,5 +7,5 @@
     "./src/Functions.ts",
     "./src/PowertoolsFunctions.ts"
   ],
-  "readme": "README.md"
+  "readme": "./API_README.md"
 }

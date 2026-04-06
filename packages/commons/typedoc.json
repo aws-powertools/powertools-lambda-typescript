@@ -9,5 +9,5 @@
     "./src/fromBase64.ts",
     "./src/LRUCache.ts"
   ],
-  "readme": "./README.md"
+  "readme": "./API_README.md"
 }

@@ -44,6 +44,6 @@
   "dependencies": {
     "aws-cdk": "^2.1113.0",
     "aws-cdk-lib": "^2.244.0",
-    "esbuild": "^0.27.5"
+    "esbuild": "^0.28.0"
   }
 }

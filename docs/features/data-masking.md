@@ -403,6 +403,78 @@ Here are common scenarios to best visualise how to use `fields`.
         }
         ```
 
+=== "All fields in an object"
+
+    You want to erase all values under `credentials` without listing each key individually.
+
+    > Expression: `masker.erase(data, { fields: ['credentials.*'] })`
+
+    === "Data"
+
+        ```json hl_lines="3-5"
+        {
+            "name": "Jane",
+            "credentials": {
+                "username": "admin",
+                "password": "s3cret",
+                "token": "abc123"
+            }
+        }
+        ```
+
+    === "Result"
+
+        ```json hl_lines="3-5"
+        {
+            "name": "Jane",
+            "credentials": {
+                "username": "*****",
+                "password": "*****",
+                "token": "*****"
+            }
+        }
+        ```
+
+=== "Nested field via object wildcard"
+
+    You want to erase the `ssn` field under every key in the `users` object.
+
+    > Expression: `masker.erase(data, { fields: ['users.*.ssn'] })`
+
+    === "Data"
+
+        ```json hl_lines="4 8"
+        {
+            "users": {
+                "alice": {
+                    "ssn": "111-22-3333",
+                    "name": "Alice"
+                },
+                "bob": {
+                    "ssn": "444-55-6666",
+                    "name": "Bob"
+                }
+            }
+        }
+        ```
+
+    === "Result"
+
+        ```json hl_lines="4 8"
+        {
+            "users": {
+                "alice": {
+                    "ssn": "*****",
+                    "name": "Alice"
+                },
+                "bob": {
+                    "ssn": "*****",
+                    "name": "Bob"
+                }
+            }
+        }
+        ```
+
 ## Advanced
 
 ### Using multiple keys

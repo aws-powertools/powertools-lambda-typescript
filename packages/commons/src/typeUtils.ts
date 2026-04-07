@@ -236,14 +236,14 @@ const getType = (value: unknown): string => {
 /**
  * Compare two arrays for strict equality.
  *
- * This function compares each element in the arrays, regardless of order.
+ * This function compares each element in the arrays at the same position.
  *
  * @example
  * ```typescript
  * import { areArraysEqual } from '@aws-lambda-powertools/commons/typeUtils';
  *
  * const left = [1, 2, 3];
- * const right = [3, 2, 1];
+ * const right = [1, 2, 3];
  * const equal = areArraysEqual(left, right); // true
  *
  * const otherLeft = [1, 2, 3];
@@ -298,8 +298,8 @@ const areRecordsEqual = (
 /**
  * Check if two unknown values are strictly equal.
  *
- * If the values are arrays, then each element is compared, regardless of
- * order. If the values are objects, then each key and value from left
+ * If the values are arrays, then each element is compared at the same
+ * position. If the values are objects, then each key and value from left
  * is compared to the corresponding key and value from right. If the
  * values are primitives, then they are compared using strict equality.
  *
@@ -312,7 +312,7 @@ const areRecordsEqual = (
  * const equal = isStrictEqual(left, right); // true
  *
  * const otherLeft = [1, 2, 3];
- * const otherRight = [3, 2, 1];
+ * const otherRight = [1, 2, 3];
  * const otherEqual = isStrictEqual(otherLeft, otherRight); // true
  *
  * const anotherLeft = 'foo';

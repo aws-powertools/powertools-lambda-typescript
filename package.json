@@ -31,7 +31,7 @@
     "docs:docker:run": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertools-typescript/docs",
     "docs:local:setup": "python3 -m venv .venv && .venv/bin/pip install -r docs/requirements.txt",
     "docs:local:run": ".venv/bin/mkdocs serve",
-    "docs:local:api": "typedoc .",
+    "docs:local:api": "python3 docs/generate_api_readme.py && typedoc .",
     "postpublish": "git restore .",
     "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#CHANGELOG.md' '#**/*/CHANGELOG.md' '#examples/app/README.md' '#.venv' '#site'"
   },

@@ -5,5 +5,5 @@
     "./src/types/index.ts",
     "./src/middleware/middy.ts"
   ],
-  "readme": "README.md"
+  "readme": "./API_README.md"
 }

@@ -9,5 +9,5 @@
     "./src/helpers/index.ts",
     "./src/helpers/dynamodb.ts"
   ],
-  "readme": "README.md"
+  "readme": "./API_README.md"
 }

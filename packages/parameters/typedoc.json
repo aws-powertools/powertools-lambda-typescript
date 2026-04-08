@@ -13,7 +13,7 @@
     "./src/errors.ts",
     "./src/constants.ts"
   ],
-  "readme": "README.md",
+  "readme": "./API_README.md",
   "externalSymbolLinkMappings": {
     "@aws-sdk/client-secrets-manager": {
       "GetSecretValueCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-secrets-manager/Interface/GetSecretValueCommandInput/"

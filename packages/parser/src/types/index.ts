@@ -1,4 +1,5 @@
 export type {
+  InferOutput,
   ParsedResult,
   ParsedResultError,
   ParsedResultSuccess,

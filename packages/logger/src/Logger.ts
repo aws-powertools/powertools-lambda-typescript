@@ -776,10 +776,7 @@ class Logger extends Utility implements LoggerInterface {
         return replacedValue.toString();
       }
       if (typeof replacedValue === 'object' && replacedValue !== null) {
-        while (
-          ancestors.length > 0 &&
-          ancestors[ancestors.length - 1] !== this
-        ) {
+        while (ancestors.length > 0 && ancestors.at(-1) !== this) {
           ancestors.pop();
         }
         /* v8 ignore next -- @preserve */

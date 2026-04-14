@@ -1,5 +1,22 @@
 # Change Log
 
+## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
+
+### Bug Fixes
+
+- **commons** don't overwrite existing value with `undefined` in deepMerge ([#5141](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5141)) ([c7c6c0f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c7c6c0febb91143215c7684fc7bb2c6ee9777555))
+- **commons** rename AvailabilityZoneId to AvailabilityZoneID in docs and tests ([#5118](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5118)) ([65c054c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/65c054c62bcfa24a98e5d2e3eaaa89e22d74e8a2))
+- **event-handler** http response body validation typings ([#5125](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5125)) ([0805db9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0805db9d65e93817f85ad640426e90725ae80ede))
+
+### Improvements
+
+- **parser** export InferOutput from public types entry point ([#5175](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5175)) ([16c6de6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/16c6de6e3c7775fdd88efe44715a6366313cc848))
+
+### Features
+
+- **event-handler** add metrics middleware for HTTP routes ([#5086](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5086)) ([5af28e8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5af28e8c629fb934d4f711e10d4f74aece2c2e48))
+
+
 ## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
 
 ### Features

@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
+
+### Bug Fixes
+
+- don't overwrite existing value with `undefined` in deepMerge ([#5141](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5141)) ([c7c6c0f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c7c6c0febb91143215c7684fc7bb2c6ee9777555))
+- rename AvailabilityZoneId to AvailabilityZoneID in docs and tests ([#5118](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5118)) ([65c054c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/65c054c62bcfa24a98e5d2e3eaaa89e22d74e8a2))
 ## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
 
 ### Features

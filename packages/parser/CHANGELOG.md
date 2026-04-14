@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
+
+### Improvements
+
+- export InferOutput from public types entry point ([#5175](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5175)) ([16c6de6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/16c6de6e3c7775fdd88efe44715a6366313cc848))
 ## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
 
 **Note:** Version bump only for this package

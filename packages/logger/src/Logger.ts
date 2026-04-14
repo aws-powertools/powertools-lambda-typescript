@@ -762,15 +762,15 @@ class Logger extends Utility implements LoggerInterface {
    */
   protected getJsonReplacer(): (key: string, value: unknown) => void {
     const ancestors: unknown[] = [];
-    const self = this;
+    const jsonReplacerFn = this.#jsonReplacerFn;
+    const logFormatter = this.getLogFormatter();
 
     return function (this: unknown, key: string, value: unknown) {
       let replacedValue = value;
-      if (self.#jsonReplacerFn)
-        replacedValue = self.#jsonReplacerFn?.(key, replacedValue);
+      if (jsonReplacerFn) replacedValue = jsonReplacerFn(key, replacedValue);
 
       if (replacedValue instanceof Error) {
-        replacedValue = self.getLogFormatter().formatError(replacedValue);
+        replacedValue = logFormatter.formatError(replacedValue);
       }
       if (typeof replacedValue === 'bigint') {
         return replacedValue.toString();

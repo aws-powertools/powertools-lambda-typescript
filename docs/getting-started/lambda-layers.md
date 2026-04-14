@@ -47,8 +47,8 @@ We publish the Lambda Layer for Powertools for AWS Lambda in all commercial regi
 | `ca-west-1`      | [arn:aws:lambda:ca-west-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:47](#){: .copyMe}             |
 | `sa-east-1`      | [arn:aws:lambda:sa-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:47](#){: .copyMe}             |
 | `af-south-1`     | [arn:aws:lambda:af-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:47](#){: .copyMe}            |
-| `me-south-1`*    | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:47](#){: .copyMe}            |
-| `me-central-1`*  | [arn:aws:lambda:me-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:47](#){: .copyMe}          |
+| `me-south-1`*    | [arn:aws:lambda:me-south-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:46](#){: .copyMe}            |
+| `me-central-1`*  | [arn:aws:lambda:me-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:45](#){: .copyMe}          |
 | `il-central-1`   | [arn:aws:lambda:il-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:47](#){: .copyMe}          |
 | `mx-central-1`   | [arn:aws:lambda:mx-central-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:47](#){: .copyMe}          |
 | `us-gov-west-1`  | [arn:aws-us-gov:lambda:us-gov-west-1:165093116878:layer:AWSLambdaPowertoolsTypeScriptV2:47](#){: .copyMe}  |

@@ -2,12 +2,7 @@ name: Post Release
 
 on:
   # Triggered manually
-  workflow_dispatch:
-    inputs:
-      versionNumber:
-        required: true
-        type: string
-        description: "If running this manually please insert a version number that corresponds to the latest published in the GitHub releases (i.e. v1.1.1)"
+  workflow_dispatch: {}
   # Or triggered as result of a release
   release:
     types: [released]
@@ -20,23 +15,10 @@ jobs:
     permissions:
       contents: read
       issues: write
-      discussions: write
-      pull-requests: write
     runs-on: ubuntu-latest
-    env:
-      RELEASE_VERSION: ${{ inputs.versionNumber }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-      - name: Get release version
-        run: |
-          # The code below does the following:
-          # 1. If the workflow was triggered manually, it will use the version number provided by the user
-          # 2. If the workflow was triggered by a release, it will use the version number of the release
-          if [ -z "$RELEASE_VERSION" ]; then
-            export RELEASE_VERSION=$(git describe --tags --abbrev=0)
-          fi
-          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
-      - name: Update issues related to release
+      - name: Update labels on issues related to release
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

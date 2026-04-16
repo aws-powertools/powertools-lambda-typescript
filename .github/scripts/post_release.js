@@ -1,4 +1,5 @@
-const { LABEL_PENDING_RELEASE, LABEL_RELEASED } = require('./constants');
+const LABEL_PENDING_RELEASE = 'pending-release';
+const LABEL_RELEASED = 'completed';
 
 /**
  * Fetch issues using GitHub REST API
@@ -37,26 +38,17 @@ const fetchIssues = async ({
 };
 
 /**
- * Notify new release and close staged GitHub issue
+ * Update labels on closed issues that are pending release
+ *
+ * Swaps the 'pending-release' label to 'completed' on each closed issue.
+ * GitHub natively links releases to issues, so no comment is needed.
  *
  * @param {object} gh_client - Pre-authenticated REST client (Octokit)
  * @param {string} owner - GitHub Organization
  * @param {string} repository - GitHub repository
- * @param {string} release_version - GitHub Release version
  * @see {@link https://octokit.github.io/rest.js/v18#usage|Octokit client}
  */
-const notifyRelease = async ({
-  gh_client,
-  core,
-  owner,
-  repository,
-  release_version,
-}) => {
-  const release_url = `https://github.com/${owner}/${repository}/releases/tag/v${release_version.replace(
-    /v/g,
-    ''
-  )}`;
-
+const updateLabels = async ({ gh_client, core, owner, repository }) => {
   const issues = await fetchIssues({
     gh_client: gh_client,
     org: owner,
@@ -65,22 +57,7 @@ const notifyRelease = async ({
   });
 
   issues.forEach(async (issue) => {
-    core.info(`Updating issue number ${issue.number}`);
-
-    const comment = `This is now released under [${release_version}](${release_url}) version!`;
-    try {
-      await gh_client.rest.issues.createComment({
-        owner: owner,
-        repo: repository,
-        body: comment,
-        issue_number: issue.number,
-      });
-    } catch (error) {
-      core.setFailed(error);
-      throw new Error(
-        `Failed to update issue ${issue.number} about ${release_version} release`
-      );
-    }
+    core.info(`Updating labels for issue number ${issue.number}`);
 
     // Remove staged label; keep existing ones
     const labels = issue.labels
@@ -106,14 +83,12 @@ const notifyRelease = async ({
 
 // context: https://github.com/actions/toolkit/blob/main/packages/github/src/context.ts
 module.exports = async ({ github, context, core }) => {
-  const { RELEASE_VERSION } = process.env;
-  core.info(`Running post-release script for ${RELEASE_VERSION} version`);
+  core.info('Running post-release label update');
 
-  await notifyRelease({
+  await updateLabels({
     gh_client: github,
     core,
     owner: context.repo.owner,
     repository: context.repo.repo,
-    release_version: RELEASE_VERSION,
   });
 };

@@ -319,7 +319,7 @@ describe('Function: deepMerge', () => {
 
     it('handles circular arrays', () => {
       // Prepare
-      const target = { a: 1 };
+      const target: Record<string, unknown> = { a: 1 };
       const circularArr: unknown[] = [1, 2];
       circularArr.push(circularArr);
       const source = { arr: circularArr };
@@ -387,7 +387,7 @@ describe('Function: deepMerge', () => {
     it('merges shared objects within arrays', () => {
       // Prepare
       const sharedObj = { shared: true };
-      const target = {
+      const target: Record<string, unknown> = {
         arr: [{ a: 1 }, { b: 2 }],
       };
       const source = {
@@ -453,7 +453,7 @@ describe('Function: deepMerge', () => {
     it('merges shared objects referenced in arrays', () => {
       // Prepare
       const sharedObj = { shared: true };
-      const target = {
+      const target: Record<string, unknown> = {
         arr: [{ a: 1 }, { b: 2 }],
       };
       const source = {
@@ -691,7 +691,7 @@ describe('Function: deepMerge', () => {
 
     it('handles special number values', () => {
       // Prepare
-      const target = {};
+      const target: Record<string, unknown> = {};
       const source = {
         inf: Number.POSITIVE_INFINITY,
         negInf: Number.NEGATIVE_INFINITY,
@@ -710,7 +710,7 @@ describe('Function: deepMerge', () => {
     it('handles function values', () => {
       // Prepare
       const fn = () => 42;
-      const target = {};
+      const target: Record<string, unknown> = {};
       const source = { fn };
 
       // Act

@@ -54,7 +54,7 @@ jobs:
           echo 'CONVERTED_REGION=${{ matrix.region }}' | tr 'a-z\-' 'A-Z_' >> "$GITHUB_OUTPUT"
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37 # v6.1.0
         with:
           role-to-assume: ${{ secrets[format('IAM_ROLE_{0}', steps.transform.outputs.CONVERTED_REGION)] }}
           aws-region: ${{ matrix.region }}
@@ -115,7 +115,7 @@ jobs:
           jq -s -r '["Layer Arn", "Runtimes", "Version", "Description", "SHA256"], ([.[0], .[1]] | .[] | [.LayerArn, (.CompatibleRuntimes | join("/")), .Version, .Description, .Content.CodeSha256]) |@tsv' AWSLambdaPowertoolsTypeScriptV2.json "$layer_output" | column -t -s $'\t'
 
       - name: Store Metadata - ${{ matrix.region }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}-${{ inputs.environment }}.json
           path: AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json

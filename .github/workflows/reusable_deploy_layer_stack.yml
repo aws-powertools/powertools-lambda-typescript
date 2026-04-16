@@ -64,7 +64,7 @@ jobs:
             "eu-south-2",
             "eu-north-1",
             "sa-east-1",
-            "me-south-1",
+            # "me-south-1", # temporarily disabled due to service disruptions
             # "me-central-1", # temporarily disabled due to service disruptions
             "il-central-1",
             "mx-central-1"
@@ -75,7 +75,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
       - name: aws credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37 # v6.1.0
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.target-account-role }}
@@ -108,7 +108,7 @@ jobs:
           fi
       - name: Save Layer ARN artifact
         if: ${{ inputs.stage == 'PROD' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cdk-layer-stack-${{ matrix.region }}
           path: ./cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.

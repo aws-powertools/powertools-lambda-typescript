@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
+
+### Bug Fixes
+
+- http response body validation typings ([#5125](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5125)) ([0805db9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0805db9d65e93817f85ad640426e90725ae80ede))
+
+### Features
+
+- add metrics middleware for HTTP routes ([#5086](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5086)) ([5af28e8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5af28e8c629fb934d4f711e10d4f74aece2c2e48))
 ## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
 
 ### Features

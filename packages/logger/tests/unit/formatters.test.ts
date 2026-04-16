@@ -727,6 +727,46 @@ describe('Formatters', () => {
 
   // #region custom JSON replacer
 
+  it('correctly serializes shared object references across different keys', () => {
+    // Prepare
+    const x1 = [{ value: '1' }];
+
+    // Act
+    logger.info('foo', { x1, destructed: [...x1] });
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        level: 'INFO',
+        message: 'foo',
+        x1: [{ value: '1' }],
+        destructed: [{ value: '1' }],
+      })
+    );
+  });
+
+  it('correctly serializes multiple spread arrays sharing the same elements', () => {
+    // Prepare
+    const x1 = [{ value: '1' }];
+
+    // Act
+    logger.info('foo', { destructed1: [...x1], destructed2: [...x1] });
+
+    // Assess
+    expect(console.info).toHaveBeenCalledTimes(1);
+    expect(console.info).toHaveLoggedNth(
+      1,
+      expect.objectContaining({
+        level: 'INFO',
+        message: 'foo',
+        destructed1: [{ value: '1' }],
+        destructed2: [{ value: '1' }],
+      })
+    );
+  });
+
   it('ignores keys with circular references when stringifying', () => {
     // Prepare
     const circularObject = {

@@ -761,25 +761,29 @@ class Logger extends Utility implements LoggerInterface {
    * @see {@link ConstructorOptions.jsonReplacerFn}
    */
   protected getJsonReplacer(): (key: string, value: unknown) => void {
-    const references = new WeakSet();
+    const ancestors: unknown[] = [];
+    const jsonReplacerFn = this.#jsonReplacerFn;
+    const logFormatter = this.getLogFormatter();
 
-    return (key, value) => {
+    return function (this: unknown, key: string, value: unknown) {
       let replacedValue = value;
-      if (this.#jsonReplacerFn)
-        replacedValue = this.#jsonReplacerFn?.(key, replacedValue);
+      if (jsonReplacerFn) replacedValue = jsonReplacerFn(key, replacedValue);
 
       if (replacedValue instanceof Error) {
-        replacedValue = this.getLogFormatter().formatError(replacedValue);
+        replacedValue = logFormatter.formatError(replacedValue);
       }
       if (typeof replacedValue === 'bigint') {
         return replacedValue.toString();
       }
       if (typeof replacedValue === 'object' && replacedValue !== null) {
+        while (ancestors.length > 0 && ancestors.at(-1) !== this) {
+          ancestors.pop();
+        }
         /* v8 ignore next -- @preserve */
-        if (references.has(replacedValue)) {
+        if (ancestors.includes(replacedValue)) {
           return;
         }
-        references.add(replacedValue);
+        ancestors.push(replacedValue);
       }
 
       return replacedValue;

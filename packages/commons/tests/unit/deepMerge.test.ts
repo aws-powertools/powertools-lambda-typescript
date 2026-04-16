@@ -296,7 +296,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - self-reference is skipped entirely
+      // Assess
       expect(result).toEqual({ a: 1, b: 2 });
       expect(result).not.toHaveProperty('self');
     });
@@ -313,7 +313,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - circular reference is skipped
+      // Assess
       expect(result).toEqual({ a: 1, b: 2, nested: { c: 3 } });
     });
 
@@ -327,8 +327,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - circular array reference is preserved in shallow copy
-      // (the array itself is copied, but the circular element points to original)
+      // Assess
       expect(result.a).toBe(1);
       expect(Array.isArray(result.arr)).toBe(true);
       expect((result.arr as unknown[])[0]).toBe(1);
@@ -336,7 +335,7 @@ describe('Function: deepMerge', () => {
     });
 
     it('skips array that references an ancestor array', () => {
-      // Prepare - an array contains an object whose property points back to the array
+      // Prepare
       const arr: unknown[] = [];
       const inner: Record<string, unknown> = { backRef: arr };
       arr.push(inner);
@@ -346,8 +345,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - inner.backRef is the same array that's in the ancestor chain,
-      // so the circular array reference is skipped during mergeRecursive
+      // Assess
       expect(result.arr).toBeDefined();
       expect((result.arr as Record<string, unknown>[])[0]).not.toHaveProperty(
         'backRef'
@@ -363,7 +361,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - source inside its own array is a circular ref and is skipped
+      // Assess
       expect(result).toEqual({ arr: [{ a: 1 }], b: 2 });
     });
 
@@ -379,7 +377,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - shared (non-circular) array is merged into both properties
+      // Assess
       expect(result).toEqual({
         first: [1, 2, 3],
         second: [1, 2, 3],
@@ -400,7 +398,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - sharedObj is merged into both prop and arr[0]
+      // Assess
       expect(result.prop).toEqual({ shared: true });
       expect((result.arr as Record<string, unknown>[])[0]).toEqual({
         a: 1,
@@ -424,7 +422,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - shared (non-circular) object appears in both locations
+      // Assess
       expect(result).toEqual({
         first: { value: 42 },
         second: { nested: { value: 42 } },
@@ -433,7 +431,7 @@ describe('Function: deepMerge', () => {
   });
 
   describe('Shared (non-circular) references', () => {
-    it('correctly merges shared array references into both properties', () => {
+    it('merges shared array references into both properties', () => {
       // Prepare
       const target = {};
       const sharedArray = [1, 2, 3];
@@ -445,14 +443,14 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - shared array should be merged into both properties
+      // Assess
       expect(result).toEqual({
         first: [1, 2, 3],
         second: [1, 2, 3],
       });
     });
 
-    it('correctly merges shared objects referenced in arrays', () => {
+    it('merges shared objects referenced in arrays', () => {
       // Prepare
       const sharedObj = { shared: true };
       const target = {
@@ -466,7 +464,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - sharedObj should be merged into both prop and arr[0]
+      // Assess
       expect(result.prop).toEqual({ shared: true });
       expect((result.arr as Record<string, unknown>[])[0]).toEqual({
         a: 1,
@@ -478,7 +476,7 @@ describe('Function: deepMerge', () => {
       });
     });
 
-    it('correctly merges shared objects into all referencing properties', () => {
+    it('merges shared objects into all referencing properties', () => {
       // Prepare
       const target = {};
       const shared = { value: 42 };
@@ -490,14 +488,14 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - shared object should appear in both locations
+      // Assess
       expect(result).toEqual({
         first: { value: 42 },
         second: { nested: { value: 42 } },
       });
     });
 
-    it('correctly merges shared objects across multiple sources', () => {
+    it('merges shared objects across multiple sources', () => {
       // Prepare
       const shared = { x: 1 };
       const target = {};
@@ -511,7 +509,7 @@ describe('Function: deepMerge', () => {
       expect(result).toEqual({ a: { x: 1 }, b: { x: 1 } });
     });
 
-    it('correctly merges diamond-shaped shared references', () => {
+    it('merges diamond-shaped shared references', () => {
       // Prepare
       const shared = { value: 'shared' };
       const target = {};
@@ -523,7 +521,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - same object at different depths in two branches
+      // Assess
       expect(result).toEqual({
         branch1: { leaf: { value: 'shared' } },
         branch2: { leaf: { value: 'shared' } },
@@ -543,8 +541,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - shared object is merged in both locations,
-      // but the circular self-reference within it is skipped
+      // Assess
       expect(result).toEqual({
         first: { value: 1 },
         second: { nested: { value: 1 } },
@@ -560,8 +557,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - inner is not in the ancestor chain when processing source,
-      // so it should be merged into both properties
+      // Assess
       expect(result).toEqual({
         a: { x: 1 },
         b: { x: 1 },
@@ -734,7 +730,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge({}, source1, source2);
 
-      // Assess - object source overwrites function, not merged into it
+      // Assess
       expect(result).toEqual({ a: { b: 2 } });
       expect('b' in (source1.a as object)).toBe(false);
     });
@@ -746,7 +742,7 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(object, object);
 
-      // Assess - should be a no-op
+      // Assess
       expect(result).toBe(object);
       expect(result).toEqual({ a: 1, b: { c: 2 } });
     });

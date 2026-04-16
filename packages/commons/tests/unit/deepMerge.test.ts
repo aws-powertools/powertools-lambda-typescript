@@ -303,6 +303,38 @@ describe('Function: deepMerge', () => {
       expect((result.arr as unknown[])[1]).toBe(2);
     });
 
+    it('skips array that references an ancestor array', () => {
+      // Prepare - an array contains an object whose property points back to the array
+      const arr: unknown[] = [];
+      const inner: Record<string, unknown> = { backRef: arr };
+      arr.push(inner);
+      const target = { arr: [{ a: 1 }] };
+      const source = { arr };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess - inner.backRef is the same array that's in the ancestor chain,
+      // so the circular array reference is skipped during mergeRecursive
+      expect(result.arr).toBeDefined();
+      expect((result.arr as Record<string, unknown>[])[0]).not.toHaveProperty(
+        'backRef'
+      );
+    });
+
+    it('skips circular plain objects inside arrays', () => {
+      // Prepare
+      const target = { arr: [{ a: 1 }] };
+      const source: Record<string, unknown> = { b: 2 };
+      source.arr = [source];
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess - source inside its own array is a circular ref and is skipped
+      expect(result).toEqual({ arr: [{ a: 1 }], b: 2 });
+    });
+
     it('merges shared array references into all properties', () => {
       // Prepare
       const target = {};

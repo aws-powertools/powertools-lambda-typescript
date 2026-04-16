@@ -303,7 +303,7 @@ describe('Function: deepMerge', () => {
       expect((result.arr as unknown[])[1]).toBe(2);
     });
 
-    it('skips already-seen arrays to prevent duplication', () => {
+    it('merges shared array references into all properties', () => {
       // Prepare
       const target = {};
       const sharedArray = [1, 2, 3];
@@ -315,16 +315,14 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - shared array is copied on first occurrence,
-      // skipped on subsequent occurrences
+      // Assess - shared (non-circular) array is merged into both properties
       expect(result).toEqual({
         first: [1, 2, 3],
-        second: undefined,
+        second: [1, 2, 3],
       });
-      expect(result).not.toHaveProperty('second');
     });
 
-    it('skips already-seen objects within arrays', () => {
+    it('merges shared objects within arrays', () => {
       // Prepare
       const sharedObj = { shared: true };
       const target = {
@@ -338,17 +336,19 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - sharedObj is merged into prop first, then skipped when
-      // encountered again in the array merge
+      // Assess - sharedObj is merged into both prop and arr[0]
       expect(result.prop).toEqual({ shared: true });
-      expect((result.arr as Record<string, unknown>[])[0]).toEqual({ a: 1 });
+      expect((result.arr as Record<string, unknown>[])[0]).toEqual({
+        a: 1,
+        shared: true,
+      });
       expect((result.arr as Record<string, unknown>[])[1]).toEqual({
         b: 2,
         c: 3,
       });
     });
 
-    it('skips already-seen objects to prevent duplication', () => {
+    it('merges shared objects into all referencing properties', () => {
       // Prepare
       const target = {};
       const shared = { value: 42 };
@@ -360,11 +360,147 @@ describe('Function: deepMerge', () => {
       // Act
       const result = deepMerge(target, source);
 
-      // Assess - shared object is merged on first occurrence,
-      // skipped on subsequent occurrences to prevent infinite recursion
+      // Assess - shared (non-circular) object appears in both locations
       expect(result).toEqual({
         first: { value: 42 },
-        second: {},
+        second: { nested: { value: 42 } },
+      });
+    });
+  });
+
+  describe('Shared (non-circular) references', () => {
+    it('correctly merges shared array references into both properties', () => {
+      // Prepare
+      const target = {};
+      const sharedArray = [1, 2, 3];
+      const source = {
+        first: sharedArray,
+        second: sharedArray,
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess - shared array should be merged into both properties
+      expect(result).toEqual({
+        first: [1, 2, 3],
+        second: [1, 2, 3],
+      });
+    });
+
+    it('correctly merges shared objects referenced in arrays', () => {
+      // Prepare
+      const sharedObj = { shared: true };
+      const target = {
+        arr: [{ a: 1 }, { b: 2 }],
+      };
+      const source = {
+        prop: sharedObj,
+        arr: [sharedObj, { c: 3 }],
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess - sharedObj should be merged into both prop and arr[0]
+      expect(result.prop).toEqual({ shared: true });
+      expect((result.arr as Record<string, unknown>[])[0]).toEqual({
+        a: 1,
+        shared: true,
+      });
+      expect((result.arr as Record<string, unknown>[])[1]).toEqual({
+        b: 2,
+        c: 3,
+      });
+    });
+
+    it('correctly merges shared objects into all referencing properties', () => {
+      // Prepare
+      const target = {};
+      const shared = { value: 42 };
+      const source = {
+        first: shared,
+        second: { nested: shared },
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess - shared object should appear in both locations
+      expect(result).toEqual({
+        first: { value: 42 },
+        second: { nested: { value: 42 } },
+      });
+    });
+
+    it('correctly merges shared objects across multiple sources', () => {
+      // Prepare
+      const shared = { x: 1 };
+      const target = {};
+      const source1 = { a: shared };
+      const source2 = { b: shared };
+
+      // Act
+      const result = deepMerge(target, source1, source2);
+
+      // Assess
+      expect(result).toEqual({ a: { x: 1 }, b: { x: 1 } });
+    });
+
+    it('correctly merges diamond-shaped shared references', () => {
+      // Prepare
+      const shared = { value: 'shared' };
+      const target = {};
+      const source = {
+        branch1: { leaf: shared },
+        branch2: { leaf: shared },
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess - same object at different depths in two branches
+      expect(result).toEqual({
+        branch1: { leaf: { value: 'shared' } },
+        branch2: { leaf: { value: 'shared' } },
+      });
+    });
+
+    it('merges a shared object that itself contains a circular reference', () => {
+      // Prepare
+      const shared: Record<string, unknown> = { value: 1 };
+      shared.self = shared;
+      const target = {};
+      const source = {
+        first: shared,
+        second: { nested: shared },
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess - shared object is merged in both locations,
+      // but the circular self-reference within it is skipped
+      expect(result).toEqual({
+        first: { value: 1 },
+        second: { nested: { value: 1 } },
+      });
+    });
+
+    it('merges when source references an object from the target', () => {
+      // Prepare
+      const inner = { x: 1 };
+      const target: Record<string, unknown> = { a: inner };
+      const source = { b: inner };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess - inner is not in the ancestor chain when processing source,
+      // so it should be merged into both properties
+      expect(result).toEqual({
+        a: { x: 1 },
+        b: { x: 1 },
       });
     });
   });

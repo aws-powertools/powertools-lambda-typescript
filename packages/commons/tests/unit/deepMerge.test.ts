@@ -146,6 +146,28 @@ describe('Function: deepMerge', () => {
     });
   });
 
+  describe('Multi-source merging', () => {
+    it('merges three sources with arrays of objects', () => {
+      // Prepare
+      const names = { characters: [{ name: 'barney' }, { name: 'fred' }] };
+      const ages = { characters: [{ age: 36 }, { age: 40 }] };
+      const heights = {
+        characters: [{ height: '5\'4"' }, { height: '5\'5"' }],
+      };
+
+      // Act
+      const result = deepMerge({}, names, ages, heights);
+
+      // Assess
+      expect(result).toEqual({
+        characters: [
+          { name: 'barney', age: 36, height: '5\'4"' },
+          { name: 'fred', age: 40, height: '5\'5"' },
+        ],
+      });
+    });
+  });
+
   describe('Array merging (index-based)', () => {
     it('merges arrays by index', () => {
       // Prepare
@@ -236,6 +258,16 @@ describe('Function: deepMerge', () => {
       // Assess
       expect(result).toEqual({ a: 1, b: 2 });
       expect(result.constructor).toBe(Object);
+    });
+
+    it('does not indirectly pollute via toString.constructor.prototype', () => {
+      // Prepare & Act
+      deepMerge({}, {
+        toString: { constructor: { prototype: { polluted: true } } },
+      } as Record<string, unknown>);
+
+      // Assess
+      expect('polluted' in Function.prototype).toBe(false);
     });
 
     it('handles nested __proto__ keys', () => {
@@ -691,6 +723,32 @@ describe('Function: deepMerge', () => {
       // Assess
       expect(result.fn).toBe(fn);
       expect((result.fn as () => number)()).toBe(42);
+    });
+
+    it('replaces function target value with object from later source', () => {
+      // Prepare
+      const fn = () => 42;
+      const source1 = { a: fn } as Record<string, unknown>;
+      const source2 = { a: { b: 2 } };
+
+      // Act
+      const result = deepMerge({}, source1, source2);
+
+      // Assess - object source overwrites function, not merged into it
+      expect(result).toEqual({ a: { b: 2 } });
+      expect('b' in (source1.a as object)).toBe(false);
+    });
+
+    it('handles self-merge without infinite loop', () => {
+      // Prepare
+      const object: Record<string, unknown> = { a: 1, b: { c: 2 } };
+
+      // Act
+      const result = deepMerge(object, object);
+
+      // Assess - should be a no-op
+      expect(result).toBe(object);
+      expect(result).toEqual({ a: 1, b: { c: 2 } });
     });
   });
 });

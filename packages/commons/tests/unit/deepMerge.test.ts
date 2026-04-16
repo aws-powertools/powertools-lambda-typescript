@@ -123,7 +123,7 @@ describe('Function: deepMerge', () => {
 
     it('replaces non-object target values with source objects', () => {
       // Prepare
-      const target = { a: 'string' } as Record<string, unknown>;
+      const target: Record<string, unknown> = { a: 'string' };
       const source = { a: { nested: 1 } };
 
       // Act
@@ -207,7 +207,7 @@ describe('Function: deepMerge', () => {
 
     it('replaces non-array target with array source', () => {
       // Prepare
-      const target = { arr: 'not an array' } as Record<string, unknown>;
+      const target: Record<string, unknown> = { arr: 'not an array' };
       const source = { arr: [1, 2, 3] };
 
       // Act
@@ -241,16 +241,16 @@ describe('Function: deepMerge', () => {
 
       // Assess
       expect(result).toEqual({ a: 1, b: 2 });
-      expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+      expect({}).not.toHaveProperty('polluted');
     });
 
     it('skips constructor keys from source', () => {
       // Prepare
       const target = { a: 1 };
-      const source = { constructor: { polluted: true }, b: 2 } as Record<
-        string,
-        unknown
-      >;
+      const source: Record<string, unknown> = {
+        constructor: { polluted: true },
+        b: 2,
+      };
 
       // Act
       const result = deepMerge(target, source);
@@ -262,12 +262,13 @@ describe('Function: deepMerge', () => {
 
     it('does not indirectly pollute via toString.constructor.prototype', () => {
       // Prepare & Act
-      deepMerge({}, {
+      const source: Record<string, unknown> = {
         toString: { constructor: { prototype: { polluted: true } } },
-      } as Record<string, unknown>);
+      };
+      deepMerge({}, source);
 
       // Assess
-      expect('polluted' in Function.prototype).toBe(false);
+      expect(Function.prototype).not.toHaveProperty('polluted');
     });
 
     it('handles nested __proto__ keys', () => {
@@ -282,7 +283,7 @@ describe('Function: deepMerge', () => {
 
       // Assess
       expect(result).toEqual({ nested: { a: 1, b: 2 } });
-      expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+      expect({}).not.toHaveProperty('polluted');
     });
   });
 
@@ -304,11 +305,9 @@ describe('Function: deepMerge', () => {
     it('handles deep circular references', () => {
       // Prepare
       const target = { a: 1 };
-      const source: Record<string, unknown> = {
-        b: 2,
-        nested: { c: 3 },
-      };
-      (source.nested as Record<string, unknown>).circular = source;
+      const nested: Record<string, unknown> = { c: 3 };
+      const source: Record<string, unknown> = { b: 2, nested };
+      nested.circular = source;
 
       // Act
       const result = deepMerge(target, source);
@@ -328,10 +327,9 @@ describe('Function: deepMerge', () => {
       const result = deepMerge(target, source);
 
       // Assess
-      expect(result.a).toBe(1);
-      expect(Array.isArray(result.arr)).toBe(true);
-      expect((result.arr as unknown[])[0]).toBe(1);
-      expect((result.arr as unknown[])[1]).toBe(2);
+      expect(result).toHaveProperty('a', 1);
+      expect(result).toHaveProperty('arr[0]', 1);
+      expect(result).toHaveProperty('arr[1]', 2);
     });
 
     it('skips array that references an ancestor array', () => {
@@ -346,10 +344,7 @@ describe('Function: deepMerge', () => {
       const result = deepMerge(target, source);
 
       // Assess
-      expect(result.arr).toBeDefined();
-      expect((result.arr as Record<string, unknown>[])[0]).not.toHaveProperty(
-        'backRef'
-      );
+      expect(result).toEqual({ arr: [{ a: 1 }] });
     });
 
     it('skips circular plain objects inside arrays', () => {
@@ -399,14 +394,12 @@ describe('Function: deepMerge', () => {
       const result = deepMerge(target, source);
 
       // Assess
-      expect(result.prop).toEqual({ shared: true });
-      expect((result.arr as Record<string, unknown>[])[0]).toEqual({
-        a: 1,
-        shared: true,
-      });
-      expect((result.arr as Record<string, unknown>[])[1]).toEqual({
-        b: 2,
-        c: 3,
+      expect(result).toEqual({
+        prop: { shared: true },
+        arr: [
+          { a: 1, shared: true },
+          { b: 2, c: 3 },
+        ],
       });
     });
 
@@ -465,14 +458,12 @@ describe('Function: deepMerge', () => {
       const result = deepMerge(target, source);
 
       // Assess
-      expect(result.prop).toEqual({ shared: true });
-      expect((result.arr as Record<string, unknown>[])[0]).toEqual({
-        a: 1,
-        shared: true,
-      });
-      expect((result.arr as Record<string, unknown>[])[1]).toEqual({
-        b: 2,
-        c: 3,
+      expect(result).toEqual({
+        prop: { shared: true },
+        arr: [
+          { a: 1, shared: true },
+          { b: 2, c: 3 },
+        ],
       });
     });
 
@@ -674,7 +665,7 @@ describe('Function: deepMerge', () => {
 
       // Assess
       expect(result).toEqual({ a: 1, b: 2 });
-      expect((result as Record<symbol, unknown>)[sym]).toBeUndefined();
+      expect(sym in result).toBe(false);
     });
 
     it('handles numeric keys', () => {
@@ -718,13 +709,12 @@ describe('Function: deepMerge', () => {
 
       // Assess
       expect(result.fn).toBe(fn);
-      expect((result.fn as () => number)()).toBe(42);
     });
 
     it('replaces function target value with object from later source', () => {
       // Prepare
       const fn = () => 42;
-      const source1 = { a: fn } as Record<string, unknown>;
+      const source1: Record<string, unknown> = { a: fn };
       const source2 = { a: { b: 2 } };
 
       // Act
@@ -732,7 +722,7 @@ describe('Function: deepMerge', () => {
 
       // Assess
       expect(result).toEqual({ a: { b: 2 } });
-      expect('b' in (source1.a as object)).toBe(false);
+      expect(source1.a).toBe(fn);
     });
 
     it('handles self-merge without infinite loop', () => {

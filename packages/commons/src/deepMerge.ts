@@ -24,7 +24,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
 const mergeArrayItemsByIndex = (
   targetArray: unknown[],
   sourceArray: unknown[],
-  seen: WeakSet<object>
+  ancestors: object[]
 ): void => {
   for (let i = 0; i < sourceArray.length; i++) {
     const srcItem = sourceArray[i];
@@ -32,15 +32,16 @@ const mergeArrayItemsByIndex = (
 
     const isSrcPlainObject = isPlainObject(srcItem);
 
-    // Skip already-seen objects to prevent circular references
-    if (isSrcPlainObject && seen.has(srcItem)) {
+    // Skip objects in the current ancestor chain to prevent circular references
+    if (isSrcPlainObject && ancestors.includes(srcItem)) {
       continue;
     }
 
     // Merge nested plain objects recursively
     if (isSrcPlainObject && isPlainObject(tgtItem)) {
-      seen.add(srcItem);
-      mergeRecursive(tgtItem, srcItem, seen);
+      ancestors.push(srcItem);
+      mergeRecursive(tgtItem, srcItem, ancestors);
+      ancestors.pop();
       continue;
     }
 
@@ -61,14 +62,14 @@ const handleArrayMerge = (
   key: string,
   sourceArray: unknown[],
   targetValue: unknown,
-  seen: WeakSet<object>
+  ancestors: object[]
 ): void => {
   if (!Array.isArray(targetValue)) {
     target[key] = [...sourceArray];
     return;
   }
 
-  mergeArrayItemsByIndex(targetValue, sourceArray, seen);
+  mergeArrayItemsByIndex(targetValue, sourceArray, ancestors);
 };
 
 /**
@@ -81,15 +82,15 @@ const handleObjectMerge = (
   key: string,
   sourceObject: Record<string, unknown>,
   targetValue: unknown,
-  seen: WeakSet<object>
+  ancestors: object[]
 ): void => {
   if (isPlainObject(targetValue)) {
-    mergeRecursive(targetValue, sourceObject, seen);
+    mergeRecursive(targetValue, sourceObject, ancestors);
     return;
   }
 
   const newTarget: Record<string, unknown> = {};
-  mergeRecursive(newTarget, sourceObject, seen);
+  mergeRecursive(newTarget, sourceObject, ancestors);
   target[key] = newTarget;
 };
 
@@ -101,7 +102,7 @@ const handleObjectMerge = (
 const mergeRecursive = (
   target: Record<string, unknown>,
   source: Record<string, unknown>,
-  seen: WeakSet<object>
+  ancestors: object[]
 ): void => {
   for (const key of Object.keys(source)) {
     if (UNSAFE_KEYS.has(key)) {
@@ -112,16 +113,18 @@ const mergeRecursive = (
     const targetValue = target[key];
 
     if (Array.isArray(sourceValue)) {
-      if (seen.has(sourceValue)) continue;
-      seen.add(sourceValue);
-      handleArrayMerge(target, key, sourceValue, targetValue, seen);
+      if (ancestors.includes(sourceValue)) continue;
+      ancestors.push(sourceValue);
+      handleArrayMerge(target, key, sourceValue, targetValue, ancestors);
+      ancestors.pop();
       continue;
     }
 
     if (isPlainObject(sourceValue)) {
-      if (seen.has(sourceValue)) continue;
-      seen.add(sourceValue);
-      handleObjectMerge(target, key, sourceValue, targetValue, seen);
+      if (ancestors.includes(sourceValue)) continue;
+      ancestors.push(sourceValue);
+      handleObjectMerge(target, key, sourceValue, targetValue, ancestors);
+      ancestors.pop();
       continue;
     }
 
@@ -135,8 +138,9 @@ const mergeRecursive = (
  * Recursively merge properties from source objects into the target object, mutating it.
  *
  * Nested plain objects are merged recursively, arrays are merged by index (e.g., `[1, 2]` + `[3]` → `[3, 2]`),
- * and class instances (Date, RegExp, custom classes) are assigned by reference. Circular references and
- * prototype pollution attempts (`__proto__`, `constructor`) are safely skipped.
+ * and class instances (Date, RegExp, custom classes) are assigned by reference. Circular references are
+ * detected via ancestor-chain tracking and safely skipped, while shared (non-circular) object references
+ * are merged correctly. Prototype pollution attempts (`__proto__`, `constructor`) are also skipped.
  *
  * @example
  * ```typescript
@@ -155,13 +159,13 @@ const deepMerge = <T extends Record<string, unknown>>(
   target: T,
   ...sources: Array<Record<string, unknown> | undefined | null>
 ): T => {
-  const seen = new WeakSet<object>();
-  seen.add(target);
+  const ancestors: object[] = [target];
 
   for (const source of sources) {
     if (source != null) {
-      seen.add(source);
-      mergeRecursive(target, source, seen);
+      ancestors.push(source);
+      mergeRecursive(target, source, ancestors);
+      ancestors.pop();
     }
   }
 

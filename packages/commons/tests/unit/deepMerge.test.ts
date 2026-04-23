@@ -332,6 +332,26 @@ describe('Function: deepMerge', () => {
       expect(result).toHaveProperty('arr[1]', 2);
     });
 
+    it('skips circular arrays nested inside arrays', () => {
+      // Prepare - outer array contains itself as an element
+      const outer: unknown[] = [1, 2];
+      outer.push(outer); // outer[2] = outer (circular)
+      const target = {
+        arr: [
+          [10, 20],
+          [30, 40],
+          [50, 60],
+        ],
+      };
+      const source = { arr: outer };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess - index 0 and 1 are primitives replacing arrays, index 2 is circular so skipped
+      expect(result).toEqual({ arr: [1, 2, [50, 60]] });
+    });
+
     it('skips array that references an ancestor array', () => {
       // Prepare
       const arr: unknown[] = [];
@@ -553,6 +573,75 @@ describe('Function: deepMerge', () => {
         a: { x: 1 },
         b: { x: 1 },
       });
+    });
+  });
+
+  describe('Source immutability', () => {
+    it('does not mutate sources when merging arrays of objects across multiple sources', () => {
+      // Prepare
+      const source1 = { a: [{ a: 1 }] };
+      const source2 = { a: [{ b: 2 }] };
+
+      // Act
+      const result = deepMerge({}, source1, source2);
+
+      // Assess
+      expect(result).toEqual({ a: [{ a: 1, b: 2 }] });
+      expect(source1).toEqual({ a: [{ a: 1 }] });
+      expect(source2).toEqual({ a: [{ b: 2 }] });
+    });
+
+    it('does not mutate sources when merging nested arrays across multiple sources', () => {
+      // Prepare
+      const src1 = { a: [[1, 2, 3]] };
+      const src2 = { a: [[3, 4]] };
+
+      // Act
+      const result = deepMerge({}, src1, src2);
+
+      // Assess
+      expect(result).toEqual({ a: [[3, 4, 3]] });
+      expect(src1).toEqual({ a: [[1, 2, 3]] });
+      expect(src2).toEqual({ a: [[3, 4]] });
+    });
+
+    it('does not mutate a single source with array of objects merged into empty target', () => {
+      // Prepare
+      const source = { a: [{ x: 1 }, { y: 2 }] };
+
+      // Act
+      const result = deepMerge({}, source);
+      result.a[0].x = 999;
+
+      // Assess
+      expect(source).toEqual({ a: [{ x: 1 }, { y: 2 }] });
+    });
+
+    it('does not mutate sources with plain objects (non-array path)', () => {
+      // Prepare
+      const source1 = { nested: { a: 1 } };
+      const source2 = { nested: { b: 2 } };
+
+      // Act
+      deepMerge({}, source1, source2);
+
+      // Assess
+      expect(source1).toEqual({ nested: { a: 1 } });
+      expect(source2).toEqual({ nested: { b: 2 } });
+    });
+
+    it('does not mutate sources with mixed arrays and nested objects', () => {
+      // Prepare
+      const source1 = { data: [{ items: [{ id: 1 }] }] };
+      const source2 = { data: [{ items: [{ name: 'a' }] }] };
+
+      // Act
+      const result = deepMerge({}, source1, source2);
+
+      // Assess
+      expect(result).toEqual({ data: [{ items: [{ id: 1, name: 'a' }] }] });
+      expect(source1).toEqual({ data: [{ items: [{ id: 1 }] }] });
+      expect(source2).toEqual({ data: [{ items: [{ name: 'a' }] }] });
     });
   });
 

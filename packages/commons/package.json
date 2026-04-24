@@ -44,7 +44,8 @@
     "@aws/lambda-invoke-store": "0.2.4"
   },
   "devDependencies": {
-    "@aws-lambda-powertools/testing-utils": "file:../testing"
+    "@aws-lambda-powertools/testing-utils": "file:../testing",
+    "fast-check": "^4.7.0"
   },
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",

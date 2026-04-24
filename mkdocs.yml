@@ -1,3 +1,6 @@
+hooks:
+  - docs/generate_api_readme.py
+
 site_name: Powertools for AWS Lambda (TypeScript)
 site_description: Powertools for AWS Lambda (TypeScript)
 site_author: Amazon Web Services

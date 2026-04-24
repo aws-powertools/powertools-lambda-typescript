@@ -7,5 +7,5 @@
     "./src/http/index.ts",
     "./src/types/index.ts"
   ],
-  "readme": "README.md"
+  "readme": "./API_README.md"
 }

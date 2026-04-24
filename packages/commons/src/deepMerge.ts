@@ -14,10 +14,87 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
 };
 
 /**
- * Merge source array items into target array by index.
+ * Clone a source item for safe assignment into a target array.
+ * Plain objects are cloned via mergeRecursive, arrays via mergeArrayItemsByIndex,
+ * and primitives (including undefined) are returned as-is.
+ * Returns `{ skip: true }` only when a circular array reference is detected.
  *
- * When both source and target items at the same index are plain objects,
- * they are merged recursively. Otherwise, the source item replaces the target.
+ * @internal
+ */
+const cloneItem = (
+  srcItem: unknown,
+  ancestors: object[]
+): { skip: true } | { skip: false; value: unknown } => {
+  if (isPlainObject(srcItem)) {
+    const cloned: Record<string, unknown> = {};
+    ancestors.push(srcItem);
+    mergeRecursive(cloned, srcItem, ancestors);
+    ancestors.pop();
+
+    return { skip: false, value: cloned };
+  }
+
+  if (Array.isArray(srcItem)) {
+    if (ancestors.includes(srcItem)) return { skip: true };
+    const cloned: unknown[] = [];
+    ancestors.push(srcItem);
+    mergeArrayItemsByIndex(cloned, srcItem, ancestors);
+    ancestors.pop();
+
+    return { skip: false, value: cloned };
+  }
+
+  return { skip: false, value: srcItem };
+};
+
+/**
+ * Merge a single source item into a target array at the given index.
+ *
+ * @internal
+ */
+const mergeArrayItem = (
+  targetArray: unknown[],
+  index: number,
+  srcItem: unknown,
+  ancestors: object[]
+): void => {
+  const tgtItem = targetArray[index];
+  const isSrcPlainObject = isPlainObject(srcItem);
+
+  // Skip circular plain object references
+  if (isSrcPlainObject && ancestors.includes(srcItem)) return;
+
+  // Merge two plain objects recursively
+  if (isSrcPlainObject && isPlainObject(tgtItem)) {
+    ancestors.push(srcItem);
+    mergeRecursive(tgtItem, srcItem, ancestors);
+    ancestors.pop();
+
+    return;
+  }
+
+  // Merge two arrays by index
+  if (Array.isArray(srcItem) && Array.isArray(tgtItem)) {
+    if (!ancestors.includes(srcItem)) {
+      ancestors.push(srcItem);
+      mergeArrayItemsByIndex(tgtItem, srcItem, ancestors);
+      ancestors.pop();
+    }
+
+    return;
+  }
+
+  // Replace with a cloned copy of the source item
+  if (srcItem !== undefined || tgtItem === undefined) {
+    const result = cloneItem(srcItem, ancestors);
+    if (!result.skip) {
+      targetArray[index] = result.value;
+    }
+  }
+};
+
+/**
+ * Merge source array items into target array by index.
  *
  * @internal
  */
@@ -27,28 +104,7 @@ const mergeArrayItemsByIndex = (
   ancestors: object[]
 ): void => {
   for (let i = 0; i < sourceArray.length; i++) {
-    const srcItem = sourceArray[i];
-    const tgtItem = targetArray[i];
-
-    const isSrcPlainObject = isPlainObject(srcItem);
-
-    // Skip objects in the current ancestor chain to prevent circular references
-    if (isSrcPlainObject && ancestors.includes(srcItem)) {
-      continue;
-    }
-
-    // Merge nested plain objects recursively
-    if (isSrcPlainObject && isPlainObject(tgtItem)) {
-      ancestors.push(srcItem);
-      mergeRecursive(tgtItem, srcItem, ancestors);
-      ancestors.pop();
-      continue;
-    }
-
-    // Otherwise, replace the target item with source item
-    if (srcItem !== undefined || tgtItem === undefined) {
-      targetArray[i] = srcItem;
-    }
+    mergeArrayItem(targetArray, i, sourceArray[i], ancestors);
   }
 };
 
@@ -65,7 +121,9 @@ const handleArrayMerge = (
   ancestors: object[]
 ): void => {
   if (!Array.isArray(targetValue)) {
-    target[key] = [...sourceArray];
+    const freshArray: unknown[] = [];
+    mergeArrayItemsByIndex(freshArray, sourceArray, ancestors);
+    target[key] = freshArray;
     return;
   }
 

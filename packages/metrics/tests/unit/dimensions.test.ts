@@ -389,6 +389,35 @@ describe('Working with dimensions', () => {
     );
   });
 
+  it('allows adding a dimension set when it reaches the limit exactly', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    // We start with 1 dimension because service name is already added
+    for (let i = 1; i < MAX_DIMENSION_COUNT - 1; i++) {
+      metrics.addDimension(`dimension-${i}`, 'test');
+    }
+
+    metrics.addDimensions({
+      final: 'test',
+    });
+
+    // Assess
+    metrics.addMetric('foo', MetricUnit.Count, 1);
+    metrics.publishStoredMetrics();
+
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        final: 'test',
+        foo: 1,
+      })
+    );
+  });
+
   it('handles dimension overrides across multiple dimension sets', () => {
     // Prepare
     const metrics = new Metrics({

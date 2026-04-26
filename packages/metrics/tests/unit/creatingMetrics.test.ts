@@ -353,27 +353,23 @@ describe('Creating metrics', () => {
   });
 
   it('clears dimensions and metadata when serializeMetrics throws', () => {
-    // Prepare
-    const metrics = new Metrics({ singleMetric: false });
+    // Prepare: use throwOnEmptyMetrics so serializeMetrics throws naturally
+    // when there are no metrics, without needing to mock
+    const metrics = new Metrics({ singleMetric: false, throwOnEmptyMetrics: true });
     metrics.addDimension('environment', 'test');
     metrics.addMetadata('cost-center', '1234');
-    metrics.addMetric('test', MetricUnit.Count, 1);
 
-    // Mock serializeMetrics to throw on first call, then restore original
-    vi.spyOn(metrics, 'serializeMetrics')
-      .mockImplementationOnce(() => {
-        throw new Error('Serialization failed');
-      });
+    // Act & Assess: publish without metrics throws from serializeMetrics
+    expect(() => metrics.publishStoredMetrics()).toThrowError(
+      'The number of metrics recorded must be higher than zero'
+    );
 
-    // Act & Assess: first publish should throw
-    expect(() => metrics.publishStoredMetrics()).toThrowError('Serialization failed');
-
-    // Now add new metrics and publish again — this should succeed
-    // and NOT include the previously added dimension/metadata (proving they were cleared)
+    // Assess: dimensions and metadata were cleared by the finally block
+    // Add new metrics and publish again — this should succeed
     metrics.addMetric('second', MetricUnit.Count, 2);
     metrics.publishStoredMetrics();
 
-    // Assess: the second EMF is at index 1 (first call threw before logging)
+    // The EMF should contain the new metric but NOT the stale dimension/metadata
     expect(console.log).toHaveEmittedNthEMFWith(
       1,
       expect.objectContaining({
@@ -384,7 +380,6 @@ describe('Creating metrics', () => {
     expect(console.log).toHaveEmittedNthEMFWith(
       1,
       expect.not.objectContaining({
-        test: expect.anything(),
         environment: expect.anything(),
         'cost-center': expect.anything(),
       })

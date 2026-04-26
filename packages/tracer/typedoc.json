@@ -6,5 +6,5 @@
     "./src/middleware/middy.ts",
     "./src/provider/ProviderService.ts"
   ],
-  "readme": "README.md"
+  "readme": "./API_README.md"
 }

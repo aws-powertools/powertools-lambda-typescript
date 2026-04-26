@@ -351,4 +351,43 @@ describe('Creating metrics', () => {
       )
     );
   });
+
+  it('clears dimensions and metadata when serializeMetrics throws', () => {
+    // Prepare
+    const metrics = new Metrics({ singleMetric: false });
+    metrics.addDimension('environment', 'test');
+    metrics.addMetadata('cost-center', '1234');
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Mock serializeMetrics to throw on first call, then restore original
+    vi.spyOn(metrics, 'serializeMetrics')
+      .mockImplementationOnce(() => {
+        throw new Error('Serialization failed');
+      });
+
+    // Act & Assess: first publish should throw
+    expect(() => metrics.publishStoredMetrics()).toThrowError('Serialization failed');
+
+    // Now add new metrics and publish again — this should succeed
+    // and NOT include the previously added dimension/metadata (proving they were cleared)
+    metrics.addMetric('second', MetricUnit.Count, 2);
+    metrics.publishStoredMetrics();
+
+    // Assess: the second EMF is at index 1 (first call threw before logging)
+    expect(console.log).toHaveEmittedNthEMFWith(
+      1,
+      expect.objectContaining({
+        second: 2,
+        service: 'hello-world',
+      })
+    );
+    expect(console.log).toHaveEmittedNthEMFWith(
+      1,
+      expect.not.objectContaining({
+        test: expect.anything(),
+        environment: expect.anything(),
+        'cost-center': expect.anything(),
+      })
+    );
+  });
 });

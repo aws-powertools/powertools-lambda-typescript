@@ -609,8 +609,8 @@ class Metrics extends Utility implements MetricsInterface {
       );
     }
 
-    /* v8 ignore else -- @preserve */
     try {
+      /* v8 ignore else -- @preserve */
       if (!this.disabled) {
         const emfOutput = this.serializeMetrics();
         hasMetrics && this.console.log(JSON.stringify(emfOutput));

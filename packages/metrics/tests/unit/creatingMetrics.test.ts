@@ -219,17 +219,15 @@ describe('Creating metrics', () => {
     metrics.addDimension('request_id', 'abc-123');
     metrics.addMetadata('trace_id', 'xyz-789');
 
-    // Act - first publish throws because no metrics were added
+    // Act
     expect(() => metrics.publishStoredMetrics()).toThrowError(
       'The number of metrics recorded must be higher than zero'
     );
-
-    // Publish again with a metric - dimensions and metadata should be clean
     metrics.setThrowOnEmptyMetrics(false);
     metrics.addMetric('test', MetricUnit.Count, 1);
     metrics.publishStoredMetrics();
 
-    // Assess - leaked state should not appear in the output
+    // Assess
     expect(console.log).toHaveEmittedNthEMFWith(
       1,
       expect.not.objectContaining({

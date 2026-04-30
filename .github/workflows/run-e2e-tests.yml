@@ -36,7 +36,7 @@ jobs:
             packages/batch,
             layers,
           ]
-        version: [20, 22, 24]
+        version: [22, 24]
         arch: [x86_64, arm64]
       fail-fast: false
     steps:

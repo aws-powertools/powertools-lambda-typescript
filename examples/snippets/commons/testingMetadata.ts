@@ -25,7 +25,7 @@ describe('function: getMetadata', async () => {
     vi.stubEnv('AWS_LAMBDA_METADATA_API', '127.0.0.1:1234');
     vi.stubEnv('AWS_LAMBDA_METADATA_TOKEN', 'test-token');
 
-    const payload = { runtime: 'nodejs20.x' };
+    const payload = { runtime: 'nodejs22.x' };
     fetchMock.mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue(payload),

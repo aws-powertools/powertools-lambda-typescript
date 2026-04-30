@@ -209,6 +209,59 @@ describe('Creating metrics', () => {
     );
   });
 
+  it('clears dimensions and metadata even when throwOnEmptyMetrics throws', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: false,
+      namespace: DEFAULT_NAMESPACE,
+    });
+    metrics.setThrowOnEmptyMetrics(true);
+    metrics.addDimension('request_id', 'abc-123');
+    metrics.addMetadata('trace_id', 'xyz-789');
+
+    // Act
+    expect(() => metrics.publishStoredMetrics()).toThrowError(
+      'The number of metrics recorded must be higher than zero'
+    );
+    metrics.setThrowOnEmptyMetrics(false);
+    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics.publishStoredMetrics();
+
+    // Assess
+    expect(console.log).toHaveEmittedNthEMFWith(
+      1,
+      expect.not.objectContaining({
+        request_id: 'abc-123',
+      })
+    );
+    expect(console.log).toHaveEmittedNthEMFWith(
+      1,
+      expect.not.objectContaining({
+        trace_id: 'xyz-789',
+      })
+    );
+  });
+
+  it('does not emit metrics when disabled but still clears state', () => {
+    // Prepare
+    process.env.POWERTOOLS_DEV = undefined;
+    process.env.POWERTOOLS_METRICS_DISABLED = 'true';
+    const metrics = new Metrics({
+      singleMetric: false,
+      namespace: DEFAULT_NAMESPACE,
+    });
+    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics.addDimension('env', 'prod');
+    metrics.addMetadata('trace', '123');
+
+    // Act
+    metrics.publishStoredMetrics();
+
+    // Assess
+    expect(console.log).not.toHaveBeenCalled();
+    expect(metrics.hasStoredMetrics()).toBe(false);
+  });
+
   it('flushes the buffer automatically when the buffer is full', () => {
     // Prepare
     const metrics = new Metrics({

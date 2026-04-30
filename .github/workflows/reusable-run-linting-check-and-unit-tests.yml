@@ -40,7 +40,7 @@ jobs:
       NODE_ENV: dev
     strategy:
       matrix:
-        version: [20, 22, 24]
+        version: [22, 24]
         workspace: [
           "packages/batch",
           "packages/commons",

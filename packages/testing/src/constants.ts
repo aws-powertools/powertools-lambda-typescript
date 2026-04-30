@@ -9,7 +9,6 @@ const defaultRuntime = 'nodejs24x';
  * The AWS Lambda runtimes that are supported by the project.
  */
 const TEST_RUNTIMES = {
-  nodejs20x: Runtime.NODEJS_20_X,
   nodejs22x: Runtime.NODEJS_22_X,
   [defaultRuntime]: Runtime.NODEJS_24_X,
 } as const;

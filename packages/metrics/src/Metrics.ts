@@ -282,7 +282,7 @@ class Metrics extends Utility implements MetricsInterface {
     const newDimensions = this.#sanitizeDimensions(dimensions);
     const currentCount = this.#dimensionsStore.getDimensionCount();
     const newSetCount = Object.keys(newDimensions).length;
-    if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
+    if (currentCount + newSetCount > MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );

@@ -11,7 +11,6 @@
     "test:unit": "vitest --run",
     "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
     "test:unit:types": "echo 'Not Implemented'",
-    "test:e2e:nodejs20x": "echo \"Not implemented\"",
     "test:e2e:nodejs22x": "echo \"Not implemented\"",
     "test:e2e:nodejs24x": "echo \"Not implemented\"",
     "test:e2e": "echo \"Not implemented\"",
@@ -99,7 +98,7 @@
   "dependencies": {
     "@aws-lambda-powertools/commons": "2.33.0",
     "@aws-lambda-powertools/jmespath": "2.33.0",
-    "ajv": "^8.18.0"
+    "ajv": "^8.20.0"
   },
   "keywords": [
     "aws",

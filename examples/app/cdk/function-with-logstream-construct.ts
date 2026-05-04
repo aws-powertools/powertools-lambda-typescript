@@ -43,7 +43,7 @@ type BindTableProps = {
  *
  * The function is created with the following properties:
  * - `handler` set to `handler`
- * - `runtime` set to `Runtime.NODEJS_20_X`
+ * - `runtime` set to `Runtime.NODEJS_22_X`
  * - `tracing` set to `Tracing.ACTIVE`
  * - `architecture` set to `Architecture.ARM_64`
  * - `timeout` set to `Duration.seconds(30)`
@@ -60,7 +60,7 @@ export class FunctionWithLogGroup extends NodejsFunction {
     super(scope, id, {
       ...props,
       handler: 'handler',
-      runtime: Runtime.NODEJS_20_X,
+      runtime: Runtime.NODEJS_22_X,
       tracing: Tracing.ACTIVE,
       architecture: Architecture.ARM_64,
       timeout: Duration.seconds(30),

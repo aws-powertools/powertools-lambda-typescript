@@ -14,7 +14,6 @@
     "test:unit": "vitest --run",
     "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
     "test:unit:types": "echo 'Not Implemented'",
-    "test:e2e:nodejs20x": "RUNTIME=nodejs20x vitest --run tests/e2e",
     "test:e2e:nodejs22x": "RUNTIME=nodejs22x vitest --run tests/e2e",
     "test:e2e:nodejs24x": "RUNTIME=nodejs24x vitest --run tests/e2e",
     "test:e2e": "vitest --run tests/e2e",
@@ -91,6 +90,6 @@
     "@aws-lambda-powertools/parser": "2.33.0",
     "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@aws-sdk/client-sqs": "^3.1014.0",
-    "zod": "^4.3.6"
+    "zod": "^4.4.1"
   }
 }

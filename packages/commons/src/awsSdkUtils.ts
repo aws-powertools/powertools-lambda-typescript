@@ -38,7 +38,7 @@ const isSdkClient = (client: unknown): client is SdkClient =>
  * The middleware will append the provided feature name and the current version of
  * the Powertools for AWS Lambda library to the user agent string.
  *
- * @example "PT/Tracer/2.1.0 PTEnv/nodejs20x"
+ * @example "PT/Tracer/2.1.0 PTEnv/nodejs22x"
  *
  * @param feature The feature name to be added to the user agent
  *

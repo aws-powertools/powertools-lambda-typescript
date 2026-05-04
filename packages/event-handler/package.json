@@ -14,7 +14,6 @@
     "test:unit": "vitest --run tests/unit",
     "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
     "test:unit:types": "vitest --typecheck --run tests/types",
-    "test:e2e:nodejs20x": "RUNTIME=nodejs20x vitest run tests/e2e",
     "test:e2e:nodejs22x": "RUNTIME=nodejs22x vitest run tests/e2e",
     "test:e2e:nodejs24x": "RUNTIME=nodejs24x vitest run tests/e2e",
     "test:e2e": "vitest run tests/e2e",

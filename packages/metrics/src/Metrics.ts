@@ -609,15 +609,16 @@ class Metrics extends Utility implements MetricsInterface {
       );
     }
 
-    /* v8 ignore else -- @preserve */
-    if (!this.disabled) {
-      const emfOutput = this.serializeMetrics();
-      hasMetrics && this.console.log(JSON.stringify(emfOutput));
+    try {
+      if (!this.disabled) {
+        const emfOutput = this.serializeMetrics();
+        hasMetrics && this.console.log(JSON.stringify(emfOutput));
+      }
+    } finally {
+      this.clearMetrics();
+      this.clearDimensions();
+      this.clearMetadata();
     }
-
-    this.clearMetrics();
-    this.clearDimensions();
-    this.clearMetadata();
     return this;
   }
 

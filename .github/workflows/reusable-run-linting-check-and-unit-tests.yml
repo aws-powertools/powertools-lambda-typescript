@@ -44,6 +44,7 @@ jobs:
         workspace: [
           "packages/batch",
           "packages/commons",
+          "packages/data-masking",
           "packages/event-handler",
           "packages/idempotency",
           "packages/jmespath",

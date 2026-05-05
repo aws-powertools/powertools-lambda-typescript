@@ -34,6 +34,7 @@ jobs:
             packages/event-handler,
             packages/tracer,
             packages/batch,
+            packages/data-masking,
             layers,
           ]
         version: [22, 24]

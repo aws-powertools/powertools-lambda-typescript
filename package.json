@@ -56,7 +56,7 @@
     "@vitest/coverage-v8": "^4.1.5",
     "esbuild": "^0.28.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
+    "lint-staged": "^17.0.2",
     "markdownlint-cli2": "^0.22.1",
     "middy5": "npm:@middy/core@^5.5.1",
     "middy6": "npm:@middy/core@^6.4.5",

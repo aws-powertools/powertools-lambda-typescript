@@ -271,8 +271,8 @@ describe('Buffer logs', () => {
     logger.critical('This is a critical message');
 
     // Assess
-    expect(console.debug).toBeCalledTimes(1);
-    expect(console.error).toBeCalledTimes(1); // critical uses console.error
+    expect(console.debug).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledTimes(1); // critical uses console.error
   });
 
   it('does not flush on critical logs when flushOnErrorLog is disabled', () => {
@@ -287,8 +287,8 @@ describe('Buffer logs', () => {
     logger.critical('This is a critical message');
 
     // Assess
-    expect(console.debug).toBeCalledTimes(0);
-    expect(console.error).toBeCalledTimes(1); // critical uses console.error
+    expect(console.debug).toHaveBeenCalledTimes(0);
+    expect(console.error).toHaveBeenCalledTimes(1); // critical uses console.error
   });
 
   it('passes down the same buffer config to child loggers', () => {

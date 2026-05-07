@@ -259,6 +259,38 @@ describe('Buffer logs', () => {
     expect(console.error).toBeCalledTimes(1);
   });
 
+  it('it flushes the buffer when a critical log is logged', () => {
+    // Prepare
+    const logger = new Logger({
+      logLevel: LogLevel.ERROR,
+      logBufferOptions: { enabled: true },
+    });
+
+    // Act
+    logger.debug('This is a log message');
+    logger.critical('This is a critical message');
+
+    // Assess
+    expect(console.debug).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledTimes(1); // critical uses console.error
+  });
+
+  it('does not flush on critical logs when flushOnErrorLog is disabled', () => {
+    // Prepare
+    const logger = new Logger({
+      logLevel: LogLevel.ERROR,
+      logBufferOptions: { enabled: true, flushOnErrorLog: false },
+    });
+
+    // Act
+    logger.debug('This is a log message');
+    logger.critical('This is a critical message');
+
+    // Assess
+    expect(console.debug).toHaveBeenCalledTimes(0);
+    expect(console.error).toHaveBeenCalledTimes(1); // critical uses console.error
+  });
+
   it('passes down the same buffer config to child loggers', () => {
     // Prepare
     const logger = new Logger({

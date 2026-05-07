@@ -408,9 +408,6 @@ class Logger extends Utility implements LoggerInterface {
    * @param extraInput - The extra input to log.
    */
   public error(input: LogItemMessage, ...extraInput: LogItemExtraInput): void {
-    if (this.#bufferConfig.enabled && this.#bufferConfig.flushOnErrorLog) {
-      this.flushBuffer();
-    }
     this.processLogItem(LogLevelThreshold.ERROR, input, extraInput);
   }
 
@@ -1063,6 +1060,15 @@ class Logger extends Utility implements LoggerInterface {
     input: LogItemMessage,
     extraInput: LogItemExtraInput
   ): void {
+    if (
+      this.#bufferConfig.enabled &&
+      this.#bufferConfig.flushOnErrorLog &&
+      logLevel >= LogLevelThreshold.ERROR &&
+      logLevel < LogLevelThreshold.SILENT
+    ) {
+      this.flushBuffer();
+    }
+
     const traceId = getXRayTraceIdFromEnv();
     if (traceId !== undefined && this.shouldBufferLog(traceId, logLevel)) {
       try {

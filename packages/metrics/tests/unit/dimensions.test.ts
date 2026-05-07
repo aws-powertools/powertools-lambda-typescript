@@ -361,6 +361,42 @@ describe('Working with dimensions', () => {
     );
   });
 
+  it('throws when setDefaultDimensions would exceed the limit with existing regular dimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    for (let i = 1; i < MAX_DIMENSION_COUNT - 1; i++) {
+      metrics.addDimension(`regular-${i}`, 'test');
+    }
+
+    // Assess
+    expect(() =>
+      metrics.setDefaultDimensions({ 'new-default': 'test' })
+    ).toThrow(
+      `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+    );
+  });
+
+  it('allows overriding existing default dimension keys without triggering the limit', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    for (let i = 1; i < MAX_DIMENSION_COUNT - 1; i++) {
+      metrics.setDefaultDimensions({ [`dimension-${i}`]: 'test' });
+    }
+
+    // Assess
+    expect(() =>
+      metrics.setDefaultDimensions({ 'dimension-1': 'updated' })
+    ).not.toThrow();
+  });
+
   it('throws when adding dimension sets would exceed the limit', () => {
     // Prepare
     const metrics = new Metrics({

@@ -134,9 +134,9 @@ gitdb==4.0.11 \
     --hash=sha256:81a3407ddd2ee8df444cbacea00e2d038e40150acfa3001696fe0dcf1d3adfa4 \
     --hash=sha256:bf5421126136d6d0af55bc1e7c1af1c397a34f5b7bd79e776cd3e89785c2b04b
     # via gitpython
-gitpython==3.1.48 \
-    --hash=sha256:737698b05889cca0f9aba7054d796620df2092c68926ee1470e5c7f5ac886680 \
-    --hash=sha256:b7c49ff4a49946fce38ac84116efa311b15e7dad06dc3787fc9e206bf9ef75e1
+gitpython==3.1.49 \
+    --hash=sha256:024b0422d7f84d15cd794844e029ffebd4c5d42a7eb9b936b458697ef550a02c \
+    --hash=sha256:42f9399c9eb33fc581014bedd76049dfbaf6375aa2a5754575966387280315e1
     # via mkdocs-git-revision-date-plugin
 idna==3.10 \
     --hash=sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9 \

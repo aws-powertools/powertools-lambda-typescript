@@ -433,7 +433,7 @@ describe('Working with dimensions', () => {
     expect(() => metrics.addDimension('dimension-1', 'updated')).not.toThrow();
   });
 
-  it('allows overriding existing default dimensions via addDimensions without triggering the limit', () => {
+  it('allows addDimensions to override existing default dimension keys without triggering the limit', () => {
     // Prepare
     const metrics = new Metrics({
       singleMetric: true,
@@ -464,8 +464,6 @@ describe('Working with dimensions', () => {
 
     // Act
     const newDimensionSet: Record<string, string> = {};
-    // We start with 2 dimensions because the default dimension & service name are already added
-    // We need 28 more to exceed the limit of 29 (2 + 28 = 30 > 29)
     for (let i = 0; i < 28; i++) {
       newDimensionSet[`dimension-extra-${i}`] = 'test';
     }

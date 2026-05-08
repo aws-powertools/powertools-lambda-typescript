@@ -249,11 +249,15 @@ class Metrics extends Utility implements MetricsInterface {
     }
     const dimensions = this.#dimensionsStore.getDimensions();
     const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
+    // addDimension only mutates the regular dimensions array, so we don't need to project against dimensionSets
+    // (each set is an independent published array).
     const projectedSize = new Set([
       ...Object.keys(defaultDimensions),
       ...Object.keys(dimensions),
       name,
     ]).size;
+    // MAX_DIMENSION_COUNT is 29 (EMF 30 dimension cap - 1 reserved for service).
+    // Thus exactly 29 custom dimensions are allowed, and we throw only if strictly greater.
     if (projectedSize > MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
@@ -286,6 +290,7 @@ class Metrics extends Utility implements MetricsInterface {
   public addDimensions(dimensions: Dimensions): this {
     const newDimensions = this.#sanitizeDimensions(dimensions);
     const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
+    // addDimensions creates a new independent dimensionSet array, so we only project against defaultDimensions.
     const projectedSize = new Set([
       ...Object.keys(defaultDimensions),
       ...Object.keys(newDimensions),
@@ -813,10 +818,13 @@ class Metrics extends Utility implements MetricsInterface {
       ...Object.keys(currentDefaultDimensions),
       ...Object.keys(newDimensions),
     ];
-    let maxProjectedSize = new Set([
-      ...combinedDefaultKeys,
-      ...Object.keys(currentDimensions),
-    ]).size;
+    const currentDimensionsKeys = Object.keys(currentDimensions);
+    // The main array is only emitted if currentDimensions has keys.
+    // When empty, maxProjectedSize safely defaults to just the combinedDefaultKeys length to guard against phantom arrays.
+    let maxProjectedSize =
+      currentDimensionsKeys.length > 0
+        ? new Set([...combinedDefaultKeys, ...currentDimensionsKeys]).size
+        : new Set(combinedDefaultKeys).size;
 
     for (const dimensionSet of dimensionSets) {
       const setSize = new Set([

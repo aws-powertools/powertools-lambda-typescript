@@ -247,13 +247,18 @@ class Metrics extends Utility implements MetricsInterface {
       );
       return this;
     }
-    if (MAX_DIMENSION_COUNT <= this.#dimensionsStore.getDimensionCount()) {
+    const dimensions = this.#dimensionsStore.getDimensions();
+    const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
+    const projectedSize = new Set([
+      ...Object.keys(defaultDimensions),
+      ...Object.keys(dimensions),
+      name,
+    ]).size;
+    if (projectedSize > MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
     }
-    const dimensions = this.#dimensionsStore.getDimensions();
-    const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
     if (
       Object.hasOwn(dimensions, name) ||
       Object.hasOwn(defaultDimensions, name)
@@ -280,9 +285,12 @@ class Metrics extends Utility implements MetricsInterface {
    */
   public addDimensions(dimensions: Dimensions): this {
     const newDimensions = this.#sanitizeDimensions(dimensions);
-    const currentCount = this.#dimensionsStore.getDimensionCount();
-    const newSetCount = Object.keys(newDimensions).length;
-    if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
+    const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
+    const projectedSize = new Set([
+      ...Object.keys(defaultDimensions),
+      ...Object.keys(newDimensions),
+    ]).size;
+    if (projectedSize > MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
@@ -798,13 +806,29 @@ class Metrics extends Utility implements MetricsInterface {
     const newDimensions = this.#sanitizeDimensions(dimensions);
     const currentDefaultDimensions =
       this.#dimensionsStore.getDefaultDimensions();
-    const newKeysCount = Object.keys(newDimensions).filter(
-      (key) => !Object.hasOwn(currentDefaultDimensions, key)
-    ).length;
-    if (
-      this.#dimensionsStore.getDimensionCount() + newKeysCount >=
-      MAX_DIMENSION_COUNT
-    ) {
+    const currentDimensions = this.#dimensionsStore.getDimensions();
+    const dimensionSets = this.#dimensionsStore.getDimensionSets();
+
+    const combinedDefaultKeys = [
+      ...Object.keys(currentDefaultDimensions),
+      ...Object.keys(newDimensions),
+    ];
+    let maxProjectedSize = new Set([
+      ...combinedDefaultKeys,
+      ...Object.keys(currentDimensions),
+    ]).size;
+
+    for (const dimensionSet of dimensionSets) {
+      const setSize = new Set([
+        ...combinedDefaultKeys,
+        ...Object.keys(dimensionSet),
+      ]).size;
+      if (setSize > maxProjectedSize) {
+        maxProjectedSize = setSize;
+      }
+    }
+
+    if (maxProjectedSize > MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );

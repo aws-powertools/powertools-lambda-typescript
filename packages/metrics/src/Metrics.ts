@@ -320,6 +320,10 @@ class Metrics extends Utility implements MetricsInterface {
    * @param value - The value of the metadata
    */
   public addMetadata(key: string, value: string): this {
+    if (this.#metricsStore.getMetric(key) !== undefined)
+      throw new Error(
+        `Metadata key "${key}" conflicts with an existing metric name and would overwrite it in the EMF output`
+      );
     this.#metadataStore.set(key, value);
     return this;
   }
@@ -1065,6 +1069,16 @@ class Metrics extends Utility implements MetricsInterface {
         `Invalid metric resolution '${resolution}', expected either option: ${Object.values(
           MetricResolutions
         ).join(',')}`
+      );
+
+    const dimensionKeys = new Set([
+      ...Object.keys(this.#dimensionsStore.getDimensions()),
+      ...Object.keys(this.#dimensionsStore.getDefaultDimensions()),
+      ...this.#dimensionsStore.getDimensionSets().flatMap(Object.keys),
+    ]);
+    if (dimensionKeys.has(name))
+      throw new Error(
+        `Metric name "${name}" conflicts with an existing dimension key and would overwrite it in the EMF output`
       );
 
     if (this.#metricsStore.getMetricsCount() >= MAX_METRICS_SIZE) {

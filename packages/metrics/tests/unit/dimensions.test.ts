@@ -647,4 +647,63 @@ describe('Working with dimensions', () => {
       expect.not.objectContaining({ [name]: value })
     );
   });
+
+  it('throws when a metric name conflicts with an existing dimension key', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+    metrics.addDimension('environment', 'prod');
+
+    // Act & Assess
+    expect(() =>
+      metrics.addMetric('environment', MetricUnit.Count, 1)
+    ).toThrowError(
+      'Metric name "environment" conflicts with an existing dimension key'
+    );
+  });
+
+  it('throws when a metric name conflicts with an existing default dimension key', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: { environment: 'prod' },
+    });
+
+    // Act & Assess
+    expect(() =>
+      metrics.addMetric('environment', MetricUnit.Count, 1)
+    ).toThrowError(
+      'Metric name "environment" conflicts with an existing dimension key'
+    );
+  });
+
+  it('throws when a metric name conflicts with the built-in service dimension', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act & Assess
+    expect(() =>
+      metrics.addMetric('service', MetricUnit.Count, 1)
+    ).toThrowError(
+      'Metric name "service" conflicts with an existing dimension key'
+    );
+  });
+
+  it('throws when a metric name conflicts with a key added via addDimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+    metrics.addDimensions({ environment: 'prod' });
+
+    // Act & Assess
+    expect(() =>
+      metrics.addMetric('environment', MetricUnit.Count, 1)
+    ).toThrowError(
+      'Metric name "environment" conflicts with an existing dimension key'
+    );
+  });
 });

@@ -86,4 +86,17 @@ describe('Working with metadata', () => {
       expect.not.objectContaining({ 'cost-center': '1234' })
     );
   });
+
+  it('throws when a metadata key conflicts with an existing metric name', () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    metrics.addMetric('request_count', MetricUnit.Count, 42);
+
+    // Act & Assess
+    expect(() =>
+      metrics.addMetadata('request_count', 'not-a-number')
+    ).toThrowError(
+      'Metadata key "request_count" conflicts with an existing metric name'
+    );
+  });
 });

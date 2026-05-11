@@ -475,6 +475,22 @@ describe('Working with dimensions', () => {
     );
   });
 
+  it('allows setDefaultDimensions to evaluate maxProjectedSize correctly when dimensionSets are smaller', () => {
+    // Prepare
+    const metrics = new Metrics({ singleMetric: true });
+
+    // Act
+    metrics.addDimension('dim1', 'val1');
+    metrics.addDimension('dim2', 'val2');
+    metrics.addDimensions({ setDim1: 'val3' });
+
+    // Assess
+    // This triggers setDefaultDimensions logic where setSize (3) < maxProjectedSize (4), covering the false branch.
+    expect(() =>
+      metrics.setDefaultDimensions({ newDefault: 'val4' })
+    ).not.toThrow();
+  });
+
   it('handles dimension overrides across multiple dimension sets', () => {
     // Prepare
     const metrics = new Metrics({

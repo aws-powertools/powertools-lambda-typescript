@@ -66,7 +66,7 @@ It's not mandatory to validate both the inbound and outbound payloads. You can e
 If you are using Middy.js, you can use the `validator` middleware to validate the incoming event and response payload.
 
 ??? note "A note on Middy.js"
-    We officially support versions of Middy.js `v4.x` through `v6.x`
+    We officially support versions of Middy.js `v4.x` through `v7.x`
 
     Check their docs to learn more about [Middy.js and its middleware stack](https://middy.js.org/docs/intro/getting-started){target="_blank"} as well as [best practices when working with Powertools for AWS](https://middy.js.org/docs/integrations/lambda-powertools#best-practices){target="_blank"}.
 

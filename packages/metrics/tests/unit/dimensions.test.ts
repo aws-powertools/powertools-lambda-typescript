@@ -349,10 +349,8 @@ describe('Working with dimensions', () => {
       singleMetric: true,
     });
 
-    // Act
-    // We start with 1 dimension because service name is already added
-    for (let i = 1; i < MAX_DIMENSION_COUNT; i++) {
-      metrics.setDefaultDimensions({ [`dimension-${i}`]: 'test' });
+    for (let i = 2; i < MAX_DIMENSION_COUNT - 1; i++) {
+      metrics.addDimension(`dimension-${i}`, 'test');
     }
 
     // Assess
@@ -386,10 +384,9 @@ describe('Working with dimensions', () => {
       singleMetric: true,
     });
 
-    // Act
-    const newDimensionSet: Record<string, string> = {};
-    for (let i = 0; i < 28; i++) {
-      newDimensionSet[`dimension-extra-${i}`] = 'test';
+    for (let i = 2; i < MAX_DIMENSION_COUNT - 1; i++) {
+      metricsA.addDimension(`dimension-${i}`, 'test');
+      metricsB.addDimension(`dimension-${i}`, 'test');
     }
     metrics.addDimensions(newDimensionSet);
 
@@ -412,10 +409,9 @@ describe('Working with dimensions', () => {
       metrics.setDefaultDimensions({ [`dimension-${i}`]: 'test' });
     }
 
-    // Assess
-    expect(() =>
-      metrics.setDefaultDimensions({ 'dimension-1': 'updated' })
-    ).not.toThrow();
+    expect(() => metrics.setDefaultDimensions({ extra: 'test' })).toThrowError(
+      'The number of metric dimensions must be lower than 29'
+    );
   });
 
   it('allows overriding existing regular dimensions via addDimension without triggering the limit', () => {
@@ -429,8 +425,11 @@ describe('Working with dimensions', () => {
       metrics.addDimension(`dimension-${i}`, 'test');
     }
 
-    // Assess
-    expect(() => metrics.addDimension('dimension-1', 'updated')).not.toThrow();
+    expect(() =>
+      metrics.setDefaultDimensions({ 'new-default': 'test' })
+    ).toThrow(
+      `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+    );
   });
 
   it('allows addDimensions to override existing default dimension keys without triggering the limit', () => {

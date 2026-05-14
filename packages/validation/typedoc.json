@@ -7,5 +7,5 @@
     "./src/decorator.ts",
     "./src/errors.ts"
   ],
-  "readme": "README.md"
+  "readme": "./API_README.md"
 }

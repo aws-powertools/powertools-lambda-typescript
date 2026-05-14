@@ -9,5 +9,5 @@
     "./src/persistence/CachePersistenceLayer.ts",
     "./src/types/CachePersistence.ts"
   ],
-  "readme": "README.md"
+  "readme": "./API_README.md"
 }

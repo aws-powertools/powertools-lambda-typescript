@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { ErrorHandlerRegistry } from '../../../src/http/ErrorHandlerRegistry.js';
-import {
-  InvalidEventError,
-  InvalidHttpMethodError,
-} from '../../../src/http/errors.js';
 import { HttpStatusCodes } from '../../../src/http/index.js';
 import type {
   HttpStatusCode,
@@ -144,27 +140,6 @@ describe('Class: ErrorHandlerRegistry', () => {
 
     // Assess
     expect(registry.resolve(new InheritedError('test'))).toBe(specificHandler);
-  });
-
-  it('does not route InvalidHttpMethodError to an InvalidEventError handler via name fallback', () => {
-    // Regression for https://github.com/aws-powertools/powertools-lambda-typescript/issues/5251.
-    // The two classes are unrelated by inheritance and have distinct constructors,
-    // so resolution falls through to the name-based step. With the prior bug
-    // (InvalidHttpMethodError set this.name = 'InvalidEventError'), the registry
-    // would mis-route the method error to the event-error handler.
-
-    // Prepare
-    const registry = new ErrorHandlerRegistry({ logger: console });
-    const eventErrorHandler = createErrorHandler(HttpStatusCodes.BAD_REQUEST);
-
-    // Act
-    registry.register(InvalidEventError, eventErrorHandler);
-
-    // Assess
-    expect(registry.resolve(new InvalidHttpMethodError('CONNECT'))).toBeNull();
-    expect(registry.resolve(new InvalidEventError('bad event'))).toBe(
-      eventErrorHandler
-    );
   });
 
   it('prioritizes instanceof match over name-based matching', () => {

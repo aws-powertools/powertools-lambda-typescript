@@ -339,15 +339,24 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
  * @param path - The path to resolve
  * @param prefix - The prefix to prepend to the path; trailing slashes are ignored
  */
+// Linear-time trailing-slash strip. Avoids `replace(/\/+$/, '')` to keep
+// behavior linear on attacker-controlled request paths.
+export const stripTrailingSlashes = (input: string): string => {
+  let end = input.length;
+  while (end > 0 && input[end - 1] === '/') end--;
+  return end === input.length ? input : input.slice(0, end);
+};
+
 export const resolvePrefixedPath = (path: Path, prefix?: Path): Path => {
   if (!prefix) return path;
-  const prefixStr = getPathString(prefix).replace(/\/+$/, '');
+  const prefixStr = stripTrailingSlashes(getPathString(prefix));
   if (isRegExp(prefix) || isRegExp(path)) {
     const pathStr = getPathString(path);
     const sep = pathStr.startsWith('/') ? '' : '/';
     return new RegExp(`${prefixStr}${sep}${pathStr}`);
   }
-  return `${prefixStr}${path}`.replace(/\/$/, '') as Path;
+  const joined = `${prefixStr}${path}`;
+  return (joined.endsWith('/') ? joined.slice(0, -1) : joined) as Path;
 };
 
 export const HttpResponseStream =

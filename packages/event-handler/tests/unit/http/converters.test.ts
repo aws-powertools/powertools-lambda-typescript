@@ -1,5 +1,6 @@
 import { Readable } from 'node:stream';
 import { describe, expect, it } from 'vitest';
+import { MULTI_VALUE_HEADERS_ALLOWLIST } from '../../../src/http/constants.js';
 import {
   bodyToNodeStream,
   webHeadersToApiGatewayHeaders,
@@ -1460,6 +1461,25 @@ describe('Converters', () => {
           'x-custom-string': 'foo, bar, baz',
         },
         multiValueHeaders: {},
+      });
+    });
+
+    it.each(
+      Array.from(MULTI_VALUE_HEADERS_ALLOWLIST)
+    )('splits allowed comma-separated header: %s', (headerName) => {
+      // Prepare
+      const headers = new Headers();
+      headers.set(headerName, 'value1, value2, value3');
+
+      // Act
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
+
+      // Assess
+      expect(result).toEqual({
+        headers: {},
+        multiValueHeaders: {
+          [headerName]: ['value1', 'value2', 'value3'],
+        },
       });
     });
 

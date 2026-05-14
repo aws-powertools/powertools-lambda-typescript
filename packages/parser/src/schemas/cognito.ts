@@ -138,7 +138,7 @@ const PreAuthenticationTriggerSchema = CognitoTriggerBaseSchema.extend({
   triggerSource: z.literal('PreAuthentication_Authentication'),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
-    validationData: z.record(z.string(), z.string()).optional(),
+    validationData: z.record(z.string(), z.string()).optional().nullable(),
     userNotFound: z.boolean().optional(),
   }),
   response: z.object({}),

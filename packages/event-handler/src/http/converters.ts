@@ -18,7 +18,12 @@ import type {
   V1Headers,
   WebResponseToProxyResultOptions,
 } from '../types/http.js';
-import { HttpStatusCodes, HttpStatusText, HttpVerbs } from './constants.js';
+import {
+  HttpStatusCodes,
+  HttpStatusText,
+  HttpVerbs,
+  MULTI_VALUE_HEADERS_ALLOWLIST,
+} from './constants.js';
 import { InvalidHttpMethodError } from './errors.js';
 import {
   isALBEvent,
@@ -216,26 +221,6 @@ const proxyEventToWebRequest = (
   }
   return proxyEventV1ToWebRequest(event);
 };
-
-/**
- * Known headers that are defined as a comma-separated list of values (1#element).
- * These headers can be safely split by commas to populate multiValueHeaders.
- */
-const MULTI_VALUE_HEADERS_ALLOWLIST = new Set([
-  'accept',
-  'accept-encoding',
-  'accept-language',
-  'cache-control',
-  'vary',
-  'connection',
-  'allow',
-  'x-forwarded-for',
-  'te',
-  'expect',
-  'transfer-encoding',
-  'content-encoding',
-  'content-language',
-]);
 
 /**
  * Converts Web API Headers to API Gateway V1 headers format.

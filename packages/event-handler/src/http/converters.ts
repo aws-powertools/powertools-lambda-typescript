@@ -218,6 +218,26 @@ const proxyEventToWebRequest = (
 };
 
 /**
+ * Known headers that are defined as a comma-separated list of values (1#element).
+ * These headers can be safely split by commas to populate multiValueHeaders.
+ */
+const MULTI_VALUE_HEADERS_ALLOWLIST = new Set([
+  'accept',
+  'accept-encoding',
+  'accept-language',
+  'cache-control',
+  'vary',
+  'connection',
+  'allow',
+  'x-forwarded-for',
+  'te',
+  'expect',
+  'transfer-encoding',
+  'content-encoding',
+  'content-language',
+]);
+
+/**
  * Converts Web API Headers to API Gateway V1 headers format.
  * Splits multi-value headers by comma or semicolon and organizes them into separate objects.
  *
@@ -245,10 +265,20 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
       continue;
     }
 
-    const values = value.split(',').map((v) => v.trimStart());
+    const lowerKey = key.toLowerCase();
 
-    if (values.length > 1) {
-      multiValueHeaders[key] = values;
+    // Only split on comma if the header is an allowed multi-value header or starts with access-control-
+    if (
+      MULTI_VALUE_HEADERS_ALLOWLIST.has(lowerKey) ||
+      lowerKey.startsWith('access-control-')
+    ) {
+      const values = value.split(',').map((v) => v.trimStart());
+
+      if (values.length > 1) {
+        multiValueHeaders[key] = values;
+      } else {
+        headers[key] = value;
+      }
     } else {
       headers[key] = value;
     }

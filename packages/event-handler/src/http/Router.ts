@@ -342,7 +342,10 @@ class Router<TEnv extends Env = Env> {
 
     try {
       const method = req.method as HttpMethod;
-      const path = new URL(req.url).pathname as Path;
+      const rawPath = new URL(req.url).pathname;
+      const path = (
+        rawPath === '/' ? rawPath : rawPath.replace(/\/+$/, '')
+      ) as Path;
 
       const route = this.routeRegistry.resolve(method, path);
 

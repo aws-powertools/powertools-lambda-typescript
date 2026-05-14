@@ -18,7 +18,12 @@ import type {
   V1Headers,
   WebResponseToProxyResultOptions,
 } from '../types/http.js';
-import { HttpStatusCodes, HttpStatusText, HttpVerbs } from './constants.js';
+import {
+  HttpStatusCodes,
+  HttpStatusText,
+  HttpVerbs,
+  MULTI_VALUE_HEADERS_ALLOWLIST,
+} from './constants.js';
 import { InvalidHttpMethodError } from './errors.js';
 import {
   isALBEvent,
@@ -245,10 +250,20 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
       continue;
     }
 
-    const values = value.split(',').map((v) => v.trimStart());
+    const lowerKey = key.toLowerCase();
 
-    if (values.length > 1) {
-      multiValueHeaders[key] = values;
+    // Only split on comma if the header is an allowed multi-value header or starts with access-control-
+    if (
+      MULTI_VALUE_HEADERS_ALLOWLIST.has(lowerKey) ||
+      lowerKey.startsWith('access-control-')
+    ) {
+      const values = value.split(',').map((v) => v.trimStart());
+
+      if (values.length > 1) {
+        multiValueHeaders[key] = values;
+      } else {
+        headers[key] = value;
+      }
     } else {
       headers[key] = value;
     }

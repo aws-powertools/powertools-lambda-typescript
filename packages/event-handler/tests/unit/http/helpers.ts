@@ -48,8 +48,8 @@ export const createTestEvent = (
 });
 
 const createAlbBody = (httpMethod: string, body: JSONValue): string | null => {
-  // ALB events represent GET and PATCH request bodies as empty strings
-  if (httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.PATCH) {
+  // ALB events represent GET and HEAD request bodies as empty strings
+  if (httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.HEAD) {
     return '';
   }
   if (body === null) {

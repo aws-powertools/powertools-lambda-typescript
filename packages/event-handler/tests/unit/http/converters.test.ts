@@ -1,6 +1,9 @@
 import { Readable } from 'node:stream';
 import { describe, expect, it } from 'vitest';
-import { MULTI_VALUE_HEADERS_ALLOWLIST } from '../../../src/http/constants.js';
+import {
+  HttpVerbs,
+  MULTI_VALUE_HEADERS_ALLOWLIST,
+} from '../../../src/http/constants.js';
 import {
   bodyToNodeStream,
   webHeadersToApiGatewayHeaders,
@@ -468,6 +471,45 @@ describe('Converters', () => {
       expect(request.method).toBe('POST');
       expect(request.text()).resolves.toBe('{"key":"value"}');
       expect(request.headers.get('Content-Type')).toBe('application/json');
+    });
+
+    it('handles PATCH request with string body', async () => {
+      // Prepare
+      const event = createTestALBEvent(
+        '/test',
+        HttpVerbs.PATCH,
+        { 'Content-Type': 'application/json' },
+        { key: 'value' }
+      );
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('PATCH');
+      expect(await request.text()).toBe('{"key":"value"}');
+      expect(request.headers.get('Content-Type')).toBe('application/json');
+    });
+
+    it('handles HEAD request without a body', () => {
+      // Prepare
+      const event = createTestALBEvent(
+        '/test',
+        HttpVerbs.HEAD,
+        {},
+        {
+          key: 'value',
+        }
+      );
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('HEAD');
+      expect(request.body).toBe(null);
     });
 
     it('decodes base64 encoded body', () => {

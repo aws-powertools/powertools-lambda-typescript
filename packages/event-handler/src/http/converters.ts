@@ -182,9 +182,9 @@ const albEventToWebRequest = (event: ALBEvent): Request => {
   const url = new URL(path, `${protocol}://${hostname}/`);
   populateV1QueryParams(url, event);
 
-  // ALB events represent GET and PATCH request bodies as empty strings
+  // ALB events represent GET and HEAD request bodies as empty strings
   const body =
-    httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.PATCH
+    httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.HEAD
       ? null
       : createBody(event.body ?? null, event.isBase64Encoded);
 

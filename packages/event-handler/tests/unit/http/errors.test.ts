@@ -84,6 +84,7 @@ describe('HTTP Error Classes', () => {
     expect(error.message).toBe(customMessage);
     expect(error.statusCode).toBe(statusCode);
     expect(error.errorType).toBe(errorType);
+    expect(error.name).toBe(errorType);
   });
 
   describe('toJSON', () => {

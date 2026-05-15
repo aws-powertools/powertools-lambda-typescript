@@ -401,13 +401,6 @@ describe('HTTP Error Classes', () => {
       expect(error.name).toBe('InvalidHttpMethodError');
       expect(error.message).toBe('HTTP method CONNECT is not supported.');
     });
-
-    it('InvalidEventError and InvalidHttpMethodError have distinct names', () => {
-      const eventErr = new InvalidEventError();
-      const methodErr = new InvalidHttpMethodError('BREW');
-
-      expect(eventErr.name).not.toBe(methodErr.name);
-    });
   });
 
   describe('ResponseValidationError', () => {

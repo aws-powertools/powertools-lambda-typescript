@@ -203,4 +203,40 @@ describe('CORS Middleware', () => {
       corsConfig.maxAge.toString()
     );
   });
+
+  it('handles OPTIONS preflight requests without Access-Control-Request-Headers', async () => {
+    // Prepare
+    const app = new Router();
+    const corsConfig = {
+      origin,
+      allowMethods: ['GET', 'POST'],
+      allowHeaders: ['Authorization', 'Content-Type'],
+      maxAge: 3600,
+    };
+    app.use(cors(corsConfig));
+
+    // Act
+    const result = await app.resolve(
+      createTestEvent('/test', 'OPTIONS', {
+        Origin: origin,
+        'Access-Control-Request-Method': 'GET',
+      }),
+      context
+    );
+
+    // Assess
+    expect(result.statusCode).toBe(204);
+    expect(result.headers?.['access-control-allow-origin']).toEqual(
+      corsConfig.origin
+    );
+    expect(result.multiValueHeaders?.['access-control-allow-methods']).toEqual(
+      corsConfig.allowMethods
+    );
+    expect(result.multiValueHeaders?.['access-control-allow-headers']).toEqual(
+      corsConfig.allowHeaders.map((header) => header.toLowerCase())
+    );
+    expect(result.headers?.['access-control-max-age']).toEqual(
+      corsConfig.maxAge.toString()
+    );
+  });
 });

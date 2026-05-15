@@ -1,6 +1,10 @@
 import { Readable } from 'node:stream';
 import { describe, expect, it } from 'vitest';
 import {
+  HttpVerbs,
+  MULTI_VALUE_HEADERS_ALLOWLIST,
+} from '../../../src/http/constants.js';
+import {
   bodyToNodeStream,
   webHeadersToApiGatewayHeaders,
 } from '../../../src/http/converters.js';
@@ -467,6 +471,45 @@ describe('Converters', () => {
       expect(request.method).toBe('POST');
       expect(request.text()).resolves.toBe('{"key":"value"}');
       expect(request.headers.get('Content-Type')).toBe('application/json');
+    });
+
+    it('handles PATCH request with string body', async () => {
+      // Prepare
+      const event = createTestALBEvent(
+        '/test',
+        HttpVerbs.PATCH,
+        { 'Content-Type': 'application/json' },
+        { key: 'value' }
+      );
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('PATCH');
+      expect(await request.text()).toBe('{"key":"value"}');
+      expect(request.headers.get('Content-Type')).toBe('application/json');
+    });
+
+    it('handles HEAD request without a body', () => {
+      // Prepare
+      const event = createTestALBEvent(
+        '/test',
+        HttpVerbs.HEAD,
+        {},
+        {
+          key: 'value',
+        }
+      );
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('HEAD');
+      expect(request.body).toBe(null);
     });
 
     it('decodes base64 encoded body', () => {
@@ -1390,8 +1433,8 @@ describe('Converters', () => {
     it('handles duplicate header keys by accumulating values', () => {
       // Prepare
       const headers = new Headers();
-      headers.append('x-custom', 'value1');
-      headers.append('x-custom', 'value2');
+      headers.append('x-forwarded-for', 'value1');
+      headers.append('x-forwarded-for', 'value2');
 
       // Act
       const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
@@ -1400,7 +1443,7 @@ describe('Converters', () => {
       expect(result).toEqual({
         headers: {},
         multiValueHeaders: {
-          'x-custom': ['value1', 'value2'],
+          'x-forwarded-for': ['value1', 'value2'],
         },
       });
     });
@@ -1408,8 +1451,8 @@ describe('Converters', () => {
     it('moves header from headers to multiValueHeaders when duplicate appears', () => {
       // Prepare
       const headers = new Headers();
-      headers.set('x-custom', 'value1');
-      headers.append('x-custom', 'value2');
+      headers.set('x-forwarded-for', 'value1');
+      headers.append('x-forwarded-for', 'value2');
 
       // Act
       const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
@@ -1418,7 +1461,7 @@ describe('Converters', () => {
       expect(result).toEqual({
         headers: {},
         multiValueHeaders: {
-          'x-custom': ['value1', 'value2'],
+          'x-forwarded-for': ['value1', 'value2'],
         },
       });
     });
@@ -1438,6 +1481,46 @@ describe('Converters', () => {
         headers: {},
         multiValueHeaders: {
           accept: ['application/json', 'text/html', 'text/plain'],
+        },
+      });
+    });
+
+    it('does not split single-value headers containing commas', () => {
+      // Prepare
+      const headers = new Headers();
+      headers.set('date', 'Sun, 06 Nov 1994 08:49:37 GMT');
+      headers.set('last-modified', 'Sunday, 06-Nov-94 08:49:37 GMT');
+      headers.set('x-custom-string', 'foo, bar, baz');
+
+      // Act
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
+
+      // Assess
+      expect(result).toEqual({
+        headers: {
+          date: 'Sun, 06 Nov 1994 08:49:37 GMT',
+          'last-modified': 'Sunday, 06-Nov-94 08:49:37 GMT',
+          'x-custom-string': 'foo, bar, baz',
+        },
+        multiValueHeaders: {},
+      });
+    });
+
+    it.each(
+      Array.from(MULTI_VALUE_HEADERS_ALLOWLIST)
+    )('splits allowed comma-separated header: %s', (headerName) => {
+      // Prepare
+      const headers = new Headers();
+      headers.set(headerName, 'value1, value2, value3');
+
+      // Act
+      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
+
+      // Assess
+      expect(result).toEqual({
+        headers: {},
+        multiValueHeaders: {
+          [headerName]: ['value1', 'value2', 'value3'],
         },
       });
     });

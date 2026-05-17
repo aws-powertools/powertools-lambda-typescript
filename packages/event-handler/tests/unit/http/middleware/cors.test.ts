@@ -167,7 +167,16 @@ describe('CORS Middleware', () => {
     expect(result.headers?.['access-control-allow-origin']).toBeUndefined();
   });
 
-  it('handles OPTIONS preflight requests', async () => {
+  it.each([
+    [
+      'handles OPTIONS preflight requests',
+      { 'Access-Control-Request-Headers': 'Authorization' },
+    ],
+    [
+      'handles OPTIONS preflight requests without Access-Control-Request-Headers',
+      {} as Record<string, string>,
+    ],
+  ])('%s', async (_, additionalHeaders) => {
     // Prepare
     const app = new Router();
     const corsConfig = {
@@ -183,7 +192,7 @@ describe('CORS Middleware', () => {
       createTestEvent('/test', 'OPTIONS', {
         Origin: origin,
         'Access-Control-Request-Method': 'GET',
-        'Access-Control-Request-Headers': 'Authorization',
+        ...additionalHeaders,
       }),
       context
     );

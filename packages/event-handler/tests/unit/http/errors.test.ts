@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  InvalidEventError,
+  InvalidHttpMethodError,
+} from '../../../src/http/errors.js';
+import {
   BadRequestError,
   ForbiddenError,
   HttpStatusCodes,
@@ -80,6 +84,7 @@ describe('HTTP Error Classes', () => {
     expect(error.message).toBe(customMessage);
     expect(error.statusCode).toBe(statusCode);
     expect(error.errorType).toBe(errorType);
+    expect(error.name).toBe(errorType);
   });
 
   describe('toJSON', () => {
@@ -376,6 +381,26 @@ describe('HTTP Error Classes', () => {
           ],
         },
       });
+    });
+  });
+
+  describe('Invalid* errors (non-HttpError subclasses)', () => {
+    it('InvalidEventError carries its own name and message', () => {
+      const error = new InvalidEventError('bad event');
+
+      expect(error).toBeInstanceOf(Error);
+      expect(error).toBeInstanceOf(InvalidEventError);
+      expect(error.name).toBe('InvalidEventError');
+      expect(error.message).toBe('bad event');
+    });
+
+    it('InvalidHttpMethodError carries its own name and a method-aware message', () => {
+      const error = new InvalidHttpMethodError('CONNECT');
+
+      expect(error).toBeInstanceOf(Error);
+      expect(error).toBeInstanceOf(InvalidHttpMethodError);
+      expect(error.name).toBe('InvalidHttpMethodError');
+      expect(error.message).toBe('HTTP method CONNECT is not supported.');
     });
   });
 

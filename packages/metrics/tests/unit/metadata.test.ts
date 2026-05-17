@@ -87,16 +87,27 @@ describe('Working with metadata', () => {
     );
   });
 
-  it('throws when a metadata key conflicts with an existing metric name', () => {
+  it('throws on serialize when metadata key and metric name collide (metric first)', () => {
     // Prepare
     const metrics = new Metrics({ namespace: 'test' });
     metrics.addMetric('request_count', MetricUnit.Count, 42);
+    metrics.addMetadata('request_count', 'not-a-number');
 
     // Act & Assess
-    expect(() =>
-      metrics.addMetadata('request_count', 'not-a-number')
-    ).toThrowError(
-      'Metadata key "request_count" conflicts with an existing metric name'
+    expect(() => metrics.serializeMetrics()).toThrowError(
+      'EMF key collision on "request_count": registered as both a metric (number) and a metadata (string)'
+    );
+  });
+
+  it('throws on serialize when metadata key and metric name collide (metadata first)', () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    metrics.addMetadata('request_count', 'not-a-number');
+    metrics.addMetric('request_count', MetricUnit.Count, 42);
+
+    // Act & Assess
+    expect(() => metrics.serializeMetrics()).toThrowError(
+      'EMF key collision on "request_count": registered as both a metric (number) and a metadata (string)'
     );
   });
 });

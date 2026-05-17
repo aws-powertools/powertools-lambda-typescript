@@ -320,10 +320,6 @@ class Metrics extends Utility implements MetricsInterface {
    * @param value - The value of the metadata
    */
   public addMetadata(key: string, value: string): this {
-    if (this.#metricsStore.getMetric(key) !== undefined)
-      throw new Error(
-        `Metadata key "${key}" conflicts with an existing metric name and would overwrite it in the EMF output`
-      );
     this.#metadataStore.set(key, value);
     return this;
   }
@@ -749,6 +745,28 @@ class Metrics extends Utility implements MetricsInterface {
       dimensionNames.push(Object.keys(defaultDimensions));
     }
 
+    type StringSource =
+      | 'dimension'
+      | 'default dimension'
+      | 'dimension set'
+      | 'metadata';
+    const stringKeys = new Map<string, StringSource>();
+    for (const k of Object.keys(defaultDimensions))
+      stringKeys.set(k, 'default dimension');
+    for (const k of Object.keys(dimensions)) stringKeys.set(k, 'dimension');
+    for (const set of dimensionSets)
+      for (const k of Object.keys(set)) stringKeys.set(k, 'dimension set');
+    for (const k of Object.keys(this.#metadataStore.getAll()))
+      stringKeys.set(k, 'metadata');
+    for (const name of Object.keys(metricValues)) {
+      const source = stringKeys.get(name);
+      if (source !== undefined) {
+        throw new Error(
+          `EMF key collision on "${name}": registered as both a metric (number) and a ${source} (string)`
+        );
+      }
+    }
+
     return {
       _aws: {
         Timestamp: this.#metricsStore.getTimestamp() ?? Date.now(),
@@ -1069,16 +1087,6 @@ class Metrics extends Utility implements MetricsInterface {
         `Invalid metric resolution '${resolution}', expected either option: ${Object.values(
           MetricResolutions
         ).join(',')}`
-      );
-
-    const dimensionKeys = new Set([
-      ...Object.keys(this.#dimensionsStore.getDimensions()),
-      ...Object.keys(this.#dimensionsStore.getDefaultDimensions()),
-      ...this.#dimensionsStore.getDimensionSets().flatMap(Object.keys),
-    ]);
-    if (dimensionKeys.has(name))
-      throw new Error(
-        `Metric name "${name}" conflicts with an existing dimension key and would overwrite it in the EMF output`
       );
 
     if (this.#metricsStore.getMetricsCount() >= MAX_METRICS_SIZE) {

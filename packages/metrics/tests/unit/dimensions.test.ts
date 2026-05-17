@@ -659,7 +659,7 @@ describe('Working with dimensions', () => {
     expect(() =>
       metrics.addMetric('environment', MetricUnit.Count, 1)
     ).toThrowError(
-      'Metric name "environment" conflicts with an existing dimension key'
+      'EMF key collision on "environment": registered as both a metric (number) and a dimension (string)'
     );
   });
 
@@ -674,7 +674,7 @@ describe('Working with dimensions', () => {
     expect(() =>
       metrics.addMetric('environment', MetricUnit.Count, 1)
     ).toThrowError(
-      'Metric name "environment" conflicts with an existing dimension key'
+      'EMF key collision on "environment": registered as both a metric (number) and a default dimension (string)'
     );
   });
 
@@ -688,7 +688,7 @@ describe('Working with dimensions', () => {
     expect(() =>
       metrics.addMetric('service', MetricUnit.Count, 1)
     ).toThrowError(
-      'Metric name "service" conflicts with an existing dimension key'
+      'EMF key collision on "service": registered as both a metric (number) and a default dimension (string)'
     );
   });
 
@@ -703,7 +703,19 @@ describe('Working with dimensions', () => {
     expect(() =>
       metrics.addMetric('environment', MetricUnit.Count, 1)
     ).toThrowError(
-      'Metric name "environment" conflicts with an existing dimension key'
+      'EMF key collision on "environment": registered as both a metric (number) and a dimension set (string)'
+    );
+  });
+
+  it('throws on serialize when a dimension key is added after a metric with the same name', () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    metrics.addMetric('environment', MetricUnit.Count, 1);
+    metrics.addDimension('environment', 'prod');
+
+    // Act & Assess
+    expect(() => metrics.serializeMetrics()).toThrowError(
+      'EMF key collision on "environment": registered as both a metric (number) and a dimension (string)'
     );
   });
 });

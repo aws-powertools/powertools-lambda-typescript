@@ -81,6 +81,7 @@ import {
   isBinaryResult,
   isExtendedAPIGatewayProxyResult,
   resolvePrefixedPath,
+  stripTrailingSlashes,
 } from './utils.js';
 
 class Router<TEnv extends Env = Env> {
@@ -342,7 +343,10 @@ class Router<TEnv extends Env = Env> {
 
     try {
       const method = req.method as HttpMethod;
-      const path = new URL(req.url).pathname as Path;
+      const rawPath = new URL(req.url).pathname;
+      const path = (
+        rawPath === '/' ? rawPath : stripTrailingSlashes(rawPath)
+      ) as Path;
 
       const route = this.routeRegistry.resolve(method, path);
 

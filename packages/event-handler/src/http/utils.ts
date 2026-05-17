@@ -322,27 +322,41 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
   };
 };
 
+// Linear-time trailing-slash strip. Avoids `replace(/\/+$/, '')` to keep
+// behavior linear on attacker-controlled request paths.
+export const stripTrailingSlashes = (input: string): string => {
+  let end = input.length;
+  while (end > 0 && input[end - 1] === '/') end--;
+  return end === input.length ? input : input.slice(0, end);
+};
+
 /**
  * Resolves a prefixed path by combining the provided path and prefix.
  *
- * The function returns a RegExp if any of the path or prefix is a RegExp.
- * Otherwise, it returns a `/${string}` type value.
+ * Trailing slashes on the prefix are stripped before joining, so a prefix of
+ * `/api` and `/api/` produce the same result. When the resulting path would
+ * end with a redundant `/` (e.g. path `/` under any prefix), the trailing
+ * slash is collapsed so the route id is canonical (`/api`, not `/api/`).
+ * Incoming request paths are normalized the same way at lookup time, so a
+ * route registered with path `/` under prefix `/api` matches both `/api` and
+ * `/api/`.
+ *
+ * Returns a `RegExp` if either argument is a `RegExp`; otherwise a
+ * `/${string}` typed value.
  *
  * @param path - The path to resolve
- * @param prefix - The prefix to prepend to the path
+ * @param prefix - The prefix to prepend to the path; trailing slashes are ignored
  */
 export const resolvePrefixedPath = (path: Path, prefix?: Path): Path => {
   if (!prefix) return path;
-  if (isRegExp(prefix)) {
-    if (isRegExp(path)) {
-      return new RegExp(`${getPathString(prefix)}/${getPathString(path)}`);
-    }
-    return new RegExp(`${getPathString(prefix)}${path}`);
+  const prefixStr = stripTrailingSlashes(getPathString(prefix));
+  if (isRegExp(prefix) || isRegExp(path)) {
+    const pathStr = getPathString(path);
+    const sep = pathStr.startsWith('/') ? '' : '/';
+    return new RegExp(`${prefixStr}${sep}${pathStr}`);
   }
-  if (isRegExp(path)) {
-    return new RegExp(`${prefix}/${getPathString(path)}`);
-  }
-  return `${prefix}${path}`.replace(/\/$/, '') as Path;
+  const joined = `${prefixStr}${path}`;
+  return (joined.endsWith('/') ? joined.slice(0, -1) : joined) as Path;
 };
 
 export const HttpResponseStream =

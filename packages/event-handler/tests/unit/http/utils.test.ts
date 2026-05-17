@@ -855,6 +855,8 @@ describe('Path Utilities', () => {
     it.each([
       { path: '/test', prefix: '/prefix', expected: '/prefix/test' },
       { path: '/', prefix: '/prefix', expected: '/prefix' },
+      { path: '/users', prefix: '/api/', expected: '/api/users' },
+      { path: '/', prefix: '/api/', expected: '/api' },
       { path: '/test', expected: '/test' },
       { path: /.+/, prefix: '/prefix', expected: /\/prefix\/.+/ },
       { path: '/test', prefix: /\/prefix/, expected: /\/prefix\/test/ },

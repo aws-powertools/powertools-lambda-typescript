@@ -745,27 +745,13 @@ class Metrics extends Utility implements MetricsInterface {
       dimensionNames.push(Object.keys(defaultDimensions));
     }
 
-    type StringSource =
-      | 'dimension'
-      | 'default dimension'
-      | 'dimension set'
-      | 'metadata';
-    const stringKeys = new Map<string, StringSource>();
-    for (const k of Object.keys(defaultDimensions))
-      stringKeys.set(k, 'default dimension');
-    for (const k of Object.keys(dimensions)) stringKeys.set(k, 'dimension');
-    for (const set of dimensionSets)
-      for (const k of Object.keys(set)) stringKeys.set(k, 'dimension set');
-    for (const k of Object.keys(this.#metadataStore.getAll()))
-      stringKeys.set(k, 'metadata');
-    for (const name of Object.keys(metricValues)) {
-      const source = stringKeys.get(name);
-      if (source !== undefined) {
-        throw new Error(
-          `EMF key collision on "${name}": registered as both a metric (number) and a ${source} (string)`
-        );
-      }
-    }
+    this.#checkKeyCollisions(
+      defaultDimensions,
+      dimensions,
+      dimensionSets,
+      metricValues,
+      this.#metadataStore.getAll()
+    );
 
     return {
       _aws: {
@@ -790,6 +776,46 @@ class Metrics extends Utility implements MetricsInterface {
       ...metricValues,
       ...this.#metadataStore.getAll(),
     };
+  }
+
+  #checkKeyCollisions(
+    defaultDimensions: Dimensions,
+    dimensions: Dimensions,
+    dimensionSets: Dimensions[],
+    metricValues: Record<string, number | number[]>,
+    metadata: Record<string, string>
+  ): void {
+    type Source =
+      | 'default dimension'
+      | 'dimension'
+      | 'dimension set'
+      | 'metadata';
+    const seenKeys = new Map<string, Source>();
+
+    for (const k of Object.keys(defaultDimensions))
+      seenKeys.set(k, 'default dimension');
+    for (const k of Object.keys(dimensions)) seenKeys.set(k, 'dimension');
+    for (const set of dimensionSets)
+      for (const k of Object.keys(set)) seenKeys.set(k, 'dimension set');
+
+    for (const k of Object.keys(metadata)) {
+      const src = seenKeys.get(k);
+      if (src !== undefined) {
+        this.#logger.warn(
+          `EMF key "${k}" is defined as both a ${src} and metadata; the metadata value will take precedence in the serialized output`
+        );
+      }
+      seenKeys.set(k, 'metadata');
+    }
+
+    for (const name of Object.keys(metricValues)) {
+      const src = seenKeys.get(name);
+      if (src !== undefined) {
+        throw new Error(
+          `EMF key collision on "${name}": registered as both a metric (number) and a ${src} (string)`
+        );
+      }
+    }
   }
 
   /**

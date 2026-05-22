@@ -110,4 +110,54 @@ describe('Working with metadata', () => {
       'EMF key collision on "request_count": registered as both a metric (number) and a metadata (string)'
     );
   });
+
+  it('warns on serialize when a metadata key matches a dimension key', () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    metrics.addDimension('environment', 'prod');
+    metrics.addMetadata('environment', 'metadata-value');
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Act
+    metrics.serializeMetrics();
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'EMF key "environment" is defined as both a dimension and metadata; the metadata value will take precedence in the serialized output'
+    );
+  });
+
+  it('warns on serialize when a metadata key matches a default dimension key', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: 'test',
+      defaultDimensions: { environment: 'prod' },
+    });
+    metrics.addMetadata('environment', 'metadata-value');
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Act
+    metrics.serializeMetrics();
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'EMF key "environment" is defined as both a default dimension and metadata; the metadata value will take precedence in the serialized output'
+    );
+  });
+
+  it('warns on serialize when a metadata key matches a dimension set key', () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    metrics.addDimensions({ environment: 'prod' });
+    metrics.addMetadata('environment', 'metadata-value');
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Act
+    metrics.serializeMetrics();
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'EMF key "environment" is defined as both a dimension set and metadata; the metadata value will take precedence in the serialized output'
+    );
+  });
 });

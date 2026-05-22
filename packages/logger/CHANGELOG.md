@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-22)
+
+### Bug Fixes
+
+- flush log buffer on critical() when flushOnErrorLog is e… ([#5227](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5227)) ([853b44f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/853b44f2b156bcb1bea46260d27b5b1f4c8c114f))
+- correctly serialize shared object references in JSON replacer ([#5186](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5186)) ([097e440](https://github.com/aws-powertools/powertools-lambda-typescript/commit/097e4405d765ed9f4bb83e86455af15dbffe5a9b))
 ## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
 
 **Note:** Version bump only for this package

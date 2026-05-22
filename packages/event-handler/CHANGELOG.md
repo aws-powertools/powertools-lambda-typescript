@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-22)
+
+### Bug Fixes
+
+- allow cors preflight without request headers ([#5267](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5267)) ([5adc3f4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5adc3f4646f8dceb5dd2f52f5ea115d149abded4))
+- preserve ALB PATCH bodies ([#5259](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5259)) ([9e1a687](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9e1a687a9268d30c4ecc17d79b1aeaf0c244815e))
+- restrict v1/alb comma header splitting to an allowlist ([#5257](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5257)) ([ca4bb13](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ca4bb1306b15c2977d8672b4568641be23115780))
 ## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
 
 ### Bug Fixes

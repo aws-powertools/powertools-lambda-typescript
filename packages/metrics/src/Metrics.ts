@@ -792,21 +792,22 @@ class Metrics extends Utility implements MetricsInterface {
       | 'metadata';
     const seenKeys = new Map<string, Source>();
 
-    for (const k of Object.keys(defaultDimensions))
-      seenKeys.set(k, 'default dimension');
-    for (const k of Object.keys(dimensions)) seenKeys.set(k, 'dimension');
-    for (const set of dimensionSets)
-      for (const k of Object.keys(set)) seenKeys.set(k, 'dimension set');
-
-    for (const k of Object.keys(metadata)) {
-      const src = seenKeys.get(k);
-      if (src !== undefined) {
+    const setKey = (k: string, source: Source) => {
+      const existing = seenKeys.get(k);
+      if (existing !== undefined) {
         this.#logger.warn(
-          `EMF key "${k}" is defined as both a ${src} and metadata; the metadata value will take precedence in the serialized output`
+          `EMF key "${k}" is defined as both a ${existing} and ${source}; the ${source} value will take precedence in the serialized output`
         );
       }
-      seenKeys.set(k, 'metadata');
-    }
+      seenKeys.set(k, source);
+    };
+
+    for (const k of Object.keys(defaultDimensions))
+      seenKeys.set(k, 'default dimension');
+    for (const k of Object.keys(dimensions)) setKey(k, 'dimension');
+    for (const set of dimensionSets)
+      for (const k of Object.keys(set)) setKey(k, 'dimension set');
+    for (const k of Object.keys(metadata)) setKey(k, 'metadata');
 
     for (const name of Object.keys(metricValues)) {
       const src = seenKeys.get(name);

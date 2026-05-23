@@ -75,11 +75,12 @@ export const cors = (options?: CorsOptions): Middleware => {
       .get('Access-Control-Request-Headers')
       ?.toLowerCase();
     return (
-      accessControlRequestMethod &&
+      accessControlRequestMethod !== undefined &&
       allowedMethods.includes(accessControlRequestMethod) &&
-      accessControlRequestHeaders
-        ?.split(',')
-        .every((header) => allowedHeaders.includes(header.trim()))
+      (!accessControlRequestHeaders ||
+        accessControlRequestHeaders
+          .split(',')
+          .every((header) => allowedHeaders.includes(header.trim())))
     );
   };
 

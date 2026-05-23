@@ -125,6 +125,26 @@ describe('Schemas: Cognito User Pool', () => {
     expect(result).toEqual(event);
   });
 
+  it('parses a valid pre-authentication event with null validationData', () => {
+    // Prepare
+    const event = structuredClone(baseEvent);
+    event.triggerSource = 'PreAuthentication_Authentication';
+    event.request = {
+      userAttributes: {
+        sub: '42051434-5091-70ec-4b71-7c26db407ea4',
+        'cognito:user_status': 'CONFIRMED',
+      },
+      userNotFound: false,
+      validationData: null,
+    };
+
+    // Act
+    const result = PreAuthenticationTriggerSchema.parse(event);
+
+    // Assess
+    expect(result).toEqual(event);
+  });
+
   it('throws if the pre-authentication event is missing a required field', () => {
     // Prepare
     const event = structuredClone(baseEvent);

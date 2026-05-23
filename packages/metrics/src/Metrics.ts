@@ -36,6 +36,7 @@ import { MetricsStore } from './MetricsStore.js';
 import type {
   ConfigServiceInterface,
   Dimensions,
+  EmfKeySource,
   EmfOutput,
   ExtraOptions,
   MetricDefinition,
@@ -247,13 +248,22 @@ class Metrics extends Utility implements MetricsInterface {
       );
       return this;
     }
-    if (MAX_DIMENSION_COUNT <= this.#dimensionsStore.getDimensionCount()) {
+    const dimensions = this.#dimensionsStore.getDimensions();
+    const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
+    // addDimension only mutates the regular dimensions array, so we don't need to project against dimensionSets
+    // (each set is an independent published array).
+    const projectedSize = new Set([
+      ...Object.keys(defaultDimensions),
+      ...Object.keys(dimensions),
+      name,
+    ]).size;
+    // MAX_DIMENSION_COUNT is 29 (EMF 30 dimension cap - 1 reserved for service).
+    // Thus exactly 29 custom dimensions are allowed, and we throw only if strictly greater.
+    if (projectedSize > MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
     }
-    const dimensions = this.#dimensionsStore.getDimensions();
-    const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
     if (
       Object.hasOwn(dimensions, name) ||
       Object.hasOwn(defaultDimensions, name)
@@ -280,9 +290,13 @@ class Metrics extends Utility implements MetricsInterface {
    */
   public addDimensions(dimensions: Dimensions): this {
     const newDimensions = this.#sanitizeDimensions(dimensions);
-    const currentCount = this.#dimensionsStore.getDimensionCount();
-    const newSetCount = Object.keys(newDimensions).length;
-    if (currentCount + newSetCount >= MAX_DIMENSION_COUNT) {
+    const defaultDimensions = this.#dimensionsStore.getDefaultDimensions();
+    // addDimensions creates a new independent dimensionSet array, so we only project against defaultDimensions.
+    const projectedSize = new Set([
+      ...Object.keys(defaultDimensions),
+      ...Object.keys(newDimensions),
+    ]).size;
+    if (projectedSize > MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );
@@ -764,6 +778,10 @@ class Metrics extends Utility implements MetricsInterface {
           },
         ],
       },
+      // Metadata is spread first so that any colliding key from a dimension
+      // source overrides it: dimensions are load-bearing for EMF aggregation,
+      // metadata is incidental context.
+      ...this.#metadataStore.getAll(),
       ...defaultDimensions,
       ...dimensions,
       // Merge all dimension sets efficiently by mutating the accumulator
@@ -774,7 +792,6 @@ class Metrics extends Utility implements MetricsInterface {
         return acc;
       }, {}),
       ...metricValues,
-      ...this.#metadataStore.getAll(),
     };
   }
 
@@ -785,14 +802,9 @@ class Metrics extends Utility implements MetricsInterface {
     metricValues: Record<string, number | number[]>,
     metadata: Record<string, string>
   ): void {
-    type Source =
-      | 'default dimension'
-      | 'dimension'
-      | 'dimension set'
-      | 'metadata';
-    const seenKeys = new Map<string, Source>();
+    const seenKeys = new Map<string, EmfKeySource>();
 
-    const setKey = (k: string, source: Source) => {
+    const setKey = (k: string, source: EmfKeySource) => {
       const existing = seenKeys.get(k);
       if (existing !== undefined) {
         this.#logger.warn(
@@ -802,12 +814,15 @@ class Metrics extends Utility implements MetricsInterface {
       seenKeys.set(k, source);
     };
 
+    // Seed in precedence order (lowest to highest). The spread in
+    // serializeMetrics() applies the same order, so the source named in the
+    // warning genuinely wins in the output.
+    for (const k of Object.keys(metadata)) setKey(k, 'metadata');
     for (const k of Object.keys(defaultDimensions))
-      seenKeys.set(k, 'default dimension');
+      setKey(k, 'default dimension');
     for (const k of Object.keys(dimensions)) setKey(k, 'dimension');
     for (const set of dimensionSets)
       for (const k of Object.keys(set)) setKey(k, 'dimension set');
-    for (const k of Object.keys(metadata)) setKey(k, 'metadata');
 
     for (const name of Object.keys(metricValues)) {
       const src = seenKeys.get(name);
@@ -847,13 +862,32 @@ class Metrics extends Utility implements MetricsInterface {
     const newDimensions = this.#sanitizeDimensions(dimensions);
     const currentDefaultDimensions =
       this.#dimensionsStore.getDefaultDimensions();
-    const newKeysCount = Object.keys(newDimensions).filter(
-      (key) => !Object.hasOwn(currentDefaultDimensions, key)
-    ).length;
-    if (
-      this.#dimensionsStore.getDimensionCount() + newKeysCount >=
-      MAX_DIMENSION_COUNT
-    ) {
+    const currentDimensions = this.#dimensionsStore.getDimensions();
+    const dimensionSets = this.#dimensionsStore.getDimensionSets();
+
+    const combinedDefaultKeys = [
+      ...Object.keys(currentDefaultDimensions),
+      ...Object.keys(newDimensions),
+    ];
+    const currentDimensionsKeys = Object.keys(currentDimensions);
+    // The main array is only emitted if currentDimensions has keys.
+    // When empty, maxProjectedSize safely defaults to just the combinedDefaultKeys length to guard against phantom arrays.
+    let maxProjectedSize =
+      currentDimensionsKeys.length > 0
+        ? new Set([...combinedDefaultKeys, ...currentDimensionsKeys]).size
+        : new Set(combinedDefaultKeys).size;
+
+    for (const dimensionSet of dimensionSets) {
+      const setSize = new Set([
+        ...combinedDefaultKeys,
+        ...Object.keys(dimensionSet),
+      ]).size;
+      if (setSize > maxProjectedSize) {
+        maxProjectedSize = setSize;
+      }
+    }
+
+    if (maxProjectedSize > MAX_DIMENSION_COUNT) {
       throw new RangeError(
         `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
       );

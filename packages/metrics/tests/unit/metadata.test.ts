@@ -111,7 +111,7 @@ describe('Working with metadata', () => {
     );
   });
 
-  it('warns on serialize when a metadata key matches a dimension key', () => {
+  it('warns on serialize when a metadata key matches a dimension key, and the dimension wins', () => {
     // Prepare
     const metrics = new Metrics({ namespace: 'test' });
     metrics.addDimension('environment', 'prod');
@@ -119,15 +119,16 @@ describe('Working with metadata', () => {
     metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Act
-    metrics.serializeMetrics();
+    const serialized = metrics.serializeMetrics();
 
     // Assess
     expect(console.warn).toHaveBeenCalledWith(
-      'EMF key "environment" is defined as both a dimension and metadata; the metadata value will take precedence in the serialized output'
+      'EMF key "environment" is defined as both a metadata and dimension; the dimension value will take precedence in the serialized output'
     );
+    expect(serialized).toMatchObject({ environment: 'prod' });
   });
 
-  it('warns on serialize when a metadata key matches a default dimension key', () => {
+  it('warns on serialize when a metadata key matches a default dimension key, and the default dimension wins', () => {
     // Prepare
     const metrics = new Metrics({
       namespace: 'test',
@@ -137,15 +138,16 @@ describe('Working with metadata', () => {
     metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Act
-    metrics.serializeMetrics();
+    const serialized = metrics.serializeMetrics();
 
     // Assess
     expect(console.warn).toHaveBeenCalledWith(
-      'EMF key "environment" is defined as both a default dimension and metadata; the metadata value will take precedence in the serialized output'
+      'EMF key "environment" is defined as both a metadata and default dimension; the default dimension value will take precedence in the serialized output'
     );
+    expect(serialized).toMatchObject({ environment: 'prod' });
   });
 
-  it('warns on serialize when a metadata key matches a dimension set key', () => {
+  it('warns on serialize when a metadata key matches a dimension set key, and the dimension set wins', () => {
     // Prepare
     const metrics = new Metrics({ namespace: 'test' });
     metrics.addDimensions({ environment: 'prod' });
@@ -153,11 +155,29 @@ describe('Working with metadata', () => {
     metrics.addMetric('test', MetricUnit.Count, 1);
 
     // Act
-    metrics.serializeMetrics();
+    const serialized = metrics.serializeMetrics();
 
     // Assess
     expect(console.warn).toHaveBeenCalledWith(
-      'EMF key "environment" is defined as both a dimension set and metadata; the metadata value will take precedence in the serialized output'
+      'EMF key "environment" is defined as both a metadata and dimension set; the dimension set value will take precedence in the serialized output'
     );
+    expect(serialized).toMatchObject({ environment: 'prod' });
+  });
+
+  it('still lets the dimension win and warns even when addMetadata is called before addDimension', () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    metrics.addMetadata('environment', 'metadata-value');
+    metrics.addDimension('environment', 'prod');
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Act
+    const serialized = metrics.serializeMetrics();
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'EMF key "environment" is defined as both a metadata and dimension; the dimension value will take precedence in the serialized output'
+    );
+    expect(serialized).toMatchObject({ environment: 'prod' });
   });
 });

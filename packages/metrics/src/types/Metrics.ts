@@ -14,6 +14,16 @@ import type { ConfigServiceInterface } from './ConfigServiceInterface.js';
 type Dimensions = Record<string, string>;
 
 /**
+ * The source of a key when emitting EMF output, used by the collision
+ * detection in {@link MetricsInterface.serializeMetrics | `serializeMetrics()`}.
+ */
+type EmfKeySource =
+  | 'default dimension'
+  | 'dimension'
+  | 'dimension set'
+  | 'metadata';
+
+/**
  * Options to configure the Metrics class.
  *
  * @example
@@ -540,6 +550,7 @@ interface MetricsInterface {
 
 export type {
   Dimensions,
+  EmfKeySource,
   EmfOutput,
   ExtraOptions,
   MetricDefinition,

@@ -92,20 +92,6 @@ class DimensionsStore {
     this.#defaultDimensions = {};
   }
 
-  public getDimensionCount(): number {
-    const dimensions = this.#getDimensions();
-    const dimensionSets = this.#getDimensionSets();
-    const dimensionSetsCount = dimensionSets.reduce(
-      (total, dimensionSet) => total + Object.keys(dimensionSet).length,
-      0
-    );
-    return (
-      Object.keys(dimensions).length +
-      Object.keys(this.#defaultDimensions).length +
-      dimensionSetsCount
-    );
-  }
-
   public setDefaultDimensions(dimensions: Dimensions): void {
     this.#defaultDimensions = { ...dimensions };
   }

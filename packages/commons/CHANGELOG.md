@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
+
+### Bug Fixes
+
+- prevent deepMerge from mutating source objects ([#5202](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5202)) ([9994787](https://github.com/aws-powertools/powertools-lambda-typescript/commit/99947879074819ee84666dfa605c56bf378f91d4))
+- correctly handle shared references in deepMerge ([#5195](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5195)) ([6b1a811](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6b1a811a2c688fd79c998990f8a94b9d6293db78))
 ## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
 
 ### Bug Fixes

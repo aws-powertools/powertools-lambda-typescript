@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
+
+### Bug Fixes
+
+- enforce dimension limits per-array ([#5229](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5229)) ([8791ee2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8791ee2721f79dbabb4d3407f13ad2a89a8d5e03))
+- account for all dimensions in setDefaultDimensions() li… ([#5228](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5228)) ([54eb80a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/54eb80a54ea8578c7a9a950cf815458ecd27aa40))
+- clear state in publishStoredMetrics even when throwOnEmptyMetrics throws ([#5213](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5213)) ([a37913f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a37913fd8ddff308ce93da3d381db7f049a87c3c))
 ## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
 
 **Note:** Version bump only for this package

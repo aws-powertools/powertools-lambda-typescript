@@ -1,5 +1,26 @@
 # Change Log
 
+## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
+
+### Bug Fixes
+
+- **commons** prevent deepMerge from mutating source objects ([#5202](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5202)) ([9994787](https://github.com/aws-powertools/powertools-lambda-typescript/commit/99947879074819ee84666dfa605c56bf378f91d4))
+- **commons** correctly handle shared references in deepMerge ([#5195](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5195)) ([6b1a811](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6b1a811a2c688fd79c998990f8a94b9d6293db78))
+- **logger** flush log buffer on critical() when flushOnErrorLog is e… ([#5227](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5227)) ([853b44f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/853b44f2b156bcb1bea46260d27b5b1f4c8c114f))
+- **logger** correctly serialize shared object references in JSON replacer ([#5186](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5186)) ([097e440](https://github.com/aws-powertools/powertools-lambda-typescript/commit/097e4405d765ed9f4bb83e86455af15dbffe5a9b))
+- **metrics** enforce dimension limits per-array ([#5229](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5229)) ([8791ee2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8791ee2721f79dbabb4d3407f13ad2a89a8d5e03))
+- **metrics** account for all dimensions in setDefaultDimensions() li… ([#5228](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5228)) ([54eb80a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/54eb80a54ea8578c7a9a950cf815458ecd27aa40))
+- **metrics** clear state in publishStoredMetrics even when throwOnEmptyMetrics throws ([#5213](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5213)) ([a37913f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a37913fd8ddff308ce93da3d381db7f049a87c3c))
+- **parser** cognito validationData may be null  ([#5250](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5250)) ([b3c1293](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b3c1293e8bbf99aa53ed2e37ec9e4072d3d98f1a))
+- **event-handler** allow cors preflight without request headers ([#5267](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5267)) ([5adc3f4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5adc3f4646f8dceb5dd2f52f5ea115d149abded4))
+- **event-handler** preserve ALB PATCH bodies ([#5259](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5259)) ([9e1a687](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9e1a687a9268d30c4ecc17d79b1aeaf0c244815e))
+- **event-handler** restrict v1/alb comma header splitting to an allowlist ([#5257](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5257)) ([ca4bb13](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ca4bb1306b15c2977d8672b4568641be23115780))
+
+### Maintenance
+
+- **validation** bump ajv from 8.18.0 to 8.20.0 ([#5214](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5214)) ([4a9edca](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4a9edca9d1caa724ff79ddf65e688d203b46be5b))
+
+
 ## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
 
 ### Bug Fixes

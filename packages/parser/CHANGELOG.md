@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
+
+### Bug Fixes
+
+- cognito validationData may be null  ([#5250](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5250)) ([b3c1293](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b3c1293e8bbf99aa53ed2e37ec9e4072d3d98f1a))
 ## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
 
 ### Improvements

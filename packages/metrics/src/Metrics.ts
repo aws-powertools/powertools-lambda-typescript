@@ -36,6 +36,7 @@ import { MetricsStore } from './MetricsStore.js';
 import type {
   ConfigServiceInterface,
   Dimensions,
+  EmfKeySource,
   EmfOutput,
   ExtraOptions,
   MetricDefinition,
@@ -758,6 +759,14 @@ class Metrics extends Utility implements MetricsInterface {
       dimensionNames.push(Object.keys(defaultDimensions));
     }
 
+    this.#checkKeyCollisions(
+      defaultDimensions,
+      dimensions,
+      dimensionSets,
+      metricValues,
+      this.#metadataStore.getAll()
+    );
+
     return {
       _aws: {
         Timestamp: this.#metricsStore.getTimestamp() ?? Date.now(),
@@ -769,6 +778,10 @@ class Metrics extends Utility implements MetricsInterface {
           },
         ],
       },
+      // Metadata is spread first so that any colliding key from a dimension
+      // source overrides it: dimensions are load-bearing for EMF aggregation,
+      // metadata is incidental context.
+      ...this.#metadataStore.getAll(),
       ...defaultDimensions,
       ...dimensions,
       // Merge all dimension sets efficiently by mutating the accumulator
@@ -779,8 +792,46 @@ class Metrics extends Utility implements MetricsInterface {
         return acc;
       }, {}),
       ...metricValues,
-      ...this.#metadataStore.getAll(),
     };
+  }
+
+  #checkKeyCollisions(
+    defaultDimensions: Dimensions,
+    dimensions: Dimensions,
+    dimensionSets: Dimensions[],
+    metricValues: Record<string, number | number[]>,
+    metadata: Record<string, string>
+  ): void {
+    const seenKeys = new Map<string, EmfKeySource>();
+
+    const setKey = (k: string, source: EmfKeySource) => {
+      const existing = seenKeys.get(k);
+      if (existing !== undefined) {
+        this.#logger.warn(
+          `EMF key "${k}" is defined as both a ${existing} and ${source}; the ${source} value will take precedence in the serialized output`
+        );
+      }
+      seenKeys.set(k, source);
+    };
+
+    // Seed in precedence order (lowest to highest). The spread in
+    // serializeMetrics() applies the same order, so the source named in the
+    // warning genuinely wins in the output.
+    for (const k of Object.keys(metadata)) setKey(k, 'metadata');
+    for (const k of Object.keys(defaultDimensions))
+      setKey(k, 'default dimension');
+    for (const k of Object.keys(dimensions)) setKey(k, 'dimension');
+    for (const set of dimensionSets)
+      for (const k of Object.keys(set)) setKey(k, 'dimension set');
+
+    for (const name of Object.keys(metricValues)) {
+      const src = seenKeys.get(name);
+      if (src !== undefined) {
+        throw new Error(
+          `EMF key collision on "${name}": registered as both a metric (number) and a ${src} (string)`
+        );
+      }
+    }
   }
 
   /**

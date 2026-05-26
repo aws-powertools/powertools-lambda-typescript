@@ -197,6 +197,9 @@ class LRUCache<K, V> {
     if (item[NEWER]) {
       this.leastRecentlyUsed = item[NEWER];
       this.leastRecentlyUsed[OLDER] = undefined;
+    } else {
+      this.leastRecentlyUsed = undefined;
+      this.mostRecentlyUsed = undefined;
     }
 
     // Remove the item from the map

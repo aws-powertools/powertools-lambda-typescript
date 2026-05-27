@@ -8,6 +8,7 @@ import {
   bodyToNodeStream,
   webHeadersToApiGatewayHeaders,
 } from '../../../src/http/converters.js';
+import { InvalidHttpMethodError } from '../../../src/http/errors.js';
 import {
   HttpStatusCodes,
   handlerResultToWebResponse,
@@ -770,6 +771,43 @@ describe('Converters', () => {
       // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.body).toBe(null);
+    });
+  });
+
+  describe('proxyEventToWebRequest (unsupported HTTP method)', () => {
+    it.each([
+      {
+        version: 'V1',
+        createEvent: () => createTestEvent('/test', 'CONNECT'),
+      },
+      {
+        version: 'V2',
+        createEvent: () => createTestEventV2('/test', 'CONNECT'),
+      },
+      {
+        version: 'ALB',
+        createEvent: () => createTestALBEvent('/test', 'CONNECT'),
+      },
+    ])('throws InvalidHttpMethodError with the correct name for $version events', ({
+      createEvent,
+    }) => {
+      // Prepare
+      const event = createEvent();
+
+      // Act & Assess
+      expect(() => proxyEventToWebRequest(event)).toThrow(
+        InvalidHttpMethodError
+      );
+
+      try {
+        proxyEventToWebRequest(event);
+      } catch (err) {
+        expect(err).toBeInstanceOf(InvalidHttpMethodError);
+        expect((err as Error).name).toBe('InvalidHttpMethodError');
+        expect((err as Error).message).toBe(
+          'HTTP method CONNECT is not supported.'
+        );
+      }
     });
   });
 

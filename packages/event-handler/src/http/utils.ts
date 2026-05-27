@@ -322,8 +322,17 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
   };
 };
 
-// Linear-time trailing-slash strip. Avoids `replace(/\/+$/, '')` to keep
-// behavior linear on attacker-controlled request paths.
+/**
+ * Strips trailing forward slashes from a path string in linear time.
+ *
+ * Implemented as a manual scan from the right rather than `replace(/\/+$/, '')`
+ * to keep the cost linear on attacker-controlled request paths — a regex
+ * approach can be coerced into pathological backtracking on inputs with long
+ * runs of slashes.
+ *
+ * @param input - The path string to normalize
+ * @returns The input with any trailing `/` characters removed; the original string is returned unchanged when no trailing slashes are present
+ */
 export const stripTrailingSlashes = (input: string): string => {
   let end = input.length;
   while (end > 0 && input[end - 1] === '/') end--;

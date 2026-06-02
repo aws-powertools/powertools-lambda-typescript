@@ -1,5 +1,4 @@
 import type { Metrics } from '@aws-lambda-powertools/metrics';
-import { MetricUnit } from '@aws-lambda-powertools/metrics';
 import type { Middleware, RequestContext } from '../../types/http.js';
 import { HttpError } from '../errors.js';
 
@@ -99,19 +98,15 @@ const metrics = (metrics: Metrics): Middleware => {
       for (const [key, value] of Object.entries(metadata)) {
         metrics.addMetadata(key, value);
       }
+      // The metric units are inlined as string literals rather than imported
+      // from the `MetricUnit` value of `@aws-lambda-powertools/metrics`. A value
+      // import would be retained by bundlers and force a runtime dependency on
+      // the metrics package even for consumers that never use this middleware.
       metrics
         .addDimension('route', reqCtx.route ?? 'NOT_FOUND')
-        .addMetric(
-          'latency',
-          MetricUnit.Milliseconds,
-          performance.now() - start
-        )
-        .addMetric('fault', MetricUnit.Count, status >= 500 ? 1 : 0)
-        .addMetric(
-          'error',
-          MetricUnit.Count,
-          status >= 400 && status < 500 ? 1 : 0
-        )
+        .addMetric('latency', 'Milliseconds', performance.now() - start)
+        .addMetric('fault', 'Count', status >= 500 ? 1 : 0)
+        .addMetric('error', 'Count', status >= 400 && status < 500 ? 1 : 0)
         .publishStoredMetrics();
     }
   };

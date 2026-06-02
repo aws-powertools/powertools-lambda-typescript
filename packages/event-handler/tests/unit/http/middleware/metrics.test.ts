@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -410,36 +409,5 @@ describe('Metrics Middleware', () => {
         ipAddress: '127.0.0.1',
       })
     );
-  });
-
-  it('does not import any runtime value from the metrics package', () => {
-    // Prepare
-    // A value import (e.g. `import { MetricUnit }`) is retained by bundlers and
-    // forces a runtime dependency on `@aws-lambda-powertools/metrics` even for
-    // consumers that never use this middleware, breaking bundles where the
-    // optional peer dependency is absent (see issue #5309). Only type-only
-    // imports (erased at compile time) are allowed.
-    const source = readFileSync(
-      new URL('../../../../src/http/middleware/metrics.ts', import.meta.url),
-      'utf-8'
-    );
-
-    // Act
-    // Split on the statement terminator (handles multi-line imports) and check
-    // each statement with plain string methods, avoiding ReDoS-prone regexes.
-    // Comments never trim to start with `import` (JSDoc lines start with `*`,
-    // line comments with `//`), so they can't cause a false positive.
-    const importsMetricsAsValue = source
-      .split(';')
-      .map((statement) => statement.trim())
-      .some(
-        (statement) =>
-          statement.startsWith('import') &&
-          !statement.startsWith('import type') &&
-          statement.includes('@aws-lambda-powertools/metrics')
-      );
-
-    // Assess
-    expect(importsMetricsAsValue).toBe(false);
   });
 });

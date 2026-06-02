@@ -422,15 +422,42 @@ describe('Metrics Middleware', () => {
     const source = readFileSync(
       new URL('../../../../src/http/middleware/metrics.ts', import.meta.url),
       'utf-8'
-    )
-      // Strip comments so documentation examples (e.g. JSDoc `@example`
-      // snippets that show a value import) don't trigger a false positive.
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/\/\/.*$/gm, '');
-    const valueImportFromMetrics =
-      /import\s+(?!type\b)[^;]*from\s+['"]@aws-lambda-powertools\/metrics['"]/;
+    );
 
-    // Act & Assess
-    expect(source).not.toMatch(valueImportFromMetrics);
+    // Strip comments with a linear character scan (no regex) so documentation
+    // examples that show a value import don't cause a false positive, while
+    // avoiding ReDoS-prone backtracking patterns.
+    const stripComments = (code: string): string => {
+      let result = '';
+      let index = 0;
+      while (index < code.length) {
+        const marker = code.slice(index, index + 2);
+        if (marker === '/*') {
+          const end = code.indexOf('*/', index + 2);
+          index = end === -1 ? code.length : end + 2;
+        } else if (marker === '//') {
+          const end = code.indexOf('\n', index + 2);
+          index = end === -1 ? code.length : end;
+        } else {
+          result += code[index];
+          index += 1;
+        }
+      }
+      return result;
+    };
+
+    // Act
+    const importsMetricsAsValue = stripComments(source)
+      .split(';')
+      .map((statement) => statement.trim())
+      .some(
+        (statement) =>
+          statement.startsWith('import') &&
+          !statement.startsWith('import type') &&
+          statement.includes('@aws-lambda-powertools/metrics')
+      );
+
+    // Assess
+    expect(importsMetricsAsValue).toBe(false);
   });
 });

@@ -424,30 +424,12 @@ describe('Metrics Middleware', () => {
       'utf-8'
     );
 
-    // Strip comments with a linear character scan (no regex) so documentation
-    // examples that show a value import don't cause a false positive, while
-    // avoiding ReDoS-prone backtracking patterns.
-    const stripComments = (code: string): string => {
-      let result = '';
-      let index = 0;
-      while (index < code.length) {
-        const marker = code.slice(index, index + 2);
-        if (marker === '/*') {
-          const end = code.indexOf('*/', index + 2);
-          index = end === -1 ? code.length : end + 2;
-        } else if (marker === '//') {
-          const end = code.indexOf('\n', index + 2);
-          index = end === -1 ? code.length : end;
-        } else {
-          result += code[index];
-          index += 1;
-        }
-      }
-      return result;
-    };
-
     // Act
-    const importsMetricsAsValue = stripComments(source)
+    // Split on the statement terminator (handles multi-line imports) and check
+    // each statement with plain string methods, avoiding ReDoS-prone regexes.
+    // Comments never trim to start with `import` (JSDoc lines start with `*`,
+    // line comments with `//`), so they can't cause a false positive.
+    const importsMetricsAsValue = source
       .split(';')
       .map((statement) => statement.trim())
       .some(

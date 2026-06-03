@@ -754,11 +754,13 @@ describe('REST Event Handler E2E tests', () => {
       expect(data.version).toBe('1.0.0');
     });
 
-    it('returns 404 for path with trailing slash when route has no trailing slash', async () => {
+    it('normalizes a trailing slash to match a route registered without one', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/methods/`);
+      const data = await response.json();
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(200);
+      expect(data.method).toBe('GET');
     });
 
     it('handles path without trailing slash', async () => {

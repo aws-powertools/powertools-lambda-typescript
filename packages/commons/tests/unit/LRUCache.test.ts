@@ -52,9 +52,14 @@ describe('Class: LRUMap', () => {
 
       // Act
       cache.add('a', 1);
+      cache.add('b', 2);
+      cache.add('c', 3);
 
       // Assess
       expect(cache.size()).toBe(0);
+      expect(cache.get('a')).toBeUndefined();
+      expect(cache.get('b')).toBeUndefined();
+      expect(cache.get('c')).toBeUndefined();
     });
   });
 

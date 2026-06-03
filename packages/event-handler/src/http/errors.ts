@@ -228,7 +228,7 @@ class InvalidEventError extends Error {
 class InvalidHttpMethodError extends Error {
   constructor(method: string) {
     super(`HTTP method ${method} is not supported.`);
-    this.name = 'InvalidEventError';
+    this.name = 'InvalidHttpMethodError';
   }
 }
 

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { customUserAgentMiddleware } from '../../src/awsSdkUtils.js';
 import {
   addUserAgentMiddleware,
@@ -87,6 +87,69 @@ describe('Helpers: awsSdk', () => {
     expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
       `test/PT/NO-OP/${version}/PTEnv/NA`
     );
+  });
+
+  describe('Module init: AWS_SDK_UA_APP_ID', () => {
+    beforeEach(() => {
+      vi.resetModules();
+      vi.stubEnv('AWS_EXECUTION_ENV', '');
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('sets the PT AWS_SDK_UA_APP_ID when one is not already set', async () => {
+      // Prepare
+      vi.stubEnv('AWS_SDK_UA_APP_ID', undefined);
+
+      // Act
+      await import('../../src/index.js');
+
+      // Assess
+      expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+        `PT/NO-OP/${version}/PTEnv/NA`
+      );
+    });
+
+    it('concatenates the PT AWS_SDK_UA_APP_ID when one is already set', async () => {
+      // Prepare
+      vi.stubEnv('AWS_SDK_UA_APP_ID', 'test');
+
+      // Act
+      await import('../../src/index.js');
+
+      // Assess
+      expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+        `test/PT/NO-OP/${version}/PTEnv/NA`
+      );
+    });
+
+    it('uses the execution environment when AWS_EXECUTION_ENV is set', async () => {
+      // Prepare
+      vi.stubEnv('AWS_SDK_UA_APP_ID', undefined);
+      vi.stubEnv('AWS_EXECUTION_ENV', 'AWS_Lambda_nodejs20.x');
+
+      // Act
+      await import('../../src/index.js');
+
+      // Assess
+      expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+        `PT/NO-OP/${version}/PTEnv/AWS_Lambda_nodejs20.x`
+      );
+    });
+
+    it('leaves the AWS_SDK_UA_APP_ID untouched when the PT UA is already present', async () => {
+      // Prepare
+      const existing = `test/PT/NO-OP/${version}/PTEnv/NA`;
+      vi.stubEnv('AWS_SDK_UA_APP_ID', existing);
+
+      // Act
+      await import('../../src/index.js');
+
+      // Assess
+      expect(process.env.AWS_SDK_UA_APP_ID).toEqual(existing);
+    });
   });
 
   describe('Function: customUserAgentMiddleware', () => {

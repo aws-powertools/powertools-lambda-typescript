@@ -1,10 +1,11 @@
 import { PT_VERSION } from './version.js';
 
 const env = process.env.AWS_EXECUTION_ENV || 'NA';
-if (process.env.AWS_SDK_UA_APP_ID) {
-  process.env.AWS_SDK_UA_APP_ID = `${process.env.AWS_SDK_UA_APP_ID}/PT/NO-OP/${PT_VERSION}/PTEnv/${env}`;
-} else {
-  process.env.AWS_SDK_UA_APP_ID = `PT/NO-OP/${PT_VERSION}/PTEnv/${env}`;
+if (!process.env.AWS_SDK_UA_APP_ID?.includes('/PTEnv/')) {
+  const ptUserAgent = `PT/NO-OP/${PT_VERSION}/PTEnv/${env}`;
+  process.env.AWS_SDK_UA_APP_ID = process.env.AWS_SDK_UA_APP_ID
+    ? `${process.env.AWS_SDK_UA_APP_ID}/${ptUserAgent}`
+    : ptUserAgent;
 }
 
 export { addUserAgentMiddleware, isSdkClient } from './awsSdkUtils.js';

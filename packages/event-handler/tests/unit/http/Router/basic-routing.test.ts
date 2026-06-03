@@ -218,6 +218,39 @@ describe.each([
     expect(JSON.parse(getResult.body ?? '{}').actualPath).toBe('/todos/1');
   });
 
+  it('matches a root route registered under a prefix for both /prefix and /prefix/', async () => {
+    // Prepare
+    const app = new Router({ prefix: '/api' });
+    app.get('/', () => ({ root: true }));
+
+    // Act
+    const noSlash = await app.resolve(createEvent('/api', 'GET'), context);
+    const trailingSlash = await app.resolve(
+      createEvent('/api/', 'GET'),
+      context
+    );
+
+    // Assess
+    expect(noSlash.statusCode).toBe(200);
+    expect(JSON.parse(noSlash.body ?? '{}')).toEqual({ root: true });
+    expect(trailingSlash.statusCode).toBe(200);
+    expect(JSON.parse(trailingSlash.body ?? '{}')).toEqual({ root: true });
+  });
+
+  it('routes correctly when prefix accidentally ends with a slash', async () => {
+    // Prepare: prefix ends with `/` — the registered route id should not
+    // contain `//` and incoming requests should still match.
+    const app = new Router({ prefix: '/api/' });
+    app.get('/users', () => ({ users: [] }));
+
+    // Act
+    const result = await app.resolve(createEvent('/api/users', 'GET'), context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(JSON.parse(result.body ?? '{}')).toEqual({ users: [] });
+  });
+
   it('routes to the included router when using split routers', async () => {
     // Prepare
     const todoRouter = new Router({ logger: console });

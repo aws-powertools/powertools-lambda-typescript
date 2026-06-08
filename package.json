@@ -52,7 +52,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
     "@types/aws-lambda": "^8.10.161",
-    "@types/node": "^25.9.1",
+    "@types/node": "^25.9.2",
     "@vitest/coverage-v8": "^4.1.8",
     "esbuild": "^0.28.0",
     "husky": "^9.1.7",

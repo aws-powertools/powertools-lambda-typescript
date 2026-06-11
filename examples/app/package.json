@@ -29,7 +29,7 @@
     "#errors": "./functions/commons/errors.js"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.161",
+    "@types/aws-lambda": "^8.10.162",
     "@types/node": "25.9.3",
     "aws-cdk-lib": "^2.258.1",
     "constructs": "^10.6.0",
@@ -47,7 +47,7 @@
     "@aws-sdk/client-ssm": "^3.1014.0",
     "@aws-sdk/lib-dynamodb": "^3.1014.0",
     "@middy/core": "^4.7.0",
-    "@types/aws-lambda": "^8.10.161",
+    "@types/aws-lambda": "^8.10.162",
     "@types/node": "25.9.3",
     "aws-cdk": "^2.1124.1",
     "constructs": "^10.6.0",

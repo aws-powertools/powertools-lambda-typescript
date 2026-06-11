@@ -3,6 +3,7 @@ import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { fromUtf8, toUtf8 } from '@smithy/util-utf8';
+import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Key } from 'aws-cdk-lib/aws-kms';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { RESOURCE_NAME_PREFIX } from './constants.js';
@@ -37,8 +38,12 @@ describe('DataMasking E2E tests', () => {
     'dataMasking.test.FunctionCode.ts'
   );
 
+  // Without an explicit removal policy CloudFormation retains KMS keys on
+  // stack teardown; schedule deletion with the minimum 7-day pending window.
   const kmsKey = new Key(testStack.stack, 'TestKmsKey', {
     description: 'KMS key for DataMasking e2e tests',
+    removalPolicy: RemovalPolicy.DESTROY,
+    pendingWindow: Duration.days(7),
   });
 
   let functionNameErase: string;

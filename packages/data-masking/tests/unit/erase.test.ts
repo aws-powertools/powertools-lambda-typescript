@@ -221,7 +221,7 @@ describe('DataMasking.erase() - custom masking rules', () => {
     const result = masker.erase(data, {
       maskingRules: {
         email: {
-          regexPattern: /(.)(.+?)(@.*)/, // NOSONAR - test data, not user input
+          regexPattern: /^(.)([^@]*)(@.*)$/,
           maskFormat: '$1****$3',
         },
       },
@@ -298,7 +298,7 @@ describe('DataMasking.erase() - custom masking rules', () => {
     const result = masker.erase(data, {
       maskingRules: {
         email: {
-          regexPattern: /(.)(.+?)(@.*)/, // NOSONAR - test data, not user input
+          regexPattern: /^(.)([^@]*)(@.*)$/,
           maskFormat: '$1****$3',
           customMask: 'XX',
           dynamicMask: true,

@@ -56,7 +56,7 @@ const masked = masker.erase(
   { email: 'jane@example.com', ssn: '123-45-6789' },
   {
     maskingRules: {
-      email: { regexPattern: /(.)(.+?)(@.*)/, maskFormat: '$1****$3' },
+      email: { regexPattern: /^(.)([^@]*)(@.*)$/, maskFormat: '$1****$3' },
       ssn: { dynamicMask: true },
     },
   }

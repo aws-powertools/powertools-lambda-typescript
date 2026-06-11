@@ -1,5 +1,5 @@
 import fc from 'fast-check';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   DataMaskingFieldNotFoundError,
   DataMaskingUnsupportedTypeError,
@@ -106,13 +106,16 @@ describe('DataMasking.erase()', () => {
     );
   });
 
-  it('silently skips missing field when throwOnMissingField is false', () => {
+  it('skips missing field with a warning when throwOnMissingField is false', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const lenientMasker = new DataMasking({ throwOnMissingField: false });
     const data = { name: 'Jane' };
 
     const result = lenientMasker.erase(data, { fields: ['nonexistent'] });
 
     expect(result).toEqual({ name: 'Jane' });
+    expect(warnSpy).toHaveBeenCalledWith("Field not found: 'nonexistent'");
+    warnSpy.mockRestore();
   });
 
   it('handles circular references by cloning them via structuredClone', () => {

@@ -105,8 +105,13 @@ export class DataMasking {
         copy as Record<string, unknown>,
         field
       );
-      if (paths.length === 0 && this.#throwOnMissingField) {
-        throw new DataMaskingFieldNotFoundError(`Field not found: '${field}'`);
+      if (paths.length === 0) {
+        if (this.#throwOnMissingField) {
+          throw new DataMaskingFieldNotFoundError(
+            `Field not found: '${field}'`
+          );
+        }
+        console.warn(`Field not found: '${field}'`);
       }
       for (const path of paths) {
         setAtPath(copy, path, DEFAULT_MASK_VALUE);
@@ -167,7 +172,13 @@ export class DataMasking {
     const copy = this.#deepCopy(data);
     if (options?.fields) {
       await this.#transformFields(copy, options.fields, async (value) => {
-        if (typeof value !== 'string') return value;
+        if (!isString(value)) {
+          console.warn(
+            `Skipping decryption of non-string value of type ${typeof value}; expected an encrypted string`
+          );
+
+          return value;
+        }
 
         return JSON.parse(await provider.decrypt(value, options.context));
       });

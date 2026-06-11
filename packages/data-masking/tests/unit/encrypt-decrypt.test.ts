@@ -166,7 +166,8 @@ describe('DataMasking.decrypt() - field level', () => {
     expect(provider.decrypt).not.toHaveBeenCalled();
   });
 
-  it('passes through non-string values during field-level decrypt', async () => {
+  it('passes through non-string values during field-level decrypt and warns', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = { num: 42, text: 'ENC:"hello"' };
@@ -174,6 +175,47 @@ describe('DataMasking.decrypt() - field level', () => {
     const result = await masker.decrypt(data, { fields: ['num', 'text'] });
 
     expect(result).toEqual({ num: 42, text: 'hello' });
+    expect(warnSpy).toHaveBeenCalledOnce();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('non-string value of type number')
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('rejects the whole operation and leaves the original untouched when one field fails to decrypt', async () => {
+    const provider: EncryptionProvider = {
+      encrypt: vi.fn(async (data: string) => `ENC:${data}`),
+      decrypt: vi.fn(async (data: string) => {
+        if (data === 'BAD') throw new Error('decryption failed');
+
+        return data.replace('ENC:', '');
+      }),
+    };
+    const masker = new DataMasking({ provider });
+    const data = { good: 'ENC:"ok"', bad: 'BAD' };
+
+    await expect(
+      masker.decrypt(data, { fields: ['good', 'bad'] })
+    ).rejects.toThrow('decryption failed');
+    expect(data).toEqual({ good: 'ENC:"ok"', bad: 'BAD' });
+  });
+
+  it('rejects the whole operation and leaves the original untouched when one field fails to encrypt', async () => {
+    const provider: EncryptionProvider = {
+      encrypt: vi.fn(async (data: string) => {
+        if (data.includes('boom')) throw new Error('encryption failed');
+
+        return `ENC:${data}`;
+      }),
+      decrypt: vi.fn(async (data: string) => data),
+    };
+    const masker = new DataMasking({ provider });
+    const data = { a: 'fine', b: 'boom' };
+
+    await expect(masker.encrypt(data, { fields: ['a', 'b'] })).rejects.toThrow(
+      'encryption failed'
+    );
+    expect(data).toEqual({ a: 'fine', b: 'boom' });
   });
 
   it('throws DataMaskingEncryptionError without provider', async () => {

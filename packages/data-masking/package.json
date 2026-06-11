@@ -40,6 +40,26 @@
         "default": "./lib/esm/index.js"
       }
     },
+    "./types": {
+      "require": {
+        "types": "./lib/cjs/types.d.ts",
+        "default": "./lib/cjs/types.js"
+      },
+      "import": {
+        "types": "./lib/esm/types.d.ts",
+        "default": "./lib/esm/types.js"
+      }
+    },
+    "./errors": {
+      "require": {
+        "types": "./lib/cjs/errors.d.ts",
+        "default": "./lib/cjs/errors.js"
+      },
+      "import": {
+        "types": "./lib/esm/errors.d.ts",
+        "default": "./lib/esm/errors.js"
+      }
+    },
     "./providers/kms": {
       "require": {
         "types": "./lib/cjs/providers/kms/index.d.ts",
@@ -63,6 +83,14 @@
   },
   "typesVersions": {
     "*": {
+      "types": [
+        "lib/cjs/types.d.ts",
+        "lib/esm/types.d.ts"
+      ],
+      "errors": [
+        "lib/cjs/errors.d.ts",
+        "lib/esm/errors.d.ts"
+      ],
       "providers/kms": [
         "lib/cjs/providers/kms/index.d.ts",
         "lib/esm/providers/kms/index.d.ts"

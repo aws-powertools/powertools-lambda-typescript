@@ -41,11 +41,15 @@ export class DataMasking {
   }
 
   /**
-   * Irreversibly mask fields in a data object. Returns a deep copy.
+   * Irreversibly mask the entire payload with the default mask value:
+   * arrays element-wise preserving their length, and everything else
+   * with a single mask string.
    *
-   * When called without options, the entire payload is replaced with the
-   * default mask value: arrays element-wise preserving their length, and
-   * everything else with a single mask string.
+   * @param data - The data to mask; returned as-is when `null` or `undefined`
+   */
+  erase<T>(data: T): MaskedPayload<T>;
+  /**
+   * Irreversibly mask fields in a data object. Returns a deep copy.
    *
    * @example
    * ```typescript
@@ -53,11 +57,8 @@ export class DataMasking {
    * ```
    *
    * @param data - The data to mask; returned as-is when `null` or `undefined`
-   * @param options - Options for the operation
-   * @param options.fields - Dot-notation path expressions for fields to mask (supports `.*` and `[*]` wildcards); mutually exclusive with `maskingRules`
-   * @param options.maskingRules - Per-field custom masking rules keyed by dot-notation path; mutually exclusive with `fields`
+   * @param options - Options for the operation, see {@link EraseOptions}: either `fields` (dot-notation path expressions supporting `.*` and `[*]` wildcards) or `maskingRules` (per-field custom rules keyed by path)
    */
-  erase<T>(data: T): MaskedPayload<T>;
   erase<T>(data: T, options: EraseOptions): T;
   erase(data: unknown, options?: EraseOptions): unknown {
     if (isNullOrUndefined(data)) return data;

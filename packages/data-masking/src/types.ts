@@ -1,3 +1,5 @@
+import type { DataMasking } from './DataMasking.js';
+
 /**
  * Interface for pluggable encryption providers.
  * Implement this to use a custom encryption backend.

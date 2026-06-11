@@ -1,4 +1,5 @@
 import type { buildDecrypt, buildEncrypt } from '@aws-crypto/client-node';
+import type { AWSEncryptionSDKProvider } from './AWSEncryptionSDKProvider.js';
 
 /** Options for the {@link AWSEncryptionSDKProvider} constructor. */
 export interface AWSEncryptionSDKProviderOptions {

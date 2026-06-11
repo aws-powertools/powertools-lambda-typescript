@@ -11,5 +11,6 @@ export type {
   EncryptionProvider,
   EncryptOptions,
   EraseOptions,
+  MaskedPayload,
   MaskingRule,
 } from './types.js';

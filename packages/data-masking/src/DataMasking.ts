@@ -14,6 +14,7 @@ import type {
   EncryptionProvider,
   EncryptOptions,
   EraseOptions,
+  MaskedPayload,
   MaskingRule,
 } from './types.js';
 
@@ -43,7 +44,8 @@ export class DataMasking {
    * Irreversibly mask fields in a data object. Returns a deep copy.
    *
    * When called without options, the entire payload is replaced with the
-   * default mask value.
+   * default mask value: arrays element-wise preserving their length, and
+   * everything else with a single mask string.
    *
    * @example
    * ```typescript
@@ -52,14 +54,19 @@ export class DataMasking {
    *
    * @param data - The data to mask; returned as-is when `null` or `undefined`
    * @param options - Options for the operation
-   * @param options.fields - Dot-notation path expressions for fields to mask (supports `.*` and `[*]` wildcards)
-   * @param options.maskingRules - Per-field custom masking rules keyed by dot-notation path; takes precedence over `fields`
+   * @param options.fields - Dot-notation path expressions for fields to mask (supports `.*` and `[*]` wildcards); mutually exclusive with `maskingRules`
+   * @param options.maskingRules - Per-field custom masking rules keyed by dot-notation path; mutually exclusive with `fields`
    */
-  erase<T>(data: T, options?: EraseOptions): T {
+  erase<T>(data: T): MaskedPayload<T>;
+  erase<T>(data: T, options: EraseOptions): T;
+  erase(data: unknown, options?: EraseOptions): unknown {
     if (isNullOrUndefined(data)) return data;
-    const { fields, maskingRules } = options ?? {};
+    const fields = options?.fields;
+    const maskingRules = options?.maskingRules;
     if (!fields && !maskingRules) {
-      return DEFAULT_MASK_VALUE as unknown as T;
+      return Array.isArray(data)
+        ? data.map(() => DEFAULT_MASK_VALUE)
+        : DEFAULT_MASK_VALUE;
     }
 
     const copy = this.#deepCopy(data);
@@ -288,12 +295,19 @@ const setAtPath = (data: unknown, path: string[], value: unknown): void => {
   current[lastKey] = value;
 };
 
+/**
+ * Apply a single masking rule to a string value.
+ *
+ * The {@link MaskingRule} type makes the strategies mutually exclusive, but
+ * JavaScript callers can still pass conflicting options - the precedence is
+ * regex+format, then custom mask, then dynamic mask.
+ */
 const applyMaskingRule = (value: string, rule: MaskingRule): string => {
   if (rule.regexPattern && rule.maskFormat) {
     return value.replace(rule.regexPattern, rule.maskFormat);
   }
-  if (rule.dynamicMask) return '*'.repeat(value.length);
   if (rule.customMask !== undefined) return rule.customMask;
+  if (rule.dynamicMask === true) return '*'.repeat(value.length);
 
   return DEFAULT_MASK_VALUE;
 };

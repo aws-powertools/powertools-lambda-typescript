@@ -275,6 +275,36 @@ describe('DataMasking.erase() - custom masking rules', () => {
 
     expect(result.secret).toBe('*****');
   });
+
+  it('prefers customMask over dynamicMask when a JS caller passes both', () => {
+    const data = { ssn: '123-45-6789' };
+
+    const result = masker.erase(data, {
+      maskingRules: {
+        // type system forbids this combination; JS callers can still pass it
+        ssn: { customMask: 'XX', dynamicMask: true } as never,
+      },
+    });
+
+    expect(result.ssn).toBe('XX');
+  });
+
+  it('prefers regex masking over all other strategies when a JS caller passes everything', () => {
+    const data = { email: 'jane@example.com' };
+
+    const result = masker.erase(data, {
+      maskingRules: {
+        email: {
+          regexPattern: /(.)(.+?)(@.*)/, // NOSONAR - test data, not user input
+          maskFormat: '$1****$3',
+          customMask: 'XX',
+          dynamicMask: true,
+        } as never,
+      },
+    });
+
+    expect(result.email).toBe('j****@example.com');
+  });
 });
 
 const pathKey = fc.stringMatching(/^[a-z][a-z0-9_]{0,10}$/);
@@ -294,13 +324,17 @@ describe('DataMasking.erase() - property tests', () => {
     );
   });
 
-  it('with no fields always returns the default mask', () => {
+  it('with no fields returns the default mask, masking arrays element-wise', () => {
     fc.assert(
       fc.property(fc.jsonValue(), (data) => {
         if (data === null || data === undefined) return;
         const result = masker.erase(data);
 
-        expect(result).toBe('*****');
+        if (Array.isArray(data)) {
+          expect(result).toEqual(data.map(() => '*****'));
+        } else {
+          expect(result).toBe('*****');
+        }
       })
     );
   });

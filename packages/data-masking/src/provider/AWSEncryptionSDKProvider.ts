@@ -1,11 +1,18 @@
 import type { buildDecrypt, buildEncrypt } from '@aws-crypto/client-node';
+import { DataMaskingEncryptionError } from '../errors.js';
 import type { EncryptionProvider } from '../types.js';
 
+/** Options for the {@link AWSEncryptionSDKProvider} constructor. */
 export interface AWSEncryptionSDKProviderOptions {
+  /** KMS key ARNs; the first is the generator key, the rest are additional keys. */
   keys: string[];
+  /** The maximum number of entries that can be retained in the local cryptographic materials cache. Default: `100`. */
   localCacheCapacity?: number;
+  /** The maximum time (in seconds) that a cache entry may be kept in the cache. Default: `300`. */
   maxCacheAgeSeconds?: number;
+  /** The maximum number of messages that may be encrypted under a cache entry. Default: `4294967296` (2^32). */
   maxMessagesEncrypted?: number;
+  /** The maximum number of bytes that may be encrypted under a cache entry. Default: `Number.MAX_SAFE_INTEGER`. */
   maxBytesEncrypted?: number;
 }
 
@@ -13,7 +20,7 @@ type EncryptFn = ReturnType<typeof buildEncrypt>['encrypt'];
 type DecryptFn = ReturnType<typeof buildDecrypt>['decrypt'];
 type CacheManager = Parameters<EncryptFn>[0];
 
-interface SDKClients {
+interface SDKClient {
   encryptFn: EncryptFn;
   decryptFn: DecryptFn;
   cacheManager: CacheManager;
@@ -21,14 +28,14 @@ interface SDKClients {
 
 export class AWSEncryptionSDKProvider implements EncryptionProvider {
   readonly #options: AWSEncryptionSDKProviderOptions;
-  #clients?: SDKClients;
+  #client?: SDKClient;
 
-  constructor(options: AWSEncryptionSDKProviderOptions) {
+  public constructor(options: AWSEncryptionSDKProviderOptions) {
     this.#options = options;
   }
 
-  async #init(): Promise<SDKClients> {
-    if (this.#clients) return this.#clients;
+  async #init(): Promise<SDKClient> {
+    if (this.#client) return this.#client;
 
     // Dynamic import — @aws-crypto/client-node is an optional peer dep,
     // so we only load it when encryption is actually used.
@@ -52,21 +59,20 @@ export class AWSEncryptionSDKProvider implements EncryptionProvider {
       this.#options.localCacheCapacity ?? 100
     );
 
-    this.#clients = {
+    this.#client = {
       encryptFn: encrypt,
       decryptFn: decrypt,
       cacheManager: new NodeCachingMaterialsManager({
         backingMaterials: keyring,
         cache,
         maxAge: (this.#options.maxCacheAgeSeconds ?? 300) * 1000,
-        maxMessagesEncrypted:
-          this.#options.maxMessagesEncrypted ?? 4294967296,
+        maxMessagesEncrypted: this.#options.maxMessagesEncrypted ?? 4294967296,
         maxBytesEncrypted:
           this.#options.maxBytesEncrypted ?? Number.MAX_SAFE_INTEGER,
       }),
     };
 
-    return this.#clients;
+    return this.#client;
   }
 
   async encrypt(
@@ -96,7 +102,7 @@ export class AWSEncryptionSDKProvider implements EncryptionProvider {
     if (context) {
       for (const [key, value] of Object.entries(context)) {
         if (messageHeader.encryptionContext[key] !== value) {
-          throw new Error(
+          throw new DataMaskingEncryptionError(
             `Encryption context mismatch for key '${key}'`
           );
         }

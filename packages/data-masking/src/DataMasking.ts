@@ -1,3 +1,7 @@
+import {
+  isNullOrUndefined,
+  isString,
+} from '@aws-lambda-powertools/commons/typeutils';
 import { DEFAULT_MASK_VALUE } from './constants.js';
 import {
   DataMaskingEncryptionError,
@@ -25,10 +29,12 @@ import type {
  * ```
  */
 export class DataMasking {
+  /** Encryption provider used by `encrypt()` and `decrypt()`; not required for `erase()`. */
   readonly #provider?: EncryptionProvider;
+  /** Whether to throw when a field path expression matches nothing in the data. */
   readonly #throwOnMissingField: boolean;
 
-  constructor(options?: DataMaskingConstructorOptions) {
+  public constructor(options?: DataMaskingConstructorOptions) {
     this.#provider = options?.provider;
     this.#throwOnMissingField = options?.throwOnMissingField ?? true;
   }
@@ -36,24 +42,33 @@ export class DataMasking {
   /**
    * Irreversibly mask fields in a data object. Returns a deep copy.
    *
+   * When called without options, the entire payload is replaced with the
+   * default mask value.
+   *
    * @example
    * ```typescript
    * const masked = masker.erase(data, { fields: ['email', 'customer.ssn'] });
    * ```
+   *
+   * @param data - The data to mask; returned as-is when `null` or `undefined`
+   * @param options - Options for the operation
+   * @param options.fields - Dot-notation path expressions for fields to mask (supports `.*` and `[*]` wildcards)
+   * @param options.maskingRules - Per-field custom masking rules keyed by dot-notation path; takes precedence over `fields`
    */
   erase<T>(data: T, options?: EraseOptions): T {
-    if (data === null || data === undefined) return data;
-    if (!options?.fields && !options?.maskingRules) {
+    if (isNullOrUndefined(data)) return data;
+    const { fields, maskingRules } = options ?? {};
+    if (!fields && !maskingRules) {
       return DEFAULT_MASK_VALUE as unknown as T;
     }
 
     const copy = this.#deepCopy(data);
 
-    if (options.maskingRules) {
-      this.#applyMaskingRules(copy, options.maskingRules);
+    if (maskingRules) {
+      this.#applyMaskingRules(copy, maskingRules);
     } else {
-      /* v8 ignore next -- @preserve fallback unreachable: line 46 returns early when fields is falsy */
-      this.#eraseFields(copy, options.fields ?? []);
+      /* v8 ignore next -- @preserve fallback unreachable: the early return above means fields is defined here */
+      this.#eraseFields(copy, fields ?? []);
     }
 
     return copy;
@@ -66,7 +81,7 @@ export class DataMasking {
         field
       )) {
         const value = getAtPath(copy, path);
-        if (typeof value !== 'string') {
+        if (!isString(value)) {
           throw new DataMaskingUnsupportedTypeError(
             `Masking rules only support string values, got ${typeof value} at path '${field}'`
           );
@@ -107,7 +122,12 @@ export class DataMasking {
     const provider = this.#requireProvider();
 
     if (!options?.fields) {
-      return provider.encrypt(JSON.stringify(data), options?.context);
+      const encryptedPayload = await provider.encrypt(
+        JSON.stringify(data),
+        options?.context
+      );
+
+      return encryptedPayload;
     }
 
     const copy = this.#deepCopy(data);
@@ -249,6 +269,15 @@ const getAtPath = (data: unknown, path: string[]): unknown => {
   return current;
 };
 
+/**
+ * Set `value` at the location identified by `path`, mutating `data` in place.
+ *
+ * Walks every path segment except the last to reach the parent container,
+ * then assigns the value to the final segment. Assumes the path was produced
+ * by `#resolveFieldPaths` against the same object, so intermediate containers
+ * are known to exist. Assignments to reserved keys (`__proto__`, `constructor`,
+ * `prototype`) are skipped to prevent prototype pollution.
+ */
 const setAtPath = (data: unknown, path: string[], value: unknown): void => {
   let current = data as Record<string, unknown>;
   for (let i = 0; i < path.length - 1; i++) {

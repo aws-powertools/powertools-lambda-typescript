@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/data-masking",
-  "version": "2.32.0",
+  "version": "2.33.1",
   "description": "A utility for masking and encrypting sensitive data in AWS Lambda functions",
   "author": {
     "name": "Amazon Web Services",
@@ -72,7 +72,7 @@
     "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
   },
   "dependencies": {
-    "@aws-lambda-powertools/commons": "2.32.0"
+    "@aws-lambda-powertools/commons": "2.33.1"
   },
   "peerDependencies": {
     "@aws-crypto/client-node": ">=4.x"

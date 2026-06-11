@@ -1,15 +1,15 @@
+export { DEFAULT_MASK_VALUE } from './constants.js';
 export { DataMasking } from './DataMasking.js';
 export {
+  DataMaskingEncryptionError,
   DataMaskingFieldNotFoundError,
   DataMaskingUnsupportedTypeError,
-  DataMaskingEncryptionError,
 } from './errors.js';
 export type {
-  EncryptionProvider,
-  EraseOptions,
-  EncryptOptions,
-  DecryptOptions,
-  MaskingRule,
   DataMaskingConstructorOptions,
+  DecryptOptions,
+  EncryptionProvider,
+  EncryptOptions,
+  EraseOptions,
+  MaskingRule,
 } from './types.js';
-export { DEFAULT_MASK_VALUE } from './constants.js';

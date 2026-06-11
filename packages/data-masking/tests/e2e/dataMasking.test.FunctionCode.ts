@@ -1,5 +1,5 @@
 import { DataMasking } from '../../src/index.js';
-import { AWSEncryptionSDKProvider } from '../../src/provider/index.js';
+import { AWSEncryptionSDKProvider } from '../../src/providers/kms/index.js';
 
 const provider = new AWSEncryptionSDKProvider({
   keys: [process.env.KMS_KEY_ARN ?? ''],

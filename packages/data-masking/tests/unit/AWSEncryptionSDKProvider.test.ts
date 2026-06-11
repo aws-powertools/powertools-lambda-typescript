@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { AWSEncryptionSDKProvider } from '../../src/provider/AWSEncryptionSDKProvider.js';
+import { AWSEncryptionSDKProvider } from '../../src/providers/kms/AWSEncryptionSDKProvider.js';
 
 vi.mock('@aws-crypto/client-node', () => {
   const mockEncrypt = vi.fn(async (_cmm: unknown, plaintext: Uint8Array) => ({

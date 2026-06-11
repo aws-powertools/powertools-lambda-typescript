@@ -172,7 +172,7 @@ Under the hood, we delegate a [number of operations](#encrypt-operation-with-enc
 
 ```typescript title="getting_started_encrypt_data.ts" hl_lines="1-2 4-6 13"
 import { DataMasking } from '@aws-lambda-powertools/data-masking';
-import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/provider';
+import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/providers/kms';
 
 const provider = new AWSEncryptionSDKProvider({
   keys: [process.env.KMS_KEY_ARN],  // (1)!
@@ -203,7 +203,7 @@ Under the hood, we delegate a [number of operations](#decrypt-operation-with-enc
 
 ```typescript title="getting_started_decrypt_data.ts" hl_lines="1-2 4-6 13"
 import { DataMasking } from '@aws-lambda-powertools/data-masking';
-import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/provider';
+import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/providers/kms';
 
 const provider = new AWSEncryptionSDKProvider({
   keys: [process.env.KMS_KEY_ARN],  // (1)!
@@ -482,7 +482,7 @@ Here are common scenarios to best visualise how to use `fields`.
 You can use multiple KMS keys from more than one AWS account for higher availability, when instantiating `AWSEncryptionSDKProvider`.
 
 ```typescript title="using_multiple_keys.ts" hl_lines="4"
-import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/provider';
+import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/providers/kms';
 
 const provider = new AWSEncryptionSDKProvider({
   keys: [process.env.KMS_KEY_ARN_1, process.env.KMS_KEY_ARN_2],
@@ -505,7 +505,7 @@ You can modify the following values when initialising the `AWSEncryptionSDKProvi
 If required, you can customise the default values when initialising the `AWSEncryptionSDKProvider` class.
 
 ```typescript title="aws_encryption_provider_example.ts" hl_lines="4-8"
-import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/provider';
+import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/providers/kms';
 
 const provider = new AWSEncryptionSDKProvider({
   keys: [process.env.KMS_KEY_ARN],

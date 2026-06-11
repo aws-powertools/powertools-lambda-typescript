@@ -88,16 +88,8 @@ Before you start, you will need a KMS symmetric key to encrypt and decrypt your 
 
 Erasing will remove the original data and replace it with `*****`. This means you cannot recover erased data, and the data type will change to `string` for all erased values.
 
-```typescript title="getting_started_erase_data.ts" hl_lines="1 3 8"
-import { DataMasking } from '@aws-lambda-powertools/data-masking';
-
-const masker = new DataMasking();
-
-export const handler = async (event: { body: Record<string, unknown> }) => {
-  const data = event.body;
-
-  return masker.erase(data, { fields: ['email', 'address.street', 'company_address'] }); // (1)!
-};
+```typescript title="getting_started_erase_data.ts" hl_lines="1 3 8-10"
+--8<-- "examples/snippets/data-masking/gettingStartedErase.ts"
 ```
 
 1. See [choosing parts of your data](#choosing-parts-of-your-data) to learn more about the `fields` option.
@@ -141,18 +133,8 @@ export const handler = async (event: { body: Record<string, unknown> }) => {
 
 The `erase` method also supports additional options for more advanced and flexible masking via `maskingRules`:
 
-```typescript title="custom_masking.ts" hl_lines="6-11"
-import { DataMasking } from '@aws-lambda-powertools/data-masking';
-
-const masker = new DataMasking();
-
-const masked = masker.erase(data, {
-  maskingRules: {
-    email: { regexPattern: /(.)(.*)(@.*)/, maskFormat: '$1****$3' },  // j****@example.com
-    ssn: { dynamicMask: true },                                       // mask length matches original
-    zip: { customMask: 'XXXXX' },                                     // fixed replacement string
-  },
-});
+```typescript title="custom_masking.ts" hl_lines="6-10"
+--8<-- "examples/snippets/data-masking/customMasking.ts:3"
 ```
 
 | Option | Description |
@@ -170,22 +152,8 @@ To encrypt, you will need an [encryption provider](#providers). Here, we will us
 
 Under the hood, we delegate a [number of operations](#encrypt-operation-with-encryption-sdk-kms) to AWS Encryption SDK to authenticate, create a portable encryption message, and actual data encryption.
 
-```typescript title="getting_started_encrypt_data.ts" hl_lines="1-2 4-6 13"
-import { DataMasking } from '@aws-lambda-powertools/data-masking';
-import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/providers/kms';
-
-const provider = new AWSEncryptionSDKProvider({
-  keys: [process.env.KMS_KEY_ARN],  // (1)!
-});
-const masker = new DataMasking({ provider });
-
-export const handler = async (event: { body: Record<string, unknown> }) => {
-  const data = event.body;
-
-  const encrypted = await masker.encrypt(data);
-
-  return { body: encrypted };
-};
+```typescript title="getting_started_encrypt_data.ts" hl_lines="1-2 4-6 12"
+--8<-- "examples/snippets/data-masking/gettingStartedEncrypt.ts"
 ```
 
 1. You can use more than one KMS Key for higher availability but increased latency.
@@ -201,22 +169,8 @@ To decrypt, you will need an [encryption provider](#providers). Here, we will us
 
 Under the hood, we delegate a [number of operations](#decrypt-operation-with-encryption-sdk-kms) to AWS Encryption SDK to verify authentication, integrity, and actual ciphertext decryption.
 
-```typescript title="getting_started_decrypt_data.ts" hl_lines="1-2 4-6 13"
-import { DataMasking } from '@aws-lambda-powertools/data-masking';
-import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/providers/kms';
-
-const provider = new AWSEncryptionSDKProvider({
-  keys: [process.env.KMS_KEY_ARN],  // (1)!
-});
-const masker = new DataMasking({ provider });
-
-export const handler = async (event: { body: Record<string, unknown> }) => {
-  const data = event.body;
-
-  const decrypted = await masker.decrypt(data);
-
-  return decrypted;
-};
+```typescript title="getting_started_decrypt_data.ts" hl_lines="1-2 4-6 12"
+--8<-- "examples/snippets/data-masking/gettingStartedDecrypt.ts"
 ```
 
 1. Note that KMS key alias or key ID won't work for decryption. You must use the full KMS Key ARN.
@@ -233,28 +187,16 @@ and even help to prevent a [confused deputy](https://docs.aws.amazon.com/IAM/lat
 
 === "Encrypting with context"
 
-    ```typescript hl_lines="3-6"
-    const encrypted = await masker.encrypt(data, {
-      fields: ['customer.ssn'],
-      context: {
-        tenantId: 'acme',
-        classification: 'confidential',
-      },  // (1)!
-    });
+    ```typescript hl_lines="10-14"
+    --8<-- "examples/snippets/data-masking/encryptWithContext.ts:3"
     ```
 
     1. They must match on `decrypt()` otherwise the operation will fail.
 
 === "Decrypting with context"
 
-    ```typescript hl_lines="3-6"
-    const decrypted = await masker.decrypt(encrypted, {
-      fields: ['customer.ssn'],
-      context: {
-        tenantId: 'acme',
-        classification: 'confidential',
-      },  // (1)!
-    });
+    ```typescript hl_lines="10-14"
+    --8<-- "examples/snippets/data-masking/decryptWithContext.ts:3"
     ```
 
     1. They must match otherwise the operation will fail.
@@ -369,7 +311,7 @@ Here are common scenarios to best visualise how to use `fields`.
 
     === "Data"
 
-        ```json hl_lines="6 11"
+        ```json hl_lines="6 10"
         {
             "name": "Jane",
             "address": [
@@ -387,7 +329,7 @@ Here are common scenarios to best visualise how to use `fields`.
 
     === "Result"
 
-        ```json hl_lines="6 11"
+        ```json hl_lines="6 10"
         {
             "name": "Jane",
             "address": [
@@ -411,7 +353,7 @@ Here are common scenarios to best visualise how to use `fields`.
 
     === "Data"
 
-        ```json hl_lines="3-5"
+        ```json hl_lines="4-6"
         {
             "name": "Jane",
             "credentials": {
@@ -424,7 +366,7 @@ Here are common scenarios to best visualise how to use `fields`.
 
     === "Result"
 
-        ```json hl_lines="3-5"
+        ```json hl_lines="4-6"
         {
             "name": "Jane",
             "credentials": {
@@ -482,11 +424,7 @@ Here are common scenarios to best visualise how to use `fields`.
 You can use multiple KMS keys from more than one AWS account for higher availability, when instantiating `AWSEncryptionSDKProvider`.
 
 ```typescript title="using_multiple_keys.ts" hl_lines="4"
-import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/providers/kms';
-
-const provider = new AWSEncryptionSDKProvider({
-  keys: [process.env.KMS_KEY_ARN_1, process.env.KMS_KEY_ARN_2],
-});
+--8<-- "examples/snippets/data-masking/usingMultipleKeys.ts"
 ```
 
 ### Providers
@@ -499,21 +437,13 @@ You can modify the following values when initialising the `AWSEncryptionSDKProvi
 | --- | --- | --- |
 | `localCacheCapacity` | `100` | The maximum number of entries that can be retained in the local cryptographic materials cache |
 | `maxCacheAgeSeconds` | `300` | The maximum time (in seconds) that a cache entry may be kept in the cache |
-| `maxMessagesEncrypted` | `4294967296` | The maximum number of messages that may be encrypted under a cache entry |
+| `maxMessagesEncrypted` | `4294967296` | The maximum number of messages that may be encrypted under a cache entry; the default is 2^32, the highest value the AWS Encryption SDK allows |
 | `maxBytesEncrypted` | `Number.MAX_SAFE_INTEGER` | The maximum number of bytes that may be encrypted under a cache entry |
 
 If required, you can customise the default values when initialising the `AWSEncryptionSDKProvider` class.
 
 ```typescript title="aws_encryption_provider_example.ts" hl_lines="4-8"
-import { AWSEncryptionSDKProvider } from '@aws-lambda-powertools/data-masking/providers/kms';
-
-const provider = new AWSEncryptionSDKProvider({
-  keys: [process.env.KMS_KEY_ARN],
-  localCacheCapacity: 200,
-  maxCacheAgeSeconds: 400,
-  maxMessagesEncrypted: 200,
-  maxBytesEncrypted: 2000,
-});
+--8<-- "examples/snippets/data-masking/awsEncryptionProviderExample.ts"
 ```
 
 ### Data masking request flow
@@ -652,19 +582,7 @@ Caching data keys during encrypt operation.
 Testing your code with a simple erase operation requires no mocking.
 
 ```typescript title="test_data_masking.test.ts"
-import { DataMasking } from '@aws-lambda-powertools/data-masking';
-
-const masker = new DataMasking();
-
-test('masks sensitive fields', () => {
-  const result = masker.erase(
-    { name: 'Jane', ssn: '123-45-6789' },
-    { fields: ['ssn'] }
-  );
-
-  expect(result.ssn).toBe('*****');
-  expect(result.name).toBe('Jane');
-});
+--8<-- "examples/snippets/data-masking/testingErase.ts"
 ```
 
 ### Testing encrypt/decrypt operations
@@ -672,22 +590,5 @@ test('masks sensitive fields', () => {
 For encrypt/decrypt, create a mock provider implementing the `EncryptionProvider` interface to avoid needing real KMS keys:
 
 ```typescript title="test_data_masking_encrypt.test.ts"
-import { DataMasking } from '@aws-lambda-powertools/data-masking';
-import type { EncryptionProvider } from '@aws-lambda-powertools/data-masking/types';
-
-const mockProvider: EncryptionProvider = {
-  encrypt: async (data: string) => `ENC:${data}`,
-  decrypt: async (data: string) => data.replace('ENC:', ''),
-};
-
-const masker = new DataMasking({ provider: mockProvider });
-
-test('encrypts and decrypts fields', async () => {
-  const data = { secret: 'value', public: 'visible' };
-
-  const encrypted = await masker.encrypt(data, { fields: ['secret'] });
-  const decrypted = await masker.decrypt(encrypted, { fields: ['secret'] });
-
-  expect(decrypted).toEqual(data);
-});
+--8<-- "examples/snippets/data-masking/testingEncryptDecrypt.ts"
 ```

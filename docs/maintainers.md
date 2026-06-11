@@ -299,10 +299,7 @@ This will kick off the [Post Release workflow](https://github.com/aws-powertools
 
 ### Run end to end tests
 
-!!! note
-    We are planning to automate this process in the future so that tests are run automatically when a PR is merged, see [#1149](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1149){target="_blank" rel="nofollow"}
-
-E2E tests should be ran before every merge to `main` or manually via [Run e2e Tests workflow](https://github.com/aws-powertools/powertools-lambda-typescript/actions/workflows/run-e2e-tests.yml) before making a release.
+E2E tests must be ran before making a release, manually via the [Run e2e Tests workflow](https://github.com/aws-powertools/powertools-lambda-typescript/actions/workflows/run-e2e-tests.yml). Maintainers should also run them manually for large contributions authored by maintainers before merging to `main`.
 
 To run locally, you need [AWS CDK CLI](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_prerequisites) and an [account bootstrapped](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) (`cdk bootstrap`). With a default AWS CLI profile configured, or `AWS_PROFILE` environment variable set, run `make e2e tests`.
 

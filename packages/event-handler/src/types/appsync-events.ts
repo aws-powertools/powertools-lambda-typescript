@@ -134,6 +134,20 @@ type RouterOptions = {
    * When no logger is provided, we'll only log warnings and errors using the global `console` object.
    */
   logger?: GenericLogger;
+  /**
+   * Whether to emit a warning log when an individual event in the response exceeds
+   * the AWS AppSync Events per-event size limit of 240 KB (including the event `id`).
+   *
+   * Events larger than this limit are silently dropped by AppSync, so enabling this
+   * helps you detect oversized payloads before they are lost. The warning is logged
+   * at most once per channel path to avoid log spam.
+   *
+   * Enabling this option has a performance cost, since each event in the response is
+   * serialized to measure its size. For this reason it is disabled by default.
+   *
+   * @default false
+   */
+  warnOnLargePayload?: boolean;
 };
 
 /**

@@ -20,6 +20,7 @@
     "test:e2e": "vitest --run tests/e2e",
     "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build:tests": "tsc --noEmit -p tests/tsconfig.json",
     "build": "npm run build:esm & npm run build:cjs",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
@@ -156,12 +157,13 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-appconfigdata": "^3.1014.0",
-    "@aws-sdk/client-dynamodb": "^3.1014.0",
-    "@aws-sdk/client-secrets-manager": "^3.1014.0",
-    "@aws-sdk/client-ssm": "^3.1014.0",
-    "@aws-sdk/util-dynamodb": "^3.996.2",
-    "@smithy/util-base64": "^4.3.0",
+    "@aws-sdk/client-appconfigdata": "^3.1067.0",
+    "@aws-sdk/client-dynamodb": "^3.1067.0",
+    "@aws-sdk/client-secrets-manager": "^3.1067.0",
+    "@aws-sdk/client-ssm": "^3.1067.0",
+    "@aws-sdk/util-dynamodb": "^3.996.4",
+    "@smithy/util-base64": "^4.4.6",
+    "@smithy/util-stream": "^4.4.6",
     "aws-sdk-client-mock": "^4.1.0"
   },
   "dependencies": {

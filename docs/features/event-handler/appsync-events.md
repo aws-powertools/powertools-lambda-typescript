@@ -184,6 +184,20 @@ If you want to omit one or more events from the response, you can do so by exclu
 
     1. You can also return an empty array `[]` to discard the entire batch and prevent subscribers from receiving it.
 
+### Detecting oversized events
+
+AWS AppSync Events limits each event to a [maximum size of 240 KB](https://docs.aws.amazon.com/appsync/latest/eventapi/event-api-concepts.html), including its `id`. Events larger than this limit are silently dropped by AppSync and never delivered to subscribers, which can be hard to diagnose.
+
+You can enable the `warnOnLargePayload` option to emit a warning log whenever an individual event in your response exceeds this limit. To avoid log spam, the warning is emitted at most once per channel path.
+
+=== "Warning on oversized events"
+
+    ```typescript hl_lines="5"
+    --8<-- "examples/snippets/event-handler/appsync-events/warnOnLargePayload.ts"
+    ```
+
+This option is disabled by default because measuring the size requires serializing each event in the response, which has a performance cost on large batches. Enable it while you investigate dropped messages, or keep it on if the overhead is acceptable for your workload.
+
 ### Handling errors
 
 You can filter or reject events by throwing exceptions in your resolvers or by formatting the payload according to the expected response structure. This instructs AppSync not to propagate that specific message, so subscribers will not receive it.

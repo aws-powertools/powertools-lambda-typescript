@@ -12,6 +12,15 @@ import { Router } from './Router.js';
 import { isAppSyncEventsEvent, isAppSyncEventsPublishEvent } from './utils.js';
 
 /**
+ * The maximum size in bytes of a single AWS AppSync Events event, including its `id`.
+ *
+ * Events larger than this limit are silently dropped by AppSync.
+ *
+ * @see {@link https://docs.aws.amazon.com/appsync/latest/eventapi/event-api-concepts.html}
+ */
+const MAX_EVENT_SIZE_IN_BYTES = 240 * 1024;
+
+/**
  * Resolver for AWS AppSync Events APIs.
  *
  * This resolver is designed to handle the `onPublish` and `onSubscribe` events
@@ -123,12 +132,16 @@ class AppSyncEventsResolver extends Router {
     const { handler, aggregate } = routeHandlerOptions;
     if (aggregate) {
       try {
-        return {
-          events: await (handler as OnPublishHandlerAggregateFn).apply(
-            options?.scope ?? this,
-            [event.events, event, context]
-          ),
-        };
+        const events = await (handler as OnPublishHandlerAggregateFn).apply(
+          options?.scope ?? this,
+          [event.events, event, context]
+        );
+        if (this.warnOnLargePayload && Array.isArray(events)) {
+          for (const item of events) {
+            this.#warnIfEventTooLarge(path, item);
+          }
+        }
+        return { events };
       } catch (error) {
         this.logger.error(`An error occurred in handler ${path}`, error);
         if (error instanceof UnauthorizedException) throw error;
@@ -144,10 +157,14 @@ class AppSyncEventsResolver extends Router {
               options?.scope ?? this,
               [payload, event, context]
             );
-            return {
+            const response = {
               id,
               payload: result,
             };
+            if (this.warnOnLargePayload) {
+              this.#warnIfEventTooLarge(path, response);
+            }
+            return response;
           } catch (error) {
             this.logger.error(`An error occurred in handler ${path}`, error);
             return {
@@ -192,6 +209,31 @@ class AppSyncEventsResolver extends Router {
       if (error instanceof UnauthorizedException) throw error;
       return this.#formatErrorResponse(error);
     }
+  }
+
+  /**
+   * Emit a warning when a single event in the response exceeds the AWS AppSync
+   * Events per-event size limit of 240 KB (including the event `id`).
+   *
+   * Events larger than this limit are silently dropped by AppSync, so this helps
+   * surface oversized payloads before they are lost. To avoid log spam, the warning
+   * is emitted at most once per channel path.
+   *
+   * The event is serialized with `JSON.stringify` to measure the size that AppSync
+   * sees on the wire, which is why this check is opt-in via the `warnOnLargePayload`
+   * option.
+   *
+   * @param path - The channel path the event was published to
+   * @param event - The assembled response event to measure
+   */
+  #warnIfEventTooLarge(path: string, event: unknown) {
+    if (this.largePayloadWarningSet.has(path)) return;
+    const sizeInBytes = Buffer.byteLength(JSON.stringify(event ?? null));
+    if (sizeInBytes <= MAX_EVENT_SIZE_IN_BYTES) return;
+    this.largePayloadWarningSet.add(path);
+    this.logger.warn(
+      `One or more events published to channel '${path}' exceed the AWS AppSync Events per-event size limit of ${MAX_EVENT_SIZE_IN_BYTES} bytes (got ${sizeInBytes} bytes). Events larger than this limit are silently dropped by AppSync and will not be delivered to subscribers.`
+    );
   }
 
   /**

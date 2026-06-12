@@ -188,10 +188,6 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
     if (segment) {
       subSegment = segment.addNewSubsegment(segmentName);
       tracer.setSegment(subSegment);
-
-      subSegment.http = {
-        request: getRequestData(reqCtx, url),
-      };
     }
 
     tracer.annotateColdStart();
@@ -212,9 +208,10 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
       throw err;
     } finally {
       if (segment && subSegment) {
-        if (subSegment.http) {
-          subSegment.http.response = getResponseData(reqCtx.res);
-        }
+        subSegment.http = {
+          request: getRequestData(reqCtx, url),
+          response: getResponseData(reqCtx.res),
+        };
         try {
           subSegment.close();
         } catch (error) {

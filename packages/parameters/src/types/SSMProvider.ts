@@ -7,7 +7,6 @@ import type {
   SSMClientConfig,
 } from '@aws-sdk/client-ssm';
 import type {
-  GetMaybeUndefined,
   GetMultipleOptionsInterface,
   GetOptionsInterface,
   TransformOptions,
@@ -273,8 +272,8 @@ type SSMGetParametersByNameOutput<InferredFromOptionsType = undefined> =
     ? Record<string, unknown> & { _errors?: string[] }
     : Record<string, InferredFromOptionsType> & { _errors?: string[] };
 
+export type { GetMaybeUndefined } from './BaseProvider.js';
 export type {
-  GetMaybeUndefined,
   SSMGetMultipleOptions,
   SSMGetMultipleOutput,
   SSMGetOptions,

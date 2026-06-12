@@ -5,11 +5,7 @@ import type {
   SecretsManagerClientConfig,
 } from '@aws-sdk/client-secrets-manager';
 import type { SecretsProvider } from '../secrets/SecretsProvider.js';
-import type {
-  GetMaybeUndefined,
-  GetOptionsInterface,
-  TransformOptions,
-} from './BaseProvider.js';
+import type { GetOptionsInterface, TransformOptions } from './BaseProvider.js';
 
 /**
  * Base interface for {@link SecretsProviderOptions | SecretsProviderOptions}.
@@ -104,9 +100,5 @@ type SecretsGetOutput<
           : never
   : ExplicitUserProvidedType;
 
-export type {
-  GetMaybeUndefined,
-  SecretsGetOptions,
-  SecretsGetOutput,
-  SecretsProviderOptions,
-};
+export type { GetMaybeUndefined } from './BaseProvider.js';
+export type { SecretsGetOptions, SecretsGetOutput, SecretsProviderOptions };

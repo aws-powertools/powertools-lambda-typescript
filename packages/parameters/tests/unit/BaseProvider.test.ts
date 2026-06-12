@@ -38,7 +38,7 @@ class TestProvider extends BaseProvider {
     this.store.set(key, value);
   }
 
-  public _get(_name: string): Promise<string> {
+  public _get(_name: string): Promise<string | undefined> {
     throw new Error('Not implemented.');
   }
 
@@ -107,9 +107,7 @@ describe('Class: BaseProvider', () => {
     it('returns undefined when the parameter is not found and throwOnMissing is not set', async () => {
       // Prepare
       const provider = new TestProvider();
-      vi.spyOn(provider, '_get').mockResolvedValue(
-        undefined as unknown as string
-      );
+      vi.spyOn(provider, '_get').mockResolvedValue(undefined);
 
       // Act
       const value = await provider.get('my-parameter');
@@ -121,9 +119,7 @@ describe('Class: BaseProvider', () => {
     it('throws a ParameterNotFoundError when the parameter is not found and throwOnMissing is set', async () => {
       // Prepare
       const provider = new TestProvider();
-      vi.spyOn(provider, '_get').mockResolvedValue(
-        undefined as unknown as string
-      );
+      vi.spyOn(provider, '_get').mockResolvedValue(undefined);
 
       // Act & Assess
       await expect(
@@ -134,7 +130,7 @@ describe('Class: BaseProvider', () => {
     it('throws a ParameterNotFoundError that is also a GetParameterError without a cause', async () => {
       // Prepare
       const provider = new TestProvider();
-      vi.spyOn(provider, '_get').mockResolvedValue(null as unknown as string);
+      vi.spyOn(provider, '_get').mockResolvedValue(undefined);
 
       // Act
       const error = await provider

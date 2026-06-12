@@ -1,0 +1,122 @@
+{
+  "name": "@aws-lambda-powertools/signer",
+  "version": "2.33.1",
+  "description": "The signer package for the Powertools for AWS Lambda (TypeScript) library.",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest --run tests/unit",
+    "test:unit": "vitest --run tests/unit",
+    "test:unit:coverage": "vitest --run tests/unit --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+    "test:unit:types": "vitest --run tests/types --typecheck",
+    "test:unit:watch": "vitest tests/unit",
+    "test:e2e:nodejs22x": "echo 'Not implemented'",
+    "test:e2e:nodejs24x": "echo 'Not implemented'",
+    "test:e2e": "echo 'Not implemented'",
+    "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build:tests": "tsc --noEmit -p tests/tsconfig.json",
+    "build": "npm run build:esm & npm run build:cjs",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
+    "lint:ci": "biome ci .",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+  },
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/signer#readme",
+  "license": "MIT-0",
+  "type": "module",
+  "exports": {
+    "./sigv4": {
+      "require": {
+        "types": "./lib/cjs/sigv4.d.ts",
+        "default": "./lib/cjs/sigv4.js"
+      },
+      "import": {
+        "types": "./lib/esm/sigv4.d.ts",
+        "default": "./lib/esm/sigv4.js"
+      }
+    },
+    "./fetch": {
+      "require": {
+        "types": "./lib/cjs/fetch.d.ts",
+        "default": "./lib/cjs/fetch.js"
+      },
+      "import": {
+        "types": "./lib/esm/fetch.d.ts",
+        "default": "./lib/esm/fetch.js"
+      }
+    },
+    "./errors": {
+      "require": {
+        "types": "./lib/cjs/errors.d.ts",
+        "default": "./lib/cjs/errors.js"
+      },
+      "import": {
+        "types": "./lib/esm/errors.d.ts",
+        "default": "./lib/esm/errors.js"
+      }
+    },
+    "./types": {
+      "require": {
+        "types": "./lib/cjs/types/index.d.ts",
+        "default": "./lib/cjs/types/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/types/index.d.ts",
+        "default": "./lib/esm/types/index.js"
+      }
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "sigv4": [
+        "lib/cjs/sigv4.d.ts",
+        "lib/esm/sigv4.d.ts"
+      ],
+      "fetch": [
+        "lib/cjs/fetch.d.ts",
+        "lib/esm/fetch.d.ts"
+      ],
+      "errors": [
+        "lib/cjs/errors.d.ts",
+        "lib/esm/errors.d.ts"
+      ],
+      "types": [
+        "lib/cjs/types/index.d.ts",
+        "lib/esm/types/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "signer",
+    "sigv4",
+    "signature-v4",
+    "iam",
+    "fetch",
+    "serverless",
+    "typescript",
+    "nodejs"
+  ],
+  "dependencies": {
+    "@smithy/signature-v4": "^5.4.6",
+    "@smithy/types": "^4.14.3"
+  }
+}

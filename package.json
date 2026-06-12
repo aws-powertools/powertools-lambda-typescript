@@ -18,7 +18,8 @@
     "examples/app",
     "packages/event-handler",
     "packages/validation",
-    "packages/kafka"
+    "packages/kafka",
+    "packages/data-masking"
   ],
   "type": "module",
   "scripts": {

@@ -4,7 +4,30 @@ import { Segment, Subsegment } from 'aws-xray-sdk-core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tracer as tracerMiddleware } from '../../../../src/http/middleware/tracer.js';
 import { Router } from '../../../../src/http/Router.js';
-import { createTestEvent, ResponseStream } from '../helpers.js';
+import {
+  createTestALBEvent,
+  createTestEvent,
+  createTestEventV2,
+  ResponseStream,
+} from '../helpers.js';
+
+type HttpData = {
+  request: {
+    method: string;
+    url: string;
+    user_agent?: string;
+    client_ip?: string;
+    x_forwarded_for?: boolean;
+  };
+  response?: {
+    status: number;
+    content_length?: number;
+  };
+};
+
+const getHttpData = (subsegment: Subsegment): HttpData | undefined =>
+  (subsegment as Subsegment & { http?: HttpData }).http;
+
 
 describe('Tracer Middleware', () => {
   let app: Router;
@@ -385,6 +408,203 @@ describe('Tracer Middleware', () => {
       // Assess
       expect(annotateColdStartSpy).toHaveBeenCalledTimes(1);
       expect(addServiceNameAnnotationSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('when populating the http field', () => {
+    it('adds request and response data to the subsegment', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      const mainSegment = new Segment('main');
+      const handlerSubsegment = new Subsegment('GET /test');
+      vi.spyOn(mainSegment, 'addNewSubsegment').mockReturnValue(
+        handlerSubsegment
+      );
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment').mockReturnValue(mainSegment);
+
+      app.use(tracerMiddleware(tracer));
+      app.get(
+        '/test',
+        () =>
+          new Response(JSON.stringify({ success: true }), {
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': '17',
+            },
+          })
+      );
+
+      // Act
+      await app.resolve(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(getHttpData(handlerSubsegment)).toEqual({
+        request: {
+          method: 'GET',
+          url: 'https://api.example.com/test',
+          client_ip: '192.0.2.1',
+        },
+        response: {
+          status: 200,
+          content_length: 17,
+        },
+      });
+    });
+
+    it('adds the user agent when the User-Agent header is present', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      const mainSegment = new Segment('main');
+      const handlerSubsegment = new Subsegment('GET /test');
+      vi.spyOn(mainSegment, 'addNewSubsegment').mockReturnValue(
+        handlerSubsegment
+      );
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment').mockReturnValue(mainSegment);
+
+      app.use(tracerMiddleware(tracer));
+      app.get('/test', () => ({ success: true }));
+
+      // Act
+      await app.resolve(
+        createTestEvent('/test', 'GET', { 'User-Agent': 'curl/8.7.1' }),
+        context
+      );
+
+      // Assess
+      expect(getHttpData(handlerSubsegment)?.request.user_agent).toBe(
+        'curl/8.7.1'
+      );
+    });
+
+    it('sets x_forwarded_for and resolves client_ip from the header for ALB events', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      const mainSegment = new Segment('main');
+      const handlerSubsegment = new Subsegment('GET /test');
+      vi.spyOn(mainSegment, 'addNewSubsegment').mockReturnValue(
+        handlerSubsegment
+      );
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment').mockReturnValue(mainSegment);
+
+      app.use(tracerMiddleware(tracer));
+      app.get('/test', () => ({ success: true }));
+
+      // Act
+      await app.resolve(
+        createTestALBEvent('/test', 'GET', {
+          'X-Forwarded-For': '203.0.113.1, 198.51.100.2',
+        }),
+        context
+      );
+
+      // Assess
+      const request = getHttpData(handlerSubsegment)?.request;
+      expect(request?.client_ip).toBe('203.0.113.1');
+      expect(request?.x_forwarded_for).toBe(true);
+    });
+
+    it('omits client_ip for ALB events without an X-Forwarded-For header', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      const mainSegment = new Segment('main');
+      const handlerSubsegment = new Subsegment('GET /test');
+      vi.spyOn(mainSegment, 'addNewSubsegment').mockReturnValue(
+        handlerSubsegment
+      );
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment').mockReturnValue(mainSegment);
+
+      app.use(tracerMiddleware(tracer));
+      app.get('/test', () => ({ success: true }));
+
+      // Act
+      await app.resolve(createTestALBEvent('/test', 'GET'), context);
+
+      // Assess
+      const request = getHttpData(handlerSubsegment)?.request;
+      expect(request?.client_ip).toBeUndefined();
+      expect(request?.x_forwarded_for).toBeUndefined();
+    });
+
+    it('resolves client_ip from the request context for API Gateway v2 events', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      const mainSegment = new Segment('main');
+      const handlerSubsegment = new Subsegment('GET /test');
+      vi.spyOn(mainSegment, 'addNewSubsegment').mockReturnValue(
+        handlerSubsegment
+      );
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment').mockReturnValue(mainSegment);
+
+      app.use(tracerMiddleware(tracer));
+      app.get('/test', () => ({ success: true }));
+
+      // Act
+      await app.resolve(createTestEventV2('/test', 'GET'), context);
+
+      // Assess
+      expect(getHttpData(handlerSubsegment)?.request.client_ip).toBe(
+        '127.0.0.1'
+      );
+    });
+
+    it('omits content_length when the Content-Length header is missing', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      const mainSegment = new Segment('main');
+      const handlerSubsegment = new Subsegment('GET /test');
+      vi.spyOn(mainSegment, 'addNewSubsegment').mockReturnValue(
+        handlerSubsegment
+      );
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment').mockReturnValue(mainSegment);
+
+      app.use(tracerMiddleware(tracer));
+      app.get('/test', () => ({ success: true }));
+
+      // Act
+      await app.resolve(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(getHttpData(handlerSubsegment)?.response).toEqual({
+        status: 200,
+      });
+    });
+
+    it('omits content_length when the Content-Length header is not a number', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      const mainSegment = new Segment('main');
+      const handlerSubsegment = new Subsegment('GET /test');
+      vi.spyOn(mainSegment, 'addNewSubsegment').mockReturnValue(
+        handlerSubsegment
+      );
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment').mockReturnValue(mainSegment);
+
+      app.use(tracerMiddleware(tracer));
+      app.get(
+        '/test',
+        () =>
+          new Response(JSON.stringify({ success: true }), {
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': 'not-a-number',
+            },
+          })
+      );
+
+      // Act
+      await app.resolve(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(
+        getHttpData(handlerSubsegment)?.response?.content_length
+      ).toBeUndefined();
     });
   });
 

@@ -415,4 +415,153 @@ describe('Class: AppSyncEventsResolver', () => {
     // Assess
     expect(console.error).toHaveBeenCalled();
   });
+
+  it('does not warn on large payloads when warnOnLargePayload is disabled', async () => {
+    // Prepare
+    const largePayload = 'a'.repeat(241 * 1024);
+    const app = new AppSyncEventsResolver({ logger: console });
+    app.onPublish('/foo', () => largePayload);
+
+    // Act
+    await app.resolve(
+      onPublishEventFactory([{ id: '1', payload: 'foo' }], {
+        path: '/foo',
+        segments: ['foo'],
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('warns when an individual event exceeds the per-event size limit', async () => {
+    // Prepare
+    const largePayload = 'a'.repeat(241 * 1024);
+    const app = new AppSyncEventsResolver({
+      logger: console,
+      warnOnLargePayload: true,
+    });
+    app.onPublish('/foo', () => largePayload);
+
+    // Act
+    await app.resolve(
+      onPublishEventFactory([{ id: '1', payload: 'foo' }], {
+        path: '/foo',
+        segments: ['foo'],
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "events published to channel '/foo' exceed the AWS AppSync Events per-event size limit"
+      )
+    );
+  });
+
+  it('does not warn when events are within the per-event size limit', async () => {
+    // Prepare
+    const app = new AppSyncEventsResolver({
+      logger: console,
+      warnOnLargePayload: true,
+    });
+    app.onPublish('/foo', (payload) => payload);
+
+    // Act
+    await app.resolve(
+      onPublishEventFactory([{ id: '1', payload: 'foo' }], {
+        path: '/foo',
+        segments: ['foo'],
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('warns at most once per channel path for large payloads', async () => {
+    // Prepare
+    const largePayload = 'a'.repeat(241 * 1024);
+    const app = new AppSyncEventsResolver({
+      logger: console,
+      warnOnLargePayload: true,
+    });
+    app.onPublish('/foo', () => largePayload);
+
+    // Act
+    await app.resolve(
+      onPublishEventFactory(
+        [
+          { id: '1', payload: 'foo' },
+          { id: '2', payload: 'bar' },
+        ],
+        { path: '/foo', segments: ['foo'] }
+      ),
+      context
+    );
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledTimes(1);
+  });
+
+  it('warns on large events when using aggregate mode', async () => {
+    // Prepare
+    const largePayload = 'a'.repeat(241 * 1024);
+    const app = new AppSyncEventsResolver({
+      logger: console,
+      warnOnLargePayload: true,
+    });
+    app.onPublish(
+      '/foo',
+      (events: OnPublishAggregatePayload) =>
+        events.map(({ id }) => ({ id, payload: largePayload })),
+      { aggregate: true }
+    );
+
+    // Act
+    await app.resolve(
+      onPublishEventFactory([{ id: '1', payload: 'foo' }], {
+        path: '/foo',
+        segments: ['foo'],
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "events published to channel '/foo' exceed the AWS AppSync Events per-event size limit"
+      )
+    );
+  });
+
+  it('does not throw or warn when an aggregate handler returns a nullish event', async () => {
+    // Prepare
+    const app = new AppSyncEventsResolver({
+      logger: console,
+      warnOnLargePayload: true,
+    });
+    app.onPublish(
+      '/foo',
+      // returns an array containing an undefined item, which must be handled gracefully
+      () => [undefined],
+      { aggregate: true }
+    );
+
+    // Act
+    const result = await app.resolve(
+      onPublishEventFactory([{ id: '1', payload: 'foo' }], {
+        path: '/foo',
+        segments: ['foo'],
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.warn).not.toHaveBeenCalled();
+    expect(result).toEqual({ events: [undefined] });
+  });
 });

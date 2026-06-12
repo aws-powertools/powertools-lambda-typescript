@@ -50,11 +50,11 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
-    "@biomejs/biome": "^2.4.16",
+    "@biomejs/biome": "^2.5.0",
     "@types/aws-lambda": "^8.10.162",
     "@types/node": "^25.9.3",
     "@vitest/coverage-v8": "^4.1.8",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.28.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
     "markdownlint-cli2": "^0.22.1",
@@ -72,5 +72,10 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "fsevents": true,
+    "protobufjs@7.5.8": true
   }
 }

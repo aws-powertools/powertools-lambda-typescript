@@ -637,6 +637,36 @@ class Metrics extends Utility implements MetricsInterface {
   }
 
   /**
+   * Flush the stored metrics when the instance goes out of a `using` scope.
+   *
+   * This implements the [`Disposable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/dispose)
+   * interface by delegating to {@link Metrics.publishStoredMetrics | `publishStoredMetrics()`}.
+   * When the binding declared with `using` leaves scope—including when an exception is thrown—the stored
+   * metrics are automatically flushed, removing the need for a manual `try/finally` block.
+   *
+   * The `using` keyword requires Node.js 24 or newer.
+   *
+   * @example
+   * ```typescript
+   * import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
+   *
+   * const metrics = new Metrics({
+   *   namespace: 'serverlessAirline',
+   *   serviceName: 'orders'
+   * });
+   *
+   * export const handler = async () => {
+   *   using _ = metrics;
+   *   metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+   *   // metrics are automatically flushed when the scope exits, including on exceptions
+   * };
+   * ```
+   */
+  public [Symbol.dispose](): void {
+    this.publishStoredMetrics();
+  }
+
+  /**
    * Sets the timestamp for the metric.
    *
    * If an integer is provided, it is assumed to be the epoch time in milliseconds.

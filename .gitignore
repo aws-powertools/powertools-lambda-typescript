@@ -53,4 +53,11 @@ tsconfig.tsbuildinfo
 .amazonq
 .kiro
 .github/instructions
-aidlc-docs
+aidlc-docsspecs/
+.specify/
+AGENTS.md
+# generated agent artifacts
+specs/
+.specify/
+AGENTS.md
+aidlc-docs/

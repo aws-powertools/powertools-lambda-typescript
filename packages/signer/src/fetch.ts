@@ -29,7 +29,7 @@ const createSignedFetcher = (
   const fetchImpl = options.fetch ?? fetch;
 
   return async (input, init) => {
-    const signed = await signer.sign(input as string | URL | Request, init);
+    const signed = await signer.sign(input, init);
     return fetchImpl(signed);
   };
 };

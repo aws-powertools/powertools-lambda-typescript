@@ -17,9 +17,9 @@ class Sha256 implements Checksum {
 
   public constructor(secret?: SourceData) {
     this.#hash =
-      secret !== undefined
-        ? createHmac('sha256', secret as Uint8Array | string)
-        : createHash('sha256');
+      secret === undefined
+        ? createHash('sha256')
+        : createHmac('sha256', secret as Uint8Array | string);
   }
 
   public update(data: SourceData): void {

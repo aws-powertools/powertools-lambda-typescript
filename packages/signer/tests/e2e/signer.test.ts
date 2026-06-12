@@ -1,7 +1,6 @@
 import { join } from 'node:path';
 import {
   invokeFunctionOnce,
-  TestInvocationLogs,
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -54,10 +53,24 @@ describe('Signer E2E tests', () => {
     );
     const logs = await invokeFunctionOnce({ functionName });
 
-    // The handler logs a single JSON line with all check results.
-    const functionLogs = logs.getFunctionLogs();
-    results = TestInvocationLogs.parseFunctionLog(
-      functionLogs[functionLogs.length - 1]
+    // The handler logs a single line with all check results as JSON. Depending
+    // on the runtime's log format, the line may be prefixed with a timestamp,
+    // request id, and level (tab-separated), or wrapped in a JSON log envelope.
+    // We locate the line by a known marker and parse from the first `{`, then
+    // unwrap a log envelope if necessary.
+    const resultLine = logs
+      .getFunctionLogs()
+      .find((log) => log.includes('"unsignedGet"'));
+    if (!resultLine) {
+      throw new Error(
+        `Could not find the results log line. Logs:\n${logs.getAllFunctionLogs().join('\n')}`
+      );
+    }
+    const parsed = JSON.parse(resultLine.slice(resultLine.indexOf('{')));
+    // If the runtime wrapped the console output in a JSON envelope, the actual
+    // payload is stringified under `message`.
+    results = (
+      'unsignedGet' in parsed ? parsed : JSON.parse(parsed.message)
     ) as Record<string, unknown>;
   });
 

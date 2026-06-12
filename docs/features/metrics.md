@@ -328,7 +328,9 @@ You can manually flush the metrics with `publishStoredMetrics` as follows:
 
 #### Using the `using` keyword
 
-If you are running on Node.js 24 or newer, the `Metrics` class implements the [`Disposable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/dispose){target="_blank"} interface. This means you can declare your instance with the [`using`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/using){target="_blank"} keyword and have your metrics flushed automatically when the binding goes out of scope, including when an exception is thrown. This is a lightweight alternative to wrapping your handler in a `try/finally` block.
+If you are running on Node.js 24 or newer, the `Metrics` class implements the [`Disposable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/dispose){target="_blank"} interface.
+This means you can declare your instance with the [`using`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/using){target="_blank"} keyword and have your metrics flushed automatically when the binding goes out of scope, including when an exception is thrown.
+This is a lightweight alternative to wrapping your handler in a `try/finally` block.
 
 !!! warning
     Metrics, dimensions and namespace validation still applies.

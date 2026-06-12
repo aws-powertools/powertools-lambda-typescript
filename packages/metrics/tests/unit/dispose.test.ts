@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_NAMESPACE } from '../../src/constants.js';
 import { Metrics, MetricUnit } from '../../src/index.js';
 
@@ -82,22 +82,36 @@ describe.skipIf(Number(process.versions.node.split('.')[0]) < 24)(
         expect.stringContaining('No application metrics to publish')
       );
     });
-
-    it('delegates to publishStoredMetrics when disposed directly', () => {
-      // Prepare
-      const metrics = new Metrics({
-        singleMetric: false,
-        namespace: DEFAULT_NAMESPACE,
-      });
-      vi.spyOn(metrics, 'publishStoredMetrics');
-      metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
-
-      // Act
-      metrics[Symbol.dispose]();
-
-      // Assess
-      expect(metrics.publishStoredMetrics).toHaveBeenCalledTimes(1);
-      expect(console.log).toHaveBeenCalledTimes(1);
-    });
   }
 );
+
+// `Symbol.dispose` itself is available on Node.js 22, so the method can be
+// exercised directly even where the `using` keyword is not supported.
+describe('Disposable support (direct dispose)', () => {
+  beforeEach(() => {
+    vi.stubEnv('POWERTOOLS_DEV', 'true');
+    vi.stubEnv('POWERTOOLS_METRICS_DISABLED', 'false');
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('delegates to publishStoredMetrics when disposed directly', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: false,
+      namespace: DEFAULT_NAMESPACE,
+    });
+    vi.spyOn(metrics, 'publishStoredMetrics');
+    metrics.addMetric('successfulBooking', MetricUnit.Count, 1);
+
+    // Act
+    metrics[Symbol.dispose]();
+
+    // Assess
+    expect(metrics.publishStoredMetrics).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledTimes(1);
+  });
+});

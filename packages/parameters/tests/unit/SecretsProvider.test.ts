@@ -2,10 +2,12 @@ import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import {
   GetSecretValueCommand,
+  ResourceNotFoundException,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { GetParameterError, ParameterNotFoundError } from '../../src/index.js';
 import { SecretsProvider } from '../../src/secrets/index.js';
 import type { SecretsProviderOptions } from '../../src/types/SecretsProvider.js';
 
@@ -117,6 +119,42 @@ describe('Class: SecretsProvider', () => {
 
       // Assess
       expect(result).toBe('bar');
+    });
+
+    it('throws a ParameterNotFoundError when the secret is missing and throwOnMissing is set', async () => {
+      // Prepare
+      const provider = new SecretsProvider();
+      const secretName = 'foo';
+      client.on(GetSecretValueCommand).rejects(
+        new ResourceNotFoundException({
+          message: "Secrets Manager can't find the specified secret.",
+          $metadata: {},
+        })
+      );
+
+      // Act & Assess
+      await expect(
+        provider.get(secretName, { throwOnMissing: true })
+      ).rejects.toThrow(ParameterNotFoundError);
+    });
+
+    it('throws the wrapped GetParameterError when the secret is missing and throwOnMissing is not set', async () => {
+      // Prepare
+      const provider = new SecretsProvider();
+      const secretName = 'foo';
+      client.on(GetSecretValueCommand).rejects(
+        new ResourceNotFoundException({
+          message: "Secrets Manager can't find the specified secret.",
+          $metadata: {},
+        })
+      );
+
+      // Act
+      const error = await provider.get(secretName).catch((err) => err);
+
+      // Assess
+      expect(error).toBeInstanceOf(GetParameterError);
+      expect(error).not.toBeInstanceOf(ParameterNotFoundError);
     });
 
     it('gets the secret binary when called with only a name', async () => {

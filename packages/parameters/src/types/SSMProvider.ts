@@ -272,6 +272,7 @@ type SSMGetParametersByNameOutput<InferredFromOptionsType = undefined> =
     ? Record<string, unknown> & { _errors?: string[] }
     : Record<string, InferredFromOptionsType> & { _errors?: string[] };
 
+export type { GetMaybeUndefined } from './BaseProvider.js';
 export type {
   SSMGetMultipleOptions,
   SSMGetMultipleOutput,

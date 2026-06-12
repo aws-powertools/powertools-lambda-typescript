@@ -145,6 +145,7 @@ type GetAppConfigOptions = Omit<
 > &
   AppConfigGetOptions;
 
+export type { GetMaybeUndefined } from './BaseProvider.js';
 export type {
   AppConfigGetOptions,
   AppConfigGetOutput,

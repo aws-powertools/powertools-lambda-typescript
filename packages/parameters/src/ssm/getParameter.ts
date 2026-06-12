@@ -1,5 +1,9 @@
 import { DEFAULT_PROVIDERS } from '../base/DefaultProviders.js';
-import type { SSMGetOptions, SSMGetOutput } from '../types/SSMProvider.js';
+import type {
+  GetMaybeUndefined,
+  SSMGetOptions,
+  SSMGetOutput,
+} from '../types/SSMProvider.js';
 import { SSMProvider } from './SSMProvider.js';
 
 /**
@@ -120,6 +124,7 @@ import { SSMProvider } from './SSMProvider.js';
  * @param options.transform - Optional transform to be applied, can be `json` or `binary`
  * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link GetParameterCommandInput | `GetParameterCommandInput`} except `Name`
  * @param options.decrypt - Optional flag to decrypt the value before returning it (default: `false`)
+ * @param options.throwOnMissing - Optional flag to throw a `ParameterNotFoundError` when the parameter is not found, which also narrows the return type to exclude `undefined` (default: `false`)
  */
 const getParameter = <
   ExplicitUserProvidedType = undefined,
@@ -128,14 +133,20 @@ const getParameter = <
   name: string,
   options?: NonNullable<InferredFromOptionsType & SSMGetOptions>
 ): Promise<
-  SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined
+  GetMaybeUndefined<
+    SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+    InferredFromOptionsType
+  >
 > => {
   if (!Object.hasOwn(DEFAULT_PROVIDERS, 'ssm')) {
     DEFAULT_PROVIDERS.ssm = new SSMProvider();
   }
 
   return (DEFAULT_PROVIDERS.ssm as SSMProvider).get(name, options) as Promise<
-    SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined
+    GetMaybeUndefined<
+      SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+      InferredFromOptionsType
+    >
   >;
 };
 

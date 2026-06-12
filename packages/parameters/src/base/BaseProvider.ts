@@ -5,7 +5,11 @@ import {
   isSdkClient,
   isString,
 } from '@aws-lambda-powertools/commons';
-import { GetParameterError, TransformParameterError } from '../errors.js';
+import {
+  GetParameterError,
+  ParameterNotFoundError,
+  TransformParameterError,
+} from '../errors.js';
 import type {
   BaseProviderConstructorOptions,
   BaseProviderInterface,
@@ -98,13 +102,22 @@ abstract class BaseProvider implements BaseProviderInterface {
     const key = [name, configs.transform].toString();
 
     if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
-      return this.store.get(key)?.value;
+      // biome-ignore lint/style/noNonNullAssertion: If the code enters this block, then the key must exist & not have been expired
+      return this.store.get(key)!.value;
     }
 
     try {
       let value = await this._get(name, options);
 
-      if (isNullOrUndefined(value)) return undefined;
+      if (isNullOrUndefined(value)) {
+        if (configs.throwOnMissing) {
+          throw new ParameterNotFoundError(
+            `Parameter ${name} not found in the store`
+          );
+        }
+
+        return undefined;
+      }
 
       if (
         configs.transform &&
@@ -118,6 +131,7 @@ abstract class BaseProvider implements BaseProviderInterface {
       return value;
     } catch (error) {
       if (error instanceof TransformParameterError) throw error;
+      if (error instanceof ParameterNotFoundError) throw error;
       throw new GetParameterError((error as Error).message, {
         cause: error,
       });

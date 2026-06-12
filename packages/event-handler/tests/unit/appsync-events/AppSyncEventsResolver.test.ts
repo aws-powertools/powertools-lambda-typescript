@@ -537,4 +537,31 @@ describe('Class: AppSyncEventsResolver', () => {
       )
     );
   });
+
+  it('does not throw or warn when an aggregate handler returns a nullish event', async () => {
+    // Prepare
+    const app = new AppSyncEventsResolver({
+      logger: console,
+      warnOnLargePayload: true,
+    });
+    app.onPublish(
+      '/foo',
+      // returns an array containing an undefined item, which must be handled gracefully
+      () => [undefined],
+      { aggregate: true }
+    );
+
+    // Act
+    const result = await app.resolve(
+      onPublishEventFactory([{ id: '1', payload: 'foo' }], {
+        path: '/foo',
+        segments: ['foo'],
+      }),
+      context
+    );
+
+    // Assess
+    expect(console.warn).not.toHaveBeenCalled();
+    expect(result).toEqual({ events: [undefined] });
+  });
 });

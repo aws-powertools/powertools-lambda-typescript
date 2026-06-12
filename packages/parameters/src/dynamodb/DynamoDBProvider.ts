@@ -15,6 +15,7 @@ import type {
   DynamoDBGetOptions,
   DynamoDBGetOutput,
   DynamoDBProviderOptions,
+  GetMaybeUndefined,
 } from '../types/DynamoDBProvider.js';
 
 /**
@@ -284,12 +285,16 @@ class DynamoDBProvider extends BaseProvider {
     name: string,
     options?: NonNullable<InferredFromOptionsType & DynamoDBGetOptions>
   ): Promise<
-    | DynamoDBGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-    | undefined
+    GetMaybeUndefined<
+      DynamoDBGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+      InferredFromOptionsType
+    >
   > {
     return super.get(name, options) as Promise<
-      | DynamoDBGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-      | undefined
+      GetMaybeUndefined<
+        DynamoDBGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+        InferredFromOptionsType
+      >
     >;
   }
 

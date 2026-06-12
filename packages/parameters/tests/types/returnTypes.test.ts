@@ -100,13 +100,12 @@ describe('Return types', () => {
     });
 
     // Act
-    const value: Record<string, unknown> | undefined = await getParameter(
-      parameterName,
-      { transform: 'json' }
-    );
+    const value: JSONValue | undefined = await getParameter(parameterName, {
+      transform: 'json',
+    });
 
     // Assess
-    expectTypeOf(value).toMatchTypeOf<Record<string, unknown> | undefined>();
+    expectTypeOf(value).toMatchTypeOf<JSONValue | undefined>();
   });
 
   it('casts the provided generic type when called and transform `JSON`', async () => {
@@ -184,13 +183,12 @@ describe('Return types', () => {
     });
 
     // Act
-    const value: Record<string, unknown> | undefined = await getSecret(
-      secretName,
-      { transform: 'json' }
-    );
+    const value: JSONValue | undefined = await getSecret(secretName, {
+      transform: 'json',
+    });
 
     // Assess
-    expectTypeOf(value).toMatchTypeOf<Record<string, unknown> | undefined>();
+    expectTypeOf(value).toMatchTypeOf<JSONValue | undefined>();
   });
 
   it('casts the provided generic type when called and transform `JSON`', async () => {
@@ -208,5 +206,94 @@ describe('Return types', () => {
 
     // Assess
     expectTypeOf(value).toMatchTypeOf<number | undefined>();
+  });
+
+  it('narrows the type to exclude undefined when throwOnMissing is set on getParameter', async () => {
+    // Prepare
+    const parameterName = 'foo';
+    ssmClient.on(GetParameterCommand).resolves({
+      Parameter: {
+        Value: 'my-value',
+      },
+    });
+
+    // Act
+    const value = await getParameter(parameterName, { throwOnMissing: true });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<string>();
+  });
+
+  it('keeps undefined in the type when throwOnMissing is false on getParameter', async () => {
+    // Prepare
+    const parameterName = 'foo';
+    ssmClient.on(GetParameterCommand).resolves({
+      Parameter: {
+        Value: 'my-value',
+      },
+    });
+
+    // Act
+    const value = await getParameter(parameterName, { throwOnMissing: false });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<string | undefined>();
+  });
+
+  it('narrows the type alongside a transform when throwOnMissing is set on getParameter', async () => {
+    // Prepare
+    const parameterName = 'foo';
+    ssmClient.on(GetParameterCommand).resolves({
+      Parameter: {
+        Value: JSON.stringify({ hello: 'world' }),
+      },
+    });
+
+    // Act
+    const value = await getParameter(parameterName, {
+      transform: 'json',
+      throwOnMissing: true,
+    });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<JSONValue>();
+  });
+
+  it('narrows the type to exclude undefined when throwOnMissing is set on getSecret', async () => {
+    // Prepare
+    const secretName = 'foo';
+    secretsClient.on(GetSecretValueCommand).resolves({
+      SecretString: 'my-value',
+    });
+
+    // Act
+    const value = await getSecret(secretName, { throwOnMissing: true });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<string | Uint8Array>();
+  });
+
+  it('narrows the type to exclude undefined when throwOnMissing is set on getAppConfig', async () => {
+    // Prepare
+    appConfigclient
+      .on(StartConfigurationSessionCommand)
+      .resolves({
+        InitialConfigurationToken: 'abcdefg',
+      })
+      .on(GetLatestConfigurationCommand)
+      .resolves({
+        Configuration: Uint8ArrayBlobAdapter.fromString('my-value'),
+        NextPollConfigurationToken: 'hijklmn',
+      });
+
+    // Act
+    const value = await getAppConfig('my-config', {
+      application: 'my-app',
+      environment: 'prod',
+      throwOnMissing: true,
+    });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<Uint8Array>();
   });
 });

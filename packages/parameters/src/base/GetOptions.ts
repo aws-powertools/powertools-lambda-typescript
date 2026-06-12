@@ -14,6 +14,7 @@ class GetOptions implements GetOptionsInterface {
   public forceFetch = false;
   public maxAge!: number;
   public sdkOptions?: unknown;
+  public throwOnMissing = false;
   public transform?: TransformOptions;
 
   public constructor(options: GetOptionsInterface = {}) {

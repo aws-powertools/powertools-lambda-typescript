@@ -167,6 +167,19 @@ If you'd like to always ensure you fetch the latest parameter from the store reg
 --8<-- "examples/snippets/parameters/forceFetch.ts"
 ```
 
+### Throwing on missing values
+
+By default, fetching a value that does not exist returns `undefined` for providers whose backend signals absence with an empty response (e.g. DynamoDB and AppConfig), while the SSM and Secrets Manager providers throw a `GetParameterError` because their underlying APIs raise a not-found error.
+
+If you'd rather fail fast with a dedicated, typed error in all cases, set the `throwOnMissing` option. When enabled, a missing value throws a `ParameterNotFoundError` and the return type is narrowed to exclude `undefined`, so you no longer need to guard against it.
+
+```typescript hl_lines="9 13" title="Throwing a ParameterNotFoundError when a value is missing"
+--8<-- "examples/snippets/parameters/throwOnMissing.ts"
+```
+
+???+ note
+    `ParameterNotFoundError` extends `GetParameterError`, so existing `catch` blocks that check for `GetParameterError` keep working. Use `ParameterNotFoundError` when you want to handle a genuinely missing value separately from other retrieval failures (e.g. network or permission errors).
+
 ### Built-in provider class
 
 For greater flexibility such as configuring the underlying SDK client used by built-in providers, you can use their respective Provider Classes directly.

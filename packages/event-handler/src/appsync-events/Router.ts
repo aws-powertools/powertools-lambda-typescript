@@ -34,6 +34,16 @@ class Router {
    * Whether the router is running in development mode.
    */
   protected readonly isDev: boolean = false;
+  /**
+   * Whether to emit a warning log when an individual event in the response
+   * exceeds the AWS AppSync Events per-event size limit of 240 KB.
+   */
+  protected readonly warnOnLargePayload: boolean = false;
+  /**
+   * A set of channel paths for which a large payload warning has already been
+   * emitted, used to avoid logging the same warning repeatedly.
+   */
+  protected readonly largePayloadWarningSet: Set<string> = new Set();
 
   public constructor(options?: RouterOptions) {
     const alcLogLevel = getStringFromEnv({
@@ -54,6 +64,7 @@ class Router {
       eventType: 'onSubscribe',
     });
     this.isDev = isDevMode();
+    this.warnOnLargePayload = options?.warnOnLargePayload ?? false;
   }
 
   /**

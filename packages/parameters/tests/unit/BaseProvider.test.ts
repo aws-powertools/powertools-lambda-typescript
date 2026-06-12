@@ -140,7 +140,7 @@ describe('Class: BaseProvider', () => {
       // Assess
       expect(error).toBeInstanceOf(ParameterNotFoundError);
       expect(error).toBeInstanceOf(GetParameterError);
-      expect(error.cause).toBeUndefined();
+      expect((error as ParameterNotFoundError).cause).toBeUndefined();
     });
 
     it('does not throw when the parameter resolves to a falsy but present value and throwOnMissing is set', async () => {

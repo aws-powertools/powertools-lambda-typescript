@@ -100,13 +100,12 @@ describe('Return types', () => {
     });
 
     // Act
-    const value: Record<string, unknown> | undefined = await getParameter(
-      parameterName,
-      { transform: 'json' }
-    );
+    const value: JSONValue | undefined = await getParameter(parameterName, {
+      transform: 'json',
+    });
 
     // Assess
-    expectTypeOf(value).toMatchTypeOf<Record<string, unknown> | undefined>();
+    expectTypeOf(value).toMatchTypeOf<JSONValue | undefined>();
   });
 
   it('casts the provided generic type when called and transform `JSON`', async () => {
@@ -184,13 +183,12 @@ describe('Return types', () => {
     });
 
     // Act
-    const value: Record<string, unknown> | undefined = await getSecret(
-      secretName,
-      { transform: 'json' }
-    );
+    const value: JSONValue | undefined = await getSecret(secretName, {
+      transform: 'json',
+    });
 
     // Assess
-    expectTypeOf(value).toMatchTypeOf<Record<string, unknown> | undefined>();
+    expectTypeOf(value).toMatchTypeOf<JSONValue | undefined>();
   });
 
   it('casts the provided generic type when called and transform `JSON`', async () => {

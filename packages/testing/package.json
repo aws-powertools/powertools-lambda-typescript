@@ -104,7 +104,7 @@
     "@aws/lambda-invoke-store": "0.2.4",
     "@smithy/util-utf8": "^4.3.6",
     "aws-cdk-lib": "^2.259.0",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.28.1",
     "promise-retry": "^2.0.1"
   },
   "devDependencies": {

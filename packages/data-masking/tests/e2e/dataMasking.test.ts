@@ -46,12 +46,18 @@ describe('DataMasking E2E tests', () => {
     pendingWindow: Duration.days(7),
   });
 
+  // The provider is constructed at module load for every handler in this file,
+  // and its keyring rejects an empty key, so even the erase function needs a
+  // valid key ARN. It never calls KMS, so it doesn't need encrypt/decrypt grants.
   let functionNameErase: string;
   new TestNodejsFunction(
     testStack,
     {
       entry: lambdaFunctionCodeFilePath,
       handler: 'handlerErase',
+      environment: {
+        KMS_KEY_ARN: kmsKey.keyArn,
+      },
     },
     { nameSuffix: 'erase' }
   );

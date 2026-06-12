@@ -132,6 +132,8 @@ jobs:
       - *setup_dependencies
       - name: Run linting
         run: npm run lint:ci -w examples/snippets
+      - name: Type check snippets
+        run: npm run build:tests -w examples/snippets
   check-docs:
     permissions:
       contents: read

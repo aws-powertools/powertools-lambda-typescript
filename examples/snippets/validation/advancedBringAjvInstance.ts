@@ -1,7 +1,7 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 import { validate } from '@aws-lambda-powertools/validation';
 import { SchemaValidationError } from '@aws-lambda-powertools/validation/errors';
-import Ajv2019 from 'ajv/dist/2019';
+import { Ajv2019 } from 'ajv/dist/2019.js';
 import { inboundSchema } from './schemas.js';
 
 const logger = new Logger();

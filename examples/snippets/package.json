@@ -7,10 +7,12 @@
     "url": "https://aws.amazon.com"
   },
   "private": true,
+  "type": "module",
   "scripts": {
     "test": "echo 'Not Applicable'",
     "test:e2e": "echo 'Not Applicable'",
     "build": "echo 'Not Applicable'",
+    "build:tests": "tsc --noEmit -p tsconfig.json",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
     "lint:ci": "biome ci ."

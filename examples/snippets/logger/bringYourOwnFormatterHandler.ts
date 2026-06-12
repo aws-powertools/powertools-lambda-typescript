@@ -1,6 +1,6 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { Context } from 'aws-lambda';
-import { MyCompanyLogFormatter } from './bringYourOwnFormatterClass';
+import { MyCompanyLogFormatter } from './bringYourOwnFormatterClass.js';
 
 const logger = new Logger({
   logFormatter: new MyCompanyLogFormatter(),

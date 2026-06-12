@@ -100,4 +100,5 @@ type SecretsGetOutput<
           : never
   : ExplicitUserProvidedType;
 
+export type { GetMaybeUndefined } from './BaseProvider.js';
 export type { SecretsGetOptions, SecretsGetOutput, SecretsProviderOptions };

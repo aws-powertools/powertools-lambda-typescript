@@ -174,15 +174,17 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
     const segmentName = `${reqCtx.req.method} ${url.pathname}`;
 
     const segment = tracer.getSegment();
-    let subSegment: Subsegment | undefined;
+    // The `http` field is not part of the public `Subsegment` type, but the
+    // X-Ray SDK reads it when serializing the segment. See `SegmentHttpData`.
+    let subSegment: (Subsegment & { http: SegmentHttpData }) | undefined;
 
     if (segment) {
-      subSegment = segment.addNewSubsegment(segmentName);
+      subSegment = segment.addNewSubsegment(segmentName) as Subsegment & {
+        http: SegmentHttpData;
+      };
       tracer.setSegment(subSegment);
 
-      // The `http` field is not part of the public `Subsegment` type, but the
-      // X-Ray SDK reads it when serializing the segment. See `SegmentHttpData`.
-      (subSegment as Subsegment & { http: SegmentHttpData }).http = {
+      subSegment.http = {
         request: getRequestData(reqCtx, url),
       };
     }
@@ -205,8 +207,7 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
       throw err;
     } finally {
       if (segment && subSegment) {
-        (subSegment as Subsegment & { http: SegmentHttpData }).http.response =
-          getResponseData(reqCtx.res);
+        subSegment.http.response = getResponseData(reqCtx.res);
         try {
           subSegment.close();
         } catch (error) {

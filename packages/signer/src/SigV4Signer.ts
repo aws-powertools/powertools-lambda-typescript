@@ -142,8 +142,12 @@ class SigV4Signer implements Signer {
 
   /**
    * Buffer the request body so it can be both hashed for signing and replayed
-   * when the signed request is sent. Streaming bodies that cannot be buffered
-   * are not supported.
+   * when the signed request is sent.
+   *
+   * Most bodies (strings, buffers, and finite streams) are buffered
+   * transparently. A body that cannot be read or replayed — for example a
+   * stream that errors mid-read — cannot be signed and results in a
+   * {@link RequestSigningError | `RequestSigningError`}.
    */
   async #readBody(request: Request): Promise<Uint8Array | undefined> {
     if (request.body === null || request.body === undefined) {
@@ -155,7 +159,7 @@ class SigV4Signer implements Signer {
       return buffer.byteLength === 0 ? undefined : new Uint8Array(buffer);
     } catch (error) {
       throw new RequestSigningError(
-        'Unable to read the request body to sign it. Streaming request bodies are not supported yet; buffer the body before signing.',
+        'Unable to read the request body to sign it. The body could not be buffered, for example because it is a stream that cannot be replayed.',
         { cause: error }
       );
     }

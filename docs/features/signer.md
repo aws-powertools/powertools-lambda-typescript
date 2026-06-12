@@ -76,10 +76,10 @@ The signer throws typed errors that all extend `SignerError`:
 | Error                 | When it is thrown                                                                                          |
 | --------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `SignerConfigError`   | The region cannot be determined (at construction), or credentials are missing or cannot be resolved.       |
-| `RequestSigningError` | Signing the request fails, for example because the request has a streaming body that cannot be buffered.   |
+| `RequestSigningError` | Signing the request fails, for example because the request body cannot be read or replayed.                |
 | `SignerError`         | Base class for the errors above. Catch this to handle any signer error.                                    |
 
 You can import them from the `@aws-lambda-powertools/signer/errors` subpath.
 
-!!! note "Streaming request bodies"
-    To compute the request signature, the request body is buffered and hashed. Non-replayable streaming request bodies are not supported yet; buffer the body before signing.
+!!! note "Request bodies"
+    To compute the request signature, the request body is buffered and hashed. Strings, buffers, and finite streams are handled transparently. A body that cannot be read or replayed — for example a stream that errors mid-read — cannot be signed and raises a `RequestSigningError`.

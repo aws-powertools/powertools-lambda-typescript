@@ -16,7 +16,7 @@ const jsonObject = (): fc.Arbitrary<Record<string, unknown>> =>
         fc.integer(),
         fc.boolean(),
         fc.constant(null),
-        fc.array(tie('value'), { maxLength: 3, depthSize: 'small' }),
+        fc.array(tie('value'), { maxLength: 3, size: 'small' }),
         fc.dictionary(fc.string({ minLength: 1, maxLength: 5 }), tie('value'), {
           maxKeys: 3,
         })

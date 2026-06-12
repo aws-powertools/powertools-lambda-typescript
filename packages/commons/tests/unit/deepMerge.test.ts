@@ -610,7 +610,7 @@ describe('Function: deepMerge', () => {
       const source = { a: [{ x: 1 }, { y: 2 }] };
 
       // Act
-      const result = deepMerge({}, source);
+      const result = deepMerge({}, source) as typeof source;
       result.a[0].x = 999;
 
       // Assess

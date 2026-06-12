@@ -32,7 +32,7 @@ class Lambda implements LambdaInterface {
     defaultDimensions: JSON.parse(defaultDimensions),
     throwOnEmptyMetrics: true,
   })
-  public handler(_event: unknown, _context: Context) {
+  public async handler(_event: unknown, _context: Context) {
     metrics.addMetric(metricName, metricUnit, Number.parseInt(metricValue, 10));
     metrics.addDimension(
       Object.entries(JSON.parse(extraDimension))[0][0],

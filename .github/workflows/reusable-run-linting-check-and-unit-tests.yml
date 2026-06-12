@@ -70,6 +70,8 @@ jobs:
           nodeVersion: ${{ matrix.version }}
       - name: Linting
         run: npm run lint -w ${{ matrix.workspace }}
+      - name: Type check tests
+        run: npm run build:tests -w ${{ matrix.workspace }}
       - name: Unit tests
         run: |
           npm run test:unit:coverage -w ${{ matrix.workspace }}

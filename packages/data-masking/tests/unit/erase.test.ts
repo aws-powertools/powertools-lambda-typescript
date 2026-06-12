@@ -255,16 +255,16 @@ describe('DataMasking.erase() - custom masking rules', () => {
     expect(result.zip).toBe('XXXXX');
   });
 
-  it('throws DataMaskingUnsupportedTypeError for non-string values', () => {
-    const data = { age: 30 };
+  it('stringifies non-string values before applying a rule', () => {
+    const data: Record<string, unknown> = { age: 30 };
 
-    expect(() =>
-      masker.erase(data, {
-        maskingRules: {
-          age: { dynamicMask: true },
-        },
-      })
-    ).toThrow(DataMaskingUnsupportedTypeError);
+    const result = masker.erase(data, {
+      maskingRules: {
+        age: { dynamicMask: true },
+      },
+    });
+
+    expect(result.age).toBe('**'); // String(30) -> '30' -> '**'
   });
 
   it('applies default mask when no rule options specified', () => {
@@ -278,35 +278,130 @@ describe('DataMasking.erase() - custom masking rules', () => {
 
     expect(result.secret).toBe('*****');
   });
+});
 
-  it('prefers customMask over dynamicMask when a JS caller passes both', () => {
-    const data = { ssn: '123-45-6789' };
+describe('DataMasking.erase() - top-level masking rule', () => {
+  const masker = new DataMasking();
+
+  it('applies a top-level rule to every listed field', () => {
+    const data = { ssn: '123-45-6789', card: '4111-1111', name: 'Jane' };
 
     const result = masker.erase(data, {
-      maskingRules: {
-        // type system forbids this combination; JS callers can still pass it
-        ssn: { customMask: 'XX', dynamicMask: true } as never,
-      },
+      fields: ['ssn', 'card'],
+      dynamicMask: true,
     });
 
-    expect(result.ssn).toBe('XX');
+    expect(result.ssn).toBe('***********');
+    expect(result.card).toBe('*********');
+    expect(result.name).toBe('Jane');
   });
 
-  it('prefers regex masking over all other strategies when a JS caller passes everything', () => {
-    const data = { email: 'jane@example.com' };
+  it('lets per-field maskingRules override the top-level rule', () => {
+    const data = { ssn: '123-45-6789', card: '4111-1111' };
 
     const result = masker.erase(data, {
+      fields: ['ssn', 'card'],
+      dynamicMask: true,
       maskingRules: {
-        email: {
-          regexPattern: /^(.)([^@]*)(@.*)$/,
-          maskFormat: '$1****$3',
-          customMask: 'XX',
-          dynamicMask: true,
-        } as never,
+        card: { customMask: 'XXXX' },
       },
     });
 
-    expect(result.email).toBe('j****@example.com');
+    // ssn falls through to the top-level dynamic mask, card uses its own rule
+    expect(result.ssn).toBe('***********');
+    expect(result.card).toBe('XXXX');
+  });
+
+  it('masks fields named only in maskingRules even without listing them in fields', () => {
+    const data = { ssn: '123-45-6789', card: '4111-1111', name: 'Jane' };
+
+    const result = masker.erase(data, {
+      fields: ['ssn'],
+      dynamicMask: true,
+      maskingRules: {
+        card: { customMask: 'XXXX' },
+      },
+    });
+
+    expect(result.ssn).toBe('***********');
+    expect(result.card).toBe('XXXX');
+    expect(result.name).toBe('Jane');
+  });
+
+  it('applies a top-level rule to every leaf when no fields are given', () => {
+    const data = {
+      ssn: '123-45-6789',
+      customer: { card: '4111', city: 'Anytown' },
+    };
+
+    const result = masker.erase(data, { dynamicMask: true });
+
+    expect(result.ssn).toBe('***********');
+    expect(result.customer.card).toBe('****');
+    expect(result.customer.city).toBe('*******');
+  });
+
+  it('stringifies non-string leaves when applying a top-level rule to all leaves', () => {
+    const data: Record<string, unknown> = { age: 30, active: true };
+
+    const result = masker.erase(data, {
+      dynamicMask: true,
+    });
+
+    expect(result.age).toBe('**'); // String(30) -> '30' -> '**'
+    expect(result.active).toBe('****'); // String(true) -> 'true' -> '****'
+  });
+
+  it('applies a top-level rule to array elements element-wise', () => {
+    const data = { cards: ['4111', '5500-0000'] };
+
+    const result = masker.erase(data, { dynamicMask: true });
+
+    expect(result.cards).toEqual(['****', '*********']);
+  });
+
+  it('masks a top-level scalar payload with a top-level rule', () => {
+    const result = masker.erase('123-45-6789', { dynamicMask: true });
+
+    expect(result).toBe('***********');
+  });
+
+  it('passes null/undefined leaves through unchanged when masking all leaves', () => {
+    const data: Record<string, unknown> = {
+      ssn: '123',
+      maybe: null,
+      missing: undefined,
+    };
+
+    const result = masker.erase(data, { customMask: 'X' });
+
+    expect(result.ssn).toBe('X');
+    expect(result.maybe).toBeNull();
+    expect(result.missing).toBeUndefined();
+  });
+
+  it('stringifies non-string fields before applying a top-level rule', () => {
+    const data: Record<string, unknown> = { age: 30 };
+
+    const result = masker.erase(data, {
+      fields: ['age'],
+      dynamicMask: true,
+    });
+
+    expect(result.age).toBe('**'); // String(30) -> '30' -> '**'
+  });
+
+  it('applies a top-level regex rule across listed fields', () => {
+    const data = { primary: 'jane@example.com', backup: 'bob@example.com' };
+
+    const result = masker.erase(data, {
+      fields: ['primary', 'backup'],
+      regexPattern: /^(.)([^@]*)(@.*)$/,
+      maskFormat: '$1****$3',
+    });
+
+    expect(result.primary).toBe('j****@example.com');
+    expect(result.backup).toBe('b****@example.com');
   });
 });
 

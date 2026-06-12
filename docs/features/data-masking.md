@@ -143,6 +143,17 @@ The `erase` method also supports additional options for more advanced and flexib
 | `dynamicMask: true` | Replace with `*` repeated to match original value length |
 | `customMask` | Replace with an exact string |
 
+You can also set a masking rule at the **top level** of the options object to apply the same strategy across many fields at once, instead of repeating it under `maskingRules` for each one:
+
+```typescript title="top_level_masking.ts" hl_lines="9 17"
+--8<-- "examples/snippets/data-masking/topLevelMasking.ts:3"
+```
+
+A top-level rule is applied to every path listed in `fields`. When `fields` is omitted, the rule is applied to **every leaf value** in the payload. Per-field `maskingRules` always take precedence over the top-level rule for the paths they name.
+
+!!! note
+    A masking rule — top-level or per-field — coerces its target to a string before masking, so non-string values like numbers and booleans are stringified first (`null` and `undefined` pass through unchanged). A plain `fields` erase with no rule instead replaces any value with `*****` regardless of type.
+
 ### Encrypting data
 
 ???+ note "About static typing and encryption"

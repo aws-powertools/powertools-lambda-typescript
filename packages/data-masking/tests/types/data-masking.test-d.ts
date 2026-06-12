@@ -31,11 +31,22 @@ describe('DataMasking type tests', () => {
     expectTypeOf(result).toEqualTypeOf<null>();
   });
 
-  it('erase rejects fields and maskingRules together', () => {
+  it('erase accepts fields, a top-level rule, and maskingRules together', () => {
+    const data = { ssn: '123', card: '4111' };
+    const result = masker.erase(data, {
+      fields: ['ssn', 'card'],
+      dynamicMask: true,
+      maskingRules: { card: { customMask: 'XXXX' } },
+    });
+
+    expectTypeOf(result).toEqualTypeOf<{ ssn: string; card: string }>();
+  });
+
+  it('erase rejects conflicting top-level masking strategies', () => {
     const data = { ssn: '123' };
 
-    // @ts-expect-error - fields and maskingRules are mutually exclusive
-    masker.erase(data, { fields: ['ssn'], maskingRules: { ssn: {} } });
+    // @ts-expect-error - customMask and dynamicMask are mutually exclusive
+    masker.erase(data, { fields: ['ssn'], customMask: 'X', dynamicMask: true });
   });
 
   it('erase rejects conflicting masking rule strategies', () => {

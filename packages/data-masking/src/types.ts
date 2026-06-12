@@ -57,19 +57,23 @@ export type MaskingRule =
 /**
  * Options for {@link DataMasking.erase}.
  *
- * `fields` and `maskingRules` are mutually exclusive: provide one or the other.
+ * All three layers are optional and compose:
+ * - a top-level {@link MaskingRule} (`regexPattern` + `maskFormat`, `dynamicMask`, or
+ *   `customMask`) sets the default masking strategy;
+ * - `fields` selects the dot-notation paths to mask — when omitted, a top-level rule is
+ *   applied to every leaf value in the payload;
+ * - `maskingRules` provides per-field rules that take precedence over the top-level rule
+ *   for the paths they name.
+ *
+ * Calling {@link DataMasking.erase} with no options at all replaces the entire payload
+ * with the default mask value.
  */
-export type EraseOptions =
-  | {
-      /** Dot-notation path expressions for fields to mask (supports `.*` and `[*]` wildcards). */
-      fields: string[];
-      maskingRules?: never;
-    }
-  | {
-      /** Per-field custom masking rules keyed by dot-notation path. */
-      maskingRules: Record<string, MaskingRule>;
-      fields?: never;
-    };
+export type EraseOptions = MaskingRule & {
+  /** Dot-notation path expressions for fields to mask (supports `.*` and `[*]` wildcards). */
+  fields?: string[];
+  /** Per-field custom masking rules keyed by dot-notation path; override the top-level rule. */
+  maskingRules?: Record<string, MaskingRule>;
+};
 
 /**
  * Return type of {@link DataMasking.erase} when called without options:

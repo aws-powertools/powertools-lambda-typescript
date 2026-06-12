@@ -51,20 +51,46 @@ export class DataMasking {
   /**
    * Irreversibly mask fields in a data object. Returns a deep copy.
    *
+   * The options compose three layers (see {@link EraseOptions}):
+   * - a top-level {@link MaskingRule} (`regexPattern` + `maskFormat`, `dynamicMask`,
+   *   or `customMask`) sets the default masking strategy;
+   * - `fields` selects the paths to mask with that strategy — when omitted, a
+   *   top-level rule is applied to every leaf value in the payload;
+   * - `maskingRules` provides per-field rules that take precedence over the
+   *   top-level rule for the paths they name.
+   *
    * @example
    * ```typescript
-   * const masked = masker.erase(data, { fields: ['email', 'customer.ssn'] });
+   * // mask two fields with the same strategy, overriding one of them
+   * const masked = masker.erase(data, {
+   *   fields: ['ssn', 'card'],
+   *   dynamicMask: true,
+   *   maskingRules: { card: { customMask: 'XXXX' } },
+   * });
    * ```
    *
    * @param data - The data to mask; returned as-is when `null` or `undefined`
-   * @param options - Options for the operation, see {@link EraseOptions}: either `fields` (dot-notation path expressions supporting `.*` and `[*]` wildcards) or `maskingRules` (per-field custom rules keyed by path)
+   * @param options - Options for the operation, see {@link EraseOptions}
    */
   erase<T>(data: T, options: EraseOptions): T;
   erase(data: unknown, options?: EraseOptions): unknown {
     if (isNullOrUndefined(data)) return data;
-    const fields = options?.fields;
-    const maskingRules = options?.maskingRules;
+
+    const { fields, maskingRules, ...topLevelRule } = options ?? {};
+    const hasTopLevelRule = isMaskingRule(topLevelRule);
+
     if (!fields && !maskingRules) {
+      // A top-level rule with no fields applies to every leaf in the payload.
+      if (hasTopLevelRule) {
+        if (typeof data !== 'object' || data === null) {
+          return maskLeaf(data, topLevelRule);
+        }
+        const copy = this.#deepCopy(data);
+        applyRuleToLeaves(copy, topLevelRule);
+
+        return copy;
+      }
+      // No options at all: collapse the whole payload to the mask value.
       return Array.isArray(data)
         ? data.map(() => DEFAULT_MASK_VALUE)
         : DEFAULT_MASK_VALUE;
@@ -72,34 +98,47 @@ export class DataMasking {
 
     const copy = this.#deepCopy(data);
 
-    if (maskingRules) {
-      this.#applyMaskingRules(copy, maskingRules);
-    } else {
-      /* v8 ignore next -- @preserve fallback unreachable: the early return above means fields is defined here */
-      this.#eraseFields(copy, fields ?? []);
+    // Per-field rules win, so apply them first (against the original values) and
+    // skip those concrete paths when the `fields` pass runs.
+    const overridden = maskingRules
+      ? this.#applyMaskingRules(copy, maskingRules)
+      : new Set<string>();
+    if (fields) {
+      this.#eraseFields(
+        copy,
+        fields,
+        hasTopLevelRule ? topLevelRule : undefined,
+        overridden
+      );
     }
 
     return copy;
   }
 
-  #applyMaskingRules<T>(copy: T, rules: Record<string, MaskingRule>): void {
+  #applyMaskingRules<T>(
+    copy: T,
+    rules: Record<string, MaskingRule>
+  ): Set<string> {
+    const touched = new Set<string>();
     for (const [field, rule] of Object.entries(rules)) {
       for (const path of this.#resolveFieldPaths(
         copy as Record<string, unknown>,
         field
       )) {
-        const value = getAtPath(copy, path);
-        if (!isString(value)) {
-          throw new DataMaskingUnsupportedTypeError(
-            `Masking rules only support string values, got ${typeof value} at path '${field}'`
-          );
-        }
-        setAtPath(copy, path, applyMaskingRule(value, rule));
+        setAtPath(copy, path, maskLeaf(getAtPath(copy, path), rule));
+        touched.add(pathKey(path));
       }
     }
+
+    return touched;
   }
 
-  #eraseFields<T>(copy: T, fields: string[]): void {
+  #eraseFields<T>(
+    copy: T,
+    fields: string[],
+    rule?: MaskingRule,
+    skip?: Set<string>
+  ): void {
     for (const field of fields) {
       const paths = this.#resolveFieldPaths(
         copy as Record<string, unknown>,
@@ -114,7 +153,14 @@ export class DataMasking {
         console.warn(`Field not found: '${field}'`);
       }
       for (const path of paths) {
-        setAtPath(copy, path, DEFAULT_MASK_VALUE);
+        if (skip?.has(pathKey(path))) continue;
+        // A plain field erase replaces any value with the mask; a rule stringifies
+        // the leaf first (null/undefined pass through), matching the Python utility.
+        setAtPath(
+          copy,
+          path,
+          rule ? maskLeaf(getAtPath(copy, path), rule) : DEFAULT_MASK_VALUE
+        );
       }
     }
   }
@@ -308,18 +354,53 @@ const setAtPath = (data: unknown, path: string[], value: unknown): void => {
 };
 
 /**
- * Apply a single masking rule to a string value.
+ * Apply a single {@link MaskingRule} to a string value.
  *
- * The {@link MaskingRule} type makes the strategies mutually exclusive, but
- * JavaScript callers can still pass conflicting options - the precedence is
- * regex+format, then custom mask, then dynamic mask.
+ * The strategies are mutually exclusive by construction (see {@link MaskingRule}),
+ * so each branch checks for the one property that identifies its variant.
  */
 const applyMaskingRule = (value: string, rule: MaskingRule): string => {
-  if (rule.regexPattern && rule.maskFormat) {
+  if (rule.regexPattern)
     return value.replace(rule.regexPattern, rule.maskFormat);
-  }
+  // Checked against `undefined` so an intentional empty-string mask is honoured.
   if (rule.customMask !== undefined) return rule.customMask;
-  if (rule.dynamicMask === true) return '*'.repeat(value.length);
+  if (rule.dynamicMask) return '*'.repeat(value.length);
 
   return DEFAULT_MASK_VALUE;
 };
+
+/** Whether a top-level rule object actually configures a masking strategy. */
+const isMaskingRule = (rule: MaskingRule): boolean =>
+  rule.regexPattern !== undefined ||
+  rule.customMask !== undefined ||
+  rule.dynamicMask !== undefined;
+
+/**
+ * Mask a single leaf value with a rule.
+ *
+ * Leaves are stringified first so the rule applies uniformly to non-string
+ * primitives (e.g. `dynamicMask` over a number), matching erase's contract that
+ * masked values become strings. `null`/`undefined` pass through unchanged.
+ */
+const maskLeaf = (value: unknown, rule: MaskingRule): unknown =>
+  isNullOrUndefined(value) ? value : applyMaskingRule(String(value), rule);
+
+/** Recursively apply a rule to every leaf value, mutating `node` in place. */
+const applyRuleToLeaves = (node: object, rule: MaskingRule): void => {
+  const entries: [string, unknown][] = Array.isArray(node)
+    ? node.map((v, i) => [String(i), v])
+    : Object.keys(node)
+        .filter((k) => !RESERVED_KEYS.has(k))
+        .map((k) => [k, (node as Record<string, unknown>)[k]]);
+
+  for (const [key, child] of entries) {
+    if (child !== null && typeof child === 'object') {
+      applyRuleToLeaves(child, rule);
+    } else {
+      (node as Record<string, unknown>)[key] = maskLeaf(child, rule);
+    }
+  }
+};
+
+/** Stable string key for a resolved path, used to dedupe overridden paths. */
+const pathKey = (path: string[]): string => JSON.stringify(path);

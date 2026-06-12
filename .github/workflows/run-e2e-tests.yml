@@ -27,6 +27,7 @@ jobs:
             packages/event-handler,
             packages/tracer,
             packages/batch,
+            packages/signer,
             layers,
           ]
         version: [22, 24]

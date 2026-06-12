@@ -1,6 +1,7 @@
 import type { Metrics } from '@aws-lambda-powertools/metrics';
 import type { Middleware, RequestContext } from '../../types/http.js';
 import { HttpError } from '../errors.js';
+import { getClientIp } from './commons.js';
 
 const getHeaderMetadata = (req: Request): Record<string, string> => {
   const metadata: Record<string, string> = {};
@@ -13,24 +14,10 @@ const getHeaderMetadata = (req: Request): Record<string, string> => {
   return metadata;
 };
 
-const getIpAddress = (reqCtx: RequestContext): string | undefined => {
-  if (reqCtx.responseType === 'ApiGatewayV1') {
-    return reqCtx.event.requestContext.identity.sourceIp;
-  }
-  if (reqCtx.responseType === 'ApiGatewayV2') {
-    return reqCtx.event.requestContext.http.sourceIp;
-  }
-  const xForwardedFor = reqCtx.req.headers.get('X-Forwarded-For');
-  if (xForwardedFor) {
-    return xForwardedFor.split(',')[0].trim();
-  }
-  return undefined;
-};
-
 const getEventMetadata = (reqCtx: RequestContext): Record<string, string> => {
   const metadata: Record<string, string> = {};
 
-  const ipAddress = getIpAddress(reqCtx);
+  const ipAddress = getClientIp(reqCtx);
   if (ipAddress) {
     metadata.ipAddress = ipAddress;
   }

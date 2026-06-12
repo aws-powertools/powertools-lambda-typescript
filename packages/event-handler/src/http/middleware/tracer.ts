@@ -30,6 +30,15 @@ type SegmentHttpData = {
 };
 
 /**
+ * A {@link Subsegment} augmented with the `http` field.
+ *
+ * The `http` field is not part of the public `Subsegment` type, but the X-Ray
+ * SDK reads it when serializing the segment, so we declare it locally as an
+ * optional property to attach request/response data without unsafe casts.
+ */
+type HttpSubsegment = Subsegment & { http?: SegmentHttpData };
+
+/**
  * Extracts the client IP address from the request context.
  *
  * For API Gateway events the source IP is taken from the request context, while
@@ -174,14 +183,10 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
     const segmentName = `${reqCtx.req.method} ${url.pathname}`;
 
     const segment = tracer.getSegment();
-    // The `http` field is not part of the public `Subsegment` type, but the
-    // X-Ray SDK reads it when serializing the segment. See `SegmentHttpData`.
-    let subSegment: (Subsegment & { http: SegmentHttpData }) | undefined;
+    let subSegment: HttpSubsegment | undefined;
 
     if (segment) {
-      subSegment = segment.addNewSubsegment(segmentName) as Subsegment & {
-        http: SegmentHttpData;
-      };
+      subSegment = segment.addNewSubsegment(segmentName);
       tracer.setSegment(subSegment);
 
       subSegment.http = {
@@ -207,7 +212,9 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
       throw err;
     } finally {
       if (segment && subSegment) {
-        subSegment.http.response = getResponseData(reqCtx.res);
+        if (subSegment.http) {
+          subSegment.http.response = getResponseData(reqCtx.res);
+        }
         try {
           subSegment.close();
         } catch (error) {

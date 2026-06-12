@@ -3,31 +3,10 @@ import type { Subsegment } from 'aws-xray-sdk-core';
 import type {
   Middleware,
   RequestContext,
+  SegmentHttpData,
   TracerOptions,
 } from '../../types/http.js';
 import type { compress } from './compress.js';
-
-/**
- * The shape of the `http` field added to an X-Ray (sub)segment.
- *
- * This mirrors the structure produced by the X-Ray SDK's `IncomingRequestData`,
- * but the SDK does not expose a type for it, so we declare it locally.
- *
- * @see {@link https://github.com/aws/aws-xray-sdk-node/blob/master/packages/core/lib/middleware/incoming_request_data.js}
- */
-type SegmentHttpData = {
-  request: {
-    method: string;
-    url: string;
-    user_agent?: string;
-    client_ip?: string;
-    x_forwarded_for?: boolean;
-  };
-  response?: {
-    status: number;
-    content_length?: number;
-  };
-};
 
 /**
  * A {@link Subsegment} augmented with the `http` field.

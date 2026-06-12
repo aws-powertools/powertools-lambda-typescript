@@ -7,6 +7,7 @@ import type {
 } from '@aws-sdk/client-dynamodb';
 import type { DynamoDBProvider } from '../dynamodb/DynamoDBProvider.js';
 import type {
+  GetMaybeUndefined,
   GetMultipleOptionsInterface,
   GetOptionsInterface,
 } from './BaseProvider.js';
@@ -214,4 +215,5 @@ export type {
   DynamoDBGetOptions,
   DynamoDBGetOutput,
   DynamoDBProviderOptions,
+  GetMaybeUndefined,
 };

@@ -4,6 +4,7 @@ import {
   GetParameterCommand,
   GetParametersByPathCommand,
   GetParametersCommand,
+  ParameterNotFound,
   PutParameterCommand,
   SSMClient,
 } from '@aws-sdk/client-ssm';
@@ -11,6 +12,7 @@ import { toBase64 } from '@smithy/util-base64';
 import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
+import { GetParameterError, ParameterNotFoundError } from '../../src/index.js';
 import { SSMProvider } from '../../src/ssm/index.js';
 import type {
   SSMGetParametersByNameFromCacheOutputType,
@@ -365,6 +367,64 @@ describe('Class: SSMProvider', () => {
         Name: parameterName,
       });
       expect(value).toBe(parameterValue);
+    });
+
+    it('throws a ParameterNotFoundError when the parameter is missing and throwOnMissing is set', async () => {
+      // Prepare
+      const provider = new SSMProvider();
+      const parameterName = 'foo';
+      mockClient(SSMClient)
+        .on(GetParameterCommand)
+        .rejects(
+          new ParameterNotFound({
+            message: 'UnknownError',
+            $metadata: {},
+          })
+        );
+
+      // Act & Assess
+      await expect(
+        provider.get(parameterName, { throwOnMissing: true })
+      ).rejects.toThrow(ParameterNotFoundError);
+    });
+
+    it('throws the wrapped GetParameterError when the parameter is missing and throwOnMissing is not set', async () => {
+      // Prepare
+      const provider = new SSMProvider();
+      const parameterName = 'foo';
+      mockClient(SSMClient)
+        .on(GetParameterCommand)
+        .rejects(
+          new ParameterNotFound({
+            message: 'UnknownError',
+            $metadata: {},
+          })
+        );
+
+      // Act
+      const error = await provider.get(parameterName).catch((err) => err);
+
+      // Assess
+      expect(error).toBeInstanceOf(GetParameterError);
+      expect(error).not.toBeInstanceOf(ParameterNotFoundError);
+    });
+
+    it('rethrows non not-found errors even when throwOnMissing is set', async () => {
+      // Prepare
+      const provider = new SSMProvider();
+      const parameterName = 'foo';
+      mockClient(SSMClient)
+        .on(GetParameterCommand)
+        .rejects(new Error('Some other SDK failure'));
+
+      // Act
+      const error = await provider
+        .get(parameterName, { throwOnMissing: true })
+        .catch((err) => err);
+
+      // Assess
+      expect(error).toBeInstanceOf(GetParameterError);
+      expect(error).not.toBeInstanceOf(ParameterNotFoundError);
     });
 
     it('uses the provided sdkOptions when getting a paramter', async () => {

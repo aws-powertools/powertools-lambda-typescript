@@ -11,6 +11,7 @@ import { DEFAULT_MAX_AGE_SECS } from '../../src/constants.js';
 import {
   clearCaches,
   GetParameterError,
+  ParameterNotFoundError,
   TransformParameterError,
 } from '../../src/index.js';
 
@@ -101,6 +102,63 @@ describe('Class: BaseProvider', () => {
           cause,
         })
       );
+    });
+
+    it('returns undefined when the parameter is not found and throwOnMissing is not set', async () => {
+      // Prepare
+      const provider = new TestProvider();
+      vi.spyOn(provider, '_get').mockResolvedValue(
+        undefined as unknown as string
+      );
+
+      // Act
+      const value = await provider.get('my-parameter');
+
+      // Assess
+      expect(value).toBeUndefined();
+    });
+
+    it('throws a ParameterNotFoundError when the parameter is not found and throwOnMissing is set', async () => {
+      // Prepare
+      const provider = new TestProvider();
+      vi.spyOn(provider, '_get').mockResolvedValue(
+        undefined as unknown as string
+      );
+
+      // Act & Assess
+      await expect(
+        provider.get('my-parameter', { throwOnMissing: true })
+      ).rejects.toThrow(ParameterNotFoundError);
+    });
+
+    it('throws a ParameterNotFoundError that is also a GetParameterError without a cause', async () => {
+      // Prepare
+      const provider = new TestProvider();
+      vi.spyOn(provider, '_get').mockResolvedValue(null as unknown as string);
+
+      // Act
+      const error = await provider
+        .get('my-parameter', { throwOnMissing: true })
+        .catch((err) => err);
+
+      // Assess
+      expect(error).toBeInstanceOf(ParameterNotFoundError);
+      expect(error).toBeInstanceOf(GetParameterError);
+      expect(error.cause).toBeUndefined();
+    });
+
+    it('does not throw when the parameter resolves to a falsy but present value and throwOnMissing is set', async () => {
+      // Prepare
+      const provider = new TestProvider();
+      vi.spyOn(provider, '_get').mockResolvedValue('');
+
+      // Act
+      const value = await provider.get('my-parameter', {
+        throwOnMissing: true,
+      });
+
+      // Assess
+      expect(value).toBe('');
     });
 
     it('returns the cached value when one is available in the cache', async () => {

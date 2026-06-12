@@ -1,10 +1,12 @@
 import type { GetSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
 import {
   GetSecretValueCommand,
+  ResourceNotFoundException,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
 import { BaseProvider } from '../base/BaseProvider.js';
 import type {
+  GetMaybeUndefined,
   SecretsGetOptions,
   SecretsGetOutput,
   SecretsProviderOptions,
@@ -182,12 +184,16 @@ class SecretsProvider extends BaseProvider {
     name: string,
     options?: NonNullable<InferredFromOptionsType & SecretsGetOptions>
   ): Promise<
-    | SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-    | undefined
+    GetMaybeUndefined<
+      SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+      InferredFromOptionsType
+    >
   > {
     return super.get(name, options) as Promise<
-      | SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-      | undefined
+      GetMaybeUndefined<
+        SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+        InferredFromOptionsType
+      >
     >;
   }
 
@@ -214,13 +220,27 @@ class SecretsProvider extends BaseProvider {
       SecretId: name,
     };
 
-    const result = await this.client.send(
-      new GetSecretValueCommand(sdkOptions)
-    );
+    try {
+      const result = await this.client.send(
+        new GetSecretValueCommand(sdkOptions)
+      );
 
-    if (result.SecretString) return result.SecretString;
+      if (result.SecretString) return result.SecretString;
 
-    return result.SecretBinary;
+      return result.SecretBinary;
+    } catch (error) {
+      // When `throwOnMissing` is set, normalize the SDK's not-found error to
+      // `undefined` so the base provider can throw a `ParameterNotFoundError`.
+      // Otherwise, preserve the existing behavior and let the error propagate
+      // to be wrapped as a `GetParameterError`.
+      if (
+        options?.throwOnMissing &&
+        error instanceof ResourceNotFoundException
+      ) {
+        return undefined;
+      }
+      throw error;
+    }
   }
 
   /**

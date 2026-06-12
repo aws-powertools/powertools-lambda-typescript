@@ -6,7 +6,7 @@ import type {
 } from '@aws-sdk/client-appconfigdata';
 import type { AppConfigProvider } from '../appconfig/AppConfigProvider.js';
 import type { getAppConfig } from '../appconfig/getAppConfig.js';
-import type { GetOptionsInterface } from './BaseProvider.js';
+import type { GetMaybeUndefined, GetOptionsInterface } from './BaseProvider.js';
 
 /**
  * Base interface for {@link AppConfigProviderOptions | `AppConfigProviderOptions`}.
@@ -150,4 +150,5 @@ export type {
   AppConfigGetOutput,
   AppConfigProviderOptions,
   GetAppConfigOptions,
+  GetMaybeUndefined,
 };

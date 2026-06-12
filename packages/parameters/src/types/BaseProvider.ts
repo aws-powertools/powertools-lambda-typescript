@@ -28,6 +28,19 @@ type BaseProviderConstructorOptions = {
 type TransformOptions = (typeof Transform)[keyof typeof Transform];
 
 /**
+ * Conditionally appends `| undefined` to the resolved output type of a `get` operation.
+ *
+ * When the inferred options include `throwOnMissing: true`, the value is guaranteed to be
+ * present (a {@link ParameterNotFoundError | `ParameterNotFoundError`} is thrown otherwise),
+ * so the output type excludes `undefined`. In every other case the value may be absent and
+ * the output type includes `undefined`.
+ */
+type GetMaybeUndefined<Output, InferredFromOptionsType> =
+  InferredFromOptionsType extends { throwOnMissing: true }
+    ? Output
+    : Output | undefined;
+
+/**
  * Options for the `get` method.
  *
  * @property maxAge - Maximum age of the value in the cache, in seconds. Will be applied after the first API call.
@@ -52,6 +65,12 @@ interface GetOptionsInterface {
    * Transform to be applied, can be `json` or `binary`.
    */
   transform?: Omit<TransformOptions, 'auto'>;
+  /**
+   * Whether to throw a {@link ParameterNotFoundError | `ParameterNotFoundError`} when the
+   * parameter is not found in the store. When set to `true`, the return type is narrowed to
+   * exclude `undefined`. Defaults to `false`.
+   */
+  throwOnMissing?: boolean;
 }
 
 /**
@@ -104,6 +123,7 @@ export type {
   BaseProviderConstructorOptions,
   BaseProviderInterface,
   ExpirableValueInterface,
+  GetMaybeUndefined,
   GetMultipleOptionsInterface,
   GetOptionsInterface,
   TransformOptions,

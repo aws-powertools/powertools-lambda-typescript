@@ -12,6 +12,7 @@ import type {
 import {
   GetParameterCommand,
   GetParametersCommand,
+  ParameterNotFound,
   PutParameterCommand,
   paginateGetParametersByPath,
   SSMClient,
@@ -21,6 +22,7 @@ import { transformValue } from '../base/transformValue.js';
 import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import { GetParameterError, SetParameterError } from '../errors.js';
 import type {
+  GetMaybeUndefined,
   SSMGetMultipleOptions,
   SSMGetMultipleOutput,
   SSMGetOptions,
@@ -306,11 +308,16 @@ class SSMProvider extends BaseProvider {
     name: string,
     options?: NonNullable<InferredFromOptionsType & SSMGetOptions>
   ): Promise<
-    SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType> | undefined
+    GetMaybeUndefined<
+      SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+      InferredFromOptionsType
+    >
   > {
     return super.get(name, options) as Promise<
-      | SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-      | undefined
+      GetMaybeUndefined<
+        SSMGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+        InferredFromOptionsType
+      >
     >;
   }
 
@@ -554,9 +561,22 @@ class SSMProvider extends BaseProvider {
       options,
       sdkOptions
     );
-    const result = await this.client.send(new GetParameterCommand(sdkOptions));
+    try {
+      const result = await this.client.send(
+        new GetParameterCommand(sdkOptions)
+      );
 
-    return result.Parameter?.Value;
+      return result.Parameter?.Value;
+    } catch (error) {
+      // When `throwOnMissing` is set, normalize the SDK's not-found error to
+      // `undefined` so the base provider can throw a `ParameterNotFoundError`.
+      // Otherwise, preserve the existing behavior and let the error propagate
+      // to be wrapped as a `GetParameterError`.
+      if (options?.throwOnMissing && error instanceof ParameterNotFound) {
+        return undefined;
+      }
+      throw error;
+    }
   }
 
   /**

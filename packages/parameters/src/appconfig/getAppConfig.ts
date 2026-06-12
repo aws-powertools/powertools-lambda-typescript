@@ -2,6 +2,7 @@ import { DEFAULT_PROVIDERS } from '../base/index.js';
 import type {
   AppConfigGetOutput,
   GetAppConfigOptions,
+  GetMaybeUndefined,
 } from '../types/AppConfigProvider.js';
 import { AppConfigProvider } from './AppConfigProvider.js';
 
@@ -151,8 +152,10 @@ const getAppConfig = <
   name: string,
   options: NonNullable<InferredFromOptionsType & GetAppConfigOptions>
 ): Promise<
-  | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-  | undefined
+  GetMaybeUndefined<
+    AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+    InferredFromOptionsType
+  >
 > => {
   if (!Object.hasOwn(DEFAULT_PROVIDERS, 'appconfig')) {
     DEFAULT_PROVIDERS.appconfig = new AppConfigProvider({
@@ -166,9 +169,12 @@ const getAppConfig = <
     transform: options?.transform,
     forceFetch: options?.forceFetch,
     sdkOptions: options?.sdkOptions,
+    throwOnMissing: options?.throwOnMissing,
   }) as Promise<
-    | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-    | undefined
+    GetMaybeUndefined<
+      AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+      InferredFromOptionsType
+    >
   >;
 };
 

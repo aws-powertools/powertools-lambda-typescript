@@ -11,6 +11,7 @@ import type {
   AppConfigGetOptions,
   AppConfigGetOutput,
   AppConfigProviderOptions,
+  GetMaybeUndefined,
 } from '../types/AppConfigProvider.js';
 
 /**
@@ -247,12 +248,16 @@ class AppConfigProvider extends BaseProvider {
     name: string,
     options?: NonNullable<InferredFromOptionsType & AppConfigGetOptions>
   ): Promise<
-    | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-    | undefined
+    GetMaybeUndefined<
+      AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+      InferredFromOptionsType
+    >
   > {
     return super.get(name, options) as Promise<
-      | AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-      | undefined
+      GetMaybeUndefined<
+        AppConfigGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+        InferredFromOptionsType
+      >
     >;
   }
 

@@ -6,7 +6,7 @@ import {
   correlationPaths,
   search,
 } from '@aws-lambda-powertools/logger/correlationId';
-import type { Context } from 'aws-lambda/handler';
+import type { Context } from 'aws-lambda';
 
 const logger = new Logger({
   correlationIdSearchFn: search,

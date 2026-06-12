@@ -182,7 +182,7 @@ For example, to validate using the schema above, you can define a custom format 
 
 === "advancedCustomFormats.ts"
 
-    ```typescript hl_lines="29"
+    ```typescript hl_lines="31"
     --8<-- "examples/snippets/validation/advancedCustomFormats.ts"
     ```
 

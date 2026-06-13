@@ -8,6 +8,7 @@ import type {
   APIGatewayProxyResult,
   APIGatewayProxyStructuredResultV2,
 } from 'aws-lambda';
+import type { BodyInit } from 'undici-types';
 import type {
   ExtendedAPIGatewayProxyResult,
   ExtendedAPIGatewayProxyResultBody,

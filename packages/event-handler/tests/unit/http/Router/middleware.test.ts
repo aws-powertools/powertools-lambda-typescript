@@ -788,7 +788,7 @@ describe('Class: Router - Middleware', () => {
           async ({ reqCtx, next }) => {
             await next();
             const clonedRes = reqCtx.res.clone();
-            message = (await clonedRes.json()).message;
+            message = ((await clonedRes.json()) as { message: string }).message;
           },
           async () => {
             return { message: 'Middleware applied' };

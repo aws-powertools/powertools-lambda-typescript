@@ -1,4 +1,5 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
+import type { ParseError } from '../errors.js';
 import type {
   ArrayEnvelope,
   DynamoDBArrayEnvelope,
@@ -17,6 +18,7 @@ type ParserOptions<
   schema: TSchema;
   envelope?: TEnvelope;
   safeParse?: TSafeParse;
+  errorHandler?: (error: ParseError) => unknown;
 };
 
 /**

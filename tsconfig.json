@@ -5,10 +5,9 @@
     "target": "ES2024", // Node.js 22
     // `Disposable`/`Symbol.dispose` are not part of any yearly ES lib yet (not ES2024 nor
     // ES2025 as of TS 6.x), so we pull them in explicitly. Compile-time only: it doesn't
-    // change emitted code or require a runtime polyfill. DOM libs must be listed too:
-    // setting `lib` replaces the target's implicit default (ES2024 + DOM + DOM.Iterable),
-    // and the codebase relies on DOM types like `BodyInit` and `Response`.
-    "lib": ["ES2024", "DOM", "DOM.Iterable", "ESNext.Disposable"],
+    // change emitted code or require a runtime polyfill. No DOM libs: this is a Node.js
+    // library, so fetch/Request/Response/Headers come from @types/node (undici-types).
+    "lib": ["ES2024", "ESNext.Disposable"],
     "experimentalDecorators": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",

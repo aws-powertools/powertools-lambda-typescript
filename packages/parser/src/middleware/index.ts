@@ -1,6 +1,7 @@
 import type { MiddyLikeRequest } from '@aws-lambda-powertools/commons/types';
 import type { MiddlewareObj } from '@middy/core';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
+import { ParseError } from '../errors.js';
 import { parse } from '../parser.js';
 import type { Envelope } from '../types/envelope.js';
 import type { ParserOptions, ParserOutput } from '../types/parser.js';
@@ -38,10 +39,20 @@ const parser = <
 >(
   options: ParserOptions<TSchema, TEnvelope, TSafeParse>
 ): MiddlewareObj<ParserOutput<TSchema, TEnvelope, TSafeParse>> => {
-  const before = (request: MiddyLikeRequest): void => {
-    const { schema, envelope, safeParse } = options;
+  const before = (request: MiddyLikeRequest): unknown => {
+    const { schema, envelope, safeParse, errorHandler } = options;
 
-    request.event = parse(request.event, envelope, schema, safeParse);
+    try {
+      request.event = parse(request.event, envelope, schema, safeParse);
+    } catch (error) {
+      if (errorHandler && error instanceof ParseError) {
+        const result = errorHandler(error);
+        if (result !== undefined) {
+          return result;
+        }
+      }
+      throw error;
+    }
   };
 
   return {

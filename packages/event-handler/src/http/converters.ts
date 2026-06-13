@@ -8,8 +8,6 @@ import type {
   APIGatewayProxyResult,
   APIGatewayProxyStructuredResultV2,
 } from 'aws-lambda';
-// `BodyInit` is not exposed as a global by @types/node, so we import it from
-// undici-types (a transitive dependency of @types/node) instead.
 import type { BodyInit } from 'undici-types';
 import type {
   ExtendedAPIGatewayProxyResult,

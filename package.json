@@ -54,7 +54,7 @@
     "@biomejs/biome": "^2.5.0",
     "@types/aws-lambda": "^8.10.162",
     "@types/node": "^25.9.3",
-    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.9",
     "esbuild": "^0.28.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",

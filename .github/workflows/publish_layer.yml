@@ -96,6 +96,7 @@ jobs:
       id-token: write
     with:
       environment: prod
+      write_latest: ${{ !inputs.pre_release }}
       package_version: ${{ inputs.latest_published_version }}
       layer-version: ${{ needs.deploy-prod.outputs.layer-version }}
     secrets:

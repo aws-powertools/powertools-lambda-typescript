@@ -1,4 +1,5 @@
 import { Readable } from 'node:stream';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it, vi } from 'vitest';
 import { HttpStatusText } from '../../../../src/http/constants.js';
@@ -446,7 +447,7 @@ describe('Class: Router - ALB Support', () => {
     // Prepare
     const app = new Router();
     app.post('/test', async ({ req }) => {
-      const body = await req.json();
+      const body = (await req.json()) as JSONValue;
       return { received: body };
     });
 

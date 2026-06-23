@@ -56,7 +56,7 @@ describe('REST Event Handler E2E tests', () => {
       // Act
       // Prepare
       const response = await fetch(`${apiUrl}/methods`);
-      const data = await response.json();
+      const data = (await response.json()) as { method: string };
 
       // Assess
 
@@ -73,7 +73,7 @@ describe('REST Event Handler E2E tests', () => {
       const response = await fetch(`${apiUrl}/methods`, {
         method: 'POST',
       });
-      const data = await response.json();
+      const data = (await response.json()) as { method: string };
 
       expect(response.status).toBe(200);
       expect(data.method).toBe('POST');
@@ -84,7 +84,7 @@ describe('REST Event Handler E2E tests', () => {
       const response = await fetch(`${apiUrl}/methods`, {
         method: 'PUT',
       });
-      const data = await response.json();
+      const data = (await response.json()) as { method: string };
 
       expect(response.status).toBe(200);
       expect(data.method).toBe('PUT');
@@ -95,7 +95,7 @@ describe('REST Event Handler E2E tests', () => {
       const response = await fetch(`${apiUrl}/methods`, {
         method: 'PATCH',
       });
-      const data = await response.json();
+      const data = (await response.json()) as { method: string };
 
       expect(response.status).toBe(200);
       expect(data.method).toBe('PATCH');
@@ -106,7 +106,7 @@ describe('REST Event Handler E2E tests', () => {
       const response = await fetch(`${apiUrl}/methods`, {
         method: 'DELETE',
       });
-      const data = await response.json();
+      const data = (await response.json()) as { method: string };
 
       expect(response.status).toBe(200);
       expect(data.method).toBe('DELETE');
@@ -132,7 +132,7 @@ describe('REST Event Handler E2E tests', () => {
       const response = await fetch(`${apiUrl}/methods`, {
         method: 'OPTIONS',
       });
-      const data = await response.json();
+      const data = (await response.json()) as { method: string };
 
       expect(response.status).toBe(200);
       expect(data.method).toBe('OPTIONS');
@@ -146,7 +146,10 @@ describe('REST Event Handler E2E tests', () => {
 
       // Act
       const response = await fetch(`${apiUrl}/params/users/${userId}`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        userId: string;
+        postId: string;
+      };
 
       expect(response.status).toBe(200);
       expect(response.headers.get('content-type')).toContain(
@@ -164,7 +167,10 @@ describe('REST Event Handler E2E tests', () => {
       const response = await fetch(
         `${apiUrl}/params/users/${userId}/posts/${postId}`
       );
-      const data = await response.json();
+      const data = (await response.json()) as {
+        userId: string;
+        postId: string;
+      };
 
       expect(response.status).toBe(200);
       expect(data.userId).toBe(userId);
@@ -178,7 +184,10 @@ describe('REST Event Handler E2E tests', () => {
 
       // Act
       const response = await fetch(`${apiUrl}/params/users/${encodedUserId}`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        userId: string;
+        postId: string;
+      };
 
       expect(response.status).toBe(200);
       expect(data.userId).toBe(userId);
@@ -191,7 +200,10 @@ describe('REST Event Handler E2E tests', () => {
 
       // Act
       const response = await fetch(`${apiUrl}/params/users/${encodedUserId}`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        userId: string;
+        postId: string;
+      };
 
       expect(response.status).toBe(200);
       expect(data.userId).toBe(userId);
@@ -205,7 +217,11 @@ describe('REST Event Handler E2E tests', () => {
 
       // Act
       const response = await fetch(`${apiUrl}/params/search?q=${searchQuery}`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        query: string | null;
+        limit: string | null;
+        filters?: string[];
+      };
 
       expect(response.status).toBe(200);
       expect(data.query).toBe(searchQuery);
@@ -220,7 +236,11 @@ describe('REST Event Handler E2E tests', () => {
       const response = await fetch(
         `${apiUrl}/params/search?q=${searchQuery}&limit=${limit}`
       );
-      const data = await response.json();
+      const data = (await response.json()) as {
+        query: string | null;
+        limit: string | null;
+        filters?: string[];
+      };
 
       expect(response.status).toBe(200);
       expect(data.query).toBe(searchQuery);
@@ -236,7 +256,11 @@ describe('REST Event Handler E2E tests', () => {
       const response = await fetch(
         `${apiUrl}/params/search?q=${searchQuery}&filter=${filters[0]}&filter=${filters[1]}`
       );
-      const data = await response.json();
+      const data = (await response.json()) as {
+        query: string | null;
+        limit: string | null;
+        filters?: string[];
+      };
 
       expect(response.status).toBe(200);
       expect(data.query).toBe(searchQuery);
@@ -246,7 +270,11 @@ describe('REST Event Handler E2E tests', () => {
     it('handles missing query parameters', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/params/search`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        query: string | null;
+        limit: string | null;
+        filters?: string[];
+      };
 
       expect(response.status).toBe(200);
       expect(data.query).toBeNull();
@@ -261,7 +289,11 @@ describe('REST Event Handler E2E tests', () => {
 
       // Act
       const response = await fetch(`${apiUrl}/params/search?q=${encodedQuery}`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        query: string | null;
+        limit: string | null;
+        filters?: string[];
+      };
 
       expect(response.status).toBe(200);
       expect(data.query).toBe(searchQuery);
@@ -274,7 +306,11 @@ describe('REST Event Handler E2E tests', () => {
 
       // Act
       const response = await fetch(`${apiUrl}/params/search?q=${encodedQuery}`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        query: string | null;
+        limit: string | null;
+        filters?: string[];
+      };
 
       expect(response.status).toBe(200);
       expect(data.query).toBe(searchQuery);
@@ -286,7 +322,11 @@ describe('REST Event Handler E2E tests', () => {
 
       // Act
       const response = await fetch(`${apiUrl}/params/search?q=&limit=${limit}`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        query: string | null;
+        limit: string | null;
+        filters?: string[];
+      };
 
       expect(response.status).toBe(200);
       expect(data.query).toBe('');
@@ -296,7 +336,11 @@ describe('REST Event Handler E2E tests', () => {
     it('handles single-value array parameter', async () => {
       // Act
       const response = await fetch(`${apiUrl}/params/search?filter=active`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        query: string | null;
+        limit: string | null;
+        filters?: string[];
+      };
 
       expect(response.status).toBe(200);
       expect(data.filters).toEqual(['active']);
@@ -307,7 +351,11 @@ describe('REST Event Handler E2E tests', () => {
     it('returns 400 for bad request errors', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/errors/400`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        error: string;
+        message: string;
+        custom: boolean;
+      };
 
       expect(response.status).toBe(400);
       expect(response.headers.get('content-type')).toContain(
@@ -321,7 +369,11 @@ describe('REST Event Handler E2E tests', () => {
     it('returns 401 for unauthorized errors', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/errors/401`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        statusCode: number;
+        error: string;
+        message: string;
+      };
 
       expect(response.status).toBe(401);
       expect(data.statusCode).toBe(401);
@@ -332,7 +384,11 @@ describe('REST Event Handler E2E tests', () => {
     it('returns 403 for forbidden errors', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/errors/403`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        statusCode: number;
+        error: string;
+        message: string;
+      };
 
       expect(response.status).toBe(403);
       expect(data.statusCode).toBe(403);
@@ -343,7 +399,11 @@ describe('REST Event Handler E2E tests', () => {
     it('returns 404 for not found errors', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/errors/404`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        statusCode: number;
+        error: string;
+        message: string;
+      };
 
       // Route exists and throws NotFoundError, which is caught by custom notFound handler
       expect(response.status).toBe(404);
@@ -355,7 +415,11 @@ describe('REST Event Handler E2E tests', () => {
     it('returns 405 for method not allowed errors', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/errors/405`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        statusCode: number;
+        error: string;
+        message: string;
+      };
 
       expect(response.status).toBe(405);
       expect(data.statusCode).toBe(405);
@@ -366,7 +430,11 @@ describe('REST Event Handler E2E tests', () => {
     it('returns 500 for internal server errors', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/errors/500`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        statusCode: number;
+        error: string;
+        message: string;
+      };
 
       expect(response.status).toBe(500);
       expect(data.statusCode).toBe(500);
@@ -377,7 +445,11 @@ describe('REST Event Handler E2E tests', () => {
     it('returns 500 for generic errors', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/errors/generic`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        statusCode: number;
+        error: string;
+        message: string;
+      };
 
       expect(response.status).toBe(500);
       expect(data.statusCode).toBe(500);
@@ -388,7 +460,11 @@ describe('REST Event Handler E2E tests', () => {
     it('applies custom error handler for specific error type', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/errors/custom`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        error: string;
+        message: string;
+        custom: boolean;
+      };
 
       expect(response.status).toBe(400);
       expect(data.error).toBe('Bad Request');
@@ -399,7 +475,10 @@ describe('REST Event Handler E2E tests', () => {
     it('applies custom not found handler for unmatched routes', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/errors/nonexistent-route`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        error: string;
+        message: string;
+      };
 
       expect(response.status).toBe(404);
       expect(data.error).toBe('Not Found');
@@ -411,7 +490,7 @@ describe('REST Event Handler E2E tests', () => {
     it('handles GET request to nested router', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/nested/info`);
-      const data = await response.json();
+      const data = (await response.json()) as { nested: boolean; path: string };
 
       expect(response.status).toBe(200);
       expect(data.nested).toBe(true);
@@ -428,7 +507,10 @@ describe('REST Event Handler E2E tests', () => {
         body: JSON.stringify(testData),
         headers: { 'Content-Type': 'application/json' },
       });
-      const data = await response.json();
+      const data = (await response.json()) as {
+        nested: boolean;
+        created: unknown;
+      };
 
       expect(response.status).toBe(200);
       expect(data.nested).toBe(true);
@@ -444,7 +526,7 @@ describe('REST Event Handler E2E tests', () => {
           Origin: 'https://example.com',
         },
       });
-      const data = await response.json();
+      const data = (await response.json()) as { message: string };
 
       expect(response.status).toBe(200);
       expect(response.headers.get('content-type')).toContain(
@@ -472,7 +554,7 @@ describe('REST Event Handler E2E tests', () => {
           Origin: 'https://example.com',
         },
       });
-      const data = await response.json();
+      const data = (await response.json()) as { received: unknown };
 
       expect(response.status).toBe(200);
       expect(data.received).toEqual(testData);
@@ -518,7 +600,7 @@ describe('REST Event Handler E2E tests', () => {
       const response = await fetch(`${apiUrl}/compress/large`, {
         headers: { 'Accept-Encoding': 'gzip' },
       });
-      const data = await response.json();
+      const data = (await response.json()) as { message: string; data: string };
 
       expect(response.status).toBe(200);
       expect(data.message).toContain('compressed');
@@ -532,7 +614,7 @@ describe('REST Event Handler E2E tests', () => {
         headers: { 'Accept-Encoding': 'gzip' },
       });
       // Act
-      const data = await response.json();
+      const data = (await response.json()) as { message: string };
 
       // Assess
       expect(response.status).toBe(200);
@@ -557,7 +639,10 @@ describe('REST Event Handler E2E tests', () => {
           'X-Custom-Header': customHeaderValue,
         },
       });
-      const data = await response.json();
+      const data = (await response.json()) as {
+        body: unknown;
+        headers: Record<string, string | null>;
+      };
 
       expect(response.status).toBe(200);
       expect(data.body).toEqual(testData);
@@ -578,7 +663,10 @@ describe('REST Event Handler E2E tests', () => {
           'X-Multi-Header': 'value1, value2',
         },
       });
-      const data = await response.json();
+      const data = (await response.json()) as {
+        body: unknown;
+        headers: Record<string, string | null>;
+      };
 
       expect(response.status).toBe(200);
       expect(data.headers['x-multi-header']).toBeDefined();
@@ -601,7 +689,11 @@ describe('REST Event Handler E2E tests', () => {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
-      const data = await response.json();
+      const data = (await response.json()) as {
+        contentType: string;
+        received: boolean;
+        bodyLength: number;
+      };
 
       expect(response.status).toBe(200);
       expect(data.contentType).toBe('application/x-www-form-urlencoded');
@@ -632,7 +724,11 @@ describe('REST Event Handler E2E tests', () => {
           'Content-Type': `multipart/form-data; boundary=----${boundary}`,
         },
       });
-      const data = await response.json();
+      const data = (await response.json()) as {
+        contentType: string;
+        received: boolean;
+        bodyLength: number;
+      };
 
       expect(response.status).toBe(200);
       expect(data.contentType).toContain('multipart/form-data');
@@ -661,7 +757,7 @@ describe('REST Event Handler E2E tests', () => {
     it('returns multiple Set-Cookie headers', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/multi-headers/set-cookies`);
-      const data = await response.json();
+      const data = (await response.json()) as { message: string };
 
       expect(response.status).toBe(200);
       expect(data.message).toBe('Multiple cookies set');
@@ -685,7 +781,11 @@ describe('REST Event Handler E2E tests', () => {
           'Content-Type': 'application/octet-stream',
         },
       });
-      const data = await response.json();
+      const data = (await response.json()) as {
+        contentType: string;
+        received: boolean;
+        bodyLength: number;
+      };
 
       expect(response.status).toBe(200);
       expect(data.received).toBe(true);
@@ -708,7 +808,11 @@ describe('REST Event Handler E2E tests', () => {
           'Content-Type': 'image/png',
         },
       });
-      const data = await response.json();
+      const data = (await response.json()) as {
+        contentType: string;
+        received: boolean;
+        bodyLength: number;
+      };
 
       expect(response.status).toBe(200);
       expect(data.received).toBe(true);
@@ -731,7 +835,7 @@ describe('REST Event Handler E2E tests', () => {
     it('returns custom status code and headers', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/custom-response`);
-      const data = await response.json();
+      const data = (await response.json()) as { message: string };
 
       expect(response.status).toBe(201);
       expect(response.headers.get('content-type')).toContain(
@@ -747,7 +851,10 @@ describe('REST Event Handler E2E tests', () => {
     it('handles root path GET request', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        message: string;
+        version: string;
+      };
 
       expect(response.status).toBe(200);
       expect(data.message).toBe('Root path');
@@ -757,7 +864,7 @@ describe('REST Event Handler E2E tests', () => {
     it('normalizes a trailing slash to match a route registered without one', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/methods/`);
-      const data = await response.json();
+      const data = (await response.json()) as { method: string };
 
       expect(response.status).toBe(200);
       expect(data.method).toBe('GET');
@@ -766,7 +873,7 @@ describe('REST Event Handler E2E tests', () => {
     it('handles path without trailing slash', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/methods`);
-      const data = await response.json();
+      const data = (await response.json()) as { method: string };
 
       expect(response.status).toBe(200);
       expect(data.method).toBe('GET');
@@ -778,7 +885,11 @@ describe('REST Event Handler E2E tests', () => {
 
       // Act
       const response = await fetch(`${apiUrl}/params/search?q=${searchQuery}`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        query: string | null;
+        limit: string | null;
+        filters?: string[];
+      };
 
       expect(response.status).toBe(200);
       expect(data.query).toBe(searchQuery);
@@ -787,7 +898,7 @@ describe('REST Event Handler E2E tests', () => {
     it('handles path with fragment in URL', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}/methods#fragment`);
-      const data = await response.json();
+      const data = (await response.json()) as { method: string };
 
       expect(response.status).toBe(200);
       expect(data.method).toBe('GET');
@@ -796,7 +907,10 @@ describe('REST Event Handler E2E tests', () => {
     it('treats path with leading double slash as protocol-relative URL', async () => {
       // Prepare
       const response = await fetch(`${apiUrl}//methods`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        message: string;
+        version: string;
+      };
 
       expect(response.status).toBe(200);
       // Double slash at the beginning is treated as protocol-relative URL by the URL constructor
@@ -872,9 +986,9 @@ describe('REST Event Handler E2E tests', () => {
     it('returns a unique request-scoped value per invocation', async () => {
       // Act
       const response1 = await fetch(`${apiUrl}/store/request`);
-      const data1 = await response1.json();
+      const data1 = (await response1.json()) as { requestId: string };
       const response2 = await fetch(`${apiUrl}/store/request`);
-      const data2 = await response2.json();
+      const data2 = (await response2.json()) as { requestId: string };
 
       // Assess
       expect(response1.status).toBe(200);
@@ -895,7 +1009,11 @@ describe('REST Event Handler E2E tests', () => {
     it('returns both request and shared store values', async () => {
       // Act
       const response = await fetch(`${apiUrl}/store/both`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        requestId: string;
+        appName: string;
+        version: number;
+      };
 
       // Assess
       expect(response.status).toBe(200);

@@ -24,7 +24,7 @@ app.get('/todos', async () => {
 });
 
 app.post('/todos', async ({ req }) => {
-  const body = await req.json();
+  const body = (await req.json()) as { title: string };
   const todo = await createTodo(body.title);
 
   return new Response(JSON.stringify(todo), {

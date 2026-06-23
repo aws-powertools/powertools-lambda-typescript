@@ -451,6 +451,44 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     );
   });
 
+  it.each([
+    { type: 'number' as const },
+    { type: 'integer' as const },
+  ])(
+    'preserves the original string when a $type parameter is not a valid number',
+    async ({ type }) => {
+      // Prepare
+      const toolFunction: ToolFunction<{ arg: number | string }> = async (
+        params,
+        _options
+      ) => params.arg;
+
+      const toolParams: Configuration = {
+        name: 'echo',
+        description: 'Echoes the received parameter',
+      };
+
+      const parameters: Parameter[] = [
+        { name: 'arg', type, value: 'not-a-number' },
+      ];
+
+      const app = new BedrockAgentFunctionResolver();
+      app.tool(toolFunction, toolParams);
+
+      // Act
+      const actual = await app.resolve(
+        createEvent(toolParams.name, parameters),
+        context
+      );
+
+      // Assess
+      expect(actual.response.function).toEqual(toolParams.name);
+      expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+        '"not-a-number"'
+      );
+    }
+  );
+
   it('correctly parses string parameters', async () => {
     // Prepare
     const toolFunction: ToolFunction<{ arg: string }> = async (

@@ -1,3 +1,4 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { Router } from '@aws-lambda-powertools/event-handler/http';
 import { cors } from '@aws-lambda-powertools/event-handler/http/middleware';
 
@@ -17,7 +18,7 @@ corsRouter.get('/data', () => ({
 }));
 
 corsRouter.post('/data', async ({ req }) => {
-  const body = await req.json();
+  const body = (await req.json()) as JSONValue;
   return { received: body };
 });
 

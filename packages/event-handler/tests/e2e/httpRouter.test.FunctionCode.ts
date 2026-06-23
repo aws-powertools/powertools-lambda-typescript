@@ -1,3 +1,4 @@
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { Router } from '@aws-lambda-powertools/event-handler/http';
 import type { Context } from 'aws-lambda';
 import { binaryRouter } from './routers/binaryRouter.js';
@@ -27,7 +28,7 @@ const app = new Router()
 
 // Request body parsing and headers
 app.post('/echo', async ({ req }) => {
-  const body = await req.json();
+  const body = (await req.json()) as JSONValue;
   const contentType = req.headers.get('content-type');
   const customHeader = req.headers.get('x-custom-header');
   const multiHeader = req.headers.get('x-multi-header');

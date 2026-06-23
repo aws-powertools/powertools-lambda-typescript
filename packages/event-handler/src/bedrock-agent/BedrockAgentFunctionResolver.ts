@@ -226,7 +226,11 @@ class BedrockAgentFunctionResolver {
         }
         case 'number':
         case 'integer': {
-          toolParams[param.name] = Number(param.value);
+          const parsed = Number(param.value);
+          // Fall back to the original string when the value is not a valid
+          // number (e.g. `Number('abc')` is `NaN`, which serializes to `null`).
+          // This matches the behavior of the Python runtime - see #3988.
+          toolParams[param.name] = Number.isNaN(parsed) ? param.value : parsed;
           break;
         }
         // this default will also catch array types but we leave them as strings

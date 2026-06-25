@@ -190,4 +190,75 @@ describe('Middleware: parser', () => {
       originalEvent: event,
     });
   });
+
+  it('rethrows the error when errorHandler returns undefined', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+
+    // Act & Assess
+    await expect(
+      middy()
+        .use(
+          parser({
+            schema: z.number(),
+            errorHandler: (_error) => undefined,
+          })
+        )
+        .handler((event) => event)(event as unknown as number, {} as Context)
+    ).rejects.toThrow(ParseError);
+  });
+
+  it('calls the errorHandler and short-circuits when schema validation fails', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+
+    // Act
+    const result = await middy()
+      .use(
+        parser({
+          schema: z.number(),
+          errorHandler: (error) => ({ errorHandled: true, message: error.message }),
+        })
+      )
+      .handler((event) => event)(event as unknown as number, {} as Context);
+
+    // Assess
+    expect(result).toEqual({
+      errorHandled: true,
+      message: expect.any(String),
+    });
+  });
+
+  it('does not call the errorHandler when schema validation succeeds', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+
+    // Act
+    const result = await middy()
+      .use(
+        parser({
+          schema: schema,
+          errorHandler: (error) => ({ errorHandled: true, message: error.message }),
+        })
+      )
+      .handler((event) => event)(
+      event as unknown as z.infer<typeof schema>,
+      {} as Context
+    );
+
+    // Assess
+    expect(result).toEqual(event);
+  });
+
+  it('rethrows the error when no errorHandler is provided and schema validation fails', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+
+    // Act & Assess
+    await expect(
+      middy()
+        .use(parser({ schema: z.number() }))
+        .handler((event) => event)(event as unknown as number, {} as Context)
+    ).rejects.toThrow(ParseError);
+  });
 });

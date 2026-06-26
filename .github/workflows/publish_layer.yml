@@ -126,7 +126,7 @@ jobs:
         run: git add .
       - name: Create PR
         id: create-pr
-        uses: aws-powertools/actions/.github/actions/create-pr@da5bcb1a3d22f87bc48b570c818d26f44c0fc960 # v1.3.0
+        uses: aws-powertools/actions/.github/actions/create-pr@4bf64a4072489399fbf39b78f558eeeed6767189 # v1.5.2
         with: 
           temp_branch_prefix: 'ci-layer-docs'
           pull_request_title: 'chore(ci): update layer ARN on documentation'

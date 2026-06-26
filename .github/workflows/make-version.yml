@@ -58,7 +58,7 @@ jobs:
         run: git add .
       - name: Create PR
         id: create-pr
-        uses: aws-powertools/actions/.github/actions/create-pr@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
+        uses: aws-powertools/actions/.github/actions/create-pr@4bf64a4072489399fbf39b78f558eeeed6767189 # v1.5.2
         with:
           temp_branch_prefix: "ci-bump"
           pull_request_title: "chore(ci): bump version to ${{ steps.version-n-changelog.outputs.new-version  }}"

@@ -64,6 +64,28 @@ describe('Decorator: parser', () => {
       return event;
     }
 
+    @parser({
+      schema,
+      errorHandler: (_error) => undefined,
+    })
+    public async handlerWithErrorHandlerReturningUndefined(
+      event: z.infer<typeof schema>,
+      _context: Context
+    ): Promise<unknown> {
+      return event;
+    }
+
+    @parser({
+      schema,
+      errorHandler: (error) => ({ errorHandled: true, message: error.message }),
+    })
+    public async handlerWithErrorHandler(
+      event: z.infer<typeof schema>,
+      _context: Context
+    ): Promise<unknown> {
+      return event;
+    }
+
     private anotherMethod(event: unknown): unknown {
       return event;
     }
@@ -141,5 +163,50 @@ describe('Decorator: parser', () => {
       success: false,
       originalEvent: { foo: 'bar' },
     });
+  });
+
+  it('rethrows the error when errorHandler returns undefined', () => {
+    // Act & Assess
+    expect(() =>
+      lambda.handlerWithErrorHandlerReturningUndefined(
+        { foo: 'bar' } as unknown as z.infer<typeof schema>,
+        {} as Context
+      )
+    ).toThrow(ParseError);
+  });
+
+  it('calls the errorHandler when schema validation fails', async () => {
+    // Act
+    const result = await lambda.handlerWithErrorHandler(
+      { foo: 'bar' } as unknown as z.infer<typeof schema>,
+      {} as Context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      errorHandled: true,
+      message: expect.any(String),
+    });
+  });
+
+  it('does not call the errorHandler when schema validation succeeds', async () => {
+    // Prepare
+    const event = { name: 'John', age: 30 };
+
+    // Act
+    const result = await lambda.handlerWithErrorHandler(
+      event as unknown as z.infer<typeof schema>,
+      {} as Context
+    );
+
+    // Assess
+    expect(result).toEqual(event);
+  });
+
+  it('rethrows the error when no errorHandler is provided and schema validation fails', () => {
+    // Act & Assess
+    expect(() =>
+      lambda.handler({ foo: 'bar' } as unknown as event, {} as Context)
+    ).toThrow(ParseError);
   });
 });

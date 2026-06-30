@@ -50,6 +50,6 @@
   },
   "dependencies": {
     "arktype": "^2.2.1",
-    "valibot": "^1.4.1"
+    "valibot": "^1.4.2"
   }
 }

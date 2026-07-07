@@ -366,4 +366,40 @@ describe('Return types', () => {
     // Assess
     expectTypeOf(value).toEqualTypeOf<{ key: string } | undefined>();
   });
+
+  it('casts the provided generic type when getConfig is called with a type parameter and no transform', async () => {
+    // Prepare
+    stubFetchForAppConfigAgent('my-value');
+
+    // Act
+    const value = await getConfig<'on' | 'off'>('my-config', {
+      application: 'my-app',
+      environment: 'prod',
+    });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<'on' | 'off' | undefined>();
+  });
+
+  it('rejects invalid options for getConfig at compile time', () => {
+    // Assess - the closure is never invoked, it only has to typecheck
+    const _invalidUsages = async () => {
+      // @ts-expect-error - environment is required
+      await getConfig('my-config', { application: 'my-app' });
+      await getConfig('my-config', {
+        application: 'my-app',
+        environment: 'prod',
+        // @ts-expect-error - `auto` transform is not supported
+        transform: 'auto',
+      });
+      await getConfig('my-config', {
+        application: 'my-app',
+        environment: 'prod',
+        // @ts-expect-error - transform must be one of the supported literals
+        transform: 'yaml',
+      });
+    };
+
+    expectTypeOf(_invalidUsages).toBeFunction();
+  });
 });

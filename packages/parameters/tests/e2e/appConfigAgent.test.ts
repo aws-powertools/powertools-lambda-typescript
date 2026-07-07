@@ -1,12 +1,12 @@
 import { join } from 'node:path';
 import {
   getArchitectureKey,
-  invokeFunctionOnce,
-  TestInvocationLogs,
   TestStack,
 } from '@aws-lambda-powertools/testing-utils';
 import { TestNodejsFunction } from '@aws-lambda-powertools/testing-utils/resources/lambda';
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { toBase64 } from '@smithy/util-base64';
+import { fromUtf8, toUtf8 } from '@smithy/util-utf8';
 import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { TestAppConfigWithProfiles } from '../helpers/resources.js';
@@ -52,11 +52,12 @@ const getAppConfigAgentLayerArn = (): string => {
  * This test suite deploys a CDK stack with a Lambda function that has the AWS AppConfig Agent
  * Lambda extension layer attached, plus a number of AppConfig configuration profiles.
  * The function code uses the `getConfig` function from the `appconfig-agent` module to retrieve
- * the configurations from the agent's local HTTP endpoint and logs the values to CloudWatch Logs
- * as JSON objects.
+ * the configurations from the agent's local HTTP endpoint and returns them as the invocation
+ * payload.
  *
- * Once the stack is deployed, the Lambda function is invoked and the CloudWatch Logs are retrieved.
- * The logs are then parsed and the values are checked against the expected values for each test case.
+ * Once the stack is deployed, the Lambda function is invoked and the returned payload is
+ * checked against the expected values for each test case. If any of the `getConfig` calls
+ * unexpectedly throws, the invocation reports a `FunctionError` and the test suite fails.
  *
  * The configuration profiles created are:
  * - Free-form JSON
@@ -118,7 +119,7 @@ describe('Parameters E2E tests, AppConfig Agent', () => {
     },
   };
 
-  let invocationLogs: TestInvocationLogs;
+  let functionResult: Record<string, unknown>;
 
   beforeAll(async () => {
     // Prepare
@@ -188,67 +189,48 @@ describe('Parameters E2E tests, AppConfig Agent', () => {
     const functionName = testStack.findAndGetStackOutputValue('appConfigAgent');
 
     // and invoke the Lambda function
-    invocationLogs = await invokeFunctionOnce({
-      functionName,
-    });
+    const result = await new LambdaClient({}).send(
+      new InvokeCommand({
+        FunctionName: functionName,
+        InvocationType: 'RequestResponse',
+        Payload: fromUtf8(JSON.stringify({})),
+      })
+    );
+    const payload = JSON.parse(toUtf8(result.Payload ?? new Uint8Array()));
+    if (result.FunctionError) {
+      throw new Error(
+        `The Lambda function failed unexpectedly: ${JSON.stringify(payload)}`
+      );
+    }
+    functionResult = payload;
   });
 
   describe('getConfig usage', () => {
     // Test 1 - get a configuration as-is (no transformation - should return a string)
     it('retrieves a single configuration as-is', () => {
-      const logs = invocationLogs.getFunctionLogs();
-      const testLog = TestInvocationLogs.parseFunctionLog(logs[0]);
-
-      expect(testLog).toStrictEqual({
-        test: 'get',
-        value: freeFormYamlValue,
-      });
+      expect(functionResult.raw).toStrictEqual(freeFormYamlValue);
     });
 
     // Test 2 - get a free-form JSON and apply json transformation (should return an object)
     it('retrieves a free-form JSON configuration with JSON transformation', () => {
-      const logs = invocationLogs.getFunctionLogs();
-      const testLog = TestInvocationLogs.parseFunctionLog(logs[1]);
-
-      expect(testLog).toStrictEqual({
-        test: 'get-freeform-json',
-        value: freeFormJsonValue,
-      });
+      expect(functionResult.json).toStrictEqual(freeFormJsonValue);
     });
 
     // Test 3 - get a free-form base64-encoded plain text and apply binary transformation
     // (should return a decoded string)
     it('retrieves a base64-encoded plain text configuration with binary transformation', () => {
-      const logs = invocationLogs.getFunctionLogs();
-      const testLog = TestInvocationLogs.parseFunctionLog(logs[2]);
-
-      expect(testLog).toStrictEqual({
-        test: 'get-freeform-base64-plaintext-binary',
-        value: freeFormPlainTextValue,
-      });
+      expect(functionResult.binary).toStrictEqual(freeFormPlainTextValue);
     });
 
     // Test 4 - get a feature flag and apply json transformation (should return an object
     // with the evaluated flag values)
     it('retrieves a feature flag configuration with JSON transformation', () => {
-      const logs = invocationLogs.getFunctionLogs();
-      const testLog = TestInvocationLogs.parseFunctionLog(logs[3]);
-
-      expect(testLog).toStrictEqual({
-        test: 'get-feature-flag',
-        value: featureFlagValue.values,
-      });
+      expect(functionResult.featureFlag).toStrictEqual(featureFlagValue.values);
     });
 
     // Test 5 - get a configuration that does not exist (should throw a GetParameterError)
     it('throws a GetParameterError when the configuration does not exist', () => {
-      const logs = invocationLogs.getFunctionLogs();
-      const testLog = TestInvocationLogs.parseFunctionLog(logs[4]);
-
-      expect(testLog).toStrictEqual({
-        test: 'get-missing',
-        error: 'GetParameterError',
-      });
+      expect(functionResult.missingConfigErrorName).toBe('GetParameterError');
     });
   });
 

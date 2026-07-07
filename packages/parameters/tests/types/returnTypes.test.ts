@@ -16,8 +16,9 @@ import {
 import { toBase64 } from '@smithy/util-base64';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
-import { beforeEach, describe, expectTypeOf, it } from 'vitest';
+import { beforeEach, describe, expectTypeOf, it, vi } from 'vitest';
 import { getAppConfig } from '../../src/appconfig/index.js';
+import { getConfig } from '../../src/appconfig-agent/index.js';
 import { Transform } from '../../src/index.js';
 import { getSecret } from '../../src/secrets/index.js';
 import { getParameter, getParameters } from '../../src/ssm/index.js';
@@ -27,10 +28,20 @@ describe('Return types', () => {
   const ssmClient = mockClient(SSMClient);
   const secretsClient = mockClient(SecretsManagerClient);
   const encoder = new TextEncoder();
+  const stubFetchForAppConfigAgent = (body: string) => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: vi.fn().mockResolvedValue(body),
+      })
+    );
+  };
 
   beforeEach(() => {
     appConfigclient.reset();
     ssmClient.reset();
+    vi.unstubAllGlobals();
   });
 
   it('returns a string value when called with transform: `binary` option', async () => {
@@ -295,5 +306,64 @@ describe('Return types', () => {
 
     // Assess
     expectTypeOf(value).toEqualTypeOf<Uint8Array>();
+  });
+
+  it('returns a string value when getConfig is called without a transform', async () => {
+    // Prepare
+    stubFetchForAppConfigAgent('my-value');
+
+    // Act
+    const value = await getConfig('my-config', {
+      application: 'my-app',
+      environment: 'prod',
+    });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<string | undefined>();
+  });
+
+  it('returns a JSON value when getConfig is called with transform `json`', async () => {
+    // Prepare
+    stubFetchForAppConfigAgent('{"key":"value"}');
+
+    // Act
+    const value = await getConfig('my-config', {
+      application: 'my-app',
+      environment: 'prod',
+      transform: 'json',
+    });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<JSONValue | undefined>();
+  });
+
+  it('returns a string value when getConfig is called with transform `binary`', async () => {
+    // Prepare
+    stubFetchForAppConfigAgent(toBase64(encoder.encode('my-value')));
+
+    // Act
+    const value = await getConfig('my-config', {
+      application: 'my-app',
+      environment: 'prod',
+      transform: 'binary',
+    });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<string | undefined>();
+  });
+
+  it('casts the provided generic type when getConfig is called with a type parameter', async () => {
+    // Prepare
+    stubFetchForAppConfigAgent('{"key":"value"}');
+
+    // Act
+    const value = await getConfig<{ key: string }>('my-config', {
+      application: 'my-app',
+      environment: 'prod',
+      transform: 'json',
+    });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<{ key: string } | undefined>();
   });
 });

@@ -132,12 +132,12 @@ const getConfig = async <
         signal: AbortSignal.timeout(options.timeout ?? 3000),
       }
     );
+    value = await res.text();
     if (!res.ok) {
       throw new GetParameterError(
-        `Failed to retrieve configuration from AppConfig Agent: ${res.status} ${await res.text()}`
+        `Failed to retrieve configuration from AppConfig Agent: ${res.status} ${value}`
       );
     }
-    value = await res.text();
   } catch (error) {
     if (error instanceof GetParameterError) throw error;
     throw new GetParameterError((error as Error).message, { cause: error });

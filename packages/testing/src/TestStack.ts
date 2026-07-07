@@ -9,7 +9,10 @@ import {
 } from '@aws-cdk/toolkit-lib';
 import { App, Stack } from 'aws-cdk-lib';
 import { generateTestUniqueName } from './helpers.js';
+import { patchCdkStackEventPolling } from './patchCdkStackEventPolling.js';
 import type { TestStackProps } from './types.js';
+
+patchCdkStackEventPolling();
 
 const testConsole = new Console({
   stdout: process.stdout,

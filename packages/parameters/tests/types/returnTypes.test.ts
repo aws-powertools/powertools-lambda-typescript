@@ -16,7 +16,7 @@ import {
 import { toBase64 } from '@smithy/util-base64';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
-import { beforeEach, describe, expectTypeOf, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expectTypeOf, it, vi } from 'vitest';
 import { getAppConfig } from '../../src/appconfig/index.js';
 import { getConfig } from '../../src/appconfig-agent/index.js';
 import { Transform } from '../../src/index.js';
@@ -41,6 +41,9 @@ describe('Return types', () => {
   beforeEach(() => {
     appConfigclient.reset();
     ssmClient.reset();
+  });
+
+  afterEach(() => {
     vi.unstubAllGlobals();
   });
 

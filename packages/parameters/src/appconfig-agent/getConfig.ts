@@ -21,8 +21,10 @@ import type {
  * function always fetches from the agent's local endpoint and doesn't support the `maxAge` and `forceFetch` options. You can
  * configure the agent's behavior, including caching and prefetching, using the [environment variables exposed by the agent](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-config.html).
  *
- * When not running in a Lambda environment (e.g., during local development or testing), the function returns `undefined`
- * without making any request.
+ * When the function detects that it's not running in AWS Lambda (the `AWS_LAMBDA_INITIALIZATION_TYPE` environment variable
+ * is not set), or when running with `POWERTOOLS_DEV` enabled, it returns `undefined` without making any request. This is
+ * helpful for unit testing. Note that local emulators that replicate the Lambda runtime environment (e.g., AWS SAM CLI) set
+ * the Lambda environment variables, so in those environments the function will attempt to call the agent.
  *
  * **Basic usage**
  *
@@ -143,19 +145,13 @@ const getConfig = async <
     throw new GetParameterError((error as Error).message, { cause: error });
   }
 
-  if (options.transform) {
-    return transformValue(value, options.transform, true, name) as
-      | AppConfigAgentGetOutput<
-          ExplicitUserProvidedType,
-          InferredFromOptionsType
-        >
-      | undefined;
-  }
-
-  return value as AppConfigAgentGetOutput<
-    ExplicitUserProvidedType,
-    InferredFromOptionsType
-  >;
+  return (
+    options.transform
+      ? transformValue(value, options.transform, true, name)
+      : value
+  ) as
+    | AppConfigAgentGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
+    | undefined;
 };
 
 export { getConfig };

@@ -152,7 +152,10 @@ If you use the [AWS AppConfig Agent Lambda extension](https://docs.aws.amazon.co
 ```
 
 ???+ note
-    To use `getConfig` you must [add the AWS AppConfig Agent Lambda extension layer](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-versions.html) to your function. When not running in a Lambda environment, for example during local development or in tests, `getConfig` returns `undefined` without making any request.
+    To use `getConfig` you must [add the AWS AppConfig Agent Lambda extension layer](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-versions.html) to your function.
+
+When `getConfig` detects that it's not running in AWS Lambda (the `AWS_LAMBDA_INITIALIZATION_TYPE` environment variable is not set), or when `POWERTOOLS_DEV` is enabled, it returns `undefined` without making any request - this is helpful for unit testing.
+Local emulators that replicate the Lambda runtime environment (e.g. AWS SAM CLI) set the Lambda environment variables, so in those environments `getConfig` will attempt to call the agent.
 
 Unlike `getAppConfig`, which uses the AWS SDK, the agent handles caching, polling, and prefetching for you, so `getConfig` doesn't support the `maxAge` and `forceFetch` options and always fetches from the agent's local endpoint.
 

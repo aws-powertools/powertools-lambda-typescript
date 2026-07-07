@@ -19,7 +19,7 @@ import { RESOURCE_NAME_PREFIX } from './constants.js';
  * The layer publisher account ID differs per region, so we keep a map of the regions
  * where we run the end-to-end tests.
  */
-const appConfigAgentLayerArns: Record<string, Record<string, string>> = {
+const appConfigAgentLayerArns = {
   'us-east-1': {
     x86_64:
       'arn:aws:lambda:us-east-1:027255383542:layer:AWS-AppConfig-Extension:328',
@@ -32,13 +32,16 @@ const appConfigAgentLayerArns: Record<string, Record<string, string>> = {
     arm64:
       'arn:aws:lambda:eu-west-1:434848589818:layer:AWS-AppConfig-Extension-Arm64:243',
   },
-};
+} satisfies Record<string, Record<'x86_64' | 'arm64', string>>;
 
 const getAppConfigAgentLayerArn = (): string => {
   const region = process.env.AWS_REGION ?? process.env.CDK_DEFAULT_REGION;
-  const layerArn = region
-    ? appConfigAgentLayerArns[region]?.[getArchitectureKey()]
-    : undefined;
+  const layerArn =
+    region && region in appConfigAgentLayerArns
+      ? appConfigAgentLayerArns[region as keyof typeof appConfigAgentLayerArns][
+          getArchitectureKey()
+        ]
+      : undefined;
   if (!layerArn) {
     throw new Error(
       `No AppConfig Agent Lambda extension layer ARN known for region '${region}' and architecture '${getArchitectureKey()}'`

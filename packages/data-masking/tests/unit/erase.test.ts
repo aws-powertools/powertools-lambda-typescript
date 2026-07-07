@@ -462,7 +462,7 @@ describe('DataMasking.erase() - property tests', () => {
     fc.assert(
       fc.property(
         pathKey,
-        pathKey,
+        pathKey.filter((key) => key !== 'keep'),
         fc.dictionary(
           pathKey,
           fc.record({ secret: fc.string(), keep: fc.string() }),
@@ -493,7 +493,7 @@ describe('DataMasking.erase() - property tests', () => {
     fc.assert(
       fc.property(
         pathKey,
-        pathKey,
+        pathKey.filter((key) => key !== 'keep'),
         fc.array(fc.string(), { minLength: 1, maxLength: 10 }),
         (parent, child, values) => {
           const data = {
@@ -516,7 +516,7 @@ describe('DataMasking.erase() - property tests', () => {
     fc.assert(
       fc.property(
         pathKey,
-        pathKey,
+        pathKey.filter((key) => key !== 'id'),
         fc.array(fc.string(), { minLength: 1, maxLength: 10 }),
         (parent, child, values) => {
           const items = values.map((v, i) =>

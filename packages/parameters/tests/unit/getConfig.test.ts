@@ -279,4 +279,30 @@ describe('Function: getConfig', () => {
 
     timeoutSpy.mockRestore();
   });
+
+  it('wraps a timed out request in a GetParameterError', async () => {
+    // Prepare
+    // Reject when the signal aborts, like the real fetch does; the request itself never resolves
+    fetchMock.mockImplementation(
+      (_url: string, { signal }: { signal: AbortSignal }) =>
+        new Promise((_, reject) => {
+          signal.addEventListener('abort', () => reject(signal.reason), {
+            once: true,
+          });
+        })
+    );
+
+    // Act & Assess
+    await expect(
+      getConfig('my-config', {
+        application: 'my-app',
+        environment: 'my-env',
+        timeout: 1,
+      })
+    ).rejects.toSatisfy(
+      (error: Error) =>
+        error instanceof GetParameterError &&
+        (error.cause as Error).name === 'TimeoutError'
+    );
+  });
 });

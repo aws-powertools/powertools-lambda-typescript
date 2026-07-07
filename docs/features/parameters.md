@@ -159,6 +159,8 @@ Local emulators that replicate the Lambda runtime environment (e.g. AWS SAM CLI)
 
 Unlike `getAppConfig`, which uses the AWS SDK, the agent handles caching, polling, and prefetching for you, so `getConfig` doesn't support the `maxAge` and `forceFetch` options and always fetches from the agent's local endpoint.
 
+When the requested configuration doesn't exist, `getConfig` throws a `ParameterNotFoundError`; any other failure to reach the agent or retrieve the value throws a `GetParameterError`.
+
 You can configure the agent's behavior using [the environment variables it exposes](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-config.html).
 For example, you can reduce cold start latency by setting `AWS_APPCONFIG_EXTENSION_PREFETCH_LIST` to the path of your configuration (i.e. `/applications/my-app/environments/my-env/configurations/my-configuration`), so that the agent starts fetching it before your handler runs.
 

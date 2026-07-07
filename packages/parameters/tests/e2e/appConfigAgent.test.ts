@@ -83,7 +83,7 @@ const getAppConfigAgentLayerArn = (): string => {
  * get a feature flag (agent returns the evaluated flag values) and apply json transformation (should return an object)
  *
  * Test 5
- * get a configuration that does not exist (should throw a GetParameterError)
+ * get a configuration that does not exist (should throw a ParameterNotFoundError)
  */
 describe('Parameters E2E tests, AppConfig Agent', () => {
   const testStack = new TestStack({
@@ -231,9 +231,11 @@ describe('Parameters E2E tests, AppConfig Agent', () => {
       expect(functionResult.featureFlag).toStrictEqual(featureFlagValue.values);
     });
 
-    // Test 5 - get a configuration that does not exist (should throw a GetParameterError)
-    it('throws a GetParameterError when the configuration does not exist', () => {
-      expect(functionResult.missingConfigErrorName).toBe('GetParameterError');
+    // Test 5 - get a configuration that does not exist (should throw a ParameterNotFoundError)
+    it('throws a ParameterNotFoundError when the configuration does not exist', () => {
+      expect(functionResult.missingConfigErrorName).toBe(
+        'ParameterNotFoundError'
+      );
     });
   });
 

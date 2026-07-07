@@ -4,7 +4,7 @@ import {
   isDevMode,
 } from '@aws-lambda-powertools/commons/utils/env';
 import { transformValue } from '../base/transformValue.js';
-import { GetParameterError } from '../errors.js';
+import { GetParameterError, ParameterNotFoundError } from '../errors.js';
 import type {
   AppConfigAgentGetOutput,
   GetConfigOptions,
@@ -135,6 +135,9 @@ const getConfig = async <
       }
     );
     value = await res.text();
+    if (res.status === 404) {
+      throw new ParameterNotFoundError(`Configuration ${name} not found`);
+    }
     if (!res.ok) {
       throw new GetParameterError(
         `Failed to retrieve configuration from AppConfig Agent: ${res.status} ${value}`

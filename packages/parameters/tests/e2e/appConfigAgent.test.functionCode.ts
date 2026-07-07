@@ -36,7 +36,7 @@ export const handler = async (): Promise<Record<string, unknown>> => {
       }),
       // Test 4 - get a feature flag and apply json transformation (should return an object with the evaluated flag values)
       getConfig(featureFlagName, { ...baseOptions, transform: 'json' }),
-      // Test 5 - get a configuration that does not exist (should throw a GetParameterError)
+      // Test 5 - get a configuration that does not exist (should throw a ParameterNotFoundError)
       getConfig('does-not-exist', baseOptions).then(
         () => 'no error thrown',
         (error) => (error as Error).name

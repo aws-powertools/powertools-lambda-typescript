@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getConfig } from '../../src/appconfig-agent/index.js';
 import {
   GetParameterError,
+  ParameterNotFoundError,
   TransformParameterError,
 } from '../../src/errors.js';
 
@@ -207,7 +208,7 @@ describe('Function: getConfig', () => {
     expect(result).toBe('my-value');
   });
 
-  it('throws when the AppConfig Agent responds with an error', async () => {
+  it('throws a ParameterNotFoundError when the configuration does not exist', async () => {
     // Prepare
     fetchMock.mockResolvedValue({
       ok: false,
@@ -226,8 +227,27 @@ describe('Function: getConfig', () => {
         environment: 'my-env',
       })
     ).rejects.toThrow(
+      new ParameterNotFoundError('Configuration my-config not found')
+    );
+  });
+
+  it('throws when the AppConfig Agent responds with an error', async () => {
+    // Prepare
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: vi.fn().mockResolvedValue('Internal Server Error'),
+    });
+
+    // Act & Assess
+    await expect(
+      getConfig('my-config', {
+        application: 'my-app',
+        environment: 'my-env',
+      })
+    ).rejects.toThrow(
       new GetParameterError(
-        'Failed to retrieve configuration from AppConfig Agent: 404 {"Message":"Unrecognized or malformed path","ResourceType":"Configuration"}'
+        'Failed to retrieve configuration from AppConfig Agent: 500 Internal Server Error'
       )
     );
   });

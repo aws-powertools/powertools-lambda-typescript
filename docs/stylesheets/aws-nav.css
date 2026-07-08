@@ -41,6 +41,27 @@
 }
 
 @media screen and (min-width: 76.25em) {
+  .md-sidebar--primary {
+    min-height: calc(100vh - var(--md-header-height, 2.4rem));
+    position: sticky;
+  }
+
+  .md-sidebar--primary::after {
+    background-color: #c6c6cd;
+    bottom: 0;
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 1px;
+    z-index: 1;
+  }
+
+  [data-md-color-scheme="slate"] .md-sidebar--primary::after {
+    background-color: var(--aws-nav-divider);
+  }
+
   .md-sidebar--primary .md-sidebar__scrollwrap {
     position: relative;
   }

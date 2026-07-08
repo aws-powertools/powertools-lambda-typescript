@@ -1,7 +1,9 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 import { validate } from '@aws-lambda-powertools/validation';
 import { SchemaValidationError } from '@aws-lambda-powertools/validation/errors';
-import schemaWithCustomFormat from './samples/schemaWithCustomFormat.json';
+import schemaWithCustomFormat from './samples/schemaWithCustomFormat.json' with {
+  type: 'json',
+};
 
 const logger = new Logger();
 

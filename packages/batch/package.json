@@ -19,6 +19,7 @@
     "test:e2e": "vitest --run tests/e2e",
     "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build:tests": "tsc --noEmit -p tests/tsconfig.json",
     "build": "npm run build:esm & npm run build:cjs",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
@@ -82,14 +83,14 @@
     "nodejs"
   ],
   "dependencies": {
-    "@aws/lambda-invoke-store": "0.2.4",
+    "@aws/lambda-invoke-store": "0.3.0",
     "@aws-lambda-powertools/commons": "2.33.1",
     "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
     "@aws-lambda-powertools/parser": "2.33.1",
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-sqs": "^3.1067.0",
+    "@aws-sdk/client-sqs": "^3.1079.0",
     "zod": "^4.4.3"
   }
 }

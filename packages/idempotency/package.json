@@ -20,6 +20,7 @@
     "test:e2e": "vitest --run tests/e2e",
     "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build:tests": "tsc --noEmit -p tests/tsconfig.json",
     "build": "npm run build:esm & npm run build:cjs",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
@@ -121,8 +122,8 @@
     "@aws-sdk/client-dynamodb": ">=3.x",
     "@aws-sdk/lib-dynamodb": ">=3.x",
     "@middy/core": "4.x || 5.x || 6.x || 7.x",
-    "@redis/client": "^6.0.0",
-    "@valkey/valkey-glide": "^2.4.1"
+    "@redis/client": "^6.1.0",
+    "@valkey/valkey-glide": "^2.4.2"
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-dynamodb": {
@@ -151,10 +152,10 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.1067.0",
-    "@aws-sdk/lib-dynamodb": "^3.1067.0",
-    "@aws-sdk/util-dynamodb": "^3.996.4",
-    "@aws/durable-execution-sdk-js": "^1.1.6",
+    "@aws-sdk/client-dynamodb": "^3.1079.0",
+    "@aws-sdk/lib-dynamodb": "^3.1079.0",
+    "@aws-sdk/util-dynamodb": "^3.996.5",
+    "@aws/durable-execution-sdk-js": "^2.1.0",
     "aws-sdk-client-mock": "^4.1.0"
   }
 }

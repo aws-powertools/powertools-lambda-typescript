@@ -49,8 +49,17 @@ tsconfig.tsbuildinfo
 .tsbuildinfo
 
 # LLMs
-.claude
+CLAUDE.md
+.claude/*
+!.claude/skills
+.claude/skills/*
+!.claude/skills/create-issue
+!.claude/skills/create-pr
 .amazonq
 .kiro
 .github/instructions
-aidlc-docs
+aidlc-docsspecs/
+.specify/
+# generated agent artifacts
+specs/
+aidlc-docs/

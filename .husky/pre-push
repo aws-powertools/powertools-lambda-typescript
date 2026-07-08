@@ -1,3 +1,5 @@
+npm run build:tests -ws --if-present
+
 vitest --run \
   --exclude tests/unit/layer-publisher.test.ts \
   --coverage --coverage.thresholds.100 \

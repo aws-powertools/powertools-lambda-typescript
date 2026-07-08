@@ -73,9 +73,9 @@ jobs:
       layer-version: ${{ steps.store-latest-layer-arn.outputs.layer-version }}
     steps:
       - name: checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - name: aws credentials
-        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
+        uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b # v6.2.1
         with:
           aws-region: ${{ matrix.region }}
           role-to-assume: ${{ secrets.target-account-role }}

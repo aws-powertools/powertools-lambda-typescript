@@ -208,6 +208,7 @@ type DynamoDBGetMultipleOutput<
         : never
   : ExplicitUserProvidedType;
 
+export type { GetMaybeUndefined } from './BaseProvider.js';
 export type {
   DynamoDBGetMultipleOptions,
   DynamoDBGetMultipleOutput,

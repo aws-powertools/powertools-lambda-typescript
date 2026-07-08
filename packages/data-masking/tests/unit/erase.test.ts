@@ -1,0 +1,558 @@
+import fc from 'fast-check';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  DataMaskingFieldNotFoundError,
+  DataMaskingUnsupportedTypeError,
+} from '../../src/errors.js';
+import { DataMasking } from '../../src/index.js';
+
+describe('DataMasking.erase()', () => {
+  const masker = new DataMasking();
+
+  it('masks specified nested fields with default mask value', () => {
+    const data = {
+      name: 'Jane',
+      customer: { ssn: '123-45-6789', city: 'Anytown' },
+    };
+
+    const result = masker.erase(data, {
+      fields: ['customer.ssn'],
+    });
+
+    expect(result.customer.ssn).toBe('*****');
+    expect(result.customer.city).toBe('Anytown');
+    expect(result.name).toBe('Jane');
+  });
+
+  it('masks multiple fields', () => {
+    const data = { email: 'j@example.com', phone: '555-1234', name: 'Jane' };
+
+    const result = masker.erase(data, {
+      fields: ['email', 'phone'],
+    });
+
+    expect(result.email).toBe('*****');
+    expect(result.phone).toBe('*****');
+    expect(result.name).toBe('Jane');
+  });
+
+  it('masks wildcard array paths', () => {
+    const data = {
+      orders: [
+        { id: 1, payment: '4111-1111' },
+        { id: 2, payment: '5500-0000' },
+      ],
+    };
+
+    const result = masker.erase(data, {
+      fields: ['orders[*].payment'],
+    });
+
+    expect(result.orders[0].payment).toBe('*****');
+    expect(result.orders[1].payment).toBe('*****');
+    expect(result.orders[0].id).toBe(1);
+  });
+
+  it('skips array elements where the nested field is missing', () => {
+    const data = {
+      items: [
+        { id: 1, secret: 'hidden' },
+        { id: 2 },
+        { id: 3, secret: 'also hidden' },
+      ],
+    };
+
+    const result = masker.erase(data, {
+      fields: ['items[*].secret'],
+    });
+
+    expect(result.items[0].secret).toBe('*****');
+    expect(result.items[1]).toEqual({ id: 2 });
+    expect(result.items[2].secret).toBe('*****');
+  });
+
+  it('handles wildcard on an empty array', () => {
+    const lenientMasker = new DataMasking({ throwOnMissingField: false });
+    const data = { orders: [] as unknown[] };
+
+    const result = lenientMasker.erase(data, {
+      fields: ['orders[*].payment'],
+    });
+
+    expect(result.orders).toEqual([]);
+  });
+
+  it('masks a deeply nested field', () => {
+    const data = {
+      a: { b: { c: { d: { secret: 'hidden', keep: 'visible' } } } },
+    };
+
+    const result = masker.erase(data, { fields: ['a.b.c.d.secret'] });
+
+    expect(result.a.b.c.d.secret).toBe('*****');
+    expect(result.a.b.c.d.keep).toBe('visible');
+  });
+
+  it('returns null/undefined as-is', () => {
+    expect(masker.erase(null)).toBeNull();
+    expect(masker.erase(undefined)).toBeUndefined();
+  });
+
+  it('throws DataMaskingFieldNotFoundError for missing field when throwOnMissingField is true', () => {
+    const data = { name: 'Jane' };
+
+    expect(() => masker.erase(data, { fields: ['nonexistent'] })).toThrow(
+      DataMaskingFieldNotFoundError
+    );
+  });
+
+  it('skips missing field with a warning when throwOnMissingField is false', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const lenientMasker = new DataMasking({ throwOnMissingField: false });
+    const data = { name: 'Jane' };
+
+    const result = lenientMasker.erase(data, { fields: ['nonexistent'] });
+
+    expect(result).toEqual({ name: 'Jane' });
+    expect(warnSpy).toHaveBeenCalledWith("Field not found: 'nonexistent'");
+    warnSpy.mockRestore();
+  });
+
+  it('handles circular references by cloning them via structuredClone', () => {
+    const data: Record<string, unknown> = { name: 'Jane' };
+    data.self = data;
+
+    const result = masker.erase(data, { fields: ['name'] });
+
+    expect(result.name).toBe('*****');
+  });
+
+  it('throws DataMaskingUnsupportedTypeError for non-cloneable data', () => {
+    const data = { fn: () => {} };
+
+    expect(() => masker.erase(data, { fields: ['fn'] })).toThrow(
+      DataMaskingUnsupportedTypeError
+    );
+  });
+
+  it('masks all properties of an object with .* wildcard', () => {
+    const data = {
+      credentials: { username: 'admin', password: 's3cret', token: 'abc123' },
+    };
+
+    const result = masker.erase(data, { fields: ['credentials.*'] });
+
+    expect(result.credentials.username).toBe('*****');
+    expect(result.credentials.password).toBe('*****');
+    expect(result.credentials.token).toBe('*****');
+  });
+
+  it('masks nested fields via .* on an intermediate object', () => {
+    const data = {
+      users: {
+        alice: { ssn: '111', name: 'Alice' },
+        bob: { ssn: '222', name: 'Bob' },
+      },
+    };
+
+    const result = masker.erase(data, { fields: ['users.*.ssn'] });
+
+    expect(result.users.alice.ssn).toBe('*****');
+    expect(result.users.bob.ssn).toBe('*****');
+    expect(result.users.alice.name).toBe('Alice');
+    expect(result.users.bob.name).toBe('Bob');
+  });
+
+  it('ignores __proto__ keys during .* object wildcard traversal', () => {
+    const data = JSON.parse(
+      '{"secrets": {"__proto__": "injected", "safe": "value"}}'
+    );
+
+    const result = masker.erase(data, { fields: ['secrets.*'] });
+
+    expect(result.secrets.safe).toBe('*****');
+    expect(result.secrets.__proto__).toBe('injected');
+  });
+
+  it('prevents prototype pollution when __proto__ is used as a direct field path', () => {
+    const lenientMasker = new DataMasking({ throwOnMissingField: false });
+    const data = { safe: 'value' };
+
+    const result = lenientMasker.erase(data, {
+      fields: ['__proto__', 'constructor', 'safe'],
+    });
+
+    expect(result.safe).toBe('*****');
+    expect(Object.getPrototypeOf(result)).toEqual(Object.getPrototypeOf({}));
+  });
+
+  it('prevents prototype pollution on nested paths like foo.__proto__', () => {
+    const lenientMasker = new DataMasking({ throwOnMissingField: false });
+    const data = { foo: { bar: 'value' } };
+
+    const result = lenientMasker.erase(data, {
+      fields: ['foo.__proto__', 'foo.bar'],
+    });
+
+    expect(result.foo.bar).toBe('*****');
+    expect(Object.getPrototypeOf(result.foo)).toEqual(
+      Object.getPrototypeOf({})
+    );
+  });
+
+  it('skips primitives inside array wildcard paths', () => {
+    const lenientMasker = new DataMasking({ throwOnMissingField: false });
+    const data = { items: ['a', 'b', 'c'] };
+
+    const result = lenientMasker.erase(data, {
+      fields: ['items[*].nested'],
+    });
+
+    expect(result.items).toEqual(['a', 'b', 'c']);
+  });
+});
+
+describe('DataMasking.erase() - custom masking rules', () => {
+  const masker = new DataMasking();
+
+  it('applies regex pattern masking', () => {
+    const data = { email: 'jane@example.com' };
+
+    const result = masker.erase(data, {
+      maskingRules: {
+        email: {
+          regexPattern: /^(.)([^@]*)(@.*)$/,
+          maskFormat: '$1****$3',
+        },
+      },
+    });
+
+    expect(result.email).toBe('j****@example.com');
+  });
+
+  it('applies dynamic mask matching original length', () => {
+    const data = { ssn: '123-45-6789' };
+
+    const result = masker.erase(data, {
+      maskingRules: {
+        ssn: { dynamicMask: true },
+      },
+    });
+
+    expect(result.ssn).toBe('***********');
+    expect(result.ssn.length).toBe('123-45-6789'.length);
+  });
+
+  it('applies custom mask string', () => {
+    const data = { zip: '90210' };
+
+    const result = masker.erase(data, {
+      maskingRules: {
+        zip: { customMask: 'XXXXX' },
+      },
+    });
+
+    expect(result.zip).toBe('XXXXX');
+  });
+
+  it('stringifies non-string values before applying a rule', () => {
+    const data: Record<string, unknown> = { age: 30 };
+
+    const result = masker.erase(data, {
+      maskingRules: {
+        age: { dynamicMask: true },
+      },
+    });
+
+    expect(result.age).toBe('**'); // String(30) -> '30' -> '**'
+  });
+
+  it('applies default mask when no rule options specified', () => {
+    const data = { secret: 'hidden' };
+
+    const result = masker.erase(data, {
+      maskingRules: {
+        secret: {},
+      },
+    });
+
+    expect(result.secret).toBe('*****');
+  });
+});
+
+describe('DataMasking.erase() - top-level masking rule', () => {
+  const masker = new DataMasking();
+
+  it('applies a top-level rule to every listed field', () => {
+    const data = { ssn: '123-45-6789', card: '4111-1111', name: 'Jane' };
+
+    const result = masker.erase(data, {
+      fields: ['ssn', 'card'],
+      dynamicMask: true,
+    });
+
+    expect(result.ssn).toBe('***********');
+    expect(result.card).toBe('*********');
+    expect(result.name).toBe('Jane');
+  });
+
+  it('lets per-field maskingRules override the top-level rule', () => {
+    const data = { ssn: '123-45-6789', card: '4111-1111' };
+
+    const result = masker.erase(data, {
+      fields: ['ssn', 'card'],
+      dynamicMask: true,
+      maskingRules: {
+        card: { customMask: 'XXXX' },
+      },
+    });
+
+    // ssn falls through to the top-level dynamic mask, card uses its own rule
+    expect(result.ssn).toBe('***********');
+    expect(result.card).toBe('XXXX');
+  });
+
+  it('masks fields named only in maskingRules even without listing them in fields', () => {
+    const data = { ssn: '123-45-6789', card: '4111-1111', name: 'Jane' };
+
+    const result = masker.erase(data, {
+      fields: ['ssn'],
+      dynamicMask: true,
+      maskingRules: {
+        card: { customMask: 'XXXX' },
+      },
+    });
+
+    expect(result.ssn).toBe('***********');
+    expect(result.card).toBe('XXXX');
+    expect(result.name).toBe('Jane');
+  });
+
+  it('applies a top-level rule to every leaf when no fields are given', () => {
+    const data = {
+      ssn: '123-45-6789',
+      customer: { card: '4111', city: 'Anytown' },
+    };
+
+    const result = masker.erase(data, { dynamicMask: true });
+
+    expect(result.ssn).toBe('***********');
+    expect(result.customer.card).toBe('****');
+    expect(result.customer.city).toBe('*******');
+  });
+
+  it('stringifies non-string leaves when applying a top-level rule to all leaves', () => {
+    const data: Record<string, unknown> = { age: 30, active: true };
+
+    const result = masker.erase(data, {
+      dynamicMask: true,
+    });
+
+    expect(result.age).toBe('**'); // String(30) -> '30' -> '**'
+    expect(result.active).toBe('****'); // String(true) -> 'true' -> '****'
+  });
+
+  it('applies a top-level rule to array elements element-wise', () => {
+    const data = { cards: ['4111', '5500-0000'] };
+
+    const result = masker.erase(data, { dynamicMask: true });
+
+    expect(result.cards).toEqual(['****', '*********']);
+  });
+
+  it('masks a top-level scalar payload with a top-level rule', () => {
+    const result = masker.erase('123-45-6789', { dynamicMask: true });
+
+    expect(result).toBe('***********');
+  });
+
+  it('passes null/undefined leaves through unchanged when masking all leaves', () => {
+    const data: Record<string, unknown> = {
+      ssn: '123',
+      maybe: null,
+      missing: undefined,
+    };
+
+    const result = masker.erase(data, { customMask: 'X' });
+
+    expect(result.ssn).toBe('X');
+    expect(result.maybe).toBeNull();
+    expect(result.missing).toBeUndefined();
+  });
+
+  it('stringifies non-string fields before applying a top-level rule', () => {
+    const data: Record<string, unknown> = { age: 30 };
+
+    const result = masker.erase(data, {
+      fields: ['age'],
+      dynamicMask: true,
+    });
+
+    expect(result.age).toBe('**'); // String(30) -> '30' -> '**'
+  });
+
+  it('applies a top-level regex rule across listed fields', () => {
+    const data = { primary: 'jane@example.com', backup: 'bob@example.com' };
+
+    const result = masker.erase(data, {
+      fields: ['primary', 'backup'],
+      regexPattern: /^(.)([^@]*)(@.*)$/,
+      maskFormat: '$1****$3',
+    });
+
+    expect(result.primary).toBe('j****@example.com');
+    expect(result.backup).toBe('b****@example.com');
+  });
+});
+
+const pathKey = fc.stringMatching(/^[a-z][a-z0-9_]{0,10}$/);
+
+describe('DataMasking.erase() - property tests', () => {
+  const masker = new DataMasking();
+
+  it('never mutates the original input', () => {
+    const lenientMasker = new DataMasking({ throwOnMissingField: false });
+    fc.assert(
+      fc.property(fc.dictionary(pathKey, fc.jsonValue()), (data) => {
+        const original = structuredClone(data);
+        lenientMasker.erase(data, { fields: Object.keys(data) });
+
+        expect(data).toEqual(original);
+      })
+    );
+  });
+
+  it('with no fields returns the default mask, masking arrays element-wise', () => {
+    fc.assert(
+      fc.property(fc.jsonValue(), (data) => {
+        if (data === null || data === undefined) return;
+        const result = masker.erase(data);
+
+        if (Array.isArray(data)) {
+          expect(result).toEqual(data.map(() => '*****'));
+        } else {
+          expect(result).toBe('*****');
+        }
+      })
+    );
+  });
+
+  it('replaces every value under parent.* with the mask', () => {
+    fc.assert(
+      fc.property(
+        pathKey,
+        fc.dictionary(pathKey, fc.string(), { minKeys: 1 }),
+        (parent, nested) => {
+          const data = { [parent]: nested };
+          const result = masker.erase(data, {
+            fields: [`${parent}.*`],
+          });
+
+          for (const key of Object.keys(nested)) {
+            expect((result[parent] as Record<string, unknown>)[key]).toBe(
+              '*****'
+            );
+          }
+        }
+      )
+    );
+  });
+
+  it('masks nested field under each key with parent.*.child', () => {
+    fc.assert(
+      fc.property(
+        pathKey,
+        pathKey.filter((key) => key !== 'keep'),
+        fc.dictionary(
+          pathKey,
+          fc.record({ secret: fc.string(), keep: fc.string() }),
+          { minKeys: 1 }
+        ),
+        (parent, child, nested) => {
+          const inner = Object.fromEntries(
+            Object.entries(nested).map(([k, v]) => [
+              k,
+              { [child]: v.secret, keep: v.keep },
+            ])
+          );
+          const data = { [parent]: inner };
+          const result = masker.erase(data, {
+            fields: [`${parent}.*.${child}`],
+          }) as Record<string, Record<string, Record<string, unknown>>>;
+
+          for (const key of Object.keys(inner)) {
+            expect(result[parent][key][child]).toBe('*****');
+            expect(result[parent][key].keep).toBe(inner[key].keep);
+          }
+        }
+      )
+    );
+  });
+
+  it('replaces every element field under parent[*].child with the mask', () => {
+    fc.assert(
+      fc.property(
+        pathKey,
+        pathKey.filter((key) => key !== 'keep'),
+        fc.array(fc.string(), { minLength: 1, maxLength: 10 }),
+        (parent, child, values) => {
+          const data = {
+            [parent]: values.map((v) => ({ [child]: v, keep: 'visible' })),
+          };
+          const result = masker.erase(data, {
+            fields: [`${parent}[*].${child}`],
+          }) as Record<string, Record<string, unknown>[]>;
+
+          for (let i = 0; i < values.length; i++) {
+            expect(result[parent][i][child]).toBe('*****');
+            expect(result[parent][i].keep).toBe('visible');
+          }
+        }
+      )
+    );
+  });
+
+  it('[*] skips array elements missing the targeted field', () => {
+    fc.assert(
+      fc.property(
+        pathKey,
+        pathKey.filter((key) => key !== 'id'),
+        fc.array(fc.string(), { minLength: 1, maxLength: 10 }),
+        (parent, child, values) => {
+          const items = values.map((v, i) =>
+            i % 2 === 0 ? { [child]: v, id: i } : { id: i }
+          );
+          const data = { [parent]: items };
+          const result = masker.erase(data, {
+            fields: [`${parent}[*].${child}`],
+          }) as Record<string, Record<string, unknown>[]>;
+
+          for (let i = 0; i < items.length; i++) {
+            if (i % 2 === 0) {
+              expect(result[parent][i][child]).toBe('*****');
+            } else {
+              expect(result[parent][i][child]).toBeUndefined();
+            }
+            expect(result[parent][i].id).toBe(i);
+          }
+        }
+      )
+    );
+  });
+
+  it('replaces every targeted top-level field with the mask', () => {
+    fc.assert(
+      fc.property(
+        fc.dictionary(pathKey, fc.string(), { minKeys: 1 }),
+        (data) => {
+          const fields = Object.keys(data);
+          const result = masker.erase(data, { fields });
+
+          for (const field of fields) {
+            expect(result[field]).toBe('*****');
+          }
+        }
+      )
+    );
+  });
+});

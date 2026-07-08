@@ -6,7 +6,7 @@ import {
   Router,
 } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
-import type { Context } from 'aws-lambda/handler';
+import type { Context } from 'aws-lambda';
 
 const logger = new Logger();
 const app = new Router({ logger });

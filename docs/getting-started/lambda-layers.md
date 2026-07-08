@@ -294,7 +294,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
     ```terraform
       data "aws_ssm_parameter" "powertools_version" {
         # Replace {version} with your chosen Powertools for AWS Lambda version or latest
-        name = "/aws/service/powertools/python/generic/all/latest"
+        name = "/aws/service/powertools/typescript/generic/all/latest"
       }
 
       resource "aws_lambda_function" "test_lambda" {

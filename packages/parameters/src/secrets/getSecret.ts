@@ -1,5 +1,6 @@
 import { DEFAULT_PROVIDERS } from '../base/DefaultProviders.js';
 import type {
+  GetMaybeUndefined,
   SecretsGetOptions,
   SecretsGetOutput,
 } from '../types/SecretsProvider.js';
@@ -96,6 +97,7 @@ import { SecretsProvider } from './SecretsProvider.js';
  * @param options.forceFetch - Optional flag to always fetch a new value from the store regardless if already available in cache (default: `false`)
  * @param options.transform - Optional transform to be applied, can be `json` or `binary`
  * @param options.sdkOptions - Optional additional options to pass to the AWS SDK v3 client, supports all options from {@link GetSecretValueCommandInput | `GetSecretValueCommandInput`} except `SecretId`
+ * @param options.throwOnMissing - Optional flag to throw a `ParameterNotFoundError` when the secret is not found, which also narrows the return type to exclude `undefined` (default: `false`)
  */
 const getSecret = <
   ExplicitUserProvidedType = undefined,
@@ -106,8 +108,10 @@ const getSecret = <
   name: string,
   options?: NonNullable<InferredFromOptionsType & SecretsGetOptions>
 ): Promise<
-  | SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>
-  | undefined
+  GetMaybeUndefined<
+    SecretsGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+    InferredFromOptionsType
+  >
 > => {
   if (!Object.hasOwn(DEFAULT_PROVIDERS, 'secrets')) {
     DEFAULT_PROVIDERS.secrets = new SecretsProvider();

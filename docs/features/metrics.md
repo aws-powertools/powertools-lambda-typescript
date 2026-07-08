@@ -252,11 +252,12 @@ As you finish adding all your metrics, you need to serialize and "flush them" by
 You can flush metrics automatically using one of the following methods:  
 
 * manually
+* the `using` keyword
 * [Middy-compatible](https://github.com/middyjs/middy){target=_blank} middleware
 * class decorator
 
 Using the Middy middleware or decorator will **automatically validate, serialize, and flush** all your metrics. During metrics validation, if no metrics are provided then a warning will be logged, but no exception will be thrown.
-If you do not use the middleware or decorator, you have to flush your metrics manually.
+If you do not use the middleware or decorator, you have to flush your metrics manually or rely on the `using` keyword.
 
 !!! warning "Metric validation"
     If metrics are provided, and any of the following criteria are not met, a **`RangeError`** error will be thrown:
@@ -318,6 +319,29 @@ You can manually flush the metrics with `publishStoredMetrics` as follows:
     ```typescript hl_lines="13"
     --8<-- "examples/snippets/metrics/manual.ts"
     ```
+
+=== "Example CloudWatch Logs excerpt"
+
+    ```json
+    --8<-- "examples/snippets/metrics/samples/manualLog.json"
+    ```
+
+#### Using the `using` keyword
+
+If you are running on Node.js 24 or newer, the `Metrics` class implements the [`Disposable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/dispose){target="_blank"} interface.
+This means you can declare your instance with the [`using`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/using){target="_blank"} keyword and have your metrics flushed automatically when the binding goes out of scope, including when an exception is thrown.
+This is a lightweight alternative to wrapping your handler in a `try/finally` block.
+
+!!! warning
+    Metrics, dimensions and namespace validation still applies.
+
+=== "handler.ts"
+
+    ```typescript hl_lines="12"
+    --8<-- "examples/snippets/metrics/usingKeyword.ts"
+    ```
+
+    1. The metrics are flushed automatically via `[Symbol.dispose]()` when the binding leaves the handler scope.
 
 === "Example CloudWatch Logs excerpt"
 

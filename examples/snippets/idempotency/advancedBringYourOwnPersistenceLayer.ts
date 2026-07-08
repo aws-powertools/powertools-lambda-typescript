@@ -13,8 +13,8 @@ import { getSecret } from '@aws-lambda-powertools/parameters/secrets';
 import {
   ProviderClient,
   ProviderItemAlreadyExists,
-} from './advancedBringYourOwnPersistenceLayerProvider';
-import type { ApiSecret, ProviderItem } from './types';
+} from './advancedBringYourOwnPersistenceLayerProvider.js';
+import type { ApiSecret, ProviderItem } from './types.js';
 
 class CustomPersistenceLayer extends BasePersistenceLayer {
   #collectionName: string;

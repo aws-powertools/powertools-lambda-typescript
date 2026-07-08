@@ -1,7 +1,7 @@
 import { AppSyncGraphQLResolver } from '@aws-lambda-powertools/event-handler/appsync-graphql';
 import type { Context } from 'aws-lambda';
-import { postRouter } from './postRouter';
-import { userRouter } from './userRouter';
+import { postRouter } from './postRouter.js';
+import { userRouter } from './userRouter.js';
 
 const app = new AppSyncGraphQLResolver();
 

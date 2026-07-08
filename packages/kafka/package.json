@@ -19,6 +19,7 @@
     "test:e2e": "echo \"Not implemented\"",
     "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build:tests": "tsc --noEmit -p tests/tsconfig.json",
     "build": "npm run build:esm & npm run build:cjs",
     "lint": "biome lint .",
     "lint:fix": "biome check --write .",
@@ -51,8 +52,8 @@
     "@standard-schema/spec": "^1.1.0"
   },
   "peerDependencies": {
-    "arktype": ">=2.0.0",
-    "valibot": "^1.4.1",
+    "arktype": "^2.2.2",
+    "valibot": "^1.4.2",
     "zod": "^3.25.0 || ^4.0.0"
   },
   "peerDependenciesMeta": {
@@ -116,7 +117,7 @@
   },
   "devDependencies": {
     "avro-js": "^1.12.1",
-    "protobufjs": "^8.6.3",
+    "protobufjs": "^8.7.0",
     "zod": "^4.4.3"
   }
 }

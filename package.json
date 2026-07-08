@@ -19,7 +19,8 @@
     "packages/event-handler",
     "packages/validation",
     "packages/kafka",
-    "packages/data-masking"
+    "packages/data-masking",
+    "packages/signer"
   ],
   "type": "module",
   "scripts": {

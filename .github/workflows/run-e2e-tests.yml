@@ -28,6 +28,7 @@ jobs:
             packages/tracer,
             packages/batch,
             packages/data-masking,
+            packages/signer,
             layers,
           ]
         version: [22, 24]

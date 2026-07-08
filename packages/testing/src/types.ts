@@ -1,5 +1,6 @@
 import type { App, Stack } from 'aws-cdk-lib';
 import type { AttributeType, TableProps } from 'aws-cdk-lib/aws-dynamodb';
+import type { CapacityProvider } from 'aws-cdk-lib/aws-lambda';
 import type { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import type { LogLevel } from './constants.js';
 
@@ -32,6 +33,46 @@ interface ExtraTestProps {
    * @default false
    */
   createAlias?: boolean;
+  /**
+   * Options to run the function on Lambda Managed Instances (LMI).
+   *
+   * When set, the function is associated with the given capacity provider,
+   * which must live in the same stack, and is published to the
+   * `$LATEST.PUBLISHED` version. The function name emitted in the stack
+   * output is qualified with `:$LATEST.PUBLISHED` so that invocations
+   * target the version served by the capacity provider.
+   *
+   * Cannot be combined with `createAlias`.
+   */
+  lmi?: {
+    /**
+     * The capacity provider to associate the function with.
+     */
+    capacityProvider: CapacityProvider;
+    /**
+     * The maximum number of concurrent invocations a single execution
+     * environment can handle.
+     *
+     * @default 10
+     */
+    perExecutionEnvironmentMaxConcurrency?: number;
+    /**
+     * The execution environment memory per vCPU, in GiB.
+     *
+     * @default 2.0
+     */
+    executionEnvironmentMemoryGiBPerVCpu?: number;
+    /**
+     * The minimum number of execution environments to maintain for the
+     * `$LATEST.PUBLISHED` version.
+     */
+    minExecutionEnvironments?: number;
+    /**
+     * The maximum number of execution environments allowed for the
+     * `$LATEST.PUBLISHED` version.
+     */
+    maxExecutionEnvironments?: number;
+  };
 }
 
 type TestDynamodbTableProps = Omit<
@@ -59,6 +100,15 @@ type InvokeTestFunctionOptions = {
   times?: number;
   invocationMode?: 'PARALLEL' | 'SEQUENTIAL';
   payload?: Record<string, unknown> | Array<Record<string, unknown>>;
+  /**
+   * Whether to request the tail of the execution log with the invocation.
+   *
+   * Not supported by functions running on Lambda Managed Instances; collect
+   * logs with the `LogTailer` instead.
+   *
+   * @default true
+   */
+  includeTailLogs?: boolean;
 };
 
 type ErrorField = {

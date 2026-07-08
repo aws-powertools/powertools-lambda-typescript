@@ -25,6 +25,9 @@ class TestNodejsFunction extends NodejsFunction {
   ) {
     const isESM = extraProps.outputFormat === 'ESM';
     const { shouldPolyfillRequire = false } = extraProps;
+    if (extraProps.lmi && extraProps.createAlias) {
+      throw new Error('lmi and createAlias are mutually exclusive');
+    }
     const { bundling, ...restProps } = props;
     const functionName = concatenateResourceName({
       testName: stack.testName,
@@ -38,7 +41,8 @@ class TestNodejsFunction extends NodejsFunction {
     });
     super(stack.stack, `fn-${resourceId}`, {
       timeout: Duration.seconds(30),
-      memorySize: 512,
+      // Lambda Managed Instance functions require at least 2048 MB
+      memorySize: extraProps.lmi ? 2048 : 512,
       tracing: Tracing.ACTIVE,
       bundling: {
         ...bundling,
@@ -58,6 +62,30 @@ class TestNodejsFunction extends NodejsFunction {
     });
 
     let outputValue = this.functionName;
+    if (extraProps.lmi) {
+      const {
+        capacityProvider,
+        perExecutionEnvironmentMaxConcurrency,
+        executionEnvironmentMemoryGiBPerVCpu,
+        minExecutionEnvironments,
+        maxExecutionEnvironments,
+      } = extraProps.lmi;
+      capacityProvider.addFunction(this, {
+        perExecutionEnvironmentMaxConcurrency,
+        executionEnvironmentMemoryGiBPerVCpu,
+        ...(minExecutionEnvironments !== undefined ||
+        maxExecutionEnvironments !== undefined
+          ? {
+              latestPublishedScalingConfig: {
+                minExecutionEnvironments,
+                maxExecutionEnvironments,
+              },
+            }
+          : {}),
+      });
+      // LMI serves the $LATEST.PUBLISHED version, so invocations must target it
+      outputValue = `${this.functionName}:$LATEST.PUBLISHED`;
+    }
     if (extraProps.createAlias) {
       const dev = new Alias(this, 'dev', {
         aliasName: 'dev',

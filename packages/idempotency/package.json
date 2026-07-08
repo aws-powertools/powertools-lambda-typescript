@@ -155,7 +155,7 @@
     "@aws-sdk/client-dynamodb": "^3.1079.0",
     "@aws-sdk/lib-dynamodb": "^3.1079.0",
     "@aws-sdk/util-dynamodb": "^3.996.5",
-    "@aws/durable-execution-sdk-js": "^2.0.0",
+    "@aws/durable-execution-sdk-js": "^2.1.0",
     "aws-sdk-client-mock": "^4.1.0"
   }
 }

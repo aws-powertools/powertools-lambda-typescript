@@ -253,6 +253,33 @@ Imagine the function executes successfully, but the client never receives the re
     --8<-- "examples/snippets/idempotency/types.ts:3:16"
     ```
 
+### Using multiple idempotent operations
+
+You can make multiple functions idempotent within the same Lambda function, each with its own configuration.
+
+In most cases, you can and should share the same persistence layer instance across idempotent operations. All the settings you pass when instantiating it - i.e. table name, attribute names, or a custom AWS SDK client - are safe to share.
+
+However, a persistence layer instance also carries the [idempotency configuration](#customizing-the-default-behavior) of the **first operation that uses it**, and silently ignores subsequent ones.
+
+For this reason, operations that need different `IdempotencyConfig` settings - i.e. different `eventKeyJmesPath` expressions - must each use their own persistence layer instance. If they shared one, the second operation would extract the idempotency key using the first operation's expression, which can cause it to always resolve to the same key and return stale results.
+
+When using multiple persistence layer instances, you can still share the same AWS SDK client to reuse the underlying connection.
+
+=== "index.ts"
+
+    ```typescript hl_lines="11 20-23 37-40"
+    --8<-- "examples/snippets/idempotency/makeIdempotentMultipleOperations.ts"
+    ```
+
+=== "types.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/idempotency/types.ts:3:16"
+    ```
+
+???+ note
+    The same applies to the [`@idempotent` decorator](#idempotent-decorator) and the [`makeHandlerIdempotent` Middy middleware](#makehandleridempotent-middy-middleware): operations with different idempotency configurations need their own persistence layer instance.
+
 ### Lambda timeouts
 
 To prevent against extended failed retries when a [Lambda function times out](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-verify-invocation-timeouts/), Powertools for AWS Lambda calculates and includes the remaining invocation available time as part of the idempotency record.

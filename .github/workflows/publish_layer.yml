@@ -37,7 +37,7 @@ jobs:
     if: ${{ (github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch') }}
     steps:
       - name: checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           ref: ${{ github.sha }}
       - name: Setup Node.js
@@ -96,6 +96,7 @@ jobs:
       id-token: write
     with:
       environment: prod
+      write_latest: ${{ !inputs.pre_release }}
       package_version: ${{ inputs.latest_published_version }}
       layer-version: ${{ needs.deploy-prod.outputs.layer-version }}
     secrets:
@@ -115,7 +116,7 @@ jobs:
       id-token: none
     steps:
       - name: Checkout repository # reusable workflows start clean, so we need to checkout again
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           ref: ${{ github.sha }}
       - name: Replace layer versions in documentation
@@ -125,7 +126,7 @@ jobs:
         run: git add .
       - name: Create PR
         id: create-pr
-        uses: aws-powertools/actions/.github/actions/create-pr@da5bcb1a3d22f87bc48b570c818d26f44c0fc960 # v1.3.0
+        uses: aws-powertools/actions/.github/actions/create-pr@4bf64a4072489399fbf39b78f558eeeed6767189 # v1.5.2
         with: 
           temp_branch_prefix: 'ci-layer-docs'
           pull_request_title: 'chore(ci): update layer ARN on documentation'

@@ -36,20 +36,21 @@
     "@aws-lambda-powertools/metrics": "^2.33.1",
     "@aws-lambda-powertools/parameters": "^2.33.1",
     "@aws-lambda-powertools/parser": "^2.33.1",
+    "@aws-lambda-powertools/signer": "^2.33.1",
     "@aws-lambda-powertools/tracer": "^2.33.1",
-    "@aws-sdk/client-appconfigdata": "^3.1067.0",
-    "@aws-sdk/client-dynamodb": "^3.1067.0",
-    "@aws-sdk/client-secrets-manager": "^3.1067.0",
-    "@aws-sdk/client-ssm": "^3.1067.0",
-    "@aws-sdk/util-dynamodb": "^3.996.4",
+    "@aws-sdk/client-appconfigdata": "^3.1079.0",
+    "@aws-sdk/client-dynamodb": "^3.1079.0",
+    "@aws-sdk/client-secrets-manager": "^3.1079.0",
+    "@aws-sdk/client-ssm": "^3.1079.0",
+    "@aws-sdk/util-dynamodb": "^3.996.5",
     "@middy/core": "^4.7.0",
-    "@redis/client": "^6.0.0",
-    "@valkey/valkey-glide": "^2.4.1",
+    "@redis/client": "^6.1.0",
+    "@valkey/valkey-glide": "^2.4.2",
     "aws-sdk-client-mock": "^4.1.0",
     "zod": "^4.4.3"
   },
   "dependencies": {
-    "arktype": "^2.2.0",
-    "valibot": "^1.4.1"
+    "arktype": "^2.2.3",
+    "valibot": "^1.4.2"
   }
 }

@@ -56,7 +56,7 @@ In addition to the Event Handler REST feature mentioned above, we will also be w
 
 - [x] [Implement resolver for Amazon Bedrock Agents Functions](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3710){target="_blank"}
 - [x] [Implement resolver for AWS AppSync Events API](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3857){target="_blank"}
-- [ ] Implement resolver for Amazon Bedrock Agents OpenAPI
+- [ ] ~~Implement resolver for Amazon Bedrock Agents OpenAPI~~ _(won't do - Amazon Bedrock Agents Classic is in [maintenance mode](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-classic-maintenance-mode.html){target="_blank"})_
 - [x] [Create RFC for AppSync GraphQL resolver](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3885){target="_blank"}
 - [x] [Implement resolver for AWS AppSync GraphQL API](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1166){target="_blank"}
 

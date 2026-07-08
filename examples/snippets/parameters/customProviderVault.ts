@@ -84,7 +84,9 @@ class HashiCorpVaultProvider extends BaseProvider {
     if (!res.ok) {
       throw new GetParameterError(`Failed to fetch secret ${res.statusText}`);
     }
-    const response = await res.json();
+    const response = (await res.json()) as {
+      data: { data: Record<string, unknown> };
+    };
     return response.data.data;
   }
 

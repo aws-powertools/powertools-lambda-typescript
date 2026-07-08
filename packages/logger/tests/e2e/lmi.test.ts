@@ -1,25 +1,24 @@
 import { join } from 'node:path';
-import {
-  invokeFunctionOnce,
-  TestStack,
-} from '@aws-lambda-powertools/testing-utils';
+import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestLmiCapacityProvider } from '@aws-lambda-powertools/testing-utils/resources/capacity-provider';
-import {
-  CloudWatchLogsClient,
-  FilterLogEventsCommand,
-} from '@aws-sdk/client-cloudwatch-logs';
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import promiseRetry from 'promise-retry';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { LoggerTestNodejsFunction } from '../helpers/resources.js';
-import { RESOURCE_NAME_PREFIX, STACK_OUTPUT_LOG_GROUP } from './constants.js';
+import { RESOURCE_NAME_PREFIX } from './constants.js';
 
-type IsolationLog = {
-  invocationKey: string;
+type IsolationResult = {
+  invocationId: string;
   executionEnvId: string;
   sawPeer: boolean;
   initializationType: string;
   maxConcurrency: string;
+  logs: Array<{
+    message: string;
+    invocationKey?: string;
+    function_request_id?: string;
+  }>;
 };
 
 /**
@@ -37,6 +36,12 @@ type IsolationLog = {
  * peer invocation lands in the same environment, proving a genuine overlap.
  * Without InvokeStore isolation, the overlapping invocations' appended keys
  * would bleed into each other's log output.
+ *
+ * The Invoke API does not support Tail logs for capacity provider functions
+ * and CloudWatch log delivery is asynchronous, so the handler intercepts its
+ * own process.stdout stream to capture the log lines the Logger emits and
+ * returns them in the response payload, making log collection fully
+ * deterministic while exercising the production log write path.
  */
 describe.runIf(process.env.RUN_LMI_TESTS === 'true')(
   'Logger E2E - Lambda Managed Instances',
@@ -70,7 +75,6 @@ describe.runIf(process.env.RUN_LMI_TESTS === 'true')(
         tracing: Tracing.DISABLED,
       },
       {
-        logGroupOutputKey: STACK_OUTPUT_LOG_GROUP,
         nameSuffix: 'LmiIsolation',
         lmi: {
           capacityProvider,
@@ -79,28 +83,44 @@ describe.runIf(process.env.RUN_LMI_TESTS === 'true')(
       }
     );
 
+    const lambdaClient = new LambdaClient({});
     let functionName: string;
-    let logGroupName: string;
-    let invokeStartTime: number;
+
+    const invokeOnce = async (payload: {
+      invocationId: string;
+      role: 'warmup' | 'test';
+    }): Promise<IsolationResult> => {
+      const response = await lambdaClient.send(
+        new InvokeCommand({
+          FunctionName: functionName,
+          InvocationType: 'RequestResponse',
+          Payload: JSON.stringify(payload),
+        })
+      );
+      if (response.FunctionError) {
+        throw new Error(
+          `Invocation ${payload.invocationId} failed: ${response.FunctionError}`
+        );
+      }
+      return JSON.parse(
+        Buffer.from(response.Payload ?? new Uint8Array()).toString()
+      );
+    };
+
+    let results: IsolationResult[];
 
     beforeAll(async () => {
       await testStack.deploy();
 
       functionName = testStack.findAndGetStackOutputValue('LmiIsolation');
-      logGroupName = testStack.findAndGetStackOutputValue(
-        STACK_OUTPUT_LOG_GROUP
-      );
 
       // The first invocation on a fresh capacity provider may have to wait
       // for an EC2 instance to boot, so retry until capacity is available
       await promiseRetry(
         async (retry) => {
-          await invokeFunctionOnce({
-            functionName,
-            payload: { invocationId: 'warmup', role: 'warmup' },
-            // Tail logs are not supported on capacity provider functions
-            includeTailLogs: false,
-          }).catch(retry);
+          await invokeOnce({ invocationId: 'warmup', role: 'warmup' }).catch(
+            retry
+          );
         },
         {
           retries: 10,
@@ -110,68 +130,26 @@ describe.runIf(process.env.RUN_LMI_TESTS === 'true')(
         }
       );
 
-      invokeStartTime = Date.now();
       // Every invocation blocks inside the handler until a second invocation
       // lands in the same execution environment. Dispatching all of them
       // simultaneously saturates the fleet, which forces the scheduler to
       // multiplex the overflow into busy environments
-      await Promise.all(
+      results = await Promise.all(
         Array.from({ length: invocationCount }, (_, index) =>
-          invokeFunctionOnce({
-            functionName,
-            payload: { invocationId: `inv-${index}`, role: 'test' },
-            includeTailLogs: false,
-          })
+          invokeOnce({ invocationId: `inv-${index}`, role: 'test' })
         )
       );
     }, 1_200_000); // VPC + capacity provider + instance boot can exceed the default hook timeout
 
-    it('isolates log attributes across concurrent invocations in the same execution environment', async () => {
-      // Collect the isolation logs from CloudWatch, retrying until every
-      // invocation's log has been ingested
-      const client = new CloudWatchLogsClient({});
-      const isolationLogs = await promiseRetry(
-        async (retry) => {
-          const logs: IsolationLog[] = [];
-          let nextToken: string | undefined;
-          do {
-            const response = await client.send(
-              new FilterLogEventsCommand({
-                logGroupName,
-                filterPattern: '"LMI isolation test"',
-                startTime: invokeStartTime,
-                nextToken,
-              })
-            );
-            for (const event of response.events ?? []) {
-              const log = JSON.parse(event.message ?? '{}') as IsolationLog;
-              if (log.invocationKey?.startsWith('inv-')) {
-                logs.push(log);
-              }
-            }
-            nextToken = response.nextToken;
-          } while (nextToken);
-
-          if (logs.length < invocationCount) {
-            return retry(
-              new Error(
-                `Expected ${invocationCount} isolation logs, got ${logs.length}`
-              )
-            );
-          }
-          return logs;
-        },
-        { retries: 10, factor: 1, minTimeout: 5_000 }
-      );
-
-      expect(isolationLogs).toHaveLength(invocationCount);
+    it('isolates log attributes across concurrent invocations in the same execution environment', () => {
+      expect(results).toHaveLength(invocationCount);
 
       // The function actually ran on Lambda Managed Instances with the
       // concurrency path active: AWS_LAMBDA_MAX_CONCURRENCY drives
       // shouldUseInvokeStore() in @aws-lambda-powertools/commons
-      for (const log of isolationLogs) {
-        expect(log.initializationType).toBe('lambda-managed-instances');
-        expect(log.maxConcurrency).toBe('10');
+      for (const result of results) {
+        expect(result.initializationType).toBe('lambda-managed-instances');
+        expect(result.maxConcurrency).toBe('10');
       }
 
       // At least one pair of invocations genuinely overlapped inside the
@@ -179,19 +157,18 @@ describe.runIf(process.env.RUN_LMI_TESTS === 'true')(
       // module-scoped barrier. The scheduler may still scale out some of
       // the invocations to other environments; that's fine as long as a
       // real overlap happened somewhere.
-      expect(isolationLogs.some((log) => log.sawPeer === true)).toBe(true);
+      expect(results.some((result) => result.sawPeer === true)).toBe(true);
 
-      // Each invocation logged exactly its own key: without isolation,
-      // concurrent appendKeys calls within the shared environment would
-      // bleed across invocations while they were blocked on the barrier
-      const invocationKeys = isolationLogs
-        .map((log) => log.invocationKey)
-        .sort((a, b) =>
-          Number(a.split('-')[1]) > Number(b.split('-')[1]) ? 1 : -1
+      // Each invocation's captured logs carry exactly its own key: without
+      // isolation, concurrent appendKeys calls within a shared environment
+      // would bleed across the invocations blocked on the barrier
+      for (const result of results) {
+        const isolationLogs = result.logs.filter(
+          (log) => log.message === 'LMI isolation test'
         );
-      expect(invocationKeys).toEqual(
-        Array.from({ length: invocationCount }, (_, index) => `inv-${index}`)
-      );
+        expect(isolationLogs).toHaveLength(1);
+        expect(isolationLogs[0].invocationKey).toBe(result.invocationId);
+      }
     });
 
     afterAll(async () => {

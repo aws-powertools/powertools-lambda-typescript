@@ -78,6 +78,6 @@
   "allowScripts": {
     "esbuild": true,
     "fsevents": true,
-    "protobufjs@7.5.8": true
+    "protobufjs@7.6.5": true
   }
 }

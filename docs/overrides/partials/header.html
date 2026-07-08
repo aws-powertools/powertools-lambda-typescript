@@ -1,0 +1,191 @@
+{#-
+  AWS documentation portal-inspired header.
+  Rebuilt from Material for MkDocs' partials/header.html while preserving
+  drawer, search, palette, and header component hooks.
+-#}
+{% set class = "md-header aws-header" %}
+{% if "navigation.tabs.sticky" in features %}
+  {% set class = class ~ " md-header--shadow md-header--lifted" %}
+{% elif "navigation.tabs" not in features %}
+  {% set class = class ~ " md-header--shadow" %}
+{% endif %}
+<header class="{{ class }}" data-md-component="header">
+  <div class="aws-utility-bar">
+    <nav class="aws-utility-bar__inner md-grid" aria-label="AWS utility navigation">
+      {% if config.theme.palette %}
+        {% if not config.theme.palette is mapping %}
+          <form class="aws-utility-bar__preferences md-header__option" data-md-component="palette">
+            {% for option in config.theme.palette %}
+              {% set scheme  = option.scheme  | d("default", true) %}
+              {% set primary = option.primary | d("indigo", true) %}
+              {% set accent  = option.accent  | d("indigo", true) %}
+              <input class="md-option" data-md-color-media="{{ option.media }}" data-md-color-scheme="{{ scheme | replace(' ', '-') }}" data-md-color-primary="{{ primary | replace(' ', '-') }}" data-md-color-accent="{{ accent | replace(' ', '-') }}" {% if option.toggle %} aria-label="{{ option.toggle.name }}" {% else %} aria-hidden="true" {% endif %} type="radio" name="__palette" id="__palette_{{ loop.index0 }}">
+            {% endfor %}
+            <span class="aws-prefs__palette-sentinel" aria-hidden="true"></span>
+            <details class="aws-prefs">
+              <summary class="aws-utility-bar__link aws-prefs__summary">
+                <span>Preferences</span>
+                <span class="aws-prefs__caret" aria-hidden="true"></span>
+              </summary>
+              <div class="aws-prefs__panel" role="group" aria-labelledby="aws-prefs-heading">
+                <div class="aws-prefs__heading" id="aws-prefs-heading">Preferences</div>
+                <div class="aws-prefs__section-label">Text theme:</div>
+                <div class="aws-prefs__options">
+                  <label class="aws-prefs__option" for="__palette_1">
+                    <span class="aws-radio" aria-hidden="true"></span>
+                    <span>Light</span>
+                  </label>
+                  <label class="aws-prefs__option" for="__palette_2">
+                    <span class="aws-radio" aria-hidden="true"></span>
+                    <span>Dark</span>
+                  </label>
+                  <label class="aws-prefs__option" for="__palette_0">
+                    <span class="aws-radio" aria-hidden="true"></span>
+                    <span>Device</span>
+                  </label>
+                </div>
+              </div>
+            </details>
+          </form>
+        {% endif %}
+      {% endif %}
+      {% if not config.theme.palette is mapping %}
+        {% include "partials/javascripts/palette.html" %}
+      {% endif %}
+      <a class="aws-utility-bar__link" href="https://aws.amazon.com/contact-us/">Contact Us</a>
+      <a class="aws-utility-bar__link" href="https://github.com/aws-powertools/powertools-lambda-typescript/issues">Feedback</a>
+    </nav>
+  </div>
+
+  <div class="aws-main-header">
+    <nav class="md-header__inner md-grid aws-main-header__inner" aria-label="{{ lang.t('header') }}">
+      <label class="md-header__button md-icon aws-header__drawer" for="__drawer" aria-label="Open navigation">
+        {% set icon = config.theme.icon.menu or "material/menu" %}
+        {% include ".icons/" ~ icon ~ ".svg" %}
+      </label>
+
+      <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" title="{{ config.site_name | e }}" class="aws-header__logo md-logo" aria-label="{{ config.site_name }}" data-md-component="logo">
+        <img src="{{ 'media/aws-logo-dark.svg' | url }}" alt="AWS">
+      </a>
+
+      <nav class="aws-header__nav" aria-label="AWS documentation sections">
+        <details class="aws-header__menu">
+          <summary class="aws-header__nav-link aws-header__menu-summary">Get started</summary>
+          <div class="aws-header__menu-panel" role="group" aria-label="Get started links">
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Understand AWS</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/what-is-aws/">Overview of AWS</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/new/">What's new with AWS?</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/training/">Training and certification</a>
+            </div>
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Choose a service</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/getting-started/decision-guides/">Decision guides</a>
+            </div>
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Get started with AWS</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/getting-started/">Getting Started Resource Center</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/getting-started/hands-on/">Hands-on tutorials</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/cloud-migration/">Cloud migration</a>
+            </div>
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Pricing</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/pricing/">Learn about AWS pricing</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/aws-cost-management/aws-budgets/">AWS Budgets</a>
+            </div>
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Security</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/security/">AWS Cloud Security</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/architecture/security-identity-compliance/">Security best practices</a>
+            </div>
+          </div>
+        </details>
+        <details class="aws-header__menu">
+          <summary class="aws-header__nav-link aws-header__menu-summary">Service guides</summary>
+          <div class="aws-header__menu-panel" role="group" aria-label="Service guides links">
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Featured service guides</div>
+              <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/ec2/">Amazon EC2</a>
+              <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/">Amazon S3</a>
+              <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/lambda/latest/dg/">AWS Lambda</a>
+              <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/">Amazon DynamoDB</a>
+            </div>
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">All services</div>
+              <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/">All services guides</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/products/">See all AWS services</a>
+            </div>
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Solutions</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/solutions/">Solutions Library</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/devops/">DevOps and AWS</a>
+            </div>
+          </div>
+        </details>
+        <details class="aws-header__menu">
+          <summary class="aws-header__nav-link aws-header__menu-summary">Developer tools</summary>
+          <div class="aws-header__menu-panel" role="group" aria-label="Developer tools links">
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Explore developer tools</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/developer/">AWS Developer Center</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/what-is/developer-tools/">What are developer tools?</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/products/developer-tools/">Explore developer tools</a>
+            </div>
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Build with AWS</div>
+              <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/cli/">Command Line Interface (CLI)</a>
+              <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/sdkref/latest/guide/">SDKs and toolkits</a>
+              <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/cdk/v2/guide/home.html">AWS Cloud Development Kit (CDK)</a>
+              <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/code-library/latest/ug/">Code example library</a>
+            </div>
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Learn and connect</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://builder.aws.com/">AWS Builder Center</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/blogs/developer/">AWS Developer Tools blog</a>
+            </div>
+          </div>
+        </details>
+        <details class="aws-header__menu">
+          <summary class="aws-header__nav-link aws-header__menu-summary">AI resources</summary>
+          <div class="aws-header__menu-panel" role="group" aria-label="AI resources links">
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Learn AI</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/ai/">AI overview</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/what-is/artificial-intelligence/">What is AI?</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/ai/learn/">Learn AI</a>
+            </div>
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Get started with AI</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/ai/generative-ai/">Choosing a generative AI service</a>
+              <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html">Amazon Bedrock overview</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/compare/the-difference-between-amazon-bedrock-and-amazon-sagemaker/">Amazon Bedrock or Amazon SageMaker decision guide</a>
+            </div>
+            <div class="aws-header__menu-section">
+              <div class="aws-header__menu-heading">Responsible and secure AI</div>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/ai/responsible-ai/">Responsible AI</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/ai/security/">Secure AI</a>
+              <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/ai/services/">Learn about AI services</a>
+            </div>
+          </div>
+        </details>
+      </nav>
+
+      <div class="aws-header__actions">
+        {% if config.extra.alternate %}
+          {% include "partials/alternate.html" %}
+        {% endif %}
+        {% if "material/search" in config.plugins %}
+          {% set search = config.plugins["material/search"] | attr("config") %}
+          {% if search.enabled %}
+            <label class="md-header__button md-icon aws-header__search-toggle" for="__search" aria-label="{{ lang.t('search') }}">
+              {% set icon = config.theme.icon.search or "material/magnify" %}
+              {% include ".icons/" ~ icon ~ ".svg" %}
+            </label>
+            {% include "partials/search.html" %}
+          {% endif %}
+        {% endif %}
+        <a class="aws-header__console" href="https://console.aws.amazon.com/">Return to the Console</a>
+      </div>
+    </nav>
+  </div>
+</header>

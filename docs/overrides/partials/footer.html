@@ -1,0 +1,78 @@
+{#-
+  This file was automatically generated - do not edit
+-#}
+{% set external_icon -%}<span class="aws-footer__external-icon" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="M6.5 3.5h-3v9h9v-3" /><path d="M8.5 3.5h4v4" /><path d="M12.5 3.5l-6 6" /></svg></span>{%- endset %}
+<footer class="md-footer aws-footer">
+  {% if page.previous_page or page.next_page %}
+    {% if page.meta and page.meta.hide %}
+      {% set hidden = "hidden" if "footer" in page.meta.hide %}
+    {% endif %}
+    <nav class="aws-footer__pager md-grid" aria-label="{{ lang.t('footer') }}" {{ hidden }}>
+      {% if page.next_page %}
+        <p class="aws-footer__pager-line">
+          <strong>Next topic:</strong>
+          <a href="{{ page.next_page.url | url }}">{{ page.next_page.title }}</a>
+        </p>
+      {% endif %}
+      {% if page.previous_page %}
+        <p class="aws-footer__pager-line">
+          <strong>Previous topic:</strong>
+          <a href="{{ page.previous_page.url | url }}">{{ page.previous_page.title }}</a>
+        </p>
+      {% endif %}
+    </nav>
+  {% endif %}
+
+  <section class="aws-footer__panel" aria-label="AWS documentation footer">
+    <div class="aws-footer__panel-inner md-grid">
+      <nav class="aws-footer__columns" aria-label="AWS documentation resources">
+        <section class="aws-footer__column" aria-labelledby="aws-footer-get-started">
+          <h2 class="aws-footer__heading" id="aws-footer-get-started">Get Started</h2>
+          <ul class="aws-footer__list">
+            <li><a class="aws-footer__link aws-footer__link--external" href="https://aws.amazon.com/getting-started/hands-on/" target="_blank" rel="noopener noreferrer">AWS Hands-On Tutorials{{ external_icon }}</a></li>
+            <li><a class="aws-footer__link aws-footer__link--external" href="https://aws.amazon.com/solutions/" target="_blank" rel="noopener noreferrer">AWS Solutions Library{{ external_icon }}</a></li>
+            <li><a class="aws-footer__link aws-footer__link--external" href="https://aws.amazon.com/getting-started/decision-guides/" target="_blank" rel="noopener noreferrer">AWS Decision Guides{{ external_icon }}</a></li>
+          </ul>
+        </section>
+
+        <section class="aws-footer__column" aria-labelledby="aws-footer-service-guides">
+          <h2 class="aws-footer__heading" id="aws-footer-service-guides">Service Guides</h2>
+          <ul class="aws-footer__list">
+            <li><a class="aws-footer__link" href="https://docs.aws.amazon.com/decision-guides/latest/generative-ai-on-aws-how-to-choose/guide.html">Choosing a generative AI service</a></li>
+            <li><a class="aws-footer__link" href="https://docs.aws.amazon.com/">AWS service guides</a></li>
+            <li><a class="aws-footer__link aws-footer__link--external" href="https://github.com/aws/aws-cli" target="_blank" rel="noopener noreferrer">AWS CLI Tutorials on GitHub{{ external_icon }}</a></li>
+          </ul>
+        </section>
+
+        <section class="aws-footer__column" aria-labelledby="aws-footer-developer-tools">
+          <h2 class="aws-footer__heading" id="aws-footer-developer-tools">Developer Tools</h2>
+          <ul class="aws-footer__list">
+            <li><a class="aws-footer__link" href="https://docs.aws.amazon.com/code-library/">AWS Code Example Library</a></li>
+            <li><a class="aws-footer__link" href="https://docs.aws.amazon.com/cli/">AWS CLI</a></li>
+            <li><a class="aws-footer__link aws-footer__link--external" href="https://builder.aws.com/" target="_blank" rel="noopener noreferrer">AWS Builder Center{{ external_icon }}</a></li>
+            <li><a class="aws-footer__link aws-footer__link--external" href="https://aws.amazon.com/blogs/developer/" target="_blank" rel="noopener noreferrer">AWS Developer Tools Blog{{ external_icon }}</a></li>
+          </ul>
+        </section>
+
+        <section class="aws-footer__column" aria-labelledby="aws-footer-helpful-links">
+          <h2 class="aws-footer__heading" id="aws-footer-helpful-links">Helpful Links</h2>
+          <ul class="aws-footer__list">
+            <li><a class="aws-footer__link aws-footer__link--external" href="https://github.com/awslabs/mcp" target="_blank" rel="noopener noreferrer">Download the AWS Docs MCP Server{{ external_icon }}</a></li>
+            <li><a class="aws-footer__link aws-footer__link--external" href="https://console.aws.amazon.com/" target="_blank" rel="noopener noreferrer">Sign into the AWS Console{{ external_icon }}</a></li>
+            <li><a class="aws-footer__link aws-footer__link--external" href="https://repost.aws/" target="_blank" rel="noopener noreferrer">AWS re:Post{{ external_icon }}</a></li>
+          </ul>
+        </section>
+      </nav>
+
+      <div class="aws-footer__legal md-typeset">
+        <div class="md-copyright">
+          {% if config.copyright %}
+            <div class="md-copyright__highlight">
+              {{ config.copyright | replace('<span class="copyright">', '<a href="#">Cookie preferences</a> | <span class="copyright">') | replace('© 2025,', '© 2026,') }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+</footer>

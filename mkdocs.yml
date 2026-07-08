@@ -32,78 +32,66 @@ watch: [
 ]
 
 nav:
-  - Homepage:
-      - index.md
-      - Getting Started:
-          - Installation: getting-started/installation.md
-          - Usage patterns: getting-started/usage-patterns.md
-          - TypeScript settings: getting-started/typescript-settings.md
-          - Lambda layers: getting-started/lambda-layers.md
-          - Workshop: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank
-      - Features:
-          - features/index.md 
-          - features/tracer.md
-          - features/logger.md
-          - features/metrics.md
-          - Event Handler:
-            - features/event-handler/index.md
-            - features/event-handler/http.md
-            - features/event-handler/appsync-events.md
-            - features/event-handler/appsync-graphql.md
-            - features/event-handler/bedrock-agents.md
-          - features/parameters.md
-          - features/idempotency.md
-          - features/batch.md
-          - features/jmespath.md
-          - features/parser.md
-          - features/validation.md
-          - features/data-masking.md
-          - features/kafka.md
-          - features/metadata.md
-      - Environment variables: environment-variables.md
+  - What is Powertools for AWS Lambda (TypeScript): index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Usage patterns: getting-started/usage-patterns.md
+      - TypeScript settings: getting-started/typescript-settings.md
+      - Lambda layers: getting-started/lambda-layers.md
+  - features/tracer.md
+  - features/logger.md
+  - features/metrics.md
+  - Event Handler:
+      - features/event-handler/index.md
+      - features/event-handler/http.md
+      - features/event-handler/appsync-events.md
+      - features/event-handler/appsync-graphql.md
+      - features/event-handler/bedrock-agents.md
+  - features/parameters.md
+  - features/idempotency.md
+  - features/batch.md
+  - features/jmespath.md
+  - features/parser.md
+  - features/validation.md
+  - features/data-masking.md
+  - features/kafka.md
+  - features/metadata.md
+  - Environment variables: environment-variables.md
+  - API reference: api/
+  - Changelog: changelog.md
+  - Versioning policy: versioning.md
+  - Resources:
       - Upgrade guide: upgrade.md
       - Community Content: we_made_this.md
-      - Roadmap: roadmap.md
-      - Changelog: changelog.md
-      - Resources:
-          - "llms.txt": ./llms.txt
-          - "llms.txt (full version)": ./llms-full.txt
-  - API reference: api/
-  - Processes:
-      - Roadmap: roadmap.md
-      - Versioning policy: versioning.md
-      - Maintainers: maintainers.md
-      - Contributing:
-          - Development environment: contributing/setup.md
-          - Your first contribution: contributing/getting_started.md
-          - Conventions: contributing/conventions.md
-          - Testing: contributing/testing.md
+      - "llms.txt": ./llms.txt
 
 theme:
   name: material
-  font:
-    text: Ubuntu
+  font: false # Amazon Ember is self-hosted via stylesheets/aws-restyle.css
   palette:
-    - scheme: default
-      primary: deep orange
-      accent: deep orange
+    - media: "(prefers-color-scheme)"
       toggle:
-        icon: material/lightbulb
-        name: Switch to dark mode
-    - scheme: slate
-      primary: deep orange
-      accent: deep orange
+        icon: material/brightness-auto
+        name: Device
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
       toggle:
-        icon: material/lightbulb-outline
-        name: Switch to light mode
+        icon: material/brightness-7
+        name: Light
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Dark
   features:
-    - header.autohide
-    - navigation.sections
     - navigation.top
     - navigation.instant
     - navigation.indexes
     - navigation.tracking
-    - navigation.tabs
     - content.code.annotate
     - content.code.copy
     - announce.dismiss
@@ -132,7 +120,7 @@ markdown_extensions:
   - meta
   - toc:
       permalink: true
-      toc_depth: 4
+      toc_depth: 2
   - attr_list
   - md_in_html
   - pymdownx.emoji:
@@ -175,6 +163,8 @@ plugins:
       markdown_description: Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless best practices and increase developer velocity. It provides a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
       full_output: llms-full.txt
       sections:
+        What is Powertools for AWS Lambda (TypeScript):
+          - index.md
         Getting Started:
           - getting-started/installation.md
           - getting-started/usage-patterns.md
@@ -184,6 +174,7 @@ plugins:
           - features/tracer.md
           - features/logger.md
           - features/metrics.md
+          - features/event-handler/index.md
           - features/event-handler/http.md
           - features/event-handler/appsync-events.md
           - features/event-handler/appsync-graphql.md
@@ -194,17 +185,29 @@ plugins:
           - features/jmespath.md
           - features/parser.md
           - features/validation.md
+          - features/data-masking.md
           - features/kafka.md
           - features/metadata.md
-        Environment variables: 
+        Environment variables:
           - environment-variables.md
-        Upgrade guide: 
+        Changelog:
+          - changelog.md
+        Versioning policy:
+          - versioning.md
+        Resources:
           - upgrade.md
+          - we_made_this.md
 
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/aws-restyle.css
+  - stylesheets/aws-header.css
+  - stylesheets/aws-nav.css
+  - stylesheets/aws-content.css
+  - stylesheets/aws-footer.css
 extra_javascript:
   - javascript/extra.js
+  - javascript/aws-header.js
   - https://docs.aws.amazon.com/powertools/shared/mermaid.min.js
   - https://docs.aws.amazon.com/assets/js/awsdocs-boot.js
 

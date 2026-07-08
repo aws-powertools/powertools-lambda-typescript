@@ -1,0 +1,129 @@
+/* AWS docs restyle: content typography + layout (owned by Minion C) */
+
+/* --------------------------------------------------------------------------
+ * Main layout: keep the page shell broad, but the prose column readable.
+ * Material uses 20px root rems, so 45rem is approximately a 900px column.
+ * ------------------------------------------------------------------------ */
+.md-grid {
+  max-width: 1440px;
+}
+
+.md-content__inner {
+  max-width: 45rem;
+  padding-top: 0;
+}
+
+.md-main__inner {
+  margin-top: 0.8rem;
+}
+
+/* --------------------------------------------------------------------------
+ * Light-scheme content colors from current AWS Developer Guide docs.
+ * Dark mode inherits the existing Material/Powertools slate palette.
+ * ------------------------------------------------------------------------ */
+[data-md-color-scheme="default"] .md-typeset {
+  color: #0f141a;
+}
+
+.md-typeset {
+  font-family: "Amazon Ember", Helvetica, Arial, sans-serif;
+}
+
+[data-md-color-scheme="default"] .md-typeset h1,
+[data-md-color-scheme="default"] .md-typeset h2,
+[data-md-color-scheme="default"] .md-typeset h3,
+[data-md-color-scheme="default"] .md-typeset h4,
+[data-md-color-scheme="default"] .md-typeset h5 {
+  color: #0f141a;
+}
+
+/* --------------------------------------------------------------------------
+ * Typography: current AWS Developer Guide content column.
+ * The live page promotes the document title into a generated Cloudscape
+ * display heading (42px/700); the older in-body h1 rule was 36px/300.
+ * ------------------------------------------------------------------------ */
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5 {
+  font-family: "Amazon Ember", Helvetica, Arial, sans-serif;
+  letter-spacing: normal;
+}
+
+.md-typeset h1 {
+  font-size: 2.625em;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0 0 10px;
+  padding: 0;
+}
+
+.md-typeset h2 {
+  font-size: 1.625em;
+  font-weight: 600;
+  line-height: 1.226em;
+  margin: 1em 0 0.75em;
+  padding: 1em 0 0;
+}
+
+.md-typeset h3 {
+  font-size: 1.375em;
+  font-weight: 700;
+  line-height: 1.226em;
+  margin: 1.25em 0 0.75em;
+  padding: 0;
+}
+
+.md-typeset h4 {
+  font-size: 1.25em;
+  font-weight: 700;
+  line-height: 1.267em;
+  margin: 1.2em 0 0.75em;
+  padding: 0;
+}
+
+.md-typeset h5 {
+  font-size: 1.125em;
+  font-weight: 700;
+  line-height: 1.267em;
+  margin: 1.2em 0 1em;
+  padding: 0;
+}
+
+.md-typeset p {
+  line-height: 1.5;
+  margin: 1em 0;
+}
+
+/* --------------------------------------------------------------------------
+ * Lists: AWS-style top-level spacing with standard markers.
+ * Keep card grids and nested lists on Material's existing spacing.
+ * ------------------------------------------------------------------------ */
+.md-typeset > ul {
+  list-style-type: disc;
+}
+
+.md-typeset > ol {
+  list-style-type: decimal;
+}
+
+.md-typeset > ul > li + li,
+.md-typeset > ol > li + li {
+  margin-top: 1em;
+}
+
+.md-typeset li::marker {
+  color: currentColor;
+}
+
+/* --------------------------------------------------------------------------
+ * Section dividers.
+ * ------------------------------------------------------------------------ */
+.md-typeset hr {
+  border-bottom: 1px solid var(--aws-border-secondary, #ebebf0);
+}
+
+[data-md-color-scheme="default"] .md-typeset hr {
+  border-bottom-color: #ebebf0;
+}

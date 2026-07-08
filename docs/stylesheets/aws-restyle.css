@@ -1,0 +1,1024 @@
+/*
+ * AWS Developer Guide restyle for MkDocs Material
+ * ------------------------------------------------
+ * Replicates the look & feel of official AWS docs (docs.aws.amazon.com),
+ * which are built on the Cloudscape Design System (awsui).
+ * Color values are Cloudscape design-token fallbacks extracted from the
+ * production CSS of the AWS Developer Guides.
+ */
+
+/* --------------------------------------------------------------------------
+ * Amazon Ember (extracted from AWS docs production CSS)
+ * ------------------------------------------------------------------------ */
+@font-face {
+  font-family: "Amazon Ember";
+  font-style: normal;
+  font-weight: 300;
+  src: url("fonts/amazon-ember-300.woff") format("woff");
+}
+@font-face {
+  font-family: "Amazon Ember";
+  font-style: normal;
+  font-weight: 400;
+  src: url("fonts/amazon-ember-400.woff") format("woff");
+}
+@font-face {
+  font-family: "Amazon Ember";
+  font-style: italic;
+  font-weight: 400;
+  src: url("fonts/amazon-ember-400-italic.woff") format("woff");
+}
+@font-face {
+  font-family: "Amazon Ember";
+  font-style: normal;
+  font-weight: 700;
+  src: url("fonts/amazon-ember-700.woff") format("woff");
+}
+@font-face {
+  font-family: "Amazon Ember";
+  font-style: normal;
+  font-weight: 900;
+  src: url("fonts/amazon-ember-900.woff") format("woff");
+}
+
+/* --------------------------------------------------------------------------
+ * Fonts
+ * ------------------------------------------------------------------------ */
+:root {
+  --md-text-font: "Amazon Ember", Helvetica, Arial, sans-serif;
+  --md-code-font: Monaco, Menlo, Consolas, "Courier Prime", Courier,
+    "Courier New", monospace;
+}
+
+/* --------------------------------------------------------------------------
+ * Color tokens - light scheme
+ * ------------------------------------------------------------------------ */
+[data-md-color-scheme="default"] {
+  /* Header bar: awsdocs dark header */
+  --md-primary-fg-color: #161d26;
+  --md-primary-fg-color--light: #2a3541;
+  --md-primary-fg-color--dark: #0f141a;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.7);
+
+  /* Accent: Cloudscape link blue */
+  --md-accent-fg-color: #006ce0;
+  --md-accent-fg-color--transparent: rgba(0, 108, 224, 0.1);
+
+  /* Text */
+  --md-default-fg-color: #0f141a; /* --color-text-body-default */
+  --md-default-fg-color--light: #424650; /* --color-text-body-secondary */
+  --md-default-fg-color--lighter: #656871;
+  --md-default-fg-color--lightest: #ebebf0;
+  --md-default-bg-color: #ffffff;
+
+  /* Links */
+  --md-typeset-a-color: #006ce0; /* --color-text-link-default */
+  --aws-link-hover-color: #002b66; /* --color-text-link-hover */
+
+  /* Code */
+  --md-code-fg-color: #16191f;
+  --md-code-bg-color: #f3f3f7; /* inline code bg */
+  --aws-code-block-bg: #f9f9f9; /* block code bg */
+  --aws-border-default: #c6c6cd; /* --color-border-divider-default */
+  --aws-border-secondary: #ebebf0;
+
+  /* Tables */
+  --md-typeset-table-color: #c6c6cd;
+  --aws-table-header-bg: #f3f3f7;
+
+  /* Admonitions (AWS note / warning / important callouts) */
+  --aws-note-bg: rgba(241, 250, 255, 0.8);
+  --aws-note-border: rgba(0, 115, 187, 0.35);
+  --aws-note-icon: #006ce0;
+  --aws-note-code-bg: #e3edf3;
+  --aws-warning-bg: hsla(10, 75%, 97%, 0.8);
+  --aws-warning-border: rgba(223, 51, 18, 0.35);
+  --aws-warning-icon: #db0000;
+  --aws-warning-code-bg: #ede3e0;
+  --aws-important-bg: var(--aws-warning-bg);
+  --aws-important-border: var(--aws-warning-border);
+  --aws-important-icon: var(--aws-warning-icon);
+  --aws-important-code-bg: var(--aws-warning-code-bg);
+
+  /* Footer */
+  --md-footer-bg-color: #161d26;
+  --md-footer-bg-color--dark: #0f141a;
+}
+
+/* --------------------------------------------------------------------------
+ * Color tokens - dark scheme (Cloudscape dark-mode equivalents)
+ * ------------------------------------------------------------------------ */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #161d26;
+  --md-primary-fg-color--light: #2a3541;
+  --md-primary-fg-color--dark: #0f141a;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.7);
+
+  --md-accent-fg-color: #42b4ff;
+  --md-accent-fg-color--transparent: rgba(66, 180, 255, 0.1);
+
+  --md-default-bg-color: #0f141a;
+  --md-typeset-a-color: #42b4ff; /* Cloudscape dark link */
+  --aws-link-hover-color: #75cfff;
+
+  --md-code-bg-color: #1b232d;
+  --aws-code-block-bg: #161d26;
+  --aws-border-default: #424650;
+  --aws-border-secondary: #2a3541;
+
+  --md-typeset-table-color: #424650;
+  --aws-table-header-bg: #1b232d;
+
+  --aws-note-bg: #12293b;
+  --aws-note-border: rgba(0, 161, 201, 0.35);
+  --aws-note-icon: #00a1c9;
+  --aws-note-code-bg: #0a2030;
+  --aws-warning-bg: #270a11;
+  --aws-warning-border: rgba(209, 50, 18, 0.35);
+  --aws-warning-icon: #ff5d64;
+  --aws-warning-code-bg: #180308;
+  --aws-important-bg: var(--aws-warning-bg);
+  --aws-important-border: var(--aws-warning-border);
+  --aws-important-icon: var(--aws-warning-icon);
+  --aws-important-code-bg: var(--aws-warning-code-bg);
+
+  --md-footer-bg-color: #161d26;
+  --md-footer-bg-color--dark: #0b0f14;
+}
+
+/* --------------------------------------------------------------------------
+ * Header / tabs: fixed dark bar like awsdocs-header
+ * ------------------------------------------------------------------------ */
+.md-header {
+  background-color: var(--md-primary-fg-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.md-tabs {
+  background-color: var(--md-primary-fg-color);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.md-header a:hover,
+.md-tabs__link:hover {
+  color: #42b4ff;
+}
+
+.md-tabs__link--active {
+  border-bottom: 2px solid #42b4ff;
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+ * Typography: current AWS Developer Guide scale
+ * base 16px, line-height 1.5; h1 is the current generated page title
+ * size/weight (42px/700), not the legacy in-body 300-weight title.
+ * ------------------------------------------------------------------------ */
+.md-typeset {
+  font-size: 0.8rem; /* 16px */
+  line-height: 1.5;
+}
+
+.md-typeset h1 {
+  color: var(--md-default-fg-color);
+  font-size: 2.625em;
+  font-weight: 700;
+  line-height: 1;
+  margin: 1em 0 0.5em;
+}
+
+.md-typeset h2 {
+  color: var(--md-default-fg-color);
+  font-size: 1.625em;
+  font-weight: 600;
+  margin: 1em 0 0.75em;
+}
+
+.md-typeset h3 {
+  color: var(--md-default-fg-color);
+  font-size: 1.375em;
+  font-weight: 700;
+  margin-top: 1.25em;
+}
+
+.md-typeset h4 {
+  font-size: 1.25em;
+  font-weight: 700;
+}
+
+.md-typeset h5 {
+  color: var(--md-default-fg-color);
+  font-size: 1.125em;
+  font-weight: 700;
+  text-transform: none;
+}
+
+/* --------------------------------------------------------------------------
+ * Links: no underline by default, underline + darker blue on hover
+ * ------------------------------------------------------------------------ */
+.md-typeset a {
+  border-bottom: none; /* remove dashed underline from extra.css */
+  text-decoration: none;
+}
+
+.md-typeset a:hover,
+.md-typeset a:focus {
+  color: var(--aws-link-hover-color);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+}
+
+/* --------------------------------------------------------------------------
+ * Code: inline + blocks
+ * ------------------------------------------------------------------------ */
+.md-typeset code {
+  background-color: var(--md-code-bg-color);
+  border-radius: 2px;
+  padding: 0 3px;
+}
+
+.md-typeset p > code,
+.md-typeset li > code {
+  font-weight: 400; /* AWS does not bold inline code */
+}
+
+.md-typeset pre > code {
+  background-color: var(--aws-code-block-bg);
+  border-radius: 0;
+  padding: 16px;
+}
+
+.md-typeset .highlight {
+  background-color: var(--aws-code-block-bg);
+  border: 1px solid var(--aws-border-default);
+  border-radius: 3px;
+}
+
+.md-typeset .highlight pre {
+  margin: 0;
+}
+
+/* Keep tabbed code groups coherent with bordered blocks */
+.md-typeset .tabbed-block .highlight {
+  border: none;
+  border-top: 1px solid var(--aws-border-secondary);
+  border-radius: 0;
+}
+
+/* --------------------------------------------------------------------------
+ * Admonitions: AWS callouts
+ * Live AWS Developer Guides currently render Warning and Important with the
+ * same red/error scheme (status-warning icon with error color), so keep the
+ * semantic mappings separate even though their token values match today:
+ *   - Note (blue):      note, info, tip, success, question, abstract, example, quote
+ *   - Warning (red):   warning, caution, attention
+ *   - Important (red): danger, failure, bug, error
+ * Uses the Cloudscape status-info/status-warning SVG strokes from live AWS docs.
+ * ------------------------------------------------------------------------ */
+:root {
+  --aws-admonition-icon-note: url("data:image/svg+xml;charset=utf-8,<svg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><g fill='none' stroke='black' stroke-width='2'><circle cx='8' cy='8' r='7'/><path d='M8 12V7M8 6V4'/></g></svg>");
+  --aws-admonition-icon-warning: url("data:image/svg+xml;charset=utf-8,<svg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><path d='M8 5v4M8 10v2M6.52 1.88l-5.33 9.76c-.13.23-.19.5-.19.76 0 .88.71 1.59 1.59 1.59H13.4c.88 0 1.59-.71 1.59-1.59 0-.27-.07-.53-.19-.76L9.48 1.88C9.18 1.34 8.62 1 8 1s-1.18.34-1.48.88Z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/></svg>");
+
+  --md-admonition-icon--note: var(--aws-admonition-icon-note);
+  --md-admonition-icon--info: var(--aws-admonition-icon-note);
+  --md-admonition-icon--tip: var(--aws-admonition-icon-note);
+  --md-admonition-icon--success: var(--aws-admonition-icon-note);
+  --md-admonition-icon--question: var(--aws-admonition-icon-note);
+  --md-admonition-icon--abstract: var(--aws-admonition-icon-note);
+  --md-admonition-icon--example: var(--aws-admonition-icon-note);
+  --md-admonition-icon--quote: var(--aws-admonition-icon-note);
+  --md-admonition-icon--warning: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--danger: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--failure: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--bug: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--error: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--caution: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--attention: var(--aws-admonition-icon-warning);
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  background-color: var(--aws-note-bg);
+  border: 2px solid var(--aws-note-border);
+  border-radius: var(--border-radius-alert-thlkk1, 12px);
+  box-shadow: none;
+  color: var(--md-default-fg-color);
+  font-size: 1em;
+  line-height: 1.5;
+  margin: 16px 0;
+  padding: 15px 20px;
+}
+
+.md-typeset .admonition-title,
+.md-typeset summary {
+  background-color: transparent !important;
+  color: var(--md-default-fg-color);
+  font-size: 1em;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0 0 0 27px !important;
+}
+
+.md-typeset summary {
+  padding-right: 36px !important;
+}
+
+.md-typeset .admonition-title::before,
+.md-typeset summary::before {
+  background-color: var(--aws-note-icon);
+  height: 16px;
+  left: 0;
+  top: 4px;
+  width: 16px;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 16px 16px;
+  mask-size: 16px 16px;
+}
+
+.md-typeset .admonition > :not(.admonition-title),
+.md-typeset details > :not(summary) {
+  padding-left: 27px;
+}
+
+.md-typeset .admonition p,
+.md-typeset details p {
+  margin: 5px 0 0 !important;
+}
+
+.md-typeset .admonition code,
+.md-typeset details code {
+  background-color: var(--aws-note-code-bg);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition,
+[data-md-color-scheme="slate"] .md-typeset details {
+  border-width: 1px;
+}
+
+/* AWS Warning variants */
+.md-typeset .admonition.warning,
+.md-typeset .admonition.caution,
+.md-typeset .admonition.attention,
+.md-typeset details.warning,
+.md-typeset details.caution,
+.md-typeset details.attention {
+  background-color: var(--aws-warning-bg);
+  border-color: var(--aws-warning-border);
+}
+
+/* AWS Important/error variants */
+.md-typeset .admonition.danger,
+.md-typeset .admonition.failure,
+.md-typeset .admonition.bug,
+.md-typeset .admonition.error,
+.md-typeset details.danger,
+.md-typeset details.failure,
+.md-typeset details.bug,
+.md-typeset details.error {
+  background-color: var(--aws-important-bg);
+  border-color: var(--aws-important-border);
+}
+
+.md-typeset .admonition.warning code,
+.md-typeset .admonition.caution code,
+.md-typeset .admonition.attention code,
+.md-typeset details.warning code,
+.md-typeset details.caution code,
+.md-typeset details.attention code {
+  background-color: var(--aws-warning-code-bg);
+}
+
+.md-typeset .admonition.danger code,
+.md-typeset .admonition.failure code,
+.md-typeset .admonition.bug code,
+.md-typeset .admonition.error code,
+.md-typeset details.danger code,
+.md-typeset details.failure code,
+.md-typeset details.bug code,
+.md-typeset details.error code {
+  background-color: var(--aws-important-code-bg);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition code,
+[data-md-color-scheme="slate"] .md-typeset details code {
+  background-color: var(--aws-note-code-bg);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition.warning code,
+[data-md-color-scheme="slate"] .md-typeset .admonition.caution code,
+[data-md-color-scheme="slate"] .md-typeset .admonition.attention code,
+[data-md-color-scheme="slate"] .md-typeset details.warning code,
+[data-md-color-scheme="slate"] .md-typeset details.caution code,
+[data-md-color-scheme="slate"] .md-typeset details.attention code {
+  background-color: var(--aws-warning-code-bg);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition.danger code,
+[data-md-color-scheme="slate"] .md-typeset .admonition.failure code,
+[data-md-color-scheme="slate"] .md-typeset .admonition.bug code,
+[data-md-color-scheme="slate"] .md-typeset .admonition.error code,
+[data-md-color-scheme="slate"] .md-typeset details.danger code,
+[data-md-color-scheme="slate"] .md-typeset details.failure code,
+[data-md-color-scheme="slate"] .md-typeset details.bug code,
+[data-md-color-scheme="slate"] .md-typeset details.error code {
+  background-color: var(--aws-important-code-bg);
+}
+
+.md-typeset .warning > .admonition-title::before,
+.md-typeset .caution > .admonition-title::before,
+.md-typeset .attention > .admonition-title::before,
+.md-typeset details.warning > summary::before,
+.md-typeset details.caution > summary::before,
+.md-typeset details.attention > summary::before {
+  background-color: var(--aws-warning-icon);
+}
+
+.md-typeset .danger > .admonition-title::before,
+.md-typeset .failure > .admonition-title::before,
+.md-typeset .bug > .admonition-title::before,
+.md-typeset .error > .admonition-title::before,
+.md-typeset details.danger > summary::before,
+.md-typeset details.failure > summary::before,
+.md-typeset details.bug > summary::before,
+.md-typeset details.error > summary::before {
+  background-color: var(--aws-important-icon);
+}
+
+/* Blue variants: normalize border and icon color for all remaining types */
+.md-typeset .admonition.note,
+.md-typeset .admonition.info,
+.md-typeset .admonition.tip,
+.md-typeset .admonition.success,
+.md-typeset .admonition.question,
+.md-typeset .admonition.abstract,
+.md-typeset .admonition.example,
+.md-typeset .admonition.quote,
+.md-typeset details.note,
+.md-typeset details.info,
+.md-typeset details.tip,
+.md-typeset details.success,
+.md-typeset details.question,
+.md-typeset details.abstract,
+.md-typeset details.example,
+.md-typeset details.quote {
+  background-color: var(--aws-note-bg);
+  border-color: var(--aws-note-border);
+}
+
+.md-typeset .note > .admonition-title::before,
+.md-typeset .info > .admonition-title::before,
+.md-typeset .tip > .admonition-title::before,
+.md-typeset .success > .admonition-title::before,
+.md-typeset .question > .admonition-title::before,
+.md-typeset .abstract > .admonition-title::before,
+.md-typeset .example > .admonition-title::before,
+.md-typeset .quote > .admonition-title::before,
+.md-typeset details.note > summary::before,
+.md-typeset details.info > summary::before,
+.md-typeset details.tip > summary::before,
+.md-typeset details.success > summary::before,
+.md-typeset details.question > summary::before,
+.md-typeset details.abstract > summary::before,
+.md-typeset details.example > summary::before,
+.md-typeset details.quote > summary::before {
+  background-color: var(--aws-note-icon) !important;
+  height: 16px !important;
+  left: 0 !important;
+  top: 4px !important;
+  width: 16px !important;
+}
+
+.md-typeset .warning > .admonition-title::before,
+.md-typeset .danger > .admonition-title::before,
+.md-typeset .failure > .admonition-title::before,
+.md-typeset .bug > .admonition-title::before,
+.md-typeset .error > .admonition-title::before,
+.md-typeset .caution > .admonition-title::before,
+.md-typeset .attention > .admonition-title::before,
+.md-typeset details.warning > summary::before,
+.md-typeset details.danger > summary::before,
+.md-typeset details.failure > summary::before,
+.md-typeset details.bug > summary::before,
+.md-typeset details.error > summary::before,
+.md-typeset details.caution > summary::before,
+.md-typeset details.attention > summary::before {
+  height: 16px !important;
+  left: 0 !important;
+  top: 4px !important;
+  width: 16px !important;
+}
+
+/* Generic collapsible sections: Cloudscape-style expandable section headers.
+ * Variant-classed details (note, warning, etc.) are collapsible admonitions and
+ * get the AWS callout skin in the override block below.
+ */
+.md-typeset details {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--md-default-fg-color);
+  margin: 16px 0;
+  padding: 0 !important;
+}
+
+.md-typeset details > summary {
+  background-color: transparent !important;
+  color: #0f141a;
+  cursor: pointer;
+  display: block;
+  font-size: 1em;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0;
+  outline: none;
+  padding: 8px 0 8px 24px !important;
+  position: relative;
+}
+
+.md-typeset details > summary:hover,
+.md-typeset details > summary:focus {
+  background-color: transparent !important;
+}
+
+.md-typeset details > summary:hover {
+  color: var(--md-typeset-a-color);
+}
+
+.md-typeset details > summary:focus-visible {
+  outline: 2px solid var(--md-typeset-a-color);
+  outline-offset: 2px;
+}
+
+.md-typeset details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.md-typeset details > summary::marker {
+  content: "";
+}
+
+.md-typeset details > summary::before,
+.md-typeset details.note > summary::before,
+.md-typeset details.info > summary::before,
+.md-typeset details.tip > summary::before,
+.md-typeset details.success > summary::before,
+.md-typeset details.question > summary::before,
+.md-typeset details.abstract > summary::before,
+.md-typeset details.example > summary::before,
+.md-typeset details.quote > summary::before,
+.md-typeset details.warning > summary::before,
+.md-typeset details.danger > summary::before,
+.md-typeset details.failure > summary::before,
+.md-typeset details.bug > summary::before,
+.md-typeset details.error > summary::before,
+.md-typeset details.caution > summary::before,
+.md-typeset details.attention > summary::before {
+  background: none !important;
+  color: #424650;
+  content: "▸";
+  font-size: 14px !important;
+  height: auto !important;
+  left: 0 !important;
+  line-height: 1;
+  -webkit-mask: none !important;
+  mask: none !important;
+  position: absolute;
+  top: 12px !important;
+  transform-origin: 50% 50%;
+  transition: transform 115ms ease-out;
+  width: auto !important;
+}
+
+.md-typeset details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.md-typeset details > summary:hover::before {
+  color: var(--md-typeset-a-color);
+}
+
+/* Hide Material's right-side details chevron. */
+.md-typeset details > summary::after {
+  content: none !important;
+  display: none !important;
+}
+
+.md-typeset details > :not(summary) {
+  padding-left: 24px !important;
+}
+
+.md-typeset details code,
+.md-typeset details.warning code,
+.md-typeset details.danger code,
+.md-typeset details.failure code,
+.md-typeset details.bug code,
+.md-typeset details.error code,
+.md-typeset details.caution code,
+.md-typeset details.attention code {
+  background-color: var(--md-code-bg-color);
+}
+
+[data-md-color-scheme="slate"] .md-typeset details > summary {
+  color: #f9f9fa;
+}
+
+[data-md-color-scheme="slate"] .md-typeset details > summary::before {
+  color: #dedee3;
+}
+
+[data-md-color-scheme="slate"] .md-typeset details > summary:hover,
+[data-md-color-scheme="slate"] .md-typeset details > summary:hover::before {
+  color: #75cfff;
+}
+
+/* Collapsible admonitions: keep the AWS callout skin while replacing Material's
+ * floating chevron with a small right-aligned caret.
+ */
+.md-typeset details.note,
+.md-typeset details.info,
+.md-typeset details.tip,
+.md-typeset details.success,
+.md-typeset details.question,
+.md-typeset details.abstract,
+.md-typeset details.example,
+.md-typeset details.quote,
+.md-typeset details.warning,
+.md-typeset details.danger,
+.md-typeset details.failure,
+.md-typeset details.bug,
+.md-typeset details.error,
+.md-typeset details.caution,
+.md-typeset details.attention {
+  background-color: var(--aws-note-bg) !important;
+  border: 2px solid var(--aws-note-border) !important;
+  border-radius: var(--border-radius-alert-thlkk1, 12px) !important;
+  box-shadow: none !important;
+  color: var(--md-default-fg-color);
+  font-size: 1em;
+  line-height: 1.5;
+  margin: 16px 0;
+  padding: 15px 20px !important;
+}
+
+.md-typeset details.warning,
+.md-typeset details.caution,
+.md-typeset details.attention {
+  background-color: var(--aws-warning-bg) !important;
+  border-color: var(--aws-warning-border) !important;
+}
+
+.md-typeset details.danger,
+.md-typeset details.failure,
+.md-typeset details.bug,
+.md-typeset details.error {
+  background-color: var(--aws-important-bg) !important;
+  border-color: var(--aws-important-border) !important;
+}
+
+[data-md-color-scheme="slate"] .md-typeset details.note,
+[data-md-color-scheme="slate"] .md-typeset details.info,
+[data-md-color-scheme="slate"] .md-typeset details.tip,
+[data-md-color-scheme="slate"] .md-typeset details.success,
+[data-md-color-scheme="slate"] .md-typeset details.question,
+[data-md-color-scheme="slate"] .md-typeset details.abstract,
+[data-md-color-scheme="slate"] .md-typeset details.example,
+[data-md-color-scheme="slate"] .md-typeset details.quote,
+[data-md-color-scheme="slate"] .md-typeset details.warning,
+[data-md-color-scheme="slate"] .md-typeset details.danger,
+[data-md-color-scheme="slate"] .md-typeset details.failure,
+[data-md-color-scheme="slate"] .md-typeset details.bug,
+[data-md-color-scheme="slate"] .md-typeset details.error,
+[data-md-color-scheme="slate"] .md-typeset details.caution,
+[data-md-color-scheme="slate"] .md-typeset details.attention {
+  border-width: 1px !important;
+}
+
+.md-typeset details.note > summary,
+.md-typeset details.info > summary,
+.md-typeset details.tip > summary,
+.md-typeset details.success > summary,
+.md-typeset details.question > summary,
+.md-typeset details.abstract > summary,
+.md-typeset details.example > summary,
+.md-typeset details.quote > summary,
+.md-typeset details.warning > summary,
+.md-typeset details.danger > summary,
+.md-typeset details.failure > summary,
+.md-typeset details.bug > summary,
+.md-typeset details.error > summary,
+.md-typeset details.caution > summary,
+.md-typeset details.attention > summary {
+  background-color: transparent !important;
+  color: var(--md-default-fg-color);
+  cursor: pointer;
+  display: block;
+  font-size: 1em;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0;
+  outline: none;
+  padding: 0 28px 0 27px !important;
+  position: relative;
+}
+
+.md-typeset details.note > summary:hover,
+.md-typeset details.info > summary:hover,
+.md-typeset details.tip > summary:hover,
+.md-typeset details.success > summary:hover,
+.md-typeset details.question > summary:hover,
+.md-typeset details.abstract > summary:hover,
+.md-typeset details.example > summary:hover,
+.md-typeset details.quote > summary:hover,
+.md-typeset details.warning > summary:hover,
+.md-typeset details.danger > summary:hover,
+.md-typeset details.failure > summary:hover,
+.md-typeset details.bug > summary:hover,
+.md-typeset details.error > summary:hover,
+.md-typeset details.caution > summary:hover,
+.md-typeset details.attention > summary:hover {
+  background-color: transparent !important;
+  color: var(--md-default-fg-color);
+}
+
+.md-typeset details.note > summary::before,
+.md-typeset details.info > summary::before,
+.md-typeset details.tip > summary::before,
+.md-typeset details.success > summary::before,
+.md-typeset details.question > summary::before,
+.md-typeset details.abstract > summary::before,
+.md-typeset details.example > summary::before,
+.md-typeset details.quote > summary::before,
+.md-typeset details.warning > summary::before,
+.md-typeset details.danger > summary::before,
+.md-typeset details.failure > summary::before,
+.md-typeset details.bug > summary::before,
+.md-typeset details.error > summary::before,
+.md-typeset details.caution > summary::before,
+.md-typeset details.attention > summary::before {
+  content: "";
+  height: 16px !important;
+  left: 0 !important;
+  line-height: 1;
+  position: absolute;
+  top: 4px !important;
+  transform: none;
+  width: 16px !important;
+  -webkit-mask-position: center !important;
+  mask-position: center !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+  -webkit-mask-size: 16px 16px !important;
+  mask-size: 16px 16px !important;
+}
+
+.md-typeset details.note > summary::before,
+.md-typeset details.info > summary::before,
+.md-typeset details.tip > summary::before,
+.md-typeset details.success > summary::before,
+.md-typeset details.question > summary::before,
+.md-typeset details.abstract > summary::before,
+.md-typeset details.example > summary::before,
+.md-typeset details.quote > summary::before {
+  background-color: var(--aws-note-icon) !important;
+  -webkit-mask-image: var(--aws-admonition-icon-note) !important;
+  mask-image: var(--aws-admonition-icon-note) !important;
+}
+
+.md-typeset details.warning > summary::before,
+.md-typeset details.caution > summary::before,
+.md-typeset details.attention > summary::before {
+  background-color: var(--aws-warning-icon) !important;
+  -webkit-mask-image: var(--aws-admonition-icon-warning) !important;
+  mask-image: var(--aws-admonition-icon-warning) !important;
+}
+
+.md-typeset details.danger > summary::before,
+.md-typeset details.failure > summary::before,
+.md-typeset details.bug > summary::before,
+.md-typeset details.error > summary::before {
+  background-color: var(--aws-important-icon) !important;
+  -webkit-mask-image: var(--aws-admonition-icon-warning) !important;
+  mask-image: var(--aws-admonition-icon-warning) !important;
+}
+
+.md-typeset details.note > summary::after,
+.md-typeset details.info > summary::after,
+.md-typeset details.tip > summary::after,
+.md-typeset details.success > summary::after,
+.md-typeset details.question > summary::after,
+.md-typeset details.abstract > summary::after,
+.md-typeset details.example > summary::after,
+.md-typeset details.quote > summary::after,
+.md-typeset details.warning > summary::after,
+.md-typeset details.danger > summary::after,
+.md-typeset details.failure > summary::after,
+.md-typeset details.bug > summary::after,
+.md-typeset details.error > summary::after,
+.md-typeset details.caution > summary::after,
+.md-typeset details.attention > summary::after {
+  background: none !important;
+  color: #424650;
+  content: "▸" !important;
+  display: block !important;
+  font-size: 12px;
+  height: auto;
+  line-height: 1;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  transform-origin: 50% 50%;
+  transition: transform 115ms ease-out;
+  width: auto;
+}
+
+.md-typeset details.note[open] > summary::after,
+.md-typeset details.info[open] > summary::after,
+.md-typeset details.tip[open] > summary::after,
+.md-typeset details.success[open] > summary::after,
+.md-typeset details.question[open] > summary::after,
+.md-typeset details.abstract[open] > summary::after,
+.md-typeset details.example[open] > summary::after,
+.md-typeset details.quote[open] > summary::after,
+.md-typeset details.warning[open] > summary::after,
+.md-typeset details.danger[open] > summary::after,
+.md-typeset details.failure[open] > summary::after,
+.md-typeset details.bug[open] > summary::after,
+.md-typeset details.error[open] > summary::after,
+.md-typeset details.caution[open] > summary::after,
+.md-typeset details.attention[open] > summary::after {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.md-typeset details.note > :not(summary),
+.md-typeset details.info > :not(summary),
+.md-typeset details.tip > :not(summary),
+.md-typeset details.success > :not(summary),
+.md-typeset details.question > :not(summary),
+.md-typeset details.abstract > :not(summary),
+.md-typeset details.example > :not(summary),
+.md-typeset details.quote > :not(summary),
+.md-typeset details.warning > :not(summary),
+.md-typeset details.danger > :not(summary),
+.md-typeset details.failure > :not(summary),
+.md-typeset details.bug > :not(summary),
+.md-typeset details.error > :not(summary),
+.md-typeset details.caution > :not(summary),
+.md-typeset details.attention > :not(summary) {
+  padding-left: 27px !important;
+}
+
+.md-typeset details.note code,
+.md-typeset details.info code,
+.md-typeset details.tip code,
+.md-typeset details.success code,
+.md-typeset details.question code,
+.md-typeset details.abstract code,
+.md-typeset details.example code,
+.md-typeset details.quote code {
+  background-color: var(--aws-note-code-bg);
+}
+
+.md-typeset details.warning code,
+.md-typeset details.caution code,
+.md-typeset details.attention code {
+  background-color: var(--aws-warning-code-bg);
+}
+
+.md-typeset details.danger code,
+.md-typeset details.failure code,
+.md-typeset details.bug code,
+.md-typeset details.error code {
+  background-color: var(--aws-important-code-bg);
+}
+
+[data-md-color-scheme="slate"] .md-typeset details.note code,
+[data-md-color-scheme="slate"] .md-typeset details.info code,
+[data-md-color-scheme="slate"] .md-typeset details.tip code,
+[data-md-color-scheme="slate"] .md-typeset details.success code,
+[data-md-color-scheme="slate"] .md-typeset details.question code,
+[data-md-color-scheme="slate"] .md-typeset details.abstract code,
+[data-md-color-scheme="slate"] .md-typeset details.example code,
+[data-md-color-scheme="slate"] .md-typeset details.quote code {
+  background-color: var(--aws-note-code-bg);
+}
+
+[data-md-color-scheme="slate"] .md-typeset details.warning code,
+[data-md-color-scheme="slate"] .md-typeset details.caution code,
+[data-md-color-scheme="slate"] .md-typeset details.attention code {
+  background-color: var(--aws-warning-code-bg);
+}
+
+[data-md-color-scheme="slate"] .md-typeset details.danger code,
+[data-md-color-scheme="slate"] .md-typeset details.failure code,
+[data-md-color-scheme="slate"] .md-typeset details.bug code,
+[data-md-color-scheme="slate"] .md-typeset details.error code {
+  background-color: var(--aws-important-code-bg);
+}
+
+[data-md-color-scheme="slate"] .md-typeset details.note > summary,
+[data-md-color-scheme="slate"] .md-typeset details.info > summary,
+[data-md-color-scheme="slate"] .md-typeset details.tip > summary,
+[data-md-color-scheme="slate"] .md-typeset details.success > summary,
+[data-md-color-scheme="slate"] .md-typeset details.question > summary,
+[data-md-color-scheme="slate"] .md-typeset details.abstract > summary,
+[data-md-color-scheme="slate"] .md-typeset details.example > summary,
+[data-md-color-scheme="slate"] .md-typeset details.quote > summary,
+[data-md-color-scheme="slate"] .md-typeset details.warning > summary,
+[data-md-color-scheme="slate"] .md-typeset details.danger > summary,
+[data-md-color-scheme="slate"] .md-typeset details.failure > summary,
+[data-md-color-scheme="slate"] .md-typeset details.bug > summary,
+[data-md-color-scheme="slate"] .md-typeset details.error > summary,
+[data-md-color-scheme="slate"] .md-typeset details.caution > summary,
+[data-md-color-scheme="slate"] .md-typeset details.attention > summary {
+  color: #f9f9fa;
+}
+
+[data-md-color-scheme="slate"] .md-typeset details.note > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.info > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.tip > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.success > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.question > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.abstract > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.example > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.quote > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.warning > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.danger > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.failure > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.bug > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.error > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.caution > summary::after,
+[data-md-color-scheme="slate"] .md-typeset details.attention > summary::after {
+  color: #dedee3;
+}
+
+/* --------------------------------------------------------------------------
+ * Tables: gray sticky header, full cell borders, drop shadow container
+ * ------------------------------------------------------------------------ */
+.md-typeset table:not([class]) {
+  border: none;
+  border-top: 1px solid var(--aws-border-default);
+  border-radius: 0;
+  box-shadow:
+    0 1px 1px rgba(0, 28, 36, 0.3),
+    1px 1px 1px rgba(0, 28, 36, 0.15),
+    -1px 1px 1px rgba(0, 28, 36, 0.15);
+  font-size: 0.7rem; /* 14px, matches AWS table density */
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--aws-table-header-bg);
+  border: 1px solid var(--aws-border-default);
+  border-top: none;
+  color: var(--md-default-fg-color);
+  font-weight: 700;
+  padding: 1em 20px;
+  vertical-align: bottom;
+}
+
+.md-typeset table:not([class]) td {
+  border: 1px solid var(--aws-border-default);
+  border-top: none;
+  padding: 8px 20px;
+  vertical-align: top;
+}
+
+/* --------------------------------------------------------------------------
+ * Navigation sidebars: 14px, blue active item
+ * ------------------------------------------------------------------------ */
+.md-nav {
+  font-size: 0.7rem;
+}
+
+.md-nav__link--active,
+.md-nav__link--active code {
+  color: var(--md-typeset-a-color);
+}
+
+.md-nav__item .md-nav__link--active {
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+ * Breadcrumb-ish / misc chrome
+ * ------------------------------------------------------------------------ */
+.md-footer-meta {
+  background-color: var(--md-footer-bg-color--dark);
+}
+
+/* Search input on dark header */
+.md-search__input {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.md-search__input:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}

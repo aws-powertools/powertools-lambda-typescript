@@ -42,7 +42,7 @@
     "nodejs"
   ],
   "dependencies": {
-    "@aws/lambda-invoke-store": "0.2.4"
+    "@aws/lambda-invoke-store": "0.3.0"
   },
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",

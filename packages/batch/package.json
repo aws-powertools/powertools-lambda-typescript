@@ -83,7 +83,7 @@
     "nodejs"
   ],
   "dependencies": {
-    "@aws/lambda-invoke-store": "0.2.4",
+    "@aws/lambda-invoke-store": "0.3.0",
     "@aws-lambda-powertools/commons": "2.33.1",
     "@standard-schema/spec": "^1.1.0"
   },

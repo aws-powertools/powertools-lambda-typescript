@@ -5,6 +5,26 @@ import type { Context } from 'aws-lambda';
 
 // Module scope: identifies the execution environment across invocations
 const executionEnvId = randomUUID();
+
+// Capture the log lines the Logger emits so they can be returned in the
+// response payload: on LMI the Invoke API does not support Tail logs and
+// CloudWatch delivery is asynchronous, so returning the logs is the only
+// fully deterministic way for the test to read them. In production mode the
+// Logger writes each log line as a single atomic write to process.stdout
+// (via its own Console instance, bypassing Lambda's patched global console),
+// so intercepting the stream captures the real production write path.
+const capturedLogs: Array<Record<string, unknown>> = [];
+const originalWrite = process.stdout.write.bind(process.stdout);
+process.stdout.write = ((chunk: string | Uint8Array, ...rest: unknown[]) => {
+  try {
+    capturedLogs.push(JSON.parse(chunk.toString()));
+  } catch {
+    // not a JSON log line, ignore
+  }
+  // @ts-expect-error - passing through the remaining overloaded args as-is
+  return originalWrite(chunk, ...rest);
+}) as typeof process.stdout.write;
+
 const logger = new Logger();
 
 // Invocations multiplexed into the same execution environment share this
@@ -37,13 +57,23 @@ export const handler = async (
     }
   }
 
-  logger.info('LMI isolation test', {
+  logger.info('LMI isolation test');
+  logger.resetKeys();
+
+  return {
+    invocationId: event.invocationId,
     executionEnvId,
     sawPeer,
     initializationType: process.env.AWS_LAMBDA_INITIALIZATION_TYPE ?? 'unset',
     maxConcurrency: process.env.AWS_LAMBDA_MAX_CONCURRENCY ?? 'unset',
-  });
-  logger.resetKeys();
-
-  return { invocationId: event.invocationId };
+    // Only the lines this invocation emitted, selected by the
+    // InvokeStore-scoped invocation key (the attribute under test).
+    // Deliberately NOT filtered by function_request_id: addContext stores
+    // the Lambda context in instance state, so under multiplexing the
+    // request id stamped on log lines can belong to another invocation
+    // (see lmi-request-id-bug-handoff.md)
+    logs: capturedLogs.filter(
+      (log) => log.invocationKey === event.invocationId
+    ),
+  };
 };

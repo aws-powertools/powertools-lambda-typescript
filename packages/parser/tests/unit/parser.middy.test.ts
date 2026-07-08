@@ -1,6 +1,6 @@
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
 import { SqsEnvelope } from '../../src/envelopes/sqs.js';
@@ -217,7 +217,10 @@ describe('Middleware: parser', () => {
       .use(
         parser({
           schema: z.number(),
-          errorHandler: (error) => ({ errorHandled: true, message: error.message }),
+          errorHandler: (error) => ({
+            errorHandled: true,
+            message: error.message,
+          }),
         })
       )
       .handler((event) => event)(event as unknown as number, {} as Context);
@@ -238,7 +241,10 @@ describe('Middleware: parser', () => {
       .use(
         parser({
           schema: schema,
-          errorHandler: (error) => ({ errorHandled: true, message: error.message }),
+          errorHandler: (error) => ({
+            errorHandled: true,
+            message: error.message,
+          }),
         })
       )
       .handler((event) => event)(
@@ -260,5 +266,127 @@ describe('Middleware: parser', () => {
         .use(parser({ schema: z.number() }))
         .handler((event) => event)(event as unknown as number, {} as Context)
     ).rejects.toThrow(ParseError);
+  });
+
+  it('calls the errorHandler when schema validation fails with an envelope', async () => {
+    // Prepare
+    const event = structuredClone(baseEventBridgeEvent);
+
+    // Act
+    const result = await middy()
+      .use(
+        parser({
+          schema: schema,
+          envelope: EventBridgeEnvelope,
+          errorHandler: (error) => ({
+            errorHandled: true,
+            message: error.message,
+          }),
+        })
+      )
+      .handler((event) => event)(
+      event as unknown as z.infer<typeof schema>,
+      {} as Context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      errorHandled: true,
+      message: expect.any(String),
+    });
+  });
+
+  it('passes the original event to the errorHandler', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+    const errorHandler = vi.fn().mockReturnValue({ errorHandled: true });
+
+    // Act
+    await middy()
+      .use(parser({ schema: z.number(), errorHandler }))
+      .handler((event) => event)(event as unknown as number, {} as Context);
+
+    // Assess
+    expect(errorHandler).toHaveBeenCalledWith(expect.any(ParseError), event);
+  });
+
+  it('does not call the errorHandler when the handler throws a non-ParseError', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+    const errorHandler = vi.fn();
+
+    // Act & Assess
+    await expect(
+      middy()
+        .use(parser({ schema: schema, errorHandler }))
+        .handler(() => {
+          throw new Error('handler failure');
+        })(event as unknown as z.infer<typeof schema>, {} as Context)
+    ).rejects.toThrow('handler failure');
+    expect(errorHandler).not.toHaveBeenCalled();
+  });
+
+  it('does not call the errorHandler when the handler itself throws a ParseError', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+    const errorHandler = vi.fn();
+
+    // Act & Assess
+    await expect(
+      middy()
+        .use(parser({ schema: schema, errorHandler }))
+        .handler(() => {
+          throw new ParseError('unrelated failure');
+        })(event as unknown as z.infer<typeof schema>, {} as Context)
+    ).rejects.toThrow('unrelated failure');
+    expect(errorHandler).not.toHaveBeenCalled();
+  });
+
+  it('throws a TypeError when the errorHandler returns a Promise', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+
+    // Act & Assess
+    await expect(
+      middy()
+        .use(
+          parser({
+            schema: z.number(),
+            // @ts-expect-error - errorHandler must be synchronous
+            errorHandler: async (_error) => ({ errorHandled: true }),
+          })
+        )
+        .handler((event) => event)(event as unknown as number, {} as Context)
+    ).rejects.toThrow(TypeError);
+  });
+
+  it('still runs other middlewares onError when the errorHandler recovers', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+    const otherOnError = vi.fn();
+
+    // Act
+    // Note: middy runs onError middlewares in reverse attachment order, so `otherOnError`
+    // (attached before parser) runs *after* parser's onError - it must still run even though
+    // parser's onError already recovered from the error.
+    const result = await middy()
+      .use({ onError: otherOnError })
+      .use(
+        parser({
+          schema: z.number(),
+          errorHandler: (error) => ({
+            errorHandled: true,
+            message: error.message,
+          }),
+        })
+      )
+      .handler((event) => event)(event as unknown as number, {} as Context);
+
+    // Assess
+    expect(result).toEqual({
+      errorHandled: true,
+      message: expect.any(String),
+    });
+    expect(otherOnError).toHaveBeenCalledTimes(1);
   });
 });

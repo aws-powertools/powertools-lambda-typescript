@@ -1,7 +1,7 @@
 import type { HandlerMethodDecorator } from '@aws-lambda-powertools/commons/types';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { Callback, Context, Handler } from 'aws-lambda';
-import { ParseError } from './errors.js';
+import { invokeErrorHandler, NO_RECOVERY } from './errorHandler.js';
 import { parse } from './parser.js';
 import type { Envelope, ParserOptions } from './types/index.js';
 import type { ParserOutput } from './types/parser.js';
@@ -96,8 +96,9 @@ export const parser = <
   TSchema extends StandardSchemaV1,
   TEnvelope extends Envelope = undefined,
   TSafeParse extends boolean = false,
+  TErrorHandlerReturn = never,
 >(
-  options: ParserOptions<TSchema, TEnvelope, TSafeParse>
+  options: ParserOptions<TSchema, TEnvelope, TSafeParse, TErrorHandlerReturn>
 ): HandlerMethodDecorator => {
   return (
     _target: unknown,
@@ -112,18 +113,25 @@ export const parser = <
       this: Handler,
       ...args: [ParserOutput<TSchema, TEnvelope, TSafeParse>, Context, Callback]
     ) {
+      let parsedEvent: ParserOutput<TSchema, TEnvelope, TSafeParse>;
       try {
-        const parsedEvent = parse(args[0], envelope, schema, safeParse);
-        return original.apply(this, [parsedEvent, ...args.slice(1)]);
+        parsedEvent = parse(
+          args[0],
+          envelope,
+          schema,
+          safeParse
+        ) as ParserOutput<TSchema, TEnvelope, TSafeParse>;
       } catch (error) {
-        if (errorHandler && error instanceof ParseError) {
-          const result = errorHandler(error);
-          if (result !== undefined) {
-            return result;
-          }
+        // Only a failure of this parser's own `parse()` call goes through errorHandler - a
+        // ParseError thrown by the wrapped handler body itself must propagate unchanged.
+        const result = invokeErrorHandler(errorHandler, error, args[0]);
+        if (result !== NO_RECOVERY) {
+          return result;
         }
         throw error;
       }
+
+      return original.apply(this, [parsedEvent, ...args.slice(1)]);
     };
 
     return descriptor;

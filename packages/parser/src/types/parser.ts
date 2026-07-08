@@ -8,18 +8,41 @@ import type {
 } from './envelope.js';
 
 /**
- * Options for the parser used in middy middleware and decorator
+ * A callback invoked when parsing fails with a {@link ParseError}, receiving the error and the original,
+ * unparsed event. Returning a value short-circuits the parse failure with that value; returning `undefined`
+ * rethrows the error. The callback must be synchronous - returning a `Promise` is a type error.
+ */
+type ErrorHandler<TErrorHandlerReturn> = (
+  error: ParseError,
+  event: unknown
+) => TErrorHandlerReturn extends Promise<unknown> ? never : TErrorHandlerReturn;
+
+type ParserOptionsBase<
+  TSchema extends StandardSchemaV1,
+  TEnvelope extends Envelope,
+> = {
+  schema: TSchema;
+  envelope?: TEnvelope;
+};
+
+/**
+ * Options for the parser used in middy middleware and decorator.
+ *
+ * `safeParse` and `errorHandler` are mutually exclusive: with `safeParse` the parser never throws,
+ * so an `errorHandler` would never be invoked.
  */
 type ParserOptions<
   TSchema extends StandardSchemaV1,
   TEnvelope extends Envelope,
   TSafeParse extends boolean,
-> = {
-  schema: TSchema;
-  envelope?: TEnvelope;
-  safeParse?: TSafeParse;
-  errorHandler?: (error: ParseError) => unknown;
-};
+  TErrorHandlerReturn = unknown,
+> = ParserOptionsBase<TSchema, TEnvelope> &
+  (TSafeParse extends true
+    ? { safeParse: TSafeParse; errorHandler?: never }
+    : {
+        safeParse?: TSafeParse;
+        errorHandler?: ErrorHandler<TErrorHandlerReturn>;
+      });
 
 /**
  * A successful parsing result with the parsed data when using safeParse
@@ -135,6 +158,7 @@ type InferOutput<Schema extends StandardSchemaV1> = NonNullable<
 >['output'];
 
 export type {
+  ErrorHandler,
   InferOutput,
   ParsedResult,
   ParsedResultError,

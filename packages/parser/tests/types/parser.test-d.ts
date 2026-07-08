@@ -3,6 +3,7 @@ import { describe, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
 import { SqsEnvelope } from '../../src/envelopes/sqs.js';
+import type { ParseError } from '../../src/errors.js';
 import { JSONStringified } from '../../src/helpers/index.js';
 import { parser } from '../../src/middleware/index.js';
 import { parse } from '../../src/parser.js';
@@ -76,5 +77,26 @@ describe('Parser types', () => {
       .handler((event) => {
         expectTypeOf(event).toEqualTypeOf<User[]>();
       });
+  });
+
+  it('rejects errorHandler when safeParse is true', () => {
+    middy().use(
+      parser({
+        schema: userSchema,
+        safeParse: true,
+        // @ts-expect-error - safeParse and errorHandler are mutually exclusive
+        errorHandler: (_error: ParseError, _event: unknown) => undefined,
+      })
+    );
+  });
+
+  it('rejects an async errorHandler', () => {
+    middy().use(
+      parser({
+        schema: userSchema,
+        // @ts-expect-error - errorHandler must be synchronous
+        errorHandler: async (_error: ParseError, _event: unknown) => undefined,
+      })
+    );
   });
 });

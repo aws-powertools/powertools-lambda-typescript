@@ -182,6 +182,12 @@ describe('Parameters E2E tests, AppConfig Agent', () => {
     });
     // Grant read permissions to the function
     appConfigResource.grantReadData(testFunction);
+    // Also grant access to the nonexistent profile requested in Test 5, so that
+    // the agent surfaces AppConfig's 404 instead of an IAM 403
+    appConfigResource.grantReadDataForMissingProfile(
+      testFunction,
+      'does-not-exist'
+    );
     // Add environment variables containing the resource names to the function
     appConfigResource.addEnvVariablesToFunction(testFunction);
 

@@ -3,27 +3,22 @@ import { RequestSigningError, SignerConfigError } from '../../src/errors.js';
 import { SigV4Signer } from '../../src/sigv4.js';
 
 describe('Class: SigV4Signer', () => {
-  const ENVIRONMENT_VARIABLES = process.env;
-
   beforeEach(() => {
-    process.env = {
-      ...ENVIRONMENT_VARIABLES,
-      AWS_REGION: 'us-east-1',
-      AWS_ACCESS_KEY_ID: 'AKIAEXAMPLE',
-      AWS_SECRET_ACCESS_KEY: 'secret-example',
-      AWS_SESSION_TOKEN: 'session-example',
-    };
+    vi.stubEnv('AWS_REGION', 'us-east-1');
+    vi.stubEnv('AWS_ACCESS_KEY_ID', 'AKIAEXAMPLE');
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'secret-example');
+    vi.stubEnv('AWS_SESSION_TOKEN', 'session-example');
   });
 
   afterEach(() => {
-    process.env = ENVIRONMENT_VARIABLES;
+    vi.unstubAllEnvs();
     vi.clearAllMocks();
   });
 
   describe('configuration', () => {
     it('throws a config error when no region can be determined', () => {
       // Prepare
-      process.env.AWS_REGION = undefined;
+      vi.stubEnv('AWS_REGION', undefined);
 
       // Act & Assess
       expect(() => new SigV4Signer({ service: 'execute-api' })).toThrow(
@@ -62,7 +57,7 @@ describe('Class: SigV4Signer', () => {
 
     it('throws a config error when credentials cannot be resolved from the environment', async () => {
       // Prepare
-      process.env.AWS_ACCESS_KEY_ID = undefined;
+      vi.stubEnv('AWS_ACCESS_KEY_ID', undefined);
       const signer = new SigV4Signer({ service: 'execute-api' });
 
       // Act & Assess
@@ -73,8 +68,8 @@ describe('Class: SigV4Signer', () => {
 
     it('resolves credentials from an async provider', async () => {
       // Prepare
-      process.env.AWS_ACCESS_KEY_ID = undefined;
-      process.env.AWS_SECRET_ACCESS_KEY = undefined;
+      vi.stubEnv('AWS_ACCESS_KEY_ID', undefined);
+      vi.stubEnv('AWS_SECRET_ACCESS_KEY', undefined);
       const credentials = vi.fn().mockResolvedValue({
         accessKeyId: 'AKIAFROMPROVIDER',
         secretAccessKey: 'secret-from-provider',
@@ -93,8 +88,8 @@ describe('Class: SigV4Signer', () => {
 
     it('accepts static credentials', async () => {
       // Prepare
-      process.env.AWS_ACCESS_KEY_ID = undefined;
-      process.env.AWS_SECRET_ACCESS_KEY = undefined;
+      vi.stubEnv('AWS_ACCESS_KEY_ID', undefined);
+      vi.stubEnv('AWS_SECRET_ACCESS_KEY', undefined);
       const signer = new SigV4Signer({
         service: 'execute-api',
         credentials: {

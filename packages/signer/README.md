@@ -2,8 +2,6 @@
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.aws.amazon.com/powertools/typescript/latest/#features).
 
-You can use the package in both TypeScript and JavaScript code bases.
-
 - [Intro](#intro)
 - [Key features](#key-features)
 - [Usage](#usage)

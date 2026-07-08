@@ -11,6 +11,7 @@ const lambdaClient = new LambdaClient({});
 const invokeFunctionOnce = async ({
   functionName,
   payload = {},
+  includeTailLogs = true,
 }: Omit<
   InvokeTestFunctionOptions,
   'times' | 'invocationMode'
@@ -19,7 +20,9 @@ const invokeFunctionOnce = async ({
     new InvokeCommand({
       FunctionName: functionName,
       InvocationType: 'RequestResponse',
-      LogType: 'Tail', // Wait until execution completes and return all logs
+      // Wait until execution completes and return all logs; not supported on
+      // functions configured with a capacity provider
+      LogType: includeTailLogs ? 'Tail' : 'None',
       Payload: fromUtf8(JSON.stringify(payload)),
     })
   );
@@ -42,6 +45,7 @@ const invokeFunction = async ({
   times = 1,
   invocationMode = 'PARALLEL',
   payload = {},
+  includeTailLogs = true,
 }: InvokeTestFunctionOptions): Promise<TestInvocationLogs[]> => {
   const invocationLogs: TestInvocationLogs[] = [];
 
@@ -64,7 +68,11 @@ const invokeFunction = async ({
             ? payload[index]
             : payload;
 
-          return invoke({ functionName, payload: invocationPayload });
+          return invoke({
+            functionName,
+            payload: invocationPayload,
+            includeTailLogs,
+          });
         })
       ))
     );
@@ -74,7 +82,11 @@ const invokeFunction = async ({
         ? payload[index]
         : payload;
       invocationLogs.push(
-        await invokeFunctionOnce({ functionName, payload: invocationPayload })
+        await invokeFunctionOnce({
+          functionName,
+          payload: invocationPayload,
+          includeTailLogs,
+        })
       );
     }
   }

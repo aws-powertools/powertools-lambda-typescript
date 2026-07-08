@@ -4,6 +4,7 @@ import type {
   AwsCredentialIdentityProvider,
   HttpRequest,
 } from '@smithy/types';
+import type { BodyInit } from 'undici-types';
 import { RequestSigningError, SignerConfigError } from './errors.js';
 import { Sha256 } from './Sha256.js';
 import type { Signer, SigV4SignerOptions } from './types/index.js';

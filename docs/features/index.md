@@ -95,4 +95,12 @@ description: Features of Powertools for AWS Lambda
 
     [:octicons-arrow-right-24: Read more](./kafka.md)
 
+- __Signer__
+
+    ---
+
+    Sign HTTP requests to AWS services using the AWS Signature Version 4 (SigV4) signing process, with an optional drop-in signed `fetch`.
+
+    [:octicons-arrow-right-24: Read more](./signer.md)
+
 </div>

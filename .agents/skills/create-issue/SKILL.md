@@ -21,5 +21,6 @@ When creating GitHub issues for this project, follow the issue templates defined
 ## Rules
 
 - ALWAYS show the draft before creating
-- Present the tenets acknowledgment checkbox as checked — the issue implicitly asserts compliance, and the user's approval of the draft confirms it
+- If the template has a `checkboxes` field (e.g. the Acknowledgment section in feature_request.yml and maintenance.yml), reproduce its options verbatim as a section with checkbox syntax (`- [ ]`), checking the required ones — the issue implicitly asserts compliance, and the user's approval of the draft confirms it
+- If the template has no `checkboxes` field (e.g. bug_report.yml), do NOT invent one
 - If unsure which template to use, ask the user

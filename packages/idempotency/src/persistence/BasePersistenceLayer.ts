@@ -38,12 +38,20 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   #jmesPathOptions?: JMESPathParsingOptions;
   #maxLocalCacheSize?: number;
   #configMismatchWarned = false;
+  /**
+   * Base value for the idempotency key prefix, snapshotted at construction
+   * time so that {@link configure | `configure()`} - which runs on every
+   * invocation - can recompute the prefix deterministically instead of
+   * appending to an already-mutated value.
+   */
+  readonly #keyPrefixBase: string;
 
   public constructor() {
-    this.idempotencyKeyPrefix = getStringFromEnv({
+    this.#keyPrefixBase = getStringFromEnv({
       key: 'AWS_LAMBDA_FUNCTION_NAME',
       defaultValue: '',
     });
+    this.idempotencyKeyPrefix = this.#keyPrefixBase;
   }
 
   /**
@@ -57,7 +65,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     if (keyPrefix?.trim()) {
       this.idempotencyKeyPrefix = keyPrefix.trim();
     } else if (functionName?.trim()) {
-      this.idempotencyKeyPrefix = `${this.idempotencyKeyPrefix}.${functionName.trim()}`;
+      this.idempotencyKeyPrefix = `${this.#keyPrefixBase}.${functionName.trim()}`;
     }
 
     // Prevent reconfiguration

@@ -66,14 +66,14 @@ export const handler = async (
     sawPeer,
     initializationType: process.env.AWS_LAMBDA_INITIALIZATION_TYPE ?? 'unset',
     maxConcurrency: process.env.AWS_LAMBDA_MAX_CONCURRENCY ?? 'unset',
-    // Only the lines this invocation emitted, selected by the
-    // InvokeStore-scoped invocation key (the attribute under test).
-    // Deliberately NOT filtered by function_request_id: addContext stores
-    // the Lambda context in instance state, so under multiplexing the
-    // request id stamped on log lines can belong to another invocation
-    // (see lmi-request-id-bug-handoff.md)
+    // Only the lines this invocation emitted, selected by the request id
+    // stamped on them. Under LMI multiplexing this only works because
+    // addContext scopes the lambda context per invocation via the
+    // InvokeStore (#5430) — an empty logs array here is the signature of
+    // that scoping regressing. The invocationKey assertion in the test
+    // then verifies appendKeys isolation on independently-selected lines.
     logs: capturedLogs.filter(
-      (log) => log.invocationKey === event.invocationId
+      (log) => log.function_request_id === context.awsRequestId
     ),
   };
 };

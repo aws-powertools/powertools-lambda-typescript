@@ -370,7 +370,12 @@ describe('Middy middleware', () => {
     expect(setSegmentSpy).toHaveBeenNthCalledWith(2, facadeSegment);
   });
 
-  it('closes each subsegment and restores each facade segment when invocations overlap', async () => {
+  it.each([
+    { completionOrder: 'in the order they started', completeFirst: 0 },
+    { completionOrder: 'in reverse order', completeFirst: 1 },
+  ])('closes each subsegment exactly once and restores each facade segment when overlapping invocations complete $completionOrder', async ({
+    completeFirst,
+  }) => {
     // Prepare
     const tracer = new Tracer();
     vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
@@ -378,19 +383,22 @@ describe('Middy middleware', () => {
     const setSegmentSpy = vi
       .spyOn(tracer.provider, 'setSegment')
       .mockImplementation(() => ({}));
-    const facadeSegmentA = new Segment('facade');
-    const handlerSubsegmentA = new Subsegment('## index.handler');
-    vi.spyOn(facadeSegmentA, 'addNewSubsegment').mockImplementation(
-      () => handlerSubsegmentA
+    const facadeSegments = [new Segment('facade'), new Segment('facade')];
+    const handlerSubsegments = [
+      new Subsegment('## index.handler'),
+      new Subsegment('## index.handler'),
+    ];
+    const closeSpies = handlerSubsegments.map((subsegment) =>
+      vi.spyOn(subsegment, 'close')
     );
-    const facadeSegmentB = new Segment('facade');
-    const handlerSubsegmentB = new Subsegment('## index.handler');
-    vi.spyOn(facadeSegmentB, 'addNewSubsegment').mockImplementation(
-      () => handlerSubsegmentB
-    );
+    for (const [idx, facadeSegment] of facadeSegments.entries()) {
+      vi.spyOn(facadeSegment, 'addNewSubsegment').mockImplementation(
+        () => handlerSubsegments[idx]
+      );
+    }
     vi.spyOn(tracer.provider, 'getSegment')
-      .mockImplementationOnce(() => facadeSegmentA)
-      .mockImplementationOnce(() => facadeSegmentB);
+      .mockImplementationOnce(() => facadeSegments[0])
+      .mockImplementationOnce(() => facadeSegments[1]);
     // Each invocation blocks in the handler until released, so the two
     // invocations can be interleaved like under Lambda Managed Instances
     // concurrency
@@ -403,17 +411,28 @@ describe('Middy middleware', () => {
     }).use(captureLambdaHandler(tracer, { captureResponse: false }));
 
     // Act
-    const invocationA = handler({ idx: 0 }, context);
-    const invocationB = handler({ idx: 1 }, context);
-    gates[0].resolve();
-    await invocationA;
-    gates[1].resolve();
-    await invocationB;
+    const invocations = [
+      handler({ idx: 0 }, context),
+      handler({ idx: 1 }, context),
+    ];
+    const completeSecond = 1 - completeFirst;
+    gates[completeFirst].resolve();
+    await invocations[completeFirst];
+    gates[completeSecond].resolve();
+    await invocations[completeSecond];
 
     // Assess
-    expect(handlerSubsegmentA.isClosed()).toBe(true);
-    expect(handlerSubsegmentB.isClosed()).toBe(true);
-    expect(setSegmentSpy).toHaveBeenNthCalledWith(3, facadeSegmentA);
-    expect(setSegmentSpy).toHaveBeenNthCalledWith(4, facadeSegmentB);
+    expect(closeSpies[0]).toHaveBeenCalledTimes(1);
+    expect(closeSpies[1]).toHaveBeenCalledTimes(1);
+    expect(handlerSubsegments[0].isClosed()).toBe(true);
+    expect(handlerSubsegments[1].isClosed()).toBe(true);
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(
+      3,
+      facadeSegments[completeFirst]
+    );
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(
+      4,
+      facadeSegments[completeSecond]
+    );
   });
 });

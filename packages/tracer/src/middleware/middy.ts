@@ -66,8 +66,11 @@ const captureLambdaHandler = (
     const handlerSegment = lambdaSegment.addNewSubsegment(
       `## ${process.env._HANDLER}`
     );
-    request.internal[lambdaSegmentKey] = lambdaSegment;
-    request.internal[handlerSegmentKey] = handlerSegment;
+    request.internal = {
+      ...request.internal,
+      [lambdaSegmentKey]: lambdaSegment,
+      [handlerSegmentKey]: handlerSegment,
+    };
     target.setSegment(handlerSegment);
   };
 

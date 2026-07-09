@@ -115,7 +115,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
       mismatchedSettings.push('payloadValidationJmesPath');
     }
     if (
-      (config.throwOnNoIdempotencyKey || false) !== this.throwOnNoIdempotencyKey
+      (config.throwOnNoIdempotencyKey ?? false) !== this.throwOnNoIdempotencyKey
     ) {
       mismatchedSettings.push('throwOnNoIdempotencyKey');
     }

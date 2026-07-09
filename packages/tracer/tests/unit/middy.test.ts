@@ -369,4 +369,51 @@ describe('Middy middleware', () => {
     // Check that the segments are restored
     expect(setSegmentSpy).toHaveBeenNthCalledWith(2, facadeSegment);
   });
+
+  it('closes each subsegment and restores each facade segment when invocations overlap', async () => {
+    // Prepare
+    const tracer = new Tracer();
+    vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+    vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(() => ({}));
+    const setSegmentSpy = vi
+      .spyOn(tracer.provider, 'setSegment')
+      .mockImplementation(() => ({}));
+    const facadeSegmentA = new Segment('facade');
+    const handlerSubsegmentA = new Subsegment('## index.handler');
+    vi.spyOn(facadeSegmentA, 'addNewSubsegment').mockImplementation(
+      () => handlerSubsegmentA
+    );
+    const facadeSegmentB = new Segment('facade');
+    const handlerSubsegmentB = new Subsegment('## index.handler');
+    vi.spyOn(facadeSegmentB, 'addNewSubsegment').mockImplementation(
+      () => handlerSubsegmentB
+    );
+    vi.spyOn(tracer.provider, 'getSegment')
+      .mockImplementationOnce(() => facadeSegmentA)
+      .mockImplementationOnce(() => facadeSegmentB);
+    // Each invocation blocks in the handler until released, so the two
+    // invocations can be interleaved like under Lambda Managed Instances
+    // concurrency
+    const gates = [
+      Promise.withResolvers<void>(),
+      Promise.withResolvers<void>(),
+    ];
+    const handler = middy(async (event: { idx: number }, _context: Context) => {
+      await gates[event.idx].promise;
+    }).use(captureLambdaHandler(tracer, { captureResponse: false }));
+
+    // Act
+    const invocationA = handler({ idx: 0 }, context);
+    const invocationB = handler({ idx: 1 }, context);
+    gates[0].resolve();
+    await invocationA;
+    gates[1].resolve();
+    await invocationB;
+
+    // Assess
+    expect(handlerSubsegmentA.isClosed()).toBe(true);
+    expect(handlerSubsegmentB.isClosed()).toBe(true);
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(3, facadeSegmentA);
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(4, facadeSegmentB);
+  });
 });

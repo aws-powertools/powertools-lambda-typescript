@@ -38,8 +38,11 @@ const captureLambdaHandler = (
   target: Tracer,
   options?: CaptureLambdaHandlerOptions
 ): MiddlewareLikeObj => {
-  let lambdaSegment: Segment;
-  let handlerSegment: Subsegment;
+  // The segments are stored in `request.internal` rather than in variables scoped
+  // to this factory so that each invocation operates on its own segments when
+  // multiple invocations run concurrently in the same execution environment.
+  const lambdaSegmentKey = `${TRACER_KEY}.lambdaSegment`;
+  const handlerSegmentKey = `${TRACER_KEY}.handlerSegment`;
 
   /**
    * Set the cleanup function to be called in case other middlewares return early.
@@ -53,21 +56,29 @@ const captureLambdaHandler = (
     };
   };
 
-  const open = (): void => {
+  const open = (request: MiddyLikeRequest): void => {
     const segment = target.getSegment();
     if (segment === undefined) {
       return;
     }
     // If segment is defined, then it is a Segment as this middleware is only used for Lambda Handlers
-    lambdaSegment = segment as Segment;
-    handlerSegment = lambdaSegment.addNewSubsegment(
+    const lambdaSegment = segment as Segment;
+    const handlerSegment = lambdaSegment.addNewSubsegment(
       `## ${process.env._HANDLER}`
     );
+    request.internal[lambdaSegmentKey] = lambdaSegment;
+    request.internal[handlerSegmentKey] = handlerSegment;
     target.setSegment(handlerSegment);
   };
 
-  const close = (): void => {
-    if (handlerSegment === undefined || lambdaSegment === null) {
+  const close = (request: MiddyLikeRequest): void => {
+    const lambdaSegment = request.internal[lambdaSegmentKey] as
+      | Segment
+      | undefined;
+    const handlerSegment = request.internal[handlerSegmentKey] as
+      | Subsegment
+      | undefined;
+    if (handlerSegment === undefined || lambdaSegment === undefined) {
       return;
     }
     try {
@@ -84,7 +95,7 @@ const captureLambdaHandler = (
 
   const before = (request: MiddyLikeRequest) => {
     if (target.isTracingEnabled()) {
-      open();
+      open(request);
       setCleanupFunction(request);
       target.annotateColdStart();
       target.addServiceNameAnnotation();
@@ -96,14 +107,14 @@ const captureLambdaHandler = (
       if (options?.captureResponse ?? true) {
         target.addResponseAsMetadata(request.response, process.env._HANDLER);
       }
-      close();
+      close(request);
     }
   };
 
   const onError = (request: MiddyLikeRequest) => {
     if (target.isTracingEnabled()) {
       target.addErrorAsMetadata(request.error as Error);
-      close();
+      close(request);
     }
   };
 

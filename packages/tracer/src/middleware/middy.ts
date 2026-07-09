@@ -8,17 +8,18 @@ import type { Tracer } from '../Tracer.js';
 import type { CaptureLambdaHandlerOptions } from '../types/Tracer.js';
 
 /**
- * Keys used to store the per-invocation segments and CLS context in the
- * middy `request.internal` object.
+ * Keys used to store the per-invocation segments in the middy
+ * `request.internal` object.
  *
  * Storing this state per-request rather than in factory-closure variables is
  * required for correctness when multiple invocations are multiplexed into the
  * same execution environment (e.g. Lambda Managed Instances with
- * `perExecutionEnvironmentMaxConcurrency` > 1).
+ * `perExecutionEnvironmentMaxConcurrency` > 1): closure variables are shared
+ * by all in-flight invocations, so one invocation's `after`/`onError` hook
+ * would close and restore another invocation's segments.
  */
 const lambdaSegmentKey = `${TRACER_KEY}.lambdaSegment`;
 const handlerSegmentKey = `${TRACER_KEY}.handlerSegment`;
-const clsContextKey = `${TRACER_KEY}.clsContext`;
 
 /**
  * A middy middleware automating capture of metadata and annotations on segments or subsegments for a Lambda Handler.
@@ -63,35 +64,11 @@ const captureLambdaHandler = (
     };
   };
 
-  /**
-   * Open a new handler subsegment inside a fresh CLS context dedicated to
-   * this invocation.
-   *
-   * In Lambda mode the X-Ray SDK enters a single process-wide CLS context at
-   * initialization, so `setSegment()` alone writes the active segment into a
-   * slot shared by all concurrent invocations. To keep interleaved
-   * invocations isolated, we create and enter a new CLS context first: the
-   * context tracking in `cls-hooked` is based on `async_hooks` resource
-   * creation, so — as long as this function runs synchronously within the
-   * `before` hook — every async resource created downstream (the handler and
-   * the `after`/`onError` hooks) inherits the new context, while other
-   * in-flight invocations keep operating on their own. This mirrors what
-   * `captureAsyncFunc` does in the decorator path via `namespace.run()`.
-   *
-   * The created context prototypally inherits the facade segment from the
-   * SDK's root context, and `setSegment()` then shadows it with the handler
-   * subsegment for this invocation only.
-   *
-   * @param request - The request object
-   */
   const open = (request: MiddyLikeRequest): void => {
     const segment = target.getSegment();
     if (segment === undefined) {
       return;
     }
-    const namespace = target.provider.getNamespace();
-    const clsContext = namespace.createContext();
-    namespace.enter(clsContext);
     // If segment is defined, then it is a Segment as this middleware is only used for Lambda Handlers
     const lambdaSegment = segment as Segment;
     const handlerSegment = lambdaSegment.addNewSubsegment(
@@ -102,16 +79,9 @@ const captureLambdaHandler = (
       ...request.internal,
       [lambdaSegmentKey]: lambdaSegment,
       [handlerSegmentKey]: handlerSegment,
-      [clsContextKey]: clsContext,
     };
   };
 
-  /**
-   * Close the handler subsegment for this invocation, restore the facade
-   * segment, and exit the invocation's CLS context.
-   *
-   * @param request - The request object
-   */
   const close = (request: MiddyLikeRequest): void => {
     const handlerSegment = request.internal[handlerSegmentKey] as
       | Subsegment
@@ -132,10 +102,6 @@ const captureLambdaHandler = (
       );
     }
     target.setSegment(lambdaSegment);
-    const clsContext = request.internal[clsContextKey];
-    if (clsContext !== undefined) {
-      target.provider.getNamespace().exit(clsContext);
-    }
   };
 
   const before = (request: MiddyLikeRequest) => {

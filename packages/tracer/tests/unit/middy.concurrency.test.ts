@@ -2,132 +2,134 @@ import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
 import { Segment, Subsegment } from 'aws-xray-sdk-core';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Tracer } from '../../src/index.js';
 import { captureLambdaHandler } from '../../src/middleware/middy.js';
 
-// Must run before aws-xray-sdk-core is imported so the SDK initializes in
-// Lambda mode with its real CLS context, which is what these tests exercise:
-// in Lambda mode the SDK enters a single process-wide CLS context at init,
-// so per-invocation isolation must be provided by the middleware itself.
-vi.hoisted(() => {
-  vi.stubEnv('LAMBDA_TASK_ROOT', '/var/task');
-  vi.stubEnv('AWS_XRAY_CONTEXT_MISSING', 'IGNORE_ERROR');
-  vi.stubEnv(
-    '_X_AMZN_TRACE_ID',
-    'Root=1-abcdef12-3456abcdef123456abcdef12;Parent=1234abcd1234abcd;Sampled=1'
-  );
-});
-
-type SubsegmentWithAnnotations = Subsegment & {
-  annotations?: Record<string, unknown>;
-};
-
 /**
- * Track every handler subsegment created by the middleware, in creation
- * order, regardless of which parent it was attached to; `annotations` is
- * not part of the SDK's public type but is where `addAnnotation()` writes.
+ * When multiple invocations are multiplexed into the same execution
+ * environment (e.g. Lambda Managed Instances with
+ * `perExecutionEnvironmentMaxConcurrency` > 1), the same middleware instance
+ * handles overlapping invocations. Per-invocation state must therefore live
+ * in `request.internal` rather than in factory-closure variables, so each
+ * invocation closes the subsegment it opened and restores the facade segment
+ * it captured - regardless of interleaving or completion order.
+ *
+ * Note: correct *attribution* of annotations/metadata under concurrent
+ * invocations (aws-powertools/powertools-lambda-typescript#5434) is not
+ * covered here as it requires per-invocation context isolation in the X-Ray
+ * SDK and cannot be provided from within a middy middleware.
  */
-const trackHandlerSubsegments = (): SubsegmentWithAnnotations[] => {
-  const handlerSubsegments: SubsegmentWithAnnotations[] = [];
-  for (const proto of [Segment.prototype, Subsegment.prototype]) {
-    const original = proto.addNewSubsegment;
-    vi.spyOn(proto, 'addNewSubsegment').mockImplementation(function (
-      this: Segment | Subsegment,
-      name: string
-    ) {
-      const subsegment = original.call(this, name);
-      if (name.startsWith('## ')) {
-        handlerSubsegments.push(subsegment);
-      }
-      return subsegment;
-    });
-  }
-  return handlerSubsegments;
-};
-
 describe('Middy middleware: concurrent invocations', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('records annotations on the subsegment of the invocation that produced them when invocations overlap', async () => {
-    // Prepare
+  const setupOverlappingInvocations = () => {
     const tracer = new Tracer({ serviceName: 'concurrency-test' });
-    const handlerSubsegments = trackHandlerSubsegments();
+    vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+    vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(
+      () => ({})
+    );
+    const setSegmentSpy = vi
+      .spyOn(tracer.provider, 'setSegment')
+      .mockImplementation(() => ({}));
+
+    const facadeSegmentA = new Segment('facadeA');
+    const handlerSubsegmentA = new Subsegment('## index.handlerA');
+    vi.spyOn(facadeSegmentA, 'addNewSubsegment').mockImplementation(
+      () => handlerSubsegmentA
+    );
+    const facadeSegmentB = new Segment('facadeB');
+    const handlerSubsegmentB = new Subsegment('## index.handlerB');
+    vi.spyOn(facadeSegmentB, 'addNewSubsegment').mockImplementation(
+      () => handlerSubsegmentB
+    );
+    vi.spyOn(tracer.provider, 'getSegment')
+      .mockImplementationOnce(() => facadeSegmentA)
+      .mockImplementationOnce(() => facadeSegmentB);
+    const closeSpyA = vi.spyOn(handlerSubsegmentA, 'close');
+    const closeSpyB = vi.spyOn(handlerSubsegmentB, 'close');
+
     // Gates to interleave the two invocations: each handler blocks until released
     const gates = [
       Promise.withResolvers<void>(),
       Promise.withResolvers<void>(),
     ];
     const handler = middy(
-      async (event: { idx: number; name: string }, _context: Context) => {
+      async (event: { idx: number }, _context: Context) => {
         await gates[event.idx].promise;
-        tracer.putAnnotation('invocation', event.name);
       }
     ).use(captureLambdaHandler(tracer, { captureResponse: false }));
+
+    return {
+      handler,
+      gates,
+      facadeSegmentA,
+      facadeSegmentB,
+      handlerSubsegmentA,
+      handlerSubsegmentB,
+      closeSpyA,
+      closeSpyB,
+      setSegmentSpy,
+    };
+  };
+
+  it('closes the subsegment opened by the same invocation when invocations overlap', async () => {
+    // Prepare
+    const {
+      handler,
+      gates,
+      facadeSegmentA,
+      facadeSegmentB,
+      closeSpyA,
+      closeSpyB,
+      setSegmentSpy,
+    } = setupOverlappingInvocations();
 
     // Act
     // Invocation A enters the handler and blocks, then invocation B enters
-    // while A is still in flight, then A resumes and annotates, then B does
-    // the same.
-    const invocationA = handler({ idx: 0, name: 'A' }, context);
-    const invocationB = handler({ idx: 1, name: 'B' }, context);
+    // while A is still in flight, then A completes, then B completes.
+    const invocationA = handler({ idx: 0 }, context);
+    const invocationB = handler({ idx: 1 }, context);
     gates[0].resolve();
     await invocationA;
     gates[1].resolve();
     await invocationB;
 
     // Assess
-    // Each invocation's annotation must land on the subsegment opened by
-    // that invocation's `before` hook
-    expect(handlerSubsegments).toHaveLength(2);
-    expect(handlerSubsegments[0].annotations).toStrictEqual(
-      expect.objectContaining({ invocation: 'A' })
-    );
-    expect(handlerSubsegments[1].annotations).toStrictEqual(
-      expect.objectContaining({ invocation: 'B' })
-    );
-    // Each invocation must have closed its own subsegment
-    expect(handlerSubsegments[0].isClosed()).toBe(true);
-    expect(handlerSubsegments[1].isClosed()).toBe(true);
+    // Each invocation must close its own subsegment exactly once ...
+    expect(closeSpyA).toHaveBeenCalledTimes(1);
+    expect(closeSpyB).toHaveBeenCalledTimes(1);
+    // ... and restore the facade segment it captured at open time
+    expect(setSegmentSpy).toHaveBeenCalledTimes(4);
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(3, facadeSegmentA);
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(4, facadeSegmentB);
   });
 
-  it('stays isolated when invocations complete in reverse order', async () => {
+  it('closes the right subsegments when invocations complete in reverse order', async () => {
     // Prepare
-    const tracer = new Tracer({ serviceName: 'concurrency-test' });
-    const handlerSubsegments = trackHandlerSubsegments();
-    const gates = [
-      Promise.withResolvers<void>(),
-      Promise.withResolvers<void>(),
-    ];
-    const handler = middy(
-      async (event: { idx: number; name: string }, _context: Context) => {
-        await gates[event.idx].promise;
-        tracer.putAnnotation('invocation', event.name);
-      }
-    ).use(captureLambdaHandler(tracer, { captureResponse: false }));
+    const {
+      handler,
+      gates,
+      facadeSegmentA,
+      facadeSegmentB,
+      closeSpyA,
+      closeSpyB,
+      setSegmentSpy,
+    } = setupOverlappingInvocations();
 
     // Act
     // Invocation A enters first but finishes last; invocation B enters
-    // second, finishes first, and tears down its CLS context while A is
-    // still in flight (out-of-order exit).
-    const invocationA = handler({ idx: 0, name: 'A' }, context);
-    const invocationB = handler({ idx: 1, name: 'B' }, context);
+    // second and finishes first.
+    const invocationA = handler({ idx: 0 }, context);
+    const invocationB = handler({ idx: 1 }, context);
     gates[1].resolve();
     await invocationB;
     gates[0].resolve();
     await invocationA;
 
     // Assess
-    expect(handlerSubsegments).toHaveLength(2);
-    expect(handlerSubsegments[0].annotations).toStrictEqual(
-      expect.objectContaining({ invocation: 'A' })
-    );
-    expect(handlerSubsegments[1].annotations).toStrictEqual(
-      expect.objectContaining({ invocation: 'B' })
-    );
-    expect(handlerSubsegments[0].isClosed()).toBe(true);
-    expect(handlerSubsegments[1].isClosed()).toBe(true);
+    expect(closeSpyA).toHaveBeenCalledTimes(1);
+    expect(closeSpyB).toHaveBeenCalledTimes(1);
+    expect(setSegmentSpy).toHaveBeenCalledTimes(4);
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(3, facadeSegmentB);
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(4, facadeSegmentA);
   });
 });

@@ -34,7 +34,11 @@ function invokeErrorHandler<TErrorHandlerReturn>(
     );
   }
 
-  return result ?? NO_RECOVERY;
+  if (result === undefined) {
+    return NO_RECOVERY;
+  }
+
+  return result;
 }
 
 export { invokeErrorHandler, NO_RECOVERY };

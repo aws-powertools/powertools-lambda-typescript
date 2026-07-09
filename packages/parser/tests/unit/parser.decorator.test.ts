@@ -81,6 +81,17 @@ describe('Decorator: parser', () => {
 
     @parser({
       schema,
+      errorHandler: (_error) => null,
+    })
+    public async handlerWithErrorHandlerReturningNull(
+      event: z.infer<typeof schema>,
+      _context: Context
+    ): Promise<unknown> {
+      return event;
+    }
+
+    @parser({
+      schema,
       errorHandler: (error) => ({ errorHandled: true, message: error.message }),
     })
     public async handlerWithErrorHandler(
@@ -222,6 +233,17 @@ describe('Decorator: parser', () => {
         {} as Context
       )
     ).toThrow(ParseError);
+  });
+
+  it('does not rethrow the error when errorHandler returns null', async () => {
+    // Act
+    const result = await lambda.handlerWithErrorHandlerReturningNull(
+      { foo: 'bar' } as unknown as z.infer<typeof schema>,
+      {} as Context
+    );
+
+    // Assess
+    expect(result).toBeNull();
   });
 
   it('calls the errorHandler when schema validation fails', async () => {

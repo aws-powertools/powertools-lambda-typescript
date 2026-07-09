@@ -208,6 +208,24 @@ describe('Middleware: parser', () => {
     ).rejects.toThrow(ParseError);
   });
 
+  it('does not rethrow the error when errorHandler returns null', async () => {
+    // Prepare
+    const event = structuredClone(JSONPayload);
+
+    // Act
+    const result = await middy()
+      .use(
+        parser({
+          schema: z.number(),
+          errorHandler: (_error) => null,
+        })
+      )
+      .handler((event) => event)(event as unknown as number, {} as Context);
+
+    // Assess
+    expect(result).toBeNull();
+  });
+
   it('calls the errorHandler and short-circuits when schema validation fails', async () => {
     // Prepare
     const event = structuredClone(JSONPayload);

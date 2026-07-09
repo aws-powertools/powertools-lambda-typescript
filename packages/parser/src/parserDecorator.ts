@@ -122,8 +122,7 @@ export const parser = <
           safeParse
         ) as ParserOutput<TSchema, TEnvelope, TSafeParse>;
       } catch (error) {
-        // Only a failure of this parser's own `parse()` call goes through errorHandler - a
-        // ParseError thrown by the wrapped handler body itself must propagate unchanged.
+        // Only a failure of this parser's own `parse()` call goes through errorHandler - a ParseError thrown by the wrapped handler body itself must propagate unchanged.
         const result = invokeErrorHandler(errorHandler, error, args[0]);
         if (result !== NO_RECOVERY) {
           return result;

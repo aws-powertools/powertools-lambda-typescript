@@ -44,9 +44,7 @@ const parser = <
   | ParserOutput<TSchema, TEnvelope, TSafeParse>
   | Exclude<TErrorHandlerReturn, undefined>
 > => {
-  // Tracks which requests failed in *this* middleware's own `before` phase, so `onError`
-  // only recovers this parser's own parse failures - not an unrelated ParseError thrown
-  // by the handler or another parser middleware further down the chain.
+  // Tracks which requests failed in *this* middleware's own `before` phase, so `onError` only recovers this parser's own parse failures - not an unrelated ParseError thrown by the handler or another parser middleware further down the chain.
   const failedRequests = new WeakSet<MiddyLikeRequest>();
 
   const before = (request: MiddyLikeRequest): void => {

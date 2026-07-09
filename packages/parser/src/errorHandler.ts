@@ -34,8 +34,7 @@ function invokeErrorHandler<TErrorHandlerReturn>(
     );
   }
 
-  // Only undefined triggers NO_RECOVERY; null is a valid recovery value per the
-  // public ErrorHandler contract, so this must stay an explicit check rather than ??.
+  // Only undefined triggers NO_RECOVERY; null is a valid recovery value per the public ErrorHandler contract, so this must stay an explicit check rather than ??.
   if (result === undefined) {
     return NO_RECOVERY;
   }

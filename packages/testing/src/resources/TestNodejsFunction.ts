@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { CfnOutput, Duration } from 'aws-cdk-lib';
-import { Alias, Tracing } from 'aws-cdk-lib/aws-lambda';
+import { Alias, type CfnFunction, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { TEST_ARCHITECTURES, TEST_RUNTIMES } from '../constants.js';
@@ -70,19 +70,43 @@ class TestNodejsFunction extends NodejsFunction {
         minExecutionEnvironments,
         maxExecutionEnvironments,
       } = extraProps.lmi;
-      capacityProvider.addFunction(this, {
-        perExecutionEnvironmentMaxConcurrency,
-        executionEnvironmentMemoryGiBPerVCpu,
-        ...(minExecutionEnvironments !== undefined ||
-        maxExecutionEnvironments !== undefined
-          ? {
-              latestPublishedScalingConfig: {
-                minExecutionEnvironments,
-                maxExecutionEnvironments,
-              },
-            }
-          : {}),
-      });
+      if (typeof capacityProvider === 'string') {
+        // A capacity provider from another stack can only be referenced by
+        // ARN, and the imported construct has no addFunction, so set the
+        // equivalent L1 properties directly
+        const cfnFunction = this.node.defaultChild as CfnFunction;
+        cfnFunction.publishToLatestPublished = true;
+        cfnFunction.capacityProviderConfig = {
+          lambdaManagedInstancesCapacityProviderConfig: {
+            capacityProviderArn: capacityProvider,
+            perExecutionEnvironmentMaxConcurrency,
+            executionEnvironmentMemoryGiBPerVCpu,
+          },
+        };
+        if (
+          minExecutionEnvironments !== undefined ||
+          maxExecutionEnvironments !== undefined
+        ) {
+          cfnFunction.functionScalingConfig = {
+            minExecutionEnvironments,
+            maxExecutionEnvironments,
+          };
+        }
+      } else {
+        capacityProvider.addFunction(this, {
+          perExecutionEnvironmentMaxConcurrency,
+          executionEnvironmentMemoryGiBPerVCpu,
+          ...(minExecutionEnvironments !== undefined ||
+          maxExecutionEnvironments !== undefined
+            ? {
+                latestPublishedScalingConfig: {
+                  minExecutionEnvironments,
+                  maxExecutionEnvironments,
+                },
+              }
+            : {}),
+        });
+      }
       // LMI serves the $LATEST.PUBLISHED version, so invocations must target it
       outputValue = `${this.functionName}:$LATEST.PUBLISHED`;
     }

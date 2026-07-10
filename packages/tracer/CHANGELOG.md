@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Bug Fixes
+
+- isolate active segment per invocation under LMI concurrency ([#5446](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5446)) ([5890d94](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5890d941a2d54862719f3399f2906544d31c59d6))
+- scope middy middleware segments per invocation ([#5444](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5444)) ([14f68b1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/14f68b138a49091e45bfbb7cdaacdafc006157d4))
+
+### Maintenance
+
+- bump @aws/lambda-invoke-store from 0.2.4 to 0.3.0 ([#5401](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5401)) ([0a05acd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0a05acd194415f2a9a988258cd5320913c3b6504))
 ## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
 
 **Note:** Version bump only for this package

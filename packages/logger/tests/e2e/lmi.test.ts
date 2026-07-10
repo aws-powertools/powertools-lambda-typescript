@@ -64,7 +64,13 @@ describe('Logger E2E - Lambda Managed Instances', () => {
     'lmi.test.FunctionCode.ts'
   );
 
-  const capacityProvider = new TestLmiCapacityProvider(testStack);
+  // In CI a setup job deploys one shared capacity provider per architecture
+  // (see the lmi CLI in the testing package) and passes its ARN via the
+  // environment; otherwise (e.g. local runs) fall back to an ephemeral
+  // capacity provider that lives and dies with this suite's stack
+  const capacityProvider =
+    process.env.LMI_CAPACITY_PROVIDER_ARN ??
+    new TestLmiCapacityProvider(testStack);
   new LoggerTestNodejsFunction(
     testStack,
     {

@@ -1,0 +1,112 @@
+import { readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { parseArgs } from 'node:util';
+import {
+  type ICloudAssemblySource,
+  StackSelectionStrategy,
+  Toolkit,
+} from '@aws-cdk/toolkit-lib';
+import { App, CfnOutput, Stack } from 'aws-cdk-lib';
+import { getArchitectureKey } from '../helpers.js';
+import { TestLmiCapacityProvider } from '../resources/TestLmiCapacityProvider.js';
+
+/**
+ * CLI to manage the run-scoped shared Lambda Managed Instances (LMI)
+ * capacity provider stacks.
+ *
+ * EC2-backed capacity providers and their networking are the slowest
+ * resources in the LMI e2e suites, so instead of every suite provisioning
+ * its own, a workflow run deploys ONE shared stack per architecture up
+ * front and passes the capacity provider ARN to the test cells via the
+ * `LMI_CAPACITY_PROVIDER_ARN` environment variable. The capacity provider
+ * is architecture-constrained but package- and runtime-agnostic: all
+ * packages' LMI suites, on both Node.js versions, attach their functions
+ * to the same per-architecture capacity provider.
+ *
+ * The stack name is scoped to the workflow run (`LmiShared-<runId>-<arch>`)
+ * so concurrent runs never share state and a run's teardown can never race
+ * another run.
+ *
+ * Usage:
+ * ```
+ * ARCH=x86_64 node lib/esm/lmi/cli.js deploy --run-id 12345
+ * ARCH=x86_64 node lib/esm/lmi/cli.js destroy --run-id 12345
+ * ```
+ * The deploy command prints `LMI_CAPACITY_PROVIDER_ARN=<arn>` on stdout as
+ * its last line so callers (e.g. a GitHub Actions setup job) can capture it.
+ */
+
+const buildStackName = (runId: string): string =>
+  `LmiShared-${runId}-${getArchitectureKey().replace('_', '-')}`;
+
+const buildApp = (stackName: string): { app: App; stack: Stack } => {
+  const app = new App();
+  const stack = new Stack(app, stackName, {
+    tags: {
+      Service: 'Powertools-for-AWS-e2e-tests',
+    },
+  });
+  const capacityProvider = new TestLmiCapacityProvider({ stack });
+  new CfnOutput(stack, 'CapacityProviderArn', {
+    value: capacityProvider.capacityProviderArn,
+  });
+
+  return { app, stack };
+};
+
+const makeAssembly = async (
+  cli: Toolkit,
+  app: App,
+  stackName: string
+): Promise<{ cx: ICloudAssemblySource; outputFilePath: string }> => {
+  const outdir = join(tmpdir(), `${stackName}-powertools-e2e-testing`);
+  const outputFilePath = join(outdir, 'outputs.json');
+  const cx = await cli.fromAssemblyBuilder(async () => app.synth(), {
+    outdir,
+  });
+  return { cx, outputFilePath };
+};
+
+const main = async (): Promise<void> => {
+  const { positionals, values } = parseArgs({
+    allowPositionals: true,
+    options: {
+      'run-id': {
+        type: 'string',
+        default: process.env.GITHUB_RUN_ID ?? 'local',
+      },
+    },
+  });
+  const action = positionals[0];
+  if (action !== 'deploy' && action !== 'destroy') {
+    throw new Error('Usage: cli.js <deploy|destroy> [--run-id <id>]');
+  }
+
+  const stackName = buildStackName(values['run-id']);
+  const { app } = buildApp(stackName);
+  const cli = new Toolkit({ color: false });
+  const { cx, outputFilePath } = await makeAssembly(cli, app, stackName);
+
+  if (action === 'deploy') {
+    await cli.deploy(cx, {
+      stacks: { strategy: StackSelectionStrategy.ALL_STACKS },
+      outputsFile: outputFilePath,
+    });
+    const outputs = JSON.parse(await readFile(outputFilePath, 'utf-8'))[
+      stackName
+    ];
+    console.log(`LMI_CAPACITY_PROVIDER_ARN=${outputs.CapacityProviderArn}`);
+    return;
+  }
+
+  await cli.destroy(cx, {
+    stacks: { strategy: StackSelectionStrategy.ALL_STACKS },
+  });
+  console.log(`Destroyed ${stackName}`);
+};
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

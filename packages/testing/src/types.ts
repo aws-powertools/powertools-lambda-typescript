@@ -36,19 +36,21 @@ interface ExtraTestProps {
   /**
    * Options to run the function on Lambda Managed Instances (LMI).
    *
-   * When set, the function is associated with the given capacity provider,
-   * which must live in the same stack, and is published to the
-   * `$LATEST.PUBLISHED` version. The function name emitted in the stack
-   * output is qualified with `:$LATEST.PUBLISHED` so that invocations
-   * target the version served by the capacity provider.
+   * When set, the function is associated with the given capacity provider
+   * and published to the `$LATEST.PUBLISHED` version. The function name
+   * emitted in the stack output is qualified with `:$LATEST.PUBLISHED` so
+   * that invocations target the version served by the capacity provider.
    *
    * Cannot be combined with `createAlias`.
    */
   lmi?: {
     /**
-     * The capacity provider to associate the function with.
+     * The capacity provider to associate the function with: either a
+     * construct in the same stack, or the ARN of a capacity provider that
+     * lives elsewhere (e.g. the run-scoped shared stack deployed by the
+     * `lmi` CLI in this package).
      */
-    capacityProvider: CapacityProvider;
+    capacityProvider: CapacityProvider | string;
     /**
      * The maximum number of concurrent invocations a single execution
      * environment can handle.

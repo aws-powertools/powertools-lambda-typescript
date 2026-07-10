@@ -26,7 +26,7 @@ import type { TestStack } from '../TestStack.js';
  * so create one per test suite and share it across the functions in that suite.
  */
 class TestLmiCapacityProvider extends CapacityProvider {
-  public constructor(stack: TestStack) {
+  public constructor(stack: Pick<TestStack, 'stack'>) {
     const resourceId = randomUUID().substring(0, 5);
     const vpc = new Vpc(stack.stack, `vpc-${resourceId}`, {
       ipProtocol: IpProtocol.DUAL_STACK,

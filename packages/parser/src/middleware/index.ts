@@ -1,6 +1,7 @@
 import type { MiddyLikeRequest } from '@aws-lambda-powertools/commons/types';
 import type { MiddlewareObj } from '@middy/core';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
+import { invokeErrorHandler, NO_RECOVERY } from '../errorHandler.js';
 import { parse } from '../parser.js';
 import type { Envelope } from '../types/envelope.js';
 import type { ParserOptions, ParserOutput } from '../types/parser.js';
@@ -35,17 +36,46 @@ const parser = <
   TSchema extends StandardSchemaV1,
   TEnvelope extends Envelope,
   TSafeParse extends boolean = false,
+  TErrorHandlerReturn = never,
 >(
-  options: ParserOptions<TSchema, TEnvelope, TSafeParse>
-): MiddlewareObj<ParserOutput<TSchema, TEnvelope, TSafeParse>> => {
+  options: ParserOptions<TSchema, TEnvelope, TSafeParse, TErrorHandlerReturn>
+): MiddlewareObj<
+  ParserOutput<TSchema, TEnvelope, TSafeParse>,
+  | ParserOutput<TSchema, TEnvelope, TSafeParse>
+  | Exclude<TErrorHandlerReturn, undefined>
+> => {
+  // Tracks which requests failed in *this* middleware's own `before` phase, so `onError` only recovers this parser's own parse failures - not an unrelated ParseError thrown by the handler or another parser middleware further down the chain.
+  const failedRequests = new WeakSet<MiddyLikeRequest>();
+
   const before = (request: MiddyLikeRequest): void => {
     const { schema, envelope, safeParse } = options;
 
-    request.event = parse(request.event, envelope, schema, safeParse);
+    try {
+      request.event = parse(request.event, envelope, schema, safeParse);
+    } catch (error) {
+      failedRequests.add(request);
+      throw error;
+    }
+  };
+
+  const onError = (request: MiddyLikeRequest): void => {
+    if (!failedRequests.has(request)) {
+      return;
+    }
+
+    const result = invokeErrorHandler(
+      options.errorHandler,
+      request.error,
+      request.event
+    );
+    if (result !== NO_RECOVERY) {
+      request.response = result;
+    }
   };
 
   return {
     before,
+    onError,
   };
 };
 

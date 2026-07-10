@@ -1,3 +1,5 @@
+import { AWS_LAMBDA_INITIALIZATION_TYPE_ENV_VAR } from './constants.js';
+
 /**
  * `Utility` is a base class that other Powertools for AWS Lambda (TypeScript) utilites can extend to inherit shared logic.
  *
@@ -72,7 +74,8 @@ export class Utility {
     | 'unknown'
     | 'on-demand'
     | 'provisioned-concurrency' {
-    const envVarValue = process.env.AWS_LAMBDA_INITIALIZATION_TYPE?.trim();
+    const envVarValue =
+      process.env[AWS_LAMBDA_INITIALIZATION_TYPE_ENV_VAR]?.trim();
     if (envVarValue === 'on-demand') {
       return 'on-demand';
     }

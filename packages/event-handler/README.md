@@ -6,7 +6,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 ## Intro
 
-Event handler for AWS AppSync GraphQL APIs, AWS AppSync Events APIs, and Amazon Bedrock Agent Functions.
+Event handler for Amazon API Gateway REST and HTTP APIs, Application Load Balancer (ALB), Lambda Function URLs, AWS AppSync GraphQL APIs, and AWS AppSync Events APIs.
 
 ## Usage
 
@@ -15,6 +15,80 @@ To get started, install the library by running:
 ```sh
 npm i @aws-lambda-powertools/event-handler
 ```
+
+## HTTP
+
+Event Handler for Amazon API Gateway REST and HTTP APIs, Application Load Balancer (ALB), and Lambda Function URLs.
+
+* Lightweight routing to reduce boilerplate for API Gateway REST/HTTP API, ALB and Lambda Function URLs
+* Web standards based - incoming events are automatically converted into [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) objects, and you can return [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) objects from your handlers
+* Automatic event type detection and response format transformation, so you can swap integrations (e.g. from ALB to API Gateway) with little to no code changes
+* Built-in middleware engine for request/response transformation and validation
+* Works with micro function (one or a few routes) and monolithic functions
+
+### Handle HTTP requests
+
+You can register handlers for specific HTTP methods and paths using the corresponding method, for example `get()` or `post()`. The handler will be called whenever a request matches the method and path.
+
+```typescript
+import { Router } from '@aws-lambda-powertools/event-handler/http';
+import type { Context } from 'aws-lambda';
+
+const app = new Router();
+
+app.get('/todos', async () => {
+  // your logic here
+  return [
+    {
+      id: 'todo-id',
+      title: 'Todo Title',
+      completed: false,
+    },
+  ];
+});
+
+app.post('/todos', async ({ req }) => {
+  const body = await req.json();
+  // your logic here
+  return body;
+});
+
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);
+```
+
+### Dynamic routes
+
+You can use dynamic path parameters in your routes, which are automatically parsed and passed to your handler.
+
+```typescript
+import { Router } from '@aws-lambda-powertools/event-handler/http';
+import type { Context } from 'aws-lambda';
+
+const app = new Router();
+
+app.get('/todos/:todoId', async ({ params: { todoId } }) => {
+  // your logic here
+  return {
+    id: todoId,
+    title: 'Todo Title',
+    completed: false,
+  };
+});
+
+export const handler = async (event: unknown, context: Context) =>
+  app.resolve(event, context);
+```
+
+There's much more to the HTTP event handler, including:
+
+* Request and response validation using [Standard Schema](https://standardschema.dev) compatible libraries like Zod, Valibot, and ArkType
+* Error handling with built-in and custom error handlers, and typed HTTP errors
+* CORS, compression, and AWS X-Ray tracing via built-in middleware
+* Split routers to organize routes across multiple files
+* Response streaming and binary responses
+
+See the [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/event-handler/http) for more details on how to use the HTTP event handler.
 
 ## AppSync Events
 
@@ -101,6 +175,8 @@ app.onSubscribe('/default/foo', async (event) => {
 export const handler = async (event, context) =>
   app.resolve(event, context);
 ```
+
+See the [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/event-handler/appsync-events) for more details on how to use the AppSync Events event handler.
 
 ## AppSync GraphQL
 
@@ -211,91 +287,7 @@ export const handler = async (event: unknown, context: Context) =>
   app.resolve(event, context);
 ```
 
-See the [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/event-handler/appsync-events) for more details on how to use the AppSync event handler.
-
-## Bedrock Agent Functions
-
-Event Handler for Amazon Bedrock Agent Functions.
-
-* Easily expose tools for your Large Language Model (LLM) agents
-* Automatic routing based on tool name and function details
-* Graceful error handling and response formatting
-
-### Handle tool use
-
-When using the Bedrock Agent Functions event handler, you can register a handler for a specific tool name. The handler will be called when the agent uses that tool.
-
-```typescript
-import { BedrockAgentFunctionResolver } from '@aws-lambda-powertools/event-handler/bedrock-agent';
-import type { Context } from 'aws-lambda';
-
-const app = new BedrockAgentFunctionResolver();
-
-app.tool<{ city: string }>(
-  async ({ city }) => {
-    // Simulate fetching weather data for the city
-    return {
-      city,
-      temperature: '20°C',
-      condition: 'Sunny',
-    };
-  },
-  {
-    name: 'getWeatherForCity',
-    description: 'Get weather for a specific city', // (1)!
-  }
-);
-
-export const handler = async (event: unknown, context: Context) =>
-  app.resolve(event, context);
-```
-
-You can also work with session attributes, which are key-value pairs that can be used to store information about the current session. The session attributes are automatically passed to the handler and can be used to store information that needs to be persisted across multiple tool invocations.
-
-```typescript
-import {
-  BedrockAgentFunctionResolver,
-  BedrockFunctionResponse,
-} from '@aws-lambda-powertools/event-handler/bedrock-agent';
-import type { Context } from 'aws-lambda';
-
-const app = new BedrockAgentFunctionResolver();
-
-app.tool<{ city: string }>(
-  async ({ city }, { event }) => {
-    const {
-      sessionAttributes,
-      promptSessionAttributes,
-      knowledgeBasesConfiguration,
-    } = event;
-
-    // your logic to fetch weather data for the city
-
-    return new BedrockFunctionResponse({
-      body: JSON.stringify({
-        city,
-        temperature: '20°C',
-        condition: 'Sunny',
-      }),
-      sessionAttributes: {
-        ...sessionAttributes,
-        isGoodWeather: true,
-      },
-      promptSessionAttributes,
-      knowledgeBasesConfiguration,
-    });
-  },
-  {
-    name: 'getWeatherForCity',
-    description: 'Get weather for a specific city',
-  }
-);
-
-export const handler = async (event: unknown, context: Context) =>
-  app.resolve(event, context);
-```
-
-See the [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/event-handler/appsync-events) for more details on how to use the AppSync event handler.
+See the [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/event-handler/appsync-graphql) for more details on how to use the AppSync GraphQL event handler.
 
 ## Contribute
 

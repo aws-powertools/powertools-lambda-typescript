@@ -42,6 +42,7 @@ import type {
   LogLevel,
 } from './types/Logger.js';
 import type {
+  LambdaFunctionContext,
   LogKeys,
   PowertoolsLogData,
   UnformattedAttributes,
@@ -271,19 +272,21 @@ class Logger extends Utility implements LoggerInterface {
    * Add the current Lambda function's invocation context data to the powertoolLogData property of the instance.
    * This context data will be part of all printed log items.
    *
+   * The implementation signature also accepts the stored {@link LambdaFunctionContext} subset so that
+   * {@link Logger.createChild | `createChild()`} can propagate the parent's context without unsafe casts.
+   * The public contract ({@link LoggerInterface.addContext}) remains `Context`.
+   *
    * @param context - The Lambda function's invocation context.
    */
-  public addContext(context: Context): void {
-    this.addToPowertoolsLogData({
-      lambdaContext: {
-        invokedFunctionArn: context.invokedFunctionArn,
-        coldStart: this.getColdStart(),
-        awsRequestId: context.awsRequestId,
-        memoryLimitInMB: context.memoryLimitInMB,
-        functionName: context.functionName,
-        functionVersion: context.functionVersion,
-        tenantId: context.tenantId,
-      },
+  public addContext(context: Context | LambdaFunctionContext): void {
+    this.#attributesStore.setLambdaContext({
+      invokedFunctionArn: context.invokedFunctionArn,
+      coldStart: this.getColdStart(),
+      awsRequestId: context.awsRequestId,
+      memoryLimitInMB: context.memoryLimitInMB,
+      functionName: context.functionName,
+      functionVersion: context.functionVersion,
+      tenantId: context.tenantId,
     });
   }
 
@@ -366,10 +369,8 @@ class Logger extends Utility implements LoggerInterface {
         options
       )
     );
-    if (this.powertoolsLogData.lambdaContext)
-      childLogger.addContext(
-        this.powertoolsLogData.lambdaContext as unknown as Context
-      );
+    const lambdaContext = this.#attributesStore.getLambdaContext();
+    if (lambdaContext) childLogger.addContext(lambdaContext);
     const temporaryAttributes = this.#attributesStore.getTemporaryAttributes();
     if (Object.keys(temporaryAttributes).length > 0) {
       childLogger.appendKeys(temporaryAttributes);
@@ -855,7 +856,7 @@ class Logger extends Utility implements LoggerInterface {
       logLevel: this.getLogLevelNameFromNumber(logLevel),
       timestamp: new Date(),
       xRayTraceId: getXRayTraceIdFromEnv(),
-      ...this.getPowertoolsLogData(),
+      ...this.#getPowertoolsLogData(),
       message: '',
     };
     const additionalAttributes = this.#attributesStore.getAllAttributes();
@@ -992,8 +993,13 @@ class Logger extends Utility implements LoggerInterface {
    * Get information that will be added in all log item by
    * this Logger instance (different from user-provided persistent attributes).
    */
-  private getPowertoolsLogData(): PowertoolsLogData {
-    return this.powertoolsLogData;
+  #getPowertoolsLogData(): PowertoolsLogData {
+    const lambdaContext = this.#attributesStore.getLambdaContext();
+    if (lambdaContext === undefined) {
+      return this.powertoolsLogData;
+    }
+
+    return { ...this.powertoolsLogData, lambdaContext };
   }
 
   /**

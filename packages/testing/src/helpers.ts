@@ -105,40 +105,6 @@ type Invocation<T = unknown> = {
 };
 
 /**
- * Creates a Promise with externally accessible resolve and reject functions.
- *
- * This is a polyfill for the proposed Promise.withResolvers() method that provides
- * a more convenient way to create promises that can be resolved or rejected from
- * outside the Promise constructor.
- *
- * We need this polyfill because this function is not available in Node 20. When we drop
- * support for this version of Node, then we should remove this function and use the
- * inbuilt `Promise.withResolvers` static methods.
- *
- * @returns Object containing the promise and its resolve/reject functions
- *
- * @example
- * ```typescript
- * const { promise, resolve, reject } = withResolvers<string>();
- *
- * // Later, from somewhere else:
- * resolve('success');
- *
- * // Or:
- * reject(new Error('failed'));
- * ```
- */
-const withResolvers = <T>() => {
-  let resolve: (value: T) => void = () => {};
-  let reject: (reason?: unknown) => void = () => {};
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return { promise, resolve, reject };
-};
-
-/**
  * Executes two invocations concurrently with synchronized side effects to test isolation behavior.
  *
  * This function ensures that side effects are executed in a specific order across both
@@ -203,8 +169,12 @@ async function sequence<T1 = unknown, T2 = unknown>(
   const executionEnv = <T>(f: () => T) =>
     options?.useInvokeStore ? invokeStore.run({}, f) : f();
 
-  const inv1Barriers = inv1.sideEffects.map(() => withResolvers<void>());
-  const inv2Barriers = inv2.sideEffects.map(() => withResolvers<void>());
+  const inv1Barriers = inv1.sideEffects.map(() =>
+    Promise.withResolvers<void>()
+  );
+  const inv2Barriers = inv2.sideEffects.map(() =>
+    Promise.withResolvers<void>()
+  );
 
   const invocation1 = executionEnv(async () => {
     for (let i = 0; i < inv1Barriers.length; i++) {
@@ -238,5 +208,4 @@ export {
   getRuntimeKey,
   isValidRuntimeKey,
   sequence,
-  withResolvers,
 };

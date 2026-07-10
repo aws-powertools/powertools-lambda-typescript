@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Features
+
+- add throwOnMissing option to fail fast on missing values ([#5343](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5343)) ([f81d247](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f81d24796fc8e4afc2e5ac8c29d5de388fa9615e))
 ## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
 
 **Note:** Version bump only for this package

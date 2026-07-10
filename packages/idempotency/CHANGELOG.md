@@ -1,5 +1,18 @@
 # Change Log
 
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Bug Fixes
+
+- recompute key prefix from base on each configure call ([#5442](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5442)) ([a739c36](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a739c3673f06847643cfdc8926ba7c7b9ae0b30c))
+
+### Features
+
+- warn when persistence layer reconfiguration is ignored ([#5422](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5422)) ([6a113b1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6a113b1cad95ff8f7b5338c312c88fa66fd1feb2))
+
+### Maintenance
+
+- bump @aws/durable-execution-sdk-js to ^1.1.6 ([#5298](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5298)) ([dbc07c7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dbc07c71d8e5eedb263b8938856c1fb1b28bf4a1))
 ## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
 
 **Note:** Version bump only for this package

@@ -15,6 +15,19 @@ if [ -z "$new_version" ]; then
     exit 1
 fi
 
+# Regions that are temporarily NOT receiving new layer versions and whose ARNs
+# must therefore be left untouched. Keep this list in sync with the regions that
+# are commented out of the deploy matrix in
+# .github/workflows/reusable_deploy_layer_stack.yml.
+paused_regions=(
+    "me-south-1"
+    "me-central-1"
+)
+
+# Build an alternation (e.g. "me-south-1|me-central-1") used as a sed address so
+# that lines belonging to paused regions are skipped during the replacement.
+paused_regions_pattern=$(IFS='|'; echo "${paused_regions[*]}")
+
 # Find all files with specified extensions in ./docs and ./examples directories
 # -type f: only find files (not directories)
 # \( ... \): group conditions
@@ -27,8 +40,10 @@ find ./docs ./examples -type f \( -name "*.md" -o -name "*.ts" -o -name "*.yaml"
     # -i: edit files in-place without creating a backup
     # -E: use extended regular expressions
     # IF TESTING IN MAC, replace `-i` with `-i ''`
-    # The regex matches the layer name and replaces only the version number at the end
-    sed -i -E "s/AWSLambdaPowertoolsTypeScriptV2:[0-9]+/AWSLambdaPowertoolsTypeScriptV2:$new_version/g" "$file"
+    # The regex matches the layer name and replaces only the version number at the end.
+    # The leading "/pattern/!" address skips lines for paused regions so their ARN
+    # versions are left untouched (see paused_regions_pattern above).
+    sed -i -E "/${paused_regions_pattern}/!s/AWSLambdaPowertoolsTypeScriptV2:[0-9]+/AWSLambdaPowertoolsTypeScriptV2:$new_version/g" "$file"
     if [ $? -eq 0 ]; then
         echo "Updated $file successfully"
         grep "arn:aws:lambda:" "$file"

@@ -233,8 +233,7 @@ a changelog. Visually inspect the diff and make sure the changelog and version a
 3/ build and deploy the Lambda layers to the `Beta` and `Prod` environments in all commercial Regions, 4/ run canary
 tests, 5/ update the documentation with the new version.
 4. **Review and approve docs PR**: Once the `Make Release` workflow is complete, a PR will be created to update the
-documentation with the new version. Review and approve this PR **but do not merge it yet**. Take note of the Lambda
-layer version that was deployed, as this will be used in the next steps.
+documentation with the new version. Review and approve this PR **but do not merge it yet**.
 5. **Publish GovCloud Layers**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting the `GovCloud` partition. This will publish the Lambda layers to the AWS GovCloud (US-East) and AWS GovCloud (US-West) Regions.
 6. **Publish China Layer**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting the `China` partition. This will publish the Lambda layer to the AWS China (Beijing) Region.
 7. **Merge docs PR**: Once the `Layer Deployment (Partition)` workflow for the production China partition is complete,

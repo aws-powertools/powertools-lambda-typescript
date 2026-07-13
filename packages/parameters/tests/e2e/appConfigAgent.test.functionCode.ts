@@ -16,6 +16,17 @@ const baseOptions = {
   timeout: 5000,
 } as const;
 
+// Captures the name of the error thrown when requesting a configuration that
+// doesn't exist, so the test file can assert on it.
+const getMissingConfigErrorName = async (): Promise<string> => {
+  try {
+    await getConfig('does-not-exist', baseOptions);
+    return 'no error thrown';
+  } catch (error) {
+    return (error as Error).name;
+  }
+};
+
 /**
  * The handler returns the results of each `getConfig` call as the invocation
  * payload, so the test file can assert on them directly. If any of the calls
@@ -37,10 +48,7 @@ export const handler = async (): Promise<Record<string, unknown>> => {
       // Test 4 - get a feature flag and apply json transformation (should return an object with the evaluated flag values)
       getConfig(featureFlagName, { ...baseOptions, transform: 'json' }),
       // Test 5 - get a configuration that does not exist (should throw a ParameterNotFoundError)
-      getConfig('does-not-exist', baseOptions).then(
-        () => 'no error thrown',
-        (error) => (error as Error).name
-      ),
+      getMissingConfigErrorName(),
     ]);
 
   return {

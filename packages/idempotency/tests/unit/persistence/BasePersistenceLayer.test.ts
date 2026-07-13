@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { PowertoolsFunctions } from '@aws-lambda-powertools/jmespath/functions';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import {
   afterAll,
@@ -112,6 +113,37 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
+    it('keeps the idempotency key prefix stable when configured multiple times with the same function name', () => {
+      // Prepare
+      const config = new IdempotencyConfig({});
+      const persistenceLayer = new PersistenceLayerTestClass();
+
+      // Act
+      persistenceLayer.configure({ config, functionName: 'my-function' });
+      persistenceLayer.configure({ config, functionName: 'my-function' });
+      persistenceLayer.configure({ config, functionName: 'my-function' });
+
+      // Assess
+      expect(persistenceLayer.idempotencyKeyPrefix).toBe(
+        'my-lambda-function.my-function'
+      );
+    });
+
+    it('recomputes the idempotency key prefix from the base value when configured with a different function name', () => {
+      // Prepare
+      const config = new IdempotencyConfig({});
+      const persistenceLayer = new PersistenceLayerTestClass();
+
+      // Act
+      persistenceLayer.configure({ config, functionName: 'operation-a' });
+      persistenceLayer.configure({ config, functionName: 'operation-b' });
+
+      // Assess
+      expect(persistenceLayer.idempotencyKeyPrefix).toBe(
+        'my-lambda-function.operation-b'
+      );
+    });
+
     it('appends custom prefix to the idempotence key prefix', () => {
       // Prepare
       const config = new IdempotencyConfig({});
@@ -200,6 +232,127 @@ describe('Class: BasePersistenceLayer', () => {
           configured: true,
           eventKeyJmesPath: 'eventKeyJmesPath',
         })
+      );
+    });
+
+    it('logs a warning when reconfigured with a different configuration', () => {
+      // Prepare
+      const logWarningSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => null);
+      const config = new IdempotencyConfig({
+        eventKeyJmesPath: 'eventKeyJmesPath',
+      });
+      const secondConfig = new IdempotencyConfig({
+        eventKeyJmesPath: 'secondEventKeyJmesPath',
+        expiresAfterSeconds: 60,
+      });
+      const persistenceLayer = new PersistenceLayerTestClass();
+
+      // Act
+      persistenceLayer.configure({ config });
+      persistenceLayer.configure({ config: secondConfig });
+
+      // Assess
+      expect(logWarningSpy).toHaveBeenCalledOnce();
+      expect(logWarningSpy).toHaveBeenCalledWith(
+        expect.stringContaining('eventKeyJmesPath, expiresAfterSeconds')
+      );
+    });
+
+    it('logs the warning only once when reconfigured multiple times', () => {
+      // Prepare
+      const logWarningSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => null);
+      const config = new IdempotencyConfig({
+        eventKeyJmesPath: 'eventKeyJmesPath',
+      });
+      const secondConfig = new IdempotencyConfig({
+        eventKeyJmesPath: 'secondEventKeyJmesPath',
+      });
+      const persistenceLayer = new PersistenceLayerTestClass();
+
+      // Act
+      persistenceLayer.configure({ config });
+      persistenceLayer.configure({ config: secondConfig });
+      persistenceLayer.configure({ config: secondConfig });
+
+      // Assess
+      expect(logWarningSpy).toHaveBeenCalledOnce();
+    });
+
+    it('does not log a warning when reconfigured with an equivalent configuration', () => {
+      // Prepare
+      const logWarningSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => null);
+      const config = new IdempotencyConfig({
+        eventKeyJmesPath: 'eventKeyJmesPath',
+      });
+      const equivalentConfig = new IdempotencyConfig({
+        eventKeyJmesPath: 'eventKeyJmesPath',
+      });
+      const persistenceLayer = new PersistenceLayerTestClass();
+
+      // Act
+      persistenceLayer.configure({ config });
+      persistenceLayer.configure({ config: equivalentConfig });
+
+      // Assess
+      expect(logWarningSpy).not.toHaveBeenCalled();
+    });
+
+    it('logs a warning listing every mismatched setting', () => {
+      // Prepare
+      const logWarningSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => null);
+      const config = new IdempotencyConfig({});
+      const secondConfig = new IdempotencyConfig({
+        eventKeyJmesPath: 'eventKeyJmesPath',
+        payloadValidationJmesPath: 'payloadValidationJmesPath',
+        throwOnNoIdempotencyKey: true,
+        expiresAfterSeconds: 60,
+        useLocalCache: true,
+        maxLocalCacheSize: 100,
+        hashFunction: 'sha256',
+      });
+      const persistenceLayer = new PersistenceLayerTestClass();
+
+      // Act
+      persistenceLayer.configure({ config });
+      persistenceLayer.configure({ config: secondConfig });
+
+      // Assess
+      expect(logWarningSpy).toHaveBeenCalledOnce();
+      expect(logWarningSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'eventKeyJmesPath, payloadValidationJmesPath, throwOnNoIdempotencyKey, expiresAfterSeconds, useLocalCache, maxLocalCacheSize, hashFunction'
+        )
+      );
+    });
+
+    it('logs a warning when reconfigured with different custom JMESPath functions', () => {
+      // Prepare
+      const logWarningSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => null);
+      class MyFunctions extends PowertoolsFunctions {}
+      const config = new IdempotencyConfig({});
+      const secondConfig = new IdempotencyConfig({
+        jmesPathOptions: new MyFunctions(),
+      });
+      const persistenceLayer = new PersistenceLayerTestClass();
+
+      // Act
+      persistenceLayer.configure({ config });
+      persistenceLayer.configure({ config: secondConfig });
+
+      // Assess
+      expect(logWarningSpy).toHaveBeenCalledOnce();
+      expect(logWarningSpy).toHaveBeenCalledWith(
+        expect.stringContaining('jmesPathOptions')
       );
     });
   });

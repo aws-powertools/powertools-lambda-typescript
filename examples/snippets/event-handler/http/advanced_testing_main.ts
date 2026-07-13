@@ -27,7 +27,7 @@ test('returns CORS headers', async () => {
       result.multiValueHeaders?.[
         'access-control-allow-methods'
       ] as Array<string>
-    ).sort((a, b) => a.localeCompare(b))
+    )?.sort((a, b) => a.localeCompare(b))
   ).toEqual(
     ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT'].sort((a, b) =>
       a.localeCompare(b)
@@ -38,7 +38,7 @@ test('returns CORS headers', async () => {
       result.multiValueHeaders?.[
         'access-control-allow-headers'
       ] as Array<string>
-    ).sort((a, b) => a.localeCompare(b))
+    )?.sort((a, b) => a.localeCompare(b))
   ).toEqual(
     [
       'Authorization',

@@ -11,6 +11,7 @@ import {
   IdempotencyKeyError,
   IdempotencyValidationError,
 } from '../errors.js';
+import type { IdempotencyConfig } from '../IdempotencyConfig.js';
 import type {
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
@@ -35,12 +36,22 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
   private useLocalCache = false;
   private validationKeyJmesPath?: string;
   #jmesPathOptions?: JMESPathParsingOptions;
+  #maxLocalCacheSize?: number;
+  #configMismatchWarned = false;
+  /**
+   * Base value for the idempotency key prefix, snapshotted at construction
+   * time so that {@link configure | `configure()`} - which runs on every
+   * invocation - can recompute the prefix deterministically instead of
+   * appending to an already-mutated value.
+   */
+  readonly #keyPrefixBase: string;
 
   public constructor() {
-    this.idempotencyKeyPrefix = getStringFromEnv({
+    this.#keyPrefixBase = getStringFromEnv({
       key: 'AWS_LAMBDA_FUNCTION_NAME',
       defaultValue: '',
     });
+    this.idempotencyKeyPrefix = this.#keyPrefixBase;
   }
 
   /**
@@ -54,11 +65,12 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     if (keyPrefix?.trim()) {
       this.idempotencyKeyPrefix = keyPrefix.trim();
     } else if (functionName?.trim()) {
-      this.idempotencyKeyPrefix = `${this.idempotencyKeyPrefix}.${functionName.trim()}`;
+      this.idempotencyKeyPrefix = `${this.#keyPrefixBase}.${functionName.trim()}`;
     }
 
     // Prevent reconfiguration
     if (this.configured) {
+      this.#warnIfConfigMismatch(idempotencyConfig);
       return;
     }
     this.configured = true;
@@ -73,12 +85,73 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     this.eventKeyJmesPath = idempotencyConfig.eventKeyJmesPath;
     this.expiresAfterSeconds = idempotencyConfig.expiresAfterSeconds; // 1 hour default
     this.useLocalCache = idempotencyConfig.useLocalCache;
+    this.#maxLocalCacheSize = idempotencyConfig.maxLocalCacheSize;
     if (this.useLocalCache) {
       this.cache = new LRUCache({
         maxSize: idempotencyConfig.maxLocalCacheSize,
       });
     }
     this.hashFunction = idempotencyConfig.hashFunction;
+  }
+
+  /**
+   * Warn the customer - once per persistence layer instance - when an already
+   * configured persistence layer is passed an idempotency configuration that
+   * materially differs from the one it was configured with.
+   *
+   * A persistence layer is configured only once (see {@link configure | `configure()`}),
+   * so when the same instance is shared across multiple idempotent operations
+   * that use different settings, all but the first configuration are silently
+   * ignored. This can lead to subtle bugs, e.g. an `eventKeyJmesPath` that
+   * doesn't match the payload of the second operation.
+   *
+   * The comparison is intentionally cheap: strict equality on the scalar
+   * settings that {@link configure | `configure()`} snapshots, plus a
+   * constructor identity check for the custom JMESPath functions, whose
+   * behavior is entirely determined by their prototype chain.
+   *
+   * @param config - the incoming idempotency configuration that is being ignored
+   */
+  #warnIfConfigMismatch(config: IdempotencyConfig): void {
+    if (this.#configMismatchWarned) return;
+
+    const mismatchedSettings: string[] = [];
+    if (config.eventKeyJmesPath !== this.eventKeyJmesPath) {
+      mismatchedSettings.push('eventKeyJmesPath');
+    }
+    if (config.payloadValidationJmesPath !== this.validationKeyJmesPath) {
+      mismatchedSettings.push('payloadValidationJmesPath');
+    }
+    if (config.throwOnNoIdempotencyKey !== this.throwOnNoIdempotencyKey) {
+      mismatchedSettings.push('throwOnNoIdempotencyKey');
+    }
+    if (config.expiresAfterSeconds !== this.expiresAfterSeconds) {
+      mismatchedSettings.push('expiresAfterSeconds');
+    }
+    if (config.useLocalCache !== this.useLocalCache) {
+      mismatchedSettings.push('useLocalCache');
+    }
+    if (config.maxLocalCacheSize !== this.#maxLocalCacheSize) {
+      mismatchedSettings.push('maxLocalCacheSize');
+    }
+    if (config.hashFunction !== this.hashFunction) {
+      mismatchedSettings.push('hashFunction');
+    }
+    if (
+      config.jmesPathOptions?.customFunctions?.constructor !==
+      this.#jmesPathOptions?.customFunctions?.constructor
+    ) {
+      mismatchedSettings.push('jmesPathOptions');
+    }
+
+    if (mismatchedSettings.length === 0) return;
+
+    this.#configMismatchWarned = true;
+    console.warn(
+      `This persistence layer is already configured with a different idempotency configuration; the new configuration is ignored (${mismatchedSettings.join(
+        ', '
+      )}). If your idempotent operations require different configurations, use a separate persistence layer instance for each one.`
+    );
   }
 
   /**

@@ -1,4 +1,4 @@
-import { getStringFromEnv, isDevMode } from './envUtils.js';
+import { getStringFromEnv, isRunningInLambda } from './envUtils.js';
 
 const metadataCache: Record<string, unknown> = {};
 
@@ -18,12 +18,7 @@ type GetMetadataOptions = {
 };
 
 const getMetadata = async (options?: GetMetadataOptions) => {
-  const initType = getStringFromEnv({
-    key: 'AWS_LAMBDA_INITIALIZATION_TYPE',
-    defaultValue: 'unknown',
-  });
-
-  if (isDevMode() || initType === 'unknown') {
+  if (!isRunningInLambda()) {
     return {};
   }
 

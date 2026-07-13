@@ -644,6 +644,7 @@ describe('Formatters', () => {
   it('defaults to :UTC when the TZ env variable is set to :/etc/localtime', () => {
     // Prepare
     vi.stubEnv('TZ', ':/etc/localtime');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(0);
     const formatter = new PowertoolsLogFormatter();
 
@@ -652,6 +653,60 @@ describe('Formatters', () => {
 
     // Assess
     expect(timestamp).toEqual('2016-06-20T12:08:10.000+00:00');
+  });
+
+  it('formats the timestamp using the `Asia/Kolkata` timezone alias, which is resolvable but not in the canonical list', () => {
+    // Prepare
+    vi.stubEnv('TZ', 'Asia/Kolkata');
+    /*
+      Difference between UTC and `Asia/Kolkata`(GMT +05.30) is 330 minutes.
+      The negative value indicates that `Asia/Kolkata` is ahead of UTC.
+    */
+    vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-330);
+    const formatter = new PowertoolsLogFormatter();
+
+    // Act
+    const timestamp = formatter.formatTimestamp(new Date());
+
+    // Assess
+    expect(timestamp).toEqual('2016-06-20T17:38:10.000+05:30');
+  });
+
+  it('falls back to UTC for both the date and the offset when the timezone is unresolvable', () => {
+    // Prepare
+    vi.stubEnv('TZ', ':/etc/localtime');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    /*
+      Simulate an OS-level local timezone with a non-zero offset while the
+      TZ value itself is unresolvable by Intl.DateTimeFormat; the emitted
+      timestamp must not mix UTC digits with a non-zero offset.
+    */
+    vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-330);
+    const formatter = new PowertoolsLogFormatter();
+
+    // Act
+    const timestamp = formatter.formatTimestamp(new Date());
+
+    // Assess
+    expect(timestamp).toEqual('2016-06-20T12:08:10.000+00:00');
+  });
+
+  it('emits a warning only once when falling back to UTC for an unresolvable timezone', () => {
+    // Prepare
+    vi.stubEnv('TZ', ':/etc/localtime');
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(0);
+    const formatter = new PowertoolsLogFormatter();
+
+    // Act
+    formatter.formatTimestamp(new Date());
+    formatter.formatTimestamp(new Date());
+
+    // Assess
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Invalid or unresolvable time zone: ":/etc/localtime" - falling back to UTC.'
+    );
   });
 
   // #region format stack traces

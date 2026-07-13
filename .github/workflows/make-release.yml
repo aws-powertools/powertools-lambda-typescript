@@ -7,8 +7,9 @@ name: Make Release
 # 2. [Release] publish all packages to npmjs.org using the latest git commit using OIDC authentication with automatic provenance attestations
 # 3. [Create tag] create a new git tag using released version, i.e. v1.13.1
 # 4. [Publish layer] build and package layer, kick off the workflow for beta and prod deployment, including canary tests
-# 5. [Publish layer] update documentation with the latest layer ARN version of the prod deployment
-# 6. [Publish layer] create PR to merge the updated documentation
+# 5. [Publish layer] deploy the layer to the GovCloud and China partitions (gamma and prod) once the commercial prod deployment finishes
+# 6. [Publish layer] update documentation with the latest layer ARN version, once the commercial, GovCloud, and China prod deployments all finish
+# 7. [Publish layer] create PR to merge the updated documentation
 #
 # === Manual activities ===
 # 1. Kick off `make-version` workflow to bump and review the version changes and changelog for each package
@@ -85,8 +86,8 @@ jobs:
           git tag -a v${{ needs.publish-npm.outputs.RELEASE_VERSION }} -m "Release v${{ needs.publish-npm.outputs.RELEASE_VERSION }}"
           git push origin v${{ needs.publish-npm.outputs.RELEASE_VERSION }}
    
-  # NOTE: Watch out for the depth limit of 4 nested workflow_calls.
-  # publish_layer -> reusable_deploy_layer_stack -> reusable_update_layer_arn_docs
+  # NOTE: GitHub Actions has a depth limit of 4 nested workflow_calls. We're at 2 today:
+  # make-release -> publish_layer -> reusable_deploy_layer_stack / layers_partitions_deploy
   publish_layer:
     needs: publish-npm
     secrets:

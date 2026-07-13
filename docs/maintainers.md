@@ -231,14 +231,12 @@ Releasing a new version is a multi-step process that requires up to 3 hours to c
 a changelog. Visually inspect the diff and make sure the changelog and version are correct, then merge the PR.
 3. **Make Release**: Run the `Make Release` workflow. This will: 1/ run the unit tests again, 2/ build and publish to npmjs.com,
 3/ build and deploy the Lambda layers to the `Beta` and `Prod` environments in all commercial Regions, 4/ run canary
-tests, 5/ update the documentation with the new version.
-4. **Review and approve docs PR**: Once the `Make Release` workflow is complete, a PR will be created to update the
-documentation with the new version. Review and approve this PR **but do not merge it yet**.
-5. **Publish GovCloud Layers**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting the `GovCloud` partition. This will publish the Lambda layers to the AWS GovCloud (US-East) and AWS GovCloud (US-West) Regions.
-6. **Publish China Layer**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting the `China` partition. This will publish the Lambda layer to the AWS China (Beijing) Region.
-7. **Merge docs PR**: Once the `Layer Deployment (Partition)` workflow for the production China partition is complete,
-merge the PR from step 4 to update the documentation with the new version.
-8. **Update Docs**: Run the `Rebuild latest docs` workflow with the `main` branch using the package version from
+tests, 5/ deploy the Lambda layers to the `GovCloud` and `China` partitions (Gamma then Prod, both in parallel) once the
+commercial Prod deployment finishes, 6/ update the documentation with the new version once all three (commercial,
+GovCloud, China) Prod deployments are complete.
+4. **Review and merge docs PR**: Once the `Make Release` workflow is complete, a PR will be created to update the
+documentation with the new version. Review and merge this PR.
+5. **Update Docs**: Run the `Rebuild latest docs` workflow with the `main` branch using the package version from
 npm (i.e. `2.20.0`). This will update the documentation with the new version.
 
 Once complete, you can start drafting the release notes to let customers know **what changed and what's in it for them (a.k.a why they should care)**. We have guidelines in the release notes section so you know what good looks like.
@@ -292,25 +290,25 @@ section Layer release
 
 Layer release : milestone, m4
 
-section Docs
-    Create commit (Layer ARN)         : active, 10:18, 8s
-    Open docs PR                      : active, 8s
-
-Review and merge docs PR : milestone, m5
-
-    Publish updated docs              : active, 2m
-
 section GovCloud
-    Publish GovCloud layers (Gamma)    : active, 8s
-    Publish GovCloud layers (Prod)    : active, 8s
-GovCloud layers published : milestone, m6
+    Publish GovCloud layers (Gamma)    : active, govcloud_gamma, after layer_prod, 8s
+    Publish GovCloud layers (Prod)    : active, govcloud_prod, after govcloud_gamma, 8s
+GovCloud layers published : milestone, m5
 
 
 section China
-    Publish China layers (Gamma)    : active, 8s
-    Publish China layers (Prod)    : active, 8s
-China layers published : milestone, m7
+    Publish China layers (Gamma)    : active, china_gamma, after layer_prod, 8s
+    Publish China layers (Prod)    : active, china_prod, after china_gamma, 8s
+China layers published : milestone, m6
 
+
+section Docs
+    Create commit (Layer ARN)         : active, after govcloud_prod china_prod, 8s
+    Open docs PR                      : active, 8s
+
+Review and merge docs PR : milestone, m7
+
+    Publish updated docs              : active, 2m
 
 section SSM
 Update SSM parameters (Beta)      : active, 8s

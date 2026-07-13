@@ -37,8 +37,24 @@ import { TestLmiCapacityProvider } from '../resources/TestLmiCapacityProvider.js
  * its last line so callers (e.g. a GitHub Actions setup job) can capture it.
  */
 
+/**
+ * A run id becomes part of a CloudFormation stack name and a temp directory
+ * path, so it is restricted to the characters CloudFormation already allows in
+ * a stack name (alphanumerics and hyphens). This also prevents a crafted
+ * `--run-id` (e.g. containing `../`) from escaping `tmpdir()` when it is joined
+ * into the assembly output path.
+ */
+const assertValidRunId = (runId: string): string => {
+  if (!/^[A-Za-z0-9-]+$/.test(runId)) {
+    throw new Error(
+      `Invalid --run-id "${runId}": only alphanumerics and hyphens are allowed`
+    );
+  }
+  return runId;
+};
+
 const buildStackName = (runId: string): string =>
-  `LmiShared-${runId}-${getArchitectureKey().replace('_', '-')}`;
+  `LmiShared-${assertValidRunId(runId)}-${getArchitectureKey().replace('_', '-')}`;
 
 const buildApp = (stackName: string): { app: App; stack: Stack } => {
   const app = new App();

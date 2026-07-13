@@ -31,6 +31,9 @@ Find the complete project's [documentation here](https://docs.aws.amazon.com/pow
 - **[JMESPath Functions](https://docs.aws.amazon.com/powertools/typescript/latest/features/jmespath/)** - Built-in JMESPath functions to easily deserialize common encoded JSON payloads in Lambda functions.
 - **[Parser (Zod)](https://docs.aws.amazon.com/powertools/typescript/latest/features/parser/)** - Utility that provides data validation and parsing using Zod, a TypeScript-first schema declaration and validation library.
 - **[Validation](https://docs.aws.amazon.com/powertools/typescript/latest/features/validation/)** - JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.
+- **[Kafka](https://docs.aws.amazon.com/powertools/typescript/latest/features/kafka/)** - Utility to easily handle message deserialization and parsing of Kafka events in AWS Lambda functions.
+- **[Data Masking](https://docs.aws.amazon.com/powertools/typescript/latest/features/data-masking/)** - Utility to encrypt, decrypt, or irreversibly erase sensitive information to protect data confidentiality.
+- **[Signer](https://docs.aws.amazon.com/powertools/typescript/latest/features/signer/)** - Utility to sign HTTP requests to AWS services using AWS Signature Version 4 (SigV4), so you can call IAM-authenticated endpoints from your Lambda functions.
 
 ## Install
 
@@ -46,6 +49,9 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 - **JMESPath Functions**: `npm install @aws-lambda-powertools/jmespath`
 - **Parser**: `npm install @aws-lambda-powertools/parser zod@~3`
 - **Validation**: `npm install @aws-lambda-powertools/validation`
+- **Kafka**: `npm install @aws-lambda-powertools/kafka` see [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/kafka/#installation) for Avro and Protobuf support
+- **Data Masking**: `npm install @aws-lambda-powertools/data-masking @aws-crypto/client-node`
+- **Signer**: `npm install @aws-lambda-powertools/signer`
 
 ### Examples
 

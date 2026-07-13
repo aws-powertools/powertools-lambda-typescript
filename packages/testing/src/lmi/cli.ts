@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 import {
   type ICloudAssemblySource,
@@ -76,7 +76,14 @@ const makeAssembly = async (
   app: App,
   stackName: string
 ): Promise<{ cx: ICloudAssemblySource; outputFilePath: string }> => {
-  const outdir = join(tmpdir(), `${stackName}-powertools-e2e-testing`);
+  const base = tmpdir();
+  const outdir = resolve(base, `${stackName}-powertools-e2e-testing`);
+  // Defence in depth: the constructed output directory must stay within the
+  // system temp directory. Combined with run-id validation this guarantees the
+  // paths we write to and read back cannot be steered outside tmpdir().
+  if (outdir !== base && !outdir.startsWith(base + sep)) {
+    throw new Error(`Refusing to use output directory outside ${base}`);
+  }
   const outputFilePath = join(outdir, 'outputs.json');
   const cx = await cli.fromAssemblyBuilder(async () => app.synth(), {
     outdir,

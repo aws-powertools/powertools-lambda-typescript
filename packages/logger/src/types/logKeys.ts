@@ -268,6 +268,7 @@ type LogKeys = { [key: string]: unknown } & {
 
 export type {
   Environment,
+  LambdaFunctionContext,
   LogAttributes,
   LogAttributesWithMessage,
   LogKey,

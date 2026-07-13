@@ -19,7 +19,8 @@
     "packages/event-handler",
     "packages/validation",
     "packages/kafka",
-    "packages/data-masking"
+    "packages/data-masking",
+    "packages/signer"
   ],
   "type": "module",
   "scripts": {
@@ -51,9 +52,9 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
-    "@biomejs/biome": "^2.5.2",
+    "@biomejs/biome": "^2.5.3",
     "@types/aws-lambda": "^8.10.162",
-    "@types/node": "^26.1.0",
+    "@types/node": "^26.1.1",
     "@vitest/coverage-v8": "^4.1.10",
     "esbuild": "^0.28.1",
     "husky": "^9.1.7",
@@ -78,6 +79,6 @@
   "allowScripts": {
     "esbuild": true,
     "fsevents": true,
-    "protobufjs@7.5.8": true
+    "protobufjs@7.6.5": true
   }
 }

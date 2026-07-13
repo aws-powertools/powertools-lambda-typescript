@@ -1,7 +1,7 @@
 {
   "name": "@aws-lambda-powertools/kafka",
   "description": "Utility to easily handle message deserialization and parsing of Kafka events in AWS Lambda functions",
-  "version": "2.33.1",
+  "version": "2.34.0",
   "author": {
     "name": "Amazon Web Services",
     "url": "https://aws.amazon.com"
@@ -48,11 +48,11 @@
     "nodejs"
   ],
   "dependencies": {
-    "@aws-lambda-powertools/commons": "2.33.1",
+    "@aws-lambda-powertools/commons": "2.34.0",
     "@standard-schema/spec": "^1.1.0"
   },
   "peerDependencies": {
-    "arktype": "^2.2.2",
+    "arktype": "^2.2.3",
     "valibot": "^1.4.2",
     "zod": "^3.25.0 || ^4.0.0"
   },

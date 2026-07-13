@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Features
+
+- add errorHandler option for inline parse error handling ([#5352](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5352)) ([de752b9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/de752b93b682e651140f46530b722113caac2aab))
 ## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
 
 ### Bug Fixes

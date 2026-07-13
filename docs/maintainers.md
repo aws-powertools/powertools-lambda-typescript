@@ -163,6 +163,65 @@ When necessary, be upfront that the time to review, approve, and implement a RFC
 
 Some examples using our initial and new RFC templates: [#447](https://github.com/aws-powertools/powertools-lambda-typescript/issues/447)
 
+### Reserving a package name on npm
+
+When a brand-new package is about to be merged into `main` for the first time (e.g. a new utility), its name must be manually published to npm **once**, ahead of its first real release.
+
+!!! important
+    The `Make Release` workflow publishes packages using [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers){target="_blank" rel="nofollow"} via GitHub Actions OIDC, so we get provenance/attestation without storing a long-lived `NPM_TOKEN`.
+
+    Trusted publishers can only be configured for a package that **already exists** on npm (under `npmjs.com/package/<name>/access`), so a package can't reserve its own name this way the first time around.
+
+    A maintainer must publish an initial placeholder version manually to reserve the name and unlock Trusted Publishing for it.
+
+Follow these steps before the new package's first real release:
+
+1. **Create a temporary local package** using the same placeholder shape adopted by every utility before its first release, for example:
+
+    ```json title="package.json"
+    {
+      "name": "@aws-lambda-powertools/<name>",
+      "version": "0.0.0",
+      "description": "The <name> package for the Powertools for AWS Lambda (TypeScript) library",
+      "author": { "name": "Amazon Web Services", "url": "https://aws.amazon.com" },
+      "publishConfig": { "access": "public" },
+      "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript",
+      "license": "MIT-0",
+      "main": "./lib/index.js",
+      "types": "./lib/index.d.ts",
+      "files": ["lib"],
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+      },
+      "bugs": { "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues" },
+      "dependencies": {},
+      "keywords": ["aws", "lambda", "powertools", "handler", "nodejs", "serverless"],
+      "devDependencies": {}
+    }
+    ```
+
+    Add a `README.md` with the same "do not use this in production yet" disclaimer used by other placeholders (see [`@aws-lambda-powertools/validation@0.0.0`](https://www.npmjs.com/package/@aws-lambda-powertools/validation/v/0.0.0){target="_blank" rel="nofollow"} as a reference).
+
+    Also add a `lib/index.js`/`lib/index.d.ts` pair, where the former only logs that it's a placeholder used to reserve the name.
+
+2. **Authenticate locally** as an npm user who's a member of the `@aws-lambda-powertools` org with publish rights. Use a short-lived, least-privilege token and never commit it to `.npmrc` - remove and rotate/revoke it as soon as you're done.
+
+3. **Publish with the `pre` dist-tag**, not `latest`:
+
+    ```bash
+    npm publish --access public --tag pre
+    ```
+
+    !!! note
+        npm always assigns `latest` to the very first version ever published for a package, regardless of `--tag`. This means `0.0.0` will briefly carry both `latest` and `pre`. This is expected and self-corrects: the next real release (published without an explicit tag) will move `latest` forward, while `pre` stays pinned to `0.0.0` as a permanent marker of the placeholder.
+
+4. **Configure Trusted Publishing** for the new package: go to `https://www.npmjs.com/package/<name>/access`, add a Trusted Publisher for GitHub Actions, and point it at this repository and the `make-release.yml` workflow. This is what lets `Make Release` publish real versions of this package with OIDC/provenance going forward, without ever needing an `NPM_TOKEN`.
+
+5. Make sure the PR adding the new package also adds it to the `workspaces` array in the root `package.json`, and to any workflow that enumerates packages individually (e.g. `reusable-run-linting-check-and-unit-tests.yml`, `run-e2e-tests.yml`), so it's picked up by CI and by the next `Make Release` run.
+
+Once these steps are done, the new package is released like any other in the [normal release process](#releasing-a-new-version) the next time `Make Release` runs.
+
 ### Releasing a new version
 
 Releasing a new version is a multi-step process that requires up to 3 hours to complete. Below a checklist of the main steps to follow:
@@ -174,8 +233,7 @@ a changelog. Visually inspect the diff and make sure the changelog and version a
 3/ build and deploy the Lambda layers to the `Beta` and `Prod` environments in all commercial Regions, 4/ run canary
 tests, 5/ update the documentation with the new version.
 4. **Review and approve docs PR**: Once the `Make Release` workflow is complete, a PR will be created to update the
-documentation with the new version. Review and approve this PR **but do not merge it yet**. Take note of the Lambda
-layer version that was deployed, as this will be used in the next steps.
+documentation with the new version. Review and approve this PR **but do not merge it yet**.
 5. **Publish GovCloud Layers**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting the `GovCloud` partition. This will publish the Lambda layers to the AWS GovCloud (US-East) and AWS GovCloud (US-West) Regions.
 6. **Publish China Layer**: Run the `Layer Deployment (Partitions)` workflow with the `main` branch, targeting the `China` partition. This will publish the Lambda layer to the AWS China (Beijing) Region.
 7. **Merge docs PR**: Once the `Layer Deployment (Partition)` workflow for the production China partition is complete,

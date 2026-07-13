@@ -369,4 +369,70 @@ describe('Middy middleware', () => {
     // Check that the segments are restored
     expect(setSegmentSpy).toHaveBeenNthCalledWith(2, facadeSegment);
   });
+
+  it.each([
+    { completionOrder: 'in the order they started', completeFirst: 0 },
+    { completionOrder: 'in reverse order', completeFirst: 1 },
+  ])('closes each subsegment exactly once and restores each facade segment when overlapping invocations complete $completionOrder', async ({
+    completeFirst,
+  }) => {
+    // Prepare
+    const tracer = new Tracer();
+    vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+    vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(() => ({}));
+    const setSegmentSpy = vi
+      .spyOn(tracer.provider, 'setSegment')
+      .mockImplementation(() => ({}));
+    const facadeSegments = [new Segment('facade'), new Segment('facade')];
+    const handlerSubsegments = [
+      new Subsegment('## index.handler'),
+      new Subsegment('## index.handler'),
+    ];
+    const closeSpies = handlerSubsegments.map((subsegment) =>
+      vi.spyOn(subsegment, 'close')
+    );
+    for (const [idx, facadeSegment] of facadeSegments.entries()) {
+      vi.spyOn(facadeSegment, 'addNewSubsegment').mockImplementation(
+        () => handlerSubsegments[idx]
+      );
+    }
+    vi.spyOn(tracer.provider, 'getSegment')
+      .mockImplementationOnce(() => facadeSegments[0])
+      .mockImplementationOnce(() => facadeSegments[1]);
+    // Each invocation blocks in the handler until released, so the two
+    // invocations can be interleaved like under Lambda Managed Instances
+    // concurrency
+    const gates = [
+      Promise.withResolvers<void>(),
+      Promise.withResolvers<void>(),
+    ];
+    const handler = middy(async (event: { idx: number }, _context: Context) => {
+      await gates[event.idx].promise;
+    }).use(captureLambdaHandler(tracer, { captureResponse: false }));
+
+    // Act
+    const invocations = [
+      handler({ idx: 0 }, context),
+      handler({ idx: 1 }, context),
+    ];
+    const completeSecond = 1 - completeFirst;
+    gates[completeFirst].resolve();
+    await invocations[completeFirst];
+    gates[completeSecond].resolve();
+    await invocations[completeSecond];
+
+    // Assess
+    expect(closeSpies[0]).toHaveBeenCalledTimes(1);
+    expect(closeSpies[1]).toHaveBeenCalledTimes(1);
+    expect(handlerSubsegments[0].isClosed()).toBe(true);
+    expect(handlerSubsegments[1].isClosed()).toBe(true);
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(
+      3,
+      facadeSegments[completeFirst]
+    );
+    expect(setSegmentSpy).toHaveBeenNthCalledWith(
+      4,
+      facadeSegments[completeSecond]
+    );
+  });
 });

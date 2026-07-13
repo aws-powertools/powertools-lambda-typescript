@@ -63,50 +63,7 @@ class TestNodejsFunction extends NodejsFunction {
 
     let outputValue = this.functionName;
     if (extraProps.lmi) {
-      const {
-        capacityProvider,
-        perExecutionEnvironmentMaxConcurrency,
-        executionEnvironmentMemoryGiBPerVCpu,
-        minExecutionEnvironments,
-        maxExecutionEnvironments,
-      } = extraProps.lmi;
-      if (typeof capacityProvider === 'string') {
-        // A capacity provider from another stack can only be referenced by
-        // ARN, and the imported construct has no addFunction, so set the
-        // equivalent L1 properties directly
-        const cfnFunction = this.node.defaultChild as CfnFunction;
-        cfnFunction.publishToLatestPublished = true;
-        cfnFunction.capacityProviderConfig = {
-          lambdaManagedInstancesCapacityProviderConfig: {
-            capacityProviderArn: capacityProvider,
-            perExecutionEnvironmentMaxConcurrency,
-            executionEnvironmentMemoryGiBPerVCpu,
-          },
-        };
-        if (
-          minExecutionEnvironments !== undefined ||
-          maxExecutionEnvironments !== undefined
-        ) {
-          cfnFunction.functionScalingConfig = {
-            minExecutionEnvironments,
-            maxExecutionEnvironments,
-          };
-        }
-      } else {
-        capacityProvider.addFunction(this, {
-          perExecutionEnvironmentMaxConcurrency,
-          executionEnvironmentMemoryGiBPerVCpu,
-          ...(minExecutionEnvironments !== undefined ||
-          maxExecutionEnvironments !== undefined
-            ? {
-                latestPublishedScalingConfig: {
-                  minExecutionEnvironments,
-                  maxExecutionEnvironments,
-                },
-              }
-            : {}),
-        });
-      }
+      this.#attachToCapacityProvider(extraProps.lmi);
       // LMI serves the $LATEST.PUBLISHED version, so invocations must target it
       outputValue = `${this.functionName}:$LATEST.PUBLISHED`;
     }
@@ -122,6 +79,72 @@ class TestNodejsFunction extends NodejsFunction {
     new CfnOutput(this, extraProps.nameSuffix, {
       value: outputValue,
     });
+  }
+
+  /**
+   * Associate this function with a Lambda Managed Instances capacity provider,
+   * given either an in-stack construct or the ARN of one in another stack.
+   */
+  #attachToCapacityProvider(lmi: NonNullable<ExtraTestProps['lmi']>): void {
+    const { capacityProvider, ...scaling } = lmi;
+    if (typeof capacityProvider === 'string') {
+      this.#attachToCapacityProviderArn(capacityProvider, scaling);
+    } else {
+      const {
+        perExecutionEnvironmentMaxConcurrency,
+        executionEnvironmentMemoryGiBPerVCpu,
+        minExecutionEnvironments,
+        maxExecutionEnvironments,
+      } = scaling;
+      capacityProvider.addFunction(this, {
+        perExecutionEnvironmentMaxConcurrency,
+        executionEnvironmentMemoryGiBPerVCpu,
+        ...(minExecutionEnvironments !== undefined ||
+        maxExecutionEnvironments !== undefined
+          ? {
+              latestPublishedScalingConfig: {
+                minExecutionEnvironments,
+                maxExecutionEnvironments,
+              },
+            }
+          : {}),
+      });
+    }
+  }
+
+  /**
+   * A capacity provider from another stack can only be referenced by ARN, and
+   * the imported construct has no `addFunction`, so set the equivalent L1
+   * properties directly.
+   */
+  #attachToCapacityProviderArn(
+    capacityProviderArn: string,
+    scaling: Omit<NonNullable<ExtraTestProps['lmi']>, 'capacityProvider'>
+  ): void {
+    const {
+      perExecutionEnvironmentMaxConcurrency,
+      executionEnvironmentMemoryGiBPerVCpu,
+      minExecutionEnvironments,
+      maxExecutionEnvironments,
+    } = scaling;
+    const cfnFunction = this.node.defaultChild as CfnFunction;
+    cfnFunction.publishToLatestPublished = true;
+    cfnFunction.capacityProviderConfig = {
+      lambdaManagedInstancesCapacityProviderConfig: {
+        capacityProviderArn,
+        perExecutionEnvironmentMaxConcurrency,
+        executionEnvironmentMemoryGiBPerVCpu,
+      },
+    };
+    if (
+      minExecutionEnvironments !== undefined ||
+      maxExecutionEnvironments !== undefined
+    ) {
+      cfnFunction.functionScalingConfig = {
+        minExecutionEnvironments,
+        maxExecutionEnvironments,
+      };
+    }
   }
 }
 

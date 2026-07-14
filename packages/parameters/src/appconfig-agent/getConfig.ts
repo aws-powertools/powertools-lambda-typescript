@@ -164,15 +164,16 @@ const getConfig = async <
     InferredFromOptionsType
   >
 > => {
-  const localValue = getStringFromEnv({
-    key: 'POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE',
-    defaultValue: '',
-  });
-  const value = isRunningInLambda()
-    ? await fetchConfigFromAgent(name, options)
-    : localValue === ''
-      ? undefined
-      : localValue;
+  let value: string | undefined;
+  if (isRunningInLambda()) {
+    value = await fetchConfigFromAgent(name, options);
+  } else {
+    const localValue = getStringFromEnv({
+      key: 'POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE',
+      defaultValue: '',
+    });
+    value = localValue === '' ? undefined : localValue;
+  }
 
   return (
     value !== undefined && options.transform

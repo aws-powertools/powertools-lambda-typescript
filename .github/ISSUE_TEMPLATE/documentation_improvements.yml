@@ -1,8 +1,7 @@
 name: Documentation improvements
 description: Suggest a documentation update to improve everyone's experience
-title: "Docs: TITLE"
+title: "Docs: <TITLE>"
 labels: ["documentation", "triage"]
-projects: ["aws-powertools/7"]
 body:
   - type: markdown
     attributes:

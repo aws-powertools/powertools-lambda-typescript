@@ -1,8 +1,7 @@
 name: Feature request
 description: Suggest an idea for Powertools for AWS Lambda
-title: "Feature request: TITLE"
+title: "Feature request: <TITLE>"
 labels: ["feature-request", "triage"]
-projects: ["aws-powertools/7"]
 body:
   - type: markdown
     attributes:
@@ -27,7 +26,6 @@ body:
     attributes:
       label: Alternative solutions
       description: Please describe what alternative solutions to this use case, if any
-      render: Markdown
     validations:
       required: false
   - type: checkboxes
@@ -49,5 +47,5 @@ body:
     id: notes
     attributes:
       label: Future readers
-      description: Please not edit this field
+      description: Please do not edit this field
       value: "Please react with 👍 and your use case to help us understand customer demand."

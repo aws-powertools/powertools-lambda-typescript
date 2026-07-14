@@ -1,7 +1,7 @@
 import {
   getServiceName,
   getStringFromEnv,
-  isDevMode,
+  isRunningInLambda,
 } from '@aws-lambda-powertools/commons/utils/env';
 import { transformValue } from '../base/transformValue.js';
 import { GetParameterError, ParameterNotFoundError } from '../errors.js';
@@ -101,6 +101,57 @@ import type {
  * @param options.timeout - Optional timeout in milliseconds for the request to the AWS AppConfig Agent (default: `3000`)
  * @param options.throwOnMissing - Optional flag to throw a `ParameterNotFoundError` when the configuration does not exist (default: `false`)
  */
+/**
+ * Fetch a configuration from the AWS AppConfig Agent local HTTP endpoint.
+ *
+ * Returns the raw response body, or `undefined` when the configuration does not
+ * exist and `throwOnMissing` is not set.
+ *
+ * @param name - The name of the configuration profile or the configuration profile ID
+ * @param options - Options to configure the retrieval, see {@link getConfig | `getConfig()`}
+ */
+const fetchConfigFromAgent = async (
+  name: string,
+  options: GetConfigOptions
+): Promise<string | undefined> => {
+  const application = options.application ?? getServiceName();
+  if (application.trim().length === 0) {
+    throw new GetParameterError(
+      'Application name is not defined or POWERTOOLS_SERVICE_NAME is not set'
+    );
+  }
+
+  const port = getStringFromEnv({
+    key: 'AWS_APPCONFIG_EXTENSION_HTTP_PORT',
+    defaultValue: '2772',
+  });
+
+  try {
+    const res = await fetch(
+      `http://localhost:${port}/applications/${encodeURIComponent(application)}/environments/${encodeURIComponent(options.environment)}/configurations/${encodeURIComponent(name)}`,
+      {
+        signal: AbortSignal.timeout(options.timeout ?? 3000),
+      }
+    );
+    const value = await res.text();
+    if (res.status === 404) {
+      if (options.throwOnMissing) {
+        throw new ParameterNotFoundError(`Configuration ${name} not found`);
+      }
+      return undefined;
+    }
+    if (!res.ok) {
+      throw new GetParameterError(
+        `Failed to retrieve configuration from AppConfig Agent: ${res.status} ${value}`
+      );
+    }
+    return value;
+  } catch (error) {
+    if (error instanceof GetParameterError) throw error;
+    throw new GetParameterError((error as Error).message, { cause: error });
+  }
+};
+
 const getConfig = async <
   ExplicitUserProvidedType = undefined,
   InferredFromOptionsType extends GetConfigOptions = GetConfigOptions,
@@ -113,67 +164,18 @@ const getConfig = async <
     InferredFromOptionsType
   >
 > => {
-  const initType = getStringFromEnv({
-    key: 'AWS_LAMBDA_INITIALIZATION_TYPE',
-    defaultValue: 'unknown',
+  const localValue = getStringFromEnv({
+    key: 'POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE',
+    defaultValue: '',
   });
-
-  let value: string;
-  if (isDevMode() || initType === 'unknown') {
-    const localValue = getStringFromEnv({
-      key: 'POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE',
-      defaultValue: '',
-    });
-    if (localValue === '') {
-      return undefined as AppConfigAgentGetConfigOutput<
-        ExplicitUserProvidedType,
-        InferredFromOptionsType
-      >;
-    }
-    value = localValue;
-  } else {
-    const application = options.application ?? getServiceName();
-    if (application.trim().length === 0) {
-      throw new GetParameterError(
-        'Application name is not defined or POWERTOOLS_SERVICE_NAME is not set'
-      );
-    }
-
-    const port = getStringFromEnv({
-      key: 'AWS_APPCONFIG_EXTENSION_HTTP_PORT',
-      defaultValue: '2772',
-    });
-
-    try {
-      const res = await fetch(
-        `http://localhost:${port}/applications/${encodeURIComponent(application)}/environments/${encodeURIComponent(options.environment)}/configurations/${encodeURIComponent(name)}`,
-        {
-          signal: AbortSignal.timeout(options.timeout ?? 3000),
-        }
-      );
-      value = await res.text();
-      if (res.status === 404) {
-        if (options.throwOnMissing) {
-          throw new ParameterNotFoundError(`Configuration ${name} not found`);
-        }
-        return undefined as AppConfigAgentGetConfigOutput<
-          ExplicitUserProvidedType,
-          InferredFromOptionsType
-        >;
-      }
-      if (!res.ok) {
-        throw new GetParameterError(
-          `Failed to retrieve configuration from AppConfig Agent: ${res.status} ${value}`
-        );
-      }
-    } catch (error) {
-      if (error instanceof GetParameterError) throw error;
-      throw new GetParameterError((error as Error).message, { cause: error });
-    }
-  }
+  const value = isRunningInLambda()
+    ? await fetchConfigFromAgent(name, options)
+    : localValue === ''
+      ? undefined
+      : localValue;
 
   return (
-    options.transform
+    value !== undefined && options.transform
       ? transformValue(value, options.transform, true, name)
       : value
   ) as AppConfigAgentGetConfigOutput<

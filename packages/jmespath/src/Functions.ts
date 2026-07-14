@@ -198,7 +198,7 @@ class Functions {
       return Math.max(...(arg as number[]));
     }
     // Math.max doesn't work with strings (returns NaN), so we use reduce for lexicographic comparison
-    return arg.reduce((a, b) => (a > b ? a : b)); // NOSONAR - Math.max only works with numbers
+    return arg.reduce((a, b) => (a > b ? a : b));
   }
 
   /**
@@ -280,7 +280,7 @@ class Functions {
       return Math.min(...arg);
     }
     // Math.min doesn't work with strings (returns NaN), so we use reduce for lexicographic comparison
-    return arg.reduce((a, b) => (a < b ? a : b)); // NOSONAR - Math.min only works with numbers
+    return arg.reduce((a, b) => (a < b ? a : b));
   }
 
   /**

@@ -17,14 +17,21 @@ const baseOptions = {
 } as const;
 
 // Captures the name of the error thrown when requesting a configuration that
-// doesn't exist, so the test file can assert on it.
+// doesn't exist with `throwOnMissing` enabled, so the test file can assert on it.
 const getMissingConfigErrorName = async (): Promise<string> => {
   try {
-    await getConfig('does-not-exist', baseOptions);
+    await getConfig('does-not-exist', { ...baseOptions, throwOnMissing: true });
     return 'no error thrown';
   } catch (error) {
     return (error as Error).name;
   }
+};
+
+// Requests a configuration that doesn't exist without `throwOnMissing`, and
+// reports whether the default behavior returned undefined.
+const isMissingConfigUndefined = async (): Promise<boolean> => {
+  const value = await getConfig('does-not-exist', baseOptions);
+  return value === undefined;
 };
 
 /**
@@ -34,22 +41,30 @@ const getMissingConfigErrorName = async (): Promise<string> => {
  * `FunctionError`, failing the test suite loudly.
  */
 export const handler = async (): Promise<Record<string, unknown>> => {
-  const [raw, json, binary, featureFlag, missingConfigErrorName] =
-    await Promise.all([
-      // Test 1 - get a configuration as-is (no transformation - should return a string)
-      getConfig(freeFormYamlName, baseOptions),
-      // Test 2 - get a free-form JSON and apply json transformation (should return an object)
-      getConfig(freeFormJsonName, { ...baseOptions, transform: 'json' }),
-      // Test 3 - get a free-form base64-encoded plain text and apply binary transformation (should return a decoded string)
-      getConfig(freeFormBase64encodedPlainText, {
-        ...baseOptions,
-        transform: 'binary',
-      }),
-      // Test 4 - get a feature flag and apply json transformation (should return an object with the evaluated flag values)
-      getConfig(featureFlagName, { ...baseOptions, transform: 'json' }),
-      // Test 5 - get a configuration that does not exist (should throw a ParameterNotFoundError)
-      getMissingConfigErrorName(),
-    ]);
+  const [
+    raw,
+    json,
+    binary,
+    featureFlag,
+    missingConfigErrorName,
+    missingConfigIsUndefined,
+  ] = await Promise.all([
+    // Test 1 - get a configuration as-is (no transformation - should return a string)
+    getConfig(freeFormYamlName, baseOptions),
+    // Test 2 - get a free-form JSON and apply json transformation (should return an object)
+    getConfig(freeFormJsonName, { ...baseOptions, transform: 'json' }),
+    // Test 3 - get a free-form base64-encoded plain text and apply binary transformation (should return a decoded string)
+    getConfig(freeFormBase64encodedPlainText, {
+      ...baseOptions,
+      transform: 'binary',
+    }),
+    // Test 4 - get a feature flag and apply json transformation (should return an object with the evaluated flag values)
+    getConfig(featureFlagName, { ...baseOptions, transform: 'json' }),
+    // Test 5 - get a configuration that does not exist with throwOnMissing (should throw a ParameterNotFoundError)
+    getMissingConfigErrorName(),
+    // Test 6 - get a configuration that does not exist (should return undefined)
+    isMissingConfigUndefined(),
+  ]);
 
   return {
     raw,
@@ -57,5 +72,6 @@ export const handler = async (): Promise<Record<string, unknown>> => {
     binary,
     featureFlag,
     missingConfigErrorName,
+    missingConfigIsUndefined,
   };
 };

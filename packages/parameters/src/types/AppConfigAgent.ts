@@ -1,5 +1,6 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import type { getConfig } from '../appconfig-agent/getConfig.js';
+import type { GetMaybeUndefined } from './BaseProvider.js';
 
 /**
  * Options for the {@link getConfig | `getConfig()`} function.
@@ -26,6 +27,12 @@ type GetConfigOptions = {
    * Optional timeout in milliseconds for the request to the AWS AppConfig Agent (default: `3000`).
    */
   timeout?: number;
+  /**
+   * Optional flag to throw a `ParameterNotFoundError` when the configuration does not exist (default: `false`).
+   *
+   * By default, a missing configuration returns `undefined`.
+   */
+  throwOnMissing?: boolean;
 };
 
 /**
@@ -44,4 +51,24 @@ type AppConfigAgentGetOutput<
     : string
   : ExplicitUserProvidedType;
 
-export type { AppConfigAgentGetOutput, GetConfigOptions };
+/**
+ * Return type of the {@link getConfig | `getConfig()`} function.
+ *
+ * Combines {@link AppConfigAgentGetOutput | `AppConfigAgentGetOutput`} with
+ * {@link GetMaybeUndefined | `GetMaybeUndefined`}: the value type is inferred from the
+ * `transform` option (or the explicit type parameter), and `undefined` is excluded from
+ * the union when the `throwOnMissing` option is set to `true`.
+ */
+type AppConfigAgentGetConfigOutput<
+  ExplicitUserProvidedType = undefined,
+  InferredFromOptionsType = undefined,
+> = GetMaybeUndefined<
+  AppConfigAgentGetOutput<ExplicitUserProvidedType, InferredFromOptionsType>,
+  InferredFromOptionsType
+>;
+
+export type {
+  AppConfigAgentGetConfigOutput,
+  AppConfigAgentGetOutput,
+  GetConfigOptions,
+};

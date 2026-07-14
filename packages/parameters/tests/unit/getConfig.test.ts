@@ -52,6 +52,39 @@ describe('Function: getConfig', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('returns the local value when not running in a Lambda environment', async () => {
+    // Prepare
+    vi.stubEnv('AWS_LAMBDA_INITIALIZATION_TYPE', undefined);
+    vi.stubEnv('POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE', 'my-local-value');
+
+    // Act
+    const result = await getConfig('my-config', {
+      application: 'my-app',
+      environment: 'my-env',
+    });
+
+    // Assess
+    expect(result).toBe('my-local-value');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('applies the transform to the local value when not running in a Lambda environment', async () => {
+    // Prepare
+    vi.stubEnv('AWS_LAMBDA_INITIALIZATION_TYPE', undefined);
+    vi.stubEnv('POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE', '{"feature": true}');
+
+    // Act
+    const result = await getConfig('my-config', {
+      application: 'my-app',
+      environment: 'my-env',
+      transform: 'json',
+    });
+
+    // Assess
+    expect(result).toStrictEqual({ feature: true });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('fetches the configuration from the AppConfig Agent and returns it as a string', async () => {
     // Prepare
     fetchMock.mockResolvedValue({
@@ -208,7 +241,29 @@ describe('Function: getConfig', () => {
     expect(result).toBe('my-value');
   });
 
-  it('throws a ParameterNotFoundError when the configuration does not exist', async () => {
+  it('returns undefined when the configuration does not exist', async () => {
+    // Prepare
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 404,
+      text: vi
+        .fn()
+        .mockResolvedValue(
+          '{"Message":"Unrecognized or malformed path","ResourceType":"Configuration"}'
+        ),
+    });
+
+    // Act
+    const result = await getConfig('my-config', {
+      application: 'my-app',
+      environment: 'my-env',
+    });
+
+    // Assess
+    expect(result).toBeUndefined();
+  });
+
+  it('throws a ParameterNotFoundError when the configuration does not exist and throwOnMissing is set', async () => {
     // Prepare
     fetchMock.mockResolvedValue({
       ok: false,
@@ -225,6 +280,7 @@ describe('Function: getConfig', () => {
       getConfig('my-config', {
         application: 'my-app',
         environment: 'my-env',
+        throwOnMissing: true,
       })
     ).rejects.toThrow(
       new ParameterNotFoundError('Configuration my-config not found')

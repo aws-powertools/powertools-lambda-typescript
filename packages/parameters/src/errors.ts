@@ -13,10 +13,8 @@ class GetParameterError extends Error {
 /**
  * Error thrown when a parameter is not found in the store.
  *
- * For provider-based functions this error is thrown only when the `throwOnMissing` option is
- * set to `true` and the requested parameter does not exist (i.e. the store returned `null` or
- * `undefined`). The `getConfig` function from the `appconfig-agent` module always throws it
- * when the AWS AppConfig Agent reports that the requested configuration does not exist.
+ * This error is thrown only when the `throwOnMissing` option is set to `true` and the
+ * requested parameter does not exist (i.e. the store returned `null` or `undefined`).
  *
  * It extends {@link GetParameterError | `GetParameterError`}, so you can catch it with either
  * `instanceof ParameterNotFoundError` to handle a missing parameter specifically, or

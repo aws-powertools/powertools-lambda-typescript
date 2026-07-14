@@ -159,7 +159,7 @@ Local emulators that replicate the Lambda runtime environment (e.g. AWS SAM CLI)
 
 Unlike `getAppConfig`, which uses the AWS SDK, the agent handles caching, polling, and prefetching for you, so `getConfig` doesn't support the `maxAge` and `forceFetch` options and always fetches from the agent's local endpoint.
 
-When the requested configuration doesn't exist, `getConfig` throws a `ParameterNotFoundError`; any other failure to reach the agent or retrieve the value throws a `GetParameterError`.
+When the requested configuration doesn't exist, `getConfig` returns `undefined` - you can use the nullish coalescing operator (`??`) to provide a fallback value, or set the [`throwOnMissing` option](#throwing-on-missing-values) to throw a `ParameterNotFoundError` instead. Any other failure to reach the agent or retrieve the value throws a `GetParameterError`.
 
 You can configure the agent's behavior using [the environment variables it exposes](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-config.html).
 For example, you can reduce cold start latency by setting `AWS_APPCONFIG_EXTENSION_PREFETCH_LIST` to the path of your configuration (i.e. `/applications/my-app/environments/my-env/configurations/my-configuration`), so that the agent starts fetching it before your handler runs.
@@ -528,6 +528,22 @@ For when you want to mock the AWS SDK v3 client directly, we recommend using the
 === "handler.ts"
 	```typescript
 	--8<-- "examples/snippets/parameters/testingYourCodeClientHandler.ts"
+	```
+
+### Testing getConfig (AppConfig Agent)
+
+When not running in AWS Lambda, the `getConfig` function doesn't make any request and returns `undefined`, so your tests never need to mock the agent's HTTP endpoint.
+
+If you want `getConfig` to return a value instead, set the `POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE` environment variable. Its value is treated as the agent response, so it goes through the same `transform` handling as a real response - for example, a JSON string works with `transform: 'json'`.
+
+=== "handler.test.ts"
+	```typescript hl_lines="6-9"
+	--8<-- "examples/snippets/parameters/testingYourCodeAppConfigAgent.ts"
+	```
+
+=== "handler.ts"
+	```typescript
+	--8<-- "examples/snippets/parameters/testingYourCodeAppConfigAgentHandler.ts"
 	```
 
 ### Clearing cache

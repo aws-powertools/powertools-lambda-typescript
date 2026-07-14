@@ -384,6 +384,22 @@ describe('Return types', () => {
     expectTypeOf(value).toEqualTypeOf<'on' | 'off' | undefined>();
   });
 
+  it('narrows the type to exclude undefined when throwOnMissing is set on getConfig', async () => {
+    // Prepare
+    stubFetchForAppConfigAgent('{"key":"value"}');
+
+    // Act
+    const value = await getConfig('my-config', {
+      application: 'my-app',
+      environment: 'prod',
+      transform: 'json',
+      throwOnMissing: true,
+    });
+
+    // Assess
+    expectTypeOf(value).toEqualTypeOf<JSONValue>();
+  });
+
   it('rejects invalid options for getConfig at compile time', () => {
     // Assess - the closure is never invoked, it only has to typecheck
     const _invalidUsages = async () => {

@@ -52,6 +52,23 @@ describe('Function: getConfig', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('throws a ParameterNotFoundError when not running in a Lambda environment, no local value is set, and throwOnMissing is set', async () => {
+    // Prepare
+    vi.stubEnv('AWS_LAMBDA_INITIALIZATION_TYPE', undefined);
+
+    // Act & Assess
+    await expect(
+      getConfig('my-config', {
+        application: 'my-app',
+        environment: 'my-env',
+        throwOnMissing: true,
+      })
+    ).rejects.toThrow(
+      new ParameterNotFoundError('Configuration my-config not found')
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('returns the local value when not running in a Lambda environment', async () => {
     // Prepare
     vi.stubEnv('AWS_LAMBDA_INITIALIZATION_TYPE', undefined);

@@ -27,9 +27,10 @@ import type {
  * When the function detects that it's not running in AWS Lambda (the `AWS_LAMBDA_INITIALIZATION_TYPE` environment variable
  * is not set), or when running with `POWERTOOLS_DEV` enabled, it doesn't make any request. In this case, if the
  * `POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE` environment variable is set, its value is treated as the agent response and goes
- * through the same transform handling; otherwise the function returns `undefined`. This is helpful for unit testing and local
- * development. Note that local emulators that replicate the Lambda runtime environment (e.g., AWS SAM CLI) set the Lambda
- * environment variables, so in those environments the function will attempt to call the agent.
+ * through the same transform handling; otherwise the function returns `undefined`, or throws a `ParameterNotFoundError` when
+ * the `throwOnMissing` option is set. This is helpful for unit testing and local development. Note that local emulators that
+ * replicate the Lambda runtime environment (e.g., AWS SAM CLI) set the Lambda environment variables, so in those environments
+ * the function will attempt to call the agent.
  *
  * **Basic usage**
  *
@@ -172,6 +173,9 @@ const getConfig = async <
       key: 'POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE',
       defaultValue: '',
     });
+    if (localValue === '' && options.throwOnMissing) {
+      throw new ParameterNotFoundError(`Configuration ${name} not found`);
+    }
     value = localValue === '' ? undefined : localValue;
   }
 

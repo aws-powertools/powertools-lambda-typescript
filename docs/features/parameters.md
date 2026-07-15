@@ -532,7 +532,7 @@ For when you want to mock the AWS SDK v3 client directly, we recommend using the
 
 ### Testing getConfig (AppConfig Agent)
 
-When not running in AWS Lambda, the `getConfig` function doesn't make any request and returns `undefined`, so your tests never need to mock the agent's HTTP endpoint.
+When not running in AWS Lambda, the `getConfig` function doesn't make any request, so your tests never need to mock the agent's HTTP endpoint. Without a local value configured, it behaves as if the configuration doesn't exist: it returns `undefined`, or throws a `ParameterNotFoundError` when the `throwOnMissing` option is set.
 
 If you want `getConfig` to return a value instead, set the `POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE` environment variable. Its value is treated as the agent response, so it goes through the same `transform` handling as a real response - for example, a JSON string works with `transform: 'json'`.
 

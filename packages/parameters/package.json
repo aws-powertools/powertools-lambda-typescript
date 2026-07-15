@@ -81,6 +81,14 @@
       "import": "./lib/esm/appconfig/index.js",
       "require": "./lib/cjs/appconfig/index.js"
     },
+    "./appconfig-agent/types": {
+      "import": "./lib/esm/types/AppConfigAgent.js",
+      "require": "./lib/cjs/types/AppConfigAgent.js"
+    },
+    "./appconfig-agent": {
+      "import": "./lib/esm/appconfig-agent/index.js",
+      "require": "./lib/cjs/appconfig-agent/index.js"
+    },
     "./errors": {
       "import": "./lib/esm/errors.js",
       "require": "./lib/cjs/errors.js"
@@ -127,6 +135,14 @@
       "appconfig": [
         "lib/cjs/appconfig/index.d.ts",
         "lib/esm/appconfig/index.d.ts"
+      ],
+      "appconfig-agent/types": [
+        "./lib/cjs/types/AppConfigAgent.d.ts",
+        "./lib/esm/types/AppConfigAgent.d.ts"
+      ],
+      "appconfig-agent": [
+        "lib/cjs/appconfig-agent/index.d.ts",
+        "lib/esm/appconfig-agent/index.d.ts"
       ],
       "errors": [
         "lib/cjs/errors.d.ts",

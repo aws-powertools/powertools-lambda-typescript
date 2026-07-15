@@ -123,7 +123,7 @@
     "@aws-sdk/lib-dynamodb": ">=3.x",
     "@middy/core": "4.x || 5.x || 6.x || 7.x",
     "@redis/client": "^6.1.0",
-    "@valkey/valkey-glide": "^2.4.2"
+    "@valkey/valkey-glide": "^2.5.0"
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-dynamodb": {

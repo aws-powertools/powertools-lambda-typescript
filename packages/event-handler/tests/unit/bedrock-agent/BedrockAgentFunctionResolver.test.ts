@@ -267,25 +267,24 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       },
       expected: '[1,"two",false,null]',
     },
-  ])('handles function that returns $toolParams.name', async ({
-    toolFunction,
-    toolParams,
-    expected,
-  }) => {
-    // Prepare
-    const app = new BedrockAgentFunctionResolver();
+  ])(
+    'handles function that returns $toolParams.name',
+    async ({ toolFunction, toolParams, expected }) => {
+      // Prepare
+      const app = new BedrockAgentFunctionResolver();
 
-    app.tool(toolFunction, toolParams);
+      app.tool(toolFunction, toolParams);
 
-    // Act
-    const actual = await app.resolve(createEvent(toolParams.name), context);
+      // Act
+      const actual = await app.resolve(createEvent(toolParams.name), context);
 
-    // Asses
-    expect(actual.response.function).toEqual(toolParams.name);
-    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
-      expected
-    );
-  });
+      // Asses
+      expect(actual.response.function).toEqual(toolParams.name);
+      expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+        expected
+      );
+    }
+  );
 
   it.each([
     {
@@ -309,22 +308,24 @@ describe('Class: BedrockAgentFunctionResolver', () => {
         description: 'Returns empty string',
       },
     },
-  ])('handles functions that return $toolParams.name by returning an empty string', async ({
-    toolFunction,
-    toolParams,
-  }) => {
-    // Prepare
-    const app = new BedrockAgentFunctionResolver();
+  ])(
+    'handles functions that return $toolParams.name by returning an empty string',
+    async ({ toolFunction, toolParams }) => {
+      // Prepare
+      const app = new BedrockAgentFunctionResolver();
 
-    app.tool(toolFunction, toolParams);
+      app.tool(toolFunction, toolParams);
 
-    // Assess
-    const actual = await app.resolve(createEvent(toolParams.name), context);
+      // Assess
+      const actual = await app.resolve(createEvent(toolParams.name), context);
 
-    // Act
-    expect(actual.response.function).toEqual(toolParams.name);
-    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual('');
-  });
+      // Act
+      expect(actual.response.function).toEqual(toolParams.name);
+      expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+        ''
+      );
+    }
+  );
 
   it('handles functions that return a BedrockAgentFunctionResponse', async () => {
     // Prepare
@@ -451,10 +452,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
     );
   });
 
-  it.each([
-    { type: 'number' as const },
-    { type: 'integer' as const },
-  ])(
+  it.each([{ type: 'number' as const }, { type: 'integer' as const }])(
     'preserves the original string when a $type parameter is not a valid number',
     async ({ type }) => {
       // Prepare
@@ -565,36 +563,36 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       toThrow: 'Something went wrong',
       expected: 'Unable to complete tool execution due to Something went wrong',
     },
-  ])('handles functions that throw errors $label', async ({
-    toThrow,
-    expected,
-  }) => {
-    // Prepare
-    const app = new BedrockAgentFunctionResolver();
+  ])(
+    'handles functions that throw errors $label',
+    async ({ toThrow, expected }) => {
+      // Prepare
+      const app = new BedrockAgentFunctionResolver();
 
-    app.tool(
-      (_params, _options) => {
-        throw toThrow;
-      },
-      {
-        name: 'error-tool',
-        description: 'Throws an error',
-      }
-    );
+      app.tool(
+        (_params, _options) => {
+          throw toThrow;
+        },
+        {
+          name: 'error-tool',
+          description: 'Throws an error',
+        }
+      );
 
-    // Act
-    const actual = await app.resolve(createEvent('error-tool', []), context);
+      // Act
+      const actual = await app.resolve(createEvent('error-tool', []), context);
 
-    // Assess
-    expect(actual.response.function).toEqual('error-tool');
-    expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
-      expected
-    );
-    expect(console.error).toHaveBeenCalledWith(
-      'An error occurred in tool error-tool.',
-      new Error('Something went wrong')
-    );
-  });
+      // Assess
+      expect(actual.response.function).toEqual('error-tool');
+      expect(actual.response.functionResponse.responseBody.TEXT.body).toEqual(
+        expected
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        'An error occurred in tool error-tool.',
+        new Error('Something went wrong')
+      );
+    }
+  );
 
   it('returns a fully structured BedrockAgentFunctionResponse', async () => {
     // Prepare

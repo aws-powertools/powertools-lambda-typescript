@@ -114,31 +114,31 @@ describe('Literal expressions tests', () => {
       expression: '`[0, 1, 2]`[1]',
       expected: 1,
     },
-  ])('should support literal expressions: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      foo: [
-        {
-          name: 'a',
+  ])(
+    'should support literal expressions: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: [
+          {
+            name: 'a',
+          },
+          {
+            name: 'b',
+          },
+        ],
+        bar: {
+          baz: 'qux',
         },
-        {
-          name: 'b',
-        },
-      ],
-      bar: {
-        baz: 'qux',
-      },
-    };
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -155,21 +155,21 @@ describe('Literal expressions tests', () => {
         foo: true,
       },
     },
-  ])('should support literals with other special characters: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support literals with other special characters: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -235,17 +235,17 @@ describe('Literal expressions tests', () => {
       expression: `'foo\\'bar'`,
       expected: `foo'bar`,
     },
-  ])('should support raw string literals: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {};
+  ])(
+    'should support raw string literals: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {};
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 });

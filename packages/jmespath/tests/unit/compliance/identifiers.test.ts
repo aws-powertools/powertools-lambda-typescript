@@ -878,15 +878,14 @@ describe('Identifiers tests', () => {
       expression: '"\\uD834\\uDD1E"',
       expected: true,
     },
-  ])('should handle different identifiers: $expression', ({
-    data,
-    expression,
-    expected,
-  }) => {
-    // Act
-    const result = search(expression, data);
+  ])(
+    'should handle different identifiers: $expression',
+    ({ data, expression, expected }) => {
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 });

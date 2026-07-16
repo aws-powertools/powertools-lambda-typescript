@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { search } from '../../../src/index.js';
 
-// NOSONAR - This file contains JMESPath compliance tests that intentionally use escape sequences
 describe('Identifiers tests', () => {
   it.each([
     {

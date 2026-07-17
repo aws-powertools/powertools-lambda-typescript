@@ -788,27 +788,28 @@ describe('Converters', () => {
         version: 'ALB',
         createEvent: () => createTestALBEvent('/test', 'CONNECT'),
       },
-    ])('throws InvalidHttpMethodError with the correct name for $version events', ({
-      createEvent,
-    }) => {
-      // Prepare
-      const event = createEvent();
+    ])(
+      'throws InvalidHttpMethodError with the correct name for $version events',
+      ({ createEvent }) => {
+        // Prepare
+        const event = createEvent();
 
-      // Act & Assess
-      expect(() => proxyEventToWebRequest(event)).toThrow(
-        InvalidHttpMethodError
-      );
-
-      try {
-        proxyEventToWebRequest(event);
-      } catch (err) {
-        expect(err).toBeInstanceOf(InvalidHttpMethodError);
-        expect((err as Error).name).toBe('InvalidHttpMethodError');
-        expect((err as Error).message).toBe(
-          'HTTP method CONNECT is not supported.'
+        // Act & Assess
+        expect(() => proxyEventToWebRequest(event)).toThrow(
+          InvalidHttpMethodError
         );
+
+        try {
+          proxyEventToWebRequest(event);
+        } catch (err) {
+          expect(err).toBeInstanceOf(InvalidHttpMethodError);
+          expect((err as Error).name).toBe('InvalidHttpMethodError');
+          expect((err as Error).message).toBe(
+            'HTTP method CONNECT is not supported.'
+          );
+        }
       }
-    });
+    );
   });
 
   describe('responseToProxyResult', () => {
@@ -1303,18 +1304,19 @@ describe('Converters', () => {
     it.each([
       { case: 'number', body: 42 },
       { case: 'boolean', body: true },
-    ])('serializes $case body as JSON in APIGatewayProxyResult', async ({
-      body,
-    }) => {
-      // Prepare
-      const proxyResult = { statusCode: HttpStatusCodes.OK, body };
+    ])(
+      'serializes $case body as JSON in APIGatewayProxyResult',
+      async ({ body }) => {
+        // Prepare
+        const proxyResult = { statusCode: HttpStatusCodes.OK, body };
 
-      // Act
-      const result = handlerResultToWebResponse(proxyResult);
+        // Act
+        const result = handlerResultToWebResponse(proxyResult);
 
-      // Assess
-      await expect(result.text()).resolves.toBe(JSON.stringify(body));
-    });
+        // Assess
+        await expect(result.text()).resolves.toBe(JSON.stringify(body));
+      }
+    );
 
     it('returns empty body when body is null in APIGatewayProxyResult', async () => {
       // Prepare
@@ -1544,24 +1546,25 @@ describe('Converters', () => {
       });
     });
 
-    it.each(
-      Array.from(MULTI_VALUE_HEADERS_ALLOWLIST)
-    )('splits allowed comma-separated header: %s', (headerName) => {
-      // Prepare
-      const headers = new Headers();
-      headers.set(headerName, 'value1, value2, value3');
+    it.each(Array.from(MULTI_VALUE_HEADERS_ALLOWLIST))(
+      'splits allowed comma-separated header: %s',
+      (headerName) => {
+        // Prepare
+        const headers = new Headers();
+        headers.set(headerName, 'value1, value2, value3');
 
-      // Act
-      const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
+        // Act
+        const result = webHeadersToApiGatewayHeaders(headers, 'ApiGatewayV1');
 
-      // Assess
-      expect(result).toEqual({
-        headers: {},
-        multiValueHeaders: {
-          [headerName]: ['value1', 'value2', 'value3'],
-        },
-      });
-    });
+        // Assess
+        expect(result).toEqual({
+          headers: {},
+          multiValueHeaders: {
+            [headerName]: ['value1', 'value2', 'value3'],
+          },
+        });
+      }
+    );
 
     it('trims whitespace from start of split values', () => {
       // Prepare

@@ -347,31 +347,31 @@ describe('Function: getConfig', () => {
   it.each([
     { case: 'default', timeout: undefined, expected: 3000 },
     { case: 'custom', timeout: 5000, expected: 5000 },
-  ])('uses the $case timeout when calling the AppConfig Agent', async ({
-    timeout,
-    expected,
-  }) => {
-    // Prepare
-    const timeoutSpy = vi
-      .spyOn(AbortSignal, 'timeout')
-      .mockReturnValue(new AbortController().signal);
-    fetchMock.mockResolvedValue({
-      ok: true,
-      text: vi.fn().mockResolvedValue('my-config-value'),
-    });
+  ])(
+    'uses the $case timeout when calling the AppConfig Agent',
+    async ({ timeout, expected }) => {
+      // Prepare
+      const timeoutSpy = vi
+        .spyOn(AbortSignal, 'timeout')
+        .mockReturnValue(new AbortController().signal);
+      fetchMock.mockResolvedValue({
+        ok: true,
+        text: vi.fn().mockResolvedValue('my-config-value'),
+      });
 
-    // Act
-    await getConfig('my-config', {
-      application: 'my-app',
-      environment: 'my-env',
-      timeout,
-    });
+      // Act
+      await getConfig('my-config', {
+        application: 'my-app',
+        environment: 'my-env',
+        timeout,
+      });
 
-    // Assess
-    expect(timeoutSpy).toHaveBeenCalledWith(expected);
+      // Assess
+      expect(timeoutSpy).toHaveBeenCalledWith(expected);
 
-    timeoutSpy.mockRestore();
-  });
+      timeoutSpy.mockRestore();
+    }
+  );
 
   it('wraps a timed out request in a GetParameterError', async () => {
     // Prepare

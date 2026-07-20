@@ -37,18 +37,12 @@ jobs:
           role-to-assume: ${{ secrets.E2E_IAM_ROLE_ARN }}
           aws-region: eu-west-1
           mask-aws-account-id: true
-      # The capacity provider ARN is NOT passed to the test jobs as a job
-      # output: it contains the AWS account id, which is masked, and GitHub
-      # silently drops job outputs containing masked values. The stack name is
-      # deterministic (LmiShared-<runId>-<arch>), so each test job resolves
-      # the ARN itself from the stack outputs.
-      - name: Deploy shared LMI capacity provider (x86_64)
-        env:
-          ARCH: x86_64
-        run: node packages/testing/lib/esm/lmi/deploySharedCapacityProvider.js
-      - name: Deploy shared LMI capacity provider (arm64)
-        env:
-          ARCH: arm64
+      # The capacity provider ARNs are NOT passed to the test jobs as job
+      # outputs: they contain the AWS account id, which is masked, and GitHub
+      # silently drops job outputs containing masked values. The stack names
+      # are deterministic (LmiShared-<runId>-<arch>), so each test job
+      # resolves the ARN itself from the stack outputs.
+      - name: Deploy shared LMI capacity providers (all architectures)
         run: node packages/testing/lib/esm/lmi/deploySharedCapacityProvider.js
 
   # Runs every package's e2e suites EXCEPT the LMI ones (each package's
@@ -199,15 +193,8 @@ jobs:
           role-to-assume: ${{ secrets.E2E_IAM_ROLE_ARN }}
           aws-region: eu-west-1
           mask-aws-account-id: true
-      - name: Destroy shared LMI capacity provider (x86_64)
-        # Attempt both teardowns even if one fails or the setup job only
-        # partially succeeded; destroying a non-existent stack is a no-op
-        continue-on-error: true
-        env:
-          ARCH: x86_64
-        run: node packages/testing/lib/esm/lmi/destroySharedCapacityProvider.js
-      - name: Destroy shared LMI capacity provider (arm64)
-        continue-on-error: true
-        env:
-          ARCH: arm64
+      # The script destroys all architectures' stacks concurrently and
+      # attempts every teardown even if one fails; destroying a non-existent
+      # stack is a no-op
+      - name: Destroy shared LMI capacity providers (all architectures)
         run: node packages/testing/lib/esm/lmi/destroySharedCapacityProvider.js

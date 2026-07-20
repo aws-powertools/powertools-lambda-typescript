@@ -1,26 +1,34 @@
+import { TEST_ARCHITECTURES } from '../constants.js';
 import { buildSharedCapacityProviderStack } from './sharedCapacityProviderStack.js';
 
 /**
- * Deploy the run-scoped shared LMI capacity provider stack for the current
- * architecture.
+ * Deploy the run-scoped shared LMI capacity provider stacks, one per
+ * architecture, concurrently: the stacks are independent and EC2-backed, so
+ * deploying them sequentially would roughly double the setup time.
  *
  * Intended to run as a workflow setup job step (after the packages have been
  * built):
  * ```yaml
  * - run: node packages/testing/lib/esm/lmi/deploySharedCapacityProvider.js
- *   env:
- *     ARCH: x86_64
  * ```
- * The ARN is deliberately not exposed as a job output: it contains the AWS
+ * The ARNs are deliberately not exposed as job outputs: they contain the AWS
  * account id, which CI masks, and GitHub silently drops job outputs that
- * contain masked values. The stack name is deterministic, so test jobs
+ * contain masked values. The stack names are deterministic, so test jobs
  * resolve the ARN from the stack outputs instead (see the e2e workflow).
  */
 const main = async (): Promise<void> => {
-  const testStack = buildSharedCapacityProviderStack();
-  await testStack.deploy();
-  const arn = testStack.findAndGetStackOutputValue('CapacityProviderArn');
-  console.log(`LMI_CAPACITY_PROVIDER_ARN=${arn}`);
+  await Promise.all(
+    (Object.keys(TEST_ARCHITECTURES) as (keyof typeof TEST_ARCHITECTURES)[])
+      // Build all stacks synchronously before any deploy starts: construction
+      // reads/writes the ambient ARCH environment variable, so it must not
+      // interleave with other builds
+      .map((architecture) => buildSharedCapacityProviderStack(architecture))
+      .map(async (testStack) => {
+        await testStack.deploy();
+        const arn = testStack.findAndGetStackOutputValue('CapacityProviderArn');
+        console.log(`${testStack.stack.stackName}: ${arn}`);
+      })
+  );
 };
 
 main().catch((error) => {

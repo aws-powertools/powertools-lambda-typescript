@@ -18,9 +18,6 @@ import { buildSharedCapacityProviderStack } from './sharedCapacityProviderStack.
 const main = async (): Promise<void> => {
   const results = await Promise.allSettled(
     (Object.keys(TEST_ARCHITECTURES) as (keyof typeof TEST_ARCHITECTURES)[])
-      // Build all stacks synchronously before any destroy starts:
-      // construction reads/writes the ambient ARCH environment variable, so
-      // it must not interleave with other builds
       .map((architecture) => buildSharedCapacityProviderStack(architecture))
       .map(async (testStack) => {
         await testStack.destroy();

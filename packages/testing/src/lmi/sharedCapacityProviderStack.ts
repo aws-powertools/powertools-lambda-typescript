@@ -31,11 +31,6 @@ const buildSharedCapacityProviderStack = (
       `Invalid run id "${runId}": only alphanumerics and hyphens are allowed`
     );
   }
-  // The construct tree below is keyed on the ambient ARCH environment
-  // variable (via getArchitectureKey()). Construction is synchronous, so
-  // setting it here cannot race a concurrent build for another architecture;
-  // only the deploy/destroy network phases run concurrently.
-  process.env.ARCH = architecture;
   const stackName = `LmiShared-${runId}-${architecture.replace('_', '-')}`;
 
   const app = new App();
@@ -52,7 +47,7 @@ const buildSharedCapacityProviderStack = (
     app,
     stack,
   });
-  const capacityProvider = new TestLmiCapacityProvider(testStack);
+  const capacityProvider = new TestLmiCapacityProvider(testStack, architecture);
   new CfnOutput(stack, 'CapacityProviderArn', {
     value: capacityProvider.capacityProviderArn,
   });

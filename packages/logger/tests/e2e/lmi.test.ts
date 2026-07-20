@@ -1,3 +1,4 @@
+import { Console } from 'node:console';
 import { join } from 'node:path';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
 import { TestLmiCapacityProvider } from '@aws-lambda-powertools/testing-utils/resources/capacity-provider';
@@ -43,6 +44,16 @@ type IsolationResult = {
  * returns them in the response payload, making log collection fully
  * deterministic while exercising the production log write path.
  */
+// Same pattern as TestStack's ioHost: a dedicated Console writing straight to
+// the process streams bypasses vitest's output capture, so these phase
+// markers appear in real time. The invocation phase takes minutes with no
+// other output, and when it fails these markers are the only way to tell
+// which phase died.
+const testConsole = new Console({
+  stdout: process.stdout,
+  stderr: process.stderr,
+});
+
 describe('Logger E2E - Lambda Managed Instances', () => {
   // The LMI scheduler scales out to fresh execution environments until the
   // capacity provider's fleet is saturated (8 environments with a 12 vCPU
@@ -122,13 +133,21 @@ describe('Logger E2E - Lambda Managed Instances', () => {
     await testStack.deploy();
 
     functionName = testStack.findAndGetStackOutputValue('LmiIsolation');
+    testConsole.log(
+      `[lmi] stack deployed (${sharedCapacityProviderArn ? 'shared' : 'ephemeral'} capacity provider), warming up ${functionName}...`
+    );
 
     // The first invocation on a fresh capacity provider may have to wait
     // for an EC2 instance to boot, so retry until capacity is available
     await promiseRetry(
-      async (retry) => {
+      async (retry, attempt) => {
         await invokeOnce({ invocationId: 'warmup', role: 'warmup' }).catch(
-          retry
+          (error) => {
+            testConsole.log(
+              `[lmi] warmup attempt ${attempt} failed, retrying...`
+            );
+            retry(error);
+          }
         );
       },
       {
@@ -137,6 +156,9 @@ describe('Logger E2E - Lambda Managed Instances', () => {
         minTimeout: 5_000,
         maxTimeout: 60_000,
       }
+    );
+    testConsole.log(
+      `[lmi] warmup complete, firing ${invocationCount} concurrent invocations...`
     );
 
     // Every invocation blocks inside the handler until a second invocation
@@ -147,6 +169,14 @@ describe('Logger E2E - Lambda Managed Instances', () => {
       Array.from({ length: invocationCount }, (_, index) =>
         invokeOnce({ invocationId: `inv-${index}`, role: 'test' })
       )
+    );
+
+    const multiplexed = results.filter((result) => result.sawPeer).length;
+    const environments = new Set(
+      results.map((result) => result.executionEnvId)
+    );
+    testConsole.log(
+      `[lmi] ${results.length}/${invocationCount} responses; ${multiplexed} multiplexed across ${environments.size} execution environments`
     );
   }, 1_200_000); // VPC + capacity provider + instance boot can exceed the default hook timeout
 

@@ -1,5 +1,5 @@
 import { App, CfnOutput, Stack } from 'aws-cdk-lib';
-import { getArchitectureKey } from '../helpers.js';
+import type { TEST_ARCHITECTURES } from '../constants.js';
 import { TestLmiCapacityProvider } from '../resources/TestLmiCapacityProvider.js';
 import { TestStack } from '../TestStack.js';
 
@@ -22,14 +22,21 @@ import { TestStack } from '../TestStack.js';
  * it in a fresh process — so it deliberately does not use
  * `generateTestUniqueName()`, which embeds a random component.
  */
-const buildSharedCapacityProviderStack = (): TestStack => {
+const buildSharedCapacityProviderStack = (
+  architecture: keyof typeof TEST_ARCHITECTURES
+): TestStack => {
   const runId = process.env.GITHUB_RUN_ID ?? 'local';
   if (!/^[A-Za-z0-9-]+$/.test(runId)) {
     throw new Error(
       `Invalid run id "${runId}": only alphanumerics and hyphens are allowed`
     );
   }
-  const stackName = `LmiShared-${runId}-${getArchitectureKey().replace('_', '-')}`;
+  // The construct tree below is keyed on the ambient ARCH environment
+  // variable (via getArchitectureKey()). Construction is synchronous, so
+  // setting it here cannot race a concurrent build for another architecture;
+  // only the deploy/destroy network phases run concurrently.
+  process.env.ARCH = architecture;
+  const stackName = `LmiShared-${runId}-${architecture.replace('_', '-')}`;
 
   const app = new App();
   const stack = new Stack(app, stackName, {

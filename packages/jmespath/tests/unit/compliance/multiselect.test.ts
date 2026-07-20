@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { search } from '../../../src/index.js';
 
-// NOSONAR - This file contains JMESPath compliance tests that intentionally use escape sequences
 describe('Multiselect expressions tests', () => {
   it.each([
     {
@@ -104,45 +103,45 @@ describe('Multiselect expressions tests', () => {
       expression: 'foo.[noexist,alsonoexist]',
       expected: [null, null],
     },
-  ])('should support expression on large nested objects: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      foo: {
-        bar: 'bar',
-        baz: 'baz',
-        qux: 'qux',
-        nested: {
-          one: {
-            a: 'first',
-            b: 'second',
-            c: 'third',
-          },
-          two: {
-            a: 'first',
-            b: 'second',
-            c: 'third',
-          },
-          three: {
-            a: 'first',
-            b: 'second',
-            c: { inner: 'third' },
+  ])(
+    'should support expression on large nested objects: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: {
+          bar: 'bar',
+          baz: 'baz',
+          qux: 'qux',
+          nested: {
+            one: {
+              a: 'first',
+              b: 'second',
+              c: 'third',
+            },
+            two: {
+              a: 'first',
+              b: 'second',
+              c: 'third',
+            },
+            three: {
+              a: 'first',
+              b: 'second',
+              c: { inner: 'third' },
+            },
           },
         },
-      },
-      bar: 1,
-      baz: 2,
-      'qux"': 3,
-    };
+        bar: 1,
+        baz: 2,
+        'qux"': 3,
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -169,21 +168,21 @@ describe('Multiselect expressions tests', () => {
       expression: 'foo.[bar[0],baz[3]]',
       expected: [null, null],
     },
-  ])('should support the expression on objects containing arrays: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      foo: { bar: 1, baz: [2, 3, 4] },
-    };
+  ])(
+    'should support the expression on objects containing arrays: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: { bar: 1, baz: [2, 3, 4] },
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -194,21 +193,21 @@ describe('Multiselect expressions tests', () => {
       expression: 'foo.[bar,baz]',
       expected: [1, 2],
     },
-  ])('should support the expression using both array and object syntax: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      foo: { bar: 1, baz: 2 },
-    };
+  ])(
+    'should support the expression using both array and object syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: { bar: 1, baz: 2 },
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -231,30 +230,30 @@ describe('Multiselect expressions tests', () => {
       expression: 'foo.[includeme, bar.baz[].common]',
       expected: [true, ['first', 'second']],
     },
-  ])('should support the expression using mixed array and object syntax: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      foo: {
-        bar: {
-          baz: [
-            { common: 'first', one: 1 },
-            { common: 'second', two: 2 },
-          ],
+  ])(
+    'should support the expression using mixed array and object syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: {
+          bar: {
+            baz: [
+              { common: 'first', one: 1 },
+              { common: 'second', two: 2 },
+            ],
+          },
+          ignoreme: 1,
+          includeme: true,
         },
-        ignoreme: 1,
-        includeme: true,
-      },
-    };
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -288,34 +287,34 @@ describe('Multiselect expressions tests', () => {
         ['id4', 'fourth'],
       ],
     },
-  ])('should support the expression with wildcards: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      reservations: [
-        {
-          instances: [
-            { id: 'id1', name: 'first' },
-            { id: 'id2', name: 'second' },
-          ],
-        },
-        {
-          instances: [
-            { id: 'id3', name: 'third' },
-            { id: 'id4', name: 'fourth' },
-          ],
-        },
-      ],
-    };
+  ])(
+    'should support the expression with wildcards: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        reservations: [
+          {
+            instances: [
+              { id: 'id1', name: 'first' },
+              { id: 'id2', name: 'second' },
+            ],
+          },
+          {
+            instances: [
+              { id: 'id3', name: 'third' },
+              { id: 'id4', name: 'fourth' },
+            ],
+          },
+        ],
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -391,77 +390,77 @@ describe('Multiselect expressions tests', () => {
       expression: 'foo[].bar[].[baz, qux][]',
       expected: [1, 2, 3, 4, 5, 6, 7, 8],
     },
-  ])('should support expression with the flatten operator: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      foo: [
-        {
-          bar: [
-            {
-              qux: 2,
-              baz: 1,
-            },
-            {
-              qux: 4,
-              baz: 3,
-            },
-          ],
-        },
-        {
-          bar: [
-            {
-              qux: 6,
-              baz: 5,
-            },
-            {
-              qux: 8,
-              baz: 7,
-            },
-          ],
-        },
-      ],
-    };
+  ])(
+    'should support expression with the flatten operator: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: [
+          {
+            bar: [
+              {
+                qux: 2,
+                baz: 1,
+              },
+              {
+                qux: 4,
+                baz: 3,
+              },
+            ],
+          },
+          {
+            bar: [
+              {
+                qux: 6,
+                baz: 5,
+              },
+              {
+                qux: 8,
+                baz: 7,
+              },
+            ],
+          },
+        ],
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
       expression: 'foo.[baz[*].bar, qux[0]]',
       expected: [['abc', 'def'], 'zero'],
     },
-  ])('should support the expression with slicing: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      foo: {
-        baz: [
-          {
-            bar: 'abc',
-          },
-          {
-            bar: 'def',
-          },
-        ],
-        qux: ['zero'],
-      },
-    };
+  ])(
+    'should support the expression with slicing: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: {
+          baz: [
+            {
+              bar: 'abc',
+            },
+            {
+              bar: 'def',
+            },
+          ],
+          qux: ['zero'],
+        },
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -474,70 +473,70 @@ describe('Multiselect expressions tests', () => {
         'zero',
       ],
     },
-  ])('should support the expression with wildcard slicing: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      foo: {
-        baz: [
-          {
-            bar: 'a',
-            bam: 'b',
-            boo: 'c',
-          },
-          {
-            bar: 'd',
-            bam: 'e',
-            boo: 'f',
-          },
-        ],
-        qux: ['zero'],
-      },
-    };
+  ])(
+    'should support the expression with wildcard slicing: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: {
+          baz: [
+            {
+              bar: 'a',
+              bam: 'b',
+              boo: 'c',
+            },
+            {
+              bar: 'd',
+              bam: 'e',
+              boo: 'f',
+            },
+          ],
+          qux: ['zero'],
+        },
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
       expression: 'foo.[baz[*].not_there || baz[*].bar, qux[0]]',
       expected: [['a', 'd'], 'zero'],
     },
-  ])('should support multiselect with inexistent values: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      foo: {
-        baz: [
-          {
-            bar: 'a',
-            bam: 'b',
-            boo: 'c',
-          },
-          {
-            bar: 'd',
-            bam: 'e',
-            boo: 'f',
-          },
-        ],
-        qux: ['zero'],
-      },
-    };
+  ])(
+    'should support multiselect with inexistent values: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        foo: {
+          baz: [
+            {
+              bar: 'a',
+              bam: 'b',
+              boo: 'c',
+            },
+            {
+              bar: 'd',
+              bam: 'e',
+              boo: 'f',
+            },
+          ],
+          qux: ['zero'],
+        },
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -545,36 +544,36 @@ describe('Multiselect expressions tests', () => {
       expression: '[[*],*]',
       expected: [null, ['object']],
     },
-  ])('should support nested multiselect: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = { type: 'object' };
+  ])(
+    'should support nested multiselect: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = { type: 'object' };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
       expression: '[[*]]',
       expected: [[]],
     },
-  ])('should handle nested multiselect with empty arrays: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data: string[] = [];
+  ])(
+    'should handle nested multiselect with empty arrays: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data: string[] = [];
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 });

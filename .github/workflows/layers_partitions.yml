@@ -6,15 +6,19 @@
 #
 # A number of safety checks are performed to ensure safety.
 #
+# NOTE: This workflow is no longer part of the automated release path. `make-release.yml`'s
+# `publish_layer.yml` now deploys the GovCloud and China partitions automatically after the
+# commercial Prod deployment finishes. This workflow remains as a standalone manual recovery
+# tool, e.g. to re-deploy a partition that failed or was skipped.
+#
 # === Automated activities ===
 # 1. [Setup] configure partition-specific regions, partition names, and STS audience based on target partition (China/GovCloud)
 # 2. [Download] retrieve the specified layer version from the main AWS partition (us-east-1) and store as artifacts
 # 3. [Copy & Verify] deploy the layer to all regions in the target partition and validate layer deployment by comparing SHA256, description, and version numbers
 #
 # === Manual activities ===
-# 1. After the `make-release` workflow finishes and the PR for the documentation update gets created, trigger this workflow manually via `workflow_dispatch` with partition inputs for each China and GovCloud partitions
+# 1. Trigger this workflow manually via `workflow_dispatch` with a partition input (China or GovCloud) when a partition needs to be re-deployed outside of the normal release flow
 # 2. Monitor deployment progress and verify successful layer publication across all target regions
-# 3. Once this workflow is completed, the PR for the documentation update can me merged
 #
 # CodeQL Security Note:
 # This workflow uses dynamic secret access via secrets[format(...)] which triggers

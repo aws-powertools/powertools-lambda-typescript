@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { search } from '../../../src/index.js';
 
-// NOSONAR - This file contains JMESPath compliance tests that intentionally use escape sequences
 describe('Identifiers tests', () => {
   it.each([
     {
@@ -879,15 +878,14 @@ describe('Identifiers tests', () => {
       expression: '"\\uD834\\uDD1E"',
       expected: true,
     },
-  ])('should handle different identifiers: $expression', ({
-    data,
-    expression,
-    expected,
-  }) => {
-    // Act
-    const result = search(expression, data);
+  ])(
+    'should handle different identifiers: $expression',
+    ({ data, expression, expected }) => {
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 });

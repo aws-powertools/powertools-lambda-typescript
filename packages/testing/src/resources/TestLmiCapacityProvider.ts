@@ -26,7 +26,18 @@ import type { TestStack } from '../TestStack.js';
  * so create one per test suite and share it across the functions in that suite.
  */
 class TestLmiCapacityProvider extends CapacityProvider {
-  public constructor(stack: Pick<TestStack, 'stack'>) {
+  /**
+   * @param stack - The test stack to create the capacity provider in
+   * @param architecture - The architecture the capacity provider serves;
+   * defaults to the ambient `ARCH` environment variable, which is the right
+   * source inside a test suite but must be passed explicitly when a single
+   * process builds providers for several architectures (e.g. the shared
+   * capacity provider scripts in `lmi/`)
+   */
+  public constructor(
+    stack: Pick<TestStack, 'stack'>,
+    architecture: keyof typeof TEST_ARCHITECTURES = getArchitectureKey()
+  ) {
     const resourceId = randomUUID().substring(0, 5);
     const vpc = new Vpc(stack.stack, `vpc-${resourceId}`, {
       ipProtocol: IpProtocol.DUAL_STACK,
@@ -63,7 +74,7 @@ class TestLmiCapacityProvider extends CapacityProvider {
     super(stack.stack, `cp-${resourceId}`, {
       subnets: vpc.privateSubnets,
       securityGroups: [securityGroup],
-      architectures: [TEST_ARCHITECTURES[getArchitectureKey()]],
+      architectures: [TEST_ARCHITECTURES[architecture]],
       // The service minimum; keeps the fleet as small as possible so that
       // concurrent invocations share execution environments
       maxVCpuCount: 12,

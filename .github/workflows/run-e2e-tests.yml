@@ -163,9 +163,11 @@ jobs:
 
   # Tears down the shared capacity provider stacks as soon as the LMI suites
   # finish: the non-LMI matrix doesn't use them, so it doesn't hold them up.
-  # If a run fails and you need to retry, use "re-run all jobs": "re-run
-  # failed jobs" skips the (succeeded) setup job while the stacks it deployed
-  # have already been destroyed by this teardown.
+  # Retries: non-LMI job failures can be recovered with "re-run failed jobs"
+  # (those cells never touch the shared stacks). LMI job failures need
+  # "re-run all jobs": this teardown destroys the stacks at the end of each
+  # attempt, so a re-run LMI cell fails fast at ARN resolution ("stack does
+  # not exist") until the setup job re-runs and redeploys them.
   teardown-lmi-capacity-providers:
     runs-on: ubuntu-latest
     needs: [setup-lmi-capacity-providers, run-e2e-tests-lmi]

@@ -43,7 +43,7 @@ jobs:
       # are deterministic (LmiShared-<runId>-<arch>), so each test job
       # resolves the ARN itself from the stack outputs.
       - name: Deploy shared LMI capacity providers (all architectures)
-        run: node packages/testing/lib/esm/lmi/deploySharedCapacityProvider.js
+        run: npm run lmi:deploy -w packages/testing
 
   # Runs every package's e2e suites EXCEPT the LMI ones (each package's
   # `test:e2e` script excludes `tests/e2e/lmi.*`). Deliberately does NOT
@@ -199,4 +199,4 @@ jobs:
       # attempts every teardown even if one fails; destroying a non-existent
       # stack is a no-op
       - name: Destroy shared LMI capacity providers (all architectures)
-        run: node packages/testing/lib/esm/lmi/destroySharedCapacityProvider.js
+        run: npm run lmi:destroy -w packages/testing

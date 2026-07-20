@@ -9,7 +9,7 @@ import { buildSharedCapacityProviderStack } from './sharedCapacityProviderStack.
  * Intended to run as a workflow setup job step (after the packages have been
  * built):
  * ```yaml
- * - run: node packages/testing/lib/esm/lmi/deploySharedCapacityProvider.js
+ * - run: npm run lmi:deploy -w packages/testing
  * ```
  * The ARNs are deliberately not exposed as job outputs: they contain the AWS
  * account id, which CI masks, and GitHub silently drops job outputs that

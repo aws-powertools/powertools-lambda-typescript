@@ -42,7 +42,10 @@ const buildSharedCapacityProviderStack = (
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: 'LmiShared',
-      testName: 'sharedCapacityProvider',
+      // Distinguishes the two architectures' otherwise-identical progress
+      // logs when both stacks deploy concurrently in one process; the actual
+      // stack name is the deterministic one passed via `stack` below
+      testName: architecture,
     },
     app,
     stack,

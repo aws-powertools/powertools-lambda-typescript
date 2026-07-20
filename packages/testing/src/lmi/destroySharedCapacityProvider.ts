@@ -8,7 +8,7 @@ import { buildSharedCapacityProviderStack } from './sharedCapacityProviderStack.
  * Intended to run as a workflow teardown job step (with `if: always()` so the
  * stacks are removed even when the test jobs fail):
  * ```yaml
- * - run: node packages/testing/lib/esm/lmi/destroySharedCapacityProvider.js
+ * - run: npm run lmi:destroy -w packages/testing
  * ```
  * The stack names are deterministic for a given run id and architecture, so
  * the teardown job reconstructs the same stacks the setup job deployed. Each

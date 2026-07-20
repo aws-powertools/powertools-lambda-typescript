@@ -65,12 +65,17 @@ describe('Logger E2E - Lambda Managed Instances', () => {
   );
 
   // In CI a setup job deploys one shared capacity provider per architecture
-  // (see the lmi CLI in the testing package) and passes its ARN via the
-  // environment; otherwise (e.g. local runs) fall back to an ephemeral
-  // capacity provider that lives and dies with this suite's stack
-  const capacityProvider =
-    process.env.LMI_CAPACITY_PROVIDER_ARN ??
-    new TestLmiCapacityProvider(testStack);
+  // (see lmi/deploySharedCapacityProvider.ts in the testing package) and
+  // passes its ARN via the environment; otherwise (e.g. local runs) fall back
+  // to an ephemeral capacity provider that lives and dies with this suite's
+  // stack. The env var is treated as unset when empty so that a
+  // mis-referenced workflow output degrades to the fallback instead of an
+  // invalid ARN.
+  const sharedCapacityProviderArn =
+    process.env.LMI_CAPACITY_PROVIDER_ARN?.trim();
+  const capacityProvider = sharedCapacityProviderArn
+    ? sharedCapacityProviderArn
+    : new TestLmiCapacityProvider(testStack);
   new LoggerTestNodejsFunction(
     testStack,
     {

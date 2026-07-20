@@ -47,8 +47,8 @@ interface ExtraTestProps {
     /**
      * The capacity provider to associate the function with: either a
      * construct in the same stack, or the ARN of a capacity provider that
-     * lives elsewhere (e.g. the run-scoped shared stack deployed by the
-     * `lmi` CLI in this package).
+     * lives elsewhere (e.g. the run-scoped shared stack deployed by
+     * `lmi/deploySharedCapacityProvider.ts` in this package).
      */
     capacityProvider: CapacityProvider | string;
     /**

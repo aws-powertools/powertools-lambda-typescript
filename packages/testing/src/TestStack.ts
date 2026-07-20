@@ -139,22 +139,29 @@ class TestStack {
   }
 
   /**
+   * Directory where the Cloud Assembly for this stack is synthesized.
+   */
+  #outdir(): string {
+    return join(tmpdir(), `${this.stack.stackName}-powertools-e2e-testing`);
+  }
+
+  /**
+   * Synthesize the CDK app into a Cloud Assembly.
+   */
+  async #synthAssembly(): Promise<ICloudAssemblySource> {
+    return await this.#cli.fromAssemblyBuilder(async () => this.app.synth(), {
+      outdir: this.#outdir(),
+    });
+  }
+
+  /**
    * Deploy the test stack to the selected environment.
    *
    * It returns the outputs of the deployed stack.
    */
   public async deploy(): Promise<Record<string, string>> {
-    const outdir = join(
-      tmpdir(),
-      `${this.stack.stackName}-powertools-e2e-testing`
-    );
-    const outputFilePath = join(outdir, 'outputs.json');
-    this.#cx = await this.#cli.fromAssemblyBuilder(
-      async () => this.app.synth(),
-      {
-        outdir,
-      }
-    );
+    const outputFilePath = join(this.#outdir(), 'outputs.json');
+    this.#cx = await this.#synthAssembly();
     await this.#cli.deploy(this.#cx, {
       stacks: {
         strategy: StackSelectionStrategy.ALL_STACKS,
@@ -172,11 +179,14 @@ class TestStack {
 
   /**
    * Destroy the test stack.
+   *
+   * The Cloud Assembly is normally created by {@link deploy | `deploy()`};
+   * when destroy is called in a fresh process (e.g. a workflow teardown job
+   * destroying a stack deployed by an earlier setup job), it is re-synthesized
+   * from the app, which must therefore define the same stack.
    */
   public async destroy(): Promise<void> {
-    if (!this.#cx) {
-      throw new Error('Cannot destroy stack without a Cloud Assembly');
-    }
+    this.#cx ??= await this.#synthAssembly();
     await this.#cli.destroy(this.#cx, {
       stacks: {
         strategy: StackSelectionStrategy.ALL_STACKS,

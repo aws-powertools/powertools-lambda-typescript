@@ -462,7 +462,7 @@ In AWS Lambda, Metrics writes [Embedded Metric Format (EMF)](https://docs.aws.am
 
 When Lambda multi-concurrency is enabled (`AWS_LAMBDA_MAX_CONCURRENCY` is set), Metrics (and related buffered state such as dimensions/metadata) automatically uses [`@aws/lambda-invoke-store`](https://www.npmjs.com/package/@aws/lambda-invoke-store) for **per-invocation isolation**. No application code changes are required; Powertools selects the store at runtime.
 
-Outside that Lambda multi-concurrency context — including typical local runs and unit tests — Metrics uses an in-memory fallback store instead. Buffered metrics are still flushed as EMF to stdout when you flush (middleware/decorator/`logMetrics`), so local behavior for asserting emitted metrics remains the same.
+Outside that Lambda multi-concurrency context Metrics uses an in-memory store by default. That applies to standard Lambda functions, local runs and unit tests. Buffered metrics are still flushed as EMF to stdout when you flush (middleware/decorator/`logMetrics`), so asserting emitted metrics locally works the same way.
 
 ### Asserting metrics in unit tests
 

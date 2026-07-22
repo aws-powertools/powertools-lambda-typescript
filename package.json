@@ -65,7 +65,7 @@
     "middy7": "npm:@middy/core@^7.0.2",
     "typedoc": "^0.28.20",
     "typedoc-plugin-missing-exports": "^4.1.4",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "undici-types": "^8.8.0",
     "vitest": "^4.1.2"
   },

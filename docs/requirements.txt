@@ -134,9 +134,9 @@ gitdb==4.0.11 \
     --hash=sha256:81a3407ddd2ee8df444cbacea00e2d038e40150acfa3001696fe0dcf1d3adfa4 \
     --hash=sha256:bf5421126136d6d0af55bc1e7c1af1c397a34f5b7bd79e776cd3e89785c2b04b
     # via gitpython
-gitpython==3.1.50 \
-    --hash=sha256:80da2d12504d52e1f998772dc5baf6e553f8d2fcfe1fcc226c9d9a2ee3372dcc \
-    --hash=sha256:d352abe2908d07355014abdd21ddf798c2a961469239afec4962e9da884858f9
+gitpython==3.1.52 \
+    --hash=sha256:79a36ee1f83523214a3f72d56cf1c4e490d577dc61af77e43dfe5862bd9da01a \
+    --hash=sha256:de0a8ad86274c6e75ae8b37dd055ba68f19818c813108642263227b20775b48e
     # via mkdocs-git-revision-date-plugin
 idna==3.15 \
     --hash=sha256:048adeaf8c2d788c40fee287673ccaa74c24ffd8dcf09ffa555a2fbb59f10ac8 \
@@ -276,9 +276,9 @@ mkdocs-llmstxt==0.5.0 \
     --hash=sha256:753c699913d2d619a9072604b26b6dc9f5fb6d257d9b107857f80c8a0b787533 \
     --hash=sha256:b2fa9e6d68df41d7467e948a4745725b6c99434a36b36204857dbd7bb3dfe041
     # via -r requirements.in
-mkdocs-material==9.7.6 \
-    --hash=sha256:00bdde50574f776d328b1862fe65daeaf581ec309bd150f7bff345a098c64a69 \
-    --hash=sha256:71b84353921b8ea1ba84fe11c50912cc512da8fe0881038fcc9a0761c0e635ba
+mkdocs-material==9.7.7 \
+    --hash=sha256:8ea9bb1737a5b524a5f9dcf2e1b4ebda8274ae3008aa7845720a97083bef708f \
+    --hash=sha256:c0649c065b1b0512d60aad8c10f947f8e455284475239b364b610f2deb4d0855
     # via -r requirements.in
 mkdocs-material-extensions==1.3.1 \
     --hash=sha256:10c9511cea88f568257f960358a467d12b970e1f7b2c0e5fb2bb48cab1928443 \

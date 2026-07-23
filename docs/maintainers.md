@@ -228,16 +228,16 @@ Releasing a new version is a multi-step process that requires up to 3 hours to c
 
 1. **End to end tests**: Run the [e2e tests](#run-end-to-end-tests) and ensure they pass.
 2. **Version bump**: Run the `Make Version` workflow to bump the version. This will create a PR with the new version and
-a changelog. Visually inspect the diff and make sure the changelog and version are correct, then merge the PR.
-3. **Make Release**: Run the `Make Release` workflow. This will: 1/ run the unit tests again, 2/ build and publish to npmjs.com,
+a changelog. Visually inspect the diff and make sure the changelog and version are correct, then merge the PR. Merging
+this PR automatically triggers the `Make Release` workflow.
+3. **Make Release**: The `Make Release` workflow will: 1/ run the unit tests again, 2/ build and publish to npmjs.com,
 3/ build and deploy the Lambda layers to the `Beta` and `Prod` environments in all commercial Regions, 4/ run canary
 tests, 5/ deploy the Lambda layers to the `GovCloud` and `China` partitions (Gamma then Prod, both in parallel) once the
-commercial Prod deployment finishes, 6/ update the documentation with the new version once all three (commercial,
-GovCloud, China) Prod deployments are complete.
+commercial Prod deployment finishes, 6/ open a PR to update the documentation with the new layer ARNs once all three
+(commercial, GovCloud, China) Prod deployments are complete.
 4. **Review and merge docs PR**: Once the `Make Release` workflow is complete, a PR will be created to update the
-documentation with the new version. Review and merge this PR.
-5. **Update Docs**: Run the `Rebuild latest docs` workflow with the `main` branch using the package version from
-npm (i.e. `2.20.0`). This will update the documentation with the new version.
+documentation with the new version. Review and merge this PR. Merging this PR automatically triggers the
+`Rebuild latest docs` workflow, which updates the documentation with the new version.
 
 Once complete, you can start drafting the release notes to let customers know **what changed and what's in it for them (a.k.a why they should care)**. We have guidelines in the release notes section so you know what good looks like.
 

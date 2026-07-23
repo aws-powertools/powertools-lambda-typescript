@@ -1,0 +1,58 @@
+name: Auto-trigger docs rebuild on layer ARN docs PR merge
+
+# PROCESS
+#
+# This workflow watches for `publish_layer.yml`'s `update_layer_arn_docs` job PR (branch
+# `ci-layer-docs-<run_id>`) merging to `main` so it can dispatch `rebuild_latest_docs.yml`
+# automatically, leaving only the human action that requires actual review: approving the
+# ARN-doc PR.
+#
+# SECURITY NOTE
+#
+# Deliberately uses `pull_request` (not `pull_request_target`), so PRs from forks keep
+# GitHub's default read-only token and no secrets - a forked PR could never reach the
+# `gh workflow run` step even if every other condition below matched.
+#
+# `github.event.pull_request.user.login` is set by GitHub from the identity that actually
+# called the API to open the PR - it isn't spoofable via branch name, PR title, or body.
+# `ci-layer-docs-*` PRs are opened by aws-powertools/actions' `create-pr` action using the
+# default `GITHUB_TOKEN`, so `.user.login` is always `github-actions[bot]` (confirmed
+# against real PR history - this is NOT the same as `aws-powertools-bot`, which is only
+# the git commit-author identity `create-pr` sets locally via `git config`, not what
+# GitHub exposes as the PR's author).
+#
+# Combined with `head.repo.full_name == github.repository` (rejects forks explicitly)
+# and `base.ref == 'main'`, only genuine automation-opened, same-repo, main-targeted
+# PRs can reach the dispatch step.
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions: {}
+
+jobs:
+  trigger-rebuild-docs:
+    if: >
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'github-actions[bot]' &&
+      startsWith(github.event.pull_request.head.ref, 'ci-layer-docs-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: main
+      - name: Resolve latest published version
+        id: version
+        run: echo "version=$(cat packages/commons/package.json | jq .version -r)" >> "$GITHUB_OUTPUT"
+      - name: Dispatch Rebuild latest docs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: gh workflow run rebuild_latest_docs.yml --repo ${{ github.repository }} --ref main --field latest_published_version="$VERSION"

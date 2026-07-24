@@ -137,7 +137,7 @@
     "serverless"
   ],
   "devDependencies": {
-    "@aws-crypto/client-node": "^5.0.0",
+    "@aws-crypto/client-node": "^5.0.2",
     "fast-check": "^4.9.0"
   }
 }

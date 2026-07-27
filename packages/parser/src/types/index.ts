@@ -33,6 +33,8 @@ export type {
   CloudWatchLogEvent,
   CloudWatchLogsDecode,
   CloudWatchLogsEvent,
+  ConnectOutboundCampaignsCustomerProfile,
+  ConnectOutboundCampaignsEvent,
   DynamoDBStreamEvent,
   DynamoDBStreamRecord,
   DynamoDBStreamToKinesisRecordEvent,

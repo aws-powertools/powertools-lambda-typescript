@@ -18,6 +18,8 @@ import type {
   CloudWatchLogEventSchema,
   CloudWatchLogsDecodeSchema,
   CloudWatchLogsSchema,
+  ConnectOutboundCampaignsCustomerProfileSchema,
+  ConnectOutboundCampaignsSchema,
   DynamoDBStreamRecord as DynamoDBStreamRecordSchema,
   DynamoDBStreamSchema,
   DynamoDBStreamToKinesisRecord,
@@ -102,6 +104,14 @@ type CloudFormationCustomResourceUpdateEvent = z.infer<
 
 type CloudWatchLogsEvent = z.infer<typeof CloudWatchLogsSchema>;
 
+type ConnectOutboundCampaignsCustomerProfile = z.infer<
+  typeof ConnectOutboundCampaignsCustomerProfileSchema
+>;
+
+type ConnectOutboundCampaignsEvent = z.infer<
+  typeof ConnectOutboundCampaignsSchema
+>;
+
 type DynamoDBStreamEvent = z.infer<typeof DynamoDBStreamSchema>;
 
 type DynamoDBStreamRecord = z.infer<typeof DynamoDBStreamRecordSchema>;
@@ -185,6 +195,8 @@ export type {
   CloudWatchLogEvent,
   CloudWatchLogsDecode,
   CloudWatchLogsEvent,
+  ConnectOutboundCampaignsCustomerProfile,
+  ConnectOutboundCampaignsEvent,
   DynamoDBStreamEvent,
   DynamoDBStreamRecord,
   DynamoDBStreamToKinesisRecordEvent,

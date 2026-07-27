@@ -1,0 +1,70 @@
+name: CodeQL
+
+# PROCESS
+#
+# 1. Run CodeQL analysis on the Actions workflows and the JavaScript/TypeScript source
+# 2. Upload results to the code-scanning dashboard and report the `CodeQL` status check
+# 3. Fail the check if new alerts are found on changed code in a pull request
+
+# USAGE
+#
+# This is CodeQL "advanced setup": a checked-in workflow that replaces the previous
+# GitHub-managed "default setup". Unlike default setup, this workflow also runs on pull
+# requests opened from forks, so external contributions can satisfy the required `CodeQL`
+# status check instead of being permanently blocked (see #5506).
+#
+# Runs against forked pull requests are still gated behind the repository's
+# "require approval for all external contributors" Actions policy, so a maintainer must
+# approve the run before CodeQL executes against a fork's code.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Weekly, matching the cadence of the previous default setup.
+    - cron: "27 4 * * 1"
+
+permissions: {}
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read  # checkout repository
+      security-events: write  # upload results to the code-scanning dashboard
+      actions: read  # read workflow run metadata (required to analyze the `actions` language)
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - actions
+          - javascript-typescript
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          languages: ${{ matrix.language }}
+          # Match the previous default setup: default query suite (queries left unset) and
+          # the remote threat model.
+          config: |
+            threat-models:
+              - remote
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          category: "/language:${{ matrix.language }}"

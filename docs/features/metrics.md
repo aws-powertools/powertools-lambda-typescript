@@ -456,6 +456,16 @@ You can customize how Metrics logs warnings and debug messages to standard outpu
 
 ## Testing your code
 
+### Lambda environment vs local
+
+In AWS Lambda, Metrics writes [Embedded Metric Format (EMF)](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html) blobs to standard output. The Lambda runtime/CloudWatch agent picks those log lines up — you do not call CloudWatch `PutMetricData` yourself.
+
+When Lambda multi-concurrency is enabled (`AWS_LAMBDA_MAX_CONCURRENCY` is set), Metrics (and related buffered state such as dimensions/metadata) automatically uses [`@aws/lambda-invoke-store`](https://www.npmjs.com/package/@aws/lambda-invoke-store) for **per-invocation isolation**. No application code changes are required; Powertools selects the store at runtime.
+
+Outside that Lambda multi-concurrency context Metrics uses an in-memory store by default. This applies to Lambda on-demand functions, local runs, and unit tests. Buffered metrics are still flushed as EMF to stdout when you flush (middleware/decorator/`logMetrics`), so asserting emitted metrics locally works the same way.
+
+### Asserting metrics in unit tests
+
 When unit testing your code that uses the Metrics utility, you may want to silence the logs emitted by the utility. To do so, you can set the `POWERTOOLS_DEV` environment variable to `true`. This instructs the utility to not emit any logs to standard output.
 
 If instead you want to spy on the logs emitted by the utility, you must set the `POWERTOOLS_DEV` environment variable to `true` in conjunction with the `POWERTOOLS_METRICS_DISABLED` environment variable set to `false`.

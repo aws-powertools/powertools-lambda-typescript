@@ -82,6 +82,7 @@ When using the decorator or middleware, you can specify a schema to parse the ev
 | **VerifyAuthChallengeResponseTriggerSchema** | Lambda Event Source payload for Amazon Cognito Verify Auth Challenge Response trigger |
 | **PreTokenGenerationTriggerSchemaV1**        | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v1        |
 | **PreTokenGenerationTriggerSchemaV2AndV3**   | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v2 and v3 |
+| **ConnectOutboundCampaignsSchema**           | Lambda Event Source payload for Amazon Connect Outbound Campaigns custom actions      |
 | **DynamoDBStreamSchema**                     | Lambda Event Source payload for Amazon DynamoDB Streams                               |
 | **EventBridgeSchema**                        | Lambda Event Source payload for Amazon EventBridge                                    |
 | **KafkaMskEventSchema**                      | Lambda Event Source payload for AWS MSK payload                                       |

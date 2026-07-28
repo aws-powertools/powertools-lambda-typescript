@@ -107,15 +107,19 @@ export class LayerPublisherStack extends Stack {
                 'node_modules/@aws-sdk/**/README.md ',
               ];
               const buildCommands: string[] = [];
-              // We install these to get the latest version of the packages
-              const modulesToInstall: string[] = [
-                '@aws-sdk/client-dynamodb',
-                '@aws-sdk/util-dynamodb',
-                '@aws-sdk/client-ssm',
-                '@aws-sdk/client-secrets-manager',
-                '@aws-sdk/client-appconfigdata',
-                'zod',
-              ];
+              // We deliberately do NOT ship any @aws-sdk/* client in the layer.
+              //
+              // The layer is mounted at /opt/nodejs/node_modules, which precedes
+              // /var/runtime/node_modules on NODE_PATH. Any SDK package we ship
+              // therefore shadows the runtime's copy for customer code too. Since
+              // we only ever shipped a subset (e.g. client-dynamodb but never
+              // lib-dynamodb), customers using the DocumentClient ended up with a
+              // layer-provided client and a runtime-provided lib, and any breaking
+              // change across that boundary surfaces as a runtime error.
+              //
+              // The Node.js runtime already provides a complete, self-consistent
+              // AWS SDK v3, so we rely on it instead of exposing a partial one.
+              const modulesToInstall: string[] = ['zod'];
 
               if (buildFromLocal) {
                 for (const util of utilities) {

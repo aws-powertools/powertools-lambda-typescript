@@ -154,7 +154,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
     }
     ```
 
-    If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
+    If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` from being bundled since the packages are already present in the layer:
 
     ```typescript
     new NodejsFunction(this, 'Function', {
@@ -162,7 +162,6 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
       bundling: {
         externalModules: [
           '@aws-lambda-powertools/*',
-          '@aws-sdk/*',
         ],
       }
     });
@@ -223,7 +222,7 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
             - {{resolve:ssm:/aws/service/powertools/typescript/generic/all/latest}}
     ```
 
-    If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
+    If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` from being bundled since the packages are already present in the layer:
 
     ```yaml hl_lines="5-14"
     MyLambdaFunction:
@@ -237,7 +236,6 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
           Minify: true
           External:
             - '@aws-lambda-powertools/*'
-            - '@aws-sdk/*'
     ```
 
     Check the [documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build-typescript.html) for more details.
@@ -252,14 +250,13 @@ Change `{aws::region}` to your AWS region, e.g. `eu-west-1`, and run the followi
           - arn:aws:lambda:${aws:region}:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:49
     ```
 
-    If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` and `@aws-sdk/*` from being bundled since the packages are already present the layer:
+    If you use `esbuild` to bundle your code, make sure to exclude `@aws-lambda-powertools/*` from being bundled since the packages are already present in the layer:
 
     ```yaml
     custom:
       esbuild:
         external:
           - '@aws-lambda-powertools/*'
-          - '@aws-sdk/*'
     ```
 
     Check the [documentation](https://floydspace.github.io/serverless-esbuild/) for more details.

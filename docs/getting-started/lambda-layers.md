@@ -361,3 +361,16 @@ npm i -D @aws-lambda-powertools/logger
 - **Version synchronization**: Keep your local development dependencies in sync with the Lambda Layer version to maintain consistency
 
 Following these practices prevents version conflicts that can cause unexpected behavior, such as failed `instanceof` checks or inconsistent behavior between your local development environment and the Lambda execution environment.
+
+???+ note "AWS SDK v3 is no longer included in the layer"
+
+    Layer version `49` is the last one to bundle AWS SDK v3 clients; later
+    versions do not include any `@aws-sdk/*` package.
+
+    The layer is mounted at `/opt/nodejs/node_modules`, which takes precedence
+    over the runtime's own copy, so the bundled clients were picked up by your
+    function code as well. Since the layer only ever included a subset of the
+    SDK, this could leave you with mismatched SDK packages at runtime.
+
+    Install the clients your code needs as regular dependencies and bundle them
+    with your function, or rely on the copy the Lambda Node.js runtime provides.

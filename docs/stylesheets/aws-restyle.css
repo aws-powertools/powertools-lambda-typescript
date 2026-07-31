@@ -48,6 +48,26 @@
   --md-text-font: "Amazon Ember", Helvetica, Arial, sans-serif;
   --md-code-font: Monaco, Menlo, Consolas, "Courier Prime", Courier,
     "Courier New", monospace;
+
+  /* Admonition icon variables */
+  --aws-admonition-icon-note: url("data:image/svg+xml;charset=utf-8,<svg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><g fill='none' stroke='black' stroke-width='2'><circle cx='8' cy='8' r='7'/><path d='M8 12V7M8 6V4'/></g></svg>");
+  --aws-admonition-icon-warning: url("data:image/svg+xml;charset=utf-8,<svg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><path d='M8 5v4M8 10v2M6.52 1.88l-5.33 9.76c-.13.23-.19.5-.19.76 0 .88.71 1.59 1.59 1.59H13.4c.88 0 1.59-.71 1.59-1.59 0-.27-.07-.53-.19-.76L9.48 1.88C9.18 1.34 8.62 1 8 1s-1.18.34-1.48.88Z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/></svg>");
+
+  --md-admonition-icon--note: var(--aws-admonition-icon-note);
+  --md-admonition-icon--info: var(--aws-admonition-icon-note);
+  --md-admonition-icon--tip: var(--aws-admonition-icon-note);
+  --md-admonition-icon--success: var(--aws-admonition-icon-note);
+  --md-admonition-icon--question: var(--aws-admonition-icon-note);
+  --md-admonition-icon--abstract: var(--aws-admonition-icon-note);
+  --md-admonition-icon--example: var(--aws-admonition-icon-note);
+  --md-admonition-icon--quote: var(--aws-admonition-icon-note);
+  --md-admonition-icon--warning: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--danger: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--failure: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--bug: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--error: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--caution: var(--aws-admonition-icon-warning);
+  --md-admonition-icon--attention: var(--aws-admonition-icon-warning);
 }
 
 /* --------------------------------------------------------------------------
@@ -278,27 +298,6 @@
  *   - Important (red): danger, failure, bug, error
  * Uses the Cloudscape status-info/status-warning SVG strokes from live AWS docs.
  * ------------------------------------------------------------------------ */
-:root {
-  --aws-admonition-icon-note: url("data:image/svg+xml;charset=utf-8,<svg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><g fill='none' stroke='black' stroke-width='2'><circle cx='8' cy='8' r='7'/><path d='M8 12V7M8 6V4'/></g></svg>");
-  --aws-admonition-icon-warning: url("data:image/svg+xml;charset=utf-8,<svg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><path d='M8 5v4M8 10v2M6.52 1.88l-5.33 9.76c-.13.23-.19.5-.19.76 0 .88.71 1.59 1.59 1.59H13.4c.88 0 1.59-.71 1.59-1.59 0-.27-.07-.53-.19-.76L9.48 1.88C9.18 1.34 8.62 1 8 1s-1.18.34-1.48.88Z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/></svg>");
-
-  --md-admonition-icon--note: var(--aws-admonition-icon-note);
-  --md-admonition-icon--info: var(--aws-admonition-icon-note);
-  --md-admonition-icon--tip: var(--aws-admonition-icon-note);
-  --md-admonition-icon--success: var(--aws-admonition-icon-note);
-  --md-admonition-icon--question: var(--aws-admonition-icon-note);
-  --md-admonition-icon--abstract: var(--aws-admonition-icon-note);
-  --md-admonition-icon--example: var(--aws-admonition-icon-note);
-  --md-admonition-icon--quote: var(--aws-admonition-icon-note);
-  --md-admonition-icon--warning: var(--aws-admonition-icon-warning);
-  --md-admonition-icon--danger: var(--aws-admonition-icon-warning);
-  --md-admonition-icon--failure: var(--aws-admonition-icon-warning);
-  --md-admonition-icon--bug: var(--aws-admonition-icon-warning);
-  --md-admonition-icon--error: var(--aws-admonition-icon-warning);
-  --md-admonition-icon--caution: var(--aws-admonition-icon-warning);
-  --md-admonition-icon--attention: var(--aws-admonition-icon-warning);
-}
-
 .md-typeset .admonition,
 .md-typeset details {
   background-color: var(--aws-note-bg);

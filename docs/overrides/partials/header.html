@@ -15,37 +15,40 @@
       {% if config.theme.palette %}
         {% if not config.theme.palette is mapping %}
           <form class="aws-utility-bar__preferences md-header__option" data-md-component="palette">
-            {% for option in config.theme.palette %}
-              {% set scheme  = option.scheme  | d("default", true) %}
-              {% set primary = option.primary | d("indigo", true) %}
-              {% set accent  = option.accent  | d("indigo", true) %}
-              <input class="md-option" data-md-color-media="{{ option.media }}" data-md-color-scheme="{{ scheme | replace(' ', '-') }}" data-md-color-primary="{{ primary | replace(' ', '-') }}" data-md-color-accent="{{ accent | replace(' ', '-') }}" {% if option.toggle %} aria-label="{{ option.toggle.name }}" {% else %} aria-hidden="true" {% endif %} type="radio" name="__palette" id="__palette_{{ loop.index0 }}">
-            {% endfor %}
-            <span class="aws-prefs__palette-sentinel" aria-hidden="true"></span>
-            <details class="aws-prefs">
-              <summary class="aws-utility-bar__link aws-prefs__summary">
-                <span>Preferences</span>
-                <span class="aws-prefs__caret" aria-hidden="true"></span>
-              </summary>
-              <div class="aws-prefs__panel" role="group" aria-labelledby="aws-prefs-heading">
-                <div class="aws-prefs__heading" id="aws-prefs-heading">Preferences</div>
-                <div class="aws-prefs__section-label">Text theme:</div>
-                <div class="aws-prefs__options">
-                  <label class="aws-prefs__option" for="__palette_1">
-                    <span class="aws-radio" aria-hidden="true"></span>
-                    <span>Light</span>
-                  </label>
-                  <label class="aws-prefs__option" for="__palette_2">
-                    <span class="aws-radio" aria-hidden="true"></span>
-                    <span>Dark</span>
-                  </label>
-                  <label class="aws-prefs__option" for="__palette_0">
-                    <span class="aws-radio" aria-hidden="true"></span>
-                    <span>Device</span>
-                  </label>
+            <fieldset class="aws-prefs__fieldset">
+              <legend class="md-visually-hidden">Text theme</legend>
+              {% for option in config.theme.palette %}
+                {% set scheme  = option.scheme  | d("default", true) %}
+                {% set primary = option.primary | d("indigo", true) %}
+                {% set accent  = option.accent  | d("indigo", true) %}
+                <input class="md-option" data-md-color-media="{{ option.media }}" data-md-color-scheme="{{ scheme | replace(' ', '-') }}" data-md-color-primary="{{ primary | replace(' ', '-') }}" data-md-color-accent="{{ accent | replace(' ', '-') }}" {% if option.toggle %} aria-label="{{ option.toggle.name }}" {% endif %} type="radio" name="__palette" id="__palette_{{ loop.index0 }}">
+              {% endfor %}
+              <span class="aws-prefs__palette-sentinel" aria-hidden="true"></span>
+              <details class="aws-prefs">
+                <summary class="aws-utility-bar__link aws-prefs__summary">
+                  <span>Preferences</span>
+                  <span class="aws-prefs__caret" aria-hidden="true"></span>
+                </summary>
+                <div class="aws-prefs__panel">
+                  <div class="aws-prefs__heading">Preferences</div>
+                  <div class="aws-prefs__section-label">Text theme:</div>
+                  <div class="aws-prefs__options">
+                    <label class="aws-prefs__option" for="__palette_1">
+                      <span class="aws-radio" aria-hidden="true"></span>
+                      <span>Light</span>
+                    </label>
+                    <label class="aws-prefs__option" for="__palette_2">
+                      <span class="aws-radio" aria-hidden="true"></span>
+                      <span>Dark</span>
+                    </label>
+                    <label class="aws-prefs__option" for="__palette_0">
+                      <span class="aws-radio" aria-hidden="true"></span>
+                      <span>Device</span>
+                    </label>
+                  </div>
                 </div>
-              </div>
-            </details>
+              </details>
+            </fieldset>
           </form>
         {% endif %}
       {% endif %}
@@ -71,7 +74,7 @@
       <nav class="aws-header__nav" aria-label="AWS documentation sections">
         <details class="aws-header__menu">
           <summary class="aws-header__nav-link aws-header__menu-summary">Get started</summary>
-          <div class="aws-header__menu-panel" role="group" aria-label="Get started links">
+          <div class="aws-header__menu-panel">
             <div class="aws-header__menu-section">
               <div class="aws-header__menu-heading">Understand AWS</div>
               <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/what-is-aws/">Overview of AWS</a>
@@ -102,7 +105,7 @@
         </details>
         <details class="aws-header__menu">
           <summary class="aws-header__nav-link aws-header__menu-summary">Service guides</summary>
-          <div class="aws-header__menu-panel" role="group" aria-label="Service guides links">
+          <div class="aws-header__menu-panel">
             <div class="aws-header__menu-section">
               <div class="aws-header__menu-heading">Featured service guides</div>
               <a class="aws-header__menu-link" href="https://docs.aws.amazon.com/ec2/">Amazon EC2</a>
@@ -124,7 +127,7 @@
         </details>
         <details class="aws-header__menu">
           <summary class="aws-header__nav-link aws-header__menu-summary">Developer tools</summary>
-          <div class="aws-header__menu-panel" role="group" aria-label="Developer tools links">
+          <div class="aws-header__menu-panel">
             <div class="aws-header__menu-section">
               <div class="aws-header__menu-heading">Explore developer tools</div>
               <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/developer/">AWS Developer Center</a>
@@ -147,7 +150,7 @@
         </details>
         <details class="aws-header__menu">
           <summary class="aws-header__nav-link aws-header__menu-summary">AI resources</summary>
-          <div class="aws-header__menu-panel" role="group" aria-label="AI resources links">
+          <div class="aws-header__menu-panel">
             <div class="aws-header__menu-section">
               <div class="aws-header__menu-heading">Learn AI</div>
               <a class="aws-header__menu-link aws-header__menu-link--external" href="https://aws.amazon.com/ai/">AI overview</a>

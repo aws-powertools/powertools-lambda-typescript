@@ -104,6 +104,9 @@
     height: 28px;
     justify-content: center;
     padding: 0;
+    position: absolute;
+    right: 0.2rem;
+    top: 0.05rem;
     width: 28px;
     z-index: 5;
   }
@@ -122,12 +125,6 @@
     display: block;
     height: 16px;
     width: 16px;
-  }
-
-  .aws-nav-collapse {
-    position: absolute;
-    right: 0.2rem;
-    top: 0.05rem;
   }
 
   .aws-nav-reopen {

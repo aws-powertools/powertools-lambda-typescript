@@ -55,6 +55,15 @@
   position: relative;
 }
 
+.aws-prefs__fieldset {
+  border: 0;
+  display: flex;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+  position: relative;
+}
+
 .aws-prefs__palette-sentinel {
   display: none;
 }

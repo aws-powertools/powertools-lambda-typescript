@@ -326,6 +326,37 @@ class TestAppConfigWithProfiles extends Construct {
   }
 
   /**
+   * Grant access to a configuration profile name that doesn't exist in the application.
+   *
+   * IAM evaluates permissions before resource existence, so without this grant a request
+   * for a missing profile is rejected with `AccessDeniedException` (403) instead of
+   * surfacing AppConfig's `ResourceNotFoundException` (404).
+   *
+   * @param fn The function to grant access to the profile name
+   * @param profileName The name of the nonexistent configuration profile
+   */
+  public grantReadDataForMissingProfile(
+    fn: TestNodejsFunction,
+    profileName: string
+  ): void {
+    const appConfigConfigurationArn = Stack.of(fn).formatArn({
+      service: 'appconfig',
+      resource: `application/${this.application.applicationId}/environment/${this.environment.environmentId}/configuration/${profileName}`,
+    });
+
+    fn.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: [
+          'appconfig:StartConfigurationSession',
+          'appconfig:GetLatestConfiguration',
+        ],
+        resources: [appConfigConfigurationArn],
+      })
+    );
+  }
+
+  /**
    * Grant access to all the profiles to a function.
    *
    * @param fn The function to grant access to the profiles

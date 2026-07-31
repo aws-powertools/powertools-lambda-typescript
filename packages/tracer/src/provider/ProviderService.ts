@@ -26,8 +26,13 @@ const {
 import { subscribe } from 'node:diagnostics_channel';
 import http from 'node:http';
 import https from 'node:https';
+import type { InvokeStoreBase } from '@aws/lambda-invoke-store';
+import '@aws/lambda-invoke-store';
 import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
-import { getXRayTraceIdFromEnv } from '@aws-lambda-powertools/commons/utils/env';
+import {
+  getXRayTraceIdFromEnv,
+  shouldUseInvokeStore,
+} from '@aws-lambda-powertools/commons/utils/env';
 import type { DiagnosticsChannel } from 'undici-types';
 import {
   findHeaderAndDecode,
@@ -47,6 +52,28 @@ import {
  * they should work as expected. However, support for these methods is not guaranteed.
  */
 class ProviderService implements ProviderServiceInterface {
+  /**
+   * Key used to store the active segment in the Lambda Invoke Store when
+   * multiple invocations may be multiplexed into the same execution
+   * environment (Lambda Managed Instances with
+   * `perExecutionEnvironmentMaxConcurrency` > 1).
+   *
+   * In Lambda mode the X-Ray SDK keeps the active segment in a single
+   * process-wide CLS context shared by all concurrent invocations, so
+   * writing to it from one invocation clobbers the others. The Invoke Store
+   * is scoped to the invocation by the runtime, so it provides the isolation
+   * the SDK context can't.
+   */
+  readonly #segmentKey = Symbol('powertools.tracer.segment');
+
+  #getInvokeStore(): InvokeStoreBase {
+    const store = globalThis.awslambda?.InvokeStore;
+    if (store === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+    return store;
+  }
+
   /**
    * @deprecated Use {@link captureAWSv3Client} instead.
    */
@@ -94,6 +121,18 @@ class ProviderService implements ProviderServiceInterface {
   }
 
   public getSegment(): Segment | Subsegment | undefined {
+    if (shouldUseInvokeStore()) {
+      // The facade segment isn't stored per-invocation: it's created by the
+      // X-Ray SDK at init and lives in its process-wide context, so when the
+      // current invocation hasn't set an active segment yet we fall through
+      // to the SDK
+      const segment = this.#getInvokeStore().get<Segment | Subsegment>(
+        this.#segmentKey
+      );
+      if (segment !== undefined) {
+        return segment;
+      }
+    }
     return getSegment();
   }
 
@@ -271,6 +310,13 @@ class ProviderService implements ProviderServiceInterface {
   }
 
   public setSegment(segment: Segment | Subsegment): void {
+    if (shouldUseInvokeStore()) {
+      // Writing to the SDK context here would clobber the shared slot for
+      // every other in-flight invocation, so the active segment goes in the
+      // invocation-scoped store instead
+      this.#getInvokeStore().set(this.#segmentKey, segment);
+      return;
+    }
     setSegment(segment);
   }
 }

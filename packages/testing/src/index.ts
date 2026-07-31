@@ -14,7 +14,6 @@ export {
   getRuntimeKey,
   isValidRuntimeKey,
   sequence,
-  withResolvers,
 } from './helpers.js';
 export { invokeFunction, invokeFunctionOnce } from './invokeTestFunction.js';
 export { LogTailer } from './LogTailer.js';

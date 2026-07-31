@@ -10,6 +10,7 @@ You can use the package in both TypeScript and JavaScript code bases.
     - [Getting secrets from Amazon Secrets Manager](#getting-secrets-from-amazon-secrets-manager)
     - [Retrieving values from Amazon DynamoDB](#retrieving-values-from-amazon-dynamodb)
     - [Fetching configs from AWS AppConfig](#fetching-configs-from-aws-appconfig)
+    - [Fetching configs from the AWS AppConfig Agent](#fetching-configs-from-the-aws-appconfig-agent)
 - [Contribute](#contribute)
 - [Roadmap](#roadmap)
 - [Connect](#connect)
@@ -194,6 +195,27 @@ export const handler = async (): Promise<void> => {
 ```
 
 Check the [docs](https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/#fetching-app-configurations) for more examples, and [the advanced section](https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/#advanced) for details about caching, transforms, customizing the underlying SDK, and more.
+
+### Fetching configs from the AWS AppConfig Agent
+
+If you use the [AWS AppConfig Agent Lambda extension](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions.html), you can fetch application configurations from the agent's local HTTP endpoint using the `getConfig` function:
+
+```ts
+import { getConfig } from '@aws-lambda-powertools/parameters/appconfig-agent';
+
+// Retrieve a configuration from the AppConfig Agent Lambda extension
+const config = await getConfig('my-configuration', {
+  environment: 'my-env',
+  application: 'my-app',
+  transform: 'json',
+});
+
+export const handler = async (): Promise<void> => {
+  console.log(config);
+};
+```
+
+Since caching, polling, and prefetching are handled by the agent, `getConfig` always fetches from the agent's local endpoint and doesn't require the AWS SDK. Check the [docs](https://docs.aws.amazon.com/powertools/typescript/latest/features/parameters/#fetching-app-configurations-via-appconfig-agent) for more details.
 
 ## Contribute
 

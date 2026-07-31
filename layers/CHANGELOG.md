@@ -1,5 +1,9 @@
 # Change Log
 
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+**Note:** Version bump only for this package
+
 ## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
 
 **Note:** Version bump only for this package

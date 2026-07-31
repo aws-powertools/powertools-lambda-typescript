@@ -74,18 +74,16 @@ describe('HTTP Error Classes', () => {
       statusCode: HttpStatusCodes.SERVICE_UNAVAILABLE,
       customMessage: 'Maintenance mode',
     },
-  ])('$errorType uses custom message when provided', ({
-    ErrorClass,
-    errorType,
-    statusCode,
-    customMessage,
-  }) => {
-    const error = new ErrorClass(customMessage);
-    expect(error.message).toBe(customMessage);
-    expect(error.statusCode).toBe(statusCode);
-    expect(error.errorType).toBe(errorType);
-    expect(error.name).toBe(errorType);
-  });
+  ])(
+    '$errorType uses custom message when provided',
+    ({ ErrorClass, errorType, statusCode, customMessage }) => {
+      const error = new ErrorClass(customMessage);
+      expect(error.message).toBe(customMessage);
+      expect(error.statusCode).toBe(statusCode);
+      expect(error.errorType).toBe(errorType);
+      expect(error.name).toBe(errorType);
+    }
+  );
 
   describe('toJSON', () => {
     it.each([
@@ -143,21 +141,19 @@ describe('HTTP Error Classes', () => {
         statusCode: HttpStatusCodes.SERVICE_UNAVAILABLE,
         message: 'Maintenance mode',
       },
-    ])('$errorType serializes to JSON format', ({
-      ErrorClass,
-      errorType,
-      statusCode,
-      message,
-    }) => {
-      const error = new ErrorClass(message);
-      const json = error.toJSON();
+    ])(
+      '$errorType serializes to JSON format',
+      ({ ErrorClass, errorType, statusCode, message }) => {
+        const error = new ErrorClass(message);
+        const json = error.toJSON();
 
-      expect(json).toEqual({
-        statusCode,
-        error: errorType,
-        message,
-      });
-    });
+        expect(json).toEqual({
+          statusCode,
+          error: errorType,
+          message,
+        });
+      }
+    );
 
     it('includes details in JSON when provided', () => {
       const details = { field: 'value', code: 'VALIDATION_ERROR' };
@@ -241,24 +237,24 @@ describe('HTTP Error Classes', () => {
         statusCode: HttpStatusCodes.SERVICE_UNAVAILABLE,
         message: 'Maintenance mode',
       },
-    ])('$errorType creates Response object', async ({
-      ErrorClass,
-      errorType,
-      statusCode,
-      message,
-    }) => {
-      const error = new ErrorClass(message);
-      const response = error.toWebResponse();
+    ])(
+      '$errorType creates Response object',
+      async ({ ErrorClass, errorType, statusCode, message }) => {
+        const error = new ErrorClass(message);
+        const response = error.toWebResponse();
 
-      expect(response.status).toEqual(statusCode);
-      expect(response.headers.get('Content-Type')).toEqual('application/json');
+        expect(response.status).toEqual(statusCode);
+        expect(response.headers.get('Content-Type')).toEqual(
+          'application/json'
+        );
 
-      await expect(response.json()).resolves.toEqual({
-        statusCode,
-        error: errorType,
-        message,
-      });
-    });
+        await expect(response.json()).resolves.toEqual({
+          statusCode,
+          error: errorType,
+          message,
+        });
+      }
+    );
 
     it('includes details in Response body when provided', async () => {
       const details = { field: 'value', code: 'VALIDATION_ERROR' };

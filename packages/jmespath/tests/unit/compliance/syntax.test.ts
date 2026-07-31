@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { search } from '../../../src/index.js';
 
-// NOSONAR - This file contains JMESPath compliance tests that intentionally use escape sequences
 describe('Syntax tests', () => {
   it.each([
     {
@@ -185,21 +184,21 @@ describe('Syntax tests', () => {
       expression: '*[0]',
       expected: [],
     },
-  ])('should support wildcard syntax: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support wildcard syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -242,21 +241,21 @@ describe('Syntax tests', () => {
       expression: '[]',
       expected: null,
     },
-  ])('should support flatten syntax: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support flatten syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -332,21 +331,21 @@ describe('Syntax tests', () => {
       expression: 'foo.[abc, def]',
       expected: null,
     },
-  ])('should support multi-select list syntax: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support multi-select list syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -463,19 +462,19 @@ describe('Syntax tests', () => {
         },
       },
     },
-  ])('should support multi-select hash syntax: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = { type: 'object' };
+  ])(
+    'should support multi-select hash syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = { type: 'object' };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -604,21 +603,21 @@ describe('Syntax tests', () => {
       expression: 'foo.[a || b]',
       expected: null,
     },
-  ])('should support boolean OR syntax: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support boolean OR syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -697,21 +696,21 @@ describe('Syntax tests', () => {
       expression: '[?"\\\\" > `"foo"`]',
       expected: null,
     },
-  ])('should support filter syntax: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data = {
-      type: 'object',
-    };
+  ])(
+    'should support filter syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        type: 'object',
+      };
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 
   it.each([
     {
@@ -868,17 +867,17 @@ describe('Syntax tests', () => {
       expression: '[*.*]',
       expected: [null],
     },
-  ])('should support combined syntax: $expression', ({
-    expression,
-    expected,
-  }) => {
-    // Prepare
-    const data: string[] = [];
+  ])(
+    'should support combined syntax: $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data: string[] = [];
 
-    // Act
-    const result = search(expression, data);
+      // Act
+      const result = search(expression, data);
 
-    // Assess
-    expect(result).toStrictEqual(expected);
-  });
+      // Assess
+      expect(result).toStrictEqual(expected);
+    }
+  );
 });

@@ -1,5 +1,18 @@
 # Change Log
 
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Improvements
+
+- remove unsafe context cast in createChild ([#5443](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5443)) ([ac97f52](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ac97f52aff3054055d88f63a3ba43252481df13e))
+
+### Bug Fixes
+
+- scope lambda context per invocation under LMI concurrency ([#5430](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5430)) ([e5d2e69](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e5d2e695c13a82b04e8273aaaebead2ca9d50cf0))
+
+### Maintenance
+
+- bump @aws/lambda-invoke-store from 0.2.4 to 0.3.0 ([#5401](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5401)) ([0a05acd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0a05acd194415f2a9a988258cd5320913c3b6504))
 ## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
 
 ### Bug Fixes

@@ -28,7 +28,6 @@ type HttpData = {
 const getHttpData = (subsegment: Subsegment): HttpData | undefined =>
   (subsegment as Subsegment & { http?: HttpData }).http;
 
-
 describe('Tracer Middleware', () => {
   let app: Router;
 

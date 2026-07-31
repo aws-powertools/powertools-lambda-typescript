@@ -1,5 +1,6 @@
 import '@aws/lambda-invoke-store';
 import {
+  AWS_LAMBDA_INITIALIZATION_TYPE_ENV_VAR,
   AWS_LAMBDA_MAX_CONCURRENCY,
   POWERTOOLS_DEV_ENV_VAR,
   POWERTOOLS_SERVICE_NAME_ENV_VAR,
@@ -232,6 +233,33 @@ const isDevMode = (): boolean => {
 };
 
 /**
+ * Check if the code is running inside an actual AWS Lambda execution environment.
+ *
+ * This is determined by the `AWS_LAMBDA_INITIALIZATION_TYPE` environment variable,
+ * which is set by the Lambda runtime to either `on-demand` or `provisioned-concurrency`.
+ *
+ * When the variable is not set, or when running in development mode - see {@link isDevMode | `isDevMode()`} -
+ * the function returns `false`, e.g. during local development or in tests.
+ *
+ * @example
+ * ```ts
+ * import { isRunningInLambda } from '@aws-lambda-powertools/commons/utils/env';
+ *
+ * if (isRunningInLambda()) {
+ *   // do something that requires a real Lambda execution environment
+ * }
+ * ```
+ */
+const isRunningInLambda = (): boolean => {
+  const initializationType = getStringFromEnv({
+    key: AWS_LAMBDA_INITIALIZATION_TYPE_ENV_VAR,
+    defaultValue: 'unknown',
+  });
+
+  return !isDevMode() && initializationType !== 'unknown';
+};
+
+/**
  * Get the service name from the environment variables.
  *
  * This is determined by the `POWERTOOLS_SERVICE_NAME` environment variable.
@@ -328,5 +356,6 @@ export {
   getXrayTraceDataFromEnv,
   isDevMode,
   isRequestXRaySampled,
+  isRunningInLambda,
   shouldUseInvokeStore,
 };

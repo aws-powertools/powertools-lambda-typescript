@@ -35,6 +35,7 @@ scopes:
   - deps-dev
   - roadmap
   - kafka
+  - signer
 
 # Always validate the PR title
 # and ignore the commits to lower the entry bar for contribution

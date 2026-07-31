@@ -49,6 +49,10 @@ export {
   VerifyAuthChallengeTriggerSchema,
 } from './cognito.js';
 export {
+  ConnectOutboundCampaignsCustomerProfileSchema,
+  ConnectOutboundCampaignsSchema,
+} from './connect-outbound-campaigns.js';
+export {
   DynamoDBStreamRecord,
   DynamoDBStreamSchema,
   DynamoDBStreamToKinesisRecord,

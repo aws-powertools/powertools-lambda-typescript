@@ -8,6 +8,7 @@ import {
   getXRayTraceIdFromEnv,
   isDevMode,
   isRequestXRaySampled,
+  isRunningInLambda,
   shouldUseInvokeStore,
 } from '../../src/envUtils.js';
 
@@ -154,19 +155,22 @@ describe('Functions: envUtils', () => {
       ['t', true],
       ['TRUE', true],
       ['on', true],
-    ])('returns true if the environment variable is set to a truthy value: %s', (value, expected) => {
-      // Prepare
-      vi.stubEnv('TEST_ENV', value);
+    ])(
+      'returns true if the environment variable is set to a truthy value: %s',
+      (value, expected) => {
+        // Prepare
+        vi.stubEnv('TEST_ENV', value);
 
-      // Act
-      const result = getBooleanFromEnv({
-        key: 'TEST_ENV',
-        extendedParsing: true,
-      });
+        // Act
+        const result = getBooleanFromEnv({
+          key: 'TEST_ENV',
+          extendedParsing: true,
+        });
 
-      // Assess
-      expect(result).toBe(expected);
-    });
+        // Assess
+        expect(result).toBe(expected);
+      }
+    );
 
     it.each([
       ['0', false],
@@ -175,19 +179,22 @@ describe('Functions: envUtils', () => {
       ['f', false],
       ['FALSE', false],
       ['off', false],
-    ])('returns false if the environment variable is set to a falsy value: %s', (value, expected) => {
-      // Prepare
-      vi.stubEnv('TEST_ENV', value);
+    ])(
+      'returns false if the environment variable is set to a falsy value: %s',
+      (value, expected) => {
+        // Prepare
+        vi.stubEnv('TEST_ENV', value);
 
-      // Act
-      const result = getBooleanFromEnv({
-        key: 'TEST_ENV',
-        extendedParsing: true,
-      });
+        // Act
+        const result = getBooleanFromEnv({
+          key: 'TEST_ENV',
+          extendedParsing: true,
+        });
 
-      // Assess
-      expect(result).toBe(expected);
-    });
+        // Assess
+        expect(result).toBe(expected);
+      }
+    );
   });
 
   describe('Function: isDevMode', () => {
@@ -216,6 +223,45 @@ describe('Functions: envUtils', () => {
     it('returns false if the environment variable is not set', () => {
       // Act
       const result = isDevMode();
+
+      // Assess
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('Function: isRunningInLambda', () => {
+    it.each(['on-demand', 'provisioned-concurrency'])(
+      'returns true when the initialization type is %s',
+      (initializationType) => {
+        // Prepare
+        vi.stubEnv('AWS_LAMBDA_INITIALIZATION_TYPE', initializationType);
+
+        // Act
+        const result = isRunningInLambda();
+
+        // Assess
+        expect(result).toBe(true);
+      }
+    );
+
+    it('returns false when the initialization type is not set', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_INITIALIZATION_TYPE', undefined);
+
+      // Act
+      const result = isRunningInLambda();
+
+      // Assess
+      expect(result).toBe(false);
+    });
+
+    it('returns false when running in dev mode', () => {
+      // Prepare
+      vi.stubEnv('AWS_LAMBDA_INITIALIZATION_TYPE', 'on-demand');
+      vi.stubEnv('POWERTOOLS_DEV', 'true');
+
+      // Act
+      const result = isRunningInLambda();
 
       // Assess
       expect(result).toBe(false);

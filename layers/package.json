@@ -1,6 +1,6 @@
 {
   "name": "layers",
-  "version": "2.33.1",
+  "version": "2.34.0",
   "bin": {
     "layer": "bin/layers.js"
   },
@@ -41,7 +41,7 @@
     "source-map-support": "^0.5.21"
   },
   "dependencies": {
-    "aws-cdk": "^2.1129.0",
+    "aws-cdk": "^2.1132.0",
     "aws-cdk-lib": "^2.261.0",
     "esbuild": "^0.28.1"
   }

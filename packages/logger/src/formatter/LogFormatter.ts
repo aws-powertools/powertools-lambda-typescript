@@ -16,6 +16,12 @@ import type { LogItem } from './LogItem.js';
  */
 abstract class LogFormatter {
   /**
+   * Whether a warning about an unresolvable timezone has already been emitted,
+   * used to avoid logging the same warning on every formatted log entry.
+   */
+  #timezoneWarningEmitted = false;
+
+  /**
    * Format key-value pairs of log attributes.
    *
    * You should implement this method in a subclass to define the structure of the log item
@@ -176,18 +182,43 @@ abstract class LogFormatter {
   }
 
   /**
+   * Resolve the time zone to use for formatting timestamps.
+   *
+   * Validation is delegated to `Intl.DateTimeFormat` itself, so both canonical
+   * identifiers (e.g. `Asia/Calcutta`) and their aliases (e.g. `Asia/Kolkata`)
+   * are accepted.
+   *
+   * If the provided time zone cannot be resolved - e.g. `TZ` is set to
+   * `:/etc/localtime` in certain Docker images - we fall back to UTC and emit
+   * a one-time warning.
+   *
+   * @param timezone - IANA time zone identifier (e.g., "Asia/Dhaka").
+   */
+  readonly #resolveTimezone = (timezone: string): string => {
+    try {
+      new Intl.DateTimeFormat('en', { timeZone: timezone });
+      return timezone;
+    } catch {
+      if (!this.#timezoneWarningEmitted) {
+        this.#timezoneWarningEmitted = true;
+        console.warn(
+          `Invalid or unresolvable time zone: "${timezone}" - falling back to UTC.`
+        );
+      }
+      return 'UTC';
+    }
+  };
+
+  /**
    * Create a new Intl.DateTimeFormat object configured with the specified time zone
    * and formatting options.
    *
    * The time is displayed in 24-hour format (hour12: false).
    *
-   * @param timezone - IANA time zone identifier (e.g., "Asia/Dhaka").
+   * @param timezone - resolvable IANA time zone identifier (e.g., "Asia/Dhaka").
    */
   readonly #getDateFormatter = (timezone: string): Intl.DateTimeFormat => {
     const twoDigitFormatOption = '2-digit';
-    const validTimeZone = Intl.supportedValuesOf('timeZone').includes(timezone)
-      ? timezone
-      : 'UTC';
 
     return new Intl.DateTimeFormat('en', {
       hourCycle: 'h23',
@@ -197,19 +228,23 @@ abstract class LogFormatter {
       hour: twoDigitFormatOption,
       minute: twoDigitFormatOption,
       second: twoDigitFormatOption,
-      timeZone: validTimeZone,
+      timeZone: timezone,
     });
   };
 
   /**
    * Generate an ISO 8601 timestamp string with the specified time zone and the local time zone offset.
    *
+   * If the time zone cannot be resolved, both the date/time digits and the offset
+   * fall back to UTC so that the emitted timestamp always denotes the correct instant.
+   *
    * @param date - date to format
    * @param timezone - IANA time zone identifier (e.g., "Asia/Dhaka").
    */
   #generateISOTimestampWithOffset(date: Date, timezone: string): string {
+    const resolvedTimezone = this.#resolveTimezone(timezone);
     const { year, month, day, hour, minute, second } = this.#getDateFormatter(
-      timezone
+      resolvedTimezone
     )
       .formatToParts(date)
       .reduce(
@@ -221,7 +256,8 @@ abstract class LogFormatter {
         {} as Record<Intl.DateTimeFormatPartTypes, string>
       );
     const datePart = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
-    const offset = -date.getTimezoneOffset();
+    const offset =
+      resolvedTimezone === timezone ? -date.getTimezoneOffset() : 0;
     const offsetSign = offset >= 0 ? '+' : '-';
     const offsetHours = Math.abs(Math.floor(offset / 60))
       .toString()

@@ -82,6 +82,7 @@ When using the decorator or middleware, you can specify a schema to parse the ev
 | **VerifyAuthChallengeResponseTriggerSchema** | Lambda Event Source payload for Amazon Cognito Verify Auth Challenge Response trigger |
 | **PreTokenGenerationTriggerSchemaV1**        | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v1        |
 | **PreTokenGenerationTriggerSchemaV2AndV3**   | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v2 and v3 |
+| **ConnectOutboundCampaignsSchema**           | Lambda Event Source payload for Amazon Connect Outbound Campaigns custom actions      |
 | **DynamoDBStreamSchema**                     | Lambda Event Source payload for Amazon DynamoDB Streams                               |
 | **EventBridgeSchema**                        | Lambda Event Source payload for Amazon EventBridge                                    |
 | **KafkaMskEventSchema**                      | Lambda Event Source payload for AWS MSK payload                                       |
@@ -264,6 +265,33 @@ If the parsing is successful, the `data` field will contain the parsed event, ot
     2. Use `data` to access the parsed event when successful
     3. Use `error` to handle the error message
     4. Use `originalEvent` to get the original event and recover
+
+## Handling parse errors inline
+
+If you want to intercept a parsing failure and return a custom response instead of throwing, use the `errorHandler` option.
+The callback receives the `ParseError` and the original, unparsed event, and must return synchronously - `errorHandler` does not support `async` functions, and providing one is a type error.
+
+If `errorHandler` returns a value, it is used as the response and the error is not thrown. If it returns `undefined`, the original error is rethrown.
+
+`errorHandler` and `safeParse` are mutually exclusive: with `safeParse` the parser never throws, so `errorHandler` would never be invoked.
+
+=== "Middy.js middleware"
+    ```typescript hl_lines="25-29"
+    --8<-- "examples/snippets/parser/errorHandlerMiddy.ts"
+    ```
+
+    1. Use `errorHandler` to intercept a `ParseError` and return a custom response
+    2. Use `error` and `event` to log the failure and the original, unparsed event
+    3. Returning a value short-circuits the parse failure with that value
+
+=== "Decorator"
+    ```typescript hl_lines="27-31"
+    --8<-- "examples/snippets/parser/errorHandlerDecorator.ts"
+    ```
+
+    1. Use `errorHandler` to intercept a `ParseError` and return a custom response
+    2. Use `error` and `event` to log the failure and the original, unparsed event
+    3. Returning a value short-circuits the parse failure with that value
 
 ## Manual parsing
 

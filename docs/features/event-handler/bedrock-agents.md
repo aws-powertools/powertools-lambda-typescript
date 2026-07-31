@@ -5,6 +5,10 @@ description: Event Handler for Amazon Bedrock Agents
 
 <!-- markdownlint-disable MD043 -->
 
+!!! warning "Amazon Bedrock Agents is in maintenance mode"
+    Amazon Bedrock Agents (now Amazon Bedrock Agents Classic) [entered maintenance mode](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-classic-maintenance-mode.html){target="_blank"} and is no longer open to new customers as of July 30, 2026.
+    Existing agents continue to work, and this feature remains supported for existing customers. However, we recommend evaluating [Amazon Bedrock AgentCore](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html){target="_blank"} for new agent development.
+
 Create [Amazon Bedrock Agents](https://docs.aws.amazon.com/bedrock/latest/userguide/agents.html#agents-how) and focus on building your agent's logic without worrying about parsing and routing requests.
 
 ```mermaid

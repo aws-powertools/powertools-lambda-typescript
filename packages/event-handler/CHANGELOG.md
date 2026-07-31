@@ -1,5 +1,22 @@
 # Change Log
 
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Bug Fixes
+
+- preserve original string for invalid Bedrock Agent number params ([#5363](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5363)) ([9cce9f9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9cce9f988735850a371321f820ce1c97ee6d927e))
+- avoid runtime import of metrics package in HTTP metrics middleware ([#5310](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5310)) ([f4a6752](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f4a67529856f748e69ca456a76146ee3949677ad))
+- correct InvalidHttpMethodError name ([#5254](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5254)) ([7d410fc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7d410fc165ef98705fb27f8edd6a1a9ef9b45f35))
+- normalize trailing slashes in HTTP Router prefix joining ([#5255](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5255)) ([7a500a1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7a500a19a55b771684f8e10b782f3106f9c189df))
+
+### Improvements
+
+- extract shared IP-extraction util for HTTP middleware ([#5346](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5346)) ([3230ca7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3230ca71342b8a6165c4edff3bed317e0b7b53fd))
+
+### Features
+
+- add HTTP request/response data to tracer subsegment ([#5338](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5338)) ([e1202b0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e1202b01c50e3520b2cd9019bd26167b8b4ef1c0))
+- warn when AppSync Events payload exceeds 240 KB per-event limit ([#5339](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5339)) ([2e7850d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2e7850d5de08ff91151fe1ecd7f5674919ee9b62))
 ## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
 
 ### Bug Fixes

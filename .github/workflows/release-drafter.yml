@@ -27,6 +27,6 @@ jobs:
     permissions:
       contents: write  # create release in draft mode
     steps:
-      - uses: release-drafter/release-drafter@4d75298e00d9e34c483e5ff8c68d0ea1c1940c1e # v5.20.1
+      - uses: release-drafter/release-drafter@34d80673e067bdc0c24568d3af899c216adcfaa9 # v5.20.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

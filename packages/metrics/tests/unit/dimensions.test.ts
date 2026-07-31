@@ -593,35 +593,35 @@ describe('Working with dimensions', () => {
       value: 'valid-value',
       name: '',
     },
-  ])('skips invalid dimension values in addDimensions ($name)', ({
-    value,
-    name,
-  }) => {
-    // Prepare
-    const metrics = new Metrics({
-      singleMetric: true,
-      namespace: DEFAULT_NAMESPACE,
-    });
+  ])(
+    'skips invalid dimension values in addDimensions ($name)',
+    ({ value, name }) => {
+      // Prepare
+      const metrics = new Metrics({
+        singleMetric: true,
+        namespace: DEFAULT_NAMESPACE,
+      });
 
-    // Act & Assess
-    metrics
-      .addDimensions({
-        validDimension: 'valid',
-        [name as string]: value as string,
-      })
-      .addMetric('test', MetricUnit.Count, 1)
-      .publishStoredMetrics();
+      // Act & Assess
+      metrics
+        .addDimensions({
+          validDimension: 'valid',
+          [name as string]: value as string,
+        })
+        .addMetric('test', MetricUnit.Count, 1)
+        .publishStoredMetrics();
 
-    expect(console.warn).toHaveBeenCalledWith(
-      `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
-    );
-    expect(console.log).toHaveEmittedEMFWith(
-      expect.objectContaining({ validDimension: 'valid' })
-    );
-    expect(console.log).toHaveEmittedEMFWith(
-      expect.not.objectContaining({ invalidDimension: value })
-    );
-  });
+      expect(console.warn).toHaveBeenCalledWith(
+        `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+      );
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.objectContaining({ validDimension: 'valid' })
+      );
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.not.objectContaining({ invalidDimension: value })
+      );
+    }
+  );
 
   it('warns when addDimensions overwrites existing dimensions', () => {
     // Prepare
@@ -681,38 +681,38 @@ describe('Working with dimensions', () => {
     { value: null, name: 'valid-name' },
     { value: '', name: 'valid-name' },
     { value: 'valid-value', name: '' },
-  ])('skips invalid default dimension values in setDefaultDimensions ($name)', ({
-    value,
-    name,
-  }) => {
-    // Arrange
-    const metrics = new Metrics({
-      singleMetric: true,
-      namespace: DEFAULT_NAMESPACE,
-    });
+  ])(
+    'skips invalid default dimension values in setDefaultDimensions ($name)',
+    ({ value, name }) => {
+      // Arrange
+      const metrics = new Metrics({
+        singleMetric: true,
+        namespace: DEFAULT_NAMESPACE,
+      });
 
-    // Act
-    metrics
-      .setDefaultDimensions({
-        validDimension: 'valid',
-        [name as string]: value as string,
-      })
-      .addMetric('test', MetricUnit.Count, 1)
-      .publishStoredMetrics();
+      // Act
+      metrics
+        .setDefaultDimensions({
+          validDimension: 'valid',
+          [name as string]: value as string,
+        })
+        .addMetric('test', MetricUnit.Count, 1)
+        .publishStoredMetrics();
 
-    // Assess
-    expect(console.warn).toHaveBeenCalledWith(
-      `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
-    );
+      // Assess
+      expect(console.warn).toHaveBeenCalledWith(
+        `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+      );
 
-    expect(console.log).toHaveEmittedEMFWith(
-      expect.objectContaining({ validDimension: 'valid' })
-    );
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.objectContaining({ validDimension: 'valid' })
+      );
 
-    expect(console.log).toHaveEmittedEMFWith(
-      expect.not.objectContaining({ [name]: value })
-    );
-  });
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.not.objectContaining({ [name]: value })
+      );
+    }
+  );
   it('allows adding multiple dimension sets as long as no single set exceeds MAX_DIMENSION_COUNT', () => {
     // Prepare
     const metrics = new Metrics({ namespace: 'test' });

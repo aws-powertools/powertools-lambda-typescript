@@ -1,8 +1,7 @@
 name: Maintenance
 description: Suggest an activity to help address tech debt, governance, and anything internal
-title: "Maintenance: TITLE"
+title: "Maintenance: <TITLE>"
 labels: ["internal", "triage"]
-projects: ["aws-powertools/7"]
 body:
   - type: markdown
     attributes:
@@ -43,6 +42,8 @@ body:
         - Batch Processing
         - Validation
         - Other
+    validations:
+      required: true
   - type: textarea
     id: suggestion
     attributes:
@@ -69,5 +70,5 @@ body:
     id: notes
     attributes:
       label: Future readers
-      description: Please not edit this field
+      description: Please do not edit this field
       value: "Please react with 👍 and your use case to help us understand customer demand."

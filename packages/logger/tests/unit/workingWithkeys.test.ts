@@ -861,27 +861,25 @@ describe('Working with keys', () => {
     );
   });
 
-  it.each([
-    { value: null },
-    { value: undefined },
-  ])('handles null and undefined values when passing them to the log method ($value)', ({
-    value,
-  }) => {
-    // Prepare
-    const logger = new Logger();
+  it.each([{ value: null }, { value: undefined }])(
+    'handles null and undefined values when passing them to the log method ($value)',
+    ({ value }) => {
+      // Prepare
+      const logger = new Logger();
 
-    // Act
-    // @ts-expect-error - these values are already forbidden by TypeScript, but JavaScript-only customers might pass them
-    logger.info('foo', value);
+      // Act
+      // @ts-expect-error - these values are already forbidden by TypeScript, but JavaScript-only customers might pass them
+      logger.info('foo', value);
 
-    // Assess
-    expect(console.info).toHaveLoggedNth(
-      1,
-      expect.objectContaining({
-        message: 'foo',
-      })
-    );
-  });
+      // Assess
+      expect(console.info).toHaveLoggedNth(
+        1,
+        expect.objectContaining({
+          message: 'foo',
+        })
+      );
+    }
+  );
 
   describe('deprecated persistentLogAttributes usage', () => {
     it('sets #attributesStore on the logger', () => {

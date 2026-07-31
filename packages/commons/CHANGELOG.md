@@ -1,5 +1,19 @@
 # Change Log
 
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Improvements
+
+- extract shared isRunningInLambda helper ([#5424](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5424)) ([aec888b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/aec888b0aca6a78cb30f8ee4cfb080ed4569f6a8))
+
+### Maintenance
+
+- bump @aws/lambda-invoke-store from 0.2.4 to 0.3.0 ([#5401](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5401)) ([0a05acd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0a05acd194415f2a9a988258cd5320913c3b6504))
+- guard UA string against duplicate PTEnv suffix ([#5311](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5311)) ([6b59973](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6b599730ae8e4134de2bbad6474fdc87fee740d2))
+
+### Bug Fixes
+
+- clear LRUCache pointers on eviction of last item ([#5295](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5295)) ([acf1ba1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/acf1ba194fa2c56d8150fd7c148804e18543d593))
 ## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
 
 ### Bug Fixes

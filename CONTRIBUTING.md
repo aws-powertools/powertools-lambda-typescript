@@ -65,7 +65,7 @@ timeline
                                     : Contribution size check
                                     : Contribution category check
                                     : GitHub Actions security check
-                                    : Quality checks (SonarCloud)
+                                    : Static analysis (CodeQL)
                                     : End-to-end tests (manual by maintainer)
                                     : +pre-commit & pre-pull request checks
 

@@ -66,6 +66,10 @@ This utility requires additional permissions to work as expected.
 | DynamoDB  | **`DynamoDBProvider.get`**                                       | **`dynamodb:GetItem`**                                                               |
 | DynamoDB  | **`DynamoDBProvider.getMultiple`**                               | **`dynamodb:Query`**                                                                 |
 | AppConfig | **`getAppConfig`**, **`AppConfigProvider.getAppConfig`**         | **`appconfig:GetLatestConfiguration`** and **`appconfig:StartConfigurationSession`** |
+| AppConfig | **`getConfig`** (AppConfig Agent)                                | **`appconfig:GetLatestConfiguration`** and **`appconfig:StartConfigurationSession`** |
+
+???+ note
+    When using `getConfig`, the permissions are used by the [AWS AppConfig Agent Lambda extension](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions.html) via the function role.
 
 ### Fetching parameters
 
@@ -138,6 +142,29 @@ The following will retrieve the latest version and store it in the cache.
 ```
 
 When using `getAppConfig`, the [underlying provider](#appconfigprovider) is cached. To fetch from different applications or environments, create separate `AppConfigProvider` instances for each application/environment combination.
+
+### Fetching app configurations via AppConfig Agent
+
+If you use the [AWS AppConfig Agent Lambda extension](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions.html), you can fetch application configurations from the agent's local HTTP endpoint using `getConfig`.
+
+```typescript hl_lines="1 4-8" title="Fetching a config from the AppConfig Agent"
+--8<-- "examples/snippets/parameters/getConfigAppConfigAgent.ts"
+```
+
+???+ note
+    To use `getConfig` you must [add the AWS AppConfig Agent Lambda extension layer](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-versions.html) to your function.
+
+When `getConfig` detects that it's not running in AWS Lambda (the `AWS_LAMBDA_INITIALIZATION_TYPE` environment variable is not set), or when `POWERTOOLS_DEV` is enabled, it returns `undefined` without making any request - this is helpful for unit testing.
+Local emulators that replicate the Lambda runtime environment (e.g. AWS SAM CLI) set the Lambda environment variables, so in those environments `getConfig` will attempt to call the agent.
+
+Unlike `getAppConfig`, which uses the AWS SDK, the agent handles caching, polling, and prefetching for you, so `getConfig` doesn't support the `maxAge` and `forceFetch` options and always fetches from the agent's local endpoint.
+
+When the requested configuration doesn't exist, `getConfig` returns `undefined` - you can use the nullish coalescing operator (`??`) to provide a fallback value, or set the [`throwOnMissing` option](#throwing-on-missing-values) to throw a `ParameterNotFoundError` instead. Any other failure to reach the agent or retrieve the value throws a `GetParameterError`.
+
+You can configure the agent's behavior using [the environment variables it exposes](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-config.html).
+For example, you can reduce cold start latency by setting `AWS_APPCONFIG_EXTENSION_PREFETCH_LIST` to the path of your configuration (i.e. `/applications/my-app/environments/my-env/configurations/my-configuration`), so that the agent starts fetching it before your handler runs.
+
+If you configured the agent to run on a port other than the default `2772` using the `AWS_APPCONFIG_EXTENSION_HTTP_PORT` environment variable, `getConfig` will use that port. You can also pass a `timeout` option (in milliseconds, default `3000`) to control how long to wait for the agent to respond.
 
 ## Advanced
 
@@ -501,6 +528,22 @@ For when you want to mock the AWS SDK v3 client directly, we recommend using the
 === "handler.ts"
 	```typescript
 	--8<-- "examples/snippets/parameters/testingYourCodeClientHandler.ts"
+	```
+
+### Testing getConfig (AppConfig Agent)
+
+When not running in AWS Lambda, the `getConfig` function doesn't make any request, so your tests never need to mock the agent's HTTP endpoint. Without a local value configured, it behaves as if the configuration doesn't exist: it returns `undefined`, or throws a `ParameterNotFoundError` when the `throwOnMissing` option is set.
+
+If you want `getConfig` to return a value instead, set the `POWERTOOLS_APPCONFIG_AGENT_RETURN_VALUE` environment variable. Its value is treated as the agent response, so it goes through the same `transform` handling as a real response - for example, a JSON string works with `transform: 'json'`.
+
+=== "handler.test.ts"
+	```typescript hl_lines="6-9"
+	--8<-- "examples/snippets/parameters/testingYourCodeAppConfigAgent.ts"
+	```
+
+=== "handler.ts"
+	```typescript
+	--8<-- "examples/snippets/parameters/testingYourCodeAppConfigAgentHandler.ts"
 	```
 
 ### Clearing cache

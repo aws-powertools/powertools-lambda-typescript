@@ -1,5 +1,48 @@
 # Change Log
 
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Improvements
+
+- **commons** extract shared isRunningInLambda helper ([#5424](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5424)) ([aec888b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/aec888b0aca6a78cb30f8ee4cfb080ed4569f6a8))
+- **logger** remove unsafe context cast in createChild ([#5443](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5443)) ([ac97f52](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ac97f52aff3054055d88f63a3ba43252481df13e))
+- **event-handler** extract shared IP-extraction util for HTTP middleware ([#5346](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5346)) ([3230ca7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3230ca71342b8a6165c4edff3bed317e0b7b53fd))
+
+### Maintenance
+
+- **commons** bump @aws/lambda-invoke-store from 0.2.4 to 0.3.0 ([#5401](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5401)) ([0a05acd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0a05acd194415f2a9a988258cd5320913c3b6504))
+- **commons** guard UA string against duplicate PTEnv suffix ([#5311](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5311)) ([6b59973](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6b599730ae8e4134de2bbad6474fdc87fee740d2))
+- **logger** bump @aws/lambda-invoke-store from 0.2.4 to 0.3.0 ([#5401](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5401)) ([0a05acd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0a05acd194415f2a9a988258cd5320913c3b6504))
+- **metrics** bump @aws/lambda-invoke-store from 0.2.4 to 0.3.0 ([#5401](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5401)) ([0a05acd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0a05acd194415f2a9a988258cd5320913c3b6504))
+- **tracer** bump @aws/lambda-invoke-store from 0.2.4 to 0.3.0 ([#5401](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5401)) ([0a05acd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0a05acd194415f2a9a988258cd5320913c3b6504))
+- **idempotency** bump @aws/durable-execution-sdk-js to ^1.1.6 ([#5298](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5298)) ([dbc07c7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dbc07c71d8e5eedb263b8938856c1fb1b28bf4a1))
+- **batch** bump @aws/lambda-invoke-store from 0.2.4 to 0.3.0 ([#5401](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5401)) ([0a05acd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0a05acd194415f2a9a988258cd5320913c3b6504))
+
+### Bug Fixes
+
+- **commons** clear LRUCache pointers on eviction of last item ([#5295](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5295)) ([acf1ba1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/acf1ba194fa2c56d8150fd7c148804e18543d593))
+- **logger** scope lambda context per invocation under LMI concurrency ([#5430](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5430)) ([e5d2e69](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e5d2e695c13a82b04e8273aaaebead2ca9d50cf0))
+- **metrics** detect key collisions between dimensions, metrics, and metadata ([#5240](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5240)) ([c1e62a6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c1e62a61a174b70c0faf714dda4cc95ffaab9aed))
+- **tracer** isolate active segment per invocation under LMI concurrency ([#5446](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5446)) ([5890d94](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5890d941a2d54862719f3399f2906544d31c59d6))
+- **tracer** scope middy middleware segments per invocation ([#5444](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5444)) ([14f68b1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/14f68b138a49091e45bfbb7cdaacdafc006157d4))
+- **idempotency** recompute key prefix from base on each configure call ([#5442](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5442)) ([a739c36](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a739c3673f06847643cfdc8926ba7c7b9ae0b30c))
+- **event-handler** preserve original string for invalid Bedrock Agent number params ([#5363](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5363)) ([9cce9f9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9cce9f988735850a371321f820ce1c97ee6d927e))
+- **event-handler** avoid runtime import of metrics package in HTTP metrics middleware ([#5310](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5310)) ([f4a6752](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f4a67529856f748e69ca456a76146ee3949677ad))
+- **event-handler** correct InvalidHttpMethodError name ([#5254](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5254)) ([7d410fc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7d410fc165ef98705fb27f8edd6a1a9ef9b45f35))
+- **event-handler** normalize trailing slashes in HTTP Router prefix joining ([#5255](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5255)) ([7a500a1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7a500a19a55b771684f8e10b782f3106f9c189df))
+
+### Features
+
+- **metrics** add Disposable support for automatic flushing via using ([#5349](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5349)) ([e1cc0e1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e1cc0e175d76d1e2dba7766420aa343186ddee12))
+- **parameters** add throwOnMissing option to fail fast on missing values ([#5343](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5343)) ([f81d247](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f81d24796fc8e4afc2e5ac8c29d5de388fa9615e))
+- **idempotency** warn when persistence layer reconfiguration is ignored ([#5422](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5422)) ([6a113b1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6a113b1cad95ff8f7b5338c312c88fa66fd1feb2))
+- **parser** add errorHandler option for inline parse error handling ([#5352](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5352)) ([de752b9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/de752b93b682e651140f46530b722113caac2aab))
+- **event-handler** add HTTP request/response data to tracer subsegment ([#5338](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5338)) ([e1202b0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e1202b01c50e3520b2cd9019bd26167b8b4ef1c0))
+- **event-handler** warn when AppSync Events payload exceeds 240 KB per-event limit ([#5339](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5339)) ([2e7850d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/2e7850d5de08ff91151fe1ecd7f5674919ee9b62))
+- **data-masking** add Data Masking utility ([#5143](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5143)) ([bae72dd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/bae72dd56345910a747c53b274199b2709628447))
+- **signer** add SigV4 request signing utility ([#5344](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5344)) ([d5dce6d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d5dce6d31cd43e25b5608df91c124fc24acc383d))
+
+
 ## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
 
 ### Bug Fixes

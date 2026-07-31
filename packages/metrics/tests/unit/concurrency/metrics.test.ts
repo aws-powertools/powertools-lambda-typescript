@@ -37,50 +37,49 @@ describe('Metrics concurrent invocation isolation', () => {
         { env: 'dev', key: 'value2', count: 2 },
       ],
     },
-  ])('handles metrics, metadata, and dimensions $description', async ({
-    useInvokeStore,
-    expectedCallCount,
-    expectedOutputs,
-  }) => {
-    if (useInvokeStore) {
-      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
-    }
-    let metrics: Metrics;
+  ])(
+    'handles metrics, metadata, and dimensions $description',
+    async ({ useInvokeStore, expectedCallCount, expectedOutputs }) => {
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
+      let metrics: Metrics;
 
-    await sequence(
-      {
-        sideEffects: [
-          () => {
-            // Metrics must be created inside ALS context because reset() clears InvokeStore
-            metrics = new Metrics({ singleMetric: false });
-            metrics
-              .addDimension('env', 'prod')
-              .addMetric('count', MetricUnit.Count, 1)
-              .addMetadata('key', 'value1');
-          },
-        ],
-        return: () => metrics.publishStoredMetrics(),
-      },
-      {
-        sideEffects: [
-          () => {
-            metrics.addDimension('env', 'dev');
-            metrics.addMetric('count', MetricUnit.Count, 2);
-            metrics.addMetadata('key', 'value2');
-          },
-        ],
-        return: () => metrics.publishStoredMetrics(),
-      },
-      { useInvokeStore }
-    );
-
-    expect(console.log).toHaveBeenCalledTimes(expectedCallCount);
-    for (const expectedOutput of expectedOutputs) {
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.objectContaining(expectedOutput)
+      await sequence(
+        {
+          sideEffects: [
+            () => {
+              // Metrics must be created inside ALS context because reset() clears InvokeStore
+              metrics = new Metrics({ singleMetric: false });
+              metrics
+                .addDimension('env', 'prod')
+                .addMetric('count', MetricUnit.Count, 1)
+                .addMetadata('key', 'value1');
+            },
+          ],
+          return: () => metrics.publishStoredMetrics(),
+        },
+        {
+          sideEffects: [
+            () => {
+              metrics.addDimension('env', 'dev');
+              metrics.addMetric('count', MetricUnit.Count, 2);
+              metrics.addMetadata('key', 'value2');
+            },
+          ],
+          return: () => metrics.publishStoredMetrics(),
+        },
+        { useInvokeStore }
       );
+
+      expect(console.log).toHaveBeenCalledTimes(expectedCallCount);
+      for (const expectedOutput of expectedOutputs) {
+        expect(console.log).toHaveEmittedEMFWith(
+          expect.objectContaining(expectedOutput)
+        );
+      }
     }
-  });
+  );
 
   it.each([
     {
@@ -103,52 +102,51 @@ describe('Metrics concurrent invocation isolation', () => {
         { _aws: expect.objectContaining({ Timestamp: 2000 }), count: 2 },
       ],
     },
-  ])('handles timestamps $description', async ({
-    useInvokeStore,
-    expectedCallCount,
-    expectedOutputs,
-  }) => {
-    if (useInvokeStore) {
-      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
-    }
-    let metrics: Metrics;
-    const timestamp1 = 1000;
-    const timestamp2 = 2000;
+  ])(
+    'handles timestamps $description',
+    async ({ useInvokeStore, expectedCallCount, expectedOutputs }) => {
+      if (useInvokeStore) {
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+      }
+      let metrics: Metrics;
+      const timestamp1 = 1000;
+      const timestamp2 = 2000;
 
-    await sequence(
-      {
-        sideEffects: [
-          () => {
-            // Metrics must be created inside ALS context because reset() clears InvokeStore
-            metrics = new Metrics({ singleMetric: false });
-            metrics.setTimestamp(timestamp1);
-            metrics.addMetric('count', MetricUnit.Count, 1);
-          },
-          () => {},
-          () => metrics.publishStoredMetrics(),
-        ],
-        return: () => {},
-      },
-      {
-        sideEffects: [
-          () => {},
-          () => {
-            metrics
-              .setTimestamp(timestamp2)
-              .addMetric('count', MetricUnit.Count, 2);
-          },
-          () => metrics.publishStoredMetrics(),
-        ],
-        return: () => {},
-      },
-      { useInvokeStore }
-    );
-
-    expect(console.log).toHaveBeenCalledTimes(expectedCallCount);
-    for (const expectedOutput of expectedOutputs) {
-      expect(console.log).toHaveEmittedEMFWith(
-        expect.objectContaining(expectedOutput)
+      await sequence(
+        {
+          sideEffects: [
+            () => {
+              // Metrics must be created inside ALS context because reset() clears InvokeStore
+              metrics = new Metrics({ singleMetric: false });
+              metrics.setTimestamp(timestamp1);
+              metrics.addMetric('count', MetricUnit.Count, 1);
+            },
+            () => {},
+            () => metrics.publishStoredMetrics(),
+          ],
+          return: () => {},
+        },
+        {
+          sideEffects: [
+            () => {},
+            () => {
+              metrics
+                .setTimestamp(timestamp2)
+                .addMetric('count', MetricUnit.Count, 2);
+            },
+            () => metrics.publishStoredMetrics(),
+          ],
+          return: () => {},
+        },
+        { useInvokeStore }
       );
+
+      expect(console.log).toHaveBeenCalledTimes(expectedCallCount);
+      for (const expectedOutput of expectedOutputs) {
+        expect(console.log).toHaveEmittedEMFWith(
+          expect.objectContaining(expectedOutput)
+        );
+      }
     }
-  });
+  );
 });

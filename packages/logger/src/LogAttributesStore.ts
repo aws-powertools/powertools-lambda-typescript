@@ -1,7 +1,7 @@
 import '@aws/lambda-invoke-store';
 import { deepMerge } from '@aws-lambda-powertools/commons';
 import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
-import type { LogAttributes } from './types/logKeys.js';
+import type { LambdaFunctionContext, LogAttributes } from './types/logKeys.js';
 
 /**
  * Manages storage of log attributes with automatic context detection.
@@ -16,10 +16,12 @@ class LogAttributesStore {
     'powertools.logger.temporaryAttributes'
   );
   readonly #keysKey = Symbol('powertools.logger.keys');
+  readonly #lambdaContextKey = Symbol('powertools.logger.lambdaContext');
 
   #fallbackTemporaryAttributes: LogAttributes = {};
   readonly #fallbackKeys: Map<string, 'temp' | 'persistent'> = new Map();
   #persistentAttributes: LogAttributes = {};
+  #fallbackLambdaContext: LambdaFunctionContext | undefined;
 
   #getTemporaryAttributes(): LogAttributes {
     if (!shouldUseInvokeStore()) {
@@ -108,6 +110,27 @@ class LogAttributesStore {
     }
 
     globalThis.awslambda.InvokeStore?.set(this.#temporaryAttributesKey, {});
+  }
+
+  public setLambdaContext(context: LambdaFunctionContext): void {
+    if (!shouldUseInvokeStore()) {
+      this.#fallbackLambdaContext = context;
+      return;
+    }
+
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    globalThis.awslambda.InvokeStore.set(this.#lambdaContextKey, context);
+  }
+
+  public getLambdaContext(): LambdaFunctionContext | undefined {
+    if (!shouldUseInvokeStore()) {
+      return this.#fallbackLambdaContext;
+    }
+
+    return globalThis.awslambda?.InvokeStore?.get(this.#lambdaContextKey);
   }
 
   public setPersistentAttributes(attributes: LogAttributes): void {

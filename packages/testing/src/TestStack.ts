@@ -9,10 +9,17 @@ import {
 } from '@aws-cdk/toolkit-lib';
 import { App, Stack } from 'aws-cdk-lib';
 import { generateTestUniqueName } from './helpers.js';
-import { patchCdkStackEventPolling } from './patchCdkStackEventPolling.js';
 import type { TestStackProps } from './types.js';
 
-patchCdkStackEventPolling();
+/**
+ * How often the CDK toolkit polls `DescribeStackEvents` for each in-flight
+ * stack operation. The default is 2s; our e2e `ioHost` only surfaces progress
+ * every 10s anyway, so nothing is lost by polling slower. Raising it avoids
+ * saturating the account-level CloudFormation read API rate when the CI matrix
+ * deploys/destroys dozens of stacks concurrently, which otherwise randomly
+ * fails jobs with `Throttling: Rate exceeded` (CDK_TOOLKIT_E5500/E7900).
+ */
+const STACK_EVENT_POLLING_INTERVAL_MS = 10_000;
 
 const testConsole = new Console({
   stdout: process.stdout,
@@ -153,6 +160,7 @@ class TestStack {
         strategy: StackSelectionStrategy.ALL_STACKS,
       },
       outputsFile: outputFilePath,
+      stackEventPollingInterval: STACK_EVENT_POLLING_INTERVAL_MS,
     });
 
     this.outputs = JSON.parse(await readFile(outputFilePath, 'utf-8'))[
@@ -173,6 +181,7 @@ class TestStack {
       stacks: {
         strategy: StackSelectionStrategy.ALL_STACKS,
       },
+      stackEventPollingInterval: STACK_EVENT_POLLING_INTERVAL_MS,
     });
   }
 

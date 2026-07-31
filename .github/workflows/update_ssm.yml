@@ -121,7 +121,7 @@ jobs:
         run: |
           echo 'CONVERTED_REGION=${{ matrix.region }}' | tr 'a-z\-' 'A-Z_' >> "$GITHUB_OUTPUT"
       - id: creds
-        uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c
         with:
           aws-region: ${{ matrix.region }}
           # Dynamic secret access is safe here - secrets are scoped per environment

@@ -3,6 +3,8 @@
   "entryPoints": [
     "./src/appconfig/index.ts",
     "./src/types/AppConfigProvider.ts",
+    "./src/appconfig-agent/index.ts",
+    "./src/types/AppConfigAgent.ts",
     "./src/ssm/index.ts",
     "./src/types/SSMProvider.ts",
     "./src/dynamodb/index.ts",

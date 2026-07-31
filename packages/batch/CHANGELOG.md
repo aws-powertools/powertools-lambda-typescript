@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Maintenance
+
+- bump @aws/lambda-invoke-store from 0.2.4 to 0.3.0 ([#5401](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5401)) ([0a05acd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0a05acd194415f2a9a988258cd5320913c3b6504))
 ## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
 
 **Note:** Version bump only for this package

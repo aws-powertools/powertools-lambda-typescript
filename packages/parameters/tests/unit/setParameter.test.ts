@@ -95,20 +95,23 @@ describe('Function: setParameter', () => {
     ['parameterType', 'SecureString', 'Type'],
     ['tier', 'Advanced', 'Tier'],
     ['kmsKeyId', 'my-key-id', 'KeyId'],
-  ])('sets the parameter with the option when called with %s option', async (option, value, sdkOption) => {
-    //Prepare
-    const options: SSMSetOptions = { value: 'my-value', [option]: value };
-    client.on(PutParameterCommand).resolves({ Version: 1 });
+  ])(
+    'sets the parameter with the option when called with %s option',
+    async (option, value, sdkOption) => {
+      //Prepare
+      const options: SSMSetOptions = { value: 'my-value', [option]: value };
+      client.on(PutParameterCommand).resolves({ Version: 1 });
 
-    // Act
-    const version = await setParameter(parameterName, options);
+      // Act
+      const version = await setParameter(parameterName, options);
 
-    // Assess
-    expect(client).toReceiveCommandWith(PutParameterCommand, {
-      Name: parameterName,
-      Value: options.value,
-      [sdkOption]: value,
-    });
-    expect(version).toBe(1);
-  });
+      // Assess
+      expect(client).toReceiveCommandWith(PutParameterCommand, {
+        Name: parameterName,
+        Value: options.value,
+        [sdkOption]: value,
+      });
+      expect(version).toBe(1);
+    }
+  );
 });

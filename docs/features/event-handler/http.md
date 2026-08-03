@@ -1,7 +1,6 @@
 ---
 title: HTTP API
 description: Event handler for building HTTP APIs in AWS Lambda
-status: new
 ---
 
 Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), and Lambda Function URLs<!--, and VPC Lattice -->.

@@ -1,7 +1,6 @@
 ---
 title: Metadata
 description: Utility to fetch data from the AWS Lambda Metadata endpoint
-status: new
 ---
 
 <!-- markdownlint-disable MD043 -->

@@ -7,36 +7,9 @@ description: Powertools for AWS Lambda (TypeScript)
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless best practices and increase developer velocity.
 
-You can use Powertools for AWS Lambda in both TypeScript and JavaScript code bases.
+You can use Powertools for AWS Lambda also in [Python](https://docs.aws.amazon.com/powertools/python/latest/){target="_blank" }, [Java](https://docs.aws.amazon.com/powertools/java/){target="_blank"}, and [.NET](https://docs.aws.amazon.com/powertools/dotnet/){target="_blank"}.
 
 <!-- markdownlint-disable MD050 -->
-<div class="grid cards" markdown>
-
-- :material-battery-charging:{ .lg .middle } __Features__
-
-    ---
-
-    Adopt one, a few, or all industry practices. **Progressively**.
-
-    [:octicons-arrow-right-24: All features](./features/index.md)
-
-- :heart:{ .lg .middle } __Support this project__
-
-    ---
-
-    Become a public reference customer, share your work, contribute, use Lambda Layers, etc.
-
-    [:octicons-arrow-right-24: Support](#support-powertools-for-aws)
-
-- :material-file-code:{ .lg .middle } __Available languages__
-
-    ---
-
-    Powertools for AWS Lambda is also available in other languages
-
-    :octicons-arrow-right-24: [Python](https://docs.aws.amazon.com/powertools/python/latest/){target="_blank" }, [Java](https://docs.aws.amazon.com/powertools/java/){target="_blank"}, and [.NET](https://docs.aws.amazon.com/powertools/dotnet/){target="_blank"}
-
-</div>
 
 ## Features
 

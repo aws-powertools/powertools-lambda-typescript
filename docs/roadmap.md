@@ -92,15 +92,15 @@ To ensure we are attracting tomorrow's customers as well as new contributors to 
 
 - [x] [Create a new "Getting Started" guide in the docs](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2948){target="_blank"}
 - [ ] Further improve the "Contributing" & "How to find contributions" pages
-- [ ] Surface contribution opportunities in Discord & other community channels
-- [ ] Improve release notes announcements in Discord & other community channels
+- [ ] Surface contribution opportunities on GitHub Discussions & other community channels
+- [ ] Improve release notes announcements on GitHub Discussions & other community channels
 - [x] We will also attempt to create a community-developed new utility (see [Validation](#validation) above)
 
 ### Missing something?
 
-You can help us prioritize by [upvoting existing feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc++label%3Atype%2Ffeature-request+), leaving a comment on what use cases it could unblock for you, and by joining our discussions on Discord.
+You can help us prioritize by [upvoting existing feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc++label%3Atype%2Ffeature-request+), leaving a comment on what use cases it could unblock for you, and by joining our discussions on GitHub.
 
-[![Discord](./media/join-discord.svg)](https://discord.gg/B8zZKbbyET)
+[![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-181717.svg?logo=github)](https://github.com/aws-powertools/powertools-lambda-typescript/discussions)
 
 ### Roadmap status definition
 

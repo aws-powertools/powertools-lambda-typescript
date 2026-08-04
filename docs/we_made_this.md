@@ -11,9 +11,9 @@ This space is dedicated to highlight our awesome community content featuring Pow
 
 ## Connect
 
-[![Join our Discord](https://img.shields.io/badge/Discord-Join_Community-7289da.svg)](https://discord.gg/B8zZKbbyET){target="_blank"}
+[![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-181717.svg?logo=github)](https://github.com/aws-powertools/powertools-lambda-typescript/discussions){target="_blank"}
 
-Join us on [Discord](https://discord.gg/B8zZKbbyET){target="_blank"} to connect with the Powertools community 👋. Ask questions, learn from each other, contribute, hang out with key contributors, and more!
+Join us on [GitHub Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions){target="_blank"} to connect with the Powertools community 👋. Ask questions, learn from each other, contribute, hang out with key contributors, and more!
 
 ## Powertools for AWS Lambda - MCP Server
 

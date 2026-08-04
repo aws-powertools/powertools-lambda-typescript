@@ -3,6 +3,6 @@ contact_links:
   - name: Ask a question
     url: https://github.com/aws-powertools/powertools-lambda-typescript/discussions/new
     about: Ask a general question about Powertools for AWS Lambda
-  - name: Join Community Discord Server
-    url: https://discord.gg/B8zZKbbyET
-    about: "Check out the #typescript channel"
+  - name: Join Community Discussions
+    url: https://github.com/aws-powertools/powertools-lambda-typescript/discussions
+    about: "Check out the discussions"

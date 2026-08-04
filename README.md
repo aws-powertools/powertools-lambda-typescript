@@ -5,7 +5,7 @@
 ![GitHub Release](https://img.shields.io/github/v/release/aws-powertools/powertools-lambda-typescript?style=flat)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/aws-powertools/powertools-lambda-typescript/badge)](https://scorecard.dev/viewer/?uri=github.com/aws-powertools/powertools-lambda-typescript)
 
-[![Discord](https://img.shields.io/badge/Discord-Join_Community-7289da.svg)](https://discord.gg/B8zZKbbyET)
+[![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-181717.svg?logo=github)](https://github.com/aws-powertools/powertools-lambda-typescript/discussions)
 
 Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless [best practices and increase developer velocity](https://docs.aws.amazon.com/powertools/typescript/latest/#features).
 
@@ -101,7 +101,7 @@ This helps us understand who uses Powertools for AWS Lambda (Typescript) in a no
 
 ## Connect
 
-- **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+- **Powertools for AWS Lambda on GitHub Discussions**: [Join the conversation](https://github.com/aws-powertools/powertools-lambda-typescript/discussions)
 - **Email**: <aws-powertools-maintainers@amazon.com>
 
 ## Security disclosures

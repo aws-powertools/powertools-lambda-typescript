@@ -220,8 +220,8 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/aws-powertools/powertools-lambda-typescript
-    - icon: fontawesome/brands/discord
-      link: https://discord.gg/B8zZKbbyET
-      name: Join our Discord Server!
+    - icon: fontawesome/brands/github
+      link: https://github.com/aws-powertools/powertools-lambda-typescript/discussions
+      name: Join our GitHub Discussions!
   status:
     new: New Utility

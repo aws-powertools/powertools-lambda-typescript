@@ -22,7 +22,7 @@ We consider any contribution that help this project improve everyone's experienc
 Whether you're new contributor or a pro, we compiled a list of the common contributions to help you choose your first:
 
 !!! info "Please check [existing open](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc){target='_blank'}, or [recently closed](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+sort%3Aupdated-desc+is%3Aclosed){target='_blank'} issues before creating a new one."
-    Each type link goes to their respective template, or Discord invite.
+    Each type link goes to their respective template, or GitHub Discussions.
 
 | Type                                                                                                  | Description                                                                                                                                                                                       |
 | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -32,7 +32,7 @@ Whether you're new contributor or a pro, we compiled a list of the common contri
 | [Bug report](https://s12d.com/pt-ts-new-issue-bug){target="_blank" rel="nofollow"}                    | A runtime error that is reproducible whether you have an idea how to solve it or not                                                                                                              |
 | [Advocacy](https://s12d.com/pt-ts-new-issue-community-content){target="_blank" rel="nofollow"}        | Share what you did with Powertools for AWS Lambda. Blog posts, workshops, presentation, sample applications, podcasts, etc.                                                                       |
 | [Public reference](https://s12d.com/pt-ts-new-issue-public-reference){target="_blank" rel="nofollow"} | Become a public reference to share how you're using Powertools for AWS Lambda at your organization                                                                                                |
-| [Discussions](https://discord.gg/B8zZKbbyET){target="_blank" rel="nofollow"}                          | Kick off a discussion on Discord, introduce yourself, and help respond to existing questions from the community                                                                                   |
+| [Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions){target="_blank" rel="nofollow"}                          | Kick off a discussion on GitHub, introduce yourself, and help respond to existing questions from the community                                                                                   |
 | [Maintenance](https://s12d.com/pt-ts-new-issue-bug-maintenance){target="_blank" rel="nofollow"}       | Suggest areas to address technical debt, governance, and anything internal. Generally used by maintainers and contributors                                                                        |
 
 ## Finding contributions to work on
@@ -46,12 +46,12 @@ Whether you're new contributor or a pro, we compiled a list of the common contri
 | [Pending design proposals](https://s12d.com/pt-ts-open-rfcs){target="_blank" rel="nofollow"}                      | These are feature requests that initially look good but need a RFC to enrich the discussion by validating user-experience, tradeoffs, and highlight use cases               |
 | [Backlog items](https://s12d.com/pt-ts-backlog){target="_blank" rel="nofollow"}                                   | We use GitHub projects to surface what we're working on, needs triage, etc. This view shows items we already triaged but don't have the bandwidth to tackle them just yet   |
 | [Documentation](https://docs.aws.amazon.com/powertools/typescript/latest/){target="_blank"}                       | Documentation can always be improved. Look for areas that could use a better example, or a diagram - keep in mind a diverse audience and English as a second language folks |
-| [Participate in discussions](https://discord.gg/B8zZKbbyET){target="_blank" rel="nofollow"}                       | There's always a discussion that could benefit others in the form of documentation, blog post, etc.                                                                         |
+| [Participate in discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions){target="_blank" rel="nofollow"}                       | There's always a discussion that could benefit others in the form of documentation, blog post, etc.                                                                         |
 | [Roadmap](../roadmap.md){target="_blank"}                                                                         | Some roadmap items need a RFC to discuss design options, or gather customers use case before we can prioritize it                                                           |
 | Build a sample application                                                                                        | Using Powertools for AWS Lambda in different contexts will give you insights on what could be made easier, which documentation could be enriched, and more                  |
 
 !!! question "Still couldn't find anything that match your skill set?"
-    Please reach out on [Discord](https://discord.gg/B8zZKbbyET){target="_blank" rel="nofollow"}, specially if you'd like to get mentoring for a task you'd like to take but you don't feel ready yet :blush:
+    Please reach out on [GitHub Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions){target="_blank" rel="nofollow"}, specially if you'd like to get mentoring for a task you'd like to take but you don't feel ready yet :blush:
 
     Contributions are meant to be bi-directional. There's always something we can learn from each other.
 

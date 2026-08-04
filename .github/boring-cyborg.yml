@@ -2,7 +2,7 @@
 firstPRWelcomeComment: >
   Thanks a lot for your first contribution! Please check out our [contributing guidelines](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/CONTRIBUTING.md) and don't hesitate to ask whatever you need.
 
-  In the meantime, check out the #typescript channel on our Powertools for AWS Lambda Discord: [Invite link](https://discord.gg/B8zZKbbyET)
+  In the meantime, check out our GitHub Discussions: [Join the conversation](https://github.com/aws-powertools/powertools-lambda-typescript/discussions)
 
 # Comment to be posted to congratulate user on their first merged PR
 firstPRMergeComment: >
@@ -12,4 +12,4 @@ firstPRMergeComment: >
 firstIssueWelcomeComment: >
   Thanks for opening your first issue here! We'll come back to you as soon as we can.
 
-  In the meantime, check out the #typescript channel on our Powertools for AWS Lambda Discord: [Invite link](https://discord.gg/B8zZKbbyET)
+  In the meantime, check out our GitHub Discussions: [Join the conversation](https://github.com/aws-powertools/powertools-lambda-typescript/discussions)

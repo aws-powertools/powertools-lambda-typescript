@@ -64,7 +64,7 @@ There are many ways you can help us gain future investments to improve everyone'
 
     Connect, ask questions, and share what features you use.
 
-    [:octicons-arrow-right-24: Discord invite](https://discord.gg/B8zZKbbyET){target="blank"}
+    [:octicons-arrow-right-24: GitHub Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions){target="blank"}
 
 </div>
 

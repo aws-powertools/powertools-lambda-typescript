@@ -19,7 +19,7 @@ When creating pull requests for this project, you MUST follow the PR template de
 
 ## PR title
 
-- Must follow [conventional commit semantics](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/.github/semantic.yml#L2)
+- Must follow the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/); the title check's failure comment lists the allowed types and scopes
 - Keep under 70 characters
 - Examples: `feat(logger): add structured logging`, `fix(metrics): resolve dimension limit`, `chore: remove me-south-1 region`
 

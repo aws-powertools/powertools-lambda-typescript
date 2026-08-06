@@ -72,7 +72,7 @@ These are the steps to send a pull request:
 
 1. Make sure that all formatting, linting, and tests tasks run as git pre-commit & pre-push hooks are passing.
 2. Commit to your fork using clear commit messages. Don't worry about typos or format, we squash all commits during merge.
-3. Send us a pull request with a conventional semantic title - see [full list of scopes and actions](https://github.com/aws-powertools/powertools-lambda-typescript/blob/main/.github/semantic.yml#L2).
+3. Send us a pull request with a title that follows the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/); the title check's failure comment lists the allowed types and scopes.
 4. Fill in the areas pre-defined in the pull request body to help expedite reviewing your work.
 5. Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
 

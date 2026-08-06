@@ -102,7 +102,7 @@ class TestStack {
             return;
           }
           if (msg.message.includes('✅') && !msg.message.includes('deployed')) {
-            testConsole.log(`${that.testName} deployed successfully`);
+            testConsole.log(`${that.stack.stackName} deployed successfully`);
             return;
           }
           if (msg.message.includes('CREATE_IN_PROGRESS')) {
@@ -110,7 +110,9 @@ class TestStack {
               return;
             }
             lastCreateLog = Date.now();
-            testConsole.log(`${that.testName} stack is being created...`);
+            testConsole.log(
+              `${that.stack.stackName} stack is being created...`
+            );
             return;
           }
           if (msg.message.includes('DELETE_IN_PROGRESS')) {
@@ -118,7 +120,9 @@ class TestStack {
               return;
             }
             lastDestroyLog = Date.now();
-            testConsole.log(`${that.testName} stack is being destroyed...`);
+            testConsole.log(
+              `${that.stack.stackName} stack is being destroyed...`
+            );
             return;
           }
           if (['warning', 'error'].includes(msg.level)) {

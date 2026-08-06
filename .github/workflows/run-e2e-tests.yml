@@ -14,6 +14,7 @@ jobs:
   # packages/testing/src/lmi/sharedCapacityProviderStack.ts).
   setup-lmi-capacity-providers:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     env:
       NODE_ENV: dev
     environment: e2e-tests
@@ -108,6 +109,7 @@ jobs:
   # shared capacity provider being ready.
   run-e2e-tests-lmi:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     needs: setup-lmi-capacity-providers
     env:
       NODE_ENV: dev
@@ -151,6 +153,15 @@ jobs:
             --stack-name "LmiShared-${GITHUB_RUN_ID}-${ARCH//_/-}" \
             --query "Stacks[0].Outputs[?OutputKey=='CapacityProviderArn'].OutputValue" \
             --output text)
+          # `--output text` prints an empty string (exit 0) when the query
+          # matches nothing and `None` when the output is null. Either would be
+          # silently treated as "no shared provider", making every cell fall
+          # back to provisioning its own VPC + capacity provider and defeating
+          # the shared-provider design, so fail loudly instead.
+          if [[ -z "$arn" || "$arn" == "None" ]]; then
+            echo "::error::Could not resolve shared LMI capacity provider ARN for LmiShared-${GITHUB_RUN_ID}-${ARCH//_/-}"
+            exit 1
+          fi
           echo "LMI_CAPACITY_PROVIDER_ARN=$arn" >> "$GITHUB_ENV"
       - name: Run LMI e2e ${{ matrix.package }}-${{ matrix.version }}-${{ matrix.arch }}
         env:
@@ -170,6 +181,7 @@ jobs:
   # not exist") until the setup job re-runs and redeploys them.
   teardown-lmi-capacity-providers:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     needs: [setup-lmi-capacity-providers, run-e2e-tests-lmi]
     if: always()
     env:

@@ -2,6 +2,7 @@ import { App, CfnOutput, Stack } from 'aws-cdk-lib';
 import type { TEST_ARCHITECTURES } from '../constants.js';
 import { TestLmiCapacityProvider } from '../resources/TestLmiCapacityProvider.js';
 import { TestStack } from '../TestStack.js';
+import { getRunId } from './naming.js';
 
 /**
  * Build the run-scoped shared Lambda Managed Instances (LMI) capacity
@@ -25,13 +26,7 @@ import { TestStack } from '../TestStack.js';
 const buildSharedCapacityProviderStack = (
   architecture: keyof typeof TEST_ARCHITECTURES
 ): TestStack => {
-  const runId = process.env.GITHUB_RUN_ID ?? 'local';
-  if (!/^[A-Za-z0-9-]+$/.test(runId)) {
-    throw new Error(
-      `Invalid run id "${runId}": only alphanumerics and hyphens are allowed`
-    );
-  }
-  const stackName = `LmiShared-${runId}-${architecture.replace('_', '-')}`;
+  const stackName = `LmiShared-${getRunId()}-${architecture.replace('_', '-')}`;
 
   const app = new App();
   const stack = new Stack(app, stackName, {

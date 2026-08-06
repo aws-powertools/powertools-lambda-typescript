@@ -53,6 +53,10 @@
       "import": "./lib/esm/resources/TestLmiCapacityProvider.js",
       "require": "./lib/cjs/resources/TestLmiCapacityProvider.js"
     },
+    "./lmi": {
+      "import": "./lib/esm/lmi/naming.js",
+      "require": "./lib/cjs/lmi/naming.js"
+    },
     "./context": {
       "import": "./lib/esm/context.js",
       "require": "./lib/cjs/context.js"
@@ -79,6 +83,10 @@
       "resources/capacity-provider": [
         "lib/cjs/resources/TestLmiCapacityProvider.d.ts",
         "lib/esm/resources/TestLmiCapacityProvider.d.ts"
+      ],
+      "lmi": [
+        "lib/cjs/lmi/naming.d.ts",
+        "lib/esm/lmi/naming.d.ts"
       ],
       "types": [
         "lib/cjs/types.d.ts",
@@ -110,6 +118,7 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
   "dependencies": {
     "@aws-cdk/toolkit-lib": "^1.39.0",
+    "@aws-sdk/client-cloudformation": "^3.1116.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.1116.0",
     "@aws-sdk/client-lambda": "^3.1116.0",
     "@aws/lambda-invoke-store": "0.3.0",

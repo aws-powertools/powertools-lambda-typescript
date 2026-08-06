@@ -147,10 +147,18 @@ class TestStack {
 
   /**
    * Synthesize the CDK app into a Cloud Assembly.
+   *
+   * `clobberEnv: false` keeps the toolkit from temporarily replacing the
+   * global `process.env` with an immutable proxy during synthesis. That swap
+   * is not concurrency-safe, so without this two `TestStack` instances
+   * synthesizing at once (e.g. the shared capacity provider stacks, one per
+   * architecture) would race on `process.env`. The assembly builder does not
+   * read the injected env, so opting out is safe here.
    */
   async #synthAssembly(): Promise<ICloudAssemblySource> {
     return await this.#cli.fromAssemblyBuilder(async () => this.app.synth(), {
       outdir: this.#outdir(),
+      clobberEnv: false,
     });
   }
 

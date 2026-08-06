@@ -6,12 +6,17 @@ import type { InvokeTestFunctionOptions } from './types.js';
 const lambdaClient = new LambdaClient({});
 
 /**
- * Invoke a Lambda function once and return the logs
+ * Invoke a Lambda function once and return the logs.
+ *
+ * `LogType: 'Tail'` is not supported on functions configured with a Lambda
+ * Managed Instances capacity provider — the invoke is rejected — so this
+ * helper cannot be used to invoke such functions. LMI suites invoke their
+ * functions directly and collect logs by other means (e.g. from the response
+ * payload) instead.
  */
 const invokeFunctionOnce = async ({
   functionName,
   payload = {},
-  includeTailLogs = true,
 }: Omit<
   InvokeTestFunctionOptions,
   'times' | 'invocationMode'
@@ -20,9 +25,8 @@ const invokeFunctionOnce = async ({
     new InvokeCommand({
       FunctionName: functionName,
       InvocationType: 'RequestResponse',
-      // Wait until execution completes and return all logs; not supported on
-      // functions configured with a capacity provider
-      LogType: includeTailLogs ? 'Tail' : 'None',
+      // Wait until execution completes and return all logs
+      LogType: 'Tail',
       Payload: fromUtf8(JSON.stringify(payload)),
     })
   );
@@ -45,7 +49,6 @@ const invokeFunction = async ({
   times = 1,
   invocationMode = 'PARALLEL',
   payload = {},
-  includeTailLogs = true,
 }: InvokeTestFunctionOptions): Promise<TestInvocationLogs[]> => {
   const invocationLogs: TestInvocationLogs[] = [];
 
@@ -71,7 +74,6 @@ const invokeFunction = async ({
           return invoke({
             functionName,
             payload: invocationPayload,
-            includeTailLogs,
           });
         })
       ))
@@ -85,7 +87,6 @@ const invokeFunction = async ({
         await invokeFunctionOnce({
           functionName,
           payload: invocationPayload,
-          includeTailLogs,
         })
       );
     }

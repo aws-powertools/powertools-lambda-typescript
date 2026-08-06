@@ -1,6 +1,7 @@
 import { Console } from 'node:console';
 import { join } from 'node:path';
 import { TestStack } from '@aws-lambda-powertools/testing-utils';
+import { lmiFunctionStackTestName } from '@aws-lambda-powertools/testing-utils/lmi';
 import { TestLmiCapacityProvider } from '@aws-lambda-powertools/testing-utils/resources/capacity-provider';
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
@@ -27,16 +28,22 @@ type IsolationResult = {
  * attributes on Lambda Managed Instances (LMI), where multiple invocations run
  * concurrently within the same execution environment.
  *
- * The function is associated with an ephemeral capacity provider whose fleet
- * is capped at the minimum size (12 vCPUs, which in practice hosts 8 of this
- * function's ~1 vCPU execution environments). The LMI scheduler prefers
- * scaling out to fresh environments over multiplexing, so the test fires more
- * simultaneous invocations than the fleet can host as dedicated environments,
- * forcing the overflow to be multiplexed into busy ones. The handler blocks
- * on a module-scoped promise barrier (see `lmi.test.FunctionCode.ts`) until a
- * peer invocation lands in the same environment, proving a genuine overlap.
- * Without InvokeStore isolation, the overlapping invocations' appended keys
- * would bleed into each other's log output.
+ * The function is associated with a small (12 vCPU) capacity provider. The
+ * LMI scheduler prefers scaling out to fresh execution environments over
+ * multiplexing invocations into busy ones, so forcing a genuine overlap does
+ * not depend on precisely sizing the fleet: instead the handler blocks on a
+ * module-scoped promise barrier (see `lmi.test.FunctionCode.ts`) until a peer
+ * invocation lands in the same environment. Holding every invocation open at
+ * once keeps environments busy long enough that the scheduler multiplexes at
+ * least one pair together, which is all the assertion needs. Without
+ * InvokeStore isolation, the overlapping invocations' appended keys would
+ * bleed into each other's log output.
+ *
+ * Exact environment counts are not asserted and vary with fleet size and load
+ * — in CI both Node.js versions share one per-architecture provider, so a run
+ * may spread these invocations across a couple of dozen environments and still
+ * multiplex a handful; a local run against an ephemeral provider looks
+ * different again. The barrier is what guarantees an overlap regardless.
  *
  * The Invoke API does not support Tail logs for capacity provider functions
  * and CloudWatch log delivery is asynchronous, so the handler intercepts its
@@ -55,17 +62,21 @@ const testConsole = new Console({
 });
 
 describe('Logger E2E - Lambda Managed Instances', () => {
-  // The LMI scheduler scales out to fresh execution environments until the
-  // capacity provider's fleet is saturated (8 environments with a 12 vCPU
-  // cap and ~1 vCPU environments) and only then multiplexes concurrent
-  // invocations into busy environments, so we need comfortably more
-  // concurrent invocations than the fleet can host
+  // Fire enough concurrent invocations, all held open on the barrier, that
+  // the scheduler multiplexes at least one pair into a shared execution
+  // environment rather than giving every invocation its own. The count only
+  // needs to comfortably exceed the fleet's environment count; the barrier,
+  // not a precise number, is what forces the overlap.
   const invocationCount = 30;
 
+  // The test name embeds an `Lmi` marker and the workflow run id
+  // (`Lmi-<runId>`) so the teardown job can find and delete this stack if the
+  // cell is cancelled or times out before its own `afterAll` runs, leaving
+  // the function attached to the shared capacity provider.
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: RESOURCE_NAME_PREFIX,
-      testName: 'Lmi',
+      testName: lmiFunctionStackTestName(),
     },
   });
 

@@ -97,6 +97,10 @@ class TestNodejsFunction extends NodejsFunction {
         maxExecutionEnvironments,
       } = scaling;
       capacityProvider.addFunction(this, {
+        // Set explicitly so both attach paths emit identical templates; the
+        // ARN path must set it on the L1 resource and the CFN property has no
+        // documented default of its own
+        publishToLatestPublished: true,
         perExecutionEnvironmentMaxConcurrency,
         executionEnvironmentMemoryGiBPerVCpu,
         ...(minExecutionEnvironments !== undefined ||

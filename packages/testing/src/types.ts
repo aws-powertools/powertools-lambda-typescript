@@ -102,15 +102,6 @@ type InvokeTestFunctionOptions = {
   times?: number;
   invocationMode?: 'PARALLEL' | 'SEQUENTIAL';
   payload?: Record<string, unknown> | Array<Record<string, unknown>>;
-  /**
-   * Whether to request the tail of the execution log with the invocation.
-   *
-   * Not supported by functions running on Lambda Managed Instances; collect
-   * logs with the `LogTailer` instead.
-   *
-   * @default true
-   */
-  includeTailLogs?: boolean;
 };
 
 type ErrorField = {

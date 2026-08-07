@@ -1,3 +1,4 @@
+import './patchToolkitLib.js';
 import { Console } from 'node:console';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

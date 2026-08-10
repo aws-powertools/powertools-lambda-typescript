@@ -29,7 +29,7 @@ import type { LogFormatter } from './formatter/LogFormatter.js';
 import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
 import { LogAttributesStore } from './LogAttributesStore.js';
-import { CircularMap } from './logBuffer.js';
+import { LogBufferStore } from './LogBufferStore.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type {
   ConstructorOptions,
@@ -227,17 +227,13 @@ class Logger extends Utility implements LoggerInterface {
   };
 
   /**
-   * Contains buffered logs, grouped by `_X_AMZN_TRACE_ID`, each group with a max size of `maxBufferBytesSize`.
+   * Store for the buffered logs, grouped by `_X_AMZN_TRACE_ID`.
    *
-   * Used when invocations run sequentially; under concurrency the buffer is scoped
-   * to each invocation via the InvokeStore, see {@link Logger.#getBuffer | `#getBuffer()`}.
+   * Scopes the buffer to each invocation via the InvokeStore when invocations
+   * run concurrently, and falls back to an instance-level buffer shared across
+   * sequential invocations. Only set when buffering is enabled.
    */
-  #buffer?: CircularMap<string>;
-
-  /**
-   * Key used to store the buffer in the InvokeStore when concurrency is enabled.
-   */
-  readonly #bufferKey = Symbol('powertools.logger.buffer');
+  #bufferStore?: LogBufferStore;
 
   /**
    * Search function for the correlation ID.
@@ -1453,9 +1449,7 @@ class Logger extends Utility implements LoggerInterface {
     if (options?.maxBytes !== undefined) {
       this.#bufferConfig.maxBytes = options.maxBytes;
     }
-    this.#buffer = new CircularMap({
-      maxBytesSize: this.#bufferConfig.maxBytes,
-    });
+    this.#bufferStore = new LogBufferStore(this.#bufferConfig.maxBytes);
 
     if (options?.flushOnErrorLog === false) {
       this.#bufferConfig.flushOnErrorLog = false;
@@ -1485,54 +1479,13 @@ class Logger extends Utility implements LoggerInterface {
    * @param log - Log to be buffered
    * @param logLevel - The level of log to be buffered
    */
-  /**
-   * Get the buffer holding this invocation's logs.
-   *
-   * When invocations run concurrently in the same execution environment
-   * (Lambda Managed Instances), each invocation gets its own buffer stored in
-   * the InvokeStore, so buffered logs die with their invocation context.
-   * Otherwise the instance-level buffer shared across sequential invocations
-   * is used.
-   */
-  #getBuffer(): CircularMap<string> | undefined {
-    if (this.#bufferConfig.enabled === false) {
-      return undefined;
-    }
-    if (!shouldUseInvokeStore()) {
-      return this.#buffer;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    let buffer = store.get(this.#bufferKey) as CircularMap<string> | undefined;
-    if (buffer == null) {
-      buffer = new CircularMap({
-        maxBytesSize: this.#bufferConfig.maxBytes,
-      });
-      store.set(this.#bufferKey, buffer);
-    }
-    return buffer;
-  }
-
   protected bufferLogItem(
     xrayTraceId: string,
     log: LogItem,
     logLevel: number
   ): void {
     log.prepareForPrint();
-    const buffer = this.#getBuffer();
-    // When invocations run sequentially, seeing a new traceId means the
-    // previous request is done, so its leftover entries are cleared to avoid
-    // retaining stale logs. Under concurrency the buffer is scoped to the
-    // invocation via the InvokeStore, so no cleanup is needed and clearing
-    // would wipe other in-flight invocations' logs.
-    if (!shouldUseInvokeStore() && buffer?.has(xrayTraceId) === false) {
-      buffer?.clear();
-    }
-    buffer?.setItem(
+    this.#bufferStore?.add(
       xrayTraceId,
       JSON.stringify(
         log.getAttributes(),
@@ -1555,8 +1508,7 @@ class Logger extends Utility implements LoggerInterface {
       return;
     }
 
-    const requestBuffer = this.#getBuffer();
-    const buffer = requestBuffer?.get(traceId);
+    const buffer = this.#bufferStore?.get(traceId);
     if (buffer === undefined) {
       return;
     }
@@ -1588,7 +1540,7 @@ class Logger extends Utility implements LoggerInterface {
       );
     }
 
-    requestBuffer?.delete(traceId);
+    this.#bufferStore?.delete(traceId);
   }
 
   /**
@@ -1599,7 +1551,7 @@ class Logger extends Utility implements LoggerInterface {
     if (traceId === undefined) {
       return;
     }
-    this.#getBuffer()?.delete(traceId);
+    this.#bufferStore?.delete(traceId);
   }
 
   /**

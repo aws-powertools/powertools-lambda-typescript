@@ -16,7 +16,6 @@ import {
   getStringFromEnv,
   getXRayTraceIdFromEnv,
   isDevMode,
-  shouldUseInvokeStore,
 } from '@aws-lambda-powertools/commons/utils/env';
 import type { Callback, Context, Handler } from 'aws-lambda';
 import {
@@ -29,6 +28,7 @@ import type { LogFormatter } from './formatter/LogFormatter.js';
 import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
 import { LogAttributesStore } from './LogAttributesStore.js';
+import { LogLevelStore } from './LogLevelStore.js';
 import { CircularMap } from './logBuffer.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type {
@@ -138,21 +138,13 @@ class Logger extends Utility implements LoggerInterface {
    */
   private logIndentation: number = LogJsonIndent.COMPACT;
   /**
-   * Log level used internally by the current instance of Logger.
+   * Store for the log level used by the current instance of Logger.
    *
-   * Holds the level set at initialization time. When invocations run
-   * concurrently in the same execution environment (Lambda Managed
-   * Instances), per-invocation changes like the debug sampling decision are
-   * scoped to the invocation via the InvokeStore, with this field as the
-   * fallback, see {@link Logger.#getLogLevel | `#getLogLevel()`}.
+   * Scopes per-invocation changes like the debug sampling decision to each
+   * invocation via the InvokeStore when invocations run concurrently, and
+   * falls back to a base level shared across sequential invocations.
    */
-  private logLevel: number = LogLevelThreshold.INFO;
-
-  /**
-   * Key used to store the per-invocation log level in the InvokeStore when
-   * concurrency is enabled.
-   */
-  readonly #logLevelKey = Symbol('powertools.logger.logLevel');
+  readonly #logLevelStore = new LogLevelStore(LogLevelThreshold.INFO);
 
   /**
    * Advanced Logging Control Log Level
@@ -264,7 +256,7 @@ class Logger extends Utility implements LoggerInterface {
    * To get the log level name, use the {@link getLevelName()} method.
    */
   public get level(): number {
-    return this.#getLogLevel();
+    return this.#logLevelStore.get();
   }
 
   public constructor(options: ConstructorOptions = {}) {
@@ -432,7 +424,7 @@ class Logger extends Utility implements LoggerInterface {
    * To get the log level as a number, use the {@link Logger.level} property.
    */
   public getLevelName(): Uppercase<LogLevel> {
-    return this.getLogLevelNameFromNumber(this.#getLogLevel());
+    return this.getLogLevelNameFromNumber(this.#logLevelStore.get());
   }
 
   /**
@@ -606,7 +598,7 @@ class Logger extends Utility implements LoggerInterface {
     }
     if (
       this.#shouldEnableDebugSampling() &&
-      this.#getLogLevel() > LogLevelThreshold.TRACE
+      this.#logLevelStore.get() > LogLevelThreshold.TRACE
     ) {
       this.setLogLevel('DEBUG');
       this.debug('Setting log level to DEBUG due to sampling rate');
@@ -671,55 +663,10 @@ class Logger extends Utility implements LoggerInterface {
   public setLogLevel(logLevel: LogLevel): void {
     if (this.awsLogLevelShortCircuit(logLevel)) return;
     if (this.isValidLogLevel(logLevel)) {
-      this.#setLogLevel(LogLevelThreshold[logLevel]);
+      this.#logLevelStore.set(LogLevelThreshold[logLevel]);
     } else {
       throw new Error(`Invalid log level: ${logLevel}`);
     }
-  }
-
-  /**
-   * Get the log level currently in effect.
-   *
-   * When invocations run concurrently in the same execution environment
-   * (Lambda Managed Instances), a per-invocation log level stored in the
-   * InvokeStore takes precedence, so changes like the debug sampling decision
-   * of one invocation don't affect the others. The level set at
-   * initialization time is the fallback.
-   */
-  #getLogLevel(): number {
-    if (!shouldUseInvokeStore()) {
-      return this.logLevel;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    return (
-      (globalThis.awslambda.InvokeStore.get(this.#logLevelKey) as
-        | number
-        | undefined) ?? this.logLevel
-    );
-  }
-
-  /**
-   * Set the log level, scoping it to the current invocation when concurrency
-   * is enabled and an invocation context is active. Outside an invocation
-   * context (e.g. during init) the instance level is set instead.
-   */
-  #setLogLevel(logLevel: number): void {
-    if (shouldUseInvokeStore()) {
-      if (globalThis.awslambda?.InvokeStore === undefined) {
-        throw new Error('InvokeStore is not available');
-      }
-
-      const store = globalThis.awslambda.InvokeStore;
-      if (store.hasContext()) {
-        store.set(this.#logLevelKey, logLevel);
-        return;
-      }
-    }
-    this.logLevel = logLevel;
   }
 
   /**
@@ -885,11 +832,11 @@ class Logger extends Utility implements LoggerInterface {
 
   private awsLogLevelShortCircuit(selectedLogLevel?: string): boolean {
     if (this.#alcLogLevel !== undefined) {
-      this.logLevel = LogLevelThreshold[this.#alcLogLevel];
+      this.#logLevelStore.setBase(LogLevelThreshold[this.#alcLogLevel]);
 
       if (
         this.isValidLogLevel(selectedLogLevel) &&
-        this.logLevel > LogLevelThreshold[selectedLogLevel]
+        this.#logLevelStore.getBase() > LogLevelThreshold[selectedLogLevel]
       ) {
         this.#warnOnce(
           `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${this.#alcLogLevel}). This can lead to data loss, consider adjusting them.`
@@ -1160,7 +1107,7 @@ class Logger extends Utility implements LoggerInterface {
       return;
     }
 
-    if (logLevel >= this.#getLogLevel()) {
+    if (logLevel >= this.#logLevelStore.get()) {
       if (this.#isInitialized) {
         this.printLog(
           logLevel,
@@ -1209,13 +1156,13 @@ class Logger extends Utility implements LoggerInterface {
     const constructorLogLevel = logLevel?.toUpperCase();
 
     if (this.awsLogLevelShortCircuit(constructorLogLevel)) {
-      this.#initialLogLevel = this.logLevel;
+      this.#initialLogLevel = this.#logLevelStore.getBase();
       return;
     }
 
     if (this.isValidLogLevel(constructorLogLevel)) {
-      this.logLevel = LogLevelThreshold[constructorLogLevel];
-      this.#initialLogLevel = this.logLevel;
+      this.#logLevelStore.setBase(LogLevelThreshold[constructorLogLevel]);
+      this.#initialLogLevel = this.#logLevelStore.getBase();
 
       return;
     }
@@ -1223,8 +1170,8 @@ class Logger extends Utility implements LoggerInterface {
       ?.getLogLevel()
       ?.toUpperCase();
     if (this.isValidLogLevel(customConfigValue)) {
-      this.logLevel = LogLevelThreshold[customConfigValue];
-      this.#initialLogLevel = this.logLevel;
+      this.#logLevelStore.setBase(LogLevelThreshold[customConfigValue]);
+      this.#initialLogLevel = this.#logLevelStore.getBase();
 
       return;
     }
@@ -1241,8 +1188,8 @@ class Logger extends Utility implements LoggerInterface {
     const logLevelValue = logLevelVariable || logLevelVariableAlias;
 
     if (this.isValidLogLevel(logLevelValue)) {
-      this.logLevel = LogLevelThreshold[logLevelValue];
-      this.#initialLogLevel = this.logLevel;
+      this.#logLevelStore.setBase(LogLevelThreshold[logLevelValue]);
+      this.#initialLogLevel = this.#logLevelStore.getBase();
     }
   }
 
@@ -1274,7 +1221,7 @@ class Logger extends Utility implements LoggerInterface {
 
         if (
           this.#shouldEnableDebugSampling() &&
-          this.logLevel > LogLevelThreshold.TRACE
+          this.#logLevelStore.getBase() > LogLevelThreshold.TRACE
         ) {
           this.setLogLevel('DEBUG');
           this.debug('Setting log level to DEBUG due to sampling rate');

@@ -147,4 +147,49 @@ describe('Debug sampling concurrent invocation isolation', () => {
       expect.objectContaining({ message: 'debug log from a later invocation' })
     );
   });
+
+  it('keeps each invocation log level isolated when two invocations overlap', async () => {
+    // Prepare
+    const store = await InvokeStore.getInstanceAsync();
+    const logger = new Logger({ logLevel: 'INFO' });
+    const aSetLevel = Promise.withResolvers<void>();
+    const bSetLevel = Promise.withResolvers<void>();
+
+    // Act
+    // Invocation A raises its level to DEBUG and yields, invocation B enters
+    // concurrently and sets its own level to ERROR, then A resumes and logs
+    const invocationA = store.run(
+      { [XRAY_TRACE_ID_KEY]: '1-aaaaaaaa-111111111111111111111111' },
+      async () => {
+        logger.setLogLevel('DEBUG');
+        aSetLevel.resolve();
+        await bSetLevel.promise;
+        logger.debug('A debug after B changed its own level');
+      }
+    );
+    const invocationB = (async () => {
+      await aSetLevel.promise;
+      await store.run(
+        { [XRAY_TRACE_ID_KEY]: '1-bbbbbbbb-222222222222222222222222' },
+        async () => {
+          logger.setLogLevel('ERROR');
+          logger.debug('B debug that should be suppressed');
+        }
+      );
+      bSetLevel.resolve();
+    })();
+    await Promise.all([invocationA, invocationB]);
+
+    // Assess
+    // A stays at DEBUG even though B set ERROR in between...
+    expect(console.debug).toHaveLogged(
+      expect.objectContaining({
+        message: 'A debug after B changed its own level',
+      })
+    );
+    // ...and B's debug is suppressed by its own ERROR level
+    expect(console.debug).not.toHaveLogged(
+      expect.objectContaining({ message: 'B debug that should be suppressed' })
+    );
+  });
 });

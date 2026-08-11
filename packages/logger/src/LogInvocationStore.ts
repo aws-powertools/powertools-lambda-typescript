@@ -3,18 +3,19 @@ import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
 import { CircularMap, type SizedSet } from './logBuffer.js';
 
 /**
- * Manages storage of buffered logs with automatic context detection.
+ * Manages per-invocation log state with automatic context detection.
  *
- * This class abstracts the storage mechanism for the log buffer, automatically
- * choosing between the InvokeStore (when invocations run concurrently in the
- * same execution environment) and an instance-level buffer shared across
- * sequential invocations. The decision is made at runtime on every access to
- * support Lambda's transition to async contexts.
+ * This class abstracts the storage mechanism for state that must be scoped to
+ * a single invocation, automatically choosing between the InvokeStore (when
+ * invocations run concurrently in the same execution environment) and an
+ * instance-level fallback shared across sequential invocations. The decision
+ * is made at runtime on every access to support Lambda's transition to async
+ * contexts.
  *
- * Buffered logs are grouped by `_X_AMZN_TRACE_ID`, each group with a max size
- * of `maxBytes`.
+ * Currently it holds the log buffer, grouped by `_X_AMZN_TRACE_ID` with each
+ * group capped at `maxBytes`.
  */
-class LogBufferStore {
+class LogInvocationStore {
   readonly #bufferKey = Symbol('powertools.logger.buffer');
   readonly #maxBytes: number;
   readonly #fallbackBuffer: CircularMap<string>;
@@ -81,4 +82,4 @@ class LogBufferStore {
   }
 }
 
-export { LogBufferStore };
+export { LogInvocationStore };

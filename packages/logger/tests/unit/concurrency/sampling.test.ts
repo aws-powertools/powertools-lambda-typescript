@@ -1,5 +1,6 @@
 import { randomInt } from 'node:crypto';
 import { InvokeStore } from '@aws/lambda-invoke-store';
+import { sequence } from '@aws-lambda-powertools/testing-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../../src/index.js';
 
@@ -150,35 +151,37 @@ describe('Debug sampling concurrent invocation isolation', () => {
 
   it('keeps each invocation log level isolated when two invocations overlap', async () => {
     // Prepare
-    const store = await InvokeStore.getInstanceAsync();
     const logger = new Logger({ logLevel: 'INFO' });
-    const aSetLevel = Promise.withResolvers<void>();
-    const bSetLevel = Promise.withResolvers<void>();
 
     // Act
-    // Invocation A raises its level to DEBUG and yields, invocation B enters
-    // concurrently and sets its own level to ERROR, then A resumes and logs
-    const invocationA = store.run(
-      { [XRAY_TRACE_ID_KEY]: '1-aaaaaaaa-111111111111111111111111' },
-      async () => {
-        logger.setLogLevel('DEBUG');
-        aSetLevel.resolve();
-        await bSetLevel.promise;
-        logger.debug('A debug after B changed its own level');
-      }
+    // Invocation A raises its level to DEBUG, then invocation B sets its own
+    // level to ERROR and logs, then A logs
+    await sequence(
+      {
+        sideEffects: [
+          () => {
+            logger.setLogLevel('DEBUG');
+          },
+          () => {}, // Wait for inv2 to set its own level
+          () => {
+            logger.debug('A debug after B changed its own level');
+          },
+        ],
+        return: () => {},
+      },
+      {
+        sideEffects: [
+          () => {}, // Wait for inv1 to set its level
+          () => {
+            logger.setLogLevel('ERROR');
+            logger.debug('B debug that should be suppressed');
+          },
+          () => {},
+        ],
+        return: () => {},
+      },
+      { useInvokeStore: true }
     );
-    const invocationB = (async () => {
-      await aSetLevel.promise;
-      await store.run(
-        { [XRAY_TRACE_ID_KEY]: '1-bbbbbbbb-222222222222222222222222' },
-        async () => {
-          logger.setLogLevel('ERROR');
-          logger.debug('B debug that should be suppressed');
-        }
-      );
-      bSetLevel.resolve();
-    })();
-    await Promise.all([invocationA, invocationB]);
 
     // Assess
     // A stays at DEBUG even though B set ERROR in between...

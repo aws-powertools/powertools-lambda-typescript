@@ -1,4 +1,5 @@
 import { InvokeStore } from '@aws/lambda-invoke-store';
+import { sequence } from '@aws-lambda-powertools/testing-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '../../../src/index.js';
 
@@ -45,34 +46,41 @@ describe('Log buffer concurrent invocation isolation', () => {
       logLevel: 'INFO',
       logBufferOptions: { enabled: true },
     });
-    const store = await InvokeStore.getInstanceAsync();
-    const aBuffered = Promise.withResolvers<void>();
-    const bBuffered = Promise.withResolvers<void>();
 
     // Act
-    // Invocation A buffers a debug log, yields (simulating I/O), invocation B
-    // starts concurrently and buffers its first debug log under a different
-    // trace id, then A errors and flushes its buffer
-    const invocationA = store.run(
-      { [XRAY_TRACE_ID_KEY]: '1-aaaaaaaa-111111111111111111111111' },
-      async () => {
-        logger.debug('A buffered debug log');
-        aBuffered.resolve();
-        await bBuffered.promise;
-        logger.flushBuffer();
-      }
+    // Invocation A buffers a debug log, invocation B starts concurrently and
+    // buffers its own debug log under a different trace id, then A flushes
+    await sequence(
+      {
+        sideEffects: [
+          () => {
+            logger.debug('A buffered debug log');
+          },
+          () => {}, // Wait for inv2 to buffer
+          () => {
+            logger.flushBuffer();
+          },
+        ],
+        return: () => {},
+        context: {
+          [XRAY_TRACE_ID_KEY]: '1-aaaaaaaa-111111111111111111111111',
+        },
+      },
+      {
+        sideEffects: [
+          () => {}, // Wait for inv1 to buffer
+          () => {
+            logger.debug('B buffered debug log');
+          },
+          () => {},
+        ],
+        return: () => {},
+        context: {
+          [XRAY_TRACE_ID_KEY]: '1-bbbbbbbb-222222222222222222222222',
+        },
+      },
+      { useInvokeStore: true }
     );
-    const invocationB = (async () => {
-      await aBuffered.promise;
-      await store.run(
-        { [XRAY_TRACE_ID_KEY]: '1-bbbbbbbb-222222222222222222222222' },
-        async () => {
-          logger.debug('B buffered debug log');
-        }
-      );
-      bBuffered.resolve();
-    })();
-    await Promise.all([invocationA, invocationB]);
 
     // Assess
     expect(console.debug).toHaveLogged(
@@ -89,31 +97,40 @@ describe('Log buffer concurrent invocation isolation', () => {
       logLevel: 'INFO',
       logBufferOptions: { enabled: true },
     });
-    const store = await InvokeStore.getInstanceAsync();
-    const aBuffered = Promise.withResolvers<void>();
-    const aFlushed = Promise.withResolvers<void>();
 
     // Act
-    // Invocation A buffers and flushes while invocation B is mid-flight with
-    // its own buffered log, then B flushes its own buffer
-    const invocationB = store.run(
-      { [XRAY_TRACE_ID_KEY]: '1-bbbbbbbb-222222222222222222222222' },
-      async () => {
-        logger.debug('B buffered debug log');
-        await aFlushed.promise;
-        logger.flushBuffer();
-      }
+    // Each invocation buffers its own debug log, then each flushes its own
+    await sequence(
+      {
+        sideEffects: [
+          () => {
+            logger.debug('A buffered debug log');
+          },
+          () => {
+            logger.flushBuffer();
+          },
+        ],
+        return: () => {},
+        context: {
+          [XRAY_TRACE_ID_KEY]: '1-aaaaaaaa-111111111111111111111111',
+        },
+      },
+      {
+        sideEffects: [
+          () => {
+            logger.debug('B buffered debug log');
+          },
+          () => {
+            logger.flushBuffer();
+          },
+        ],
+        return: () => {},
+        context: {
+          [XRAY_TRACE_ID_KEY]: '1-bbbbbbbb-222222222222222222222222',
+        },
+      },
+      { useInvokeStore: true }
     );
-    const invocationA = store.run(
-      { [XRAY_TRACE_ID_KEY]: '1-aaaaaaaa-111111111111111111111111' },
-      async () => {
-        logger.debug('A buffered debug log');
-        aBuffered.resolve();
-        logger.flushBuffer();
-        aFlushed.resolve();
-      }
-    );
-    await Promise.all([invocationA, invocationB]);
 
     // Assess
     expect(console.debug).toHaveLogged(

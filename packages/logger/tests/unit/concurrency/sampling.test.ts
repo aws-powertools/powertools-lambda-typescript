@@ -71,39 +71,47 @@ describe('Debug sampling concurrent invocation isolation', () => {
       .mockReturnValueOnce(99 as never)
       .mockReturnValueOnce(0 as never)
       .mockReturnValueOnce(99 as never);
-    const store = await InvokeStore.getInstanceAsync();
+    await InvokeStore.getInstanceAsync();
     const logger = new Logger({ logLevel: 'INFO', sampleRateValue: 0.5 });
     // Cold-start invocation: the first refresh keeps the constructor decision
     logger.refreshSampleRateCalculation();
-    const aStarted = Promise.withResolvers<void>();
-    const bRefreshed = Promise.withResolvers<void>();
 
     // Act
-    // Warm invocation A is sampled in by its refresh, emits a debug log,
-    // yields, invocation B's refresh re-rolls and is NOT sampled, then A
-    // emits another debug log
-    const invocationA = store.run(
-      { [XRAY_TRACE_ID_KEY]: '1-aaaaaaaa-111111111111111111111111' },
-      async () => {
-        logger.refreshSampleRateCalculation();
-        logger.debug('A sampled debug log 1');
-        aStarted.resolve();
-        await bRefreshed.promise;
-        logger.debug('A sampled debug log 2');
-      }
+    // Warm invocation A is sampled in by its refresh and logs, invocation B's
+    // refresh re-rolls and is NOT sampled, then A logs again
+    await sequence(
+      {
+        sideEffects: [
+          () => {
+            logger.refreshSampleRateCalculation();
+            logger.debug('A sampled debug log 1');
+          },
+          () => {}, // Wait for inv2 to refresh
+          () => {
+            logger.debug('A sampled debug log 2');
+          },
+        ],
+        return: () => {},
+        context: {
+          [XRAY_TRACE_ID_KEY]: '1-aaaaaaaa-111111111111111111111111',
+        },
+      },
+      {
+        sideEffects: [
+          () => {}, // Wait for inv1 to refresh
+          () => {
+            logger.refreshSampleRateCalculation();
+            logger.debug('B unsampled debug log');
+          },
+          () => {},
+        ],
+        return: () => {},
+        context: {
+          [XRAY_TRACE_ID_KEY]: '1-bbbbbbbb-222222222222222222222222',
+        },
+      },
+      { useInvokeStore: true }
     );
-    const invocationB = (async () => {
-      await aStarted.promise;
-      await store.run(
-        { [XRAY_TRACE_ID_KEY]: '1-bbbbbbbb-222222222222222222222222' },
-        async () => {
-          logger.refreshSampleRateCalculation();
-          logger.debug('B unsampled debug log');
-        }
-      );
-      bRefreshed.resolve();
-    })();
-    await Promise.all([invocationA, invocationB]);
 
     // Assess
     expect(console.debug).toHaveLogged(
@@ -119,23 +127,36 @@ describe('Debug sampling concurrent invocation isolation', () => {
 
   it('keeps the invocation-scoped log level from leaking into later invocations', async () => {
     // Prepare
-    const store = await InvokeStore.getInstanceAsync();
+    await InvokeStore.getInstanceAsync();
     const logger = new Logger({ logLevel: 'INFO' });
 
     // Act
     // An invocation raises its own verbosity, then a later invocation logs
-    await store.run(
-      { [XRAY_TRACE_ID_KEY]: '1-aaaaaaaa-111111111111111111111111' },
-      async () => {
-        logger.setLogLevel('DEBUG');
-        logger.debug('debug log from the invocation that opted in');
-      }
-    );
-    await store.run(
-      { [XRAY_TRACE_ID_KEY]: '1-bbbbbbbb-222222222222222222222222' },
-      async () => {
-        logger.debug('debug log from a later invocation');
-      }
+    await sequence(
+      {
+        sideEffects: [
+          () => {
+            logger.setLogLevel('DEBUG');
+            logger.debug('debug log from the invocation that opted in');
+          },
+        ],
+        return: () => {},
+        context: {
+          [XRAY_TRACE_ID_KEY]: '1-aaaaaaaa-111111111111111111111111',
+        },
+      },
+      {
+        sideEffects: [
+          () => {
+            logger.debug('debug log from a later invocation');
+          },
+        ],
+        return: () => {},
+        context: {
+          [XRAY_TRACE_ID_KEY]: '1-bbbbbbbb-222222222222222222222222',
+        },
+      },
+      { useInvokeStore: true }
     );
 
     // Assess

@@ -29,7 +29,7 @@ import type { LogFormatter } from './formatter/LogFormatter.js';
 import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
 import { LogAttributesStore } from './LogAttributesStore.js';
-import { CircularMap } from './logBuffer.js';
+import { LogInvocationStore } from './LogInvocationStore.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type {
   ConstructorOptions,
@@ -227,9 +227,14 @@ class Logger extends Utility implements LoggerInterface {
   };
 
   /**
-   * Contains buffered logs, grouped by `_X_AMZN_TRACE_ID`, each group with a max size of `maxBufferBytesSize`
+   * Store for per-invocation log state, currently the buffered logs grouped by
+   * `_X_AMZN_TRACE_ID`.
+   *
+   * Scopes the state to each invocation via the InvokeStore when invocations
+   * run concurrently, and falls back to an instance-level store shared across
+   * sequential invocations. Only set when buffering is enabled.
    */
-  #buffer?: CircularMap<string>;
+  #invocationStore?: LogInvocationStore;
 
   /**
    * Search function for the correlation ID.
@@ -1445,9 +1450,7 @@ class Logger extends Utility implements LoggerInterface {
     if (options?.maxBytes !== undefined) {
       this.#bufferConfig.maxBytes = options.maxBytes;
     }
-    this.#buffer = new CircularMap({
-      maxBytesSize: this.#bufferConfig.maxBytes,
-    });
+    this.#invocationStore = new LogInvocationStore(this.#bufferConfig.maxBytes);
 
     if (options?.flushOnErrorLog === false) {
       this.#bufferConfig.flushOnErrorLog = false;
@@ -1483,13 +1486,7 @@ class Logger extends Utility implements LoggerInterface {
     logLevel: number
   ): void {
     log.prepareForPrint();
-    // This is the first time we see this traceId, so we need to clear the buffer
-    // from previous requests. This is ok because in AWS Lambda, the same sandbox
-    // environment can only ever be used by one request at a time.
-    if (this.#buffer?.has(xrayTraceId) === false) {
-      this.#buffer?.clear();
-    }
-    this.#buffer?.setItem(
+    this.#invocationStore?.add(
       xrayTraceId,
       JSON.stringify(
         log.getAttributes(),
@@ -1512,7 +1509,7 @@ class Logger extends Utility implements LoggerInterface {
       return;
     }
 
-    const buffer = this.#buffer?.get(traceId);
+    const buffer = this.#invocationStore?.get(traceId);
     if (buffer === undefined) {
       return;
     }
@@ -1544,7 +1541,7 @@ class Logger extends Utility implements LoggerInterface {
       );
     }
 
-    this.#buffer?.delete(traceId);
+    this.#invocationStore?.delete(traceId);
   }
 
   /**
@@ -1555,7 +1552,7 @@ class Logger extends Utility implements LoggerInterface {
     if (traceId === undefined) {
       return;
     }
-    this.#buffer?.delete(traceId);
+    this.#invocationStore?.delete(traceId);
   }
 
   /**

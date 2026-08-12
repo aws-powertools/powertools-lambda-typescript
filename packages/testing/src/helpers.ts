@@ -99,9 +99,12 @@ const findAndGetStackOutputValue = (
   return outputs[value];
 };
 
+type InvocationContext = Record<string | symbol, unknown>;
+
 type Invocation<T = unknown> = {
   sideEffects: (() => void)[];
   return: () => T;
+  context?: InvocationContext;
 };
 
 /**
@@ -114,9 +117,11 @@ type Invocation<T = unknown> = {
  * @param inv1 - First invocation configuration
  * @param inv1.sideEffects - Array of functions to execute sequentially, synchronized with inv2
  * @param inv1.return - Function to call after all side effects, returns the test result
+ * @param inv1.context - Optional InvokeStore context for this invocation (e.g. an X-Ray trace id); defaults to an empty object
  * @param inv2 - Second invocation configuration
  * @param inv2.sideEffects - Array of functions to execute sequentially, synchronized with inv1
  * @param inv2.return - Function to call after all side effects, returns the test result
+ * @param inv2.context - Optional InvokeStore context for this invocation (e.g. an X-Ray trace id); defaults to an empty object
  * @param options - Execution options
  * @param options.useInvokeStore - Whether to run invocations in separate InvokeStore contexts
  *   - `true`: Each invocation runs in its own InvokeStore.run() context (isolated)
@@ -166,8 +171,8 @@ async function sequence<T1 = unknown, T2 = unknown>(
   options: { useInvokeStore?: boolean }
 ): Promise<[T1, T2]> {
   const invokeStore = await InvokeStore.getInstanceAsync();
-  const executionEnv = <T>(f: () => T) =>
-    options?.useInvokeStore ? invokeStore.run({}, f) : f();
+  const executionEnv = <T>(context: InvocationContext, f: () => T) =>
+    options?.useInvokeStore ? invokeStore.run(context, f) : f();
 
   const inv1Barriers = inv1.sideEffects.map(() =>
     Promise.withResolvers<void>()
@@ -176,7 +181,7 @@ async function sequence<T1 = unknown, T2 = unknown>(
     Promise.withResolvers<void>()
   );
 
-  const invocation1 = executionEnv(async () => {
+  const invocation1 = executionEnv(inv1.context ?? {}, async () => {
     for (let i = 0; i < inv1Barriers.length; i++) {
       const sideEffect = inv1.sideEffects[i] ?? (() => {});
       sideEffect();
@@ -186,7 +191,7 @@ async function sequence<T1 = unknown, T2 = unknown>(
     return inv1.return();
   });
 
-  const invocation2 = executionEnv(async () => {
+  const invocation2 = executionEnv(inv2.context ?? {}, async () => {
     for (let i = 0; i < inv2Barriers.length; i++) {
       await inv1Barriers[i].promise;
       const sideEffect = inv2.sideEffects[i] ?? (() => {});

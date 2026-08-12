@@ -12,15 +12,90 @@ import { CircularMap, type SizedSet } from './logBuffer.js';
  * is made at runtime on every access to support Lambda's transition to async
  * contexts.
  *
- * Currently it holds the log buffer, grouped by `_X_AMZN_TRACE_ID` with each
- * group capped at `maxBytes`.
+ * It holds:
+ * - the effective log level, so per-invocation changes like the debug sampling
+ *   decision don't leak across concurrent invocations, with the base level as
+ *   the fallback;
+ * - the log buffer, grouped by `_X_AMZN_TRACE_ID` with each group capped at
+ *   `maxBytes` (only after {@link LogInvocationStore.configureBuffer | `configureBuffer()`}).
  */
 class LogInvocationStore {
+  readonly #logLevelKey = Symbol('powertools.logger.logLevel');
   readonly #bufferKey = Symbol('powertools.logger.buffer');
-  readonly #maxBytes: number;
-  readonly #fallbackBuffer: CircularMap<string>;
+  #baseLogLevel: number;
+  #maxBytes!: number;
+  #fallbackBuffer!: CircularMap<string>;
 
-  public constructor(maxBytes: number) {
+  public constructor(logLevel: number) {
+    this.#baseLogLevel = logLevel;
+  }
+
+  /**
+   * Get the log level in effect: the per-invocation level when one has been
+   * set, otherwise the base level.
+   */
+  public getLogLevel(): number {
+    if (!shouldUseInvokeStore()) {
+      return this.#baseLogLevel;
+    }
+
+    if (globalThis.awslambda?.InvokeStore === undefined) {
+      throw new Error('InvokeStore is not available');
+    }
+
+    return (
+      (globalThis.awslambda.InvokeStore.get(this.#logLevelKey) as
+        | number
+        | undefined) ?? this.#baseLogLevel
+    );
+  }
+
+  /**
+   * Get the base log level shared across invocations, without consulting the
+   * InvokeStore.
+   */
+  public getBaseLogLevel(): number {
+    return this.#baseLogLevel;
+  }
+
+  /**
+   * Set the log level, scoping it to the current invocation when concurrency
+   * is enabled and an invocation context is active. Outside an invocation
+   * context (e.g. during initialization) the base level is set instead.
+   */
+  public setLogLevel(logLevel: number): void {
+    if (shouldUseInvokeStore()) {
+      if (globalThis.awslambda?.InvokeStore === undefined) {
+        throw new Error('InvokeStore is not available');
+      }
+
+      const store = globalThis.awslambda.InvokeStore;
+      if (store.hasContext()) {
+        store.set(this.#logLevelKey, logLevel);
+        return;
+      }
+    }
+    this.#baseLogLevel = logLevel;
+  }
+
+  /**
+   * Set the base log level shared across invocations, regardless of any active
+   * invocation context. Used at initialization and for Advanced Logging
+   * Controls, which apply environment-wide.
+   */
+  public setBaseLogLevel(logLevel: number): void {
+    this.#baseLogLevel = logLevel;
+  }
+
+  /**
+   * Enable the log buffer with the given max byte size per trace id.
+   *
+   * Must be called before any buffer operation; the buffer methods are only
+   * reached when buffering is enabled.
+   *
+   * @param maxBytes - Max byte size of each trace id's buffer
+   */
+  public configureBuffer(maxBytes: number): void {
     this.#maxBytes = maxBytes;
     this.#fallbackBuffer = new CircularMap({ maxBytesSize: maxBytes });
   }

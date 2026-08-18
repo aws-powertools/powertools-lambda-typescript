@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
+
+### Features
+
+- add schema for Amazon Connect Outbound Campaigns ([#5502](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5502)) ([30d7beb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/30d7beb35d9d6f0a3d60f0972b78a3bb0d87c2a8))
 ## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
 
 ### Features

@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
+
+### Features
+
+- add support for AppConfig Agent ([#5399](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5399)) ([f1deacc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f1deacc60955a2fb7ba4ea346af23d2204bca837))
 ## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
 
 ### Features

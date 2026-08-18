@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
+
+### Improvements
+
+- isolate log level InvokeStore access in a store ([#5548](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5548)) ([a47c7a6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a47c7a6e3aef36d6bf90856f2ecd779a80b2298d))
+
+### Bug Fixes
+
+- scope log buffer per invocation under LMI concurrency ([#5543](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5543)) ([0d4071b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0d4071b9a562a0ee34a1b311c363d9f53a3eef28))
+- scope debug sampling log level per invocation under LMI concurrency ([#5544](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5544)) ([1b4b013](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1b4b0136261892dcf83c4525f2c91e9992914dfb))
+- accept resolvable IANA timezone aliases in timestamps ([#5458](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5458)) ([4cdc936](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4cdc936e6487ff8d97a0c9cfe0aec0fcf970bf47))
 ## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
 
 ### Improvements

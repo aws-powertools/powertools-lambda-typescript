@@ -6,6 +6,7 @@ import type {
   SegmentHttpData,
   TracerOptions,
 } from '../../types/http.js';
+import { isJsonContentType } from '../utils.js';
 import { getClientIp } from './commons.js';
 import type { compress } from './compress.js';
 
@@ -156,7 +157,7 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
 
       if (
         captureResponse &&
-        reqCtx.res.headers.get('Content-Type') === 'application/json'
+        isJsonContentType(reqCtx.res.headers.get('Content-Type'))
       ) {
         const responseBody = await reqCtx.res.clone().json();
         tracer.addResponseAsMetadata(responseBody, segmentName);

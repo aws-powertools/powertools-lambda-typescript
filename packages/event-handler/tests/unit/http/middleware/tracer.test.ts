@@ -170,6 +170,37 @@ describe('Tracer Middleware', () => {
       expect(addResponseSpy).toHaveBeenCalledTimes(0);
     });
 
+    it('captures response as metadata when content-type has a +json suffix', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => new Segment('main'))
+        .mockImplementation(() => new Subsegment('GET /test'));
+      const addResponseSpy = vi.spyOn(tracer, 'addResponseAsMetadata');
+
+      app.use(tracerMiddleware(tracer));
+      app.get(
+        '/test',
+        () =>
+          new Response(JSON.stringify({ foo: 'bar' }), {
+            headers: { 'Content-Type': 'application/vnd.api+json' },
+          })
+      );
+
+      // Act
+      await app.resolve(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(addResponseSpy).toHaveBeenCalledTimes(1);
+      expect(addResponseSpy).toHaveBeenCalledWith(
+        {
+          foo: 'bar',
+        },
+        'GET /test'
+      );
+    });
+
     it('does not capture non-JSON responses', async () => {
       // Prepare
       const tracer = new Tracer();

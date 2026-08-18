@@ -127,7 +127,7 @@ Help us prioritize upcoming functionalities or utilities by [upvoting existing R
 
 ## Connect
 
-- **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+- **Powertools for AWS Lambda on GitHub Discussions**: [Join the conversation](https://github.com/aws-powertools/powertools-lambda-typescript/discussions)
 - **Email**: <aws-lambda-powertools-feedback@amazon.com>
 
 ## How to support Powertools for AWS Lambda (TypeScript)?

@@ -28,7 +28,7 @@ import type { LogFormatter } from './formatter/LogFormatter.js';
 import type { LogItem } from './formatter/LogItem.js';
 import { PowertoolsLogFormatter } from './formatter/PowertoolsLogFormatter.js';
 import { LogAttributesStore } from './LogAttributesStore.js';
-import { CircularMap } from './logBuffer.js';
+import { LogInvocationStore } from './LogInvocationStore.js';
 import type { ConfigServiceInterface } from './types/ConfigServiceInterface.js';
 import type {
   ConstructorOptions,
@@ -137,11 +137,6 @@ class Logger extends Utility implements LoggerInterface {
    */
   private logIndentation: number = LogJsonIndent.COMPACT;
   /**
-   * Log level used internally by the current instance of Logger.
-   */
-  private logLevel: number = LogLevelThreshold.INFO;
-
-  /**
    * Advanced Logging Control Log Level
    * If not a valid value this will be left undefined, even if the
    * environment variable AWS_LAMBDA_LOG_LEVEL is set
@@ -214,9 +209,14 @@ class Logger extends Utility implements LoggerInterface {
   };
 
   /**
-   * Contains buffered logs, grouped by `_X_AMZN_TRACE_ID`, each group with a max size of `maxBufferBytesSize`
+   * Store for per-invocation log state: the effective log level and, once
+   * buffering is enabled, the buffered logs grouped by `_X_AMZN_TRACE_ID`.
+   *
+   * Scopes the state to each invocation via the InvokeStore when invocations
+   * run concurrently, and falls back to instance-level state shared across
+   * sequential invocations.
    */
-  #buffer?: CircularMap<string>;
+  readonly #invocationStore = new LogInvocationStore(LogLevelThreshold.INFO);
 
   /**
    * Search function for the correlation ID.
@@ -251,7 +251,7 @@ class Logger extends Utility implements LoggerInterface {
    * To get the log level name, use the {@link getLevelName()} method.
    */
   public get level(): number {
-    return this.logLevel;
+    return this.#invocationStore.getLogLevel();
   }
 
   public constructor(options: ConstructorOptions = {}) {
@@ -419,7 +419,7 @@ class Logger extends Utility implements LoggerInterface {
    * To get the log level as a number, use the {@link Logger.level} property.
    */
   public getLevelName(): Uppercase<LogLevel> {
-    return this.getLogLevelNameFromNumber(this.logLevel);
+    return this.getLogLevelNameFromNumber(this.#invocationStore.getLogLevel());
   }
 
   /**
@@ -593,7 +593,7 @@ class Logger extends Utility implements LoggerInterface {
     }
     if (
       this.#shouldEnableDebugSampling() &&
-      this.logLevel > LogLevelThreshold.TRACE
+      this.#invocationStore.getLogLevel() > LogLevelThreshold.TRACE
     ) {
       this.setLogLevel('DEBUG');
       this.debug('Setting log level to DEBUG due to sampling rate');
@@ -658,7 +658,7 @@ class Logger extends Utility implements LoggerInterface {
   public setLogLevel(logLevel: LogLevel): void {
     if (this.awsLogLevelShortCircuit(logLevel)) return;
     if (this.isValidLogLevel(logLevel)) {
-      this.logLevel = LogLevelThreshold[logLevel];
+      this.#invocationStore.setLogLevel(LogLevelThreshold[logLevel]);
     } else {
       throw new Error(`Invalid log level: ${logLevel}`);
     }
@@ -827,11 +827,14 @@ class Logger extends Utility implements LoggerInterface {
 
   private awsLogLevelShortCircuit(selectedLogLevel?: string): boolean {
     if (this.#alcLogLevel !== undefined) {
-      this.logLevel = LogLevelThreshold[this.#alcLogLevel];
+      this.#invocationStore.setBaseLogLevel(
+        LogLevelThreshold[this.#alcLogLevel]
+      );
 
       if (
         this.isValidLogLevel(selectedLogLevel) &&
-        this.logLevel > LogLevelThreshold[selectedLogLevel]
+        this.#invocationStore.getBaseLogLevel() >
+          LogLevelThreshold[selectedLogLevel]
       ) {
         this.#warnOnce(
           `Current log level (${selectedLogLevel}) does not match AWS Lambda Advanced Logging Controls minimum log level (${this.#alcLogLevel}). This can lead to data loss, consider adjusting them.`
@@ -1102,7 +1105,7 @@ class Logger extends Utility implements LoggerInterface {
       return;
     }
 
-    if (logLevel >= this.logLevel) {
+    if (logLevel >= this.#invocationStore.getLogLevel()) {
       if (this.#isInitialized) {
         this.printLog(
           logLevel,
@@ -1151,13 +1154,15 @@ class Logger extends Utility implements LoggerInterface {
     const constructorLogLevel = logLevel?.toUpperCase();
 
     if (this.awsLogLevelShortCircuit(constructorLogLevel)) {
-      this.#initialLogLevel = this.logLevel;
+      this.#initialLogLevel = this.#invocationStore.getBaseLogLevel();
       return;
     }
 
     if (this.isValidLogLevel(constructorLogLevel)) {
-      this.logLevel = LogLevelThreshold[constructorLogLevel];
-      this.#initialLogLevel = this.logLevel;
+      this.#invocationStore.setBaseLogLevel(
+        LogLevelThreshold[constructorLogLevel]
+      );
+      this.#initialLogLevel = this.#invocationStore.getBaseLogLevel();
 
       return;
     }
@@ -1165,8 +1170,10 @@ class Logger extends Utility implements LoggerInterface {
       ?.getLogLevel()
       ?.toUpperCase();
     if (this.isValidLogLevel(customConfigValue)) {
-      this.logLevel = LogLevelThreshold[customConfigValue];
-      this.#initialLogLevel = this.logLevel;
+      this.#invocationStore.setBaseLogLevel(
+        LogLevelThreshold[customConfigValue]
+      );
+      this.#initialLogLevel = this.#invocationStore.getBaseLogLevel();
 
       return;
     }
@@ -1183,8 +1190,8 @@ class Logger extends Utility implements LoggerInterface {
     const logLevelValue = logLevelVariable || logLevelVariableAlias;
 
     if (this.isValidLogLevel(logLevelValue)) {
-      this.logLevel = LogLevelThreshold[logLevelValue];
-      this.#initialLogLevel = this.logLevel;
+      this.#invocationStore.setBaseLogLevel(LogLevelThreshold[logLevelValue]);
+      this.#initialLogLevel = this.#invocationStore.getBaseLogLevel();
     }
   }
 
@@ -1216,7 +1223,7 @@ class Logger extends Utility implements LoggerInterface {
 
         if (
           this.#shouldEnableDebugSampling() &&
-          this.logLevel > LogLevelThreshold.TRACE
+          this.#invocationStore.getBaseLogLevel() > LogLevelThreshold.TRACE
         ) {
           this.setLogLevel('DEBUG');
           this.debug('Setting log level to DEBUG due to sampling rate');
@@ -1387,9 +1394,7 @@ class Logger extends Utility implements LoggerInterface {
     if (options?.maxBytes !== undefined) {
       this.#bufferConfig.maxBytes = options.maxBytes;
     }
-    this.#buffer = new CircularMap({
-      maxBytesSize: this.#bufferConfig.maxBytes,
-    });
+    this.#invocationStore.configureBuffer(this.#bufferConfig.maxBytes);
 
     if (options?.flushOnErrorLog === false) {
       this.#bufferConfig.flushOnErrorLog = false;
@@ -1425,13 +1430,7 @@ class Logger extends Utility implements LoggerInterface {
     logLevel: number
   ): void {
     log.prepareForPrint();
-    // This is the first time we see this traceId, so we need to clear the buffer
-    // from previous requests. This is ok because in AWS Lambda, the same sandbox
-    // environment can only ever be used by one request at a time.
-    if (this.#buffer?.has(xrayTraceId) === false) {
-      this.#buffer?.clear();
-    }
-    this.#buffer?.setItem(
+    this.#invocationStore.add(
       xrayTraceId,
       JSON.stringify(
         log.getAttributes(),
@@ -1449,12 +1448,15 @@ class Logger extends Utility implements LoggerInterface {
    * your function throws an error.
    */
   public flushBuffer(): void {
+    if (this.#bufferConfig.enabled === false) {
+      return;
+    }
     const traceId = getXRayTraceIdFromEnv();
     if (traceId === undefined) {
       return;
     }
 
-    const buffer = this.#buffer?.get(traceId);
+    const buffer = this.#invocationStore.get(traceId);
     if (buffer === undefined) {
       return;
     }
@@ -1486,18 +1488,21 @@ class Logger extends Utility implements LoggerInterface {
       );
     }
 
-    this.#buffer?.delete(traceId);
+    this.#invocationStore.delete(traceId);
   }
 
   /**
    * Empties the buffer for the current request
    */
   public clearBuffer(): void {
+    if (this.#bufferConfig.enabled === false) {
+      return;
+    }
     const traceId = getXRayTraceIdFromEnv();
     if (traceId === undefined) {
       return;
     }
-    this.#buffer?.delete(traceId);
+    this.#invocationStore.delete(traceId);
   }
 
   /**

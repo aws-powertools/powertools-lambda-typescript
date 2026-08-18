@@ -93,12 +93,12 @@ If you are interested in contributing to this project, please refer to our [Cont
 
 ## Roadmap
 
-The roadmap of Powertools for AWS Lambda (TypeScript) is driven by customers’ demand.  
+The roadmap of Powertools for AWS Lambda (TypeScript) is driven by customers’ demand.
 Help us prioritize upcoming functionalities or utilities by [upvoting existing RFCs and feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues), or [creating new ones](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose), in this GitHub repository.
 
 ## Connect
 
-- **Powertools for AWS Lambda on Discord**: `#typescript` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+- **Powertools for AWS Lambda on GitHub Discussions**: [Join the conversation](https://github.com/aws-powertools/powertools-lambda-typescript/discussions)
 - **Email**: <aws-lambda-powertools-feedback@amazon.com>
 
 ## How to support Powertools for AWS Lambda (TypeScript)?

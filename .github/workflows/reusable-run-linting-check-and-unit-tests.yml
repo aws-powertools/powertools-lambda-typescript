@@ -147,3 +147,24 @@ jobs:
       - *setup_dependencies
       - name: Run linting
         run: npm run lint:markdown
+  unit-tests-complete:
+    # Single stable context (`run-unit-tests / unit-tests-complete`) that branch protection can
+    # require, so that adding a Node.js version or a workspace to the `code-quality` matrix
+    # doesn't silently change which checks are required.
+    #
+    # `if: always()` is required so this job still runs when a dependency fails - otherwise it
+    # would be skipped, and a skipped required check counts as satisfied. For the same reason
+    # `skipped` is treated as a failure below: none of the jobs above are conditional, so a skip
+    # means something upstream went wrong.
+    needs: [code-quality, check-examples, check-layer-publisher, check-docs-snippets, check-docs]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all unit test jobs succeeded
+        env:
+          FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
+        run: |
+          if [ "${FAILED}" = "true" ]; then
+            echo "::error::One or more unit test jobs did not succeed"
+            exit 1
+          fi

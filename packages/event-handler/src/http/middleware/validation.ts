@@ -12,6 +12,7 @@ import type {
   ValidationConfig,
 } from '../../types/http.js';
 import { RequestValidationError, ResponseValidationError } from '../errors.js';
+import { isJsonContentType } from '../utils.js';
 
 /**
  * Creates a validation middleware from the provided validation configuration.
@@ -189,7 +190,7 @@ async function extractBody(source: Request | Response): Promise<unknown> {
   const cloned = source.clone();
   const contentType = source.headers.get('content-type');
 
-  if (contentType?.includes('application/json')) {
+  if (isJsonContentType(contentType)) {
     try {
       return await cloned.json();
     } catch {

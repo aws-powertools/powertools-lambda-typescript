@@ -40,6 +40,34 @@ describe('Router Validation Integration', () => {
     expect(result.body).toBe('Created John');
   });
 
+  it('validates request body successfully when content-type has a +json suffix', async () => {
+    // Prepare
+    const requestBodySchema = z.object({ name: z.string() });
+
+    app.post(
+      '/users',
+      (reqCtx) => {
+        const { name } = reqCtx.valid.req.body;
+        return { statusCode: 201, body: `Created ${name}` };
+      },
+      {
+        validation: { req: { body: requestBodySchema } },
+      }
+    );
+
+    const event = createTestEvent('/users', 'POST', {
+      'content-type': 'application/vnd.api+json',
+    });
+    event.body = JSON.stringify({ name: 'John' });
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(201);
+    expect(result.body).toBe('Created John');
+  });
+
   it('returns 422 on request body validation failure', async () => {
     // Prepare
     const requestBodySchema = z.object({ name: z.string() });
@@ -335,6 +363,34 @@ describe('Router Validation Integration', () => {
 
     // Assess
     expect(result.statusCode).toBe(200);
+  });
+
+  it('validates response body successfully when content-type has a +json suffix', async () => {
+    // Prepare
+    const responseSchema = z.array(
+      z.object({ id: z.string(), name: z.string() })
+    );
+
+    app.get(
+      '/users',
+      () => ({
+        statusCode: 200,
+        body: [{ id: '1', name: 'John' }],
+        headers: { 'content-type': 'application/vnd.api+json' },
+      }),
+      {
+        validation: { res: { body: responseSchema } },
+      }
+    );
+
+    const event = createTestEvent('/users', 'GET');
+
+    // Act
+    const result = await app.resolve(event, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toBe(JSON.stringify([{ id: '1', name: 'John' }]));
   });
 
   it('returns 500 on response body validation failure', async () => {

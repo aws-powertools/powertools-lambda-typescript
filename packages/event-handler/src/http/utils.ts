@@ -438,10 +438,13 @@ export const getBase64EncodingFromHeaders = (headers: Headers): boolean => {
 };
 
 /**
- * Checks whether a `Content-Type` value is `application/json` or uses the RFC 6839
- * `+json` structured syntax suffix (e.g. `application/vnd.api+json`). Parameters are ignored.
+ * Determines whether a `Content-Type` header value is JSON, including RFC 6839
+ * structured syntax suffixes such as `application/vnd.api+json`.
+ * Reference: https://datatracker.ietf.org/doc/html/rfc6839#section-3.1
  *
- * @param contentType - The `Content-Type` header value to check
+ * Any parameters in the header value are ignored.
+ *
+ * @param contentType - The `Content-Type` header value to check.
  */
 export const isJsonContentType = (
   contentType: string | null | undefined

@@ -13,6 +13,7 @@ import {
 } from '../../../src/http/index.js';
 import {
   compilePath,
+  isJsonContentType,
   resolvePrefixedPath,
   validatePathPattern,
 } from '../../../src/http/utils.js';
@@ -866,6 +867,32 @@ describe('Path Utilities', () => {
 
       // Assert
       expect(resolvedPath).toEqual(expected);
+    });
+  });
+
+  describe('isJsonContentType', () => {
+    it.each([
+      { contentType: 'application/json' },
+      { contentType: 'application/json; charset=utf-8' },
+      { contentType: 'Application/JSON' },
+      { contentType: 'application/vnd.api+json' },
+      { contentType: 'application/problem+json; charset=utf-8' },
+      { contentType: 'model/gltf+json' },
+    ])('returns true for "$contentType"', ({ contentType }) => {
+      // Act & Assess
+      expect(isJsonContentType(contentType)).toBe(true);
+    });
+
+    it.each([
+      { contentType: null },
+      { contentType: undefined },
+      { contentType: '' },
+      { contentType: 'text/plain' },
+      { contentType: 'application/json-ish' },
+      { contentType: 'application/json, text/plain' },
+    ])('returns false for "$contentType"', ({ contentType }) => {
+      // Act & Assess
+      expect(isJsonContentType(contentType)).toBe(false);
     });
   });
 

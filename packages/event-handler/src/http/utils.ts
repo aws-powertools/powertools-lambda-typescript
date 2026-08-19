@@ -437,6 +437,23 @@ export const getBase64EncodingFromHeaders = (headers: Headers): boolean => {
   return false;
 };
 
+/**
+ * Determines whether a `Content-Type` header value is JSON, including RFC 6839
+ * structured syntax suffixes such as `application/vnd.api+json`.
+ * Reference: https://datatracker.ietf.org/doc/html/rfc6839#section-3.1
+ *
+ * Any parameters in the header value are ignored.
+ *
+ * @param contentType - The `Content-Type` header value to check.
+ */
+export const isJsonContentType = (
+  contentType: string | null | undefined
+): boolean => {
+  if (!contentType) return false;
+  const type = contentType.split(';')[0].trim().toLowerCase();
+  return type === 'application/json' || type.endsWith('+json');
+};
+
 export const getStatusCode = (
   result: HandlerResponse,
   fallback: HttpStatusCode = HttpStatusCodes.OK

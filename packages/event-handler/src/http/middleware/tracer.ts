@@ -6,6 +6,7 @@ import type {
   SegmentHttpData,
   TracerOptions,
 } from '../../types/http.js';
+import { isJsonContentType } from '../utils.js';
 import { getClientIp } from './commons.js';
 import type { compress } from './compress.js';
 
@@ -156,10 +157,19 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
 
       if (
         captureResponse &&
-        reqCtx.res.headers.get('Content-Type') === 'application/json'
+        reqCtx.res.body &&
+        isJsonContentType(reqCtx.res.headers.get('Content-Type'))
       ) {
-        const responseBody = await reqCtx.res.clone().json();
-        tracer.addResponseAsMetadata(responseBody, segmentName);
+        try {
+          const responseBody = await reqCtx.res.clone().json();
+          tracer.addResponseAsMetadata(responseBody, segmentName);
+        } catch (error) {
+          logger.warn(
+            'Failed to parse response body as JSON for segment %s. Response metadata will not be captured.',
+            segmentName,
+            error
+          );
+        }
       }
     } catch (err) {
       tracer.addErrorAsMetadata(err as Error);

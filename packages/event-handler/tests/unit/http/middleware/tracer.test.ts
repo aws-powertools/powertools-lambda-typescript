@@ -170,6 +170,37 @@ describe('Tracer Middleware', () => {
       expect(addResponseSpy).toHaveBeenCalledTimes(0);
     });
 
+    it('captures response as metadata when content-type has a +json suffix', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => new Segment('main'))
+        .mockImplementation(() => new Subsegment('GET /test'));
+      const addResponseSpy = vi.spyOn(tracer, 'addResponseAsMetadata');
+
+      app.use(tracerMiddleware(tracer));
+      app.get(
+        '/test',
+        () =>
+          new Response(JSON.stringify({ foo: 'bar' }), {
+            headers: { 'Content-Type': 'application/vnd.api+json' },
+          })
+      );
+
+      // Act
+      await app.resolve(createTestEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(addResponseSpy).toHaveBeenCalledTimes(1);
+      expect(addResponseSpy).toHaveBeenCalledWith(
+        {
+          foo: 'bar',
+        },
+        'GET /test'
+      );
+    });
+
     it('does not capture non-JSON responses', async () => {
       // Prepare
       const tracer = new Tracer();
@@ -193,6 +224,78 @@ describe('Tracer Middleware', () => {
 
       // Assess
       expect(addResponseSpy).toHaveBeenCalledTimes(0);
+    });
+
+    it('logs a warning and does not fail the request when the response body is not valid JSON', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => new Segment('main'))
+        .mockImplementation(() => new Subsegment('GET /test'));
+      vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+      vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(
+        () => ({})
+      );
+      const addResponseSpy = vi.spyOn(tracer, 'addResponseAsMetadata');
+      const addErrorSpy = vi.spyOn(tracer, 'addErrorAsMetadata');
+      const logWarningSpy = vi.spyOn(console, 'warn');
+
+      app.use(tracerMiddleware(tracer));
+      app.get(
+        '/test',
+        () =>
+          new Response('not json', {
+            headers: { 'Content-Type': 'application/json' },
+          })
+      );
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.body).toBe('not json');
+      expect(addResponseSpy).toHaveBeenCalledTimes(0);
+      expect(addErrorSpy).toHaveBeenCalledTimes(0);
+      expect(logWarningSpy).toHaveBeenNthCalledWith(
+        1,
+        'Failed to parse response body as JSON for segment %s. Response metadata will not be captured.',
+        'GET /test',
+        expect.any(Error)
+      );
+    });
+
+    it('does not capture metadata or log a warning for bodyless responses', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => new Segment('main'))
+        .mockImplementation(() => new Subsegment('DELETE /test'));
+      vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+      vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(
+        () => ({})
+      );
+      const addResponseSpy = vi.spyOn(tracer, 'addResponseAsMetadata');
+      const logWarningSpy = vi.spyOn(console, 'warn');
+
+      app.use(tracerMiddleware(tracer));
+      app.delete('/test', () => ({ statusCode: 204 }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'DELETE'),
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(204);
+      expect(addResponseSpy).toHaveBeenCalledTimes(0);
+      expect(logWarningSpy).toHaveBeenCalledTimes(0);
     });
 
     it('closes subsegment and restores parent segment after successful request', async () => {

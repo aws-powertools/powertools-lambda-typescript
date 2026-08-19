@@ -204,7 +204,8 @@ If you prefer to use the decorator syntax, you can use the same methods on a cla
 Event Handler supports built-in request and response validation using [Standard Schema](https://standardschema.dev){target="_blank"}, a common specification supported by popular TypeScript validation libraries including [Zod](https://zod.dev){target="_blank"}, [Valibot](https://valibot.dev){target="_blank"}, and [ArkType](https://arktype.io){target="_blank"}.
 
 !!! note "Body validation is limited to JSON-serializable values"
-    Standard Schema validators operate on JavaScript values, not raw bytes. For body validation, Event Handler deserializes the body before passing it to your schema: `application/json` content is parsed as an object, all other content types are passed as a plain string. Binary data, streams, and other non-serializable response types cannot be validated.
+    Standard Schema validators operate on JavaScript values, not raw bytes. For body validation, Event Handler deserializes the body before passing it to your schema: `application/json` content, and any content type with a `+json` structured syntax suffix (e.g. `application/vnd.api+json`, `application/problem+json`), is parsed as an object.
+    All other content types are passed as a plain string. Binary data, streams, and other non-serializable response types cannot be validated.
 
 #### Validating requests
 

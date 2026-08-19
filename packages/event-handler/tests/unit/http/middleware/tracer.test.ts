@@ -269,6 +269,35 @@ describe('Tracer Middleware', () => {
       );
     });
 
+    it('does not capture metadata or log a warning for bodyless responses', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => new Segment('main'))
+        .mockImplementation(() => new Subsegment('DELETE /test'));
+      vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+      vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(
+        () => ({})
+      );
+      const addResponseSpy = vi.spyOn(tracer, 'addResponseAsMetadata');
+      const logWarningSpy = vi.spyOn(console, 'warn');
+
+      app.use(tracerMiddleware(tracer));
+      app.delete('/test', () => ({ statusCode: 204 }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'DELETE'),
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(204);
+      expect(addResponseSpy).toHaveBeenCalledTimes(0);
+      expect(logWarningSpy).toHaveBeenCalledTimes(0);
+    });
+
     it('closes subsegment and restores parent segment after successful request', async () => {
       // Prepare
       const tracer = new Tracer();

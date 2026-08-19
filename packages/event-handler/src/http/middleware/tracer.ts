@@ -157,6 +157,7 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
 
       if (
         captureResponse &&
+        reqCtx.res.body &&
         isJsonContentType(reqCtx.res.headers.get('Content-Type'))
       ) {
         try {

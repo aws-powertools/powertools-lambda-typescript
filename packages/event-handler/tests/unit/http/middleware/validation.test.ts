@@ -65,6 +65,7 @@ describe('Router Validation Integration', () => {
 
     // Assess
     expect(result.statusCode).toBe(201);
+    expect(result.body).toBe('Created John');
   });
 
   it('returns 422 on request body validation failure', async () => {
@@ -366,13 +367,15 @@ describe('Router Validation Integration', () => {
 
   it('validates response body successfully when content-type has a +json suffix', async () => {
     // Prepare
-    const responseSchema = z.object({ id: z.string(), name: z.string() });
+    const responseSchema = z.array(
+      z.object({ id: z.string(), name: z.string() })
+    );
 
     app.get(
       '/users',
       () => ({
         statusCode: 200,
-        body: { id: '1', name: 'John' },
+        body: [{ id: '1', name: 'John' }],
         headers: { 'content-type': 'application/vnd.api+json' },
       }),
       {
@@ -387,6 +390,7 @@ describe('Router Validation Integration', () => {
 
     // Assess
     expect(result.statusCode).toBe(200);
+    expect(result.body).toBe(JSON.stringify([{ id: '1', name: 'John' }]));
   });
 
   it('returns 500 on response body validation failure', async () => {

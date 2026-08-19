@@ -226,6 +226,49 @@ describe('Tracer Middleware', () => {
       expect(addResponseSpy).toHaveBeenCalledTimes(0);
     });
 
+    it('logs a warning and does not fail the request when the response body is not valid JSON', async () => {
+      // Prepare
+      const tracer = new Tracer();
+      vi.spyOn(tracer, 'setSegment').mockImplementation(() => null);
+      vi.spyOn(tracer, 'getSegment')
+        .mockImplementationOnce(() => new Segment('main'))
+        .mockImplementation(() => new Subsegment('GET /test'));
+      vi.spyOn(tracer, 'annotateColdStart').mockImplementation(() => ({}));
+      vi.spyOn(tracer, 'addServiceNameAnnotation').mockImplementation(
+        () => ({})
+      );
+      const addResponseSpy = vi.spyOn(tracer, 'addResponseAsMetadata');
+      const addErrorSpy = vi.spyOn(tracer, 'addErrorAsMetadata');
+      const logWarningSpy = vi.spyOn(console, 'warn');
+
+      app.use(tracerMiddleware(tracer));
+      app.get(
+        '/test',
+        () =>
+          new Response('not json', {
+            headers: { 'Content-Type': 'application/json' },
+          })
+      );
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.body).toBe('not json');
+      expect(addResponseSpy).toHaveBeenCalledTimes(0);
+      expect(addErrorSpy).toHaveBeenCalledTimes(0);
+      expect(logWarningSpy).toHaveBeenNthCalledWith(
+        1,
+        'Failed to parse response body as JSON for segment %s. Response metadata will not be captured.',
+        'GET /test',
+        expect.any(Error)
+      );
+    });
+
     it('closes subsegment and restores parent segment after successful request', async () => {
       // Prepare
       const tracer = new Tracer();

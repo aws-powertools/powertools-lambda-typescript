@@ -159,8 +159,16 @@ const tracer = (tracer: Tracer, options?: TracerOptions): Middleware => {
         captureResponse &&
         isJsonContentType(reqCtx.res.headers.get('Content-Type'))
       ) {
-        const responseBody = await reqCtx.res.clone().json();
-        tracer.addResponseAsMetadata(responseBody, segmentName);
+        try {
+          const responseBody = await reqCtx.res.clone().json();
+          tracer.addResponseAsMetadata(responseBody, segmentName);
+        } catch (error) {
+          logger.warn(
+            'Failed to parse response body as JSON for segment %s. Response metadata will not be captured.',
+            segmentName,
+            error
+          );
+        }
       }
     } catch (err) {
       tracer.addErrorAsMetadata(err as Error);

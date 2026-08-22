@@ -42,6 +42,7 @@ type MetricsOptions = {
    * A custom configuration service to use for retrieving configuration values.
    *
    * @default undefined
+   * @deprecated Use the other Metrics constructor options or `POWERTOOLS_*` environment variables instead.
    */
   customConfigService?: ConfigServiceInterface;
   /**

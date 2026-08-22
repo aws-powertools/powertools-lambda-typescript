@@ -1,6 +1,8 @@
 /**
  * This class defines common methods and variables that can be set by the developer
  * in the runtime.
+ *
+ * @deprecated Use utility constructor options and `POWERTOOLS_*` environment variables instead.
  */
 interface ConfigServiceInterface {
   /**

@@ -98,6 +98,8 @@ type BaseConstructorOptions = {
    * A custom config service that can be passed to the Logger constructor to extend the default behavior.
    *
    * See {@link ConfigServiceInterface} for more information.
+   *
+   * @deprecated Use the other Logger constructor options or `POWERTOOLS_*` environment variables instead.
    */
   customConfigService?: ConfigServiceInterface;
   /**

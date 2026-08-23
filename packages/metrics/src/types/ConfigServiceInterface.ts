@@ -4,6 +4,7 @@ import type { ConfigServiceInterface as ConfigServiceBaseInterface } from '@aws-
  * Interface ConfigServiceInterface
  *
  * @interface
+ * @deprecated Use Metrics constructor options and `POWERTOOLS_*` environment variables instead.
  * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
  * @see https://docs.aws.amazon.com/powertools/typescript/latest/#environment-variables
  */

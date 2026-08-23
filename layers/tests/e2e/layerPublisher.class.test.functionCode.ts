@@ -1,15 +1,19 @@
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { BatchProcessor, EventType } from '@aws-lambda-powertools/batch';
+import { DataMasking } from '@aws-lambda-powertools/data-masking';
 import { Router } from '@aws-lambda-powertools/event-handler/http';
 import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+import { kafkaConsumer, SchemaType } from '@aws-lambda-powertools/kafka';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics } from '@aws-lambda-powertools/metrics';
 import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
 import { DynamoDBProvider } from '@aws-lambda-powertools/parameters/dynamodb';
 import { SecretsProvider } from '@aws-lambda-powertools/parameters/secrets';
 import { SSMProvider } from '@aws-lambda-powertools/parameters/ssm';
+import { SigV4Signer } from '@aws-lambda-powertools/signer/sigv4';
 import { Tracer } from '@aws-lambda-powertools/tracer';
+import { validate } from '@aws-lambda-powertools/validation';
 import { AppConfigDataClient } from '@aws-sdk/client-appconfigdata';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
@@ -85,18 +89,17 @@ const getVersionFromModule = async (moduleName: string): Promise<string> => {
 };
 
 export const handler = async (_event: unknown, context: Context) => {
-  // Check that the packages version matches the expected one
-  for (const moduleName of [
-    'commons',
-    'logger',
-    'metrics',
-    'tracer',
-    'parameters',
-    'idempotency',
-    'batch',
-    'parser',
-    'event-handler',
-  ]) {
+  // Check that every Powertools package bundled in the layer matches the
+  // expected version. Reading the layer directory keeps this verification in
+  // sync automatically as utilities are added to the layer.
+  const scopeDir = join(layerPath, '@aws-lambda-powertools');
+  const bundledModules = (await readdir(scopeDir)).filter(
+    (name) => !name.startsWith('.')
+  );
+  if (bundledModules.length === 0) {
+    throw new Error(`No Powertools packages found in the layer at ${scopeDir}`);
+  }
+  for (const moduleName of bundledModules) {
     const moduleVersion = await getVersionFromModule(moduleName);
     if (moduleVersion !== expectedVersion) {
       throw new Error(
@@ -132,5 +135,28 @@ export const handler = async (_event: unknown, context: Context) => {
     if ((error as Error).name !== 'InvalidEventError') {
       throw error;
     }
+  }
+
+  // Exercise the remaining utilities to prove they load from the layer at
+  // runtime (both CJS and ESM). These don't emit logs; a missing package or a
+  // broken import would surface as an error and fail the invocation.
+  const masker = new DataMasking();
+  masker.erase({ ssn: '123-45-6789' }, { fields: ['ssn'] });
+
+  validate({ payload: { foo: 'bar' }, schema: { type: 'object' } });
+
+  const kafkaHandler = kafkaConsumer(async () => {}, {
+    value: { type: SchemaType.JSON },
+  });
+  if (typeof kafkaHandler !== 'function') {
+    throw new Error('kafkaConsumer did not return a handler');
+  }
+
+  const signer = new SigV4Signer({
+    service: 'execute-api',
+    region: 'eu-west-1',
+  });
+  if (typeof signer.sign !== 'function') {
+    throw new Error('SigV4Signer.sign is not available');
   }
 };

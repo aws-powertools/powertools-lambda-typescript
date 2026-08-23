@@ -1,5 +1,6 @@
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { readdirSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CfnOutput, RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib';
@@ -15,6 +16,49 @@ import type { Construct } from 'constructs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const INSTALL_MAX_ATTEMPTS = 5;
+const INSTALL_BASE_DELAY_MS = 5_000;
+
+/**
+ * Synchronous sleep for CDK's `tryBundle`, which is called synchronously and
+ * cannot await. Parks the thread on a never-notified `Atomics.wait` lock, so it
+ * blocks without spinning the CPU or spawning a `sleep` subprocess.
+ */
+const sleepSync = (ms: number): void => {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+};
+
+/**
+ * Runs `execFileSync`, retrying with exponential backoff so the layer install
+ * can ride out npm registry propagation lag for freshly published versions (#5564).
+ */
+const execFileWithRetry = (
+  file: string,
+  args: string[],
+  maxAttempts: number = INSTALL_MAX_ATTEMPTS
+): void => {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      execFileSync(file, args);
+      return;
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        console.error(
+          `Command failed after ${maxAttempts} attempts: ${file} ${args.join(' ')}`
+        );
+        throw error;
+      }
+      const delayMs = INSTALL_BASE_DELAY_MS * 2 ** (attempt - 1);
+      console.warn(
+        `Command failed (attempt ${attempt}/${maxAttempts}), retrying in ${
+          delayMs / 1000
+        }s`
+      );
+      sleepSync(delayMs);
+    }
+  }
+};
 
 export interface LayerPublisherStackProps extends StackProps {
   readonly layerName?: string;
@@ -132,11 +176,6 @@ export class LayerPublisherStack extends Stack {
                     `mv aws-lambda-powertools-${util}-*.tgz ${tmpBuildDir}`
                   );
                 }
-                modulesToInstall.push(
-                  ...utilities.map((util) =>
-                    join(tmpBuildDir, `aws-lambda-powertools-${util}-*.tgz`)
-                  )
-                );
                 filesToRemove.push(
                   ...utilities.map((util) =>
                     join(`aws-lambda-powertools-${util}-*.tgz`)
@@ -166,10 +205,31 @@ export class LayerPublisherStack extends Stack {
               buildFromLocal &&
                 execSync(buildCommands.join(' && '), { cwd: projectRoot });
 
-              // Phase 3: Install dependencies to tmp folder
-              execSync(
-                `npm i --prefix ${tmpBuildDir} ${modulesToInstall.join(' ')}`
-              );
+              // Phase 3: Install dependencies to tmp folder. Retry with backoff
+              // to absorb npm registry propagation delays for freshly published
+              // versions (see issue #5564). Args are passed to execFileSync as an
+              // array (no shell), so the local .tgz paths are resolved here rather
+              // than relying on shell glob expansion.
+              if (buildFromLocal) {
+                for (const util of utilities) {
+                  const prefix = `aws-lambda-powertools-${util}-`;
+                  const tarball = readdirSync(tmpBuildDir).find(
+                    (name) => name.startsWith(prefix) && name.endsWith('.tgz')
+                  );
+                  if (tarball === undefined) {
+                    throw new Error(
+                      `Could not find packed tarball for ${util} in ${tmpBuildDir}`
+                    );
+                  }
+                  modulesToInstall.push(join(tmpBuildDir, tarball));
+                }
+              }
+              execFileWithRetry('npm', [
+                'i',
+                '--prefix',
+                tmpBuildDir,
+                ...modulesToInstall,
+              ]);
 
               // Phase 4: Remove unnecessary files
               execSync(

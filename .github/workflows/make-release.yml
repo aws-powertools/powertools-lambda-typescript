@@ -64,6 +64,13 @@ jobs:
         run: |
           VERSION=$(cat packages/commons/package.json | jq .version -r)
           echo RELEASE_VERSION="$VERSION" >> "$GITHUB_OUTPUT"
+      # Block until registry.npmjs.org serves every just-published, non-private
+      # workspace version. Because publish_layer and create_tag both gate on
+      # `needs: publish-npm`, this stops the layer build's `cdk synth`/`npm i`
+      # from starting before the versions exist and failing with a misleading
+      # ETARGET (see issue #5564).
+      - name: Verify npm registry propagation
+        run: bash .github/scripts/verify_npm_publish.sh
   
   # This job creates a new git tag using the released version (v1.18.1)
   create_tag: 

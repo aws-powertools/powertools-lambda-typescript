@@ -1,8 +1,14 @@
-import { describe, expect, it } from 'vitest';
-import { deserialize } from '../../src/deserializer/avro.js';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { createDeserializer } from '../../src/deserializer/avro.js';
 import { KafkaConsumerDeserializationError } from '../../src/errors.js';
 
 describe('Avro Deserializer: ', () => {
+  let deserialize: Awaited<ReturnType<typeof createDeserializer>>;
+
+  beforeAll(async () => {
+    deserialize = await createDeserializer();
+  });
+
   it('returns avro deserialised value', async () => {
     // Prepare
     const message = '0g8MTGFwdG9wUrgehes/j0A=';

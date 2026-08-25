@@ -1,6 +1,6 @@
 ---
 title: Signer
-descrition: Utility
+description: Utility
 ---
 
 <!-- markdownlint-disable MD043 --->

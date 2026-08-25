@@ -89,7 +89,7 @@ If you prefer to use the decorator syntax, you can instead use the same methods 
 --8<-- "examples/snippets/event-handler/appsync-graphql/gettingStartedDecorators.ts"
 ```
 
-1. It's recommended to pass a refernce of `this` to ensure the correct class scope is propageted to the route handler functions.
+1. It's recommended to pass a reference of `this` to ensure the correct class scope is propageted to the route handler functions.
 
 ### Scalar functions
 

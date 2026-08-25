@@ -1,6 +1,6 @@
 ---
 title: Parser (Standard Schema)
-descrition: Utility
+description: Utility
 ---
 
 <!-- markdownlint-disable MD043 --->

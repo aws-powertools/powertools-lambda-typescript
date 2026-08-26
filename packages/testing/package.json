@@ -100,8 +100,8 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
   "dependencies": {
     "@aws-cdk/toolkit-lib": "^1.38.2",
-    "@aws-sdk/client-cloudwatch-logs": "^3.1111.0",
-    "@aws-sdk/client-lambda": "^3.1111.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.1116.0",
+    "@aws-sdk/client-lambda": "^3.1116.0",
     "@aws/lambda-invoke-store": "0.3.0",
     "@smithy/util-utf8": "^4.5.2",
     "aws-cdk-lib": "^2.265.0",

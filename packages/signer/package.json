@@ -116,7 +116,7 @@
     "nodejs"
   ],
   "dependencies": {
-    "@smithy/signature-v4": "^5.7.2",
+    "@smithy/signature-v4": "^5.7.3",
     "@smithy/types": "^4.14.3"
   },
   "devDependencies": {

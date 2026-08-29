@@ -33,6 +33,7 @@
     "@types/node": "26.3.0",
     "aws-cdk-lib": "^2.266.0",
     "constructs": "^10.8.1",
+    "esbuild": "^0.28.2",
     "source-map-support": "^0.5.21",
     "typescript": "^6.0.3",
     "vitest": "^4.1.11"
@@ -47,11 +48,7 @@
     "@aws-sdk/client-ssm": "^3.1116.0",
     "@aws-sdk/lib-dynamodb": "^3.1116.0",
     "@middy/core": "^4.7.0",
-    "@types/aws-lambda": "^8.10.162",
-    "@types/node": "26.3.0",
     "aws-cdk": "^2.1138.0",
-    "constructs": "^10.8.1",
-    "esbuild": "^0.28.2",
-    "typescript": "^6.0.3"
+    "constructs": "^10.8.1"
   }
 }

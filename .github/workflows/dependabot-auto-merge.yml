@@ -1,0 +1,190 @@
+name: Auto-merge Dependabot dev dependency PRs
+
+# PROCESS
+#
+# 1. Runs on every Dependabot pull request against `main`
+# 2. Reads the update's metadata (ecosystem, dependency type, semver bump)
+# 3. Rejects anything that isn't a non-major bump of a direct *development* npm dependency
+# 4. Rejects any PR whose commits weren't all authored by Dependabot and signed by GitHub
+# 5. Only then approves the PR and hands it to GitHub's native auto-merge, which still has to
+#    satisfy every required status check and branch protection rule before anything merges
+#
+# An update that is merely out of scope is left alone for a human to review, and the job still
+# reports success. A PR that fails the *provenance* gate reports failure, which - because this
+# job's context is required, see REQUIRED CHECK below - blocks it until the branch is put right
+# with `@dependabot rebase`.
+#
+# SECURITY NOTE
+#
+# Deliberately uses `pull_request` (not `pull_request_target`), and never checks out or executes
+# the PR's code. On Dependabot-triggered runs GitHub sets `Secret source: Dependabot`, but the
+# `permissions:` block below is still honoured (verified against live Dependabot runs), so
+# `on: pull_request` is sufficient and the more convoluted `on: workflow_run` indirection isn't
+# needed.
+#
+# Three independent gates have to agree before an approval is issued:
+#
+# 1. `github.event.pull_request.user.login == 'dependabot[bot]'` - set by GitHub from the identity
+#    that actually opened the PR, so it can't be spoofed via branch name, title, or body. Combined
+#    with `head.repo.full_name == github.repository` a fork PR can never reach the approval step.
+# 2. Every commit on the branch must be authored by `dependabot[bot]` *and* carry a valid GitHub
+#    signature. This is the gate that stops a human (or a compromised account with push access to
+#    the Dependabot branch) from smuggling a commit into an otherwise-legitimate bump. Note
+#    Dependabot's own commits have `committer: web-flow` - GitHub's signing key - so the check is on
+#    the *author*, not the committer.
+# 3. The scope gate below: npm direct development dependencies only, and never a major bump.
+#
+# Consequences of gate 2 worth knowing: GitHub's "Update branch" button produces a merge commit
+# authored by the human who clicked it, which fails the gate and drops the PR back to manual
+# review. Use `@dependabot rebase` instead, which rewrites the branch with Dependabot-authored,
+# GitHub-signed commits.
+#
+# REQUIRED CHECK
+#
+# This job's `auto-merge` context must be added to the branch protection rule's required status
+# checks. The gates below decide whether to *grant* an approval; only a required check can stop a
+# PR that was granted one earlier from merging later. For pull requests that aren't Dependabot's
+# the job is skipped, and GitHub counts a skipped required check as satisfied, so requiring it
+# costs human PRs nothing.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions: {}
+
+# Runs for the same PR queue rather than cancel, so the most recent head SHA is always the last
+# to decide. Cancelling would let an older run's cleanup step race the newer run's approval.
+concurrency:
+  group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  auto-merge:
+    if: >
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # enable GitHub's native auto-merge on the PR
+      pull-requests: write # approve the PR
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+
+      - name: Verify update is in scope
+        id: scope
+        env:
+          ECOSYSTEM: ${{ steps.metadata.outputs.package-ecosystem }}
+          DEPENDENCY_TYPE: ${{ steps.metadata.outputs.dependency-type }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+        run: |
+          echo "ecosystem=${ECOSYSTEM} type=${DEPENDENCY_TYPE} update=${UPDATE_TYPE} names=${DEPENDENCY_NAMES}"
+          if [ "${ECOSYSTEM}" != "npm_and_yarn" ]; then
+            echo "::notice::Not an npm update (${ECOSYSTEM}) - leaving for manual review"
+            echo "in-scope=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          if [ "${DEPENDENCY_TYPE}" != "direct:development" ]; then
+            echo "::notice::Not a direct development dependency (${DEPENDENCY_TYPE}) - leaving for manual review"
+            echo "in-scope=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          if [ "${UPDATE_TYPE}" = "version-update:semver-major" ]; then
+            echo "::notice::Major version bump - leaving for manual review"
+            echo "in-scope=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          echo "in-scope=true" >> "${GITHUB_OUTPUT}"
+
+      # Reads the PR's commits from the API rather than the event payload, so a commit pushed
+      # *after* this run started is still caught - there's no window in which a late push can
+      # race an in-flight approval.
+      - name: Verify every commit is authored by Dependabot and signed by GitHub
+        if: steps.scope.outputs.in-scope == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          commits="$(gh api "repos/${REPO}/pulls/${PR}/commits" --paginate \
+            --jq '.[] | [.sha, (.author.login // "unknown"), (.commit.verification.verified | tostring), .commit.verification.reason] | @tsv')"
+
+          if [ -z "${commits}" ]; then
+            echo "::error::Could not read the PR's commits - refusing to approve"
+            exit 1
+          fi
+
+          echo "${commits}"
+
+          untrusted="$(echo "${commits}" | awk -F'\t' '$2 != "dependabot[bot]" || $3 != "true"')"
+          if [ -n "${untrusted}" ]; then
+            echo "::error::PR carries commits that are not Dependabot-authored and GitHub-signed:"
+            echo "${untrusted}"
+            exit 1
+          fi
+
+      - name: Approve the pull request
+        id: approve
+        if: steps.scope.outputs.in-scope == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # `commit_id` pins the approval to the SHA whose commits were just verified, so an
+          # approval can never be attributed to code that landed after the check ran.
+          gh api "repos/${REPO}/pulls/${PR}/reviews" \
+            --method POST \
+            --field event=APPROVE \
+            --field commit_id="${HEAD_SHA}" \
+            --field body="Approved automatically: non-major bump of a direct development dependency, with all commits authored by Dependabot and signed by GitHub."
+
+      - name: Enable auto-merge
+        id: enable
+        if: steps.scope.outputs.in-scope == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: gh pr merge "${PR}" --repo "${REPO}" --squash --auto
+
+      # An approval and an armed auto-merge outlive the run that granted them, and GitHub does
+      # *not* dismiss reviews when a PR branch is updated from its base. Without this step a PR
+      # that passed the gates once goes on to merge even after a later push fails them - reproduced
+      # in rehearsal, where clicking "Update branch" put a human-authored merge commit into `main`
+      # behind an approval granted before it existed, with the gate red. So whenever this run does
+      # not itself approve, withdraw whatever
+      # a previous run granted. Only ever touches this workflow's own approvals and its own
+      # auto-merge, never a maintainer's.
+      - name: Withdraw approval and auto-merge if the gates no longer pass
+        if: always() && steps.enable.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          enabled_by="$(gh pr view "${PR}" --repo "${REPO}" --json autoMergeRequest \
+            --jq '.autoMergeRequest.enabledBy.login // ""')"
+          case "${enabled_by}" in
+            *github-actions*)
+              echo "::warning::Disabling auto-merge that this workflow enabled earlier"
+              gh pr merge "${PR}" --repo "${REPO}" --disable-auto
+              ;;
+          esac
+
+          gh api "repos/${REPO}/pulls/${PR}/reviews" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and .state == "APPROVED") | .id' \
+          | while read -r review_id; do
+              [ -n "${review_id}" ] || continue
+              echo "::warning::Dismissing automated approval ${review_id}"
+              gh api "repos/${REPO}/pulls/${PR}/reviews/${review_id}/dismissals" \
+                --method PUT \
+                --field message="Withdrawn automatically: this pull request no longer satisfies the automated merge gates." \
+                --field event=DISMISS
+            done

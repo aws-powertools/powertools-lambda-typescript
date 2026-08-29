@@ -53,6 +53,8 @@
   },
   "peerDependencies": {
     "arktype": "^2.2.3",
+    "avro-js": "^1.12.1",
+    "protobufjs": "^8.7.2",
     "valibot": "^1.4.2",
     "zod": "^3.25.0 || ^4.0.0"
   },
@@ -64,6 +66,12 @@
       "optional": true
     },
     "arktype": {
+      "optional": true
+    },
+    "avro-js": {
+      "optional": true
+    },
+    "protobufjs": {
       "optional": true
     }
   },

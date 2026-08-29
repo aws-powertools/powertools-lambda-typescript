@@ -152,10 +152,10 @@
   ],
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-dynamodb": "^3.1106.0",
-    "@aws-sdk/lib-dynamodb": "^3.1106.0",
-    "@aws-sdk/util-dynamodb": "^3.996.7",
-    "@aws/durable-execution-sdk-js": "^2.2.0",
+    "@aws-sdk/client-dynamodb": "^3.1116.0",
+    "@aws-sdk/lib-dynamodb": "^3.1116.0",
+    "@aws-sdk/util-dynamodb": "^3.996.9",
+    "@aws/durable-execution-sdk-js": "^2.3.0",
     "aws-sdk-client-mock": "^4.1.0"
   }
 }

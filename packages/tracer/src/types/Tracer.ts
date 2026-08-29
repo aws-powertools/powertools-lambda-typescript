@@ -26,6 +26,9 @@ type TracerOptions = {
    * Whether to trace outgoing HTTP requests made with the `http`, `https`, or `fetch` modules
    */
   captureHTTPsRequests?: boolean;
+  /**
+   * @deprecated Use the other Tracer constructor options or `POWERTOOLS_*` environment variables instead.
+   */
   customConfigService?: ConfigServiceInterface;
 };
 

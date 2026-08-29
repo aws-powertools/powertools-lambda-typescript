@@ -35,7 +35,7 @@
     "constructs": "^10.8.1",
     "source-map-support": "^0.5.21",
     "typescript": "^6.0.3",
-    "vitest": "^4.0.10"
+    "vitest": "^4.1.11"
   },
   "dependencies": {
     "@aws-lambda-powertools/batch": "^2.35.0",

@@ -105,11 +105,11 @@
     "@aws/lambda-invoke-store": "0.3.0",
     "@smithy/util-utf8": "^4.5.2",
     "aws-cdk-lib": "^2.266.0",
+    "esbuild": "^0.28.2",
     "promise-retry": "^2.0.1"
   },
   "devDependencies": {
     "@types/promise-retry": "^1.1.6",
-    "aws-sdk-client-mock-vitest": "^7.1.0",
-    "esbuild": "^0.28.2"
+    "aws-sdk-client-mock-vitest": "^7.1.0"
   }
 }

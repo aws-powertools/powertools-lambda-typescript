@@ -1,0 +1,148 @@
+name: Sweep stale e2e stacks
+
+# STALE E2E STACK SWEEPER
+#
+# Nightly safety net for issue #5519. Deletes leaked e2e CloudFormation stacks
+# older than 12 hours when selected by either:
+# - the exact `Service=Powertools-for-AWS-e2e-tests` tag
+# - an `LmiShared-*` stack name
+#
+# Triggers:
+# - Nightly cron at 02:00 UTC; always performs a real cleanup run.
+# - Manual `workflow_dispatch`; `dry_run` defaults to true. Dry runs only
+#   discover stacks and write a job summary, deleting nothing and creating no issue.
+#
+# Failure behavior:
+# - When stacks remain unresolved after two dependency-ordered passes, the notify
+#   job creates or comments on a single incident issue, deduplicated by exact title,
+#   and the run fails.
+# - The incident stays open until a maintainer closes it.
+#
+# Authentication:
+# - Assumes the E2E OIDC role via the `e2e-tests` environment in eu-west-1;
+#   requires no standing infrastructure.
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Discover stale stacks without deleting them
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sweep-stale-e2e-stacks
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: e2e-tests
+    permissions:
+      id-token: write # needed to interact with GitHub's OIDC Token endpoint.
+      contents: read
+    outputs:
+      dry_run: ${{ steps.mode.outputs.dry_run }}
+      report: ${{ steps.report.outputs.report }}
+      sweep_outcome: ${{ steps.sweep.outcome }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
+        with:
+          node-version: 24
+      - name: Setup AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        with:
+          role-to-assume: ${{ secrets.E2E_IAM_ROLE_ARN }}
+          aws-region: eu-west-1
+          mask-aws-account-id: true
+      - name: Select sweep mode
+        id: mode
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run != false }}
+        run: echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
+      - name: Sweep stale stacks
+        id: sweep
+        continue-on-error: true
+        env:
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+        run: npm run --silent e2e:sweep -w packages/testing > "$RUNNER_TEMP/report.json"
+      - name: Record report
+        id: report
+        if: always()
+        run: |
+          report=$(node -e '
+            const fs = require("node:fs");
+            const path = process.env.REPORT_PATH;
+            let report;
+            try {
+              report = JSON.parse(fs.readFileSync(path, "utf8"));
+            } catch {
+              report = {
+                dryRun: process.env.DRY_RUN === "true",
+                timestamp: new Date().toISOString(),
+                candidates: [],
+                deleted: [],
+                skippedInProgress: [],
+                unresolved: [],
+                discoveryFailed: true,
+                ok: false,
+              };
+            }
+            process.stdout.write(JSON.stringify(report));
+          ')
+          echo "report=$report" >> "$GITHUB_OUTPUT"
+        env:
+          REPORT_PATH: ${{ runner.temp }}/report.json
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+      - name: Add sweep summary
+        if: always()
+        env:
+          REPORT_JSON: ${{ steps.report.outputs.report }}
+        run: |
+          node <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const { formatReport } = require('./.github/scripts/report_e2e_sweep.js');
+          const report = JSON.parse(process.env.REPORT_JSON);
+          const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+          console.log(formatReport({ report, runUrl }));
+          NODE
+      - name: Fail after unsuccessful dry run
+        if: always() && steps.mode.outputs.dry_run == 'true' && steps.sweep.outcome != 'success'
+        run: exit 1
+
+  notify:
+    needs: sweep
+    if: always() && needs.sweep.outputs.dry_run == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Report sweep status
+        id: notification
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          REPORT_JSON: ${{ needs.sweep.outputs.report }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const report_e2e_sweep = require('./.github/scripts/report_e2e_sweep.js')
+            await report_e2e_sweep({github, context, core, report: JSON.parse(process.env.REPORT_JSON)})
+      - name: Fail after unsuccessful cleanup
+        if: always() && (needs.sweep.outputs.sweep_outcome != 'success' || steps.notification.outcome != 'success')
+        run: exit 1

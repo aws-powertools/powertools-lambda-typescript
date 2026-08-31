@@ -2,6 +2,7 @@ import {
   CloudFormationClient,
   DeleteStackCommand,
   DescribeStacksCommand,
+  paginateDescribeStacks,
   type Stack,
   type StackStatus,
   waitUntilStackDeleteComplete,
@@ -339,7 +340,8 @@ const selectCandidate = (
  * `DescribeStacks` is used rather than `ListStacks` because it returns `Tags`,
  * `CreationTime`, `RootId` and `StackId` in the same response, so selection
  * needs no per-stack follow-up call — which both halves the API calls and
- * removes the window in which a stack could change underneath us.
+ * removes the window in which a stack could change underneath us. The SDK
+ * paginator walks the pages, so no token bookkeeping is needed here.
  *
  * Any error propagates: discovery is all-or-nothing, because deleting from a
  * half-built candidate list could delete a shared stack while the function
@@ -354,19 +356,14 @@ const discoverStaleStacks = async (
   now: number
 ): Promise<StaleStackCandidate[]> => {
   const candidates: StaleStackCandidate[] = [];
-  let nextToken: string | undefined;
-  do {
-    const page = await client.send(
-      new DescribeStacksCommand({ NextToken: nextToken })
-    );
+  for await (const page of paginateDescribeStacks({ client }, {})) {
     for (const stack of page.Stacks ?? []) {
       const candidate = selectCandidate(stack, now);
       if (candidate) {
         candidates.push(candidate);
       }
     }
-    nextToken = page.NextToken;
-  } while (nextToken);
+  }
 
   // Sorted so the report reads the same way for the same account state.
   return candidates.sort((a, b) => a.stackName.localeCompare(b.stackName));
@@ -735,42 +732,38 @@ const sweepStaleStacks = async ({
 
   const deleted = new Set<string>();
   const unresolved = new Map<string, SweepReport['unresolved'][number]>();
-  const markUnresolved = (
-    { stackName, status }: StaleStackCandidate,
-    reason: string
-  ): void => {
-    unresolved.set(stackName, { stackName, status, reason });
-  };
 
   const failed: StaleStackCandidate[] = [];
-  for (const outcome of await runDeletionPass(
+  for (const { candidate, state, failureReason } of await runDeletionPass(
     client,
     deletable,
     waiter,
     budget,
     log
   )) {
-    if (outcome.state === 'deleted') {
-      deleted.add(outcome.candidate.stackName);
+    if (state === 'deleted') {
+      deleted.add(candidate.stackName);
       continue;
     }
-    if (outcome.state === 'out-of-time') {
-      markUnresolved(
-        outcome.candidate,
-        outcome.failureReason ?? TIME_BUDGET_REASON
-      );
+    if (state === 'out-of-time') {
+      unresolved.set(candidate.stackName, {
+        stackName: candidate.stackName,
+        status: candidate.status,
+        reason: failureReason ?? TIME_BUDGET_REASON,
+      });
       continue;
     }
-    failed.push(outcome.candidate);
+    failed.push(candidate);
   }
 
   if (failed.length > 0 && budget.isExhausted()) {
     log(`${TIME_BUDGET_REASON}, not retrying ${failed.length} stack(s)`);
-    for (const candidate of failed) {
-      markUnresolved(
-        candidate,
-        `${TIME_BUDGET_REASON} before the delete could be retried`
-      );
+    for (const { stackName, status } of failed) {
+      unresolved.set(stackName, {
+        stackName,
+        status,
+        reason: `${TIME_BUDGET_REASON} before the delete could be retried`,
+      });
     }
   } else if (failed.length > 0) {
     log(`Retrying ${failed.length} stack(s) that did not delete`);
@@ -781,27 +774,29 @@ const sweepStaleStacks = async ({
     for (const candidate of gone) {
       deleted.add(candidate.stackName);
     }
-    for (const candidate of untouchable) {
-      markUnresolved(
-        candidate,
-        `CloudFormation is busy with the stack (${candidate.status}), it was not deleted again`
-      );
+    for (const { stackName, status } of untouchable) {
+      unresolved.set(stackName, {
+        stackName,
+        status,
+        reason: `CloudFormation is busy with the stack (${status}), it was not deleted again`,
+      });
     }
-    for (const outcome of await runDeletionPass(
+    for (const { candidate, state, failureReason } of await runDeletionPass(
       client,
       retryable,
       waiter,
       budget,
       log
     )) {
-      if (outcome.state === 'deleted') {
-        deleted.add(outcome.candidate.stackName);
+      if (state === 'deleted') {
+        deleted.add(candidate.stackName);
         continue;
       }
-      markUnresolved(
-        outcome.candidate,
-        outcome.failureReason ?? 'Unknown failure'
-      );
+      unresolved.set(candidate.stackName, {
+        stackName: candidate.stackName,
+        status: candidate.status,
+        reason: failureReason ?? 'Unknown failure',
+      });
     }
   }
 

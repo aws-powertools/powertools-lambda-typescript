@@ -1,12 +1,14 @@
 import {
-  type CloudFormationClient,
+  CloudFormationClient,
   DeleteStackCommand,
   type DeleteStackCommandInput,
   DescribeStacksCommand,
+  type DescribeStacksCommandInput,
   type Stack,
   type StackStatus,
 } from '@aws-sdk/client-cloudformation';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { mockClient } from 'aws-sdk-client-mock';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   MIN_STACK_AGE_HOURS,
   type StackDeleteWaiter,
@@ -62,18 +64,34 @@ type StubOptions = {
 };
 
 /**
- * A hand-rolled `CloudFormationClient` stub. It records the order of the calls
- * it receives in `events`, which the ordering and dependency assertions rely
- * on.
+ * Intercepts `CloudFormationClient#send()` on the class itself, so the tests can
+ * hand the sweep a real client — which the SDK paginator insists on — while
+ * every call is answered locally.
+ */
+const cloudFormationMock = mockClient(CloudFormationClient);
+
+/**
+ * Arms the mocked client for one test and returns the handles the assertions
+ * need.
+ *
+ * Every call is appended to `events`, which is what the ordering and dependency
+ * assertions read: a single ordered log is the only way to tell "the shared
+ * stack was deleted after the others had finished" from "they overlapped".
  */
 const createStub = ({ pages = [], recheck = {} }: StubOptions = {}) => {
   const events: string[] = [];
   const deleteInputs: DeleteStackCommandInput[] = [];
   let pageIndex = 0;
 
-  const send = vi.fn(async (command: unknown) => {
-    if (command instanceof DescribeStacksCommand) {
-      const stackId = command.input.StackName;
+  cloudFormationMock.callsFake(() => {
+    throw new Error('Unexpected command');
+  });
+
+  cloudFormationMock
+    .on(DescribeStacksCommand)
+    .callsFake(async ({ StackName: stackId }: DescribeStacksCommandInput) => {
+      // A named (well, id'd) describe is the second-pass re-check; an unnamed
+      // one is the paginator walking the account.
       if (stackId) {
         const stackName = stackNameOf(stackId);
         events.push(`recheck:${stackName}`);
@@ -95,20 +113,20 @@ const createStub = ({ pages = [], recheck = {} }: StubOptions = {}) => {
         throw page;
       }
       return page ?? {};
-    }
-    if (command instanceof DeleteStackCommand) {
-      deleteInputs.push(command.input);
-      events.push(`delete:${stackNameOf(command.input.StackName as string)}`);
+    });
+
+  cloudFormationMock
+    .on(DeleteStackCommand)
+    .callsFake(async (input: DeleteStackCommandInput) => {
+      deleteInputs.push(input);
+      events.push(`delete:${stackNameOf(input.StackName as string)}`);
       return {};
-    }
-    throw new Error('Unexpected command');
-  });
+    });
 
   return {
-    client: { send } as unknown as CloudFormationClient,
+    client: new CloudFormationClient({}),
     deleteInputs,
     events,
-    send,
     deletedStacks: () =>
       events
         .filter((event) => event.startsWith('delete:'))
@@ -155,7 +173,12 @@ const sweep = async (
 
 describe('sweepStaleStacks', () => {
   beforeEach(() => {
+    cloudFormationMock.reset();
     vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    cloudFormationMock.restore();
   });
 
   describe('discovery', () => {
@@ -355,7 +378,8 @@ describe('sweepStaleStacks', () => {
       expect(report.deleted).toEqual([]);
       expect(report.ok).toBe(false);
       expect(stub.deletedStacks()).toEqual([]);
-      expect(stub.send).toHaveBeenCalledTimes(2);
+      // Two pages listed, nothing else: discovery stopped where it broke.
+      expect(stub.events).toEqual(['describe:page1', 'describe:page2']);
     });
   });
 

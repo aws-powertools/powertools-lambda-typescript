@@ -1,5 +1,27 @@
 name: Sweep stale e2e stacks
 
+# STALE E2E STACK SWEEPER
+#
+# Nightly safety net for issue #5519. Deletes leaked e2e CloudFormation stacks
+# older than 12 hours when selected by either:
+# - the exact `Service=Powertools-for-AWS-e2e-tests` tag
+# - an `LmiShared-*` stack name
+#
+# Triggers:
+# - Nightly cron at 02:00 UTC; always performs a real cleanup run.
+# - Manual `workflow_dispatch`; `dry_run` defaults to true. Dry runs only
+#   discover stacks and write a job summary, deleting nothing and creating no issue.
+#
+# Failure behavior:
+# - When stacks remain unresolved after two dependency-ordered passes, the notify
+#   job creates or comments on a single incident issue, deduplicated by exact title,
+#   and the run fails.
+# - The incident stays open until a maintainer closes it.
+#
+# Authentication:
+# - Assumes the E2E OIDC role via the `e2e-tests` environment in eu-west-1;
+#   requires no standing infrastructure.
+
 on:
   schedule:
     - cron: '0 2 * * *'

@@ -27,6 +27,7 @@ Match the existing style of the surrounding code. House conventions:
 - `async/await` for asynchronous code.
 - `for...of` for array iteration; `Object.entries` / `Object.keys` / `Object.values` for object iteration.
 - Specific types first, `unknown` when the type is genuinely unknown, `any` only when unavoidable.
+- Fix type errors at their source; a cast (`as Type`, and especially `as unknown as Type`) is a last resort for genuine boundaries, paired with a comment explaining why it's safe.
 - `import type` / `export type` for type-only imports and exports.
 - `null` means the absence of a value; `undefined` means a value not yet set or initialized. Pick the one that matches the meaning.
 - Descriptive, spelled-out names; readability over cleverness.

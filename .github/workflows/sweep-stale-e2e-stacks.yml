@@ -5,13 +5,17 @@ on:
     - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
-      dry-run:
+      dry_run:
         description: Discover stale stacks without deleting them
         type: boolean
         default: true
 
 permissions:
   contents: read
+
+concurrency:
+  group: sweep-stale-e2e-stacks
+  cancel-in-progress: false
 
 jobs:
   sweep:
@@ -42,12 +46,10 @@ jobs:
           role-to-assume: ${{ secrets.E2E_IAM_ROLE_ARN }}
           aws-region: eu-west-1
           mask-aws-account-id: true
-      - name: Build
-        run: npm run build
       - name: Select sweep mode
         id: mode
         env:
-          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs['dry-run'] == true }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run != false }}
         run: echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
       - name: Sweep stale stacks
         id: sweep
@@ -89,32 +91,14 @@ jobs:
           REPORT_JSON: ${{ steps.report.outputs.report }}
         run: |
           node <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const { formatReport } = require('./.github/scripts/report_e2e_sweep.js');
           const report = JSON.parse(process.env.REPORT_JSON);
-          const section = (title, items, format) => {
-            console.log(`## ${title} (${items.length})\n`);
-            if (items.length === 0) {
-              console.log('_None_\n');
-              return;
-            }
-            for (const item of items) console.log(`- ${format(item)}`);
-            console.log();
-          };
-
-          console.log('# E2E stale stack sweep');
-          console.log(`\n- Mode: **${report.dryRun ? 'dry run' : 'cleanup'}**`);
-          console.log(`- Timestamp: ${report.timestamp}`);
-          console.log(`- Discovery failed: ${report.discoveryFailed ? 'yes' : 'no'}\n`);
-          section('Candidates', report.candidates, (item) =>
-            `\`${item.stackName}\` — ${item.status}, ${item.ageHours} hours old (${item.reason})`
-          );
-          section('Deleted', report.deleted, (name) => `\`${name}\``);
-          section('Skipped in progress', report.skippedInProgress, (item) =>
-            `\`${item.stackName}\` — ${item.status}`
-          );
-          section('Unresolved', report.unresolved, (item) =>
-            `\`${item.stackName}\` — ${item.status}: ${item.reason}`
-          );
+          const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+          console.log(formatReport({ report, runUrl }));
           NODE
+      - name: Fail after unsuccessful dry run
+        if: always() && steps.mode.outputs.dry_run == 'true' && steps.sweep.outcome != 'success'
+        run: exit 1
 
   notify:
     needs: sweep

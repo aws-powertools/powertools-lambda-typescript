@@ -8,14 +8,15 @@ import {
 } from '@aws-sdk/client-cloudformation';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  MAX_CONCURRENT_DELETIONS,
   MIN_STACK_AGE_HOURS,
   type StackDeleteWaiter,
+  type SweepStaleStacksOptions,
   sweepStaleStacks,
 } from '../../src/e2e/sweepStaleStacks.js';
 
 const NOW = new Date('2026-08-31T12:00:00.000Z').getTime();
 const HOUR_IN_MS = 3_600_000;
+const MINUTE_IN_MS = 60_000;
 const ACCOUNT_ID = '123456789012';
 const E2E_TAGS = [{ Key: 'Service', Value: 'Powertools-for-AWS-e2e-tests' }];
 
@@ -23,6 +24,9 @@ const stackIdOf = (stackName: string): string =>
   `arn:aws:cloudformation:eu-west-1:${ACCOUNT_ID}:stack/${stackName}/11111111-2222-3333-4444-555555555555`;
 
 const stackNameOf = (stackId: string): string => stackId.split('/')[1];
+
+const createdHoursAgo = (hours: number): Date =>
+  new Date(NOW - hours * HOUR_IN_MS);
 
 /**
  * A `DescribeStacks` entry that is a valid sweep candidate by default: a tagged
@@ -36,7 +40,7 @@ const makeStack = (
   StackName: stackName,
   StackId: stackIdOf(stackName),
   StackStatus: 'CREATE_COMPLETE',
-  CreationTime: new Date(NOW - 24 * HOUR_IN_MS),
+  CreationTime: createdHoursAgo(24),
   Tags: E2E_TAGS,
   ...overrides,
 });
@@ -52,7 +56,7 @@ type StubOptions = {
   /**
    * Responses returned by `DescribeStacks` for a single stack id, i.e. the
    * second-pass re-check, keyed by stack name. `null` stands for an empty
-   * `Stacks` array.
+   * `Stacks` array, a missing entry for a stack CloudFormation no longer knows.
    */
   recheck?: Record<string, Stack | Error | null>;
 };
@@ -131,17 +135,22 @@ const createWaiter = (
     events.push(`waitEnd:${stackName}`);
   });
 
+/**
+ * Runs the sweep with a clock frozen at `NOW`, so the time budget is never
+ * exhausted unless the test says so.
+ */
 const sweep = async (
   client: CloudFormationClient,
   waiter: StackDeleteWaiter,
-  dryRun = false
+  overrides: Partial<SweepStaleStacksOptions> = {}
 ) =>
   await sweepStaleStacks({
     client,
     now: NOW,
-    dryRun,
+    clock: () => NOW,
     waiter,
     log: () => {},
+    ...overrides,
   });
 
 describe('sweepStaleStacks', () => {
@@ -274,22 +283,21 @@ describe('sweepStaleStacks', () => {
 
     it('rejects a stack younger than the minimum age, even next to an older one', async () => {
       // Prepare
-      const ageInMs = (hours: number) => new Date(NOW - hours * HOUR_IN_MS);
       const stub = createStub({
         pages: [
           {
             Stacks: [
               makeStack('TooYoung', {
-                CreationTime: ageInMs(MIN_STACK_AGE_HOURS - 0.1),
+                CreationTime: createdHoursAgo(MIN_STACK_AGE_HOURS - 0.1),
               }),
               makeStack('ExactlyAtTheLimit', {
-                CreationTime: ageInMs(MIN_STACK_AGE_HOURS),
+                CreationTime: createdHoursAgo(MIN_STACK_AGE_HOURS),
               }),
               makeStack('OldEnough', {
-                CreationTime: ageInMs(MIN_STACK_AGE_HOURS + 0.1),
+                CreationTime: createdHoursAgo(MIN_STACK_AGE_HOURS + 0.1),
               }),
               makeStack('LmiShared-young', {
-                CreationTime: ageInMs(1),
+                CreationTime: createdHoursAgo(1),
                 Tags: undefined,
               }),
               makeStack('NoCreationTime', { CreationTime: undefined }),
@@ -356,7 +364,6 @@ describe('sweepStaleStacks', () => {
       'CREATE_IN_PROGRESS',
       'UPDATE_IN_PROGRESS',
       'DELETE_IN_PROGRESS',
-      'REVIEW_IN_PROGRESS',
       'UPDATE_ROLLBACK_IN_PROGRESS',
     ])('reports a %s stack instead of deleting it', async (status) => {
       // Prepare
@@ -372,6 +379,28 @@ describe('sweepStaleStacks', () => {
       expect(report.deleted).toEqual([]);
       expect(stub.deletedStacks()).toEqual([]);
       expect(report.ok).toBe(false);
+    });
+
+    it('deletes a REVIEW_IN_PROGRESS stack, which holds no resources', async () => {
+      // Prepare
+      const stub = createStub({
+        pages: [
+          {
+            Stacks: [
+              makeStack('NeverExecuted', { StackStatus: 'REVIEW_IN_PROGRESS' }),
+            ],
+          },
+        ],
+      });
+
+      // Act
+      const report = await sweep(stub.client, createWaiter(stub.events));
+
+      // Assess
+      expect(report.skippedInProgress).toEqual([]);
+      expect(stub.deletedStacks()).toEqual(['NeverExecuted']);
+      expect(report.deleted).toEqual(['NeverExecuted']);
+      expect(report.ok).toBe(true);
     });
 
     it('still deletes the other candidates', async () => {
@@ -435,10 +464,10 @@ describe('sweepStaleStacks', () => {
       expect(report.ok).toBe(true);
     });
 
-    it('never keeps more deletions in flight than the concurrency limit', async () => {
+    it('never keeps more than 5 deletions in flight', async () => {
       // Prepare
       const stackNames = Array.from(
-        { length: MAX_CONCURRENT_DELETIONS + 2 },
+        { length: 7 },
         (_value, index) => `Stack-${index}`
       );
       const stub = createStub({
@@ -463,7 +492,7 @@ describe('sweepStaleStacks', () => {
       const report = await sweep(stub.client, waiter);
 
       // Assess
-      expect(maxInFlight).toBe(MAX_CONCURRENT_DELETIONS);
+      expect(maxInFlight).toBe(5);
       expect(report.deleted).toHaveLength(stackNames.length);
       expect(report.ok).toBe(true);
     });
@@ -544,33 +573,26 @@ describe('sweepStaleStacks', () => {
       expect(report.ok).toBe(true);
     });
 
-    it('treats a stack that no longer exists as deleted', async () => {
-      // Prepare
-      const stub = createStub({
-        pages: [{ Stacks: [makeStack('Vanished')] }],
-        // No `recheck` entry: the re-check rejects with a "does not exist".
-      });
-      const waiter = createWaiter(stub.events, {
-        Vanished: new Error('Waiter timed out'),
-      });
-
-      // Act
-      const report = await sweep(stub.client, waiter);
-
-      // Assess
-      expect(stub.deletedStacks()).toEqual(['Vanished']);
-      expect(report.deleted).toEqual(['Vanished']);
-      expect(report.unresolved).toEqual([]);
-      expect(report.ok).toBe(true);
-    });
-
-    it('treats a DELETE_COMPLETE re-check as deleted', async () => {
-      // Prepare
-      const stub = createStub({
-        pages: [{ Stacks: [makeStack('Slow')] }],
+    it.each<{ case: string; recheck: StubOptions['recheck'] }>([
+      {
+        case: 'CloudFormation no longer knows',
+        recheck: {},
+      },
+      {
+        case: 'CloudFormation returns no description for',
+        recheck: { Slow: null },
+      },
+      {
+        case: 'is DELETE_COMPLETE by the time of the re-check',
         recheck: {
           Slow: makeStack('Slow', { StackStatus: 'DELETE_COMPLETE' }),
         },
+      },
+    ])('treats a stack that $case as deleted', async ({ recheck }) => {
+      // Prepare
+      const stub = createStub({
+        pages: [{ Stacks: [makeStack('Slow')] }],
+        recheck,
       });
       const waiter = createWaiter(stub.events, {
         Slow: new Error('Waiter timed out'),
@@ -582,6 +604,7 @@ describe('sweepStaleStacks', () => {
       // Assess
       expect(stub.deletedStacks()).toEqual(['Slow']);
       expect(report.deleted).toEqual(['Slow']);
+      expect(report.unresolved).toEqual([]);
       expect(report.ok).toBe(true);
     });
 
@@ -647,6 +670,213 @@ describe('sweepStaleStacks', () => {
     });
   });
 
+  describe('time budget', () => {
+    it('starts no new deletion once the budget is exhausted', async () => {
+      // Prepare
+      const stackNames = Array.from(
+        { length: 7 },
+        (_value, index) => `Stack-${index}`
+      );
+      const stub = createStub({
+        pages: [
+          { Stacks: stackNames.map((stackName) => makeStack(stackName)) },
+        ],
+      });
+      let elapsedMs = 0;
+      // Each of the 5 concurrent waits burns 10 minutes of a 25 minute budget,
+      // so the deletions that have not started yet never will.
+      const waiter: StackDeleteWaiter = vi.fn(async () => {
+        elapsedMs += 10 * MINUTE_IN_MS;
+      });
+
+      // Act
+      const report = await sweep(stub.client, waiter, {
+        clock: () => NOW + elapsedMs,
+        timeBudgetMs: 25 * MINUTE_IN_MS,
+      });
+
+      // Assess
+      expect(stub.deletedStacks()).toEqual([
+        'Stack-0',
+        'Stack-1',
+        'Stack-2',
+        'Stack-3',
+        'Stack-4',
+      ]);
+      expect(report.deleted).toHaveLength(5);
+      expect(report.unresolved).toEqual([
+        {
+          stackName: 'Stack-5',
+          status: 'CREATE_COMPLETE',
+          reason: 'Time budget exhausted, the delete was never attempted',
+        },
+        {
+          stackName: 'Stack-6',
+          status: 'CREATE_COMPLETE',
+          reason: 'Time budget exhausted, the delete was never attempted',
+        },
+      ]);
+      // The report is still complete: every candidate is accounted for, and the
+      // sweep returns normally so the workflow can read it.
+      expect(report.candidates).toHaveLength(7);
+      expect(report.discoveryFailed).toBe(false);
+      expect(report.ok).toBe(false);
+    });
+
+    it('reports a stack it was still waiting for when the budget ran out', async () => {
+      // Prepare
+      const stub = createStub({
+        pages: [{ Stacks: [makeStack('Slow')] }],
+      });
+      let elapsedMs = 0;
+      const waiter: StackDeleteWaiter = vi.fn(async () => {
+        elapsedMs += 30 * MINUTE_IN_MS;
+        throw new Error('Waiter timed out');
+      });
+
+      // Act
+      const report = await sweep(stub.client, waiter, {
+        clock: () => NOW + elapsedMs,
+        timeBudgetMs: 20 * MINUTE_IN_MS,
+      });
+
+      // Assess
+      expect(report.unresolved).toEqual([
+        {
+          stackName: 'Slow',
+          status: 'CREATE_COMPLETE',
+          reason:
+            'Time budget exhausted while waiting for the delete to complete',
+        },
+      ]);
+      expect(report.deleted).toEqual([]);
+      // Out of time means out of re-checks and retries too.
+      expect(stub.events).not.toContain('recheck:Slow');
+      expect(stub.deletedStacks()).toEqual(['Slow']);
+      expect(report.ok).toBe(false);
+    });
+
+    it.each([
+      {
+        case: 'the budget when it is the shorter of the two',
+        budgetMinutes: 5,
+        expectedSeconds: 300,
+      },
+      {
+        case: 'the per-stack maximum otherwise',
+        budgetMinutes: 60,
+        expectedSeconds: 1200,
+      },
+    ])(
+      'caps each wait at $case',
+      async ({ budgetMinutes, expectedSeconds }) => {
+        // Prepare
+        const stub = createStub({ pages: [{ Stacks: [makeStack('Alpha')] }] });
+        const waiter = createWaiter(stub.events);
+
+        // Act
+        await sweep(stub.client, waiter, {
+          timeBudgetMs: budgetMinutes * MINUTE_IN_MS,
+        });
+
+        // Assess
+        expect(waiter).toHaveBeenCalledWith(
+          stub.client,
+          stackIdOf('Alpha'),
+          expectedSeconds
+        );
+      }
+    );
+
+    it.each([
+      {
+        case: 'keeps deleting while the default budget lasts',
+        elapsedMinutes: 49,
+        expectedDeleted: ['Alpha', 'LmiShared-1234-x86'],
+        expectedUnresolved: [],
+      },
+      {
+        case: 'stops once the default budget is spent',
+        elapsedMinutes: 51,
+        expectedDeleted: ['Alpha'],
+        expectedUnresolved: [
+          {
+            stackName: 'LmiShared-1234-x86',
+            status: 'CREATE_COMPLETE',
+            reason: 'Time budget exhausted, the delete was never attempted',
+          },
+        ],
+      },
+    ])(
+      '$case',
+      async ({ elapsedMinutes, expectedDeleted, expectedUnresolved }) => {
+        // Prepare
+        const stub = createStub({
+          pages: [
+            { Stacks: [makeStack('Alpha'), makeStack('LmiShared-1234-x86')] },
+          ],
+        });
+        let elapsedMs = 0;
+        // Deleting `Alpha` in the first phase burns the time, so the shared
+        // stack's phase is the one that sees the budget as it stands.
+        const waiter: StackDeleteWaiter = vi.fn(async (_client, stackId) => {
+          if (stackNameOf(stackId) === 'Alpha') {
+            elapsedMs += elapsedMinutes * MINUTE_IN_MS;
+          }
+        });
+
+        // Act
+        const report = await sweep(stub.client, waiter, {
+          clock: () => NOW + elapsedMs,
+        });
+
+        // Assess
+        expect(report.deleted).toEqual(expectedDeleted);
+        expect(report.unresolved).toEqual(expectedUnresolved);
+      }
+    );
+
+    it('skips the retry when the budget ran out during the first pass', async () => {
+      // Prepare
+      const stub = createStub({
+        pages: [
+          { Stacks: [makeStack('Alpha'), makeStack('LmiShared-1234-x86')] },
+        ],
+        recheck: {
+          Alpha: makeStack('Alpha', { StackStatus: 'DELETE_FAILED' }),
+        },
+      });
+      let elapsedMs = 0;
+      // `Alpha` fails while there is still time, then deleting the shared stack
+      // in the next phase burns what is left of the budget.
+      const waiter: StackDeleteWaiter = vi.fn(async (_client, stackId) => {
+        if (stackNameOf(stackId) === 'Alpha') {
+          throw new Error('Resource is still in use');
+        }
+        elapsedMs += 60 * MINUTE_IN_MS;
+      });
+
+      // Act
+      const report = await sweep(stub.client, waiter, {
+        clock: () => NOW + elapsedMs,
+        timeBudgetMs: 30 * MINUTE_IN_MS,
+      });
+
+      // Assess
+      expect(report.deleted).toEqual(['LmiShared-1234-x86']);
+      expect(report.unresolved).toEqual([
+        {
+          stackName: 'Alpha',
+          status: 'CREATE_COMPLETE',
+          reason: 'Time budget exhausted before the delete could be retried',
+        },
+      ]);
+      expect(stub.events).not.toContain('recheck:Alpha');
+      expect(stub.deletedStacks()).toEqual(['Alpha', 'LmiShared-1234-x86']);
+      expect(report.ok).toBe(false);
+    });
+  });
+
   describe('dry run', () => {
     it('reports the candidates without deleting anything', async () => {
       // Prepare
@@ -657,7 +887,7 @@ describe('sweepStaleStacks', () => {
               makeStack('Alpha'),
               makeStack('LmiShared-1234-x86', { Tags: undefined }),
               makeStack('Busy', { StackStatus: 'DELETE_IN_PROGRESS' }),
-              makeStack('Fresh', { CreationTime: new Date(NOW - HOUR_IN_MS) }),
+              makeStack('Fresh', { CreationTime: createdHoursAgo(1) }),
             ],
           },
         ],
@@ -665,7 +895,7 @@ describe('sweepStaleStacks', () => {
       const waiter = createWaiter(stub.events);
 
       // Act
-      const report = await sweep(stub.client, waiter, true);
+      const report = await sweep(stub.client, waiter, { dryRun: true });
 
       // Assess
       expect(report.dryRun).toBe(true);
@@ -689,7 +919,9 @@ describe('sweepStaleStacks', () => {
       const stub = createStub({ pages: [new Error('AccessDenied')] });
 
       // Act
-      const report = await sweep(stub.client, createWaiter(stub.events), true);
+      const report = await sweep(stub.client, createWaiter(stub.events), {
+        dryRun: true,
+      });
 
       // Assess
       expect(report.discoveryFailed).toBe(true);

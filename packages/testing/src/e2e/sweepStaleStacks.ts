@@ -3,6 +3,7 @@ import {
   DeleteStackCommand,
   DescribeStacksCommand,
   type Stack,
+  type StackStatus,
   waitUntilStackDeleteComplete,
 } from '@aws-sdk/client-cloudformation';
 
@@ -10,6 +11,8 @@ import {
  * The tag every stack deployed by `TestStack` carries. An exact key/value match
  * is the primary signal that a stack belongs to the e2e test suite and can be
  * swept; anything else in the account is left alone.
+ *
+ * @internal
  */
 const E2E_TAG_KEY = 'Service';
 const E2E_TAG_VALUE = 'Powertools-for-AWS-e2e-tests';
@@ -20,6 +23,8 @@ const E2E_TAG_VALUE = 'Powertools-for-AWS-e2e-tests';
  * depend on, so they must be recognisable even if a future change stops tagging
  * them, and they must always be deleted *after* the function stacks that attach
  * to them by ARN (a relationship CloudFormation cannot see).
+ *
+ * @internal
  */
 const LMI_SHARED_STACK_NAME_PREFIX = 'LmiShared-';
 
@@ -29,6 +34,8 @@ const LMI_SHARED_STACK_NAME_PREFIX = 'LmiShared-';
  * guarantees the sweeper can never race a live workflow. There are no
  * exemptions: a stack younger than this is never deleted, even when it is what
  * keeps an older stack from being deleted.
+ *
+ * @internal
  */
 const MIN_STACK_AGE_HOURS = 12;
 
@@ -37,6 +44,8 @@ const MIN_STACK_AGE_HOURS = 12;
  * are cheap to issue but each one polls `DescribeStacks` until it completes, so
  * the cap keeps the sweep from tripping the account-wide CloudFormation read
  * rate limit (which surfaces as `Throttling: Rate exceeded`).
+ *
+ * @internal
  */
 const MAX_CONCURRENT_DELETIONS = 5;
 
@@ -45,29 +54,65 @@ const MAX_CONCURRENT_DELETIONS = 5;
  * Stacks holding VPC-attached Lambda functions can take ~15 minutes to release
  * their ENIs, so anything below 20 minutes would report healthy deletions as
  * failures.
+ *
+ * @internal
  */
 const STACK_DELETE_MAX_WAIT_SECONDS = 20 * 60;
 
 /**
- * Statuses that mean CloudFormation is mid-operation on the stack. These are
- * never deleted: a `DeleteStack` call would either fail or fight an operation
- * that may still be a live workflow's, so they are reported for a human to look
- * at instead.
+ * How long the whole sweep may take before it stops starting work and reports
+ * what it did not get to.
+ *
+ * The workflow job that runs the sweep is capped at 60 minutes, and a job the
+ * runner kills never gets to print its report — which the workflow can only
+ * read as a discovery failure, hiding whatever the sweep actually achieved. The
+ * budget is therefore comfortably below the job timeout, leaving room for the
+ * checkout, build and reporting steps around it.
+ *
+ * @internal
  */
-const isInProgress = (status: string): boolean =>
-  status.endsWith('_IN_PROGRESS');
+const DEFAULT_TIME_BUDGET_MS = 50 * 60 * 1_000;
 
 /**
- * A candidate stack, as selected by {@link discoverStaleStacks | discovery}.
+ * Prefix shared by every `unresolved` reason caused by the time budget, so a
+ * reader (and a test) can tell "we ran out of time" apart from "CloudFormation
+ * refused".
+ *
+ * @internal
+ */
+const TIME_BUDGET_REASON = 'Time budget exhausted';
+
+/**
+ * Tells whether CloudFormation is mid-operation on a stack in this status.
+ *
+ * Such stacks are never deleted: a `DeleteStack` call would either fail or
+ * fight an operation that may still be a live workflow's, so they are reported
+ * for a human to look at instead.
+ *
+ * `REVIEW_IN_PROGRESS` is the exception. Despite the name it is a terminal
+ * status: it means a stack was created from a change set that was never
+ * executed, so it holds no resources, nothing is running, and `DeleteStack`
+ * removes it cleanly.
+ *
+ * @param status - the CloudFormation status of the stack
+ * @internal
+ */
+const isInProgress = (status: string): boolean =>
+  status.endsWith('_IN_PROGRESS') && status !== 'REVIEW_IN_PROGRESS';
+
+/**
+ * A candidate stack, as selected by {@link discoverStaleStacks | `discoverStaleStacks`}.
  *
  * `stackId` is kept alongside the name because the delete waiter must poll by
  * id: `DescribeStacks` by *name* stops resolving once the stack is gone, so a
  * name-based waiter never observes `DELETE_COMPLETE`.
+ *
+ * @internal
  */
 type StaleStackCandidate = {
   stackName: string;
   stackId: string;
-  status: string;
+  status: StackStatus;
   ageHours: number;
   reason: 'tag' | 'lmi-shared-name';
 };
@@ -82,13 +127,13 @@ type SweepReport = {
   timestamp: string;
   candidates: {
     stackName: string;
-    status: string;
+    status: StackStatus;
     ageHours: number;
     reason: StaleStackCandidate['reason'];
   }[];
   deleted: string[];
-  skippedInProgress: { stackName: string; status: string }[];
-  unresolved: { stackName: string; status: string; reason: string }[];
+  skippedInProgress: { stackName: string; status: StackStatus }[];
+  unresolved: { stackName: string; status: StackStatus; reason: string }[];
   discoveryFailed: boolean;
   ok: boolean;
 };
@@ -99,7 +144,8 @@ type SweepReport = {
  */
 type StackDeleteWaiter = (
   client: CloudFormationClient,
-  stackId: string
+  stackId: string,
+  maxWaitTimeSeconds: number
 ) => Promise<void>;
 
 type SweepStaleStacksOptions = {
@@ -110,10 +156,21 @@ type SweepStaleStacksOptions = {
    */
   client?: CloudFormationClient;
   /**
-   * The instant the sweep is anchored to, as epoch milliseconds. Injectable so
-   * the age gate is deterministic in tests.
+   * Reads the current time, in epoch milliseconds. Only used to tell how much
+   * of the {@link SweepStaleStacksOptions.timeBudgetMs | `timeBudgetMs`} is
+   * left, and injectable so tests can make time pass without waiting.
+   */
+  clock?: () => number;
+  /**
+   * The instant the sweep is anchored to, as epoch milliseconds: the age gate,
+   * the report timestamp and the time budget are all measured from it.
    */
   now?: number;
+  /**
+   * How long the sweep may keep working, measured from
+   * {@link SweepStaleStacksOptions.now | `now`}.
+   */
+  timeBudgetMs?: number;
   /**
    * When `true`, discover and select candidates but issue no `DeleteStack`
    * call.
@@ -127,48 +184,115 @@ type SweepStaleStacksOptions = {
   log?: (message: string) => void;
 };
 
-const defaultWaiter: StackDeleteWaiter = async (client, stackId) => {
+/**
+ * Waits for a stack to reach `DELETE_COMPLETE`, using the CloudFormation
+ * waiter.
+ *
+ * @param client - the CloudFormation client to poll with
+ * @param stackId - the id of the stack being deleted
+ * @param maxWaitTimeSeconds - how long to keep polling before giving up
+ * @internal
+ */
+const defaultWaiter: StackDeleteWaiter = async (
+  client,
+  stackId,
+  maxWaitTimeSeconds
+) => {
   await waitUntilStackDeleteComplete(
-    { client, maxWaitTime: STACK_DELETE_MAX_WAIT_SECONDS },
+    { client, maxWaitTime: maxWaitTimeSeconds },
     { StackName: stackId }
   );
 };
 
 /**
- * Strip anything that identifies the AWS account from text that ends up in the
- * report, which is published to a public workflow run: ARNs first (they embed
- * the account id), then any bare 12-digit number.
+ * Tracks how much of the sweep's wall-clock budget is left.
+ *
+ * @internal
+ */
+type TimeBudget = {
+  /** Whether the budget is spent, i.e. no new deletion may be started. */
+  isExhausted: () => boolean;
+  /** How many whole seconds are left, never less than one. */
+  remainingSeconds: () => number;
+};
+
+/**
+ * Creates the time budget the sweep checks before it starts any new work.
+ *
+ * @param deadline - the instant the sweep must stop working, in epoch milliseconds
+ * @param clock - reads the current time, in epoch milliseconds
+ * @internal
+ */
+const createTimeBudget = (
+  deadline: number,
+  clock: () => number
+): TimeBudget => ({
+  isExhausted: () => clock() >= deadline,
+  remainingSeconds: () => Math.max(1, Math.ceil((deadline - clock()) / 1_000)),
+});
+
+/**
+ * Strips anything that identifies the AWS account from text that ends up in the
+ * report, which is published to a public workflow run.
+ *
+ * ARNs go first because they embed the account id, then any bare 12-digit
+ * number.
+ *
+ * @param value - the text to redact
+ * @internal
  */
 const sanitize = (value: string): string =>
   value
     .replaceAll(/arn:[^\s"']+/g, '[REDACTED]')
     .replaceAll(/\d{12}/g, '[REDACTED]');
 
+/**
+ * Turns an error into a message that is safe to publish.
+ *
+ * @param error - the error to describe
+ * @internal
+ */
 const describeError = (error: unknown): string =>
   sanitize(error instanceof Error ? error.message : String(error));
 
+/**
+ * Tells whether a stack is one of the shared LMI capacity provider stacks.
+ *
+ * @param stackName - the name of the stack
+ * @internal
+ */
 const isLmiSharedStack = (stackName: string): boolean =>
   stackName.startsWith(LMI_SHARED_STACK_NAME_PREFIX);
 
+/**
+ * Tells whether a stack carries the exact tag the e2e suite applies.
+ *
+ * @param stack - the stack as returned by `DescribeStacks`
+ * @internal
+ */
 const hasE2eTag = (stack: Stack): boolean =>
   (stack.Tags ?? []).some(
     (tag) => tag.Key === E2E_TAG_KEY && tag.Value === E2E_TAG_VALUE
   );
 
 /**
- * Decide whether a described stack is a sweep candidate, and why.
+ * Decides whether a described stack is a sweep candidate, and why.
  *
  * All of the following must hold:
  * - it is a root stack: nested stacks are deleted by their parent, and deleting
  *   one directly fails;
- * - it was created more than {@link MIN_STACK_AGE_HOURS} ago, computed from
- *   `CreationTime` (a stack without one is never swept, because its age cannot
- *   be proven);
+ * - it was created more than {@link MIN_STACK_AGE_HOURS | `MIN_STACK_AGE_HOURS`}
+ *   ago, computed from `CreationTime` (a stack without one is never swept,
+ *   because its age cannot be proven);
  * - it carries the exact e2e `Service` tag, or its name marks it as a shared
  *   LMI stack.
  *
  * `DELETE_COMPLETE` stacks are dropped as well; `DescribeStacks` without a
  * stack name does not return them, but a re-check by id does.
+ *
+ * @param stack - the stack as returned by `DescribeStacks`
+ * @param now - the instant the stack's age is measured against, in epoch milliseconds
+ * @internal
  */
 const selectCandidate = (
   stack: Stack,
@@ -210,7 +334,7 @@ const selectCandidate = (
 };
 
 /**
- * Page through every stack in the account and return the stale ones.
+ * Pages through every stack in the account and returns the stale ones.
  *
  * `DescribeStacks` is used rather than `ListStacks` because it returns `Tags`,
  * `CreationTime`, `RootId` and `StackId` in the same response, so selection
@@ -220,6 +344,10 @@ const selectCandidate = (
  * Any error propagates: discovery is all-or-nothing, because deleting from a
  * half-built candidate list could delete a shared stack while the function
  * stacks depending on it are still unknown.
+ *
+ * @param client - the CloudFormation client to list stacks with
+ * @param now - the instant stack ages are measured against, in epoch milliseconds
+ * @internal
  */
 const discoverStaleStacks = async (
   client: CloudFormationClient,
@@ -245,11 +373,16 @@ const discoverStaleStacks = async (
 };
 
 /**
- * Run `worker` over `items` with at most `limit` calls in flight, preserving
- * the input order in the results.
+ * Runs a worker over every item with a bounded number of calls in flight,
+ * preserving the input order in the results.
  *
  * A handful of long-lived promises pulling from a shared cursor is all the
  * limiter this needs, and it keeps the package free of another dependency.
+ *
+ * @param items - the items to work through
+ * @param limit - how many workers may run at the same time
+ * @param worker - handles a single item
+ * @internal
  */
 const mapWithConcurrency = async <TItem, TResult>(
   items: TItem[],
@@ -273,14 +406,19 @@ const mapWithConcurrency = async <TItem, TResult>(
   return results;
 };
 
+/**
+ * What became of one attempt to delete one stack.
+ *
+ * @internal
+ */
 type DeletionOutcome = {
   candidate: StaleStackCandidate;
-  deleted: boolean;
+  state: 'deleted' | 'failed' | 'out-of-time';
   failureReason?: string;
 };
 
 /**
- * Delete a single stack and wait for it to be gone.
+ * Deletes a single stack and waits for it to be gone.
  *
  * The stack *id* is used for both the delete and the wait: it pins the
  * operation to the exact stack discovery selected (a name could in principle
@@ -293,41 +431,80 @@ type DeletionOutcome = {
  * than the stack itself, so a stack that will not delete is reported instead.
  *
  * Failures are captured rather than thrown so one stuck stack cannot stop the
- * rest of the sweep.
+ * rest of the sweep. Nothing is started once the budget is spent, and the wait
+ * itself is capped by whatever is left of it, so the sweep always gets to
+ * report instead of being killed mid-wait by the job timeout.
+ *
+ * @param client - the CloudFormation client to delete with
+ * @param candidate - the stack to delete
+ * @param waiter - waits for the delete to complete
+ * @param budget - tells how much sweeping time is left
+ * @param log - writes human-readable progress
+ * @internal
  */
 const deleteStack = async (
   client: CloudFormationClient,
   candidate: StaleStackCandidate,
   waiter: StackDeleteWaiter,
+  budget: TimeBudget,
   log: (message: string) => void
 ): Promise<DeletionOutcome> => {
+  if (budget.isExhausted()) {
+    log(`Not deleting ${candidate.stackName}: ${TIME_BUDGET_REASON}`);
+
+    return {
+      candidate,
+      state: 'out-of-time',
+      failureReason: `${TIME_BUDGET_REASON}, the delete was never attempted`,
+    };
+  }
+
   log(`Deleting ${candidate.stackName} (${candidate.status})`);
   try {
     await client.send(new DeleteStackCommand({ StackName: candidate.stackId }));
-    await waiter(client, candidate.stackId);
+    await waiter(
+      client,
+      candidate.stackId,
+      Math.min(STACK_DELETE_MAX_WAIT_SECONDS, budget.remainingSeconds())
+    );
     log(`Deleted ${candidate.stackName}`);
 
-    return { candidate, deleted: true };
+    return { candidate, state: 'deleted' };
   } catch (error) {
     const failureReason = describeError(error);
     log(`Failed to delete ${candidate.stackName}: ${failureReason}`);
+    if (budget.isExhausted()) {
+      return {
+        candidate,
+        state: 'out-of-time',
+        failureReason: `${TIME_BUDGET_REASON} while waiting for the delete to complete`,
+      };
+    }
 
-    return { candidate, deleted: false, failureReason };
+    return { candidate, state: 'failed', failureReason };
   }
 };
 
 /**
- * One dependency-ordered deletion pass: every stack that is not a shared LMI
- * stack first, then — once those are all gone — the shared ones.
+ * Runs one dependency-ordered deletion pass: every stack that is not a shared
+ * LMI stack first, then — once those are all gone — the shared ones.
  *
  * The ordering exists because a function stack's function attaches to a shared
  * capacity provider by ARN. CloudFormation does not know about that link, so
  * deleting the provider stack first fails on ENIs still in use.
+ *
+ * @param client - the CloudFormation client to delete with
+ * @param candidates - the stacks to delete in this pass
+ * @param waiter - waits for each delete to complete
+ * @param budget - tells how much sweeping time is left
+ * @param log - writes human-readable progress
+ * @internal
  */
 const runDeletionPass = async (
   client: CloudFormationClient,
   candidates: StaleStackCandidate[],
   waiter: StackDeleteWaiter,
+  budget: TimeBudget,
   log: (message: string) => void
 ): Promise<DeletionOutcome[]> => {
   const phases = [
@@ -344,7 +521,7 @@ const runDeletionPass = async (
       ...(await mapWithConcurrency(
         phase,
         MAX_CONCURRENT_DELETIONS,
-        async (candidate) => deleteStack(client, candidate, waiter, log)
+        async (candidate) => deleteStack(client, candidate, waiter, budget, log)
       ))
     );
   }
@@ -352,6 +529,11 @@ const runDeletionPass = async (
   return outcomes;
 };
 
+/**
+ * How the stacks a pass could not delete look on a second look.
+ *
+ * @internal
+ */
 type RecheckResult = {
   /** Stacks that are gone after all, despite the first pass reporting them as failed. */
   gone: StaleStackCandidate[];
@@ -362,7 +544,7 @@ type RecheckResult = {
 };
 
 /**
- * Re-read the state of the stacks the first pass could not delete.
+ * Re-reads the state of the stacks the first pass could not delete.
  *
  * The most common first-pass failure is a stack that depends on another one in
  * the same batch, so by the time the batch is over it is either already gone or
@@ -373,6 +555,10 @@ type RecheckResult = {
  * A stack that no longer resolves is treated as deleted. Any other describe
  * error (a throttle, say) leaves the stack in the retry list: retrying costs
  * one call and the retry's own failure is reported if it doesn't help.
+ *
+ * @param client - the CloudFormation client to describe stacks with
+ * @param candidates - the stacks whose delete did not complete
+ * @internal
  */
 const recheckFailedStacks = async (
   client: CloudFormationClient,
@@ -417,6 +603,12 @@ const recheckFailedStacks = async (
   return result;
 };
 
+/**
+ * Reduces a candidate to the fields the report publishes.
+ *
+ * @param candidate - the candidate to report on
+ * @internal
+ */
 const toReportCandidate = ({
   stackName,
   status,
@@ -430,9 +622,14 @@ const toReportCandidate = ({
 });
 
 /**
- * An empty report: nothing found, nothing done, not `ok`. Every sweep starts
- * from this and fills it in, and the CLI falls back to it when the sweep itself
- * blows up, so the workflow always gets a report in the agreed shape.
+ * Creates an empty report: nothing found, nothing done, not `ok`.
+ *
+ * Every sweep starts from this and fills it in, and the CLI falls back to it
+ * when the sweep itself blows up, so the workflow always gets a report in the
+ * agreed shape.
+ *
+ * @param dryRun - whether the sweep is only reporting what it would delete
+ * @param now - the instant to timestamp the report with, in epoch milliseconds
  */
 const createEmptyReport = (dryRun: boolean, now = Date.now()): SweepReport => ({
   dryRun,
@@ -446,33 +643,50 @@ const createEmptyReport = (dryRun: boolean, now = Date.now()): SweepReport => ({
 });
 
 /**
- * Delete the CloudFormation stacks left behind by e2e test runs, and report
+ * Deletes the CloudFormation stacks left behind by e2e test runs, and reports
  * what happened.
  *
  * A cancelled or timed-out e2e job never runs its own teardown, so its stacks
  * stay in the account forever and eventually collide with account limits. This
  * sweep is the safety net: it deletes stacks that are provably abandoned — root
- * stacks, older than {@link MIN_STACK_AGE_HOURS}, tagged as e2e test stacks (or
- * named as shared LMI stacks) — and nothing else.
+ * stacks, older than {@link MIN_STACK_AGE_HOURS | `MIN_STACK_AGE_HOURS`},
+ * tagged as e2e test stacks (or named as shared LMI stacks) — and nothing else.
  *
  * The sweep is deliberately staged:
  * 1. discovery runs to completion before anything is deleted, so a partial
  *    listing can never cause a partial (and out-of-order) deletion;
- * 2. deletion runs as two {@link runDeletionPass | dependency-ordered passes},
+ * 2. deletion runs as two {@link runDeletionPass | `runDeletionPass`} calls,
  *    because cross-stack dependencies that CloudFormation cannot see make some
  *    first-pass failures expected;
  * 3. whatever is still there afterwards is reported as `unresolved` for a human
  *    to deal with, never force-deleted.
+ *
+ * Every stage is bounded by
+ * {@link SweepStaleStacksOptions.timeBudgetMs | `timeBudgetMs`}: once it is
+ * spent no new delete is started, and whatever was left is reported as
+ * `unresolved`. Reporting late but completely beats being killed by the job
+ * timeout, which would leave the workflow with no report at all.
  *
  * The returned report is the workflow's contract. `ok` is `false` whenever the
  * account was left in a state a human should look at: a discovery failure,
  * anything unresolved, or a candidate skipped because CloudFormation was busy
  * with it. A dry run is `ok` unless discovery itself failed — it changes
  * nothing, so there is nothing to fail.
+ *
+ * @param {Object} options - the options to run the sweep with
+ * @param options.client - the CloudFormation client to sweep with
+ * @param options.clock - reads the current time, in epoch milliseconds
+ * @param options.now - the instant the sweep is anchored to, in epoch milliseconds
+ * @param options.timeBudgetMs - how long the sweep may keep working
+ * @param options.dryRun - whether to report the candidates instead of deleting them
+ * @param options.waiter - waits for each delete to complete
+ * @param options.log - writes human-readable progress
  */
 const sweepStaleStacks = async ({
   client = new CloudFormationClient({}),
-  now = Date.now(),
+  clock = Date.now,
+  now = clock(),
+  timeBudgetMs = DEFAULT_TIME_BUDGET_MS,
   dryRun = false,
   waiter = defaultWaiter,
   log = (message: string) => {
@@ -480,6 +694,7 @@ const sweepStaleStacks = async ({
   },
 }: SweepStaleStacksOptions = {}): Promise<SweepReport> => {
   const report: SweepReport = createEmptyReport(dryRun, now);
+  const budget = createTimeBudget(now + timeBudgetMs, clock);
 
   let candidates: StaleStackCandidate[];
   try {
@@ -519,18 +734,45 @@ const sweepStaleStacks = async ({
   }
 
   const deleted = new Set<string>();
-  const firstPass = await runDeletionPass(client, deletable, waiter, log);
+  const unresolved = new Map<string, SweepReport['unresolved'][number]>();
+  const markUnresolved = (
+    { stackName, status }: StaleStackCandidate,
+    reason: string
+  ): void => {
+    unresolved.set(stackName, { stackName, status, reason });
+  };
+
   const failed: StaleStackCandidate[] = [];
-  for (const outcome of firstPass) {
-    if (outcome.deleted) {
+  for (const outcome of await runDeletionPass(
+    client,
+    deletable,
+    waiter,
+    budget,
+    log
+  )) {
+    if (outcome.state === 'deleted') {
       deleted.add(outcome.candidate.stackName);
+      continue;
+    }
+    if (outcome.state === 'out-of-time') {
+      markUnresolved(
+        outcome.candidate,
+        outcome.failureReason ?? TIME_BUDGET_REASON
+      );
       continue;
     }
     failed.push(outcome.candidate);
   }
 
-  const unresolved = new Map<string, SweepReport['unresolved'][number]>();
-  if (failed.length > 0) {
+  if (failed.length > 0 && budget.isExhausted()) {
+    log(`${TIME_BUDGET_REASON}, not retrying ${failed.length} stack(s)`);
+    for (const candidate of failed) {
+      markUnresolved(
+        candidate,
+        `${TIME_BUDGET_REASON} before the delete could be retried`
+      );
+    }
+  } else if (failed.length > 0) {
     log(`Retrying ${failed.length} stack(s) that did not delete`);
     const { gone, retryable, untouchable } = await recheckFailedStacks(
       client,
@@ -540,27 +782,26 @@ const sweepStaleStacks = async ({
       deleted.add(candidate.stackName);
     }
     for (const candidate of untouchable) {
-      unresolved.set(candidate.stackName, {
-        stackName: candidate.stackName,
-        status: candidate.status,
-        reason: `CloudFormation is busy with the stack (${candidate.status}), it was not deleted again`,
-      });
+      markUnresolved(
+        candidate,
+        `CloudFormation is busy with the stack (${candidate.status}), it was not deleted again`
+      );
     }
     for (const outcome of await runDeletionPass(
       client,
       retryable,
       waiter,
+      budget,
       log
     )) {
-      if (outcome.deleted) {
+      if (outcome.state === 'deleted') {
         deleted.add(outcome.candidate.stackName);
         continue;
       }
-      unresolved.set(outcome.candidate.stackName, {
-        stackName: outcome.candidate.stackName,
-        status: outcome.candidate.status,
-        reason: outcome.failureReason ?? 'Unknown failure',
-      });
+      markUnresolved(
+        outcome.candidate,
+        outcome.failureReason ?? 'Unknown failure'
+      );
     }
   }
 
@@ -576,7 +817,6 @@ const sweepStaleStacks = async ({
 
 export {
   createEmptyReport,
-  MAX_CONCURRENT_DELETIONS,
   MIN_STACK_AGE_HOURS,
   type StackDeleteWaiter,
   type SweepReport,

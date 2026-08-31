@@ -29,11 +29,7 @@ const buildSharedCapacityProviderStack = (
   const stackName = `LmiShared-${getRunId()}-${architecture.replace('_', '-')}`;
 
   const app = new App();
-  const stack = new Stack(app, stackName, {
-    tags: {
-      Service: 'Powertools-for-AWS-e2e-tests',
-    },
-  });
+  const stack = new Stack(app, stackName);
   const testStack = new TestStack({
     stackNameProps: {
       stackNamePrefix: 'LmiShared',

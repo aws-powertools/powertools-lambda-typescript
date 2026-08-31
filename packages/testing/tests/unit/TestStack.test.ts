@@ -7,35 +7,35 @@ const serviceTag = {
 };
 
 describe('TestStack', () => {
-  it('tags an internally created stack', () => {
+  it.each([
+    {
+      stackType: 'an internally created stack',
+      prepareStack: () => ({}),
+    },
+    {
+      stackType: 'a caller-supplied stack',
+      prepareStack: () => {
+        const app = new App();
+        return { app, stack: new Stack(app, 'CallerSuppliedStack') };
+      },
+    },
+  ])('tags $stackType', ({ prepareStack }) => {
+    // Prepare
+    const stack = prepareStack();
+
+    // Act
     const testStack = new TestStack({
+      ...stack,
       stackNameProps: {
         stackNamePrefix: 'TEST',
-        testName: 'internal-stack',
+        testName: 'tagged-stack',
       },
     });
-
     const artifact = testStack.app
       .synth()
       .getStackArtifact(testStack.stack.artifactId);
 
-    expect(artifact.tags).toMatchObject(serviceTag);
-  });
-
-  it('tags a caller-supplied stack', () => {
-    const app = new App();
-    const stack = new Stack(app, 'CallerSuppliedStack');
-    const testStack = new TestStack({
-      app,
-      stack,
-      stackNameProps: {
-        stackNamePrefix: 'TEST',
-        testName: 'supplied-stack',
-      },
-    });
-
-    const artifact = app.synth().getStackArtifact(testStack.stack.artifactId);
-
+    // Assess
     expect(artifact.tags).toMatchObject(serviceTag);
   });
 });

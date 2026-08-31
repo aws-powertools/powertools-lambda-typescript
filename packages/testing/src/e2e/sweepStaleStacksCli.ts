@@ -2,7 +2,7 @@ import { CloudFormationClient } from '@aws-sdk/client-cloudformation';
 import { createEmptyReport, sweepStaleStacks } from './sweepStaleStacks.js';
 
 /**
- * Entry point for the scheduled e2e stale stack sweeper.
+ * Runs the scheduled e2e stale stack sweeper.
  *
  * Run it from the workflow (or locally, against whatever account the AWS SDK
  * default provider chain resolves to) with:
@@ -14,10 +14,11 @@ import { createEmptyReport, sweepStaleStacks } from './sweepStaleStacks.js';
  * ```
  *
  * The two output streams are strictly separated so the workflow can consume
- * both: **stdout carries exactly one line**, the JSON
- * {@link sweepStaleStacks | sweep report}, while all human-readable progress
- * goes to stderr. The report is always printed, including when the sweep did
- * not go well and the process exits non-zero.
+ * both: **stdout carries exactly one line**, the JSON report of
+ * {@link sweepStaleStacks | `sweepStaleStacks`}, while all human-readable
+ * progress goes to stderr. The report is always printed, including when the
+ * sweep did not go well and the process exits non-zero — the sweep's own time
+ * budget makes sure it gets that far before the job timeout.
  *
  * No region is configured here on purpose: the client picks it up from the
  * environment, so the same script sweeps whichever region the caller points it

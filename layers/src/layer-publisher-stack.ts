@@ -1,7 +1,16 @@
-import { execFileSync, execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { readdirSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve, sep } from 'node:path';
+import {
+  cpSync,
+  globSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CfnOutput, RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib';
 import {
@@ -188,10 +197,9 @@ export class LayerPublisherStack extends Stack {
                 'node_modules/@aws-lambda-powertools/*/lib/**/*.d.ts.map',
                 'node_modules/@aws-sdk/*/dist-types',
                 'node_modules/@smithy/*/dist-types',
-                'node_modules/@smithy/**/README.md ',
-                'node_modules/@aws-sdk/**/README.md ',
+                'node_modules/@smithy/**/README.md',
+                'node_modules/@aws-sdk/**/README.md',
               ];
-              const buildCommands: string[] = [];
               // We deliberately do NOT ship any @aws-sdk/* client in the layer.
               //
               // The layer is mounted at /opt/nodejs/node_modules, which precedes
@@ -206,23 +214,7 @@ export class LayerPublisherStack extends Stack {
               // AWS SDK v3, so we rely on it instead of exposing a partial one.
               const modulesToInstall: string[] = ['zod'];
 
-              if (buildFromLocal) {
-                for (const util of utilities) {
-                  buildCommands.push(
-                    // Build latest version of the package
-                    `npm run build -w packages/${util.workspace}`,
-                    // Pack the package to a .tgz file
-                    `npm pack -w packages/${util.workspace}`,
-                    // Move the .tgz file to the tmp folder
-                    `mv ${packTarballPrefix(util.packageName)}*.tgz ${tmpBuildDir}`
-                  );
-                }
-                filesToRemove.push(
-                  ...utilities.map((util) =>
-                    join(`${packTarballPrefix(util.packageName)}*.tgz`)
-                  )
-                );
-              } else {
+              if (!buildFromLocal) {
                 // Dependencies to install in the Lambda Layer
                 modulesToInstall.push(
                   ...utilities.map(
@@ -232,38 +224,41 @@ export class LayerPublisherStack extends Stack {
               }
 
               // Phase 1: Cleanup & create tmp folder
-              execSync(
-                [
-                  // Clean up existing tmp folder from previous builds
-                  `rm -rf ${tmpBuildDir}`,
-                  // Create tmp folder again
-                  `mkdir -p ${tmpBuildDir}`,
-                ].join(' && ')
-              );
+              rmSync(tmpBuildDir, { recursive: true, force: true });
+              mkdirSync(tmpBuildDir, { recursive: true });
 
               // Phase 2: (Optional) Build packages & pack them
-              buildFromLocal &&
-                execSync(buildCommands.join(' && '), { cwd: projectRoot });
+              if (buildFromLocal) {
+                for (const util of utilities) {
+                  execFileSync(
+                    'npm',
+                    ['run', 'build', '-w', `packages/${util.workspace}`],
+                    { cwd: projectRoot }
+                  );
+                  const packOutput = execFileSync(
+                    'npm',
+                    ['pack', '-w', `packages/${util.workspace}`, '--json'],
+                    { cwd: projectRoot, encoding: 'utf-8' }
+                  );
+                  const packedTarballs = JSON.parse(packOutput) as Array<{
+                    filename?: string;
+                  }>;
+                  const tarball = packedTarballs[0]?.filename;
+                  if (packedTarballs.length !== 1 || tarball === undefined) {
+                    throw new Error(
+                      `Could not determine packed tarball for ${util.packageName}`
+                    );
+                  }
+                  const tmpTarballPath = join(tmpBuildDir, tarball);
+                  renameSync(join(projectRoot, tarball), tmpTarballPath);
+                  modulesToInstall.push(tmpTarballPath);
+                  filesToRemove.push(tarball);
+                }
+              }
 
               // Phase 3: Install dependencies to tmp folder. Retry with backoff
               // to absorb npm registry propagation delays for freshly published
-              // versions (see issue #5564). Args are passed to execFileSync as an
-              // array (no shell), so the local .tgz paths are resolved here rather
-              // than relying on shell glob expansion.
-              if (buildFromLocal) {
-                for (const util of utilities) {
-                  const prefix = packTarballPrefix(util.packageName);
-                  const tarball = readdirSync(tmpBuildDir).find(
-                    (name) => name.startsWith(prefix) && name.endsWith('.tgz')
-                  );
-                  if (tarball === undefined) {
-                    throw new Error(
-                      `Could not find packed tarball for ${util.packageName} in ${tmpBuildDir}`
-                    );
-                  }
-                  modulesToInstall.push(join(tmpBuildDir, tarball));
-                }
-              }
+              // versions (see issue #5564).
               execFileWithRetry('npm', [
                 'i',
                 '--prefix',
@@ -272,11 +267,16 @@ export class LayerPublisherStack extends Stack {
               ]);
 
               // Phase 4: Remove unnecessary files
-              execSync(
-                `rm -rf ${filesToRemove
-                  .map((filePath) => `${tmpBuildDir}/${filePath}`)
-                  .join(' ')}`
-              );
+              for (const pattern of filesToRemove) {
+                for (const filePath of globSync(pattern, {
+                  cwd: tmpBuildDir,
+                })) {
+                  rmSync(join(tmpBuildDir, filePath), {
+                    recursive: true,
+                    force: true,
+                  });
+                }
+              }
 
               // Phase 5: patch require keyword in ESM Tracer package due to AWS X-Ray SDK for Node.js not being ESM compatible
               const esmTracerPath = join(
@@ -288,18 +288,30 @@ export class LayerPublisherStack extends Stack {
                 'provider',
                 'ProviderService.js'
               );
-              execSync(
-                `echo "import { createRequire } from 'module'; const require = createRequire(import.meta.url);$(cat ${esmTracerPath})" > ${esmTracerPath}`
+              writeFileSync(
+                esmTracerPath,
+                `import { createRequire } from 'module'; const require = createRequire(import.meta.url);${readFileSync(esmTracerPath, 'utf-8')}`
               );
 
               // Phase 6: Copy files from tmp folder to cdk.out asset folder (the folder is created by CDK)
-              execSync(`cp -R ${tmpBuildPath}${sep}* ${outputDir}`);
+              cpSync(tmpBuildPath, outputDir, { recursive: true });
 
               // Phase 7: (Optional) Restore changes to the project root made by the build
-              buildFromLocal &&
-                execSync('git restore packages/*/package.json', {
-                  cwd: projectRoot,
-                });
+              if (buildFromLocal) {
+                execFileSync(
+                  'git',
+                  [
+                    'restore',
+                    '--',
+                    ...utilities.map((util) =>
+                      join('packages', util.workspace, 'package.json')
+                    ),
+                  ],
+                  {
+                    cwd: projectRoot,
+                  }
+                );
+              }
 
               return true;
             },

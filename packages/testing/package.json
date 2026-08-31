@@ -11,6 +11,8 @@
     "test": "vitest --run",
     "test:unit": "vitest --run",
     "test:e2e": "echo 'Not implemented'",
+    "lmi:deploy": "node lib/esm/lmi/deploySharedCapacityProvider.js",
+    "lmi:destroy": "node lib/esm/lmi/destroySharedCapacityProvider.js",
     "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
     "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
     "build:tests": "tsc --noEmit -p tests/tsconfig.json",
@@ -47,6 +49,14 @@
       "import": "./lib/esm/resources/TestDynamodbTable.js",
       "require": "./lib/cjs/resources/TestDynamodbTable.js"
     },
+    "./resources/capacity-provider": {
+      "import": "./lib/esm/resources/TestLmiCapacityProvider.js",
+      "require": "./lib/cjs/resources/TestLmiCapacityProvider.js"
+    },
+    "./lmi": {
+      "import": "./lib/esm/lmi/naming.js",
+      "require": "./lib/cjs/lmi/naming.js"
+    },
     "./context": {
       "import": "./lib/esm/context.js",
       "require": "./lib/cjs/context.js"
@@ -69,6 +79,14 @@
       "resources/dynamodb": [
         "lib/cjs/resources/TestDynamodbTable.d.ts",
         "lib/esm/resources/TestDynamodbTable.d.ts"
+      ],
+      "resources/capacity-provider": [
+        "lib/cjs/resources/TestLmiCapacityProvider.d.ts",
+        "lib/esm/resources/TestLmiCapacityProvider.d.ts"
+      ],
+      "lmi": [
+        "lib/cjs/lmi/naming.d.ts",
+        "lib/esm/lmi/naming.d.ts"
       ],
       "types": [
         "lib/cjs/types.d.ts",
@@ -100,6 +118,7 @@
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
   "dependencies": {
     "@aws-cdk/toolkit-lib": "^1.39.0",
+    "@aws-sdk/client-cloudformation": "^3.1116.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.1116.0",
     "@aws-sdk/client-lambda": "^3.1116.0",
     "@aws/lambda-invoke-store": "0.3.0",

@@ -7,7 +7,7 @@ import {
   StackSelectionStrategy,
   Toolkit,
 } from '@aws-cdk/toolkit-lib';
-import { App, Stack } from 'aws-cdk-lib';
+import { App, Stack, Tags } from 'aws-cdk-lib';
 import { generateTestUniqueName } from './helpers.js';
 import type { TestStackProps } from './types.js';
 
@@ -68,13 +68,8 @@ class TestStack {
       testPrefix: stackNameProps.stackNamePrefix,
     });
     this.app = app ?? new App();
-    this.stack =
-      stack ??
-      new Stack(this.app, this.testName, {
-        tags: {
-          Service: 'Powertools-for-AWS-e2e-tests',
-        },
-      });
+    this.stack = stack ?? new Stack(this.app, this.testName);
+    Tags.of(this.stack).add('Service', 'Powertools-for-AWS-e2e-tests');
     let lastCreateLog = 0;
     let lastDestroyLog = 0;
     const creationDeleteLogFrequency = 10000; // 10 seconds

@@ -74,6 +74,7 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
           // Prepare
           if (useInvokeStore) {
             vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+            await InvokeStore.getInstanceAsync();
           }
           const processor = new processorClass();
           const recordsA = [sqsRecordFactory('record-A', '1')];
@@ -150,6 +151,7 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
           // Prepare
           if (useInvokeStore) {
             vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+            await InvokeStore.getInstanceAsync();
           }
           const processor = new processorClass();
           const recordsA = [sqsRecordFactory('record-A', '1')];
@@ -227,6 +229,7 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
           // Prepare
           if (useInvokeStore) {
             vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+            await InvokeStore.getInstanceAsync();
           }
           const processor = new processorClass();
           const recordsA = [sqsRecordFactory('body-A-2', '1')];
@@ -308,6 +311,7 @@ describe('SQS FIFO Processors concurrent invocation isolation', () => {
           // Prepare
           if (useInvokeStore) {
             vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+            await InvokeStore.getInstanceAsync();
           }
           const processor = new processorClass();
           const recordsA = [

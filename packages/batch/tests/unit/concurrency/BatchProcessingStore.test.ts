@@ -236,6 +236,26 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
     }
   );
 
+  it('shadows shared options with undefined in an invocation context', async () => {
+    // Prepare
+    vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+    const invokeStore = await InvokeStore.getInstanceAsync();
+    const store = new BatchProcessingStore();
+    const sharedOptions = { throwOnFullBatchFailure: false };
+    store.setOptions(sharedOptions);
+
+    // Act
+    const scopedOptions = invokeStore.run({}, () => {
+      store.setOptions(undefined);
+
+      return store.getOptions();
+    });
+
+    // Assess
+    expect(scopedOptions).toBeUndefined();
+    expect(store.getOptions()).toBe(sharedOptions);
+  });
+
   describe('InvokeStore error handling', () => {
     beforeEach(() => {
       vi.stubGlobal('awslambda', undefined);
@@ -245,26 +265,56 @@ describe('BatchProcessingStore concurrent invocation isolation', () => {
       vi.unstubAllGlobals();
     });
 
-    it('throws error when getRecords is called with AWS_LAMBDA_MAX_CONCURRENCY set but InvokeStore is not available', () => {
-      // Prepare
-      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
-      const store = new BatchProcessingStore();
+    it.each([
+      ['getRecords', (store: BatchProcessingStore) => store.getRecords()],
+      ['setRecords', (store: BatchProcessingStore) => store.setRecords([])],
+      ['getHandler', (store: BatchProcessingStore) => store.getHandler()],
+      [
+        'setHandler',
+        (store: BatchProcessingStore) => store.setHandler(() => {}),
+      ],
+      ['getOptions', (store: BatchProcessingStore) => store.getOptions()],
+      [
+        'setOptions',
+        (store: BatchProcessingStore) => store.setOptions(undefined),
+      ],
+      [
+        'getFailureMessages',
+        (store: BatchProcessingStore) => store.getFailureMessages(),
+      ],
+      [
+        'setFailureMessages',
+        (store: BatchProcessingStore) => store.setFailureMessages([]),
+      ],
+      [
+        'getSuccessMessages',
+        (store: BatchProcessingStore) => store.getSuccessMessages(),
+      ],
+      [
+        'setSuccessMessages',
+        (store: BatchProcessingStore) => store.setSuccessMessages([]),
+      ],
+      [
+        'getBatchResponse',
+        (store: BatchProcessingStore) => store.getBatchResponse(),
+      ],
+      [
+        'setBatchResponse',
+        (store: BatchProcessingStore) =>
+          store.setBatchResponse({ batchItemFailures: [] }),
+      ],
+      ['getErrors', (store: BatchProcessingStore) => store.getErrors()],
+      ['setErrors', (store: BatchProcessingStore) => store.setErrors([])],
+    ])(
+      'throws error when %s is called with InvokeStore unavailable',
+      (_method, action) => {
+        // Prepare
+        vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+        const store = new BatchProcessingStore();
 
-      // Act & Assess
-      expect(() => {
-        store.getRecords();
-      }).toThrow('InvokeStore is not available');
-    });
-
-    it('throws error when setRecords is called with AWS_LAMBDA_MAX_CONCURRENCY set but InvokeStore is not available', () => {
-      // Prepare
-      vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
-      const store = new BatchProcessingStore();
-
-      // Act & Assess
-      expect(() => {
-        store.setRecords([]);
-      }).toThrow('InvokeStore is not available');
-    });
+        // Act & Assess
+        expect(() => action(store)).toThrow('InvokeStore is not available');
+      }
+    );
   });
 });

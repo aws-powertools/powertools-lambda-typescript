@@ -70,6 +70,21 @@ describe('DimensionsStore concurrent invocation isolation', () => {
     });
   });
 
+  it('uses shared dimensions when no invocation context is active', async () => {
+    // Prepare
+    vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+    await InvokeStore.getInstanceAsync();
+    const store = new DimensionsStore();
+
+    // Act
+    store.addDimension('env', 'prod');
+    store.addDimensionSet({ service: 'api' });
+
+    // Assess
+    expect(store.getDimensions()).toEqual({ env: 'prod' });
+    expect(store.getDimensionSets()).toEqual([{ service: 'api' }]);
+  });
+
   it.each([
     {
       description: 'without InvokeStore',

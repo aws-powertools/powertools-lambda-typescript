@@ -69,6 +69,43 @@ describe('MetricsStore concurrent invocation isolation', () => {
     });
   });
 
+  it('uses shared metrics when no invocation context is active', async () => {
+    // Prepare
+    vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+    await InvokeStore.getInstanceAsync();
+    const store = new MetricsStore();
+
+    // Act
+    store.setMetric('count', MetricUnit.Count, 1, 60);
+    store.setTimestamp(1000);
+
+    // Assess
+    expect(store.getMetric('count')).toEqual({
+      name: 'count',
+      unit: MetricUnit.Count,
+      value: 1,
+      resolution: 60,
+    });
+    expect(store.getTimestamp()).toBe(1000);
+  });
+
+  it('clears a scoped timestamp when a shared timestamp exists', async () => {
+    // Prepare
+    vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+    const invokeStore = await InvokeStore.getInstanceAsync();
+    const store = new MetricsStore();
+    store.setTimestamp(1000);
+
+    // Act
+    const timestamp = invokeStore.run({}, () => {
+      store.clearMetrics();
+      return store.getTimestamp();
+    });
+
+    // Assess
+    expect(timestamp).toBeUndefined();
+  });
+
   it.each([
     {
       description: 'without InvokeStore',

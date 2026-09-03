@@ -2,38 +2,56 @@
 
 ## Table of contents <!-- omit in toc -->
 
-- [Reporting Bugs/Feature Requests](#reporting-bugsfeature-requests)
-- [Contributing via Pull Requests](#contributing-via-pull-requests)
-    - [Dev setup](#dev-setup)
-    - [Sending a pull request](#sending-a-pull-request)
-    - [Local documentation](#local-documentation)
-- [Conventions](#conventions)
-    - [General terminology and practices](#general-terminology-and-practices)
-    - [Testing definition](#testing-definition)
+- [Reporting bugs and requesting features](#reporting-bugs-and-requesting-features)
 - [Finding contributions to work on](#finding-contributions-to-work-on)
+- [Contributing via pull requests](#contributing-via-pull-requests)
+    - [Dev setup](#dev-setup)
+    - [Coding standards](#coding-standards)
+    - [Sending a pull request](#sending-a-pull-request)
+    - [What a pull request must satisfy](#what-a-pull-request-must-satisfy)
+    - [End-to-end tests](#end-to-end-tests)
+    - [Local documentation](#local-documentation)
 - [Code of Conduct](#code-of-conduct)
 - [Security issue notifications](#security-issue-notifications)
 - [Licensing](#licensing)
 
-<!-- markdownlint-disable MD013 -->
-Thank you for your interest in contributing to our project. Whether it's a [bug report](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=type%2Fbug%2Ctriage&projects=aws-powertools%2F7&template=bug_report.yml&title=Bug%3A+TITLE), [new feature](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=type%2Ffeature-request%2Ctriage&projects=aws-powertools%2F7&template=feature_request.yml&title=Feature+request%3A+TITLE), [correction](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose), or [additional documentation](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=area%2Fdocumentation%2Ctriage&projects=aws-powertools%2F7&template=documentation_improvements.yml&title=Docs%3A+TITLE), we greatly value feedback and contributions from our community.
-<!-- markdownlint-enable MD013 -->
+Thank you for your interest in contributing to our project. Whether it's a bug report, a new feature, a correction, or additional documentation, we greatly value feedback and contributions from our community.
 
 We encourage contributions from the community and we will work with contributors to merge their pull requests.
-Rarely, we may close pull requests that do not meet our guidelines specified in CONTRIBUTING.md, or will require unreasonable effort to meet our quality bar.
+Rarely, we may close pull requests that do not meet the guidelines in this document, or will require unreasonable effort to meet our quality bar.
 
 Please read through this document before submitting any issues or pull requests to ensure we have all the necessary
 information to effectively respond to your bug report or contribution.
 
-## Reporting Bugs/Feature Requests
+## Reporting bugs and requesting features
 
-We welcome you to use the GitHub issue tracker to report bugs, suggest features, or documentation improvements.
+Before opening anything new, please check [existing open](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
+and [recently closed](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+sort%3Aupdated-desc+is%3Aclosed) issues, so nobody duplicates work.
+Then pick the entry point that matches what you have:
 
-<!-- markdownlint-disable MD013 -->
-[When filing an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new/choose), please check [existing open](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc), or [recently closed](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+sort%3Aupdated-desc+is%3Aclosed), issues to make sure somebody else hasn't already reported the issue. Please try to include as much information as you can.
-<!-- markdownlint-enable MD013 -->
+- [Bug report](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=bug_report.yml) — a runtime error you can reproduce, whether or not you know how to fix it.
+- [Feature request](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=feature_request.yml) — a new feature or enhancement that would help you, your team, or other customers.
+- [Documentation improvement](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=documentation_improvements.yml) — typos, unclear guides, missing examples, diagrams.
+- [Maintenance](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=maintenance.yml) — technical debt, governance, and anything internal.
+- [Design proposal (RFC)](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/new?category=rfcs-request-for-comments) — a Request for Comments that explores the user experience and tradeoffs of a larger change before anyone writes code. Substantial feature requests usually start life here.
+- [Share your work](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=share_your_work.yml) — blog posts, workshops, talks, and sample apps built with Powertools for AWS Lambda.
+- [Become a public reference](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=support_powertools.yml) — tell everyone how your organization uses Powertools for AWS Lambda.
+- [GitHub Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions) — questions, half-formed ideas, and anything that isn't an issue yet.
 
-## Contributing via Pull Requests
+## Finding contributions to work on
+
+Browsing the [open issues](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) is the best place to start.
+Issues still labelled for triage are being scoped, so comment before picking one up.
+[GitHub Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions) is where questions and design proposals get debated — answering a question there is as valuable as a code change.
+
+Two areas are always open:
+
+- **Documentation.** Look for places that could use a clearer example or a diagram, and keep in mind a diverse audience that often reads English as a second language.
+- **Sample applications.** Using Powertools for AWS Lambda in a new context surfaces rough edges we can't see from the inside.
+
+Still nothing that matches your skill set? Say so on [GitHub Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions) — especially if you'd like mentoring on something you don't feel ready for yet. Contributions are meant to be bi-directional; there's always something we can learn from each other.
+
+## Contributing via pull requests
 
 Contributions via pull requests are much appreciated. Before sending us a pull request, please ensure that:
 
@@ -46,51 +64,96 @@ At a high level, these are the steps to get code merged in the repository - don'
 ```mermaid
 timeline
     title Code integration journey (CI)
-    Project setup <br> (make dev)   : Code checkout
-                                    : Dependencies
-                                    : Git pre-commit hooks
-                                    : Local branch
-                                    : Local changes
-                                    : Local tests
+    Project setup <br> (npm run setup-local)   : Code checkout
+                                               : Dependencies
+                                               : Git hooks
+                                               : Local branch
+                                               : Local changes
+                                               : Local tests
 
-    Pre-commit checks <br> (git commit)   : Code linting (standards)
+    Pre-commit checks <br> (git commit)   : Code linting and formatting
                                           : Markdown linting
 
-    Pre-Pull Request <br> (git push)   : Tests (unit)
+    Pre-push checks <br> (git push)   : Type check tests
+                                      : Unit tests with 100% coverage
 
-    Pull Request <br> (CI checks)   : Semantic PR title check
-                                    : Related issue check
-                                    : Acknowledgment check
-                                    : Code coverage diff
-                                    : Contribution size check
-                                    : Contribution category check
-                                    : GitHub Actions security check
+    Pull Request <br> (CI checks)   : Conventional Commits title
+                                    : Linked issue
+                                    : Acknowledgment
+                                    : Linting and unit tests
                                     : Static analysis (CodeQL)
+                                    : Dependency review
+                                    : GitHub Actions security check
                                     : End-to-end tests (manual by maintainer)
-                                    : +pre-commit & pre-pull request checks
 
-    After merge <br> (CI checks)    : GitHub Actions security check
-                                    : Rebuild Changelog
-                                    : Deploy staging docs
+    After merge <br> (CI checks)    : Deploy staging docs
                                     : Update draft release
 ```
 
 ### Dev setup
 
-Firstly, [fork the repository](https://github.com/aws-powertools/powertools-lambda-typescript/fork), then use `npm run setup-local` on your local machine to install all dependencies and setup pre-commit hooks.
+[Fork the repository](https://github.com/aws-powertools/powertools-lambda-typescript/fork), clone your fork, then run `npm run setup-local` from the repo root to install dependencies, build every workspace, and install the Git hooks. New to this? GitHub documents [how to fork and clone a project](https://docs.github.com/en/get-started/quickstart/contributing-to-projects).
+
+What you need installed:
+
+- **Node.js 24.x**, the version pinned in `.nvmrc`, so `nvm use` or `fnm use` picks it up. npm 11.x ships with it; this is an npm workspaces monorepo, so always install from the repo root rather than from a package directory.
+- **Docker**, only to preview the documentation with `npm run docs:docker:*`. Nothing else in the repo needs it.
+- **Python 3**, only to preview the documentation without Docker, with `npm run docs:local:*`.
+- **An AWS account and the AWS CLI**, only to run [end-to-end tests](#end-to-end-tests).
+
+### Coding standards
+
+[`CODING_STANDARDS.md`](CODING_STANDARDS.md) is the source of truth for package layout, TypeScript style, JSDoc, unit tests, and the commands that verify all of them. Read it before writing code, tests, or documentation. If you drive a coding agent, point it at [`AGENTS.md`](AGENTS.md).
 
 ### Sending a pull request
 
-To send us a pull request, please follow these steps:
-
-1. Create a new branch to focus on the specific change you are contributing e.g. `improv/logger-debug-sampling`
-2. Make sure that all formatting, linting, and tests tasks run as git pre-commit & pre-push hooks are passing.
-3. Commit to your fork using clear commit messages.
-4. Send us a pull request with a [conventional semantic title](https://github.com/aws-powertools/powertools-lambda-typescript/pull/1744), and answer any default question in the pull request interface.
+1. Create a branch named after the change you are contributing, e.g. `improv/logger-debug-sampling`.
+2. Commit to your fork using clear commit messages. Don't worry about the commit format — we squash every pull request on merge.
+3. Make sure the Git hooks pass. The pre-commit hook lints and formats staged files; the pre-push hook type-checks the tests and runs the unit tests with the 100% coverage threshold.
+4. Open a pull request with a title that follows the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/), and fill in every area the pull request template asks for — including the issue it closes.
 5. Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
 
-GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and
-[creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
+First pull request ever? GitHub documents [forking a repository](https://help.github.com/articles/fork-a-repo/) and [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
+
+### What a pull request must satisfy
+
+Each of these is a required status check, so none of them is optional:
+
+- **A [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) title.** Our label automation and the changelog are generated from it, which is why we enforce it on the pull request title rather than on your commits.
+- **A linked issue.** Put `closes #<issue_number>` in the pull request body; a pull request without one may be blocked from review.
+- **The acknowledgment statement** at the bottom of the pull request template, left in place.
+- **Linting and unit tests passing on every supported Node.js version**, with 100% coverage of each package's `src` directory — [`pr-run-linting-check-and-unit-tests.yml`](.github/workflows/pr-run-linting-check-and-unit-tests.yml).
+- **No new CodeQL alert** on the code you changed — [`codeql.yml`](.github/workflows/codeql.yml).
+- **No known-vulnerable dependency** introduced — [`dependency-review.yml`](.github/workflows/dependency-review.yml).
+- **Third-party GitHub Actions pinned to a commit SHA**, if you touch `.github/workflows/` — [`secure-workflows.yml`](.github/workflows/secure-workflows.yml).
+
+A maintainer may also add a `do-not-merge` label, which blocks the merge until whatever prompted it is resolved.
+
+### End-to-end tests
+
+End-to-end tests give us confidence that a Lambda function using our code behaves as expected once deployed — event source configuration, IAM permissions, and all. They deploy real resources with AWS CDK, invoke the functions, assert on the logs, metrics, and traces they emit, then tear everything down.
+
+> [!WARNING]
+> Running end-to-end tests creates AWS resources in your account, which may incur costs. Some services are covered by the [AWS Free Tier](https://aws.amazon.com/free/), but not all of them. Use a dedicated AWS account, and when in doubt let the CI on our repository run them for you.
+
+You'll need an [AWS account bootstrapped with CDK](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) and the [AWS CLI installed and configured](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html). Then, from the repo root:
+
+- `npm run test:e2e -w packages/metrics` runs the end-to-end suites of a single package on the default Node.js runtime.
+- `npm run test:e2e:nodejs24x -w packages/metrics` runs the same suites pinned to a specific runtime.
+
+```mermaid
+sequenceDiagram
+    Dev Environment / CI->>+Vitest: npm run test:e2e
+    Vitest-->Vitest: Synthetize CloudFormation Stack
+    Vitest->>+AWS: Deploy Stack
+    Vitest->>+AWS: Invoke Lambda function
+    AWS->>Vitest: Report logs / results
+    Vitest-->Vitest: Assert logs/result
+    Vitest->>+AWS: Destroy Stack
+    Vitest->>+Dev Environment / CI: show test results
+```
+
+In CI these only run when a maintainer triggers [`run-e2e-tests.yml`](.github/workflows/run-e2e-tests.yml), which fans the suites out across every supported runtime version and architecture.
 
 ### Local documentation
 
@@ -125,37 +188,6 @@ If you have Python 3.x installed, you can run the documentation website and API 
    ```bash
    npm run docs:local:run
    ```
-
-## Conventions
-
-### General terminology and practices
-
-| Category              | Convention                                                                                                                                                                                                                                                                  |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Docstring**         | We use [TypeDoc](https://typedoc.org) annotations to help generate more readable API references. For public APIs, we always include at least one **Example** to ease everyone's experience when using an IDE.                                                               |
-| **Style guide**       | We use [Biome](http://biomejs.dev) to enforce style and format beyond good practices. We use TypeScript types, function return types, and access modifiers to convey intent.                                                                                                |
-| **Core utilities**    | Core utilities always accept `serviceName` as a constructor parameter, can work in isolation, and are also available in other languages implementation.                                                                                                                     |
-| **Utilities**         | Utilities are not as strict as core and focus on community needs: development productivity, industry leading practices, etc. Both core and general utilities follow our [Tenets](https://docs.aws.amazon.com/powertools/typescript/#tenets).                                |
-| **Errors**            | Specific errors thrown by Powertools live within utilities themselves and use `Error` suffix e.g. `IdempotencyKeyError`.                                                                                                                                                    |
-| **Git commits**       | We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). We do not enforce conventional commits on contributors to lower the entry bar. Instead, we enforce a conventional PR title so our label automation and changelog are generated correctly. |
-| **API documentation** | API reference docs are generated from docstrings which should have Examples section to allow developers to have what they need within their own IDE. Documentation website covers the wider usage, tips, and strive to be concise.                                          |
-| **Documentation**     | We treat it like a product. We sub-divide content aimed at getting started (80% of customers) vs advanced usage (20%). We also ensure customers know how to unit test their code when using our features.                                                                   |
-
-### Testing definition
-
-We group tests in different categories
-
-| Test              | When to write                                                                                                     | Notes                                                                                                                                      | Speed                                             |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| Unit tests        | Verify the smallest possible unit works.                                                                          | Networking access is prohibited. Keep mocks and spies at minimum.                                                                          | Fast (ms to few seconds at worst)                 |
-| End-to-end tests  | Gain confidence that a Lambda function with our code operates as expected. Also referred to as integration tests. | It simulates how customers configure, deploy, and run their Lambda function - Event Source configuration, IAM permissions, etc.            | Slow (minutes)                                    |
-| Performance tests | Ensure critical operations won't increase latency and costs to customers.                                         | CI arbitrary hardware can make it flaky. We'll resume writing perf test after we revamp our unit/functional tests with internal utilities. | Fast to moderate (a few seconds to a few minutes) |
-
-**NOTE**: Unit tests are mandatory. We have plans to create a guide on how to create these different tests. Maintainers will help indicate whether additional tests are necessary and provide assistance as required.
-
-## Finding contributions to work on
-
-Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use GitHub issue labels, [looking at any 'help-wanted' issues is a great place to start](https://github.com/orgs/aws-powertools/projects/7/views/3?query=is%3Aopen+sort%3Aupdated-desc).
 
 ## Code of Conduct
 

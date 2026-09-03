@@ -37,8 +37,8 @@ Most AWS SDKs have underlying dependencies, such as language runtimes, AWS Lambd
 
 The following terms are used to classify underlying third party dependencies:
 
-* [**AWS Lambda Runtime**](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html): Examples include `nodejs22.x`, `python3.12`, etc.
-* **Language Runtime**: Examples include Python 3.12, NodeJS 22, Java 17, .NET Core, etc.
+* [**AWS Lambda Runtime**](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html): Examples include `nodejs24.x`, `python3.12`, etc.
+* **Language Runtime**: Examples include Python 3.12, Node.js 24, Java 17, .NET Core, etc.
 * **Third party Library**: Examples include Pydantic, AWS X-Ray SDK, AWS Encryption SDK, Middy.js, etc.
 
 Powertools for AWS Lambda follows the [AWS Lambda Runtime deprecation policy cycle](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html#runtime-support-policy), when it comes to Language Runtime. This means we will stop supporting their respective deprecated Language Runtime _(e.g., `nodejs20.x`)_ without increasing the major SDK version.
@@ -59,7 +59,7 @@ Each Powertools for AWS Lambda layer adheres to the versioning policy outlined a
 
 Maintenance announcements are communicated in several ways:
 
-* A pinned GitHub Request For Comments (RFC) issue indicating the campaign for the next major version. The RFC will outline the path to end-of-support, specify campaign timelines, and upgrade guidance.
+* A pinned GitHub Discussion in the RFCs (Request for Comments) category indicating the campaign for the next major version. The RFC will outline the path to end-of-support, specify campaign timelines, and upgrade guidance.
 * AWS SDK documentation, such as API reference documentation, user guides, SDK product marketing pages, and GitHub readme(s) are updated to indicate the campaign timeline and provide guidance on upgrading affected applications.
 * Deprecation warnings are added to the SDKs, outlining the path to end-of-support and linking to the upgrade guide.
 

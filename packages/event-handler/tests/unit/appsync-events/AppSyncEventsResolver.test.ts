@@ -395,6 +395,32 @@ describe('Class: AppSyncEventsResolver', () => {
     expect(console.error).toHaveBeenCalled();
   });
 
+  it('throws an UnauthorizedException when thrown by a non-aggregate onPublish handler', async () => {
+    // Prepare
+    const app = new AppSyncEventsResolver({ logger: console });
+    app.onPublish('/foo', (payload) => {
+      if (payload === 'foo') {
+        return true;
+      }
+      throw new UnauthorizedException('nah');
+    });
+
+    // Act & Assess
+    await expect(
+      app.resolve(
+        onPublishEventFactory(
+          [
+            { id: '1', payload: 'foo' },
+            { id: '2', payload: 'bar' },
+          ],
+          { path: '/foo', segments: ['foo'] }
+        ),
+        context
+      )
+    ).rejects.toThrow(UnauthorizedException);
+    expect(console.error).toHaveBeenCalled();
+  });
+
   it('logs the error even if the logger is not provided', async () => {
     // Prepare
     const app = new AppSyncEventsResolver();

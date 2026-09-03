@@ -167,6 +167,7 @@ class AppSyncEventsResolver extends Router {
             return response;
           } catch (error) {
             this.logger.error(`An error occurred in handler ${path}`, error);
+            if (error instanceof UnauthorizedException) throw error;
             return {
               id,
               ...this.#formatErrorResponse(error),

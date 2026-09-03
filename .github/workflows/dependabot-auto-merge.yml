@@ -1,10 +1,11 @@
-name: Auto-merge Dependabot dev dependency PRs
+name: Auto-merge Dependabot PRs
 
 # PROCESS
 #
 # 1. Runs on every Dependabot pull request against `main`
 # 2. Reads the update's metadata (ecosystem, dependency type, semver bump)
-# 3. Rejects anything that isn't a non-major bump of a direct *development* npm dependency
+# 3. Rejects anything that isn't in scope: a non-major bump of either a direct *development* npm
+#    dependency or a GitHub Actions dependency
 # 4. Rejects any PR whose commits weren't all authored by Dependabot and signed by GitHub
 # 5. Only then approves the PR and hands it to GitHub's native auto-merge, which still has to
 #    satisfy every required status check and branch protection rule before anything merges
@@ -32,7 +33,11 @@ name: Auto-merge Dependabot dev dependency PRs
 #    the Dependabot branch) from smuggling a commit into an otherwise-legitimate bump. Note
 #    Dependabot's own commits have `committer: web-flow` - GitHub's signing key - so the check is on
 #    the *author*, not the committer.
-# 3. The scope gate below: npm direct development dependencies only, and never a major bump.
+# 3. The scope gate below: direct development npm dependencies or GitHub Actions dependencies
+#    only, and never a major bump. GitHub Actions have no dev/prod distinction (Dependabot always
+#    reports them as `direct:production`), and they're pinned to commit SHAs and re-pinned by
+#    `secure-workflows.yml`, so the dev-dependency requirement is dropped for that ecosystem while
+#    the non-major guard and provenance check (gate 2) still apply.
 #
 # Consequences of gate 2 worth knowing: GitHub's "Update branch" button produces a merge commit
 # authored by the human who clicked it, which fails the gate and drops the PR back to manual
@@ -84,16 +89,25 @@ jobs:
           DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
         run: |
           echo "ecosystem=${ECOSYSTEM} type=${DEPENDENCY_TYPE} update=${UPDATE_TYPE} names=${DEPENDENCY_NAMES}"
-          if [ "${ECOSYSTEM}" != "npm_and_yarn" ]; then
-            echo "::notice::Not an npm update (${ECOSYSTEM}) - leaving for manual review"
-            echo "in-scope=false" >> "${GITHUB_OUTPUT}"
-            exit 0
-          fi
-          if [ "${DEPENDENCY_TYPE}" != "direct:development" ]; then
-            echo "::notice::Not a direct development dependency (${DEPENDENCY_TYPE}) - leaving for manual review"
-            echo "in-scope=false" >> "${GITHUB_OUTPUT}"
-            exit 0
-          fi
+          case "${ECOSYSTEM}" in
+            npm_and_yarn)
+              # Only direct development dependencies: prod dependencies ship in published packages.
+              if [ "${DEPENDENCY_TYPE}" != "direct:development" ]; then
+                echo "::notice::Not a direct development dependency (${DEPENDENCY_TYPE}) - leaving for manual review"
+                echo "in-scope=false" >> "${GITHUB_OUTPUT}"
+                exit 0
+              fi
+              ;;
+            github_actions)
+              # No dev/prod distinction (always direct:production); the non-major guard and the
+              # commit-provenance check below are the gates that apply.
+              ;;
+            *)
+              echo "::notice::Ecosystem out of scope (${ECOSYSTEM}) - leaving for manual review"
+              echo "in-scope=false" >> "${GITHUB_OUTPUT}"
+              exit 0
+              ;;
+          esac
           if [ "${UPDATE_TYPE}" = "version-update:semver-major" ]; then
             echo "::notice::Major version bump - leaving for manual review"
             echo "in-scope=false" >> "${GITHUB_OUTPUT}"
@@ -143,7 +157,7 @@ jobs:
             --method POST \
             --field event=APPROVE \
             --field commit_id="${HEAD_SHA}" \
-            --field body="Approved automatically: non-major bump of a direct development dependency, with all commits authored by Dependabot and signed by GitHub."
+            --field body="Approved automatically: non-major bump of an in-scope dependency (direct development npm dependency or GitHub Actions), with all commits authored by Dependabot and signed by GitHub."
 
       - name: Enable auto-merge
         id: enable

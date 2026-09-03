@@ -22,8 +22,26 @@ const Transform = {
   AUTO: TRANSFORM_METHOD_AUTO,
 } as const;
 
+/**
+ * Kinds of request that share the cache, used as the first component of a cache key.
+ */
+const CacheKeyKind = {
+  /** A request for a single value. */
+  GET: 'get',
+  /** A request for multiple values under a path. */
+  GET_MULTIPLE: 'getMultiple',
+} as const;
+
+/**
+ * Kind of request a cache key belongs to, see {@link CacheKeyKind}.
+ */
+type CacheKeyKindOptions = (typeof CacheKeyKind)[keyof typeof CacheKeyKind];
+
+export type { CacheKeyKindOptions };
+
 export {
   APPCONFIG_TOKEN_EXPIRATION,
+  CacheKeyKind,
   DEFAULT_MAX_AGE_SECS,
   TRANSFORM_METHOD_AUTO,
   TRANSFORM_METHOD_BINARY,

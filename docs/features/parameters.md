@@ -186,6 +186,10 @@ You can adjust how long values should be kept in cache by using the param `maxAg
 ???+ info
 	The `maxAge` parameter is also available in high level functions like `getParameter`, `getSecret`, etc.
 
+Setting `maxAge` to `0` disables caching for that call: the value is fetched from the store and not cached afterwards.
+
+Cached values are keyed by the parameter name together with the options that affect the value returned by the store, such as `transform`, `decrypt`, `recursive`, or `sdkOptions`. Calls that differ in any of these options are cached independently and each results in a request to the store.
+
 ### Always fetching the latest
 
 If you'd like to always ensure you fetch the latest parameter from the store regardless if already available in cache, use the `forceFetch` parameter.

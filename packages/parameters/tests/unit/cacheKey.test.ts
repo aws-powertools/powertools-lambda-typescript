@@ -181,6 +181,25 @@ describe('Cache key isolation', () => {
       expect(ssm.commandCalls(GetParametersByPathCommand)).toHaveLength(1);
     });
 
+    it('does not cache getParametersByName results for a parameter with maxAge of 0', async () => {
+      // Prepare
+      ssm.on(GetParametersCommand).callsFake((input) => ({
+        Parameters: input.Names.map((name: string) => ({
+          Name: name,
+          Value: 'value',
+        })),
+        InvalidParameters: [],
+      }));
+      const provider = new SSMProvider();
+
+      // Act
+      await provider.getParametersByName({ '/a': { maxAge: 0 } });
+      await provider.getParametersByName({ '/a': {} });
+
+      // Assess
+      expect(ssm.commandCalls(GetParametersCommand)).toHaveLength(2);
+    });
+
     it('does not serve a cached value to a call with maxAge of 0', async () => {
       // Prepare
       const provider = new SSMProvider();

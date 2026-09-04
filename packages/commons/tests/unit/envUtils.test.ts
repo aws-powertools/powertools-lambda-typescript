@@ -428,7 +428,7 @@ describe('Functions: envUtils', () => {
   });
 
   describe('Function: shouldUseInvokeStore', () => {
-    it('returns true when AWS_LAMBDA_MAX_CONCURRENCY is not set', () => {
+    it('returns false when AWS_LAMBDA_MAX_CONCURRENCY is not set', () => {
       // Act
       const result = shouldUseInvokeStore();
 
@@ -436,7 +436,7 @@ describe('Functions: envUtils', () => {
       expect(result).toBe(false);
     });
 
-    it('returns false when AWS_LAMBDA_MAX_CONCURRENCY is set', () => {
+    it('returns true when AWS_LAMBDA_MAX_CONCURRENCY is set', () => {
       // Prepare
       vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
 

@@ -1,6 +1,5 @@
-import '@aws/lambda-invoke-store';
 import { deepMerge } from '@aws-lambda-powertools/commons';
-import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
+import { InvocationScoped } from '@aws-lambda-powertools/commons/utils/invocation-scoped';
 import type { LambdaFunctionContext, LogAttributes } from './types/logKeys.js';
 
 /**
@@ -12,55 +11,26 @@ import type { LambdaFunctionContext, LogAttributes } from './types/logKeys.js';
  * every method call to support Lambda's transition to async contexts.
  */
 class LogAttributesStore {
-  readonly #temporaryAttributesKey = Symbol(
-    'powertools.logger.temporaryAttributes'
+  readonly #temporaryAttributes = new InvocationScoped<LogAttributes>(
+    'powertools.logger.temporaryAttributes',
+    { fresh: () => ({}) }
   );
-  readonly #keysKey = Symbol('powertools.logger.keys');
-  readonly #lambdaContextKey = Symbol('powertools.logger.lambdaContext');
+  readonly #keys = new InvocationScoped<Map<string, 'temp' | 'persistent'>>(
+    'powertools.logger.keys',
+    { fresh: () => new Map() }
+  );
+  readonly #lambdaContext = new InvocationScoped<
+    LambdaFunctionContext | undefined
+  >('powertools.logger.lambdaContext', { initial: undefined });
 
-  #fallbackTemporaryAttributes: LogAttributes = {};
-  readonly #fallbackKeys: Map<string, 'temp' | 'persistent'> = new Map();
   #persistentAttributes: LogAttributes = {};
-  #fallbackLambdaContext: LambdaFunctionContext | undefined;
 
   #getTemporaryAttributes(): LogAttributes {
-    if (!shouldUseInvokeStore()) {
-      return this.#fallbackTemporaryAttributes;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    let stored = store.get(this.#temporaryAttributesKey) as
-      | LogAttributes
-      | undefined;
-    if (stored == null) {
-      stored = {};
-      store.set(this.#temporaryAttributesKey, stored);
-    }
-    return stored;
+    return this.#temporaryAttributes.get();
   }
 
   #getKeys(): Map<string, 'temp' | 'persistent'> {
-    if (!shouldUseInvokeStore()) {
-      return this.#fallbackKeys;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    let stored = store.get(this.#keysKey) as
-      | Map<string, 'temp' | 'persistent'>
-      | undefined;
-    if (stored == null) {
-      stored = new Map();
-      store.set(this.#keysKey, stored);
-    }
-    return stored;
+    return this.#keys.get();
   }
 
   public appendTemporaryKeys(attributes: LogAttributes): void {
@@ -104,33 +74,15 @@ class LogAttributesStore {
       }
     }
 
-    if (!shouldUseInvokeStore()) {
-      this.#fallbackTemporaryAttributes = {};
-      return;
-    }
-
-    globalThis.awslambda.InvokeStore?.set(this.#temporaryAttributesKey, {});
+    this.#temporaryAttributes.reset();
   }
 
   public setLambdaContext(context: LambdaFunctionContext): void {
-    if (!shouldUseInvokeStore()) {
-      this.#fallbackLambdaContext = context;
-      return;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    globalThis.awslambda.InvokeStore.set(this.#lambdaContextKey, context);
+    this.#lambdaContext.set(context);
   }
 
   public getLambdaContext(): LambdaFunctionContext | undefined {
-    if (!shouldUseInvokeStore()) {
-      return this.#fallbackLambdaContext;
-    }
-
-    return globalThis.awslambda?.InvokeStore?.get(this.#lambdaContextKey);
+    return this.#lambdaContext.get();
   }
 
   public setPersistentAttributes(attributes: LogAttributes): void {

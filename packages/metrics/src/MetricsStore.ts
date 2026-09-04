@@ -1,6 +1,5 @@
-import '@aws/lambda-invoke-store';
 import { isIntegerNumber } from '@aws-lambda-powertools/commons/typeutils';
-import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
+import { InvocationScoped } from '@aws-lambda-powertools/commons/utils/invocation-scoped';
 import { MetricResolution as MetricResolutions } from './constants.js';
 import type {
   MetricResolution,
@@ -18,28 +17,17 @@ import type {
  * every method call to support Lambda's transition to async contexts.
  */
 class MetricsStore {
-  readonly #storedMetricsKey = Symbol('powertools.metrics.storedMetrics');
-  readonly #timestampKey = Symbol('powertools.metrics.timestamp');
-
-  #fallbackStorage: StoredMetrics = {};
-  #fallbackTimestamp?: number;
+  readonly #storedMetrics = new InvocationScoped<StoredMetrics>(
+    'powertools.metrics.storedMetrics',
+    { fresh: () => ({}) }
+  );
+  readonly #timestamp = new InvocationScoped<number | undefined>(
+    'powertools.metrics.timestamp',
+    { initial: undefined }
+  );
 
   #getStorage(): StoredMetrics {
-    if (!shouldUseInvokeStore()) {
-      return this.#fallbackStorage;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    let stored = store.get(this.#storedMetricsKey) as StoredMetrics | undefined;
-    if (stored == null) {
-      stored = {};
-      store.set(this.#storedMetricsKey, stored);
-    }
-    return stored;
+    return this.#storedMetrics.get();
   }
 
   public getMetric(name: string): StoredMetric | undefined {
@@ -109,19 +97,8 @@ class MetricsStore {
   }
 
   public clearMetrics(): void {
-    if (!shouldUseInvokeStore()) {
-      this.#fallbackStorage = {};
-      this.#fallbackTimestamp = undefined;
-      return;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    store.set(this.#storedMetricsKey, {});
-    store.set(this.#timestampKey, undefined);
+    this.#storedMetrics.reset();
+    this.#timestamp.set(undefined);
   }
 
   public hasMetrics(): boolean {
@@ -133,32 +110,13 @@ class MetricsStore {
   }
 
   public getTimestamp(): number | undefined {
-    if (!shouldUseInvokeStore()) {
-      return this.#fallbackTimestamp;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    return store.get(this.#timestampKey) as number | undefined;
+    return this.#timestamp.get();
   }
 
   public setTimestamp(timestamp: number | Date): number {
     const timestampMs = this.#convertTimestampToEmfFormat(timestamp);
 
-    if (!shouldUseInvokeStore()) {
-      this.#fallbackTimestamp = timestampMs;
-      return timestampMs;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    store.set(this.#timestampKey, timestampMs);
+    this.#timestamp.set(timestampMs);
     return timestampMs;
   }
 

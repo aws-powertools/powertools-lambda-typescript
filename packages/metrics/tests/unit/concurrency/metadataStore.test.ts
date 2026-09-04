@@ -45,6 +45,19 @@ describe('MetadataStore concurrent invocation isolation', () => {
     });
   });
 
+  it('uses shared metadata when no invocation context is active', async () => {
+    // Prepare
+    vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+    await InvokeStore.getInstanceAsync();
+    const store = new MetadataStore();
+
+    // Act
+    store.set('env', 'prod');
+
+    // Assess
+    expect(store.getAll()).toEqual({ env: 'prod' });
+  });
+
   it.each([
     {
       description: 'without InvokeStore',

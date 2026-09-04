@@ -41,7 +41,7 @@ export class DataMasking {
   }
 
   /**
-   * Irreversibly mask the entire payload with the default mask value:
+   * Irreversibly masks the entire payload with the default mask value:
    * arrays element-wise preserving their length, and everything else
    * with a single mask string.
    *
@@ -49,10 +49,10 @@ export class DataMasking {
    */
   erase<T>(data: T): MaskedPayload<T>;
   /**
-   * Irreversibly mask fields in a data object. Returns a deep copy.
+   * Irreversibly masks fields in a data object and returns a deep copy.
    *
-   * The options compose three layers (see {@link EraseOptions}):
-   * - a top-level {@link MaskingRule} (`regexPattern` + `maskFormat`, `dynamicMask`,
+   * The options compose three layers (see {@link EraseOptions | `EraseOptions`}):
+   * - a top-level {@link MaskingRule | `MaskingRule`} (`regexPattern` + `maskFormat`, `dynamicMask`,
    *   or `customMask`) sets the default masking strategy;
    * - `fields` selects the paths to mask with that strategy — when omitted, a
    *   top-level rule is applied to every leaf value in the payload;
@@ -70,7 +70,7 @@ export class DataMasking {
    * ```
    *
    * @param data - The data to mask; returned as-is when `null` or `undefined`
-   * @param options - Options for the operation, see {@link EraseOptions}
+   * @param options - Options for the operation, see {@link EraseOptions | `EraseOptions`}
    */
   erase<T>(data: T, options: EraseOptions): T;
   erase(data: unknown, options?: EraseOptions): unknown {
@@ -98,76 +98,38 @@ export class DataMasking {
 
     const copy = this.#deepCopy(data);
 
-    // Per-field rules win, so apply them first (against the original values) and
-    // skip those concrete paths when the `fields` pass runs.
-    const overridden = maskingRules
-      ? this.#applyMaskingRules(copy, maskingRules)
-      : new Set<string>();
-    if (fields) {
-      this.#eraseFields(
+    // Resolve every path against the untouched copy before masking anything. Rules
+    // are claimed first so they win over the top-level rule for the paths they name.
+    const targets = new Map<string, MaskTarget>();
+    for (const [field, rule] of Object.entries(maskingRules ?? {})) {
+      for (const path of this.#resolvePaths(copy, field)) {
+        claim(targets, path, rule);
+      }
+    }
+    for (const field of fields ?? []) {
+      for (const path of this.#resolvePaths(copy, field)) {
+        claim(targets, path, hasTopLevelRule ? topLevelRule : undefined);
+      }
+    }
+
+    for (const { path, rule } of withoutSubsumed(targets)) {
+      // A plain field erase replaces any value with the mask; a rule stringifies
+      // the leaf first (null/undefined pass through), matching the Python utility.
+      setAtPath(
         copy,
-        fields,
-        hasTopLevelRule ? topLevelRule : undefined,
-        overridden
+        path,
+        rule ? maskLeaf(getAtPath(copy, path), rule) : DEFAULT_MASK_VALUE
       );
     }
 
     return copy;
   }
 
-  #applyMaskingRules<T>(
-    copy: T,
-    rules: Record<string, MaskingRule>
-  ): Set<string> {
-    const touched = new Set<string>();
-    for (const [field, rule] of Object.entries(rules)) {
-      for (const path of this.#resolveFieldPaths(
-        copy as Record<string, unknown>,
-        field
-      )) {
-        setAtPath(copy, path, maskLeaf(getAtPath(copy, path), rule));
-        touched.add(pathKey(path));
-      }
-    }
-
-    return touched;
-  }
-
-  #eraseFields<T>(
-    copy: T,
-    fields: string[],
-    rule?: MaskingRule,
-    skip?: Set<string>
-  ): void {
-    for (const field of fields) {
-      const paths = this.#resolveFieldPaths(
-        copy as Record<string, unknown>,
-        field
-      );
-      if (paths.length === 0) {
-        if (this.#throwOnMissingField) {
-          throw new DataMaskingFieldNotFoundError(
-            `Field not found: '${field}'`
-          );
-        }
-        console.warn(`Field not found: '${field}'`);
-      }
-      for (const path of paths) {
-        if (skip?.has(pathKey(path))) continue;
-        // A plain field erase replaces any value with the mask; a rule stringifies
-        // the leaf first (null/undefined pass through), matching the Python utility.
-        setAtPath(
-          copy,
-          path,
-          rule ? maskLeaf(getAtPath(copy, path), rule) : DEFAULT_MASK_VALUE
-        );
-      }
-    }
-  }
-
   /**
-   * Encrypt data using the configured provider. With fields, encrypts
-   * specific values in place. Without fields, encrypts the entire payload.
+   * Encrypts data using the configured provider.
+   *
+   * With `fields`, encrypts the matched values in place and returns a deep copy;
+   * without `fields`, encrypts the entire payload into a single string.
    *
    * @example
    * ```typescript
@@ -176,6 +138,9 @@ export class DataMasking {
    *   context: { tenantId: 'acme' },
    * });
    * ```
+   *
+   * @param data - The data to encrypt
+   * @param options - Options for the operation, see {@link EncryptOptions | `EncryptOptions`}
    */
   async encrypt<T>(data: T, options?: EncryptOptions): Promise<T | string> {
     const provider = this.#requireProvider();
@@ -190,7 +155,10 @@ export class DataMasking {
     }
 
     const copy = this.#deepCopy(data);
-    await this.#transformFields(copy, options.fields, (value) => {
+    await this.#transformFields(copy, options.fields, async (value) => {
+      // Nothing to protect; matches how a masking rule passes `undefined` through.
+      if (value === undefined) return value;
+
       return provider.encrypt(JSON.stringify(value), options.context);
     });
 
@@ -198,8 +166,10 @@ export class DataMasking {
   }
 
   /**
-   * Decrypt data using the configured provider. Automatically detects
-   * full-payload (string input) vs field-level (object input) format.
+   * Decrypts data using the configured provider.
+   *
+   * A string input is treated as a full encrypted payload; an object input is
+   * deep copied and the values at `fields` are decrypted in place.
    *
    * @example
    * ```typescript
@@ -207,17 +177,22 @@ export class DataMasking {
    *   fields: ['customer.ssn'],
    * });
    * ```
+   *
+   * @param data - The encrypted payload string or an object holding encrypted fields
+   * @param options - Options for the operation, see {@link DecryptOptions | `DecryptOptions`}
    */
   async decrypt<T>(data: T | string, options?: DecryptOptions): Promise<T> {
     const provider = this.#requireProvider();
 
     if (typeof data === 'string') {
+      // Safe by contract: a string payload is the output of `encrypt` without `fields`.
       return JSON.parse(await provider.decrypt(data, options?.context)) as T;
     }
 
     const copy = this.#deepCopy(data);
     if (options?.fields) {
       await this.#transformFields(copy, options.fields, async (value) => {
+        if (value === undefined) return value;
         if (!isString(value)) {
           console.warn(
             `Skipping decryption of non-string value of type ${typeof value}; expected an encrypted string`
@@ -233,6 +208,9 @@ export class DataMasking {
     return copy;
   }
 
+  /**
+   * Returns the configured encryption provider or throws when none was given.
+   */
   #requireProvider(): EncryptionProvider {
     if (!this.#provider) {
       throw new DataMaskingEncryptionError(
@@ -243,6 +221,11 @@ export class DataMasking {
     return this.#provider;
   }
 
+  /**
+   * Returns a structured clone of `data`, wrapping cloning failures in a package error.
+   *
+   * @param data - The data to clone
+   */
   #deepCopy<T>(data: T): T {
     try {
       return structuredClone(data);
@@ -253,111 +236,251 @@ export class DataMasking {
     }
   }
 
-  async #transformFields<T>(
-    data: T,
+  /**
+   * Replaces the value at every path matched by `fields` with the result of `transform`,
+   * mutating `data` in place.
+   *
+   * All paths are resolved before the first `transform` call, so a missing field
+   * cannot leave earlier provider calls in flight without a rejection handler.
+   *
+   * @param data - The object to transform in place
+   * @param fields - Path expressions selecting the values to transform
+   * @param transform - Async function producing the replacement for a value
+   */
+  async #transformFields(
+    data: unknown,
     fields: string[],
     transform: (value: unknown) => Promise<unknown>
   ): Promise<void> {
-    const operations: Promise<void>[] = [];
-
+    const targets = new Map<string, MaskTarget>();
     for (const field of fields) {
-      for (const path of this.#resolveFieldPaths(
-        data as Record<string, unknown>,
-        field
-      )) {
-        operations.push(
-          transform(getAtPath(data, path)).then((result) =>
-            setAtPath(data, path, result)
-          )
-        );
+      for (const path of this.#resolvePaths(data, field)) {
+        claim(targets, path);
       }
+    }
+
+    const transformAt = async (path: string[]): Promise<void> => {
+      const result = await transform(getAtPath(data, path));
+      setAtPath(data, path, result);
+    };
+    const operations: Promise<void>[] = [];
+    for (const { path } of withoutSubsumed(targets)) {
+      operations.push(transformAt(path));
     }
 
     await Promise.all(operations);
   }
 
-  #resolveFieldPaths(
-    data: Record<string, unknown>,
-    expression: string
-  ): string[][] {
+  /**
+   * Expands a path expression into every concrete path it matches in `data`,
+   * throwing or warning per `throwOnMissingField` when it matches nothing.
+   *
+   * A wildcard over an empty collection is a match with no paths, not a missing
+   * field; only an absent non-wildcard segment counts as missing. Reserved keys
+   * (`__proto__`, `constructor`, `prototype`) never resolve, whether named directly
+   * or reached through a wildcard, which keeps the in-place assignment free of
+   * prototype pollution.
+   *
+   * @param data - The object to resolve the expression against
+   * @param expression - Dot-notation path, optionally with `.*` or `[*]` wildcards
+   */
+  #resolvePaths(data: unknown, expression: string): string[][] {
     const segments = expression.split(/\.|\[(\*)\]\.?/).filter(Boolean);
-
     const paths: string[][] = [];
-    const walk = (obj: unknown, i: number, current: string[]): void => {
-      if (i === segments.length) {
+    let missing = false;
+
+    const walk = (node: unknown, depth: number, current: string[]): void => {
+      if (depth === segments.length) {
         paths.push(current);
 
         return;
       }
-      if (obj == null || typeof obj !== 'object') return;
+      if (node == null || typeof node !== 'object') {
+        missing = true;
 
-      for (const [key, child] of resolveWildcardEntries(obj, segments[i])) {
-        walk(child, i + 1, [...current, key]);
+        return;
+      }
+      const entries = childEntries(node, segments[depth]);
+      if (entries.length === 0 && segments[depth] !== '*') missing = true;
+      for (const [key, child] of entries) {
+        walk(child, depth + 1, [...current, key]);
       }
     };
+    if (segments.length === 0) {
+      missing = true;
+    } else {
+      walk(data, 0, []);
+    }
 
-    walk(data, 0, []);
+    if (paths.length === 0 && missing) {
+      if (this.#throwOnMissingField) {
+        throw new DataMaskingFieldNotFoundError(
+          `Field not found: '${expression}'`
+        );
+      }
+      console.warn(`Field not found: '${expression}'`);
+    }
 
     return paths;
   }
 }
 
+/** Keys that never resolve as path segments, so masking cannot touch an object's prototype. */
 const RESERVED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
-const resolveWildcardEntries = (
-  obj: object,
-  segment: string
-): [string, unknown][] => {
-  if (segment !== '*') {
-    const next = (obj as Record<string, unknown>)[segment];
+/** A resolved concrete path and the rule to mask it with; no rule means the default mask. */
+type MaskTarget = { path: string[]; rule?: MaskingRule };
 
-    if (next === undefined) return [];
-
-    return [[segment, next]];
-  }
-  if (Array.isArray(obj)) {
-    return obj.map((v, i) => [String(i), v]);
-  }
-
-  return Object.keys(obj)
-    .filter((k) => !RESERVED_KEYS.has(k))
-    .map((k) => [k, (obj as Record<string, unknown>)[k]]);
+/**
+ * Records `path` as a target unless an earlier expression already claimed it.
+ *
+ * @param targets - Targets collected so far, keyed by {@link pathKey | `pathKey`}
+ * @param path - The concrete path to claim
+ * @param rule - The rule to mask the path with; omit for the default mask
+ */
+const claim = (
+  targets: Map<string, MaskTarget>,
+  path: string[],
+  rule?: MaskingRule
+): void => {
+  const key = pathKey(path);
+  if (!targets.has(key)) targets.set(key, { path, rule });
 };
 
+/**
+ * Drops targets that sit beneath another target.
+ *
+ * Masking or encrypting a parent already covers everything under it, and applying
+ * a child first would hand the parent's rule already-transformed children.
+ *
+ * @param targets - Targets collected by {@link claim | `claim`}
+ */
+const withoutSubsumed = (targets: Map<string, MaskTarget>): MaskTarget[] => {
+  const kept: MaskTarget[] = [];
+  for (const target of targets.values()) {
+    if (!hasTargetedAncestor(targets, target.path)) kept.push(target);
+  }
+
+  return kept;
+};
+
+/**
+ * Returns whether any proper prefix of `path` is itself a target.
+ *
+ * @param targets - Targets collected by {@link claim | `claim`}
+ * @param path - The concrete path to check
+ */
+const hasTargetedAncestor = (
+  targets: Map<string, MaskTarget>,
+  path: string[]
+): boolean => {
+  for (let depth = 1; depth < path.length; depth++) {
+    if (targets.has(pathKey(path.slice(0, depth)))) return true;
+  }
+
+  return false;
+};
+
+/**
+ * Reads the property `key` of `node`.
+ *
+ * @param node - A plain object or array reached by walking a resolved path
+ * @param key - Own property name or array index
+ */
+const propertyOf = (node: unknown, key: string): unknown =>
+  // Safe: `key` always comes from `childEntries` on this same `node`, so it is an own,
+  // non-reserved property and `node` is a container the path already walked through.
+  (node as Record<string, unknown>)[key];
+
+/**
+ * Returns whether `key` names an own, non-reserved entry of `node`.
+ *
+ * A present key with an `undefined` value counts; on arrays only index keys do, so
+ * `length` never resolves.
+ *
+ * @param node - The object or array to inspect
+ * @param key - The candidate property name
+ */
+const hasOwnEntry = (node: object, key: string): boolean =>
+  !RESERVED_KEYS.has(key) &&
+  Object.hasOwn(node, key) &&
+  (!Array.isArray(node) || /^\d+$/.test(key));
+
+/**
+ * Lists the `[key, value]` entries of `node` selected by one path segment.
+ *
+ * A literal segment yields at most one entry; the `*` wildcard yields every array
+ * index or every own, non-reserved object key.
+ *
+ * @param node - The object or array to read from
+ * @param segment - A property name, array index, or `*`
+ */
+const childEntries = (node: object, segment: string): [string, unknown][] => {
+  if (segment !== '*') {
+    return hasOwnEntry(node, segment)
+      ? [[segment, propertyOf(node, segment)]]
+      : [];
+  }
+
+  const entries: [string, unknown][] = [];
+  if (Array.isArray(node)) {
+    for (const [index, value] of node.entries()) {
+      entries.push([String(index), value]);
+    }
+
+    return entries;
+  }
+  for (const key of Object.keys(node)) {
+    if (!RESERVED_KEYS.has(key)) entries.push([key, propertyOf(node, key)]);
+  }
+
+  return entries;
+};
+
+/**
+ * Reads the value at `path`.
+ *
+ * @param data - The object the path was resolved against
+ * @param path - A concrete path produced by `#resolvePaths`
+ */
 const getAtPath = (data: unknown, path: string[]): unknown => {
-  let current = data as Record<string, unknown>;
+  let current = data;
   for (const key of path) {
-    if (RESERVED_KEYS.has(key)) return undefined;
-    current = current[key] as Record<string, unknown>;
+    current = propertyOf(current, key);
   }
 
   return current;
 };
 
 /**
- * Set `value` at the location identified by `path`, mutating `data` in place.
+ * Sets `value` at the location identified by `path`, mutating `data` in place.
  *
- * Walks every path segment except the last to reach the parent container,
- * then assigns the value to the final segment. Assumes the path was produced
- * by `#resolveFieldPaths` against the same object, so intermediate containers
- * are known to exist. Assignments to reserved keys (`__proto__`, `constructor`,
- * `prototype`) are skipped to prevent prototype pollution.
+ * Walks every path segment except the last to reach the parent container, then
+ * assigns the value to the final segment. Assumes the path was produced by
+ * `#resolvePaths` against the same object, so it is non-empty, free of
+ * reserved keys, and its intermediate containers exist.
+ *
+ * @param data - The object the path was resolved against
+ * @param path - A concrete path produced by `#resolvePaths`
+ * @param value - The replacement value
  */
 const setAtPath = (data: unknown, path: string[], value: unknown): void => {
-  let current = data as Record<string, unknown>;
-  for (let i = 0; i < path.length - 1; i++) {
-    current = current[path[i]] as Record<string, unknown>;
+  let parent = data;
+  for (const key of path.slice(0, -1)) {
+    parent = propertyOf(parent, key);
   }
-  const lastKey = path.at(-1);
-  if (!lastKey || RESERVED_KEYS.has(lastKey)) return;
-  current[lastKey] = value;
+  // Safe: `parent` is an intermediate container that `#resolvePaths` walked through.
+  (parent as Record<string, unknown>)[path[path.length - 1]] = value;
 };
 
 /**
- * Apply a single {@link MaskingRule} to a string value.
+ * Applies a single masking rule to a string value.
  *
- * The strategies are mutually exclusive by construction (see {@link MaskingRule}),
+ * The strategies are mutually exclusive by construction (see {@link MaskingRule | `MaskingRule`}),
  * so each branch checks for the one property that identifies its variant.
+ *
+ * @param value - The string to mask
+ * @param rule - The rule to apply
  */
 const applyMaskingRule = (value: string, rule: MaskingRule): string => {
   if (rule.regexPattern)
@@ -369,38 +492,48 @@ const applyMaskingRule = (value: string, rule: MaskingRule): string => {
   return DEFAULT_MASK_VALUE;
 };
 
-/** Whether a top-level rule object actually configures a masking strategy. */
+/**
+ * Returns whether a top-level rule object actually configures a masking strategy.
+ *
+ * @param rule - The remaining top-level options after `fields` and `maskingRules` are removed
+ */
 const isMaskingRule = (rule: MaskingRule): boolean =>
   rule.regexPattern !== undefined ||
   rule.customMask !== undefined ||
   rule.dynamicMask !== undefined;
 
 /**
- * Mask a single leaf value with a rule.
+ * Masks a single leaf value with a rule.
  *
  * Leaves are stringified first so the rule applies uniformly to non-string
  * primitives (e.g. `dynamicMask` over a number), matching erase's contract that
  * masked values become strings. `null`/`undefined` pass through unchanged.
+ *
+ * @param value - The leaf value to mask
+ * @param rule - The rule to apply
  */
 const maskLeaf = (value: unknown, rule: MaskingRule): unknown =>
   isNullOrUndefined(value) ? value : applyMaskingRule(String(value), rule);
 
-/** Recursively apply a rule to every leaf value, mutating `node` in place. */
+/**
+ * Recursively applies a rule to every leaf value, mutating `node` in place.
+ *
+ * @param node - The object or array to walk
+ * @param rule - The rule to apply to each leaf
+ */
 const applyRuleToLeaves = (node: object, rule: MaskingRule): void => {
-  const entries: [string, unknown][] = Array.isArray(node)
-    ? node.map((v, i) => [String(i), v])
-    : Object.keys(node)
-        .filter((k) => !RESERVED_KEYS.has(k))
-        .map((k) => [k, (node as Record<string, unknown>)[k]]);
-
-  for (const [key, child] of entries) {
+  for (const [key, child] of childEntries(node, '*')) {
     if (child !== null && typeof child === 'object') {
       applyRuleToLeaves(child, rule);
     } else {
-      (node as Record<string, unknown>)[key] = maskLeaf(child, rule);
+      setAtPath(node, [key], maskLeaf(child, rule));
     }
   }
 };
 
-/** Stable string key for a resolved path, used to dedupe overridden paths. */
+/**
+ * Builds a stable string key for a resolved path, used to dedupe targets.
+ *
+ * @param path - The concrete path to key
+ */
 const pathKey = (path: string[]): string => JSON.stringify(path);

@@ -154,6 +154,12 @@ A top-level rule is applied to every path listed in `fields`. When `fields` is o
 !!! note
     A masking rule — top-level or per-field — coerces its target to a string before masking, so non-string values like numbers and booleans are stringified first (`null` and `undefined` pass through unchanged). A plain `fields` erase with no rule instead replaces any value with `*****` regardless of type.
 
+#### Missing fields
+
+By default, `erase`, `encrypt` and `decrypt` throw a `DataMaskingFieldNotFoundError` when a path in `fields` or a key in `maskingRules` matches nothing in the data, so a typo in a path cannot silently leave a value unprotected. Set `throwOnMissingField: false` on the `DataMasking` constructor to log a warning and continue instead.
+
+A wildcard that expands to nothing, such as `orders[*].card` when `orders` is an empty array, is not a missing field. When a path and one of its descendants are both listed, only the parent is processed, since masking or encrypting it already covers everything beneath it.
+
 ### Encrypting data
 
 ???+ note "About static typing and encryption"

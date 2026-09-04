@@ -98,7 +98,7 @@ To ensure we are attracting tomorrow's customers as well as new contributors to 
 
 ### Missing something?
 
-You can help us prioritize by [upvoting existing feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc++label%3Atype%2Ffeature-request+), leaving a comment on what use cases it could unblock for you, and by joining our discussions on GitHub.
+You can help us prioritize by [upvoting existing feature requests](https://github.com/aws-powertools/powertools-lambda-typescript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+type%3AEnhancement), leaving a comment on what use cases it could unblock for you, and by joining our discussions on GitHub.
 
 [![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-181717.svg?logo=github)](https://github.com/aws-powertools/powertools-lambda-typescript/discussions)
 
@@ -140,9 +140,9 @@ graph LR
 
 Our end-to-end mechanism follows four major steps:
 
-- **Feature Request**. Ideas start with a [feature request](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=type%2Ffeature-request%2Ctriage&template=feature_request.yml&title=Feature+request%3A+TITLE){target="_blank"} to outline their use case at a high level. For complex use cases, maintainers might ask for/write a RFC.
+- **Feature Request**. Ideas start with a [feature request](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=triage&template=feature_request.yml&title=Feature+request%3A+TITLE){target="_blank"} to outline their use case at a high level. For complex use cases, maintainers might ask for/write a RFC.
     - Maintainers review requests based on [project tenets](index.md#tenets){target="_blank"}, customers reaction (👍), and use cases.
-- **Request-for-comments (RFC)**. Design proposals use our [RFC template](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/new?category=rfcs){target="_blank"} to describe its implementation, challenges, developer experience, dependencies, and alternative solutions.
+- **Request-for-comments (RFC)**. Design proposals use our [RFC template](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/new?category=rfcs-request-for-comments){target="_blank"} to describe its implementation, challenges, developer experience, dependencies, and alternative solutions.
     - This helps refine the initial idea with community feedback before a decision is made.
 - **Decision**. After carefully reviewing and discussing them, maintainers make a final decision on whether to start implementation, defer or reject it, and update everyone with the next steps.
 - **Implementation**. For approved features, maintainers give priority to the original authors for implementation unless it is a sensitive task that is best handled by maintainers.

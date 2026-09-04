@@ -12,8 +12,8 @@ name: PR requirements
 
 # NOTES
 #
-# PR requirements are checked async in on_opened_pr.yml and enforced here synchronously
-# due to limitations in GH API.
+# Organization-level checks evaluate PR requirements asynchronously; this workflow enforces
+# the resulting do-not-merge label synchronously due to limitations in the GitHub API.
 
 on:
   pull_request:

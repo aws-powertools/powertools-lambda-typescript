@@ -19,6 +19,7 @@ const createMockProvider = (): EncryptionProvider => ({
 
 describe('DataMasking.encrypt()', () => {
   it('encrypts specified fields in place', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = {
@@ -26,10 +27,12 @@ describe('DataMasking.encrypt()', () => {
       customer: { ssn: '123-45-6789', city: 'Anytown' },
     };
 
+    // Act
     const result = await masker.encrypt(data, {
       fields: ['customer.ssn'],
     });
 
+    // Assess
     expect(result).toEqual({
       name: 'Jane',
       customer: { ssn: 'ENC:"123-45-6789"', city: 'Anytown' },
@@ -37,9 +40,11 @@ describe('DataMasking.encrypt()', () => {
   });
 
   it('passes encryption context to provider', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
 
+    // Act
     await masker.encrypt(
       { secret: 'val' },
       {
@@ -48,12 +53,14 @@ describe('DataMasking.encrypt()', () => {
       }
     );
 
+    // Assess
     expect(provider.encrypt).toHaveBeenCalledWith('"val"', {
       tenantId: 'acme',
     });
   });
 
   it('encrypts nested and array fields', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = {
@@ -63,17 +70,21 @@ describe('DataMasking.encrypt()', () => {
       ],
     };
 
+    // Act
     const result = await masker.encrypt(data, {
       fields: ['orders[*].card'],
     });
 
     if (typeof result === 'string') throw new Error('Expected object');
+
+    // Assess
     expect(result.orders[0].card).toBe('ENC:"4111"');
     expect(result.orders[1].card).toBe('ENC:"5500"');
     expect(result.orders[0].id).toBe(1);
   });
 
   it('prevents prototype pollution when __proto__ is used as a field path', async () => {
+    // Prepare
     const provider = createMockProvider();
     const lenientMasker = new DataMasking({
       provider,
@@ -81,18 +92,23 @@ describe('DataMasking.encrypt()', () => {
     });
     const data = { safe: 'value' };
 
+    // Act
     const result = await lenientMasker.encrypt(data, {
       fields: ['__proto__', 'safe'],
     });
 
     if (typeof result === 'string') throw new Error('Expected object');
+
+    // Assess
     expect(result.safe).toBe('ENC:"value"');
     expect(Object.getPrototypeOf(result)).toEqual(Object.getPrototypeOf({}));
   });
 
   it('throws DataMaskingEncryptionError without provider', async () => {
+    // Prepare
     const masker = new DataMasking();
 
+    // Act & Assess
     await expect(masker.encrypt({ a: 1 }, { fields: ['a'] })).rejects.toThrow(
       DataMaskingEncryptionError
     );
@@ -187,53 +203,66 @@ describe('DataMasking.encrypt()', () => {
   });
 
   it('does not mutate original input', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = { secret: 'original' };
 
+    // Act
     await masker.encrypt(data, { fields: ['secret'] });
 
+    // Assess
     expect(data.secret).toBe('original');
   });
 });
 
 describe('DataMasking.encrypt() - full payload', () => {
   it('encrypts entire payload when no fields specified', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = { name: 'Jane', ssn: '123-45-6789' };
 
+    // Act
     const result = await masker.encrypt(data);
 
+    // Assess
     expect(typeof result).toBe('string');
     expect(result).toBe(`ENC:${JSON.stringify(data)}`);
   });
 
   it('passes encryption context for full payload', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
 
+    // Act
     await masker.encrypt({ a: 1 }, { context: { env: 'prod' } });
 
+    // Assess
     expect(provider.encrypt).toHaveBeenCalledWith('{"a":1}', { env: 'prod' });
   });
 });
 
 describe('DataMasking.decrypt() - full payload', () => {
   it('decrypts opaque string and restores original data', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const original = { name: 'Jane', age: 30 };
     const encrypted = `ENC:${JSON.stringify(original)}`;
 
+    // Act
     const result = await masker.decrypt(encrypted);
 
+    // Assess
     expect(result).toEqual(original);
   });
 });
 
 describe('DataMasking.decrypt() - field level', () => {
   it('decrypts specified fields and restores original values', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const encrypted = {
@@ -241,10 +270,12 @@ describe('DataMasking.decrypt() - field level', () => {
       customer: { ssn: 'ENC:"123-45-6789"', city: 'Anytown' },
     };
 
+    // Act
     const result = await masker.decrypt(encrypted, {
       fields: ['customer.ssn'],
     });
 
+    // Assess
     expect(result).toEqual({
       name: 'Jane',
       customer: { ssn: '123-45-6789', city: 'Anytown' },
@@ -263,23 +294,29 @@ describe('DataMasking.decrypt() - field level', () => {
   });
 
   it('returns a copy when decrypting object without fields', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = { name: 'Jane', age: 30 };
 
+    // Act
     const result = await masker.decrypt(data);
 
+    // Assess
     expect(result).toEqual(data);
     expect(provider.decrypt).not.toHaveBeenCalled();
   });
 
   it('passes through non-string values during field-level decrypt and warns', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = { num: 42, text: 'ENC:"hello"' };
 
+    // Act
     const result = await masker.decrypt(data, { fields: ['num', 'text'] });
 
+    // Assess
     expect(result).toEqual({ num: 42, text: 'hello' });
     expect(console.warn).toHaveBeenCalledOnce();
     expect(console.warn).toHaveBeenCalledWith(
@@ -288,6 +325,7 @@ describe('DataMasking.decrypt() - field level', () => {
   });
 
   it('rejects the whole operation and leaves the original untouched when one field fails to decrypt', async () => {
+    // Prepare
     const provider: EncryptionProvider = {
       encrypt: vi.fn(async (data: string) => `ENC:${data}`),
       decrypt: vi.fn(async (data: string) => {
@@ -299,6 +337,7 @@ describe('DataMasking.decrypt() - field level', () => {
     const masker = new DataMasking({ provider });
     const data = { good: 'ENC:"ok"', bad: 'BAD' };
 
+    // Act & Assess
     await expect(
       masker.decrypt(data, { fields: ['good', 'bad'] })
     ).rejects.toThrow('decryption failed');
@@ -306,6 +345,7 @@ describe('DataMasking.decrypt() - field level', () => {
   });
 
   it('rejects the whole operation and leaves the original untouched when one field fails to encrypt', async () => {
+    // Prepare
     const provider: EncryptionProvider = {
       encrypt: vi.fn(async (data: string) => {
         if (data.includes('boom')) throw new Error('encryption failed');
@@ -317,6 +357,7 @@ describe('DataMasking.decrypt() - field level', () => {
     const masker = new DataMasking({ provider });
     const data = { a: 'fine', b: 'boom' };
 
+    // Act & Assess
     await expect(masker.encrypt(data, { fields: ['a', 'b'] })).rejects.toThrow(
       'encryption failed'
     );
@@ -324,8 +365,10 @@ describe('DataMasking.decrypt() - field level', () => {
   });
 
   it('throws DataMaskingEncryptionError without provider', async () => {
+    // Prepare
     const masker = new DataMasking();
 
+    // Act & Assess
     await expect(
       masker.decrypt({ a: 'encrypted' }, { fields: ['a'] })
     ).rejects.toThrow(DataMaskingEncryptionError);
@@ -336,9 +379,11 @@ const pathKey = fc.stringMatching(/^[a-z][a-z0-9_]{0,10}$/);
 
 describe('DataMasking encrypt/decrypt - property tests', () => {
   it('full-payload encrypt then decrypt is identity', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
 
+    // Act & Assess
     await fc.assert(
       fc.asyncProperty(fc.jsonValue(), async (data) => {
         if (data === null || data === undefined) return;
@@ -352,9 +397,11 @@ describe('DataMasking encrypt/decrypt - property tests', () => {
   });
 
   it('parent.* encrypt then decrypt restores original values', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
 
+    // Act & Assess
     await fc.assert(
       fc.asyncProperty(
         pathKey,
@@ -375,9 +422,11 @@ describe('DataMasking encrypt/decrypt - property tests', () => {
   });
 
   it('parent[*].child encrypt then decrypt restores original values', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
 
+    // Act & Assess
     await fc.assert(
       fc.asyncProperty(
         pathKey,
@@ -401,9 +450,11 @@ describe('DataMasking encrypt/decrypt - property tests', () => {
   });
 
   it('field-level encrypt then decrypt restores original values', async () => {
+    // Prepare
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
 
+    // Act & Assess
     await fc.assert(
       fc.asyncProperty(
         fc.dictionary(pathKey, fc.string(), { minKeys: 1 }),

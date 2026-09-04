@@ -1,5 +1,6 @@
+import { setTimeout } from 'node:timers/promises';
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { Context } from 'aws-lambda';
+import type { Context, SQSRecord } from 'aws-lambda';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   BatchProcessingError,
@@ -110,6 +111,28 @@ describe('Class: AsyncBatchProcessor', () => {
           FullBatchFailureError
         );
       });
+
+      it('reports every record in the response after a full batch failure', async () => {
+        // Prepare
+        const firstRecord = sqsRecordFactory('fail');
+        const secondRecord = sqsRecordFactory('fail');
+        const records = [firstRecord, secondRecord];
+        const processor = new BatchProcessor(EventType.SQS);
+        processor.register(records, asyncSqsRecordHandler, options);
+
+        // Act
+        await expect(processor.process()).rejects.toThrowError(
+          FullBatchFailureError
+        );
+
+        // Assess
+        expect(processor.response()).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: firstRecord.messageId },
+            { itemIdentifier: secondRecord.messageId },
+          ],
+        });
+      });
     });
 
     describe.each(cases)('Kinesis Records $description', ({ options }) => {
@@ -174,6 +197,28 @@ describe('Class: AsyncBatchProcessor', () => {
         await expect(processor.process()).rejects.toThrowError(
           FullBatchFailureError
         );
+      });
+
+      it('reports every record in the response after a full batch failure', async () => {
+        // Prepare
+        const firstRecord = kinesisRecordFactory('fail');
+        const secondRecord = kinesisRecordFactory('fail');
+        const records = [firstRecord, secondRecord];
+        const processor = new BatchProcessor(EventType.KinesisDataStreams);
+        processor.register(records, asyncKinesisRecordHandler, options);
+
+        // Act
+        await expect(processor.process()).rejects.toThrowError(
+          FullBatchFailureError
+        );
+
+        // Assess
+        expect(processor.response()).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: firstRecord.kinesis.sequenceNumber },
+            { itemIdentifier: secondRecord.kinesis.sequenceNumber },
+          ],
+        });
       });
     });
 
@@ -240,6 +285,28 @@ describe('Class: AsyncBatchProcessor', () => {
           FullBatchFailureError
         );
       });
+
+      it('reports every record in the response after a full batch failure', async () => {
+        // Prepare
+        const firstRecord = dynamodbRecordFactory('fail');
+        const secondRecord = dynamodbRecordFactory('fail');
+        const records = [firstRecord, secondRecord];
+        const processor = new BatchProcessor(EventType.DynamoDBStreams);
+        processor.register(records, asyncDynamodbRecordHandler, options);
+
+        // Act
+        await expect(processor.process()).rejects.toThrowError(
+          FullBatchFailureError
+        );
+
+        // Assess
+        expect(processor.response()).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: firstRecord.dynamodb?.SequenceNumber },
+            { itemIdentifier: secondRecord.dynamodb?.SequenceNumber },
+          ],
+        });
+      });
     });
   });
 
@@ -276,6 +343,63 @@ describe('Class: AsyncBatchProcessor', () => {
       await expect(() => processor.process()).rejects.toThrowError(
         FullBatchFailureError
       );
+    });
+  });
+
+  describe('Handler throwing a non-Error value', () => {
+    it('records the failure and completes the batch when the handler throws undefined', async () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory('fail');
+      const secondRecord = sqsRecordFactory('success');
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS);
+      const handler = async (record: SQSRecord): Promise<string> => {
+        if (record.body.includes('fail')) {
+          throw undefined;
+        }
+        await setTimeout(1);
+        return record.body;
+      };
+
+      // Act
+      processor.register(records, handler, options);
+      const processedMessages = await processor.process();
+
+      // Assess
+      expect(processedMessages).toStrictEqual([
+        ['fail', 'undefined', firstRecord],
+        ['success', secondRecord.body, secondRecord],
+      ]);
+      expect(processor.errors[0]).toBeInstanceOf(Error);
+      expect(processor.response()).toStrictEqual({
+        batchItemFailures: [{ itemIdentifier: firstRecord.messageId }],
+      });
+    });
+
+    it('uses the thrown value as the failure message when the handler throws a string', async () => {
+      // Prepare
+      const firstRecord = sqsRecordFactory('fail');
+      const secondRecord = sqsRecordFactory('success');
+      const records = [firstRecord, secondRecord];
+      const processor = new BatchProcessor(EventType.SQS);
+      const handler = async (record: SQSRecord): Promise<string> => {
+        if (record.body.includes('fail')) {
+          throw 'boom';
+        }
+        return record.body;
+      };
+
+      // Act
+      processor.register(records, handler, options);
+      const processedMessages = await processor.process();
+
+      // Assess
+      expect(processedMessages).toStrictEqual([
+        ['fail', 'boom', firstRecord],
+        ['success', secondRecord.body, secondRecord],
+      ]);
+      expect(processor.errors[0]).toBeInstanceOf(Error);
+      expect(processor.errors[0].message).toBe('boom');
     });
   });
 

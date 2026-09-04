@@ -5,6 +5,7 @@ import {
   isSdkClient,
   isString,
 } from '@aws-lambda-powertools/commons';
+import { CacheKeyKind, type CacheKeyKindOptions } from '../constants.js';
 import {
   GetParameterError,
   ParameterNotFoundError,
@@ -22,6 +23,28 @@ import { GetOptions } from './GetOptions.js';
 import { transformValue } from './transformValue.js';
 
 /**
+ * Request options that do not affect the value stored in the cache.
+ *
+ * `throwOnTransformError` is deliberately absent: when `false`, entries that fail to
+ * transform are cached as `undefined`, so lenient and strict calls must not share an entry.
+ */
+const CACHE_KEY_IGNORED_OPTIONS: ReadonlySet<string> = new Set<
+  keyof GetMultipleOptionsInterface | 'throwOnError'
+>(['maxAge', 'forceFetch', 'throwOnMissing', 'throwOnError']);
+
+/** `JSON.stringify` replacer that emits object keys in sorted order so equivalent options serialise identically. */
+const sortObjectKeys = (_key: string, value: unknown): unknown => {
+  if (!isRecord(value)) return value;
+
+  const sorted: Record<string, unknown> = {};
+  for (const key of Object.keys(value).sort()) {
+    sorted[key] = value[key];
+  }
+
+  return sorted;
+};
+
+/**
  * Base class for all providers.
  *
  * As an abstract class, it should not be used directly, but rather extended by other providers.
@@ -32,13 +55,13 @@ import { transformValue } from './transformValue.js';
  * These methods are responsible for retrieving the values from the underlying parameter store. They are
  * called by the `get` and `getMultiple` methods, which are responsible for caching and transformation.
  *
- * If there are multiple calls to the same parameter but in a different transform, they will be stored multiple times.
- * This allows us to optimize by transforming the data only once per retrieval, thus there is no need to transform cached values multiple times.
+ * Cached values are keyed by the method used, the parameter name, and every request option that can change the
+ * value returned by the store (for example `transform`, `decrypt`, `recursive`, or `sdkOptions`). Calls that differ
+ * in any of these are cached separately, so a value is only ever served to a request that would have produced it.
  *
- * However, this means that we need to make multiple calls to the underlying parameter store if we need to return it in different transforms.
- *
- * Since the number of supported transform is small and the probability that a given parameter will always be used in a specific transform,
- * this should be an acceptable tradeoff.
+ * This means that we need to make multiple calls to the underlying parameter store if we need the same parameter
+ * in different transforms or with different options. Since a given parameter is usually always requested the same
+ * way, this should be an acceptable tradeoff.
  */
 abstract class BaseProvider implements BaseProviderInterface {
   protected client: unknown;
@@ -89,6 +112,30 @@ abstract class BaseProvider implements BaseProviderInterface {
   }
 
   /**
+   * Build the cache key for a request.
+   *
+   * The key covers the method, the name, and every option that can affect the cached value,
+   * so requests that would receive different values never share an entry. Object keys are
+   * sorted so option order does not matter.
+   *
+   * @param kind - Whether the request is for a single value or multiple values
+   * @param name - Parameter name or path
+   * @param options - Options passed to the request
+   */
+  protected buildCacheKey(
+    kind: CacheKeyKindOptions,
+    name: string,
+    options?: object
+  ): string {
+    const significant: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(options ?? {})) {
+      if (!CACHE_KEY_IGNORED_OPTIONS.has(key)) significant[key] = value;
+    }
+
+    return JSON.stringify([kind, name, significant], sortObjectKeys);
+  }
+
+  /**
    * Retrieve a parameter value or return the cached value.
    *
    * @param {string} name - Parameter name
@@ -99,9 +146,13 @@ abstract class BaseProvider implements BaseProviderInterface {
     options?: GetOptionsInterface
   ): Promise<unknown> {
     const configs = new GetOptions(options);
-    const key = [name, configs.transform].toString();
+    const key = this.buildCacheKey(CacheKeyKind.GET, name, options);
 
-    if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
+    if (
+      !configs.forceFetch &&
+      configs.maxAge > 0 &&
+      !this.hasKeyExpiredInCache(key)
+    ) {
       // biome-ignore lint/style/noNonNullAssertion: If the code enters this block, then the key must exist & not have been expired
       return this.store.get(key)!.value;
     }
@@ -150,9 +201,13 @@ abstract class BaseProvider implements BaseProviderInterface {
     options?: GetMultipleOptionsInterface
   ): Promise<unknown> {
     const configs = new GetMultipleOptions(options);
-    const key = [path, configs.transform].toString();
+    const key = this.buildCacheKey(CacheKeyKind.GET_MULTIPLE, path, options);
 
-    if (!configs.forceFetch && !this.hasKeyExpiredInCache(key)) {
+    if (
+      !configs.forceFetch &&
+      configs.maxAge > 0 &&
+      !this.hasKeyExpiredInCache(key)
+    ) {
       // biome-ignore lint/style/noNonNullAssertion: If the code enters in this block, then the key must exist & not have been expired
       return this.store.get(key)!.value as Record<string, unknown>;
     }

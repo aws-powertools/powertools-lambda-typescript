@@ -1,6 +1,9 @@
 import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
-import { DataMaskingEncryptionError } from '../../src/errors.js';
+import {
+  DataMaskingEncryptionError,
+  DataMaskingFieldNotFoundError,
+} from '../../src/errors.js';
 import { DataMasking } from '../../src/index.js';
 import type { EncryptionProvider } from '../../src/types.js';
 
@@ -90,6 +93,37 @@ describe('DataMasking.encrypt()', () => {
     );
   });
 
+  it('throws DataMaskingFieldNotFoundError for missing field when throwOnMissingField is true', async () => {
+    // Prepare
+    const masker = new DataMasking({ provider: createMockProvider() });
+    const data = { ssn: '123' };
+
+    // Act & Assess
+    await expect(masker.encrypt(data, { fields: ['snn'] })).rejects.toThrow(
+      DataMaskingFieldNotFoundError
+    );
+  });
+
+  it('skips missing field with a warning when throwOnMissingField is false', async () => {
+    // Prepare
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const lenientMasker = new DataMasking({
+      provider: createMockProvider(),
+      throwOnMissingField: false,
+    });
+    const data = { ssn: '123' };
+
+    // Act
+    const result = await lenientMasker.encrypt(data, {
+      fields: ['snn', 'ssn'],
+    });
+
+    // Assess
+    expect(result).toEqual({ ssn: 'ENC:"123"' });
+    expect(warnSpy).toHaveBeenCalledWith("Field not found: 'snn'");
+    warnSpy.mockRestore();
+  });
+
   it('does not mutate original input', async () => {
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
@@ -153,6 +187,17 @@ describe('DataMasking.decrypt() - field level', () => {
       name: 'Jane',
       customer: { ssn: '123-45-6789', city: 'Anytown' },
     });
+  });
+
+  it('throws DataMaskingFieldNotFoundError for missing field when throwOnMissingField is true', async () => {
+    // Prepare
+    const masker = new DataMasking({ provider: createMockProvider() });
+    const encrypted = { ssn: 'ENC:"123"' };
+
+    // Act & Assess
+    await expect(
+      masker.decrypt(encrypted, { fields: ['snn'] })
+    ).rejects.toThrow(DataMaskingFieldNotFoundError);
   });
 
   it('returns a copy when decrypting object without fields', async () => {

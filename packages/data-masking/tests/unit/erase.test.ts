@@ -98,6 +98,17 @@ describe('DataMasking.erase()', () => {
     expect(masker.erase(undefined)).toBeUndefined();
   });
 
+  it('masks a field that is present with an undefined value', () => {
+    // Prepare
+    const data = { ssn: undefined, name: 'Jane' };
+
+    // Act
+    const result = masker.erase(data, { fields: ['ssn'] });
+
+    // Assess
+    expect(result).toEqual({ ssn: '*****', name: 'Jane' });
+  });
+
   it('throws DataMaskingFieldNotFoundError for missing field when throwOnMissingField is true', () => {
     const data = { name: 'Jane' };
 
@@ -258,6 +269,53 @@ describe('DataMasking.erase() - custom masking rules', () => {
     expect(result).toEqual({ ssn: '123-45-6789', name: 'XXXX' });
     expect(warnSpy).toHaveBeenCalledWith("Field not found: 'snn'");
     warnSpy.mockRestore();
+  });
+
+  it.each([
+    { order: 'parent first', rules: ['a', 'a.b'] },
+    { order: 'child first', rules: ['a.b', 'a'] },
+  ])(
+    'resolves every rule before masking so key order does not matter ($order)',
+    ({ rules }) => {
+      // Prepare
+      const data = { a: { b: 'x' } };
+      const maskingRules = Object.fromEntries(
+        rules.map((field) => [field, { customMask: 'M' }])
+      );
+
+      // Act
+      const result = masker.erase(data, { maskingRules });
+
+      // Assess
+      expect(result).toEqual({ a: 'M' });
+    }
+  );
+
+  it('does not report a field as missing when a rule collapses its parent', () => {
+    // Prepare
+    const data = { a: { b: 'x' } };
+
+    // Act
+    const result = masker.erase(data, {
+      fields: ['a.b'],
+      maskingRules: { a: { customMask: 'M' } },
+    });
+
+    // Assess
+    expect(result).toEqual({ a: 'M' });
+  });
+
+  it('passes a present but undefined value through a masking rule', () => {
+    // Prepare
+    const data = { ssn: undefined, name: 'Jane' };
+
+    // Act
+    const result = masker.erase(data, {
+      maskingRules: { ssn: { customMask: 'X' }, name: { customMask: 'X' } },
+    });
+
+    // Assess
+    expect(result).toEqual({ ssn: undefined, name: 'X' });
   });
 
   it('applies dynamic mask matching original length', () => {

@@ -9,16 +9,21 @@ export interface EncryptionProvider {
   decrypt(data: string, context?: Record<string, string>): Promise<string>;
 }
 
-/** Options for the {@link DataMasking} constructor. */
+/** Options for the {@link DataMasking | `DataMasking`} constructor. */
 export interface DataMaskingConstructorOptions {
   /** Encryption provider for encrypt/decrypt operations. */
   provider?: EncryptionProvider;
-  /** Whether to throw when a field path doesn't match. Default: `true`. */
+  /**
+   * Whether `erase`, `encrypt` and `decrypt` throw when a path in `fields` or a key in
+   * `maskingRules` matches nothing in the data. When `false`, a warning is logged and
+   * the path is skipped. A wildcard over an empty collection is not a missing field.
+   * Default: `true`.
+   */
   throwOnMissingField?: boolean;
 }
 
 /**
- * Per-field custom masking configuration for {@link DataMasking.erase}.
+ * Per-field custom masking configuration for {@link DataMasking.erase | `DataMasking.erase`}.
  *
  * The masking strategies are mutually exclusive: provide `regexPattern` together
  * with `maskFormat`, or `dynamicMask`, or `customMask`, or an empty rule (`{}`)
@@ -55,17 +60,17 @@ export type MaskingRule =
     };
 
 /**
- * Options for {@link DataMasking.erase}.
+ * Options for {@link DataMasking.erase | `DataMasking.erase`}.
  *
  * All three layers are optional and compose:
- * - a top-level {@link MaskingRule} (`regexPattern` + `maskFormat`, `dynamicMask`, or
+ * - a top-level {@link MaskingRule | `MaskingRule`} (`regexPattern` + `maskFormat`, `dynamicMask`, or
  *   `customMask`) sets the default masking strategy;
  * - `fields` selects the dot-notation paths to mask — when omitted, a top-level rule is
  *   applied to every leaf value in the payload;
  * - `maskingRules` provides per-field rules that take precedence over the top-level rule
  *   for the paths they name.
  *
- * Calling {@link DataMasking.erase} with no options at all replaces the entire payload
+ * Calling {@link DataMasking.erase | `DataMasking.erase`} with no options at all replaces the entire payload
  * with the default mask value.
  */
 export type EraseOptions = MaskingRule & {
@@ -76,7 +81,7 @@ export type EraseOptions = MaskingRule & {
 };
 
 /**
- * Return type of {@link DataMasking.erase} when called without options:
+ * Return type of {@link DataMasking.erase | `DataMasking.erase`} when called without options:
  * arrays are masked element-wise preserving length, `null` and `undefined`
  * pass through unchanged, and everything else collapses to the mask string.
  */
@@ -86,7 +91,7 @@ export type MaskedPayload<T> = T extends null | undefined
     ? string[]
     : string;
 
-/** Options for {@link DataMasking.encrypt}. */
+/** Options for {@link DataMasking.encrypt | `DataMasking.encrypt`}. */
 export interface EncryptOptions {
   /** Dot-notation path expressions for fields to encrypt (supports `.*` and `[*]` wildcards). If omitted, entire payload is encrypted. */
   fields?: string[];
@@ -96,7 +101,7 @@ export interface EncryptOptions {
   providerOptions?: Record<string, unknown>;
 }
 
-/** Options for {@link DataMasking.decrypt}. */
+/** Options for {@link DataMasking.decrypt | `DataMasking.decrypt`}. */
 export interface DecryptOptions {
   /** Dot-notation path expressions for fields to decrypt (supports `.*` and `[*]` wildcards). */
   fields?: string[];

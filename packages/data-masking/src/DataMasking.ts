@@ -121,10 +121,7 @@ export class DataMasking {
   ): Set<string> {
     const touched = new Set<string>();
     for (const [field, rule] of Object.entries(rules)) {
-      for (const path of this.#resolveFieldPaths(
-        copy as Record<string, unknown>,
-        field
-      )) {
+      for (const path of this.#resolvePathsOrReportMissing(copy, field)) {
         setAtPath(copy, path, maskLeaf(getAtPath(copy, path), rule));
         touched.add(pathKey(path));
       }
@@ -140,19 +137,7 @@ export class DataMasking {
     skip?: Set<string>
   ): void {
     for (const field of fields) {
-      const paths = this.#resolveFieldPaths(
-        copy as Record<string, unknown>,
-        field
-      );
-      if (paths.length === 0) {
-        if (this.#throwOnMissingField) {
-          throw new DataMaskingFieldNotFoundError(
-            `Field not found: '${field}'`
-          );
-        }
-        console.warn(`Field not found: '${field}'`);
-      }
-      for (const path of paths) {
+      for (const path of this.#resolvePathsOrReportMissing(copy, field)) {
         if (skip?.has(pathKey(path))) continue;
         // A plain field erase replaces any value with the mask; a rule stringifies
         // the leaf first (null/undefined pass through), matching the Python utility.
@@ -274,6 +259,25 @@ export class DataMasking {
     }
 
     await Promise.all(operations);
+  }
+
+  /**
+   * Resolve a path expression, throwing or warning per `throwOnMissingField`
+   * when it matches nothing in the data.
+   */
+  #resolvePathsOrReportMissing<T>(copy: T, field: string): string[][] {
+    const paths = this.#resolveFieldPaths(
+      copy as Record<string, unknown>,
+      field
+    );
+    if (paths.length === 0) {
+      if (this.#throwOnMissingField) {
+        throw new DataMaskingFieldNotFoundError(`Field not found: '${field}'`);
+      }
+      console.warn(`Field not found: '${field}'`);
+    }
+
+    return paths;
   }
 
   #resolveFieldPaths(

@@ -12,6 +12,7 @@ import { toBase64 } from '@smithy/util-base64';
 import { mockClient } from 'aws-sdk-client-mock';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ExpirableValue } from '../../src/base/ExpirableValue.js';
+import { CacheKeyKind } from '../../src/constants.js';
 import { GetParameterError, ParameterNotFoundError } from '../../src/index.js';
 import { SSMProvider } from '../../src/ssm/index.js';
 import type {
@@ -850,6 +851,10 @@ describe('Class: SSMProvider', () => {
         this.store.set(key, value);
       }
 
+      public _buildKey(name: string): string {
+        return this.buildCacheKey(CacheKeyKind.GET, name);
+      }
+
       public getParametersByNameFromCache(
         parameters: Record<string, SSMGetParametersByNameOptions>
       ): SSMGetParametersByNameFromCacheOutputType {
@@ -865,7 +870,7 @@ describe('Class: SSMProvider', () => {
         '/foo/baz': {},
       };
       provider._add(
-        ['/foo/bar', undefined].toString(),
+        provider._buildKey('/foo/bar'),
         new ExpirableValue('my-value', 60000)
       );
 

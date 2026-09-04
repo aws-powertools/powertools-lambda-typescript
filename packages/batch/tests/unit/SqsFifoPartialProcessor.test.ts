@@ -1,5 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  FullBatchFailureError,
   processPartialResponse,
   processPartialResponseSync,
   SqsFifoMessageGroupShortCircuitError,
@@ -182,6 +183,33 @@ describe('SQS FIFO Processors', () => {
         );
         expect(processor.errors.length).toBe(3);
         expect(processor.errors[1]).toBeInstanceOf(SqsFifoShortCircuitError);
+      });
+
+      it('reports every record in the response after a full batch failure', async () => {
+        // Prepare
+        const firstRecord = sqsRecordFactory('fail', '1');
+        const secondRecord = sqsRecordFactory('success', '2');
+        const processor = new processorClass();
+        processor.register([firstRecord, secondRecord], sqsRecordHandler);
+
+        // Act
+        if (isAsync) {
+          await expect(processor.process()).rejects.toThrowError(
+            FullBatchFailureError
+          );
+        } else {
+          expect(() => processor.processSync()).toThrowError(
+            FullBatchFailureError
+          );
+        }
+
+        // Assess
+        expect(processor.response()).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: firstRecord.messageId },
+            { itemIdentifier: secondRecord.messageId },
+          ],
+        });
       });
     });
   }

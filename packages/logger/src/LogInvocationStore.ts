@@ -1,5 +1,4 @@
-import '@aws/lambda-invoke-store';
-import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
+import { InvocationScoped } from '@aws-lambda-powertools/commons/utils/invocation-scoped';
 import { CircularMap, type SizedSet } from './logBuffer.js';
 
 /**
@@ -20,14 +19,17 @@ import { CircularMap, type SizedSet } from './logBuffer.js';
  *   `maxBytes` (only after {@link LogInvocationStore.configureBuffer | `configureBuffer()`}).
  */
 class LogInvocationStore {
-  readonly #logLevelKey = Symbol('powertools.logger.logLevel');
-  readonly #bufferKey = Symbol('powertools.logger.buffer');
-  #baseLogLevel: number;
+  readonly #logLevel: InvocationScoped<number>;
+  readonly #buffer = new InvocationScoped<CircularMap<string>>(
+    'powertools.logger.buffer',
+    { fresh: () => new CircularMap({ maxBytesSize: this.#maxBytes }) }
+  );
   #maxBytes!: number;
-  #fallbackBuffer!: CircularMap<string>;
 
   public constructor(logLevel: number) {
-    this.#baseLogLevel = logLevel;
+    this.#logLevel = new InvocationScoped('powertools.logger.logLevel', {
+      initial: logLevel,
+    });
   }
 
   /**
@@ -35,19 +37,7 @@ class LogInvocationStore {
    * set, otherwise the base level.
    */
   public getLogLevel(): number {
-    if (!shouldUseInvokeStore()) {
-      return this.#baseLogLevel;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    return (
-      (globalThis.awslambda.InvokeStore.get(this.#logLevelKey) as
-        | number
-        | undefined) ?? this.#baseLogLevel
-    );
+    return this.#logLevel.get();
   }
 
   /**
@@ -55,7 +45,7 @@ class LogInvocationStore {
    * InvokeStore.
    */
   public getBaseLogLevel(): number {
-    return this.#baseLogLevel;
+    return this.#logLevel.getShared();
   }
 
   /**
@@ -64,18 +54,7 @@ class LogInvocationStore {
    * context (e.g. during initialization) the base level is set instead.
    */
   public setLogLevel(logLevel: number): void {
-    if (shouldUseInvokeStore()) {
-      if (globalThis.awslambda?.InvokeStore === undefined) {
-        throw new Error('InvokeStore is not available');
-      }
-
-      const store = globalThis.awslambda.InvokeStore;
-      if (store.hasContext()) {
-        store.set(this.#logLevelKey, logLevel);
-        return;
-      }
-    }
-    this.#baseLogLevel = logLevel;
+    this.#logLevel.set(logLevel);
   }
 
   /**
@@ -84,7 +63,7 @@ class LogInvocationStore {
    * Controls, which apply environment-wide.
    */
   public setBaseLogLevel(logLevel: number): void {
-    this.#baseLogLevel = logLevel;
+    this.#logLevel.setShared(logLevel);
   }
 
   /**
@@ -97,25 +76,11 @@ class LogInvocationStore {
    */
   public configureBuffer(maxBytes: number): void {
     this.#maxBytes = maxBytes;
-    this.#fallbackBuffer = new CircularMap({ maxBytesSize: maxBytes });
+    this.#buffer.setShared(new CircularMap({ maxBytesSize: maxBytes }));
   }
 
   #getBuffer(): CircularMap<string> {
-    if (!shouldUseInvokeStore()) {
-      return this.#fallbackBuffer;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    let buffer = store.get(this.#bufferKey) as CircularMap<string> | undefined;
-    if (buffer == null) {
-      buffer = new CircularMap({ maxBytesSize: this.#maxBytes });
-      store.set(this.#bufferKey, buffer);
-    }
-    return buffer;
+    return this.#buffer.get();
   }
 
   /**
@@ -132,7 +97,7 @@ class LogInvocationStore {
     // retaining stale logs. Under concurrency the buffer is scoped to the
     // invocation via the InvokeStore, so no cleanup is needed and clearing
     // would wipe other in-flight invocations' logs.
-    if (!shouldUseInvokeStore() && buffer.has(traceId) === false) {
+    if (!this.#buffer.isScoped && buffer.has(traceId) === false) {
       buffer.clear();
     }
     buffer.setItem(traceId, value, logLevel);

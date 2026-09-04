@@ -1,4 +1,5 @@
 import { BatchProcessingStore } from './BatchProcessingStore.js';
+import { toError } from './errors.js';
 import type {
   BaseRecord,
   BatchProcessingOptions,
@@ -98,14 +99,15 @@ abstract class BasePartialProcessor {
    * the processor can keep track of the error and the record that failed.
    *
    * @param record - Record that failed processing
-   * @param error - Error that was thrown
+   * @param error - Error that was thrown; non-Error values are wrapped in an `Error`
    */
   public failureHandler(
     record: EventSourceDataClassTypes,
     error: Error
   ): FailureResponse {
-    const entry: FailureResponse = ['fail', error.message, record];
-    this.errors.push(error);
+    const normalizedError = toError(error);
+    const entry: FailureResponse = ['fail', normalizedError.message, record];
+    this.errors.push(normalizedError);
     this.failureMessages.push(record);
 
     return entry;

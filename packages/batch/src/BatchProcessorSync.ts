@@ -1,5 +1,5 @@
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
-import { BatchProcessingError } from './errors.js';
+import { BatchProcessingError, toError } from './errors.js';
 import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
 
 /**
@@ -117,7 +117,7 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
 
       return this.successHandler(record, result);
     } catch (error) {
-      return this.failureHandler(record, error as Error);
+      return this.failureHandler(record, toError(error));
     }
   }
 }

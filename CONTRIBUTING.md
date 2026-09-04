@@ -3,12 +3,12 @@
 ## Table of contents <!-- omit in toc -->
 
 - [Reporting bugs and requesting features](#reporting-bugs-and-requesting-features)
+    - [What we look for when reviewing an RFC](#what-we-look-for-when-reviewing-an-rfc)
 - [Finding contributions to work on](#finding-contributions-to-work-on)
 - [Contributing via pull requests](#contributing-via-pull-requests)
     - [Dev setup](#dev-setup)
     - [Coding standards](#coding-standards)
     - [Sending a pull request](#sending-a-pull-request)
-    - [What a pull request must satisfy](#what-a-pull-request-must-satisfy)
     - [End-to-end tests](#end-to-end-tests)
     - [Local documentation](#local-documentation)
 - [Code of Conduct](#code-of-conduct)
@@ -37,6 +37,17 @@ Then pick the entry point that matches what you have:
 - [Share your work](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=share_your_work.yml) — blog posts, workshops, talks, and sample apps built with Powertools for AWS Lambda.
 - [Become a public reference](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=support_powertools.yml) — tell everyone how your organization uses Powertools for AWS Lambda.
 - [GitHub Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions) — questions, half-formed ideas, and anything that isn't an issue yet.
+
+### What we look for when reviewing an RFC
+
+RFC review is collaborative. Before submitting an RFC, use the [RFC template](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/new?category=rfcs-request-for-comments) and make sure the proposal:
+
+- Aligns with our [tenets](https://docs.aws.amazon.com/powertools/typescript/latest/#tenets).
+- Defines the use case and recommended usage, including Lambda-specific constraints and how the design works across the relevant utilities.
+- Explains the mechanics at a level that someone familiar with the codebase could implement, without prescribing fine-grained implementation details.
+- Covers alternatives, including existing projects or whether the use case belongs in a separate project.
+- Accounts for the ongoing maintenance and skills the proposal would require.
+- Says whether you want to help implement it and where you need guidance.
 
 ## Finding contributions to work on
 
@@ -72,18 +83,22 @@ timeline
     Pre-push checks <br> (git push)   : Type check tests
                                       : Unit tests with 100% coverage
 
-    Pull Request <br> (CI checks)   : Conventional Commits title
-                                    : Linked issue
-                                    : Acknowledgment
-                                    : Linting and unit tests
-                                    : Static analysis (CodeQL)
-                                    : Dependency review
-                                    : GitHub Actions security check
+    Pull Request <br> (CI checks)   : Conventional Commits title drives labels and changelog
+                                    : Linked issue (closes #issue_number)
+                                    : Acknowledgment retained from the PR template
+                                    : Linting and unit tests on every supported Node.js version
+                                    : 100% coverage of each package's src directory
+                                    : No new CodeQL alerts
+                                    : No known-vulnerable dependencies
+                                    : Third-party GitHub Actions pinned to a commit SHA
                                     : End-to-end tests (manual by maintainer)
 
     After merge <br> (CI checks)    : Deploy staging docs
                                     : Update draft release
 ```
+
+The checks are defined in the [lint and unit test](.github/workflows/pr-run-linting-check-and-unit-tests.yml), [CodeQL](.github/workflows/codeql.yml), [dependency review](.github/workflows/dependency-review.yml), and [workflow security](.github/workflows/secure-workflows.yml) workflows.
+A maintainer may add a `do-not-merge` label, which blocks the merge until the underlying issue is resolved.
 
 ### Dev setup
 
@@ -109,20 +124,6 @@ What you need installed:
 5. Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
 
 First pull request ever? GitHub documents [forking a repository](https://help.github.com/articles/fork-a-repo/) and [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
-
-### What a pull request must satisfy
-
-Each of these is a required status check, so none of them is optional:
-
-- **A [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) title.** Our label automation and the changelog are generated from it, which is why we enforce it on the pull request title rather than on your commits.
-- **A linked issue.** Put `closes #<issue_number>` in the pull request body; a pull request without one may be blocked from review.
-- **The acknowledgment statement** at the bottom of the pull request template, left in place.
-- **Linting and unit tests passing on every supported Node.js version**, with 100% coverage of each package's `src` directory — [`pr-run-linting-check-and-unit-tests.yml`](.github/workflows/pr-run-linting-check-and-unit-tests.yml).
-- **No new CodeQL alert** on the code you changed — [`codeql.yml`](.github/workflows/codeql.yml).
-- **No known-vulnerable dependency** introduced — [`dependency-review.yml`](.github/workflows/dependency-review.yml).
-- **Third-party GitHub Actions pinned to a commit SHA**, if you touch `.github/workflows/` — [`secure-workflows.yml`](.github/workflows/secure-workflows.yml).
-
-A maintainer may also add a `do-not-merge` label, which blocks the merge until whatever prompted it is resolved.
 
 ### End-to-end tests
 

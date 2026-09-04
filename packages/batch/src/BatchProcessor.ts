@@ -1,5 +1,5 @@
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
-import { BatchProcessingError } from './errors.js';
+import { BatchProcessingError, toError } from './errors.js';
 import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
 
 /**
@@ -180,7 +180,7 @@ class BatchProcessor extends BasePartialBatchProcessor {
       const result = await this.handler(data, this.options?.context);
       return this.successHandler(record, result);
     } catch (error) {
-      return this.failureHandler(record, error as Error);
+      return this.failureHandler(record, toError(error));
     }
   }
 

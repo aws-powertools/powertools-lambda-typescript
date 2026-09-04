@@ -90,7 +90,7 @@ For bugs caused by an upstream dependency, apply `bug-upstream` and ask the auth
 
 PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/) — they feed the [changelog](./CHANGELOG.md) and the drafted release notes, so make sure they read well to a human. PR titles, related issues, and the acknowledgment checkbox are enforced by organization-level checks, not by workflows in this repository.
 
-Labels need no action when you merge: organization-level automation applies `pending-release` to the linked issue, and `.github/workflows/post-release.yml` removes it from every closed issue once the GitHub release is published.
+Labels need no action when you merge: organization-level automation applies `pending-release` when the PR merges and removes it automatically when the release ships.
 
 ## Adding a new package
 
@@ -169,7 +169,7 @@ It takes a few hours end to end, most of it spent waiting on the layer rollout a
     - copies the layer into the GovCloud and China partitions, Gamma then Prod, both in parallel;
     - opens a `chore(ci): update layer ARN on documentation` PR once all three Prod deployments are done.
 6. **Review and merge the layer ARN docs PR.** `.github/workflows/on_layer_docs_pr_merge.yml` picks up the merge and dispatches `Rebuild latest docs`, which republishes the user guide and API reference.
-7. **Draft and publish the release notes** (see below). Publishing the GitHub release triggers `.github/workflows/post-release.yml`, which removes `pending-release` from the shipped issues.
+7. **Draft and publish the release notes** (see below). Organization-level automation removes `pending-release` from shipped issues once the release is published.
 
 ### Release process visualized
 

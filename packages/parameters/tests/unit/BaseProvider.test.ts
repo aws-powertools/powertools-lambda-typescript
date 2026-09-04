@@ -7,7 +7,11 @@ import {
   GetMultipleOptions,
   GetOptions,
 } from '../../src/base/index.js';
-import { DEFAULT_MAX_AGE_SECS } from '../../src/constants.js';
+import {
+  CacheKeyKind,
+  type CacheKeyKindOptions,
+  DEFAULT_MAX_AGE_SECS,
+} from '../../src/constants.js';
 import {
   clearCaches,
   GetParameterError,
@@ -36,6 +40,14 @@ class TestProvider extends BaseProvider {
 
   public _add(key: string, value: ExpirableValue): void {
     this.store.set(key, value);
+  }
+
+  public _buildKey(
+    kind: CacheKeyKindOptions,
+    name: string,
+    options?: object
+  ): string {
+    return this.buildCacheKey(kind, name, options);
   }
 
   public _get(_name: string): Promise<string | undefined> {
@@ -161,7 +173,7 @@ describe('Class: BaseProvider', () => {
       // Prepare
       const provider = new TestProvider();
       provider._add(
-        ['my-parameter', undefined].toString(),
+        provider._buildKey(CacheKeyKind.GET, 'my-parameter'),
         new ExpirableValue('my-value', 5000)
       );
 
@@ -178,7 +190,7 @@ describe('Class: BaseProvider', () => {
       const provider = new TestProvider();
       vi.spyOn(provider, '_get').mockResolvedValue(mockData);
       provider._add(
-        ['my-parameter', undefined].toString(),
+        provider._buildKey(CacheKeyKind.GET, 'my-parameter'),
         new ExpirableValue('my-value', 5000)
       );
 
@@ -196,7 +208,10 @@ describe('Class: BaseProvider', () => {
       vi.spyOn(provider, '_get').mockResolvedValue(mockData);
       const expirableValue = new ExpirableValue('my-other-value', 0);
       vi.spyOn(expirableValue, 'isExpired').mockImplementation(() => true);
-      provider._add(['my-path', undefined].toString(), expirableValue);
+      provider._add(
+        provider._buildKey(CacheKeyKind.GET, 'my-parameter'),
+        expirableValue
+      );
 
       // Act
       const values = await provider.get('my-parameter');
@@ -532,7 +547,7 @@ describe('Class: BaseProvider', () => {
       // Prepare
       const provider = new TestProvider();
       provider._add(
-        ['my-path', undefined].toString(),
+        provider._buildKey(CacheKeyKind.GET_MULTIPLE, 'my-path'),
         new ExpirableValue({ A: 'my-value' }, 60000)
       );
 
@@ -552,7 +567,10 @@ describe('Class: BaseProvider', () => {
       vi.spyOn(provider, '_getMultiple').mockResolvedValue(mockData);
       const expirableValue = new ExpirableValue({ B: 'my-other-value' }, 0);
       vi.spyOn(expirableValue, 'isExpired').mockImplementation(() => true);
-      provider._add(['my-path', undefined].toString(), expirableValue);
+      provider._add(
+        provider._buildKey(CacheKeyKind.GET_MULTIPLE, 'my-path'),
+        expirableValue
+      );
 
       // Act
       const values = await provider.getMultiple('my-path');
@@ -569,7 +587,7 @@ describe('Class: BaseProvider', () => {
       // Prepare
       const provider = new TestProvider();
       provider._add(
-        ['my-path', undefined].toString(),
+        provider._buildKey(CacheKeyKind.GET_MULTIPLE, 'my-path'),
         new ExpirableValue({ B: 'my-other-value' }, 0)
       );
 
@@ -579,6 +597,80 @@ describe('Class: BaseProvider', () => {
       // Assess
       expect(provider._getStoreSize()).toBe(0);
     });
+  });
+});
+
+describe('Method: buildCacheKey', () => {
+  const provider = new TestProvider();
+
+  it('produces the same key regardless of option order', () => {
+    // Prepare
+    const first = {
+      sdkOptions: { VersionStage: 'a', VersionId: 'b' },
+      transform: 'json',
+    };
+    const second = {
+      transform: 'json',
+      sdkOptions: { VersionId: 'b', VersionStage: 'a' },
+    };
+
+    // Act
+    const keys = [first, second].map((options) =>
+      provider._buildKey(CacheKeyKind.GET, 'foo', options)
+    );
+
+    // Assess
+    expect(keys[0]).toBe(keys[1]);
+  });
+
+  it('ignores options that do not affect the cached value', () => {
+    // Prepare
+    const options = {
+      maxAge: 10,
+      forceFetch: true,
+      throwOnMissing: true,
+      throwOnError: false,
+    };
+
+    // Act
+    const key = provider._buildKey(CacheKeyKind.GET, 'foo', options);
+
+    // Assess
+    expect(key).toBe(provider._buildKey(CacheKeyKind.GET, 'foo'));
+  });
+
+  it('treats undefined options the same as absent ones', () => {
+    // Prepare
+    const options = { transform: undefined, decrypt: undefined };
+
+    // Act
+    const key = provider._buildKey(CacheKeyKind.GET, 'foo', options);
+
+    // Assess
+    expect(key).toBe(provider._buildKey(CacheKeyKind.GET, 'foo', {}));
+  });
+
+  it.each([
+    { options: { decrypt: true } },
+    { options: { recursive: true } },
+    { options: { transform: 'json' } },
+    { options: { throwOnTransformError: false } },
+    { options: { sdkOptions: { WithDecryption: true } } },
+  ])('produces a distinct key for %o', ({ options }) => {
+    // Act
+    const key = provider._buildKey(CacheKeyKind.GET, 'foo', options);
+
+    // Assess
+    expect(key).not.toBe(provider._buildKey(CacheKeyKind.GET, 'foo'));
+  });
+
+  it('produces distinct keys for get and getMultiple on the same name', () => {
+    // Act
+    const single = provider._buildKey(CacheKeyKind.GET, 'foo');
+    const multiple = provider._buildKey(CacheKeyKind.GET_MULTIPLE, 'foo');
+
+    // Assess
+    expect(single).not.toBe(multiple);
   });
 });
 

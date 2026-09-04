@@ -19,7 +19,7 @@ import {
 } from '@aws-sdk/client-ssm';
 import { BaseProvider } from '../base/BaseProvider.js';
 import { transformValue } from '../base/transformValue.js';
-import { DEFAULT_MAX_AGE_SECS } from '../constants.js';
+import { CacheKeyKind, DEFAULT_MAX_AGE_SECS } from '../constants.js';
 import { GetParameterError, SetParameterError } from '../errors.js';
 import type {
   GetMaybeUndefined,
@@ -728,8 +728,15 @@ class SSMProvider extends BaseProvider {
     for (const [parameterName, parameterOptions] of Object.entries(
       parameters
     )) {
-      const cacheKey = [parameterName, parameterOptions.transform].toString();
-      if (!this.hasKeyExpiredInCache(cacheKey)) {
+      const cacheKey = this.buildCacheKey(
+        CacheKeyKind.GET,
+        parameterName,
+        parameterOptions
+      );
+      if (
+        (parameterOptions.maxAge ?? DEFAULT_MAX_AGE_SECS) > 0 &&
+        !this.hasKeyExpiredInCache(cacheKey)
+      ) {
         // biome-ignore lint/style/noNonNullAssertion: Since we know the key exists in the cache, we can safely use the non-null assertion operator
         cached[parameterName] = this.store.get(cacheKey)!.value as Record<
           string,
@@ -961,11 +968,15 @@ class SSMProvider extends BaseProvider {
 
       /* v8 ignore else -- @preserve */
       if (value) {
-        const cacheKey = [parameterName, parameterOptions.transform].toString();
+        const cacheKey = this.buildCacheKey(
+          CacheKeyKind.GET,
+          parameterName,
+          parameterOptions
+        );
         this.addToCache(
           cacheKey,
           value,
-          parameterOptions.maxAge || DEFAULT_MAX_AGE_SECS
+          parameterOptions.maxAge ?? DEFAULT_MAX_AGE_SECS
         );
       }
 

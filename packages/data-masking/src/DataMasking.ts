@@ -98,56 +98,41 @@ export class DataMasking {
 
     const copy = this.#deepCopy(data);
 
-    // Per-field rules win, so apply them first (against the original values) and
-    // skip those concrete paths when the `fields` pass runs.
-    const overridden = maskingRules
-      ? this.#applyMaskingRules(copy, maskingRules)
-      : new Set<string>();
-    if (fields) {
-      this.#eraseFields(
+    // Resolve every path against the untouched copy before masking anything, so a
+    // rule that collapses a parent cannot make another expression's path vanish.
+    const targets: MaskTarget[] = [];
+    const overridden = new Set<string>();
+    for (const [field, rule] of Object.entries(maskingRules ?? {})) {
+      for (const path of this.#resolvePathsOrReportMissing(copy, field)) {
+        targets.push({ path, rule });
+        overridden.add(pathKey(path));
+      }
+    }
+    for (const field of fields ?? []) {
+      for (const path of this.#resolvePathsOrReportMissing(copy, field)) {
+        // Per-field rules win over the top-level rule for the paths they name.
+        if (overridden.has(pathKey(path))) continue;
+        targets.push({
+          path,
+          rule: hasTopLevelRule ? topLevelRule : undefined,
+        });
+      }
+    }
+
+    // Deepest paths first, so masking a parent never traverses a leaf that has
+    // already been replaced with a string.
+    targets.sort((a, b) => b.path.length - a.path.length);
+    for (const { path, rule } of targets) {
+      // A plain field erase replaces any value with the mask; a rule stringifies
+      // the leaf first (null/undefined pass through), matching the Python utility.
+      setAtPath(
         copy,
-        fields,
-        hasTopLevelRule ? topLevelRule : undefined,
-        overridden
+        path,
+        rule ? maskLeaf(getAtPath(copy, path), rule) : DEFAULT_MASK_VALUE
       );
     }
 
     return copy;
-  }
-
-  #applyMaskingRules<T>(
-    copy: T,
-    rules: Record<string, MaskingRule>
-  ): Set<string> {
-    const touched = new Set<string>();
-    for (const [field, rule] of Object.entries(rules)) {
-      for (const path of this.#resolvePathsOrReportMissing(copy, field)) {
-        setAtPath(copy, path, maskLeaf(getAtPath(copy, path), rule));
-        touched.add(pathKey(path));
-      }
-    }
-
-    return touched;
-  }
-
-  #eraseFields<T>(
-    copy: T,
-    fields: string[],
-    rule?: MaskingRule,
-    skip?: Set<string>
-  ): void {
-    for (const field of fields) {
-      for (const path of this.#resolvePathsOrReportMissing(copy, field)) {
-        if (skip?.has(pathKey(path))) continue;
-        // A plain field erase replaces any value with the mask; a rule stringifies
-        // the leaf first (null/undefined pass through), matching the Python utility.
-        setAtPath(
-          copy,
-          path,
-          rule ? maskLeaf(getAtPath(copy, path), rule) : DEFAULT_MASK_VALUE
-        );
-      }
-    }
   }
 
   /**
@@ -246,10 +231,7 @@ export class DataMasking {
     const operations: Promise<void>[] = [];
 
     for (const field of fields) {
-      for (const path of this.#resolveFieldPaths(
-        data as Record<string, unknown>,
-        field
-      )) {
+      for (const path of this.#resolvePathsOrReportMissing(data, field)) {
         operations.push(
           transform(getAtPath(data, path)).then((result) =>
             setAtPath(data, path, result)
@@ -265,11 +247,8 @@ export class DataMasking {
    * Resolve a path expression, throwing or warning per `throwOnMissingField`
    * when it matches nothing in the data.
    */
-  #resolvePathsOrReportMissing<T>(copy: T, field: string): string[][] {
-    const paths = this.#resolveFieldPaths(
-      copy as Record<string, unknown>,
-      field
-    );
+  #resolvePathsOrReportMissing(data: unknown, field: string): string[][] {
+    const paths = this.#resolveFieldPaths(data, field);
     if (paths.length === 0) {
       if (this.#throwOnMissingField) {
         throw new DataMaskingFieldNotFoundError(`Field not found: '${field}'`);
@@ -280,11 +259,16 @@ export class DataMasking {
     return paths;
   }
 
-  #resolveFieldPaths(
-    data: Record<string, unknown>,
-    expression: string
-  ): string[][] {
+  /**
+   * Expand a path expression into every concrete path it matches in `data`.
+   *
+   * Reserved keys (`__proto__`, `constructor`, `prototype`) never resolve, whether
+   * named directly or reached through a wildcard, which is what keeps the later
+   * in-place assignment free of prototype pollution.
+   */
+  #resolveFieldPaths(data: unknown, expression: string): string[][] {
     const segments = expression.split(/\.|\[(\*)\]\.?/).filter(Boolean);
+    if (segments.length === 0) return [];
 
     const paths: string[][] = [];
     const walk = (obj: unknown, i: number, current: string[]): void => {
@@ -308,16 +292,18 @@ export class DataMasking {
 
 const RESERVED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
+/** A resolved concrete path and the rule to mask it with; no rule means the default mask. */
+type MaskTarget = { path: string[]; rule?: MaskingRule };
+
 const resolveWildcardEntries = (
   obj: object,
   segment: string
 ): [string, unknown][] => {
   if (segment !== '*') {
-    const next = (obj as Record<string, unknown>)[segment];
+    // A present key with an `undefined` value still resolves; only absent keys do not.
+    if (RESERVED_KEYS.has(segment) || !Object.hasOwn(obj, segment)) return [];
 
-    if (next === undefined) return [];
-
-    return [[segment, next]];
+    return [[segment, (obj as Record<string, unknown>)[segment]]];
   }
   if (Array.isArray(obj)) {
     return obj.map((v, i) => [String(i), v]);
@@ -331,7 +317,6 @@ const resolveWildcardEntries = (
 const getAtPath = (data: unknown, path: string[]): unknown => {
   let current = data as Record<string, unknown>;
   for (const key of path) {
-    if (RESERVED_KEYS.has(key)) return undefined;
     current = current[key] as Record<string, unknown>;
   }
 
@@ -341,20 +326,17 @@ const getAtPath = (data: unknown, path: string[]): unknown => {
 /**
  * Set `value` at the location identified by `path`, mutating `data` in place.
  *
- * Walks every path segment except the last to reach the parent container,
- * then assigns the value to the final segment. Assumes the path was produced
- * by `#resolveFieldPaths` against the same object, so intermediate containers
- * are known to exist. Assignments to reserved keys (`__proto__`, `constructor`,
- * `prototype`) are skipped to prevent prototype pollution.
+ * Walks every path segment except the last to reach the parent container, then
+ * assigns the value to the final segment. Assumes the path was produced by
+ * `#resolveFieldPaths` against the same object, so it is non-empty, free of
+ * reserved keys, and its intermediate containers exist.
  */
 const setAtPath = (data: unknown, path: string[], value: unknown): void => {
   let current = data as Record<string, unknown>;
   for (let i = 0; i < path.length - 1; i++) {
     current = current[path[i]] as Record<string, unknown>;
   }
-  const lastKey = path.at(-1);
-  if (!lastKey || RESERVED_KEYS.has(lastKey)) return;
-  current[lastKey] = value;
+  current[path[path.length - 1]] = value;
 };
 
 /**

@@ -185,6 +185,23 @@ describe('DataMasking.erase()', () => {
     expect(result.secrets.__proto__).toBe('injected');
   });
 
+  it.each([
+    { label: 'a reserved key', field: '__proto__' },
+    { label: 'an own __proto__ key', field: 'secrets.__proto__' },
+    { label: 'an empty expression', field: '' },
+  ])('reports $label as a missing field', ({ field }) => {
+    // Prepare
+    const data = JSON.parse(
+      '{"secrets": {"__proto__": "injected", "safe": "value"}}'
+    );
+
+    // Act & Assess
+    expect(() => masker.erase(data, { fields: [field] })).toThrow(
+      DataMaskingFieldNotFoundError
+    );
+    expect(Object.getPrototypeOf(data)).toBe(Object.prototype);
+  });
+
   it('prevents prototype pollution when __proto__ is used as a direct field path', () => {
     const lenientMasker = new DataMasking({ throwOnMissingField: false });
     const data = { safe: 'value' };

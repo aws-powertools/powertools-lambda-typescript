@@ -53,7 +53,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 
 ### Examples
 
-You can find examples of how to use Powertools for AWS Lambda (TypeScript) in the [examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples) directory. The directory contains code snippets around certain features as well as an is a simple REST API application that can be deployed via either AWS CDK or AWS SAM.
+You can find code snippets showing how to use Powertools for AWS Lambda (TypeScript) in the [examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples) directory.
 
 ## How to support Powertools for AWS Lambda (TypeScript)?
 

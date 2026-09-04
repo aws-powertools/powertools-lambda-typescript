@@ -1,10 +1,15 @@
 import fc from 'fast-check';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
   DataMaskingFieldNotFoundError,
   DataMaskingUnsupportedTypeError,
 } from '../../src/errors.js';
 import { DataMasking } from '../../src/index.js';
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe('DataMasking.erase()', () => {
   const masker = new DataMasking();
@@ -167,15 +172,13 @@ describe('DataMasking.erase()', () => {
   });
 
   it('skips missing field with a warning when throwOnMissingField is false', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const lenientMasker = new DataMasking({ throwOnMissingField: false });
     const data = { name: 'Jane' };
 
     const result = lenientMasker.erase(data, { fields: ['nonexistent'] });
 
     expect(result).toEqual({ name: 'Jane' });
-    expect(warnSpy).toHaveBeenCalledWith("Field not found: 'nonexistent'");
-    warnSpy.mockRestore();
+    expect(console.warn).toHaveBeenCalledWith("Field not found: 'nonexistent'");
   });
 
   it('handles circular references by cloning them via structuredClone', () => {
@@ -319,7 +322,6 @@ describe('DataMasking.erase() - custom masking rules', () => {
 
   it('skips a rule that matches no field with a warning when throwOnMissingField is false', () => {
     // Prepare
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const lenientMasker = new DataMasking({ throwOnMissingField: false });
     const data = { ssn: '123-45-6789', name: 'Jane' };
 
@@ -333,8 +335,7 @@ describe('DataMasking.erase() - custom masking rules', () => {
 
     // Assess
     expect(result).toEqual({ ssn: '123-45-6789', name: 'XXXX' });
-    expect(warnSpy).toHaveBeenCalledWith("Field not found: 'snn'");
-    warnSpy.mockRestore();
+    expect(console.warn).toHaveBeenCalledWith("Field not found: 'snn'");
   });
 
   it.each([

@@ -13,7 +13,12 @@ export interface EncryptionProvider {
 export interface DataMaskingConstructorOptions {
   /** Encryption provider for encrypt/decrypt operations. */
   provider?: EncryptionProvider;
-  /** Whether to throw when a field path doesn't match. Default: `true`. */
+  /**
+   * Whether `erase`, `encrypt` and `decrypt` throw when a path in `fields` or a key in
+   * `maskingRules` matches nothing in the data. When `false`, a warning is logged and
+   * the path is skipped. A wildcard over an empty collection is not a missing field.
+   * Default: `true`.
+   */
   throwOnMissingField?: boolean;
 }
 

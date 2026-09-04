@@ -1,11 +1,16 @@
 import fc from 'fast-check';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
   DataMaskingEncryptionError,
   DataMaskingFieldNotFoundError,
 } from '../../src/errors.js';
 import { DataMasking } from '../../src/index.js';
 import type { EncryptionProvider } from '../../src/types.js';
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 const createMockProvider = (): EncryptionProvider => ({
   encrypt: vi.fn(async (data: string) => `ENC:${data}`),
@@ -129,6 +134,26 @@ describe('DataMasking.encrypt()', () => {
     expect(result).toEqual({ orders: [] });
   });
 
+  it('leaves a present but undefined value untouched and round-trips it', async () => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+    const data = { ssn: undefined, name: 'Jane' };
+
+    // Act
+    const encrypted = await masker.encrypt(data, { fields: ['ssn', 'name'] });
+    const decrypted = await masker.decrypt(encrypted, {
+      fields: ['ssn', 'name'],
+    });
+
+    // Assess
+    expect(encrypted).toEqual({ ssn: undefined, name: 'ENC:"Jane"' });
+    expect(decrypted).toEqual({ ssn: undefined, name: 'Jane' });
+    expect(provider.encrypt).toHaveBeenCalledTimes(1);
+    expect(provider.decrypt).toHaveBeenCalledTimes(1);
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
   it('encrypts only the parent when both a parent and its child are listed', async () => {
     // Prepare
     const provider = createMockProvider();
@@ -145,7 +170,6 @@ describe('DataMasking.encrypt()', () => {
 
   it('skips missing field with a warning when throwOnMissingField is false', async () => {
     // Prepare
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const lenientMasker = new DataMasking({
       provider: createMockProvider(),
       throwOnMissingField: false,
@@ -159,8 +183,7 @@ describe('DataMasking.encrypt()', () => {
 
     // Assess
     expect(result).toEqual({ ssn: 'ENC:"123"' });
-    expect(warnSpy).toHaveBeenCalledWith("Field not found: 'snn'");
-    warnSpy.mockRestore();
+    expect(console.warn).toHaveBeenCalledWith("Field not found: 'snn'");
   });
 
   it('does not mutate original input', async () => {
@@ -251,7 +274,6 @@ describe('DataMasking.decrypt() - field level', () => {
   });
 
   it('passes through non-string values during field-level decrypt and warns', async () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const provider = createMockProvider();
     const masker = new DataMasking({ provider });
     const data = { num: 42, text: 'ENC:"hello"' };
@@ -259,11 +281,10 @@ describe('DataMasking.decrypt() - field level', () => {
     const result = await masker.decrypt(data, { fields: ['num', 'text'] });
 
     expect(result).toEqual({ num: 42, text: 'hello' });
-    expect(warnSpy).toHaveBeenCalledOnce();
-    expect(warnSpy).toHaveBeenCalledWith(
+    expect(console.warn).toHaveBeenCalledOnce();
+    expect(console.warn).toHaveBeenCalledWith(
       expect.stringContaining('non-string value of type number')
     );
-    warnSpy.mockRestore();
   });
 
   it('rejects the whole operation and leaves the original untouched when one field fails to decrypt', async () => {

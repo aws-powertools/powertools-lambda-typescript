@@ -32,6 +32,7 @@ describe('BatchProcessor concurrent invocation isolation', () => {
       // Prepare
       if (useInvokeStore) {
         vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+        await InvokeStore.getInstanceAsync();
       }
       const processor = new BatchProcessor(EventType.SQS);
       const recordsA = [sqsRecordFactory('record-A')];
@@ -97,6 +98,7 @@ describe('BatchProcessor concurrent invocation isolation', () => {
       // Prepare
       if (useInvokeStore) {
         vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+        await InvokeStore.getInstanceAsync();
       }
       const processor = new BatchProcessor(EventType.SQS);
       const recordsA = [sqsRecordFactory('record-A')];
@@ -152,6 +154,7 @@ describe('BatchProcessor concurrent invocation isolation', () => {
       // Prepare
       if (useInvokeStore) {
         vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+        await InvokeStore.getInstanceAsync();
       }
       const processor = new BatchProcessor(EventType.SQS);
       const recordsA = [sqsRecordFactory('fail')];
@@ -225,6 +228,7 @@ describe('BatchProcessor concurrent invocation isolation', () => {
       // Prepare
       if (useInvokeStore) {
         vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+        await InvokeStore.getInstanceAsync();
       }
       const processor = new BatchProcessor(EventType.SQS);
       const recordsA = [sqsRecordFactory('fail-1'), sqsRecordFactory('fail-2')];

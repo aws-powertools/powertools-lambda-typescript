@@ -120,12 +120,12 @@ const getDeserializer = async (type?: string) => {
     return deserializeJson as Deserializer;
   }
   if (type === 'protobuf') {
-    const deserializer = await import('./deserializer/protobuf.js');
-    return deserializer.deserialize as Deserializer;
+    const { createDeserializer } = await import('./deserializer/protobuf.js');
+    return (await createDeserializer()) as Deserializer;
   }
   if (type === 'avro') {
-    const deserializer = await import('./deserializer/avro.js');
-    return deserializer.deserialize as Deserializer;
+    const { createDeserializer } = await import('./deserializer/avro.js');
+    return (await createDeserializer()) as Deserializer;
   }
   throw new KafkaConsumerDeserializationError(
     `Unsupported deserialization type: ${type}. Supported types are: json, avro, protobuf.`

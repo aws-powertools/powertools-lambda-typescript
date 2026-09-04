@@ -251,6 +251,14 @@ type Deserializer = (
   schemaMetadata?: SchemaMetadata
 ) => unknown;
 
+type AvroDeserializer = (data: string, schema: string) => unknown;
+
+type ProtobufDeserializer = <T>(
+  data: string,
+  messageType: ProtobufMessage<T>,
+  schemaMetadata: SchemaMetadata
+) => T;
+
 type DeserializeOptions = {
   value: string | null;
   deserializer: Deserializer;
@@ -259,11 +267,13 @@ type DeserializeOptions = {
 };
 
 export type {
+  AvroDeserializer,
   ConsumerRecord,
   ConsumerRecords,
   DeserializeOptions,
   Deserializer,
   MSKEvent,
+  ProtobufDeserializer,
   ProtobufMessage,
   Record,
   RecordHeader,

@@ -66,6 +66,10 @@ Depending on the schema types you want to use, install the library and the corre
 	npm install @aws-lambda-powertools/kafka protobufjs
 	```
 
+`avro-js` and `protobufjs` are declared as optional peer dependencies (`avro-js@^1.12.1`, `protobufjs@^8.7.2`).
+They are only imported when you configure an Avro or Protobuf schema, so a JSON-only consumer bundles without them installed.
+If you already have one of these installed at an incompatible version you may see a peer-dependency warning; align it with the supported range to clear it.
+
 Additionally, if you want to use output parsing with [Standard Schema](https://github.com/standard-schema/standard-schema), you can install [any of the supported libraries](https://standardschema.dev/#what-schema-libraries-implement-the-spec), for example: Zod, Valibot, or ArkType.
 
 ### Required resources

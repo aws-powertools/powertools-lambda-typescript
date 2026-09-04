@@ -324,6 +324,15 @@ const isRequestXRaySampled = (): boolean => {
   return xRayTraceData?.Sampled === '1';
 };
 
+/**
+ * Determine whether invocations may run concurrently in the same execution
+ * environment, and state that must not leak between them should be held in the
+ * Lambda `InvokeStore` rather than on an instance.
+ *
+ * Concurrency is opted into by setting the `AWS_LAMBDA_MAX_CONCURRENCY`
+ * environment variable, which the runtime also uses to decide whether to back
+ * the `InvokeStore` with an `AsyncLocalStorage`.
+ */
 const shouldUseInvokeStore = (): boolean => {
   const res = getStringFromEnv({
     key: AWS_LAMBDA_MAX_CONCURRENCY,

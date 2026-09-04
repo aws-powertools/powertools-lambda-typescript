@@ -230,6 +230,36 @@ describe('DataMasking.erase() - custom masking rules', () => {
     expect(result.email).toBe('j****@example.com');
   });
 
+  it('throws DataMaskingFieldNotFoundError for a rule that matches no field when throwOnMissingField is true', () => {
+    // Prepare
+    const data = { ssn: '123-45-6789' };
+
+    // Act & Assess
+    expect(() =>
+      masker.erase(data, { maskingRules: { snn: { dynamicMask: true } } })
+    ).toThrow(DataMaskingFieldNotFoundError);
+  });
+
+  it('skips a rule that matches no field with a warning when throwOnMissingField is false', () => {
+    // Prepare
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const lenientMasker = new DataMasking({ throwOnMissingField: false });
+    const data = { ssn: '123-45-6789', name: 'Jane' };
+
+    // Act
+    const result = lenientMasker.erase(data, {
+      maskingRules: {
+        snn: { dynamicMask: true },
+        name: { customMask: 'XXXX' },
+      },
+    });
+
+    // Assess
+    expect(result).toEqual({ ssn: '123-45-6789', name: 'XXXX' });
+    expect(warnSpy).toHaveBeenCalledWith("Field not found: 'snn'");
+    warnSpy.mockRestore();
+  });
+
   it('applies dynamic mask matching original length', () => {
     const data = { ssn: '123-45-6789' };
 

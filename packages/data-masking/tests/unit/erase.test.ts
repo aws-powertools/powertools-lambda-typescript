@@ -98,6 +98,55 @@ describe('DataMasking.erase()', () => {
     expect(masker.erase(undefined)).toBeUndefined();
   });
 
+  it('applies a rule once to a path reached by overlapping field expressions', () => {
+    // Prepare
+    const data = { a: { b: '123' } };
+
+    // Act
+    const result = masker.erase(data, {
+      fields: ['a.*', 'a.b'],
+      regexPattern: /\d/,
+      maskFormat: '#',
+    });
+
+    // Assess
+    expect(result).toEqual({ a: { b: '#23' } });
+  });
+
+  it.each([
+    { label: 'an empty array', data: { orders: [] } },
+    { label: 'an empty object', data: { orders: {} } },
+  ])(
+    'does not report a wildcard over $label as a missing field',
+    ({ data }) => {
+      // Act
+      const result = masker.erase(data, { fields: ['orders.*.card'] });
+
+      // Assess
+      expect(result).toEqual(data);
+    }
+  );
+
+  it('reports a wildcard whose entries all lack the next segment as missing', () => {
+    // Prepare
+    const data = { users: { alice: { name: 'Alice' } } };
+
+    // Act & Assess
+    expect(() => masker.erase(data, { fields: ['users.*.ssn'] })).toThrow(
+      DataMaskingFieldNotFoundError
+    );
+  });
+
+  it('does not resolve non-index keys on arrays', () => {
+    // Prepare
+    const data = { items: [1, 2] };
+
+    // Act & Assess
+    expect(() => masker.erase(data, { fields: ['items.length'] })).toThrow(
+      DataMaskingFieldNotFoundError
+    );
+  });
+
   it('masks a field that is present with an undefined value', () => {
     // Prepare
     const data = { ssn: undefined, name: 'Jane' };
@@ -320,6 +369,49 @@ describe('DataMasking.erase() - custom masking rules', () => {
 
     // Assess
     expect(result).toEqual({ a: 'M' });
+  });
+
+  it('lets a rule on a parent see the original values of its children', () => {
+    // Prepare
+    const data = { cards: ['4111', '4222'] };
+
+    // Act
+    const result = masker.erase(data, {
+      fields: ['cards[*]'],
+      maskingRules: { cards: { dynamicMask: true } },
+    });
+
+    // Assess
+    expect(result).toEqual({ cards: '*********' });
+  });
+
+  it('applies the first rule given to a path reached by several expressions', () => {
+    // Prepare
+    const data = { a: { b: '123' } };
+
+    // Act
+    const result = masker.erase(data, {
+      maskingRules: {
+        'a.*': { customMask: 'X' },
+        'a.b': { dynamicMask: true },
+      },
+    });
+
+    // Assess
+    expect(result).toEqual({ a: { b: 'X' } });
+  });
+
+  it('does not report a wildcard over an empty collection as a missing field', () => {
+    // Prepare
+    const data = { orders: [] };
+
+    // Act
+    const result = masker.erase(data, {
+      maskingRules: { 'orders[*].card': { dynamicMask: true } },
+    });
+
+    // Assess
+    expect(result).toEqual({ orders: [] });
   });
 
   it('passes a present but undefined value through a masking rule', () => {

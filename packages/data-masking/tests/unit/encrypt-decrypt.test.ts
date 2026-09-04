@@ -104,6 +104,45 @@ describe('DataMasking.encrypt()', () => {
     );
   });
 
+  it('resolves every field before calling the provider', async () => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+    const data = { ssn: '123' };
+
+    // Act & Assess
+    await expect(
+      masker.encrypt(data, { fields: ['ssn', 'snn'] })
+    ).rejects.toThrow(DataMaskingFieldNotFoundError);
+    expect(provider.encrypt).not.toHaveBeenCalled();
+  });
+
+  it('does not report a wildcard over an empty collection as a missing field', async () => {
+    // Prepare
+    const masker = new DataMasking({ provider: createMockProvider() });
+    const data = { orders: [] };
+
+    // Act
+    const result = await masker.encrypt(data, { fields: ['orders[*].card'] });
+
+    // Assess
+    expect(result).toEqual({ orders: [] });
+  });
+
+  it('encrypts only the parent when both a parent and its child are listed', async () => {
+    // Prepare
+    const provider = createMockProvider();
+    const masker = new DataMasking({ provider });
+    const data = { a: { b: 'x' } };
+
+    // Act
+    const result = await masker.encrypt(data, { fields: ['a', 'a.b'] });
+
+    // Assess
+    expect(result).toEqual({ a: 'ENC:{"b":"x"}' });
+    expect(provider.encrypt).toHaveBeenCalledTimes(1);
+  });
+
   it('skips missing field with a warning when throwOnMissingField is false', async () => {
     // Prepare
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});

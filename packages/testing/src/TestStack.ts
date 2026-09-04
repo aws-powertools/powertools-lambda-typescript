@@ -7,7 +7,7 @@ import {
   StackSelectionStrategy,
   Toolkit,
 } from '@aws-cdk/toolkit-lib';
-import { App, Stack } from 'aws-cdk-lib';
+import { App, Stack, Tags } from 'aws-cdk-lib';
 import { generateTestUniqueName } from './helpers.js';
 import type { TestStackProps } from './types.js';
 
@@ -68,13 +68,8 @@ class TestStack {
       testPrefix: stackNameProps.stackNamePrefix,
     });
     this.app = app ?? new App();
-    this.stack =
-      stack ??
-      new Stack(this.app, this.testName, {
-        tags: {
-          Service: 'Powertools-for-AWS-e2e-tests',
-        },
-      });
+    this.stack = stack ?? new Stack(this.app, this.testName);
+    Tags.of(this.stack).add('Service', 'Powertools-for-AWS-e2e-tests');
     let lastCreateLog = 0;
     let lastDestroyLog = 0;
     const creationDeleteLogFrequency = 10000; // 10 seconds
@@ -102,7 +97,7 @@ class TestStack {
             return;
           }
           if (msg.message.includes('✅') && !msg.message.includes('deployed')) {
-            testConsole.log(`${that.testName} deployed successfully`);
+            testConsole.log(`${that.stack.stackName} deployed successfully`);
             return;
           }
           if (msg.message.includes('CREATE_IN_PROGRESS')) {
@@ -110,7 +105,9 @@ class TestStack {
               return;
             }
             lastCreateLog = Date.now();
-            testConsole.log(`${that.testName} stack is being created...`);
+            testConsole.log(
+              `${that.stack.stackName} stack is being created...`
+            );
             return;
           }
           if (msg.message.includes('DELETE_IN_PROGRESS')) {
@@ -118,7 +115,9 @@ class TestStack {
               return;
             }
             lastDestroyLog = Date.now();
-            testConsole.log(`${that.testName} stack is being destroyed...`);
+            testConsole.log(
+              `${that.stack.stackName} stack is being destroyed...`
+            );
             return;
           }
           if (['warning', 'error'].includes(msg.level)) {
@@ -139,22 +138,37 @@ class TestStack {
   }
 
   /**
+   * Directory where the Cloud Assembly for this stack is synthesized.
+   */
+  #outdir(): string {
+    return join(tmpdir(), `${this.stack.stackName}-powertools-e2e-testing`);
+  }
+
+  /**
+   * Synthesize the CDK app into a Cloud Assembly.
+   *
+   * `clobberEnv: false` keeps the toolkit from temporarily replacing the
+   * global `process.env` with an immutable proxy during synthesis. That swap
+   * is not concurrency-safe, so without this two `TestStack` instances
+   * synthesizing at once (e.g. the shared capacity provider stacks, one per
+   * architecture) would race on `process.env`. The assembly builder does not
+   * read the injected env, so opting out is safe here.
+   */
+  async #synthAssembly(): Promise<ICloudAssemblySource> {
+    return await this.#cli.fromAssemblyBuilder(async () => this.app.synth(), {
+      outdir: this.#outdir(),
+      clobberEnv: false,
+    });
+  }
+
+  /**
    * Deploy the test stack to the selected environment.
    *
    * It returns the outputs of the deployed stack.
    */
   public async deploy(): Promise<Record<string, string>> {
-    const outdir = join(
-      tmpdir(),
-      `${this.stack.stackName}-powertools-e2e-testing`
-    );
-    const outputFilePath = join(outdir, 'outputs.json');
-    this.#cx = await this.#cli.fromAssemblyBuilder(
-      async () => this.app.synth(),
-      {
-        outdir,
-      }
-    );
+    const outputFilePath = join(this.#outdir(), 'outputs.json');
+    this.#cx = await this.#synthAssembly();
     await this.#cli.deploy(this.#cx, {
       stacks: {
         strategy: StackSelectionStrategy.ALL_STACKS,
@@ -172,11 +186,14 @@ class TestStack {
 
   /**
    * Destroy the test stack.
+   *
+   * The Cloud Assembly is normally created by {@link deploy | `deploy()`};
+   * when destroy is called in a fresh process (e.g. a workflow teardown job
+   * destroying a stack deployed by an earlier setup job), it is re-synthesized
+   * from the app, which must therefore define the same stack.
    */
   public async destroy(): Promise<void> {
-    if (!this.#cx) {
-      throw new Error('Cannot destroy stack without a Cloud Assembly');
-    }
+    this.#cx ??= await this.#synthAssembly();
     await this.#cli.destroy(this.#cx, {
       stacks: {
         strategy: StackSelectionStrategy.ALL_STACKS,

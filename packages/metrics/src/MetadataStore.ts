@@ -1,5 +1,4 @@
-import '@aws/lambda-invoke-store';
-import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
+import { InvocationScoped } from '@aws-lambda-powertools/commons/utils/invocation-scoped';
 
 /**
  * Manages storage of metrics #metadata with automatic context detection.
@@ -10,28 +9,13 @@ import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
  * every method call to support Lambda's transition to async contexts.
  */
 class MetadataStore {
-  readonly #metadataKey = Symbol('powertools.metrics.metadata');
-
-  #fallbackStorage: Record<string, string> = {};
+  readonly #metadata = new InvocationScoped<Record<string, string>>(
+    'powertools.metrics.metadata',
+    { fresh: () => ({}) }
+  );
 
   #getStorage(): Record<string, string> {
-    if (!shouldUseInvokeStore()) {
-      return this.#fallbackStorage;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    let stored = store.get(this.#metadataKey) as
-      | Record<string, string>
-      | undefined;
-    if (stored == null) {
-      stored = {};
-      store.set(this.#metadataKey, stored);
-    }
-    return stored;
+    return this.#metadata.get();
   }
 
   public set(key: string, value: string): string {
@@ -44,17 +28,7 @@ class MetadataStore {
   }
 
   public clear(): void {
-    if (!shouldUseInvokeStore()) {
-      this.#fallbackStorage = {};
-      return;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    store.set(this.#metadataKey, {});
+    this.#metadata.reset();
   }
 }
 

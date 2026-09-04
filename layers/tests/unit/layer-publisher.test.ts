@@ -1,7 +1,12 @@
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { App } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
-import { describe, it } from 'vitest';
-import { LayerPublisherStack } from '../../src/layer-publisher-stack.js';
+import { describe, expect, it } from 'vitest';
+import {
+  getLayerUtilities,
+  LayerPublisherStack,
+} from '../../src/layer-publisher-stack.js';
 
 describe('Class: LayerPublisherStack', () => {
   it('creates the stack with a layer in it', () => {
@@ -40,5 +45,30 @@ describe('Class: LayerPublisherStack', () => {
       Name: '/layers/powertools-layer-arn',
       Type: 'String',
     });
+
+    // Synthesising the stack above runs the local bundling, which installs the
+    // utilities into the tmp folder. Assert every publishable utility landed in
+    // the layer so the derived list can't silently drop a package.
+    const packagesDir = join(import.meta.dirname, '..', '..', '..', 'packages');
+    const expectedUtilities = getLayerUtilities(packagesDir).map(
+      (util) => util.workspace
+    );
+    const bundledScopeDir = join(
+      import.meta.dirname,
+      '..',
+      '..',
+      'tmp',
+      'nodejs',
+      'node_modules',
+      '@aws-lambda-powertools'
+    );
+    const bundledUtilities = readdirSync(bundledScopeDir).filter(
+      (name) => !name.startsWith('.')
+    );
+    for (const utility of expectedUtilities) {
+      expect(bundledUtilities).toContain(utility);
+    }
+    // The internal testing package is private and must never ship in the layer.
+    expect(bundledUtilities).not.toContain('testing-utils');
   }, 120000);
 });

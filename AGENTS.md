@@ -1,5 +1,9 @@
 # Agent Instructions
 
+## Coding standards
+
+Before writing or reviewing code, tests, or docs, read [`CODING_STANDARDS.md`](CODING_STANDARDS.md) — the project's conventions for package layout, TypeScript style, JSDoc, verification commands, unit tests (including the 100% coverage requirement), and documentation snippets.
+
 ## Skills
 
 Project-specific agent skills live in [`.agents/skills/`](.agents/skills/). Each skill is a directory containing a `SKILL.md` with frontmatter (`name`, `description`) describing when to use it.

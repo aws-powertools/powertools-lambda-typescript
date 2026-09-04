@@ -1,5 +1,4 @@
-import '@aws/lambda-invoke-store';
-import { shouldUseInvokeStore } from '@aws-lambda-powertools/commons/utils/env';
+import { InvocationScoped } from '@aws-lambda-powertools/commons/utils/invocation-scoped';
 import type { Dimensions } from './types/Metrics.js';
 
 /**
@@ -11,47 +10,22 @@ import type { Dimensions } from './types/Metrics.js';
  * every method call to support Lambda's transition to async contexts.
  */
 class DimensionsStore {
-  readonly #dimensionsKey = Symbol('powertools.metrics.dimensions');
-  readonly #dimensionSetsKey = Symbol('powertools.metrics.dimensionSets');
-
-  #fallbackDimensions: Dimensions = {};
-  #fallbackDimensionSets: Dimensions[] = [];
+  readonly #dimensions = new InvocationScoped<Dimensions>(
+    'powertools.metrics.dimensions',
+    { fresh: () => ({}) }
+  );
+  readonly #dimensionSets = new InvocationScoped<Dimensions[]>(
+    'powertools.metrics.dimensionSets',
+    { fresh: () => [] }
+  );
   #defaultDimensions: Dimensions = {};
 
   #getDimensions(): Dimensions {
-    if (!shouldUseInvokeStore()) {
-      return this.#fallbackDimensions;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    let stored = store.get(this.#dimensionsKey) as Dimensions | undefined;
-    if (stored == null) {
-      stored = {};
-      store.set(this.#dimensionsKey, stored);
-    }
-    return stored;
+    return this.#dimensions.get();
   }
 
   #getDimensionSets(): Dimensions[] {
-    if (!shouldUseInvokeStore()) {
-      return this.#fallbackDimensionSets;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    let stored = store.get(this.#dimensionSetsKey) as Dimensions[] | undefined;
-    if (stored == null) {
-      stored = [];
-      store.set(this.#dimensionSetsKey, stored);
-    }
-    return stored;
+    return this.#dimensionSets.get();
   }
 
   public addDimension(name: string, value: string): string {
@@ -73,19 +47,8 @@ class DimensionsStore {
   }
 
   public clearRequestDimensions(): void {
-    if (!shouldUseInvokeStore()) {
-      this.#fallbackDimensions = {};
-      this.#fallbackDimensionSets = [];
-      return;
-    }
-
-    if (globalThis.awslambda?.InvokeStore === undefined) {
-      throw new Error('InvokeStore is not available');
-    }
-
-    const store = globalThis.awslambda.InvokeStore;
-    store.set(this.#dimensionsKey, {});
-    store.set(this.#dimensionSetsKey, []);
+    this.#dimensions.reset();
+    this.#dimensionSets.reset();
   }
 
   public clearDefaultDimensions(): void {

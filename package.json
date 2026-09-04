@@ -52,13 +52,13 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
-    "@biomejs/biome": "^2.5.8",
+    "@biomejs/biome": "^2.5.11",
     "@types/aws-lambda": "^8.10.162",
-    "@types/node": "^26.2.0",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@types/node": "^26.4.0",
+    "@vitest/coverage-v8": "4.1.11",
     "esbuild": "^0.28.2",
     "husky": "^9.1.7",
-    "lint-staged": "^17.3.0",
+    "lint-staged": "^17.4.1",
     "markdownlint-cli2": "^0.23.2",
     "middy5": "npm:@middy/core@^5.5.1",
     "middy6": "npm:@middy/core@^6.4.5",
@@ -67,7 +67,7 @@
     "typedoc-plugin-missing-exports": "^4.1.4",
     "typescript": "^6.0.3",
     "undici-types": "^8.10.0",
-    "vitest": "^4.1.2"
+    "vitest": "4.1.11"
   },
   "lint-staged": {
     "*.{js,ts,json}": "biome check --write --no-errors-on-unmatched",

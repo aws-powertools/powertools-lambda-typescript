@@ -21,11 +21,10 @@ jobs:
           # Label applied or removed when an issue becomes stale
           stale-issue-label: pending-close-response-required
           remove-stale-when-updated: true
-          # Label and close type when a stale issue is finally closed
-          close-issue-label: rejected
+          # Close type when a stale issue is finally closed
           close-issue-reason: not_planned
           # Exempt any issue that hasn't been triaged yet, or that is clearly labeled
-          exempt-issue-labels: triage,confirmed,blocked,on-hold,completed
+          exempt-issue-labels: triage,blocked,on-hold
           # Include only issues that were labeled as `need-response` (aka only issues that need a response from the customer)
           only-issue-labels: need-response
           # Settings specific to issues

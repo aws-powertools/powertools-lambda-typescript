@@ -20,10 +20,10 @@ Previous active maintainers who contributed to this project.
 
 | Maintainer                 | GitHub ID                                       | Affiliation |
 | -------------------------- | ----------------------------------------------- | ----------- |
-| Alexander Schueren         | [am29d](https://github.com/am29d)               |             |
-| Simon Thulbourn            | [sthulb](https://github.com/sthulb)             | Amazon      |
+| Alexander Schueren         | [am29d](https://github.com/am29d)               | OpenAI      |
+| Simon Thulbourn            | [sthulb](https://github.com/sthulb)             |             |
 | Sara Gerion                | [saragerion](https://github.com/saragerion)     | Amazon      |
-| Florian Chazal             | [flochaz](https://github.com/flochaz)           | Amazon      |
+| Florian Chazal             | [flochaz](https://github.com/flochaz)           |             |
 | Chadchapol Vittavutkarnvej | [ijemmy](https://github.com/ijemmy)             | Booking.com |
 | Alan Churley               | [alan-churley](https://github.com/alan-churley) | CloudCall   |
 | Michael Bahr               | [bahrmichael](https://github.com/bahrmichael)   | Stedi       |
@@ -34,54 +34,37 @@ Labels we actually use, and what applies them. Anything marked _manual_ is only 
 
 ### Issue lifecycle
 
-| Label                             | Usage                                                                 | Applied by                                               |
-| --------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------- |
-| `triage`                          | Not yet triaged; remove it once you've validated the request or repro | Issue templates                                          |
-| `confirmed`                       | Scope is clear and it's ready for implementation                      | Manual                                                   |
-| `discussing`                      | Needs to be discussed, elaborated, or refined                         | Manual                                                   |
-| `researching`                     | Under consideration; we'll update once we know more                   | Manual                                                   |
-| `need-more-information`           | Missing information before we can make a call                         | Manual                                                   |
-| `need-customer-feedback`          | Needs more customer input before deciding or revisiting a decision    | Manual                                                   |
-| `need-response`                   | Waiting on the author; opts the issue into the stale automation       | Manual                                                   |
-| `pending-close-response-required` | Went stale waiting for a response and will be closed unless it moves  | `.github/workflows/stale-issues.yml`                     |
-| `rejected`                        | We won't work on this, at least not in the foreseeable future         | `.github/workflows/stale-issues.yml` on close, or manual |
-| `blocked`                         | Progress is blocked by an external dependency or reason               | Manual                                                   |
-| `on-hold`                         | Parked and will be revisited in the future                            | Manual                                                   |
-| `revisit-in-3-months`             | Parked with a rough timer, often paired with `need-customer-feedback` | Manual                                                   |
-| `next-major-version`              | Deferred to the next major version                                    | Manual                                                   |
-| `duplicate`                       | Duplicate of an existing item                                         | Manual                                                   |
-| `pending-release`                 | Merged and shipping in the next release                               | Manual, when merging the PR                              |
-| `completed`                       | Shipped                                                               | `.github/workflows/post-release.yml`                     |
+| Label                             | Usage                                                                 | Applied by                                        |
+| --------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------- |
+| `triage`                          | Not yet triaged; remove it once you've validated the request or repro | Issue templates                                   |
+| `researching`                     | Still being discussed or refined; we'll update once we know more      | Manual                                            |
+| `need-more-information`           | Missing information before we can make a call                         | Manual                                            |
+| `need-customer-feedback`          | Needs more customer input before deciding or revisiting a decision    | Manual                                            |
+| `need-response`                   | Waiting on the author; opts the issue into the stale automation       | Manual                                            |
+| `pending-close-response-required` | Went stale waiting for a response and will be closed unless it moves  | `.github/workflows/stale-issues.yml`              |
+| `blocked`                         | Progress is blocked by an external dependency or reason               | Manual                                            |
+| `on-hold`                         | Parked and will be revisited in the future                            | Manual                                            |
+| `next-major-version`              | Deferred to the next major version                                    | Manual                                            |
+| `pending-release`                 | Merged and shipping in the next release                               | Organization-level automation, when the PR merges |
 
 ### Type and area
 
-| Label                | Usage                                                                              | Applied by                                      |
-| -------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------- |
-| `bug`                | Unexpected, reproducible, unintended runtime behavior                              | `bug_report.yml` issue template                 |
-| `not-a-bug`          | Reported as a bug but isn't one, see [What counts as a bug](#what-counts-as-a-bug) | Manual                                          |
-| `bug-upstream`       | Bug caused by an upstream dependency                                               | Manual                                          |
-| `feature-request`    | Request for a new feature or an enhancement to an existing one                     | `feature_request.yml` issue template            |
-| `documentation`      | Documentation additions and fixes, including examples and readmes                  | `documentation_improvements.yml` issue template |
-| `internal`           | Governance, tech debt, and chores                                                  | `maintenance.yml` issue template                |
-| `RFC`                | Technical design document related to a feature request                             | Manual                                          |
-| `deprecation`        | Contains code deprecation                                                          | Manual                                          |
-| `breaking-change`    | Customer-impacting change that needs careful triage                                | Manual                                          |
-| `good-first-issue`   | Suitable for someone who wants to start contributing                               | Manual                                          |
-| `help-wanted`        | We'd appreciate support from the community on this one                             | Manual                                          |
-| `customer-reference` | Authorization to use a customer name publicly                                      | `support_powertools.yml` issue template         |
-| `community-content`  | Community content to feature in the documentation                                  | `share_your_work.yml` issue template            |
+Issue type — bug, feature, documentation, or maintenance — is tracked with [GitHub Issue Types](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/configuring-issue-types) rather than labels. What's left are the labels that qualify an item further.
 
-Area labels flag which part of the library an item belongs to: `logger`, `metrics`, `tracer`, `parameters`, `idempotency`, `batch`, `parser`, `validation`, `jmespath`, `event-handler`, `commons`, `layers`, and `automation` for CI/CD and workflows.
+| Label                | Usage                                                  | Applied by                              |
+| -------------------- | ------------------------------------------------------ | --------------------------------------- |
+| `bug-upstream`       | Bug caused by an upstream dependency                   | Manual                                  |
+| `good-first-issue`   | Suitable for someone who wants to start contributing   | Manual                                  |
+| `help-wanted`        | We'd appreciate support from the community on this one | Manual                                  |
+| `customer-reference` | Authorization to use a customer name publicly          | `support_powertools.yml` issue template |
+| `community-content`  | Community content to feature in the documentation      | `share_your_work.yml` issue template    |
 
-All of them are applied manually — nothing labels PRs by changed files anymore. There is no area label yet for `data-masking`, `kafka`, or `signer`.
+Area labels flag which part of the library an item belongs to: `logger`, `metrics`, `tracer`, `parameters`, `idempotency`, `batch`, `parser`, `validation`, `jmespath`, `event-handler`, `data-masking`, `kafka`, `signer`, `commons`, `layers`, and `automation` for CI/CD and workflows.
 
 ### Pull requests
 
 | Label                                              | Usage                                                                        | Applied by                                             |
 | -------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `feature`                                          | Introduces a new feature; groups the PR in the drafted release notes         | Manual                                                 |
-| `enhancement`                                      | Minor change, usually to an existing feature                                 | Manual                                                 |
-| `tests`                                            | Adds or changes tests                                                        | Manual                                                 |
 | `do-not-merge`                                     | Blocks the merge; `.github/workflows/on_pr_updates.yml` fails while it's set | Manual                                                 |
 | `need-issue`                                       | PR is missing a related issue                                                | Organization-level PR checks                           |
 | `dependencies`                                     | Touches dependencies                                                         | Dependabot, alongside an ecosystem label               |
@@ -91,29 +74,23 @@ All of them are applied manually — nothing labels PRs by changed files anymore
 
 ## Triaging issues and pull requests
 
-Remove `triage` once you can confirm a request is valid or a bug reproduces, then set a state label from the table above. Give priority to the original author for implementation, unless the task is sensitive enough that it's better handled by maintainers.
+Remove `triage` once you can confirm a request is valid or a bug reproduces, then set a state label from the table above if one applies — an item with no state label is one whose scope is clear and that nothing is blocking. Give priority to the original author for implementation, unless the task is sensitive enough that it's better handled by maintainers.
+
+Not everything needs a label: close an issue as **duplicate** when it repeats an existing one, and as **not planned** when we won't work on it. The close reason is what customers see, and it keeps the label list to what's actionable.
 
 Issues are tracked on the [board of activities](https://github.com/orgs/aws-powertools/projects/7).
 
 ### What counts as a bug
 
-A bug produces incorrect or unexpected results at runtime that differ from the intended behavior, is reproducible, and affects customers who follow the recommended usage. Documentation snippets, use of internal components, and unadvertised functionality are not bugs — relabel with `not-a-bug` and explain why.
+A bug produces incorrect or unexpected results at runtime that differ from the intended behavior, is reproducible, and affects customers who follow the recommended usage. Documentation snippets, use of internal components, and unadvertised functionality are not bugs — close the issue as not planned and explain why.
 
-For bugs caused by an upstream dependency, swap `bug` for `bug-upstream` and ask the author whether they'd like to raise the issue upstream or prefer us to. Assess the impact and decide whether an emergency release is warranted; ask another maintainer when in doubt.
+For bugs caused by an upstream dependency, apply `bug-upstream` and ask the author whether they'd like to raise the issue upstream or prefer us to. Assess the impact and decide whether an emergency release is warranted; ask another maintainer when in doubt.
 
 ### Reviewing pull requests
 
 PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/) — they feed the [changelog](./CHANGELOG.md) and the drafted release notes, so make sure they read well to a human. PR titles, related issues, and the acknowledgment checkbox are enforced by organization-level checks, not by workflows in this repository.
 
-When merging a PR that closes an issue, apply `pending-release` to the issue. `.github/workflows/post-release.yml` swaps it for `completed` on every closed issue once the GitHub release is published.
-
-### Automation you can rely on
-
-- `.github/workflows/stale-issues.yml` runs daily. Issues labeled `need-response` go stale after 14 days (labeled `pending-close-response-required`, with a comment) and are closed 7 days later as `rejected` / not planned. Issues labeled `triage`, `confirmed`, `blocked`, `on-hold`, or `completed` are exempt, and the stale label is removed as soon as the issue is updated.
-- `.github/workflows/on_pr_updates.yml` fails a required check while `do-not-merge` is set, so it can't be merged until a maintainer removes the label.
-- `.github/workflows/release-drafter.yml` keeps a draft release up to date on every push to `main`, grouping changes by label.
-- `.github/workflows/quality_check.yml` runs linting, unit and type tests, the example projects, the layer publisher, the doc snippets, and the docs build when a PR enters the merge queue.
-- `.github/workflows/sweep-stale-e2e-stacks.yml` cleans up infrastructure leaked by end-to-end test runs.
+Labels need no action when you merge: organization-level automation applies `pending-release` to the linked issue, and `.github/workflows/post-release.yml` removes it from every closed issue once the GitHub release is published.
 
 ## Adding a new package
 
@@ -192,7 +169,7 @@ It takes a few hours end to end, most of it spent waiting on the layer rollout a
     - copies the layer into the GovCloud and China partitions, Gamma then Prod, both in parallel;
     - opens a `chore(ci): update layer ARN on documentation` PR once all three Prod deployments are done.
 6. **Review and merge the layer ARN docs PR.** `.github/workflows/on_layer_docs_pr_merge.yml` picks up the merge and dispatches `Rebuild latest docs`, which republishes the user guide and API reference.
-7. **Draft and publish the release notes** (see below). Publishing the GitHub release triggers `.github/workflows/post-release.yml`, which relabels the shipped issues from `pending-release` to `completed`.
+7. **Draft and publish the release notes** (see below). Publishing the GitHub release triggers `.github/workflows/post-release.yml`, which removes `pending-release` from the shipped issues.
 
 ### Release process visualized
 

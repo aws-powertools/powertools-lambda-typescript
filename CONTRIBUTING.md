@@ -44,12 +44,7 @@ Browsing the [open issues](https://github.com/aws-powertools/powertools-lambda-t
 Issues still labelled for triage are being scoped, so comment before picking one up.
 [GitHub Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions) is where questions and design proposals get debated — answering a question there is as valuable as a code change.
 
-Two areas are always open:
-
-- **Documentation.** Look for places that could use a clearer example or a diagram, and keep in mind a diverse audience that often reads English as a second language.
-- **Sample applications.** Using Powertools for AWS Lambda in a new context surfaces rough edges we can't see from the inside.
-
-Still nothing that matches your skill set? Say so on [GitHub Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions) — especially if you'd like mentoring on something you don't feel ready for yet. Contributions are meant to be bi-directional; there's always something we can learn from each other.
+Documentation is always open: look for places that could use a clearer example or a diagram, and keep in mind a diverse audience that often reads English as a second language.
 
 ## Contributing via pull requests
 

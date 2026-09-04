@@ -1,5 +1,4 @@
 const LABEL_PENDING_RELEASE = 'pending-release';
-const LABEL_RELEASED = 'completed';
 
 /**
  * Fetch issues using GitHub REST API
@@ -40,8 +39,9 @@ const fetchIssues = async ({
 /**
  * Update labels on closed issues that are pending release
  *
- * Swaps the 'pending-release' label to 'completed' on each closed issue.
- * GitHub natively links releases to issues, so no comment is needed.
+ * Removes the 'pending-release' label from each closed issue, since a closed
+ * issue in a published release has shipped. GitHub natively links releases to
+ * issues, so no comment is needed.
  *
  * @param {object} gh_client - Pre-authenticated REST client (Octokit)
  * @param {string} owner - GitHub Organization
@@ -56,29 +56,23 @@ const updateLabels = async ({ gh_client, core, owner, repository }) => {
     state: 'closed',
   });
 
-  issues.forEach(async (issue) => {
-    core.info(`Updating labels for issue number ${issue.number}`);
+  for (const issue of issues) {
+    core.info(`Removing ${LABEL_PENDING_RELEASE} from issue ${issue.number}`);
 
-    // Remove staged label; keep existing ones
-    const labels = issue.labels
-      .filter((label) => label.name !== LABEL_PENDING_RELEASE)
-      .map((label) => label.name);
-
-    // Update labels including the released one
     try {
-      await gh_client.rest.issues.setLabels({
+      await gh_client.rest.issues.removeLabel({
         repo: repository,
         owner,
         issue_number: issue.number,
-        labels: [...labels, LABEL_RELEASED],
+        name: LABEL_PENDING_RELEASE,
       });
     } catch (error) {
       core.setFailed(error);
-      throw new Error('Failed to label issue');
+      throw new Error('Failed to remove label from issue');
     }
 
-    core.info(`Issue number ${issue.number} labeled`);
-  });
+    core.info(`Issue ${issue.number} updated`);
+  }
 };
 
 // context: https://github.com/actions/toolkit/blob/main/packages/github/src/context.ts

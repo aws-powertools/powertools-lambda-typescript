@@ -40,8 +40,8 @@ Labels we actually use, and what applies them. Anything marked _manual_ is only 
 | `researching`                     | Still being discussed or refined; we'll update once we know more      | Manual                                            |
 | `need-more-information`           | Missing information before we can make a call                         | Manual                                            |
 | `need-customer-feedback`          | Needs more customer input before deciding or revisiting a decision    | Manual                                            |
-| `need-response`                   | Waiting on the author; opts the issue into the stale automation       | Manual                                            |
-| `pending-close-response-required` | Went stale waiting for a response and will be closed unless it moves  | `.github/workflows/stale-issues.yml`              |
+| `need-response`                   | Waiting on the author; opts the issue into org-level stale automation | Manual                                            |
+| `pending-close-response-required` | Went stale waiting for a response and will be closed unless it moves  | Organization-level automation                     |
 | `blocked`                         | Progress is blocked by an external dependency or reason               | Manual                                            |
 | `on-hold`                         | Parked and will be revisited in the future                            | Manual                                            |
 | `next-major-version`              | Deferred to the next major version                                    | Manual                                            |

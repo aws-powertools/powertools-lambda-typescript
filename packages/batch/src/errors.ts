@@ -73,11 +73,49 @@ class ParsingError extends BatchProcessingError {
   }
 }
 
+/**
+ * Message for a thrown value that is not an `Error`, preferring its own
+ * `message` and falling back to a generic one when it cannot be stringified.
+ *
+ * @param value - The thrown value
+ */
+const messageOf = (value: unknown): string => {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    'message' in value &&
+    typeof value.message === 'string'
+  ) {
+    return value.message;
+  }
+  try {
+    return String(value);
+  } catch {
+    return 'Unknown error';
+  }
+};
+
+/**
+ * Coerce a thrown value into an `Error`, keeping the original as `cause`.
+ *
+ * Record handlers can throw anything, and the failure path must never
+ * throw again while recording it.
+ *
+ * @param value - The thrown value
+ */
+const toError = (value: unknown): Error => {
+  if (value instanceof Error) {
+    return value;
+  }
+  return new Error(messageOf(value), { cause: value });
+};
+
 export {
   BatchProcessingError,
   FullBatchFailureError,
   ParsingError,
   SqsFifoMessageGroupShortCircuitError,
   SqsFifoShortCircuitError,
+  toError,
   UnexpectedBatchTypeError,
 };

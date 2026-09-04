@@ -59,6 +59,7 @@ jobs:
     strategy:
       matrix:
         version: [22, 24]
+        # packages/testing is private and intentionally excluded from this publishable package matrix.
         workspace: ${{ fromJSON(needs.resolve-workspaces.outputs.workspaces) }}
       fail-fast: false
     steps:

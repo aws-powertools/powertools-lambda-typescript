@@ -23,5 +23,5 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const post_release = require('.github/scripts/post_release.js')
+            const { default: post_release } = await import('${{ github.workspace }}/.github/scripts/post_release.js')
             await post_release({github, context, core})

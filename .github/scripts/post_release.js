@@ -82,7 +82,7 @@ const updateLabels = async ({ gh_client, core, owner, repository }) => {
 };
 
 // context: https://github.com/actions/toolkit/blob/main/packages/github/src/context.ts
-module.exports = async ({ github, context, core }) => {
+export default async ({ github, context, core }) => {
   core.info('Running post-release label update');
 
   await updateLabels({

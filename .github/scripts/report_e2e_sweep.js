@@ -96,5 +96,4 @@ const reportE2eSweep = async ({ github, context, core, report }) => {
   core.info(`Updated incident issue #${incident.number}`);
 };
 
-module.exports = reportE2eSweep;
-module.exports.formatReport = formatReport;
+export { formatReport, reportE2eSweep as default };

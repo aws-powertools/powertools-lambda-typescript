@@ -1,7 +1,8 @@
 name: Feature request
 description: Suggest an idea for Powertools for AWS Lambda
 title: "Feature request: <TITLE>"
-labels: ["feature-request", "triage"]
+labels: ["triage"]
+type: Enhancement
 body:
   - type: markdown
     attributes:

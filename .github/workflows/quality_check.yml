@@ -43,7 +43,7 @@ jobs:
           node-version: ${{ matrix.version }}
           cache: "npm"
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
         with:
           nodeVersion: ${{ matrix.version }}
       - name: Linting
@@ -74,7 +74,7 @@ jobs:
           node-version: 24
           cache: "npm"
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
       - name: Run linting
         run: npm run lint
       - name: Run tests
@@ -94,7 +94,7 @@ jobs:
           node-version: 24
           cache: "npm"
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
       - name: Run linting
         run: npm run lint -w layers
       - name: Run tests
@@ -114,7 +114,7 @@ jobs:
           node-version: 24
           cache: "npm"
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
       - name: Run linting
         run: npm run lint -w examples/snippets
   check-docs:
@@ -132,6 +132,6 @@ jobs:
           node-version: 24
           cache: "npm"
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@3b5b8e2e58b7af07994be982e83584a94e8c76c5 # v1.5.0
       - name: Run linting
         run: npm run lint:markdown

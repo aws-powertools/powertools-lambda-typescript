@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "test": "vitest --run",
-    "test:unit": "vitest --run",
+    "test:unit": "vitest --run tests/unit",
     "test:e2e": "echo 'Not implemented'",
     "lmi:deploy": "node lib/esm/lmi/deploySharedCapacityProvider.js",
     "lmi:destroy": "node lib/esm/lmi/destroySharedCapacityProvider.js",

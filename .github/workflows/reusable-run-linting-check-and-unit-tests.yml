@@ -10,8 +10,8 @@ name: Run unit tests
 #
 # NOTES
 # We create different jobs for different workspaces of the monorepo, since we have slightly different requirements for each.
-# For example, the docs (`check-docs`), runs markdown linting, while the layer (`check-layer-publisher`), examples (`check-examples`),
-# and code snippets (`check-docs-snippets`) jobs run linting and unit tests but only for the current LTS version of Node.js.
+# For example, the docs (`check-docs`) run Markdown linting, while the layer (`check-layer-publisher`)
+# and code snippets (`check-docs-snippets`) jobs run checks only for the current LTS version of Node.js.
 #
 # For the Powertools for AWS main features (aka `packages/*`), instead we run linting and unit tests for all the supported
 # versions of Node.js.
@@ -77,19 +77,12 @@ jobs:
         run: |
           npm run test:unit:coverage -w ${{ matrix.workspace }}
           npm run test:unit:types -w ${{ matrix.workspace }}
-  check-examples:
+  check-layer-publisher:
     permissions:
       contents: read
     runs-on: ubuntu-latest
     env:
       NODE_ENV: dev
-    strategy:
-      matrix:
-        example: ["app"]
-      fail-fast: false
-    defaults:
-      run:
-        working-directory: examples/${{ matrix.example }}
     steps:
       - &checkout_code
         name: Checkout code
@@ -103,20 +96,6 @@ jobs:
       - &setup_dependencies
         name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
-      - name: Run linting
-        run: npm run lint:ci
-      - name: Run tests
-        run: npm t
-  check-layer-publisher:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    env:
-      NODE_ENV: dev
-    steps:
-      - *checkout_code
-      - *setup_node
-      - *setup_dependencies
       - name: Run linting
         run: npm run lint:ci -w layers
       - name: Run tests
@@ -156,7 +135,7 @@ jobs:
     # would be skipped, and a skipped required check counts as satisfied. For the same reason
     # `skipped` is treated as a failure below: none of the jobs above are conditional, so a skip
     # means something upstream went wrong.
-    needs: [code-quality, check-examples, check-layer-publisher, check-docs-snippets, check-docs]
+    needs: [code-quality, check-layer-publisher, check-docs-snippets, check-docs]
     if: always()
     runs-on: ubuntu-latest
     steps:

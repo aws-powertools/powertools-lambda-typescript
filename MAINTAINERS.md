@@ -143,12 +143,8 @@ Trusted publishers can only be configured for a package that **already exists** 
 
 ### Wiring the package into CI
 
-The PR that adds the package must also add it to:
-
-- the `workspaces` array in the root `package.json` — this is also what gets it into the Lambda layer, since the layer bundles every non-private `@aws-lambda-powertools/*` workspace;
-- `.github/workflows/reusable-run-linting-check-and-unit-tests.yml`;
-- `.github/workflows/quality_check.yml`;
-- `.github/workflows/run-e2e-tests.yml`, if it has end-to-end tests.
+The PR that adds the package must also add it to the `workspaces` array in the root `package.json`. That is all CI needs: the unit test and e2e workflows derive their package lists from it through `.github/scripts/list_workspaces.js`, the e2e workflow picking up any workspace with suites under `tests/e2e`.
+The same array is what gets the package into the Lambda layer, since the layer bundles every non-private `@aws-lambda-powertools/*` workspace.
 
 Once that's done, the package ships like any other on the next `Make Release` run.
 

@@ -23,40 +23,8 @@
     "skipLibCheck": true,
     "pretty": true // Enable pretty formatting for output messages.
   },
-  "files": [],
-  "references": [
-    {
-      "path": "./packages/commons"
-    },
-    {
-      "path": "./packages/tracer"
-    },
-    {
-      "path": "./packages/metrics"
-    },
-    {
-      "path": "./packages/logger"
-    },
-    {
-      "path": "./packages/parameters"
-    },
-    {
-      "path": "./packages/idempotency"
-    },
-    {
-      "path": "./packages/batch"
-    },
-    {
-      "path": "./packages/testing"
-    },
-    {
-      "path": "./packages/parser"
-    },
-    {
-      "path": "./packages/event-handler"
-    },
-    {
-      "path": "./packages/validation"
-    }
-  ]
+  // Options base with no program of its own: every project extends this and lists its own
+  // files. Both empty arrays are needed for tsc and TypeDoc to accept a config with no inputs.
+  "include": [],
+  "references": []
 }

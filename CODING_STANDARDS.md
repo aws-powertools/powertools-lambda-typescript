@@ -50,8 +50,7 @@ Document functions, classes, and types with a single JSDoc block per symbol — 
 Run from the repo root with `-w <workspace>`, or from the package directory:
 
 - `npm run lint` to check; `npm run lint:fix` to auto-fix (review its changes).
-- `npm run tsc` to type-check source.
-- `npm run build:tests` to type-check tests — CI compiles them separately from running them.
+- `npm run build:tests` to type-check source and tests without emitting — CI compiles them separately from running them. `npm run build` additionally compiles the CommonJS target.
 
 ## Unit tests
 

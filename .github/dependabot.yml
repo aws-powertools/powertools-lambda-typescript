@@ -7,6 +7,12 @@ updates:
     labels: [ ]
     schedule:
       interval: daily
+    ignore:
+      # The docs image tracks docs/.python-version; only take digest refreshes for the Python tag.
+      - dependency-name: python
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
 
   - package-ecosystem: github-actions
     directories:

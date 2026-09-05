@@ -61,7 +61,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.12"
+          python-version-file: docs/.python-version
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
       - name: Install doc generation dependencies
         run: |
           set -euo pipefail

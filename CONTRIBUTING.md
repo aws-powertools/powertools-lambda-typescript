@@ -112,13 +112,15 @@ You might find useful to run both the documentation website and the API referenc
 
 #### Using Python directly
 
-If you have Python 3.x installed, you can run the documentation website and API reference locally without Docker:
+You can also run the documentation website and API reference locally without Docker. This needs the Python version pinned in `docs/.python-version`, which is also the version CI uses:
 
 1. Create a virtual environment and install dependencies:
 
    ```bash
    npm run docs:local:setup
    ```
+
+   The script looks for a `python3.12`-style executable. If your interpreter is only available under another name, for example in a conda environment, point the script at it with `PYTHON=python npm run docs:local:setup`.
 
 2. Run the documentation website:
 

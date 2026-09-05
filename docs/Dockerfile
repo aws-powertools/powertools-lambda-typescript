@@ -1,8 +1,15 @@
-# version 9.5.35
-FROM squidfunk/mkdocs-material@sha256:51b87149d227691486b5f08993d28c65ca7e4990010664b697265b8e6fcd5287
+# The Python minor version must match docs/.python-version; Dependabot keeps the digest current.
+FROM python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
 
-# Install Node.js
-RUN apk add --no-cache nodejs=22.13.1-r0 npm
+# git for mkdocs-git-revision-date-plugin, Node.js for TypeDoc, tini to forward signals to mkdocs serve.
+# The mounted checkout belongs to the host user, so git must be told to trust it.
+RUN apk add --no-cache git nodejs npm tini \
+  && git config --system --add safe.directory /docs
 
 COPY requirements.txt /tmp/
-RUN pip install --require-hashes -r /tmp/requirements.txt
+RUN pip install --no-cache-dir --require-hashes -r /tmp/requirements.txt
+
+WORKDIR /docs
+EXPOSE 8000
+ENTRYPOINT ["/sbin/tini", "--", "mkdocs"]
+CMD ["serve", "--dev-addr=0.0.0.0:8000"]

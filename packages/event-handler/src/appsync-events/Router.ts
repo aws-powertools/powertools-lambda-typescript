@@ -103,7 +103,8 @@ class Router {
    *
    * If your function throws an error, we catch it and format the error response for a friendly output to the client corresponding to the
    * event that caused the error. In this case, that specific event will be dropped, but the other events will
-   * still be processed.
+   * still be processed. The exception is `UnauthorizedException`, which is rethrown so that the whole invocation
+   * fails and no events are delivered.
    *
    * **Process all events at once**
    *

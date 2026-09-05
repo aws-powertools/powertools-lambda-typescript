@@ -33,7 +33,7 @@ With the index being local searches are super fast and the index is cached for t
 
 ### Lambda Powertools - great defaults for batteries that aren't quite (but should be) included
 
-> **Author: [Mike Roberts](mailto:mike@symphonia.io) [:material-twitter:](https://twitter.com/mikebroberts){target="_blank"}**
+> **Author: [Mike Roberts](mailto:mike@symphonia.io) [:fontawesome-brands-x-twitter:](https://x.com/mikebroberts){target="_blank"}**
 
 This article discusses why you should consider using Powertools in your Lambda functions.
 
@@ -41,7 +41,7 @@ This article discusses why you should consider using Powertools in your Lambda f
 
 ### Test Drive AWS Lambda Powertools for Typescript
 
-> **Author: [Matt Lewis](https://twitter.com/m_lewis){target="_blank"} :material-twitter:**
+> **Author: [Matt Lewis](https://x.com/m_lewis){target="_blank"} :fontawesome-brands-x-twitter:**
 
 This article gives an overview Powertools' core utilities: Logger, Metrics, and Tracer.
 
@@ -57,7 +57,7 @@ Discover how easy it is to quickly “power-up” your Node.js Lambda functions 
 
 ### Getting to Well Architected Faster with AWS Lambda Powertools
 
-> **Author: [Eoin Shanaghy](https://twitter.com/eoins){target="_blank"} :material-twitter:**
+> **Author: [Eoin Shanaghy](https://x.com/eoins){target="_blank"} :fontawesome-brands-x-twitter:**
 
 This post shows how to use Powertools for AWS Lambda to quickly build Well-Architected Serverless applications.
 
@@ -65,7 +65,7 @@ This post shows how to use Powertools for AWS Lambda to quickly build Well-Archi
 
 ### AWS Lambda Powertools TypeScript
 
-> **Author: [Matt Morgan](https://twitter.com/NullishCoalesce){target="_blank"} :material-twitter:**
+> **Author: [Matt Morgan](https://x.com/NullishCoalesce){target="_blank"} :fontawesome-brands-x-twitter:**
 
 A two parts series that gives an overview of Powertools and its features starting from the beta phase to the General Availability release.
 
@@ -89,7 +89,7 @@ This article discusses how to use the Idempotency feature to work around EventBr
 
 An overview of all the Powertools for AWS Lambda features put into a real world example.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/DYf7kpR24dk?si=qm2wWg0asxLUY8xe" title" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/DYf7kpR24dk?si=qm2wWg0asxLUY8xe" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ### AWS re:Invent 2024 - Gain expert-level knowledge about Powertools for AWS Lambda (OPN402)
 
@@ -97,4 +97,4 @@ An overview of all the Powertools for AWS Lambda features put into a real world 
 
 Did you learn serverless best practices but are unsure about implementation? Have you used Powertools for AWS Lambda but felt you barely scratched the surface? This session dives deep into observability practices, safe retries with idempotency, mono- and multi-function APIs, and more. Learn about each practice in depth, achieve expert-level knowledge, and hear from maintainers about what’s next.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/kxJTq8FTkDA?si=tV75z2HVGlPxYtPA" title" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/kxJTq8FTkDA?si=tV75z2HVGlPxYtPA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>

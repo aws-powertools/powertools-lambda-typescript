@@ -218,7 +218,7 @@ Follow these steps before the new package's first real release:
 
 4. **Configure Trusted Publishing** for the new package: go to `https://www.npmjs.com/package/<name>/access`, add a Trusted Publisher for GitHub Actions, and point it at this repository and the `make-release.yml` workflow. This is what lets `Make Release` publish real versions of this package with OIDC/provenance going forward, without ever needing an `NPM_TOKEN`.
 
-5. Make sure the PR adding the new package also adds it to the `workspaces` array in the root `package.json`, and to any workflow that enumerates packages individually (e.g. `reusable-run-linting-check-and-unit-tests.yml`, `run-e2e-tests.yml`), so it's picked up by CI and by the next `Make Release` run.
+5. Make sure the PR adding the new package also adds it to the `workspaces` array in the root `package.json`. That is all CI needs: the unit test and e2e workflows derive their package lists from it through `.github/scripts/list_workspaces.mjs`, the e2e workflow picking up any workspace with suites under `tests/e2e`, and the next `Make Release` run publishes every non-private workspace.
 
 Once these steps are done, the new package is released like any other in the [normal release process](#releasing-a-new-version) the next time `Make Release` runs.
 

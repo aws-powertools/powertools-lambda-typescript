@@ -155,7 +155,7 @@ plugins:
         - snippets/package.json
         - snippets/CHANGELOG.md
   - typedoc:
-      source: '.'
+      source: 'packages/*'
       output_dir: 'api'
       tsconfig: 'tsconfig.json'
       options: 'typedoc.json'

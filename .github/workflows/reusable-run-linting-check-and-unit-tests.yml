@@ -14,7 +14,8 @@ name: Run unit tests
 # and code snippets (`check-docs-snippets`) jobs run linting and unit tests but only for the current LTS version of Node.js.
 #
 # For the Powertools for AWS main features (aka `packages/*`), instead we run linting and unit tests for all the supported
-# versions of Node.js.
+# versions of Node.js. The list of packages is derived from the root `package.json` workspaces by
+# `.github/scripts/list_workspaces.mjs`, so adding a workspace there is all it takes to get it tested here.
 #
 # Since #2938, we are in the process of improving our test suite, so we are gradually extracting the tests for each package
 # from (`run-linting-check-and-unit-tests-on-utilities`) to their own job, so we can run them in parallel using the matrix
@@ -23,7 +24,8 @@ name: Run unit tests
 # USAGE
 #
 # NOTE: meant to be called by ./.github/workflows/pr-run-linting-check-and-unit-tests.yml when a PR is opened or updated,
-# or by ./.github/workflows/make-release.yml when a release is made.
+# by ./.github/workflows/quality_check.yml when a PR enters the merge queue, or by ./.github/workflows/make-release.yml
+# when a release is made.
 #
 
 on:
@@ -32,7 +34,23 @@ on:
 permissions: {}
 
 jobs:
+  resolve-workspaces:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      workspaces: ${{ steps.list.outputs.workspaces }}
+    steps:
+      - &checkout_code
+        name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: List non-private packages
+        id: list
+        run: |
+          workspaces=$(node .github/scripts/list_workspaces.mjs unit)
+          echo "workspaces=${workspaces}" >> "$GITHUB_OUTPUT"
   code-quality:
+    needs: resolve-workspaces
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -41,25 +59,10 @@ jobs:
     strategy:
       matrix:
         version: [22, 24]
-        workspace: [
-          "packages/batch",
-          "packages/commons",
-          "packages/data-masking",
-          "packages/event-handler",
-          "packages/idempotency",
-          "packages/jmespath",
-          "packages/logger",
-          "packages/tracer",
-          "packages/parser",
-          "packages/parameters",
-          "packages/validation",
-          "packages/metrics",
-          "packages/kafka"
-        ]
+        workspace: ${{ fromJSON(needs.resolve-workspaces.outputs.workspaces) }}
       fail-fast: false
     steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - *checkout_code
       - name: Setup NodeJS
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -91,9 +94,7 @@ jobs:
       run:
         working-directory: examples/${{ matrix.example }}
     steps:
-      - &checkout_code
-        name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - *checkout_code
       - &setup_node
         name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
@@ -152,11 +153,14 @@ jobs:
     # require, so that adding a Node.js version or a workspace to the `code-quality` matrix
     # doesn't silently change which checks are required.
     #
+    # `resolve-workspaces` is listed so that a failure to derive the matrix, which skips
+    # `code-quality` entirely, is reported here rather than passing as "nothing ran".
+    #
     # `if: always()` is required so this job still runs when a dependency fails - otherwise it
     # would be skipped, and a skipped required check counts as satisfied. For the same reason
     # `skipped` is treated as a failure below: none of the jobs above are conditional, so a skip
     # means something upstream went wrong.
-    needs: [code-quality, check-examples, check-layer-publisher, check-docs-snippets, check-docs]
+    needs: [resolve-workspaces, code-quality, check-examples, check-layer-publisher, check-docs-snippets, check-docs]
     if: always()
     runs-on: ubuntu-latest
     steps:

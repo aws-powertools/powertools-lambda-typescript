@@ -46,13 +46,34 @@ jobs:
       - name: Deploy shared LMI capacity providers (all architectures)
         run: npm run lmi:deploy -w packages/testing
 
+  # Derives both e2e matrices from the workspaces that have suites under
+  # `tests/e2e`, so a package gets e2e coverage as soon as it has a suite.
+  resolve-workspaces:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      e2e: ${{ steps.list.outputs.e2e }}
+      lmi: ${{ steps.list.outputs.lmi }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: List workspaces with e2e suites
+        id: list
+        run: |
+          e2e=$(node .github/scripts/list_workspaces.mjs e2e)
+          lmi=$(node .github/scripts/list_workspaces.mjs e2e-lmi)
+          echo "e2e=${e2e}" >> "$GITHUB_OUTPUT"
+          echo "lmi=${lmi}" >> "$GITHUB_OUTPUT"
+
   # Runs every package's e2e suites EXCEPT the LMI ones (each package's
   # `test:e2e` script excludes `tests/e2e/lmi.*`). Deliberately does NOT
   # depend on the LMI setup job: these suites don't use the capacity
-  # provider, so they fan out immediately and its EC2-backed provisioning
-  # time is amortized behind them.
+  # provider, so they fan out as soon as the matrix is resolved and its
+  # EC2-backed provisioning time is amortized behind them.
   run-e2e-tests-on-utils:
     runs-on: ubuntu-latest
+    needs: resolve-workspaces
     env:
       NODE_ENV: dev
     environment: e2e-tests
@@ -62,19 +83,7 @@ jobs:
     strategy:
       max-parallel: 25
       matrix:
-        package:
-          [
-            packages/idempotency,
-            packages/logger,
-            packages/metrics,
-            packages/parameters,
-            packages/event-handler,
-            packages/tracer,
-            packages/batch,
-            packages/data-masking,
-            packages/signer,
-            layers,
-          ]
+        package: ${{ fromJSON(needs.resolve-workspaces.outputs.e2e) }}
         version: [22, 24]
         arch: [x86_64, arm64]
       fail-fast: false
@@ -110,7 +119,7 @@ jobs:
   run-e2e-tests-lmi:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    needs: setup-lmi-capacity-providers
+    needs: [setup-lmi-capacity-providers, resolve-workspaces]
     env:
       NODE_ENV: dev
     environment: e2e-tests
@@ -119,7 +128,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        package: [packages/logger]
+        package: ${{ fromJSON(needs.resolve-workspaces.outputs.lmi) }}
         version: [22, 24]
         arch: [x86_64, arm64]
       fail-fast: false

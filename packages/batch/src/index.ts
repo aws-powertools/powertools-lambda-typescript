@@ -3,6 +3,7 @@ export { BatchProcessor } from './BatchProcessor.js';
 export { BatchProcessorSync } from './BatchProcessorSync.js';
 export { EventType } from './constants.js';
 export {
+  AsyncHandlerNotSupportedError,
   BatchProcessingError,
   FullBatchFailureError,
   ParsingError,

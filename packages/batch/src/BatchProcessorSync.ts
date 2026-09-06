@@ -1,5 +1,9 @@
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
-import { BatchProcessingError, toError } from './errors.js';
+import {
+  AsyncHandlerNotSupportedError,
+  BatchProcessingError,
+  toError,
+} from './errors.js';
 import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
 
 /**
@@ -120,9 +124,12 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
     }
 
     if (isThenable(result)) {
-      throw new BatchProcessingError(
-        'The record handler returned a promise, but this batch processor is synchronous and cannot await it. Use `BatchProcessor` together with `processPartialResponse()`, or `SqsFifoPartialProcessorAsync` for FIFO queues.'
-      );
+      // The promise is abandoned here, so take ownership of its rejection first:
+      // otherwise a rejecting handler also surfaces as an unhandled rejection, which
+      // the Lambda runtime reports instead of the error thrown below.
+      result.then(undefined, () => undefined);
+
+      throw new AsyncHandlerNotSupportedError();
     }
 
     return this.successHandler(record, result);

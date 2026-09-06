@@ -9,8 +9,8 @@
   "private": true,
   "scripts": {
     "test": "vitest --run",
-    "test:unit": "vitest --run",
-    "test:e2e": "echo 'Not implemented'",
+    "test:unit": "vitest --run tests/unit",
+    "test:e2e": "echo 'Not Implemented'",
     "lmi:deploy": "node lib/esm/lmi/deploySharedCapacityProvider.js",
     "lmi:destroy": "node lib/esm/lmi/destroySharedCapacityProvider.js",
     "e2e:sweep": "node lib/esm/e2e/sweepStaleStacksCli.js",

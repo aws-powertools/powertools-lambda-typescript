@@ -111,15 +111,30 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
   public processRecordSync(
     record: BaseRecord
   ): SuccessResponse | FailureResponse {
+    let result: unknown;
     try {
       const data = this.toBatchType(record, this.eventType);
-      const result = this.handler(data, this.options?.context);
-
-      return this.successHandler(record, result);
+      result = this.handler(data, this.options?.context);
     } catch (error) {
       return this.failureHandler(record, toError(error));
     }
+
+    if (isThenable(result)) {
+      throw new BatchProcessingError(
+        'The record handler returned a promise, but this batch processor is synchronous and cannot await it. Use `BatchProcessor` together with `processPartialResponse()`, or `SqsFifoPartialProcessorAsync` for FIFO queues.'
+      );
+    }
+
+    return this.successHandler(record, result);
   }
 }
+
+/**
+ * Type guard to detect a thenable (promise-like) value returned by a record handler.
+ *
+ * @param value - The value returned by the record handler
+ */
+const isThenable = (value: unknown): value is PromiseLike<unknown> =>
+  typeof (value as PromiseLike<unknown> | undefined)?.then === 'function';
 
 export { BatchProcessorSync };

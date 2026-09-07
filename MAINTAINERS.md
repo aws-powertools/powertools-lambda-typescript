@@ -154,7 +154,7 @@ Once that's done, the package ships like any other on the next `Make Release` ru
 
 ## Releasing a new version
 
-It takes a few hours end to end, most of it spent waiting on the layer rollout and on the two PRs that need a human review.
+It usually takes under an hour end to end, most of it spent waiting on the layer rollout and on the two PRs that need a human review.
 
 1. **Run the end-to-end tests** via the `Run e2e Tests` workflow and make sure they pass.
 2. **Run `Make Version`** (`.github/workflows/make-version.yml`) and pick a release type — `auto` unless you have a reason not to. It bumps every package version, regenerates the changelogs, updates the user agent version in `packages/commons/src/version.ts`, and opens a `chore(ci): bump version to X.Y.Z` PR.

@@ -104,7 +104,7 @@ A maintainer may add a `do-not-merge` label, which blocks the merge until the un
 
 [Fork the repository](https://github.com/aws-powertools/powertools-lambda-typescript/fork), clone your fork, then run `npm run setup-local` from the repo root to install dependencies, build every workspace, and install the Git hooks. New to this? GitHub documents [how to fork and clone a project](https://docs.github.com/en/get-started/quickstart/contributing-to-projects).
 
-What you need installed:
+Prerequisites:
 
 - **Node.js 24.x**, the version pinned in `.nvmrc`, so `nvm use` or `fnm use` picks it up. npm 11.x ships with it; this is an npm workspaces monorepo, so always install from the repo root rather than from a package directory.
 - **Docker**, only to preview the documentation with `npm run docs:docker:*`. Nothing else in the repo needs it.
@@ -119,7 +119,9 @@ What you need installed:
 
 1. Create a branch named after the change you are contributing, e.g. `improv/logger-debug-sampling`.
 2. Commit to your fork using clear commit messages. Don't worry about the commit format — we squash every pull request on merge.
-3. Make sure the Git hooks pass. The pre-commit hook lints and formats staged files; the pre-push hook type-checks the tests and runs the unit tests with the 100% coverage threshold.
+3. Run the Git hooks; they are mandatory.
+    Never bypass them with `--no-verify`, `HUSKY=0`, or similar; if a hook fails, fix the cause.
+    If hooks do not run in your environment, including Git worktrees and some CI or agent sandboxes, manually run `npx lint-staged`, `npm run build:tests -ws --if-present`, and `npx vitest --run --exclude tests/unit/layer-publisher.test.ts --coverage --coverage.thresholds.100 tests/unit` before pushing.
 4. Open a pull request with a title that follows the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/), and fill in every area the pull request template asks for — including the issue it closes.
 5. Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
 

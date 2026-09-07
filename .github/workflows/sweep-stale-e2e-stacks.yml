@@ -112,8 +112,8 @@ jobs:
         env:
           REPORT_JSON: ${{ steps.report.outputs.report }}
         run: |
-          node <<'NODE' >> "$GITHUB_STEP_SUMMARY"
-          const { formatReport } = require('./.github/scripts/report_e2e_sweep.js');
+          node --input-type=module <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          import { formatReport } from './.github/scripts/report_e2e_sweep.js';
           const report = JSON.parse(process.env.REPORT_JSON);
           const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
           console.log(formatReport({ report, runUrl }));
@@ -141,7 +141,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const report_e2e_sweep = require('./.github/scripts/report_e2e_sweep.js')
+            const { default: report_e2e_sweep } = await import('${{ github.workspace }}/.github/scripts/report_e2e_sweep.js')
             await report_e2e_sweep({github, context, core, report: JSON.parse(process.env.REPORT_JSON)})
       - name: Fail after unsuccessful cleanup
         if: always() && (needs.sweep.outputs.sweep_outcome != 'success' || steps.notification.outcome != 'success')

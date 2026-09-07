@@ -82,16 +82,16 @@ Environment:
 - `console` is pre-mocked: use it freely in code under test and in assertions.
 - Set env vars with `vi.stubEnv()` and restore with `vi.unstubAllEnvs()` in `beforeEach`/`afterEach`; setupEnv pre-sets the standard Lambda env vars.
 
-Invocation-scoped state (`tests/unit/concurrency/`): Logger, Metrics, and Batch keep per-invocation state in the Lambda `InvokeStore` from [`@aws/lambda-invoke-store`](https://www.npmjs.com/package/@aws/lambda-invoke-store) when `AWS_LAMBDA_MAX_CONCURRENCY` is set, and on the instance otherwise. Two properties of that package shape how the tests are written:
+Invocation-scoped state (`tests/unit/concurrency/`): when `AWS_LAMBDA_MAX_CONCURRENCY` is set, Logger, Metrics, and Batch keep per-invocation state in the `InvokeStore` from [`@aws/lambda-invoke-store`](https://www.npmjs.com/package/@aws/lambda-invoke-store). Otherwise they keep one value shared by all invocations. Two things about that package matter for tests:
 
-- The stores read `globalThis.awslambda.InvokeStore`, which only exists after something calls `InvokeStore.getInstanceAsync()`. The Lambda runtime does this at startup; in tests nothing does it for you, and with the env var set every store accessor throws `InvokeStore is not available` until it happens.
-- The instance is cached at module level and its kind is fixed on first creation: `AsyncLocalStorage`-backed, isolating invocations, only if `AWS_LAMBDA_MAX_CONCURRENCY` was in `process.env` at that first call; otherwise a single-context store whose `run()` gives no isolation. Later calls return the cached instance whatever the env.
+- The stores read `globalThis.awslambda.InvokeStore`. It only exists after something calls `InvokeStore.getInstanceAsync()`. The Lambda runtime does that at startup; tests have to do it themselves. Until then, with the env var set, every invocation-scoped read or write throws `InvokeStore is not available`.
+- The instance is created once and cached. Its kind depends on the env at that moment: with `AWS_LAMBDA_MAX_CONCURRENCY` set it uses `AsyncLocalStorage` and isolates invocations; without it, `run()` gives no isolation. Later calls return the cached instance whatever the env.
 
-Hence:
+So:
 
-- Call `InvokeStore._testing?.reset()` in `beforeEach` so each test creates its own instance. setupEnv sets `AWS_LAMBDA_BENCHMARK_MODE=1` to expose `_testing`.
-- Interleave two invocations with `sequence()` from `@aws-lambda-powertools/testing-utils`; it calls `getInstanceAsync()` itself, so code inside the invocation callbacks needs nothing more.
-- Code that touches the store before `sequence()` runs, such as a constructor or a test of the shared fallback outside any invocation, must `await InvokeStore.getInstanceAsync()` itself, after the env stub:
+- Call `InvokeStore._testing?.reset()` in `beforeEach` to drop the cached instance. setupEnv sets `AWS_LAMBDA_BENCHMARK_MODE=1` to expose `_testing`.
+- Use `sequence()` from `@aws-lambda-powertools/testing-utils` to interleave two invocations. It calls `getInstanceAsync()` for you, so code inside the invocation callbacks needs nothing more.
+- Code that runs before `sequence()`, such as a constructor or a test of the shared fallback outside any invocation, needs `await InvokeStore.getInstanceAsync()` after the env stub:
 
   ```typescript
   vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
@@ -99,8 +99,8 @@ Hence:
   const processor = new BatchProcessor(EventType.SQS);
   ```
 
-- Never call `getInstanceAsync()` before the env stub, e.g. from a `beforeEach` ahead of a per-test `vi.stubEnv()`: it caches the non-isolating store and tests fail on assertions, one invocation reading the other's state, not with an error. Pass `getInstanceAsync(true)` to force the isolating store if a single hoisted call is wanted.
-- Tests for the `InvokeStore is not available` error use `vi.stubGlobal('awslambda', undefined)` and must `vi.unstubAllGlobals()` in `afterEach`, or later tests lose the global too.
+- Never call `getInstanceAsync()` before the env stub, for example from a `beforeEach` that runs ahead of a per-test `vi.stubEnv()`. It caches the non-isolating store, and tests fail on assertions because one invocation reads the other's state. Nothing throws.
+- Tests for the `InvokeStore is not available` error stub the global away with `vi.stubGlobal('awslambda', undefined)`. Restore it with `vi.unstubAllGlobals()` in `afterEach` or later tests lose it too.
 
 When unsure, copy the pattern of an existing test in the same package.
 

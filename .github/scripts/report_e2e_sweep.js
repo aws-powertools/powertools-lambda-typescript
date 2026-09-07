@@ -2,19 +2,26 @@ const INCIDENT_TITLE = 'E2E stale stack cleanup failing';
 const MAX_SECTION_ENTRIES = 50;
 const MAX_BODY_LENGTH = 60_000;
 
-/** Find the open incident issue by its exact title. */
-const findIncident = async ({ github, owner, repo }) => {
-  const { data: issues } = await github.rest.issues.listForRepo({
-    owner,
-    repo,
-    state: 'open',
-    per_page: 100,
-  });
+/** Whether an item returned by the issues API is the incident issue. */
+const isIncident = (issue) =>
+  issue.title === INCIDENT_TITLE && issue.pull_request === undefined;
 
-  return issues.find(
-    (issue) =>
-      issue.title === INCIDENT_TITLE && issue.pull_request === undefined
+/**
+ * Find the open incident issue by its exact title, paging through every open
+ * issue and stopping at the first page that contains it.
+ */
+const findIncident = async ({ github, owner, repo }) => {
+  const matches = await github.paginate(
+    github.rest.issues.listForRepo,
+    { owner, repo, state: 'open', per_page: 100 },
+    (response, done) => {
+      const incident = response.data.find(isIncident);
+      if (incident !== undefined) done();
+      return incident === undefined ? [] : [incident];
+    }
   );
+
+  return matches[0];
 };
 
 /** Render one bounded report section as Markdown. */

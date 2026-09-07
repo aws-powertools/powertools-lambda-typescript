@@ -1,41 +1,23 @@
 import { randomUUID } from 'node:crypto';
-import { setTimeout } from 'node:timers/promises';
+import {
+  captureJsonStdout,
+  createPeerBarrier,
+} from '@aws-lambda-powertools/testing-utils/lmi/handler';
 import { Metrics, MetricUnit } from '../../src/index.js';
 import type { EmfOutput } from '../../src/types/index.js';
 
 // Module scope: identifies the execution environment across invocations
 const executionEnvId = randomUUID();
 
-// Capture the EMF payloads Metrics emits so they can be returned in the
-// response payload: on LMI the Invoke API does not support Tail logs and
-// CloudWatch delivery is asynchronous, so returning the payloads is the only
-// fully deterministic way for the test to read them. Outside dev mode Metrics
-// writes each payload as a single console.log call on its own Console instance
-// bound to process.stdout (bypassing Lambda's patched global console), so
-// intercepting the stream captures the real production write path.
-const capturedPayloads: EmfOutput[] = [];
-const originalWrite = process.stdout.write.bind(process.stdout);
-process.stdout.write = ((chunk: string | Uint8Array, ...rest: unknown[]) => {
-  try {
-    const parsed = JSON.parse(chunk.toString());
-    if (typeof parsed === 'object' && parsed !== null && '_aws' in parsed) {
-      capturedPayloads.push(parsed);
-    }
-  } catch {
-    // not a JSON line, ignore
-  }
-  // @ts-expect-error - passing through the remaining overloaded args as-is
-  return originalWrite(chunk, ...rest);
-}) as typeof process.stdout.write;
+// The EMF payloads Metrics emits, returned in the response payload since on
+// LMI the test cannot read them from the Invoke API or CloudWatch in time
+const capturedPayloads = captureJsonStdout<EmfOutput>();
 
 const metrics = new Metrics({ namespace: process.env.EXPECTED_NAMESPACE });
 
-// Invocations multiplexed into the same execution environment share this
-// module-scoped state, which lets us prove a genuine overlap: every
-// invocation blocks until a second invocation is in flight in the same
-// environment (or times out reporting that it stayed alone)
-let inFlight = 0;
-let barrier = Promise.withResolvers<void>();
+// Shared by invocations multiplexed into this execution environment: each one
+// blocks until a second invocation is in flight, proving a genuine overlap
+const awaitPeer = createPeerBarrier();
 
 export const handler = async (event: {
   invocationId: string;
@@ -48,21 +30,7 @@ export const handler = async (event: {
   metrics.addMetadata('invocationKey', event.invocationId);
   metrics.addMetric('LmiIsolation', MetricUnit.Count, event.metricValue);
 
-  let sawPeer = false;
-  if (event.role === 'test') {
-    inFlight++;
-    if (inFlight >= 2) {
-      barrier.resolve();
-    }
-    sawPeer = await Promise.race([
-      barrier.promise.then(() => true),
-      setTimeout(15_000, false),
-    ]);
-    inFlight--;
-    if (inFlight === 0) {
-      barrier = Promise.withResolvers<void>();
-    }
-  }
+  const sawPeer = event.role === 'test' ? await awaitPeer() : false;
 
   metrics.publishStoredMetrics();
 

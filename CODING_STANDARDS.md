@@ -4,7 +4,8 @@ Reference for writing code and tests in this repo. Rules are grouped by concern;
 
 ## Project layout and imports
 
-- The codebase is TypeScript, ESM. Each utility lives in `packages/<package-name>` with `src` for source and `test` for tests.
+- The codebase is TypeScript, ESM. Each utility lives in `packages/<package-name>` with `src` for source and `tests` for tests, split into `tests/unit` and `tests/e2e`.
+- Not every workspace is a published package: `examples/snippets`, `examples/app`, `layers`, and `packages/testing` share dependencies and tooling with the rest of the monorepo but never ship to npm.
 - Import across packages by package name (`import { myFunction } from '@aws-lambda-powertools/commons'`), with the dependency declared in the importing package's `package.json`. Relative paths stay within a package and always carry the `.js` extension (`from './utils.js'`).
 - Utilities and types shared by two or more packages belong in `@aws-lambda-powertools/commons`.
 - Sibling-package dependencies (including peerDependencies) are exact pins matching the current lockstep version (`"@aws-lambda-powertools/commons": "2.35.0"`), no range specifiers.
@@ -54,7 +55,7 @@ Run from the repo root with `-w <workspace>`, or from the package directory:
 
 ## Unit tests
 
-Tests use `vitest` and live in each package's `test` directory. Run with `npm run test:unit -w packages/<name>` (or `npm run test:unit` from the package directory). Write unit tests only — end-to-end tests happen when the user asks for them.
+Tests use `vitest` and live in each package's `tests/unit` directory. Run with `npm run test:unit -w packages/<name>` (or `npm run test:unit` from the package directory). Write unit tests only — end-to-end tests happen when the user asks for them.
 
 Coverage: CI enforces 100% coverage on `src/**` (types files excluded) via `npm run test:unit:coverage` — the plain test run skips coverage, so verify with the `:coverage` variant before finishing. Every new source line needs a covering test.
 

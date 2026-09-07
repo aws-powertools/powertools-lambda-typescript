@@ -13,7 +13,7 @@ You can use the library in both TypeScript and JavaScript code bases.
 
 > Also available in [Python](https://github.com/aws-powertools/powertools-lambda-python), [Java](https://github.com/aws-powertools/powertools-lambda-java), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet).
 
-**[Documentation](https://docs.aws.amazon.com/powertools/typescript/latest)** | **[npmjs.com](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Roadmap](https://docs.aws.amazon.com/powertools/typescript/latest/roadmap)** | **[Examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples)**
+**[Documentation](https://docs.aws.amazon.com/powertools/typescript/latest)** | **[npmjs.com](https://www.npmjs.com/org/aws-lambda-powertools)** | **[Examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples)**
 
 ## Features
 
@@ -45,7 +45,7 @@ You can use Powertools for AWS Lambda (TypeScript) by installing it with your fa
 - **Idempotency**: `npm install @aws-lambda-powertools/idempotency @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb` see [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/idempotency/#installation) for other providers
 - **Batch Processing**: `npm install @aws-lambda-powertools/batch`
 - **JMESPath Functions**: `npm install @aws-lambda-powertools/jmespath`
-- **Parser**: `npm install @aws-lambda-powertools/parser zod@~3`
+- **Parser**: `npm install @aws-lambda-powertools/parser zod`
 - **Validation**: `npm install @aws-lambda-powertools/validation`
 - **Kafka**: `npm install @aws-lambda-powertools/kafka` see [documentation](https://docs.aws.amazon.com/powertools/typescript/latest/features/kafka/#installation) for Avro and Protobuf support
 - **Data Masking**: `npm install @aws-lambda-powertools/data-masking @aws-crypto/client-node`

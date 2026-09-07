@@ -17,10 +17,6 @@ name: Run unit tests
 # versions of Node.js. The list of packages is derived from the root `package.json` workspaces by
 # `.github/scripts/list_workspaces.js`, so adding a workspace there is all it takes to get it tested here.
 #
-# Since #2938, we are in the process of improving our test suite, so we are gradually extracting the tests for each package
-# from (`run-linting-check-and-unit-tests-on-utilities`) to their own job, so we can run them in parallel using the matrix
-# strategy and reduce the time it takes to run the tests, as well as improve maintainer experience in case of failures.
-# 
 # USAGE
 #
 # NOTE: meant to be called by ./.github/workflows/pr-run-linting-check-and-unit-tests.yml when a PR is opened or updated,
@@ -70,9 +66,9 @@ jobs:
           node-version: ${{ matrix.version }}
           cache: "npm"
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@4bf64a4072489399fbf39b78f558eeeed6767189 # v1.5.2
         with:
-          nodeVersion: ${{ matrix.version }}
+          node-version: ${{ matrix.version }}
       - name: Linting
         run: npm run lint -w ${{ matrix.workspace }}
       - name: Type check tests
@@ -97,7 +93,7 @@ jobs:
           cache: "npm"
       - &setup_dependencies
         name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@4bf64a4072489399fbf39b78f558eeeed6767189 # v1.5.2
       - name: Run linting
         run: npm run lint:ci -w layers
       - name: Run tests

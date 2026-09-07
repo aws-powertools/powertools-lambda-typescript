@@ -55,7 +55,7 @@ jobs:
           cache: "npm"
           registry-url: 'https://registry.npmjs.org'
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@4bf64a4072489399fbf39b78f558eeeed6767189 # v1.5.2
       - name: Publish to npm
         run: |
           npm publish --workspaces

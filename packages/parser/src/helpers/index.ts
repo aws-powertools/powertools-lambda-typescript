@@ -102,7 +102,7 @@ const JSONStringified = <T extends ZodType>(schema: T) =>
  */
 const Base64Encoded = <T extends ZodType>(schema: T) =>
   z
-    .string()
+    .base64()
     .transform((data) => {
       const decompressed = decompress(data);
       const decoded = decoder.decode(fromBase64(data, 'base64'));

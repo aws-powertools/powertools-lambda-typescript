@@ -4,7 +4,12 @@ import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
 import { SqsEnvelope } from '../../src/envelopes/sqs.js';
 import { ParseError } from '../../src/errors.js';
 import { parse } from '../../src/parser.js';
-import type { EventBridgeEvent, SqsEvent } from '../../src/types/index.js';
+import { KinesisDataStreamSchema } from '../../src/schemas/kinesis.js';
+import type {
+  EventBridgeEvent,
+  KinesisDataStreamEvent,
+  SqsEvent,
+} from '../../src/types/index.js';
 import { getTestEvent } from './helpers/utils.js';
 
 describe('Parser', () => {
@@ -132,5 +137,38 @@ describe('Parser', () => {
       error: expect.any(ParseError),
       originalEvent: event,
     });
+  });
+
+  it('returns a failed result when a built-in schema carries malformed base64', () => {
+    // Prepare
+    const event = getTestEvent<KinesisDataStreamEvent>({
+      eventsPath: 'kinesis',
+      filename: 'stream',
+    });
+    event.Records[0].kinesis.data = 'not base64!!';
+
+    // Act
+    const result = parse(event, undefined, KinesisDataStreamSchema, true);
+
+    // Assess
+    expect(result).toStrictEqual({
+      success: false,
+      error: expect.any(ParseError),
+      originalEvent: event,
+    });
+  });
+
+  it('throws without leaking a rejection when a schema validates asynchronously', () => {
+    // Prepare
+    // A transform that throws synchronously makes Zod fall back to async
+    // validation, so `~standard.validate` returns a rejected promise
+    const schema = z.string().transform(() => {
+      throw new Error('cannot validate synchronously');
+    });
+
+    // Act & Assess
+    expect(() => parse('data', undefined, schema, true)).toThrow(
+      new ParseError('Schema parsing supports only synchronous validation')
+    );
   });
 });

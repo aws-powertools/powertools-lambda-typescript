@@ -2,7 +2,7 @@ name: Documentation improvements
 description: Suggest a documentation update to improve everyone's experience
 title: "Docs: <TITLE>"
 labels: ["triage"]
-type: Task
+type: Docs
 body:
   - type: markdown
     attributes:

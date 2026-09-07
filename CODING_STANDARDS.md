@@ -57,6 +57,8 @@ Run from the repo root with `-w <workspace>`, or from the package directory:
 
 Tests use `vitest` and live in each package's `tests/unit` directory. Run with `npm run test:unit -w packages/<name>` (or `npm run test:unit` from the package directory). Write unit tests only — end-to-end tests happen when the user asks for them.
 
+Package test scripts use `vitest --run tests/unit` for unit tests, `vitest --run tests/types --typecheck` for type tests, and `vitest --run tests/e2e` for end-to-end tests. Use `echo 'Not Implemented'` when a package does not provide a suite.
+
 Coverage: CI enforces 100% coverage on `src/**` (types files excluded) via `npm run test:unit:coverage` — the plain test run skips coverage, so verify with the `:coverage` variant before finishing. Every new source line needs a covering test.
 
 Structure:

@@ -25,6 +25,9 @@ body:
         - JMESPath
         - Batch Processing
         - Validation
+        - Kafka
+        - Data Masking
+        - Signer
         - Commons
         - Automation
         - Governance

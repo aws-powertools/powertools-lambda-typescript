@@ -1,7 +1,8 @@
 name: Bug report
 description: Report a reproducible bug to help us improve
 title: "Bug: <TITLE>"
-labels: ["bug", "triage"]
+labels: ["triage"]
+type: Bug
 body:
   - type: markdown
     attributes:

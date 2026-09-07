@@ -8,8 +8,8 @@
  *
  * The file will be restored to its original state after the release is complete.
  */
-const { readFileSync, writeFileSync } = require('node:fs');
-const { join, resolve } = require('node:path');
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 if (process.argv.length < 3) {
   console.error('Usage: node release_patch_package_json.js <package_path>\n');

@@ -82,7 +82,7 @@ Environment:
 - `console` is pre-mocked: use it freely in code under test and in assertions.
 - Set env vars with `vi.stubEnv()` and restore with `vi.unstubAllEnvs()` in `beforeEach`/`afterEach`; setupEnv pre-sets the standard Lambda env vars.
 
-Invocation-scoped state (`tests/unit/concurrency/`): Logger, Metrics, and Batch keep per-invocation state in the Lambda `InvokeStore` from `@aws/lambda-invoke-store` when `AWS_LAMBDA_MAX_CONCURRENCY` is set, and on the instance otherwise. Two properties of that package shape how the tests are written:
+Invocation-scoped state (`tests/unit/concurrency/`): Logger, Metrics, and Batch keep per-invocation state in the Lambda `InvokeStore` from [`@aws/lambda-invoke-store`](https://www.npmjs.com/package/@aws/lambda-invoke-store) when `AWS_LAMBDA_MAX_CONCURRENCY` is set, and on the instance otherwise. Two properties of that package shape how the tests are written:
 
 - The stores read `globalThis.awslambda.InvokeStore`, which only exists after something calls `InvokeStore.getInstanceAsync()`. The Lambda runtime does this at startup; in tests nothing does it for you, and with the env var set every store accessor throws `InvokeStore is not available` until it happens.
 - The instance is cached at module level and its kind is fixed on first creation: `AsyncLocalStorage`-backed, isolating invocations, only if `AWS_LAMBDA_MAX_CONCURRENCY` was in `process.env` at that first call; otherwise a single-context store whose `run()` gives no isolation. Later calls return the cached instance whatever the env.

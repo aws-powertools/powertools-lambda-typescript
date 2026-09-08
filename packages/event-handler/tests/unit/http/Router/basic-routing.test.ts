@@ -598,6 +598,57 @@ describe.each([
     expect(result.isBase64Encoded).toBe(false);
   });
 
+  it.each([
+    {
+      type: 'base64 string',
+      createResult: (bytes: Buffer) => ({
+        body: bytes.toString('base64'),
+        isBase64Encoded: true,
+      }),
+    },
+    {
+      type: 'ArrayBuffer',
+      createResult: (bytes: Buffer) => ({
+        body: new Uint8Array(bytes).buffer,
+      }),
+    },
+    {
+      type: 'Readable',
+      createResult: (bytes: Buffer) => ({ body: Readable.from([bytes]) }),
+    },
+    {
+      type: 'ReadableStream',
+      createResult: (bytes: Buffer) => ({
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(new Uint8Array(bytes));
+            controller.close();
+          },
+        }),
+      }),
+    },
+  ])(
+    'base64 encodes a $type body inside a proxy result with a non-media content-type',
+    async ({ createResult }) => {
+      // Prepare
+      const app = new Router();
+      const bytes = Buffer.from([0x25, 0x50, 0x44, 0x46, 0xff, 0xfe, 0x00]);
+      app.get('/pdf', () => ({
+        statusCode: 200,
+        headers: { 'content-type': 'application/pdf' },
+        ...createResult(bytes),
+      }));
+
+      // Act
+      const result = await app.resolve(createEvent('/pdf', 'GET'), context);
+
+      // Assess
+      expect(result.body).toBe(bytes.toString('base64'));
+      expect(result.headers?.['content-type']).toBe('application/pdf');
+      expect(result.isBase64Encoded).toBe(true);
+    }
+  );
+
   it('sets reqCtx.route to METHOD and path for static routes', async () => {
     // Prepare
     const app = new Router();

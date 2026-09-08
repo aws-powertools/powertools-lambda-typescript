@@ -61,6 +61,32 @@ describe.each([
     expect(JSON.parse(result.body)).toEqual({ data: 'test' });
   });
 
+  it('streams the decoded bytes of a base64 encoded proxy result body', async () => {
+    // Prepare
+    const app = new Router();
+    const bytes = Buffer.from([0x25, 0x50, 0x44, 0x46, 0xff, 0xfe, 0x00]);
+    app.get('/pdf', () => ({
+      statusCode: 200,
+      headers: { 'content-type': 'application/pdf' },
+      body: bytes.toString('base64'),
+      isBase64Encoded: true,
+    }));
+    const responseStream = new ResponseStream();
+
+    // Act
+    await app.resolveStream(createEvent('/pdf', 'GET'), context, {
+      responseStream,
+    });
+
+    // Assess
+    const output = responseStream.getBuffer();
+    const separatorIndex = output.indexOf(Buffer.alloc(8));
+    const prelude = JSON.parse(output.subarray(0, separatorIndex).toString());
+    expect(prelude.statusCode).toBe(200);
+    expect(prelude.headers['content-type']).toBe('application/pdf');
+    expect(output.subarray(separatorIndex + 8)).toEqual(bytes);
+  });
+
   it('handles route not found', async () => {
     // Prepare
     const app = new Router();

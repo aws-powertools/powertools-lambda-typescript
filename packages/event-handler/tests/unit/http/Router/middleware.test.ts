@@ -595,8 +595,8 @@ describe('Class: Router - Middleware', () => {
 
       // Assess
       expect(result.statusCode).toBe(200);
-      expect(result.isBase64Encoded).toBe(false);
-      expect(result.body).toEqual(testData);
+      expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toEqual(Buffer.from(testData).toString('base64'));
     });
 
     it('handles middleware returning ExtendedAPIGatewayProxyResult with web stream body', async () => {
@@ -625,8 +625,34 @@ describe('Class: Router - Middleware', () => {
 
       // Assess
       expect(result.statusCode).toBe(200);
-      expect(result.isBase64Encoded).toBe(false);
-      expect(result.body).toEqual(testData);
+      expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toEqual(Buffer.from(testData).toString('base64'));
+    });
+
+    it('honours isBase64Encoded on a proxy result returned by a middleware', async () => {
+      // Prepare
+      const app = new Router();
+      const bytes = Buffer.from([0x25, 0x50, 0x44, 0x46, 0xff, 0xfe, 0x00]);
+
+      app.use(async () => ({
+        statusCode: 200,
+        headers: { 'content-type': 'application/pdf' },
+        body: bytes.toString('base64'),
+        isBase64Encoded: true,
+      }));
+
+      app.get('/test', () => ({ success: true }));
+
+      // Act
+      const result = await app.resolve(
+        createTestEvent('/test', 'GET'),
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.isBase64Encoded).toBe(true);
+      expect(result.body).toBe(bytes.toString('base64'));
     });
 
     it('handles middleware returning v2 proxy event with cookies', async () => {

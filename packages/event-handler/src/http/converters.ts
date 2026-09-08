@@ -529,10 +529,14 @@ const handlerResultToWebResponse = (
       body = null;
     } else if (isNodeReadableStream(response.body)) {
       body = Readable.toWeb(response.body) as ReadableStream;
+    } else if (typeof response.body === 'string') {
+      // a base64 body is decoded so the Response carries the raw bytes
+      body = response.isBase64Encoded
+        ? Buffer.from(response.body, 'base64')
+        : response.body;
     } else if (
       isWebReadableStream(response.body) ||
-      response.body instanceof ArrayBuffer ||
-      typeof response.body === 'string'
+      response.body instanceof ArrayBuffer
     ) {
       body = response.body;
     } else {

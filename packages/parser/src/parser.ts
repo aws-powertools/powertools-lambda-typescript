@@ -119,8 +119,11 @@ function parse<T extends StandardSchemaV1, E extends Envelope>(
   }
 
   const result = schema['~standard'].validate(data);
-  /* v8 ignore next -- @preserve */
   if (result instanceof Promise) {
+    // Some validators (e.g. Zod) fall back to async validation when a transform
+    // throws synchronously, returning a rejected promise. Attach a handler so it
+    // does not surface as an unhandled rejection before we throw below.
+    result.catch(() => {});
     throw new ParseError('Schema parsing supports only synchronous validation');
   }
 

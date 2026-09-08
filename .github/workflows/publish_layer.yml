@@ -47,7 +47,7 @@ jobs:
         with:
           node-version: 24
       - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@4bf64a4072489399fbf39b78f558eeeed6767189 # v1.5.2
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
       - name: CDK build
         env:
           LAYER_VERSION: ${{ inputs.latest_published_version }}

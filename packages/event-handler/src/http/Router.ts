@@ -53,7 +53,6 @@ import type {
 import type { HandlerResponse, ResolveOptions } from '../types/index.js';
 import { HttpStatusCodes, HttpVerbs } from './constants.js';
 import {
-  handlerResultToWebResponse,
   proxyEventToWebRequest,
   webHeadersToApiGatewayHeaders,
   webResponseToProxyResult,
@@ -70,10 +69,9 @@ import { validate } from './middleware/validation.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 import {
+  applyHandlerResult,
   composeMiddleware,
   getBase64EncodingFromHeaders,
-  getBase64EncodingFromResult,
-  getStatusCode,
   HttpResponseStream,
   isALBEvent,
   isAPIGatewayProxyEventV1,
@@ -370,14 +368,7 @@ class Router<TEnv extends Env = Env> {
           handlerRes = await handler(reqCtx);
         }
 
-        if (getBase64EncodingFromResult(handlerRes)) {
-          reqCtx.isBase64Encoded = true;
-        }
-
-        reqCtx.res = handlerResultToWebResponse(handlerRes, {
-          statusCode: getStatusCode(handlerRes),
-          resHeaders: reqCtx.res.headers,
-        });
+        applyHandlerResult(reqCtx, handlerRes);
 
         await next();
       };
@@ -402,14 +393,13 @@ class Router<TEnv extends Env = Env> {
         scope: options?.scope,
       });
 
-      if (getBase64EncodingFromResult(res)) {
-        requestContext.isBase64Encoded = true;
-      }
-
-      requestContext.res = handlerResultToWebResponse(res, {
-        statusCode: getStatusCode(res, HttpStatusCodes.INTERNAL_SERVER_ERROR),
-        resHeaders: requestContext.res.headers,
-      });
+      // the error response decides the encoding, not the failed handler result
+      requestContext.isBase64Encoded = undefined;
+      applyHandlerResult(
+        requestContext,
+        res,
+        HttpStatusCodes.INTERNAL_SERVER_ERROR
+      );
 
       return requestContext;
     }

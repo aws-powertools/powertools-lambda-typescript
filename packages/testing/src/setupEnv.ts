@@ -378,4 +378,6 @@ process.env._HANDLER = 'index.handler';
 process.env.POWERTOOLS_SERVICE_NAME = 'hello-world';
 process.env.AWS_XRAY_LOGGING_LEVEL = 'silent';
 process.env.AWS_LAMBDA_INITIALIZATION_TYPE = 'on-demand';
+// Exposes `InvokeStore._testing.reset()` so concurrency tests can drop the
+// module-level instance between tests, see `CODING_STANDARDS.md`.
 process.env.AWS_LAMBDA_BENCHMARK_MODE = '1';

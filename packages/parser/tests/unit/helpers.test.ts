@@ -371,6 +371,17 @@ describe('Helper: Base64Encoded', () => {
     expect(() => extendedSchema.parse(data)).toThrow();
   });
 
+  it('returns a failed result instead of throwing when safeParse gets malformed base64', () => {
+    // Prepare
+    const schema = Base64Encoded(bodySchema);
+
+    // Act
+    const result = schema.safeParse('not base64!!');
+
+    // Assess
+    expect(result.success).toBe(false);
+  });
+
   it('parses extended KinesisDataStreamSchema', () => {
     // Prepare
     const testEvent = getTestEvent<KinesisDataStreamEvent>({

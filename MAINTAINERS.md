@@ -167,6 +167,9 @@ It usually takes under an hour end to end, most of it spent waiting on the layer
 6. **Review and merge the layer ARN docs PR.** `.github/workflows/on_layer_docs_pr_merge.yml` picks up the merge and dispatches `Rebuild latest docs`, which republishes the user guide and API reference.
 7. **Draft and publish the release notes** (see below). Organization-level automation removes `pending-release` from shipped issues once the release is published.
 
+There is no workflow for publishing a single package. Trusted Publishing only trusts `make-release.yml`, and npm only issues provenance attestations from CI, so a one-off publish of one package has to be done from a maintainer's machine with a short-lived token, as described in [Reserving the package name on npm](#reserving-the-package-name-on-npm).
+It ships without provenance, so treat it as a last resort and prefer fixing forward with a regular release.
+
 ### Release process visualized
 
 The GitHub Actions UI is the source of truth; this is a close visual representation of the main steps, with approximate durations.

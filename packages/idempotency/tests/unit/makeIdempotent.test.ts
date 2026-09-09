@@ -6,11 +6,13 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_RETRIES } from '../../src/constants.js';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler.js';
 import {
+  IdempotencyAlreadyInProgressError,
   IdempotencyConfig,
   IdempotencyInconsistentStateError,
   IdempotencyItemAlreadyExistsError,
   IdempotencyRecordStatus,
   IdempotencyUnknownError,
+  IdempotencyValidationError,
   makeIdempotent,
 } from '../../src/index.js';
 import { makeHandlerIdempotent } from '../../src/middleware/makeHandlerIdempotent.js';
@@ -157,6 +159,10 @@ describe('Function: makeIdempotent', () => {
         mockIdempotencyOptions.persistenceStore,
         'saveInProgress'
       ).mockRejectedValue(new Error('Something went wrong'));
+      const deleteRecordSpy = vi.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'deleteRecord'
+      );
 
       // Act && Assess
       await expect(handler(event, context)).rejects.toMatchObject({
@@ -164,6 +170,7 @@ describe('Function: makeIdempotent', () => {
         message: 'Failed to save in progress record to idempotency store',
         cause: new Error('Something went wrong'),
       });
+      expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
     }
   );
 
@@ -181,6 +188,10 @@ describe('Function: makeIdempotent', () => {
         mockIdempotencyOptions.persistenceStore,
         'saveSuccess'
       ).mockRejectedValue(new Error('Something went wrong'));
+      const deleteRecordSpy = vi.spyOn(
+        mockIdempotencyOptions.persistenceStore,
+        'deleteRecord'
+      );
 
       // Act && Assess
       await expect(handler(event, context)).rejects.toMatchObject({
@@ -188,8 +199,178 @@ describe('Function: makeIdempotent', () => {
         message: 'Failed to update success record to idempotency store',
         cause: new Error('Something went wrong'),
       });
+      expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
     }
   );
+
+  it('deletes the record when a later middleware fails before the handler runs (middleware)', async () => {
+    // Prepare
+    const handler = middy(fnSuccessfull)
+      .use(makeHandlerIdempotent(mockIdempotencyOptions))
+      .use({ before: fnError });
+    const deleteRecordSpy = vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'deleteRecord'
+    );
+
+    // Act && Assess
+    await expect(handler(event, context)).rejects.toThrowError(
+      'Something went wrong'
+    );
+    expect(deleteRecordSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a completed record with an undefined response when the handler throws (middleware)', async () => {
+    // Prepare
+    const handler = middy(fnError).use(
+      makeHandlerIdempotent(mockIdempotencyOptions)
+    );
+    vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveInProgress'
+    ).mockRejectedValue(
+      new IdempotencyItemAlreadyExistsError(
+        'Record exists',
+        new IdempotencyRecord({
+          idempotencyKey: 'idempotencyKey',
+          expiryTimestamp: Date.now() + 10000,
+          inProgressExpiryTimestamp: 0,
+          payloadHash: 'payloadHash',
+          status: IdempotencyRecordStatus.COMPLETED,
+        })
+      )
+    );
+    const deleteRecordSpy = vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'deleteRecord'
+    );
+
+    // Act && Assess
+    await expect(handler(event, context)).rejects.toThrowError(
+      'Something went wrong'
+    );
+    expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
+  });
+
+  it('resets ownership between invocations sharing the same internal storage (middleware)', async () => {
+    // Prepare
+    const handler = middy(fnError, { internal: {} }).use(
+      makeHandlerIdempotent(mockIdempotencyOptions)
+    );
+    const deleteRecordSpy = vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'deleteRecord'
+    );
+    await expect(handler(event, context)).rejects.toThrowError(
+      'Something went wrong'
+    );
+    vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveInProgress'
+    ).mockRejectedValue(
+      new IdempotencyItemAlreadyExistsError(
+        'Record exists',
+        new IdempotencyRecord({
+          idempotencyKey: 'idempotencyKey',
+          expiryTimestamp: Date.now() + 10000,
+          inProgressExpiryTimestamp: Date.now() + 10000,
+          payloadHash: 'payloadHash',
+          status: IdempotencyRecordStatus.INPROGRESS,
+        })
+      )
+    );
+
+    // Act && Assess
+    await expect(handler(event, context)).rejects.toBeInstanceOf(
+      IdempotencyAlreadyInProgressError
+    );
+    expect(deleteRecordSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the record of a concurrent execution when rejecting a duplicate request (middleware)', async () => {
+    // Prepare
+    const handler = middy(fnSuccessfull).use(
+      makeHandlerIdempotent(mockIdempotencyOptions)
+    );
+    vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveInProgress'
+    ).mockRejectedValue(
+      new IdempotencyItemAlreadyExistsError(
+        'Record exists',
+        new IdempotencyRecord({
+          idempotencyKey: 'idempotencyKey',
+          expiryTimestamp: Date.now() + 10000,
+          inProgressExpiryTimestamp: Date.now() + 10000,
+          payloadHash: 'payloadHash',
+          status: IdempotencyRecordStatus.INPROGRESS,
+        })
+      )
+    );
+    const deleteRecordSpy = vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'deleteRecord'
+    );
+
+    // Act && Assess
+    await expect(handler(event, context)).rejects.toBeInstanceOf(
+      IdempotencyAlreadyInProgressError
+    );
+    expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
+  });
+
+  it('keeps the completed record when rejecting a request with a different payload (middleware)', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const handler = middy(fnSuccessfull).use(
+      makeHandlerIdempotent({
+        persistenceStore,
+        config: new IdempotencyConfig({ payloadValidationJmesPath: 'foo' }),
+      })
+    );
+    vi.spyOn(persistenceStore, 'saveInProgress').mockRejectedValue(
+      new IdempotencyItemAlreadyExistsError(
+        'Record exists',
+        new IdempotencyRecord({
+          idempotencyKey: 'idempotencyKey',
+          expiryTimestamp: Date.now() + 10000,
+          inProgressExpiryTimestamp: 0,
+          responseData: { response: false },
+          payloadHash: 'differentPayloadHash',
+          status: IdempotencyRecordStatus.COMPLETED,
+        })
+      )
+    );
+    const deleteRecordSpy = vi.spyOn(persistenceStore, 'deleteRecord');
+
+    // Act && Assess
+    await expect(handler(event, context)).rejects.toBeInstanceOf(
+      IdempotencyValidationError
+    );
+    expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
+  });
+
+  it('keeps the completed record when a later middleware fails after the result was saved (middleware)', async () => {
+    // Prepare
+    const handler = middy(fnSuccessfull)
+      .use({ after: fnError })
+      .use(makeHandlerIdempotent(mockIdempotencyOptions));
+    const saveSuccessSpy = vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'saveSuccess'
+    );
+    const deleteRecordSpy = vi.spyOn(
+      mockIdempotencyOptions.persistenceStore,
+      'deleteRecord'
+    );
+
+    // Act && Assess
+    await expect(handler(event, context)).rejects.toThrowError(
+      'Something went wrong'
+    );
+    expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
+    expect(deleteRecordSpy).toHaveBeenCalledTimes(0);
+  });
 
   it.each([{ type: 'wrapper' }, { type: 'middleware' }])(
     'thows an error if the persistence layer throws an error when deleting a record ($type)',

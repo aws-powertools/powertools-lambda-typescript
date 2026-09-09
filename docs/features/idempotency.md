@@ -327,7 +327,8 @@ sequenceDiagram
 
 If you are using `makeIdempotent` on any other function, any unhandled exceptions that are thrown _inside_ the wrapped function will cause the record in the persistence layer to be deleted, and allow the function to be executed again if retried.
 
-If an error is thrown _outside_ the scope of the decorated function and after your function has been called, the persistent record will not be affected. In this case, idempotency will be maintained for your decorated function. Example:
+If an error is thrown _outside_ the scope of the decorated function and after your function has been called, the persistent record will not be affected. In this case, idempotency will be maintained for your decorated function.
+The same applies to the `makeHandlerIdempotent` Middy middleware: the record is kept when the middleware itself rejects a request, and once your handler has returned. It is still deleted when a middleware registered after it fails before your handler has returned. Example:
 
 === "Handling exceptions"
 

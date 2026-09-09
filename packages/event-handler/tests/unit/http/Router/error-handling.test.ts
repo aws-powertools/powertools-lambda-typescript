@@ -649,6 +649,34 @@ describe.each([
     expect(result.isBase64Encoded).toBe(true);
     expect(result.body).toBe(Buffer.from(buffer.buffer).toString('base64'));
   });
+
+  it('does not base64 encode the error response when a middleware fails after a binary handler result', async () => {
+    // Prepare
+    const app = new Router();
+    const bytes = Buffer.from([0x25, 0x50, 0x44, 0x46, 0xff, 0xfe, 0x00]);
+    app.use(async ({ next }) => {
+      await next();
+      throw new Error('post-processing failed');
+    });
+    app.get('/pdf', () => ({
+      statusCode: 200,
+      headers: { 'content-type': 'application/pdf' },
+      body: bytes.toString('base64'),
+      isBase64Encoded: true,
+    }));
+
+    // Act
+    const result = await app.resolve(createEvent('/pdf', 'GET'), context);
+
+    // Assess
+    expect(result.statusCode).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(result.isBase64Encoded).toBe(false);
+    expect(JSON.parse(result.body ?? '')).toEqual({
+      statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      error: 'Internal Server Error',
+      message: 'Internal Server Error',
+    });
+  });
 });
 describe('Class: Router - proxyEventToWebRequest Error Handling', () => {
   beforeEach(() => {

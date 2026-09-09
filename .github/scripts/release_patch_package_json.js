@@ -89,5 +89,5 @@ const betaPackages = [];
   // Temporarily update the original package.json file.
   // This version will be picked up during the `npm publish` step, so that
   // the version number and metadata in the registry are correct and match the tarball.
-  writeFileSync('package.json', JSON.stringify(newPkgJson, null, 2));
+  writeFileSync(packageJsonPath, JSON.stringify(newPkgJson, null, 2));
 })();

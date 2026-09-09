@@ -60,6 +60,30 @@ const setIdempotencySkipFlag = (request: MiddyLikeRequest): void => {
 
 /**
  * @internal
+ * Records whether this request acquired an in-progress record it has not yet completed.
+ *
+ * @param request - The Middy request object
+ * @param owned - Whether the request owns an unfinished in-progress record
+ */
+const setIdempotencyRecordOwnership = (
+  request: MiddyLikeRequest,
+  owned: boolean
+): void => {
+  request.internal[`${IDEMPOTENCY_KEY}.ownsRecord`] = owned;
+};
+
+/**
+ * @internal
+ * Checks whether this request owns an unfinished in-progress record.
+ *
+ * @param request - The Middy request object
+ */
+const ownsIdempotencyRecord = (request: MiddyLikeRequest): boolean => {
+  return request.internal[`${IDEMPOTENCY_KEY}.ownsRecord`] === true;
+};
+
+/**
+ * @internal
  * Utility function to get the idempotency key from the request internal storage
  * and determine if the request should skip the idempotency middleware
  *
@@ -109,10 +133,12 @@ const makeHandlerIdempotent = (
    *
    * If idempotency is enabled and the idempotency key is present in the payload,
    * we then run the idempotency operations. These are handled in {@link IdempotencyHandler.handleMiddyBefore}.
+   * A stored response is returned early; otherwise this request now owns the
+   * in-progress record and `onError` is allowed to delete it.
    *
    * @param request - The Middy request object
    */
-  const before = (request: MiddyLikeRequest): unknown => {
+  const before = async (request: MiddyLikeRequest): Promise<unknown> => {
     const idempotencyConfig = options.config ?? new IdempotencyConfig({});
     const persistenceStore = options.persistenceStore;
     const keyPrefix = options.keyPrefix;
@@ -132,6 +158,9 @@ const makeHandlerIdempotent = (
       functionPayloadToBeHashed: undefined,
     });
     setIdempotencyHandlerInRequestInternal(request, idempotencyHandler);
+    // `request.internal` can be shared across invocations, so reset per-request state
+    request.internal[`${IDEMPOTENCY_KEY}.skip`] = false;
+    setIdempotencyRecordOwnership(request, false);
 
     // set the payload to be hashed
     idempotencyHandler.setFunctionPayloadToBeHashed(request.event as JSONValue);
@@ -145,7 +174,20 @@ const makeHandlerIdempotent = (
 
     idempotencyConfig.registerLambdaContext(request.context);
 
-    return idempotencyHandler.handleMiddyBefore(request, cleanupMiddlewares);
+    // the cleanup callback only runs when a stored response is replayed
+    let replayed = false;
+    const result = await idempotencyHandler.handleMiddyBefore(
+      request,
+      async (request) => {
+        replayed = true;
+        await cleanupMiddlewares(request);
+      }
+    );
+    if (!replayed) {
+      setIdempotencyRecordOwnership(request, true);
+    }
+
+    return result;
   };
 
   /**
@@ -155,6 +197,9 @@ const makeHandlerIdempotent = (
    * idempotency store to indicate that the execution has completed and
    * store its result. This is handled in {@link IdempotencyHandler.handleMiddyAfter}.
    *
+   * Ownership is released before saving so that a failure to store the result
+   * does not delete the record, in line with the function wrapper.
+   *
    * @param request - The Middy request object
    */
   const after = async (request: MiddyLikeRequest): Promise<void> => {
@@ -163,6 +208,7 @@ const makeHandlerIdempotent = (
     }
     const idempotencyHandler =
       getIdempotencyHandlerFromRequestInternal(request);
+    setIdempotencyRecordOwnership(request, false);
     await idempotencyHandler.handleMiddyAfter(request.response);
   };
 
@@ -172,10 +218,14 @@ const makeHandlerIdempotent = (
    * When an error is thrown in the handler, we need to delete the record from the
    * idempotency store. This is handled in {@link IdempotencyHandler.handleMiddyOnError}.
    *
+   * The record is left untouched when this request never acquired it, for example
+   * when `before` rejected a concurrent or mismatching request, or once the
+   * handler has returned and its result is being stored.
+   *
    * @param request - The Middy request object
    */
   const onError = async (request: MiddyLikeRequest): Promise<void> => {
-    if (shouldSkipIdempotency(request)) {
+    if (shouldSkipIdempotency(request) || !ownsIdempotencyRecord(request)) {
       return;
     }
     const idempotencyHandler =

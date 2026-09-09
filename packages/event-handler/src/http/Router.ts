@@ -314,7 +314,6 @@ class Router<TEnv extends Env = Env> {
     } catch (err) {
       if (err instanceof InvalidHttpMethodError) {
         this.logger.error(err);
-        // Return a 405 without constructing a request context for an invalid request.
         return {
           responseType: classified.responseType,
           res: new Response(null, {

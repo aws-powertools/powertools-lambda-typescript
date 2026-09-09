@@ -9,6 +9,7 @@ import {
 } from 'vitest';
 import { IdempotencyRecordStatus } from '../../../src/constants.js';
 import {
+  IdempotencyItemAlreadyExistsError,
   IdempotencyItemNotFoundError,
   IdempotencyPersistenceConsistencyError,
 } from '../../../src/errors.js';
@@ -245,6 +246,85 @@ describe('Class: CachePersistenceLayerTestClass', () => {
         `Failed to put record for in-progress idempotency key: ${dummyKey}`
       );
     });
+
+    it('preserves an unexpired in-progress record without an execution deadline', async () => {
+      // Prepare
+      const expiryTimestamp = getFutureTimestamp(3600);
+      const record = new IdempotencyRecord({
+        idempotencyKey: dummyKey,
+        status: IdempotencyRecordStatus.INPROGRESS,
+        expiryTimestamp,
+      });
+      const cacheClient = {
+        get: vi.fn().mockResolvedValue(
+          JSON.stringify({
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiration: expiryTimestamp,
+          })
+        ),
+        set: vi.fn().mockResolvedValue('OK').mockResolvedValueOnce(null),
+        del: vi.fn(),
+      };
+      const persistenceStore = new CachePersistenceLayerTestClass({
+        client: cacheClient,
+      });
+
+      // Act
+      const acquisition = persistenceStore._putRecord(record);
+
+      // Assess
+      await expect(acquisition).rejects.toThrow(
+        IdempotencyItemAlreadyExistsError
+      );
+      expect(cacheClient.set).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      { label: 'an elapsed execution deadline', deadline: 'elapsed' },
+      { label: 'an execution deadline of zero', deadline: 'zero' },
+    ])(
+      'recovers a record with $label before overall expiry',
+      async ({ deadline }) => {
+        // Prepare
+        const expiryTimestamp = getFutureTimestamp(3600);
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.INPROGRESS,
+          expiryTimestamp,
+          inProgressExpiryTimestamp: Date.now() + 60_000,
+        });
+        const cacheClient = {
+          get: vi.fn().mockResolvedValue(
+            JSON.stringify({
+              status: IdempotencyRecordStatus.INPROGRESS,
+              expiration: expiryTimestamp,
+              in_progress_expiration:
+                deadline === 'zero' ? 0 : Date.now() - 1000,
+            })
+          ),
+          set: vi.fn().mockResolvedValue('OK').mockResolvedValueOnce(null),
+          del: vi.fn(),
+        };
+        const persistenceStore = new CachePersistenceLayerTestClass({
+          client: cacheClient,
+        });
+
+        // Act
+        await persistenceStore._putRecord(record);
+
+        // Assess
+        expect(cacheClient.set).toHaveBeenCalledTimes(3);
+        expect(cacheClient.set).toHaveBeenLastCalledWith(
+          dummyKey,
+          JSON.stringify({
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiration: expiryTimestamp,
+            in_progress_expiration: record.inProgressExpiryTimestamp,
+          }),
+          { EX: 3600 }
+        );
+      }
+    );
 
     it('throws error when trying to put a non-INPROGRESS record', async () => {
       // Prepare

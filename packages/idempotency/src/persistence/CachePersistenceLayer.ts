@@ -256,15 +256,15 @@ class CachePersistenceLayer extends BasePersistenceLayer {
       }
 
       /**
-       * If the idempotency record has a status of 'INPROGRESS' and has a valid `inProgressExpiryTimestamp`
-       * (meaning the timestamp is greater than the current timestamp in milliseconds), then we have encountered
-       * a valid in-progress record. This indicates that another process is currently handling the request, and
-       * to maintain idempotency, we raise an error to prevent concurrent processing of the same request.
+       * If the idempotency record has a status of 'INPROGRESS' and its execution deadline is absent or
+       * still in the future, another process may still be handling the request. Without an execution
+       * deadline, the record remains active until its overall expiry, which getStatus() checks.
+       * Raise an error to prevent concurrent processing of the same request.
        */
       if (
         existingRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS &&
-        existingRecord.inProgressExpiryTimestamp &&
-        existingRecord.inProgressExpiryTimestamp > Date.now()
+        (existingRecord.inProgressExpiryTimestamp === undefined ||
+          existingRecord.inProgressExpiryTimestamp > Date.now())
       ) {
         throw new IdempotencyItemAlreadyExistsError(
           `Failed to put record for in-progress idempotency key: ${record.idempotencyKey}`,

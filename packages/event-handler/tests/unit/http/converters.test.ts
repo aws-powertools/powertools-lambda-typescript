@@ -122,6 +122,40 @@ describe('Converters', () => {
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
+    it('ignores a body on GET request', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        httpMethod: HttpVerbs.GET,
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('GET');
+      expect(request.body).toBe(null);
+    });
+
+    it('ignores a body on HEAD request', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        httpMethod: HttpVerbs.HEAD,
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('HEAD');
+      expect(request.body).toBe(null);
+    });
+
     it('decodes base64 encoded body', () => {
       // Prepare
       const originalText = 'Hello World';
@@ -679,6 +713,38 @@ describe('Converters', () => {
       expect(request.method).toBe('POST');
       expect(request.text()).resolves.toBe('{"key":"value"}');
       expect(request.headers.get('Content-Type')).toBe('application/json');
+    });
+
+    it('ignores a body on GET request', () => {
+      // Prepare
+      const event = {
+        ...createTestEventV2('/test', HttpVerbs.GET),
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('GET');
+      expect(request.body).toBe(null);
+    });
+
+    it('ignores a body on HEAD request', () => {
+      // Prepare
+      const event = {
+        ...createTestEventV2('/test', HttpVerbs.HEAD),
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('HEAD');
+      expect(request.body).toBe(null);
     });
 
     it('decodes base64 encoded body', () => {

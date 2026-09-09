@@ -39,11 +39,22 @@ import {
 /**
  * Creates a request body from API Gateway event body, handling base64 decoding if needed.
  *
+ * GET and HEAD requests are not allowed to carry a body when constructing a
+ * Web API {@link Request | `Request`}, so any body present on the event is ignored for those methods.
+ *
  * @param body - The raw body from the API Gateway event
  * @param isBase64Encoded - Whether the body is base64 encoded
- * @returns The decoded body string or null
+ * @param httpMethod - The HTTP method of the request
  */
-const createBody = (body: string | null, isBase64Encoded: boolean) => {
+const createBody = (
+  body: string | null,
+  isBase64Encoded: boolean,
+  httpMethod: string
+) => {
+  if (httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.HEAD) {
+    return null;
+  }
+
   if (body === null) return null;
 
   if (!isBase64Encoded) {
@@ -125,7 +136,7 @@ const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
   return new Request(url.toString(), {
     method: httpMethod,
     headers,
-    body: createBody(event.body, event.isBase64Encoded),
+    body: createBody(event.body, event.isBase64Encoded, httpMethod),
   });
 };
 
@@ -161,7 +172,7 @@ const proxyEventV2ToWebRequest = (event: APIGatewayProxyEventV2): Request => {
   return new Request(url, {
     method,
     headers,
-    body: createBody(event.body ?? null, event.isBase64Encoded),
+    body: createBody(event.body ?? null, event.isBase64Encoded, method),
   });
 };
 
@@ -183,16 +194,10 @@ const albEventToWebRequest = (event: ALBEvent): Request => {
   const url = new URL(path, `${protocol}://${hostname}/`);
   populateV1QueryParams(url, event);
 
-  // ALB events represent GET and HEAD request bodies as empty strings
-  const body =
-    httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.HEAD
-      ? null
-      : createBody(event.body ?? null, event.isBase64Encoded);
-
   return new Request(url.toString(), {
     method: httpMethod,
     headers,
-    body: body,
+    body: createBody(event.body ?? null, event.isBase64Encoded, httpMethod),
   });
 };
 

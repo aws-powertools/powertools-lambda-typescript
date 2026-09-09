@@ -28,6 +28,7 @@ import {
   MULTI_VALUE_HEADERS_ALLOWLIST,
 } from './constants.js';
 import { InvalidEventError, InvalidHttpMethodError } from './errors.js';
+import type { Router } from './Router.js';
 import {
   isALBEvent,
   isAPIGatewayProxyEventV1,
@@ -237,6 +238,7 @@ const classifiedEventToWebRequest = (classified: ClassifiedEvent): Request => {
  * Converts an API Gateway proxy event (V1 or V2) or ALB event to a Web API Request object.
  * Automatically detects the integration and normalizes its request fields.
  *
+ * @deprecated This converter is an implementation detail and will be removed in a future major version. Access `reqCtx.req` in {@link Router | `Router`} handlers or middleware instead.
  * @param event - The API Gateway proxy event (V1 or V2) or ALB event
  */
 const proxyEventToWebRequest = (

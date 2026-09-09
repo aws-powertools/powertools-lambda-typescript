@@ -58,6 +58,10 @@
       "import": "./lib/esm/lmi/naming.js",
       "require": "./lib/cjs/lmi/naming.js"
     },
+    "./lmi/handler": {
+      "import": "./lib/esm/lmi/handler.js",
+      "require": "./lib/cjs/lmi/handler.js"
+    },
     "./context": {
       "import": "./lib/esm/context.js",
       "require": "./lib/cjs/context.js"
@@ -88,6 +92,10 @@
       "lmi": [
         "lib/cjs/lmi/naming.d.ts",
         "lib/esm/lmi/naming.d.ts"
+      ],
+      "lmi/handler": [
+        "lib/cjs/lmi/handler.d.ts",
+        "lib/esm/lmi/handler.d.ts"
       ],
       "types": [
         "lib/cjs/types.d.ts",

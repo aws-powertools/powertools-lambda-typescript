@@ -156,6 +156,39 @@ describe('Converters', () => {
       expect(request.body).toBe(null);
     });
 
+    it('ignores a body on a lowercase get request', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        httpMethod: 'get',
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('GET');
+      expect(request.body).toBe(null);
+    });
+
+    it('normalizes a lowercase patch method', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        httpMethod: 'patch',
+        body: '{"key":"value"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('PATCH');
+    });
+
     it('decodes base64 encoded body', () => {
       // Prepare
       const originalText = 'Hello World';
@@ -745,6 +778,37 @@ describe('Converters', () => {
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('HEAD');
       expect(request.body).toBe(null);
+    });
+
+    it('ignores a body on a lowercase get request', () => {
+      // Prepare
+      const event = {
+        ...createTestEventV2('/test', 'get'),
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('GET');
+      expect(request.body).toBe(null);
+    });
+
+    it('normalizes a lowercase patch method', () => {
+      // Prepare
+      const event = {
+        ...createTestEventV2('/test', 'patch'),
+        body: '{"key":"value"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('PATCH');
     });
 
     it('decodes base64 encoded body', () => {

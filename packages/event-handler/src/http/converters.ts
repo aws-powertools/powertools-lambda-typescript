@@ -13,6 +13,7 @@ import type {
   ExtendedAPIGatewayProxyResult,
   ExtendedAPIGatewayProxyResultBody,
   HandlerResponse,
+  HttpMethod,
   HttpStatusCode,
   ResponseType,
   ResponseTypeMap,
@@ -37,6 +38,19 @@ import {
 } from './utils.js';
 
 /**
+ * Reads and normalises the HTTP method of an event, throwing when it is not one we route.
+ *
+ * @param rawMethod - The method as it appears on the event
+ */
+const toHttpMethod = (rawMethod: string): HttpMethod => {
+  const method = rawMethod.toUpperCase();
+  if (!isHttpMethod(method)) {
+    throw new InvalidHttpMethodError(method);
+  }
+  return method;
+};
+
+/**
  * Creates a request body from API Gateway event body, handling base64 decoding if needed.
  *
  * GET and HEAD requests are not allowed to carry a body when constructing a
@@ -49,7 +63,7 @@ import {
 const createBody = (
   body: string | null,
   isBase64Encoded: boolean,
-  httpMethod: string
+  httpMethod: HttpMethod
 ) => {
   if (httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.HEAD) {
     return null;
@@ -121,8 +135,9 @@ const populateV1QueryParams = (
  * @returns A Web API Request object
  */
 const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
-  const { httpMethod, path } = event;
+  const { path } = event;
   const { domainName } = event.requestContext;
+  const method = toHttpMethod(event.httpMethod);
 
   const headers = new Headers();
   populateV1Headers(headers, event);
@@ -134,9 +149,9 @@ const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
   populateV1QueryParams(url, event);
 
   return new Request(url.toString(), {
-    method: httpMethod,
+    method,
     headers,
-    body: createBody(event.body, event.isBase64Encoded, httpMethod),
+    body: createBody(event.body, event.isBase64Encoded, method),
   });
 };
 
@@ -148,10 +163,8 @@ const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
  */
 const proxyEventV2ToWebRequest = (event: APIGatewayProxyEventV2): Request => {
   const { rawPath, rawQueryString } = event;
-  const {
-    http: { method },
-    domainName,
-  } = event.requestContext;
+  const { domainName } = event.requestContext;
+  const method = toHttpMethod(event.requestContext.http.method);
 
   const headers = new Headers();
   for (const [name, value] of Object.entries(event.headers)) {
@@ -183,7 +196,8 @@ const proxyEventV2ToWebRequest = (event: APIGatewayProxyEventV2): Request => {
  * @returns A Web API Request object
  */
 const albEventToWebRequest = (event: ALBEvent): Request => {
-  const { httpMethod, path } = event;
+  const { path } = event;
+  const method = toHttpMethod(event.httpMethod);
 
   const headers = new Headers();
   populateV1Headers(headers, event);
@@ -195,9 +209,9 @@ const albEventToWebRequest = (event: ALBEvent): Request => {
   populateV1QueryParams(url, event);
 
   return new Request(url.toString(), {
-    method: httpMethod,
+    method,
     headers,
-    body: createBody(event.body ?? null, event.isBase64Encoded, httpMethod),
+    body: createBody(event.body ?? null, event.isBase64Encoded, method),
   });
 };
 
@@ -212,15 +226,7 @@ const proxyEventToWebRequest = (
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent
 ): Request => {
   if (isAPIGatewayProxyEventV2(event)) {
-    const method = event.requestContext.http.method.toUpperCase();
-    if (!isHttpMethod(method)) {
-      throw new InvalidHttpMethodError(method);
-    }
     return proxyEventV2ToWebRequest(event);
-  }
-  const method = event.httpMethod.toUpperCase();
-  if (!isHttpMethod(method)) {
-    throw new InvalidHttpMethodError(method);
   }
   if (isALBEvent(event)) {
     return albEventToWebRequest(event);

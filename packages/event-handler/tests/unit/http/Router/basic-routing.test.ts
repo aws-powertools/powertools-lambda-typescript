@@ -331,6 +331,27 @@ describe.each([
   });
 });
 
+describe('Class: Router - GET request with a body', () => {
+  it.each([
+    { version: 'V1', createEvent: createTestEvent },
+    { version: 'V2', createEvent: createTestEventV2 },
+  ])(
+    'resolves a GET request that carries a body end to end ($version)',
+    async ({ createEvent }) => {
+      // Prepare
+      const app = new Router();
+      app.get('/test', async () => ({ result: 'ok' }));
+      const event = { ...createEvent('/test', 'GET'), body: '{"q":"x"}' };
+
+      // Act
+      const result = await app.resolve(event, context);
+
+      // Assess
+      expect(result.statusCode).toBe(HttpStatusCodes.OK);
+    }
+  );
+});
+
 describe('Class: Router - V1 Multivalue Headers Support', () => {
   it('handles ExtendedAPIGatewayProxyResult with multiValueHeaders field', async () => {
     // Prepare

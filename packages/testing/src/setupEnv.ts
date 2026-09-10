@@ -1,8 +1,8 @@
-import {
-  type CustomMatcher,
-  toReceiveCommandWith,
-} from 'aws-sdk-client-mock-vitest';
 import { expect, vi } from 'vitest';
+import {
+  type CommandMatcher,
+  toReceiveCommandWith,
+} from './toReceiveCommandWith.js';
 
 expect.extend({ toReceiveCommandWith });
 
@@ -234,7 +234,7 @@ expect.addEqualityTesters([
 
 declare module 'vitest' {
   // biome-ignore lint/suspicious/noExplicitAny: vitest typings expect an any type
-  interface Assertion<T = any> extends CustomMatcher<T> {
+  interface Assertion<T = any> extends CommandMatcher {
     /**
      * Asserts that the logger function has been called with the expected log message
      * during any call.
@@ -360,7 +360,7 @@ declare module 'vitest' {
       expected: Record<string, unknown>
     ): void;
   }
-  interface AsymmetricMatchersContaining extends CustomMatcher {}
+  interface AsymmetricMatchersContaining extends CommandMatcher {}
 }
 
 // Set up environment variables for testing

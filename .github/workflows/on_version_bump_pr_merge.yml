@@ -9,9 +9,11 @@ name: Auto-trigger Make Release on version bump PR merge
 #
 # SECURITY NOTE
 #
-# Deliberately uses `pull_request` (not `pull_request_target`), so PRs from forks keep
-# GitHub's default read-only token and no secrets - a forked PR could never reach the
-# `gh workflow run` step even if every other condition below matched.
+# Uses `pull_request_target` so unrelated fork PRs can skip without workflow approval.
+# The workflow definition comes from the default branch. This event can grant the
+# job's write permissions even for fork events, so all job conditions below are required.
+# The job only dispatches a fixed workflow on `main`; it never checks out or executes
+# PR code.
 #
 # `github.event.pull_request.user.login` is set by GitHub from the identity that actually
 # called the API to open the PR - it isn't spoofable via branch name, PR title, or body.
@@ -22,12 +24,14 @@ name: Auto-trigger Make Release on version bump PR merge
 # GitHub exposes as the PR's author).
 #
 # Combined with `head.repo.full_name == github.repository` (rejects forks explicitly)
-# and `base.ref == 'main'`, only genuine automation-opened, same-repo, main-targeted
-# PRs can reach the dispatch step.
+# and the merge and branch checks, only merged, same-repo, bot-authored PRs with the
+# expected prefix can reach the dispatch step. Bot authorship does not attest which
+# workflow created the PR. Unrelated closures on `main` still create skipped runs.
 
 on:
-  pull_request:
+  pull_request_target:
     types: [closed]
+    branches: [main]
 
 permissions: {}
 

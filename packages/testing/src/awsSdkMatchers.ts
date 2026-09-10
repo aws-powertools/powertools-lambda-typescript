@@ -3,9 +3,9 @@ import type { AwsCommand, AwsStub } from 'aws-sdk-client-mock';
 import { expect, type MatcherResult, type MatcherState } from 'vitest';
 
 /**
- * Describes the AWS command matcher available in test assertions.
+ * Describes the AWS SDK matchers available in test assertions.
  */
-interface CommandMatcher {
+interface AwsSdkMatchers {
   /**
    * Asserts that at least one call to the command contains the expected input.
    *
@@ -50,5 +50,5 @@ function toReceiveCommandWith<
   };
 }
 
-export type { CommandMatcher };
+export type { AwsSdkMatchers };
 export { toReceiveCommandWith };

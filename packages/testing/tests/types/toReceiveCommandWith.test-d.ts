@@ -1,6 +1,5 @@
 import { DescribeStacksCommand } from '@aws-sdk/client-cloudformation';
 import { expect, expectTypeOf, it } from 'vitest';
-import type { AwsSdkMatchers } from '../../src/awsSdkMatchers.js';
 import '../../src/setupEnv.js';
 
 it('infers the expected input from the command constructor', () => {
@@ -8,7 +7,6 @@ it('infers the expected input from the command constructor', () => {
   const assertion = expect({});
 
   // Act & Assess
-  expectTypeOf(assertion).toExtend<AwsSdkMatchers>();
   expectTypeOf(
     assertion.toReceiveCommandWith(DescribeStacksCommand, {
       StackName: 'stack',

@@ -124,6 +124,18 @@ type EventTypeMap = {
   ALB: ALBEvent;
 };
 
+/**
+ * Associates an incoming event with its integration's response format.
+ *
+ * @internal
+ */
+type ClassifiedEvent = {
+  [T in keyof EventTypeMap]: {
+    responseType: T;
+    event: EventTypeMap[T];
+  };
+}[keyof EventTypeMap];
+
 type ResponseTypeMap = {
   ApiGatewayV1: APIGatewayProxyResult;
   ApiGatewayV2: APIGatewayProxyStructuredResultV2;
@@ -611,6 +623,7 @@ type HandlerOrOptions<
 
 export type {
   BinaryResult,
+  ClassifiedEvent,
   CompiledRoute,
   CompressionOptions,
   CorsOptions,

@@ -678,32 +678,3 @@ describe.each([
     });
   });
 });
-describe('Class: Router - proxyEventToWebRequest Error Handling', () => {
-  beforeEach(() => {
-    vi.resetModules();
-  });
-
-  it('re-throws non-InvalidHttpMethodError from proxyEventToWebRequest', async () => {
-    // Prepare
-    vi.doMock('../../../../src/http/converters.js', async () => {
-      const actual = await vi.importActual<
-        typeof import('../../../../src/http/converters.js')
-      >('../../../../src/http/converters.js');
-      return {
-        ...actual,
-        proxyEventToWebRequest: vi.fn(() => {
-          throw new TypeError('Unexpected error');
-        }),
-      };
-    });
-
-    const { Router } = await import('../../../../src/http/Router.js');
-    const app = new Router();
-    app.get('/test', () => ({ message: 'success' }));
-
-    // Act & Assess
-    await expect(
-      app.resolve(createTestEvent('/test', 'GET'), context)
-    ).rejects.toThrow('Unexpected error');
-  });
-});

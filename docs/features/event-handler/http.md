@@ -312,6 +312,10 @@ You can combine both request and response validation in a single route by provid
 
 You can access request details such as headers, query parameters, and body using the `Request` object provided to your route handlers and middleware functions via `reqCtx.req`.
 
+For API Gateway v1, API Gateway v2, and ALB events, the router automatically decodes base64 request bodies into bytes. Use `reqCtx.req.arrayBuffer()` to read binary uploads or `reqCtx.req.formData()` to read multipart uploads. You can continue using `reqCtx.req.text()` and `reqCtx.req.json()` for text and JSON bodies.
+
+The router preserves the request's `Content-Type` header. If the event contains a base64 body without this header, the router leaves the content type unset. Plain string bodies without a content type retain the Web `Request` default of `text/plain;charset=UTF-8`. Bodies on GET and HEAD requests are ignored.
+
 ### Error handling
 
 You can use the `errorHandler()` method as a higher-order function or class method decorator to define a custom error handler for errors thrown in your route handlers or middleware.

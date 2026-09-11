@@ -53,6 +53,12 @@ Run from the repo root with `-w <workspace>`, or from the package directory:
 - `npm run lint` to check; `npm run lint:fix` to auto-fix (review its changes).
 - `npm run build:tests` to type-check source and tests without emitting — CI compiles them separately from running them. `npm run build` additionally compiles the CommonJS target.
 
+Test configs in `packages/*/tests/tsconfig.json` extend the root `tsconfig.test.json`, which inherits common compiler options from `tsconfig.json`. Keep only package-specific exceptions in the package test configs.
+
+The shared test config includes `packages/testing/src/setupEnv.ts` through `files` so custom matcher types are available even when a package overrides `include`; `${configDir}` resolves source and test paths relative to each package's test config.
+
+Vitest runs tests; TypeScript only checks them. Test projects disable `composite` and declaration output, retain incremental checking, and store their cache in each workspace's `.tsbuildinfo/tests.json`, separately from production build caches. Vitest's runtime `setupFiles` registration remains in its own configuration.
+
 ## Unit tests
 
 Tests use `vitest` and live in each package's `tests/unit` directory. Run with `npm run test:unit -w packages/<name>` (or `npm run test:unit` from the package directory). Write unit tests only — end-to-end tests happen when the user asks for them.

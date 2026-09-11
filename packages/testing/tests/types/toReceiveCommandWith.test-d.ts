@@ -1,6 +1,5 @@
 import { DescribeStacksCommand } from '@aws-sdk/client-cloudformation';
 import { expect, expectTypeOf, it } from 'vitest';
-import '../../src/setupEnv.js';
 
 it('infers the expected input from the command constructor', () => {
   // Prepare

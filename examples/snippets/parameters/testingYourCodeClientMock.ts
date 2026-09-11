@@ -6,7 +6,6 @@ import {
 import { mockClient } from 'aws-sdk-client-mock';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { handler } from './testingYourCodeFunctionsHandler.js';
-import 'aws-sdk-client-mock-vitest';
 
 describe('Function tests', () => {
   const client = mockClient(SecretsManagerClient);

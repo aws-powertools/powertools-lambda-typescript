@@ -522,10 +522,10 @@ A similar pattern can be applied also to any of the built-in provider classes - 
 	--8<-- "examples/snippets/parameters/testingYourCodeProvidersHandler.ts"
 	```
 
-For when you want to mock the AWS SDK v3 client directly, we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) and [`aws-sdk-client-mock-vitest`](https://www.npmjs.com/package/aws-sdk-client-mock-vitest) libraries. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
+For when you want to mock the AWS SDK v3 client directly, we recommend using the [`aws-sdk-client-mock`](https://www.npmjs.com/package/aws-sdk-client-mock) library. This is useful when you want to test how your code behaves when the AWS SDK v3 client throws an error or a specific response.
 
 === "handler.test.ts"
-	```typescript hl_lines="2-7 12 16 21-28"
+	```typescript hl_lines="2-7 11 15 20-27"
 	--8<-- "examples/snippets/parameters/testingYourCodeClientMock.ts"
 	```
 

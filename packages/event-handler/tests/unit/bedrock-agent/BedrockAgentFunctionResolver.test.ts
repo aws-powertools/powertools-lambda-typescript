@@ -589,7 +589,7 @@ describe('Class: BedrockAgentFunctionResolver', () => {
       );
       expect(console.error).toHaveBeenCalledWith(
         'An error occurred in tool error-tool.',
-        new Error('Something went wrong')
+        toThrow
       );
     }
   );

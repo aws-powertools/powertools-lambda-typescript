@@ -103,7 +103,7 @@ describe('Converters', () => {
       expect(url.searchParams.get('sort')).toBe('desc');
     });
 
-    it('handles POST request with string body', () => {
+    it('handles POST request with string body', async () => {
       // Prepare
       const event = {
         ...baseEvent,
@@ -118,7 +118,7 @@ describe('Converters', () => {
       // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('POST');
-      expect(request.text()).resolves.toBe('{"key":"value"}');
+      await expect(request.text()).resolves.toBe('{"key":"value"}');
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
@@ -189,7 +189,7 @@ describe('Converters', () => {
       expect(request.method).toBe('PATCH');
     });
 
-    it('decodes base64 encoded body', () => {
+    it('decodes base64 encoded body', async () => {
       // Prepare
       const originalText = 'Hello World';
       const base64Text = Buffer.from(originalText).toString('base64');
@@ -205,7 +205,7 @@ describe('Converters', () => {
 
       // Assess
       expect(request).toBeInstanceOf(Request);
-      expect(request.text()).resolves.toBe(originalText);
+      await expect(request.text()).resolves.toBe(originalText);
     });
 
     it('handles single-value headers', () => {
@@ -522,7 +522,7 @@ describe('Converters', () => {
       expect(request.url).toBe('http://localhost/test');
     });
 
-    it('handles POST request with string body', () => {
+    it('handles POST request with string body', async () => {
       // Prepare
       const event = {
         ...baseEvent,
@@ -537,7 +537,7 @@ describe('Converters', () => {
       // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('POST');
-      expect(request.text()).resolves.toBe('{"key":"value"}');
+      await expect(request.text()).resolves.toBe('{"key":"value"}');
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
@@ -580,7 +580,7 @@ describe('Converters', () => {
       expect(request.body).toBe(null);
     });
 
-    it('decodes base64 encoded body', () => {
+    it('decodes base64 encoded body', async () => {
       // Prepare
       const originalText = 'Hello World';
       const base64Text = Buffer.from(originalText).toString('base64');
@@ -596,7 +596,7 @@ describe('Converters', () => {
 
       // Assess
       expect(request).toBeInstanceOf(Request);
-      expect(request.text()).resolves.toBe(originalText);
+      await expect(request.text()).resolves.toBe(originalText);
     });
 
     it('handles multiValueHeaders', () => {
@@ -730,7 +730,7 @@ describe('Converters', () => {
       expect(request.url).toBe('http://api.example.com/test');
     });
 
-    it('handles POST request with string body', () => {
+    it('handles POST request with string body', async () => {
       // Prepare
       const event = {
         ...createTestEventV2('/test', 'POST'),
@@ -744,7 +744,7 @@ describe('Converters', () => {
       // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('POST');
-      expect(request.text()).resolves.toBe('{"key":"value"}');
+      await expect(request.text()).resolves.toBe('{"key":"value"}');
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
@@ -811,7 +811,7 @@ describe('Converters', () => {
       expect(request.method).toBe('PATCH');
     });
 
-    it('decodes base64 encoded body', () => {
+    it('decodes base64 encoded body', async () => {
       // Prepare
       const originalText = 'Hello World';
       const base64Text = Buffer.from(originalText).toString('base64');
@@ -826,7 +826,7 @@ describe('Converters', () => {
 
       // Assess
       expect(request).toBeInstanceOf(Request);
-      expect(request.text()).resolves.toBe(originalText);
+      await expect(request.text()).resolves.toBe(originalText);
     });
 
     it('handles cookies array', () => {
@@ -1292,7 +1292,7 @@ describe('Converters', () => {
       expect(result.headers.get('Cache-Control')).toBe('no-cache, no-store');
     });
 
-    it('converts plain object to JSON Response with default headers', () => {
+    it('converts plain object to JSON Response with default headers', async () => {
       // Prepare
       const obj = { message: 'success' };
 
@@ -1302,7 +1302,7 @@ describe('Converters', () => {
       // Assess
       expect(result).toBeInstanceOf(Response);
       expect(result.status).toBe(HttpStatusCodes.OK);
-      expect(result.text()).resolves.toBe(JSON.stringify(obj));
+      await expect(result.text()).resolves.toBe(JSON.stringify(obj));
       expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
@@ -1375,7 +1375,7 @@ describe('Converters', () => {
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
 
-    it('merges headers from resHeaders with Response object, headers from Response take precedence', () => {
+    it('merges headers from resHeaders with Response object, headers from Response take precedence', async () => {
       // Prepare
       const response = new Response('Hello', {
         headers: { 'content-type': 'text/plain' },
@@ -1395,7 +1395,7 @@ describe('Converters', () => {
       expect(result.status).toBe(HttpStatusCodes.OK);
       expect(result.headers.get('content-type')).toBe('text/plain');
       expect(result.headers.get('x-custom')).toBe('value');
-      expect(result.text()).resolves.toBe('Hello');
+      await expect(result.text()).resolves.toBe('Hello');
     });
 
     it('serializes JSON object body in APIGatewayProxyResult', async () => {

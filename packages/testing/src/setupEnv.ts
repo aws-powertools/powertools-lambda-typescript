@@ -272,8 +272,7 @@ interface AwsSdkMatchers {
 }
 
 declare module 'vitest' {
-  // biome-ignore lint/suspicious/noExplicitAny: vitest typings expect an any type
-  interface Assertion<T = any> extends AwsSdkMatchers {
+  interface Assertion<R, T> extends AwsSdkMatchers {
     /**
      * Asserts that the logger function has been called with the expected log message
      * during any call.

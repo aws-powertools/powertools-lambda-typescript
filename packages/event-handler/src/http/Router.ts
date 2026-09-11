@@ -22,6 +22,7 @@ import type {
 import type { IStore } from '../store/Store.js';
 import { Store } from '../store/Store.js';
 import type {
+  ClassifiedEvent,
   Env,
   ErrorConstructor,
   ErrorHandler,
@@ -53,15 +54,14 @@ import type {
 import type { HandlerResponse, ResolveOptions } from '../types/index.js';
 import { HttpStatusCodes, HttpVerbs } from './constants.js';
 import {
-  handlerResultToWebResponse,
-  proxyEventToWebRequest,
+  classifiedEventToWebRequest,
+  classifyEvent,
   webHeadersToApiGatewayHeaders,
   webResponseToProxyResult,
 } from './converters.js';
 import { ErrorHandlerRegistry } from './ErrorHandlerRegistry.js';
 import {
   HttpError,
-  InvalidEventError,
   InvalidHttpMethodError,
   MethodNotAllowedError,
   NotFoundError,
@@ -70,19 +70,25 @@ import { validate } from './middleware/validation.js';
 import { Route } from './Route.js';
 import { RouteHandlerRegistry } from './RouteHandlerRegistry.js';
 import {
+  applyHandlerResult,
   composeMiddleware,
   getBase64EncodingFromHeaders,
-  getBase64EncodingFromResult,
-  getStatusCode,
   HttpResponseStream,
-  isALBEvent,
-  isAPIGatewayProxyEventV1,
-  isAPIGatewayProxyEventV2,
   isBinaryResult,
   isExtendedAPIGatewayProxyResult,
   resolvePrefixedPath,
   stripTrailingSlashes,
 } from './utils.js';
+
+/**
+ * Carries the response and metadata needed for buffered or streaming output.
+ *
+ * @internal
+ */
+type ResolvedResponse = Pick<
+  RequestContext,
+  'res' | 'responseType' | 'isBase64Encoded'
+>;
 
 class Router<TEnv extends Env = Env> {
   /**
@@ -247,8 +253,15 @@ class Router<TEnv extends Env = Env> {
     };
   }
 
+  /**
+   * Builds the middleware context from a classified event and its Web Request.
+   *
+   * @param classified - The event and its integration
+   * @param context - The Lambda context
+   * @param options - The request, response, and store accessors
+   */
   #buildRequestContext(
-    event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent,
+    classified: ClassifiedEvent,
     context: Context,
     options: {
       req: Request;
@@ -256,7 +269,8 @@ class Router<TEnv extends Env = Env> {
       isHttpStreaming?: boolean;
     } & Pick<RequestContext<TEnv>, 'set' | 'get' | 'has' | 'delete' | 'shared'>
   ): RequestContext<TEnv> {
-    const common = {
+    return {
+      ...classified,
       context,
       req: options.req,
       res: options.res,
@@ -269,14 +283,6 @@ class Router<TEnv extends Env = Env> {
       delete: options.delete,
       shared: options.shared,
     };
-
-    if (isAPIGatewayProxyEventV2(event)) {
-      return { ...common, event, responseType: 'ApiGatewayV2' };
-    }
-    if (isALBEvent(event)) {
-      return { ...common, event, responseType: 'ALB' };
-    }
-    return { ...common, event, responseType: 'ApiGatewayV1' };
   }
 
   /**
@@ -286,50 +292,44 @@ class Router<TEnv extends Env = Env> {
    * @param event - The Lambda event to resolve
    * @param context - The Lambda context
    * @param options - Optional resolve options for scope binding
-   * @returns A handler response (Response, JSONObject, or ExtendedAPIGatewayProxyResult)
    */
   async #resolve(
     event: unknown,
     context: Context,
     options?: HttpResolveOptions
-  ): Promise<RequestContext<TEnv>> {
-    if (
-      !isAPIGatewayProxyEventV1(event) &&
-      !isAPIGatewayProxyEventV2(event) &&
-      !isALBEvent(event)
-    ) {
+  ): Promise<ResolvedResponse> {
+    let classified: ClassifiedEvent;
+    try {
+      classified = classifyEvent(event);
+    } catch (error) {
       this.logger.error(
         'Received an event that is not compatible with this resolver'
       );
-      throw new InvalidEventError();
+      throw error;
     }
-
-    const requestStore = new Store<RequestStoreOf<TEnv>>();
-    const storeAccessors = this.#createStoreAccessors(requestStore);
 
     let req: Request;
     try {
-      req = proxyEventToWebRequest(event);
+      req = classifiedEventToWebRequest(classified);
     } catch (err) {
       if (err instanceof InvalidHttpMethodError) {
         this.logger.error(err);
-        // We can't throw a MethodNotAllowedError outside the try block as it
-        // will be converted to an internal server error by the API Gateway runtime
-        return this.#buildRequestContext(event, context, {
-          req: new Request('https://invalid'),
+        return {
+          responseType: classified.responseType,
           res: new Response(null, {
             status: HttpStatusCodes.METHOD_NOT_ALLOWED,
             ...(options?.isHttpStreaming && {
               headers: { 'transfer-encoding': 'chunked' },
             }),
           }),
-          ...storeAccessors,
-        });
+        };
       }
       throw err;
     }
 
-    const requestContext = this.#buildRequestContext(event, context, {
+    const requestStore = new Store<RequestStoreOf<TEnv>>();
+    const storeAccessors = this.#createStoreAccessors(requestStore);
+    const requestContext = this.#buildRequestContext(classified, context, {
       req,
       res: new Response('', {
         status: HttpStatusCodes.INTERNAL_SERVER_ERROR,
@@ -370,14 +370,7 @@ class Router<TEnv extends Env = Env> {
           handlerRes = await handler(reqCtx);
         }
 
-        if (getBase64EncodingFromResult(handlerRes)) {
-          reqCtx.isBase64Encoded = true;
-        }
-
-        reqCtx.res = handlerResultToWebResponse(handlerRes, {
-          statusCode: getStatusCode(handlerRes),
-          resHeaders: reqCtx.res.headers,
-        });
+        applyHandlerResult(reqCtx, handlerRes);
 
         await next();
       };
@@ -402,14 +395,13 @@ class Router<TEnv extends Env = Env> {
         scope: options?.scope,
       });
 
-      if (getBase64EncodingFromResult(res)) {
-        requestContext.isBase64Encoded = true;
-      }
-
-      requestContext.res = handlerResultToWebResponse(res, {
-        statusCode: getStatusCode(res, HttpStatusCodes.INTERNAL_SERVER_ERROR),
-        resHeaders: requestContext.res.headers,
-      });
+      // the error response decides the encoding, not the failed handler result
+      requestContext.isBase64Encoded = undefined;
+      applyHandlerResult(
+        requestContext,
+        res,
+        HttpStatusCodes.INTERNAL_SERVER_ERROR
+      );
 
       return requestContext;
     }
@@ -451,13 +443,15 @@ class Router<TEnv extends Env = Env> {
     context: Context,
     options?: ResolveOptions
   ): Promise<RouterResponse> {
-    const reqCtx = await this.#resolve(event, context, options);
+    const resolvedResponse = await this.#resolve(event, context, options);
     const isBase64Encoded =
-      reqCtx.isBase64Encoded ??
-      getBase64EncodingFromHeaders(reqCtx.res.headers);
-    return webResponseToProxyResult(reqCtx.res, reqCtx.responseType, {
-      isBase64Encoded,
-    });
+      resolvedResponse.isBase64Encoded ??
+      getBase64EncodingFromHeaders(resolvedResponse.res.headers);
+    return webResponseToProxyResult(
+      resolvedResponse.res,
+      resolvedResponse.responseType,
+      { isBase64Encoded }
+    );
   }
 
   /**
@@ -474,36 +468,36 @@ class Router<TEnv extends Env = Env> {
     context: Context,
     options: ResolveStreamOptions
   ): Promise<void> {
-    const reqCtx = await this.#resolve(event, context, {
+    const resolvedResponse = await this.#resolve(event, context, {
       ...options,
       isHttpStreaming: true,
     });
-    await this.#streamHandlerResponse(reqCtx, options.responseStream);
+    await this.#streamHandlerResponse(resolvedResponse, options.responseStream);
   }
 
   /**
    * Streams a handler response to the Lambda response stream.
    * Converts the response to a web response and pipes it through the stream.
    *
-   * @param reqCtx - The request context containing the response to stream
+   * @param resolvedResponse - The resolved response and its output metadata
    * @param responseStream - The Lambda response stream to write to
    */
   async #streamHandlerResponse(
-    reqCtx: RequestContext,
+    resolvedResponse: ResolvedResponse,
     responseStream: ResponseStream
   ) {
     const { headers } = webHeadersToApiGatewayHeaders(
-      reqCtx.res.headers,
-      reqCtx.responseType
+      resolvedResponse.res.headers,
+      resolvedResponse.responseType
     );
     const resStream = HttpResponseStream.from(responseStream, {
-      statusCode: reqCtx.res.status,
+      statusCode: resolvedResponse.res.status,
       headers,
     });
 
-    if (reqCtx.res.body) {
+    if (resolvedResponse.res.body) {
       const nodeStream = Readable.fromWeb(
-        reqCtx.res.body as streamWeb.ReadableStream
+        resolvedResponse.res.body as streamWeb.ReadableStream
       );
       await pipeline(nodeStream, resStream);
     } else {

@@ -4,7 +4,8 @@ Reference for writing code and tests in this repo. Rules are grouped by concern;
 
 ## Project layout and imports
 
-- The codebase is TypeScript, ESM. Each utility lives in `packages/<package-name>` with `src` for source and `test` for tests.
+- The codebase is TypeScript, ESM. Each utility lives in `packages/<package-name>` with `src` for source and `tests` for tests, split into `tests/unit` and `tests/e2e`.
+- Not every workspace is a published package: `examples/snippets`, `layers`, and `packages/testing` share dependencies and tooling with the rest of the monorepo but never ship to npm.
 - Import across packages by package name (`import { myFunction } from '@aws-lambda-powertools/commons'`), with the dependency declared in the importing package's `package.json`. Relative paths stay within a package and always carry the `.js` extension (`from './utils.js'`).
 - Utilities and types shared by two or more packages belong in `@aws-lambda-powertools/commons`.
 - Sibling-package dependencies (including peerDependencies) are exact pins matching the current lockstep version (`"@aws-lambda-powertools/commons": "2.35.0"`), no range specifiers.
@@ -52,9 +53,17 @@ Run from the repo root with `-w <workspace>`, or from the package directory:
 - `npm run lint` to check; `npm run lint:fix` to auto-fix (review its changes).
 - `npm run build:tests` to type-check source and tests without emitting — CI compiles them separately from running them. `npm run build` additionally compiles the CommonJS target.
 
+Test configs in `packages/*/tests/tsconfig.json` extend the root `tsconfig.test.json`, which inherits common compiler options from `tsconfig.json`. Keep only package-specific exceptions in the package test configs.
+
+The shared test config includes `packages/testing/src/setupEnv.ts` through `files` so custom matcher types are available even when a package overrides `include`; `${configDir}` resolves source and test paths relative to each package's test config.
+
+Vitest runs tests; TypeScript only checks them. Test projects disable `composite` and declaration output, retain incremental checking, and store their cache in each workspace's `.tsbuildinfo/tests.json`, separately from production build caches. Vitest's runtime `setupFiles` registration remains in its own configuration.
+
 ## Unit tests
 
-Tests use `vitest` and live in each package's `test` directory. Run with `npm run test:unit -w packages/<name>` (or `npm run test:unit` from the package directory). Write unit tests only — end-to-end tests happen when the user asks for them.
+Tests use `vitest` and live in each package's `tests/unit` directory. Run with `npm run test:unit -w packages/<name>` (or `npm run test:unit` from the package directory). Write unit tests only — end-to-end tests happen when the user asks for them.
+
+Package test scripts use `vitest --run tests/unit` for unit tests, `vitest --run tests/types --typecheck` for type tests, and `vitest --run tests/e2e` for end-to-end tests. Use `echo 'Not Implemented'` when a package does not provide a suite.
 
 Coverage: CI enforces 100% coverage on `src/**` (types files excluded) via `npm run test:unit:coverage` — the plain test run skips coverage, so verify with the `:coverage` variant before finishing. Every new source line needs a covering test.
 
@@ -78,6 +87,26 @@ Environment:
 - `vi.mock` sparingly, for external dependencies only.
 - `console` is pre-mocked: use it freely in code under test and in assertions.
 - Set env vars with `vi.stubEnv()` and restore with `vi.unstubAllEnvs()` in `beforeEach`/`afterEach`; setupEnv pre-sets the standard Lambda env vars.
+
+Invocation-scoped state (`tests/unit/concurrency/`): when `AWS_LAMBDA_MAX_CONCURRENCY` is set, Logger, Metrics, and Batch keep per-invocation state in the `InvokeStore` from [`@aws/lambda-invoke-store`](https://www.npmjs.com/package/@aws/lambda-invoke-store). Otherwise they keep one value shared by all invocations. Two things about that package matter for tests:
+
+- The stores read `globalThis.awslambda.InvokeStore`. It only exists after something calls `InvokeStore.getInstanceAsync()`. The Lambda runtime does that at startup; tests have to do it themselves. Until then, with the env var set, every invocation-scoped read or write throws `InvokeStore is not available`.
+- The instance is created once and cached. Its kind depends on the env at that moment: with `AWS_LAMBDA_MAX_CONCURRENCY` set it uses `AsyncLocalStorage` and isolates invocations; without it, `run()` gives no isolation. Later calls return the cached instance whatever the env.
+
+So:
+
+- Call `InvokeStore._testing?.reset()` in `beforeEach` to drop the cached instance. setupEnv sets `AWS_LAMBDA_BENCHMARK_MODE=1` to expose `_testing`.
+- Use `sequence()` from `@aws-lambda-powertools/testing-utils` to interleave two invocations. It calls `getInstanceAsync()` for you, so code inside the invocation callbacks needs nothing more.
+- Code that runs before `sequence()`, such as a constructor or a test of the shared fallback outside any invocation, needs `await InvokeStore.getInstanceAsync()` after the env stub:
+
+  ```typescript
+  vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
+  await InvokeStore.getInstanceAsync();
+  const processor = new BatchProcessor(EventType.SQS);
+  ```
+
+- Never call `getInstanceAsync()` before the env stub, for example from a `beforeEach` that runs ahead of a per-test `vi.stubEnv()`. It caches the non-isolating store, and tests fail on assertions because one invocation reads the other's state. Nothing throws.
+- Tests for the `InvokeStore is not available` error stub the global away with `vi.stubGlobal('awslambda', undefined)`. Restore it with `vi.unstubAllGlobals()` in `afterEach` or later tests lose it too.
 
 When unsure, copy the pattern of an existing test in the same package.
 

@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { type Mock, vi } from 'vitest';
 import { BasePersistenceLayer } from '../../src/persistence/BasePersistenceLayer.js';
 import { CachePersistenceLayer } from '../../src/persistence/CachePersistenceLayer.js';
 import { DynamoDBPersistenceLayer } from '../../src/persistence/DynamoDBPersistenceLayer.js';
@@ -10,10 +10,10 @@ import type { IdempotencyRecord } from '../../src/persistence/IdempotencyRecord.
  * This class is used in the unit tests.
  */
 class PersistenceLayerTestClass extends BasePersistenceLayer {
-  public _deleteRecord = vi.fn();
-  public _getRecord = vi.fn();
-  public _putRecord = vi.fn();
-  public _updateRecord = vi.fn();
+  public _deleteRecord: Mock = vi.fn();
+  public _getRecord: Mock = vi.fn();
+  public _putRecord: Mock = vi.fn();
+  public _updateRecord: Mock = vi.fn();
 }
 
 /**

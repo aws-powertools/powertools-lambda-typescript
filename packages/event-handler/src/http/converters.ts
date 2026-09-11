@@ -10,9 +10,11 @@ import type {
 } from 'aws-lambda';
 import type { BodyInit } from 'undici-types';
 import type {
+  ClassifiedEvent,
   ExtendedAPIGatewayProxyResult,
   ExtendedAPIGatewayProxyResultBody,
   HandlerResponse,
+  HttpMethod,
   HttpStatusCode,
   ResponseType,
   ResponseTypeMap,
@@ -25,9 +27,11 @@ import {
   HttpVerbs,
   MULTI_VALUE_HEADERS_ALLOWLIST,
 } from './constants.js';
-import { InvalidHttpMethodError } from './errors.js';
+import { InvalidEventError, InvalidHttpMethodError } from './errors.js';
+import type { Router } from './Router.js';
 import {
   isALBEvent,
+  isAPIGatewayProxyEventV1,
   isAPIGatewayProxyEventV2,
   isBinaryResult,
   isExtendedAPIGatewayProxyResult,
@@ -37,36 +41,90 @@ import {
 } from './utils.js';
 
 /**
- * Creates a request body from API Gateway event body, handling base64 decoding if needed.
+ * Identifies the integration and retains its narrowed event.
+ *
+ * @param event - The incoming Lambda event
+ * @internal
+ */
+const classifyEvent = (event: unknown): ClassifiedEvent => {
+  if (isAPIGatewayProxyEventV2(event)) {
+    return { responseType: 'ApiGatewayV2', event };
+  }
+  if (isALBEvent(event)) {
+    return { responseType: 'ALB', event };
+  }
+  if (isAPIGatewayProxyEventV1(event)) {
+    return { responseType: 'ApiGatewayV1', event };
+  }
+  throw new InvalidEventError();
+};
+
+/**
+ * Uppercases the event's HTTP method and rejects unsupported methods.
+ *
+ * @param classified - The event and its integration
+ */
+const normalizeHttpMethod = (classified: ClassifiedEvent): HttpMethod => {
+  const rawMethod =
+    classified.responseType === 'ApiGatewayV2'
+      ? classified.event.requestContext.http.method
+      : classified.event.httpMethod;
+  const method = rawMethod.toUpperCase();
+  if (!isHttpMethod(method)) {
+    throw new InvalidHttpMethodError(method);
+  }
+  return method;
+};
+
+/**
+ * Preserves text bodies and decodes base64 bodies into bytes.
+ *
+ * GET and HEAD requests are not allowed to carry a body when constructing a
+ * Web API {@link Request | `Request`}, so any body present on the event is ignored for those methods.
  *
  * @param body - The raw body from the API Gateway event
  * @param isBase64Encoded - Whether the body is base64 encoded
- * @returns The decoded body string or null
+ * @param httpMethod - The HTTP method of the request
  */
-const createBody = (body: string | null, isBase64Encoded: boolean) => {
+const createBody = (
+  body: string | null,
+  isBase64Encoded: boolean,
+  httpMethod: HttpMethod
+): string | Uint8Array | null => {
+  if (httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.HEAD) {
+    return null;
+  }
+
   if (body === null) return null;
 
   if (!isBase64Encoded) {
     return body;
   }
-  return Buffer.from(body, 'base64').toString('utf8');
+  return Buffer.from(body, 'base64');
 };
 
 /**
- * Populates headers from single and multi-value header entries.
+ * Normalizes single-value headers, multi-value headers, and cookies.
  *
- * @param headers - The Headers object to populate
- * @param event - The API Gateway proxy event or ALB event
+ * @param classified - The event and its integration
  */
-const populateV1Headers = (
-  headers: Headers,
-  event: APIGatewayProxyEvent | ALBEvent
-): void => {
-  for (const [name, value] of Object.entries(event.headers ?? {})) {
+const createHeaders = (classified: ClassifiedEvent): Headers => {
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(classified.event.headers ?? {})) {
     if (value !== undefined) headers.set(name, value);
   }
 
-  for (const [name, values] of Object.entries(event.multiValueHeaders ?? {})) {
+  if (classified.responseType === 'ApiGatewayV2') {
+    const { cookies } = classified.event;
+    if (Array.isArray(cookies)) {
+      headers.set('Cookie', cookies.join('; '));
+    }
+    return headers;
+  }
+
+  for (const [name, values] of Object.entries(
+    classified.event.multiValueHeaders ?? {}
+  )) {
     for (const value of values ?? []) {
       const headerValue = headers.get(name);
       if (!headerValue?.includes(value)) {
@@ -74,13 +132,15 @@ const populateV1Headers = (
       }
     }
   }
+
+  return headers;
 };
 
 /**
  * Populates URL search parameters from single and multi-value query string parameters.
  *
  * @param url - The URL object to populate
- * @param event - The API Gateway proxy event or ALB event
+ * @param event - The API Gateway v1 or ALB event
  */
 const populateV1QueryParams = (
   url: URL,
@@ -104,123 +164,87 @@ const populateV1QueryParams = (
 };
 
 /**
- * Converts an API Gateway proxy event to a Web API Request object.
+ * Builds a URL from the structured path and query fields used by v1 and ALB.
  *
- * @param event - The API Gateway proxy event
- * @returns A Web API Request object
+ * Retains the existing URL resolution and query encoding behavior for both sources.
+ *
+ * @param event - The API Gateway v1 or ALB event
+ * @param headers - The normalized request headers
+ * @param fallbackHostname - The hostname to use when the Host header is absent
  */
-const proxyEventV1ToWebRequest = (event: APIGatewayProxyEvent): Request => {
-  const { httpMethod, path } = event;
-  const { domainName } = event.requestContext;
-
-  const headers = new Headers();
-  populateV1Headers(headers, event);
-
-  const hostname = headers.get('Host') ?? domainName;
+const createStructuredUrl = (
+  event: APIGatewayProxyEvent | ALBEvent,
+  headers: Headers,
+  fallbackHostname: string | undefined
+): URL => {
+  const hostname = headers.get('Host') ?? fallbackHostname;
   const protocol = headers.get('X-Forwarded-Proto') ?? 'https';
 
-  const url = new URL(path, `${protocol}://${hostname}/`);
+  const url = new URL(event.path, `${protocol}://${hostname}/`);
   populateV1QueryParams(url, event);
-
-  return new Request(url.toString(), {
-    method: httpMethod,
-    headers,
-    body: createBody(event.body, event.isBase64Encoded),
-  });
+  return url;
 };
 
 /**
- * Converts an API Gateway V2 proxy event to a Web API Request object.
+ * Builds a Web URL using the integration's path and query representation.
  *
- * @param event - The API Gateway V2 proxy event
- * @returns A Web API Request object
+ * @param classified - The event and its integration
+ * @param headers - The normalized request headers
  */
-const proxyEventV2ToWebRequest = (event: APIGatewayProxyEventV2): Request => {
-  const { rawPath, rawQueryString } = event;
-  const {
-    http: { method },
-    domainName,
-  } = event.requestContext;
-
-  const headers = new Headers();
-  for (const [name, value] of Object.entries(event.headers)) {
-    if (value !== undefined) headers.set(name, value);
+const createUrl = (classified: ClassifiedEvent, headers: Headers): URL => {
+  switch (classified.responseType) {
+    case 'ApiGatewayV1':
+      return createStructuredUrl(
+        classified.event,
+        headers,
+        classified.event.requestContext.domainName
+      );
+    case 'ApiGatewayV2': {
+      const { event } = classified;
+      const hostname = headers.get('Host') ?? event.requestContext.domainName;
+      const protocol = headers.get('X-Forwarded-Proto') ?? 'https';
+      const url = `${protocol}://${hostname}${event.rawPath}`;
+      return new URL(
+        event.rawQueryString ? `${url}?${event.rawQueryString}` : url
+      );
+    }
+    case 'ALB':
+      return createStructuredUrl(classified.event, headers, 'localhost');
   }
+};
 
-  if (Array.isArray(event.cookies)) {
-    headers.set('Cookie', event.cookies.join('; '));
-  }
-
-  const hostname = headers.get('Host') ?? domainName;
-  const protocol = headers.get('X-Forwarded-Proto') ?? 'https';
-
-  const url = rawQueryString
-    ? `${protocol}://${hostname}${rawPath}?${rawQueryString}`
-    : `${protocol}://${hostname}${rawPath}`;
-
+/**
+ * Constructs a Web Request from an already-classified event.
+ *
+ * @param classified - The event and its integration
+ * @internal
+ */
+const classifiedEventToWebRequest = (classified: ClassifiedEvent): Request => {
+  const method = normalizeHttpMethod(classified);
+  const headers = createHeaders(classified);
+  const url = createUrl(classified, headers);
   return new Request(url, {
     method,
     headers,
-    body: createBody(event.body ?? null, event.isBase64Encoded),
-  });
-};
-
-/**
- * Converts an ALB event to a Web API Request object.
- *
- * @param event - The ALB event
- * @returns A Web API Request object
- */
-const albEventToWebRequest = (event: ALBEvent): Request => {
-  const { httpMethod, path } = event;
-
-  const headers = new Headers();
-  populateV1Headers(headers, event);
-
-  const hostname = headers.get('Host') ?? 'localhost';
-  const protocol = headers.get('X-Forwarded-Proto') ?? 'https';
-
-  const url = new URL(path, `${protocol}://${hostname}/`);
-  populateV1QueryParams(url, event);
-
-  // ALB events represent GET and HEAD request bodies as empty strings
-  const body =
-    httpMethod === HttpVerbs.GET || httpMethod === HttpVerbs.HEAD
-      ? null
-      : createBody(event.body ?? null, event.isBase64Encoded);
-
-  return new Request(url.toString(), {
-    method: httpMethod,
-    headers,
-    body: body,
+    body: createBody(
+      classified.event.body ?? null,
+      classified.event.isBase64Encoded,
+      method
+    ),
   });
 };
 
 /**
  * Converts an API Gateway proxy event (V1 or V2) or ALB event to a Web API Request object.
- * Automatically detects the event version and calls the appropriate converter.
+ * Automatically detects the integration and normalizes its request fields.
  *
+ * @deprecated This converter is an implementation detail and will be removed in a future major version. Access `reqCtx.req` in {@link Router | `Router`} handlers or middleware instead.
  * @param event - The API Gateway proxy event (V1 or V2) or ALB event
- * @returns A Web API Request object
  */
 const proxyEventToWebRequest = (
   event: APIGatewayProxyEvent | APIGatewayProxyEventV2 | ALBEvent
 ): Request => {
-  if (isAPIGatewayProxyEventV2(event)) {
-    const method = event.requestContext.http.method.toUpperCase();
-    if (!isHttpMethod(method)) {
-      throw new InvalidHttpMethodError(method);
-    }
-    return proxyEventV2ToWebRequest(event);
-  }
-  const method = event.httpMethod.toUpperCase();
-  if (!isHttpMethod(method)) {
-    throw new InvalidHttpMethodError(method);
-  }
-  if (isALBEvent(event)) {
-    return albEventToWebRequest(event);
-  }
-  return proxyEventV1ToWebRequest(event);
+  return classifiedEventToWebRequest(classifyEvent(event));
 };
 
 /**
@@ -529,10 +553,14 @@ const handlerResultToWebResponse = (
       body = null;
     } else if (isNodeReadableStream(response.body)) {
       body = Readable.toWeb(response.body) as ReadableStream;
+    } else if (typeof response.body === 'string') {
+      // a base64 body is decoded so the Response carries the raw bytes
+      body = response.isBase64Encoded
+        ? Buffer.from(response.body, 'base64')
+        : response.body;
     } else if (
       isWebReadableStream(response.body) ||
-      response.body instanceof ArrayBuffer ||
-      typeof response.body === 'string'
+      response.body instanceof ArrayBuffer
     ) {
       body = response.body;
     } else {
@@ -570,6 +598,8 @@ const bodyToNodeStream = (body: ExtendedAPIGatewayProxyResultBody) => {
 
 export {
   bodyToNodeStream,
+  classifiedEventToWebRequest,
+  classifyEvent,
   handlerResultToWebResponse,
   proxyEventToWebRequest,
   webHeadersToApiGatewayHeaders,

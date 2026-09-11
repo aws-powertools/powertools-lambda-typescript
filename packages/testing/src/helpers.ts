@@ -114,6 +114,12 @@ type Invocation<T = unknown> = {
  * invocations using barrier synchronization. Each step waits for the corresponding step
  * in the other invocation to complete before proceeding to the next step.
  *
+ * Calls `InvokeStore.getInstanceAsync()` before running either invocation, so
+ * the `globalThis.awslambda.InvokeStore` global exists inside the callbacks.
+ * Code that touches invocation-scoped state before `sequence()` runs, such as
+ * a constructor, must call it itself after stubbing `AWS_LAMBDA_MAX_CONCURRENCY`.
+ * See "Invocation-scoped state" under Unit tests in `CODING_STANDARDS.md`.
+ *
  * @param inv1 - First invocation configuration
  * @param inv1.sideEffects - Array of functions to execute sequentially, synchronized with inv2
  * @param inv1.return - Function to call after all side effects, returns the test result

@@ -8,8 +8,8 @@
  *
  * The file will be restored to its original state after the release is complete.
  */
-const { readFileSync, writeFileSync } = require('node:fs');
-const { join, resolve } = require('node:path');
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 if (process.argv.length < 3) {
   console.error('Usage: node release_patch_package_json.js <package_path>\n');
@@ -89,5 +89,5 @@ const betaPackages = [];
   // Temporarily update the original package.json file.
   // This version will be picked up during the `npm publish` step, so that
   // the version number and metadata in the registry are correct and match the tarball.
-  writeFileSync('package.json', JSON.stringify(newPkgJson, null, 2));
+  writeFileSync(packageJsonPath, JSON.stringify(newPkgJson, null, 2));
 })();

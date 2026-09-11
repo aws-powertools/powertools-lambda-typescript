@@ -2,136 +2,17 @@ name: Code quality
 
 # USAGE
 #
-# Automatically triggered when a PR is added to the merge queue.
+# Automatically triggered when a PR is added to the merge queue. Runs the same linting
+# and unit test jobs as the PR workflow, see ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml.
 
 on:
   merge_group:
     branches:
       - main
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
-  code-quality:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    env:
-      NODE_ENV: dev
-    strategy:
-      matrix:
-        version: [22, 24]
-        workspace: [
-          "packages/batch",
-          "packages/commons",
-          "packages/event-handler",
-          "packages/idempotency",
-          "packages/jmespath",
-          "packages/logger",
-          "packages/tracer",
-          "packages/parser",
-          "packages/parameters",
-          "packages/metrics"
-        ]
-      fail-fast: false
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-      - name: Setup NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: ${{ matrix.version }}
-          cache: "npm"
-      - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
-        with:
-          nodeVersion: ${{ matrix.version }}
-      - name: Linting
-        run: npm run lint -w ${{ matrix.workspace }}
-      - name: Unit tests
-        run: |
-          npm run test:unit:coverage -w ${{ matrix.workspace }}
-          npm run test:unit:types -w ${{ matrix.workspace }}
-  check-examples:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    env:
-      NODE_ENV: dev
-    strategy:
-      matrix:
-        example: ["app"]
-      fail-fast: false
-    defaults:
-      run:
-        working-directory: examples/${{ matrix.example }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-      - name: Setup NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: "npm"
-      - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
-      - name: Run linting
-        run: npm run lint
-      - name: Run tests
-        run: npm t
-  check-layer-publisher:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    env:
-      NODE_ENV: dev
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-      - name: Setup NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: "npm"
-      - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
-      - name: Run linting
-        run: npm run lint -w layers
-      - name: Run tests
-        run: npm run test:unit -w layers
-  check-docs-snippets:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    env:
-      NODE_ENV: dev
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-      - name: Setup NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: "npm"
-      - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
-      - name: Run linting
-        run: npm run lint -w examples/snippets
-  check-docs:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    env:
-      NODE_ENV: dev
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-      - name: Setup NodeJS
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-          cache: "npm"
-      - name: Setup dependencies
-        uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
-      - name: Run linting
-        run: npm run lint:markdown
+  run-unit-tests:
+    uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml

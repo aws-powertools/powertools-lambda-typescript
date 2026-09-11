@@ -9,8 +9,8 @@
   "private": true,
   "scripts": {
     "test": "vitest --run",
-    "test:unit": "vitest --run",
-    "test:e2e": "echo 'Not implemented'",
+    "test:unit": "vitest --run tests/unit",
+    "test:e2e": "echo 'Not Implemented'",
     "lmi:deploy": "node lib/esm/lmi/deploySharedCapacityProvider.js",
     "lmi:destroy": "node lib/esm/lmi/destroySharedCapacityProvider.js",
     "e2e:sweep": "node lib/esm/e2e/sweepStaleStacksCli.js",
@@ -58,6 +58,10 @@
       "import": "./lib/esm/lmi/naming.js",
       "require": "./lib/cjs/lmi/naming.js"
     },
+    "./lmi/handler": {
+      "import": "./lib/esm/lmi/handler.js",
+      "require": "./lib/cjs/lmi/handler.js"
+    },
     "./context": {
       "import": "./lib/esm/context.js",
       "require": "./lib/cjs/context.js"
@@ -89,6 +93,10 @@
         "lib/cjs/lmi/naming.d.ts",
         "lib/esm/lmi/naming.d.ts"
       ],
+      "lmi/handler": [
+        "lib/cjs/lmi/handler.d.ts",
+        "lib/esm/lmi/handler.d.ts"
+      ],
       "types": [
         "lib/cjs/types.d.ts",
         "lib/esm/types.d.ts"
@@ -118,19 +126,19 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
   "dependencies": {
-    "@aws-cdk/toolkit-lib": "^1.40.0",
-    "@aws-sdk/client-cloudformation": "^3.1121.0",
-    "@aws-sdk/client-cloudwatch-logs": "^3.1121.0",
-    "@aws-sdk/client-lambda": "^3.1121.0",
+    "@aws-cdk/toolkit-lib": "^1.40.1",
+    "@aws-sdk/client-cloudformation": "^3.1127.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.1127.0",
+    "@aws-sdk/client-lambda": "^3.1127.0",
     "@aws/lambda-invoke-store": "0.3.0",
     "@smithy/util-utf8": "^4.5.2",
-    "aws-cdk-lib": "^2.267.0",
+    "aws-cdk-lib": "^2.268.0",
     "esbuild": "^0.28.2",
     "promise-retry": "^2.0.1"
   },
   "devDependencies": {
+    "@smithy/types": "^4.18.0",
     "@types/promise-retry": "^1.1.6",
-    "aws-sdk-client-mock": "^4.1.0",
-    "aws-sdk-client-mock-vitest": "^7.1.0"
+    "aws-sdk-client-mock": "^4.1.0"
   }
 }

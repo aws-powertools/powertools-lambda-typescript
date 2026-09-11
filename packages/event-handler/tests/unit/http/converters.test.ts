@@ -103,7 +103,7 @@ describe('Converters', () => {
       expect(url.searchParams.get('sort')).toBe('desc');
     });
 
-    it('handles POST request with string body', () => {
+    it('handles POST request with string body', async () => {
       // Prepare
       const event = {
         ...baseEvent,
@@ -118,11 +118,78 @@ describe('Converters', () => {
       // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('POST');
-      expect(request.text()).resolves.toBe('{"key":"value"}');
+      await expect(request.text()).resolves.toBe('{"key":"value"}');
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('decodes base64 encoded body', () => {
+    it('ignores a body on GET request', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        httpMethod: HttpVerbs.GET,
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('GET');
+      expect(request.body).toBe(null);
+    });
+
+    it('ignores a body on HEAD request', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        httpMethod: HttpVerbs.HEAD,
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('HEAD');
+      expect(request.body).toBe(null);
+    });
+
+    it('ignores a body on a lowercase get request', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        httpMethod: 'get',
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('GET');
+      expect(request.body).toBe(null);
+    });
+
+    it('normalizes a lowercase patch method', () => {
+      // Prepare
+      const event = {
+        ...baseEvent,
+        httpMethod: 'patch',
+        body: '{"key":"value"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('PATCH');
+    });
+
+    it('decodes base64 encoded body', async () => {
       // Prepare
       const originalText = 'Hello World';
       const base64Text = Buffer.from(originalText).toString('base64');
@@ -138,7 +205,7 @@ describe('Converters', () => {
 
       // Assess
       expect(request).toBeInstanceOf(Request);
-      expect(request.text()).resolves.toBe(originalText);
+      await expect(request.text()).resolves.toBe(originalText);
     });
 
     it('handles single-value headers', () => {
@@ -455,7 +522,7 @@ describe('Converters', () => {
       expect(request.url).toBe('http://localhost/test');
     });
 
-    it('handles POST request with string body', () => {
+    it('handles POST request with string body', async () => {
       // Prepare
       const event = {
         ...baseEvent,
@@ -470,7 +537,7 @@ describe('Converters', () => {
       // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('POST');
-      expect(request.text()).resolves.toBe('{"key":"value"}');
+      await expect(request.text()).resolves.toBe('{"key":"value"}');
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
@@ -513,7 +580,7 @@ describe('Converters', () => {
       expect(request.body).toBe(null);
     });
 
-    it('decodes base64 encoded body', () => {
+    it('decodes base64 encoded body', async () => {
       // Prepare
       const originalText = 'Hello World';
       const base64Text = Buffer.from(originalText).toString('base64');
@@ -529,7 +596,7 @@ describe('Converters', () => {
 
       // Assess
       expect(request).toBeInstanceOf(Request);
-      expect(request.text()).resolves.toBe(originalText);
+      await expect(request.text()).resolves.toBe(originalText);
     });
 
     it('handles multiValueHeaders', () => {
@@ -663,7 +730,7 @@ describe('Converters', () => {
       expect(request.url).toBe('http://api.example.com/test');
     });
 
-    it('handles POST request with string body', () => {
+    it('handles POST request with string body', async () => {
       // Prepare
       const event = {
         ...createTestEventV2('/test', 'POST'),
@@ -677,11 +744,74 @@ describe('Converters', () => {
       // Assess
       expect(request).toBeInstanceOf(Request);
       expect(request.method).toBe('POST');
-      expect(request.text()).resolves.toBe('{"key":"value"}');
+      await expect(request.text()).resolves.toBe('{"key":"value"}');
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('decodes base64 encoded body', () => {
+    it('ignores a body on GET request', () => {
+      // Prepare
+      const event = {
+        ...createTestEventV2('/test', HttpVerbs.GET),
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('GET');
+      expect(request.body).toBe(null);
+    });
+
+    it('ignores a body on HEAD request', () => {
+      // Prepare
+      const event = {
+        ...createTestEventV2('/test', HttpVerbs.HEAD),
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('HEAD');
+      expect(request.body).toBe(null);
+    });
+
+    it('ignores a body on a lowercase get request', () => {
+      // Prepare
+      const event = {
+        ...createTestEventV2('/test', 'get'),
+        body: '{"q":"x"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('GET');
+      expect(request.body).toBe(null);
+    });
+
+    it('normalizes a lowercase patch method', () => {
+      // Prepare
+      const event = {
+        ...createTestEventV2('/test', 'patch'),
+        body: '{"key":"value"}',
+      };
+
+      // Act
+      const request = proxyEventToWebRequest(event);
+
+      // Assess
+      expect(request).toBeInstanceOf(Request);
+      expect(request.method).toBe('PATCH');
+    });
+
+    it('decodes base64 encoded body', async () => {
       // Prepare
       const originalText = 'Hello World';
       const base64Text = Buffer.from(originalText).toString('base64');
@@ -696,7 +826,7 @@ describe('Converters', () => {
 
       // Assess
       expect(request).toBeInstanceOf(Request);
-      expect(request.text()).resolves.toBe(originalText);
+      await expect(request.text()).resolves.toBe(originalText);
     });
 
     it('handles cookies array', () => {
@@ -1162,7 +1292,7 @@ describe('Converters', () => {
       expect(result.headers.get('Cache-Control')).toBe('no-cache, no-store');
     });
 
-    it('converts plain object to JSON Response with default headers', () => {
+    it('converts plain object to JSON Response with default headers', async () => {
       // Prepare
       const obj = { message: 'success' };
 
@@ -1172,7 +1302,7 @@ describe('Converters', () => {
       // Assess
       expect(result).toBeInstanceOf(Response);
       expect(result.status).toBe(HttpStatusCodes.OK);
-      expect(result.text()).resolves.toBe(JSON.stringify(obj));
+      await expect(result.text()).resolves.toBe(JSON.stringify(obj));
       expect(result.headers.get('Content-Type')).toBe('application/json');
     });
 
@@ -1245,7 +1375,7 @@ describe('Converters', () => {
       expect(result.headers.get('content-type')).toBe('text/plain');
     });
 
-    it('merges headers from resHeaders with Response object, headers from Response take precedence', () => {
+    it('merges headers from resHeaders with Response object, headers from Response take precedence', async () => {
       // Prepare
       const response = new Response('Hello', {
         headers: { 'content-type': 'text/plain' },
@@ -1265,7 +1395,7 @@ describe('Converters', () => {
       expect(result.status).toBe(HttpStatusCodes.OK);
       expect(result.headers.get('content-type')).toBe('text/plain');
       expect(result.headers.get('x-custom')).toBe('value');
-      expect(result.text()).resolves.toBe('Hello');
+      await expect(result.text()).resolves.toBe('Hello');
     });
 
     it('serializes JSON object body in APIGatewayProxyResult', async () => {

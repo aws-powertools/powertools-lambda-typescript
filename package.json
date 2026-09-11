@@ -15,7 +15,6 @@
     "packages/testing",
     "examples/snippets",
     "layers",
-    "examples/app",
     "packages/event-handler",
     "packages/validation",
     "packages/kafka",
@@ -31,11 +30,11 @@
     "build": "npm run build -ws",
     "docs:docker:build": "docker build -t powertools-typescript/docs ./docs/",
     "docs:docker:run": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertools-typescript/docs",
-    "docs:local:setup": "python3 -m venv .venv && .venv/bin/pip install -r docs/requirements.txt",
+    "docs:local:setup": "${PYTHON:-python$(cut -d. -f1,2 docs/.python-version)} -m venv --clear .venv && .venv/bin/pip install --require-hashes -r docs/requirements.txt",
     "docs:local:run": ".venv/bin/mkdocs serve",
-    "docs:local:api": "typedoc .",
+    "docs:local:api": "typedoc",
     "postpublish": "git restore .",
-    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#CHANGELOG.md' '#**/*/CHANGELOG.md' '#examples/app/README.md' '#.venv' '#site'"
+    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#CHANGELOG.md' '#**/*/CHANGELOG.md' '#.venv' '#site'"
   },
   "repository": {
     "type": "git",
@@ -52,13 +51,13 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
   "devDependencies": {
-    "@biomejs/biome": "^2.5.11",
-    "@types/aws-lambda": "^8.10.162",
-    "@types/node": "^26.4.0",
-    "@vitest/coverage-v8": "4.1.11",
+    "@biomejs/biome": "^2.5.12",
+    "@types/aws-lambda": "^8.10.163",
+    "@types/node": "^26.5.0",
+    "@vitest/coverage-v8": "5.0.0",
     "esbuild": "^0.28.2",
     "husky": "^9.1.7",
-    "lint-staged": "^17.4.1",
+    "lint-staged": "^17.5.0",
     "markdownlint-cli2": "^0.23.2",
     "middy5": "npm:@middy/core@^5.5.1",
     "middy6": "npm:@middy/core@^6.4.5",
@@ -66,8 +65,8 @@
     "typedoc": "^0.28.20",
     "typedoc-plugin-missing-exports": "^4.1.4",
     "typescript": "^6.0.3",
-    "undici-types": "^8.10.1",
-    "vitest": "4.1.11"
+    "undici-types": "^8.10.2",
+    "vitest": "5.0.0"
   },
   "lint-staged": {
     "*.{js,ts,json}": "biome check --write --no-errors-on-unmatched",

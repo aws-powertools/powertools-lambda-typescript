@@ -19,6 +19,7 @@ import type {
   HttpStatusCode,
   Middleware,
   Path,
+  RequestContext,
   ResponseStream,
   ValidationResult,
 } from '../types/http.js';
@@ -310,10 +311,7 @@ export const composeMiddleware = (middleware: Middleware[]): Middleware => {
       // middleware result takes precedence to allow short-circuiting
       if (middlewareResult !== undefined) {
         result = middlewareResult;
-        reqCtx.res = handlerResultToWebResponse(middlewareResult, {
-          statusCode: getStatusCode(middlewareResult),
-          resHeaders: reqCtx.res.headers,
-        });
+        applyHandlerResult(reqCtx, middlewareResult);
       }
     };
 
@@ -396,14 +394,50 @@ export const HttpResponseStream =
     }
   };
 
+/**
+ * Determines whether a handler result must be base64 encoded.
+ *
+ * Binary results (`ArrayBuffer`, Node.js `Readable`, Web `ReadableStream`)
+ * are always encoded, whether returned directly or as the `body` of a proxy
+ * result. A proxy result with `isBase64Encoded: true` is honoured as-is; the
+ * flag describes a string body that is already base64, binary bodies are
+ * always treated as raw bytes.
+ *
+ * @param result - The value returned by the route handler
+ */
 export const getBase64EncodingFromResult = (result: HandlerResponse) => {
   if (isBinaryResult(result)) {
     return true;
   }
   if (isExtendedAPIGatewayProxyResult(result)) {
-    return isBinaryResult(result);
+    return result.isBase64Encoded === true || isBinaryResult(result.body);
   }
   return false;
+};
+
+/**
+ * Applies a handler, middleware, or error handler result to the request context.
+ *
+ * Replaces `reqCtx.res` with the result converted to a Web `Response`, keeping
+ * the headers already present on the context, and marks the context as base64
+ * encoded when the result is binary.
+ *
+ * @param reqCtx - The request context to update
+ * @param result - The value returned by the handler
+ * @param fallbackStatus - The status code to use when the result does not carry one
+ */
+export const applyHandlerResult = (
+  reqCtx: Pick<RequestContext, 'res' | 'isBase64Encoded'>,
+  result: HandlerResponse,
+  fallbackStatus?: HttpStatusCode
+): void => {
+  if (getBase64EncodingFromResult(result)) {
+    reqCtx.isBase64Encoded = true;
+  }
+  reqCtx.res = handlerResultToWebResponse(result, {
+    statusCode: getStatusCode(result, fallbackStatus),
+    resHeaders: reqCtx.res.headers,
+  });
 };
 
 export const getBase64EncodingFromHeaders = (headers: Headers): boolean => {

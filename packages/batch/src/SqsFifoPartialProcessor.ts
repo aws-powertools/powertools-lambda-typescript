@@ -27,15 +27,14 @@ import type {
  * @example
  * ```typescript
  * import {
- *   BatchProcessor,
- *   EventType,
  *   processPartialResponseSync,
+ *   SqsFifoPartialProcessor,
  * } from '@aws-lambda-powertools/batch';
  * import type { SQSRecord, SQSHandler } from 'aws-lambda';
  *
- * const processor = new BatchProcessor(EventType.SQS);
+ * const processor = new SqsFifoPartialProcessor();
  *
- * const recordHandler = async (record: SQSRecord): Promise<void> => {
+ * const recordHandler = (record: SQSRecord): void => {
  *   const payload = JSON.parse(record.body);
  * };
  *

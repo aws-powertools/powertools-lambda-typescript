@@ -16,6 +16,28 @@ describe.each([
   { version: 'V1', createEvent: createTestEvent },
   { version: 'V2', createEvent: createTestEventV2 },
 ])('Class: Router - Streaming ($version)', ({ createEvent }) => {
+  it.each([200, 204, 205, 304])(
+    'streams status %i with an empty proxy response body',
+    async (statusCode) => {
+      // Prepare
+      const app = new Router();
+      app.get('/empty', () => ({ statusCode, body: '' }));
+      const handler = streamify(app);
+      const responseStream = new ResponseStream();
+
+      // Act
+      const result = await handler(
+        createEvent('/empty', 'GET'),
+        responseStream,
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(statusCode);
+      expect(result.body).toBe('');
+    }
+  );
+
   it('streams a simple JSON response', async () => {
     // Prepare
     const app = new Router();

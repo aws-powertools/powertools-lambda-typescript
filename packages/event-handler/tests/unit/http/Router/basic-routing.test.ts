@@ -21,6 +21,38 @@ describe.each([
   { version: 'V2', createEvent: createTestEventV2 },
   { version: 'ALB', createEvent: createTestALBEvent },
 ])('Class: Router - Basic Routing ($version)', ({ createEvent }) => {
+  it.each([200, 204, 205, 304])(
+    'preserves status %i for a proxy result with an empty string body',
+    async (statusCode) => {
+      // Prepare
+      const app = new Router();
+      app.get('/empty', () => ({ statusCode, body: '' }));
+
+      // Act
+      const result = await app.resolve(createEvent('/empty', 'GET'), context);
+
+      // Assess
+      expect(result.statusCode).toBe(statusCode);
+      expect(result.body).toBe('');
+    }
+  );
+
+  it.each([204, 205, 304])(
+    'preserves status %i for a proxy result with an omitted body',
+    async (statusCode) => {
+      // Prepare
+      const app = new Router();
+      app.get('/empty', () => ({ statusCode }));
+
+      // Act
+      const result = await app.resolve(createEvent('/empty', 'GET'), context);
+
+      // Assess
+      expect(result.statusCode).toBe(statusCode);
+      expect(result.body).toBe('');
+    }
+  );
+
   const httpMethods = [
     ['GET', 'get'],
     ['POST', 'post'],

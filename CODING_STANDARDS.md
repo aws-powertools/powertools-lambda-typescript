@@ -79,7 +79,7 @@ Assertions:
 
 - Verify results with `expect` assertions on observable behavior.
 - Each assertion tests something meaningful; test behavior, and reach private methods only by extending the class in the test to expose them.
-- Custom matchers from `packages/testing/src/setupEnv.ts`: `toHaveLogged`, `toHaveLoggedNth`, `toHaveEmittedEMFWith`, `toHaveEmittedNthEMFWith`, `toHaveEmittedMetricWith`, `toHaveEmittedNthMetricWith`, plus `toReceiveCommandWith` for mocked AWS SDK clients.
+- Custom matchers from `packages/testing/src/matchers/`, registered by `setupEnv.ts`: `toHaveLogged`, `toHaveLoggedNth`, `toHaveEmittedEMFWith`, `toHaveEmittedNthEMFWith`, `toHaveEmittedMetricWith`, `toHaveEmittedNthMetricWith`, plus `toReceiveCommandWith` for mocked AWS SDK clients.
 
 Environment:
 

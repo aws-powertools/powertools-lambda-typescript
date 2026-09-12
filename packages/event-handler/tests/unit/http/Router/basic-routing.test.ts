@@ -598,14 +598,57 @@ describe.each([
     }
   );
 
-  it('does not set isBase64Encoded for text content-types', async () => {
+  it.each([
+    'application/pdf',
+    'application/zip',
+    'application/octet-stream',
+    'Application/PDF',
+    'application/zip; version=1',
+    'APPLICATION/OCTET-STREAM; charset=binary',
+  ])(
+    'preserves binary bytes in a Web Response with %s content-type',
+    async (contentType) => {
+      // Prepare
+      const app = new Router();
+      const bytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0xff, 0xfe, 0x00]);
+      app.get(
+        '/binary',
+        () =>
+          new Response(bytes, {
+            headers: { 'content-type': contentType },
+          })
+      );
+
+      // Act
+      const result = await app.resolve(createEvent('/binary', 'GET'), context);
+      const received = Buffer.from(
+        result.body ?? '',
+        result.isBase64Encoded ? 'base64' : 'utf8'
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.headers?.['content-type']).toBe(contentType);
+      expect(received.toString('hex')).toBe(Buffer.from(bytes).toString('hex'));
+      expect(result.isBase64Encoded).toBe(true);
+    }
+  );
+
+  it.each([
+    'text/plain',
+    'text/html; charset=utf-8',
+    'application/json',
+    'application/problem+json',
+    'application/xml',
+  ])('does not set isBase64Encoded for %s', async (contentType) => {
     // Prepare
     const app = new Router();
+    const body = '"text data"';
     app.get(
       '/text',
       () =>
-        new Response('text data', {
-          headers: { 'content-type': 'text/plain' },
+        new Response(body, {
+          headers: { 'content-type': contentType },
         })
     );
 
@@ -614,8 +657,8 @@ describe.each([
 
     // Assess
     expect(result.statusCode).toBe(200);
-    expect(result.body).toBe('text data');
-    expect(result.headers?.['content-type']).toBe('text/plain');
+    expect(result.body).toBe(body);
+    expect(result.headers?.['content-type']).toBe(contentType);
     expect(result.isBase64Encoded).toBe(false);
   });
 

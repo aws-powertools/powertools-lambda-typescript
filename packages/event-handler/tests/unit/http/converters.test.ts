@@ -1459,6 +1459,26 @@ describe('Converters', () => {
       await expect(result.text()).resolves.toBe('');
     });
 
+    it.each([200, 204, 205, 304])(
+      'handles an empty base64 proxy body with status %i',
+      async (statusCode) => {
+        // Prepare
+        const proxyResult = {
+          statusCode,
+          body: '',
+          isBase64Encoded: true,
+        };
+
+        // Act
+        const result = handlerResultToWebResponse(proxyResult);
+
+        // Assess
+        expect(result.status).toBe(statusCode);
+        expect(result.body).toBeNull();
+        await expect(result.text()).resolves.toBe('');
+      }
+    );
+
     it('does not double-encode a pre-serialized string body in APIGatewayProxyResult', async () => {
       // Prepare
       const proxyResult = {

@@ -549,7 +549,12 @@ const handlerResultToWebResponse = (
     addProxyEventHeaders(headers, response);
 
     let body: BodyInit | null;
-    if (response.body === undefined || response.body === null) {
+    if (
+      response.body === undefined ||
+      response.body === null ||
+      response.body === ''
+    ) {
+      // Web Response requires a null body for statuses such as 204 and 304.
       body = null;
     } else if (isNodeReadableStream(response.body)) {
       body = Readable.toWeb(response.body) as ReadableStream;

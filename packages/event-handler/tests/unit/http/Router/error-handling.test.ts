@@ -8,7 +8,185 @@ import {
   NotFoundError,
   Router,
 } from '../../../../src/http/index.js';
-import { createTestEvent, createTestEventV2 } from '../helpers.js';
+import {
+  createTestALBEvent,
+  createTestEvent,
+  createTestEventV2,
+} from '../helpers.js';
+
+describe.each([
+  { version: 'V1', createEvent: createTestEvent },
+  { version: 'V2', createEvent: createTestEventV2 },
+  { version: 'ALB', createEvent: createTestALBEvent },
+])('Class: Router - Error Handler Cycles ($version)', ({ createEvent }) => {
+  it.each([
+    { name: 'specific', errorClass: BadRequestError },
+    { name: 'catch-all', errorClass: Error },
+  ])(
+    'stops an async $name handler from re-entering',
+    async ({ errorClass }) => {
+      // Prepare
+      const app = new Router();
+      let calls = 0;
+      const errorHandler = vi.fn(async (error: Error) => {
+        calls += 1;
+        // Keep a regression from hanging the test runner.
+        if (calls > 50) throw new Error('Test bailout');
+        throw error;
+      });
+      app.errorHandler(errorClass, errorHandler);
+      app.get('/test', () => {
+        throw new BadRequestError('Invalid request');
+      });
+
+      // Act
+      const result = await app.resolve(createEvent('/test', 'GET'), context);
+
+      // Assess
+      expect(errorHandler).toHaveBeenCalledTimes(1);
+      expect(result.statusCode).toBe(400);
+      expect(JSON.parse(result.body ?? '{}')).toEqual({
+        statusCode: 400,
+        error: 'BadRequestError',
+        message: 'Invalid request',
+      });
+    }
+  );
+
+  it('stops a synchronous handler from throwing fresh matching errors repeatedly', async () => {
+    // Prepare
+    const app = new Router();
+    let calls = 0;
+    const errorHandler = vi.fn(() => {
+      calls += 1;
+      if (calls > 50) throw new Error('Test bailout');
+      throw new BadRequestError('Replacement error');
+    });
+    app.errorHandler(BadRequestError, errorHandler);
+    app.get('/test', () => {
+      throw new BadRequestError('Original error');
+    });
+
+    // Act
+    const result = await app.resolve(createEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(errorHandler).toHaveBeenCalledTimes(1);
+    expect(result.statusCode).toBe(400);
+    expect(JSON.parse(result.body ?? '{}').message).toBe('Replacement error');
+  });
+
+  it('stops a cycle between two handlers', async () => {
+    // Prepare
+    const app = new Router();
+    let calls = 0;
+    const firstHandler = vi.fn(async () => {
+      calls += 1;
+      if (calls > 50) throw new Error('Test bailout');
+      throw new NotFoundError('Translated error');
+    });
+    const secondHandler = vi.fn(async () => {
+      throw new BadRequestError('Cycle returns to the first handler');
+    });
+    app.errorHandler(BadRequestError, firstHandler);
+    app.errorHandler(NotFoundError, secondHandler);
+    app.get('/test', () => {
+      throw new BadRequestError('Original error');
+    });
+
+    // Act
+    const result = await app.resolve(createEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(firstHandler).toHaveBeenCalledTimes(1);
+    expect(secondHandler).toHaveBeenCalledTimes(1);
+    expect(result.statusCode).toBe(400);
+    expect(JSON.parse(result.body ?? '{}').message).toBe(
+      'Cycle returns to the first handler'
+    );
+  });
+
+  it('tracks a shared handler registered for multiple error types', async () => {
+    // Prepare
+    const app = new Router();
+    let calls = 0;
+    const errorHandler = vi.fn(async () => {
+      calls += 1;
+      if (calls > 50) throw new Error('Test bailout');
+      throw new NotFoundError('Translated error');
+    });
+    app.errorHandler<Error>([BadRequestError, NotFoundError], errorHandler);
+    app.get('/test', () => {
+      throw new BadRequestError('Original error');
+    });
+
+    // Act
+    const result = await app.resolve(createEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(errorHandler).toHaveBeenCalledTimes(1);
+    expect(result.statusCode).toBe(404);
+    expect(JSON.parse(result.body ?? '{}').message).toBe('Translated error');
+  });
+
+  it('allows delegation to a different error handler', async () => {
+    // Prepare
+    const app = new Router();
+    const firstHandler = vi.fn(async () => {
+      throw new NotFoundError('Translated error');
+    });
+    const secondHandler = vi.fn(
+      async () => new Response('Custom not found', { status: 404 })
+    );
+    app.errorHandler(BadRequestError, firstHandler);
+    app.errorHandler(NotFoundError, secondHandler);
+    app.get('/test', () => {
+      throw new BadRequestError('Original error');
+    });
+
+    // Act
+    const result = await app.resolve(createEvent('/test', 'GET'), context);
+
+    // Assess
+    expect(firstHandler).toHaveBeenCalledTimes(1);
+    expect(secondHandler).toHaveBeenCalledTimes(1);
+    expect(result.statusCode).toBe(404);
+    expect(result.body).toBe('Custom not found');
+  });
+
+  it('keeps error handler tracking local to concurrent requests', async () => {
+    // Prepare
+    const app = new Router();
+    const entered = Promise.withResolvers<void>();
+    const release = Promise.withResolvers<void>();
+    let calls = 0;
+    const errorHandler = vi.fn(async (error: Error) => {
+      calls += 1;
+      if (calls > 50) throw new Error('Test bailout');
+      entered.resolve();
+      await release.promise;
+      throw error;
+    });
+    app.errorHandler(BadRequestError, errorHandler);
+    app.get('/test/:id', ({ req }) => {
+      throw new BadRequestError(new URL(req.url).pathname);
+    });
+
+    // Act
+    const first = app.resolve(createEvent('/test/first', 'GET'), context);
+    await entered.promise;
+    const second = app.resolve(createEvent('/test/second', 'GET'), context);
+    release.resolve();
+    const results = await Promise.all([first, second]);
+
+    // Assess
+    expect(errorHandler).toHaveBeenCalledTimes(2);
+    expect(results.map((result) => result.statusCode)).toEqual([400, 400]);
+    expect(
+      results.map((result) => JSON.parse(result.body ?? '{}').message)
+    ).toEqual(['/test/first', '/test/second']);
+  });
+});
 
 describe.each([
   { version: 'V1', createEvent: createTestEvent },

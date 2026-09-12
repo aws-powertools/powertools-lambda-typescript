@@ -440,6 +440,11 @@ export const applyHandlerResult = (
   });
 };
 
+/**
+ * Determines whether response headers identify binary or compressed content.
+ *
+ * @param headers - The response headers.
+ */
 export const getBase64EncodingFromHeaders = (headers: Headers): boolean => {
   const contentEncoding = headers.get(
     'content-encoding'
@@ -458,11 +463,16 @@ export const getBase64EncodingFromHeaders = (headers: Headers): boolean => {
   const contentType = headers.get('content-type');
   /* v8 ignore else -- @preserve */
   if (contentType != null) {
-    const type = contentType.split(';')[0].trim();
+    const type = contentType.split(';')[0].trim().toLowerCase();
     if (
       type.startsWith('image/') ||
       type.startsWith('audio/') ||
-      type.startsWith('video/')
+      type.startsWith('video/') ||
+      [
+        'application/pdf',
+        'application/zip',
+        'application/octet-stream',
+      ].includes(type)
     ) {
       return true;
     }

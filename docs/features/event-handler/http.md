@@ -749,6 +749,9 @@ a [Nodejs stream](https://nodejs.org/api/stream.html){target="_blank"}, or
 a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API#browser_compatibility){target="_blank"}
 directly from your handler. We will automatically serialize the response by setting the `isBase64Encoded` flag to `true` and `base64` encoding the binary data.
 
+When you return a Web `Response`, the router uses its `Content-Type` header to identify binary data. Buffered responses with `image/*`, `audio/*`, `video/*`, `application/pdf`, `application/zip`, or `application/octet-stream` content types are automatically base64 encoded.
+Matching is case-insensitive and ignores content-type parameters. For other binary content types, [set `reqCtx.isBase64Encoded` to `true`](#set-isbase64encoded-parameter).
+
 !!! note "Content types"
     The default header will be set to `application/json`. If you wish to change this,
     e.g., in the case of images, PDFs, videos, etc, then you should use the `reqCtx.res.headers` object to set the appropriate header.

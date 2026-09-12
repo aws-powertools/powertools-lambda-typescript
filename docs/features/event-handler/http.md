@@ -368,6 +368,8 @@ If you need to send custom headers or a different response structure/code, you c
 
 !!! tip "You can throw HTTP errors in your route handlers, middleware, or custom error handlers!"
 
+When a custom error handler throws an HTTP error, the router can pass it to another registered handler. Each handler runs at most once in that error-resolution chain. If dispatch would call a handler again, the router returns the HTTP error's built-in status and message instead. This also prevents cycles involving multiple handlers.
+
 === "index.ts"
 
     ```ts hl_lines="3 11"

@@ -46,6 +46,28 @@ describe.each([
     expect(JSON.parse(result.body).message).toBe('Invalid request');
   });
 
+  it.each([200, 204, 205, 304])(
+    'streams status %i with an empty proxy response body',
+    async (statusCode) => {
+      // Prepare
+      const app = new Router();
+      app.get('/empty', () => ({ statusCode, body: '' }));
+      const handler = streamify(app);
+      const responseStream = new ResponseStream();
+
+      // Act
+      const result = await handler(
+        createEvent('/empty', 'GET'),
+        responseStream,
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(statusCode);
+      expect(result.body).toBe('');
+    }
+  );
+
   it('streams a simple JSON response', async () => {
     // Prepare
     const app = new Router();

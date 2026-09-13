@@ -556,22 +556,30 @@ class Router<TEnv extends Env = Env> {
   }
 
   /**
-   * Handles errors by finding a registered error handler or falling
-   * back to a default handler.
+   * Handles errors through registered handlers and built-in responses.
+   *
+   * Calls each registered handler at most once per resolution chain. If a
+   * handler throws an HTTP error that would revisit a handler, returns that
+   * error's built-in response.
    *
    * @param error - The error to handle
    * @param options - Error resolve options including request context and scope
-   * @returns A Response object with appropriate status code and error details
    */
   protected async handleError(
     error: Error,
     options: ErrorResolveOptions
   ): Promise<HandlerResponse> {
-    const handler = this.errorHandlerRegistry.resolve(error);
-    if (handler !== null) {
+    const visitedHandlers = new Set<ErrorHandler>();
+    let currentError = error;
+
+    while (true) {
+      const handler = this.errorHandlerRegistry.resolve(currentError);
+      if (handler === null || visitedHandlers.has(handler)) break;
+      visitedHandlers.add(handler);
+
       try {
         const { scope, ...reqCtx } = options;
-        const body = await handler.apply(scope ?? this, [error, reqCtx]);
+        const body = await handler.apply(scope ?? this, [currentError, reqCtx]);
         if (
           body instanceof Response ||
           isExtendedAPIGatewayProxyResult(body) ||
@@ -579,20 +587,20 @@ class Router<TEnv extends Env = Env> {
         ) {
           return body;
         }
-        return this.#errorBodyToWebResponse(body, error);
+        return this.#errorBodyToWebResponse(body, currentError);
       } catch (handlerError) {
-        if (handlerError instanceof HttpError) {
-          return await this.handleError(handlerError, options);
+        if (!(handlerError instanceof HttpError)) {
+          return this.#defaultErrorHandler(handlerError as Error);
         }
-        return this.#defaultErrorHandler(handlerError as Error);
+        currentError = handlerError;
       }
     }
 
-    if (error instanceof HttpError) {
-      return error.toWebResponse();
+    if (currentError instanceof HttpError) {
+      return currentError.toWebResponse();
     }
 
-    return this.#defaultErrorHandler(error);
+    return this.#defaultErrorHandler(currentError);
   }
 
   /**

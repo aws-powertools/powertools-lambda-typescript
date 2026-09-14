@@ -10,9 +10,19 @@ type BasePersistenceLayerOptions = {
 interface BasePersistenceLayerInterface {
   configure(options?: BasePersistenceLayerOptions): void;
   isPayloadValidationEnabled(): boolean;
-  saveInProgress(data: unknown, remainingTimeInMillis?: number): Promise<void>;
-  saveSuccess(data: unknown, result: unknown): Promise<void>;
-  deleteRecord(data: unknown): Promise<void>;
+  saveInProgress(
+    data: unknown,
+    remainingTimeInMillis?: number
+  ): Promise<IdempotencyRecord>;
+  saveSuccess(
+    data: unknown,
+    result: unknown,
+    record?: Pick<IdempotencyRecord, 'idempotencyKey' | 'payloadHash'>
+  ): Promise<void>;
+  deleteRecord(
+    data: unknown,
+    record?: Pick<IdempotencyRecord, 'idempotencyKey'>
+  ): Promise<void>;
   getRecord(data: unknown): Promise<IdempotencyRecord>;
 }
 

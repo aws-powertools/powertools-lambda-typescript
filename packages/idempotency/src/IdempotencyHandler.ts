@@ -44,6 +44,14 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    */
   #functionPayloadToBeHashed: JSONValue;
   /**
+   * The record acquired when the operation started.
+   *
+   * Its key and payload hash identify the operation for the completion and
+   * cleanup calls, so they target the acquired record even if the wrapped
+   * function mutated the payload in the meantime.
+   */
+  #acquiredRecord?: IdempotencyRecord;
+  /**
    * Reference to the function to be made idempotent.
    */
   readonly #functionToMakeIdempotent: AnyFunction;
@@ -344,7 +352,8 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   readonly #deleteInProgressRecord = async (): Promise<void> => {
     try {
       await this.#persistenceStore.deleteRecord(
-        this.#functionPayloadToBeHashed
+        this.#functionPayloadToBeHashed,
+        this.#acquiredRecord
       );
     } catch (error) {
       throw new IdempotencyPersistenceLayerError(
@@ -376,7 +385,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       result: undefined,
     };
     try {
-      await this.#persistenceStore.saveInProgress(
+      this.#acquiredRecord = await this.#persistenceStore.saveInProgress(
         this.#functionPayloadToBeHashed,
         this.#idempotencyConfig.lambdaContext?.getRemainingTimeInMillis()
       );
@@ -437,7 +446,8 @@ export class IdempotencyHandler<Func extends AnyFunction> {
     try {
       await this.#persistenceStore.saveSuccess(
         this.#functionPayloadToBeHashed,
-        result
+        result,
+        this.#acquiredRecord
       );
     } catch (error) {
       throw new IdempotencyPersistenceLayerError(

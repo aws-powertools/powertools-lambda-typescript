@@ -51,6 +51,6 @@
   },
   "dependencies": {
     "arktype": "^2.2.3",
-    "valibot": "^1.4.2"
+    "valibot": "^1.5.0"
   }
 }

@@ -913,6 +913,15 @@ Below an example implementation of a custom persistence layer backed by a generi
 
     For example, the `_putRecord()` method needs to throw an error if a non-expired record already exists in the data store with a matching key.
 
+???+ tip "Overriding the public methods"
+    The protected methods above are the recommended extension points for a custom storage implementation. Subclasses that implement only these hooks need no further changes to keep the record identity guarantees of the base class.
+
+    If you override `saveInProgress()`, `saveSuccess()`, or `deleteRecord()` instead:
+
+    * Accept the optional trailing `identity` argument (typed as `IdempotencyRecordIdentity`) and forward it to `super`. Do this by default, even if your application does not mutate its inputs today.
+    * The utility resolves the idempotency key and payload hash before your function runs and passes them to these methods, so completion and cleanup target the record that was created even if the function mutated its input.
+    * An override that forwards only the original arguments discards the identity and falls back to hashing the payload as it is at that point.
+
 ### Manipulating the Idempotent Response
 
 You can set up a `responseHook` in the `IdempotentConfig` class to manipulate the returned data when an operation is idempotent. The hook function will be called with the current deserialized response object and the Idempotency record.

@@ -354,7 +354,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
     try {
       await this.#persistenceStore.deleteRecord(
         this.#functionPayloadToBeHashed,
-        this.#recordIdentity
+        { identity: this.#recordIdentity }
       );
     } catch (error) {
       throw new IdempotencyPersistenceLayerError(
@@ -394,7 +394,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       await this.#persistenceStore.saveInProgress(
         this.#functionPayloadToBeHashed,
         this.#idempotencyConfig.lambdaContext?.getRemainingTimeInMillis(),
-        this.#recordIdentity
+        { identity: this.#recordIdentity }
       );
 
       return returnValue;
@@ -454,7 +454,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       await this.#persistenceStore.saveSuccess(
         this.#functionPayloadToBeHashed,
         result,
-        this.#recordIdentity
+        { identity: this.#recordIdentity }
       );
     } catch (error) {
       throw new IdempotencyPersistenceLayerError(

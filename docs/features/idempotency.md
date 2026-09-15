@@ -918,8 +918,8 @@ Below an example implementation of a custom persistence layer backed by a generi
 
     If you override `saveInProgress()`, `saveSuccess()`, or `deleteRecord()` instead:
 
-    * Accept the optional trailing `identity` argument (typed as `IdempotencyRecordIdentity`) and forward it to `super`. Do this by default, even if your application does not mutate its inputs today.
-    * The utility resolves the idempotency key and payload hash before your function runs and passes them to these methods, so completion and cleanup target the record that was created even if the function mutated its input.
+    * Accept the optional trailing `options` argument (typed as `PersistenceOperationOptions`) and forward it unchanged to `super`, even if your application does not mutate its inputs today. This also preserves any option added in the future.
+    * The utility resolves the idempotency key and payload hash before your function runs and passes them as `options.identity` to these methods, so completion and cleanup target the record that was created even if the function mutated its input.
     * An override that forwards only the original arguments discards the identity and falls back to hashing the payload as it is at that point.
 
 ### Manipulating the Idempotent Response

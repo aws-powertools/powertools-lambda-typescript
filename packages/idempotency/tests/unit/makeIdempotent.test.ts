@@ -18,15 +18,18 @@ import {
 } from '../../src/index.js';
 import { makeHandlerIdempotent } from '../../src/middleware/makeHandlerIdempotent.js';
 import { IdempotencyRecord } from '../../src/persistence/index.js';
+import type { PersistenceOperationOptions } from '../../src/types/index.js';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
 
 const mockIdempotencyOptions = {
   persistenceStore: new PersistenceLayerTestClass(),
 };
 const remainingTImeInMillis = 1234;
-const recordIdentity = {
-  idempotencyKey: expect.any(String),
-  payloadHash: expect.any(String),
+const withIdentity = {
+  identity: {
+    idempotencyKey: expect.any(String),
+    payloadHash: expect.any(String),
+  },
 };
 const fnSuccessfull = async () => true;
 const fnError = () => {
@@ -83,13 +86,13 @@ describe('Function: makeIdempotent', () => {
     expect(saveInProgressSpy).toHaveBeenCalledWith(
       event,
       remainingTImeInMillis,
-      recordIdentity
+      withIdentity
     );
     expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
     expect(saveSuccessSpy).toHaveBeenCalledWith(
       event,
       context.awsRequestId,
-      recordIdentity
+      withIdentity
     );
   });
 
@@ -121,10 +124,10 @@ describe('Function: makeIdempotent', () => {
     expect(saveInProgressSpy).toHaveBeenCalledWith(
       event,
       remainingTImeInMillis,
-      recordIdentity
+      withIdentity
     );
     expect(deleteRecordSpy).toHaveBeenCalledTimes(1);
-    expect(deleteRecordSpy).toHaveBeenCalledWith(event, recordIdentity);
+    expect(deleteRecordSpy).toHaveBeenCalledWith(event, withIdentity);
   });
 
   it('handles an execution that throws an early middleware error (middleware)', async () => {
@@ -678,14 +681,10 @@ describe('Function: makeIdempotent', () => {
     expect(saveInProgressSpy).toHaveBeenCalledWith(
       event,
       remainingTImeInMillis,
-      recordIdentity
+      withIdentity
     );
     expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
-    expect(saveSuccessSpy).toHaveBeenCalledWith(
-      event,
-      '123456',
-      recordIdentity
-    );
+    expect(saveSuccessSpy).toHaveBeenCalledWith(event, '123456', withIdentity);
   });
 
   it('uses the specified argument as payload when wrapping an arbitrary function', async () => {
@@ -719,14 +718,10 @@ describe('Function: makeIdempotent', () => {
     expect(saveInProgressSpy).toHaveBeenCalledWith(
       '456',
       remainingTImeInMillis,
-      recordIdentity
+      withIdentity
     );
     expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
-    expect(saveSuccessSpy).toHaveBeenCalledWith(
-      '456',
-      '123456',
-      recordIdentity
-    );
+    expect(saveSuccessSpy).toHaveBeenCalledWith('456', '123456', withIdentity);
   });
 
   it('skips idempotency if error is thrown in the middleware', async () => {
@@ -1004,6 +999,37 @@ describe('Function: makeIdempotent', () => {
         remainingTimeInMillis?: number
       ): Promise<void> {
         await super.saveInProgress(data, remainingTimeInMillis);
+      }
+    }
+    const persistenceStore = new OverridingPersistenceLayer();
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+    const processOrder = makeIdempotent(
+      async (order: { id: string; normalized?: boolean }) => {
+        order.normalized = true;
+        return { processed: order.id };
+      },
+      { persistenceStore, config }
+    );
+
+    // Act
+    await processOrder({ id: 'order-1' });
+
+    // Assess
+    const [putRecord] = persistenceStore._putRecord.mock.calls[0];
+    const [updateRecord] = persistenceStore._updateRecord.mock.calls[0];
+    expect(updateRecord.idempotencyKey).toBe(putRecord.idempotencyKey);
+  });
+
+  it('completes the record it acquired when the persistence layer overrides saveSuccess and forwards the options', async () => {
+    // Prepare
+    class OverridingPersistenceLayer extends PersistenceLayerTestClass {
+      public async saveSuccess(
+        data: JSONValue,
+        result: JSONValue,
+        options?: PersistenceOperationOptions
+      ): Promise<void> {
+        await super.saveSuccess(data, result, options);
       }
     }
     const persistenceStore = new OverridingPersistenceLayer();

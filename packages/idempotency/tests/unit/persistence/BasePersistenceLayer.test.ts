@@ -390,7 +390,7 @@ describe('Class: BasePersistenceLayer', () => {
       };
 
       // Act
-      await persistenceLayer.deleteRecord({ foo: 'bar' }, identity);
+      await persistenceLayer.deleteRecord({ foo: 'bar' }, { identity });
 
       // Assess
       expect(deleteRecordSpy).toHaveBeenCalledWith(
@@ -639,7 +639,9 @@ describe('Class: BasePersistenceLayer', () => {
       };
 
       // Act
-      await persistenceLayer.saveInProgress({ foo: 'bar' }, 2000, identity);
+      await persistenceLayer.saveInProgress({ foo: 'bar' }, 2000, {
+        identity,
+      });
 
       // Assess
       expect(putRecordSpy).toHaveBeenCalledWith(
@@ -733,7 +735,7 @@ describe('Class: BasePersistenceLayer', () => {
       await persistenceLayer.saveSuccess(
         { foo: 'bar' },
         { bar: 'baz' },
-        identity
+        { identity }
       );
 
       // Assess

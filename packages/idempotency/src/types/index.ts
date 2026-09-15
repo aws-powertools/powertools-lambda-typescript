@@ -2,6 +2,8 @@ export type {
   BasePersistenceAttributes,
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
+  IdempotencyRecordIdentity,
+  PersistenceOperationOptions,
 } from './BasePersistenceLayer.js';
 export type {
   CacheClient,

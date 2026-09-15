@@ -7,12 +7,43 @@ type BasePersistenceLayerOptions = {
   keyPrefix?: string;
 };
 
+/**
+ * The idempotency key and payload hash that identify the record of an operation.
+ *
+ * It is resolved from the payload before the operation starts, so completion and cleanup
+ * target the same record even if the payload is mutated while the operation runs.
+ */
+type IdempotencyRecordIdentity = Pick<
+  IdempotencyRecord,
+  'idempotencyKey' | 'payloadHash'
+>;
+
+/**
+ * Options accepted by the persistence operations that write or delete a record.
+ *
+ * @property identity - the record identity resolved before the operation started; when provided it is used instead of hashing the payload again
+ */
+type PersistenceOperationOptions = {
+  identity?: IdempotencyRecordIdentity;
+};
+
 interface BasePersistenceLayerInterface {
   configure(options?: BasePersistenceLayerOptions): void;
   isPayloadValidationEnabled(): boolean;
-  saveInProgress(data: unknown, remainingTimeInMillis?: number): Promise<void>;
-  saveSuccess(data: unknown, result: unknown): Promise<void>;
-  deleteRecord(data: unknown): Promise<void>;
+  saveInProgress(
+    data: unknown,
+    remainingTimeInMillis?: number,
+    options?: PersistenceOperationOptions
+  ): Promise<void>;
+  saveSuccess(
+    data: unknown,
+    result: unknown,
+    options?: PersistenceOperationOptions
+  ): Promise<void>;
+  deleteRecord(
+    data: unknown,
+    options?: PersistenceOperationOptions
+  ): Promise<void>;
   getRecord(data: unknown): Promise<IdempotencyRecord>;
 }
 
@@ -38,4 +69,6 @@ export type {
   BasePersistenceAttributes,
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
+  IdempotencyRecordIdentity,
+  PersistenceOperationOptions,
 };

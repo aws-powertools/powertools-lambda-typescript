@@ -15,6 +15,7 @@ import {
 import type { IdempotencyConfig } from './IdempotencyConfig.js';
 import type { BasePersistenceLayer } from './persistence/BasePersistenceLayer.js';
 import type { IdempotencyRecord } from './persistence/IdempotencyRecord.js';
+import type { IdempotencyRecordIdentity } from './types/BasePersistenceLayer.js';
 import type {
   AnyFunction,
   IdempotencyHandlerOptions,
@@ -44,13 +45,13 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    */
   #functionPayloadToBeHashed: JSONValue;
   /**
-   * The record acquired when the operation started.
+   * The identity of the idempotency record, resolved from the payload before
+   * the operation starts.
    *
-   * Its key and payload hash identify the operation for the completion and
-   * cleanup calls, so they target the acquired record even if the wrapped
-   * function mutated the payload in the meantime.
+   * It is passed to the persistence calls that follow, so they all target the
+   * same record even if the wrapped function mutated the payload in the meantime.
    */
-  #acquiredRecord?: IdempotencyRecord;
+  #recordIdentity?: IdempotencyRecordIdentity;
   /**
    * Reference to the function to be made idempotent.
    */
@@ -353,7 +354,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
     try {
       await this.#persistenceStore.deleteRecord(
         this.#functionPayloadToBeHashed,
-        this.#acquiredRecord
+        this.#recordIdentity
       );
     } catch (error) {
       throw new IdempotencyPersistenceLayerError(
@@ -385,9 +386,15 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       result: undefined,
     };
     try {
-      this.#acquiredRecord = await this.#persistenceStore.saveInProgress(
+      // Resolve the identity before attempting acquisition so that it is also
+      // available when the function runs without acquiring a record (replay).
+      this.#recordIdentity = this.#persistenceStore.getRecordIdentity(
+        this.#functionPayloadToBeHashed
+      );
+      await this.#persistenceStore.saveInProgress(
         this.#functionPayloadToBeHashed,
-        this.#idempotencyConfig.lambdaContext?.getRemainingTimeInMillis()
+        this.#idempotencyConfig.lambdaContext?.getRemainingTimeInMillis(),
+        this.#recordIdentity
       );
 
       return returnValue;
@@ -447,7 +454,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       await this.#persistenceStore.saveSuccess(
         this.#functionPayloadToBeHashed,
         result,
-        this.#acquiredRecord
+        this.#recordIdentity
       );
     } catch (error) {
       throw new IdempotencyPersistenceLayerError(

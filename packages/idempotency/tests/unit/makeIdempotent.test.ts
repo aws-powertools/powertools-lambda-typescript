@@ -1,4 +1,5 @@
 import type { DurableContext } from '@aws/durable-execution-sdk-js';
+import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
@@ -23,6 +24,10 @@ const mockIdempotencyOptions = {
   persistenceStore: new PersistenceLayerTestClass(),
 };
 const remainingTImeInMillis = 1234;
+const recordIdentity = {
+  idempotencyKey: expect.any(String),
+  payloadHash: expect.any(String),
+};
 const fnSuccessfull = async () => true;
 const fnError = () => {
   throw new Error('Something went wrong');
@@ -77,13 +82,14 @@ describe('Function: makeIdempotent', () => {
     expect(saveInProgressSpy).toHaveBeenCalledTimes(1);
     expect(saveInProgressSpy).toHaveBeenCalledWith(
       event,
-      remainingTImeInMillis
+      remainingTImeInMillis,
+      recordIdentity
     );
     expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
     expect(saveSuccessSpy).toHaveBeenCalledWith(
       event,
       context.awsRequestId,
-      expect.any(IdempotencyRecord)
+      recordIdentity
     );
   });
 
@@ -114,13 +120,11 @@ describe('Function: makeIdempotent', () => {
     expect(saveInProgressSpy).toHaveBeenCalledTimes(1);
     expect(saveInProgressSpy).toHaveBeenCalledWith(
       event,
-      remainingTImeInMillis
+      remainingTImeInMillis,
+      recordIdentity
     );
     expect(deleteRecordSpy).toHaveBeenCalledTimes(1);
-    expect(deleteRecordSpy).toHaveBeenCalledWith(
-      event,
-      expect.any(IdempotencyRecord)
-    );
+    expect(deleteRecordSpy).toHaveBeenCalledWith(event, recordIdentity);
   });
 
   it('handles an execution that throws an early middleware error (middleware)', async () => {
@@ -673,13 +677,14 @@ describe('Function: makeIdempotent', () => {
     expect(saveInProgressSpy).toHaveBeenCalledTimes(1);
     expect(saveInProgressSpy).toHaveBeenCalledWith(
       event,
-      remainingTImeInMillis
+      remainingTImeInMillis,
+      recordIdentity
     );
     expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
     expect(saveSuccessSpy).toHaveBeenCalledWith(
       event,
       '123456',
-      expect.any(IdempotencyRecord)
+      recordIdentity
     );
   });
 
@@ -713,13 +718,14 @@ describe('Function: makeIdempotent', () => {
     expect(saveInProgressSpy).toHaveBeenCalledTimes(1);
     expect(saveInProgressSpy).toHaveBeenCalledWith(
       '456',
-      remainingTImeInMillis
+      remainingTImeInMillis,
+      recordIdentity
     );
     expect(saveSuccessSpy).toHaveBeenCalledTimes(1);
     expect(saveSuccessSpy).toHaveBeenCalledWith(
       '456',
       '123456',
-      expect.any(IdempotencyRecord)
+      recordIdentity
     );
   });
 
@@ -924,5 +930,99 @@ describe('Function: makeIdempotent', () => {
     const [putRecord] = persistenceStore._putRecord.mock.calls[0];
     const [updateRecord] = persistenceStore._updateRecord.mock.calls[0];
     expect(updateRecord.payloadHash).toBe(putRecord.payloadHash);
+  });
+
+  it('completes the existing record when the wrapped function mutates its input during a durable replay', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    persistenceStore._putRecord.mockRejectedValueOnce(
+      new IdempotencyItemAlreadyExistsError('Record is already in progress')
+    );
+    const processOrder = makeIdempotent(
+      async (
+        order: { id: string; normalized?: boolean },
+        _context: DurableContext
+      ) => {
+        order.normalized = true;
+        return { processed: order.id };
+      },
+      { persistenceStore }
+    );
+    const durableContext = {
+      step: vi.fn(),
+      lambdaContext: context,
+      durableExecutionMode: 'ReplayMode',
+    } as unknown as DurableContext;
+
+    // Act
+    await processOrder({ id: 'order-1' }, durableContext);
+
+    // Assess
+    const [inProgressRecord] = persistenceStore._putRecord.mock.calls[0];
+    const [updateRecord] = persistenceStore._updateRecord.mock.calls[0];
+    expect(updateRecord.idempotencyKey).toBe(inProgressRecord.idempotencyKey);
+  });
+
+  it('deletes the existing record when the wrapped function mutates its input and throws during a durable replay', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    persistenceStore._putRecord.mockRejectedValueOnce(
+      new IdempotencyItemAlreadyExistsError('Record is already in progress')
+    );
+    const processOrder = makeIdempotent(
+      async (
+        order: { id: string; normalized?: boolean },
+        _context: DurableContext
+      ) => {
+        order.normalized = true;
+        throw new Error('Something went wrong');
+      },
+      { persistenceStore }
+    );
+    const durableContext = {
+      step: vi.fn(),
+      lambdaContext: context,
+      durableExecutionMode: 'ReplayMode',
+    } as unknown as DurableContext;
+
+    // Act
+    await expect(
+      processOrder({ id: 'order-1' }, durableContext)
+    ).rejects.toThrow('Something went wrong');
+
+    // Assess
+    const [inProgressRecord] = persistenceStore._putRecord.mock.calls[0];
+    const [deleteRecord] = persistenceStore._deleteRecord.mock.calls[0];
+    expect(deleteRecord.idempotencyKey).toBe(inProgressRecord.idempotencyKey);
+  });
+
+  it('completes the record it acquired when the persistence layer overrides saveInProgress without the identity', async () => {
+    // Prepare
+    class OverridingPersistenceLayer extends PersistenceLayerTestClass {
+      public async saveInProgress(
+        data: JSONValue,
+        remainingTimeInMillis?: number
+      ): Promise<void> {
+        await super.saveInProgress(data, remainingTimeInMillis);
+      }
+    }
+    const persistenceStore = new OverridingPersistenceLayer();
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+    const processOrder = makeIdempotent(
+      async (order: { id: string; normalized?: boolean }) => {
+        order.normalized = true;
+        return { processed: order.id };
+      },
+      { persistenceStore, config }
+    );
+
+    // Act
+    await processOrder({ id: 'order-1' });
+
+    // Assess
+    const [putRecord] = persistenceStore._putRecord.mock.calls[0];
+    const [updateRecord] = persistenceStore._updateRecord.mock.calls[0];
+    expect(updateRecord.idempotencyKey).toBe(putRecord.idempotencyKey);
   });
 });

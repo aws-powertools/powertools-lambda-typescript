@@ -15,6 +15,7 @@ import type { IdempotencyConfig } from '../IdempotencyConfig.js';
 import type {
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
+  IdempotencyRecordIdentity,
 } from '../types/BasePersistenceLayer.js';
 import { IdempotencyRecord } from './IdempotencyRecord.js';
 
@@ -158,15 +159,15 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    * Deletes a record from the persistence store for the persistence key generated from the data passed in.
    *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
-   * @param record - the record acquired by {@link BasePersistenceLayer.saveInProgress | `saveInProgress()`}; when provided its key is used instead of hashing `data` again, so the record is deleted even if `data` was mutated since it was acquired
+   * @param identity - the record identity resolved by {@link BasePersistenceLayer.getRecordIdentity | `getRecordIdentity()`} before the operation started; when provided its key is used instead of hashing `data` again, so the record is deleted even if `data` was mutated in the meantime
    */
   public async deleteRecord(
     data: JSONValue,
-    record?: Pick<IdempotencyRecord, 'idempotencyKey'>
+    identity?: IdempotencyRecordIdentity
   ): Promise<void> {
     const idempotencyRecord = new IdempotencyRecord({
       idempotencyKey:
-        record?.idempotencyKey ?? this.getHashedIdempotencyKey(data),
+        identity?.idempotencyKey ?? this.getHashedIdempotencyKey(data),
       status: IdempotencyRecordStatus.EXPIRED,
     });
 
@@ -180,6 +181,22 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    */
   public getExpiresAfterSeconds(): number {
     return this.expiresAfterSeconds;
+  }
+
+  /**
+   * Resolves the idempotency key and payload hash that identify the record for the provided data.
+   *
+   * Call it before the operation starts and pass the result to {@link BasePersistenceLayer.saveInProgress | `saveInProgress()`},
+   * {@link BasePersistenceLayer.saveSuccess | `saveSuccess()`}, and {@link BasePersistenceLayer.deleteRecord | `deleteRecord()`},
+   * so they all target the same record even if `data` is mutated while the operation runs.
+   *
+   * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
+   */
+  public getRecordIdentity(data: JSONValue): IdempotencyRecordIdentity {
+    return {
+      idempotencyKey: this.getHashedIdempotencyKey(data),
+      payloadHash: this.getHashedPayload(data),
+    };
   }
 
   /**
@@ -238,17 +255,20 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    * @param remainingTimeInMillis - the remaining time left in the lambda execution context
-   * @returns the acquired record, whose key and payload hash identify the operation for {@link BasePersistenceLayer.saveSuccess | `saveSuccess()`} and {@link BasePersistenceLayer.deleteRecord | `deleteRecord()`}
+   * @param identity - the record identity resolved by {@link BasePersistenceLayer.getRecordIdentity | `getRecordIdentity()`}; when provided it is used instead of hashing `data` again
    */
   public async saveInProgress(
     data: JSONValue,
-    remainingTimeInMillis?: number
-  ): Promise<IdempotencyRecord> {
+    remainingTimeInMillis?: number,
+    identity?: IdempotencyRecordIdentity
+  ): Promise<void> {
+    const { idempotencyKey, payloadHash } =
+      identity ?? this.getRecordIdentity(data);
     const idempotencyRecord = new IdempotencyRecord({
-      idempotencyKey: this.getHashedIdempotencyKey(data),
+      idempotencyKey,
       status: IdempotencyRecordStatus.INPROGRESS,
       expiryTimestamp: this.getExpiryTimestamp(),
-      payloadHash: this.getHashedPayload(data),
+      payloadHash,
     });
 
     if (remainingTimeInMillis) {
@@ -269,8 +289,6 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
     }
 
     await this._putRecord(idempotencyRecord);
-
-    return idempotencyRecord;
   }
 
   /**
@@ -279,17 +297,15 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    * @param result - the result of the successfully completed function
-   * @param record - the record acquired by {@link BasePersistenceLayer.saveInProgress | `saveInProgress()`}; when provided its key and payload hash are used instead of hashing `data` again, so the acquired record is completed even if `data` was mutated since it was acquired
+   * @param identity - the record identity resolved by {@link BasePersistenceLayer.getRecordIdentity | `getRecordIdentity()`} before the operation started; when provided its key and payload hash are used instead of hashing `data` again, so the in-progress record is completed even if `data` was mutated in the meantime
    */
   public async saveSuccess(
     data: JSONValue,
     result: JSONValue,
-    record?: Pick<IdempotencyRecord, 'idempotencyKey' | 'payloadHash'>
+    identity?: IdempotencyRecordIdentity
   ): Promise<void> {
-    const { idempotencyKey, payloadHash } = record ?? {
-      idempotencyKey: this.getHashedIdempotencyKey(data),
-      payloadHash: this.getHashedPayload(data),
-    };
+    const { idempotencyKey, payloadHash } =
+      identity ?? this.getRecordIdentity(data);
     const idempotencyRecord = new IdempotencyRecord({
       idempotencyKey,
       status: IdempotencyRecordStatus.COMPLETED,

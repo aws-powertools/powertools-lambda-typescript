@@ -7,21 +7,33 @@ type BasePersistenceLayerOptions = {
   keyPrefix?: string;
 };
 
+/**
+ * The idempotency key and payload hash that identify the record of an operation.
+ *
+ * It is resolved from the payload before the operation starts, so completion and cleanup
+ * target the same record even if the payload is mutated while the operation runs.
+ */
+type IdempotencyRecordIdentity = Pick<
+  IdempotencyRecord,
+  'idempotencyKey' | 'payloadHash'
+>;
+
 interface BasePersistenceLayerInterface {
   configure(options?: BasePersistenceLayerOptions): void;
   isPayloadValidationEnabled(): boolean;
   saveInProgress(
     data: unknown,
-    remainingTimeInMillis?: number
-  ): Promise<IdempotencyRecord>;
+    remainingTimeInMillis?: number,
+    identity?: IdempotencyRecordIdentity
+  ): Promise<void>;
   saveSuccess(
     data: unknown,
     result: unknown,
-    record?: Pick<IdempotencyRecord, 'idempotencyKey' | 'payloadHash'>
+    identity?: IdempotencyRecordIdentity
   ): Promise<void>;
   deleteRecord(
     data: unknown,
-    record?: Pick<IdempotencyRecord, 'idempotencyKey'>
+    identity?: IdempotencyRecordIdentity
   ): Promise<void>;
   getRecord(data: unknown): Promise<IdempotencyRecord>;
 }
@@ -48,4 +60,5 @@ export type {
   BasePersistenceAttributes,
   BasePersistenceLayerInterface,
   BasePersistenceLayerOptions,
+  IdempotencyRecordIdentity,
 };

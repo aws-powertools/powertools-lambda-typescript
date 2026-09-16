@@ -236,6 +236,154 @@ describe('Compress Middleware', () => {
     expect(result.isBase64Encoded).toBe(false);
   });
 
+  it('does not compress if Accept-Encoding includes gzip with q=0', async () => {
+    // Prepare
+    const noCompressionEvent = createTestEvent('/test', 'GET', {
+      'Accept-Encoding': 'gzip;q=0',
+    });
+    app.get('/test', () => body);
+
+    // Act
+    const result = await app.resolve(noCompressionEvent, context);
+
+    // Assess
+    expect(result.headers?.['content-encoding']).toBeUndefined();
+    expect(result.isBase64Encoded).toBe(false);
+  });
+
+  it('compresses if Accept-Encoding includes gzip and identity', async () => {
+    // Prepare
+    const compressionEvent = createTestEvent('/test', 'GET', {
+      'Accept-Encoding': 'gzip, identity',
+    });
+    app.get('/test', () => body);
+
+    // Act
+    const result = await app.resolve(compressionEvent, context);
+
+    // Assess
+    expect(result.headers?.['content-encoding']).toBe('gzip');
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it('compresses when Accept-Encoding is absent', async () => {
+    // Prepare
+    const noHeaderEvent = createTestEvent('/test', 'GET');
+    app.get('/test', () => body);
+
+    // Act
+    const result = await app.resolve(noHeaderEvent, context);
+
+    // Assess
+    expect(result.headers?.['content-encoding']).toBe('gzip');
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it('does not compress when Accept-Encoding is empty', async () => {
+    // Prepare
+    const noCompressionEvent = createTestEvent('/test', 'GET', {
+      'Accept-Encoding': '',
+    });
+    app.get('/test', () => body);
+
+    // Act
+    const result = await app.resolve(noCompressionEvent, context);
+
+    // Assess
+    expect(result.headers?.['content-encoding']).toBeUndefined();
+    expect(result.isBase64Encoded).toBe(false);
+  });
+
+  it.each([
+    { expectedEncoding: 'gzip', header: 'GZIP' },
+    { expectedEncoding: 'gzip', header: 'x-gzip' },
+    { expectedEncoding: undefined, header: 'x-gzip;q=0, *;q=1' },
+    { expectedEncoding: undefined, header: 'gzip;Q=0' },
+    { expectedEncoding: 'gzip', header: ' gzip ; q=0.5 , identity ' },
+    { expectedEncoding: undefined, header: ' gzip ; q=0 ' },
+    { expectedEncoding: undefined, header: 'gzipx, x-deflate' },
+    { expectedEncoding: 'gzip', header: ', ,gzip' },
+    { expectedEncoding: undefined, header: 'gzip;q=' },
+    { expectedEncoding: undefined, header: 'gzip;q=invalid' },
+    { expectedEncoding: undefined, header: 'gzip;q=Infinity' },
+    { expectedEncoding: 'gzip', header: 'gzip;q=1.1' },
+    { expectedEncoding: undefined, header: 'gzip;q=-1' },
+    { expectedEncoding: 'gzip', header: 'gzip;q=0.5' },
+    { expectedEncoding: 'gzip', header: 'gzip;q=1.0000' },
+    { expectedEncoding: 'gzip', header: 'gzip;foo=bar' },
+    { expectedEncoding: 'gzip', header: 'gzip;foo=bar;q=1' },
+    { expectedEncoding: undefined, header: 'gzip;q=0, *;q=1' },
+    { expectedEncoding: undefined, header: 'gzip;q=invalid, *;q=1' },
+    { expectedEncoding: undefined, header: '*;q=0' },
+    { expectedEncoding: 'gzip', header: 'identity;q=0, *;q=1' },
+  ])(
+    'resolves encoding $expectedEncoding for Accept-Encoding "$header"',
+    async ({ expectedEncoding, header }) => {
+      // Prepare
+      const acceptEncodingEvent = createTestEvent('/test', 'GET', {
+        'Accept-Encoding': header,
+      });
+      app.get('/test', () => body);
+
+      // Act
+      const result = await app.resolve(acceptEncodingEvent, context);
+
+      // Assess
+      expect(result.headers?.['content-encoding']).toBe(expectedEncoding);
+      expect(result.isBase64Encoded).toBe(!!expectedEncoding);
+    }
+  );
+
+  it('compresses with deflate when Accept-Encoding accepts deflate', async () => {
+    // Prepare
+    const application = new Router();
+    application.get(
+      '/test',
+      [
+        compress({ encoding: 'deflate' }),
+        createSettingHeadersMiddleware({
+          'content-length': '2000',
+        }),
+      ],
+      () => body
+    );
+    const deflateEvent = createTestEvent('/test', 'GET', {
+      'Accept-Encoding': 'deflate;q=0.5',
+    });
+
+    // Act
+    const result = await application.resolve(deflateEvent, context);
+
+    // Assess
+    expect(result.headers?.['content-encoding']).toBe('deflate');
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it('does not negotiate down to an accepted encoding other than the configured one', async () => {
+    // Prepare
+    const application = new Router();
+    application.get(
+      '/test',
+      [
+        compress({ encoding: 'deflate' }),
+        createSettingHeadersMiddleware({
+          'content-length': '2000',
+        }),
+      ],
+      () => body
+    );
+    const gzipOnlyEvent = createTestEvent('/test', 'GET', {
+      'Accept-Encoding': 'gzip',
+    });
+
+    // Act
+    const result = await application.resolve(gzipOnlyEvent, context);
+
+    // Assess
+    expect(result.headers?.['content-encoding']).toBeUndefined();
+    expect(result.isBase64Encoded).toBe(false);
+  });
+
   it('skips compression and content-length in streaming mode', async () => {
     // Prepare
     const application = new Router();

@@ -31,6 +31,17 @@ const withIdentity = {
     payloadHash: expect.any(String),
   },
 };
+/**
+ * The subset of a durable context that makeIdempotent inspects to detect a replay.
+ */
+type DurableReplayContext = Pick<DurableContext, 'step' | 'lambdaContext'> & {
+  durableExecutionMode: 'ReplayMode';
+};
+const durableReplayContext: DurableReplayContext = {
+  step: vi.fn(),
+  lambdaContext: context,
+  durableExecutionMode: 'ReplayMode',
+};
 const fnSuccessfull = async () => true;
 const fnError = () => {
   throw new Error('Something went wrong');
@@ -936,21 +947,16 @@ describe('Function: makeIdempotent', () => {
     const processOrder = makeIdempotent(
       async (
         order: { id: string; normalized?: boolean },
-        _context: DurableContext
+        _context: DurableReplayContext
       ) => {
         order.normalized = true;
         return { processed: order.id };
       },
       { persistenceStore }
     );
-    const durableContext = {
-      step: vi.fn(),
-      lambdaContext: context,
-      durableExecutionMode: 'ReplayMode',
-    } as unknown as DurableContext;
 
     // Act
-    await processOrder({ id: 'order-1' }, durableContext);
+    await processOrder({ id: 'order-1' }, durableReplayContext);
 
     // Assess
     const [inProgressRecord] = persistenceStore._putRecord.mock.calls[0];
@@ -967,22 +973,17 @@ describe('Function: makeIdempotent', () => {
     const processOrder = makeIdempotent(
       async (
         order: { id: string; normalized?: boolean },
-        _context: DurableContext
+        _context: DurableReplayContext
       ) => {
         order.normalized = true;
         throw new Error('Something went wrong');
       },
       { persistenceStore }
     );
-    const durableContext = {
-      step: vi.fn(),
-      lambdaContext: context,
-      durableExecutionMode: 'ReplayMode',
-    } as unknown as DurableContext;
 
     // Act
     await expect(
-      processOrder({ id: 'order-1' }, durableContext)
+      processOrder({ id: 'order-1' }, durableReplayContext)
     ).rejects.toThrow('Something went wrong');
 
     // Assess

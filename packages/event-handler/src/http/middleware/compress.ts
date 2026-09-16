@@ -90,14 +90,57 @@ const compress = (options?: CompressionOptions): Middleware => {
   };
 };
 
+/**
+ * Gets the quality value from an Accept-Encoding coding's parameters.
+ *
+ * Missing `q` defaults to 1; non-finite values return 0. Callers treat non-positive values as not accepted.
+ *
+ * @param parameters - The coding parameters to inspect
+ */
+const getQuality = (parameters: string[]): number => {
+  for (const parameter of parameters) {
+    const [name, value] = parameter.split('=');
+    if (name.trim().toLowerCase() === 'q') {
+      const quality = Number(value);
+      return Number.isFinite(quality) ? quality : 0;
+    }
+  }
+  return 1;
+};
+
+/**
+ * Checks if the client accepts the preferred compression encoding based on the Accept-Encoding header.
+ *
+ * @param header - The value of the Accept-Encoding header from the request
+ * @param preferredEncoding - The preferred compression encoding to use
+ */
+const acceptsEncoding = (
+  header: string | null,
+  preferredEncoding: NonNullable<CompressionOptions['encoding']>
+): boolean => {
+  if (header === null) return true;
+
+  // An exact coding match takes precedence over the `*` wildcard
+  let acceptedByWildcard = false;
+  for (const entry of header.split(',')) {
+    const [rawCoding, ...parameters] = entry.split(';');
+    let coding = rawCoding.trim().toLowerCase();
+    if (coding === 'x-gzip') coding = COMPRESSION_ENCODING_TYPES.GZIP; // RFC 9110 §8.4.1.3 alias
+    const accepted = getQuality(parameters) > 0;
+
+    if (coding === preferredEncoding) return accepted;
+    if (coding === COMPRESSION_ENCODING_TYPES.ANY)
+      acceptedByWildcard = accepted;
+  }
+  return acceptedByWildcard;
+};
+
 const shouldCompress = (
   request: Request,
   response: Response,
   preferredEncoding: NonNullable<CompressionOptions['encoding']>,
   threshold: NonNullable<CompressionOptions['threshold']>
 ): response is Response & { body: NonNullable<Response['body']> } => {
-  const acceptedEncoding =
-    request.headers.get('accept-encoding') ?? COMPRESSION_ENCODING_TYPES.ANY;
   const contentLength = response.headers.get('content-length');
   const cacheControl = response.headers.get('cache-control');
 
@@ -105,10 +148,10 @@ const shouldCompress = (
     response.headers.has('content-encoding') ||
     response.headers.has('transfer-encoding');
 
-  const shouldEncode =
-    !acceptedEncoding.includes(COMPRESSION_ENCODING_TYPES.IDENTITY) &&
-    (acceptedEncoding.includes(preferredEncoding) ||
-      acceptedEncoding.includes(COMPRESSION_ENCODING_TYPES.ANY));
+  const shouldEncode = acceptsEncoding(
+    request.headers.get('accept-encoding'),
+    preferredEncoding
+  );
 
   return (
     shouldEncode &&

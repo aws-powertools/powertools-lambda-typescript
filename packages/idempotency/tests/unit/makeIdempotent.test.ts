@@ -32,12 +32,12 @@ const withIdentity = {
   },
 };
 /**
- * The subset of a durable context that makeIdempotent inspects to detect a replay.
+ * The subset of a durable context that makeIdempotent inspects to detect it and its execution mode.
  */
-type DurableReplayContext = Pick<DurableContext, 'step' | 'lambdaContext'> & {
-  durableExecutionMode: 'ReplayMode';
+type DurableTestContext = Pick<DurableContext, 'step' | 'lambdaContext'> & {
+  durableExecutionMode?: 'ExecutionMode' | 'ReplayMode';
 };
-const durableReplayContext: DurableReplayContext = {
+const durableReplayContext: DurableTestContext = {
   step: vi.fn(),
   lambdaContext: context,
   durableExecutionMode: 'ReplayMode',
@@ -816,13 +816,16 @@ describe('Function: makeIdempotent', () => {
       'registerLambdaContext'
     );
     const handler = makeIdempotent(
-      async (_event: unknown, _context: DurableContext) => {},
+      async (_event: unknown, _context: DurableTestContext) => {},
       mockIdempotencyOptions
     );
-    const mockDurableContext = { step: vi.fn(), lambdaContext: context };
+    const mockDurableContext: DurableTestContext = {
+      step: vi.fn(),
+      lambdaContext: context,
+    };
 
     // Act
-    await handler(event, mockDurableContext as unknown as DurableContext);
+    await handler(event, mockDurableContext);
 
     // Assess
     expect(registerLambdaContextSpy).toHaveBeenCalledOnce();
@@ -832,17 +835,12 @@ describe('Function: makeIdempotent', () => {
     // Prepare
     const handleSpy = vi.spyOn(IdempotencyHandler.prototype, 'handle');
     const handler = makeIdempotent(
-      async (_event: unknown, _context: DurableContext) => {},
+      async (_event: unknown, _context: DurableTestContext) => {},
       mockIdempotencyOptions
     );
-    const mockDurableContext = {
-      step: vi.fn(),
-      lambdaContext: context,
-      durableExecutionMode: 'ReplayMode',
-    };
 
     // Act
-    await handler(event, mockDurableContext as unknown as DurableContext);
+    await handler(event, durableReplayContext);
 
     // Assess
     expect(handleSpy).toHaveBeenCalledWith({ isReplay: true });
@@ -852,17 +850,17 @@ describe('Function: makeIdempotent', () => {
     // Prepare
     const handleSpy = vi.spyOn(IdempotencyHandler.prototype, 'handle');
     const handler = makeIdempotent(
-      async (_event: unknown, _context: DurableContext) => {},
+      async (_event: unknown, _context: DurableTestContext) => {},
       mockIdempotencyOptions
     );
-    const mockDurableContext = {
+    const mockDurableContext: DurableTestContext = {
       step: vi.fn(),
       lambdaContext: context,
       durableExecutionMode: 'ExecutionMode',
     };
 
     // Act
-    await handler(event, mockDurableContext as unknown as DurableContext);
+    await handler(event, mockDurableContext);
 
     // Assess
     expect(handleSpy).toHaveBeenCalledWith({ isReplay: false });
@@ -947,7 +945,7 @@ describe('Function: makeIdempotent', () => {
     const processOrder = makeIdempotent(
       async (
         order: { id: string; normalized?: boolean },
-        _context: DurableReplayContext
+        _context: DurableTestContext
       ) => {
         order.normalized = true;
         return { processed: order.id };
@@ -973,7 +971,7 @@ describe('Function: makeIdempotent', () => {
     const processOrder = makeIdempotent(
       async (
         order: { id: string; normalized?: boolean },
-        _context: DurableReplayContext
+        _context: DurableTestContext
       ) => {
         order.normalized = true;
         throw new Error('Something went wrong');

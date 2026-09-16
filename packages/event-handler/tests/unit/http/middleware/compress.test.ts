@@ -236,7 +236,7 @@ describe('Compress Middleware', () => {
     expect(result.isBase64Encoded).toBe(false);
   });
 
-  it('does not compress if Accept-Encoding includes gzip with q=0', async () => {
+  it('does not compress when Accept-Encoding includes gzip with q=0', async () => {
     // Prepare
     const noCompressionEvent = createTestEvent('/test', 'GET', {
       'Accept-Encoding': 'gzip;q=0',
@@ -251,7 +251,7 @@ describe('Compress Middleware', () => {
     expect(result.isBase64Encoded).toBe(false);
   });
 
-  it('compresses if Accept-Encoding includes gzip and identity', async () => {
+  it('compresses when Accept-Encoding includes gzip and identity', async () => {
     // Prepare
     const compressionEvent = createTestEvent('/test', 'GET', {
       'Accept-Encoding': 'gzip, identity',
@@ -297,6 +297,7 @@ describe('Compress Middleware', () => {
   it.each([
     { expectedEncoding: 'gzip', header: 'GZIP' },
     { expectedEncoding: 'gzip', header: 'x-gzip' },
+    { expectedEncoding: 'gzip', header: 'x-Gzip' },
     { expectedEncoding: undefined, header: 'x-gzip;q=0, *;q=1' },
     { expectedEncoding: undefined, header: 'gzip;Q=0' },
     { expectedEncoding: 'gzip', header: ' gzip ; q=0.5 , identity ' },

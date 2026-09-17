@@ -245,6 +245,7 @@ describe('Compress Middleware', () => {
     const result = await app.resolve(noCompressionEvent, context);
 
     // Assess
+    expect(result.statusCode).toBe(200);
     expect(result.headers?.['content-encoding']).toBeUndefined();
     expect(result.isBase64Encoded).toBe(false);
   });
@@ -276,6 +277,7 @@ describe('Compress Middleware', () => {
     const result = await app.resolve(compressionEvent, context);
 
     // Assess
+    expect(result.statusCode).toBe(200);
     expect(result.headers?.['content-encoding']).toBe('gzip');
     expect(result.isBase64Encoded).toBe(true);
   });
@@ -365,6 +367,7 @@ describe('Compress Middleware', () => {
     const result = await application.resolve(deflateEvent, context);
 
     // Assess
+    expect(result.statusCode).toBe(200);
     expect(result.headers?.['content-encoding']).toBe('deflate');
     expect(result.isBase64Encoded).toBe(true);
   });

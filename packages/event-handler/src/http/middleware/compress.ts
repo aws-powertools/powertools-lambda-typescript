@@ -93,23 +93,36 @@ const compress = (options?: CompressionOptions): Middleware => {
 /**
  * Gets the quality value from an Accept-Encoding coding's parameters.
  *
- * Missing `q` defaults to 1; non-finite values return 0. Callers treat non-positive values as not accepted.
+ * Missing `q` defaults to 1; finite numbers are clamped to [0, 1]; anything else returns 0.
+ *
+ * Quality values: https://www.rfc-editor.org/rfc/rfc9110.html#section-12.4.2
  *
  * @param parameters - The coding parameters to inspect
  */
 const getQuality = (parameters: string[]): number => {
   for (const parameter of parameters) {
-    const [name, value] = parameter.split('=');
-    if (name.trim().toLowerCase() === 'q') {
-      const quality = Number(value);
-      return Number.isFinite(quality) ? quality : 0;
-    }
+    const separator = parameter.indexOf('=');
+    const name = separator === -1 ? parameter : parameter.slice(0, separator);
+
+    if (name.trim().toLowerCase() !== 'q') continue;
+    if (separator === -1) return 0;
+
+    const value = parameter.slice(separator + 1).trim();
+    if (value.length === 0) return 0;
+
+    const quality = Number(value);
+    if (!Number.isFinite(quality)) return 0;
+
+    return Math.min(Math.max(quality, 0), 1);
   }
+
   return 1;
 };
 
 /**
- * Checks if the client accepts the preferred compression encoding based on the Accept-Encoding header.
+ * Checks whether the preferred compression encoding is at least as acceptable as identity.
+ *
+ * When both have the same quality, the server preference for compression wins.
  *
  * @param header - The value of the Accept-Encoding header from the request
  * @param preferredEncoding - The preferred compression encoding to use
@@ -120,19 +133,27 @@ const acceptsEncoding = (
 ): boolean => {
   if (header === null) return true;
 
-  // An exact coding match takes precedence over the `*` wildcard
-  let acceptedByWildcard = false;
+  // Exact coding matches take precedence over the `*` wildcard.
+  let preferredQuality: number | undefined;
+  let identityQuality: number | undefined;
+  let wildcardQuality: number | undefined;
   for (const entry of header.split(',')) {
     const [rawCoding, ...parameters] = entry.split(';');
     let coding = rawCoding.trim().toLowerCase();
     if (coding === 'x-gzip') coding = COMPRESSION_ENCODING_TYPES.GZIP; // RFC 9110 §8.4.1.3 alias
-    const accepted = getQuality(parameters) > 0;
+    const quality = getQuality(parameters);
 
-    if (coding === preferredEncoding) return accepted;
-    if (coding === COMPRESSION_ENCODING_TYPES.ANY)
-      acceptedByWildcard = accepted;
+    if (coding === preferredEncoding) preferredQuality ??= quality;
+    if (coding === COMPRESSION_ENCODING_TYPES.IDENTITY)
+      identityQuality ??= quality;
+    if (coding === COMPRESSION_ENCODING_TYPES.ANY) wildcardQuality ??= quality;
   }
-  return acceptedByWildcard;
+
+  const compressionQuality = preferredQuality ?? wildcardQuality ?? 0;
+  const uncompressedQuality =
+    identityQuality ?? wildcardQuality ?? compressionQuality;
+
+  return compressionQuality > 0 && compressionQuality >= uncompressedQuality;
 };
 
 const shouldCompress = (

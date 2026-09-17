@@ -7,7 +7,10 @@ export type {
 } from './BasePersistenceLayer.js';
 export type {
   CacheClient,
+  CacheClientSetOptions,
   CachePersistenceOptions,
+  GlideSetOptions,
+  RedisSetOptions,
 } from './CachePersistence.js';
 export type {
   DynamoDBPersistenceOptions,

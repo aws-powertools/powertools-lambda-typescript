@@ -10,6 +10,7 @@ import {
 } from '../errors.js';
 import type {
   CacheClient,
+  CacheClientSetOptions,
   CachePersistenceOptions,
 } from '../types/CachePersistence.js';
 import type { IdempotencyRecordStatusValue } from '../types/IdempotencyRecord.js';
@@ -161,10 +162,12 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {
     const encodedItem = this.#encodeRecord(record);
     const ttl = this.#getExpirySeconds(record.expiryTimestamp);
-    // Need to set ttl again, if we don't set `EX` here the record will not have a ttl
-    await this.#client.set(record.idempotencyKey, encodedItem, {
-      EX: ttl,
-    });
+    // Need to set ttl again, if we don't set the expiry here the record will not have a ttl
+    await this.#client.set(
+      record.idempotencyKey,
+      encodedItem,
+      this.#getSetOptions({ ttl })
+    );
   }
 
   /**
@@ -217,10 +220,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
       const response = await this.#client.set(
         record.idempotencyKey,
         encodedItem,
-        {
-          EX: ttl,
-          NX: true,
-        }
+        this.#getSetOptions({ ttl, onlyIfNotExists: true })
       );
 
       /**
@@ -295,13 +295,46 @@ class CachePersistenceLayer extends BasePersistenceLayer {
          */
         await this.#acquireLock(record.idempotencyKey);
 
-        await this.#client.set(record.idempotencyKey, encodedItem, {
-          EX: ttl,
-        });
+        await this.#client.set(
+          record.idempotencyKey,
+          encodedItem,
+          this.#getSetOptions({ ttl })
+        );
       } else {
         throw error;
       }
     }
+  }
+
+  /**
+   * Builds the options for a `SET` command in the shapes of both supported clients.
+   *
+   * `@redis/client` reads `EX` and `NX`, while `@valkey/valkey-glide` reads `expiry` and
+   * `conditionalSet`. Each client ignores the properties of the other, so passing only one shape
+   * would silently write the key without a condition or a TTL on the other client.
+   *
+   * @param options - The options for the `SET` command
+   * @param options.ttl - The expiry time of the key in seconds
+   * @param options.onlyIfNotExists - Whether to set the key only if it does not already exist
+   */
+  #getSetOptions(options: {
+    ttl: number;
+    onlyIfNotExists?: boolean;
+  }): CacheClientSetOptions {
+    const { ttl, onlyIfNotExists } = options;
+    if (onlyIfNotExists) {
+      return {
+        EX: ttl,
+        NX: true,
+        expiry: { type: 'EX', count: ttl },
+        conditionalSet: 'onlyIfDoesNotExist',
+      };
+    }
+
+    return {
+      EX: ttl,
+      expiry: { type: 'EX', count: ttl },
+    };
   }
 
   /**
@@ -326,10 +359,14 @@ class CachePersistenceLayer extends BasePersistenceLayer {
     const lockKey = `${idempotencyKey}:lock`;
     const lockValue = 'true';
 
-    const acquired = await this.#client.set(lockKey, lockValue, {
-      EX: this.#orphanLockTimeout,
-      NX: true,
-    });
+    const acquired = await this.#client.set(
+      lockKey,
+      lockValue,
+      this.#getSetOptions({
+        ttl: this.#orphanLockTimeout,
+        onlyIfNotExists: true,
+      })
+    );
 
     if (acquired) return;
     /** If the lock acquisition fails, it suggests a race condition has occurred. In this case, instead of

@@ -4,6 +4,51 @@ import type { BasePersistenceAttributes } from './BasePersistenceLayer.js';
 type CacheValue = string | Uint8Array<ArrayBufferLike>;
 
 /**
+ * Options for the `SET` command in the shape read by `@redis/client`.
+ *
+ * @see {@link https://valkey.io/commands/set/ | Valkey SET command}
+ */
+interface RedisSetOptions {
+  /**
+   * The expiry time in seconds, `EX` in the `SET` command.
+   */
+  EX?: number;
+  /**
+   * Whether to set the key only if it does not already exist, `NX` in the `SET` command.
+   */
+  NX?: boolean;
+}
+
+/**
+ * Options for the `SET` command in the shape read by `@valkey/valkey-glide`.
+ *
+ * The property types mirror the ones declared by Valkey Glide, so that its clients remain
+ * assignable to {@link CacheClient | `CacheClient`}. Glide declares `expiry.type` as its
+ * `TimeUnit` enum, whose values are the strings sent to the server, for example `'EX'`.
+ *
+ * @see {@link https://valkey.io/commands/set/ | Valkey SET command}
+ */
+interface GlideSetOptions {
+  /**
+   * The condition for setting the key, `onlyIfDoesNotExist` is `NX` in the `SET` command.
+   */
+  conditionalSet?: 'onlyIfExists' | 'onlyIfDoesNotExist' | 'onlyIfEqual';
+  /**
+   * The expiry of the key, `{ type: 'EX', count: seconds }` is `EX` in the `SET` command.
+   */
+  expiry?: 'keepExisting' | { type: string; count: number };
+}
+
+/**
+ * Options passed to {@link CacheClient.set | `CacheClient.set()`}.
+ *
+ * The persistence layer passes each option in the shape of both supported clients, since
+ * `@redis/client` and `@valkey/valkey-glide` each read their own properties and ignore the others.
+ * Typing both shapes means a client that does not accept one of them fails to compile.
+ */
+type CacheClientSetOptions = RedisSetOptions & GlideSetOptions;
+
+/**
  * Interface for clients compatible with Valkey and Redis-OSS operations.
  *
  * This interface defines the minimum set of operations that must be implemented
@@ -29,7 +74,7 @@ interface CacheClient {
   set(
     name: CacheValue,
     value: unknown,
-    options?: unknown
+    options?: CacheClientSetOptions
   ): Promise<CacheValue | null>;
 
   /**
@@ -52,4 +97,10 @@ interface CachePersistenceOptions extends BasePersistenceAttributes {
   client: CacheClient;
 }
 
-export type { CacheClient, CachePersistenceOptions };
+export type {
+  CacheClient,
+  CacheClientSetOptions,
+  CachePersistenceOptions,
+  GlideSetOptions,
+  RedisSetOptions,
+};

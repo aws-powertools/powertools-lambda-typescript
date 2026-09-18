@@ -11,6 +11,19 @@ class BatchProcessingError extends Error {
 }
 
 /**
+ * Error thrown by the Batch Processing utility when a record handler returns a promise
+ * to a synchronous batch processor, which has no way to await it.
+ */
+class AsyncHandlerNotSupportedError extends BatchProcessingError {
+  public constructor() {
+    super(
+      'The record handler returned a promise, but this batch processor is synchronous and cannot await it. Use BatchProcessor together with processPartialResponse(), or SqsFifoPartialProcessorAsync for FIFO queues.'
+    );
+    this.name = 'AsyncHandlerNotSupportedError';
+  }
+}
+
+/**
  * Error thrown by the Batch Processing utility when all batch records failed to be processed
  */
 class FullBatchFailureError extends BatchProcessingError {
@@ -111,6 +124,7 @@ const toError = (value: unknown): Error => {
 };
 
 export {
+  AsyncHandlerNotSupportedError,
   BatchProcessingError,
   FullBatchFailureError,
   ParsingError,

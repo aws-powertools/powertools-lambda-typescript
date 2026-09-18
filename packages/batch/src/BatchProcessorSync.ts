@@ -1,5 +1,9 @@
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
-import { BatchProcessingError, toError } from './errors.js';
+import {
+  AsyncHandlerNotSupportedError,
+  BatchProcessingError,
+  toError,
+} from './errors.js';
 import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
 
 /**
@@ -111,15 +115,33 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
   public processRecordSync(
     record: BaseRecord
   ): SuccessResponse | FailureResponse {
+    let result: unknown;
     try {
       const data = this.toBatchType(record, this.eventType);
-      const result = this.handler(data, this.options?.context);
-
-      return this.successHandler(record, result);
+      result = this.handler(data, this.options?.context);
     } catch (error) {
       return this.failureHandler(record, toError(error));
     }
+
+    if (isThenable(result)) {
+      // The promise is abandoned here, so take ownership of its rejection first:
+      // otherwise a rejecting handler also surfaces as an unhandled rejection, which
+      // the Lambda runtime reports instead of the error thrown below.
+      result.then(undefined, () => undefined);
+
+      throw new AsyncHandlerNotSupportedError();
+    }
+
+    return this.successHandler(record, result);
   }
 }
+
+/**
+ * Type guard to detect a thenable (promise-like) value returned by a record handler.
+ *
+ * @param value - The value returned by the record handler
+ */
+const isThenable = (value: unknown): value is PromiseLike<unknown> =>
+  typeof (value as PromiseLike<unknown> | undefined)?.then === 'function';
 
 export { BatchProcessorSync };

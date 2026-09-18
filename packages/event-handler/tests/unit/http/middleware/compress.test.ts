@@ -15,6 +15,19 @@ describe('Compress Middleware', () => {
   let app: Router;
   const body = { test: 'x'.repeat(2000) };
 
+  const createDeflateApp = () => {
+    const application = new Router();
+    application.get(
+      '/test',
+      [
+        compress({ encoding: 'deflate' }),
+        createSettingHeadersMiddleware({ 'content-length': '2000' }),
+      ],
+      () => body
+    );
+    return application;
+  };
+
   beforeEach(() => {
     app = new Router();
     app.use(compress());
@@ -232,6 +245,145 @@ describe('Compress Middleware', () => {
     const result = await app.resolve(noCompressionEvent, context);
 
     // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.headers?.['content-encoding']).toBeUndefined();
+    expect(result.isBase64Encoded).toBe(false);
+  });
+
+  it('does not compress when Accept-Encoding includes gzip with q=0', async () => {
+    // Prepare
+    const noCompressionEvent = createTestEvent('/test', 'GET', {
+      'Accept-Encoding': 'gzip;q=0',
+    });
+    app.get('/test', () => body);
+
+    // Act
+    const result = await app.resolve(noCompressionEvent, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.headers?.['content-encoding']).toBeUndefined();
+    expect(result.isBase64Encoded).toBe(false);
+  });
+
+  it('compresses when Accept-Encoding includes gzip and identity', async () => {
+    // Prepare
+    const compressionEvent = createTestEvent('/test', 'GET', {
+      'Accept-Encoding': 'gzip, identity',
+    });
+    app.get('/test', () => body);
+
+    // Act
+    const result = await app.resolve(compressionEvent, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.headers?.['content-encoding']).toBe('gzip');
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it.each([
+    { compressed: false, header: '' },
+    { compressed: true, header: 'GZIP' },
+    { compressed: true, header: 'x-gzip' },
+    { compressed: true, header: 'x-Gzip' },
+    { compressed: false, header: 'x-gzip;q=0, *;q=1' },
+    { compressed: false, header: 'gzip;Q=0' },
+    {
+      compressed: false,
+      header: 'gzip ; q=0.5 , identity',
+    },
+    {
+      compressed: true,
+      header: 'gzip;q=1, identity;q=0.1',
+    },
+    {
+      compressed: true,
+      header: 'gzip;q=0.5, identity;q=0.5',
+    },
+    { compressed: false, header: 'gzip ; q=0' },
+    { compressed: false, header: 'gzipx, x-deflate' },
+    { compressed: true, header: ', ,gzip' },
+    { compressed: false, header: 'gzip;q=' },
+    { compressed: false, header: 'gzip;q=invalid' },
+    { compressed: false, header: 'gzip;q=Infinity' },
+    { compressed: true, header: 'gzip;q=1.1' },
+    { compressed: false, header: 'gzip;q=-1' },
+    { compressed: true, header: 'gzip;q=0.5' },
+    { compressed: true, header: 'gzip;\tq=0.5\t' },
+    { compressed: true, header: 'gzip;q=1.0000' },
+    { compressed: true, header: 'gzip;q=1e-1' },
+    { compressed: true, header: 'gzip;q=0.1234' },
+    { compressed: true, header: 'gzip;q= 0.5' },
+    { compressed: true, header: 'gzip;q = 0.5' },
+    { compressed: true, header: 'gzip;q=.5' },
+    { compressed: false, header: 'gzip;q=1foo' },
+    { compressed: false, header: 'gzip;q=NaN' },
+    { compressed: false, header: 'gzip;q=0.5=bad' },
+    { compressed: false, header: 'gzip;q =0' },
+    { compressed: false, header: 'gzip;q' },
+    { compressed: false, header: 'gzip;q=0..' },
+    { compressed: false, header: 'gzip;q=0.' },
+    { compressed: true, header: 'gzip;q=1.' },
+    { compressed: true, header: 'gzip;q=1.000' },
+    { compressed: true, header: 'gzip;q=0.001' },
+    { compressed: true, header: 'gzip;foo=bar' },
+    { compressed: true, header: 'gzip;foo=bar;q=1' },
+    { compressed: false, header: 'gzip;q=0, *;q=1' },
+    { compressed: false, header: 'gzip;q=invalid, *;q=1' },
+    { compressed: false, header: '*;q=0' },
+    { compressed: true, header: 'identity;q=0, *;q=1' },
+    { compressed: false, header: 'gzip;q=0, gzip' },
+    { compressed: false, header: '*;q=0, *' },
+  ])(
+    'returns compressed: $compressed for Accept-Encoding "$header"',
+    async ({ compressed, header }) => {
+      // Prepare
+      const acceptEncodingEvent = createTestEvent('/test', 'GET', {
+        'Accept-Encoding': header,
+      });
+      app.get('/test', () => body);
+
+      // Act
+      const result = await app.resolve(acceptEncodingEvent, context);
+
+      // Assess
+      expect(result.statusCode).toBe(200);
+      expect(result.headers?.['content-encoding']).toBe(
+        compressed ? 'gzip' : undefined
+      );
+      expect(result.isBase64Encoded).toBe(compressed);
+    }
+  );
+
+  it('compresses with deflate when Accept-Encoding accepts deflate', async () => {
+    // Prepare
+    const application = createDeflateApp();
+    const deflateEvent = createTestEvent('/test', 'GET', {
+      'Accept-Encoding': 'deflate;q=0.5',
+    });
+
+    // Act
+    const result = await application.resolve(deflateEvent, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
+    expect(result.headers?.['content-encoding']).toBe('deflate');
+    expect(result.isBase64Encoded).toBe(true);
+  });
+
+  it('does not negotiate down to an accepted encoding other than the configured one', async () => {
+    // Prepare
+    const application = createDeflateApp();
+    const gzipOnlyEvent = createTestEvent('/test', 'GET', {
+      'Accept-Encoding': 'gzip',
+    });
+
+    // Act
+    const result = await application.resolve(gzipOnlyEvent, context);
+
+    // Assess
+    expect(result.statusCode).toBe(200);
     expect(result.headers?.['content-encoding']).toBeUndefined();
     expect(result.isBase64Encoded).toBe(false);
   });

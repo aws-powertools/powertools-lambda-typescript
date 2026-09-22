@@ -1,6 +1,5 @@
 import context from '@aws-lambda-powertools/testing-utils/context';
-import type { SQSRecord } from 'aws-lambda';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   AsyncHandlerNotSupportedError,
   BatchProcessorSync,
@@ -9,17 +8,9 @@ import {
   SqsFifoPartialProcessor,
 } from '../../src/index.js';
 import { sqsRecordFactory } from '../helpers/factories.js';
+import { asyncSqsRecordHandler } from '../helpers/handlers.js';
 
 describe('Class: BatchProcessorSync', () => {
-  const asyncRecordHandler = async (record: SQSRecord): Promise<string> =>
-    record.body;
-
-  const rejectingRecordHandler = async (
-    _record: SQSRecord
-  ): Promise<string> => {
-    throw new Error('failed');
-  };
-
   it('throws when the record handler returns a promise', () => {
     // Prepare
     const records = [sqsRecordFactory('success'), sqsRecordFactory('success')];
@@ -28,27 +19,35 @@ describe('Class: BatchProcessorSync', () => {
 
     // Act & Assess
     expect(() =>
-      processPartialResponseSync(batch, asyncRecordHandler, processor, {
+      processPartialResponseSync(batch, asyncSqsRecordHandler, processor, {
         context,
       })
     ).toThrow(AsyncHandlerNotSupportedError);
     expect(processor.successMessages).toHaveLength(0);
   });
 
-  it('leaves no unhandled rejection behind when the promise rejects', () => {
+  it('logs the rejection reason instead of leaving an unhandled rejection when the promise rejects', async () => {
     // Prepare
-    const records = [sqsRecordFactory('success'), sqsRecordFactory('success')];
+    const records = [sqsRecordFactory('fail'), sqsRecordFactory('success')];
     const batch = { Records: records };
     const processor = new BatchProcessorSync(EventType.SQS);
 
-    // Act & Assess
+    // Act
     // The abandoned promise rejects after the throw, and vitest fails this file
     // if nothing has taken ownership of that rejection.
     expect(() =>
-      processPartialResponseSync(batch, rejectingRecordHandler, processor, {
+      processPartialResponseSync(batch, asyncSqsRecordHandler, processor, {
         context,
       })
     ).toThrow(AsyncHandlerNotSupportedError);
+
+    // Assess
+    await vi.waitFor(() =>
+      expect(console.error).toHaveBeenCalledWith(
+        'The record handler returned a promise to a synchronous batch processor and the promise later rejected',
+        new Error('Failed to process record.')
+      )
+    );
   });
 
   it('throws when a SqsFifoPartialProcessor record handler returns a promise', () => {
@@ -59,7 +58,7 @@ describe('Class: BatchProcessorSync', () => {
 
     // Act & Assess
     expect(() =>
-      processPartialResponseSync(batch, asyncRecordHandler, processor, {
+      processPartialResponseSync(batch, asyncSqsRecordHandler, processor, {
         context,
       })
     ).toThrow(AsyncHandlerNotSupportedError);

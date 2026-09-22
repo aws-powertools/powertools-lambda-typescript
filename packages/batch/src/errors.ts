@@ -17,7 +17,7 @@ class BatchProcessingError extends Error {
 class AsyncHandlerNotSupportedError extends BatchProcessingError {
   public constructor() {
     super(
-      'The record handler returned a promise, but this batch processor is synchronous and cannot await it. Use BatchProcessor together with processPartialResponse(), or SqsFifoPartialProcessorAsync for FIFO queues.'
+      'The record handler returned a promise, but this batch processor is synchronous and cannot await it. The handler has already been invoked, so any side effects of that call may still be in flight. Use BatchProcessor together with processPartialResponse(), or SqsFifoPartialProcessorAsync for FIFO queues.'
     );
     this.name = 'AsyncHandlerNotSupportedError';
   }

@@ -3,6 +3,7 @@ import type { Middleware } from '../../types/index.js';
 import {
   CACHE_CONTROL_NO_TRANSFORM_REGEX,
   COMPRESSION_ENCODING_TYPES,
+  DECIMAL_QVALUE_REGEX,
   DEFAULT_COMPRESSION_RESPONSE_THRESHOLD,
 } from '../constants.js';
 
@@ -90,14 +91,75 @@ const compress = (options?: CompressionOptions): Middleware => {
   };
 };
 
+/**
+ * Gets the quality value from an Accept-Encoding coding's parameters.
+ *
+ * Missing `q` defaults to 1; plain decimals (e.g. `1`, `0.5`, `.5`) are capped at 1; anything else returns 0.
+ *
+ * Quality values: https://www.rfc-editor.org/rfc/rfc9110.html#section-12.4.2
+ *
+ * @param parameters - The coding parameters to inspect
+ */
+const getQuality = (parameters: string[]): number => {
+  for (const parameter of parameters) {
+    const separator = parameter.indexOf('=');
+    const name = separator === -1 ? parameter : parameter.slice(0, separator);
+
+    if (name.trim().toLowerCase() !== 'q') continue;
+    if (separator === -1) return 0;
+
+    const value = parameter.slice(separator + 1).trim();
+    if (!DECIMAL_QVALUE_REGEX.test(value)) return 0;
+
+    return Math.min(Number(value), 1);
+  }
+
+  return 1;
+};
+
+/**
+ * Checks whether the preferred compression encoding is at least as acceptable as identity.
+ *
+ * When both have the same quality, the server preference for compression wins.
+ *
+ * @param header - The value of the Accept-Encoding header from the request
+ * @param preferredEncoding - The preferred compression encoding to use
+ */
+const acceptsEncoding = (
+  header: string | null,
+  preferredEncoding: NonNullable<CompressionOptions['encoding']>
+): boolean => {
+  if (header === null) return true;
+
+  // Exact coding matches take precedence over the `*` wildcard.
+  let preferredQuality: number | undefined;
+  let identityQuality: number | undefined;
+  let wildcardQuality: number | undefined;
+  for (const entry of header.split(',')) {
+    const [rawCoding, ...parameters] = entry.split(';');
+    let coding = rawCoding.trim().toLowerCase();
+    if (coding === 'x-gzip') coding = COMPRESSION_ENCODING_TYPES.GZIP; // RFC 9110 §8.4.1.3 alias
+    const quality = getQuality(parameters);
+
+    if (coding === preferredEncoding) preferredQuality ??= quality;
+    if (coding === COMPRESSION_ENCODING_TYPES.IDENTITY)
+      identityQuality ??= quality;
+    if (coding === COMPRESSION_ENCODING_TYPES.ANY) wildcardQuality ??= quality;
+  }
+
+  const compressionQuality = preferredQuality ?? wildcardQuality ?? 0;
+  const uncompressedQuality =
+    identityQuality ?? wildcardQuality ?? compressionQuality;
+
+  return compressionQuality > 0 && compressionQuality >= uncompressedQuality;
+};
+
 const shouldCompress = (
   request: Request,
   response: Response,
   preferredEncoding: NonNullable<CompressionOptions['encoding']>,
   threshold: NonNullable<CompressionOptions['threshold']>
 ): response is Response & { body: NonNullable<Response['body']> } => {
-  const acceptedEncoding =
-    request.headers.get('accept-encoding') ?? COMPRESSION_ENCODING_TYPES.ANY;
   const contentLength = response.headers.get('content-length');
   const cacheControl = response.headers.get('cache-control');
 
@@ -105,10 +167,10 @@ const shouldCompress = (
     response.headers.has('content-encoding') ||
     response.headers.has('transfer-encoding');
 
-  const shouldEncode =
-    !acceptedEncoding.includes(COMPRESSION_ENCODING_TYPES.IDENTITY) &&
-    (acceptedEncoding.includes(preferredEncoding) ||
-      acceptedEncoding.includes(COMPRESSION_ENCODING_TYPES.ANY));
+  const shouldEncode = acceptsEncoding(
+    request.headers.get('accept-encoding'),
+    preferredEncoding
+  );
 
   return (
     shouldEncode &&

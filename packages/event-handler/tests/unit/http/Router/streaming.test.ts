@@ -2,6 +2,7 @@ import { Duplex, PassThrough, Readable } from 'node:stream';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  BadRequestError,
   Router,
   streamify,
   UnauthorizedError,
@@ -16,6 +17,57 @@ describe.each([
   { version: 'V1', createEvent: createTestEvent },
   { version: 'V2', createEvent: createTestEventV2 },
 ])('Class: Router - Streaming ($version)', ({ createEvent }) => {
+  it('streams the built-in HTTP response when an error handler rethrows', async () => {
+    // Prepare
+    const app = new Router();
+    let calls = 0;
+    const errorHandler = vi.fn(async (error: Error) => {
+      calls += 1;
+      if (calls > 50) throw new Error('Test bailout');
+      throw error;
+    });
+    app.errorHandler(BadRequestError, errorHandler);
+    app.get('/test', () => {
+      throw new BadRequestError('Invalid request');
+    });
+    const handler = streamify(app);
+    const responseStream = new ResponseStream();
+
+    // Act
+    const result = await handler(
+      createEvent('/test', 'GET'),
+      responseStream,
+      context
+    );
+
+    // Assess
+    expect(errorHandler).toHaveBeenCalledTimes(1);
+    expect(result.statusCode).toBe(400);
+    expect(JSON.parse(result.body).message).toBe('Invalid request');
+  });
+
+  it.each([200, 204, 205, 304])(
+    'streams status %i with an empty proxy response body',
+    async (statusCode) => {
+      // Prepare
+      const app = new Router();
+      app.get('/empty', () => ({ statusCode, body: '' }));
+      const handler = streamify(app);
+      const responseStream = new ResponseStream();
+
+      // Act
+      const result = await handler(
+        createEvent('/empty', 'GET'),
+        responseStream,
+        context
+      );
+
+      // Assess
+      expect(result.statusCode).toBe(statusCode);
+      expect(result.body).toBe('');
+    }
+  );
+
   it('streams a simple JSON response', async () => {
     // Prepare
     const app = new Router();

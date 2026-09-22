@@ -380,6 +380,27 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
+    it('uses the provided identity instead of hashing the payload', async () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      const deleteRecordSpy = vi.spyOn(persistenceLayer, '_deleteRecord');
+      const identity = {
+        idempotencyKey: 'my-lambda-function#resolved-hash',
+        payloadHash: '',
+      };
+
+      // Act
+      await persistenceLayer.deleteRecord({ foo: 'bar' }, { identity });
+
+      // Assess
+      expect(deleteRecordSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          idempotencyKey: 'my-lambda-function#resolved-hash',
+          status: IdempotencyRecordStatus.EXPIRED,
+        })
+      );
+    });
+
     it('it deletes the record from the local cache', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
@@ -406,6 +427,41 @@ describe('Class: BasePersistenceLayer', () => {
           status: IdempotencyRecordStatus.EXPIRED,
         })
       );
+    });
+  });
+
+  describe('Method: getRecordIdentity', () => {
+    it('returns the idempotency key and the payload hash for the payload', () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({
+        config: new IdempotencyConfig({
+          payloadValidationJmesPath: 'foo',
+        }),
+      });
+
+      // Act
+      const identity = persistenceLayer.getRecordIdentity({ foo: 'bar' });
+
+      // Assess
+      expect(identity).toEqual({
+        idempotencyKey: 'my-lambda-function#mocked-hash',
+        payloadHash: 'mocked-hash',
+      });
+    });
+
+    it('returns an empty payload hash when payload validation is disabled', () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+
+      // Act
+      const identity = persistenceLayer.getRecordIdentity({ foo: 'bar' });
+
+      // Assess
+      expect(identity).toEqual({
+        idempotencyKey: 'my-lambda-function#mocked-hash',
+        payloadHash: '',
+      });
     });
   });
 
@@ -573,6 +629,29 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
+    it('uses the provided identity instead of hashing the payload', async () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      const putRecordSpy = vi.spyOn(persistenceLayer, '_putRecord');
+      const identity = {
+        idempotencyKey: 'my-lambda-function#resolved-hash',
+        payloadHash: 'resolved-payload-hash',
+      };
+
+      // Act
+      await persistenceLayer.saveInProgress({ foo: 'bar' }, 2000, {
+        identity,
+      });
+
+      // Assess
+      expect(putRecordSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ...identity,
+          status: IdempotencyRecordStatus.INPROGRESS,
+        })
+      );
+    });
+
     it('logs a warning when unable to call remainingTimeInMillis() from the context', async () => {
       // Prepare
       const persistenceLayer = new PersistenceLayerTestClass();
@@ -639,6 +718,31 @@ describe('Class: BasePersistenceLayer', () => {
           payloadHash: '',
           inProgressExpiryTimestamp: undefined,
           responseData: result,
+        })
+      );
+    });
+
+    it('uses the provided identity instead of hashing the payload', async () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      const updateRecordSpy = vi.spyOn(persistenceLayer, '_updateRecord');
+      const identity = {
+        idempotencyKey: 'my-lambda-function#resolved-hash',
+        payloadHash: 'resolved-payload-hash',
+      };
+
+      // Act
+      await persistenceLayer.saveSuccess(
+        { foo: 'bar' },
+        { bar: 'baz' },
+        { identity }
+      );
+
+      // Assess
+      expect(updateRecordSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ...identity,
+          status: IdempotencyRecordStatus.COMPLETED,
         })
       );
     });

@@ -368,6 +368,8 @@ If you need to send custom headers or a different response structure/code, you c
 
 !!! tip "You can throw HTTP errors in your route handlers, middleware, or custom error handlers!"
 
+When a custom error handler throws an HTTP error, the router can pass it to another registered handler. Each handler runs at most once in that error-resolution chain. If dispatch would call a handler again, the router returns the HTTP error's built-in status and message instead. This also prevents cycles involving multiple handlers.
+
 === "index.ts"
 
     ```ts hl_lines="3 11"
@@ -748,6 +750,9 @@ A similar pattern applies to binary data where you can return an `ArrayBuffer`,
 a [Nodejs stream](https://nodejs.org/api/stream.html){target="_blank"}, or
 a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API#browser_compatibility){target="_blank"}
 directly from your handler. We will automatically serialize the response by setting the `isBase64Encoded` flag to `true` and `base64` encoding the binary data.
+
+When you return a Web `Response`, the router uses its `Content-Type` header to identify binary data. Buffered responses with `image/*`, `audio/*`, `video/*`, `application/pdf`, `application/zip`, or `application/octet-stream` content types are automatically base64 encoded.
+Matching is case-insensitive and ignores content-type parameters. For other binary content types, [set `reqCtx.isBase64Encoded` to `true`](#set-isbase64encoded-parameter).
 
 !!! note "Content types"
     The default header will be set to `application/json`. If you wish to change this,

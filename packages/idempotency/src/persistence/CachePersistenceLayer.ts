@@ -159,13 +159,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   }
 
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {
-    const item: Record<string, unknown> = {
-      [this.#statusAttr]: record.getStatus(),
-      [this.#expiryAttr]: record.expiryTimestamp,
-      [this.#dataAttr]: record.responseData,
-    };
-
-    const encodedItem = JSON.stringify(item);
+    const encodedItem = this.#encodeRecord(record);
     const ttl = this.#getExpirySeconds(record.expiryTimestamp);
     // Need to set ttl again, if we don't set `EX` here the record will not have a ttl
     await this.#client.set(record.idempotencyKey, encodedItem, {
@@ -174,25 +168,35 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   }
 
   /**
-   * Put a record in the persistence store with a status of "INPROGRESS".
+   * Serialize a record into the JSON value stored in the cache.
    *
-   * The method guards against concurrent execution by using conditional write operations.
+   * Undefined fields are omitted by `JSON.stringify`, so the same shape serves
+   * both in-progress and completed records.
+   *
+   * @param record - The record to serialize
    */
-  async #putInProgressRecord(record: IdempotencyRecord): Promise<void> {
+  #encodeRecord(record: IdempotencyRecord): string {
     const item: Record<string, unknown> = {
       [this.#statusAttr]: record.getStatus(),
       [this.#expiryAttr]: record.expiryTimestamp,
+      [this.#inProgressExpiryAttr]: record.inProgressExpiryTimestamp,
+      [this.#dataAttr]: record.responseData,
     };
-
-    if (record.inProgressExpiryTimestamp !== undefined) {
-      item[this.#inProgressExpiryAttr] = record.inProgressExpiryTimestamp;
-    }
 
     if (this.isPayloadValidationEnabled() && record.payloadHash !== undefined) {
       item[this.#validationKeyAttr] = record.payloadHash;
     }
 
-    const encodedItem = JSON.stringify(item);
+    return JSON.stringify(item);
+  }
+
+  /**
+   * Put a record in the persistence store with a status of "INPROGRESS".
+   *
+   * The method guards against concurrent execution by using conditional write operations.
+   */
+  async #putInProgressRecord(record: IdempotencyRecord): Promise<void> {
+    const encodedItem = this.#encodeRecord(record);
     const ttl = this.#getExpirySeconds(record.expiryTimestamp);
 
     try {

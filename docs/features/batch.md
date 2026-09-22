@@ -87,7 +87,7 @@ Processing batches from SQS works in three stages:
     By default, the batch processor will process messages in parallel, which does not guarantee the order of processing. If you need to process messages in order, set the [`processInParallel` option to `false`](#sequential-processing), or use [`SqsFifoPartialProcessor` for SQS FIFO queues](#fifo-queues).
 
 !!! note
-    If you're migrating from `BatchProcessorSync` to `BatchProcessor`, note that `processPartialResponse` is async and returns a promise.
+    If you're migrating from `BatchProcessorSync` to `BatchProcessor`, note that `processPartialResponse` is async and returns a promise. The synchronous processors have no way to await a record handler, so they throw `AsyncHandlerNotSupportedError` when the handler returns one.
 
 === "index.ts"
 
@@ -124,6 +124,9 @@ When using [SQS FIFO queues](https://docs.aws.amazon.com/AWSSimpleQueueService/l
 By default, we will stop processing at the first failure and mark unprocessed messages as failed to preserve ordering. However, this behavior may not be optimal for customers who wish to proceed with processing messages from a different group ID.
 
 Enable the `skipGroupOnError` option for seamless processing of messages from various group IDs. This setup ensures that messages from a failed group ID are sent back to SQS, enabling uninterrupted processing of messages from the subsequent group ID.
+
+!!! note
+    `SqsFifoPartialProcessor` is synchronous and throws `AsyncHandlerNotSupportedError` when the record handler returns a promise. Use `SqsFifoPartialProcessorAsync` together with `processPartialResponse` for asynchronous record handlers.
 
 === "index.ts"
 

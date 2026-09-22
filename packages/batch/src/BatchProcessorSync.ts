@@ -1,5 +1,9 @@
 import { BasePartialBatchProcessor } from './BasePartialBatchProcessor.js';
-import { BatchProcessingError, toError } from './errors.js';
+import {
+  AsyncHandlerNotSupportedError,
+  BatchProcessingError,
+  toError,
+} from './errors.js';
 import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
 
 /**
@@ -104,22 +108,50 @@ import type { BaseRecord, FailureResponse, SuccessResponse } from './types.js';
    * Then, it calls the handler function with the record data and context.
    *
    * If the handler function completes successfully, the method returns a success response.
-   * Otherwise, it returns a failure response with the error that occurred during processing.
+   * If it throws, the method returns a failure response with the error that occurred during processing.
+   * If it returns a promise, the method throws an {@link AsyncHandlerNotSupportedError}, since a
+   * synchronous processor cannot await it.
    *
    * @param record The record to be processed
    */
   public processRecordSync(
     record: BaseRecord
   ): SuccessResponse | FailureResponse {
+    let result: unknown;
     try {
       const data = this.toBatchType(record, this.eventType);
-      const result = this.handler(data, this.options?.context);
-
-      return this.successHandler(record, result);
+      result = this.handler(data, this.options?.context);
     } catch (error) {
       return this.failureHandler(record, toError(error));
     }
+
+    if (isThenable(result)) {
+      // The promise cannot be awaited here. Suppress its rejection so a failing handler
+      // doesn't also surface as Runtime.UnhandledPromiseRejection and mask the error
+      // thrown below, and log the reason so the handler's own failure is not lost.
+      result.then(undefined, (reason) => {
+        this.logger.error(
+          'The record handler returned a promise to a synchronous batch processor and the promise later rejected',
+          toError(reason)
+        );
+      });
+
+      throw new AsyncHandlerNotSupportedError();
+    }
+
+    return this.successHandler(record, result);
   }
 }
+
+/**
+ * Type guard to detect a thenable (promise-like) value returned by a record handler.
+ *
+ * @param value - The value returned by the record handler
+ */
+const isThenable = (value: unknown): value is PromiseLike<unknown> =>
+  typeof value === 'object' &&
+  value !== null &&
+  'then' in value &&
+  typeof value.then === 'function';
 
 export { BatchProcessorSync };

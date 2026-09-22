@@ -3,6 +3,7 @@ import type { Middleware } from '../../types/index.js';
 import {
   CACHE_CONTROL_NO_TRANSFORM_REGEX,
   COMPRESSION_ENCODING_TYPES,
+  DECIMAL_QVALUE_REGEX,
   DEFAULT_COMPRESSION_RESPONSE_THRESHOLD,
 } from '../constants.js';
 
@@ -93,7 +94,7 @@ const compress = (options?: CompressionOptions): Middleware => {
 /**
  * Gets the quality value from an Accept-Encoding coding's parameters.
  *
- * Missing `q` defaults to 1; finite numbers are clamped to [0, 1]; anything else returns 0.
+ * Missing `q` defaults to 1; plain decimals (e.g. `1`, `0.5`, `.5`) are capped at 1; anything else returns 0.
  *
  * Quality values: https://www.rfc-editor.org/rfc/rfc9110.html#section-12.4.2
  *
@@ -108,12 +109,9 @@ const getQuality = (parameters: string[]): number => {
     if (separator === -1) return 0;
 
     const value = parameter.slice(separator + 1).trim();
-    if (value.length === 0) return 0;
+    if (!DECIMAL_QVALUE_REGEX.test(value)) return 0;
 
-    const quality = Number(value);
-    if (!Number.isFinite(quality)) return 0;
-
-    return Math.min(Math.max(quality, 0), 1);
+    return Math.min(Number(value), 1);
   }
 
   return 1;

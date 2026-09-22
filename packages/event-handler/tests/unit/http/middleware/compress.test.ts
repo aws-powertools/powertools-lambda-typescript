@@ -312,7 +312,10 @@ describe('Compress Middleware', () => {
     { compressed: true, header: 'gzip;q=0.5' },
     { compressed: true, header: 'gzip;\tq=0.5\t' },
     { compressed: true, header: 'gzip;q=1.0000' },
-    { compressed: true, header: 'gzip;q=1e-1' },
+    { compressed: false, header: 'gzip;q=1e-1' },
+    { compressed: false, header: 'gzip;q=0x1' },
+    { compressed: false, header: 'gzip;q=0o1' },
+    { compressed: false, header: 'gzip;q=0b1' },
     { compressed: true, header: 'gzip;q=0.1234' },
     { compressed: true, header: 'gzip;q= 0.5' },
     { compressed: true, header: 'gzip;q = 0.5' },
@@ -335,6 +338,8 @@ describe('Compress Middleware', () => {
     { compressed: true, header: 'identity;q=0, *;q=1' },
     { compressed: false, header: 'gzip;q=0, gzip' },
     { compressed: false, header: '*;q=0, *' },
+    { compressed: true, header: '*;q=0, gzip' },
+    { compressed: true, header: 'identity;q=0, gzip' },
   ])(
     'returns compressed: $compressed for Accept-Encoding "$header"',
     async ({ compressed, header }) => {

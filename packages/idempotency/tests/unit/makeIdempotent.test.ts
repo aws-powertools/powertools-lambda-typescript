@@ -698,6 +698,72 @@ describe('Function: makeIdempotent', () => {
     expect(saveSuccessSpy).toHaveBeenCalledWith(event, '123456', withIdentity);
   });
 
+  it('completes nested operations under their own key prefix when sharing a persistence store', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+    const inner = makeIdempotent(async (_event: unknown) => 'inner', {
+      persistenceStore,
+      config,
+      keyPrefix: 'inner',
+    });
+    const outer = makeIdempotent(
+      async (event: unknown) => `outer:${await inner(event)}`,
+      { persistenceStore, config, keyPrefix: 'outer' }
+    );
+    const event = { id: 'order-1' };
+
+    // Act
+    const result = await outer(event);
+
+    // Assess
+    expect(result).toBe('outer:inner');
+    const putKeys = persistenceStore._putRecord.mock.calls.map(
+      ([record]) => record.idempotencyKey
+    );
+    const updateKeys = persistenceStore._updateRecord.mock.calls.map(
+      ([record]) => record.idempotencyKey
+    );
+    expect(putKeys).toEqual([
+      expect.stringMatching(/^outer#/),
+      expect.stringMatching(/^inner#/),
+    ]);
+    expect(updateKeys).toEqual([putKeys[1], putKeys[0]]);
+  });
+
+  it('completes a nested operation without a key prefix under the default prefix', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const config = new IdempotencyConfig({});
+    config.registerLambdaContext(context);
+    const inner = makeIdempotent(async (_event: unknown) => 'inner', {
+      persistenceStore,
+      config,
+    });
+    const outer = makeIdempotent(
+      async (event: unknown) => `outer:${await inner(event)}`,
+      { persistenceStore, config, keyPrefix: 'outer' }
+    );
+
+    // Act
+    const result = await outer({ id: 'order-1' });
+
+    // Assess
+    expect(result).toBe('outer:inner');
+    const putKeys = persistenceStore._putRecord.mock.calls.map(
+      ([record]) => record.idempotencyKey
+    );
+    const updateKeys = persistenceStore._updateRecord.mock.calls.map(
+      ([record]) => record.idempotencyKey
+    );
+    expect(putKeys).toEqual([
+      expect.stringMatching(/^outer#/),
+      expect.stringMatching(/^my-lambda-function#/),
+    ]);
+    expect(updateKeys).toEqual([putKeys[1], putKeys[0]]);
+  });
+
   it('uses the specified argument as payload when wrapping an arbitrary function', async () => {
     // Prepare
     const config = new IdempotencyConfig({});

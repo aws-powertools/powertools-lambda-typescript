@@ -481,5 +481,36 @@ describe('Class: CachePersistenceLayerTestClass', () => {
         expect.objectContaining({ EX: expect.any(Number) })
       );
     });
+
+    it('keeps the payload hash when updating a record with payload validation', async () => {
+      // Prepare
+      const persistenceLayerSpy = vi
+        .spyOn(persistenceLayer, 'isPayloadValidationEnabled')
+        .mockReturnValue(true);
+      const record = new IdempotencyRecord({
+        idempotencyKey: dummyKey,
+        status: IdempotencyRecordStatus.COMPLETED,
+        expiryTimestamp: getFutureTimestamp(15),
+        responseData: { key: 'value' },
+        payloadHash: 'someHash',
+      });
+      client.set.mockResolvedValue('OK');
+
+      // Act
+      await persistenceLayer._updateRecord(record);
+
+      // Assess
+      expect(client.set).toHaveBeenCalledWith(
+        dummyKey,
+        JSON.stringify({
+          status: 'COMPLETED',
+          expiration: record.expiryTimestamp,
+          data: record.responseData,
+          validation: 'someHash',
+        }),
+        expect.objectContaining({ EX: expect.any(Number) })
+      );
+      persistenceLayerSpy.mockRestore();
+    });
   });
 });

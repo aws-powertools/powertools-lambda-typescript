@@ -99,6 +99,19 @@ describe('Class: BasePersistenceLayer', () => {
       );
     });
 
+    it('resets the idempotency key prefix when configured without a prefix or function name', () => {
+      // Prepare
+      const config = new IdempotencyConfig({});
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({ config, keyPrefix: 'custom' });
+
+      // Act
+      persistenceLayer.configure({ config });
+
+      // Assess
+      expect(persistenceLayer.idempotencyKeyPrefix).toBe('my-lambda-function');
+    });
+
     it('trims the function name before appending as key prefix', () => {
       // Prepare
       const config = new IdempotencyConfig({});
@@ -649,6 +662,26 @@ describe('Class: BasePersistenceLayer', () => {
           ...identity,
           status: IdempotencyRecordStatus.INPROGRESS,
         })
+      );
+    });
+
+    it('hashes the idempotency key before yielding to the event loop', async () => {
+      // Prepare
+      const persistenceLayer = new PersistenceLayerTestClass();
+      persistenceLayer.configure({
+        config: new IdempotencyConfig({}),
+        keyPrefix: 'first',
+      });
+      const putRecordSpy = vi.spyOn(persistenceLayer, '_putRecord');
+
+      // Act
+      const pending = persistenceLayer.saveInProgress({ foo: 'bar' }, 2000);
+      persistenceLayer.idempotencyKeyPrefix = 'second';
+      await pending;
+
+      // Assess
+      expect(putRecordSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ idempotencyKey: 'first#mocked-hash' })
       );
     });
 

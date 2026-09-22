@@ -68,6 +68,8 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
       this.idempotencyKeyPrefix = keyPrefix.trim();
     } else if (functionName?.trim()) {
       this.idempotencyKeyPrefix = `${this.#keyPrefixBase}.${functionName.trim()}`;
+    } else {
+      this.idempotencyKeyPrefix = this.#keyPrefixBase;
     }
 
     // Prevent reconfiguration

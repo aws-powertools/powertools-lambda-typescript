@@ -61,9 +61,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    */
   readonly #idempotencyConfig: IdempotencyConfig;
   /**
-   * Custom prefix to be used when generating the idempotency key.
+   * Key prefix resolved by the persistence store for this operation.
    */
-  readonly #keyPrefix: string | undefined;
+  readonly #resolvedKeyPrefix: string;
   /**
    * Persistence layer used to store the idempotency records.
    */
@@ -88,7 +88,6 @@ export class IdempotencyHandler<Func extends AnyFunction> {
     this.#functionToMakeIdempotent = functionToMakeIdempotent;
     this.#functionPayloadToBeHashed = functionPayloadToBeHashed;
     this.#idempotencyConfig = idempotencyConfig;
-    this.#keyPrefix = keyPrefix;
     this.#functionArguments = functionArguments;
     this.#thisArg = thisArg;
 
@@ -96,8 +95,9 @@ export class IdempotencyHandler<Func extends AnyFunction> {
 
     this.#persistenceStore.configure({
       config: this.#idempotencyConfig,
-      keyPrefix: this.#keyPrefix,
+      keyPrefix,
     });
+    this.#resolvedKeyPrefix = this.#persistenceStore.idempotencyKeyPrefix;
   }
 
   /**
@@ -346,6 +346,16 @@ export class IdempotencyHandler<Func extends AnyFunction> {
   }
 
   /**
+   * Restore this operation's key prefix on the persistence store.
+   *
+   * Operations sharing a store reconfigure its prefix on construction, so it
+   * is re-applied immediately before each call that hashes a key.
+   */
+  readonly #applyKeyPrefix = (): void => {
+    this.#persistenceStore.idempotencyKeyPrefix = this.#resolvedKeyPrefix;
+  };
+
+  /**
    * Delete an in progress record from the idempotency store.
    *
    * This is called when the handler throws an error.
@@ -386,6 +396,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       result: undefined,
     };
     try {
+      this.#applyKeyPrefix();
       // Resolve the identity before attempting acquisition so that it is also
       // available when the function runs without acquiring a record (replay).
       this.#recordIdentity = this.#persistenceStore.getRecordIdentity(
@@ -415,6 +426,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
           // If the error doesn't include the existing record, we need to fetch
           // it from the persistence layer. In doing so, we also call the processExistingRecord
           // method to validate the record and cache it in memory.
+          this.#applyKeyPrefix();
           idempotencyRecord = await this.#persistenceStore.getRecord(
             this.#functionPayloadToBeHashed
           );

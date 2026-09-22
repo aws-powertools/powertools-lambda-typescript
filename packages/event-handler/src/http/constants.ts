@@ -109,6 +109,8 @@ const DEFAULT_COMPRESSION_RESPONSE_THRESHOLD = 1024;
 
 const CACHE_CONTROL_NO_TRANSFORM_REGEX = /(?:^|,)\s*?no-transform\s*?(?:,|$)/i;
 
+const DECIMAL_QVALUE_REGEX = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
+
 const COMPRESSION_ENCODING_TYPES = {
   GZIP: 'gzip',
   DEFLATE: 'deflate',
@@ -207,6 +209,7 @@ const HttpStatusText: Record<number, string> = {
 export {
   CACHE_CONTROL_NO_TRANSFORM_REGEX,
   COMPRESSION_ENCODING_TYPES,
+  DECIMAL_QVALUE_REGEX,
   DEFAULT_COMPRESSION_RESPONSE_THRESHOLD,
   DEFAULT_CORS_OPTIONS,
   HttpStatusCodes,

@@ -66,6 +66,20 @@ describe('Envelope: CloudWatch', () => {
   };
 
   describe('Method: parse', () => {
+    it('throws a ParseError with the original error as cause when a transform throws', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      const cause = new SyntaxError('boom');
+      const throwingSchema = z.unknown().transform(() => {
+        throw cause;
+      });
+
+      // Act & Assess
+      expect(() => CloudWatchEnvelope.parse(event, throwingSchema)).toThrow(
+        expect.objectContaining({ name: 'ParseError', cause })
+      );
+    });
+
     it('throws if one of the payloads does not match the schema', () => {
       // Prepare
       const event = structuredClone(baseEvent);

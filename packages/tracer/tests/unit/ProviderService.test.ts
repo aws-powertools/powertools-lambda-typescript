@@ -8,7 +8,12 @@ import xraySDK from 'aws-xray-sdk-core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProviderService } from '../../src/provider/ProviderService.js';
 import type { HttpSubsegment } from '../../src/types/ProviderService.js';
-import { mockFetch } from '../helpers/mockRequests.js';
+import {
+  mockFetch,
+  mockFetchError,
+  mockFetchRequest,
+  mockFetchResponse,
+} from '../helpers/mockRequests.js';
 
 const { Segment, Subsegment } = xraySDK;
 const mocks = vi.hoisted(() => ({
@@ -327,12 +332,8 @@ describe('Class: ProviderService', () => {
       vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
         () => subsegment
       );
-      vi.spyOn(provider, 'getSegment')
-        .mockImplementationOnce(() => segment)
-        .mockImplementationOnce(() => subsegment)
-        .mockImplementationOnce(() => subsegment);
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
       vi.spyOn(subsegment, 'close');
-      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -358,7 +359,6 @@ describe('Class: ProviderService', () => {
         },
       });
       expect(subsegment.close).toHaveBeenCalledTimes(1);
-      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
       expect(mockRequest.addHeader).toHaveBeenLastCalledWith(
         'X-Amzn-Trace-Id',
         expect.stringMatching(
@@ -375,12 +375,8 @@ describe('Class: ProviderService', () => {
       vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
         () => subsegment
       );
-      vi.spyOn(provider, 'getSegment')
-        .mockImplementationOnce(() => segment)
-        .mockImplementationOnce(() => subsegment)
-        .mockImplementationOnce(() => subsegment);
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
       vi.spyOn(subsegment, 'close');
-      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -403,7 +399,6 @@ describe('Class: ProviderService', () => {
         },
       });
       expect(subsegment.close).toHaveBeenCalledTimes(1);
-      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
     it('adds a throttle flag to the segment when the status code is 429', () => {
@@ -415,12 +410,8 @@ describe('Class: ProviderService', () => {
       vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
         () => subsegment
       );
-      vi.spyOn(provider, 'getSegment')
-        .mockImplementationOnce(() => segment)
-        .mockImplementationOnce(() => subsegment)
-        .mockImplementationOnce(() => subsegment);
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
       vi.spyOn(subsegment, 'close');
-      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -439,7 +430,6 @@ describe('Class: ProviderService', () => {
       );
       expect(subsegment.addThrottleFlag).toHaveBeenCalledTimes(1);
       expect(subsegment.close).toHaveBeenCalledTimes(1);
-      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
     it('adds an error flag to the segment when the status code is 4xx', () => {
@@ -451,12 +441,8 @@ describe('Class: ProviderService', () => {
       vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
         () => subsegment
       );
-      vi.spyOn(provider, 'getSegment')
-        .mockImplementationOnce(() => segment)
-        .mockImplementationOnce(() => subsegment)
-        .mockImplementationOnce(() => subsegment);
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
       vi.spyOn(subsegment, 'close');
-      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -475,7 +461,6 @@ describe('Class: ProviderService', () => {
       );
       expect(subsegment.addErrorFlag).toHaveBeenCalledTimes(1);
       expect(subsegment.close).toHaveBeenCalledTimes(1);
-      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
     it('adds a fault flag to the segment when the status code is 5xx', () => {
@@ -487,12 +472,8 @@ describe('Class: ProviderService', () => {
       vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
         () => subsegment
       );
-      vi.spyOn(provider, 'getSegment')
-        .mockImplementationOnce(() => segment)
-        .mockImplementationOnce(() => subsegment)
-        .mockImplementationOnce(() => subsegment);
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
       vi.spyOn(subsegment, 'close');
-      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -511,7 +492,6 @@ describe('Class: ProviderService', () => {
       );
       expect(subsegment.addFaultFlag).toHaveBeenCalledTimes(1);
       expect(subsegment.close).toHaveBeenCalledTimes(1);
-      expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
     it('skips the segment creation when the request has no origin', () => {
@@ -520,7 +500,6 @@ describe('Class: ProviderService', () => {
       const segment = new Subsegment('## dummySegment');
       vi.spyOn(segment, 'addNewSubsegment');
       vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
-      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -528,7 +507,6 @@ describe('Class: ProviderService', () => {
 
       // Assess
       expect(segment.addNewSubsegment).toHaveBeenCalledTimes(0);
-      expect(provider.setSegment).toHaveBeenCalledTimes(0);
     });
 
     it('does not add any path to the segment when the request has no path', () => {
@@ -539,12 +517,8 @@ describe('Class: ProviderService', () => {
       vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
         () => subsegment
       );
-      vi.spyOn(provider, 'getSegment')
-        .mockImplementationOnce(() => segment)
-        .mockImplementationOnce(() => subsegment)
-        .mockImplementationOnce(() => subsegment);
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
       vi.spyOn(subsegment, 'close');
-      vi.spyOn(provider, 'setSegment');
 
       // Act
       provider.instrumentFetch();
@@ -562,6 +536,94 @@ describe('Class: ProviderService', () => {
         })
       );
     });
+
+    it('closes the subsegment of the request that received the response when requests overlap', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+
+      // Act
+      provider.instrumentFetch();
+      const firstRequest = mockFetchRequest({
+        origin: 'https://aws.amazon.com',
+        path: '/blogs',
+      });
+      const secondRequest = mockFetchRequest({
+        origin: 'https://docs.aws.amazon.com',
+        path: '/lambda',
+      });
+      mockFetchResponse(secondRequest, { statusCode: 500 });
+      mockFetchResponse(firstRequest, { statusCode: 200 });
+
+      // Assess
+      const [firstSubsegment, secondSubsegment] =
+        segment.subsegments as HttpSubsegment[];
+      expect(firstSubsegment.http).toEqual({
+        request: {
+          url: 'https://aws.amazon.com/blogs',
+          method: 'GET',
+        },
+        response: {
+          status: 200,
+        },
+      });
+      expect(secondSubsegment.http).toEqual({
+        request: {
+          url: 'https://docs.aws.amazon.com/lambda',
+          method: 'GET',
+        },
+        response: {
+          status: 500,
+        },
+      });
+      expect(firstSubsegment.isClosed()).toBe(true);
+      expect(secondSubsegment.isClosed()).toBe(true);
+    });
+
+    it('closes the subsegment only once when the request fails after receiving the response', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(subsegment, 'close');
+      vi.spyOn(subsegment, 'addErrorFlag');
+
+      // Act
+      provider.instrumentFetch();
+      const request = mockFetchRequest({
+        origin: 'https://aws.amazon.com',
+        path: '/blogs',
+      });
+      mockFetchResponse(request);
+      mockFetchError(request, new Error('Connection reset by peer'));
+
+      // Assess
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(subsegment.addErrorFlag).toHaveBeenCalledTimes(0);
+    });
+
+    it('leaves the active segment unchanged for the duration of the request', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(provider, 'setSegment');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: 'https://aws.amazon.com',
+        path: '/blogs',
+      });
+
+      // Assess
+      expect(provider.setSegment).toHaveBeenCalledTimes(0);
+    });
   });
 
   it('closes the segment and adds a fault flag when the connection fails', () => {
@@ -573,12 +635,8 @@ describe('Class: ProviderService', () => {
     vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
       () => subsegment
     );
-    vi.spyOn(provider, 'getSegment')
-      .mockImplementationOnce(() => segment)
-      .mockImplementationOnce(() => subsegment)
-      .mockImplementationOnce(() => subsegment);
+    vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
     vi.spyOn(subsegment, 'close');
-    vi.spyOn(provider, 'setSegment');
 
     // Act
     provider.instrumentFetch();
@@ -592,7 +650,6 @@ describe('Class: ProviderService', () => {
     // Assess
     expect(subsegment.addError).toHaveBeenCalledTimes(1);
     expect(subsegment.close).toHaveBeenCalledTimes(1);
-    expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
   });
 
   it('forwards the correct sampling decision in the request header', () => {
@@ -604,12 +661,8 @@ describe('Class: ProviderService', () => {
     vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
       () => subsegment
     );
-    vi.spyOn(provider, 'getSegment')
-      .mockImplementationOnce(() => segment)
-      .mockImplementationOnce(() => subsegment)
-      .mockImplementationOnce(() => subsegment);
+    vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
     vi.spyOn(subsegment, 'close');
-    vi.spyOn(provider, 'setSegment');
 
     // Act
     provider.instrumentFetch();

@@ -2,21 +2,92 @@ import { channel } from 'node:diagnostics_channel';
 import type { URL } from 'node:url';
 import { type Mock, vi } from 'vitest';
 
-type MockFetchOptions = {
+type MockRequestOptions = {
   origin?: string | URL;
   path?: string;
   method?: string;
+};
+
+type MockResponseOptions = {
+  statusCode?: number;
   headers?: { [key: string]: string };
-} & (
-  | {
-      statusCode?: never;
-      throwError?: boolean;
-    }
-  | {
-      statusCode: number;
-      throwError?: never;
-    }
-);
+};
+
+type MockRequest = MockRequestOptions & {
+  method: string;
+  addHeader: Mock;
+};
+
+type MockFetchOptions = MockRequestOptions &
+  (
+    | {
+        statusCode?: never;
+        headers?: MockResponseOptions['headers'];
+        throwError?: boolean;
+      }
+    | {
+        statusCode: number;
+        headers?: MockResponseOptions['headers'];
+        throwError?: never;
+      }
+  );
+
+/**
+ * Simulates the start of a fetch request by publishing the message to the `undici` channel
+ *
+ * @param options The options for the mock request
+ */
+const mockFetchRequest = ({
+  origin,
+  path,
+  method,
+}: MockRequestOptions): MockRequest => {
+  const request = {
+    origin,
+    method: method ?? 'GET',
+    path,
+    addHeader: vi.fn(),
+  };
+
+  channel('undici:request:create').publish({ request });
+
+  return request;
+};
+
+/**
+ * Simulates the response to a request by publishing the message to the `undici` channel
+ *
+ * @param request The request the response is for
+ * @param options The options for the mock response
+ */
+const mockFetchResponse = (
+  request: MockRequest,
+  { statusCode, headers }: MockResponseOptions = {}
+): void => {
+  const encoder = new TextEncoder();
+  const encodedHeaders = [];
+  for (const [key, value] of Object.entries(headers ?? {})) {
+    encodedHeaders.push(encoder.encode(key), encoder.encode(value));
+  }
+
+  channel('undici:request:headers').publish({
+    request,
+    response: {
+      statusCode: statusCode ?? 200,
+      headers: encodedHeaders,
+    },
+  });
+};
+
+/**
+ * Simulates a failed request by publishing the message to the `undici` channel
+ *
+ * @param request The request that failed
+ * @param error The error the request failed with
+ */
+const mockFetchError = (request: MockRequest, error: Error): void => {
+  channel('undici:request:error').publish({ request, error });
+};
 
 /**
  * Simulates a fetch request by publishing messages to the undici channel
@@ -32,48 +103,20 @@ const mockFetch = ({
   statusCode,
   headers,
   throwError,
-}: MockFetchOptions) => {
-  const requestCreateChannel = channel('undici:request:create');
-  const responseHeadersChannel = channel('undici:request:headers');
-  const errorChannel = channel('undici:request:error');
-
-  const addHeader: Mock = vi.fn();
-  const request = {
-    origin,
-    method: method ?? 'GET',
-    path,
-    addHeader,
-  };
-
-  requestCreateChannel.publish({
-    request,
-  });
+}: MockFetchOptions): MockRequest => {
+  const request = mockFetchRequest({ origin, path, method });
 
   if (throwError) {
     const error = new AggregateError([], 'Mock fetch error');
 
-    errorChannel.publish({
-      request,
-      error,
-    });
+    mockFetchError(request, error);
 
     throw error;
   }
 
-  const encoder = new TextEncoder();
-  const encodedHeaders = [];
-  for (const [key, value] of Object.entries(headers ?? {})) {
-    encodedHeaders.push(encoder.encode(key), encoder.encode(value));
-  }
-  responseHeadersChannel.publish({
-    request,
-    response: {
-      statusCode: statusCode ?? 200,
-      headers: encodedHeaders,
-    },
-  });
+  mockFetchResponse(request, { statusCode, headers });
 
   return request;
 };
 
-export { mockFetch };
+export { mockFetch, mockFetchError, mockFetchRequest, mockFetchResponse };

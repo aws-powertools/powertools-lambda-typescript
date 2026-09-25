@@ -66,6 +66,22 @@ class ProviderService implements ProviderServiceInterface {
    */
   readonly #segmentKey = Symbol('powertools.tracer.segment');
 
+  /**
+   * Open subsegments of the `fetch` requests in flight, keyed by the `undici`
+   * request that opened them.
+   *
+   * Every message on the `undici` request channels carries the request, which
+   * makes it a stable identity for the whole request. The active segment is
+   * not: `request:headers` and `request:error` may run on the async chain of
+   * the connection, which is reused across requests, so once invocations get
+   * their own context they resolve a different segment, leaving the subsegment
+   * open and the trace data of the invocation dropped.
+   */
+  readonly #fetchSubsegments = new WeakMap<
+    DiagnosticsChannel.Request,
+    Subsegment
+  >();
+
   #getInvokeStore(): InvokeStoreBase {
     const store = globalThis.awslambda?.InvokeStore;
     if (store === undefined) {
@@ -137,10 +153,27 @@ class ProviderService implements ProviderServiceInterface {
   }
 
   /**
+   * Stop tracking the subsegment of a `fetch` request and return it.
+   *
+   * Returns `undefined` when the request has no open subsegment, which is what
+   * keeps an earlier event from closing it twice.
+   *
+   * @param request The `undici` request the subsegment was opened for
+   */
+  #takeFetchSubsegment(
+    request: DiagnosticsChannel.Request
+  ): Subsegment | undefined {
+    const subsegment = this.#fetchSubsegments.get(request);
+    this.#fetchSubsegments.delete(request);
+
+    return subsegment;
+  }
+
+  /**
    * Instrument `fetch` requests with AWS X-Ray
    *
    * The instrumentation is done by subscribing to the `undici` events. When a request is created,
-   * a new subsegment is created with the hostname of the request.
+   * a new subsegment is created with the hostname of the request, and tracked against that request.
    *
    * Then, when the headers are received, the subsegment is updated with the request and response details.
    *
@@ -183,22 +216,22 @@ class ProviderService implements ProviderServiceInterface {
           },
         };
 
-        this.setSegment(subsegment);
+        this.#fetchSubsegments.set(request, subsegment);
       }
     };
 
     /**
      * Enrich the subsegment with the response details, and close it.
-     * Then, set the parent segment as the active segment.
      *
      * `message` must be `unknown` because that's the type expected by `subscribe`
      *
      * @param message The message received from the `undici` channel
      */
     const onResponse = (message: unknown): void => {
-      const { response } = message as DiagnosticsChannel.RequestHeadersMessage;
+      const { request, response } =
+        message as DiagnosticsChannel.RequestHeadersMessage;
 
-      const subsegment = this.getSegment();
+      const subsegment = this.#takeFetchSubsegment(request);
       if (isHttpSubsegment(subsegment)) {
         const status = response.statusCode;
         const contentLenght = findHeaderAndDecode(
@@ -226,7 +259,6 @@ class ProviderService implements ProviderServiceInterface {
         }
 
         subsegment.close();
-        this.setSegment(subsegment.parent);
       }
     };
 
@@ -241,15 +273,15 @@ class ProviderService implements ProviderServiceInterface {
      * @param message The message received from the `undici` channel
      */
     const onError = (message: unknown): void => {
-      const { error } = message as DiagnosticsChannel.RequestErrorMessage;
+      const { request, error } =
+        message as DiagnosticsChannel.RequestErrorMessage;
 
-      const subsegment = this.getSegment();
+      const subsegment = this.#takeFetchSubsegment(request);
       if (isHttpSubsegment(subsegment)) {
         subsegment.addErrorFlag();
         error instanceof Error && subsegment.addError(error, true);
 
         subsegment.close();
-        this.setSegment(subsegment.parent);
       }
     };
 

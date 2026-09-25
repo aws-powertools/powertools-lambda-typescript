@@ -17,6 +17,20 @@ describe('Envelope: SnsSqsEnvelope', () => {
   });
 
   describe('Method: parse', () => {
+    it('throws a ParseError with the original error as cause when a transform throws', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      const cause = new SyntaxError('boom');
+      const throwingSchema = z.unknown().transform(() => {
+        throw cause;
+      });
+
+      // Act & Assess
+      expect(() => SnsSqsEnvelope.parse(event, throwingSchema)).toThrow(
+        expect.objectContaining({ name: 'ParseError', cause })
+      );
+    });
+
     it('throws if one of the payloads does not match the schema', () => {
       // Prepare
       const event = structuredClone(baseEvent);
@@ -227,6 +241,35 @@ describe('Envelope: SnsSqsEnvelope', () => {
                 message: expect.stringMatching(/^Invalid JSON - /),
                 path: ['Records', 0, 'body'],
               },
+            ],
+          }),
+        }),
+        originalEvent: event,
+      });
+    });
+
+    it('returns the transform error message when a transform throws', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      const throwingSchema = z.unknown().transform(() => {
+        throw new SyntaxError('boom');
+      });
+
+      // Act
+      const result = SnsSqsEnvelope.safeParse(event, throwingSchema);
+
+      // Assess
+      expect(result).toEqual({
+        success: false,
+        error: expect.objectContaining({
+          name: 'ParseError',
+          cause: expect.objectContaining({
+            issues: [
+              expect.objectContaining({
+                code: 'custom',
+                message: 'boom',
+                path: ['Records', 0, 'body'],
+              }),
             ],
           }),
         }),

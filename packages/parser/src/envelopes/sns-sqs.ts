@@ -3,7 +3,7 @@ import { ParseError } from '../errors.js';
 import { SnsSqsNotificationSchema } from '../schemas/sns.js';
 import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult, SnsSqsNotification } from '../types/index.js';
-import { envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
 
 const createError = (index: number, issues: z.core.$ZodIssue[]) => ({
   issues: issues.map((issue) => ({
@@ -67,30 +67,31 @@ export const SnsSqsEnvelope = {
     }
 
     return parsedEnvelope.Records.map((record, recordIndex) => {
+      let body: unknown;
       try {
-        return schema.parse(
-          SnsSqsNotificationSchema.parse(JSON.parse(record.body)).Message
-        );
+        body = JSON.parse(record.body);
       } catch (error) {
         throw new ParseError(
           `Failed to parse SQS Record at index ${recordIndex}`,
           {
-            cause: new ZodError(
-              error instanceof ZodError
-                ? (error as ZodError).issues.map((issue) => ({
-                    ...issue,
-                    path: ['Records', recordIndex, 'body', ...issue.path],
-                  }))
-                : [
-                    {
-                      code: 'custom',
-                      input: record.body,
-                      message: `Invalid JSON - ${(error as Error).message}`,
-                      path: ['Records', recordIndex, 'body'],
-                    },
-                  ]
-            ),
+            cause: new ZodError([
+              {
+                code: 'custom',
+                input: record.body,
+                message: `Invalid JSON - ${(error as Error).message}`,
+                path: ['Records', recordIndex, 'body'],
+              },
+            ]),
           }
+        );
+      }
+
+      try {
+        return schema.parse(SnsSqsNotificationSchema.parse(body).Message);
+      } catch (error) {
+        throw new ParseError(
+          `Failed to parse SQS Record at index ${recordIndex}`,
+          { cause: prefixIssuePaths(error, ['Records', recordIndex, 'body']) }
         );
       }
     });
@@ -112,8 +113,24 @@ export const SnsSqsEnvelope = {
       record: { body: string },
       index: number
     ): ParseStepResult<T> => {
+      let body: unknown;
       try {
-        const body = JSON.parse(record.body);
+        body = JSON.parse(record.body);
+      } catch (error) {
+        return {
+          success: false,
+          error: createError(index, [
+            {
+              code: 'custom',
+              message: `Invalid JSON - ${(error as Error).message}`,
+              input: record.body,
+              path: [],
+            },
+          ]),
+        };
+      }
+
+      try {
         const notification = parseStep<SnsSqsNotification>(
           (data) => SnsSqsNotificationSchema.safeParse(data),
           body,
@@ -132,7 +149,7 @@ export const SnsSqsEnvelope = {
           error: createError(index, [
             {
               code: 'custom',
-              message: `Invalid JSON - ${(error as Error).message}`,
+              message: (error as Error).message,
               input: record.body,
               path: [],
             },

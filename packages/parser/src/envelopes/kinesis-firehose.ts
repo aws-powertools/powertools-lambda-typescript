@@ -2,7 +2,7 @@ import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { KinesisFirehoseSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
 
 /**
  * Kinesis Firehose Envelope to extract array of Records
@@ -40,12 +40,7 @@ export const KinesisFirehoseEnvelope = {
         throw new ParseError(
           `Failed to parse Kinesis Firehose record at index ${recordIndex}`,
           {
-            cause: new ZodError(
-              (error as ZodError).issues.map((issue) => ({
-                ...issue,
-                path: ['records', recordIndex, 'data', ...issue.path],
-              }))
-            ),
+            cause: prefixIssuePaths(error, ['records', recordIndex, 'data']),
           }
         );
       }

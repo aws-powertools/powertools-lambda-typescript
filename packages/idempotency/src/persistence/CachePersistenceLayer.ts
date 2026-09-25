@@ -166,7 +166,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
     await this.#client.set(
       record.idempotencyKey,
       encodedItem,
-      this.#getSetOptions({ ttl })
+      this.#getSetOptions(ttl)
     );
   }
 
@@ -220,7 +220,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
       const response = await this.#client.set(
         record.idempotencyKey,
         encodedItem,
-        this.#getSetOptions({ ttl, onlyIfNotExists: true })
+        this.#getSetIfNotExistsOptions(ttl)
       );
 
       /**
@@ -298,7 +298,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
         await this.#client.set(
           record.idempotencyKey,
           encodedItem,
-          this.#getSetOptions({ ttl })
+          this.#getSetOptions(ttl)
         );
       } else {
         throw error;
@@ -311,29 +311,31 @@ class CachePersistenceLayer extends BasePersistenceLayer {
    *
    * `@redis/client` reads `EX` and `NX`, while `@valkey/valkey-glide` reads `expiry` and
    * `conditionalSet`. Each client ignores the properties of the other, so passing only one shape
-   * would silently write the key without a condition or a TTL on the other client.
+   * would silently write the key without a TTL on the other client.
    *
-   * @param options - The options for the `SET` command
-   * @param options.ttl - The expiry time of the key in seconds
-   * @param options.onlyIfNotExists - Whether to set the key only if it does not already exist
+   * @param ttl - The expiry time of the key in seconds
    */
-  #getSetOptions(options: {
-    ttl: number;
-    onlyIfNotExists?: boolean;
-  }): CacheClientSetOptions {
-    const { ttl, onlyIfNotExists } = options;
-    if (onlyIfNotExists) {
-      return {
-        EX: ttl,
-        NX: true,
-        expiry: { type: 'EX', count: ttl },
-        conditionalSet: 'onlyIfDoesNotExist',
-      };
-    }
-
+  #getSetOptions(ttl: number): CacheClientSetOptions {
     return {
       EX: ttl,
       expiry: { type: 'EX', count: ttl },
+    };
+  }
+
+  /**
+   * Builds the options for a `SET` command that only writes the key if it does not already exist,
+   * in the shapes of both supported clients.
+   *
+   * On top of the expiry from {@link CachePersistenceLayer.#getSetOptions | `#getSetOptions()`},
+   * `@redis/client` reads `NX` and `@valkey/valkey-glide` reads `conditionalSet`.
+   *
+   * @param ttl - The expiry time of the key in seconds
+   */
+  #getSetIfNotExistsOptions(ttl: number): CacheClientSetOptions {
+    return {
+      ...this.#getSetOptions(ttl),
+      NX: true,
+      conditionalSet: 'onlyIfDoesNotExist',
     };
   }
 
@@ -362,10 +364,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
     const acquired = await this.#client.set(
       lockKey,
       lockValue,
-      this.#getSetOptions({
-        ttl: this.#orphanLockTimeout,
-        onlyIfNotExists: true,
-      })
+      this.#getSetIfNotExistsOptions(this.#orphanLockTimeout)
     );
 
     if (acquired) return;

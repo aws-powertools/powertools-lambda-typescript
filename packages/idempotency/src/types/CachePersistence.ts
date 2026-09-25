@@ -8,7 +8,7 @@ type CacheValue = string | Uint8Array<ArrayBufferLike>;
  *
  * @see {@link https://valkey.io/commands/set/ | Valkey SET command}
  */
-interface RedisSetOptions {
+type RedisSetOptions = {
   /**
    * The expiry time in seconds, `EX` in the `SET` command.
    */
@@ -17,7 +17,7 @@ interface RedisSetOptions {
    * Whether to set the key only if it does not already exist, `NX` in the `SET` command.
    */
   NX?: boolean;
-}
+};
 
 /**
  * Options for the `SET` command in the shape read by `@valkey/valkey-glide`.
@@ -28,7 +28,7 @@ interface RedisSetOptions {
  *
  * @see {@link https://valkey.io/commands/set/ | Valkey SET command}
  */
-interface GlideSetOptions {
+type GlideSetOptions = {
   /**
    * The condition for setting the key, `onlyIfDoesNotExist` is `NX` in the `SET` command.
    */
@@ -37,7 +37,7 @@ interface GlideSetOptions {
    * The expiry of the key, `{ type: 'EX', count: seconds }` is `EX` in the `SET` command.
    */
   expiry?: 'keepExisting' | { type: string; count: number };
-}
+};
 
 /**
  * Options passed to {@link CacheClient.set | `CacheClient.set()`}.

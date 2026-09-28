@@ -2,7 +2,7 @@ import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
 
 /**
  * SQS Envelope to extract array of Records
@@ -47,12 +47,7 @@ const SqsEnvelope = {
         throw new ParseError(
           `Failed to parse SQS Record at index ${recordIndex}`,
           {
-            cause: new ZodError(
-              (error as ZodError).issues.map((issue) => ({
-                ...issue,
-                path: ['Records', recordIndex, 'body', ...issue.path],
-              }))
-            ),
+            cause: prefixIssuePaths(error, ['Records', recordIndex, 'body']),
           }
         );
       }

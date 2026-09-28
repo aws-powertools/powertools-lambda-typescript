@@ -58,14 +58,14 @@
     "esbuild": "^0.28.2",
     "husky": "^9.1.7",
     "lint-staged": "^17.5.1",
-    "markdownlint-cli2": "^0.23.2",
+    "markdownlint-cli2": "^0.23.3",
     "middy5": "npm:@middy/core@^5.5.1",
     "middy6": "npm:@middy/core@^6.4.5",
     "middy7": "npm:@middy/core@^7.0.2",
     "typedoc": "^0.28.20",
     "typedoc-plugin-missing-exports": "^4.1.4",
     "typescript": "^6.0.3",
-    "undici-types": "^8.10.2",
+    "undici-types": "^8.11.0",
     "vitest": "5.0.1"
   },
   "lint-staged": {

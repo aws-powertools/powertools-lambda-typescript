@@ -50,7 +50,8 @@
     "resourceId": "nmnny7",
     "authorizer": {
       "principalId": "user",
-      "integrationLatency": 422
+      "integrationLatency": 422,
+      "tenantId": "tenant-1"
     },
     "resourcePath": "/lambda-token",
     "httpMethod": "POST",

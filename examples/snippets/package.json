@@ -50,7 +50,7 @@
     "zod": "^4.6.5"
   },
   "dependencies": {
-    "arktype": "^2.2.3",
+    "arktype": "^2.2.5",
     "valibot": "^1.5.0"
   }
 }

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { RemovalPolicy } from 'aws-cdk-lib';
 import {
   InterfaceVpcEndpointAwsService,
   IpProtocol,
@@ -7,6 +8,7 @@ import {
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
 import { CapacityProvider } from 'aws-cdk-lib/aws-lambda';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { TEST_ARCHITECTURES } from '../constants.js';
 import { getArchitectureKey } from '../helpers.js';
 import type { TestStack } from '../TestStack.js';
@@ -41,9 +43,8 @@ class TestLmiCapacityProvider extends CapacityProvider {
     const resourceId = randomUUID().substring(0, 5);
     const vpc = new Vpc(stack.stack, `vpc-${resourceId}`, {
       ipProtocol: IpProtocol.DUAL_STACK,
-      // A single AZ keeps the fleet as concentrated as possible so that
-      // saturating it forces concurrent invocations to be multiplexed into
-      // shared execution environments
+      // A single AZ keeps the networking minimal; the tests pin execution
+      // environments per function rather than relying on fleet placement
       maxAzs: 1,
       natGateways: 0,
       subnetConfiguration: [
@@ -71,13 +72,28 @@ class TestLmiCapacityProvider extends CapacityProvider {
       allowAllIpv6Outbound: true,
     });
 
+    // Without an explicit log group Lambda creates its own
+    // `/aws/lambda/capacity-provider/<name>` outside the stack, with no
+    // retention, and it outlives teardown
+    const logGroup = new LogGroup(stack.stack, `cp-logs-${resourceId}`, {
+      retention: RetentionDays.ONE_DAY,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+
     super(stack.stack, `cp-${resourceId}`, {
       subnets: vpc.privateSubnets,
       securityGroups: [securityGroup],
       architectures: [TEST_ARCHITECTURES[architecture]],
-      // The service minimum; keeps the fleet as small as possible so that
-      // concurrent invocations share execution environments
-      maxVCpuCount: 12,
+      logGroup,
+      // Sized for the CI matrix rather than the service minimum of 12. Every
+      // LMI cell of an architecture (two packages x two Node.js versions)
+      // attaches a function that Lambda places on its own 4 vCPU instance, so
+      // the fleet sits at 16 vCPU. The cap is only enforced on launches made
+      // once the fleet has reached it, so at 12 a single failed instance
+      // launch could never be replaced. Two spare instances' worth of headroom
+      // covers that; the tests do not depend on the fleet being small because
+      // each function pins its own execution environments.
+      maxVCpuCount: 24,
     });
   }
 }

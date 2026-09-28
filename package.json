@@ -65,7 +65,7 @@
     "typedoc": "^0.28.20",
     "typedoc-plugin-missing-exports": "^4.1.4",
     "typescript": "^6.0.3",
-    "undici-types": "^8.10.2",
+    "undici-types": "^8.11.0",
     "vitest": "5.0.1"
   },
   "lint-staged": {

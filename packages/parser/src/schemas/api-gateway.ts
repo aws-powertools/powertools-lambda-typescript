@@ -51,7 +51,8 @@ const APIGatewayEventRequestContextSchema = z
     deploymentId: z.string().nullish(),
     authorizer: z
       .union([
-        z.object({
+        // Lambda authorizer: keep the custom context it returns alongside these keys
+        z.looseObject({
           integrationLatency: z.number(),
           principalId: z.string(),
         }),

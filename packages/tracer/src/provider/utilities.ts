@@ -1,27 +1,32 @@
 import { URL } from 'node:url';
 import type { Segment, Subsegment } from 'aws-xray-sdk-core';
 import type { DiagnosticsChannel } from 'undici-types';
+import type { IncomingHttpHeaders } from 'undici-types/header.js';
 import type { HttpSubsegment } from '../types/ProviderService.js';
 
 const decoder = new TextDecoder();
 
 /**
- * The `fetch` implementation based on `undici` includes the headers as an array of encoded key-value pairs.
- * This function finds the header with the given key and decodes the value.
+ * Finds the header with the given key and return its value as a string.
  *
- * The function walks through the array of encoded headers and decodes the key of each pair.
- * If the key matches the given key, the function returns the decoded value of the next element in the array.
+ * Over HTTP/1, `undici` publishes the headers as a flat array of encoded key-value pairs;
+ * over HTTP/2 it publishes them as an object with lowercase keys.
  *
- * @param encodedHeaders The array of encoded headers
- * @param key The key to search for
+ * @param headers The response headers published by `undici`
+ * @param key The lowercase key to search for
  */
 const findHeaderAndDecode = (
-  encodedHeaders: Uint8Array[],
+  headers: Uint8Array[] | IncomingHttpHeaders,
   key: string
 ): string | null => {
+  if (!Array.isArray(headers)) {
+    const value = headers[key];
+    return (Array.isArray(value) ? value[0] : value) ?? null;
+  }
+
   let foundIndex = -1;
-  for (let i = 0; i < encodedHeaders.length; i += 2) {
-    const header = decoder.decode(encodedHeaders[i]);
+  for (let i = 0; i < headers.length; i += 2) {
+    const header = decoder.decode(headers[i]);
     if (header.toLowerCase() === key) {
       foundIndex = i;
       break;
@@ -32,7 +37,7 @@ const findHeaderAndDecode = (
     return null;
   }
 
-  return decoder.decode(encodedHeaders[foundIndex + 1]);
+  return decoder.decode(headers[foundIndex + 1]);
 };
 
 /**

@@ -6,7 +6,8 @@ type MockFetchOptions = {
   origin?: string | URL;
   path?: string;
   method?: string;
-  headers?: { [key: string]: string };
+  headers?: { [key: string]: string | string[] };
+  http2?: boolean;
 } & (
   | {
       statusCode?: never;
@@ -31,6 +32,7 @@ const mockFetch = ({
   method,
   statusCode,
   headers,
+  http2,
   throwError,
 }: MockFetchOptions) => {
   const requestCreateChannel = channel('undici:request:create');
@@ -63,13 +65,13 @@ const mockFetch = ({
   const encoder = new TextEncoder();
   const encodedHeaders = [];
   for (const [key, value] of Object.entries(headers ?? {})) {
-    encodedHeaders.push(encoder.encode(key), encoder.encode(value));
+    encodedHeaders.push(encoder.encode(key), encoder.encode(String(value)));
   }
   responseHeadersChannel.publish({
     request,
     response: {
       statusCode: statusCode ?? 200,
-      headers: encodedHeaders,
+      headers: http2 ? headers : encodedHeaders,
     },
   });
 

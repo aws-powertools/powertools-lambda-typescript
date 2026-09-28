@@ -138,6 +138,6 @@
   ],
   "devDependencies": {
     "@aws-crypto/client-node": "^5.0.2",
-    "fast-check": "^4.10.1"
+    "fast-check": "^4.10.2"
   }
 }

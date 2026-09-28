@@ -2,7 +2,7 @@ import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { CloudWatchLogsSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
 
 /**
  * CloudWatch Envelope to extract messages from the `awslogs.data.logEvents` key.
@@ -23,19 +23,13 @@ export const CloudWatchEnvelope = {
         throw new ParseError(
           `Failed to parse CloudWatch log event at index ${index}`,
           {
-            cause: new ZodError(
-              (error as ZodError).issues.map((issue) => ({
-                ...issue,
-                path: [
-                  'awslogs',
-                  'data',
-                  'logEvents',
-                  index,
-                  'message',
-                  ...issue.path,
-                ],
-              }))
-            ),
+            cause: prefixIssuePaths(error, [
+              'awslogs',
+              'data',
+              'logEvents',
+              index,
+              'message',
+            ]),
           }
         );
       }

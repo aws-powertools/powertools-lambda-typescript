@@ -2,7 +2,7 @@ import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { SnsSchema } from '../schemas/sns.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
 
 /**
  * SNS Envelope to extract array of Records
@@ -27,12 +27,7 @@ export const SnsEnvelope = {
         return schema.parse(record.Sns.Message);
       } catch (error) {
         throw new ParseError(`Failed to parse SNS record at index ${index}`, {
-          cause: new ZodError(
-            (error as ZodError).issues.map((issue) => ({
-              ...issue,
-              path: ['Records', index, 'Sns', 'Message', ...issue.path],
-            }))
-          ),
+          cause: prefixIssuePaths(error, ['Records', index, 'Sns', 'Message']),
         });
       }
     });

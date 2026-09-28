@@ -406,6 +406,61 @@ describe('Class: ProviderService', () => {
       expect(provider.setSegment).toHaveBeenLastCalledWith(segment);
     });
 
+    it.each<{
+      case: string;
+      headers: Record<string, string | string[]>;
+      response: Record<string, number>;
+    }>([
+      {
+        case: 'string',
+        headers: { 'content-length': '100' },
+        response: { status: 200, content_length: 100 },
+      },
+      {
+        case: 'array',
+        headers: { 'content-length': ['100'] },
+        response: { status: 200, content_length: 100 },
+      },
+      {
+        case: 'missing',
+        headers: { 'content-type': 'application/json' },
+        response: { status: 200 },
+      },
+    ])(
+      'reads the content_length from HTTP/2 headers ($case)',
+      ({ headers, response }) => {
+        // Prepare
+        const provider: ProviderService = new ProviderService();
+        const segment = new Subsegment('## dummySegment');
+        const subsegment = segment.addNewSubsegment('aws.amazon.com');
+        vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+          () => subsegment
+        );
+        vi.spyOn(provider, 'getSegment')
+          .mockImplementationOnce(() => segment)
+          .mockImplementationOnce(() => subsegment)
+          .mockImplementationOnce(() => subsegment);
+
+        // Act
+        provider.instrumentFetch();
+        mockFetch({
+          origin: 'https://aws.amazon.com',
+          path: '/blogs',
+          headers,
+          http2: true,
+        });
+
+        // Assess
+        expect((subsegment as HttpSubsegment).http).toEqual({
+          request: {
+            url: 'https://aws.amazon.com/blogs',
+            method: 'GET',
+          },
+          response,
+        });
+      }
+    );
+
     it('adds a throttle flag to the segment when the status code is 429', () => {
       // Prepare
       const provider: ProviderService = new ProviderService();

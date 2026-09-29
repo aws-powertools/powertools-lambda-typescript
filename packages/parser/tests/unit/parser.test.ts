@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
@@ -168,7 +169,42 @@ describe('Parser', () => {
 
     // Act & Assess
     expect(() => parse('data', undefined, schema, true)).toThrow(
-      new ParseError('Schema parsing supports only synchronous validation')
+      new ParseError(
+        'Schema validation returned a Promise: the schema is asynchronous or a transform threw an error'
+      )
     );
+  });
+
+  const validationCause = new SyntaxError('boom');
+  const throwingSchema: StandardSchemaV1<unknown, never> = {
+    '~standard': {
+      version: 1,
+      vendor: 'test',
+      validate: () => {
+        throw validationCause;
+      },
+    },
+  };
+
+  it('throws a ParseError with the original error as cause when validation throws', () => {
+    // Act & Assess
+    expect(() => parse('data', undefined, throwingSchema)).toThrow(
+      expect.objectContaining({ name: 'ParseError', cause: validationCause })
+    );
+  });
+
+  it('returns a failed result with the original error as cause when validation throws and safeParse is enabled', () => {
+    // Act
+    const result = parse('data', undefined, throwingSchema, true);
+
+    // Assess
+    expect(result).toStrictEqual({
+      success: false,
+      error: expect.objectContaining({
+        name: 'ParseError',
+        cause: validationCause,
+      }),
+      originalEvent: 'data',
+    });
   });
 });

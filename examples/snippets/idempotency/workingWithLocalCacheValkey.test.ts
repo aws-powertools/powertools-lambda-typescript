@@ -18,13 +18,14 @@ const context = {
 
 describe('Idempotent handler', () => {
   it('returns the same response', async () => {
+    // Prepare
+    const event = {
+      foo: 'bar',
+    };
+
     // Act
-    const response = await handler(
-      {
-        foo: 'bar',
-      },
-      context
-    );
+    const response = await handler(event, context);
+    const replayedResponse = await handler(event, context);
 
     // Assess
     expect(response).toEqual({
@@ -32,5 +33,6 @@ describe('Idempotent handler', () => {
       message: 'success',
       statusCode: 200,
     });
+    expect(replayedResponse).toEqual(response);
   });
 });

@@ -64,7 +64,12 @@ describe('Class: CachePersistenceLayerTestClass', () => {
           status: IdempotencyRecordStatus.INPROGRESS,
           expiration: record.expiryTimestamp,
         }),
-        { EX: 10, NX: true }
+        {
+          EX: 10,
+          NX: true,
+          expiry: { type: 'EX', count: 10 },
+          conditionalSet: 'onlyIfDoesNotExist',
+        }
       );
     });
 
@@ -91,7 +96,12 @@ describe('Class: CachePersistenceLayerTestClass', () => {
           expiration: expiryTimestamp,
           in_progress_expiration: inProgressExpiryTimestamp,
         }),
-        { EX: 10, NX: true }
+        {
+          EX: 10,
+          NX: true,
+          expiry: { type: 'EX', count: 10 },
+          conditionalSet: 'onlyIfDoesNotExist',
+        }
       );
     });
 
@@ -119,7 +129,12 @@ describe('Class: CachePersistenceLayerTestClass', () => {
           expiration: expiryTimestamp,
           validation: 'someHash',
         }),
-        { EX: 10, NX: true }
+        {
+          EX: 10,
+          NX: true,
+          expiry: { type: 'EX', count: 10 },
+          conditionalSet: 'onlyIfDoesNotExist',
+        }
       );
       persistenceLayerSpy.mockRestore();
     });
@@ -141,7 +156,12 @@ describe('Class: CachePersistenceLayerTestClass', () => {
         JSON.stringify({
           status,
         }),
-        { EX: 60 * 60, NX: true }
+        {
+          EX: 60 * 60,
+          NX: true,
+          expiry: { type: 'EX', count: 60 * 60 },
+          conditionalSet: 'onlyIfDoesNotExist',
+        }
       );
     });
 
@@ -165,18 +185,19 @@ describe('Class: CachePersistenceLayerTestClass', () => {
       await persistenceLayer._putRecord(record);
 
       // Assess
-      expect(client.set).toHaveBeenCalledWith(
-        `${dummyKey}:lock`,
-        'true',
-        expect.objectContaining({ EX: 10, NX: true })
-      );
+      expect(client.set).toHaveBeenCalledWith(`${dummyKey}:lock`, 'true', {
+        EX: 10,
+        NX: true,
+        expiry: { type: 'EX', count: 10 },
+        conditionalSet: 'onlyIfDoesNotExist',
+      });
       expect(client.set).toHaveBeenCalledWith(
         dummyKey,
         JSON.stringify({
           status: IdempotencyRecordStatus.INPROGRESS,
           expiration: record.expiryTimestamp,
         }),
-        { EX: 10 }
+        { EX: 10, expiry: { type: 'EX', count: 10 } }
       );
     });
 
@@ -321,7 +342,7 @@ describe('Class: CachePersistenceLayerTestClass', () => {
             expiration: expiryTimestamp,
             in_progress_expiration: record.inProgressExpiryTimestamp,
           }),
-          { EX: 3600 }
+          { EX: 3600, expiry: { type: 'EX', count: 3600 } }
         );
       }
     );
@@ -429,7 +450,7 @@ describe('Class: CachePersistenceLayerTestClass', () => {
           status: 'COMPLETED',
           expiration: record.expiryTimestamp,
         }),
-        expect.objectContaining({ EX: expect.any(Number) })
+        { EX: 15, expiry: { type: 'EX', count: 15 } }
       );
     });
 
@@ -453,7 +474,7 @@ describe('Class: CachePersistenceLayerTestClass', () => {
           status: 'COMPLETED',
           expiration: record.expiryTimestamp,
         }),
-        expect.objectContaining({ EX: expect.any(Number) })
+        { EX: 15, expiry: { type: 'EX', count: 15 } }
       );
     });
 
@@ -478,7 +499,7 @@ describe('Class: CachePersistenceLayerTestClass', () => {
           expiration: record.expiryTimestamp,
           data: record.responseData,
         }),
-        expect.objectContaining({ EX: expect.any(Number) })
+        { EX: 15, expiry: { type: 'EX', count: 15 } }
       );
     });
 
@@ -508,7 +529,7 @@ describe('Class: CachePersistenceLayerTestClass', () => {
           data: record.responseData,
           validation: 'someHash',
         }),
-        expect.objectContaining({ EX: expect.any(Number) })
+        { EX: 15, expiry: { type: 'EX', count: 15 } }
       );
       persistenceLayerSpy.mockRestore();
     });

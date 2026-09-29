@@ -67,15 +67,16 @@ class ProviderService implements ProviderServiceInterface {
   readonly #segmentKey = Symbol('powertools.tracer.segment');
 
   /**
-   * Open subsegments of the `fetch` requests in flight, keyed by the `undici`
+   * Open subsegments for in-flight `fetch` requests, keyed by the `undici`
    * request that opened them.
    *
-   * Every message on the `undici` request channels carries the request, which
-   * makes it a stable identity for the whole request. The active segment is
-   * not: `request:headers` and `request:error` may run on the async chain of
-   * the connection, which is reused across requests, so once invocations get
-   * their own context they resolve a different segment, leaving the subsegment
-   * open and the trace data of the invocation dropped.
+   * We key by the request because every `undici` channel message carries it,
+   * so it reliably identifies the request from start to finish. We can't rely
+   * on the active segment instead: `request:headers` and `request:error` may
+   * run on the connection's async chain, which is reused across requests. Once
+   * invocations have their own context, that chain can resolve a different
+   * segment, which would leave the subsegment open and drop the invocation's
+   * trace data.
    */
   readonly #fetchSubsegments = new WeakMap<
     DiagnosticsChannel.Request,

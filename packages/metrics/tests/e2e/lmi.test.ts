@@ -31,22 +31,27 @@ type InvocationPayload = {
  * metrics and metadata on Lambda Managed Instances (LMI), where multiple
  * invocations run concurrently within the same execution environment.
  *
- * The function is associated with a small (12 vCPU) capacity provider. The
- * LMI scheduler prefers scaling out to fresh execution environments over
- * multiplexing invocations into busy ones, so forcing a genuine overlap does
- * not depend on precisely sizing the fleet: instead the handler blocks on a
- * module-scoped promise barrier (see `lmi.test.functionCode.ts`) until a peer
- * invocation lands in the same environment. Holding every invocation open at
- * once keeps environments busy long enough that the scheduler multiplexes at
- * least one pair together, which is all the assertion needs. Without
- * InvokeStore isolation, the overlapping invocations' metric values and
- * metadata would bleed into each other's EMF payload.
+ * On LMI the Node.js runtime runs several worker threads per execution
+ * environment (one per vCPU by default) and initializes the module once per
+ * thread, so module-scoped state — and therefore the isolation under test —
+ * is per worker thread, not per environment. The function is configured so
+ * that an overlap is guaranteed rather than probable: a single worker thread
+ * per environment (`AWS_LAMBDA_NODEJS_WORKER_COUNT=1`) and at most four
+ * environments (`minExecutionEnvironments` / `maxExecutionEnvironments` on
+ * `$LATEST.PUBLISHED`) give 30 simultaneous invocations at most four module
+ * instances to land on. With the runtime's default thread count the same
+ * burst spread over 24 module instances and only a handful of pairs
+ * overlapped. To prove the overlap rather than infer it, the handler blocks on
+ * a module-scoped promise barrier (see `lmi.test.functionCode.ts`) until a
+ * peer invocation lands in the same thread. Without InvokeStore isolation, the
+ * overlapping invocations' metric values and metadata would bleed into each
+ * other's EMF payload.
  *
- * Exact environment counts are not asserted and vary with fleet size and load
- * — in CI both Node.js versions share one per-architecture provider, so a run
- * may spread these invocations across a couple of dozen environments and still
- * multiplex a handful; a local run against an ephemeral provider looks
- * different again. The barrier is what guarantees an overlap regardless.
+ * Exact environment counts are not asserted. In CI both Node.js versions of
+ * both LMI suites share one per-architecture capacity provider; pinning the
+ * environments per function keeps the overlap independent of that fleet and
+ * lets the provider carry spare vCPU headroom to replace a failed instance
+ * (see `TestLmiCapacityProvider`).
  *
  * The Invoke API does not support Tail logs for capacity provider functions
  * and CloudWatch log delivery is asynchronous, so the handler intercepts its
@@ -66,10 +71,9 @@ const testConsole = new Console({
 
 describe('Metrics E2E - Lambda Managed Instances', () => {
   // Fire enough concurrent invocations, all held open on the barrier, that
-  // the scheduler multiplexes at least one pair into a shared execution
-  // environment rather than giving every invocation its own. The count only
-  // needs to comfortably exceed the fleet's environment count; the barrier,
-  // not a precise number, is what forces the overlap.
+  // the pinned execution environments (at most 4, one worker thread and 10
+  // concurrent slots each) must host several of them apiece. 30 leaves slack
+  // below the 40 slots so uneven routing does not surface as throttles.
   const invocationCount = 30;
 
   // The test name embeds an `Lmi` marker and the workflow run id
@@ -107,12 +111,19 @@ describe('Metrics E2E - Lambda Managed Instances', () => {
       entry: lambdaFunctionCodeFilePath,
       // ACTIVE tracing compatibility with LMI is unverified
       tracing: Tracing.DISABLED,
+      // One worker thread per execution environment so every invocation
+      // routed to an environment shares the same module scope (see above)
+      environment: { AWS_LAMBDA_NODEJS_WORKER_COUNT: '1' },
     },
     {
       nameSuffix: 'LmiIsolation',
       lmi: {
         capacityProvider,
         perExecutionEnvironmentMaxConcurrency: 10,
+        // Pinned so the overlap the test relies on is a property of the
+        // function, not of the (shared) fleet size
+        minExecutionEnvironments: 3,
+        maxExecutionEnvironments: 4,
       },
     }
   );

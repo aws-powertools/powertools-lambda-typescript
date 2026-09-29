@@ -10,7 +10,8 @@ type MockRequestOptions = {
 
 type MockResponseOptions = {
   statusCode?: number;
-  headers?: { [key: string]: string };
+  headers?: { [key: string]: string | string[] };
+  http2?: boolean;
 };
 
 type MockRequest = MockRequestOptions & {
@@ -18,16 +19,16 @@ type MockRequest = MockRequestOptions & {
   addHeader: Mock;
 };
 
-type MockFetchOptions = MockRequestOptions &
-  (
+type MockFetchOptions = MockRequestOptions & {
+  headers?: MockResponseOptions['headers'];
+  http2?: boolean;
+} & (
     | {
         statusCode?: never;
-        headers?: MockResponseOptions['headers'];
         throwError?: boolean;
       }
     | {
         statusCode: number;
-        headers?: MockResponseOptions['headers'];
         throwError?: never;
       }
   );
@@ -62,19 +63,19 @@ const mockFetchRequest = ({
  */
 const mockFetchResponse = (
   request: MockRequest,
-  { statusCode, headers }: MockResponseOptions = {}
+  { statusCode, headers, http2 }: MockResponseOptions = {}
 ): void => {
   const encoder = new TextEncoder();
   const encodedHeaders = [];
   for (const [key, value] of Object.entries(headers ?? {})) {
-    encodedHeaders.push(encoder.encode(key), encoder.encode(value));
+    encodedHeaders.push(encoder.encode(key), encoder.encode(String(value)));
   }
 
   channel('undici:request:headers').publish({
     request,
     response: {
       statusCode: statusCode ?? 200,
-      headers: encodedHeaders,
+      headers: http2 ? headers : encodedHeaders,
     },
   });
 };
@@ -102,6 +103,7 @@ const mockFetch = ({
   method,
   statusCode,
   headers,
+  http2,
   throwError,
 }: MockFetchOptions): MockRequest => {
   const request = mockFetchRequest({ origin, path, method });
@@ -114,7 +116,7 @@ const mockFetch = ({
     throw error;
   }
 
-  mockFetchResponse(request, { statusCode, headers });
+  mockFetchResponse(request, { statusCode, headers, http2 });
 
   return request;
 };

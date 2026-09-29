@@ -53,11 +53,11 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
     "@types/aws-lambda": "^8.10.163",
-    "@types/node": "^26.6.2",
-    "@vitest/coverage-v8": "5.0.1",
+    "@types/node": "^26.6.3",
+    "@vitest/coverage-v8": "5.0.2",
     "esbuild": "^0.28.2",
     "husky": "^9.1.7",
-    "lint-staged": "^17.5.1",
+    "lint-staged": "^17.6.0",
     "markdownlint-cli2": "^0.23.3",
     "middy5": "npm:@middy/core@^5.5.1",
     "middy6": "npm:@middy/core@^6.4.5",
@@ -65,8 +65,8 @@
     "typedoc": "^0.28.20",
     "typedoc-plugin-missing-exports": "^4.1.4",
     "typescript": "^6.0.3",
-    "undici-types": "^8.10.2",
-    "vitest": "5.0.1"
+    "undici-types": "^8.11.2",
+    "vitest": "5.0.2"
   },
   "lint-staged": {
     "*.{js,ts,json}": "biome check --write --no-errors-on-unmatched",

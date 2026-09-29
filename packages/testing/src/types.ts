@@ -66,12 +66,14 @@ interface ExtraTestProps {
     executionEnvironmentMemoryGiBPerVCpu?: number;
     /**
      * The minimum number of execution environments to maintain for the
-     * `$LATEST.PUBLISHED` version.
+     * `$LATEST.PUBLISHED` version. The service requires both bounds to be
+     * set together; an unspecified one reverts to its default.
      */
     minExecutionEnvironments?: number;
     /**
      * The maximum number of execution environments allowed for the
-     * `$LATEST.PUBLISHED` version.
+     * `$LATEST.PUBLISHED` version. The service requires both bounds to be
+     * set together; an unspecified one reverts to its default.
      */
     maxExecutionEnvironments?: number;
   };

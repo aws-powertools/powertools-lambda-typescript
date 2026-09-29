@@ -45,12 +45,12 @@
     "@aws-sdk/util-dynamodb": "^3.996.9",
     "@middy/core": "^4.7.0",
     "@redis/client": "^6.2.1",
-    "@valkey/valkey-glide": "^2.5.2",
+    "@valkey/valkey-glide": "^2.5.3",
     "aws-sdk-client-mock": "^4.1.0",
     "zod": "^4.6.5"
   },
   "dependencies": {
-    "arktype": "^2.2.3",
+    "arktype": "^2.2.5",
     "valibot": "^1.5.0"
   }
 }

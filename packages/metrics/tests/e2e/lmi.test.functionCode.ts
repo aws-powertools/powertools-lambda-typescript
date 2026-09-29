@@ -6,7 +6,8 @@ import {
 import { Metrics, MetricUnit } from '../../src/index.js';
 import type { EmfOutput } from '../../src/types/index.js';
 
-// Module scope: identifies the execution environment across invocations
+// Module scope: identifies the worker thread (one per execution environment
+// in this test) across invocations
 const executionEnvId = randomUUID();
 
 // The EMF payloads Metrics emits, returned in the response payload since on

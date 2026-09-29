@@ -6,7 +6,8 @@ import {
 } from '@aws-lambda-powertools/testing-utils/lmi/handler';
 import type { Context } from 'aws-lambda';
 
-// Module scope: identifies the execution environment across invocations
+// Module scope: identifies the worker thread (one per execution environment
+// in this test) across invocations
 const executionEnvId = randomUUID();
 
 // The log lines the Logger emits, returned in the response payload since on

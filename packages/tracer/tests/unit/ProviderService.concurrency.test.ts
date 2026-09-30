@@ -56,9 +56,6 @@ describe('Fetch instrumentation: concurrent invocations', () => {
     const tracer = new Tracer({ serviceName: 'fetch-concurrency-test' });
     const fetchSubsegments = trackFetchSubsegments();
     const requests: ReturnType<typeof mockFetchRequest>[] = [];
-    // Open a fetch request inside the calling invocation's context, the way a
-    // handler that awaits `fetch` would: a handler subsegment on the facade
-    // segment is made active, and the request opens a subsegment under it.
     const openRequest = (idx: number, host: string) => {
       const handlerSegment = new Segment('facade').addNewSubsegment(
         `## handler-${idx}`
@@ -71,12 +68,6 @@ describe('Fetch instrumentation: concurrent invocations', () => {
     };
 
     // Act
-    // Both invocations open a request while the other is still in flight, then
-    // invocation A delivers both responses from its own context. Under the
-    // Lambda Managed Instances runtime the `undici` response event runs on the
-    // async chain of the connection, which is rooted in the invocation that
-    // opened it and reused by the other, so a response can surface in a
-    // different invocation's context than the one that made the request.
     await sequence(
       {
         sideEffects: [

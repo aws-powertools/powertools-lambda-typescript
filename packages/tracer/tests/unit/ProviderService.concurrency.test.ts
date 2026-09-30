@@ -1,10 +1,8 @@
 import { InvokeStore } from '@aws/lambda-invoke-store';
-import context from '@aws-lambda-powertools/testing-utils/context';
-import middy from '@middy/core';
-import { Subsegment } from 'aws-xray-sdk-core';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sequence } from '@aws-lambda-powertools/testing-utils';
+import { Segment, Subsegment } from 'aws-xray-sdk-core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Tracer } from '../../src/index.js';
-import { captureLambdaHandler } from '../../src/middleware/middy.js';
 import type { HttpSubsegment } from '../../src/types/ProviderService.js';
 import {
   mockFetchRequest,
@@ -45,47 +43,55 @@ const trackFetchSubsegments = (): HttpSubsegment[] => {
 };
 
 describe('Fetch instrumentation: concurrent invocations', () => {
+  beforeEach(() => {
+    InvokeStore._testing?.reset();
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('closes the subsegment of each request when the response is received outside the invocation context', async () => {
+  it("closes each request's subsegment when the response arrives on another invocation's context", async () => {
     // Prepare
     const tracer = new Tracer({ serviceName: 'fetch-concurrency-test' });
     const fetchSubsegments = trackFetchSubsegments();
-    const started = [
-      Promise.withResolvers<void>(),
-      Promise.withResolvers<void>(),
-    ];
-    const gates = [
-      Promise.withResolvers<void>(),
-      Promise.withResolvers<void>(),
-    ];
     const requests: ReturnType<typeof mockFetchRequest>[] = [];
-    const handler = middy(async (event: { idx: number; host: string }) => {
-      requests[event.idx] = mockFetchRequest({
-        origin: `https://${event.host}`,
+    const openRequest = (idx: number, host: string) => {
+      const handlerSegment = new Segment('facade').addNewSubsegment(
+        `## handler-${idx}`
+      );
+      tracer.setSegment(handlerSegment);
+      requests[idx] = mockFetchRequest({
+        origin: `https://${host}`,
         path: '/blogs',
       });
-      started[event.idx].resolve();
-      await gates[event.idx].promise;
-    }).use(captureLambdaHandler(tracer, { captureResponse: false }));
-    const invokeStore = await InvokeStore.getInstanceAsync();
+    };
 
     // Act
-    const invocationA = invokeStore.run({}, () =>
-      handler({ idx: 0, host: 'aws.amazon.com' }, context)
+    await sequence(
+      {
+        sideEffects: [
+          () => {
+            openRequest(0, 'aws.amazon.com');
+          },
+          () => {
+            mockFetchResponse(requests[1], { statusCode: 500 });
+            mockFetchResponse(requests[0], { statusCode: 200 });
+          },
+        ],
+        return: () => {},
+      },
+      {
+        sideEffects: [
+          () => {
+            openRequest(1, 'docs.aws.amazon.com');
+          },
+          () => {},
+        ],
+        return: () => {},
+      },
+      { useInvokeStore: true }
     );
-    const invocationB = invokeStore.run({}, () =>
-      handler({ idx: 1, host: 'docs.aws.amazon.com' }, context)
-    );
-    await Promise.all([started[0].promise, started[1].promise]);
-    mockFetchResponse(requests[1], { statusCode: 500 });
-    mockFetchResponse(requests[0], { statusCode: 200 });
-    gates[0].resolve();
-    await invocationA;
-    gates[1].resolve();
-    await invocationB;
 
     // Assess
     expect(fetchSubsegments).toHaveLength(2);

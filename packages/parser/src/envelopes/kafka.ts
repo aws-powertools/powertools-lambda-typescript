@@ -4,8 +4,12 @@ import {
   KafkaMskEventSchema,
   KafkaSelfManagedEventSchema,
 } from '../schemas/kafka.js';
-import type { KafkaMskEvent, ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator } from './envelope.js';
+import type {
+  KafkaMskEvent,
+  KafkaSelfManagedEvent,
+  ParsedResult,
+} from '../types/index.js';
+import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
 
 /**
  * Get the event source from the data.
@@ -44,17 +48,38 @@ export const KafkaEnvelope = {
    */
   [envelopeDiscriminator]: 'array' as const,
   parse<T>(data: unknown, schema: ZodType<T>): z.infer<ZodType<T>>[] {
-    const eventSource = extractEventSource(data);
-
-    const parsedEnvelope =
-      eventSource === 'aws:kafka'
-        ? KafkaMskEventSchema.parse(data)
-        : KafkaSelfManagedEventSchema.parse(data);
+    let parsedEnvelope: KafkaMskEvent | KafkaSelfManagedEvent;
+    try {
+      parsedEnvelope =
+        extractEventSource(data) === 'aws:kafka'
+          ? KafkaMskEventSchema.parse(data)
+          : KafkaSelfManagedEventSchema.parse(data);
+    } catch (error) {
+      throw new ParseError('Failed to parse Kafka envelope', {
+        cause: error as Error,
+      });
+    }
 
     const values: z.infer<ZodType<T>>[] = [];
-    for (const topicRecord of Object.values(parsedEnvelope.records)) {
-      for (const record of topicRecord) {
-        values.push(schema.parse(record.value));
+    for (const [topicKey, topicRecord] of Object.entries(
+      parsedEnvelope.records
+    )) {
+      for (const [index, record] of topicRecord.entries()) {
+        try {
+          values.push(schema.parse(record.value));
+        } catch (error) {
+          throw new ParseError(
+            `Failed to parse Kafka record at index ${index} of ${topicKey}`,
+            {
+              cause: prefixIssuePaths(error, [
+                'records',
+                topicKey,
+                index,
+                'value',
+              ]),
+            }
+          );
+        }
       }
     }
 

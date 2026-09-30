@@ -14,7 +14,14 @@ export const CloudWatchEnvelope = {
    */
   [envelopeDiscriminator]: 'array' as const,
   parse<T>(data: unknown, schema: ZodType<T>): T[] {
-    const parsedEnvelope = CloudWatchLogsSchema.parse(data);
+    let parsedEnvelope: z.infer<typeof CloudWatchLogsSchema>;
+    try {
+      parsedEnvelope = CloudWatchLogsSchema.parse(data);
+    } catch (error) {
+      throw new ParseError('Failed to parse CloudWatch Log envelope', {
+        cause: error as Error,
+      });
+    }
 
     return parsedEnvelope.awslogs.data.logEvents.map((record, index) => {
       try {

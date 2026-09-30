@@ -21,7 +21,14 @@ export const DynamoDBStreamEnvelope = {
     data: unknown,
     schema: ZodType<T>
   ): DynamoDBStreamEnvelopeResponse<T>[] {
-    const parsedEnvelope = DynamoDBStreamSchema.parse(data);
+    let parsedEnvelope: z.infer<typeof DynamoDBStreamSchema>;
+    try {
+      parsedEnvelope = DynamoDBStreamSchema.parse(data);
+    } catch (error) {
+      throw new ParseError('Failed to parse DynamoDB Stream envelope', {
+        cause: error as Error,
+      });
+    }
 
     const processImage = (
       image: unknown,

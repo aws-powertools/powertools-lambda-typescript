@@ -31,7 +31,12 @@ describe('Batch LMI handler isolation', () => {
       // Act
       const results = await Promise.all(
         invocations.map(({ event }) =>
-          store.run({}, () => handlers[exportName](event, context))
+          store.run({}, () =>
+            handlers[exportName](event, {
+              ...context,
+              awsRequestId: `request-${event.invocationId}`,
+            })
+          )
         )
       );
 
@@ -41,10 +46,14 @@ describe('Batch LMI handler isolation', () => {
         const { event, expectedProcessedMessageIds, expectedFailedMessageIds } =
           invocations[index];
         expect(result.invocationId).toBe(event.invocationId);
+        expect(result.requestId).toBe(`request-${event.invocationId}`);
         expect(result.receivedMessageIds).toEqual(
           event.Records.map((record) => record.messageId)
         );
         expect(result.processedMessageIds).toEqual(expectedProcessedMessageIds);
+        expect(result.processedRequestIds).toEqual(
+          expectedProcessedMessageIds.map(() => `request-${event.invocationId}`)
+        );
         expect(result.failedMessageIds).toHaveLength(
           expectedFailedMessageIds.length
         );

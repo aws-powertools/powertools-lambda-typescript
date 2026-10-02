@@ -10,16 +10,18 @@ type IsolationEvent = SQSEvent & {
 /** Reports the observable state of one batch invocation. */
 type IsolationResult = {
   invocationId: string;
+  requestId: string;
   executionEnvId: string;
   sawPeer: boolean;
   initializationType: string;
   maxConcurrency: string;
   receivedMessageIds: string[];
   processedMessageIds: string[];
+  processedRequestIds: (string | null)[];
   failedMessageIds: string[];
 };
 
-// Alternate healthy, group-0 failure, group-1 failure, and full failure.
+// Alternate healthy, first-group failure, second-group failure, and full failure.
 // Both groups recur after their first record to exercise FIFO short circuits.
 const failurePatterns = [[], [0], [1], [0, 1, 2, 3, 4, 5]];
 const fifoFailurePatterns = [[], [0, 2, 4], [1, 3, 5], [0, 1, 2, 3, 4, 5]];
@@ -47,7 +49,7 @@ const createIsolationInvocation = (index: number, fifo: boolean) => {
           invocationId,
           shouldFail: failurePatterns[pattern].includes(recordIndex),
         }),
-        `group-${recordIndex % 2}`
+        `group-${(recordIndex + index) % 2}`
       ),
       messageId,
     })),

@@ -25,8 +25,10 @@ const processBatch = async (
   let first = true;
   let sawPeer = false;
   const processedMessageIds: string[] = [];
-  const recordHandler = async (record: SQSRecord) => {
+  const processedRequestIds: (string | null)[] = [];
+  const recordHandler = async (record: SQSRecord, recordContext?: Context) => {
     processedMessageIds.push(record.messageId);
+    processedRequestIds.push(recordContext?.awsRequestId ?? null);
     if (first && event.role === 'test') {
       first = false;
       sawPeer = await awaitPeer();
@@ -45,6 +47,7 @@ const processBatch = async (
 
   return {
     invocationId: event.invocationId,
+    requestId: context.awsRequestId,
     executionEnvId,
     sawPeer,
     initializationType: getStringFromEnv({
@@ -55,8 +58,12 @@ const processBatch = async (
       key: 'AWS_LAMBDA_MAX_CONCURRENCY',
       defaultValue: 'unset',
     }),
-    receivedMessageIds: event.Records.map((record) => record.messageId),
+    receivedMessageIds: (fifo ? fifoProcessor : processor).records.map(
+      // Both processors in this fixture handle SQS records exclusively.
+      (record) => (record as SQSRecord).messageId
+    ),
     processedMessageIds,
+    processedRequestIds,
     failedMessageIds: response.batchItemFailures.map(
       (failure) => failure.itemIdentifier
     ),

@@ -127,6 +127,10 @@ describe.each([
         event.Records.map((record) => record.messageId)
       );
       expect(result.processedMessageIds).toEqual(expectedProcessedMessageIds);
+      expect(result.requestId).toEqual(expect.any(String));
+      expect(result.processedRequestIds).toEqual(
+        expectedProcessedMessageIds.map(() => result.requestId)
+      );
       expect(result.failedMessageIds).toHaveLength(
         expectedFailedMessageIds.length
       );

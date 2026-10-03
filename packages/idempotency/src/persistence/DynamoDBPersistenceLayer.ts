@@ -4,7 +4,7 @@ import {
 } from '@aws-lambda-powertools/commons';
 import {
   type AttributeValue,
-  ConditionalCheckFailedException,
+  type ConditionalCheckFailedException,
   DeleteItemCommand,
   DynamoDBClient,
   GetItemCommand,
@@ -209,8 +209,12 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
         })
       );
     } catch (error) {
-      if (error instanceof ConditionalCheckFailedException) {
-        const item = error.Item && unmarshall(error.Item);
+      if (
+        error instanceof Error &&
+        error.name === 'ConditionalCheckFailedException'
+      ) {
+        const { Item } = error as ConditionalCheckFailedException;
+        const item = Item && unmarshall(Item);
         const idempotencyRecord =
           item &&
           new IdempotencyRecord({

@@ -86,14 +86,15 @@ class TestLmiCapacityProvider extends CapacityProvider {
       architectures: [TEST_ARCHITECTURES[architecture]],
       logGroup,
       // Sized for the CI matrix rather than the service minimum of 12. Every
-      // LMI cell of an architecture (two packages x two Node.js versions)
+      // LMI cell of an architecture (three packages x two Node.js versions)
       // attaches a function that Lambda places on its own 4 vCPU instance, so
-      // the fleet sits at 16 vCPU. The cap is only enforced on launches made
-      // once the fleet has reached it, so at 12 a single failed instance
-      // launch could never be replaced. Two spare instances' worth of headroom
+      // the fleet sits at 24 vCPU. Batch runs its two handlers sequentially.
+      // The cap is only enforced on launches made once the fleet has reached
+      // it, so at 24 a single failed instance launch could never be replaced.
+      // Two spare instances' worth of headroom
       // covers that; the tests do not depend on the fleet being small because
       // each function pins its own execution environments.
-      maxVCpuCount: 24,
+      maxVCpuCount: 32,
     });
   }
 }

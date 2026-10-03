@@ -20,7 +20,14 @@ export const SnsEnvelope = {
    */
   [envelopeDiscriminator]: 'array' as const,
   parse<T>(data: unknown, schema: ZodType<T>): T[] {
-    const parsedEnvelope = SnsSchema.parse(data);
+    let parsedEnvelope: z.infer<typeof SnsSchema>;
+    try {
+      parsedEnvelope = SnsSchema.parse(data);
+    } catch (error) {
+      throw new ParseError('Failed to parse SNS envelope', {
+        cause: error as Error,
+      });
+    }
 
     return parsedEnvelope.Records.map((record, index) => {
       try {

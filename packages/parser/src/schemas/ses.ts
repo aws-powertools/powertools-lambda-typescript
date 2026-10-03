@@ -14,10 +14,11 @@ const SesReceipt = z.object({
   spfVerdict: SesReceiptVerdict,
   dmarcVerdict: SesReceiptVerdict,
   dkimVerdict: SesReceiptVerdict,
-  dmarcPolicy: z.enum(['none', 'quarantine', 'reject']),
+  // Present only when the message fails DMARC authentication
+  dmarcPolicy: z.enum(['none', 'quarantine', 'reject']).optional(),
   action: z.object({
     type: z.enum(['Lambda']),
-    invocationType: z.literal('Event'),
+    invocationType: z.enum(['Event', 'RequestResponse']).optional(),
     functionArn: z.string(),
   }),
 });
@@ -34,17 +35,18 @@ const SesMail = z.object({
       value: z.string(),
     })
   ),
+  // Each field is present only if the incoming email has the matching header
   commonHeaders: z.object({
-    from: z.array(z.string()),
-    to: z.array(z.string()),
+    from: z.array(z.string()).optional(),
+    to: z.array(z.string()).optional(),
     cc: z.array(z.string()).optional(),
     bcc: z.array(z.string()).optional(),
     sender: z.array(z.string()).optional(),
-    'reply-to': z.array(z.string()).optional(),
-    returnPath: z.string(),
-    messageId: z.string(),
-    date: z.string(),
-    subject: z.string(),
+    replyTo: z.array(z.string()).optional(),
+    returnPath: z.string().optional(),
+    messageId: z.string().optional(),
+    date: z.string().optional(),
+    subject: z.string().optional(),
   }),
 });
 
@@ -146,7 +148,6 @@ const SesRecordSchema = z.object({
  *           "dkimVerdict": {
  *             "status": "PASS"
  *           },
- *           "dmarcPolicy": "reject",
  *           "processingTimeMillis": 574,
  *           "action": {
  *             "type": "Lambda",

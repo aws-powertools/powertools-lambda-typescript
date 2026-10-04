@@ -3,6 +3,7 @@ export { ApiGatewayV2Envelope } from './api-gatewayv2.js';
 export { CloudWatchEnvelope } from './cloudwatch.js';
 export { DynamoDBStreamEnvelope } from './dynamodb.js';
 export { EventBridgeEnvelope } from './eventbridge.js';
+export { EventBridgeWithMetadataEnvelope } from './eventbridge-with-metadata.js';
 export { KafkaEnvelope } from './kafka.js';
 export { KinesisEnvelope } from './kinesis.js';
 export { KinesisFirehoseEnvelope } from './kinesis-firehose.js';

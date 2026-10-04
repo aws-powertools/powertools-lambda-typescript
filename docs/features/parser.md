@@ -238,6 +238,35 @@ Parser comes with the following built-in Zod envelopes:
 | **VpcLatticeEnvelope**        | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
 | **VpcLatticeV2Envelope**      | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
 
+### EventBridge WITH_METADATA deliveries
+
+For [Custom Event Bus subscribers](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-custom-bus-transform.html){target="_blank"} using `WITH_METADATA`, each record wraps an event in `Data` alongside `SystemMetadata` and optional `Metadata`.
+These schemas validate standard EventBridge events inside `Data`, such as those published with `PutEvents`; arbitrary `PutRawEvents` payloads require your own schema.
+
+`EventBridgeWithMetadataSchema` and `EventBridgeWithMetadataEnvelope` accept nonempty arrays. The envelope returns an array of parsed details and rejects the entire batch if any record fails validation. Error paths include the record index, for example `[1, "Data", "detail", "orderId"]`. Safe parsing returns the error and original batch on failure.
+
+`EventBridgeWithMetadataSystemMetadataSchema` validates delivery metadata. Only `aws:DeliveryType` (`LIVE` or `REPLAY`) is required in system metadata. Other documented fields are optional strings.
+Sequence numbers stay strings, including values beyond JavaScript's safe integer range. Grouping and deduplication fields can occur on unordered deliveries too; their presence does not identify a FIFO subscriber.
+
+Use `EventBridgeWithMetadataRecordSchema` directly for single-object delivery with `MaxBatchSize: 1`. Extend it when you need both validated details and delivery metadata. The classic `EventBridgeSchema` and `EventBridgeEnvelope` remain available for classic event payloads.
+
+=== "Manual parsing and metadata"
+    ```typescript
+    --8<-- "examples/snippets/parser/eventBridgeWithMetadata.ts"
+    ```
+
+=== "Middy.js middleware"
+    ```typescript
+    --8<-- "examples/snippets/parser/eventBridgeWithMetadataMiddy.ts"
+    ```
+
+=== "Decorator"
+    ```typescript
+    --8<-- "examples/snippets/parser/eventBridgeWithMetadataDecorator.ts"
+    ```
+
+Import the schemas from `/schemas` or `/schemas/eventbridge-with-metadata`, and the envelope from `/envelopes` or `/envelopes/eventbridge-with-metadata`. The inferred `EventBridgeWithMetadataSystemMetadata`, `EventBridgeWithMetadataRecord`, and `EventBridgeWithMetadataEvent` types are available from `@aws-lambda-powertools/parser/types`.
+
 ## Safe parsing
 
 If you want to parse the event without throwing an error, use the `safeParse` option.

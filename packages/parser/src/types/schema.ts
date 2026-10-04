@@ -24,6 +24,9 @@ import type {
   DynamoDBStreamSchema,
   DynamoDBStreamToKinesisRecord,
   EventBridgeSchema,
+  EventBridgeWithMetadataRecordSchema,
+  EventBridgeWithMetadataSchema,
+  EventBridgeWithMetadataSystemMetadataSchema,
   KafkaMskEventSchema,
   KafkaRecordSchema,
   KafkaSelfManagedEventSchema,
@@ -122,6 +125,21 @@ type DynamoDBStreamToKinesisRecordEvent = z.infer<
 
 type EventBridgeEvent = z.infer<typeof EventBridgeSchema>;
 
+/** Represents the system metadata of a WITH_METADATA delivery. */
+type EventBridgeWithMetadataSystemMetadata = z.infer<
+  typeof EventBridgeWithMetadataSystemMetadataSchema
+>;
+
+/** Represents one WITH_METADATA record containing a standard EventBridge event. */
+type EventBridgeWithMetadataRecord = z.infer<
+  typeof EventBridgeWithMetadataRecordSchema
+>;
+
+/** Represents a nonempty batch of WITH_METADATA records. */
+type EventBridgeWithMetadataEvent = z.infer<
+  typeof EventBridgeWithMetadataSchema
+>;
+
 type KafkaSelfManagedEvent = z.infer<typeof KafkaSelfManagedEventSchema>;
 
 type KafkaRecord = z.infer<typeof KafkaRecordSchema>;
@@ -201,6 +219,9 @@ export type {
   DynamoDBStreamRecord,
   DynamoDBStreamToKinesisRecordEvent,
   EventBridgeEvent,
+  EventBridgeWithMetadataEvent,
+  EventBridgeWithMetadataRecord,
+  EventBridgeWithMetadataSystemMetadata,
   KafkaMskEvent,
   KafkaRecord,
   KafkaSelfManagedEvent,

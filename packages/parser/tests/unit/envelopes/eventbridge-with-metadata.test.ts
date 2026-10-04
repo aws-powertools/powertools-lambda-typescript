@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { EventBridgeWithMetadataEnvelope } from '../../../src/envelopes/eventbridge-with-metadata.js';
 import { ParseError } from '../../../src/errors.js';
 import { parse } from '../../../src/parser.js';
-import { makeRecord } from '../helpers/eventbridge-with-metadata.js';
+import { makeEventBridgeWithMetadataRecord } from '../helpers/utils.js';
 
 describe('Envelope: EventBridge WITH_METADATA', () => {
   const schema = z.object({ orderId: z.string().transform(Number) });
@@ -11,7 +11,7 @@ describe('Envelope: EventBridge WITH_METADATA', () => {
   it.each([1, 3])('parses and transforms %i records in order', (count) => {
     // Prepare
     const event = Array.from({ length: count }, (_, index) =>
-      makeRecord({ orderId: `${index}` })
+      makeEventBridgeWithMetadataRecord({ orderId: `${index}` })
     );
     const expected = Array.from({ length: count }, (_, index) => ({
       orderId: index,
@@ -35,26 +35,45 @@ describe('Envelope: EventBridge WITH_METADATA', () => {
   it.each([
     {
       name: 'invalid detail',
-      event: [makeRecord({ orderId: '1' }), makeRecord({ orderId: 2 })],
+      event: [
+        makeEventBridgeWithMetadataRecord({ orderId: '1' }),
+        makeEventBridgeWithMetadataRecord({ orderId: 2 }),
+      ],
       path: [1, 'Data', 'detail', 'orderId'],
     },
     {
       name: 'invalid metadata',
-      event: [{ ...makeRecord({ orderId: '1' }), SystemMetadata: {} }],
+      event: [
+        {
+          ...makeEventBridgeWithMetadataRecord({ orderId: '1' }),
+          SystemMetadata: {},
+        },
+      ],
       path: [0, 'SystemMetadata', 'aws:DeliveryType'],
     },
     {
       name: 'invalid producer metadata',
-      event: [{ ...makeRecord({ orderId: '1' }), Metadata: { tenant: 123 } }],
+      event: [
+        {
+          ...makeEventBridgeWithMetadataRecord({ orderId: '1' }),
+          Metadata: { tenant: 123 },
+        },
+      ],
       path: [0, 'Metadata', 'tenant'],
     },
     {
       name: 'invalid data',
-      event: [{ ...makeRecord({ orderId: '1' }), Data: null }],
+      event: [
+        { ...makeEventBridgeWithMetadataRecord({ orderId: '1' }), Data: null },
+      ],
       path: [0, 'Data'],
     },
     { name: 'empty batch', event: [], path: [] },
-    { name: 'single object', event: makeRecord({ orderId: '1' }), path: [] },
+    {
+      name: 'single object',
+      event: makeEventBridgeWithMetadataRecord({ orderId: '1' }),
+      path: [],
+    },
   ])(
     'fails the whole batch for $name and preserves the issue path',
     ({ event, path }) => {
@@ -85,7 +104,10 @@ describe('Envelope: EventBridge WITH_METADATA', () => {
 
   it('retains validation errors for multiple invalid records', () => {
     // Prepare
-    const event = [makeRecord({}), makeRecord({})];
+    const event = [
+      makeEventBridgeWithMetadataRecord({}),
+      makeEventBridgeWithMetadataRecord({}),
+    ];
 
     // Act
     const result = EventBridgeWithMetadataEnvelope.safeParse(event, schema);
@@ -108,7 +130,7 @@ describe('Envelope: EventBridge WITH_METADATA', () => {
     'preserves a thrown transform cause %s',
     (cause) => {
       // Prepare
-      const event = [makeRecord({ orderId: '1' })];
+      const event = [makeEventBridgeWithMetadataRecord({ orderId: '1' })];
       const throwingSchema = z.unknown().transform(() => {
         throw cause;
       });

@@ -7,7 +7,7 @@ import { EventBridgeWithMetadataEnvelope } from '../../src/envelopes/index.js';
 import { parser } from '../../src/index.js';
 import { parser as parserMiddleware } from '../../src/middleware/index.js';
 import type { ParsedResult } from '../../src/types/index.js';
-import { makeRecord } from './helpers/eventbridge-with-metadata.js';
+import { makeEventBridgeWithMetadataRecord } from './helpers/utils.js';
 
 describe('Integration: EventBridge WITH_METADATA', () => {
   const schema = z.object({ orderId: z.string().transform(Number) });
@@ -23,7 +23,7 @@ describe('Integration: EventBridge WITH_METADATA', () => {
     }
     // Invoke through the Lambda boundary, which receives the unparsed event.
     const lambda: LambdaInterface = new Lambda();
-    const event = [makeRecord({ orderId: '42' })];
+    const event = [makeEventBridgeWithMetadataRecord({ orderId: '42' })];
 
     // Act
     const result = await lambda.handler(event, {} as Context, () => {});
@@ -39,7 +39,7 @@ describe('Integration: EventBridge WITH_METADATA', () => {
         parserMiddleware({ schema, envelope: EventBridgeWithMetadataEnvelope })
       )
       .handler(async (event) => event);
-    const event = [makeRecord({ orderId: '42' })];
+    const event = [makeEventBridgeWithMetadataRecord({ orderId: '42' })];
 
     // Act
     const result = await handler(event, {} as Context, () => {});
@@ -68,7 +68,7 @@ describe('Integration: EventBridge WITH_METADATA', () => {
       }
     }
     const lambda: LambdaInterface = new Lambda();
-    const event = [makeRecord({})];
+    const event = [makeEventBridgeWithMetadataRecord({})];
 
     // Act
     const result = await lambda.handler(event, {} as Context, () => {});
@@ -96,7 +96,7 @@ describe('Integration: EventBridge WITH_METADATA', () => {
         })
       )
       .handler(async (event) => event);
-    const event = [makeRecord({})];
+    const event = [makeEventBridgeWithMetadataRecord({})];
 
     // Act
     const result = await handler(event, {} as Context, () => {});

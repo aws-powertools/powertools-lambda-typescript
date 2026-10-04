@@ -6,14 +6,13 @@ import {
   EventBridgeWithMetadataSchema,
   EventBridgeWithMetadataSystemMetadataSchema,
 } from '../../../src/schemas/eventbridge-with-metadata.js';
-import { makeRecord } from '../helpers/eventbridge-with-metadata.js';
-import { omit } from '../helpers/utils.js';
+import { makeEventBridgeWithMetadataRecord, omit } from '../helpers/utils.js';
 
 describe('Schema: EventBridge WITH_METADATA', () => {
   it.each([1, 3])('parses a batch of %i records in order', (count) => {
     // Prepare
     const event = Array.from({ length: count }, (_, index) =>
-      makeRecord({ orderId: `order-${index}` })
+      makeEventBridgeWithMetadataRecord({ orderId: `order-${index}` })
     );
 
     // Act
@@ -27,7 +26,7 @@ describe('Schema: EventBridge WITH_METADATA', () => {
     'preserves sequence %s exactly',
     (sequence) => {
       // Prepare
-      const event = makeRecord({ orderId: '1' });
+      const event = makeEventBridgeWithMetadataRecord({ orderId: '1' });
       event.SystemMetadata['aws:SequenceNumber'] = sequence;
 
       // Act
@@ -44,7 +43,7 @@ describe('Schema: EventBridge WITH_METADATA', () => {
     (deliveryType) => {
       // Prepare: synthetic omission case based on documented optionality.
       const event = {
-        ...makeRecord({ orderId: '1' }),
+        ...makeEventBridgeWithMetadataRecord({ orderId: '1' }),
         SystemMetadata: { 'aws:DeliveryType': deliveryType },
       };
 
@@ -60,7 +59,7 @@ describe('Schema: EventBridge WITH_METADATA', () => {
 
   it('retains replay names and independent event identifiers', () => {
     // Prepare
-    const event = makeRecord({ orderId: '1' });
+    const event = makeEventBridgeWithMetadataRecord({ orderId: '1' });
     event.Data['replay-name'] = 'orders-replay';
     event.SystemMetadata['aws:DeliveryType'] = 'REPLAY';
 
@@ -75,7 +74,10 @@ describe('Schema: EventBridge WITH_METADATA', () => {
     'accepts optional producer metadata %j',
     (metadata) => {
       // Prepare
-      const record = omit(['Metadata'], makeRecord({ orderId: '1' }));
+      const record = omit(
+        ['Metadata'],
+        makeEventBridgeWithMetadataRecord({ orderId: '1' })
+      );
       const event =
         metadata === undefined ? record : { ...record, Metadata: metadata };
 
@@ -87,16 +89,20 @@ describe('Schema: EventBridge WITH_METADATA', () => {
     }
   );
 
-  it.each([[], {}, null, undefined, 'event', makeRecord({ orderId: '1' })])(
-    'rejects a non-batch input %j',
-    (event) => {
-      // Act
-      const result = EventBridgeWithMetadataSchema.safeParse(event);
+  it.each([
+    [],
+    {},
+    null,
+    undefined,
+    'event',
+    makeEventBridgeWithMetadataRecord({ orderId: '1' }),
+  ])('rejects a non-batch input %j', (event) => {
+    // Act
+    const result = EventBridgeWithMetadataSchema.safeParse(event);
 
-      // Assess
-      expect(result.success).toBe(false);
-    }
-  );
+    // Assess
+    expect(result.success).toBe(false);
+  });
 
   it.each([
     undefined,
@@ -109,7 +115,7 @@ describe('Schema: EventBridge WITH_METADATA', () => {
   ])('rejects invalid system metadata %j', (systemMetadata) => {
     // Prepare
     const event = {
-      ...makeRecord({ orderId: '1' }),
+      ...makeEventBridgeWithMetadataRecord({ orderId: '1' }),
       SystemMetadata: systemMetadata,
     };
 
@@ -150,7 +156,10 @@ describe('Schema: EventBridge WITH_METADATA', () => {
     'rejects invalid producer metadata %j',
     (metadata) => {
       // Prepare
-      const event = { ...makeRecord({ orderId: '1' }), Metadata: metadata };
+      const event = {
+        ...makeEventBridgeWithMetadataRecord({ orderId: '1' }),
+        Metadata: metadata,
+      };
 
       // Act
       const result = EventBridgeWithMetadataRecordSchema.safeParse(event);
@@ -164,11 +173,14 @@ describe('Schema: EventBridge WITH_METADATA', () => {
     null,
     undefined,
     { orderId: 'raw-event' },
-    { ...makeRecord({}).Data, time: 'invalid' },
-    omit(['detail-type'], makeRecord({}).Data),
+    { ...makeEventBridgeWithMetadataRecord({}).Data, time: 'invalid' },
+    omit(['detail-type'], makeEventBridgeWithMetadataRecord({}).Data),
   ])('rejects malformed standard event data %j', (data) => {
     // Prepare
-    const event = { ...makeRecord({ orderId: '1' }), Data: data };
+    const event = {
+      ...makeEventBridgeWithMetadataRecord({ orderId: '1' }),
+      Data: data,
+    };
 
     // Act
     const result = EventBridgeWithMetadataRecordSchema.safeParse(event);
@@ -184,7 +196,7 @@ describe('Schema: EventBridge WITH_METADATA', () => {
         detail: z.object({ orderId: z.string().transform(Number) }),
       }),
     });
-    const event = makeRecord({ orderId: '42' });
+    const event = makeEventBridgeWithMetadataRecord({ orderId: '42' });
     event.Metadata = { tenant: 'example' };
 
     // Act

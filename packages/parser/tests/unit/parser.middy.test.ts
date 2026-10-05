@@ -1,8 +1,9 @@
 import middy from '@middy/core';
-import type { Context } from 'aws-lambda';
+import type { Context, Handler } from 'aws-lambda';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
+import { EventBridgeWithMetadataEnvelope } from '../../src/envelopes/eventbridge-with-metadata.js';
 import { SqsEnvelope } from '../../src/envelopes/sqs.js';
 import { ParseError } from '../../src/errors.js';
 import { parser } from '../../src/middleware/index.js';
@@ -11,7 +12,10 @@ import type {
   ParsedResult,
   SqsEvent,
 } from '../../src/types/index.js';
-import { getTestEvent } from './helpers/utils.js';
+import {
+  getTestEvent,
+  makeEventBridgeWithMetadataRecord,
+} from './helpers/utils.js';
 
 describe('Middleware: parser', () => {
   const schema = z
@@ -406,5 +410,48 @@ describe('Middleware: parser', () => {
       message: expect.any(String),
     });
     expect(otherOnError).toHaveBeenCalledTimes(1);
+  });
+
+  it('parses transformed WITH_METADATA details with middleware', async () => {
+    // Prepare
+    const schema = z.object({ orderId: z.string().transform(Number) });
+    const handler: Handler = middy()
+      .use(parser({ schema, envelope: EventBridgeWithMetadataEnvelope }))
+      .handler(async (event) => event);
+    const event = [makeEventBridgeWithMetadataRecord({ orderId: '42' })];
+
+    // Act
+    const result = await handler(event, {} as Context, () => {});
+
+    // Assess
+    expect(result).toEqual([{ orderId: 42 }]);
+  });
+
+  it('returns a failed WITH_METADATA result for a throwing transform', async () => {
+    // Prepare
+    const cause = new SyntaxError('invalid JSON');
+    const throwingSchema = z.unknown().transform(() => {
+      throw cause;
+    });
+    const handler: Handler = middy()
+      .use(
+        parser({
+          schema: throwingSchema,
+          envelope: EventBridgeWithMetadataEnvelope,
+          safeParse: true,
+        })
+      )
+      .handler(async (event) => event);
+    const event = [makeEventBridgeWithMetadataRecord({})];
+
+    // Act
+    const result = await handler(event, {} as Context, () => {});
+
+    // Assess
+    expect(result).toMatchObject({
+      success: false,
+      originalEvent: event,
+      error: { cause },
+    });
   });
 });

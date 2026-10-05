@@ -13,13 +13,146 @@ import {
   PreTokenGenerationTriggerSchemaV1,
   VerifyAuthChallengeTriggerSchema,
 } from '../../../src/schemas/cognito.js';
-import { getTestEvent } from '../helpers/utils.js';
+import { getTestEvent, omit } from '../helpers/utils.js';
 
 describe('Schemas: Cognito User Pool', () => {
   const baseEvent = getTestEvent({
     eventsPath: 'cognito',
     filename: 'base',
   });
+
+  // Shapes captured from a live user pool, derived from the base event
+  const userAttributes = {
+    sub: '11111111-2222-3333-4444-555555555555',
+    email_verified: 'true',
+    'cognito:user_status': 'CONFIRMED',
+    email: 'user@example.com',
+  };
+  const adminCallerContext = {
+    awsSdkVersion: 'aws-sdk-unknown-unknown',
+    clientId: 'CLIENT_ID_NOT_APPLICABLE',
+  };
+  const customEmailSenderRequest = {
+    userAttributes,
+    type: 'customEmailSenderRequestV1',
+    code: 'AYADeIZczazd30Tm9/+4',
+    clientMetadata: null,
+  };
+  const capturedEvents = [
+    {
+      name: 'PreSignUp_AdminCreateUser',
+      schema: PreSignupTriggerSchema,
+      event: {
+        ...baseEvent,
+        callerContext: adminCallerContext,
+        triggerSource: 'PreSignUp_AdminCreateUser',
+        request: { userAttributes, validationData: null },
+        response: {
+          autoConfirmUser: false,
+          autoVerifyEmail: false,
+          autoVerifyPhone: false,
+        },
+      },
+    },
+    {
+      name: 'PostConfirmation_ConfirmForgotPassword',
+      schema: PostConfirmationTriggerSchema,
+      event: {
+        ...baseEvent,
+        triggerSource: 'PostConfirmation_ConfirmForgotPassword',
+        request: { userAttributes },
+      },
+    },
+    {
+      name: 'PostConfirmation_ConfirmSignUp (admin-confirm-sign-up)',
+      schema: PostConfirmationTriggerSchema,
+      event: {
+        ...baseEvent,
+        callerContext: {
+          awsSdkVersion: 'aws-sdk-unknown-unknown',
+          clientId: null,
+        },
+        triggerSource: 'PostConfirmation_ConfirmSignUp',
+        request: { userAttributes },
+      },
+    },
+    {
+      name: 'CustomEmailSender_ForgotPassword',
+      schema: CustomEmailSenderTriggerSchema,
+      event: {
+        ...omit(['response'], baseEvent),
+        triggerSource: 'CustomEmailSender_ForgotPassword',
+        request: customEmailSenderRequest,
+      },
+    },
+    {
+      name: 'CustomEmailSender_AdminCreateUser',
+      schema: CustomEmailSenderTriggerSchema,
+      event: {
+        ...omit(['response'], baseEvent),
+        callerContext: adminCallerContext,
+        triggerSource: 'CustomEmailSender_AdminCreateUser',
+        request: customEmailSenderRequest,
+      },
+    },
+    {
+      name: 'DefineAuthChallenge_Authentication (first call)',
+      schema: DefineAuthChallengeTriggerSchema,
+      event: {
+        ...baseEvent,
+        triggerSource: 'DefineAuthChallenge_Authentication',
+        request: { userAttributes, session: [] },
+        response: {
+          challengeName: null,
+          issueTokens: null,
+          failAuthentication: null,
+        },
+      },
+    },
+    {
+      name: 'CreateAuthChallenge_Authentication (first call)',
+      schema: CreateAuthChallengeTriggerSchema,
+      event: {
+        ...baseEvent,
+        triggerSource: 'CreateAuthChallenge_Authentication',
+        request: {
+          userAttributes,
+          challengeName: 'CUSTOM_CHALLENGE',
+          session: [],
+        },
+        response: {
+          publicChallengeParameters: null,
+          privateChallengeParameters: null,
+          challengeMetadata: null,
+        },
+      },
+    },
+    {
+      name: 'VerifyAuthChallengeResponse_Authentication',
+      schema: VerifyAuthChallengeTriggerSchema,
+      event: {
+        ...baseEvent,
+        triggerSource: 'VerifyAuthChallengeResponse_Authentication',
+        request: {
+          userAttributes,
+          privateChallengeParameters: { answer: '42' },
+          challengeAnswer: '42',
+        },
+        response: { answerCorrect: null },
+      },
+    },
+  ];
+
+  it.each(capturedEvents)(
+    'parses a $name event captured from a user pool',
+    ({ schema, event }) => {
+      // Act
+      const result = schema.parse(event);
+
+      // Assess
+      expect(result).toStrictEqual(event);
+    }
+  );
 
   it('parses a valid pre-signup event', () => {
     // Prepare
@@ -230,6 +363,7 @@ describe('Schemas: Cognito User Pool', () => {
   it('parses a valid custom message event with custom email sender', () => {
     // Prepare
     const event = structuredClone(baseEvent);
+    delete event.response;
     event.triggerSource = 'CustomEmailSender_SignUp';
     event.request = {
       type: 'customEmailSenderRequestV1',
@@ -261,6 +395,7 @@ describe('Schemas: Cognito User Pool', () => {
   it('parses a valid custom message event with custom SMS sender', () => {
     // Prepare
     const event = structuredClone(baseEvent);
+    delete event.response;
     event.triggerSource = 'CustomSMSSender_SignUp';
     event.request = {
       type: 'customSMSSenderRequestV1',

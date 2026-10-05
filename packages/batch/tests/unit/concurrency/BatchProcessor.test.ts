@@ -13,6 +13,8 @@ import {
 
 describe('BatchProcessor concurrent invocation isolation', () => {
   beforeEach(() => {
+    // Recreate the dynamically imported fixture's processors and peer barrier.
+    vi.resetModules();
     InvokeStore._testing?.reset();
     vi.clearAllMocks();
   });
@@ -30,7 +32,6 @@ describe('BatchProcessor concurrent invocation isolation', () => {
     'isolates overlapping $name handler invocations',
     async ({ exportName, fifo }) => {
       // Prepare
-      vi.resetModules();
       vi.stubEnv('AWS_LAMBDA_MAX_CONCURRENCY', '10');
       vi.stubEnv('AWS_LAMBDA_INITIALIZATION_TYPE', 'lambda-managed-instances');
       // The fixture constructs module-scoped processors before sequence runs.

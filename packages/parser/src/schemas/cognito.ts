@@ -13,7 +13,8 @@ const CognitoTriggerBaseSchema = z.object({
   userName: z.string().optional(),
   callerContext: z.object({
     awsSdkVersion: z.string(),
-    clientId: z.string(),
+    // Admin API operations such as AdminConfirmSignUp send null
+    clientId: z.string().nullable(),
   }),
   request: z.object({}),
   response: z.object({}),
@@ -55,7 +56,11 @@ const CognitoTriggerBaseSchema = z.object({
  * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-sign-up.html | Amazon Cognito Developer Guide}
  */
 const PreSignupTriggerSchema = CognitoTriggerBaseSchema.extend({
-  triggerSource: z.literal('PreSignUp_SignUp'),
+  triggerSource: z.enum([
+    'PreSignUp_SignUp',
+    'PreSignUp_AdminCreateUser',
+    'PreSignUp_ExternalProvider',
+  ]),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
     validationData: z.record(z.string(), z.string()).nullable(),
@@ -100,7 +105,10 @@ const PreSignupTriggerSchema = CognitoTriggerBaseSchema.extend({
  * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-post-confirmation.html | Amazon Cognito Developer Guide}
  */
 const PostConfirmationTriggerSchema = CognitoTriggerBaseSchema.extend({
-  triggerSource: z.literal('PostConfirmation_ConfirmSignUp'),
+  triggerSource: z.enum([
+    'PostConfirmation_ConfirmSignUp',
+    'PostConfirmation_ConfirmForgotPassword',
+  ]),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
     clientMetadata: z.record(z.string(), z.string()).optional(),
@@ -397,19 +405,30 @@ const CustomMessageTriggerSchema = CognitoTriggerBaseSchema.extend({
  *     "code": "string",
  *     "clientMetadata": { "string": "string" },
  *     "userAttributes": { "string": "string" }
- *   },
- *   "response": {}
+ *   }
  * }
  * ```
  *
  * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-custom-email-sender.html | Amazon Cognito Developer Guide}
  */
-const CustomEmailSenderTriggerSchema = CognitoTriggerBaseSchema.extend({
-  triggerSource: z.literal('CustomEmailSender_SignUp'),
+// Custom sender events have no response, since Cognito expects nothing back
+const CustomEmailSenderTriggerSchema = CognitoTriggerBaseSchema.omit({
+  response: true,
+}).extend({
+  triggerSource: z.enum([
+    'CustomEmailSender_SignUp',
+    'CustomEmailSender_ResendCode',
+    'CustomEmailSender_ForgotPassword',
+    'CustomEmailSender_UpdateUserAttribute',
+    'CustomEmailSender_VerifyUserAttribute',
+    'CustomEmailSender_AdminCreateUser',
+    'CustomEmailSender_Authentication',
+    'CustomEmailSender_AccountTakeOverNotification',
+  ]),
   request: z.object({
     type: z.literal('customEmailSenderRequestV1'),
     code: z.string(),
-    clientMetadata: z.record(z.string(), z.string()).optional(),
+    clientMetadata: z.record(z.string(), z.string()).nullish(),
     userAttributes: z.record(z.string(), z.string()),
   }),
 });
@@ -436,19 +455,28 @@ const CustomEmailSenderTriggerSchema = CognitoTriggerBaseSchema.extend({
  *       "string": "string"
  *     },
  *     "userAttributes": { "string": "string" }
- *   },
- *   "response": {}
+ *   }
  * }
  * ```
  *
  * @see {@link https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-custom-sms-sender.html | Amazon Cognito Developer Guide}
  */
-const CustomSMSSenderTriggerSchema = CognitoTriggerBaseSchema.extend({
-  triggerSource: z.literal('CustomSMSSender_SignUp'),
+const CustomSMSSenderTriggerSchema = CognitoTriggerBaseSchema.omit({
+  response: true,
+}).extend({
+  triggerSource: z.enum([
+    'CustomSMSSender_SignUp',
+    'CustomSMSSender_ResendCode',
+    'CustomSMSSender_ForgotPassword',
+    'CustomSMSSender_UpdateUserAttribute',
+    'CustomSMSSender_VerifyUserAttribute',
+    'CustomSMSSender_AdminCreateUser',
+    'CustomSMSSender_Authentication',
+  ]),
   request: z.object({
     type: z.literal('customSMSSenderRequestV1'),
     code: z.string(),
-    clientMetadata: z.record(z.string(), z.string()).optional(),
+    clientMetadata: z.record(z.string(), z.string()).nullish(),
     userAttributes: z.record(z.string(), z.string()),
   }),
 });
@@ -513,7 +541,8 @@ const DefineAuthChallengeTriggerSchema = CognitoTriggerBaseSchema.extend({
   triggerSource: z.literal('DefineAuthChallenge_Authentication'),
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
-    session: z.array(ChallengeResultSchema).min(1),
+    // Empty on the first call of a custom auth flow without SRP
+    session: z.array(ChallengeResultSchema),
     clientMetadata: z.record(z.string(), z.string()).optional(),
     userNotFound: z.boolean().optional(),
   }),
@@ -563,7 +592,8 @@ const CreateAuthChallengeTriggerSchema = CognitoTriggerBaseSchema.extend({
   request: z.object({
     userAttributes: z.record(z.string(), z.string()),
     challengeName: z.string(),
-    session: z.array(ChallengeResultSchema).min(1),
+    // Empty on the first call of a custom auth flow without SRP
+    session: z.array(ChallengeResultSchema),
     clientMetadata: z.record(z.string(), z.string()).optional(),
     userNotFound: z.boolean().optional(),
   }),
@@ -614,7 +644,8 @@ const VerifyAuthChallengeTriggerSchema = CognitoTriggerBaseSchema.extend({
     userNotFound: z.boolean().optional(),
   }),
   response: z.object({
-    answerCorrect: z.boolean(),
+    // Cognito sends null; the function sets the verdict
+    answerCorrect: z.boolean().nullable(),
   }),
 });
 

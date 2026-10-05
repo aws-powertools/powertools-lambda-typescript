@@ -30,33 +30,30 @@ const VpcLatticeV2RequestContext = z.object({
  * ```json
  * {
  *   "version": "2.0",
- *   "path": "/newpath",
- *   "method": "GET",
+ *   "path": "/echo?QS1=value1&QS1=value2&single=one",
+ *   "method": "POST",
  *   "headers": {
- *     "user_agent": "curl/7.64.1",
- *     "x-forwarded-for": "10.213.229.10",
- *     "host": "test-lambda-service-3908sdf9u3u.dkfjd93.vpc-lattice-svcs.us-east-2.on.aws",
- *     "accept": "*]/*"
+ *     "content-type": ["application/json"],
+ *     "x-forwarded-for": ["10.42.0.189"],
+ *     "header1": ["value1", "value2"],
+ *     "host": ["my-service-0123456789abcdef0.7d67968.vpc-lattice-svcs.eu-west-1.on.aws"]
  *   },
  *   "queryStringParameters": {
- *     "order-id": "1"
+ *     "QS1": ["value1", "value2"],
+ *     "single": ["one"]
  *   },
- *   "body": "{\"message\": \"Hello from Lambda!\"}",
- *   "isBase64Encoded": false,
+ *   "body": "{\"hello\":\"world\"}",
  *   "requestContext": {
- *     "serviceNetworkArn": "arn:aws:vpc-lattice:us-east-2:123456789012:servicenetwork/sn-0bf3f2882e9cc805a",
- *     "serviceArn": "arn:aws:vpc-lattice:us-east-2:123456789012:service/svc-0a40eebed65f8d69c",
- *     "targetGroupArn": "arn:aws:vpc-lattice:us-east-2:123456789012:targetgroup/tg-6d0ecf831eec9f09",
+ *     "serviceNetworkArn": "arn:aws:vpc-lattice:eu-west-1:123456789012:servicenetwork/sn-0123456789abcdef0",
+ *     "serviceArn": "arn:aws:vpc-lattice:eu-west-1:123456789012:service/svc-0123456789abcdef0",
+ *     "targetGroupArn": "arn:aws:vpc-lattice:eu-west-1:123456789012:targetgroup/tg-0123456789abcdef0",
  *     "identity": {
- *       "sourceVpcArn": "arn:aws:ec2:region:123456789012:vpc/vpc-0b8276c84697e7339",
- *       "type": "AWS_IAM",
- *       "principal": "arn:aws:sts::123456789012:assumed-role/example-role/057d00f8b51257ba3c853a0f248943cf",
- *       "sessionName": "057d00f8b51257ba3c853a0f248943cf",
- *       "x509SanDns": "example.com"
+ *       "sourceVpcArn": "arn:aws:ec2:eu-west-1:123456789012:vpc/vpc-0123456789abcdef0"
  *     },
- *     "region": "us-east-2",
- *     "timeEpoch": "1696331543569073"
- *   }
+ *     "region": "eu-west-1",
+ *     "timeEpoch": "1790935900260914"
+ *   },
+ *   "requestId": "6ccfc913-b027-4fdc-be66-a07809329ee3"
  * }
  * ```
  * @see {@link VpcLatticeEventV2 | `VpcLatticeEventV2`}
@@ -66,11 +63,13 @@ const VpcLatticeV2Schema = z.object({
   version: z.string(),
   path: z.string(),
   method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']),
-  headers: z.record(z.string(), z.string()),
-  queryStringParameters: z.record(z.string(), z.string()).optional(),
+  // VPC Lattice sends every header and query string value as an array, even a single one
+  headers: z.record(z.string(), z.array(z.string())),
+  queryStringParameters: z.record(z.string(), z.array(z.string())).optional(),
   body: z.string().optional(),
   isBase64Encoded: z.boolean().optional(),
   requestContext: VpcLatticeV2RequestContext,
+  requestId: z.string().optional(),
 });
 
 export { VpcLatticeV2Schema };

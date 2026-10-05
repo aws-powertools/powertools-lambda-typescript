@@ -69,17 +69,16 @@ When using the decorator or middleware, you can specify a schema to parse the ev
 | **CloudFormationCustomResourceCreateSchema**    | Lambda Event Source payload for AWS CloudFormation `CREATE` operation                                                 |
 | **CloudFormationCustomResourceUpdateSchema**    | Lambda Event Source payload for AWS CloudFormation `UPDATE` operation                                                 |
 | **CloudFormationCustomResourceDeleteSchema**    | Lambda Event Source payload for AWS CloudFormation `DELETE` operation                                                 |
-| **CloudwatchLogsSchema**                        | Lambda Event Source payload for Amazon CloudWatch Logs                                                                |
+| **CloudWatchLogsSchema**                        | Lambda Event Source payload for Amazon CloudWatch Logs                                                                |
 | **PreSignupTriggerSchema**                      | Lambda Event Source payload for Amazon Cognito Pre Sign-up trigger                                                    |
 | **PostConfirmationTriggerSchema**               | Lambda Event Source payload for Amazon Cognito Post Confirmation trigger                                              |
-| **PreTokenGenerationTriggerSchema**             | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger                                           |
 | **CustomMessageTriggerSchema**                  | Lambda Event Source payload for Amazon Cognito Custom Message trigger                                                 |
 | **MigrateUserTriggerSchema**                    | Lambda Event Source payload for Amazon Cognito User Migration trigger                                                 |
-| **CustomSMSTriggerSchema**                      | Lambda Event Source payload for Amazon Cognito Custom SMS trigger                                                     |
-| **CustomEmailTriggerSchema**                    | Lambda Event Source payload for Amazon Cognito Custom Email trigger                                                   |
+| **CustomSMSSenderTriggerSchema**                | Lambda Event Source payload for Amazon Cognito Custom SMS trigger                                                     |
+| **CustomEmailSenderTriggerSchema**              | Lambda Event Source payload for Amazon Cognito Custom Email trigger                                                   |
 | **DefineAuthChallengeTriggerSchema**            | Lambda Event Source payload for Amazon Cognito Define Auth Challenge trigger                                          |
 | **CreateAuthChallengeTriggerSchema**            | Lambda Event Source payload for Amazon Cognito Create Auth Challenge trigger                                          |
-| **VerifyAuthChallengeResponseTriggerSchema**    | Lambda Event Source payload for Amazon Cognito Verify Auth Challenge Response trigger                                 |
+| **VerifyAuthChallengeTriggerSchema**            | Lambda Event Source payload for Amazon Cognito Verify Auth Challenge Response trigger                                 |
 | **PreTokenGenerationTriggerSchemaV1**           | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v1                                        |
 | **PreTokenGenerationTriggerSchemaV2AndV3**      | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v2 and v3                                 |
 | **ConnectOutboundCampaignsSchema**              | Lambda Event Source payload for Amazon Connect Outbound Campaigns custom actions                                      |
@@ -97,7 +96,7 @@ When using the decorator or middleware, you can specify a schema to parse the ev
 | **LambdaFunctionUrlSchema**                     | Lambda Event Source payload for Lambda Function URL payload                                                           |
 | **S3EventNotificationEventBridgeSchema**        | Lambda Event Source payload for Amazon S3 Event Notification to EventBridge.                                          |
 | **S3Schema**                                    | Lambda Event Source payload for Amazon S3                                                                             |
-| **S3ObjectLambdaEvent**                         | Lambda Event Source payload for Amazon S3 Object Lambda                                                               |
+| **S3ObjectLambdaEventSchema**                   | Lambda Event Source payload for Amazon S3 Object Lambda                                                               |
 | **S3SqsEventNotificationSchema**                | Lambda Event Source payload for S3 event notifications wrapped in SQS event (S3->SQS)                                 |
 | **SesSchema**                                   | Lambda Event Source payload for Amazon Simple Email Service                                                           |
 | **SnsSchema**                                   | Lambda Event Source payload for Amazon Simple Notification Service                                                    |

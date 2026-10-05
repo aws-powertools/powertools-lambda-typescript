@@ -1,0 +1,22 @@
+{
+  "version": "1",
+  "region": "eu-west-1",
+  "userPoolId": "eu-west-1_EXAMPLE",
+  "userName": "user1",
+  "callerContext": {
+    "awsSdkVersion": "aws-sdk-unknown-unknown",
+    "clientId": "CLIENT_ID_NOT_APPLICABLE"
+  },
+  "triggerSource": "CustomEmailSender_AdminCreateUser",
+  "request": {
+    "userAttributes": {
+      "sub": "11111111-2222-3333-4444-555555555555",
+      "email_verified": "true",
+      "cognito:user_status": "CONFIRMED",
+      "email": "user@example.com"
+    },
+    "type": "customEmailSenderRequestV1",
+    "code": "AYADeIZczazd30Tm9/+4",
+    "clientMetadata": null
+  }
+}

@@ -21,6 +21,53 @@ describe('Schemas: Cognito User Pool', () => {
     filename: 'base',
   });
 
+  it.each([
+    {
+      filename: 'pre-signup-admin-create-user',
+      schema: PreSignupTriggerSchema,
+    },
+    {
+      filename: 'post-confirmation-confirm-forgot-password',
+      schema: PostConfirmationTriggerSchema,
+    },
+    {
+      filename: 'post-confirmation-admin-confirm-sign-up',
+      schema: PostConfirmationTriggerSchema,
+    },
+    {
+      filename: 'custom-email-sender-forgot-password',
+      schema: CustomEmailSenderTriggerSchema,
+    },
+    {
+      filename: 'custom-email-sender-admin-create-user',
+      schema: CustomEmailSenderTriggerSchema,
+    },
+    {
+      filename: 'define-auth-challenge-first-call',
+      schema: DefineAuthChallengeTriggerSchema,
+    },
+    {
+      filename: 'create-auth-challenge-first-call',
+      schema: CreateAuthChallengeTriggerSchema,
+    },
+    {
+      filename: 'verify-auth-challenge-response',
+      schema: VerifyAuthChallengeTriggerSchema,
+    },
+  ])(
+    'parses the $filename event captured from a user pool',
+    ({ filename, schema }) => {
+      // Prepare
+      const event = getTestEvent({ eventsPath: 'cognito', filename });
+
+      // Act
+      const result = schema.parse(event);
+
+      // Assess
+      expect(result).toStrictEqual(event);
+    }
+  );
+
   it('parses a valid pre-signup event', () => {
     // Prepare
     const event = structuredClone(baseEvent);
@@ -230,6 +277,7 @@ describe('Schemas: Cognito User Pool', () => {
   it('parses a valid custom message event with custom email sender', () => {
     // Prepare
     const event = structuredClone(baseEvent);
+    delete event.response;
     event.triggerSource = 'CustomEmailSender_SignUp';
     event.request = {
       type: 'customEmailSenderRequestV1',
@@ -261,6 +309,7 @@ describe('Schemas: Cognito User Pool', () => {
   it('parses a valid custom message event with custom SMS sender', () => {
     // Prepare
     const event = structuredClone(baseEvent);
+    delete event.response;
     event.triggerSource = 'CustomSMSSender_SignUp';
     event.request = {
       type: 'customSMSSenderRequestV1',

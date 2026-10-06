@@ -12,8 +12,8 @@
 # `cdk synth` -- would otherwise fail with the misleading error
 # `npm error code ETARGET / No matching version found`.
 #
-# Run from the repository root, after `npm publish --workspaces`.
-# See .github/workflows/make-release.yml (publish-npm job).
+# Run from the repository root at the release commit, after publishing succeeds.
+# See .github/workflows/make-release.yml (verify-npm-propagation job).
 
 set -euo pipefail
 
@@ -76,7 +76,7 @@ while [ "${#pending[@]}" -gt 0 ]; do
   if [ "$now" -ge "$deadline" ]; then
     echo "::error::verify_npm_publish: timed out after ${TIMEOUT_SECONDS}s waiting for the following package version(s) to appear on ${REGISTRY}:"
     printf '::error::  - %s\n' "${pending[@]}"
-    echo "::error::These versions were accepted by 'npm publish' but are not yet served by the registry. Continuing would make the Lambda layer build's 'npm i' fail with a misleading 'npm error code ETARGET / No matching version found'. Re-run the release once propagation completes, or check for an npm registry incident at https://status.npmjs.org."
+    echo "::error::These versions were accepted by 'npm publish' but are not yet served by the registry. Continuing would make the Lambda layer build's 'npm i' fail with a misleading 'npm error code ETARGET / No matching version found'. Re-run the failed verify-npm-propagation job once propagation completes, or check for an npm registry incident at https://status.npmjs.org. Do not re-run the successful publish-npm job."
     exit 1
   fi
 

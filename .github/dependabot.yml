@@ -45,6 +45,8 @@ updates:
     ignore:
       - dependency-name: "@middy/core"
         update-types: [ "version-update:semver-major" ]
+      # List all three update-types to keep AWS version updates in the weekly entry.
+      # Omitting update-types would also ignore security updates.
       - dependency-name: "@aws-sdk/*"
         update-types:
           - version-update:semver-major

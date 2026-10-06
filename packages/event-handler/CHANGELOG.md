@@ -1,5 +1,21 @@
 # Change Log
 
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Bug Fixes
+
+- honor Accept-Encoding q-values in compression ([#5725](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5725)) ([881a1f4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/881a1f4be627bd40abdf5127d391d11bf9ef75f4))
+- handle empty proxy response bodies ([#5701](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5701)) ([9f39aef](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9f39aefdb359f8f5b636be8e1efede2ed2dc54fc))
+- preserve binary Web Response bodies ([#5700](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5700)) ([e093a3d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e093a3df72feb02e1b84f2eb23e9b8655846c583))
+- stop recursive HTTP error handler dispatch ([#5703](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5703)) ([4fbfc3e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4fbfc3eb5bb43e1ac567cc5a12e81fe75cd13425))
+- ignore body on GET/HEAD requests when converting to Web Request ([#5683](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5683)) ([51bc98c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/51bc98cd27cf9d712fc6d95b89f4f14013572c24))
+- honour isBase64Encoded and binary bodies on proxy results ([#5668](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5668)) ([e133a45](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e133a45cd29136414ade523ae5eb5fb35cac4e0a))
+- fail invocation on UnauthorizedException in onPublish ([#5621](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5621)) ([8d496bb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8d496bbffde638da91e6a372693327bd0e36dd54))
+- handle +json content types and bodyless responses ([#5570](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5570)) ([770ab06](https://github.com/aws-powertools/powertools-lambda-typescript/commit/770ab0680b55a37ffdc0ebab87e23e5197419f98))
+
+### Improvements
+
+- simplify HTTP event parsing ([#5686](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5686)) ([69b0b75](https://github.com/aws-powertools/powertools-lambda-typescript/commit/69b0b75b274d7bafd11859beb1af854859f3f511))
 ## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
 
 **Note:** Version bump only for this package

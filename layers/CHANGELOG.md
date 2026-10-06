@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Maintenance
+
+- replace shell filesystem commands ([#5596](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5596)) ([19b9bda](https://github.com/aws-powertools/powertools-lambda-typescript/commit/19b9bda401175576aa8777386be05d5cc29b4312))
+
+### Bug Fixes
+
+- bundle all publishable utilities in the Lambda layer ([#5577](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5577)) ([e155651](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e15565192ad2c19f57e0ab0f31e1f3a61a547485))
+- do not ship AWS SDK clients in the Lambda layer ([#5512](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5512)) ([0311e79](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0311e7939832f606678256a2ac9e89b0af6c8468))
 ## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
 
 **Note:** Version bump only for this package

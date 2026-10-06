@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Improvements
+
+- extract InvokeStore fallback into InvocationScoped ([#5615](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5615)) ([e352cb0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e352cb0b8e57ab5d0ba22e5b9d374f9cb589ebc0))
 ## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
 
 **Note:** Version bump only for this package

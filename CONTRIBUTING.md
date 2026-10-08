@@ -115,6 +115,10 @@ Prerequisites:
 
 [`CODING_STANDARDS.md`](CODING_STANDARDS.md) is the source of truth for package layout, TypeScript style, JSDoc, unit tests, and the commands that verify all of them. Read it before writing code, tests, or documentation. If you drive a coding agent, point it at [`AGENTS.md`](AGENTS.md).
 
+Run `npm run test:middy` on Node.js 24 to check middleware compatibility against the locked Middy.js v4, v5, v6, v7, and v8 prerelease versions.
+This type-checks the middleware suites and parser type assertions against each version's declarations, then runs the middleware lifecycle suites against each version.
+The v8 prerelease is a development-only test dependency; this check does not declare support for the upcoming stable release or exercise its durable and streaming execution modes.
+
 ### Sending a pull request
 
 1. Create a branch named after the change you are contributing, e.g. `improv/logger-debug-sampling`.

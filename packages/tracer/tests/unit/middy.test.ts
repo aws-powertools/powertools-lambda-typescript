@@ -48,7 +48,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
 
       // Act
-      await handler({}, context, () => console.log('Lambda invoked!'));
+      await handler({}, context);
 
       // Assess
       expect(setSegmentSpy).toHaveBeenCalledTimes(0);
@@ -70,9 +70,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
 
       // Act & Assess
-      await expect(
-        handler({}, context, () => console.log('Lambda invoked!'))
-      ).rejects.toThrowError(Error);
+      await expect(handler({}, context)).rejects.toThrowError(Error);
       expect(setSegmentSpy).toHaveBeenCalledTimes(0);
       expect(getSegmentSpy).toHaveBeenCalledTimes(0);
       expect.assertions(3);
@@ -173,9 +171,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
 
       // Act & Assess
-      await expect(
-        handler({}, context, () => console.log('Lambda invoked!'))
-      ).rejects.toThrowError(Error);
+      await expect(handler({}, context)).rejects.toThrowError(Error);
       expect(setSegmentSpy).toHaveBeenCalledTimes(2);
       expect('cause' in newSubsegment).toBe(false);
       expect(addErrorFlagSpy).toHaveBeenCalledTimes(1);
@@ -202,9 +198,7 @@ describe('Middy middleware', () => {
       const handler = middy(lambdaHandler).use(captureLambdaHandler(tracer));
 
       // Act & Assess
-      await expect(
-        handler({}, context, () => console.log('Lambda invoked!'))
-      ).rejects.toThrowError(Error);
+      await expect(handler({}, context)).rejects.toThrowError(Error);
       expect(setSegmentSpy).toHaveBeenCalledTimes(2);
       expect('cause' in newSubsegment).toBe(true);
       expect(addErrorSpy).toHaveBeenCalledTimes(1);
@@ -290,9 +284,9 @@ describe('Middy middleware', () => {
       vi.spyOn(tracer.provider, 'getSegment')
         .mockImplementationOnce(() => facadeSegment1)
         .mockImplementationOnce(() => facadeSegment2);
-      const myCustomMiddleware = (): middy.MiddlewareObj => {
+      const myCustomMiddleware = (): middy.MiddlewareObj<{ idx: number }> => {
         const before = async (
-          request: middy.Request
+          request: middy.Request<{ idx: number }>
         ): Promise<undefined | string> => {
           // Return early on the second invocation
           if (request.event.idx === 1) {

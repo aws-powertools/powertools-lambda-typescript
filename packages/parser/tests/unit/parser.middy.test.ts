@@ -96,7 +96,7 @@ describe('Middleware: parser', () => {
 
     // Act & Assess
     await expect(
-      middy((event) => event).use(parser({ schema: z.number() }))(
+      middy((event: unknown) => event).use(parser({ schema: z.number() }))(
         event as unknown as number,
         {} as Context
       )
@@ -364,9 +364,23 @@ describe('Middleware: parser', () => {
     expect(errorHandler).not.toHaveBeenCalled();
   });
 
-  it('throws a TypeError when the errorHandler returns a Promise', async () => {
+  it('rejects an errorHandler that returns a Promise', async () => {
     // Prepare
     const event = structuredClone(JSONPayload);
+    const typeError = expect.objectContaining({
+      name: 'TypeError',
+      message:
+        'errorHandler must return synchronously; async errorHandler functions are not supported',
+    });
+    // Middy v8 preserves both the parse failure and the onError failure.
+    const expectedError =
+      process.env.MIDDY_TEST_VERSION === 'middy8'
+        ? {
+            name: 'AggregateError',
+            message: 'Error thrown in onError middleware',
+            errors: [expect.any(ParseError), typeError],
+          }
+        : typeError;
 
     // Act & Assess
     await expect(
@@ -379,7 +393,7 @@ describe('Middleware: parser', () => {
           })
         )
         .handler((event) => event)(event as unknown as number, {} as Context)
-    ).rejects.toThrow(TypeError);
+    ).rejects.toMatchObject(expectedError);
   });
 
   it('still runs other middlewares onError when the errorHandler recovers', async () => {

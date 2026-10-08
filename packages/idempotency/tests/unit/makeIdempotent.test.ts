@@ -410,12 +410,28 @@ describe('Function: makeIdempotent', () => {
         'deleteRecord'
       ).mockRejectedValue(new Error('Something went wrong'));
 
-      // Act && Assess
-      await expect(handler(event, context)).rejects.toMatchObject({
+      const persistenceError = {
         name: 'IdempotencyPersistenceLayerError',
         message: 'Failed to delete record from idempotency store',
         cause: new Error('Something went wrong'),
-      });
+      };
+      // Middy v8 keeps the original handler error alongside the cleanup error.
+      const expectedError =
+        type === 'middleware' && process.env.MIDDY_TEST_VERSION === 'middy8'
+          ? {
+              name: 'AggregateError',
+              message: 'Error thrown in onError middleware',
+              errors: [
+                expect.objectContaining({ message: 'Something went wrong' }),
+                expect.objectContaining(persistenceError),
+              ],
+            }
+          : persistenceError;
+
+      // Act && Assess
+      await expect(handler(event, context)).rejects.toMatchObject(
+        expectedError
+      );
     }
   );
 

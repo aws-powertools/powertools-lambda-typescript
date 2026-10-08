@@ -34,7 +34,8 @@
     "docs:local:run": ".venv/bin/mkdocs serve",
     "docs:local:api": "typedoc",
     "postpublish": "git restore .",
-    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#CHANGELOG.md' '#**/*/CHANGELOG.md' '#.venv' '#site'"
+    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#CHANGELOG.md' '#**/*/CHANGELOG.md' '#.venv' '#site'",
+    "test:middy": "node .github/scripts/test_middy.js"
   },
   "repository": {
     "type": "git",
@@ -62,6 +63,7 @@
     "middy5": "npm:@middy/core@^5.5.1",
     "middy6": "npm:@middy/core@^6.4.5",
     "middy7": "npm:@middy/core@^7.0.2",
+    "middy8": "npm:@middy/core@8.0.0-alpha.1",
     "typedoc": "^0.28.20",
     "typedoc-plugin-missing-exports": "^4.1.4",
     "typescript": "^6.0.3",

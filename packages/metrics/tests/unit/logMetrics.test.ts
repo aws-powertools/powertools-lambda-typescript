@@ -340,6 +340,27 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     );
   });
 
+  it('flushes metrics and propagates the handler error in Middy onError', async () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: DEFAULT_NAMESPACE });
+    const handlerError = new Error('Handler failed');
+    const publishStoredMetrics = vi.spyOn(metrics, 'publishStoredMetrics');
+    const handler = middy(async () => {
+      metrics.addMetric('failedOperations', MetricUnit.Count, 1);
+      throw handlerError;
+    }).use(logMetrics(metrics));
+
+    // Act & Assess
+    await expect(handler({}, contextWithFunctionName)).rejects.toBe(
+      handlerError
+    );
+    expect(publishStoredMetrics).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({ failedOperations: 1, service: 'hello-world' })
+    );
+  });
+
   it('throws when no metrics are added and throwOnEmptyMetrics is true', async () => {
     // Prepare
     const metrics = new Metrics({
@@ -370,10 +391,22 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
     const handler = middy(async () => {}).use(
       logMetrics([metrics], { throwOnEmptyMetrics: true })
     );
+    const emptyMetricsError = expect.objectContaining({
+      message: 'The number of metrics recorded must be higher than zero',
+    });
+    // Both after and onError try to publish the empty metric set.
+    const expectedError =
+      process.env.MIDDY_TEST_VERSION === 'middy8'
+        ? {
+            name: 'AggregateError',
+            message: 'Error thrown in onError middleware',
+            errors: [emptyMetricsError, emptyMetricsError],
+          }
+        : emptyMetricsError;
 
     // Act & Assess
-    await expect(() => handler({}, {} as Context)).rejects.toThrowError(
-      'The number of metrics recorded must be higher than zero'
+    await expect(handler({}, {} as Context)).rejects.toMatchObject(
+      expectedError
     );
   });
 
@@ -384,9 +417,9 @@ describe('LogMetrics decorator & Middy.js middleware', () => {
       namespace: DEFAULT_NAMESPACE,
     });
     vi.spyOn(metrics, 'publishStoredMetrics');
-    const myCustomMiddleware = (): middy.MiddlewareObj => {
+    const myCustomMiddleware = (): middy.MiddlewareObj<{ idx: number }> => {
       const before = async (
-        request: middy.Request
+        request: middy.Request<{ idx: number }>
       ): Promise<undefined | string> => {
         // Return early on the second invocation
         if (request.event.idx === 1) {

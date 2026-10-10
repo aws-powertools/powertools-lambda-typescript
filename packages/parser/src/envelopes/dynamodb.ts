@@ -3,7 +3,7 @@ import { ParseError } from '../errors.js';
 import { DynamoDBStreamSchema } from '../schemas/index.js';
 import type { DynamoDBStreamEnvelopeResponse } from '../types/envelope.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
+import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
 
 /**
  * DynamoDB Stream Envelope to extract data within NewImage/OldImage
@@ -21,36 +21,25 @@ export const DynamoDBStreamEnvelope = {
     data: unknown,
     schema: ZodType<T>
   ): DynamoDBStreamEnvelopeResponse<T>[] {
-    let parsedEnvelope: z.infer<typeof DynamoDBStreamSchema>;
-    try {
-      parsedEnvelope = DynamoDBStreamSchema.parse(data);
-    } catch (error) {
-      throw new ParseError('Failed to parse DynamoDB Stream envelope', {
-        cause: error as Error,
-      });
-    }
+    const parsedEnvelope = parseOrThrow(
+      DynamoDBStreamSchema,
+      data,
+      'Failed to parse DynamoDB Stream envelope'
+    );
 
     const processImage = (
       image: unknown,
       imageType: 'NewImage' | 'OldImage',
       recordIndex: number
-    ) => {
-      try {
-        return image ? schema.parse(image) : undefined;
-      } catch (error) {
-        throw new ParseError(
-          `Failed to parse DynamoDB record at index ${recordIndex}`,
-          {
-            cause: prefixIssuePaths(error, [
-              'Records',
-              recordIndex,
-              'dynamodb',
-              imageType,
-            ]),
-          }
-        );
-      }
-    };
+    ) =>
+      image
+        ? parseOrThrow(
+            schema,
+            image,
+            `Failed to parse DynamoDB record at index ${recordIndex}`,
+            ['Records', recordIndex, 'dynamodb', imageType]
+          )
+        : undefined;
 
     return parsedEnvelope.Records.map((record, index) => ({
       NewImage: processImage(record.dynamodb.NewImage, 'NewImage', index),

@@ -9,7 +9,7 @@ import type {
   KafkaSelfManagedEvent,
   ParsedResult,
 } from '../types/index.js';
-import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
+import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
 
 /**
  * Get the event source from the data.
@@ -18,20 +18,17 @@ import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
  *
  * @param data - The data to extract the event source from
  */
-const extractEventSource = (
-  data: unknown
-): 'aws:kafka' | 'SelfManagedKafka' => {
-  const verifiedData = z
-    .object({
+const extractEventSource = (data: unknown): 'aws:kafka' | 'SelfManagedKafka' =>
+  parseOrThrow(
+    z.object({
       eventSource: z.union([
         z.literal('aws:kafka'),
         z.literal('SelfManagedKafka'),
       ]),
-    })
-    .parse(data);
-
-  return verifiedData.eventSource;
-};
+    }),
+    data,
+    'Failed to parse Kafka envelope'
+  ).eventSource;
 
 /**
  * Kafka event envelope to extract data within body key
@@ -48,38 +45,27 @@ export const KafkaEnvelope = {
    */
   [envelopeDiscriminator]: 'array' as const,
   parse<T>(data: unknown, schema: ZodType<T>): z.infer<ZodType<T>>[] {
-    let parsedEnvelope: KafkaMskEvent | KafkaSelfManagedEvent;
-    try {
-      parsedEnvelope =
-        extractEventSource(data) === 'aws:kafka'
-          ? KafkaMskEventSchema.parse(data)
-          : KafkaSelfManagedEventSchema.parse(data);
-    } catch (error) {
-      throw new ParseError('Failed to parse Kafka envelope', {
-        cause: error as Error,
-      });
-    }
+    const parsedEnvelope = parseOrThrow<KafkaMskEvent | KafkaSelfManagedEvent>(
+      extractEventSource(data) === 'aws:kafka'
+        ? KafkaMskEventSchema
+        : KafkaSelfManagedEventSchema,
+      data,
+      'Failed to parse Kafka envelope'
+    );
 
     const values: z.infer<ZodType<T>>[] = [];
     for (const [topicKey, topicRecord] of Object.entries(
       parsedEnvelope.records
     )) {
       for (const [index, record] of topicRecord.entries()) {
-        try {
-          values.push(schema.parse(record.value));
-        } catch (error) {
-          throw new ParseError(
+        values.push(
+          parseOrThrow(
+            schema,
+            record.value,
             `Failed to parse Kafka record at index ${index} of ${topicKey}`,
-            {
-              cause: prefixIssuePaths(error, [
-                'records',
-                topicKey,
-                index,
-                'value',
-              ]),
-            }
-          );
-        }
+            ['records', topicKey, index, 'value']
+          )
+        );
       }
     }
 

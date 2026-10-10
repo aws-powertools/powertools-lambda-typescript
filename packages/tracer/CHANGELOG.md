@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Improvements
+
+- track fetch subsegments per request ([#5746](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5746)) ([b75385f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b75385fc1d65a67af3ae8f1f53c13131d1b4ee42))
 ## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
 
 **Note:** Version bump only for this package

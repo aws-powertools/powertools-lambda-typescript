@@ -8,7 +8,7 @@ import { getTestEvent, omit } from '../helpers/utils.js';
 describe('Envelope: VPC Lattice v2', () => {
   const schema = z
     .object({
-      message: z.string(),
+      hello: z.string(),
     })
     .strict();
   const baseEvent = getTestEvent<VpcLatticeEventV2>({
@@ -50,7 +50,7 @@ describe('Envelope: VPC Lattice v2', () => {
       const result = VpcLatticeV2Envelope.parse(event, z.string());
 
       // Assess
-      expect(result).toEqual('{"message": "Hello from Lambda!"}');
+      expect(result).toEqual('{"hello":"world"}');
     });
 
     it('parses an VPC Lattice v2 event with JSON-stringified body', () => {
@@ -61,14 +61,14 @@ describe('Envelope: VPC Lattice v2', () => {
       const result = VpcLatticeV2Envelope.parse(event, JSONStringified(schema));
 
       // Assess
-      expect(result).toStrictEqual({ message: 'Hello from Lambda!' });
+      expect(result).toStrictEqual({ hello: 'world' });
     });
 
     it('parses an VPC Lattice v2 event with binary body', () => {
       // Prepare
       const event = structuredClone(baseEvent);
       event.body = 'aGVsbG8gd29ybGQ='; // base64 encoded 'hello world'
-      event.headers['content-type'] = 'application/octet-stream';
+      event.headers['content-type'] = ['application/octet-stream'];
       event.isBase64Encoded = true;
 
       // Act
@@ -93,7 +93,7 @@ describe('Envelope: VPC Lattice v2', () => {
       // Assess
       expect(result).toEqual({
         success: true,
-        data: { message: 'Hello from Lambda!' },
+        data: { hello: 'world' },
       });
     });
 

@@ -1,5 +1,55 @@
 # Change Log
 
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Improvements
+
+- **commons** extract InvokeStore fallback into InvocationScoped ([#5615](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5615)) ([e352cb0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e352cb0b8e57ab5d0ba22e5b9d374f9cb589ebc0))
+- **tracer** track fetch subsegments per request ([#5746](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5746)) ([b75385f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b75385fc1d65a67af3ae8f1f53c13131d1b4ee42))
+- **idempotency** make DynamoDB error check minification-resistant ([#5775](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5775)) ([991fb88](https://github.com/aws-powertools/powertools-lambda-typescript/commit/991fb8836ac18ff905b25603910fae6163646ffd))
+- **event-handler** simplify HTTP event parsing ([#5686](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5686)) ([69b0b75](https://github.com/aws-powertools/powertools-lambda-typescript/commit/69b0b75b274d7bafd11859beb1af854859f3f511))
+
+### Bug Fixes
+
+- **parameters** include request options in cache key ([#5623](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5623)) ([a02f7bc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a02f7bce583722153a149d4f3757ca80486dd2f5))
+- **idempotency** pass cache SET options in the Valkey Glide shape ([#5737](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5737)) ([3015a43](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3015a439887159097d04bc8ae9a54e44dac3f534))
+- **idempotency** bind operations to their own key prefix on a shared store ([#5708](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5708)) ([006a472](https://github.com/aws-powertools/powertools-lambda-typescript/commit/006a4729fa291d31b5ca0979b39471a6213d57e4))
+- **idempotency** complete and delete the record acquired at operation start ([#5717](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5717)) ([daa6e7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/daa6e7cbeeaeffc95ae44aa5f8db5cc00339169c))
+- **idempotency** keep payload validation hash on cache record completion ([#5706](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5706)) ([c0dac7a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c0dac7a8ca8863484b54de16019af72fdbf18ffa))
+- **idempotency** retain cache locks without execution deadlines ([#5680](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5680)) ([504e1cd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/504e1cd9574aeba2585f311367b2c311ff5f7c38))
+- **idempotency** delete only acquired records in the Middy onError hook ([#5676](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5676)) ([9267cb3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9267cb3775d9bcc575ad03d4f2ef3a3f8dcc2d68))
+- **parser** accept real Cognito trigger events from common flows ([#5777](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5777)) ([c77facf](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c77facf2d5780e7f241c03ac9fe02e8e4ec83ac1))
+- **parser** accept multi-value headers in VPC Lattice v2 events ([#5773](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5773)) ([40fb84e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/40fb84e8e9b1d496b8d4074180dc68ae3e77a171))
+- **parser** accept documented SES receipt event variants ([#5772](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5772)) ([13257dd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/13257dd0f314f5734f16ac3f426a6099bc461c2e))
+- **parser** keep PhysicalResourceId in CloudFormation events ([#5767](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5767)) ([f9cce6a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f9cce6a0d80343d1010673777d80bf8cba6bf2dd))
+- **parser** keep transform errors as the ParseError cause ([#5745](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5745)) ([b898ec4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b898ec495dadacd0ebbdcebb8c03506aa8e68509))
+- **parser** keep Lambda authorizer context in the REST API event schema ([#5749](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5749)) ([077d1f1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/077d1f1894f1be8fc8ae23b7e3036663455f1c9e))
+- **parser** stop malformed base64 from escaping safeParse ([#5666](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5666)) ([11a18a3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/11a18a3ab553e0f72a2c0cea46458fc10430d043))
+- **batch** throw when a synchronous processor gets a promise-returning handler ([#5650](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5650)) ([cb36243](https://github.com/aws-powertools/powertools-lambda-typescript/commit/cb36243d470acdc78dd579ead8a607a820f57a7e))
+- **batch** populate response() before full batch throw and normalize non-Error throws ([#5625](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5625)) ([f71fd53](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f71fd53d19c0a76e663d908068d6816c7c4e3801))
+- **event-handler** honor Accept-Encoding q-values in compression ([#5725](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5725)) ([881a1f4](https://github.com/aws-powertools/powertools-lambda-typescript/commit/881a1f4be627bd40abdf5127d391d11bf9ef75f4))
+- **event-handler** handle empty proxy response bodies ([#5701](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5701)) ([9f39aef](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9f39aefdb359f8f5b636be8e1efede2ed2dc54fc))
+- **event-handler** preserve binary Web Response bodies ([#5700](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5700)) ([e093a3d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e093a3df72feb02e1b84f2eb23e9b8655846c583))
+- **event-handler** stop recursive HTTP error handler dispatch ([#5703](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5703)) ([4fbfc3e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4fbfc3eb5bb43e1ac567cc5a12e81fe75cd13425))
+- **event-handler** ignore body on GET/HEAD requests when converting to Web Request ([#5683](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5683)) ([51bc98c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/51bc98cd27cf9d712fc6d95b89f4f14013572c24))
+- **event-handler** honour isBase64Encoded and binary bodies on proxy results ([#5668](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5668)) ([e133a45](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e133a45cd29136414ade523ae5eb5fb35cac4e0a))
+- **event-handler** fail invocation on UnauthorizedException in onPublish ([#5621](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5621)) ([8d496bb](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8d496bbffde638da91e6a372693327bd0e36dd54))
+- **event-handler** handle +json content types and bodyless responses ([#5570](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5570)) ([770ab06](https://github.com/aws-powertools/powertools-lambda-typescript/commit/770ab0680b55a37ffdc0ebab87e23e5197419f98))
+- **kafka** lazily import Avro and Protobuf codecs so JSON-only consumers bundle ([#5578](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5578)) ([0b7521b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0b7521b20138240ccadbe8fce98120c4898be6eb))
+- **data-masking** honor throwOnMissingField consistently and resolve paths before masking ([#5630](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5630)) ([b93417d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b93417d8bd049995d49f7451f071b2c6f5af6989))
+
+### Features
+
+- **parser** support EventBridge WITH_METADATA deliveries ([#5776](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5776)) ([58f4bb2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/58f4bb2ad179033022fcafaee3757b284b02f07e))
+
+### Maintenance
+
+- **signer** bump the aws-sdk-v3 group across 1 directory with 54 updates ([#5759](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5759)) ([a3ff940](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a3ff940ffecf7c8c785a3ae23bfa6a25ff0ab3fb))
+- **signer** bump the aws-sdk-v3 group across 1 directory with 33 updates ([#5659](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5659)) ([1ba493c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1ba493c274543fb9362260c9cce6fa01d0987e38))
+- **signer** bump the aws-sdk-v3 group across 1 directory with 54 updates ([#5589](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5589)) ([abb5597](https://github.com/aws-powertools/powertools-lambda-typescript/commit/abb559714519fbc5e03167b548aef6574aa49638))
+- **signer** bump the aws-sdk-v3 group across 1 directory with 55 updates ([#5571](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5571)) ([1e5fe1b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1e5fe1b497003615377ceb8e03b4321ce6260815))
+
+
 ## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
 
 ### Improvements

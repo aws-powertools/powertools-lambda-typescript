@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Bug Fixes
+
+- include request options in cache key ([#5623](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5623)) ([a02f7bc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a02f7bce583722153a149d4f3757ca80486dd2f5))
 ## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
 
 ### Features

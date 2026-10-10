@@ -1,6 +1,6 @@
 {
   "name": "@aws-lambda-powertools/testing-utils",
-  "version": "2.35.0",
+  "version": "2.36.0",
   "description": "A package containing utilities to test your serverless workloads",
   "author": {
     "name": "Amazon Web Services",
@@ -126,13 +126,13 @@
   },
   "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
   "dependencies": {
-    "@aws-cdk/toolkit-lib": "^1.42.0",
-    "@aws-sdk/client-cloudformation": "^3.1136.0",
-    "@aws-sdk/client-cloudwatch-logs": "^3.1136.0",
-    "@aws-sdk/client-lambda": "^3.1136.0",
+    "@aws-cdk/toolkit-lib": "^1.42.1",
+    "@aws-sdk/client-cloudformation": "^3.1146.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.1146.0",
+    "@aws-sdk/client-lambda": "^3.1146.0",
     "@aws/lambda-invoke-store": "0.3.0",
     "@smithy/util-utf8": "^4.5.2",
-    "aws-cdk-lib": "^2.270.0",
+    "aws-cdk-lib": "^2.272.0",
     "esbuild": "^0.28.2",
     "promise-retry": "^2.0.1"
   },

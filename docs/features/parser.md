@@ -53,55 +53,57 @@ When using the decorator or middleware, you can specify a schema to parse the ev
 !!! note "Looking for other libraries?"
     The built-in schemas are defined using Zod, if you would like us to support other libraries like [valibot](https://valibot.dev){target="_blank"} please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=feature_request.yml){target="_blank"} and we will consider it based on the community's feedback.
 
-| Model name                                   | Description                                                                           |
-| -------------------------------------------- | ------------------------------------------------------------------------------------- |
-| **AlbSchema**                                | Lambda Event Source payload for Amazon Application Load Balancer                      |
-| **APIGatewayProxyEventSchema**               | Lambda Event Source payload for Amazon API Gateway                                    |
-| **APIGatewayRequestAuthorizerEventSchema**   | Lambda Event Source payload for Amazon API Gateway Request Authorizer                 |
-| **APIGatewayTokenAuthorizerEventSchema**     | Lambda Event Source payload for Amazon API Gateway Token Authorizer                   |
-| **APIGatewayProxyEventV2Schema**             | Lambda Event Source payload for Amazon API Gateway v2 payload                         |
-| **APIGatewayProxyWebsocketEventSchema**      | Lambda Event Source payload for Amazon API Gateway WebSocket events                   |
-| **APIGatewayRequestAuthorizerEventV2Schema** | Lambda Event Source payload for Amazon API Gateway v2 Authorizer                      |
-| **AppSyncResolverSchema**                    | Lambda Event Source payload for AWS AppSync GraphQL API resolver                      |
-| **AppSyncBatchResolverSchema**               | Lambda Event Source payload for AWS AppSync GraphQL API batch resolver                |
-| **AppSyncEventsPublishSchema**               | Lambda Event Source payload for AWS AppSync Events API `PUBLISH` operation            |
-| **AppSyncEventsSubscribeSchema**             | Lambda Event Source payload for AWS AppSync Events API `SUBSCRIBE` operation          |
-| **CloudFormationCustomResourceCreateSchema** | Lambda Event Source payload for AWS CloudFormation `CREATE` operation                 |
-| **CloudFormationCustomResourceUpdateSchema** | Lambda Event Source payload for AWS CloudFormation `UPDATE` operation                 |
-| **CloudFormationCustomResourceDeleteSchema** | Lambda Event Source payload for AWS CloudFormation `DELETE` operation                 |
-| **CloudwatchLogsSchema**                     | Lambda Event Source payload for Amazon CloudWatch Logs                                |
-| **PreSignupTriggerSchema**                   | Lambda Event Source payload for Amazon Cognito Pre Sign-up trigger                    |
-| **PostConfirmationTriggerSchema**            | Lambda Event Source payload for Amazon Cognito Post Confirmation trigger              |
-| **PreTokenGenerationTriggerSchema**          | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger           |
-| **CustomMessageTriggerSchema**               | Lambda Event Source payload for Amazon Cognito Custom Message trigger                 |
-| **MigrateUserTriggerSchema**                 | Lambda Event Source payload for Amazon Cognito User Migration trigger                 |
-| **CustomSMSTriggerSchema**                   | Lambda Event Source payload for Amazon Cognito Custom SMS trigger                     |
-| **CustomEmailTriggerSchema**                 | Lambda Event Source payload for Amazon Cognito Custom Email trigger                   |
-| **DefineAuthChallengeTriggerSchema**         | Lambda Event Source payload for Amazon Cognito Define Auth Challenge trigger          |
-| **CreateAuthChallengeTriggerSchema**         | Lambda Event Source payload for Amazon Cognito Create Auth Challenge trigger          |
-| **VerifyAuthChallengeResponseTriggerSchema** | Lambda Event Source payload for Amazon Cognito Verify Auth Challenge Response trigger |
-| **PreTokenGenerationTriggerSchemaV1**        | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v1        |
-| **PreTokenGenerationTriggerSchemaV2AndV3**   | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v2 and v3 |
-| **ConnectOutboundCampaignsSchema**           | Lambda Event Source payload for Amazon Connect Outbound Campaigns custom actions      |
-| **DynamoDBStreamSchema**                     | Lambda Event Source payload for Amazon DynamoDB Streams                               |
-| **EventBridgeSchema**                        | Lambda Event Source payload for Amazon EventBridge                                    |
-| **KafkaMskEventSchema**                      | Lambda Event Source payload for AWS MSK payload                                       |
-| **KafkaSelfManagedEventSchema**              | Lambda Event Source payload for self managed Kafka payload                            |
-| **KinesisDataStreamSchema**                  | Lambda Event Source payload for Amazon Kinesis Data Streams                           |
-| **KinesisFirehoseSchema**                    | Lambda Event Source payload for Amazon Kinesis Firehose                               |
-| **KinesisDynamoDBStreamSchema**              | Lambda Event Source payload for DynamodbStream record wrapped in Kinesis Data stream  |
-| **KinesisFirehoseSqsSchema**                 | Lambda Event Source payload for SQS messages wrapped in Kinesis Firehose records      |
-| **LambdaFunctionUrlSchema**                  | Lambda Event Source payload for Lambda Function URL payload                           |
-| **S3EventNotificationEventBridgeSchema**     | Lambda Event Source payload for Amazon S3 Event Notification to EventBridge.          |
-| **S3Schema**                                 | Lambda Event Source payload for Amazon S3                                             |
-| **S3ObjectLambdaEvent**                      | Lambda Event Source payload for Amazon S3 Object Lambda                               |
-| **S3SqsEventNotificationSchema**             | Lambda Event Source payload for S3 event notifications wrapped in SQS event (S3->SQS) |
-| **SesSchema**                                | Lambda Event Source payload for Amazon Simple Email Service                           |
-| **SnsSchema**                                | Lambda Event Source payload for Amazon Simple Notification Service                    |
-| **SqsSchema**                                | Lambda Event Source payload for Amazon SQS                                            |
-| **TransferFamilySchema**                     | Lambda Event Source payload for AWS Transfer Family events                            |
-| **VpcLatticeSchema**                         | Lambda Event Source payload for Amazon VPC Lattice                                    |
-| **VpcLatticeV2Schema**                       | Lambda Event Source payload for Amazon VPC Lattice v2 payload                         |
+| Model name                                      | Description                                                                                                           |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **AlbSchema**                                   | Lambda Event Source payload for Amazon Application Load Balancer                                                      |
+| **APIGatewayProxyEventSchema**                  | Lambda Event Source payload for Amazon API Gateway                                                                    |
+| **APIGatewayRequestAuthorizerEventSchema**      | Lambda Event Source payload for Amazon API Gateway Request Authorizer                                                 |
+| **APIGatewayTokenAuthorizerEventSchema**        | Lambda Event Source payload for Amazon API Gateway Token Authorizer                                                   |
+| **APIGatewayProxyEventV2Schema**                | Lambda Event Source payload for Amazon API Gateway v2 payload                                                         |
+| **APIGatewayProxyWebsocketEventSchema**         | Lambda Event Source payload for Amazon API Gateway WebSocket events                                                   |
+| **APIGatewayRequestAuthorizerEventV2Schema**    | Lambda Event Source payload for Amazon API Gateway v2 Authorizer                                                      |
+| **AppSyncResolverSchema**                       | Lambda Event Source payload for AWS AppSync GraphQL API resolver                                                      |
+| **AppSyncBatchResolverSchema**                  | Lambda Event Source payload for AWS AppSync GraphQL API batch resolver                                                |
+| **AppSyncEventsPublishSchema**                  | Lambda Event Source payload for AWS AppSync Events API `PUBLISH` operation                                            |
+| **AppSyncEventsSubscribeSchema**                | Lambda Event Source payload for AWS AppSync Events API `SUBSCRIBE` operation                                          |
+| **CloudFormationCustomResourceCreateSchema**    | Lambda Event Source payload for AWS CloudFormation `CREATE` operation                                                 |
+| **CloudFormationCustomResourceUpdateSchema**    | Lambda Event Source payload for AWS CloudFormation `UPDATE` operation                                                 |
+| **CloudFormationCustomResourceDeleteSchema**    | Lambda Event Source payload for AWS CloudFormation `DELETE` operation                                                 |
+| **CloudWatchLogsSchema**                        | Lambda Event Source payload for Amazon CloudWatch Logs                                                                |
+| **PreSignupTriggerSchema**                      | Lambda Event Source payload for Amazon Cognito Pre Sign-up trigger                                                    |
+| **PostConfirmationTriggerSchema**               | Lambda Event Source payload for Amazon Cognito Post Confirmation trigger                                              |
+| **CustomMessageTriggerSchema**                  | Lambda Event Source payload for Amazon Cognito Custom Message trigger                                                 |
+| **MigrateUserTriggerSchema**                    | Lambda Event Source payload for Amazon Cognito User Migration trigger                                                 |
+| **CustomSMSSenderTriggerSchema**                | Lambda Event Source payload for Amazon Cognito Custom SMS trigger                                                     |
+| **CustomEmailSenderTriggerSchema**              | Lambda Event Source payload for Amazon Cognito Custom Email trigger                                                   |
+| **DefineAuthChallengeTriggerSchema**            | Lambda Event Source payload for Amazon Cognito Define Auth Challenge trigger                                          |
+| **CreateAuthChallengeTriggerSchema**            | Lambda Event Source payload for Amazon Cognito Create Auth Challenge trigger                                          |
+| **VerifyAuthChallengeTriggerSchema**            | Lambda Event Source payload for Amazon Cognito Verify Auth Challenge Response trigger                                 |
+| **PreTokenGenerationTriggerSchemaV1**           | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v1                                        |
+| **PreTokenGenerationTriggerSchemaV2AndV3**      | Lambda Event Source payload for Amazon Cognito Pre Token Generation trigger v2 and v3                                 |
+| **ConnectOutboundCampaignsSchema**              | Lambda Event Source payload for Amazon Connect Outbound Campaigns custom actions                                      |
+| **DynamoDBStreamSchema**                        | Lambda Event Source payload for Amazon DynamoDB Streams                                                               |
+| **EventBridgeSchema**                           | Lambda Event Source payload for Amazon EventBridge                                                                    |
+| **EventBridgeWithMetadataSchema**               | Nonempty batch of EventBridge `WITH_METADATA` records containing standard EventBridge events.                         |
+| **EventBridgeWithMetadataRecordSchema**         | One EventBridge `WITH_METADATA` record, including single-object delivery with `MaxBatchSize: 1`.                      |
+| **EventBridgeWithMetadataSystemMetadataSchema** | EventBridge delivery metadata; requires `aws:DeliveryType` (`LIVE` or `REPLAY`) and keeps optional fields as strings. |
+| **KafkaMskEventSchema**                         | Lambda Event Source payload for AWS MSK payload                                                                       |
+| **KafkaSelfManagedEventSchema**                 | Lambda Event Source payload for self managed Kafka payload                                                            |
+| **KinesisDataStreamSchema**                     | Lambda Event Source payload for Amazon Kinesis Data Streams                                                           |
+| **KinesisFirehoseSchema**                       | Lambda Event Source payload for Amazon Kinesis Firehose                                                               |
+| **KinesisDynamoDBStreamSchema**                 | Lambda Event Source payload for DynamodbStream record wrapped in Kinesis Data stream                                  |
+| **KinesisFirehoseSqsSchema**                    | Lambda Event Source payload for SQS messages wrapped in Kinesis Firehose records                                      |
+| **LambdaFunctionUrlSchema**                     | Lambda Event Source payload for Lambda Function URL payload                                                           |
+| **S3EventNotificationEventBridgeSchema**        | Lambda Event Source payload for Amazon S3 Event Notification to EventBridge.                                          |
+| **S3Schema**                                    | Lambda Event Source payload for Amazon S3                                                                             |
+| **S3ObjectLambdaEventSchema**                   | Lambda Event Source payload for Amazon S3 Object Lambda                                                               |
+| **S3SqsEventNotificationSchema**                | Lambda Event Source payload for S3 event notifications wrapped in SQS event (S3->SQS)                                 |
+| **SesSchema**                                   | Lambda Event Source payload for Amazon Simple Email Service                                                           |
+| **SnsSchema**                                   | Lambda Event Source payload for Amazon Simple Notification Service                                                    |
+| **SqsSchema**                                   | Lambda Event Source payload for Amazon SQS                                                                            |
+| **TransferFamilySchema**                        | Lambda Event Source payload for AWS Transfer Family events                                                            |
+| **VpcLatticeSchema**                            | Lambda Event Source payload for Amazon VPC Lattice                                                                    |
+| **VpcLatticeV2Schema**                          | Lambda Event Source payload for Amazon VPC Lattice v2 payload                                                         |
 
 ### Extend built-in schemas
 
@@ -221,22 +223,23 @@ Parser comes with the following built-in Zod envelopes:
 !!! note "Looking for other libraries?"
     The built-in schemas are defined using Zod, if you would like us to support other libraries like [valibot](https://valibot.dev){target="_blank"} please [open an issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?template=feature_request.yml){target="_blank"} and we will consider it based on the community's feedback.
 
-| Envelope name                 | Behaviour                                                                                                                                                                                                     |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ApiGatewayEnvelope**        | 1. Parses data using `APIGatewayProxyEventSchema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                               |
-| **ApiGatewayV2Envelope**      | 1. Parses data using `APIGatewayProxyEventV2Schema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                             |
-| **CloudWatchEnvelope**        | 1. Parses data using `CloudwatchLogsSchema` which will base64 decode and decompress it. <br/> 2. Parses records in `message` key using your schema and return them in a list.                                 |
-| **DynamoDBStreamEnvelope**    | 1. Parses data using `DynamoDBStreamSchema`. <br/> 2. Parses records in `NewImage` and `OldImage` keys using your schema. <br/> 3. Returns a list with a dictionary containing `NewImage` and `OldImage` keys |
-| **EventBridgeEnvelope**       | 1. Parses data using `EventBridgeSchema`. <br/> 2. Parses `detail` key using your schema and returns it.                                                                                                      |
-| **KafkaEnvelope**             | 1. Parses data using `KafkaRecordSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                       |
-| **KinesisEnvelope**           | 1. Parses data using `KinesisDataStreamSchema` which will base64 decode it. <br/> 2. Parses records in `Records` key using your schema and returns them in a list.                                            |
-| **KinesisFirehoseEnvelope**   | 1. Parses data using `KinesisFirehoseSchema` which will base64 decode it. <br/> 2. Parses records in `Records` key using your schema and returns them in a list.                                              |
-| **LambdaFunctionUrlEnvelope** | 1. Parses data using `LambdaFunctionUrlSchema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                                  |
-| **SnsEnvelope**               | 1. Parses data using `SnsSchema`. <br/> 2. Parses records in `body` key using your schema and return them in a list.                                                                                          |
-| **SnsSqsEnvelope**            | 1. Parses data using `SqsSchema`. <br/> 2. Parses SNS records in `body` key using `SnsNotificationSchema`. <br/> 3. Parses data in `Message` key using your schema and return them in a list.                 |
-| **SqsEnvelope**               | 1. Parses data using `SqsSchema`. <br/> 2. Parses records in `body` key using your schema and return them in a list.                                                                                          |
-| **VpcLatticeEnvelope**        | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
-| **VpcLatticeV2Envelope**      | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
+| Envelope name                       | Behaviour                                                                                                                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ApiGatewayEnvelope**              | 1. Parses data using `APIGatewayProxyEventSchema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                               |
+| **ApiGatewayV2Envelope**            | 1. Parses data using `APIGatewayProxyEventV2Schema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                             |
+| **CloudWatchEnvelope**              | 1. Parses data using `CloudwatchLogsSchema` which will base64 decode and decompress it. <br/> 2. Parses records in `message` key using your schema and return them in a list.                                 |
+| **DynamoDBStreamEnvelope**          | 1. Parses data using `DynamoDBStreamSchema`. <br/> 2. Parses records in `NewImage` and `OldImage` keys using your schema. <br/> 3. Returns a list with a dictionary containing `NewImage` and `OldImage` keys |
+| **EventBridgeEnvelope**             | 1. Parses data using `EventBridgeSchema`. <br/> 2. Parses `detail` key using your schema and returns it.                                                                                                      |
+| **EventBridgeWithMetadataEnvelope** | 1. Validates a nonempty `WITH_METADATA` batch. <br/> 2. Parses each `Data.detail` using your schema and returns the results in input order.                                                                   |
+| **KafkaEnvelope**                   | 1. Parses data using `KafkaRecordSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                       |
+| **KinesisEnvelope**                 | 1. Parses data using `KinesisDataStreamSchema` which will base64 decode it. <br/> 2. Parses records in `Records` key using your schema and returns them in a list.                                            |
+| **KinesisFirehoseEnvelope**         | 1. Parses data using `KinesisFirehoseSchema` which will base64 decode it. <br/> 2. Parses records in `Records` key using your schema and returns them in a list.                                              |
+| **LambdaFunctionUrlEnvelope**       | 1. Parses data using `LambdaFunctionUrlSchema`. <br/> 2. Parses `body` key using your schema and returns it.                                                                                                  |
+| **SnsEnvelope**                     | 1. Parses data using `SnsSchema`. <br/> 2. Parses records in `body` key using your schema and return them in a list.                                                                                          |
+| **SnsSqsEnvelope**                  | 1. Parses data using `SqsSchema`. <br/> 2. Parses SNS records in `body` key using `SnsNotificationSchema`. <br/> 3. Parses data in `Message` key using your schema and return them in a list.                 |
+| **SqsEnvelope**                     | 1. Parses data using `SqsSchema`. <br/> 2. Parses records in `body` key using your schema and return them in a list.                                                                                          |
+| **VpcLatticeEnvelope**              | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
+| **VpcLatticeV2Envelope**            | 1. Parses data using `VpcLatticeSchema`. <br/> 2. Parses `value` key using your schema and returns it.                                                                                                        |
 
 ## Safe parsing
 

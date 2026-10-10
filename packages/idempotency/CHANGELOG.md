@@ -1,5 +1,19 @@
 # Change Log
 
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Improvements
+
+- make DynamoDB error check minification-resistant ([#5775](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5775)) ([991fb88](https://github.com/aws-powertools/powertools-lambda-typescript/commit/991fb8836ac18ff905b25603910fae6163646ffd))
+
+### Bug Fixes
+
+- pass cache SET options in the Valkey Glide shape ([#5737](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5737)) ([3015a43](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3015a439887159097d04bc8ae9a54e44dac3f534))
+- bind operations to their own key prefix on a shared store ([#5708](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5708)) ([006a472](https://github.com/aws-powertools/powertools-lambda-typescript/commit/006a4729fa291d31b5ca0979b39471a6213d57e4))
+- complete and delete the record acquired at operation start ([#5717](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5717)) ([daa6e7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/daa6e7cbeeaeffc95ae44aa5f8db5cc00339169c))
+- keep payload validation hash on cache record completion ([#5706](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5706)) ([c0dac7a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c0dac7a8ca8863484b54de16019af72fdbf18ffa))
+- retain cache locks without execution deadlines ([#5680](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5680)) ([504e1cd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/504e1cd9574aeba2585f311367b2c311ff5f7c38))
+- delete only acquired records in the Middy onError hook ([#5676](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5676)) ([9267cb3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9267cb3775d9bcc575ad03d4f2ef3a3f8dcc2d68))
 ## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
 
 **Note:** Version bump only for this package

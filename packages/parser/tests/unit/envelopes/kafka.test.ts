@@ -11,12 +11,81 @@ describe('Envelope: Kafka', () => {
   });
 
   describe('Method: parse', () => {
-    it('throws if the payload of the value does not match the schema', () => {
+    it('throws a ParseError if the payload of the value does not match the schema', () => {
       // Prepare
       const event = structuredClone(baseEvent);
 
       // Act & Assess
-      expect(() => KafkaEnvelope.parse(event, z.number())).toThrow();
+      expect(() => KafkaEnvelope.parse(event, z.number())).toThrow(
+        expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse Kafka record at index 0 of mytopic-0'
+          ),
+          cause: expect.objectContaining({
+            issues: [
+              expect.objectContaining({
+                code: 'invalid_type',
+                path: ['records', 'mytopic-0', 0, 'value'],
+              }),
+            ],
+          }),
+        })
+      );
+    });
+
+    it('throws a ParseError with the original error as cause when a transform throws', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      const cause = new SyntaxError('boom');
+      const throwingSchema = z.unknown().transform(() => {
+        throw cause;
+      });
+
+      // Act & Assess
+      expect(() => KafkaEnvelope.parse(event, throwingSchema)).toThrow(
+        expect.objectContaining({ name: 'ParseError', cause })
+      );
+    });
+
+    it('throws a ParseError if the event is not a valid Kafka event', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      // @ts-expect-error - Intentionally invalid event
+      event.records['mytopic-0'] = [];
+
+      // Act & Assess
+      expect(() => KafkaEnvelope.parse(event, z.string())).toThrow(
+        expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining('Failed to parse Kafka envelope'),
+          cause: expect.objectContaining({
+            issues: [
+              expect.objectContaining({
+                code: 'too_small',
+                path: ['records', 'mytopic-0'],
+              }),
+            ],
+          }),
+        })
+      );
+    });
+
+    it('throws a ParseError if the event source is unknown', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.eventSource = 'aws:sqs';
+
+      // Act & Assess
+      expect(() => KafkaEnvelope.parse(event, z.string())).toThrow(
+        expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining('Failed to parse Kafka envelope'),
+          cause: expect.objectContaining({
+            issues: [expect.objectContaining({ path: ['eventSource'] })],
+          }),
+        })
+      );
     });
 
     it('parses a Kafka event', () => {

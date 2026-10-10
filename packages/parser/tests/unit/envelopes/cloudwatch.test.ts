@@ -66,6 +66,29 @@ describe('Envelope: CloudWatch', () => {
   };
 
   describe('Method: parse', () => {
+    it('throws a ParseError if the event is not a valid CloudWatch Logs event', () => {
+      // Prepare
+      const event = { awslogs: { data: 'invalid' } };
+
+      // Act & Assess
+      expect(() => CloudWatchEnvelope.parse(event, z.string())).toThrow(
+        expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse CloudWatch Log envelope'
+          ),
+          cause: expect.objectContaining({
+            name: 'ZodError',
+            issues: [
+              expect.objectContaining({
+                path: ['awslogs', 'data'],
+              }),
+            ],
+          }),
+        })
+      );
+    });
+
     it('throws a ParseError with the original error as cause when a transform throws', () => {
       // Prepare
       const event = structuredClone(baseEvent);

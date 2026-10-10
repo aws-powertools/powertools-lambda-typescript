@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { EventBridgeEnvelope } from '../../src/envelopes/eventbridge.js';
 import { EventBridgeWithMetadataEnvelope } from '../../src/envelopes/eventbridge-with-metadata.js';
+import { SnsEnvelope } from '../../src/envelopes/sns.js';
 import { SqsEnvelope } from '../../src/envelopes/sqs.js';
 import { ParseError } from '../../src/errors.js';
 import { parser } from '../../src/middleware/index.js';
@@ -251,6 +252,28 @@ describe('Middleware: parser', () => {
     expect(result).toEqual({
       errorHandled: true,
       message: expect.any(String),
+    });
+  });
+
+  it('calls the errorHandler when the envelope fails to parse', async () => {
+    // Act
+    const result = await middy()
+      .use(
+        parser({
+          schema: z.string(),
+          envelope: SnsEnvelope,
+          errorHandler: (error) => ({
+            errorHandled: true,
+            message: error.message,
+          }),
+        })
+      )
+      .handler((event) => event)({ Records: [] } as never, {} as Context);
+
+    // Assess
+    expect(result).toEqual({
+      errorHandled: true,
+      message: expect.stringContaining('Failed to parse SNS envelope'),
     });
   });
 

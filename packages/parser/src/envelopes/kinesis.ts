@@ -2,7 +2,7 @@ import { ZodError, type ZodType, type z } from 'zod';
 import { ParseError } from '../errors.js';
 import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator, prefixIssuePaths } from './envelope.js';
+import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
 
 /**
  * Kinesis Data Stream Envelope to extract array of Records
@@ -21,34 +21,20 @@ export const KinesisEnvelope = {
    */
   [envelopeDiscriminator]: 'array' as const,
   parse<T>(data: unknown, schema: ZodType<T>): T[] {
-    let parsedEnvelope: z.infer<typeof KinesisDataStreamSchema>;
-    try {
-      parsedEnvelope = KinesisDataStreamSchema.parse(data);
-    } catch (error) {
-      throw new ParseError('Failed to parse Kinesis Data Stream envelope', {
-        cause: error as Error,
-      });
-    }
+    const parsedEnvelope = parseOrThrow(
+      KinesisDataStreamSchema,
+      data,
+      'Failed to parse Kinesis Data Stream envelope'
+    );
 
-    return parsedEnvelope.Records.map((record, recordIndex) => {
-      let parsedRecord: T;
-      try {
-        parsedRecord = schema.parse(record.kinesis.data);
-      } catch (error) {
-        throw new ParseError(
-          `Failed to parse Kinesis Data Stream record at index ${recordIndex}`,
-          {
-            cause: prefixIssuePaths(error, [
-              'Records',
-              recordIndex,
-              'kinesis',
-              'data',
-            ]),
-          }
-        );
-      }
-      return parsedRecord;
-    });
+    return parsedEnvelope.Records.map((record, recordIndex) =>
+      parseOrThrow(
+        schema,
+        record.kinesis.data,
+        `Failed to parse Kinesis Data Stream record at index ${recordIndex}`,
+        ['Records', recordIndex, 'kinesis', 'data']
+      )
+    );
   },
 
   safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T[]> {

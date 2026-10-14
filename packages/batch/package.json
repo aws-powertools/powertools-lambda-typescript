@@ -92,6 +92,6 @@
     "@aws-lambda-powertools/testing-utils": "file:../testing",
     "@aws-sdk/client-sqs": "^3.1146.0",
     "@aws/lambda-invoke-store": "0.3.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.6"
   }
 }

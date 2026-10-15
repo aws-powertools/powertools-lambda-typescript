@@ -47,7 +47,7 @@
     "@redis/client": "^6.3.0",
     "@valkey/valkey-glide": "^2.5.3",
     "aws-sdk-client-mock": "^4.1.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.6"
   },
   "dependencies": {
     "arktype": "^2.2.7",

@@ -54,7 +54,7 @@
   "peerDependencies": {
     "arktype": "^2.2.7",
     "avro-js": "^1.12.1",
-    "protobufjs": "^8.8.0",
+    "protobufjs": "^8.8.1",
     "valibot": "^1.5.0",
     "zod": "^3.25.0 || ^4.0.0"
   },
@@ -125,7 +125,7 @@
   },
   "devDependencies": {
     "avro-js": "^1.12.1",
-    "protobufjs": "^8.8.0",
+    "protobufjs": "^8.8.1",
     "zod": "^4.6.5"
   }
 }

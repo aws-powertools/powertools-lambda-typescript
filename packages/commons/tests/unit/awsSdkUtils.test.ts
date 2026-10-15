@@ -150,6 +150,44 @@ describe('Helpers: awsSdk', () => {
       // Assess
       expect(process.env.AWS_SDK_UA_APP_ID).toEqual(existing);
     });
+
+    it.each([
+      { case: 'unset', appId: undefined },
+      { case: 'set', appId: 'MyApplication-2.2.0' },
+    ])(
+      'leaves the AWS_SDK_UA_APP_ID untouched when POWERTOOLS_SDK_UA_APP_ID_DISABLED is true and the app ID is $case',
+      async ({ appId }) => {
+        // Prepare
+        vi.stubEnv('AWS_SDK_UA_APP_ID', appId);
+        vi.stubEnv('POWERTOOLS_SDK_UA_APP_ID_DISABLED', 'true');
+
+        // Act
+        await import('../../src/index.js');
+
+        // Assess
+        expect(process.env.AWS_SDK_UA_APP_ID).toEqual(appId);
+      }
+    );
+
+    it.each([
+      { case: 'false', value: 'false' },
+      { case: 'invalid', value: 'not-a-boolean' },
+    ])(
+      'concatenates the PT AWS_SDK_UA_APP_ID when POWERTOOLS_SDK_UA_APP_ID_DISABLED is $case',
+      async ({ value }) => {
+        // Prepare
+        vi.stubEnv('AWS_SDK_UA_APP_ID', 'test');
+        vi.stubEnv('POWERTOOLS_SDK_UA_APP_ID_DISABLED', value);
+
+        // Act
+        await import('../../src/index.js');
+
+        // Assess
+        expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+          `test/PT/NO-OP/${version}/PTEnv/NA`
+        );
+      }
+    );
   });
 
   describe('Function: customUserAgentMiddleware', () => {

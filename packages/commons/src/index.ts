@@ -1,7 +1,31 @@
+import { POWERTOOLS_SDK_UA_APP_ID_DISABLED_ENV_VAR } from './constants.js';
+import { getBooleanFromEnv } from './envUtils.js';
 import { PT_VERSION } from './version.js';
 
+/**
+ * Checks whether the `POWERTOOLS_SDK_UA_APP_ID_DISABLED` environment variable opts out of adding the Powertools marker to `AWS_SDK_UA_APP_ID`.
+ *
+ * Invalid values are treated as `false`, since this runs at module load and must never throw.
+ *
+ * @internal
+ */
+const isSdkUaAppIdDisabled = (): boolean => {
+  try {
+    return getBooleanFromEnv({
+      key: POWERTOOLS_SDK_UA_APP_ID_DISABLED_ENV_VAR,
+      defaultValue: false,
+      extendedParsing: true,
+    });
+  } catch {
+    return false;
+  }
+};
+
 const env = process.env.AWS_EXECUTION_ENV || 'NA';
-if (!process.env.AWS_SDK_UA_APP_ID?.includes('/PTEnv/')) {
+if (
+  !isSdkUaAppIdDisabled() &&
+  !process.env.AWS_SDK_UA_APP_ID?.includes('/PTEnv/')
+) {
   const ptUserAgent = `PT/NO-OP/${PT_VERSION}/PTEnv/${env}`;
   process.env.AWS_SDK_UA_APP_ID = process.env.AWS_SDK_UA_APP_ID
     ? `${process.env.AWS_SDK_UA_APP_ID}/${ptUserAgent}`

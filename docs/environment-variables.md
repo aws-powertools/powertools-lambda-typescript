@@ -27,6 +27,7 @@ You can configure Powertools for AWS Lambda using environment variables. This is
 | **POWERTOOLS_PARAMETERS_MAX_AGE**            | Adjust how long values are kept in cache (in seconds)                                    | [Parameters](features/parameters.md)   | `5`                                                   |
 | **POWERTOOLS_PARAMETERS_SSM_DECRYPT**        | Set whether to decrypt or not values retrieved from AWS Systems Manager Parameters Store | [Parameters](features/parameters.md)   | `false`                                               |
 | **POWERTOOLS_IDEMPOTENCY_DISABLED**          | Disable the Idempotency logic without changing your code, useful for testing             | [Idempotency](features/idempotency.md) | `false`                                               |
+| **POWERTOOLS_SDK_UA_APP_ID_DISABLED**        | Stop Powertools from appending its marker to `AWS_SDK_UA_APP_ID`                         | All                                    | `false`                                               |
 
 Each Utility page provides information on example values and allowed values.
 

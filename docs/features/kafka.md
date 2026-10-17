@@ -58,7 +58,7 @@ Depending on the schema types you want to use, install the library and the corre
 
 === "Avro"
 	```bash
-	npm install @aws-lambda-powertools/kafka avro-js
+	npm install @aws-lambda-powertools/kafka avsc
 	```
 
 === "Protobuf"
@@ -66,7 +66,7 @@ Depending on the schema types you want to use, install the library and the corre
 	npm install @aws-lambda-powertools/kafka protobufjs
 	```
 
-`avro-js` and `protobufjs` are declared as optional peer dependencies (`avro-js@^1.12.1`, `protobufjs@^8.7.2`).
+`avsc` and `protobufjs` are declared as optional peer dependencies (`avsc@^5.7.9`, `protobufjs@^8.7.2`).
 They are only imported when you configure an Avro or Protobuf schema, so a JSON-only consumer bundles without them installed.
 If you already have one of these installed at an incompatible version you may see a peer-dependency warning; align it with the supported range to clear it.
 
@@ -219,7 +219,7 @@ The Kafka consumer utility supports multiple serialization formats to match your
     | **Processing Speed**          | Slower   | Fast                 | Fastest                 |
     | **Human Readability**         | High     | Low                  | Low                     |
     | **Implementation Complexity** | Low      | Medium               | Medium                  |
-    | **Additional Dependencies**   | None     | `avro-js` module     | `protobufjs` module     |
+    | **Additional Dependencies**   | None     | `avsc` module        | `protobufjs` module     |
 
 Choose the serialization format that best fits your needs:
 

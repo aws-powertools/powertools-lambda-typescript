@@ -4,11 +4,11 @@ import type { AvroDeserializer } from '../types/types.js';
 let deserializer: AvroDeserializer | undefined;
 
 /**
- * Create an Avro deserializer, importing `avro-js` on first use.
+ * Create an Avro deserializer, importing `avsc` on first use.
  *
- * The `avro-js` dependency is only required when deserializing Avro messages,
+ * The `avsc` dependency is only required when deserializing Avro messages,
  * so it's resolved at runtime through a non-literal specifier. This keeps
- * bundlers (e.g. esbuild) from eagerly including `avro-js` - and failing when
+ * bundlers (e.g. esbuild) from eagerly including `avsc` - and failing when
  * it isn't installed - in builds that never use Avro.
  */
 const createDeserializer = async (): Promise<AvroDeserializer> => {
@@ -16,8 +16,10 @@ const createDeserializer = async (): Promise<AvroDeserializer> => {
     return deserializer;
   }
 
-  const moduleName = 'avro-js';
-  const { default: avro }: typeof import('avro-js') = await import(moduleName);
+  const moduleName = 'avsc';
+  const { default: avro }: { default: typeof import('avsc') } = await import(
+    moduleName
+  );
 
   /**
    * Deserialize an Avro message from a base64-encoded string using the provided Avro schema.

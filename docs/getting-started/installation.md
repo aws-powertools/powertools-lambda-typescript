@@ -32,4 +32,4 @@ Some features use additional dependencies like the AWS SDK for JavaScript v3, wh
 | **[Parser](../features/parser.md)**                           | **`npm i @aws-lambda-powertools/parser zod`**{.copyMe}                                                 |                     |
 | **[Validation](../features/validation.md)**                   | **`npm i @aws-lambda-powertools/validation`**{.copyMe}                                                 | `ajv`               |
 | **[Kafka (Protocol Buffers)](../features/kafka.md)**          | **`npm i @aws-lambda-powertools/kafka protobufjs`**{.copyMe}                                           |                     |
-| **[Kafka (Avro)](../features/kafka.md)**                      | **`npm i @aws-lambda-powertools/kafka avro-js`**{.copyMe}                                              |                     |
+| **[Kafka (Avro)](../features/kafka.md)**                      | **`npm i @aws-lambda-powertools/kafka avsc`**{.copyMe}                                                 |                     |

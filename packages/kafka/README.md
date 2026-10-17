@@ -21,7 +21,7 @@ npm install @aws-lambda-powertools/kafka
 For Avro schemas:
 
 ```bash
-npm install @aws-lambda-powertools/kafka avro-js
+npm install @aws-lambda-powertools/kafka avsc
 ```
 
 For Protobuf schemas:

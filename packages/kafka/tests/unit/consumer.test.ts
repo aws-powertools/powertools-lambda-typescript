@@ -90,6 +90,42 @@ describe('Kafka consumer', () => {
     );
   });
 
+  it('deserializes avro key and value in Confluent wire format', async () => {
+    // Prepare
+    const event = structuredClone(avroTestEvent);
+    event.records['mytopic-0'][0].key = 'AAAAAAFU';
+    event.records['mytopic-0'][0].value = 'AAAAAAHSDwxMYXB0b3BSuB6F6z+PQA==';
+    const handler = kafkaConsumer(async (event) => event, {
+      value: {
+        type: 'avro',
+        schema: `{
+          "type": "record",
+          "name": "Product",
+          "fields": [
+            { "name": "id", "type": "int" },
+            { "name": "name", "type": "string" },
+            { "name": "price", "type": "double" }
+          ]
+        }`,
+        wireFormat: 'confluent',
+      },
+      key: { type: 'avro', schema: '"int"', wireFormat: 'confluent' },
+    });
+
+    // Act
+    const result = (await handler(event, context)) as ConsumerRecords;
+
+    // Assess
+    expect(result.records[0]).toEqual(
+      expect.objectContaining({
+        key: 42,
+        value: { id: 1001, name: 'Laptop', price: 999.99 },
+        originalKey: 'AAAAAAFU',
+        originalValue: 'AAAAAAHSDwxMYXB0b3BSuB6F6z+PQA==',
+      })
+    );
+  });
+
   it('deserializes protobuf message', async () => {
     // Prepare
     const event = structuredClone(protobufTestEvent);

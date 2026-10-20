@@ -259,6 +259,20 @@ For debugging purposes, you can also access the original key, value, and headers
 | `valueSchemaMetadata` | Metadata about the value schema like `schemaId` and `dataFormat` | Used by `kafkaConsumer` to process Protobuf, data format validation |
 | `keySchemaMetadata`   | Metadata about the key schema like `schemaId` and `dataFormat`   | Used by `kafkaConsumer` to process Protobuf, data format validation |
 
+### Avro messages with Confluent wire format
+
+When your Event Source Mapping has no Schema Registry integration and the producer used a Confluent Schema Registry serializer, Lambda delivers the raw payload, which starts with a 5-byte header: a magic byte (`0x00`) followed by a 4-byte schema ID.
+Set `wireFormat: 'confluent'` on the Avro `key` or `value` configuration to strip this header before decoding with the schema you provide.
+
+???+ warning "Opt-in only"
+    Powertools for AWS does not detect the header automatically, because a valid raw Avro message can also start with `0x00`. Leave `wireFormat` unset when your Event Source Mapping uses Schema Registry integration, as Lambda already removes the header.
+
+=== "Confluent wire format"
+
+    ```typescript hl_lines="12"
+    --8<-- "examples/snippets/kafka/advancedWorkingWithConfluentWireFormat.ts"
+    ```
+
 ### Additional Parsing
 
 You can parse deserialized data using your preferred parsing library. This can help you integrate Kafka data with your domain schemas and application architecture, providing type hints, runtime parsing and validation, and advanced data transformations.

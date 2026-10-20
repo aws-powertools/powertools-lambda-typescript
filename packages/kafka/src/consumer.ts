@@ -93,7 +93,7 @@ const deserialize = ({
         'Schema string is required for avro deserialization'
       );
     }
-    return deserializer(value, config.schema);
+    return deserializer(value, config.schema, config.wireFormat);
   }
   /* v8 ignore else -- @preserve */
   if (config.type === 'protobuf') {

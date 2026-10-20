@@ -1,7 +1,39 @@
 import { KafkaConsumerDeserializationError } from '../errors.js';
 import type { AvroDeserializer } from '../types/types.js';
 
+const CONFLUENT_HEADER_SIZE = 5;
+const CONFLUENT_MAGIC_BYTE = 0x00;
+
 let deserializer: AvroDeserializer | undefined;
+
+/**
+ * Strip the Confluent wire format header (magic byte and 4-byte schema ID) from an Avro payload.
+ *
+ * @param buffer - The decoded Avro payload.
+ * @param wireFormat - The wire format of the payload. If not provided, the payload is returned as is.
+ */
+const stripWireFormatHeader = (buffer: Buffer, wireFormat?: string) => {
+  if (wireFormat === undefined) {
+    return buffer;
+  }
+  // Guards untyped (plain JavaScript) callers
+  if (wireFormat !== 'confluent') {
+    throw new KafkaConsumerDeserializationError(
+      `Unsupported Avro wire format: ${wireFormat}`
+    );
+  }
+  if (buffer.length < CONFLUENT_HEADER_SIZE) {
+    throw new KafkaConsumerDeserializationError(
+      'Invalid Confluent wire format: payload must contain a 5-byte header'
+    );
+  }
+  if (buffer[0] !== CONFLUENT_MAGIC_BYTE) {
+    throw new KafkaConsumerDeserializationError(
+      'Invalid Confluent wire format: expected magic byte 0x00'
+    );
+  }
+  return buffer.subarray(CONFLUENT_HEADER_SIZE);
+};
 
 /**
  * Create an Avro deserializer, importing `avro-js` on first use.
@@ -24,11 +56,15 @@ const createDeserializer = async (): Promise<AvroDeserializer> => {
    *
    * @param data - The base64-encoded string representing the Avro binary data.
    * @param schema - The Avro schema as a JSON string.
+   * @param wireFormat - The wire format of the payload. If `confluent`, the 5-byte header is stripped.
    */
-  deserializer = (data: string, schema: string) => {
+  deserializer = (data: string, schema: string, wireFormat) => {
+    const buffer = stripWireFormatHeader(
+      Buffer.from(data, 'base64'),
+      wireFormat
+    );
     try {
       const type = avro.parse(schema);
-      const buffer = Buffer.from(data, 'base64');
       return type.fromBuffer(buffer);
     } catch (error) {
       throw new KafkaConsumerDeserializationError(

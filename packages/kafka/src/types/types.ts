@@ -121,6 +121,10 @@ type AvroConfig = {
    */
   schema: string;
   /**
+   * Optional wire format of the payload; `confluent` strips the 5-byte Confluent header before decoding.
+   */
+  wireFormat?: 'confluent';
+  /**
    * Optional {@link https://github.com/standard-schema/standard-schema | Standard Schema} for runtime validation
    */
   parserSchema?: StandardSchemaV1;
@@ -248,10 +252,14 @@ type ProtobufMessage<T = unknown> = {
 type Deserializer = (
   input: string | null,
   schema?: unknown,
-  schemaMetadata?: SchemaMetadata
+  options?: SchemaMetadata | AvroConfig['wireFormat']
 ) => unknown;
 
-type AvroDeserializer = (data: string, schema: string) => unknown;
+type AvroDeserializer = (
+  data: string,
+  schema: string,
+  wireFormat?: AvroConfig['wireFormat']
+) => unknown;
 
 type ProtobufDeserializer = <T>(
   data: string,

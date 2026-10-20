@@ -1515,6 +1515,18 @@ describe('Functions tests', () => {
       expression: 'not_null(all, expressions, are_null)',
       expected: null,
     },
+    {
+      expression: 'not_null(unknown_key, zero, str)',
+      expected: 0,
+    },
+    {
+      expression: 'not_null(unknown_key, "false", str)',
+      expected: false,
+    },
+    {
+      expression: 'not_null(unknown_key, `""`, str)',
+      expected: '',
+    },
   ])('should support the not_null() function', ({ expression, expected }) => {
     // Prepare
     const data = {
@@ -2222,6 +2234,10 @@ describe('Functions tests', () => {
       expression: 'map(&foo, empty)',
       expected: [],
     },
+    {
+      expression: 'map(&value, falsy)',
+      expected: [0, false, '', null],
+    },
   ])('should support map() special cases', ({ expression, expected }) => {
     // Prepare
     const data = {
@@ -2270,6 +2286,7 @@ describe('Functions tests', () => {
         },
       ],
       empty: [],
+      falsy: [{ value: 0 }, { value: false }, { value: '' }, {}],
     };
 
     // Act

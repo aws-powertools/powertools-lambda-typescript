@@ -177,7 +177,7 @@ class Functions {
     args: JSONArray
   ): JSONArray | Array<unknown> {
     return args.map((arg: JSONObjectType) => {
-      return expression.visit(arg) || null;
+      return expression.visit(arg) ?? null;
     });
   }
 
@@ -340,7 +340,7 @@ class Functions {
     variadic: true,
   })
   public funcNotNull(...args: Array<JSONValue>): JSONValue | null {
-    return args.find((arg) => !Object.is(arg, null)) || null;
+    return args.find((arg) => !Object.is(arg, null)) ?? null;
   }
 
   /**

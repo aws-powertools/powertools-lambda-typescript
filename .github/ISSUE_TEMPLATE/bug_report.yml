@@ -1,0 +1,97 @@
+name: Bug report
+description: Report a reproducible bug to help us improve
+title: "Bug: <TITLE>"
+labels: ["triage"]
+type: Bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting a bug report. Before you start, make sure that [the bug hasn't been reported already](https://github.com/aws-powertools/powertools-lambda-typescript/issues).
+        
+        Please add as much information as possible to help us reproduce, and remove any potential sensitive data.
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: Please share details on the behavior you expected
+    validations:
+      required: true
+  - type: textarea
+    id: current_behavior
+    attributes:
+      label: Current Behavior
+      description: Please share details on the current issue
+    validations:
+      required: true
+  - type: textarea
+    id: code_snippet
+    attributes:
+      label: Code snippet
+      description: Please share a code snippet to help us reproduce the issue
+      placeholder: |
+        ```typescript
+        some code here
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Please share how we might be able to reproduce this issue
+      placeholder: |
+        1. In this environment...
+        2. With this config...
+        3. Run '...'
+        4. See error...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Possible Solution
+      description: If known, please suggest a potential resolution
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Powertools for AWS Lambda (TypeScript) version
+      placeholder: "latest, 2.1.0"
+      value: latest
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: AWS Lambda function runtime
+      options:
+        - 24.x
+        - 22.x
+    validations:
+      required: true
+  - type: dropdown
+    id: packaging
+    attributes:
+      label: Packaging format used
+      options:
+        - npm
+        - Lambda Layers
+      multiple: true
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Execution logs
+      description: If available, please share some logs making sure to remove any sensitive data
+      render: Shell
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        **Disclaimer**: After creating an issue, please wait until it is triaged and confirmed by a maintainer before implementing it. This will reduce amount of rework and the chance that a pull request gets rejected.

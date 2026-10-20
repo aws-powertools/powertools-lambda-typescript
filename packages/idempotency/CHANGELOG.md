@@ -1,0 +1,339 @@
+# Change Log
+
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Improvements
+
+- make DynamoDB error check minification-resistant ([#5775](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5775)) ([991fb88](https://github.com/aws-powertools/powertools-lambda-typescript/commit/991fb8836ac18ff905b25603910fae6163646ffd))
+
+### Bug Fixes
+
+- pass cache SET options in the Valkey Glide shape ([#5737](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5737)) ([3015a43](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3015a439887159097d04bc8ae9a54e44dac3f534))
+- bind operations to their own key prefix on a shared store ([#5708](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5708)) ([006a472](https://github.com/aws-powertools/powertools-lambda-typescript/commit/006a4729fa291d31b5ca0979b39471a6213d57e4))
+- complete and delete the record acquired at operation start ([#5717](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5717)) ([daa6e7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/daa6e7cbeeaeffc95ae44aa5f8db5cc00339169c))
+- keep payload validation hash on cache record completion ([#5706](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5706)) ([c0dac7a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c0dac7a8ca8863484b54de16019af72fdbf18ffa))
+- retain cache locks without execution deadlines ([#5680](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5680)) ([504e1cd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/504e1cd9574aeba2585f311367b2c311ff5f7c38))
+- delete only acquired records in the Middy onError hook ([#5676](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5676)) ([9267cb3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9267cb3775d9bcc575ad03d4f2ef3a3f8dcc2d68))
+## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
+
+**Note:** Version bump only for this package
+
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Bug Fixes
+
+- recompute key prefix from base on each configure call ([#5442](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5442)) ([a739c36](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a739c3673f06847643cfdc8926ba7c7b9ae0b30c))
+
+### Features
+
+- warn when persistence layer reconfiguration is ignored ([#5422](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5422)) ([6a113b1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6a113b1cad95ff8f7b5338c312c88fa66fd1feb2))
+
+### Maintenance
+
+- bump @aws/durable-execution-sdk-js to ^1.1.6 ([#5298](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5298)) ([dbc07c7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dbc07c71d8e5eedb263b8938856c1fb1b28bf4a1))
+## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
+
+**Note:** Version bump only for this package
+
+## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
+
+**Note:** Version bump only for this package
+
+## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
+
+**Note:** Version bump only for this package
+
+## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
+
+**Note:** Version bump only for this package
+
+## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
+
+**Note:** Version bump only for this package
+
+## [2.30.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.0...v2.30.1) (2026-01-06)
+
+**Note:** Version bump only for this package
+
+## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
+
+### Bug Fixes
+
+- Update durableExecutionMode string ([#4837](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4837)) ([919c26d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/919c26dc8a09a3ce2af42e6d68728710e21afd38))
+
+### Features
+
+- Allow durable function to replay ([#4834](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4834)) ([4dc0798](https://github.com/aws-powertools/powertools-lambda-typescript/commit/4dc079824b57a3f6f4577e03905e3a02d055f009))
+## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
+
+**Note:** Version bump only for this package
+
+## [2.28.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.0...v2.28.1) (2025-10-23)
+
+**Note:** Version bump only for this package
+
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+### Bug Fixes
+
+- add null check for idempotencyHandler before calling handleMiddyOnError ([#4643](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4643)) ([5dab224](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5dab224fa5a341ff6e00b819690090594dbcd811))
+## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
+
+**Note:** Version bump only for this package
+
+## [2.26.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.0...v2.26.1) (2025-09-15)
+
+**Note:** Version bump only for this package
+
+## [2.26.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.2...v2.26.0) (2025-09-11)
+
+**Note:** Version bump only for this package
+
+## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
+
+**Note:** Version bump only for this package
+
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+### Improvements
+
+- Prevent error when AWS_LAMBDA_FUNCTION_NAME is not passed in the Idempotency Persistence Layer ([#4327](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4327)) ([17845d0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/17845d0de45508388100aefdbe42d1e0d9a02522))
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
+
+### Improvements
+
+- fix code quality issues ([#4298](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4298)) ([1fc8604](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1fc86041f773bcaa1ea836b782d6b688d1e3636c))
+## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
+
+**Note:** Version bump only for this package
+
+## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
+
+**Note:** Version bump only for this package
+
+# [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.22.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.21.0...v2.22.0) (2025-06-20)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.21.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.20.0...v2.21.0) (2025-06-03)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.20.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.1...v2.20.0) (2025-05-20)
+
+### Features
+
+* **idempotency:** support for Valkey- and Redis OSS-compatible cache  ([#3896](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3896)) ([3352b90](https://github.com/aws-powertools/powertools-lambda-typescript/commit/3352b909cf06f435fe876adba8f2c9f6e5ba11b0))
+
+## [2.19.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.0...v2.19.1) (2025-05-05)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.19.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.18.0...v2.19.0) (2025-04-24)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.17.0...v2.18.0) (2025-04-07)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.16.0...v2.17.0) (2025-03-25)
+
+### Bug Fixes
+
+* **idempotency:** include sk in error msgs when using composite key ([#3709](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3709)) ([661f5ff](https://github.com/aws-powertools/powertools-lambda-typescript/commit/661f5ff7f3f3805e24f515892e98430dccebf979))
+
+# [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
+
+### Features
+
+* **idempotency:** add support for custom key prefix ([#3532](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3532)) ([7be7a83](https://github.com/aws-powertools/powertools-lambda-typescript/commit/7be7a83a07e86927221ba34ec1dbae7e73cf6e32))
+
+# [2.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.1...v2.14.0) (2025-02-10)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+## [2.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.0...v2.13.1) (2025-01-28)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.12.0...v2.13.0) (2025-01-14)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.12.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.11.0...v2.12.0) (2024-12-17)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.10.0...v2.11.0) (2024-11-20)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.9.0...v2.10.0) (2024-10-22)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.9.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.8.0...v2.9.0) (2024-10-07)
+
+### Features
+
+* **idempotency:** ability to specify JMESPath custom functions ([#3150](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3150)) ([869b6fc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/869b6fced659ad820ffe79a0b905022061570974))
+* **idempotency:** manipulate idempotent response via response hook ([#3071](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3071)) ([f7c1769](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f7c176901a36698f591d897c2abde54cf30c9ea9))
+
+# [2.8.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.7.0...v2.8.0) (2024-09-16)
+
+### Bug Fixes
+
+* **idempotency:** include cause in idempotency persistence layer error ([#2916](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2916)) ([47f0161](https://github.com/aws-powertools/powertools-lambda-typescript/commit/47f016188e5d36611c10466a4755d1228a6e14e1))
+
+# [2.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.6.0...v2.7.0) (2024-08-08)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.5.0...v2.6.0) (2024-07-25)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.4.0...v2.5.0) (2024-07-15)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.3.0...v2.4.0) (2024-07-10)
+
+### Bug Fixes
+
+* **idempotency:** check error identity via names ([#2747](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2747)) ([55c3878](https://github.com/aws-powertools/powertools-lambda-typescript/commit/55c387816baee98829441526a0de001044d67344))
+
+### Features
+
+* **internal:** support Middy.js 5.x ([#2748](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2748)) ([1d7ad61](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1d7ad61a569a4b1421dbe1754b0179f676cfede7))
+* **maintenance:** drop support for Node.js 16.x ([#2717](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2717)) ([e4eee73](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e4eee73770ffccead9212a566335ec256a31af7d))
+
+# [2.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.2.0...v2.3.0) (2024-06-27)
+
+### Bug Fixes
+
+* **idempotency:** preserve scope of decorated class ([#2693](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2693)) ([22ec1f0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/22ec1f005ae334577a2ee878a454527ad16a56d9))
+
+# [2.2.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.1...v2.2.0) (2024-06-13)
+
+### Bug Fixes
+
+* **idempotency:** deep sort payload during hashing ([#2570](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2570)) ([6765f35](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6765f35e98e2d8267d2672c12ba387a9af62a4b5))
+
+## [2.1.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.0...v2.1.1) (2024-05-14)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.1.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.0.4...v2.1.0) (2024-04-17)
+
+### Features
+
+* **idempotency:** add custom JMESPath functions ([#2364](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2364)) ([9721e7c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/9721e7c01fc010944eb477bdbc24b9e06a5c4571))
+
+## 2.0.4 (2024-04-10)
+
+### Bug Fixes
+
+**idempotency:** return correct value from in-memory cache ([#2309](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2309)) ([5b4c103](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b908aa1111d332fcf3638a77f24a545b85b4c103))
+
+## 2.0.3 (2024-03-15)
+
+**fix:** transform private class fields ([#2230](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2230)) ([aa6e6e0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/aa6e6e0c25bbc93151cc5cddc584400575604f05))
+
+## 2.0.2 (2024-03-05)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+## 2.0.1 (2024-03-04)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [2.0.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.18.1...v2.0.0) (2024-03-04)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+## 1.18.1 (2024-02-20)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+## [1.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.17.0...v1.18.0) (2024-01-26)
+
+### Features
+
+* **idempotency:** leverage new DynamoDB failed conditional writes ([#1779](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1779)) ([1917ec6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/1917ec6b48df17de3126a1b8b1d008295e60f4ef))
+
+## [1.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.16.0...v1.17.0) (2023-11-24)
+
+**maintenance:** drop support for Node.js 14 ([#1664](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1664)) ([e2a0923](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e2a09232f86167b5208be2daf892aa1ea433ce0f))
+
+# [1.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.15.0...v1.16.0) (2023-11-16)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [1.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.2...v1.15.0) (2023-11-14)
+
+### Features
+
+* **maintenance:** add support for nodejs20.x runtime ([#1790](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1790)) ([6b9b1bc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6b9b1bcb9baf4b3d8e0e5ec6709594aca09bb033))
+
+## [1.14.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.1...v1.14.2) (2023-11-03)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+## [1.14.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.0...v1.14.1) (2023-10-31)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [1.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.13.1...v1.14.0) (2023-09-29)
+
+### Features
+
+* **idempotency:** add idempotency decorator ([#1723](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1723)) ([d138673](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d138673a33ff31f40b225dc046b2ff8258d0a97d))
+* **layers:** add `arm64` to integration test matrix ([#1720](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1720)) ([61ad5ac](https://github.com/aws-powertools/powertools-lambda-typescript/commit/61ad5ac3bcf7742684aeec28553ec294696f3301))
+
+## [1.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.13.0...v1.13.1) (2023-09-21)
+
+### Bug Fixes
+
+* **maintenance:** remove upper peer dependency Middy ([#1705](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1705)) ([df21ec8](https://github.com/aws-powertools/powertools-lambda-typescript/commit/df21ec8761b1be511c13c28fedd41bf0e2851061))
+
+# [1.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.12.1...v1.13.0) (2023-09-18)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+## [1.12.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.12.0...v1.12.1) (2023-07-25)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+# [1.12.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.11.1...v1.12.0) (2023-07-25)
+
+**Note:** Version bump only for package @aws-lambda-powertools/idempotency
+
+## [1.11.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.11.0...v1.11.1) (2023-07-11)
+
+### Bug Fixes
+
+* **idempotency:** types, docs, and `makeIdempotent` function wrapper ([#1579](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1579)) ([bba1c01](https://github.com/aws-powertools/powertools-lambda-typescript/commit/bba1c01a0b3f08e962568e1d0eb44d486829657b))
+
+# [1.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.10.0...v1.11.0) (2023-06-29)
+
+### Features
+
+* **idempotency:** preserve original error when wrapping into `IdempotencyPersistenceLayerError` ([#1552](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1552)) ([866837d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/866837daf34563698709612351c45769e02daf16))
+
+# [1.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.9.0...v1.10.0) (2023-06-23)
+
+### Bug Fixes
+
+* **idempotency:** pass lambda context remaining time to save inprogress ([#1540](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1540)) ([d47c3ec](https://github.com/aws-powertools/powertools-lambda-typescript/commit/d47c3ec64d926d49f3799f361d54a11627d16cc1))
+* **idempotency:** record validation not using hash ([#1502](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1502)) ([f475bd0](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f475bd097b64f009c329c023a2dd7c7e9371270a))
+* **idempotency:** skip persistence for optional idempotency key ([#1507](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1507)) ([b9fcef6](https://github.com/aws-powertools/powertools-lambda-typescript/commit/b9fcef66eb4bd9a7ad1eeac5f5db2cdbccc70c71))

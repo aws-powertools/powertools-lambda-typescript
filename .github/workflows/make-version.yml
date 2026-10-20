@@ -1,0 +1,65 @@
+name: Make Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: 'Release type, if auto it will be determined by the changes since the last tag'
+        required: false
+        type: choice
+        options: 
+        - auto
+        - major
+        - minor
+        - patch
+
+permissions:
+  contents: read
+
+
+jobs:
+  bump-version:
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: "24"
+    outputs:
+      RELEASE_VERSION: ${{ steps.version-n-changelog.outputs.new-version  }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0 # fetch all history, commits and tags, so we can determine the next version
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          build: "false"
+      - name: Version and changelog
+        id: version-n-changelog
+        uses: aws-powertools/actions/.github/actions/version-n-changelog@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
+        with:
+          release-type: ${{ env.RELEASE_TYPE }}
+        env:
+          RELEASE_TYPE: ${{ github.event.inputs.release-type }}
+      - name: Update user agent version
+        run: |
+          echo -e "// this file is auto generated, do not modify\nexport const PT_VERSION = '${{ steps.version-n-changelog.outputs.new-version }}';" > packages/commons/src/version.ts
+      - name: Stage changes
+        run: git add .
+      - name: Create PR
+        id: create-pr
+        uses: aws-powertools/actions/.github/actions/create-pr@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
+        with:
+          temp_branch_prefix: "ci-bump"
+          pull_request_title: "chore(ci): bump version to ${{ steps.version-n-changelog.outputs.new-version  }}"
+          github_token: ${{ secrets.GITHUB_TOKEN }}

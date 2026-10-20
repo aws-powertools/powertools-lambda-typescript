@@ -1,0 +1,287 @@
+import { BatchProcessingStore } from './BatchProcessingStore.js';
+import { toError } from './errors.js';
+import type {
+  BaseRecord,
+  BatchProcessingOptions,
+  EventSourceDataClassTypes,
+  FailureResponse,
+  SuccessResponse,
+} from './types.js';
+
+/**
+ * Abstract class for batch processors.
+ *
+ * This class provides a common interface for processing records in a batch.
+ *
+ * Batch processors implementing this class should provide implementations for
+ * a number of abstract methods that are specific to the type of processor or the
+ * type of records being processed.
+ *
+ * The class comes with a few helper methods and hooks that can be used to prepare
+ * the processor before processing records, clean up after processing records, and
+ * handle records that succeed or fail processing.
+ */
+abstract class BasePartialProcessor {
+  /**
+   * Store for managing invocation-specific state
+   */
+  readonly #store = new BatchProcessingStore();
+
+  public get errors(): Error[] {
+    return this.#store.getErrors();
+  }
+
+  protected set errors(errors: Error[]) {
+    this.#store.setErrors(errors);
+  }
+
+  public get failureMessages(): EventSourceDataClassTypes[] {
+    return this.#store.getFailureMessages();
+  }
+
+  protected set failureMessages(messages: EventSourceDataClassTypes[]) {
+    this.#store.setFailureMessages(messages);
+  }
+
+  public get handler(): CallableFunction {
+    return this.#store.getHandler();
+  }
+
+  protected set handler(handler: CallableFunction) {
+    this.#store.setHandler(handler);
+  }
+
+  public get options(): BatchProcessingOptions | undefined {
+    return this.#store.getOptions();
+  }
+
+  protected set options(options: BatchProcessingOptions | undefined) {
+    this.#store.setOptions(options);
+  }
+
+  public get records(): BaseRecord[] {
+    return this.#store.getRecords();
+  }
+
+  protected set records(records: BaseRecord[]) {
+    this.#store.setRecords(records);
+  }
+
+  public get successMessages(): EventSourceDataClassTypes[] {
+    return this.#store.getSuccessMessages();
+  }
+
+  protected set successMessages(messages: EventSourceDataClassTypes[]) {
+    this.#store.setSuccessMessages(messages);
+  }
+
+  protected get batchResponse() {
+    return this.#store.getBatchResponse();
+  }
+
+  protected set batchResponse(response) {
+    this.#store.setBatchResponse(response);
+  }
+
+  /**
+   * Clean or resets the processor instance after completing a batch
+   *
+   * This method should be called after processing a full batch to reset the processor.
+   *
+   * You can use this as a hook to run any cleanup logic after processing the records.
+   */
+  public abstract clean(): void;
+
+  /**
+   * Method to handle a record that failed processing
+   *
+   * This method should be called when a record fails processing so that
+   * the processor can keep track of the error and the record that failed.
+   *
+   * @param record - Record that failed processing
+   * @param error - Error that was thrown; non-Error values are wrapped in an `Error`
+   */
+  public failureHandler(
+    record: EventSourceDataClassTypes,
+    error: Error
+  ): FailureResponse {
+    const normalizedError = toError(error);
+    const entry: FailureResponse = ['fail', normalizedError.message, record];
+    this.errors.push(normalizedError);
+    this.failureMessages.push(record);
+
+    return entry;
+  }
+
+  /**
+   * Prepare class instance before processing
+   *
+   * This method should be called before processing the records
+   *
+   * You can use this as a hook to run any setup logic before processing the records.
+   */
+  public abstract prepare(): void;
+
+  /**
+   * Process all records with an asynchronous handler
+   *
+   * Once called, the processor will create an array of promises to process each record
+   * and wait for all of them to settle before returning the results.
+   *
+   * Before and after processing, the processor will call the prepare and clean methods respectively.
+   */
+  public async process(): Promise<(SuccessResponse | FailureResponse)[]> {
+    this.prepare();
+
+    // Default to `true` if `processInParallel` is not specified.
+    const processInParallel = this.options?.processInParallel ?? true;
+    const processedRecords = processInParallel
+      ? await this.#processRecordsInParallel()
+      : await this.#processRecordsSequentially();
+
+    this.clean();
+
+    return processedRecords;
+  }
+
+  /**
+   * Process a record with an asynchronous handler
+   *
+   * An implementation of this method is required for asynchronous processors.
+   *
+   * When implementing this method, you should at least call the successHandler method
+   * when a record succeeds processing and the failureHandler method when a record
+   * fails processing.
+   *
+   * This is to ensure that the processor keeps track of the results and the records
+   * that succeeded and failed processing.
+   *
+   * @param record - Record to be processed
+   */
+  public abstract processRecord(
+    record: BaseRecord
+  ): Promise<SuccessResponse | FailureResponse>;
+
+  /**
+   * Process a record with a synchronous handler
+   *
+   * An implementation of this method is required for synchronous processors.
+   *
+   * When implementing this method, you should at least call the successHandler method
+   * when a record succeeds processing and the failureHandler method when a record
+   * fails processing.
+   *
+   * This is to ensure that the processor keeps track of the results and the records
+   * that succeeded and failed processing.
+   *
+   * @param record - Record to be processed
+   */
+  public abstract processRecordSync(
+    record: BaseRecord
+  ): SuccessResponse | FailureResponse;
+
+  /**
+   * Orchestrate the processing of a batch of records synchronously
+   * and sequentially.
+   *
+   * The method is responsible for calling the prepare method before
+   * processing the records and the clean method after processing the records.
+   *
+   * In the middle, the method will iterate over the records and call the
+   * processRecordSync method for each record.
+   *
+   * @returns List of processed records
+   */
+  public processSync(): (SuccessResponse | FailureResponse)[] {
+    /**
+     * If this is an async processor, user should have called process instead,
+     * so we call the method early to throw the error early thus failing fast.
+     */
+    if (this.constructor.name === 'BatchProcessor') {
+      this.processRecordSync(this.records[0]);
+    }
+    this.prepare();
+
+    const processedRecords: (SuccessResponse | FailureResponse)[] = [];
+    for (const record of this.records) {
+      processedRecords.push(this.processRecordSync(record));
+    }
+
+    this.clean();
+
+    return processedRecords;
+  }
+
+  /**
+   * Set up the processor with the records and the handler
+   *
+   * This method should be called before processing the records to
+   * bind the records and the handler for a specific invocation to
+   * the processor.
+   *
+   * We use a separate method to do this rather than the constructor
+   * to allow for reusing the processor instance across multiple invocations
+   * by instantiating the processor outside the Lambda function handler.
+   *
+   * @param records - Array of records to be processed
+   * @param handler - CallableFunction to process each record from the batch
+   * @param options - Options to be used during processing (optional)
+   */
+  public register(
+    records: BaseRecord[],
+    handler: CallableFunction,
+    options?: BatchProcessingOptions
+  ): this {
+    this.records = records;
+    this.handler = handler;
+
+    if (options) {
+      this.options = options;
+    }
+
+    return this;
+  }
+
+  /**
+   * Method to handle a record that succeeded processing
+   *
+   * This method should be called when a record succeeds processing so that
+   * the processor can keep track of the result and the record that succeeded.
+   *
+   * @param record - Record that succeeded processing
+   * @param result - Result from record handler
+   */
+  public successHandler(
+    record: EventSourceDataClassTypes,
+    result: unknown
+  ): SuccessResponse {
+    const entry: SuccessResponse = ['success', result, record];
+    this.successMessages.push(record);
+
+    return entry;
+  }
+
+  /**
+   * Processes records in parallel using `Promise.all`.
+   */
+  #processRecordsInParallel(): Promise<(SuccessResponse | FailureResponse)[]> {
+    return Promise.all(
+      this.records.map((record) => this.processRecord(record))
+    );
+  }
+
+  /**
+   * Processes records sequentially, ensuring that each record is processed one after the other.
+   */
+  async #processRecordsSequentially(): Promise<
+    (SuccessResponse | FailureResponse)[]
+  > {
+    const processedRecords: (SuccessResponse | FailureResponse)[] = [];
+    for (const record of this.records) {
+      processedRecords.push(await this.processRecord(record));
+    }
+    return processedRecords;
+  }
+}
+
+export { BasePartialProcessor };

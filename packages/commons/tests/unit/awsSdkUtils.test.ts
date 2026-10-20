@@ -1,0 +1,283 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { customUserAgentMiddleware } from '../../src/awsSdkUtils.js';
+import {
+  addUserAgentMiddleware,
+  isSdkClient,
+  PT_VERSION as version,
+} from '../../src/index.js';
+
+vi.hoisted(() => {
+  process.env.AWS_EXECUTION_ENV = '';
+  process.env.AWS_SDK_UA_APP_ID = 'test';
+});
+
+describe('Helpers: awsSdk', () => {
+  describe('Function: userAgentMiddleware', () => {
+    it('handles gracefully failures in adding a middleware and only log a warning', () => {
+      // Prepare
+      const client = {
+        middlewareStack: {
+          addRelativeTo: () => {
+            throw new Error('test');
+          },
+        },
+      };
+
+      // Act & Assess
+      expect(() => addUserAgentMiddleware(client, 'my-feature')).not.toThrow();
+      expect(console.warn).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return and do nothing if the client already has a Powertools UA middleware', () => {
+      // Prepare
+      const client = {
+        middlewareStack: {
+          identify: () => [
+            'addPowertoolsToUserAgent: after getUserAgentMiddleware',
+          ],
+          addRelativeTo: vi.fn(),
+        },
+        send: vi.fn(),
+        config: {
+          defaultSigningName: 'bar',
+        },
+      };
+      const feature = 'my-feature';
+
+      // Act
+      addUserAgentMiddleware(client, feature);
+
+      // Assess
+      expect(client.middlewareStack.addRelativeTo).toHaveBeenCalledTimes(0);
+    });
+
+    it('should call the function to add the middleware with the correct arguments', () => {
+      // Prepare
+      const client = {
+        middlewareStack: {
+          identify: () => '',
+          addRelativeTo: vi.fn(),
+        },
+        send: vi.fn(),
+        config: {
+          defaultSigningName: 'bar',
+        },
+      };
+      const feature = 'my-feature';
+
+      // Act
+      addUserAgentMiddleware(client, feature);
+
+      // Assess
+      expect(client.middlewareStack.addRelativeTo).toHaveBeenNthCalledWith(
+        1,
+        expect.any(Function),
+        {
+          relation: 'after',
+          toMiddleware: 'getUserAgentMiddleware',
+          name: 'addPowertoolsToUserAgent',
+          tags: ['POWERTOOLS', 'USER_AGENT'],
+        }
+      );
+    });
+  });
+
+  it('concatenates the PT AWS_SDK_UA_APP_ID when one is already set', () => {
+    // Assess
+    expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+      `test/PT/NO-OP/${version}/PTEnv/NA`
+    );
+  });
+
+  describe('Module init: AWS_SDK_UA_APP_ID', () => {
+    beforeEach(() => {
+      vi.resetModules();
+      vi.stubEnv('AWS_EXECUTION_ENV', '');
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('sets the PT AWS_SDK_UA_APP_ID when one is not already set', async () => {
+      // Prepare
+      vi.stubEnv('AWS_SDK_UA_APP_ID', undefined);
+
+      // Act
+      await import('../../src/index.js');
+
+      // Assess
+      expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+        `PT/NO-OP/${version}/PTEnv/NA`
+      );
+    });
+
+    it('concatenates the PT AWS_SDK_UA_APP_ID when one is already set', async () => {
+      // Prepare
+      vi.stubEnv('AWS_SDK_UA_APP_ID', 'test');
+
+      // Act
+      await import('../../src/index.js');
+
+      // Assess
+      expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+        `test/PT/NO-OP/${version}/PTEnv/NA`
+      );
+    });
+
+    it('uses the execution environment when AWS_EXECUTION_ENV is set', async () => {
+      // Prepare
+      vi.stubEnv('AWS_SDK_UA_APP_ID', undefined);
+      vi.stubEnv('AWS_EXECUTION_ENV', 'AWS_Lambda_nodejs20.x');
+
+      // Act
+      await import('../../src/index.js');
+
+      // Assess
+      expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+        `PT/NO-OP/${version}/PTEnv/AWS_Lambda_nodejs20.x`
+      );
+    });
+
+    it('leaves the AWS_SDK_UA_APP_ID untouched when the PT UA is already present', async () => {
+      // Prepare
+      const existing = `test/PT/NO-OP/${version}/PTEnv/NA`;
+      vi.stubEnv('AWS_SDK_UA_APP_ID', existing);
+
+      // Act
+      await import('../../src/index.js');
+
+      // Assess
+      expect(process.env.AWS_SDK_UA_APP_ID).toEqual(existing);
+    });
+
+    it.each([
+      { case: 'unset', appId: undefined },
+      { case: 'set', appId: 'MyApplication-2.2.0' },
+    ])(
+      'leaves the AWS_SDK_UA_APP_ID untouched when POWERTOOLS_SDK_UA_APP_ID_DISABLED is true and the app ID is $case',
+      async ({ appId }) => {
+        // Prepare
+        vi.stubEnv('AWS_SDK_UA_APP_ID', appId);
+        vi.stubEnv('POWERTOOLS_SDK_UA_APP_ID_DISABLED', 'true');
+
+        // Act
+        await import('../../src/index.js');
+
+        // Assess
+        expect(process.env.AWS_SDK_UA_APP_ID).toEqual(appId);
+      }
+    );
+
+    it.each([
+      { case: 'false', value: 'false' },
+      { case: 'invalid', value: 'not-a-boolean' },
+    ])(
+      'concatenates the PT AWS_SDK_UA_APP_ID when POWERTOOLS_SDK_UA_APP_ID_DISABLED is $case',
+      async ({ value }) => {
+        // Prepare
+        vi.stubEnv('AWS_SDK_UA_APP_ID', 'test');
+        vi.stubEnv('POWERTOOLS_SDK_UA_APP_ID_DISABLED', value);
+
+        // Act
+        await import('../../src/index.js');
+
+        // Assess
+        expect(process.env.AWS_SDK_UA_APP_ID).toEqual(
+          `test/PT/NO-OP/${version}/PTEnv/NA`
+        );
+      }
+    );
+  });
+
+  describe('Function: customUserAgentMiddleware', () => {
+    it('returns a middleware function', () => {
+      // Prepare
+      const feature = 'my-feature';
+
+      // Act
+      const middleware = customUserAgentMiddleware(feature);
+
+      // Assess
+      expect(middleware).toBeInstanceOf(Function);
+    });
+
+    const feature = 'my-feature';
+    const middleware = customUserAgentMiddleware(feature);
+
+    it.each([
+      {
+        case: 'adds the feature-specific UA when none is present',
+        headers: {},
+        expected: `PT/my-feature/${version} PTEnv/NA`,
+      },
+      {
+        case: 'concatenates the ua to existing ones',
+        headers: {
+          'user-agent': 'foo',
+        },
+        expected: `foo PT/my-feature/${version} PTEnv/NA`,
+      },
+      {
+        case: 'replaces no-op UA with the feature-specific one',
+        headers: {
+          'user-agent': 'PT/NO-OP',
+        },
+        expected: `PT/my-feature/${version} PTEnv/NA`,
+      },
+      {
+        case: 'leaves a feature-specific UA intact',
+        headers: {
+          'user-agent': 'PT/other-feature/1.0 PTEnv/NA',
+        },
+        expected: 'PT/other-feature/1.0 PTEnv/NA',
+      },
+    ])('it $case', async ({ headers, expected }) => {
+      // Prepare
+      const args = {
+        request: {
+          headers,
+        },
+      };
+
+      // Act
+      await middleware(vi.fn())(args);
+
+      // Assess
+      expect(args.request.headers['user-agent']).toEqual(expected);
+    });
+  });
+
+  describe('Function: isSdkClient', () => {
+    it('returns true if the client is a valid AWS SDK v3 client', () => {
+      // Prepare
+      const client = {
+        send: vi.fn(),
+        config: {
+          defaultSigningName: 'bar',
+        },
+        middlewareStack: {
+          identify: () => '',
+          addRelativeTo: vi.fn(),
+        },
+      };
+
+      // Act
+      const result = isSdkClient(client);
+
+      // Assess
+      expect(result).toEqual(true);
+    });
+
+    it('returns false if the client is not a valid AWS SDK v3 client', () => {
+      // Prepare
+      const client = {};
+
+      // Act
+      const result = isSdkClient(client);
+
+      // Assess
+      expect(result).toEqual(false);
+    });
+  });
+});

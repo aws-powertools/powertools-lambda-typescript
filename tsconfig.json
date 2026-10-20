@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "composite": true,
+    "target": "ES2024", // Node.js 22
+    // `Disposable`/`Symbol.dispose` are not part of any yearly ES lib yet (not ES2024 nor
+    // ES2025 as of TS 6.x), so we pull them in explicitly. Compile-time only: it doesn't
+    // change emitted code or require a runtime polyfill. No DOM libs: this is a Node.js
+    // library, so fetch/Request/Response/Headers come from @types/node (undici-types).
+    "lib": ["ES2024", "ESNext.Disposable"],
+    "experimentalDecorators": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    // "traceResolution": true, // Enable this to debug module resolution issues
+    "declaration": true,
+    "removeComments": false,
+    "isolatedModules": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "types": ["node"],
+    "skipLibCheck": true,
+    "pretty": true // Enable pretty formatting for output messages.
+  },
+  // Options base with no program of its own: every project extends this and lists its own
+  // files. Both empty arrays are needed for tsc and TypeDoc to accept a config with no inputs.
+  "include": [],
+  "references": []
+}

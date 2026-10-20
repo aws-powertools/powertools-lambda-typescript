@@ -1,0 +1,22 @@
+import type { ConfigServiceInterface as ConfigServiceBaseInterface } from '@aws-lambda-powertools/commons/types';
+
+/**
+ * Interface ConfigServiceInterface
+ *
+ * @interface
+ * @deprecated Use Metrics constructor options and `POWERTOOLS_*` environment variables instead.
+ * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
+ * @see https://docs.aws.amazon.com/powertools/typescript/latest/#environment-variables
+ */
+interface ConfigServiceInterface extends ConfigServiceBaseInterface {
+  /**
+   * Get the value of the `POWERTOOLS_METRICS_NAMESPACE` environment variable.
+   */
+  getNamespace(): string;
+  /**
+   * Get the value of the `POWERTOOLS_METRICS_FUNCTION_NAME` environment variable.
+   */
+  getFunctionName(): string;
+}
+
+export type { ConfigServiceInterface };

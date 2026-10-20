@@ -1,0 +1,158 @@
+# Partition Layer Verification
+# ---
+# This workflow queries the Partition layer info in production only
+#
+# CodeQL Security Note:
+# This workflow uses dynamic secret access via secrets[format(...)] which triggers
+# an "Excessive Secrets Exposure" alert. However, this is safe because:
+# - Secrets are scoped per environment (China/GovCloud Gamma/Prod)
+# - Each job only accesses secrets for its specific partition and region
+# - No global secrets array containing mixed credentials (API keys, PEM files, etc.)
+# - The secrets object is already minimally scoped to the environment being used
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment environment
+        type: choice
+        options:
+          - Gamma
+          - Prod
+        required: true
+      version:
+        description: Layer version to verify
+        type: string
+        required: true
+      partition_version:
+        description: Layer version to verify, this is mostly used in Gamma where a version mismatch might exist
+        type: string
+        required: false
+      partition:
+        description: Partition to deploy to
+        type: choice
+        options:
+          - China
+          - GovCloud
+  workflow_call:
+    inputs:
+      environment:
+        description: Deployment environment
+        type: string
+        required: true
+      version:
+        description: Layer version to verify
+        type: string
+        required: true
+      partition_version:
+        description: Partition Layer version to verify, this is mostly used in Gamma where a version mismatch might exist
+        type: string
+        required: false
+
+name: Layer Verification (Partition)
+run-name: Layer Verification (${{ inputs.partition }}) - ${{ inputs.environment }} / Version - ${{ inputs.version }}
+
+permissions: {}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      regions: ${{ format('{0}{1}', steps.regions_china.outputs.regions, steps.regions_govcloud.outputs.regions) }}
+      partition: ${{ format('{0}{1}', steps.regions_china.outputs.partition, steps.regions_govcloud.outputs.partition) }}
+      aud: ${{ format('{0}{1}', steps.regions_china.outputs.aud, steps.regions_govcloud.outputs.aud) }}
+    steps:
+      - id: regions_china
+        name: Partition (China)
+        if: ${{ inputs.partition == 'China' }}
+        run: |
+          echo regions='["cn-north-1"]'>> "$GITHUB_OUTPUT"
+          echo partition='aws-cn'>> "$GITHUB_OUTPUT"
+          echo aud='sts.amazonaws.com.cn'>> "$GITHUB_OUTPUT"
+      - id: regions_govcloud
+        name: Partition (GovCloud)
+        if: ${{ inputs.partition == 'GovCloud' }}
+        run: |
+          echo regions='["us-gov-east-1", "us-gov-west-1"]'>> "$GITHUB_OUTPUT"
+          echo partition='aws-us-gov'>> "$GITHUB_OUTPUT"
+          echo aud='sts.amazonaws.com'>> "$GITHUB_OUTPUT"
+  commercial:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    environment: Prod (Readonly)
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: us-east-1
+          mask-aws-account-id: true
+      - name: Output AWSLambdaPowertoolsTypeScriptV2
+        env:
+          VERSION: ${{ inputs.version }}
+        # fetch the specific layer version information from the us-east-1 commercial region
+        run: |
+          set -euo pipefail
+          aws --region us-east-1 lambda get-layer-version-by-arn --arn "arn:aws:lambda:us-east-1:094274105915:layer:AWSLambdaPowertoolsTypeScriptV2:${VERSION}" > AWSLambdaPowertoolsTypeScriptV2.json
+      - name: Store Metadata
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: AWSLambdaPowertoolsTypeScriptV2.json
+          path: AWSLambdaPowertoolsTypeScriptV2.json
+          retention-days: 1
+          if-no-files-found: error
+
+  verify:
+    name: Verify
+    needs: 
+      - setup
+      - commercial
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    # Environment should interpolate as "GovCloud Prod" or "China Beta"
+    environment: ${{ inputs.partition }} ${{ inputs.environment }}
+    strategy:
+      matrix:
+        region: ${{ fromJson(needs.setup.outputs.regions) }}
+    steps:
+      - name: Download Metadata
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: AWSLambdaPowertoolsTypeScriptV2.json
+      - id: transform
+        run: |
+          echo 'CONVERTED_REGION=${{ matrix.region }}' | tr 'a-z\-' 'A-Z_' >> "$GITHUB_OUTPUT"
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          # Dynamic secret access is safe here - secrets are scoped per environment
+          role-to-assume: ${{ secrets[format('IAM_ROLE_{0}', steps.transform.outputs.CONVERTED_REGION)] }}
+          aws-region: ${{ matrix.region}}
+          mask-aws-account-id: true
+          audience: ${{ needs.setup.outputs.aud }}
+      - id: partition_version
+        name: Partition Layer Version
+        env:
+          VERSION: ${{ inputs.version }}
+          PARTITION_VERSION: ${{ inputs.partition_version }}
+        run: |
+          set -euo pipefail
+          if [ -n "${PARTITION_VERSION:-}" ]; then
+            echo "partition_version=${PARTITION_VERSION}" >> "$GITHUB_OUTPUT"
+          else
+            echo "partition_version=${VERSION}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Verify Layer
+        run: |
+          set -euo pipefail
+          layer_output="AWSLambdaPowertoolsTypeScriptV2-${{ matrix.region }}.json"
+          # Dynamic secret access is safe here - secrets are scoped per environment
+          aws --region "${{ matrix.region }}" lambda get-layer-version-by-arn --arn "arn:${{ needs.setup.outputs.partition }}:lambda:${{ matrix.region }}:${{ secrets[format('AWS_ACCOUNT_{0}', steps.transform.outputs.CONVERTED_REGION)] }}:layer:AWSLambdaPowertoolsTypeScriptV2:${{ steps.partition_version.outputs.partition_version }}" > "$layer_output"
+          REMOTE_SHA=$(jq -r '.Content.CodeSha256' $layer_output)
+          LOCAL_SHA=$(jq -r '.Content.CodeSha256' AWSLambdaPowertoolsTypeScriptV2.json)
+          test "$REMOTE_SHA" == "$LOCAL_SHA" && echo "SHA OK: ${LOCAL_SHA}" || exit 1
+          jq -s -r '["Layer Arn", "Runtimes", "Version", "Description", "SHA256"], ([.[0], .[1]] | .[] | [.LayerArn, (.CompatibleRuntimes | join("/")), .Version, .Description, .Content.CodeSha256]) |@tsv' AWSLambdaPowertoolsTypeScriptV2.json $layer_output | column -t -s $'\t'

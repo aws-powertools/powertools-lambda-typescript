@@ -1,0 +1,36 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": [
+    "./src/appconfig/index.ts",
+    "./src/types/AppConfigProvider.ts",
+    "./src/appconfig-agent/index.ts",
+    "./src/types/AppConfigAgent.ts",
+    "./src/ssm/index.ts",
+    "./src/types/SSMProvider.ts",
+    "./src/dynamodb/index.ts",
+    "./src/types/DynamoDBProvider.ts",
+    "./src/secrets/index.ts",
+    "./src/types/SecretsProvider.ts",
+    "./src/base/index.ts",
+    "./src/errors.ts",
+    "./src/constants.ts"
+  ],
+  "readme": "README.md",
+  "externalSymbolLinkMappings": {
+    "@aws-sdk/client-secrets-manager": {
+      "GetSecretValueCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-secrets-manager/Interface/GetSecretValueCommandInput/"
+    },
+    "@aws-sdk/client-dynamodb": {
+      "DynamoDBClient": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/dynamodb/",
+      "GetItemCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-dynamodb/Interface/GetItemCommandInput/",
+      "QueryCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-dynamodb/Interface/QueryCommandInput/"
+    },
+    "@aws-sdk/client-appconfigdata": {
+      "AppConfigDataClient": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/appconfigdata/",
+      "StartConfigurationSessionCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-appconfigdata/Interface/StartConfigurationSessionCommandInput/"
+    },
+    "@aws-sdk/client-ssm": {
+      "GetParameterCommandInput": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-ssm/Interface/GetParameterCommandInput/"
+    }
+  }
+}

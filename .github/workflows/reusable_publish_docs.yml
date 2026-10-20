@@ -1,0 +1,153 @@
+name: Reusable Publish docs
+
+# see .github/workflows/on_push_docs.yml for docs
+
+env:
+  ORIGIN: aws-powertools/powertools-lambda-typescript
+
+on:
+  workflow_call:
+    secrets:
+      AWS_DOCS_ROLE_ARN:
+        description: zomg
+        required: false
+      AWS_DOCS_BUCKET:
+        description: zomg
+        required: false
+    inputs:
+      version:
+        description: "Version to build and publish docs (1.28.0, develop)"
+        required: true
+        type: string
+      alias:
+        description: "Alias to associate version (latest, stage)"
+        required: true
+        type: string
+      detached_mode:
+        description: "Whether it's running in git detached mode to ensure git is sync'd"
+        required: false
+        default: false
+        type: boolean
+      git_ref:
+        description: "Branch or commit ID to checkout from"
+        required: false
+        type: string
+        default: develop
+
+permissions:
+  contents: read
+
+jobs:
+  publish_docs:
+    if: github.repository == 'aws-powertools/powertools-lambda-typescript'
+    # Force Github action to run only a single job at a time (based on the group name)
+    # This is to prevent "race-condition" in publishing a new version of doc to `gh-pages`
+    concurrency:
+      group: on-docs-rebuild
+    runs-on: ubuntu-latest
+    environment: Docs
+    permissions:
+      id-token: write  # trade JWT token for AWS credentials in AWS Docs account
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Setup NodeJS
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: "npm"
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: docs/.python-version
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+      - name: Install doc generation dependencies
+        run: |
+          set -euo pipefail
+          pip install --require-hashes -r docs/requirements.txt
+      - name: Git refresh tip (detached mode)
+        # Git Detached mode (release notes) doesn't have origin
+        if: ${{ inputs.detached_mode }}
+        run: |
+          set -euo pipefail
+          git config pull.rebase true
+          git config remote.origin.url >&- || git remote add origin "https://github.com/$ORIGIN"
+          git pull origin "$BRANCH"
+        env:
+          BRANCH: ${{ inputs.git_ref }}
+      - name: Normalize Version Number
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          echo "VERSION=$(echo "$VERSION" | sed 's/v//')" >> "$GITHUB_ENV"
+      - name: Build docs website and API reference
+        env:
+          ALIAS: ${{ inputs.alias }}
+        run: |
+          set -euo pipefail
+          rm -rf site
+          mkdocs build
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
+          mask-aws-account-id: true
+      - name: Create Artifact (Site)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: site
+          path: site
+      - name: Deploy Docs (Version)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: ${{ inputs.alias }}
+          AWS_DOCS_BUCKET: ${{ secrets.AWS_DOCS_BUCKET }}
+        run: |
+          set -euo pipefail
+          aws s3 sync \
+            site/ \
+            "s3://$AWS_DOCS_BUCKET/lambda-typescript/$VERSION/" \
+            --delete
+      - name: Deploy Docs (Alias)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: ${{ inputs.alias }}
+          AWS_DOCS_BUCKET: ${{ secrets.AWS_DOCS_BUCKET }}
+        run: |
+          set -euo pipefail
+          aws s3 sync \
+            site/ \
+            "s3://$AWS_DOCS_BUCKET/lambda-typescript/$ALIAS/" \
+            --delete
+      - name: Deploy Docs (Version JSON)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: ${{ inputs.alias }}
+          AWS_DOCS_BUCKET: ${{ secrets.AWS_DOCS_BUCKET }}
+        # We originally used "mike" from PyPi to manage versions for us, but since we moved to S3, we can't use it to manage versions any more.
+        # Instead, we're using some shell script that manages the versions.
+        #
+        # Operations:
+        #   1. Download the versions.json file from S3
+        #   2. Find any reference to the alias and delete it from the versions file
+        #   3. This is voodoo (don't use JQ):
+        #      - we assign the input as $o and the new version/alias as $n,
+        #      - we check if the version number exists in the file already (for republishing docs)
+        #      - if it's an alias (stage/latest/*) or old version, we do nothing and output $o (original input)
+        #      - if it's a new version number, we add it at position 0 in the array.
+        #   4. Once done, we'll upload it back to S3.
+        run: |
+          set -euo pipefail
+          aws s3 cp \
+            "s3://$AWS_DOCS_BUCKET/lambda-typescript/versions.json" \
+            versions_old.json
+          jq --arg ALIAS "$ALIAS" 'del(.[].aliases[] | select(. == $ALIAS))' < versions_old.json > versions_proc.json
+          jq --arg VERSION "$VERSION" --arg ALIAS "$ALIAS" '. as $o | [{"title": $VERSION, "version": $VERSION, "aliases": [$ALIAS]}] as $n | $n | if .[0].title | test("[a-z]+") or any($o[].title == $n[0].title;.) then [($o | .[] | select(.title == $n[0].title).aliases += $n[0].aliases | . )] else $n + $o end' < versions_proc.json > versions.json
+          aws s3 cp \
+            versions.json \
+            "s3://$AWS_DOCS_BUCKET/lambda-typescript/versions.json"

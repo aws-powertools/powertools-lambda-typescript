@@ -1,0 +1,13 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/middleware/index.ts",
+    "./src/types/index.ts",
+    "./src/envelopes/index.ts",
+    "./src/schemas/index.ts",
+    "./src/helpers/index.ts",
+    "./src/helpers/dynamodb.ts"
+  ],
+  "readme": "README.md"
+}

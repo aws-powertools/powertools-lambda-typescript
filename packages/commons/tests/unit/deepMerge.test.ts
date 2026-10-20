@@ -1,0 +1,829 @@
+import { describe, expect, it } from 'vitest';
+import { deepMerge } from '../../src/deepMerge.js';
+
+describe('Function: deepMerge', () => {
+  describe('Basic merging', () => {
+    it('mutates and returns the target object', () => {
+      // Prepare
+      const target = { a: 1 };
+      const source = { b: 2 };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toBe(target);
+      expect(result).toEqual({ a: 1, b: 2 });
+    });
+
+    it('merges multiple sources in order', () => {
+      // Prepare
+      const target = { a: 1 };
+      const source1 = { b: 2 };
+      const source2 = { c: 3 };
+      const source3 = { a: 100 };
+
+      // Act
+      const result = deepMerge(target, source1, source2, source3);
+
+      // Assess
+      expect(result).toEqual({ a: 100, b: 2, c: 3 });
+    });
+
+    it('handles null sources gracefully', () => {
+      // Prepare
+      const target = { a: 1 };
+
+      // Act
+      const result = deepMerge(target, null, { b: 2 }, null);
+
+      // Assess
+      expect(result).toEqual({ a: 1, b: 2 });
+    });
+
+    it('handles undefined sources gracefully', () => {
+      // Prepare
+      const target = { a: 1 };
+
+      // Act
+      const result = deepMerge(target, undefined, { b: 2 }, undefined);
+
+      // Assess
+      expect(result).toEqual({ a: 1, b: 2 });
+    });
+
+    it('handles empty source objects', () => {
+      // Prepare
+      const target = { a: 1 };
+
+      // Act
+      const result = deepMerge(target, {});
+
+      // Assess
+      expect(result).toEqual({ a: 1 });
+    });
+
+    it('handles empty target object', () => {
+      // Prepare
+      const target = {};
+      const source = { a: 1, b: { c: 2 } };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ a: 1, b: { c: 2 } });
+    });
+  });
+
+  describe('Deep object merging', () => {
+    it('deeply merges nested objects', () => {
+      // Prepare
+      const target = { nested: { a: 1, b: 2 } };
+      const source = { nested: { b: 3, c: 4 } };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ nested: { a: 1, b: 3, c: 4 } });
+    });
+
+    it('deeply merges multiple levels of nesting', () => {
+      // Prepare
+      const target = {
+        level1: {
+          level2: {
+            level3: { a: 1 },
+          },
+        },
+      };
+      const source = {
+        level1: {
+          level2: {
+            level3: { b: 2 },
+            newKey: 'value',
+          },
+        },
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({
+        level1: {
+          level2: {
+            level3: { a: 1, b: 2 },
+            newKey: 'value',
+          },
+        },
+      });
+    });
+
+    it('replaces non-object target values with source objects', () => {
+      // Prepare
+      const target: Record<string, unknown> = { a: 'string' };
+      const source = { a: { nested: 1 } };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ a: { nested: 1 } });
+    });
+
+    it('replaces object target values with non-object source values', () => {
+      // Prepare
+      const target = { a: { nested: 1 } };
+      const source = { a: 'string' };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ a: 'string' });
+    });
+  });
+
+  describe('Multi-source merging', () => {
+    it('merges three sources with arrays of objects', () => {
+      // Prepare
+      const names = { characters: [{ name: 'barney' }, { name: 'fred' }] };
+      const ages = { characters: [{ age: 36 }, { age: 40 }] };
+      const heights = {
+        characters: [{ height: '5\'4"' }, { height: '5\'5"' }],
+      };
+
+      // Act
+      const result = deepMerge({}, names, ages, heights);
+
+      // Assess
+      expect(result).toEqual({
+        characters: [
+          { name: 'barney', age: 36, height: '5\'4"' },
+          { name: 'fred', age: 40, height: '5\'5"' },
+        ],
+      });
+    });
+  });
+
+  describe('Array merging (index-based)', () => {
+    it('merges arrays by index', () => {
+      // Prepare
+      const target = { arr: [1, 2, 3] };
+      const source = { arr: [10] };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ arr: [10, 2, 3] });
+    });
+
+    it('extends array when source has more elements', () => {
+      // Prepare
+      const target = { arr: [1] };
+      const source = { arr: [10, 20, 30] };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ arr: [10, 20, 30] });
+    });
+
+    it('merges objects within arrays by index', () => {
+      // Prepare
+      const target = { arr: [{ a: 1 }, { b: 2 }] };
+      const source = { arr: [{ c: 3 }] };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ arr: [{ a: 1, c: 3 }, { b: 2 }] });
+    });
+
+    it('replaces non-array target with array source', () => {
+      // Prepare
+      const target: Record<string, unknown> = { arr: 'not an array' };
+      const source = { arr: [1, 2, 3] };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ arr: [1, 2, 3] });
+    });
+
+    it('replaces array target with non-array source', () => {
+      // Prepare
+      const target = { arr: [1, 2, 3] };
+      const source = { arr: 'not an array' };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ arr: 'not an array' });
+    });
+  });
+
+  describe('Prototype pollution protection', () => {
+    it('skips __proto__ keys from source', () => {
+      // Prepare
+      const target = { a: 1 };
+      const source = JSON.parse('{"__proto__": {"polluted": true}, "b": 2}');
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ a: 1, b: 2 });
+      expect({}).not.toHaveProperty('polluted');
+    });
+
+    it('skips constructor keys from source', () => {
+      // Prepare
+      const target = { a: 1 };
+      const source: Record<string, unknown> = {
+        constructor: { polluted: true },
+        b: 2,
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ a: 1, b: 2 });
+      expect(result.constructor).toBe(Object);
+    });
+
+    it('does not indirectly pollute via toString.constructor.prototype', () => {
+      // Prepare & Act
+      const source: Record<string, unknown> = {
+        toString: { constructor: { prototype: { polluted: true } } },
+      };
+      deepMerge({}, source);
+
+      // Assess
+      expect(Function.prototype).not.toHaveProperty('polluted');
+    });
+
+    it('handles nested __proto__ keys', () => {
+      // Prepare
+      const target = { nested: { a: 1 } };
+      const source = {
+        nested: JSON.parse('{"__proto__": {"polluted": true}, "b": 2}'),
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ nested: { a: 1, b: 2 } });
+      expect({}).not.toHaveProperty('polluted');
+    });
+  });
+
+  describe('Circular reference protection', () => {
+    it('handles circular references in source objects', () => {
+      // Prepare
+      const target = { a: 1 };
+      const source: Record<string, unknown> = { b: 2 };
+      source.self = source;
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ a: 1, b: 2 });
+      expect(result).not.toHaveProperty('self');
+    });
+
+    it('handles deep circular references', () => {
+      // Prepare
+      const target = { a: 1 };
+      const nested: Record<string, unknown> = { c: 3 };
+      const source: Record<string, unknown> = { b: 2, nested };
+      nested.circular = source;
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ a: 1, b: 2, nested: { c: 3 } });
+    });
+
+    it('handles circular arrays', () => {
+      // Prepare
+      const target: Record<string, unknown> = { a: 1 };
+      const circularArr: unknown[] = [1, 2];
+      circularArr.push(circularArr);
+      const source = { arr: circularArr };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toHaveProperty('a', 1);
+      expect(result).toHaveProperty('arr[0]', 1);
+      expect(result).toHaveProperty('arr[1]', 2);
+    });
+
+    it('skips circular arrays nested inside arrays', () => {
+      // Prepare - outer array contains itself as an element
+      const outer: unknown[] = [1, 2];
+      outer.push(outer); // outer[2] = outer (circular)
+      const target = {
+        arr: [
+          [10, 20],
+          [30, 40],
+          [50, 60],
+        ],
+      };
+      const source = { arr: outer };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess - index 0 and 1 are primitives replacing arrays, index 2 is circular so skipped
+      expect(result).toEqual({ arr: [1, 2, [50, 60]] });
+    });
+
+    it('skips array that references an ancestor array', () => {
+      // Prepare
+      const arr: unknown[] = [];
+      const inner: Record<string, unknown> = { backRef: arr };
+      arr.push(inner);
+      const target = { arr: [{ a: 1 }] };
+      const source = { arr };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ arr: [{ a: 1 }] });
+    });
+
+    it('skips circular plain objects inside arrays', () => {
+      // Prepare
+      const target = { arr: [{ a: 1 }] };
+      const source: Record<string, unknown> = { b: 2 };
+      source.arr = [source];
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ arr: [{ a: 1 }], b: 2 });
+    });
+
+    it('merges shared array references into all properties', () => {
+      // Prepare
+      const target = {};
+      const sharedArray = [1, 2, 3];
+      const source = {
+        first: sharedArray,
+        second: sharedArray,
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({
+        first: [1, 2, 3],
+        second: [1, 2, 3],
+      });
+    });
+
+    it('merges shared objects within arrays', () => {
+      // Prepare
+      const sharedObj = { shared: true };
+      const target: Record<string, unknown> = {
+        arr: [{ a: 1 }, { b: 2 }],
+      };
+      const source = {
+        prop: sharedObj,
+        arr: [sharedObj, { c: 3 }],
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({
+        prop: { shared: true },
+        arr: [
+          { a: 1, shared: true },
+          { b: 2, c: 3 },
+        ],
+      });
+    });
+
+    it('merges shared objects into all referencing properties', () => {
+      // Prepare
+      const target = {};
+      const shared = { value: 42 };
+      const source = {
+        first: shared,
+        second: { nested: shared },
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({
+        first: { value: 42 },
+        second: { nested: { value: 42 } },
+      });
+    });
+  });
+
+  describe('Shared (non-circular) references', () => {
+    it('merges shared array references into both properties', () => {
+      // Prepare
+      const target = {};
+      const sharedArray = [1, 2, 3];
+      const source = {
+        first: sharedArray,
+        second: sharedArray,
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({
+        first: [1, 2, 3],
+        second: [1, 2, 3],
+      });
+    });
+
+    it('merges shared objects referenced in arrays', () => {
+      // Prepare
+      const sharedObj = { shared: true };
+      const target: Record<string, unknown> = {
+        arr: [{ a: 1 }, { b: 2 }],
+      };
+      const source = {
+        prop: sharedObj,
+        arr: [sharedObj, { c: 3 }],
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({
+        prop: { shared: true },
+        arr: [
+          { a: 1, shared: true },
+          { b: 2, c: 3 },
+        ],
+      });
+    });
+
+    it('merges shared objects into all referencing properties', () => {
+      // Prepare
+      const target = {};
+      const shared = { value: 42 };
+      const source = {
+        first: shared,
+        second: { nested: shared },
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({
+        first: { value: 42 },
+        second: { nested: { value: 42 } },
+      });
+    });
+
+    it('merges shared objects across multiple sources', () => {
+      // Prepare
+      const shared = { x: 1 };
+      const target = {};
+      const source1 = { a: shared };
+      const source2 = { b: shared };
+
+      // Act
+      const result = deepMerge(target, source1, source2);
+
+      // Assess
+      expect(result).toEqual({ a: { x: 1 }, b: { x: 1 } });
+    });
+
+    it('merges diamond-shaped shared references', () => {
+      // Prepare
+      const shared = { value: 'shared' };
+      const target = {};
+      const source = {
+        branch1: { leaf: shared },
+        branch2: { leaf: shared },
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({
+        branch1: { leaf: { value: 'shared' } },
+        branch2: { leaf: { value: 'shared' } },
+      });
+    });
+
+    it('merges a shared object that itself contains a circular reference', () => {
+      // Prepare
+      const shared: Record<string, unknown> = { value: 1 };
+      shared.self = shared;
+      const target = {};
+      const source = {
+        first: shared,
+        second: { nested: shared },
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({
+        first: { value: 1 },
+        second: { nested: { value: 1 } },
+      });
+    });
+
+    it('merges when source references an object from the target', () => {
+      // Prepare
+      const inner = { x: 1 };
+      const target: Record<string, unknown> = { a: inner };
+      const source = { b: inner };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({
+        a: { x: 1 },
+        b: { x: 1 },
+      });
+    });
+  });
+
+  describe('Source immutability', () => {
+    it('does not mutate sources when merging arrays of objects across multiple sources', () => {
+      // Prepare
+      const source1 = { a: [{ a: 1 }] };
+      const source2 = { a: [{ b: 2 }] };
+
+      // Act
+      const result = deepMerge({}, source1, source2);
+
+      // Assess
+      expect(result).toEqual({ a: [{ a: 1, b: 2 }] });
+      expect(source1).toEqual({ a: [{ a: 1 }] });
+      expect(source2).toEqual({ a: [{ b: 2 }] });
+    });
+
+    it('does not mutate sources when merging nested arrays across multiple sources', () => {
+      // Prepare
+      const src1 = { a: [[1, 2, 3]] };
+      const src2 = { a: [[3, 4]] };
+
+      // Act
+      const result = deepMerge({}, src1, src2);
+
+      // Assess
+      expect(result).toEqual({ a: [[3, 4, 3]] });
+      expect(src1).toEqual({ a: [[1, 2, 3]] });
+      expect(src2).toEqual({ a: [[3, 4]] });
+    });
+
+    it('does not mutate a single source with array of objects merged into empty target', () => {
+      // Prepare
+      const source = { a: [{ x: 1 }, { y: 2 }] };
+
+      // Act
+      const result = deepMerge({}, source) as typeof source;
+      result.a[0].x = 999;
+
+      // Assess
+      expect(source).toEqual({ a: [{ x: 1 }, { y: 2 }] });
+    });
+
+    it('does not mutate sources with plain objects (non-array path)', () => {
+      // Prepare
+      const source1 = { nested: { a: 1 } };
+      const source2 = { nested: { b: 2 } };
+
+      // Act
+      deepMerge({}, source1, source2);
+
+      // Assess
+      expect(source1).toEqual({ nested: { a: 1 } });
+      expect(source2).toEqual({ nested: { b: 2 } });
+    });
+
+    it('does not mutate sources with mixed arrays and nested objects', () => {
+      // Prepare
+      const source1 = { data: [{ items: [{ id: 1 }] }] };
+      const source2 = { data: [{ items: [{ name: 'a' }] }] };
+
+      // Act
+      const result = deepMerge({}, source1, source2);
+
+      // Assess
+      expect(result).toEqual({ data: [{ items: [{ id: 1, name: 'a' }] }] });
+      expect(source1).toEqual({ data: [{ items: [{ id: 1 }] }] });
+      expect(source2).toEqual({ data: [{ items: [{ name: 'a' }] }] });
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('handles Date objects (treats as value, not merged)', () => {
+      // Prepare
+      const date = new Date('2024-01-01');
+      const target = { date: new Date('2023-01-01') };
+      const source = { date };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result.date).toBe(date);
+    });
+
+    it('handles RegExp objects (treats as value, not merged)', () => {
+      // Prepare
+      const regex = /test/gi;
+      const target = { regex: /old/ };
+      const source = { regex };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result.regex).toBe(regex);
+    });
+
+    it('handles class instances (treats as value, not merged)', () => {
+      // Prepare
+      class CustomClass {
+        value: number;
+        constructor(value: number) {
+          this.value = value;
+        }
+      }
+      const instance = new CustomClass(42);
+      const target = { obj: { a: 1 } };
+      const source = { obj: instance };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result.obj).toBe(instance);
+      expect(result.obj).toBeInstanceOf(CustomClass);
+    });
+
+    it('handles null values in source', () => {
+      // Prepare
+      const target = { a: { b: 1 } };
+      const source = { a: null };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ a: null });
+    });
+
+    it('handles undefined values in source (does not overwrite existing value with `undefined`)', () => {
+      // Prepare
+      const target = { a: 1, b: 2 };
+      const source = { a: undefined, c: undefined };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toStrictEqual({ a: 1, b: 2, c: undefined });
+    });
+
+    it('handles undefined values in array of source (does not overwrite existing value with `undefined`)', () => {
+      // Prepare
+      const target = { arr: [4, 5, 6] };
+      const source = { arr: [1, undefined, 3, undefined] };
+      source.arr[1] = undefined;
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toStrictEqual({ arr: [1, 5, 3, undefined] });
+    });
+
+    it('handles missing values in array of source (does not overwrite existing value with `undefined`)', () => {
+      // Prepare
+      const target = { arr: [4, 5, 6] };
+      const source = { arr: new Array(4) };
+      source.arr[0] = 1;
+      source.arr[2] = 3;
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toStrictEqual({ arr: [1, 5, 3, undefined] });
+    });
+
+    it('handles Symbol keys (ignores them)', () => {
+      // Prepare
+      const sym = Symbol('test');
+      const target = { a: 1 };
+      const source = { [sym]: 'symbol value', b: 2 };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ a: 1, b: 2 });
+      expect(sym in result).toBe(false);
+    });
+
+    it('handles numeric keys', () => {
+      // Prepare
+      const target = { 1: 'one' };
+      const source = { 2: 'two' };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result).toEqual({ 1: 'one', 2: 'two' });
+    });
+
+    it('handles special number values', () => {
+      // Prepare
+      const target: Record<string, unknown> = {};
+      const source = {
+        inf: Number.POSITIVE_INFINITY,
+        negInf: Number.NEGATIVE_INFINITY,
+        nan: Number.NaN,
+      };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result.inf).toBe(Number.POSITIVE_INFINITY);
+      expect(result.negInf).toBe(Number.NEGATIVE_INFINITY);
+      expect(Number.isNaN(result.nan)).toBe(true);
+    });
+
+    it('handles function values', () => {
+      // Prepare
+      const fn = () => 42;
+      const target: Record<string, unknown> = {};
+      const source = { fn };
+
+      // Act
+      const result = deepMerge(target, source);
+
+      // Assess
+      expect(result.fn).toBe(fn);
+    });
+
+    it('replaces function target value with object from later source', () => {
+      // Prepare
+      const fn = () => 42;
+      const source1: Record<string, unknown> = { a: fn };
+      const source2 = { a: { b: 2 } };
+
+      // Act
+      const result = deepMerge({}, source1, source2);
+
+      // Assess
+      expect(result).toEqual({ a: { b: 2 } });
+      expect(source1.a).toBe(fn);
+    });
+
+    it('handles self-merge without infinite loop', () => {
+      // Prepare
+      const object: Record<string, unknown> = { a: 1, b: { c: 2 } };
+
+      // Act
+      const result = deepMerge(object, object);
+
+      // Assess
+      expect(result).toBe(object);
+      expect(result).toEqual({ a: 1, b: { c: 2 } });
+    });
+  });
+});

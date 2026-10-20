@@ -1,0 +1,243 @@
+import {
+  cleanupMiddlewares,
+  IDEMPOTENCY_KEY,
+} from '@aws-lambda-powertools/commons';
+import type {
+  JSONValue,
+  MiddlewareLikeObj,
+  MiddyLikeRequest,
+} from '@aws-lambda-powertools/commons/types';
+import { IdempotencyConfig } from '../IdempotencyConfig.js';
+import { IdempotencyHandler } from '../IdempotencyHandler.js';
+import type {
+  AnyFunction,
+  IdempotencyLambdaHandlerOptions,
+} from '../types/IdempotencyOptions.js';
+
+/**
+ * @internal
+ * Utility function to get the idempotency handler from the request internal storage
+ *
+ * @param request The Middy request object
+ * @returns The idempotency handler from the request internal
+ */
+const getIdempotencyHandlerFromRequestInternal = (
+  request: MiddyLikeRequest
+): IdempotencyHandler<AnyFunction> => {
+  const idempotencyHandler = request.internal[
+    `${IDEMPOTENCY_KEY}.idempotencyHandler`
+  ] as IdempotencyHandler<AnyFunction>;
+
+  return idempotencyHandler;
+};
+
+/**
+ * @internal
+ * Utility function to set the idempotency handler in the request internal storage
+ *
+ * @param request The Middy request object
+ * @param idempotencyHandler The idempotency handler to set in the request internal
+ */
+const setIdempotencyHandlerInRequestInternal = (
+  request: MiddyLikeRequest,
+  idempotencyHandler: IdempotencyHandler<AnyFunction>
+): void => {
+  request.internal[`${IDEMPOTENCY_KEY}.idempotencyHandler`] =
+    idempotencyHandler;
+};
+
+/**
+ * @internal
+ * Utility function to set a flag in the request internal storage to skip the idempotency middleware
+ * This is used to skip the idempotency middleware when the idempotency key is not present in the payload
+ * or when idempotency is disabled
+ *
+ * @param request The Middy request object
+ */
+const setIdempotencySkipFlag = (request: MiddyLikeRequest): void => {
+  request.internal[`${IDEMPOTENCY_KEY}.skip`] = true;
+};
+
+/**
+ * @internal
+ * Records whether this request acquired an in-progress record it has not yet completed.
+ *
+ * @param request - The Middy request object
+ * @param owned - Whether the request owns an unfinished in-progress record
+ */
+const setIdempotencyRecordOwnership = (
+  request: MiddyLikeRequest,
+  owned: boolean
+): void => {
+  request.internal[`${IDEMPOTENCY_KEY}.ownsRecord`] = owned;
+};
+
+/**
+ * @internal
+ * Checks whether this request owns an unfinished in-progress record.
+ *
+ * @param request - The Middy request object
+ */
+const ownsIdempotencyRecord = (request: MiddyLikeRequest): boolean => {
+  return request.internal[`${IDEMPOTENCY_KEY}.ownsRecord`] === true;
+};
+
+/**
+ * @internal
+ * Utility function to get the idempotency key from the request internal storage
+ * and determine if the request should skip the idempotency middleware
+ *
+ * @param request The Middy request object
+ * @returns Whether the idempotency middleware should be skipped
+ */
+const shouldSkipIdempotency = (request: MiddyLikeRequest): boolean => {
+  return request.internal[`${IDEMPOTENCY_KEY}.skip`] === true;
+};
+
+/**
+ * A middy middleware to make your Lambda Handler idempotent.
+ *
+ * @example
+ * ```typescript
+ * import { makeHandlerIdempotent } from '@aws-lambda-powertools/idempotency/middleware';
+ * import { DynamoDBPersistenceLayer } from '@aws-lambda-powertools/idempotency/dynamodb';
+ * import middy from '@middy/core';
+ *
+ * const persistenceStore = new DynamoDBPersistenceLayer({
+ *  tableName: 'idempotencyTable',
+ * });
+ *
+ * export const handler = middy(
+ *   async (_event: unknown, _context: unknown): Promise<void> => {
+ *     // your code goes here
+ *   }
+ * ).use(makeHandlerIdempotent({ persistenceStore: dynamoDBPersistenceLayer }));
+ * ```
+ *
+ * For the middleware to work, your Lambda function handler must return a value different from `undefined`.
+ * This is a [known limitation of the early return feature in Middy.js](https://github.com/middyjs/middy/issues/1236).
+ *
+ * If your use case requires early returns, you can use the {@link index.makeIdempotent | makeIdempotent()} function wrapper instead.
+ *
+ * @param options - Options for the idempotency middleware
+ */
+const makeHandlerIdempotent = (
+  options: IdempotencyLambdaHandlerOptions
+): MiddlewareLikeObj => {
+  /**
+   * Function called before the handler is executed.
+   *
+   * Before the handler is executed, we insantiate the {@link IdempotencyHandler} and
+   * set it in the request internal storage. We then configure the persistence store
+   * and set the payload to be hashed and Lambda context in the idempotency config.
+   *
+   * If idempotency is enabled and the idempotency key is present in the payload,
+   * we then run the idempotency operations. These are handled in {@link IdempotencyHandler.handleMiddyBefore}.
+   * A stored response is returned early; otherwise this request now owns the
+   * in-progress record and `onError` is allowed to delete it.
+   *
+   * @param request - The Middy request object
+   */
+  const before = async (request: MiddyLikeRequest): Promise<unknown> => {
+    const idempotencyConfig = options.config ?? new IdempotencyConfig({});
+    const persistenceStore = options.persistenceStore;
+    const keyPrefix = options.keyPrefix;
+    persistenceStore.configure({
+      config: idempotencyConfig,
+      keyPrefix: keyPrefix,
+    });
+
+    const idempotencyHandler = new IdempotencyHandler({
+      /* v8 ignore start */
+      functionToMakeIdempotent: () => ({}),
+      /* v8 ignore stop */
+      functionArguments: [],
+      idempotencyConfig,
+      persistenceStore,
+      keyPrefix,
+      functionPayloadToBeHashed: undefined,
+    });
+    setIdempotencyHandlerInRequestInternal(request, idempotencyHandler);
+    // `request.internal` can be shared across invocations, so reset per-request state
+    request.internal[`${IDEMPOTENCY_KEY}.skip`] = false;
+    setIdempotencyRecordOwnership(request, false);
+
+    // set the payload to be hashed
+    idempotencyHandler.setFunctionPayloadToBeHashed(request.event as JSONValue);
+    // check if we should skip idempotency checks
+    if (idempotencyHandler.shouldSkipIdempotency()) {
+      // set the flag to skip checks in after and onError
+      setIdempotencySkipFlag(request);
+
+      return;
+    }
+
+    idempotencyConfig.registerLambdaContext(request.context);
+
+    // the cleanup callback only runs when a stored response is replayed
+    let replayed = false;
+    const result = await idempotencyHandler.handleMiddyBefore(
+      request,
+      async (request) => {
+        replayed = true;
+        await cleanupMiddlewares(request);
+      }
+    );
+    if (!replayed) {
+      setIdempotencyRecordOwnership(request, true);
+    }
+
+    return result;
+  };
+
+  /**
+   * Function called after the handler has executed successfully.
+   *
+   * When the handler returns successfully, we need to update the record in the
+   * idempotency store to indicate that the execution has completed and
+   * store its result. This is handled in {@link IdempotencyHandler.handleMiddyAfter}.
+   *
+   * Ownership is released before saving so that a failure to store the result
+   * does not delete the record, in line with the function wrapper.
+   *
+   * @param request - The Middy request object
+   */
+  const after = async (request: MiddyLikeRequest): Promise<void> => {
+    if (shouldSkipIdempotency(request)) {
+      return;
+    }
+    const idempotencyHandler =
+      getIdempotencyHandlerFromRequestInternal(request);
+    setIdempotencyRecordOwnership(request, false);
+    await idempotencyHandler.handleMiddyAfter(request.response);
+  };
+
+  /**
+   * Function called when an error occurs in the handler.
+   *
+   * When an error is thrown in the handler, we need to delete the record from the
+   * idempotency store. This is handled in {@link IdempotencyHandler.handleMiddyOnError}.
+   *
+   * The record is left untouched when this request never acquired it, for example
+   * when `before` rejected a concurrent or mismatching request, or once the
+   * handler has returned and its result is being stored.
+   *
+   * @param request - The Middy request object
+   */
+  const onError = async (request: MiddyLikeRequest): Promise<void> => {
+    if (shouldSkipIdempotency(request) || !ownsIdempotencyRecord(request)) {
+      return;
+    }
+    const idempotencyHandler =
+      getIdempotencyHandlerFromRequestInternal(request);
+    await idempotencyHandler?.handleMiddyOnError();
+  };
+
+  return {
+    before,
+    after,
+    onError,
+  };
+};
+
+export { makeHandlerIdempotent };

@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Hello world event handler API Gateway HTTP API
+
+Globals:
+  HttpApi:
+    CorsConfiguration:
+      AllowOrigins:
+        - https://example.com
+      AllowHeaders:
+        - Content-Type
+        - Authorization
+        - X-Amz-Date
+      MaxAge: 300
+
+  Function:
+    Timeout: 5
+    MemorySize: 256
+    Runtime: nodejs22.x
+    Tracing: Active
+    Environment:
+      Variables:
+        POWERTOOLS_LOG_LEVEL: INFO
+        POWERTOOLS_SERVICE_NAME: hello
+
+Resources:
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: hello_world
+      Description: API handler function
+      Events:
+        AnyApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+        GetAllTodos:
+           Type: HttpApi
+           Properties:
+             Path: /todos
+             Method: GET
+        GetTodoById:
+           Type: HttpApi
+           Properties:
+             Path: /todos/{todo_id}
+             Method: GET

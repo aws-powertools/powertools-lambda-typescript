@@ -1,0 +1,75 @@
+name: Maintenance
+description: Suggest an activity to help address tech debt, governance, and anything internal
+title: "Maintenance: <TITLE>"
+labels: ["triage"]
+type: Maintenance
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to help us improve this project.
+  - type: textarea
+    id: activity
+    attributes:
+      label: Summary
+      description: Please provide an overview in one or two paragraphs
+    validations:
+      required: true
+  - type: textarea
+    id: importance
+    attributes:
+      label: Why is this needed?
+      description: Please help us understand the value so we can prioritize it accordingly
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area does this relate to?
+      multiple: true
+      options:
+        - Automation
+        - Governance
+        - Tests
+        - Commons
+        - Event Handler
+        - Parser
+        - Tracer
+        - Logger
+        - Metrics
+        - Parameters
+        - Idempotency
+        - JMESPath
+        - Batch Processing
+        - Validation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Solution
+      description: If available, please share what a good solution would look like
+    validations:
+      required: false
+  - type: checkboxes
+    id: acknowledgment
+    attributes:
+      label: Acknowledgment
+      options:
+        - label: This request meets [Powertools for AWS Lambda (TypeScript) Tenets](https://docs.aws.amazon.com/powertools/typescript/latest/#tenets)
+          required: true
+        - label: Should this be considered in other Powertools for AWS Lambda languages? i.e. [Python](https://github.com/aws-powertools/powertools-lambda-python/), [Java](https://github.com/aws-powertools/powertools-lambda-java/), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet/)
+          required: false
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        **Disclaimer**: After creating an issue, please wait until it is triaged and confirmed by a maintainer before implementing it. This will reduce amount of rework and the chance that a pull request gets rejected.
+  - type: input
+    id: notes
+    attributes:
+      label: Future readers
+      description: Please do not edit this field
+      value: "Please react with 👍 and your use case to help us understand customer demand."

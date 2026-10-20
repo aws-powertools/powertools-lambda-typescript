@@ -1,0 +1,8 @@
+{
+  "statusCode": 200,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{'message':'pong'}",
+  "isBase64Encoded": false
+}

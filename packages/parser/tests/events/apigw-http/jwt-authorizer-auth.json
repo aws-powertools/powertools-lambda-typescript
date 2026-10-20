@@ -1,0 +1,55 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /cognito",
+  "rawPath": "/cognito",
+  "rawQueryString": "",
+  "headers": {
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "authorization": "Bearer eyJra[...]A",
+    "content-length": "0",
+    "host": "lsw1ro4ipb.execute-api.eu-west-1.amazonaws.com",
+    "user-agent": "HTTPie/3.2.2",
+    "x-amzn-trace-id": "Root=1-66705b09-5f85233d2fb7bd54034f7e30",
+    "x-forwarded-for": "15.248.3.126",
+    "x-forwarded-port": "443",
+    "x-forwarded-proto": "https"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "lsw1ro4ipb",
+    "authorizer": {
+      "jwt": {
+        "claims": {
+          "aud": "3nkoep4151b7umeggnottc30u9",
+          "auth_time": "1718636404",
+          "cognito:username": "aamorosi",
+          "event_id": "c7f6cc62-c476-4c6a-ba5b-745244dfe5ee",
+          "exp": "1718722804",
+          "iat": "1718636404",
+          "iss": "https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_y0bLG4i27",
+          "jti": "13727aba-89e6-4896-bd9e-8cbc0f478f9c",
+          "origin_jti": "37cc02cf-5c14-4636-beb3-4f8ca887935b",
+          "sub": "d2f50444-0041-7036-aea2-a955fca33d37",
+          "token_use": "id"
+        },
+        "scopes": null
+      }
+    },
+    "domainName": "lsw1ro4ipb.execute-api.eu-west-1.amazonaws.com",
+    "domainPrefix": "lsw1ro4ipb",
+    "http": {
+      "method": "POST",
+      "path": "/cognito",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "15.248.3.126",
+      "userAgent": "HTTPie/3.2.2"
+    },
+    "requestId": "ZhMpgigvDoEEPlg=",
+    "routeKey": "POST /cognito",
+    "stage": "$default",
+    "time": "17/Jun/2024:15:49:29 +0000",
+    "timeEpoch": 1718639369348
+  },
+  "isBase64Encoded": false
+}

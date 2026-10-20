@@ -1,0 +1,102 @@
+# Change Log
+
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Bug Fixes
+
+- lazily import Avro and Protobuf codecs so JSON-only consumers bundle ([#5578](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5578)) ([0b7521b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0b7521b20138240ccadbe8fce98120c4898be6eb))
+## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
+
+**Note:** Version bump only for this package
+
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+**Note:** Version bump only for this package
+
+## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
+
+**Note:** Version bump only for this package
+
+## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
+
+**Note:** Version bump only for this package
+
+## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
+
+### Bug Fixes
+
+- handle tombstone events without value ([#5017](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5017)) ([79553c9](https://github.com/aws-powertools/powertools-lambda-typescript/commit/79553c96a404df96f57268309c4468fe6c92b470))
+## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
+
+### Bug Fixes
+
+- handle tombstone events ([#4991](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4991)) ([04c3236](https://github.com/aws-powertools/powertools-lambda-typescript/commit/04c32360c972aff984c69cce3eae6e95007e79b7))
+## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
+
+**Note:** Version bump only for this package
+
+## [2.30.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.0...v2.30.1) (2026-01-06)
+
+### Maintenance
+
+- bump @standard-schema/spec from 1.0.0 to 1.1.0 ([#4880](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4880)) ([79a236d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/79a236df12e15398e8e1cdbf803bc81d51e50866))
+## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
+
+**Note:** Version bump only for this package
+
+## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
+
+**Note:** Version bump only for this package
+
+## [2.28.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.0...v2.28.1) (2025-10-23)
+
+**Note:** Version bump only for this package
+
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+**Note:** Version bump only for this package
+
+## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
+
+**Note:** Version bump only for this package
+
+## [2.26.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.0...v2.26.1) (2025-09-15)
+
+**Note:** Version bump only for this package
+
+## [2.26.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.2...v2.26.0) (2025-09-11)
+
+**Note:** Version bump only for this package
+
+## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
+
+**Note:** Version bump only for this package
+
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+**Note:** Version bump only for this package
+
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
+
+### Improvements
+
+- improve tests & error handling ([#4262](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4262)) ([dab0be1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/dab0be1b5be166f972dcd2152968999dc212a0a7))
+## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
+
+**Note:** Version bump only for this package
+
+## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
+
+**Note:** Version bump only for this package
+
+# [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
+
+**Note:** Version bump only for package @aws-lambda-powertools/kafka
+
+# [2.22.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.21.0...v2.22.0) (2025-06-20)
+
+### Features
+
+* **kafka:** add logic to handle delimited protobufs ([#4071](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4071)) ([db9ec0c](https://github.com/aws-powertools/powertools-lambda-typescript/commit/db9ec0c4af668c002460f8dc9171c7d4bfc155b2))
+* **kafka:** lazily deserialize key/value/headers ([#4068](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4068)) ([ef9bb52](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ef9bb5215a588f3d9a4e9ec9da7c0b307e3c4fa0))
+* **kafka:** new kafka utility ([#4058](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4058)) ([006f27b](https://github.com/aws-powertools/powertools-lambda-typescript/commit/006f27bd9909e2da548cff9dbdcc1944ba76dbd1))

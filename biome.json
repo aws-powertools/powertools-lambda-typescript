@@ -1,0 +1,90 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "root": true,
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "style": {
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
+      },
+      "suspicious": {
+        "noTsIgnore": "error",
+        "noConfusingVoidType": "error",
+        "noDoubleEquals": "error",
+        "noGlobalIsNan": "error",
+        "noGlobalIsFinite": "error",
+        "useNumberToFixedDigitsArgument": "error",
+        "noPrototypeBuiltins": "error",
+        "noSkippedTests": "error",
+        "noFocusedTests": "error",
+        "noUnassignedVariables": "error",
+        "noVar": "error",
+        "useAdjacentOverloadSignatures": "error",
+        "useErrorMessage": "error",
+        "useIsArray": "error",
+        "useStaticResponseMethods": "error"
+      },
+      "correctness": {
+        "useParseIntRadix": "error",
+        "useSingleJsDocAsterisk": "error",
+        "noUnusedVariables": "error",
+        "noUnusedPrivateClassMembers": "error",
+        "noUnusedImports": "error",
+        "noUnusedFunctionParameters": "error"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 80
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "always",
+      "bracketSpacing": true,
+      "quoteStyle": "single",
+      "trailingCommas": "es5"
+    }
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/.cache",
+      "!**/.claude",
+      "!**/.vscode",
+      "!**/.amazonq",
+      "!**/api",
+      "!**/site",
+      "!**/.devcontainer",
+      "!**/node_modules",
+      "!**/.tsbuildinfo",
+      "!**/coverage",
+      "!**/lib",
+      "!**/cdk.out",
+      "!**/site",
+      "!**/.aws-sam",
+      "!**/*.generated.js",
+      "!**/*.generated.d.ts"
+    ]
+  }
+}

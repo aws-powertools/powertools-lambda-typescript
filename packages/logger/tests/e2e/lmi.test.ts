@@ -1,0 +1,240 @@
+import { Console } from 'node:console';
+import { join } from 'node:path';
+import { TestStack } from '@aws-lambda-powertools/testing-utils';
+import { lmiFunctionStackTestName } from '@aws-lambda-powertools/testing-utils/lmi';
+import { TestLmiCapacityProvider } from '@aws-lambda-powertools/testing-utils/resources/capacity-provider';
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
+import { Tracing } from 'aws-cdk-lib/aws-lambda';
+import promiseRetry from 'promise-retry';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { LoggerTestNodejsFunction } from '../helpers/resources.js';
+import { RESOURCE_NAME_PREFIX } from './constants.js';
+
+type IsolationResult = {
+  invocationId: string;
+  executionEnvId: string;
+  sawPeer: boolean;
+  initializationType: string;
+  maxConcurrency: string;
+  logs: Array<{
+    message: string;
+    invocationKey?: string;
+    function_request_id?: string;
+  }>;
+};
+
+/**
+ * In this e2e test for Logger, we test the InvokeStore-backed isolation of log
+ * attributes on Lambda Managed Instances (LMI), where multiple invocations run
+ * concurrently within the same execution environment.
+ *
+ * On LMI the Node.js runtime runs several worker threads per execution
+ * environment (one per vCPU by default) and initializes the module once per
+ * thread, so module-scoped state — and therefore the isolation under test —
+ * is per worker thread, not per environment. The function is configured so
+ * that an overlap is guaranteed rather than probable: a single worker thread
+ * per environment (`AWS_LAMBDA_NODEJS_WORKER_COUNT=1`) and at most four
+ * environments (`minExecutionEnvironments` / `maxExecutionEnvironments` on
+ * `$LATEST.PUBLISHED`) give 30 simultaneous invocations at most four module
+ * instances to land on. With the runtime's default thread count the same
+ * burst spread over 24 module instances and only a handful of pairs
+ * overlapped. To prove the overlap rather than infer it, the handler blocks on
+ * a module-scoped promise barrier (see `lmi.test.FunctionCode.ts`) until a
+ * peer invocation lands in the same thread. Without InvokeStore isolation, the
+ * overlapping invocations' appended keys would bleed into each other's log
+ * output.
+ *
+ * Exact environment counts are not asserted. In CI both Node.js versions of
+ * both LMI suites share one per-architecture capacity provider; pinning the
+ * environments per function keeps the overlap independent of that fleet and
+ * lets the provider carry spare vCPU headroom to replace a failed instance
+ * (see `TestLmiCapacityProvider`).
+ *
+ * The Invoke API does not support Tail logs for capacity provider functions
+ * and CloudWatch log delivery is asynchronous, so the handler intercepts its
+ * own process.stdout stream to capture the log lines the Logger emits and
+ * returns them in the response payload, making log collection fully
+ * deterministic while exercising the production log write path.
+ */
+// Same pattern as TestStack's ioHost: a dedicated Console writing straight to
+// the process streams bypasses vitest's output capture, so these phase
+// markers appear in real time. The invocation phase takes minutes with no
+// other output, and when it fails these markers are the only way to tell
+// which phase died.
+const testConsole = new Console({
+  stdout: process.stdout,
+  stderr: process.stderr,
+});
+
+describe('Logger E2E - Lambda Managed Instances', () => {
+  // Fire enough concurrent invocations, all held open on the barrier, that
+  // the pinned execution environments (at most 4, one worker thread and 10
+  // concurrent slots each) must host several of them apiece. 30 leaves slack
+  // below the 40 slots so uneven routing does not surface as throttles.
+  const invocationCount = 30;
+
+  // The test name embeds an `Lmi` marker and the workflow run id
+  // (`Lmi-<runId>`) so the teardown job can find and delete this stack if the
+  // cell is cancelled or times out before its own `afterAll` runs, leaving
+  // the function attached to the shared capacity provider.
+  const testStack = new TestStack({
+    stackNameProps: {
+      stackNamePrefix: RESOURCE_NAME_PREFIX,
+      testName: lmiFunctionStackTestName(),
+    },
+  });
+
+  // Location of the lambda function code
+  const lambdaFunctionCodeFilePath = join(
+    __dirname,
+    'lmi.test.FunctionCode.ts'
+  );
+
+  // In CI a setup job deploys one shared capacity provider per architecture
+  // (see lmi/deploySharedCapacityProvider.ts in the testing package) and
+  // passes its ARN via the environment; otherwise (e.g. local runs) fall back
+  // to an ephemeral capacity provider that lives and dies with this suite's
+  // stack. The env var is treated as unset when empty so that a
+  // mis-referenced workflow output degrades to the fallback instead of an
+  // invalid ARN.
+  const sharedCapacityProviderArn =
+    process.env.LMI_CAPACITY_PROVIDER_ARN?.trim();
+  const capacityProvider = sharedCapacityProviderArn
+    ? sharedCapacityProviderArn
+    : new TestLmiCapacityProvider(testStack);
+  new LoggerTestNodejsFunction(
+    testStack,
+    {
+      entry: lambdaFunctionCodeFilePath,
+      // ACTIVE tracing compatibility with LMI is unverified
+      tracing: Tracing.DISABLED,
+      // One worker thread per execution environment so every invocation
+      // routed to an environment shares the same module scope (see above)
+      environment: { AWS_LAMBDA_NODEJS_WORKER_COUNT: '1' },
+    },
+    {
+      nameSuffix: 'LmiIsolation',
+      lmi: {
+        capacityProvider,
+        perExecutionEnvironmentMaxConcurrency: 10,
+        // Pinned so the overlap the test relies on is a property of the
+        // function, not of the (shared) fleet size
+        minExecutionEnvironments: 3,
+        maxExecutionEnvironments: 4,
+      },
+    }
+  );
+
+  const lambdaClient = new LambdaClient({});
+  let functionName: string;
+
+  const invokeOnce = async (payload: {
+    invocationId: string;
+    role: 'warmup' | 'test';
+  }): Promise<IsolationResult> => {
+    const response = await lambdaClient.send(
+      new InvokeCommand({
+        FunctionName: functionName,
+        InvocationType: 'RequestResponse',
+        Payload: JSON.stringify(payload),
+      })
+    );
+    if (response.FunctionError) {
+      throw new Error(
+        `Invocation ${payload.invocationId} failed: ${response.FunctionError}`
+      );
+    }
+    return JSON.parse(
+      Buffer.from(response.Payload ?? new Uint8Array()).toString()
+    );
+  };
+
+  let results: IsolationResult[];
+
+  beforeAll(async () => {
+    await testStack.deploy();
+
+    functionName = testStack.findAndGetStackOutputValue('LmiIsolation');
+    testConsole.log(
+      `[lmi] stack deployed (${sharedCapacityProviderArn ? 'shared' : 'ephemeral'} capacity provider), warming up ${functionName}...`
+    );
+
+    // The first invocation on a fresh capacity provider may have to wait
+    // for an EC2 instance to boot, so retry until capacity is available
+    await promiseRetry(
+      async (retry, attempt) => {
+        await invokeOnce({ invocationId: 'warmup', role: 'warmup' }).catch(
+          (error) => {
+            testConsole.log(
+              `[lmi] warmup attempt ${attempt} failed, retrying...`
+            );
+            retry(error);
+          }
+        );
+      },
+      {
+        retries: 10,
+        factor: 2,
+        minTimeout: 5_000,
+        maxTimeout: 60_000,
+      }
+    );
+    testConsole.log(
+      `[lmi] warmup complete, firing ${invocationCount} concurrent invocations...`
+    );
+
+    // Every invocation blocks inside the handler until a second invocation
+    // lands in the same execution environment. Dispatching all of them
+    // simultaneously saturates the fleet, which forces the scheduler to
+    // multiplex the overflow into busy environments
+    results = await Promise.all(
+      Array.from({ length: invocationCount }, (_, index) =>
+        invokeOnce({ invocationId: `inv-${index}`, role: 'test' })
+      )
+    );
+
+    const multiplexed = results.filter((result) => result.sawPeer).length;
+    const environments = new Set(
+      results.map((result) => result.executionEnvId)
+    );
+    testConsole.log(
+      `[lmi] ${results.length}/${invocationCount} responses; ${multiplexed} multiplexed across ${environments.size} execution environments`
+    );
+  }, 1_200_000); // VPC + capacity provider + instance boot can exceed the default hook timeout
+
+  it('isolates log attributes across concurrent invocations in the same execution environment', () => {
+    expect(results).toHaveLength(invocationCount);
+
+    // The function actually ran on Lambda Managed Instances with the
+    // concurrency path active: AWS_LAMBDA_MAX_CONCURRENCY drives
+    // shouldUseInvokeStore() in @aws-lambda-powertools/commons
+    for (const result of results) {
+      expect(result.initializationType).toBe('lambda-managed-instances');
+      expect(result.maxConcurrency).toBe('10');
+    }
+
+    // At least one pair of invocations genuinely overlapped inside the
+    // same execution environment: they observed each other through the
+    // module-scoped barrier. The scheduler may still scale out some of
+    // the invocations to other environments; that's fine as long as a
+    // real overlap happened somewhere.
+    expect(results.some((result) => result.sawPeer === true)).toBe(true);
+
+    // Each invocation's captured logs carry exactly its own key: without
+    // isolation, concurrent appendKeys calls within a shared environment
+    // would bleed across the invocations blocked on the barrier
+    for (const result of results) {
+      const isolationLogs = result.logs.filter(
+        (log) => log.message === 'LMI isolation test'
+      );
+      expect(isolationLogs).toHaveLength(1);
+      expect(isolationLogs[0].invocationKey).toBe(result.invocationId);
+    }
+  });
+
+  afterAll(async () => {
+    if (!process.env.DISABLE_TEARDOWN) {
+      await testStack.destroy();
+    }
+  }, 1_200_000);
+});

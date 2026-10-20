@@ -1,0 +1,3 @@
+const RESOURCE_NAME_PREFIX = 'Batch';
+
+export { RESOURCE_NAME_PREFIX };

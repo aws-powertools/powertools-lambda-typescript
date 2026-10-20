@@ -1,0 +1,255 @@
+# Change Log
+
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+**Note:** Version bump only for this package
+
+## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
+
+**Note:** Version bump only for this package
+
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+**Note:** Version bump only for this package
+
+## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
+
+**Note:** Version bump only for this package
+
+## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
+
+**Note:** Version bump only for this package
+
+## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
+
+**Note:** Version bump only for this package
+
+## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
+
+**Note:** Version bump only for this package
+
+## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
+
+**Note:** Version bump only for this package
+
+## [2.30.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.0...v2.30.1) (2026-01-06)
+
+**Note:** Version bump only for this package
+
+## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
+
+**Note:** Version bump only for this package
+
+## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
+
+**Note:** Version bump only for this package
+
+## [2.28.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.0...v2.28.1) (2025-10-23)
+
+**Note:** Version bump only for this package
+
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+**Note:** Version bump only for this package
+
+## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
+
+**Note:** Version bump only for this package
+
+## [2.26.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.0...v2.26.1) (2025-09-15)
+
+**Note:** Version bump only for this package
+
+## [2.26.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.2...v2.26.0) (2025-09-11)
+
+**Note:** Version bump only for this package
+
+## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
+
+**Note:** Version bump only for this package
+
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+**Note:** Version bump only for this package
+
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
+
+**Note:** Version bump only for this package
+
+## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
+
+**Note:** Version bump only for this package
+
+## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
+
+**Note:** Version bump only for this package
+
+# [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.22.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.21.0...v2.22.0) (2025-06-20)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.21.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.20.0...v2.21.0) (2025-06-03)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.20.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.1...v2.20.0) (2025-05-20)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## [2.19.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.0...v2.19.1) (2025-05-05)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.19.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.18.0...v2.19.0) (2025-04-24)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.17.0...v2.18.0) (2025-04-07)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.16.0...v2.17.0) (2025-03-25)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.1...v2.14.0) (2025-02-10)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## [2.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.0...v2.13.1) (2025-01-28)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.12.0...v2.13.0) (2025-01-14)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.12.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.11.0...v2.12.0) (2024-12-17)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.10.0...v2.11.0) (2024-11-20)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.9.0...v2.10.0) (2024-10-22)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.9.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.8.0...v2.9.0) (2024-10-07)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.8.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.7.0...v2.8.0) (2024-09-16)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.6.0...v2.7.0) (2024-08-08)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.5.0...v2.6.0) (2024-07-25)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.4.0...v2.5.0) (2024-07-15)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.3.0...v2.4.0) (2024-07-10)
+
+### Features
+
+* **maintenance:** drop support for Node.js 16.x ([#2717](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2717)) ([e4eee73](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e4eee73770ffccead9212a566335ec256a31af7d))
+
+# [2.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.2.0...v2.3.0) (2024-06-27)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.2.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.1...v2.2.0) (2024-06-13)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## [2.1.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.0...v2.1.1) (2024-05-14)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.1.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.0.4...v2.1.0) (2024-04-17)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## 2.0.4 (2024-04-10)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## 2.0.3 (2024-03-15)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## 2.0.2 (2024-03-05)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## 2.0.1 (2024-03-04)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [2.0.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.18.1...v2.0.0) (2024-03-04)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## 1.18.1 (2024-02-20)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## [1.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.17.0...v1.18.0) (2024-01-26)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## [1.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.16.0...v1.17.0) (2023-11-24)
+
+**maintenance:** drop support for Node.js 14 ([#1664](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1664)) ([e2a0923](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e2a09232f86167b5208be2daf892aa1ea433ce0f))
+
+# [1.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.15.0...v1.16.0) (2023-11-16)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [1.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.2...v1.15.0) (2023-11-14)
+
+### Features
+
+* **maintenance:** add support for nodejs20.x runtime ([#1790](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1790)) ([6b9b1bc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6b9b1bcb9baf4b3d8e0e5ec6709594aca09bb033))
+
+## [1.14.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.1...v1.14.2) (2023-11-03)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+## [1.14.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.0...v1.14.1) (2023-10-31)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [1.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.13.1...v1.14.0) (2023-09-29)
+
+### Features
+
+* **layers:** add `arm64` to integration test matrix ([#1720](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1720)) ([61ad5ac](https://github.com/aws-powertools/powertools-lambda-typescript/commit/61ad5ac3bcf7742684aeec28553ec294696f3301))
+
+## [1.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.13.0...v1.13.1) (2023-09-21)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils
+
+# [1.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.12.1...v1.13.0) (2023-09-18)
+
+**Note:** Version bump only for package @aws-lambda-powertools/testing-utils

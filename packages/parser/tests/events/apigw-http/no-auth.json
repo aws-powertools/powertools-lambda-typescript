@@ -1,0 +1,40 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /lambda",
+  "rawPath": "/lambda",
+  "rawQueryString": "",
+  "headers": {
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "authorization": "Bearer foo",
+    "content-length": "0",
+    "host": "lsw1ro4ipb.execute-api.eu-west-1.amazonaws.com",
+    "user-agent": "HTTPie/3.2.2",
+    "x-amzn-trace-id": "Root=1-66705bc7-2b4257df30cbee696ef2cf28",
+    "x-forwarded-for": "15.248.3.126",
+    "x-forwarded-port": "443",
+    "x-forwarded-proto": "https"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "lsw1ro4ipb",
+    "authorizer": {
+      "lambda": null
+    },
+    "domainName": "lsw1ro4ipb.execute-api.eu-west-1.amazonaws.com",
+    "domainPrefix": "lsw1ro4ipb",
+    "http": {
+      "method": "POST",
+      "path": "/lambda",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "15.248.3.126",
+      "userAgent": "HTTPie/3.2.2"
+    },
+    "requestId": "ZhNHJhhLjoEEPiw=",
+    "routeKey": "POST /lambda",
+    "stage": "$default",
+    "time": "17/Jun/2024:15:52:39 +0000",
+    "timeEpoch": 1718639559080
+  },
+  "isBase64Encoded": false
+}

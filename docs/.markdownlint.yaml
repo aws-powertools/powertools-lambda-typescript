@@ -1,0 +1,27 @@
+# Rules: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+
+extends: ../.markdownlint.yaml
+
+# MD041/first-line-heading/first-line-h1 - First line in a file should be a top-level heading
+MD041:
+  # Heading level
+  level: 2
+  # RegExp for matching title in front matter
+  front_matter_title: "^\\s*title\\s*[:=]"
+
+# MD043/required-headings/required-headers - Required heading structure
+# NOTE: Enforce our minimum headers across the docs
+MD043:
+  # List of headings
+  headings:
+    [
+      "*",
+      "## Key features",
+      "*",
+      "## Getting started",
+      "*",
+      "## Advanced",
+      "*",
+      "## Testing your code",
+      "*",
+    ]

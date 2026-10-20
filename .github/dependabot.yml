@@ -1,0 +1,123 @@
+version: 2
+updates:
+  - package-ecosystem: docker
+    directories:
+      - "/.devcontainer"
+      - "/docs"
+    labels: [ ]
+    schedule:
+      interval: daily
+    ignore:
+      # The docs image tracks docs/.python-version; only take digest refreshes for the Python tag.
+      - dependency-name: python
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+
+  - package-ecosystem: github-actions
+    directories:
+      - "/"
+    labels: [ ]
+    schedule:
+      interval: daily
+    groups:
+      codeql-action:
+        patterns:
+          - "github/codeql-action/*"
+
+  - package-ecosystem: pip
+    directories:
+      - "/docs"
+    labels: [ ]
+    schedule:
+      interval: daily
+    ignore:
+      - dependency-name: "mike"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: npm
+    directories:
+      - "/"
+    labels: [ ]
+    schedule:
+      interval: daily
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: "@middy/core"
+        update-types: [ "version-update:semver-major" ]
+      # List all three update-types to keep AWS version updates in the weekly entry.
+      # Omitting update-types would also ignore security updates.
+      - dependency-name: "@aws-sdk/*"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+          - version-update:semver-patch
+      - dependency-name: "@smithy/*"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+          - version-update:semver-patch
+      - dependency-name: "aws-sdk-client-mock"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+          - version-update:semver-patch
+      - dependency-name: "aws-sdk-client-mock-vitest"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+          - version-update:semver-patch
+      - dependency-name: "@aws-cdk/toolkit-lib"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+          - version-update:semver-patch
+      - dependency-name: "aws-cdk-lib"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+          - version-update:semver-patch
+      - dependency-name: "aws-cdk"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+          - version-update:semver-patch
+    groups:
+      typescript:
+        patterns:
+        - "typedoc"
+        - "typedoc-plugin-*"
+        - "typescript"
+      vitest:
+        patterns:
+        - "vitest"
+        - "@vitest/*"
+  
+  - package-ecosystem: npm
+    target-branch: main # see https://github.com/dependabot/dependabot-core/issues/1778#issuecomment-1988140219
+    directories:
+      - "/"
+    labels: [ ]
+    schedule:
+      interval: weekly
+    versioning-strategy: increase
+    allow:
+      - dependency-name: "@aws-sdk/*"
+      - dependency-name: "@smithy/*"
+      - dependency-name: "aws-sdk-client-mock"
+      - dependency-name: "aws-sdk-client-mock-vitest"
+      - dependency-name: "@aws-cdk/toolkit-lib"
+      - dependency-name: "aws-cdk-lib"
+      - dependency-name: "aws-cdk"
+    groups:
+      aws-sdk-v3:
+        patterns:
+        - "@aws-sdk/*"
+        - "@smithy/*"
+        - "aws-sdk-client-mock"
+        - "aws-sdk-client-mock-vitest"
+      aws-cdk:
+        patterns:
+        - "@aws-cdk/toolkit-lib"
+        - "aws-cdk-lib"
+        - "aws-cdk"

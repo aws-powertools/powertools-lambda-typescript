@@ -1,0 +1,80 @@
+# bootstraps new regions
+#
+# PURPOSE
+# Ensures new regions are deployable in future releases
+#
+# JOB 1 PROCESS
+# 1. Sets up Go
+# 2. Installs the balance script
+# 3. Runs balance script to copy layers between aws regions
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options:
+          - beta
+          - prod
+        description: Deployment environment
+      region:
+        type: string
+        required: true
+        description: AWS region to deploy into (i.e. eu-west-1)
+      start_at:
+        type: string
+        required: false
+        description: Layer version to start at
+  
+name: Region Balance
+run-name: Region Balance ${{ inputs.region }} - ${{ inputs.environment }}
+  
+permissions:
+  contents: read
+  
+jobs:
+  copy_layers:
+    name: Copy Layers
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment: layer-${{ inputs.environment }}
+    env:
+      BALANCE_ROLE_ARN: ${{ secrets.BALANCE_ROLE_ARN }}
+    steps:
+      - id: credentials
+        name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.REGION_IAM_ROLE }}
+          mask-aws-account-id: true
+      - id: go-setup
+        name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '>=1.23.0'
+      - id: go-env
+        name: Go Env
+        run: go env
+      - id: go-install-pkg
+        name: Install
+        run: go install github.com/aws-powertools/actions/layer-balancer/cmd/balance@29979bc5339bf54f76a11ac36ff67701986bb0f0
+      - id: run-balance-new-region
+        name: Run Balance
+        if: ${{ inputs.start_at == '' }}
+        env:
+          REGION: ${{ inputs.region }}
+        run: |
+          set -euo pipefail
+          balance -read-region us-east-1 -write-region "$REGION" -write-role "$BALANCE_ROLE_ARN" -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false
+      - id: run-balance-existing
+        name: Run Balance (Existing Region)
+        if: ${{ inputs.start_at != '' }}
+        env:
+          REGION: ${{ inputs.region }}
+          START_AT: ${{ inputs.start_at }}
+        run: |
+          set -euo pipefail
+          balance -read-region us-east-1 -start-at "$START_AT" -write-region "$REGION" -write-role "$BALANCE_ROLE_ARN" -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false

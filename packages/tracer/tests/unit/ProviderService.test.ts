@@ -1,0 +1,758 @@
+import { channel } from 'node:diagnostics_channel';
+import http from 'node:http';
+import https from 'node:https';
+import { URL } from 'node:url';
+import { addUserAgentMiddleware } from '@aws-lambda-powertools/commons';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import xraySDK from 'aws-xray-sdk-core';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ProviderService } from '../../src/provider/ProviderService.js';
+import type { HttpSubsegment } from '../../src/types/ProviderService.js';
+import {
+  mockFetch,
+  mockFetchError,
+  mockFetchRequest,
+  mockFetchResponse,
+} from '../helpers/mockRequests.js';
+
+const { Segment, Subsegment } = xraySDK;
+const mocks = vi.hoisted(() => ({
+  captureAWS: vi.fn(),
+  captureAWSClient: vi.fn(),
+  captureAWSv3Client: vi.fn(),
+  captureAsyncFunc: vi.fn(),
+  captureHTTPsGlobal: vi.fn(),
+  captureFunc: vi.fn(),
+  getNamespace: vi.fn(),
+  getSegment: vi.fn(),
+  setContextMissingStrategy: vi.fn(),
+  setDaemonAddress: vi.fn(),
+  setLogger: vi.fn(),
+  setSegment: vi.fn(),
+}));
+
+vi.mock('aws-xray-sdk-core', async (importOriginal) => ({
+  default: {
+    ...(
+      await importOriginal<{
+        default: typeof import('aws-xray-sdk-core');
+      }>()
+    ).default,
+    ...mocks,
+  },
+}));
+
+vi.mock('@aws-lambda-powertools/commons', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@aws-lambda-powertools/commons')>()),
+  addUserAgentMiddleware: vi.fn(),
+}));
+
+describe('Class: ProviderService', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('Method: captureAWSv3Client', () => {
+    it('calls the correct underlying function with proper arguments', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.captureAWSv3Client({});
+
+      // Assess
+      expect(mocks.captureAWSv3Client).toHaveBeenCalledTimes(1);
+      expect(mocks.captureAWSv3Client).toHaveBeenCalledWith({});
+    });
+
+    it('adds the correct user agent middleware', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      const dynamoDBClient = new DynamoDBClient({});
+      provider.captureAWSv3Client(dynamoDBClient);
+
+      // Assess
+      expect(addUserAgentMiddleware).toHaveBeenNthCalledWith(
+        1,
+        dynamoDBClient,
+        'tracer'
+      );
+    });
+  });
+
+  describe('Method: captureAsyncFunc', () => {
+    it('calls the correct underlying function function', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.captureAsyncFunc('my-func', () => true);
+
+      // Assess
+      expect(mocks.captureAsyncFunc).toHaveBeenCalledTimes(1);
+      expect(mocks.captureAsyncFunc).toHaveBeenCalledWith(
+        'my-func',
+        expect.anything()
+      );
+    });
+  });
+
+  describe('Method: captureHTTPsGlobal', () => {
+    it('calls the correct underlying function with proper arguments', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.captureHTTPsGlobal();
+
+      // Assess
+      expect(mocks.captureHTTPsGlobal).toHaveBeenCalledTimes(2);
+      expect(mocks.captureHTTPsGlobal).toHaveBeenNthCalledWith(1, http);
+      expect(mocks.captureHTTPsGlobal).toHaveBeenNthCalledWith(2, https);
+    });
+  });
+
+  describe('Method: captureFunc', () => {
+    it('calls the correct underlying function with proper arguments', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.captureFunc('my-func', () => true);
+
+      // Assess
+      expect(mocks.captureFunc).toHaveBeenCalledTimes(1);
+      expect(mocks.captureFunc).toHaveBeenCalledWith(
+        'my-func',
+        expect.anything()
+      );
+    });
+  });
+
+  describe('Method: getNamespace', () => {
+    it('calls the correct sdk function', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.getNamespace();
+
+      // Assess
+      expect(mocks.getNamespace).toHaveBeenCalledTimes(1);
+      expect(mocks.getNamespace).toHaveBeenCalledWith();
+    });
+  });
+
+  describe('Method: setContextMissingStrategy', () => {
+    it('calls the correct sdk function', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.setContextMissingStrategy('LOG_ERROR');
+
+      // Assess
+      expect(mocks.setContextMissingStrategy).toHaveBeenCalledTimes(1);
+      expect(mocks.setContextMissingStrategy).toHaveBeenCalledWith('LOG_ERROR');
+    });
+  });
+
+  describe('Method: setDaemonAddress', () => {
+    it('calls the correct sdk function', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.setDaemonAddress('http://localhost:8000');
+
+      // Assess
+      expect(mocks.setDaemonAddress).toHaveBeenCalledTimes(1);
+      expect(mocks.setDaemonAddress).toHaveBeenCalledWith(
+        'http://localhost:8000'
+      );
+    });
+  });
+
+  describe('Method: setLogger', () => {
+    it('calls the correct sdk function', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.setLogger({});
+
+      // Assess
+      expect(mocks.setLogger).toHaveBeenCalledTimes(1);
+      expect(mocks.setLogger).toHaveBeenCalledWith({});
+    });
+  });
+
+  describe('Method: setSegment', () => {
+    it('calls the correct sdk function', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const subsegment = new Subsegment('## foo-bar');
+
+      // Act
+      provider.setSegment(subsegment);
+
+      // Assess
+      expect(mocks.setSegment).toHaveBeenCalledTimes(1);
+      expect(mocks.setSegment).toHaveBeenCalledWith(subsegment);
+    });
+  });
+
+  describe('Method: putAnnotation', () => {
+    it('logs a warning and does not throw when there is no active segment', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const logSpy = vi.spyOn(console, 'warn');
+
+      // Act
+      provider.putAnnotation('foo', 'bar');
+
+      // Assess
+      expect(logSpy).toHaveBeenCalledTimes(1);
+      expect(logSpy).toHaveBeenCalledWith(
+        'No active segment or subsegment found, skipping annotation'
+      );
+    });
+
+    it('logs a warning and does not annotate the segment when called on a segment', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const facade = new Segment('facade');
+      const logWarningSpy = vi.spyOn(console, 'warn');
+      vi.spyOn(provider, 'getSegment').mockImplementation(
+        () => new Segment('facade')
+      );
+      const addAnnotationSpy = vi.spyOn(facade, 'addAnnotation');
+
+      // Act
+      provider.putAnnotation('foo', 'bar');
+
+      // Assess
+      expect(logWarningSpy).toHaveBeenCalledTimes(1);
+      expect(logWarningSpy).toHaveBeenCalledWith(
+        'You cannot annotate the main segment in a Lambda execution environment'
+      );
+      expect(addAnnotationSpy).toHaveBeenCalledTimes(0);
+    });
+
+    it('annotates the currently active segment', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      const segmentSpy = vi.spyOn(segment, 'addAnnotation');
+
+      // Act
+      provider.putAnnotation('foo', 'bar');
+
+      // Assess
+      expect(segmentSpy).toHaveBeenCalledTimes(1);
+      expect(segmentSpy).toHaveBeenCalledWith('foo', 'bar');
+    });
+  });
+
+  describe('Method: putMetadata', () => {
+    it('logs a warning and does not throw when called and there is no segment', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const logWarningSpy = vi.spyOn(console, 'warn');
+
+      // Act
+      provider.putMetadata('foo', 'bar');
+
+      // Assess
+      expect(logWarningSpy).toHaveBeenCalledTimes(1);
+      expect(logWarningSpy).toHaveBeenCalledWith(
+        'No active segment or subsegment found, skipping metadata addition'
+      );
+    });
+
+    it('logs a warning and does not annotate the segment when called on a segment', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const facade = new Segment('facade');
+      const logSpy = vi.spyOn(console, 'warn');
+      vi.spyOn(provider, 'getSegment').mockImplementation(
+        () => new Segment('facade')
+      );
+      const facadeSpy = vi.spyOn(facade, 'addMetadata');
+
+      // Act
+      provider.putMetadata('foo', 'bar');
+
+      // Assess
+      expect(logSpy).toHaveBeenCalledTimes(1);
+      expect(logSpy).toHaveBeenCalledWith(
+        'You cannot add metadata to the main segment in a Lambda execution environment'
+      );
+      expect(facadeSpy).toHaveBeenCalledTimes(0);
+    });
+
+    it('adds the metadata on the currently active subsegment', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      const segmentSpy = vi.spyOn(segment, 'addMetadata');
+
+      // Act
+      provider.putMetadata('foo', 'bar', 'baz');
+
+      // Assess
+      expect(segmentSpy).toHaveBeenCalledTimes(1);
+      expect(segmentSpy).toHaveBeenCalledWith('foo', 'bar', 'baz');
+    });
+  });
+
+  describe('Method: instrumentFetch', () => {
+    it('subscribes to the diagnostics channel', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+
+      // Act
+      provider.instrumentFetch();
+
+      // Assess
+      expect(channel('undici:request:create').hasSubscribers).toBe(true);
+      expect(channel('undici:request:headers').hasSubscribers).toBe(true);
+      expect(channel('undici:request:error').hasSubscribers).toBe(true);
+    });
+
+    it('traces a successful request', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(subsegment, 'close');
+
+      // Act
+      provider.instrumentFetch();
+      const mockRequest = mockFetch({
+        origin: 'https://aws.amazon.com',
+        path: '/blogs',
+        headers: {
+          'content-length': '100',
+        },
+      });
+
+      // Assess
+      expect(segment.addNewSubsegment).toHaveBeenCalledTimes(1);
+      expect(segment.addNewSubsegment).toHaveBeenCalledWith('aws.amazon.com');
+      expect((subsegment as HttpSubsegment).http).toEqual({
+        request: {
+          url: 'https://aws.amazon.com/blogs',
+          method: 'GET',
+        },
+        response: {
+          status: 200,
+          content_length: 100,
+        },
+      });
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(mockRequest.addHeader).toHaveBeenLastCalledWith(
+        'X-Amzn-Trace-Id',
+        expect.stringMatching(
+          /Root=1-abcdef12-3456abcdef123456abcdef12;Parent=\S{16};Sampled=1/
+        )
+      );
+    });
+
+    it('excludes the content_length header when invalid or not found', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(subsegment, 'close');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: new URL('https://aws.amazon.com'),
+        path: '/blogs',
+        headers: {
+          'content-type': 'application/json',
+        },
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual({
+        request: {
+          url: 'https://aws.amazon.com/blogs',
+          method: 'GET',
+        },
+        response: {
+          status: 200,
+        },
+      });
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+    });
+
+    it.each<{
+      case: string;
+      headers: Record<string, string | string[]>;
+      response: Record<string, number>;
+    }>([
+      {
+        case: 'string',
+        headers: { 'content-length': '100' },
+        response: { status: 200, content_length: 100 },
+      },
+      {
+        case: 'array',
+        headers: { 'content-length': ['100'] },
+        response: { status: 200, content_length: 100 },
+      },
+      {
+        case: 'missing',
+        headers: { 'content-type': 'application/json' },
+        response: { status: 200 },
+      },
+    ])(
+      'reads the content_length from HTTP/2 headers ($case)',
+      ({ headers, response }) => {
+        // Prepare
+        const provider: ProviderService = new ProviderService();
+        const segment = new Subsegment('## dummySegment');
+        const subsegment = segment.addNewSubsegment('aws.amazon.com');
+        vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+          () => subsegment
+        );
+        vi.spyOn(provider, 'getSegment')
+          .mockImplementationOnce(() => segment)
+          .mockImplementationOnce(() => subsegment)
+          .mockImplementationOnce(() => subsegment);
+
+        // Act
+        provider.instrumentFetch();
+        mockFetch({
+          origin: 'https://aws.amazon.com',
+          path: '/blogs',
+          headers,
+          http2: true,
+        });
+
+        // Assess
+        expect((subsegment as HttpSubsegment).http).toEqual({
+          request: {
+            url: 'https://aws.amazon.com/blogs',
+            method: 'GET',
+          },
+          response,
+        });
+      }
+    );
+
+    it('adds a throttle flag to the segment when the status code is 429', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      vi.spyOn(subsegment, 'addThrottleFlag');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(subsegment, 'close');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: 'https://aws.amazon.com/blogs',
+        statusCode: 429,
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          response: {
+            status: 429,
+          },
+        })
+      );
+      expect(subsegment.addThrottleFlag).toHaveBeenCalledTimes(1);
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('adds an error flag to the segment when the status code is 4xx', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      vi.spyOn(subsegment, 'addErrorFlag');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(subsegment, 'close');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: 'https://aws.amazon.com/blogs',
+        statusCode: 404,
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          response: {
+            status: 404,
+          },
+        })
+      );
+      expect(subsegment.addErrorFlag).toHaveBeenCalledTimes(1);
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('adds a fault flag to the segment when the status code is 5xx', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      vi.spyOn(subsegment, 'addFaultFlag');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(subsegment, 'close');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: 'https://aws.amazon.com/blogs',
+        statusCode: 500,
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          response: {
+            status: 500,
+          },
+        })
+      );
+      expect(subsegment.addFaultFlag).toHaveBeenCalledTimes(1);
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('skips the segment creation when the request has no origin', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      vi.spyOn(segment, 'addNewSubsegment');
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({});
+
+      // Assess
+      expect(segment.addNewSubsegment).toHaveBeenCalledTimes(0);
+    });
+
+    it('does not add any path to the segment when the request has no path', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(subsegment, 'close');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: new URL('https://aws.amazon.com'),
+      });
+
+      // Assess
+      expect((subsegment as HttpSubsegment).http).toEqual(
+        expect.objectContaining({
+          request: {
+            url: 'https://aws.amazon.com/',
+            method: 'GET',
+          },
+        })
+      );
+    });
+
+    it('closes the subsegment of the request that received the response when requests overlap', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+
+      // Act
+      provider.instrumentFetch();
+      const firstRequest = mockFetchRequest({
+        origin: 'https://aws.amazon.com',
+        path: '/blogs',
+      });
+      const secondRequest = mockFetchRequest({
+        origin: 'https://docs.aws.amazon.com',
+        path: '/lambda',
+      });
+      mockFetchResponse(secondRequest, { statusCode: 500 });
+      mockFetchResponse(firstRequest, { statusCode: 200 });
+
+      // Assess
+      const [firstSubsegment, secondSubsegment] =
+        segment.subsegments as HttpSubsegment[];
+      expect(firstSubsegment.http).toEqual({
+        request: {
+          url: 'https://aws.amazon.com/blogs',
+          method: 'GET',
+        },
+        response: {
+          status: 200,
+        },
+      });
+      expect(secondSubsegment.http).toEqual({
+        request: {
+          url: 'https://docs.aws.amazon.com/lambda',
+          method: 'GET',
+        },
+        response: {
+          status: 500,
+        },
+      });
+      expect(firstSubsegment.isClosed()).toBe(true);
+      expect(secondSubsegment.isClosed()).toBe(true);
+    });
+
+    it('closes the subsegment only once when the request fails after receiving the response', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      const subsegment = segment.addNewSubsegment('aws.amazon.com');
+      vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+        () => subsegment
+      );
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(subsegment, 'close');
+      vi.spyOn(subsegment, 'addErrorFlag');
+
+      // Act
+      provider.instrumentFetch();
+      const request = mockFetchRequest({
+        origin: 'https://aws.amazon.com',
+        path: '/blogs',
+      });
+      mockFetchResponse(request);
+      mockFetchError(request, new Error('Connection reset by peer'));
+
+      // Assess
+      expect(subsegment.close).toHaveBeenCalledTimes(1);
+      expect(subsegment.addErrorFlag).toHaveBeenCalledTimes(0);
+    });
+
+    it('leaves the active segment unchanged for the duration of the request', () => {
+      // Prepare
+      const provider: ProviderService = new ProviderService();
+      const segment = new Subsegment('## dummySegment');
+      vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+      vi.spyOn(provider, 'setSegment');
+
+      // Act
+      provider.instrumentFetch();
+      mockFetch({
+        origin: 'https://aws.amazon.com',
+        path: '/blogs',
+      });
+
+      // Assess
+      expect(provider.setSegment).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  it('closes the segment and adds a fault flag when the connection fails', () => {
+    // Prepare
+    const provider: ProviderService = new ProviderService();
+    const segment = new Subsegment('## dummySegment');
+    const subsegment = segment.addNewSubsegment('aws.amazon.com');
+    vi.spyOn(subsegment, 'addError');
+    vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+      () => subsegment
+    );
+    vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+    vi.spyOn(subsegment, 'close');
+
+    // Act
+    provider.instrumentFetch();
+    try {
+      mockFetch({
+        origin: 'https://aws.amazon.com/blogs',
+        throwError: true,
+      });
+    } catch {}
+
+    // Assess
+    expect(subsegment.addError).toHaveBeenCalledTimes(1);
+    expect(subsegment.close).toHaveBeenCalledTimes(1);
+  });
+
+  it('forwards the correct sampling decision in the request header', () => {
+    // Prepare
+    const provider: ProviderService = new ProviderService();
+    const segment = new Subsegment('## dummySegment');
+    const subsegment = segment.addNewSubsegment('aws.amazon.com');
+    subsegment.notTraced = true;
+    vi.spyOn(segment, 'addNewSubsegment').mockImplementationOnce(
+      () => subsegment
+    );
+    vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+    vi.spyOn(subsegment, 'close');
+
+    // Act
+    provider.instrumentFetch();
+    const mockRequest = mockFetch({
+      origin: 'https://aws.amazon.com',
+      path: '/blogs',
+      headers: {
+        'content-length': '100',
+      },
+    });
+
+    // Assess
+    expect(mockRequest.addHeader).toHaveBeenLastCalledWith(
+      'X-Amzn-Trace-Id',
+      expect.stringMatching(
+        /Root=1-abcdef12-3456abcdef123456abcdef12;Parent=\S{16};Sampled=0/
+      )
+    );
+  });
+
+  it('skips requests with CONNECT method', () => {
+    // Prepare
+    const provider: ProviderService = new ProviderService();
+    const segment = new Subsegment('## dummySegment');
+    vi.spyOn(provider, 'getSegment').mockImplementation(() => segment);
+    vi.spyOn(segment, 'addNewSubsegment');
+
+    // Act
+    provider.instrumentFetch();
+    mockFetch({
+      origin: 'https://aws.amazon.com',
+      method: 'CONNECT',
+    });
+
+    // Assess
+    expect(segment.addNewSubsegment).toHaveBeenCalledTimes(0);
+  });
+});

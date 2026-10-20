@@ -1,0 +1,68 @@
+name: Auto-trigger docs rebuild on layer ARN docs PR merge
+
+# PROCESS
+#
+# This workflow watches for `publish_layer.yml`'s `update_layer_arn_docs` job PR (branch
+# `ci-layer-docs-<run_id>`) merging to `main` so it can dispatch `rebuild_latest_docs.yml`
+# automatically, leaving only the human action that requires actual review: approving the
+# ARN-doc PR.
+#
+# SECURITY NOTE
+#
+# Uses `pull_request_target` so unrelated fork PRs can skip without workflow approval.
+# The workflow definition comes from the default branch. This event can grant the
+# job's write permissions even for fork events, so all job conditions below are required.
+# The job only reads data from trusted `main` and dispatches a fixed workflow on `main`;
+# it never checks out or executes PR code.
+#
+# `github.event.pull_request.user.login` is set by GitHub from the identity that actually
+# called the API to open the PR - it isn't spoofable via branch name, PR title, or body.
+# `ci-layer-docs-*` PRs are opened by aws-powertools/actions' `create-pr` action using the
+# default `GITHUB_TOKEN`, so `.user.login` is always `github-actions[bot]` (confirmed
+# against real PR history - this is NOT the same as `aws-powertools-bot`, which is only
+# the git commit-author identity `create-pr` sets locally via `git config`, not what
+# GitHub exposes as the PR's author).
+#
+# Combined with `head.repo.full_name == github.repository` (rejects forks explicitly)
+# and the merge and branch checks, only merged, same-repo, bot-authored PRs with the
+# expected prefix can reach the dispatch step. Bot authorship does not attest which
+# workflow created the PR. Unrelated closures on `main` still create skipped runs.
+
+on:
+  pull_request_target:
+    types: [closed]
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  trigger-rebuild-docs:
+    if: >
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'github-actions[bot]' &&
+      startsWith(github.event.pull_request.head.ref, 'ci-layer-docs-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Resolve latest published version
+        id: version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          version=$(gh api "repos/$REPOSITORY/contents/packages/commons/package.json?ref=main" --jq '.content' | base64 --decode | jq -er '.version | select(type == "string")')
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Expected a stable release version" >&2
+            exit 1
+          fi
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+      - name: Dispatch Rebuild latest docs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: gh workflow run rebuild_latest_docs.yml --repo ${{ github.repository }} --ref main --field latest_published_version="$VERSION"

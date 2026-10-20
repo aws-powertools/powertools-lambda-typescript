@@ -1,0 +1,17 @@
+sequenceDiagram
+    autonumber
+    participant SQS queue
+    participant Lambda service
+    participant Lambda function
+    Lambda service->>SQS queue: Poll
+    Lambda service->>Lambda function: Invoke (batch event)
+    activate Lambda function
+    Lambda function-->Lambda function: Process 2 out of 10 batch items
+    Lambda function--xLambda function: Fail on 3rd batch item
+    Lambda function-->Lambda function: Process messages from another MessageGroupID
+    Lambda function->>Lambda service: Report 3rd batch item and all messages within the same MessageGroupID as failure
+    deactivate Lambda function
+    activate SQS queue
+    Lambda service->>SQS queue: Delete successful messages processed
+    SQS queue-->>SQS queue: Failed messages return
+    deactivate SQS queue

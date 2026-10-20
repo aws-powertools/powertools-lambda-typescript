@@ -1,0 +1,1096 @@
+---
+title: HTTP API
+description: Event handler for building HTTP APIs in AWS Lambda
+---
+
+Event handler for Amazon API Gateway REST and HTTP APIs, Application Loader Balancer (ALB), and Lambda Function URLs<!--, and VPC Lattice -->.
+
+## Key Features
+
+* Lightweight routing to reduce boilerplate for API Gateway REST/HTTP API, ALB and Lambda Function URLs.
+* Built-in middleware engine for request/response transformation and validation.
+* Works with micro function (one or a few routes) and monolithic functions (see [Considerations](#considerations)).
+
+## Getting started
+
+### Install
+
+<!-- !!! info "This is not necessary if you're using Powertools for AWS Lambda (TypeScript) via [Lambda layer](../../getting-started/lambda-layers.md)." -->
+
+```shell
+npm install @aws-lambda-powertools/event-handler
+```
+
+### Required resources
+
+The event handler works with different types of events. It can process events from API Gateway REST APIs, HTTP APIs, ALB, Lambda Function URLs, and will soon support VPC Lattice as well.
+
+You must have an existing integration configured to invoke your Lambda function depending on what you are using:
+
+| Integration               | Documentation                                                                                                                                |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| API Gateway REST API      | [Proxy integration](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html){target="_blank"}     |
+| API Gateway HTTP API      | [Proxy integration](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html){target="_blank"} |
+| Application Load Balancer | [ALB configuration](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html){target="_blank"}              |
+| Lambda Function URL       | [Function URL configuration](https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html){target="_blank"}                          |
+
+<!-- In case of using [VPC Lattice](https://docs.aws.amazon.com/lambda/latest/dg/services-vpc-lattice.html){target="_blank"}, you must have a service network configured to invoke your Lambda function. -->
+
+This is the sample infrastructure for the different integrations we are using for the examples in this documentation. There is no additional permissions or dependencies required to use this utility.
+
+??? "See Infrastructure as Code (IaC) examples"
+    === "API Gateway REST API SAM Template"
+
+        ```yaml title="AWS Serverless Application Model (SAM) example"
+        --8<-- "examples/snippets/event-handler/http/templates/api_gateway_rest_api.yml"
+        ```
+    
+    === "API Gateway HTTP API SAM Template"
+
+        ```yaml title="AWS Serverless Application Model (SAM) example"
+        --8<-- "examples/snippets/event-handler/http/templates/api_gateway_http_api.yml"
+        ```
+    
+    === "Lambda Function URL SAM Template"
+
+        ```yaml title="AWS Serverless Application Model (SAM) example"
+        --8<-- "examples/snippets/event-handler/http/templates/lambda_furl.yml"
+        ```
+
+### Route events
+
+When a request is received, the event handler automatically detects the event type and converts it into a [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request){target="_blank"} object.
+
+You get access to headers, query parameters, request body, and path parameters via typed arguments. The response type is determined automatically based on the event.
+
+#### Response auto-serialization
+
+!!! tip "Want full control over the response, headers, and status code? Read how to [return `Response` objects](#returning-response-objects) directly."
+
+For your convenience, when you return a JavaScript object from your route handler, we automatically perform these actions:
+
+* Auto-serialize the response to JSON
+* Include the response under the appropriate equivalent of a `body`
+* Set the `Content-Type` header to `application/json`
+* Set the HTTP status code to 200 (OK)
+
+=== "index.ts"
+
+    ```ts hl_lines="6"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_serialization.ts"
+    ```
+
+    1. This object will be serialized and included under the `body` key
+
+=== "JSON response"
+
+    ```json hl_lines="6"
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_serialization.json"
+    ```
+
+!!! tip "Automatic response format transformation"
+    The event handler automatically ensures the correct response format is returned based on the event type received. For example, if your handler returns an API Gateway v1 proxy response but processes an ALB event, we'll automatically transform it into an ALB-compatible response. This allows you to swap integrations with little to no code changes.
+
+If you need to control the status code or headers alongside auto-serialization, return an object with `statusCode` and `headers` fields. The `body` field accepts any JSON-serializable value — object or array — and is automatically serialized. Omitting `body` produces an empty response body, which is useful for responses like `204 No Content`.
+
+=== "index.ts"
+
+    ```ts hl_lines="7-9 14 18"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_extended_proxy_result.ts"
+    ```
+
+    1. Set a custom status code alongside JSON auto-serialization
+    2. Set custom response headers
+    3. Object body is automatically serialized to JSON
+    4. Array body is automatically serialized to JSON
+    5. Omitting `body` produces an empty response body
+
+=== "Response"
+
+    ```json hl_lines="2"
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_extended_proxy_result.json"
+    ```
+
+### Dynamic routes
+
+You can use `/todos/:todoId` to configure dynamic URL paths, where `:todoId` will be resolved at runtime.
+
+All dynamic route parameters will be available as typed object properties in the first argument of your route handler.
+
+=== "index.ts"
+
+    ```ts hl_lines="14"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_dynamic_routes.ts:3"
+    ```
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_dynamic_routes.json"
+    ```
+
+You can also nest dynamic paths, for example `/todos/:todoId/comments/:commentId`, where both `:todoId` and `:commentId` will be resolved at runtime.
+
+#### Catch-all routes
+
+For scenarios where you need to handle arbitrary or deeply nested paths, you can use regex patterns directly in your route definitions. These are particularly useful for proxy routes or when dealing with file paths.
+
+**We recommend** having explicit routes whenever possible; use catch-all routes sparingly.
+
+##### Using Regex Patterns
+
+You can use standard [regular expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions){target="_blank" rel="nofollow"} in your route definitions, for example:
+
+| Pattern   | Description                              | Examples                                                    |
+|-----------|------------------------------------------|-------------------------------------------------------------|
+| `/.+/`    | Matches one or more characters (greedy)  | `/\/proxy\/.+/` matches `/proxy/any/deep/path`              |
+| `/.*/`    | Matches zero or more characters (greedy) | `/\/files\/.*/` matches `/files/` and `/files/deep/path`    |
+| `/[^/]+/` | Matches one or more non-slash characters | `/\/api\/[^\/]+/` matches `/api/v1` but not `/api/v1/users` |
+| `/\w+/`   | Matches one or more word characters      | `/\/users\/\w+/` matches `/users/john123`                   |
+
+=== "index.ts"
+
+    ```python hl_lines="7 10 13 20"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_dynamic_routes_catch_all.ts"
+    ```
+
+???+ warning "Route Matching Priority"
+    - For non-regex routes, routes are matched in **order of specificity**, not registration order
+    - More specific routes (exact matches) take precedence over regex patterns
+    - Among regex routes, registration order determines matching precedence, therefore, always place catch-all routes `/.*/` last
+
+### HTTP Methods
+
+You can use dedicated methods to specify the HTTP method that should be handled in each resolver. That is, `app.<httpMethod>()`, where the HTTP method could be `delete`, `get`, `head`, `patch`, `post`, `put`, `options`.
+
+=== "index.ts"
+
+    ```ts hl_lines="14 16"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_methods.ts:3"
+    ```
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_methods.json"
+    ```
+
+If you need to accept multiple HTTP methods in a single function, or support an HTTP method for which no dedicated method exists (i.e. [`TRACE`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/TRACE){target="_blank"}), you can use the `route()` method and pass a list of HTTP methods.
+
+=== "index.ts"
+
+    ```ts hl_lines="21-24"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_multi_methods.ts:3"
+    ```
+
+!!! tip
+    We recommend defining separate route handlers for each HTTP method within your Lambda function, as the functionality typically differs between operations such as `GET`, `POST`, `PUT`, `DELETE` etc
+
+#### Using decorators
+
+If you prefer to use the decorator syntax, you can use the same methods on a class method to register your route handlers. Learn more about how Powertools for TypeScript supports [decorators](../../getting-started/usage-patterns.md).
+
+=== "Decorator syntax"
+
+    ```ts hl_lines="10 21 32"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_decorators_basic.ts"
+    ```
+
+    !!! tip
+        We recommend passing a reference to `this` to ensure the correct class scope is propagated to the route handler functions.
+
+### Data validation
+
+Event Handler supports built-in request and response validation using [Standard Schema](https://standardschema.dev){target="_blank"}, a common specification supported by popular TypeScript validation libraries including [Zod](https://zod.dev){target="_blank"}, [Valibot](https://valibot.dev){target="_blank"}, and [ArkType](https://arktype.io){target="_blank"}.
+
+!!! note "Body validation is limited to JSON-serializable values"
+    Standard Schema validators operate on JavaScript values, not raw bytes. For body validation, Event Handler deserializes the body before passing it to your schema: `application/json` content, and any content type with a `+json` structured syntax suffix (e.g. `application/vnd.api+json`, `application/problem+json`), is parsed as an object.
+    All other content types are passed as a plain string. Binary data, streams, and other non-serializable response types cannot be validated.
+
+#### Validating requests
+
+Pass a `validation` option to your route handler with a `req` configuration to validate the incoming request. Validation runs before your handler, and if it fails, Event Handler automatically returns a **422 Unprocessable Entity** response with structured error details.
+
+Validated data is available via `reqCtx.valid.req` and is fully typed based on your schema. Only the fields you provide schemas for are accessible: accessing an unvalidated field (e.g., `reqCtx.valid.req.headers` when no headers schema was configured) is a compile-time error.
+
+=== "index.ts"
+
+    ```ts hl_lines="3 7-10 15 19"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_request.ts"
+    ```
+
+    1. Access the validated and typed request body via `reqCtx.valid.req.body`
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_validation_req.json"
+    ```
+
+=== "Response"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_validation_res.json"
+    ```
+
+=== "Validation error (422)"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_validation_422.json"
+    ```
+
+You can validate any combination of `body`, `headers`, `path` parameters, and `query` parameters — at least one must be specified:
+
+=== "index.ts"
+
+    ```ts hl_lines="8-11 17-19"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_request_parts.ts"
+    ```
+
+    1. Query params are always strings — `z.coerce.number()` coerces and validates the value, typing it as `number`
+    2. Validated path parameters available via `reqCtx.valid.req.path`
+    3. `page` and `limit` are typed as `number` — no manual casting needed
+    4. Validated headers available via `reqCtx.valid.req.headers`
+    5. Headers are always strings — `z.coerce.number()` coerces and validates the value, typing it as `number`
+
+#### Validating responses
+
+Pass a `validation` option to your route handler with a `res` configuration to validate the outgoing response body and headers after your handler executes. If validation fails, Event Handler returns a **500 Internal Server Error**.
+
+Response validation is useful for ensuring your handler returns the expected shape and catching contract violations early.
+Validated data is available via `reqCtx.valid.res` and is fully typed based on your schema. Only the fields you provide schemas
+for are accessible: accessing an unvalidated field (e.g., `reqCtx.valid.res.headers` when no headers schema was configured) is a compile-time error.
+
+=== "index.ts"
+
+    ```ts hl_lines="3 7-11 19"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_response.ts"
+    ```
+
+    1. If the response doesn't match the schema, a 500 is returned
+
+=== "Validation error (500)"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/gettingStarted_validation_500.json"
+    ```
+
+You can also validate response headers by providing a `headers` schema in the `res` configuration. This is useful for enforcing that required headers — such as correlation IDs or cache directives — are always present:
+
+=== "index.ts"
+
+    ```ts hl_lines="7-10 26"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_response_headers.ts"
+    ```
+
+    1. Enforce that the correlation ID is a valid UUID
+    2. If either required header is absent or invalid, a 500 is returned
+    3. Headers are always strings — `z.coerce.number()` coerces and validates the value, typing it as `number`
+
+You can combine both request and response validation in a single route by providing both `req` and `res`:
+
+=== "index.ts"
+
+    ```ts hl_lines="7-13 18 23-24"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_combined.ts"
+    ```
+
+    1. Access the validated and typed request body via `reqCtx.valid.req.body`
+    2. If the response doesn't match the schema, a 500 is returned
+
+!!! tip
+    If you need request validation but want to skip runtime response validation, annotate your handler's return type directly and TypeScript will enforce the return shape at compile time:
+
+    ```ts hl_lines="9 13 19"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_validation_response_types.ts"
+    ```
+
+    1. TypeScript enforces `Todo` as the return type at compile time
+    2. Only request validation runs at runtime — no response validation
+
+### Accessing request details
+
+You can access request details such as headers, query parameters, and body using the `Request` object provided to your route handlers and middleware functions via `reqCtx.req`.
+
+For API Gateway v1, API Gateway v2, and ALB events, the router automatically decodes base64 request bodies into bytes. Use `reqCtx.req.arrayBuffer()` to read binary uploads or `reqCtx.req.formData()` to read multipart uploads. You can continue using `reqCtx.req.text()` and `reqCtx.req.json()` for text and JSON bodies.
+
+The router preserves the request's `Content-Type` header. If the event contains a base64 body without this header, the router leaves the content type unset. Plain string bodies without a content type retain the Web `Request` default of `text/plain;charset=UTF-8`. Bodies on GET and HEAD requests are ignored.
+
+### Error handling
+
+You can use the `errorHandler()` method as a higher-order function or class method decorator to define a custom error handler for errors thrown in your route handlers or middleware.
+
+This allows you to catch and return custom error responses, or perform any other error handling logic you need.
+
+Error handlers receive the error object and the request context as arguments, and can return a [`Response` object](#returning-response-objects) or a JavaScript object that will be auto-serialized as per the [response auto-serialization](#response-auto-serialization) section.
+
+!!! tip "You can also pass a list of error classes to the `errorHandler()` method."
+
+=== "index.ts"
+
+    ```ts hl_lines="11"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_error_handling.ts:4"
+    ```
+
+=== "Using decorators"
+
+    ```ts hl_lines="16"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_error_handling_decorators.ts"
+    ```
+
+### Built-in Error Handlers
+
+We provide built-in error handlers for common routing errors so you don't have to specify the Error type explicitly.
+
+You can use the `notFound()` and `methodNotAllowed()` methods as higher-order functions or class method decorators to customize error responses for unmatched routes and unsupported HTTP methods.
+
+By default, we return a `404 Not Found` response for unmatched routes.
+
+=== "index.ts"
+
+    ```ts hl_lines="11 23"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_built_in_error_handler.ts"
+    ```
+
+=== "Using decorators"
+
+    ```ts hl_lines="15 31"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_built_in_error_handler_decorators.ts"
+    ```
+
+### Throwing HTTP errors
+
+You can throw HTTP errors in your route handlers to stop execution and return specific HTTP status codes and messages. Event Handler provides a set of built-in HTTP error classes that you can use to throw common HTTP errors.
+
+This ensures that your Lambda function doesn't fail but returns a well-defined HTTP error response to the client.
+
+If you need to send custom headers or a different response structure/code, you can use the [Response](#returning-response-objects) object instead.
+
+!!! tip "You can throw HTTP errors in your route handlers, middleware, or custom error handlers!"
+
+When a custom error handler throws an HTTP error, the router can pass it to another registered handler. Each handler runs at most once in that error-resolution chain. If dispatch would call a handler again, the router returns the HTTP error's built-in status and message instead. This also prevents cycles involving multiple handlers.
+
+=== "index.ts"
+
+    ```ts hl_lines="3 11"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_throwing_http_errors.ts:3"
+    ```
+
+#### Available HTTP error classes
+
+The following HTTP error classes are available for use in your route handlers:
+
+| Error Class                  | HTTP Status Code | Description                                                                            |
+| ---------------------------- | ---------------- | -------------------------------------------------------------------------------------- |
+| `BadRequestError`            | 400              | Bad Request - The request cannot be fulfilled due to bad syntax                        |
+| `UnauthorizedError`          | 401              | Unauthorized - Authentication is required and has failed or not been provided          |
+| `ForbiddenError`             | 403              | Forbidden - The request is valid but the server is refusing action                     |
+| `NotFoundError`              | 404              | Not Found - The requested resource could not be found                                  |
+| `MethodNotAllowedError`      | 405              | Method Not Allowed - The request method is not supported for the requested resource    |
+| `RequestTimeoutError`        | 408              | Request Timeout - The server timed out waiting for the request                         |
+| `RequestEntityTooLargeError` | 413              | Request Entity Too Large - The request is larger than the server is willing to process |
+| `InternalServerError`        | 500              | Internal Server Error - A generic error message for unexpected server conditions       |
+| `ServiceUnavailableError`    | 503              | Service Unavailable - The server is currently unavailable                              |
+
+All error classes accept optional parameters for custom messages and additional details:
+
+* `message` - Custom error message
+* `options` - Standard JavaScript `ErrorOptions`
+* `details` - Additional structured data to include in the error response
+
+### Route prefixes
+
+When defining multiple routes related to a specific resource, it's common to have a shared prefix. For example, you might have several routes that all start with `/todos`.
+
+For example, if you have a custom domain `api.example.com` and you want to map it to the `/v1` base path of your API. In this case, all the requests will contain `/v1/<resource>` in the path, requiring you to repeat the `/v1` prefix in all your route definitions.
+
+To avoid repeating the prefix in each route definition, you can use the `prefix` constructor parameter when creating a new `Router` instance, and we'll automatically strip it from the request path before matching routes. After mapping a path prefix, the new root path will automatically be mapped to the path argument of `/`.
+
+=== "index.ts"
+
+    ```ts hl_lines="4 7"
+    --8<-- "examples/snippets/event-handler/http/gettingStarted_route_prefix.ts:3"
+    ```
+
+This is also useful when splitting routes into separate files (see [Split routers](#split-routers) section) or when using [API mappings](https://docs.aws.amazon.com/apigateway/latest/developerguide/rest-api-mappings.html){target="_blank"} to map custom domains to specific base paths.
+
+For example, when using `prefix: '/pay'`, there is no difference between a request path of `/pay` and `/pay/`; and the path argument would be defined as `/`.
+
+## Advanced
+
+### Middleware
+
+Middleware are functions that execute during the request-response cycle, sitting between the
+incoming request and your route handler. They provide a way to implement cross-cutting
+concerns like authentication, logging, validation, and response transformation without
+cluttering your route handlers.
+
+Each middleware function receives two arguments:
+
+* **reqCtx** - Request context containing the event, Lambda context, request, and response objects
+* **next** - A function to pass control to the next middleware in the chain
+
+Middleware can be applied on specific routes, globally on all routes, or a combination of both.
+
+Middleware execution follows an onion pattern where global middleware runs first in
+pre-processing, then route-specific middleware. After the handler executes, the order reverses
+for post-processing. When middleware modify the same response properties, the middleware that
+executes last in post-processing wins.
+
+```mermaid
+--8<-- "examples/snippets/event-handler/http/diagrams/middleware_execution_order.mermaid"
+
+```
+
+#### Registering middleware
+
+You can use `app.use()` to register middleware that should always run regardless of the route
+and you can apply middleware to specific routes by passing them as arguments before the route
+handler or as a second argument to the route decorator.
+
+=== "index.ts"
+
+    ```ts hl_lines="9-14 16-21 31"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_middleware_order.ts:3"
+    ```
+
+=== "Using decorators"
+
+    ```ts hl_lines="18-22 34"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_middleware_order_decorators.ts:3"
+    ```
+
+=== "Response"
+
+    ```json hl_lines="6-7"
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_mw_middleware_order.json"
+    ```
+
+#### Returning early
+
+There are cases where you may want to terminate the execution of the middleware chain early. To
+do so, middleware can short-circuit processing by returning a `Response` or JSON object
+instead of calling `await next()`.
+
+Neither the handler nor any subsequent middleware will run
+but the post-processing of already executed middleware will.
+
+```mermaid
+--8<-- "examples/snippets/event-handler/http/diagrams/middleware_early_return.mermaid"
+```
+
+=== "index.ts"
+
+    ```ts hl_lines="13-18"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_early_return.ts:3"
+    ```
+
+=== "Response"
+
+    ```json hl_lines="2"
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_mw_early_return.json"
+    ```
+
+#### Error Handling
+
+By default, any unhandled error in the middleware chain will be propagated as a HTTP
+500 back to the client. As you would expect, unlike early return, this stops the middleware
+chain entirely and no post-processing steps for any previously executed middleware will occur.
+
+```mermaid
+--8<-- "examples/snippets/event-handler/http/diagrams/middleware_error_handling.mermaid"
+```
+
+<center>*Unhandled errors*</center>
+
+You can handle errors in middleware as you would anywhere else, simply surround your code in
+a `try`/`catch` block and processing will occur as usual.
+
+```mermaid
+--8<-- "examples/snippets/event-handler/http/diagrams/middleware_handled_error.mermaid"
+```
+
+<center>*Handled errors*</center>
+
+Similarly, you can choose to stop processing entirely by throwing an error in your
+middleware. Event handler provides many [built-in HTTP errors](#throwing-http-errors) that
+you can use or you can throw a custom error of your own. As noted above, this means
+that no post-processing of your request will occur.
+
+```mermaid
+--8<-- "examples/snippets/event-handler/http/diagrams/middleware_throwing_error.mermaid"
+
+```
+
+<center>*Intentional errors*</center>
+
+#### Custom middleware
+
+A common pattern to create reusable middleware is to implement a factory functions that
+accepts configuration options and returns a middleware function.
+
+!!! note "Always `await next()` unless returning early"
+    Middleware functions must always call `await next()` to pass control to the next middleware
+    in the chain, unless you are intentionally returning early by returning a `Response` or
+    JSON object.
+
+=== "index.ts"
+
+    ```ts hl_lines="23"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_custom_middleware.ts:7"
+    ```
+
+In this example we have a middleware that extracts a correlation ID from a request header
+or generates a new one if absent. It stores the ID in the request context using
+`reqCtx.set()` so that route handlers can retrieve it with `reqCtx.get()`. This ensures
+each invocation has its own isolated state without relying on module-level variables.
+
+#### Avoiding destructuring pitfalls
+
+!!! warning "Never destructure the response object"
+    When writing middleware, always access the response through `reqCtx.res` rather than destructuring `{ res }` from the request context. Destructuring captures a reference to the original response object, which becomes stale when middleware replaces the response.
+
+=== "index.ts"
+
+    ```ts hl_lines="6 14-15"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_destructuring_problem.ts:3"
+    ```
+
+During the middleware execution chain, the response object (`reqCtx.res`) can be replaced by
+other middleware or the route handler. When you destructure the request context, you capture
+a reference to the response object as it existed at that moment, not the current response.
+
+#### Composing middleware
+
+You can create reusable middleware stacks by using the `composeMiddleware` function to combine
+multiple middleware into a single middleware function. This is useful for creating standardized
+middleware combinations that can be shared across different routes or applications.
+
+=== "middleware.ts"
+
+    ```ts hl_lines="1 21"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_compose_middleware_shared.ts"
+    ```
+
+=== "index.ts"
+
+    ```ts hl_lines="3 7"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_compose_middleware_index.ts:3"
+    ```
+
+The `composeMiddleware` function maintains the same execution order as if you had applied the
+middleware individually, following the onion pattern where middleware execute in order during
+pre-processing and in reverse order during post-processing.
+
+!!! note "Composition order"
+    Unlike traditional function composition which typically works right-to-left, `composeMiddleware` follows the convention used by most web frameworks and executes middleware left-to-right (first to last in the array). This means `composeMiddleware([a, b, c])` executes middleware `a` first, then `b`, then `c`.
+
+#### Being a good citizen
+
+Middleware can add subtle improvements to request/response processing, but also add significant complexity if you're not careful.
+
+Keep the following in mind when authoring middleware for Event Handler:
+
+* **Call the next middleware.** If you are not returning early by returning a `Response` object
+ or JSON object, always ensure you call the `next` function.
+* **Keep a lean scope.** Focus on a single task per middleware to ease composability and maintenance.
+* **Catch your own errors.** Catch and handle known errors to your logic, unless you want to raise HTTP Errors, or propagate specific errors to the client.
+* **Avoid destructuring the response object.** As mentioned in the [destructuring pitfalls](#avoiding-destructuring-pitfalls) section, always access the response through `reqCtx.res` rather than destructuring to avoid stale references.
+
+### Returning `Response` objects
+
+You can use the Web API's `Response` object to have full control over the response. For
+example, you might want to add additional headers, cookies, or set a custom content type.
+
+=== "index.ts"
+
+    ```ts hl_lines="11-18 25-31"
+    --8<-- "examples/snippets/event-handler/http/advanced_fine_grained_responses.ts:6"
+    ```
+
+=== "Response"
+
+    ```json hl_lines="4-6"
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_fine_grained_responses.json"
+    ```
+
+### CORS
+
+You can configure CORS (Cross-Origin Resource Sharing) by using the `cors` middleware.
+
+This will ensure that CORS headers are returned as part of the response when your functions match the path invoked and the Origin matches one of the allowed values.
+
+=== "index.ts"
+
+    ```ts hl_lines="2 8-11"
+    --8<-- "examples/snippets/event-handler/http/advanced_cors_simple.ts:3"
+    ```
+
+=== "Response"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_cors_simple.json"
+    ```
+
+#### Pre-flight
+
+Pre-flight (`OPTIONS`) requests are typically handled at the API Gateway or Lambda Function URL as per our [sample infrastructure](#required-resources), no Lambda integration is necessary. However, ALB expects you to handle pre-flight requests in your function.
+
+For convenience, when you register the `cors` middleware, we automatically handle these requests for you as long as the path matches and the `Origin` header is present and valid.
+
+#### Defaults
+
+For convenience, these are the default CORS settings applied when you register the `cors` middleware without any options:
+
+!!! warning "Security consideration"
+    Always set the `origin` option to a specific domain or list of domains in production environments to avoid security risks associated with allowing all origins.
+
+| Key             | Default Value                                                                | Description                                                                                                                                                               |
+| --------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `origin`        | `*`                                                                          | Specifies the allowed origin(s) that can access the resource. Use `*` to allow all origins.                                                                               |
+| `methods`       | `['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']`                          | Specifies the allowed HTTP methods.                                                                                                                                       |
+| `allowHeaders`  | `[Authorization, Content-Type, X-Amz-Date, X-Api-Key, X-Amz-Security-Token]` | Specifies the allowed headers that can be used in the actual request.                                                                                                     |
+| `exposeHeaders` | `[]`                                                                         | Any additional header beyond the [safe listed by CORS specification](https://developer.mozilla.org/en-US/docs/Glossary/CORS-safelisted_response_header){target="_blank"}. |
+| `credentials`   | `false`                                                                      | Only necessary when you need to expose cookies, authorization headers or TLS client certificates.                                                                         |
+
+#### Per-route overrides
+
+You can override the global CORS settings on a per-route basis by passing options to the `cors` middleware when applying it to a specific route.
+
+=== "index.ts"
+
+    ```ts hl_lines="2 19"
+    --8<-- "examples/snippets/event-handler/http/advanced_cors_per_route.ts:3"
+    ```
+
+=== "Response"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_cors_per_route.json"
+    ```
+
+### Compress
+
+You can enable response compression by using the `compress` middleware. This will automatically compress responses using gzip and base64 encode them when the client indicates support via the `Accept-Encoding` header.
+
+=== "index.ts"
+
+    ```ts hl_lines="2 7"
+    --8<-- "examples/snippets/event-handler/http/advanced_compress.ts:3"
+    ```
+
+=== "Request"
+
+    ```json hl_lines="3"
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_compress_req.json"
+    ```
+
+=== "Response"
+
+    ```json hl_lines="4-5 7-8"
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_compress_res.json"
+    ```
+
+### Tracer
+
+You can enable distributed tracing for your HTTP routes by using the `tracer`. This middleware integrates with [AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html){target="_blank"} through the [Tracer utility](../tracer.md) to automatically trace each route invocation.
+
+!!! note "Installation"
+    The `tracer` requires the `@aws-lambda-powertools/tracer` package as a peer dependency. Install it separately:
+
+    ```shell
+    npm install @aws-lambda-powertools/tracer
+    ```
+
+The middleware automatically:
+
+* Creates a subsegment for each HTTP route with the format `METHOD /path` (e.g., `GET /users`)
+* Adds `ColdStart` annotation to easily filter cold start traces
+* Adds `Service` annotation for filtering by service name
+* Captures JSON response bodies as metadata (configurable)
+* Captures errors as metadata when exceptions occur
+
+!!! note "Response capture behavior"
+    Only JSON responses are captured as metadata.
+
+=== "index.ts"
+
+    ```ts hl_lines="2 3 6 10"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_tracer.ts"
+    ```
+
+    ```json hl_lines="11 18-25"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_tracer.json"
+    ```
+
+#### Disabling response capture
+
+For routes that return sensitive data, you can disable response capture by setting `captureResponse: false`:
+
+=== "index.ts"
+
+    ```ts hl_lines="2 3 6 11"
+    --8<-- "examples/snippets/event-handler/http/advanced_mw_tracer_per_route.ts"
+    ```
+
+#### Streaming limitation
+
+!!! warning "Tracer middleware is disabled for streaming responses"
+    When using HTTP response streaming, the Tracer middleware is automatically disabled to prevent buffering the entire response. In streaming mode the middleware exits early and does not create a subsegment. You can still use the Tracer utility manually within your route handler to create subsegments and add annotations.
+
+### Binary responses
+
+If you need to return binary data, there are several ways you can do so based on how much control you require.
+
+#### Auto serialization
+
+As described in the [response auto serialization](#response-auto-serialization) section, when you return a JavaScript object from your route handler, we automatically serialize it to JSON and set the `Content-Type` header to `application/json`.
+
+A similar pattern applies to binary data where you can return an `ArrayBuffer`,
+a [Nodejs stream](https://nodejs.org/api/stream.html){target="_blank"}, or
+a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API#browser_compatibility){target="_blank"}
+directly from your handler. We will automatically serialize the response by setting the `isBase64Encoded` flag to `true` and `base64` encoding the binary data.
+
+When you return a Web `Response`, the router uses its `Content-Type` header to identify binary data. Buffered responses with `image/*`, `audio/*`, `video/*`, `application/pdf`, `application/zip`, or `application/octet-stream` content types are automatically base64 encoded.
+Matching is case-insensitive and ignores content-type parameters. For other binary content types, [set `reqCtx.isBase64Encoded` to `true`](#set-isbase64encoded-parameter).
+
+!!! note "Content types"
+    The default header will be set to `application/json`. If you wish to change this,
+    e.g., in the case of images, PDFs, videos, etc, then you should use the `reqCtx.res.headers` object to set the appropriate header.
+
+=== "index.ts"
+
+    ```ts hl_lines="8-9"
+    --8<-- "examples/snippets/event-handler/http/advanced_binary_response_auto.ts"
+    ```
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_binary_req_logo_image.json"
+    ```
+
+=== "Response"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_binary_res_logo_image.json"
+    ```
+
+#### Set `isBase64Encoded` parameter
+
+You can indicate that you wish to `base64` encode any response, regardless of type, by setting the `isBase64Encoded` field in `reqCtx` to `true`.
+
+=== "index.ts"
+
+    ```ts hl_lines="7"
+    --8<-- "examples/snippets/event-handler/http/advanced_binary_response_reqCtx.ts"
+    ```
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_binary_req_json64.json"
+    ```
+
+=== "Response"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_binary_res_json64.json"
+    ```
+
+#### Manual serialization
+
+For complete control you can return an `APIGatewayProxyEvent` (`v1` or `v2`) and this will be handled transparently by the resolver.
+
+=== "index.ts"
+
+    ```ts hl_lines="8-16"
+    --8<-- "examples/snippets/event-handler/http/advanced_binary_response_manual.ts"
+    ```
+
+=== "Request"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_binary_req_logo_image.json"
+    ```
+
+=== "Response"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_binary_res_logo_image.json"
+    ```
+!!! note "Compression"
+    If you wish to use binary responses together with the [`compress`](#compress) feature, the client must send the `Accept` header with the correct media type.
+
+### Response streaming
+
+!!! note "Compatibility"
+    Response streaming is only available for [API Gateway REST APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html){target="_blank"}
+    and [Lambda function URLs](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html){target="_blank"}.
+
+You can send responses to the client using HTTP streaming by wrapping your router with the `streamify` function to turn all the associated route handlers into stream compatible handlers. This is useful when you need to send large payloads or want to start sending data before the entire response is ready.
+
+In order to gain the most benefit, you should return either a readable [Nodejs stream](https://nodejs.org/api/stream.html#readable-streams){target="_blank"},
+a duplex [Nodejs stream](https://nodejs.org/api/stream.html#class-streamduplex){target="_blank"}, or
+a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API){target="_blank"} from your handlers. However, you can also return
+other types and these will also be delivered via HTTP streaming.
+
+=== "index.ts"
+
+    ```ts hl_lines="3 17"
+    --8<-- "examples/snippets/event-handler/http/advanced_response_streaming.ts:4"
+    ```
+
+!!! tip "When to use streaming"
+    Consider response streaming when:
+
+    - Returning large payloads (> 6MB)
+    - Processing data that can be sent incrementally
+    - Reducing time-to-first-byte for long-running operations is a requirement
+
+    For most use cases, the standard `resolve` method is sufficient.
+
+### Debug mode
+
+You can enable debug mode via the `POWERTOOLS_DEV` environment variable.
+
+When set to `true`, debug mode enhances error responses with detailed information to aid in debugging and testing.
+
+!!! danger "Security consideration"
+    Never enable debug mode in production environments as it exposes sensitive error details that could be exploited by attackers<!--  and relaxes CORS restrictions -->.
+
+    Only use it during development and testing.
+
+#### Enhanced error responses
+
+When an unhandled error occurs in your route handler or middleware, Event Handler will return a HTTP 500 response by default.
+
+=== "Production mode (default)"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_error_prod.json"
+    ```
+
+=== "Debug mode"
+
+    ```json
+    --8<-- "examples/snippets/event-handler/http/samples/advanced_error_debug.json"
+    ```
+
+#### Logging requests and responses
+
+!!! note "Coming soon"
+    Please [check this issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4482) and add 👍 if you would like us to prioritize this feature.
+
+### OpenAPI
+
+!!! note "Coming soon"
+
+Currently, Event Handler does not support automatic generation of OpenAPI documentation from your route definitions.
+
+We plan to add this feature in a future release with an experience similar to what described in the [utility's RFC](https://github.com/aws-powertools/powertools-lambda-typescript/discussions/3500){target="_blank"} and to what available in [Powertools for AWS Lambda (Python)](https://docs.aws.amazon.com/powertools/python/latest/core/event_handler/api_gateway/#openapi){target="_blank"}.
+
+Please [check this issue](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4515) for more details, and add 👍 if you would like us to prioritize it.
+
+### Split routers
+
+As applications grow and the number of routes a Lambda function handles increases, it becomes natural to either break it into smaller Lambda functions or split routes into separate files to ease maintenance.
+
+The `Router` class provide an `includeRouter` method to compose multiple router instances allowing developers to define routes in multiple files and merge route definitions. You will be able to define routes in separate files and import them into a main router file, improving code organization and maintainability.
+
+!!! note "Merging with Global Middleware"
+    When merging two `Router` instances together, if you have a global middleware defined in one of your instances, the global middleware gets applied to the all the merged routes.
+
+Let's assume you have `index.ts` as your Lambda function entrypoint and routes in `split_route.ts`. This is how you'd use the `includeRouter` feature.
+
+=== "split_route.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/event-handler/http/split_route.ts"
+    ```
+
+=== "index.ts"
+
+    ```typescript hl_lines="8"
+    --8<-- "examples/snippets/event-handler/http/split_route_index.ts"
+    ```
+
+#### Route Prefix
+
+In the previous example, `split_route.ts` routes had a `/todos` prefix. This might grow over time and become repetitive.
+
+When necessary, you can set a prefix when including a `Router` instance. This means you can remove `/todos` prefix altogether.
+
+=== "split_route_prefix.ts"
+
+    ```typescript
+    --8<-- "examples/snippets/event-handler/http/split_route_prefix.ts"
+    ```
+=== "index.ts"
+
+    ```typescript hl_lines="8"
+    --8<-- "examples/snippets/event-handler/http/split_route_prefix_index.ts"
+    ```
+
+### Store
+
+The Store API provides a way to share data between middleware and route handlers without relying on closures or module-level variables. There are two types of store: **request** and **shared**.
+
+#### Request store
+
+The request store is scoped to a single invocation. Each time your Lambda function handles a request, a fresh store is created. This is ideal for passing values like authenticated user IDs or parsed tokens from middleware to route handlers.
+
+You can interact with the request store directly on the request context using `set`, `get`, `has`, and `delete`.
+
+=== "index.ts"
+
+    ```ts hl_lines="12 18"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_request.ts:8"
+    ```
+
+    1. Middleware stores the authenticated user ID in the request store.
+    2. Route handler retrieves the user ID set by middleware.
+
+!!! note "Request store lifecycle"
+    The request store is created at the beginning of each invocation and is not shared across concurrent or subsequent requests. You don't need to clean up after yourself — the store is discarded when the invocation completes.
+
+#### Shared store
+
+The shared store lives on the `Router` instance and persists across invocations for the lifetime of the execution environment. This makes it suitable for values that are expensive to compute and don't change between requests, such as database clients, configuration, or feature flags.
+
+You can access the shared store via `app.shared` at the module level (e.g., during cold start), or via `reqCtx.shared` inside middleware and route handlers.
+
+=== "index.ts"
+
+    ```ts hl_lines="7-8 11-12"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_shared.ts"
+    ```
+
+    1. Set shared values at the module level during cold start.
+    2. Access shared values inside route handlers via `reqCtx.shared`.
+
+#### Typed stores
+
+By default, both stores accept any string key and return `unknown` values. When you know the shape of your data ahead of time, you can define an `Env` type to get full type safety on store keys and values.
+
+=== "index.ts"
+
+    ```ts hl_lines="4-9 14 20-21 27-28 31"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_typed.ts:8"
+    ```
+
+    1. Define the shape of the request store — keys and their value types.
+    2. Define the shape of the shared store.
+    3. `app.shared.set` only accepts keys defined in `AppEnv['store']['shared']` with matching value types.
+    4. `reqCtx.set` only accepts keys defined in `AppEnv['store']['request']` with matching value types.
+    5. `reqCtx.get('userId')` returns `string | undefined` instead of `unknown`.
+    6. `reqCtx.shared.get('db')` returns the typed database client or `undefined`.
+    7. Accessing a key not defined in `AppEnv` is a type error — the compiler only allows `'userId'` and `'isAdmin'`.
+
+!!! tip "Store values are always `T | undefined`"
+    Even with typed stores, `get` returns `T[K] | undefined`. This ensures you handle the case where a value hasn't been set yet, for example if a middleware hasn't run or a shared value wasn't initialized during cold start.
+
+#### Typed stores with split routers
+
+When using [split routers](#split-routers), each sub-router can declare its own `Env` type with only the store keys it needs. You can then chain `includeRouter` calls to merge the store types together, so the parent router sees all keys from all sub-routers.
+
+=== "index.ts"
+
+    ```ts hl_lines="5-9 12-16 32 35-36 38-39"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_include_router.ts"
+    ```
+
+    1. Chaining `includeRouter` calls merges the store types from each sub-router.
+    2. Inferred as `string | undefined` — from `AuthEnv`.
+    3. Inferred as `number | undefined` — from `FeatureEnv`.
+    4. Assigning `maxResults` to a `string` variable produces a type error — the compiler knows it's a `number`.
+
+Alternatively, you can declare the full environment type upfront on the parent router using the `MergeEnv` utility type.
+`MergeEnv` takes a tuple of `Env` types and intersects their request and shared stores into a single `Env`,
+so you don't have to manually write out the combined type.
+This is useful when you prefer to define the parent's type in one place rather than relying on chaining to infer it.
+
+=== "index.ts"
+
+    ```ts hl_lines="18 32-34"
+    --8<-- "examples/snippets/event-handler/http/advanced_store_declare_upfront.ts"
+    ```
+
+    1. `MergeEnv` computes the intersection of the sub-router store types into a single `Env`.
+    2. The parent router is created with the merged `AppEnv` type — all store keys are known upfront.
+    3. `includeRouter` accepts any sub-router whose `Env` is a subset of the parent's.
+
+### Considerations
+
+This utility is optimized for AWS Lambda computing model and prioritizes fast startup, minimal feature set, and quick onboarding for triggers supported by Lambda.
+
+Event Handler naturally leads to a single Lambda function handling multiple routes for a given service, which can be eventually broken into multiple functions.
+
+Both single (monolithic) and multiple functions (micro) offer different set of trade-offs worth knowing.
+
+!!! tip "TL;DR;"
+    Start with a monolithic function, add additional functions with new handlers, and possibly break into micro functions if necessary.
+
+#### Monolithic function
+
+![monolithic function](../../media//monolithic-function.png)
+
+A monolithic function means that your final code artifact will be deployed to a single function. This is generally the best approach to start.
+
+_**Benefits**_
+
+* **Code reuse.** It's easier to reason about your service, modularize it and reuse code as it grows. Eventually, it can be turned into a standalone library.
+* **No custom tooling.** Monolithic functions are treated just like normal Typescript packages; no upfront investment in tooling.
+* **Faster deployment and debugging.** Whether you use all-at-once, linear, or canary deployments, a monolithic function is a single deployable unit. IDEs like WebStorm and VSCode have tooling to quickly profile, visualize, and step through debug any Typescript package.
+
+_**Downsides**_
+
+* **Cold starts.** Frequent deployments and/or high load can diminish the benefit of monolithic functions depending on your latency requirements, due to the [Lambda scaling model](https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html){target="_blank"}. Always load test to find a pragmatic balance between customer experience and developer cognitive load.
+* **Granular security permissions.** The micro function approach enables you to use fine-grained permissions and access controls, separate external dependencies and code signing at the function level. Conversely, you could have multiple functions while duplicating the final code artifact in a monolithic approach. Regardless, least privilege can be applied to either approaches.
+* **Higher risk per deployment.** A misconfiguration or invalid import can cause disruption if not caught early in automated testing. Multiple functions can mitigate misconfigurations but they will still share the same code artifact. You can further minimize risks with multiple environments in your CI/CD pipeline.
+
+#### Micro function
+
+![micro function](../../media//micro-function.png)
+
+A micro function means that your final code artifact will be different to each function deployed. This is generally the approach to start if you're looking for fine-grain control and/or high load on certain parts of your service.
+
+_**Benefits**_
+
+* **Granular scaling.** A micro function can benefit from the [Lambda scaling model](https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html){target="_blank"} to scale differently depending on each part of your application. Concurrency controls and provisioned concurrency can also be used at a granular level for capacity management.
+* **Discoverability.** Micro functions are easier to visualize when using distributed tracing. Their high-level architectures can be self-explanatory, and complexity is highly visible — assuming each function is named after the business purpose it serves.
+* **Package size.** An independent function can be significantly smaller (KB vs MB) depending on the external dependencies it requires to perform its purpose. Conversely, a monolithic approach can benefit from [Lambda Layers](https://docs.aws.amazon.com/lambda/latest/dg/invocation-layers.html){target="_blank"} to optimize builds for external dependencies.
+
+_**Downsides**_
+
+* **Upfront investment.** You need custom build tooling to bundle assets, including [native bindings for runtime compatibility](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html){target="_blank"}. Operations become more elaborate — you need to standardize tracing labels/annotations, structured logging, and metrics to pinpoint root causes.
+* **Engineering discipline** is necessary for both approaches. However, the micro-function approach requires further attention to consistency as the number of functions grow, just like any distributed system.
+* **Harder to share code.** Shared code must be carefully evaluated to avoid unnecessary deployments when this code changes. Equally, if shared code isn't a library, your development, building, deployment tooling need to accommodate the distinct layout.
+* **Slower safe deployments.** Safely deploying multiple functions require coordination — AWS CodeDeploy deploys and verifies each function sequentially. This increases lead time substantially (minutes to hours) depending on the deployment strategy you choose. You can mitigate it by selectively enabling it in prod-like environments only, and where the risk profile is applicable.
+Automated testing, operational and security reviews are essential to stability in either approaches.
+
+## Testing your code
+
+You can use any testing framework of your choice to test Lambda functions using Event Handler.
+
+Since Event Handler doesn't require any server or socket to run, you can test your code as you would any other JavaScript/TypeScript function.
+
+Below is an example using [Vitest](https://vitest.dev){target="_blank"}, including a helper function to create mock API Gateway events that you can copy and adapt to your needs.
+
+=== "index.test.ts"
+
+    ```ts
+    --8<-- "examples/snippets/event-handler/http/advanced_testing_main.ts"
+    ```
+
+=== "event_helper.ts"
+
+    ```ts
+    --8<-- "examples/snippets/event-handler/http/advanced_testing_helper.ts"
+    ```
+
+=== "index.ts"
+
+    ```ts
+    --8<-- "examples/snippets/event-handler/http/advanced_cors_simple.ts:3"
+    ```

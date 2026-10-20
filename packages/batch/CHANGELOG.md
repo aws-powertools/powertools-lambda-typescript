@@ -1,0 +1,295 @@
+# Change Log
+
+## [2.36.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.35.0...v2.36.0) (2026-10-06)
+
+### Bug Fixes
+
+- throw when a synchronous processor gets a promise-returning handler ([#5650](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5650)) ([cb36243](https://github.com/aws-powertools/powertools-lambda-typescript/commit/cb36243d470acdc78dd579ead8a607a820f57a7e))
+- populate response() before full batch throw and normalize non-Error throws ([#5625](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5625)) ([f71fd53](https://github.com/aws-powertools/powertools-lambda-typescript/commit/f71fd53d19c0a76e663d908068d6816c7c4e3801))
+## [2.35.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.34.0...v2.35.0) (2026-08-18)
+
+**Note:** Version bump only for this package
+
+## [2.34.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.1...v2.34.0) (2026-07-10)
+
+### Maintenance
+
+- bump @aws/lambda-invoke-store from 0.2.4 to 0.3.0 ([#5401](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5401)) ([0a05acd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/0a05acd194415f2a9a988258cd5320913c3b6504))
+## [2.33.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.33.0...v2.33.1) (2026-05-25)
+
+**Note:** Version bump only for this package
+
+## [2.33.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.32.0...v2.33.0) (2026-04-14)
+
+**Note:** Version bump only for this package
+
+## [2.32.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.31.0...v2.32.0) (2026-03-19)
+
+### Maintenance
+
+- bump @aws/lambda-invoke-store from 0.2.3 to 0.2.4 ([#5089](https://github.com/aws-powertools/powertools-lambda-typescript/issues/5089)) ([fe519ab](https://github.com/aws-powertools/powertools-lambda-typescript/commit/fe519abf01c152eca16b93e42b48d77ce1d67c10))
+## [2.31.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.2...v2.31.0) (2026-02-10)
+
+**Note:** Version bump only for this package
+
+## [2.30.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.1...v2.30.2) (2026-01-12)
+
+### Maintenance
+
+- remove invoke store global namespace workaround ([#4932](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4932)) ([8e93ec3](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8e93ec3badf4b5043748ad67f5f3b944d97a3fcb))
+## [2.30.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.30.0...v2.30.1) (2026-01-06)
+
+### Maintenance
+
+- bump @standard-schema/spec from 1.0.0 to 1.1.0 ([#4880](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4880)) ([79a236d](https://github.com/aws-powertools/powertools-lambda-typescript/commit/79a236df12e15398e8e1cdbf803bc81d51e50866))
+## [2.30.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.29.0...v2.30.0) (2025-12-11)
+
+### Maintenance
+
+- bump @aws/lambda-invoke-store from 0.2.1 to 0.2.2 ([#4847](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4847)) ([47c6545](https://github.com/aws-powertools/powertools-lambda-typescript/commit/47c6545953d68dd2933123ea31197f2e608cf501))
+
+### Bug Fixes
+
+- revert @aws/lambda-invoke-store to dependency ([#4833](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4833)) ([5e728e1](https://github.com/aws-powertools/powertools-lambda-typescript/commit/5e728e1669c5a3fa6c8912b206e85d400c89ee40))
+## [2.29.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.1...v2.29.0) (2025-11-21)
+
+### Features
+
+- use async local storage for batch processing ([#4700](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4700)) ([67a8de7](https://github.com/aws-powertools/powertools-lambda-typescript/commit/67a8de7baec4a240bc5f22493a13c75289397d7c))
+## [2.28.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.28.0...v2.28.1) (2025-10-23)
+
+**Note:** Version bump only for this package
+
+## [2.28.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.27.0...v2.28.0) (2025-10-21)
+
+**Note:** Version bump only for this package
+
+## [2.27.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.1...v2.27.0) (2025-09-24)
+
+### Bug Fixes
+
+- fixed the build issue with Batch processor due to missing dependencies ([#4498](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4498)) ([ef67b43](https://github.com/aws-powertools/powertools-lambda-typescript/commit/ef67b43921f1d67b06b3257fb0f96c74e0d6dbae))
+## [2.26.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.26.0...v2.26.1) (2025-09-15)
+
+### Bug Fixes
+
+- declare the @aws-lambda-powertools/commons dependency ([#4484](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4484)) ([8cfcccd](https://github.com/aws-powertools/powertools-lambda-typescript/commit/8cfcccd6e94a6f0b25087ffbd8a4a2ec4bbf0e3d))
+## [2.26.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.2...v2.26.0) (2025-09-11)
+
+### Improvements
+
+- simplified the parser integration api with batch processor ([#4465](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4465)) ([96977ff](https://github.com/aws-powertools/powertools-lambda-typescript/commit/96977ff6b1330adcf82d9caa3b30454208d654e8))
+## [2.25.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.1...v2.25.2) (2025-08-26)
+
+**Note:** Version bump only for this package
+
+## [2.25.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.25.0...v2.25.1) (2025-08-14)
+
+**Note:** Version bump only for this package
+
+## [2.25.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.1...v2.25.0) (2025-08-12)
+
+### Improvements
+
+- improve code quality in test handlers ([#4281](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4281)) ([75e233f](https://github.com/aws-powertools/powertools-lambda-typescript/commit/75e233f340acb27a4d31babbdd1a6d81f974f279))
+## [2.24.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.24.0...v2.24.1) (2025-07-29)
+
+**Note:** Version bump only for this package
+
+## [2.24.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.23.0...v2.24.0) (2025-07-15)
+
+### Maintenance
+
+- exclude deprecated code from coverage ([#4152](https://github.com/aws-powertools/powertools-lambda-typescript/issues/4152)) ([30bbf5a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/30bbf5af3ae78fdb4b837ad9b4322a9e90f15f57))
+# [2.23.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.22.0...v2.23.0) (2025-07-02)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.22.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.21.0...v2.22.0) (2025-06-20)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.21.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.20.0...v2.21.0) (2025-06-03)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.20.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.1...v2.20.0) (2025-05-20)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## [2.19.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.19.0...v2.19.1) (2025-05-05)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.19.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.18.0...v2.19.0) (2025-04-24)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.17.0...v2.18.0) (2025-04-07)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.16.0...v2.17.0) (2025-03-25)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.15.0...v2.16.0) (2025-03-07)
+
+### Bug Fixes
+
+* **batch:** clear message group references after request ([#3674](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3674)) ([270115e](https://github.com/aws-powertools/powertools-lambda-typescript/commit/270115e288a552bdb32083f04f23530725a86243))
+
+# [2.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.14.0...v2.15.0) (2025-02-25)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.1...v2.14.0) (2025-02-10)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## [2.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.13.0...v2.13.1) (2025-01-28)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.12.0...v2.13.0) (2025-01-14)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.12.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.11.0...v2.12.0) (2024-12-17)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.11.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.10.0...v2.11.0) (2024-11-20)
+
+### Features
+
+* **batch:** Async Processing of Records for for SQS Fifo ([#3160](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3160)) ([e73b575](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e73b575b784b7a59ca8cde02d4ca51ec97789d19))
+
+# [2.10.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.9.0...v2.10.0) (2024-10-22)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.9.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.8.0...v2.9.0) (2024-10-07)
+
+### Features
+
+* **batch:** sequential async processing of records for `BatchProcessor` ([#3109](https://github.com/aws-powertools/powertools-lambda-typescript/issues/3109)) ([e31279a](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e31279af90446050a7974fbe25c34758f64915f9))
+
+# [2.8.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.7.0...v2.8.0) (2024-09-16)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.7.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.6.0...v2.7.0) (2024-08-08)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.6.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.5.0...v2.6.0) (2024-07-25)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.5.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.4.0...v2.5.0) (2024-07-15)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.4.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.3.0...v2.4.0) (2024-07-10)
+
+### Features
+
+* **batch:** add option to not throw `FullBatchFailureError` when the entire batch fails ([#2711](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2711)) ([74198ef](https://github.com/aws-powertools/powertools-lambda-typescript/commit/74198ef1ec1d11267813d2f4b6dd5f4c5692f7d4))
+* **maintenance:** drop support for Node.js 16.x ([#2717](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2717)) ([e4eee73](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e4eee73770ffccead9212a566335ec256a31af7d))
+
+# [2.3.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.2.0...v2.3.0) (2024-06-27)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.2.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.1...v2.2.0) (2024-06-13)
+
+### Features
+
+* **batch:** add option to continue processing other group IDs on failure in `SqsFifoPartialProcessor` ([#2590](https://github.com/aws-powertools/powertools-lambda-typescript/issues/2590)) ([a615c24](https://github.com/aws-powertools/powertools-lambda-typescript/commit/a615c24108c4653be4c62d8488092fc08a4a3cc3))
+
+## [2.1.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.1.0...v2.1.1) (2024-05-14)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.1.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v2.0.4...v2.1.0) (2024-04-17)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## 2.0.4 (2024-04-10)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## 2.0.3 (2024-03-15)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## 2.0.2 (2024-03-05)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## 2.0.1 (2024-03-04)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [2.0.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.18.1...v2.0.0) (2024-03-04)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## 1.18.1 (2024-02-20)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## [1.18.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.17.0...v1.18.0) (2024-01-26)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## [1.17.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.16.0...v1.17.0) (2023-11-24)
+
+**maintenance:** drop support for Node.js 14 ([#1664](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1664)) ([e2a0923](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e2a09232f86167b5208be2daf892aa1ea433ce0f))
+
+# [1.16.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.15.0...v1.16.0) (2023-11-16)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [1.15.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.2...v1.15.0) (2023-11-14)
+
+### Features
+
+* **maintenance:** add support for nodejs20.x runtime ([#1790](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1790)) ([6b9b1bc](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6b9b1bcb9baf4b3d8e0e5ec6709594aca09bb033))
+
+## [1.14.2](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.1...v1.14.2) (2023-11-03)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## [1.14.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.14.0...v1.14.1) (2023-10-31)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [1.14.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.13.1...v1.14.0) (2023-09-29)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+## [1.13.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.13.0...v1.13.1) (2023-09-21)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [1.13.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.12.1...v1.13.0) (2023-09-18)
+
+### Bug Fixes
+
+* **batch:** Update processor to pass only context to handler ([#1637](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1637)) ([6fa09b2](https://github.com/aws-powertools/powertools-lambda-typescript/commit/6fa09b2638bf247fd595db51ac3d1aa1252d3379))
+
+### Features
+
+* **batch:** rename AsyncBatchProcessor to default BatchProcessor ([#1683](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1683)) ([e253755](https://github.com/aws-powertools/powertools-lambda-typescript/commit/e253755d09f50a75cde805168845f52d8b85af28))
+
+## [1.12.1](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.12.0...v1.12.1) (2023-07-25)
+
+**Note:** Version bump only for package @aws-lambda-powertools/batch
+
+# [1.12.0](https://github.com/aws-powertools/powertools-lambda-typescript/compare/v1.11.1...v1.12.0) (2023-07-25)
+
+### Features
+
+* **batch:** add batch processing utility ([#1625](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1625)) ([c4e6b19](https://github.com/aws-powertools/powertools-lambda-typescript/commit/c4e6b192c3658cbcc3f458a579a0752153e3c201)), closes [#1588](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1588) [#1591](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1591) [#1593](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1593) [#1592](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1592) [#1594](https://github.com/aws-powertools/powertools-lambda-typescript/issues/1594)

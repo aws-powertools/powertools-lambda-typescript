@@ -1,0 +1,118 @@
+name: Deploy cdk stack
+
+on:
+  workflow_call:
+    inputs:
+      stage:
+        description: "Deployment stage (BETA, PROD)"
+        required: true
+        type: string
+      artifact-name:
+        description: "CDK Layer artifact name to download"
+        required: true
+        type: string
+      latest_published_version:
+        description: "Latest version that is published"
+        required: true
+        type: string
+    outputs:
+      layer-version:
+        description: "The latest deployed Layer version"
+        value: ${{ jobs.deploy-cdk-stack.outputs.layer-version }}
+    secrets:
+      target-account-role:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-cdk-stack:
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        region:
+          [
+            "af-south-1",
+            "eu-central-1",
+            "eu-central-2",
+            "us-east-1",
+            "us-east-2",
+            "us-west-1",
+            "us-west-2",
+            "ap-east-1",
+            "ap-south-1",
+            "ap-south-2",
+            "ap-northeast-1",
+            "ap-northeast-2",
+            "ap-northeast-3",
+            "ap-southeast-1",
+            "ap-southeast-2",
+            "ap-southeast-3",
+            "ap-southeast-4",
+            "ap-southeast-5",
+            "ap-southeast-7",
+            "ca-central-1",
+            "ca-west-1",
+            "eu-west-1",
+            "eu-west-2",
+            "eu-west-3",
+            "eu-south-1",
+            "eu-south-2",
+            "eu-north-1",
+            "sa-east-1",
+            # "me-south-1", # temporarily disabled due to service disruptions
+            # "me-central-1", # temporarily disabled due to service disruptions
+            "il-central-1",
+            "mx-central-1"
+          ]
+    outputs:
+      layer-version: ${{ steps.store-latest-layer-arn.outputs.layer-version }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: aws credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          aws-region: ${{ matrix.region }}
+          role-to-assume: ${{ secrets.target-account-role }}
+          mask-aws-account-id: true
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
+      - name: Download artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ inputs.artifact-name }}
+      - name: Unzip artifact
+        run: unzip -o cdk.out.zip
+      - name: Deploy Layer
+        run: npm run cdk -w layers -- deploy --app cdk.out --context region=${{ matrix.region }} 'LayerPublisherStack' --require-approval never --verbose --outputs-file cdk-outputs.json
+      - name: Store latest Layer ARN
+        id: store-latest-layer-arn
+        if: ${{ inputs.stage == 'PROD' }}
+        run: |
+          mkdir cdk-layer-stack
+          jq -r -c '.LayerPublisherStack.LatestLayerArn' layers/cdk-outputs.json > cdk-layer-stack/${{ matrix.region }}-layer-version.txt
+          layer_arn=$(cat cdk-layer-stack/${{ matrix.region }}-layer-version.txt)
+          echo "$layer_arn"
+          if [ "${{ matrix.region }}" = "us-east-1" ]; then
+            layer_version=$(echo $layer_arn | sed 's/.*://')
+            echo "layer-version=$layer_version" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Save Layer ARN artifact
+        if: ${{ inputs.stage == 'PROD' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cdk-layer-stack-${{ matrix.region }}
+          path: ./cdk-layer-stack/* # NOTE: upload-artifact does not inherit working-directory setting.
+          if-no-files-found: error
+          retention-days: 1
+      - name: CDK deploy canary
+        run: npm run cdk -w layers -- deploy --app cdk.out --context region=${{ matrix.region }} 'CanaryStack' --require-approval never --verbose --outputs-file cdk-outputs.json

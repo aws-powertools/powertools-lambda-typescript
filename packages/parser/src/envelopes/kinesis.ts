@@ -1,0 +1,94 @@
+import { ZodError, type ZodType, type z } from 'zod';
+import { ParseError } from '../errors.js';
+import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
+import type { ParsedResult } from '../types/index.js';
+import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
+
+/**
+ * Kinesis Data Stream Envelope to extract array of Records
+ *
+ * The record's data parameter is a base64 encoded string which is parsed into a bytes array,
+ * though it can also be a JSON encoded string.
+ * Regardless of its type it'll be parsed into a BaseModel object.
+ *
+ * Note: Records will be parsed the same way so if model is str,
+ * all items in the list will be parsed as str and not as JSON (and vice versa)
+ */
+export const KinesisEnvelope = {
+  /**
+   * This is a discriminator to differentiate whether an envelope returns an array or an object
+   * @hidden
+   */
+  [envelopeDiscriminator]: 'array' as const,
+  parse<T>(data: unknown, schema: ZodType<T>): T[] {
+    const parsedEnvelope = parseOrThrow(
+      KinesisDataStreamSchema,
+      data,
+      'Failed to parse Kinesis Data Stream envelope'
+    );
+
+    return parsedEnvelope.Records.map((record, recordIndex) =>
+      parseOrThrow(
+        schema,
+        record.kinesis.data,
+        `Failed to parse Kinesis Data Stream record at index ${recordIndex}`,
+        ['Records', recordIndex, 'kinesis', 'data']
+      )
+    );
+  },
+
+  safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T[]> {
+    const parsedEnvelope = KinesisDataStreamSchema.safeParse(data);
+    if (!parsedEnvelope.success) {
+      return {
+        success: false,
+        error: new ParseError('Failed to parse Kinesis Data Stream envelope', {
+          cause: parsedEnvelope.error,
+        }),
+        originalEvent: data,
+      };
+    }
+
+    const result = parsedEnvelope.data.Records.reduce<{
+      success: boolean;
+      records: T[];
+      errors: { [key: number]: { issues: z.core.$ZodIssue[] } };
+    }>(
+      (acc, record, index) => {
+        const parsedRecord = schema.safeParse(record.kinesis.data);
+
+        if (!parsedRecord.success) {
+          const issues = parsedRecord.error.issues.map((issue) => ({
+            ...issue,
+            path: ['Records', index, 'kinesis', 'data', ...issue.path],
+          }));
+          acc.success = false;
+          acc.errors[index] = { issues };
+          return acc;
+        }
+
+        acc.records.push(parsedRecord.data);
+        return acc;
+      },
+      { success: true, records: [], errors: {} }
+    );
+
+    if (result.success) {
+      return { success: true, data: result.records };
+    }
+
+    const errorMessage =
+      Object.keys(result.errors).length > 1
+        ? `Failed to parse Kinesis Data Stream records at indexes ${Object.keys(result.errors).join(', ')}`
+        : `Failed to parse Kinesis Data Stream record at index ${Object.keys(result.errors)[0]}`;
+    return {
+      success: false,
+      error: new ParseError(errorMessage, {
+        cause: new ZodError(
+          Object.values(result.errors).flatMap((error) => error.issues)
+        ),
+      }),
+      originalEvent: data,
+    };
+  },
+};

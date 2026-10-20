@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/aws-powertools/powertools-lambda-typescript/discussions/new
+    about: Ask a general question about Powertools for AWS Lambda
+  - name: Join Community Discussions
+    url: https://github.com/aws-powertools/powertools-lambda-typescript/discussions
+    about: "Check out the discussions"

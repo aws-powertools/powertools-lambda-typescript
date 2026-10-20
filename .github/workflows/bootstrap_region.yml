@@ -1,0 +1,110 @@
+# bootstraps new regions
+#
+# PURPOSE
+# Ensures new regions are deployable in future releases
+#
+# JOB 1 PROCESS
+#
+# 1. Installs CDK
+# 2. Bootstraps region
+#
+# JOB 2 PROCESS
+# 1. Sets up Go
+# 2. Installs the balance script
+# 3. Runs balance script to copy layers between aws regions
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options:
+          - beta
+          - prod
+        description: Deployment environment
+      region:
+        type: string
+        required: true
+        description: AWS region to bootstrap (i.e. eu-west-1)
+
+name: Region Bootstrap
+run-name: Region Bootstrap ${{ inputs.region }} - ${{ inputs.environment }}
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    name: Bootstrap Region
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment: layer-${{ inputs.environment }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
+      - id: credentials
+        name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd
+        with:
+          aws-region: ${{ inputs.region }}
+          role-to-assume: ${{ secrets.REGION_IAM_ROLE }}
+          mask-aws-account-id: true
+      - id: workdir
+        name: Create Workdir
+        run: |
+          mkdir -p build/project
+      - id: cdk-project
+        name: CDK Project
+        env:
+          REGION: ${{ inputs.region }}
+        working-directory: build/project
+        run: |
+          set -euo pipefail
+          npx cdk init app --language=typescript
+          AWS_REGION="$REGION" npx cdk bootstrap
+
+  copy_layers:
+    name: Copy Layers
+    runs-on: ubuntu-latest
+    needs: bootstrap
+    permissions:
+      contents: read
+      id-token: write
+    environment: layer-${{ inputs.environment }}
+    steps:
+      - id: credentials
+        name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.REGION_IAM_ROLE }}
+          mask-aws-account-id: true
+      - id: go-setup
+        name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '>=1.23.0'
+      - id: go-env
+        name: Go Env
+        run: go env
+      - id: go-install-pkg
+        name: Install
+        run: go install github.com/aws-powertools/actions/layer-balancer/cmd/balance@29979bc5339bf54f76a11ac36ff67701986bb0f0
+      - id: run-balance
+        name: Run Balance
+        env:
+          BALANCE_ROLE_ARN: ${{ secrets.BALANCE_ROLE_ARN }}
+          REGION: ${{ inputs.region }}
+        run: |
+          set -euo pipefail
+          balance -read-region us-east-1 -write-region "$REGION" -write-role "$BALANCE_ROLE_ARN" -layer-name AWSLambdaPowertoolsTypeScriptV2 -dry-run=false

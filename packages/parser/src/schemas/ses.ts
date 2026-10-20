@@ -1,0 +1,181 @@
+import { z } from 'zod';
+import type { SesEvent } from '../types/schema.js';
+
+const SesReceiptVerdict = z.object({
+  status: z.enum(['PASS', 'FAIL', 'GRAY', 'PROCESSING_FAILED']),
+});
+
+const SesReceipt = z.object({
+  timestamp: z.iso.datetime(),
+  processingTimeMillis: z.number().int().positive(),
+  recipients: z.array(z.string()),
+  spamVerdict: SesReceiptVerdict,
+  virusVerdict: SesReceiptVerdict,
+  spfVerdict: SesReceiptVerdict,
+  dmarcVerdict: SesReceiptVerdict,
+  dkimVerdict: SesReceiptVerdict,
+  // Present only when the message fails DMARC authentication
+  dmarcPolicy: z.enum(['none', 'quarantine', 'reject']).optional(),
+  action: z.object({
+    type: z.enum(['Lambda']),
+    invocationType: z.enum(['Event', 'RequestResponse']).optional(),
+    functionArn: z.string(),
+  }),
+});
+
+const SesMail = z.object({
+  timestamp: z.iso.datetime(),
+  source: z.string(),
+  messageId: z.string(),
+  destination: z.array(z.string()),
+  headersTruncated: z.boolean(),
+  headers: z.array(
+    z.object({
+      name: z.string(),
+      value: z.string(),
+    })
+  ),
+  // Each field is present only if the incoming email has the matching header
+  commonHeaders: z.object({
+    from: z.array(z.string()).optional(),
+    to: z.array(z.string()).optional(),
+    cc: z.array(z.string()).optional(),
+    bcc: z.array(z.string()).optional(),
+    sender: z.array(z.string()).optional(),
+    replyTo: z.array(z.string()).optional(),
+    returnPath: z.string().optional(),
+    messageId: z.string().optional(),
+    date: z.string().optional(),
+    subject: z.string().optional(),
+  }),
+});
+
+const SesMessage = z.object({
+  mail: SesMail,
+  receipt: SesReceipt,
+});
+
+/**
+ * Zod schema for a SES record from an SES event.
+ */
+const SesRecordSchema = z.object({
+  eventSource: z.literal('aws:ses'),
+  eventVersion: z.string(),
+  ses: SesMessage,
+});
+
+/**
+ * Zod schema for SES events from AWS.
+ *
+ * @example
+ * ```json
+ * {
+ *   "Records": [
+ *     {
+ *       "eventVersion": "1.0",
+ *       "ses": {
+ *         "mail": {
+ *           "commonHeaders": {
+ *             "from": [
+ *               "Jane Doe <janedoe@example.com>"
+ *             ],
+ *             "to": [
+ *               "johndoe@example.com"
+ *             ],
+ *             "returnPath": "janedoe@example.com",
+ *             "messageId": "<0123456789example.com>",
+ *             "date": "Wed, 7 Oct 2015 12:34:56 -0700",
+ *             "subject": "Test Subject"
+ *           },
+ *           "source": "janedoe@example.com",
+ *           "timestamp": "1970-01-01T00:00:00.000Z",
+ *           "destination": [
+ *             "johndoe@example.com"
+ *           ],
+ *           "headers": [
+ *             {
+ *               "name": "Return-Path",
+ *               "value": "<janedoe@example.com>"
+ *             },
+ *             {
+ *               "name": "Received",
+ *               "value": "from mailer.example.com (mailer.example.com [203.0.113.1]) by ..."
+ *             },
+ *             {
+ *               "name": "DKIM-Signature",
+ *               "value": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=example.com; s=example; ..."
+ *             },
+ *             {
+ *               "name": "MIME-Version",
+ *               "value": "1.0"
+ *             },
+ *             {
+ *               "name": "From",
+ *               "value": "Jane Doe <janedoe@example.com>"
+ *             },
+ *             {
+ *               "name": "Date",
+ *               "value": "Wed, 7 Oct 2015 12:34:56 -0700"
+ *             },
+ *             {
+ *               "name": "Message-ID",
+ *               "value": "<0123456789example.com>"
+ *             },
+ *             {
+ *               "name": "Subject",
+ *               "value": "Test Subject"
+ *             },
+ *             {
+ *               "name": "To",
+ *               "value": "johndoe@example.com"
+ *             },
+ *             {
+ *               "name": "Content-Type",
+ *               "value": "text/plain; charset=UTF-8"
+ *             }
+ *           ],
+ *           "headersTruncated": false,
+ *           "messageId": "o3vrnil0e2ic28tr"
+ *         },
+ *         "receipt": {
+ *           "recipients": [
+ *             "johndoe@example.com"
+ *           ],
+ *           "timestamp": "1970-01-01T00:00:00.000Z",
+ *           "spamVerdict": {
+ *             "status": "PASS"
+ *           },
+ *           "dkimVerdict": {
+ *             "status": "PASS"
+ *           },
+ *           "processingTimeMillis": 574,
+ *           "action": {
+ *             "type": "Lambda",
+ *             "invocationType": "Event",
+ *             "functionArn": "arn:aws:lambda:us-west-2:012345678912:function:Example"
+ *           },
+ *           "dmarcVerdict": {
+ *             "status": "PASS"
+ *           },
+ *           "spfVerdict": {
+ *             "status": "PASS"
+ *           },
+ *           "virusVerdict": {
+ *             "status": "PASS"
+ *           }
+ *         }
+ *       },
+ *       "eventSource": "aws:ses"
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * @see {@link SesEvent | SesEvent}
+ * @see {@link https://docs.aws.amazon.com/ses/latest/dg/receiving-email-notifications-examples.html}
+ */
+const SesSchema = z.object({
+  Records: z.array(SesRecordSchema).nonempty(),
+});
+
+export { SesRecordSchema, SesSchema };

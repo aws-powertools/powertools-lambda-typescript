@@ -1,0 +1,28 @@
+[
+  {
+    "level": "DEBUG",
+    "message": "Adding resolver for field Query.getTodo",
+    "timestamp": "2025-07-02T13:39:36.017Z",
+    "service": "service_undefined",
+    "sampling_rate": 0
+  },
+  {
+    "level": "DEBUG",
+    "message": "Looking for resolver for type=Query, field=getTodo",
+    "timestamp": "2025-07-02T13:39:36.033Z",
+    "service": "service_undefined",
+    "sampling_rate": 0,
+    "xray_trace_id": "1-68653697-0f1223120d19409c38812f01",
+    "correlation_id": "Root=1-68653697-3623822a02e171272e2ecfe4"
+  },
+  {
+    "level": "DEBUG",
+    "message": "Resolving todo",
+    "timestamp": "2025-07-02T13:39:36.033Z",
+    "service": "service_undefined",
+    "sampling_rate": 0,
+    "xray_trace_id": "1-68653697-0f1223120d19409c38812f01",
+    "correlation_id": "Root=1-68653697-3623822a02e171272e2ecfe4",
+    "id": "42"
+  }
+]

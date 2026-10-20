@@ -1,0 +1,16 @@
+# built artifacts
+site/**
+api/**
+# changelogs - these are not linted as they are auto-generated
+CHANGELOG.md
+packages/*/CHANGELOG.md
+examples/*/CHANGELOG.md
+layers/*/CHANGELOG.md
+# other files
+LICENSE
+.github/**
+**node_modules/** */
+.venv
+# generated spec artifacts
+specs/**
+.specify/**

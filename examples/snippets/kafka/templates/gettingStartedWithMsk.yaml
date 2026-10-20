@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  KafkaConsumerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs24.x
+      Handler: index.js
+      Timeout: 30
+      Events:
+        MSKEvent:
+          Type: MSK
+          Properties:
+            StartingPosition: LATEST
+            Stream: !GetAtt MyMSKCluster.Arn
+            Topics:
+              - my-topic-1
+              - my-topic-2
+      Policies:
+        - AWSLambdaMSKExecutionRole

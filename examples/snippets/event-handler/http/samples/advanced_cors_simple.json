@@ -1,0 +1,27 @@
+{
+  "statusCode": 200,
+  "headers": {
+    "access-control-allow-credentials": "false",
+    "access-control-allow-origin": "https://example.com",
+    "content-type": "application/json"
+  },
+  "multiValueHeaders": {
+    "access-control-allow-headers": [
+      "Authorization",
+      "Content-Type",
+      "X-Amz-Date",
+      "X-Api-Key",
+      "X-Amz-Security-Token"
+    ],
+    "access-control-allow-methods": [
+      "DELETE",
+      "GET",
+      "HEAD",
+      "PATCH",
+      "POST",
+      "PUT"
+    ]
+  },
+  "body": "{\"todoId\":\"123\",\"task\":\"Example task\",\"completed\":false}",
+  "isBase64Encoded": false
+}

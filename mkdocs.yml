@@ -1,0 +1,227 @@
+site_name: Powertools for AWS Lambda (TypeScript)
+site_description: Powertools for AWS Lambda (TypeScript)
+site_author: Amazon Web Services
+repo_url: https://github.com/aws-powertools/powertools-lambda-typescript
+edit_uri: edit/main/docs
+site_url: https://docs.aws.amazon.com/powertools/typescript/latest/
+watch: [
+  docs,
+  packages/batch/src,
+  examples/snippets/batch,
+  packages/commons/src,
+  packages/event-handler/src,
+  examples/snippets/event-handler,
+  packages/idempotency/src,
+  examples/snippets/idempotency,
+  packages/jmespath/src,
+  examples/snippets/jmespath,
+  packages/logger/src,
+  examples/snippets/logger,
+  packages/metrics/src,
+  examples/snippets/metrics,
+  packages/parameters/src,
+  examples/snippets/parameters,
+  packages/parser/src,
+  examples/snippets/parser,
+  packages/tracer/src,
+  examples/snippets/tracer,
+  packages/validation/src,
+  examples/snippets/validation,
+  packages/kafka/src,
+  examples/snippets/kafka,
+]
+
+nav:
+  - What is Powertools for AWS Lambda (TypeScript): index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Usage patterns: getting-started/usage-patterns.md
+      - TypeScript settings: getting-started/typescript-settings.md
+      - Lambda layers: getting-started/lambda-layers.md
+  - features/tracer.md
+  - features/logger.md
+  - features/metrics.md
+  - Event Handler:
+      - features/event-handler/index.md
+      - features/event-handler/http.md
+      - features/event-handler/appsync-events.md
+      - features/event-handler/appsync-graphql.md
+      - features/event-handler/bedrock-agents.md
+  - features/parameters.md
+  - features/idempotency.md
+  - features/batch.md
+  - features/jmespath.md
+  - features/parser.md
+  - features/validation.md
+  - features/data-masking.md
+  - features/kafka.md
+  - features/signer.md
+  - features/metadata.md
+  - Environment variables: environment-variables.md
+  - API reference: api/
+  - Changelog: changelog.md
+  - Versioning policy: versioning.md
+  - Resources:
+      - Upgrade guide: upgrade.md
+      - Community Content: we_made_this.md
+      - "llms.txt": ./llms.txt
+
+theme:
+  name: material
+  font: false # Amazon Ember is self-hosted via stylesheets/aws-restyle.css
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Device
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Light
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Dark
+  features:
+    - navigation.top
+    - navigation.instant
+    - navigation.indexes
+    - navigation.tracking
+    - content.code.annotate
+    - content.code.copy
+    - announce.dismiss
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+  logo: media/aws-logo-light.svg
+  favicon: media/aws-logo-light.svg
+  custom_dir: docs/overrides
+
+markdown_extensions:
+  - admonition
+  - abbr
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.highlight:
+      linenums: true
+  - pymdownx.details
+  - pymdownx.snippets:
+      base_path: "."
+      check_paths: true
+      restrict_base_path: false
+  - meta
+  - toc:
+      permalink: true
+      toc_depth: 2
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+copyright: |
+  <div id="awsdocs-legal-zone-copyright">
+      <a href="https://aws.amazon.com/privacy" target="_blank" rel="nofollow">Privacy</a> |
+      <a href="https://aws.amazon.com/terms/" target="_blank" rel="nofollow">Site terms</a> |
+      <span class="copyright">
+        © 2025, Amazon Web Services, Inc. or its affiliates. All rights reserved.
+      </span>
+  </div>
+
+plugins:
+  - privacy
+  - git-revision-date
+  - search
+  - exclude:
+      glob:
+        - snippets/node_modules/*
+        - snippets/package.json
+        - snippets/CHANGELOG.md
+  - typedoc:
+      source: 'packages/*'
+      output_dir: 'api'
+      tsconfig: 'tsconfig.json'
+      options: 'typedoc.json'
+      name: 'API Reference'
+  - llmstxt:
+      markdown_description: Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless best practices and increase developer velocity. It provides a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
+      full_output: llms-full.txt
+      sections:
+        What is Powertools for AWS Lambda (TypeScript):
+          - index.md
+        Getting Started:
+          - getting-started/installation.md
+          - getting-started/usage-patterns.md
+          - getting-started/typescript-settings.md
+          - getting-started/lambda-layers.md
+        Features:
+          - features/tracer.md
+          - features/logger.md
+          - features/metrics.md
+          - features/event-handler/index.md
+          - features/event-handler/http.md
+          - features/event-handler/appsync-events.md
+          - features/event-handler/appsync-graphql.md
+          - features/event-handler/bedrock-agents.md
+          - features/parameters.md
+          - features/idempotency.md
+          - features/batch.md
+          - features/jmespath.md
+          - features/parser.md
+          - features/validation.md
+          - features/data-masking.md
+          - features/kafka.md
+          - features/signer.md
+          - features/metadata.md
+        Environment variables:
+          - environment-variables.md
+        Changelog:
+          - changelog.md
+        Versioning policy:
+          - versioning.md
+        Resources:
+          - upgrade.md
+          - we_made_this.md
+
+extra_css:
+  - stylesheets/extra.css
+  - stylesheets/aws-restyle.css
+  - stylesheets/aws-header.css
+  - stylesheets/aws-nav.css
+  - stylesheets/aws-content.css
+  - stylesheets/aws-footer.css
+extra_javascript:
+  - javascript/extra.js
+  - javascript/aws-header.js
+  - https://docs.aws.amazon.com/powertools/shared/mermaid.min.js
+  - https://docs.aws.amazon.com/assets/js/awsdocs-boot.js
+
+extra:
+  version:
+    provider: mike
+    default: latest
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/aws-powertools/powertools-lambda-typescript
+    - icon: fontawesome/brands/github
+      link: https://github.com/aws-powertools/powertools-lambda-typescript/discussions
+      name: Join our GitHub Discussions!
+  status:
+    new: New Utility

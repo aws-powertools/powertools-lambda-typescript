@@ -1,0 +1,683 @@
+import type { Readable, Writable } from 'node:stream';
+import type {
+  GenericLogger,
+  JSONValue,
+} from '@aws-lambda-powertools/commons/types';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
+import type {
+  ALBEvent,
+  ALBResult,
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResult,
+  APIGatewayProxyStructuredResultV2,
+  Context,
+} from 'aws-lambda';
+import type { HttpStatusCodes, HttpVerbs } from '../http/constants.js';
+import type { Route } from '../http/Route.js';
+import type { IStore } from '../store/Store.js';
+import type { ResolveOptions } from './common.js';
+
+type ResponseType = 'ApiGatewayV1' | 'ApiGatewayV2' | 'ALB';
+
+/**
+ * Recursively intersects a tuple of record types into a single type.
+ */
+type IntersectAll<T extends Record<string, unknown>[]> = T extends [
+  infer First extends Record<string, unknown>,
+  ...infer Rest extends Record<string, unknown>[],
+]
+  ? First & IntersectAll<Rest>
+  : unknown;
+
+/**
+ * Merges multiple `Env` types into a single `Env` whose request and shared
+ * stores are the intersection of all input stores.
+ */
+/**
+ * Widens `{}` back to `Record<string, unknown>` so that fully-untyped
+ * merges remain open for arbitrary key access.
+ */
+type DefaultIfEmpty<T> = keyof T extends never ? Record<string, unknown> : T;
+
+type MergeEnv<TEnvs extends [Env, Env, ...Env[]]> = {
+  store: {
+    request: DefaultIfEmpty<
+      IntersectAll<{
+        [K in keyof TEnvs]: RequestStoreOfForMerge<TEnvs[K]>;
+      }>
+    >;
+    shared: DefaultIfEmpty<
+      IntersectAll<{
+        [K in keyof TEnvs]: SharedStoreOfForMerge<TEnvs[K]>;
+      }>
+    >;
+  };
+};
+
+/**
+ * Environment configuration for the Router.
+ *
+ * Use this to define the shape of your request-scoped and shared stores.
+ */
+type Env = {
+  store?: {
+    request?: Record<string, unknown>;
+    shared?: Record<string, unknown>;
+  };
+};
+
+/**
+ * Extracts the request store type from an Env.
+ */
+type RequestStoreOf<TEnv extends Env> = TEnv extends {
+  store: { request: infer R extends Record<string, unknown> };
+}
+  ? R
+  : Record<string, unknown>;
+
+/**
+ * Extracts the shared store type from an Env.
+ */
+type SharedStoreOf<TEnv extends Env> = TEnv extends {
+  store: { shared: infer S extends Record<string, unknown> };
+}
+  ? S
+  : Record<string, unknown>;
+
+/**
+ * Like {@link RequestStoreOf} but falls back to `{}` instead of
+ * `Record<string, unknown>`, so it acts as an identity element
+ * when intersected inside {@link MergeEnv}.
+ */
+type RequestStoreOfForMerge<TEnv extends Env> = TEnv extends {
+  store: { request: infer R extends Record<string, unknown> };
+}
+  ? R
+  : // biome-ignore lint/complexity/noBannedTypes: we want to allow this for type merging
+    {};
+
+/**
+ * Like {@link SharedStoreOf} but falls back to `{}` instead of
+ * `Record<string, unknown>`, so it acts as an identity element
+ * when intersected inside {@link MergeEnv}.
+ */
+type SharedStoreOfForMerge<TEnv extends Env> = TEnv extends {
+  store: { shared: infer S extends Record<string, unknown> };
+}
+  ? S
+  : // biome-ignore lint/complexity/noBannedTypes: we want to allow this for type merging
+    {};
+
+/**
+ * Convenience methods for interacting with the request-scoped store.
+ * These are exposed directly on `RequestContext` as closure-backed methods.
+ */
+type RequestStoreMethods<TEnv extends Env = Env> = Pick<
+  IStore<RequestStoreOf<TEnv>>,
+  'set' | 'get' | 'has' | 'delete'
+>;
+
+type EventTypeMap = {
+  ApiGatewayV1: APIGatewayProxyEvent;
+  ApiGatewayV2: APIGatewayProxyEventV2;
+  ALB: ALBEvent;
+};
+
+/**
+ * Associates an incoming event with its integration's response format.
+ *
+ * @internal
+ */
+type ClassifiedEvent = {
+  [T in keyof EventTypeMap]: {
+    responseType: T;
+    event: EventTypeMap[T];
+  };
+}[keyof EventTypeMap];
+
+type ResponseTypeMap = {
+  ApiGatewayV1: APIGatewayProxyResult;
+  ApiGatewayV2: APIGatewayProxyStructuredResultV2;
+  ALB: ALBResult;
+};
+
+type Headers = Record<string, string | number | boolean>;
+
+/**
+ * Request validation type parameters
+ */
+type ReqSchema = {
+  body?: unknown;
+  headers?: Headers;
+  path?: Record<string, string>;
+  query?: Record<string, unknown>;
+};
+
+/**
+ * Response validation type parameters
+ */
+type ResSchema = {
+  body?: unknown;
+  headers?: Headers;
+};
+
+/**
+ * Validated request data - only includes fields that were actually validated
+ * (i.e., fields whose type is not `undefined` in the schema inference result)
+ */
+type ValidatedRequest<TReq extends ReqSchema = ReqSchema> = {
+  [K in keyof TReq as TReq[K] extends undefined ? never : K]: TReq[K];
+};
+
+/**
+ * Validated response data - only includes fields that were actually validated
+ * (i.e., fields whose type is not `undefined` in the schema inference result)
+ */
+type ValidatedResponse<TRes extends ResSchema = ResSchema> = {
+  [K in keyof TRes as TRes[K] extends undefined ? never : K]: TRes[K];
+};
+
+type RequestContext<TEnv extends Env = Env> = {
+  [T in ResponseType]: {
+    req: Request;
+    event: EventTypeMap[T];
+    context: Context;
+    res: Response;
+    route: string | null;
+    params: Record<string, string>;
+    responseType: T;
+    isBase64Encoded?: boolean;
+    isHttpStreaming?: boolean;
+    shared: IStore<SharedStoreOf<TEnv>>;
+  } & RequestStoreMethods<TEnv>;
+}[ResponseType];
+
+type TypedRequestContext<
+  TEnv extends Env = Env,
+  TReq extends ReqSchema = ReqSchema,
+  TRes extends ResSchema = ResSchema,
+> = RequestContext<TEnv> & {
+  // biome-ignore lint/complexity/noBannedTypes: {} is intentional — means "no additional properties" in conditional type
+  valid: ([ReqSchema] extends [TReq] ? {} : { req: ValidatedRequest<TReq> }) &
+    // biome-ignore lint/complexity/noBannedTypes: {} is intentional — means "no additional properties" in conditional type
+    ([ResSchema] extends [TRes] ? {} : { res: ValidatedResponse<TRes> });
+};
+
+type HttpResolveOptions = ResolveOptions & { isHttpStreaming?: boolean };
+
+type ErrorResolveOptions = RequestContext & ResolveOptions;
+
+type ErrorHandler<T extends Error = Error> = (
+  error: T,
+  reqCtx: RequestContext
+) => Promise<HandlerResponse>;
+
+interface ErrorConstructor<T extends Error = Error> {
+  // biome-ignore lint/suspicious/noExplicitAny: this is a generic type that is intentionally open
+  new (...args: any[]): T;
+  prototype: T;
+}
+
+/**
+ * Options for the `Router` class
+ */
+type HttpRouterOptions = {
+  /**
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
+   */
+  logger?: GenericLogger;
+  /**
+   * The base prefix to be used for all routes registered using this Router.
+   */
+  prefix?: Path;
+};
+
+interface CompiledRoute {
+  path: Path;
+  regex: RegExp;
+  paramNames: string[];
+  isDynamic: boolean;
+}
+
+type DynamicRoute = Route & CompiledRoute;
+
+type BinaryResult = ArrayBuffer | Readable | ReadableStream;
+
+type ExtendedAPIGatewayProxyResultBody = BinaryResult | JSONValue;
+
+type ExtendedAPIGatewayProxyResult<TBody = ExtendedAPIGatewayProxyResultBody> =
+  Omit<APIGatewayProxyResult, 'body'> & {
+    body: TBody;
+    cookies?: string[];
+    statusDescription?: string;
+  };
+
+type HandlerResponse =
+  | Response
+  | JSONValue
+  | ExtendedAPIGatewayProxyResult
+  | BinaryResult;
+
+type RouteHandler<TEnv extends Env = Env, TReturn = HandlerResponse> = (
+  reqCtx: RequestContext<TEnv>
+) => Promise<TReturn> | TReturn;
+
+type TypedRouteHandler<
+  TEnv extends Env = Env,
+  TReq extends ReqSchema = ReqSchema,
+  TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
+> = (
+  reqCtx: TypedRequestContext<TEnv, TReq, TRes>
+) =>
+  | Promise<TResBody | ExtendedAPIGatewayProxyResult<TResBody> | Response>
+  | TResBody
+  | ExtendedAPIGatewayProxyResult<TResBody>
+  | Response;
+
+type HttpMethod = keyof typeof HttpVerbs;
+
+type HttpStatusCode = (typeof HttpStatusCodes)[keyof typeof HttpStatusCodes];
+
+type Path = `/${string}` | RegExp;
+
+type HttpRouteHandlerOptions = {
+  handler: RouteHandler;
+  route: string;
+  params: Record<string, string>;
+  rawParams: Record<string, string>;
+  middleware: Middleware[];
+};
+
+type HttpRouteOptions = {
+  method: HttpMethod | HttpMethod[];
+  path: Path;
+  middleware?: Middleware[];
+  validation?: ValidationConfig;
+};
+
+// biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
+type NextFunction = () => Promise<HandlerResponse | void>;
+
+type Middleware<TEnv extends Env = Env> = (args: {
+  reqCtx: RequestContext<TEnv> | TypedRequestContext<TEnv>;
+  next: NextFunction;
+  // biome-ignore lint/suspicious/noConfusingVoidType: To ensure next function is awaited
+}) => Promise<HandlerResponse | void>;
+
+type RouteRegistryOptions = {
+  /**
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
+   */
+  logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+};
+
+type ErrorHandlerRegistryOptions = {
+  /**
+   * A logger instance to be used for logging debug, warning, and error messages.
+   *
+   * When no logger is provided, we'll only log warnings and errors using the global `console` object.
+   */
+  logger: Pick<GenericLogger, 'debug' | 'warn' | 'error'>;
+};
+
+type ValidationResult = {
+  isValid: boolean;
+  issues: string[];
+};
+
+interface ResponseStream extends Writable {
+  setContentType(contentType: string): void;
+  _onBeforeFirstWrite?: (writeFn: (chunk: unknown) => void) => void;
+  getBuffer?: () => Buffer;
+}
+
+type V1Headers = {
+  headers: Record<string, string>;
+  multiValueHeaders: Record<string, string[]>;
+};
+
+/**
+ * Object to pass to the {@link Router.resolveStream | `Router.resolveStream()`} method.
+ */
+type ResolveStreamOptions = {
+  /**
+   * Reference to `this` instance of the class that is calling the `resolveStream` method.
+   *
+   * This parameter should be used only when using {@link Router} route decorators like
+   * {@link Router.get | `Router.get()`}, {@link Router.post | `Router.post()`}, etc. as class method decorators, and
+   * it's used to bind the decorated methods to your class instance.
+   *
+   * @example
+   * ```ts
+   * import { Router } from '@aws-lambda-powertools/event-handler/http';
+   *
+   * const app = new Router();
+   *
+   * class Lambda {
+   *   public scope = 'scoped';
+   *
+   *   @app.get('/test')
+   *   public async getTest() {
+   *     return { message: `${this.scope}: success` };
+   *   }
+   *
+   *   public async handler(event: unknown, context: Context, responseStream: ResponseStream) {
+   *     return app.resolveStream(event, context, { scope: this, responseStream });
+   *   }
+   * }
+   * const lambda = new Lambda();
+   * const handler = lambda.handler.bind(lambda);
+   * ```
+   */
+  scope?: unknown;
+  /**
+   * The Lambda response stream used for streaming responses directly to the client.
+   * This stream is provided by the AWS Lambda runtime for response streaming.
+   */
+  responseStream: ResponseStream;
+};
+
+/**
+ * Configuration options for CORS middleware
+ */
+type CorsOptions = {
+  /**
+   * The Access-Control-Allow-Origin header value.
+   * Can be a string, array of strings.
+   * @default '*'
+   */
+  origin?: string | string[];
+
+  /**
+   * The Access-Control-Allow-Methods header value.
+   * @default ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']
+   */
+  allowMethods?: string[];
+
+  /**
+   * The Access-Control-Allow-Headers header value.
+   * @default ['Authorization', 'Content-Type', 'X-Amz-Date', 'X-Api-Key', 'X-Amz-Security-Token']
+   */
+  allowHeaders?: string[];
+
+  /**
+   * The Access-Control-Expose-Headers header value.
+   * @default []
+   */
+  exposeHeaders?: string[];
+
+  /**
+   * The Access-Control-Allow-Credentials header value.
+   * @default false
+   */
+  credentials?: boolean;
+
+  /**
+   * The Access-Control-Max-Age header value in seconds.
+   * Only applicable for preflight requests.
+   */
+  maxAge?: number;
+};
+
+type CompressionOptions = {
+  encoding?: 'gzip' | 'deflate';
+  threshold?: number;
+};
+
+/**
+ * Configuration options for Tracer middleware
+ */
+type TracerOptions = {
+  /**
+   * Whether to capture the response body as metadata.
+   * @default true
+   */
+  captureResponse?: boolean;
+  /**
+   * A logger instance to be used for logging.
+   *
+   * When no logger is provided, we'll only log using the global `console` object.
+   */
+  logger?: GenericLogger;
+};
+
+/**
+ * The shape of the `http` field added to an X-Ray (sub)segment.
+ *
+ * This mirrors the structure produced by the X-Ray SDK's `IncomingRequestData`,
+ * but the SDK does not expose a type for it, so we declare it locally.
+ *
+ * @see {@link https://github.com/aws/aws-xray-sdk-node/blob/master/packages/core/lib/middleware/incoming_request_data.js}
+ */
+type SegmentHttpData = {
+  request: {
+    method: string;
+    url: string;
+    user_agent?: string;
+    client_ip?: string;
+    x_forwarded_for?: boolean;
+  };
+  response?: {
+    status: number;
+    content_length?: number;
+  };
+};
+
+type WebResponseToProxyResultOptions = {
+  isBase64Encoded?: boolean;
+};
+
+type RouterResponse =
+  | APIGatewayProxyResult
+  | APIGatewayProxyStructuredResultV2
+  | ALBResult;
+
+/**
+ * Configuration for request validation.
+ * At least one of body, headers, path, or query must be provided.
+ */
+type RequestValidationConfig<TReq extends ReqSchema = ReqSchema> =
+  | {
+      body: StandardSchemaV1<unknown, TReq['body']>;
+      headers?: StandardSchemaV1<unknown, TReq['headers']>;
+      path?: StandardSchemaV1<unknown, TReq['path']>;
+      query?: StandardSchemaV1<unknown, TReq['query']>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, TReq['body']>;
+      headers: StandardSchemaV1<unknown, TReq['headers']>;
+      path?: StandardSchemaV1<unknown, TReq['path']>;
+      query?: StandardSchemaV1<unknown, TReq['query']>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, TReq['body']>;
+      headers?: StandardSchemaV1<unknown, TReq['headers']>;
+      path: StandardSchemaV1<unknown, TReq['path']>;
+      query?: StandardSchemaV1<unknown, TReq['query']>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, TReq['body']>;
+      headers?: StandardSchemaV1<unknown, TReq['headers']>;
+      path?: StandardSchemaV1<unknown, TReq['path']>;
+      query: StandardSchemaV1<unknown, TReq['query']>;
+    };
+
+/**
+ * Configuration for response validation.
+ * At least one of body or headers must be provided.
+ */
+type ResponseValidationConfig<T extends HandlerResponse = HandlerResponse> =
+  | {
+      body: StandardSchemaV1<unknown, T>;
+      headers?: StandardSchemaV1<unknown, Headers>;
+    }
+  | {
+      body?: StandardSchemaV1<unknown, T>;
+      headers: StandardSchemaV1<unknown, Headers>;
+    };
+
+/**
+ * Validation configuration for request and response.
+ * At least one of req or res must be provided.
+ */
+type ValidationConfig<
+  TReq extends ReqSchema = ReqSchema,
+  TResBody extends HandlerResponse = HandlerResponse,
+> =
+  | {
+      req: RequestValidationConfig<TReq>;
+      res?: ResponseValidationConfig<TResBody>;
+    }
+  | {
+      req?: RequestValidationConfig<TReq>;
+      res: ResponseValidationConfig<TResBody>;
+    };
+
+/**
+ * Infers the `ReqSchema` type from a `ValidationConfig` by extracting the output types
+ * from each request schema (body, headers, path, query).
+ */
+type InferReqSchema<V extends ValidationConfig> = V extends {
+  req: infer R;
+}
+  ? {
+      body: R extends { body: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      headers: R extends { headers: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      path: R extends { path: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      query: R extends { query: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+    }
+  : ReqSchema;
+
+/**
+ * Infers the response body type from a `ValidationConfig` by extracting the input type
+ * from the response body schema.
+ */
+type InferResBody<V extends ValidationConfig> = V extends {
+  res: { body: infer S extends StandardSchemaV1 };
+}
+  ? StandardSchemaV1.InferInput<S>
+  : HandlerResponse;
+
+/**
+ * Infers the `ResSchema` type from a `ValidationConfig` by extracting the output types
+ * from each response schema (body, headers).
+ */
+type InferResSchema<V extends ValidationConfig> = V extends { res: infer R }
+  ? {
+      body: R extends { body: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+      headers: R extends { headers: StandardSchemaV1<infer _I, infer O> }
+        ? O
+        : undefined;
+    }
+  : ResSchema;
+
+/**
+ * Validation error details
+ */
+type ValidationErrorDetail = {
+  component: 'body' | 'headers' | 'path' | 'query';
+  message: string;
+};
+
+/**
+ * Union type for middleware array or route handler
+ */
+type MiddlewareOrHandler<
+  TEnv extends Env = Env,
+  TReq extends ReqSchema = ReqSchema,
+  TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
+> =
+  | Middleware<TEnv>[]
+  | RouteHandler<TEnv>
+  | TypedRouteHandler<TEnv, TReq, TResBody, TRes>;
+
+/**
+ * Union type for route handler or validation options
+ */
+type HandlerOrOptions<
+  TEnv extends Env = Env,
+  TReq extends ReqSchema = ReqSchema,
+  TResBody extends HandlerResponse = HandlerResponse,
+  TRes extends ResSchema = ResSchema,
+> =
+  | RouteHandler<TEnv>
+  | TypedRouteHandler<TEnv, TReq, TResBody, TRes>
+  | { validation: ValidationConfig<TReq, TResBody> };
+
+export type {
+  BinaryResult,
+  ClassifiedEvent,
+  CompiledRoute,
+  CompressionOptions,
+  CorsOptions,
+  DynamicRoute,
+  Env,
+  ErrorConstructor,
+  ErrorHandler,
+  ErrorHandlerRegistryOptions,
+  ErrorResolveOptions,
+  EventTypeMap,
+  ExtendedAPIGatewayProxyResult,
+  ExtendedAPIGatewayProxyResultBody,
+  HandlerOrOptions,
+  HandlerResponse,
+  Headers,
+  HttpMethod,
+  HttpResolveOptions,
+  HttpRouteHandlerOptions,
+  HttpRouteOptions,
+  HttpRouterOptions,
+  HttpStatusCode,
+  InferReqSchema,
+  InferResBody,
+  InferResSchema,
+  IntersectAll,
+  MergeEnv,
+  Middleware,
+  MiddlewareOrHandler,
+  NextFunction,
+  Path,
+  ReqSchema,
+  RequestContext,
+  RequestStoreMethods,
+  RequestStoreOf,
+  RequestValidationConfig,
+  ResolveStreamOptions,
+  ResponseStream,
+  ResponseType,
+  ResponseTypeMap,
+  ResponseValidationConfig,
+  ResSchema,
+  RouteHandler,
+  RouteRegistryOptions,
+  RouterResponse,
+  SegmentHttpData,
+  SharedStoreOf,
+  TracerOptions,
+  TypedRequestContext,
+  TypedRouteHandler,
+  V1Headers,
+  ValidatedRequest,
+  ValidatedResponse,
+  ValidationConfig,
+  ValidationErrorDetail,
+  ValidationResult,
+  WebResponseToProxyResultOptions,
+};

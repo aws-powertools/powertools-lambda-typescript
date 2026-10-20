@@ -1,0 +1,5 @@
+{
+  "type": "TOKEN",
+  "methodArn": "arn:aws:execute-api:eu-west-1:123456789012:puhdx84jy9/prod/POST/lambda-token",
+  "authorizationToken": "Bearer foo"
+}

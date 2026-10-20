@@ -1,0 +1,144 @@
+{
+  "name": "@aws-lambda-powertools/testing-utils",
+  "version": "2.36.0",
+  "description": "A package containing utilities to test your serverless workloads",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "private": true,
+  "scripts": {
+    "test": "vitest --run",
+    "test:unit": "vitest --run tests/unit",
+    "test:e2e": "echo 'Not Implemented'",
+    "lmi:deploy": "node lib/esm/lmi/deploySharedCapacityProvider.js",
+    "lmi:destroy": "node lib/esm/lmi/destroySharedCapacityProvider.js",
+    "e2e:sweep": "node lib/esm/e2e/sweepStaleStacksCli.js",
+    "build:cjs": "tsc --build tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json",
+    "build:esm": "tsc --build tsconfig.json && echo '{ \"type\": \"module\" }' > lib/esm/package.json",
+    "build:tests": "tsc --noEmit -p tests/tsconfig.json",
+    "build": "npm run build:esm & npm run build:cjs",
+    "lint": "biome lint .",
+    "lint:fix": "biome check --write .",
+    "lint:ci": "biome ci .",
+    "prepack": "node ../../.github/scripts/release_patch_package_json.js ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
+      }
+    },
+    "./resources/lambda": {
+      "import": "./lib/esm/resources/TestNodejsFunction.js",
+      "require": "./lib/cjs/resources/TestNodejsFunction.js"
+    },
+    "./resources/dynamodb": {
+      "import": "./lib/esm/resources/TestDynamodbTable.js",
+      "require": "./lib/cjs/resources/TestDynamodbTable.js"
+    },
+    "./resources/capacity-provider": {
+      "import": "./lib/esm/resources/TestLmiCapacityProvider.js",
+      "require": "./lib/cjs/resources/TestLmiCapacityProvider.js"
+    },
+    "./lmi": {
+      "import": "./lib/esm/lmi/naming.js",
+      "require": "./lib/cjs/lmi/naming.js"
+    },
+    "./lmi/handler": {
+      "import": "./lib/esm/lmi/handler.js",
+      "require": "./lib/cjs/lmi/handler.js"
+    },
+    "./context": {
+      "import": "./lib/esm/context.js",
+      "require": "./lib/cjs/context.js"
+    },
+    "./types": {
+      "import": "./lib/esm/types.js",
+      "require": "./lib/cjs/types.js"
+    },
+    "./utils/xray-traces": {
+      "import": "./lib/esm/xray-traces-utils.js",
+      "require": "./lib/cjs/xray-traces-utils.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "resources/lambda": [
+        "lib/cjs/resources/TestNodejsFunction.d.ts",
+        "lib/esm/resources/TestNodejsFunction.d.ts"
+      ],
+      "resources/dynamodb": [
+        "lib/cjs/resources/TestDynamodbTable.d.ts",
+        "lib/esm/resources/TestDynamodbTable.d.ts"
+      ],
+      "resources/capacity-provider": [
+        "lib/cjs/resources/TestLmiCapacityProvider.d.ts",
+        "lib/esm/resources/TestLmiCapacityProvider.d.ts"
+      ],
+      "lmi": [
+        "lib/cjs/lmi/naming.d.ts",
+        "lib/esm/lmi/naming.d.ts"
+      ],
+      "lmi/handler": [
+        "lib/cjs/lmi/handler.d.ts",
+        "lib/esm/lmi/handler.d.ts"
+      ],
+      "types": [
+        "lib/cjs/types.d.ts",
+        "lib/esm/types.d.ts"
+      ],
+      "context": [
+        "lib/cjs/context.d.ts",
+        "lib/esm/context.d.ts"
+      ],
+      "utils/xray-traces": [
+        "lib/cjs/xray-traces-utils.d.ts",
+        "lib/esm/xray-traces-utils.d.ts"
+      ]
+    }
+  },
+  "types": "./lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "keywords": [
+    "aws",
+    "lambda",
+    "powertools",
+    "testing",
+    "serverless"
+  ],
+  "license": "MIT-0",
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/packages/testing#readme",
+  "dependencies": {
+    "@aws-cdk/toolkit-lib": "^1.43.0",
+    "@aws-sdk/client-cloudformation": "^3.1149.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.1149.0",
+    "@aws-sdk/client-lambda": "^3.1149.0",
+    "@aws/lambda-invoke-store": "0.3.0",
+    "@smithy/util-utf8": "^4.5.2",
+    "aws-cdk-lib": "^2.273.0",
+    "esbuild": "^0.28.2",
+    "promise-retry": "^2.0.1"
+  },
+  "devDependencies": {
+    "@smithy/types": "^4.18.0",
+    "@types/promise-retry": "^1.1.6",
+    "aws-sdk-client-mock": "^4.1.0"
+  }
+}

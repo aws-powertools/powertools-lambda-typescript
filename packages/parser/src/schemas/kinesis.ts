@@ -1,0 +1,97 @@
+import { z } from 'zod';
+import { Base64Encoded } from '../helpers/index.js';
+import type { KinesisDataStreamEvent } from '../types/schema.js';
+import { DynamoDBStreamToKinesisRecord } from './dynamodb.js';
+
+const KinesisDataStreamRecordPayload = z.object({
+  kinesisSchemaVersion: z.string(),
+  partitionKey: z.string(),
+  sequenceNumber: z.string(),
+  approximateArrivalTimestamp: z.number(),
+  data: Base64Encoded(z.any()),
+});
+
+const KinesisDataStreamRecord = z.object({
+  eventSource: z.literal('aws:kinesis'),
+  eventVersion: z.string(),
+  eventID: z.string(),
+  eventName: z.literal('aws:kinesis:record'),
+  awsRegion: z.string(),
+  invokeIdentityArn: z.string(),
+  eventSourceARN: z.string(),
+  kinesis: KinesisDataStreamRecordPayload,
+});
+
+const KinesisDynamoDBStreamSchema = z.object({
+  Records: z.array(
+    KinesisDataStreamRecord.extend({
+      kinesis: KinesisDataStreamRecordPayload.extend({
+        data: Base64Encoded(z.any()).pipe(DynamoDBStreamToKinesisRecord),
+      }),
+    })
+  ),
+});
+
+/**
+ * Zod schema for Kinesis Data Stream event
+ *
+ * @example
+ * ```json
+ * {
+ *   "Records": [
+ *     {
+ *       "kinesis": {
+ *         "kinesisSchemaVersion": "1.0",
+ *         "partitionKey": "1",
+ *         "sequenceNumber": "49590338271490256608559692538361571095921575989136588898",
+ *         "data": "SGVsbG8sIHRoaXMgaXMgYSB0ZXN0Lg==",
+ *         "approximateArrivalTimestamp": 1607497475.000
+ *       },
+ *       "eventSource": "aws:kinesis",
+ *       "eventVersion": "1.0",
+ *       "eventID": "shardId-000000000006:49590338271490256608559692538361571095921575989136588898",
+ *       "eventName": "aws:kinesis:record",
+ *       "invokeIdentityArn": "arn:aws:iam::123456789012:role/lambda-kinesis-role",
+ *       "awsRegion": "us-east-1",
+ *       "eventSourceARN": "arn:aws:kinesis:us-east-1:123456789012:stream/lambda-stream"
+ *     }
+ *   ],
+ *   "window": {
+ *     "start": "2020-12-09T07:04:00Z",
+ *     "end": "2020-12-09T07:06:00Z"
+ *   },
+ *   "state": {
+ *     "1": 282,
+ *     "2": 715
+ *   },
+ *   "shardId": "shardId-000000000006",
+ *   "eventSourceARN": "arn:aws:kinesis:us-east-1:123456789012:stream/lambda-stream",
+ *   "isFinalInvokeForWindow": false,
+ *   "isWindowTerminatedEarly": false
+ * }
+ *```
+ * @see {@link KinesisDataStreamEvent | `KinesisDataStreamEvent`}
+ * @see {@link https://docs.aws.amazon.com/lambda/latest/dg/services-kinesis-windows.html#streams-tumbling-processing}
+ *
+ */
+const KinesisDataStreamSchema = z.object({
+  Records: z.array(KinesisDataStreamRecord).min(1),
+  window: z
+    .object({
+      start: z.iso.datetime(),
+      end: z.iso.datetime(),
+    })
+    .optional(),
+  state: z.record(z.string(), z.unknown()).optional(),
+  shardId: z.string().optional(),
+  eventSourceARN: z.string().optional(),
+  isFinalInvokeForWindow: z.boolean().optional(),
+  isWindowTerminatedEarly: z.boolean().optional(),
+});
+
+export {
+  KinesisDataStreamRecord,
+  KinesisDataStreamRecordPayload,
+  KinesisDataStreamSchema,
+  KinesisDynamoDBStreamSchema,
+};

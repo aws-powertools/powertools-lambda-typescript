@@ -1,0 +1,83 @@
+{
+  "name": "aws-lambda-powertools-typescript",
+  "version": "0.0.1",
+  "description": "A suite of utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more.",
+  "workspaces": [
+    "packages/commons",
+    "packages/jmespath",
+    "packages/logger",
+    "packages/metrics",
+    "packages/tracer",
+    "packages/parameters",
+    "packages/idempotency",
+    "packages/parser",
+    "packages/batch",
+    "packages/testing",
+    "examples/snippets",
+    "layers",
+    "packages/event-handler",
+    "packages/validation",
+    "packages/kafka",
+    "packages/data-masking",
+    "packages/signer"
+  ],
+  "type": "module",
+  "scripts": {
+    "test": "npm t -ws",
+    "test:e2e": "npm run test:e2e -ws",
+    "commit": "commit",
+    "setup-local": "npm ci && npm run build && husky",
+    "build": "npm run build -ws",
+    "docs:docker:build": "docker build -t powertools-typescript/docs ./docs/",
+    "docs:docker:run": "docker run --rm -it -p 8000:8000 -v ${PWD}:/docs powertools-typescript/docs",
+    "docs:local:setup": "${PYTHON:-python$(cut -d. -f1,2 docs/.python-version)} -m venv --clear .venv && .venv/bin/pip install --require-hashes -r docs/requirements.txt",
+    "docs:local:run": ".venv/bin/mkdocs serve",
+    "docs:local:api": "typedoc",
+    "postpublish": "git restore .",
+    "lint:markdown": "markdownlint-cli2 '**/*.md' '#node_modules' '#**/*/node_modules' '#docs/changelog.md' '#LICENSE.md' '#.github' '#CHANGELOG.md' '#**/*/CHANGELOG.md' '#.venv' '#site'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws-powertools/powertools-lambda-typescript.git"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aws-powertools/powertools-lambda-typescript/issues"
+  },
+  "homepage": "https://github.com/aws-powertools/powertools-lambda-typescript#readme",
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/aws-lambda": "^8.10.164",
+    "@types/node": "^26.6.5",
+    "@vitest/coverage-v8": "5.0.5",
+    "esbuild": "^0.28.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "markdownlint-cli2": "^0.23.3",
+    "middy5": "npm:@middy/core@^5.5.1",
+    "middy6": "npm:@middy/core@^6.4.5",
+    "middy7": "npm:@middy/core@^7.0.2",
+    "typedoc": "^0.28.20",
+    "typedoc-plugin-missing-exports": "^4.1.4",
+    "typescript": "^6.0.3",
+    "undici-types": "^8.12.2",
+    "vitest": "5.0.5"
+  },
+  "lint-staged": {
+    "*.{js,ts,json}": "biome check --write --no-errors-on-unmatched",
+    "*.md": "markdownlint-cli2 --fix"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "fsevents": true,
+    "protobufjs@7.6.5": true
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "events": [
+    {
+      "error": "SyntaxError - Invalid item",
+      "id": "1"
+    },
+    {
+      "payload": {
+        "processed": true,
+        "original_payload": {
+          "event_2": "data_2"
+        }
+      },
+      "id": "2"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+---
+title: Homepage
+description: Powertools for AWS Lambda (TypeScript)
+---
+
+<!-- markdownlint-disable MD043 MD013 -->
+
+Powertools for AWS Lambda (TypeScript) is a developer toolkit to implement Serverless best practices and increase developer velocity.
+
+You can use Powertools for AWS Lambda also in [Python](https://docs.aws.amazon.com/powertools/python/latest/){target="_blank" }, [Java](https://docs.aws.amazon.com/powertools/java/){target="_blank"}, and [.NET](https://docs.aws.amazon.com/powertools/dotnet/){target="_blank"}.
+
+<!-- markdownlint-disable MD050 -->
+
+## Features
+
+Powertools for AWS Lambda (TypeScript) is built as a modular toolkit, so you can pick and choose the utilities you want to use. The following table lists the available utilities, and links to their documentation.
+
+| Utility                                                     | Description                                                                                                                                                       |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Tracer](./features/tracer.md)                              | Decorators and utilities to trace Lambda function handlers, and both synchronous and asynchronous functions                                                       |
+| [Logger](./features/logger.md)                              | Structured logging made easier, and a middleware to enrich structured logging with key Lambda context details                                                     |
+| [Metrics](./features/metrics.md)                            | Custom Metrics created asynchronously via CloudWatch Embedded Metric Format (EMF)                                                                                 |
+| [Event Handler](./features/event-handler/appsync-events.md) | Event Handler for AWS AppSync real-time events, AppSync GraphQL APIs, Bedrock Agents, and more.                                                                   |
+| [Parameters](./features/parameters.md)                      | High-level functions to retrieve one or more parameters from AWS SSM Parameter Store, AWS Secrets Manager, AWS AppConfig, and Amazon DynamoDB                     |
+| [Idempotency](./features/idempotency.md)                    | Class method decorator, Middy middleware, and function wrapper to make your Lambda functions idempotent and prevent duplicate execution based on payload content. |
+| [Batch Processing](./features/batch.md)                     | Utility to handle partial failures when processing batches from Amazon SQS, Amazon Kinesis Data Streams, and Amazon DynamoDB Streams.                             |
+| [JMESPath Functions](./features/jmespath.md)                | Built-in JMESPath functions to easily deserialize common encoded JSON payloads in Lambda functions.                                                               |
+| [Parser](./features/parser.md)                              | Utility to parse and validate AWS Lambda event payloads using Zod, a TypeScript-first schema declaration and validation library.                                  |
+| [Validation](./features/validation.md)                      | JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.                                                   |
+| [Kafka](./features/kafka.md)                                | Utility to easily handle message deserialization and parsing of Kafka events in AWS Lambda functions.                                                             |
+| [Signer](./features/signer.md)                              | Sign HTTP requests to AWS services using the AWS Signature Version 4 (SigV4) signing process, with an optional drop-in signed `fetch`.                            |
+
+## Examples
+
+You can find code snippets showing how to use Powertools for AWS Lambda (TypeScript) in the [examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples){target="_blank"} directory.
+
+If instead you want to see Powertools for AWS Lambda (TypeScript) in a more involved context, check the [Powertools for AWS workshop](https://github.com/aws-samples/powertools-for-aws-lambda-workshop/tree/main/functions/typescript) where we demonstrate how to use toolkit in a more complex application.
+
+## Support Powertools for AWS
+
+There are many ways you can help us gain future investments to improve everyone's experience:
+
+<div class="grid cards" markdown>
+
+- :heart:{ .lg .middle } __Become a public reference__
+
+    ---
+
+    Add your company name and logo on our [landing page](https://powertools.aws.dev), documentation, and README files.
+
+    [:octicons-arrow-right-24: GitHub Issue template](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=customer-reference&projects=aws-powertools%2F7&template=support_powertools.yml&title=%5BSupport+Powertools+for+AWS+Lambda+%28TypeScript%29%5D%3A+%3Cyour+organization+name%3E){target="_blank"}
+
+- :mega:{ .lg .middle } __Share your work__
+
+    ---
+
+    Blog posts, video, and sample projects about Powertools for AWS Lambda.
+
+    [:octicons-arrow-right-24: GitHub Issue template](https://github.com/aws-powertools/powertools-lambda-typescript/issues/new?assignees=&labels=community-content&projects=aws-powertools%2F7&template=share_your_work.yml&title=%5BI+Made+This%5D%3A+%3CTITLE%3E){target="_blank"}
+
+- :partying_face:{ .lg .middle } __Join the community__
+
+    ---
+
+    Connect, ask questions, and share what features you use.
+
+    [:octicons-arrow-right-24: GitHub Discussions](https://github.com/aws-powertools/powertools-lambda-typescript/discussions){target="blank"}
+
+</div>
+
+### Becoming a reference customer
+
+Knowing which companies are using this library is important to help prioritize the project internally. [These](https://github.com/aws-powertools/powertools-lambda-typescript?tab=readme-ov-file#becoming-a-reference-customer) are some of the customers who use Powertools for AWS.
+
+### Using Lambda Layers
+
+!!! note "Layers help us understand who uses Powertools for AWS Lambda (TypeScript) in a non-intrusive way."
+
+When [using Layers](./getting-started/lambda-layers.md), you can add Powertools for AWS Lambda (TypeScript) as a dev dependency to not impact the development process. For Layers, we pre-package all dependencies, compile and optimize for storage.
+
+## Tenets
+
+These are our core principles to guide our decision making.
+
+- __AWS Lambda only__. We optimise for AWS Lambda function environments and supported runtimes only. Utilities might work with web frameworks and non-Lambda environments, though they are not officially supported.
+- __Eases the adoption of best practices__. The main priority of the utilities is to facilitate best practices adoption, as defined in the AWS Well-Architected Serverless Lens; all other functionality is optional.
+- __Keep it lean__. Additional dependencies are carefully considered for security and ease of maintenance, and prevent negatively impacting startup time.
+- __We strive for backwards compatibility__. New features and changes should keep backwards compatibility. If a breaking change cannot be avoided, the deprecation and migration process should be clearly defined.
+- __We work backwards from the community__. We aim to strike a balance of what would work best for 80% of customers. Emerging practices are considered and discussed via Requests for Comment (RFCs)
+- __Progressive__. Utilities are designed to be incrementally adoptable for customers at any stage of their Serverless journey. They follow language idioms and their community’s common practices.

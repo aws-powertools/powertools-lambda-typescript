@@ -1,0 +1,854 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DEFAULT_NAMESPACE, MAX_DIMENSION_COUNT } from '../../src/constants.js';
+import { Metrics, MetricUnit } from '../../src/index.js';
+
+describe('Working with dimensions', () => {
+  const ENVIRONMENT_VARIABLES = process.env;
+
+  beforeEach(() => {
+    process.env = {
+      ...ENVIRONMENT_VARIABLES,
+      POWERTOOLS_DEV: 'true',
+      POWERTOOLS_METRICS_DISABLED: 'false',
+    };
+    vi.clearAllMocks();
+  });
+
+  it('creates a new dimension set', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+    });
+
+    // Act
+    metrics
+      .addDimension('environment', 'prod')
+      .addDimensions({
+        dimension1: '1',
+        dimension2: '2',
+      })
+      .addMetric('foo', MetricUnit.Count, 1)
+      .publishStoredMetrics();
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        environment: 'prod',
+        dimension1: '1',
+        dimension2: '2',
+        foo: 1,
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [
+          ['service', 'environment'],
+          ['service', 'dimension1', 'dimension2'],
+        ],
+      })
+    );
+  });
+
+  it('adds default dimensions to the metric via constructor', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
+    });
+
+    // Act
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({ service: 'hello-world', environment: 'test' })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [['service', 'environment']],
+      })
+    );
+  });
+
+  it('adds default dimensions to the metric via method', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'prod',
+      },
+    });
+
+    // Act
+    metrics.setDefaultDimensions({ environment: 'test', commit: '1234' });
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        environment: 'test',
+        commit: '1234',
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [['service', 'environment', 'commit']],
+      })
+    );
+  });
+
+  it('handles dimension sets with default dimensions and overrides', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+      defaultDimensions: {
+        environment: 'prod',
+        region: 'us-east-1',
+      },
+    });
+
+    // Act
+    // Add a dimension set that overrides one of the default dimensions
+    metrics
+      .addDimensions({
+        environment: 'staging', // This should override the default 'prod' value
+        feature: 'search',
+      })
+      .addMetric('api_calls', MetricUnit.Count, 1);
+    metrics.publishStoredMetrics();
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        environment: 'staging', // Should use the overridden value
+        region: 'us-east-1', // Should keep the default value
+        feature: 'search', // Should add the new dimension
+        api_calls: 1,
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [
+          ['service', 'environment', 'region', 'feature'], // Should include all dimensions
+        ],
+      })
+    );
+  });
+
+  it('adds one dimension to the metric', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    metrics
+      .addDimension('environment', 'test')
+      .addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({ service: 'hello-world', environment: 'test' })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [['service', 'environment']],
+      })
+    );
+  });
+
+  it('adds multiple dimensions to the metric', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    metrics.addDimensions({ environment: 'test', commit: '1234' });
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        environment: 'test',
+        commit: '1234',
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [['service', 'environment', 'commit']],
+      })
+    );
+  });
+
+  it('overrides an existing dimension with the same name', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
+    });
+
+    // Act
+    metrics
+      .addDimension('environment', 'prod')
+      .addDimension('commit', '1234')
+      .addDimension('commit', '5678')
+      .addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        service: 'hello-world',
+        environment: 'prod',
+        commit: '5678',
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [['service', 'environment', 'commit']],
+      })
+    );
+  });
+
+  it('clears default dimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
+    });
+
+    // Act
+    metrics.addDimension('commit', '1234').clearDefaultDimensions();
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({
+        environment: 'test',
+        service: 'hello-world',
+      })
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        commit: '1234',
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [['commit']],
+      })
+    );
+  });
+
+  it('clears all non-default dimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
+    });
+
+    // Act
+    metrics.addDimension('commit', '1234').clearDimensions();
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({
+        commit: '1234',
+      })
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        environment: 'test',
+        service: 'hello-world',
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [['service', 'environment']],
+      })
+    );
+  });
+
+  it('clears standard dimensions after publishing the metric', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
+    });
+
+    // Act
+    metrics.addDimension('commit', '1234');
+    metrics.addMetric('test', MetricUnit.Count, 1);
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(console.log).toHaveEmittedNthEMFWith(
+      1,
+      expect.objectContaining({ commit: '1234', environment: 'test' })
+    );
+    expect(console.log).toHaveEmittedNthMetricWith(
+      1,
+      expect.objectContaining({
+        Dimensions: [['service', 'environment', 'commit']],
+      })
+    );
+    expect(console.log).toHaveEmittedNthEMFWith(
+      2,
+      expect.not.objectContaining({ commit: '1234' })
+    );
+    expect(console.log).toHaveEmittedNthEMFWith(
+      2,
+      expect.objectContaining({ environment: 'test' })
+    );
+    expect(console.log).toHaveEmittedNthMetricWith(
+      2,
+      expect.objectContaining({
+        Dimensions: [['service', 'environment']],
+      })
+    );
+  });
+
+  it('throws when the number of dimensions exceeds the limit', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
+    });
+
+    // Act
+    // We start with 2 dimensions because the default dimension & service name are already added
+    for (let i = 2; i < MAX_DIMENSION_COUNT; i++) {
+      metrics.addDimension(`dimension-${i}`, 'test');
+    }
+
+    // Assess
+    expect(() => metrics.addDimension('extra', 'test')).toThrow(
+      `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+    );
+  });
+
+  it('throws when the number of dimensions exceeds the limit after adding default dimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    // We start with 1 dimension because service name is already added
+    for (let i = 1; i < MAX_DIMENSION_COUNT; i++) {
+      metrics.setDefaultDimensions({ [`dimension-${i}`]: 'test' });
+    }
+
+    // Assess
+    expect(() => metrics.setDefaultDimensions({ extra: 'test' })).toThrow(
+      'The number of metric dimensions must be lower than 29'
+    );
+  });
+
+  it('throws when setDefaultDimensions would exceed the limit with existing regular dimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    for (let i = 1; i < MAX_DIMENSION_COUNT; i++) {
+      metrics.addDimension(`regular-${i}`, 'test');
+    }
+
+    // Assess
+    expect(() =>
+      metrics.setDefaultDimensions({ 'new-default': 'test' })
+    ).toThrow(
+      `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+    );
+  });
+
+  it('throws when setDefaultDimensions would exceed the limit with existing dimension sets', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    const newDimensionSet: Record<string, string> = {};
+    for (let i = 0; i < 28; i++) {
+      newDimensionSet[`dimension-extra-${i}`] = 'test';
+    }
+    metrics.addDimensions(newDimensionSet);
+
+    // Assess
+    expect(() =>
+      metrics.setDefaultDimensions({ 'new-default': 'test' })
+    ).toThrow(
+      `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+    );
+  });
+
+  it('allows overriding existing default dimension keys without triggering the limit', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    for (let i = 1; i < MAX_DIMENSION_COUNT; i++) {
+      metrics.setDefaultDimensions({ [`dimension-${i}`]: 'test' });
+    }
+
+    // Assess
+    expect(() =>
+      metrics.setDefaultDimensions({ 'dimension-1': 'updated' })
+    ).not.toThrow();
+  });
+
+  it('allows overriding existing regular dimensions via addDimension without triggering the limit', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    for (let i = 1; i < MAX_DIMENSION_COUNT; i++) {
+      metrics.addDimension(`dimension-${i}`, 'test');
+    }
+
+    // Assess
+    expect(() => metrics.addDimension('dimension-1', 'updated')).not.toThrow();
+  });
+
+  it('allows addDimensions to override existing default dimension keys without triggering the limit', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act
+    for (let i = 1; i < MAX_DIMENSION_COUNT; i++) {
+      metrics.setDefaultDimensions({ [`dimension-${i}`]: 'test' });
+    }
+
+    // Assess
+    expect(() =>
+      metrics.addDimensions({
+        'dimension-1': 'updated',
+        'dimension-2': 'updated',
+      })
+    ).not.toThrow();
+  });
+
+  it('throws when adding dimension sets would exceed the limit', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: {
+        environment: 'test',
+      },
+    });
+
+    // Act
+    const newDimensionSet: Record<string, string> = {};
+    for (let i = 0; i < 28; i++) {
+      newDimensionSet[`dimension-extra-${i}`] = 'test';
+    }
+
+    // Assess
+    // Adding a dimension set that results in > 29 dimensions should exceed the limit
+    expect(() => metrics.addDimensions(newDimensionSet)).toThrow(
+      `The number of metric dimensions must be lower than ${MAX_DIMENSION_COUNT}`
+    );
+  });
+
+  it('allows setDefaultDimensions to evaluate maxProjectedSize correctly when dimensionSets are smaller', () => {
+    // Prepare
+    const metrics = new Metrics({ singleMetric: true });
+
+    // Act
+    metrics.addDimension('dim1', 'val1');
+    metrics.addDimension('dim2', 'val2');
+    metrics.addDimensions({ setDim1: 'val3' });
+
+    // Assess
+    // This triggers setDefaultDimensions logic where setSize (3) < maxProjectedSize (4), covering the false branch.
+    expect(() =>
+      metrics.setDefaultDimensions({ newDefault: 'val4' })
+    ).not.toThrow();
+  });
+
+  it('handles dimension overrides across multiple dimension sets', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+    });
+
+    // Act
+    // First add a single dimension
+    metrics.addDimension('d', '3');
+
+    // First dimension set
+    metrics.addDimensions({
+      a: '1',
+      b: '2',
+    });
+
+    // Second dimension set with some overlapping keys
+    metrics.addDimensions({
+      a: '3',
+      c: '5',
+      d: '8',
+    });
+
+    // Third dimension set with more overlapping keys
+    metrics.addDimensions({
+      b: '5',
+      d: '1',
+    });
+
+    metrics.addMetric('foo', MetricUnit.Count, 1);
+    metrics.publishStoredMetrics();
+
+    // Assess
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        a: '3', // Last value from second set
+        b: '5', // Last value from third set
+        c: '5', // Only value from second set
+        d: '1', // Last value from third set (overriding both the initial d:3 and second set's d:8)
+        foo: 1,
+      })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.objectContaining({
+        Dimensions: [
+          ['service', 'd'],
+          ['service', 'a', 'b'],
+          ['service', 'a', 'c', 'd'],
+          ['service', 'b', 'd'],
+        ],
+      })
+    );
+  });
+
+  it.each([
+    { value: undefined, name: 'valid-name' },
+    { value: null, name: 'valid-name' },
+    {
+      value: '',
+      name: 'valid-name',
+    },
+    { value: 'valid-value', name: undefined },
+    { value: 'valid-value', name: null },
+    {
+      value: 'valid-value',
+      name: '',
+    },
+  ])('skips invalid dimension values ($name)', ({ value, name }) => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      namespace: DEFAULT_NAMESPACE,
+    });
+
+    // Act & Assess
+    metrics
+      .addDimension(name as string, value as string)
+      .addMetric('test', MetricUnit.Count, 1);
+
+    expect(console.warn).toHaveBeenCalledTimes(1);
+    expect(console.warn).toHaveBeenCalledWith(
+      `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.not.objectContaining({ test: value })
+    );
+    expect(console.log).toHaveEmittedMetricWith(
+      expect.not.objectContaining({ Dimensions: [['test']] })
+    );
+  });
+
+  it.each([
+    { value: undefined, name: 'valid-name' },
+    { value: null, name: 'valid-name' },
+    {
+      value: '',
+      name: 'valid-name',
+    },
+    {
+      value: 'valid-value',
+      name: '',
+    },
+  ])(
+    'skips invalid dimension values in addDimensions ($name)',
+    ({ value, name }) => {
+      // Prepare
+      const metrics = new Metrics({
+        singleMetric: true,
+        namespace: DEFAULT_NAMESPACE,
+      });
+
+      // Act & Assess
+      metrics
+        .addDimensions({
+          validDimension: 'valid',
+          [name as string]: value as string,
+        })
+        .addMetric('test', MetricUnit.Count, 1)
+        .publishStoredMetrics();
+
+      expect(console.warn).toHaveBeenCalledWith(
+        `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+      );
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.objectContaining({ validDimension: 'valid' })
+      );
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.not.objectContaining({ invalidDimension: value })
+      );
+    }
+  );
+
+  it('warns when addDimensions overwrites existing dimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+      defaultDimensions: { environment: 'prod' },
+    });
+
+    // Act
+    metrics
+      .addDimension('region', 'us-east-1')
+      .addDimensions({
+        environment: 'staging', // overwrites default dimension
+        region: 'us-west-2', // overwrites regular dimension
+        newDim: 'value',
+      })
+      .addMetric('test', MetricUnit.Count, 1)
+      .publishStoredMetrics();
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'Dimension "environment" has already been added. The previous value will be overwritten.'
+    );
+    expect(console.warn).toHaveBeenCalledWith(
+      'Dimension "region" has already been added. The previous value will be overwritten.'
+    );
+    expect(console.log).toHaveEmittedEMFWith(
+      expect.objectContaining({
+        environment: 'staging',
+        region: 'us-west-2',
+        newDim: 'value',
+      })
+    );
+  });
+
+  it('warns when setDefaultDimensions overwrites existing dimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: DEFAULT_NAMESPACE,
+      defaultDimensions: { environment: 'prod' },
+    });
+
+    // Act
+    metrics.setDefaultDimensions({ region: 'us-east-1' }).setDefaultDimensions({
+      environment: 'staging', // overwrites default dimension
+    });
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledOnce();
+    expect(console.warn).toHaveBeenCalledWith(
+      'Dimension "environment" has already been added. The previous value will be overwritten.'
+    );
+  });
+
+  it.each([
+    { value: undefined, name: 'valid-name' },
+    { value: null, name: 'valid-name' },
+    { value: '', name: 'valid-name' },
+    { value: 'valid-value', name: '' },
+  ])(
+    'skips invalid default dimension values in setDefaultDimensions ($name)',
+    ({ value, name }) => {
+      // Arrange
+      const metrics = new Metrics({
+        singleMetric: true,
+        namespace: DEFAULT_NAMESPACE,
+      });
+
+      // Act
+      metrics
+        .setDefaultDimensions({
+          validDimension: 'valid',
+          [name as string]: value as string,
+        })
+        .addMetric('test', MetricUnit.Count, 1)
+        .publishStoredMetrics();
+
+      // Assess
+      expect(console.warn).toHaveBeenCalledWith(
+        `The dimension ${name} doesn't meet the requirements and won't be added. Ensure the dimension name and value are non empty strings`
+      );
+
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.objectContaining({ validDimension: 'valid' })
+      );
+
+      expect(console.log).toHaveEmittedEMFWith(
+        expect.not.objectContaining({ [name]: value })
+      );
+    }
+  );
+  it('allows adding multiple dimension sets as long as no single set exceeds MAX_DIMENSION_COUNT', () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+
+    // Act
+    // Add 30 dimension sets, each with 1 dimension
+    for (let i = 0; i < 30; i++) {
+      metrics.addDimensions({ [`dim-${i}`]: 'value' });
+    }
+
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Assess
+    expect(() => metrics.publishStoredMetrics()).not.toThrow();
+  });
+
+  it('throws when a metric name conflicts with an existing dimension key', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+    metrics.addDimension('environment', 'prod');
+
+    // Act & Assess
+    expect(() =>
+      metrics.addMetric('environment', MetricUnit.Count, 1)
+    ).toThrowError(
+      'EMF key collision on "environment": registered as both a metric (number) and a dimension (string)'
+    );
+  });
+
+  it('throws when a metric name conflicts with an existing default dimension key', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+      defaultDimensions: { environment: 'prod' },
+    });
+
+    // Act & Assess
+    expect(() =>
+      metrics.addMetric('environment', MetricUnit.Count, 1)
+    ).toThrowError(
+      'EMF key collision on "environment": registered as both a metric (number) and a default dimension (string)'
+    );
+  });
+
+  it('throws when a metric name conflicts with the built-in service dimension', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+
+    // Act & Assess
+    expect(() =>
+      metrics.addMetric('service', MetricUnit.Count, 1)
+    ).toThrowError(
+      'EMF key collision on "service": registered as both a metric (number) and a default dimension (string)'
+    );
+  });
+
+  it('throws when a metric name conflicts with a key added via addDimensions', () => {
+    // Prepare
+    const metrics = new Metrics({
+      singleMetric: true,
+    });
+    metrics.addDimensions({ environment: 'prod' });
+
+    // Act & Assess
+    expect(() =>
+      metrics.addMetric('environment', MetricUnit.Count, 1)
+    ).toThrowError(
+      'EMF key collision on "environment": registered as both a metric (number) and a dimension set (string)'
+    );
+  });
+
+  it('throws on serialize when a dimension key is added after a metric with the same name', () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    metrics.addMetric('environment', MetricUnit.Count, 1);
+    metrics.addDimension('environment', 'prod');
+
+    // Act & Assess
+    expect(() => metrics.serializeMetrics()).toThrowError(
+      'EMF key collision on "environment": registered as both a metric (number) and a dimension (string)'
+    );
+  });
+
+  it('warns on serialize when a dimension key overwrites a default dimension key', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: 'test',
+      defaultDimensions: { environment: 'prod' },
+    });
+    metrics.addDimension('environment', 'staging');
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Act
+    metrics.serializeMetrics();
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'EMF key "environment" is defined as both a default dimension and dimension; the dimension value will take precedence in the serialized output'
+    );
+  });
+
+  it('warns on serialize when a dimension set key overwrites a regular dimension key', () => {
+    // Prepare
+    const metrics = new Metrics({ namespace: 'test' });
+    metrics.addDimension('environment', 'prod');
+    metrics.addDimensions({ environment: 'staging' });
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Act
+    metrics.serializeMetrics();
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'EMF key "environment" is defined as both a dimension and dimension set; the dimension set value will take precedence in the serialized output'
+    );
+  });
+
+  it('warns on serialize when a dimension set key overwrites a default dimension key', () => {
+    // Prepare
+    const metrics = new Metrics({
+      namespace: 'test',
+      defaultDimensions: { environment: 'prod' },
+    });
+    metrics.addDimensions({ environment: 'staging' });
+    metrics.addMetric('test', MetricUnit.Count, 1);
+
+    // Act
+    metrics.serializeMetrics();
+
+    // Assess
+    expect(console.warn).toHaveBeenCalledWith(
+      'EMF key "environment" is defined as both a default dimension and dimension set; the dimension set value will take precedence in the serialized output'
+    );
+  });
+});

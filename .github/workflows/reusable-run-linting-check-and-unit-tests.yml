@@ -1,0 +1,150 @@
+name: Run unit tests
+
+# 
+# PROCESS
+#
+# 1. Checkout code
+# 2. Install dependencies & build project
+# 3. Run linting
+# 4. Run unit tests
+#
+# NOTES
+# We create different jobs for different workspaces of the monorepo, since we have slightly different requirements for each.
+# For example, the docs (`check-docs`) run Markdown linting, while the layer (`check-layer-publisher`)
+# and code snippets (`check-docs-snippets`) jobs run checks only for the current LTS version of Node.js.
+#
+# For the Powertools for AWS main features (aka `packages/*`), instead we run linting and unit tests for all the supported
+# versions of Node.js. The list of packages is derived from the root `package.json` workspaces by
+# `.github/scripts/list_workspaces.js`, so adding a workspace there is all it takes to get it tested here.
+#
+# USAGE
+#
+# NOTE: meant to be called by ./.github/workflows/pr-run-linting-check-and-unit-tests.yml when a PR is opened or updated,
+# by ./.github/workflows/quality_check.yml when a PR enters the merge queue, or by ./.github/workflows/make-release.yml
+# when a release is made.
+#
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  resolve-workspaces:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      workspaces: ${{ steps.list.outputs.workspaces }}
+    steps:
+      - &checkout_code
+        name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: List non-private packages
+        id: list
+        run: |
+          workspaces=$(node .github/scripts/list_workspaces.js unit)
+          echo "workspaces=${workspaces}" >> "$GITHUB_OUTPUT"
+  code-quality:
+    needs: resolve-workspaces
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    strategy:
+      matrix:
+        version: [22, 24]
+        # packages/testing is private and intentionally excluded from this publishable package matrix.
+        workspace: ${{ fromJSON(needs.resolve-workspaces.outputs.workspaces) }}
+      fail-fast: false
+    steps:
+      - *checkout_code
+      - name: Setup NodeJS
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.version }}
+          cache: "npm"
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
+        with:
+          node-version: ${{ matrix.version }}
+      - name: Linting
+        run: npm run lint -w ${{ matrix.workspace }}
+      - name: Type check tests
+        run: npm run build:tests -w ${{ matrix.workspace }}
+      - name: Unit tests
+        run: |
+          npm run test:unit:coverage -w ${{ matrix.workspace }}
+          npm run test:unit:types -w ${{ matrix.workspace }}
+  check-layer-publisher:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    steps:
+      - *checkout_code
+      - &setup_node
+        name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: 24
+          cache: "npm"
+      - &setup_dependencies
+        name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
+      - name: Run linting
+        run: npm run lint:ci -w layers
+      - name: Run tests
+        run: npm run test:unit -w layers
+  check-docs-snippets:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    steps:
+      - *checkout_code
+      - *setup_node
+      - *setup_dependencies
+      - name: Run linting
+        run: npm run lint:ci -w examples/snippets
+      - name: Type check snippets
+        run: npm run build:tests -w examples/snippets
+  check-docs:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: dev
+    steps:
+      - *checkout_code
+      - *setup_node
+      - *setup_dependencies
+      - name: Run linting
+        run: npm run lint:markdown
+  unit-tests-complete:
+    # Single stable context (`run-unit-tests / unit-tests-complete`) that branch protection can
+    # require, so that adding a Node.js version or a workspace to the `code-quality` matrix
+    # doesn't silently change which checks are required.
+    #
+    # `resolve-workspaces` is listed so that a failure to derive the matrix, which skips
+    # `code-quality` entirely, is reported here rather than passing as "nothing ran".
+    #
+    # `if: always()` is required so this job still runs when a dependency fails - otherwise it
+    # would be skipped, and a skipped required check counts as satisfied. For the same reason
+    # `skipped` is treated as a failure below: none of the jobs above are conditional, so a skip
+    # means something upstream went wrong.
+    needs: [resolve-workspaces, code-quality, check-layer-publisher, check-docs-snippets, check-docs]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all unit test jobs succeeded
+        env:
+          FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
+        run: |
+          if [ "${FAILED}" = "true" ]; then
+            echo "::error::One or more unit test jobs did not succeed"
+            exit 1
+          fi

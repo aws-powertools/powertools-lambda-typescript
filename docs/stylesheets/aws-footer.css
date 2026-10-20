@@ -1,0 +1,224 @@
+/* AWS docs restyle: footer (owned by Minion B) */
+
+.aws-footer.md-footer {
+  background: #fff;
+  color: #0f141a;
+}
+
+.aws-footer__pager {
+  background: #fff;
+  border-top: 1px solid #ebebf0;
+  color: #0f141a;
+  display: block;
+  padding-bottom: 24px;
+  padding-top: 24px;
+}
+
+.aws-footer__pager-line {
+  color: #0f141a;
+  font-size: 15px;
+  line-height: 22px;
+  margin: 0;
+}
+
+.aws-footer__pager-line + .aws-footer__pager-line {
+  margin-top: 8px;
+}
+
+.aws-footer__pager-line strong {
+  color: #0f141a;
+  font-weight: 700;
+}
+
+.aws-footer__pager-line a {
+  color: #006ce0;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.aws-footer__pager-line a:hover,
+.aws-footer__pager-line a:focus-visible {
+  color: #006ce0;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.aws-footer__panel {
+  background: #161d26;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--md-text-font), sans-serif;
+  padding: 48px 0 0;
+  position: relative;
+}
+
+.aws-footer__panel-inner {
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1440px;
+  padding-left: 40px;
+  padding-right: 40px;
+  position: relative;
+  width: 100%;
+}
+
+.aws-footer__columns {
+  box-sizing: border-box;
+  display: grid;
+  gap: 32px 40px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.aws-footer__column {
+  margin: 0;
+}
+
+.aws-footer__heading {
+  color: #fff;
+  font-family: var(--md-text-font), sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  margin: 0 0 16px;
+}
+
+.aws-footer__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.aws-footer__list li + li {
+  margin-top: 11px;
+}
+
+.aws-footer__link {
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--md-text-font), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.aws-footer__link:hover,
+.aws-footer__link:focus-visible {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.aws-footer__external-icon {
+  color: currentcolor;
+  display: inline-flex;
+  height: 12px;
+  margin-left: 4px;
+  vertical-align: -1px;
+  width: 12px;
+}
+
+.aws-footer__external-icon svg {
+  display: block;
+  fill: none;
+  height: 12px;
+  stroke: currentcolor;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  stroke-width: 1.5;
+  width: 12px;
+}
+
+.aws-footer__legal {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--md-text-font), sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  margin-top: 40px;
+  padding-bottom: 24px;
+  padding-top: 24px;
+}
+
+.aws-footer__legal .md-copyright,
+.aws-footer__legal .md-copyright__highlight,
+.aws-footer__legal #awsdocs-legal-zone-copyright,
+.aws-footer__legal .copyright {
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--md-text-font), sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.aws-footer__legal .md-copyright {
+  max-width: none;
+  padding: 0;
+  width: 100%;
+}
+
+.aws-footer__legal a {
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 400;
+  margin-left: 10px;
+  margin-right: 10px;
+  text-decoration: none;
+}
+
+.aws-footer__legal a:first-child {
+  margin-left: 0;
+}
+
+.aws-footer__legal a:hover,
+.aws-footer__legal a:focus-visible {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+@media screen and (max-width: 62.5em) {
+  .aws-footer__columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 44.9375em) {
+  .aws-footer__pager {
+    padding-bottom: 20px;
+    padding-top: 20px;
+  }
+
+  .aws-footer__panel {
+    padding-top: 40px;
+  }
+
+  .aws-footer__panel-inner {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .aws-footer__columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+[data-md-color-scheme="slate"] .aws-footer.md-footer,
+[data-md-color-scheme="slate"] .aws-footer__pager {
+  background: #0f141a;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+[data-md-color-scheme="slate"] .aws-footer__pager {
+  border-top-color: #424650;
+}
+
+[data-md-color-scheme="slate"] .aws-footer__pager-line,
+[data-md-color-scheme="slate"] .aws-footer__pager-line strong {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+[data-md-color-scheme="slate"] .aws-footer__pager-line a,
+[data-md-color-scheme="slate"] .aws-footer__pager-line a:hover,
+[data-md-color-scheme="slate"] .aws-footer__pager-line a:focus-visible {
+  color: #42b4ff;
+}

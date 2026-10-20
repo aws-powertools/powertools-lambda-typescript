@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "outDir": "./lib",
+    "rootDir": "./",
+    "resolveJsonModule": true
+  },
+  "include": ["./src/**/*", "./bin/**/*"]
+}

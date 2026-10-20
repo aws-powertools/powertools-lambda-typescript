@@ -1,0 +1,118 @@
+name: Make Release
+
+# RELEASE PROCESS
+#
+# === Automated activities ===
+# 1. [Quality check] run unit tests, linting, examples, layer, doc snippets
+# 2. [Release] publish all packages to npmjs.org using the latest git commit using OIDC authentication with automatic provenance attestations
+# 3. [Create tag] create a new git tag using released version, i.e. v1.13.1
+# 4. [Publish layer] build and package layer, kick off the workflow for beta and prod deployment, including canary tests
+# 5. [Publish layer] deploy the layer to the GovCloud and China partitions (gamma and prod) once the commercial prod deployment finishes
+# 6. [Publish layer] update documentation with the latest layer ARN version, once the commercial, GovCloud, and China prod deployments all finish
+# 7. [Publish layer] create PR to merge the updated documentation
+#
+# === Manual activities ===
+# 1. Kick off `make-version` workflow to bump and review the version changes and changelog for each package
+# 2. Merge the PR created by `make-version` workflow
+# 3. Kick off this workflow to make the release
+# 4. Merge the PR created by the `publish_layer` workflow to update the documentation
+# 5. Update draft release notes with the latest changes and publish the release on GitHub
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+concurrency:
+  group: on-release-publish
+
+
+jobs:
+  run-unit-tests:
+    uses: ./.github/workflows/reusable-run-linting-check-and-unit-tests.yml
+  # This job publishes the packages to npm.
+  # It uses the latest git commit sha as the version and uses OIDC authentication for secure
+  # and passwordless publishing to npmjs.org with automatic provenance attestations.
+  # We don't bump the version because we do that in the `make-version` workflow.
+  # It also sets the RELEASE_VERSION output to be used by the next job to create a git tag.
+  publish-npm:
+    needs: run-unit-tests
+    permissions:
+      id-token: write # Needed for OIDC authentication & provenance with npm trusted publishing
+    environment: Release
+    runs-on: ubuntu-latest
+    outputs:
+      RELEASE_VERSION: ${{ steps.set-release-version.outputs.RELEASE_VERSION }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: "npm"
+          registry-url: 'https://registry.npmjs.org'
+      - name: Setup dependencies
+        uses: aws-powertools/actions/.github/actions/cached-node-modules@7898dbd71be8083748aa52f07ce5201bb36078ac # v1.6.0
+      - name: Publish to npm
+        run: |
+          npm publish --workspaces
+      - name: Set release version
+        id: set-release-version
+        run: |
+          VERSION=$(cat packages/commons/package.json | jq .version -r)
+          echo RELEASE_VERSION="$VERSION" >> "$GITHUB_OUTPUT"
+
+  verify-npm-propagation:
+    needs: publish-npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 24
+      - name: Verify npm registry propagation
+        run: bash .github/scripts/verify_npm_publish.sh
+  
+  # This job creates a new git tag using the released version (v1.18.1)
+  create_tag: 
+    needs: [publish-npm, verify-npm-propagation]
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+      - name: Git client setup
+        run: | 
+          git config --global user.name 'aws-powertools-bot'
+          git config --global user.email '151832416+aws-powertools-bot@users.noreply.github.com'
+          git config remote.origin.url >&-
+      - name: Create git tag
+        run : |
+          git tag -a v${{ needs.publish-npm.outputs.RELEASE_VERSION }} -m "Release v${{ needs.publish-npm.outputs.RELEASE_VERSION }}"
+          git push origin v${{ needs.publish-npm.outputs.RELEASE_VERSION }}
+   
+  # NOTE: GitHub Actions has a depth limit of 4 nested workflow_calls. We're at 2 today:
+  # make-release -> publish_layer -> reusable_deploy_layer_stack / layers_partitions_deploy
+  publish_layer:
+    needs: [publish-npm, verify-npm-propagation]
+    secrets:
+      # We use "inherit" because need to propagate the secrets to the reusable workflow, secrets are already scoped by using GitHub's deployment environments to mitigate the risk of secret exposure.
+      inherit
+    permissions:
+      id-token: write
+      contents: write
+      pages: write
+      pull-requests: write
+    uses: ./.github/workflows/publish_layer.yml
+    with:
+      latest_published_version: ${{ needs.publish-npm.outputs.RELEASE_VERSION }}

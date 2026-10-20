@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block outdated %}
+You're not viewing the latest version.
+<a href="{{ '../' ~ base_url }}">
+  <strong>Click here to go to latest.</strong>
+</a>
+{% endblock %}
+
+{% block extrahead %}
+    <meta name="guide-name" content="Powertools for AWS Lambda (TypeScript)">
+    <meta name="service-name" content="Powertools for AWS Lambda">
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+{% endblock %}

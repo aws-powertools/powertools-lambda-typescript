@@ -1,0 +1,9 @@
+{
+  "statusCode": 201,
+  "body": "{\"id\":\"123\",\"title\":\"Learn TypeScript\"}",
+  "headers": {
+    "Content-Type": "application/json",
+    "Location": "/todos/123"
+  },
+  "isBase64Encoded": false
+}

@@ -1,0 +1,35 @@
+.md-grid {
+  max-width: 90vw;
+}
+
+.highlight .hll {
+  [data-md-color-scheme="default"] {
+    background-color: lavender;
+  }
+}
+
+.md-typeset table:not([class]) {
+  font-size: 0.75rem;
+}
+
+.md-tabs__link {
+  font-size: 0.8rem;
+}
+
+.md-nav__link--active {
+  font-weight: bold;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  font-size: 0.7rem;
+}
+
+.copyMe {
+  cursor: pointer;
+  border-bottom: 0.1px dashed black;
+}
+
+.copyMe::after {
+  content: " 📋";
+}

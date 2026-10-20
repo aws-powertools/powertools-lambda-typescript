@@ -1,0 +1,220 @@
+import { Console } from 'node:console';
+import { readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import {
+  type ICloudAssemblySource,
+  StackSelectionStrategy,
+  Toolkit,
+} from '@aws-cdk/toolkit-lib';
+import { App, Stack, Tags } from 'aws-cdk-lib';
+import { generateTestUniqueName } from './helpers.js';
+import type { TestStackProps } from './types.js';
+
+/**
+ * How often the CDK toolkit polls `DescribeStackEvents` for each in-flight
+ * stack operation. The default is 2s; our e2e `ioHost` only surfaces progress
+ * every 10s anyway, so nothing is lost by polling slower. Raising it avoids
+ * saturating the account-level CloudFormation read API rate when the CI matrix
+ * deploys/destroys dozens of stacks concurrently, which otherwise randomly
+ * fails jobs with `Throttling: Rate exceeded` (CDK_TOOLKIT_E5500/E7900).
+ */
+const STACK_EVENT_POLLING_INTERVAL_MS = 10_000;
+
+const testConsole = new Console({
+  stdout: process.stdout,
+  stderr: process.stderr,
+});
+
+/**
+ * Test stack that can be deployed to the selected environment.
+ */
+class TestStack {
+  /**
+   * Reference to the AWS CDK App object.
+   * @default new App()
+   */
+  public app: App;
+  /**
+   * Outputs of the deployed stack.
+   */
+  public outputs: Record<string, string> = {};
+  /**
+   * Reference to the AWS CDK Stack object.
+   * @default new Stack(this.app, stackName)
+   */
+  public stack: Stack;
+  /**
+   * Name of the test stack.
+   * @example
+   * Logger-E2E-node18-12345-someFeature
+   */
+  public testName: string;
+
+  /**
+   * @internal
+   * Reference to the AWS CDK CLI object.
+   */
+  readonly #cli: Toolkit;
+  /**
+   * @internal
+   * Reference to the AWS CDK Cloud Assembly context.
+   */
+  #cx?: ICloudAssemblySource;
+
+  public constructor({ stackNameProps, app, stack }: TestStackProps) {
+    this.testName = generateTestUniqueName({
+      testName: stackNameProps.testName,
+      testPrefix: stackNameProps.stackNamePrefix,
+    });
+    this.app = app ?? new App();
+    this.stack = stack ?? new Stack(this.app, this.testName);
+    Tags.of(this.stack).add('Service', 'Powertools-for-AWS-e2e-tests');
+    let lastCreateLog = 0;
+    let lastDestroyLog = 0;
+    const creationDeleteLogFrequency = 10000; // 10 seconds
+    const that = this;
+    this.#cli = new Toolkit({
+      color: false,
+      ioHost: {
+        /**
+         * Log messages to the console depending on the log level.
+         *
+         * If the `RUNNER_DEBUG` environment variable is set to `1`, all messages are logged.
+         *
+         * Otherwise, we log messages that are either warnings or errors as well as periodic
+         * updates on the stack creation and destruction process.
+         *
+         * @param msg - Message to log sent by the CDK CLI
+         */
+        async notify(msg) {
+          if (process.env.RUNNER_DEBUG === '1') {
+            testConsole.log(msg);
+            return;
+          }
+          if (msg.message.includes('destroyed') && msg.message.includes('✅')) {
+            testConsole.log(msg.message);
+            return;
+          }
+          if (msg.message.includes('✅') && !msg.message.includes('deployed')) {
+            testConsole.log(`${that.stack.stackName} deployed successfully`);
+            return;
+          }
+          if (msg.message.includes('CREATE_IN_PROGRESS')) {
+            if (Date.now() - lastCreateLog < creationDeleteLogFrequency) {
+              return;
+            }
+            lastCreateLog = Date.now();
+            testConsole.log(
+              `${that.stack.stackName} stack is being created...`
+            );
+            return;
+          }
+          if (msg.message.includes('DELETE_IN_PROGRESS')) {
+            if (Date.now() - lastDestroyLog < creationDeleteLogFrequency) {
+              return;
+            }
+            lastDestroyLog = Date.now();
+            testConsole.log(
+              `${that.stack.stackName} stack is being destroyed...`
+            );
+            return;
+          }
+          if (['warning', 'error'].includes(msg.level)) {
+            testConsole.log(msg);
+          }
+        },
+        async requestResponse(msg) {
+          if (
+            process.env.RUNNER_DEBUG === '1' ||
+            ['warning', 'error'].includes(msg.level)
+          ) {
+            testConsole.log(msg);
+          }
+          return msg.defaultResponse;
+        },
+      },
+    });
+  }
+
+  /**
+   * Directory where the Cloud Assembly for this stack is synthesized.
+   */
+  #outdir(): string {
+    return join(tmpdir(), `${this.stack.stackName}-powertools-e2e-testing`);
+  }
+
+  /**
+   * Synthesize the CDK app into a Cloud Assembly.
+   *
+   * `clobberEnv: false` keeps the toolkit from temporarily replacing the
+   * global `process.env` with an immutable proxy during synthesis. That swap
+   * is not concurrency-safe, so without this two `TestStack` instances
+   * synthesizing at once (e.g. the shared capacity provider stacks, one per
+   * architecture) would race on `process.env`. The assembly builder does not
+   * read the injected env, so opting out is safe here.
+   */
+  async #synthAssembly(): Promise<ICloudAssemblySource> {
+    return await this.#cli.fromAssemblyBuilder(async () => this.app.synth(), {
+      outdir: this.#outdir(),
+      clobberEnv: false,
+    });
+  }
+
+  /**
+   * Deploy the test stack to the selected environment.
+   *
+   * It returns the outputs of the deployed stack.
+   */
+  public async deploy(): Promise<Record<string, string>> {
+    const outputFilePath = join(this.#outdir(), 'outputs.json');
+    this.#cx = await this.#synthAssembly();
+    await this.#cli.deploy(this.#cx, {
+      stacks: {
+        strategy: StackSelectionStrategy.ALL_STACKS,
+      },
+      outputsFile: outputFilePath,
+      stackEventPollingInterval: STACK_EVENT_POLLING_INTERVAL_MS,
+    });
+
+    this.outputs = JSON.parse(await readFile(outputFilePath, 'utf-8'))[
+      this.stack.stackName
+    ];
+
+    return this.outputs;
+  }
+
+  /**
+   * Destroy the test stack.
+   *
+   * The Cloud Assembly is normally created by {@link deploy | `deploy()`};
+   * when destroy is called in a fresh process (e.g. a workflow teardown job
+   * destroying a stack deployed by an earlier setup job), it is re-synthesized
+   * from the app, which must therefore define the same stack.
+   */
+  public async destroy(): Promise<void> {
+    this.#cx ??= await this.#synthAssembly();
+    await this.#cli.destroy(this.#cx, {
+      stacks: {
+        strategy: StackSelectionStrategy.ALL_STACKS,
+      },
+      stackEventPollingInterval: STACK_EVENT_POLLING_INTERVAL_MS,
+    });
+  }
+
+  /**
+   * Find and get the value of a StackOutput by its key.
+   */
+  public findAndGetStackOutputValue = (key: string): string => {
+    const value = Object.keys(this.outputs).find((outputKey) =>
+      outputKey.includes(key)
+    );
+    if (!value) {
+      throw new Error(`Cannot find output for ${key}`);
+    }
+
+    return this.outputs[value];
+  };
+}
+
+export { TestStack };

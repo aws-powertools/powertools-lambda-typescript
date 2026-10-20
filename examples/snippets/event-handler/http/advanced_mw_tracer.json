@@ -1,0 +1,28 @@
+{
+  "subsegments": [
+    {
+      "id": "96706b172edc5427",
+      "name": "Overhead",
+      "start_time": 1769780291.4940002,
+      "end_time": 1769780291.5135612
+    },
+    {
+      "id": "fe5efd6965d43f13",
+      "name": "GET /user",
+      "start_time": 1769780291.434,
+      "end_time": 1769780291.473,
+      "annotations": {
+        "ColdStart": false,
+        "Service": "my-api"
+      },
+      "metadata": {
+        "my-api": {
+          "GET /user response": {
+            "name": "John Doe",
+            "id": "1dd62759-f47f-4382-93c3-4c0282d13e08"
+          }
+        }
+      }
+    }
+  ]
+}

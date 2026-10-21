@@ -79,7 +79,9 @@ describe('Avro Deserializer: ', () => {
     const expected = { id: 1001, name: 'Laptop', price: 999.99 };
 
     // Act & Assess
-    expect(deserialize(message, productSchema, 'confluent')).toEqual(expected);
+    expect(
+      deserialize(message, productSchema, { wireFormat: 'confluent' })
+    ).toEqual(expected);
   });
 
   it('does not strip a leading zero byte when no wire format is set', () => {
@@ -103,7 +105,9 @@ describe('Avro Deserializer: ', () => {
     { description: 'empty', message: '' },
   ])('throws when the Confluent payload is $description', ({ message }) => {
     // Act & Assess
-    expect(() => deserialize(message, productSchema, 'confluent')).toThrow(
+    expect(() =>
+      deserialize(message, productSchema, { wireFormat: 'confluent' })
+    ).toThrow(
       new KafkaConsumerDeserializationError(
         'Invalid Confluent wire format: payload must contain a 5-byte header'
       )
@@ -112,7 +116,9 @@ describe('Avro Deserializer: ', () => {
 
   it('returns null for a header-only payload when the schema is null', () => {
     // Act & Assess
-    expect(deserialize('AAAAAAE=', '"null"', 'confluent')).toBeNull();
+    expect(
+      deserialize('AAAAAAE=', '"null"', { wireFormat: 'confluent' })
+    ).toBeNull();
   });
 
   it('throws when the Confluent magic byte is wrong', () => {
@@ -120,7 +126,9 @@ describe('Avro Deserializer: ', () => {
     const message = 'AQAAAAHSDwxMYXB0b3BSuB6F6z+PQA==';
 
     // Act & Assess
-    expect(() => deserialize(message, productSchema, 'confluent')).toThrow(
+    expect(() =>
+      deserialize(message, productSchema, { wireFormat: 'confluent' })
+    ).toThrow(
       new KafkaConsumerDeserializationError(
         'Invalid Confluent wire format: expected magic byte 0x00'
       )
@@ -134,7 +142,7 @@ describe('Avro Deserializer: ', () => {
     // Act & Assess
     expect(() =>
       // @ts-expect-error - testing unsupported wire format
-      deserialize(message, productSchema, 'glue')
+      deserialize(message, productSchema, { wireFormat: 'glue' })
     ).toThrow(
       new KafkaConsumerDeserializationError(
         'Unsupported Avro wire format: glue'

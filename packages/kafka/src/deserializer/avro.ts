@@ -1,3 +1,4 @@
+import { WireFormat } from '../constants.js';
 import { KafkaConsumerDeserializationError } from '../errors.js';
 import type { AvroDeserializer } from '../types/types.js';
 
@@ -17,7 +18,7 @@ const stripWireFormatHeader = (buffer: Buffer, wireFormat?: string) => {
     return buffer;
   }
   // Guards untyped (plain JavaScript) callers
-  if (wireFormat !== 'confluent') {
+  if (wireFormat !== WireFormat.CONFLUENT) {
     throw new KafkaConsumerDeserializationError(
       `Unsupported Avro wire format: ${wireFormat}`
     );
@@ -56,12 +57,12 @@ const createDeserializer = async (): Promise<AvroDeserializer> => {
    *
    * @param data - The base64-encoded string representing the Avro binary data.
    * @param schema - The Avro schema as a JSON string.
-   * @param wireFormat - The wire format of the payload. If `confluent`, the 5-byte header is stripped.
+   * @param options - Deserialization options. If `options.wireFormat` is `confluent`, the 5-byte header is stripped.
    */
-  deserializer = (data: string, schema: string, wireFormat) => {
+  deserializer = (data: string, schema: string, options) => {
     const buffer = stripWireFormatHeader(
       Buffer.from(data, 'base64'),
-      wireFormat
+      options?.wireFormat
     );
     try {
       const type = avro.parse(schema);

@@ -1,5 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { kafkaConsumer, SchemaType } from '@aws-lambda-powertools/kafka';
+import {
+  kafkaConsumer,
+  SchemaType,
+  WireFormat,
+} from '@aws-lambda-powertools/kafka';
 import type { SchemaConfig } from '@aws-lambda-powertools/kafka/types';
 import { Logger } from '@aws-lambda-powertools/logger';
 
@@ -9,7 +13,7 @@ const schemaConfig = {
   value: {
     type: SchemaType.AVRO,
     schema: readFileSync(new URL('./user.avsc', import.meta.url), 'utf8'),
-    wireFormat: 'confluent',
+    wireFormat: WireFormat.CONFLUENT,
   },
 } satisfies SchemaConfig;
 

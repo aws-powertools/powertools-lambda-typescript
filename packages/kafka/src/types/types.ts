@@ -1,11 +1,19 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { Reader } from 'protobufjs';
-import type { SchemaType as SchemaTypeMap } from '../constants.js';
+import type {
+  SchemaType as SchemaTypeMap,
+  WireFormat as WireFormatMap,
+} from '../constants.js';
 
 /**
  * Union type for supported schema types (JSON, Avro, Protobuf).
  */
 type SchemaType = (typeof SchemaTypeMap)[keyof typeof SchemaTypeMap];
+
+/**
+ * Union type for supported wire formats.
+ */
+type WireFormat = (typeof WireFormatMap)[keyof typeof WireFormatMap];
 
 /**
  * Metadata about the schema used for the field.
@@ -123,7 +131,7 @@ type AvroConfig = {
   /**
    * Optional wire format of the payload; `confluent` strips the 5-byte Confluent header before decoding.
    */
-  wireFormat?: 'confluent';
+  wireFormat?: WireFormat;
   /**
    * Optional {@link https://github.com/standard-schema/standard-schema | Standard Schema} for runtime validation
    */
@@ -252,13 +260,20 @@ type ProtobufMessage<T = unknown> = {
 type Deserializer = (
   input: string | null,
   schema?: unknown,
-  options?: SchemaMetadata | AvroConfig['wireFormat']
+  options?: SchemaMetadata | AvroDeserializerOptions
 ) => unknown;
+
+type AvroDeserializerOptions = {
+  /**
+   * Wire format of the payload; `confluent` strips the 5-byte Confluent header before decoding.
+   */
+  wireFormat?: WireFormat;
+};
 
 type AvroDeserializer = (
   data: string,
   schema: string,
-  wireFormat?: AvroConfig['wireFormat']
+  options?: AvroDeserializerOptions
 ) => unknown;
 
 type ProtobufDeserializer = <T>(
@@ -276,6 +291,7 @@ type DeserializeOptions = {
 
 export type {
   AvroDeserializer,
+  AvroDeserializerOptions,
   ConsumerRecord,
   ConsumerRecords,
   DeserializeOptions,
@@ -289,4 +305,5 @@ export type {
   SchemaConfigValue,
   SchemaMetadata,
   SchemaType,
+  WireFormat,
 };

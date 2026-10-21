@@ -270,7 +270,7 @@ Set `wireFormat: 'confluent'` on the Avro `key` or `value` configuration that st
 
 === "Confluent wire format"
 
-    ```typescript hl_lines="12"
+    ```typescript hl_lines="16"
     --8<-- "examples/snippets/kafka/advancedWorkingWithConfluentWireFormat.ts"
     ```
 

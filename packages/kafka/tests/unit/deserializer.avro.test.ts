@@ -114,6 +114,34 @@ describe('Avro Deserializer: ', () => {
     );
   });
 
+  it('returns the raw bytes of a Confluent wire format bytes schema', () => {
+    // Prepare
+    const message = Buffer.from([0, 0, 0, 0, 1, 0x02, 0x41]).toString('base64');
+
+    // Act & Assess
+    expect(
+      deserialize(message, '"bytes"', { wireFormat: 'confluent' })
+    ).toEqual(Buffer.from([0x02, 0x41]));
+  });
+
+  it('returns empty bytes for a header-only Confluent bytes schema payload', () => {
+    // Prepare
+    const message = Buffer.from([0, 0, 0, 0, 1]).toString('base64');
+
+    // Act & Assess
+    expect(
+      deserialize(message, '"bytes"', { wireFormat: 'confluent' })
+    ).toEqual(Buffer.alloc(0));
+  });
+
+  it('keeps the Avro length prefix for a bytes schema when no wire format is set', () => {
+    // Prepare
+    const message = Buffer.from([0x02, 0x41]).toString('base64');
+
+    // Act & Assess
+    expect(deserialize(message, '"bytes"')).toEqual(Buffer.from([0x41]));
+  });
+
   it('returns null for a header-only payload when the schema is null', () => {
     // Act & Assess
     expect(

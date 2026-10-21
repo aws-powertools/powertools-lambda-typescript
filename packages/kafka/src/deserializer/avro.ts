@@ -66,6 +66,13 @@ const createDeserializer = async (): Promise<AvroDeserializer> => {
     );
     try {
       const type = avro.parse(schema);
+      // Confluent writes top-level bytes schemas without the Avro length prefix
+      if (
+        options?.wireFormat === WireFormat.CONFLUENT &&
+        type.getName(true) === 'bytes'
+      ) {
+        return buffer;
+      }
       return type.fromBuffer(buffer);
     } catch (error) {
       throw new KafkaConsumerDeserializationError(

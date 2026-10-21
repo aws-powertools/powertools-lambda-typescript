@@ -67,7 +67,7 @@
   "main": "./lib/cjs/index.js",
   "devDependencies": {
     "@aws-lambda-powertools/testing-utils": "file:../testing",
-    "@aws-sdk/client-cloudwatch": "^3.1149.0",
+    "@aws-sdk/client-cloudwatch": "^3.1152.0",
     "@aws-sdk/client-lambda": "^3.1149.0",
     "@aws/lambda-invoke-store": "0.3.0",
     "@types/promise-retry": "^1.1.3",

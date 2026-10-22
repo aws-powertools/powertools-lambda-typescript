@@ -2,7 +2,7 @@ import type { ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { APIGatewayProxyEventSchema } from '../schemas/api-gateway.js';
 import type { ParsedResult } from '../types/parser.js';
-import { envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator, safeParseWithCause } from './envelope.js';
 
 /**
  * API Gateway envelope to extract data within body key
@@ -26,9 +26,10 @@ export const ApiGatewayEnvelope = {
   },
 
   safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T> {
-    const result = APIGatewayProxyEventSchema.extend({
-      body: schema,
-    }).safeParse(data);
+    const result = safeParseWithCause(
+      APIGatewayProxyEventSchema.extend({ body: schema }),
+      data
+    );
 
     if (!result.success) {
       return {

@@ -1,8 +1,13 @@
-import { ZodError, type ZodType, type z } from 'zod';
+import type { ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { SnsSchema } from '../schemas/sns.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
+import {
+  envelopeDiscriminator,
+  mergeRecordErrors,
+  parseOrThrow,
+  safeParseWithCause,
+} from './envelope.js';
 
 /**
  * SNS Envelope to extract array of Records
@@ -52,17 +57,18 @@ export const SnsEnvelope = {
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
       messages: T[];
-      errors: { [key: number]: { issues: z.core.$ZodIssue[] } };
+      errors: { [key: number]: unknown };
     }>(
       (acc, message, index) => {
-        const parsedMessage = schema.safeParse(message.Sns.Message);
+        const parsedMessage = safeParseWithCause(schema, message.Sns.Message, [
+          'Records',
+          index,
+          'Sns',
+          'Message',
+        ]);
         if (!parsedMessage.success) {
           acc.success = false;
-          const issues = parsedMessage.error.issues.map((issue) => ({
-            ...issue,
-            path: ['Records', index, 'Sns', 'Message', ...issue.path],
-          }));
-          acc.errors[index] = { issues };
+          acc.errors[index] = parsedMessage.error;
           return acc;
         }
 
@@ -80,9 +86,7 @@ export const SnsEnvelope = {
       Object.keys(result.errors).length > 1
         ? `Failed to parse SNS messages at indexes ${Object.keys(result.errors).join(', ')}`
         : `Failed to parse SNS message at index ${Object.keys(result.errors)[0]}`;
-    const errorCause = new ZodError(
-      Object.values(result.errors).flatMap((error) => error.issues)
-    );
+    const errorCause = mergeRecordErrors(Object.values(result.errors));
 
     return {
       success: false,

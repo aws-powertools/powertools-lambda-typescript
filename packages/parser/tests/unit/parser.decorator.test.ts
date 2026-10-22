@@ -426,4 +426,34 @@ describe('Decorator: parser', () => {
       error: { cause },
     });
   });
+
+  it('returns a failed result with the original error as cause when a transform throws inside an envelope', async () => {
+    // Prepare
+    const cause = new SyntaxError('boom');
+    const throwingSchema = z.unknown().transform(() => {
+      throw cause;
+    });
+    class Lambda implements LambdaInterface {
+      @parser({
+        schema: throwingSchema,
+        envelope: EventBridgeEnvelope,
+        safeParse: true,
+      })
+      public async handler(event: ParsedResult, _context: Context) {
+        return event;
+      }
+    }
+    const lambda: LambdaInterface = new Lambda();
+    const event = structuredClone(baseEvent);
+
+    // Act
+    const result = await lambda.handler(event, {} as Context, () => {});
+
+    // Assess
+    expect(result).toStrictEqual({
+      success: false,
+      error: expect.objectContaining({ name: 'ParseError', cause }),
+      originalEvent: event,
+    });
+  });
 });

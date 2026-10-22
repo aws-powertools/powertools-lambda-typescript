@@ -2,7 +2,7 @@ import type { ZodType, z } from 'zod';
 import { ParseError } from '../errors.js';
 import { VpcLatticeSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator, safeParseWithCause } from './envelope.js';
 
 /**
  * Amazon VPC Lattice envelope to extract data within body key
@@ -29,9 +29,10 @@ export const VpcLatticeEnvelope = {
     data: unknown,
     schema: ZodType<T>
   ): ParsedResult<unknown, z.infer<ZodType<T>>> {
-    const result = VpcLatticeSchema.extend({
-      body: schema,
-    }).safeParse(data);
+    const result = safeParseWithCause(
+      VpcLatticeSchema.extend({ body: schema }),
+      data
+    );
 
     if (!result.success) {
       return {

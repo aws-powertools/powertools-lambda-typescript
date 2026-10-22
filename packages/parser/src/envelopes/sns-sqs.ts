@@ -1,46 +1,16 @@
-import { ZodError, type ZodType, type z } from 'zod';
+import { ZodError, type ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { SnsSqsNotificationSchema } from '../schemas/sns.js';
 import { SqsSchema } from '../schemas/sqs.js';
-import type { ParsedResult, SnsSqsNotification } from '../types/index.js';
+import type { ParsedResult } from '../types/index.js';
 import {
   envelopeDiscriminator,
+  mergeRecordErrors,
   parseOrThrow,
   prefixIssuePaths,
+  type SafeParseWithCauseResult,
+  safeParseWithCause,
 } from './envelope.js';
-
-const createError = (index: number, issues: z.core.$ZodIssue[]) => ({
-  issues: issues.map((issue) => ({
-    ...issue,
-    path: ['Records', index, 'body', ...issue.path],
-  })),
-});
-
-type ParseStepSuccess<T> = {
-  success: true;
-  data: T;
-};
-
-type ParseStepError = {
-  success: false;
-  error: { issues: z.core.$ZodIssue[] };
-};
-
-type ParseStepResult<T> = ParseStepSuccess<T> | ParseStepError;
-
-const parseStep = <U>(
-  parser: (data: unknown) => z.ZodSafeParseResult<U>,
-  data: unknown,
-  index: number
-): ParseStepResult<U> => {
-  const result = parser(data);
-  return result.success
-    ? { success: true, data: result.data }
-    : {
-        success: false,
-        error: createError(index, result.error.issues),
-      };
-};
 
 /**
  * SNS plus SQS Envelope to extract array of Records
@@ -113,58 +83,39 @@ export const SnsSqsEnvelope = {
     const parseRecord = (
       record: { body: string },
       index: number
-    ): ParseStepResult<T> => {
+    ): SafeParseWithCauseResult<T> => {
+      const path = ['Records', index, 'body'];
       let body: unknown;
       try {
         body = JSON.parse(record.body);
       } catch (error) {
         return {
           success: false,
-          error: createError(index, [
+          error: new ZodError([
             {
               code: 'custom',
               message: `Invalid JSON - ${(error as Error).message}`,
               input: record.body,
-              path: [],
+              path,
             },
           ]),
         };
       }
 
-      try {
-        const notification = parseStep<SnsSqsNotification>(
-          (data) => SnsSqsNotificationSchema.safeParse(data),
-          body,
-          index
-        );
-        if (!notification.success) return notification;
+      const notification = safeParseWithCause(
+        SnsSqsNotificationSchema,
+        body,
+        path
+      );
+      if (!notification.success) return notification;
 
-        return parseStep<T>(
-          (data) => schema.safeParse(data),
-          notification.data.Message,
-          index
-        );
-      } catch (error) {
-        return {
-          success: false,
-          error: createError(index, [
-            {
-              code: 'custom',
-              message: (error as Error).message,
-              input: record.body,
-              path: [],
-            },
-          ]),
-        };
-      }
+      return safeParseWithCause(schema, notification.data.Message, path);
     };
 
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
       records: T[];
-      errors: {
-        [key: number | string]: { issues: z.core.$ZodIssue[] };
-      };
+      errors: { [key: number]: unknown };
     }>(
       (acc, record, index) => {
         const parsed = parseRecord(record, index);
@@ -192,9 +143,7 @@ export const SnsSqsEnvelope = {
     return {
       success: false,
       error: new ParseError(errorMessage, {
-        cause: new ZodError(
-          Object.values(result.errors).flatMap((e) => e.issues)
-        ),
+        cause: mergeRecordErrors(Object.values(result.errors)),
       }),
       originalEvent: data,
     };

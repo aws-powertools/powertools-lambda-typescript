@@ -1,8 +1,13 @@
-import { ZodError, type ZodType, type z } from 'zod';
+import type { ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { CloudWatchLogsSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
+import {
+  envelopeDiscriminator,
+  mergeRecordErrors,
+  parseOrThrow,
+  safeParseWithCause,
+} from './envelope.js';
 
 /**
  * CloudWatch Envelope to extract messages from the `awslogs.data.logEvents` key.
@@ -48,27 +53,21 @@ export const CloudWatchEnvelope = {
         acc: {
           success: boolean;
           messages: T[];
-          errors: { [key: number]: { issues: z.core.$ZodIssue[] } };
+          errors: { [key: number]: unknown };
         },
         record: { message: string },
         index: number
       ) => {
-        const result = schema.safeParse(record.message);
+        const result = safeParseWithCause(schema, record.message, [
+          'awslogs',
+          'data',
+          'logEvents',
+          index,
+          'message',
+        ]);
         if (!result.success) {
-          const issues = result.error.issues.map((issue) => ({
-            ...issue,
-            path: [
-              'awslogs',
-              'data',
-              'logEvents',
-              index,
-              'message',
-              ...issue.path,
-            ],
-          }));
-
           acc.success = false;
-          acc.errors[index] = { issues };
+          acc.errors[index] = result.error;
           return acc;
         }
 
@@ -90,9 +89,7 @@ export const CloudWatchEnvelope = {
       Object.keys(result.errors).length > 1
         ? `Failed to parse CloudWatch Log messages at indexes ${Object.keys(result.errors).join(', ')}`
         : `Failed to parse CloudWatch Log message at index ${Object.keys(result.errors)[0]}`;
-    const errorCause = new ZodError(
-      Object.values(result.errors).flatMap((error) => error.issues)
-    );
+    const errorCause = mergeRecordErrors(Object.values(result.errors));
 
     return {
       success: false,

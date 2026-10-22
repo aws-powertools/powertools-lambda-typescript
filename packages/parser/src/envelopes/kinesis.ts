@@ -1,8 +1,13 @@
-import { ZodError, type ZodType, type z } from 'zod';
+import type { ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { KinesisDataStreamSchema } from '../schemas/kinesis.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
+import {
+  envelopeDiscriminator,
+  mergeRecordErrors,
+  parseOrThrow,
+  safeParseWithCause,
+} from './envelope.js';
 
 /**
  * Kinesis Data Stream Envelope to extract array of Records
@@ -52,18 +57,19 @@ export const KinesisEnvelope = {
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
       records: T[];
-      errors: { [key: number]: { issues: z.core.$ZodIssue[] } };
+      errors: { [key: number]: unknown };
     }>(
       (acc, record, index) => {
-        const parsedRecord = schema.safeParse(record.kinesis.data);
+        const parsedRecord = safeParseWithCause(schema, record.kinesis.data, [
+          'Records',
+          index,
+          'kinesis',
+          'data',
+        ]);
 
         if (!parsedRecord.success) {
-          const issues = parsedRecord.error.issues.map((issue) => ({
-            ...issue,
-            path: ['Records', index, 'kinesis', 'data', ...issue.path],
-          }));
           acc.success = false;
-          acc.errors[index] = { issues };
+          acc.errors[index] = parsedRecord.error;
           return acc;
         }
 
@@ -84,9 +90,7 @@ export const KinesisEnvelope = {
     return {
       success: false,
       error: new ParseError(errorMessage, {
-        cause: new ZodError(
-          Object.values(result.errors).flatMap((error) => error.issues)
-        ),
+        cause: mergeRecordErrors(Object.values(result.errors)),
       }),
       originalEvent: data,
     };

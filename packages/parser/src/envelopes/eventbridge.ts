@@ -2,7 +2,7 @@ import type { ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { EventBridgeSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator, safeParseWithCause } from './envelope.js';
 
 /**
  * Envelope for EventBridge schema that extracts and parses data from the `detail` key.
@@ -26,9 +26,10 @@ export const EventBridgeEnvelope = {
   },
 
   safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T> {
-    const parsedResult = EventBridgeSchema.extend({
-      detail: schema,
-    }).safeParse(data);
+    const parsedResult = safeParseWithCause(
+      EventBridgeSchema.extend({ detail: schema }),
+      data
+    );
     if (!parsedResult.success) {
       return {
         success: false,

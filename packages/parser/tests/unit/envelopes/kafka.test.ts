@@ -127,6 +127,25 @@ describe('Envelope: Kafka', () => {
   });
 
   describe('Method: safeParse', () => {
+    it('returns a ParseError with the original error as cause when a transform throws', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      const cause = new SyntaxError('boom');
+      const throwingSchema = z.unknown().transform(() => {
+        throw cause;
+      });
+
+      // Act
+      const result = KafkaEnvelope.safeParse(event, throwingSchema);
+
+      // Assess
+      expect(result).toStrictEqual({
+        success: false,
+        error: expect.objectContaining({ name: 'ParseError', cause }),
+        originalEvent: event,
+      });
+    });
+
     it('parses a Kafka event', () => {
       // Prepare
       const event = structuredClone(baseEvent);

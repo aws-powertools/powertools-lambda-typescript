@@ -1,8 +1,13 @@
-import { ZodError, type ZodType, type z } from 'zod';
+import type { ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { SqsSchema } from '../schemas/sqs.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
+import {
+  envelopeDiscriminator,
+  mergeRecordErrors,
+  parseOrThrow,
+  safeParseWithCause,
+} from './envelope.js';
 
 /**
  * SQS Envelope to extract array of Records
@@ -61,19 +66,18 @@ const SqsEnvelope = {
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
       records: T[];
-      errors: { index?: number; issues?: z.core.$ZodIssue[] };
+      errors: { [key: number]: unknown };
     }>(
       (acc, record, index) => {
-        const parsedRecord = schema.safeParse(record.body);
+        const parsedRecord = safeParseWithCause(schema, record.body, [
+          'Records',
+          index,
+          'body',
+        ]);
 
         if (!parsedRecord.success) {
-          const issues = parsedRecord.error.issues.map((issue) => ({
-            ...issue,
-            path: ['Records', index, 'body', ...issue.path],
-          }));
           acc.success = false;
-          // @ts-expect-error - index is assigned
-          acc.errors[index] = { issues };
+          acc.errors[index] = parsedRecord.error;
           return acc;
         }
 
@@ -94,10 +98,7 @@ const SqsEnvelope = {
     return {
       success: false,
       error: new ParseError(errorMessage, {
-        cause: new ZodError(
-          // @ts-expect-error - issues are assigned because success is false
-          Object.values(result.errors).flatMap((error) => error.issues)
-        ),
+        cause: mergeRecordErrors(Object.values(result.errors)),
       }),
       originalEvent: data,
     };

@@ -196,6 +196,36 @@ describe('Middleware: parser', () => {
     });
   });
 
+  it('returns the original error as cause when using safeParse with envelope and a transform throws', async () => {
+    // Prepare
+    const event = structuredClone(baseSqsEvent);
+    const cause = new SyntaxError('boom');
+    const throwingSchema = z.unknown().transform(() => {
+      throw cause;
+    });
+
+    // Act
+    const result = await middy()
+      .use(
+        parser({
+          schema: throwingSchema,
+          envelope: SqsEnvelope,
+          safeParse: true,
+        })
+      )
+      .handler((event) => event)(
+      event as unknown as ParsedResult<unknown, never[]>,
+      {} as Context
+    );
+
+    // Assess
+    expect(result).toStrictEqual({
+      success: false,
+      error: expect.objectContaining({ name: 'ParseError', cause }),
+      originalEvent: event,
+    });
+  });
+
   it('rethrows the error when errorHandler returns undefined', async () => {
     // Prepare
     const event = structuredClone(JSONPayload);

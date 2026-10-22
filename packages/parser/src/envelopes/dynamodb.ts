@@ -1,9 +1,14 @@
-import { ZodError, type ZodType, type z } from 'zod';
+import type { ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { DynamoDBStreamSchema } from '../schemas/index.js';
 import type { DynamoDBStreamEnvelopeResponse } from '../types/envelope.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
+import {
+  envelopeDiscriminator,
+  mergeRecordErrors,
+  parseOrThrow,
+  safeParseWithCause,
+} from './envelope.js';
 
 /**
  * DynamoDB Stream Envelope to extract data within NewImage/OldImage
@@ -62,33 +67,37 @@ export const DynamoDBStreamEnvelope = {
       };
     }
 
-    const processImage = (image: unknown) =>
-      image ? schema.safeParse(image) : undefined;
+    const processImage = (image: unknown, path: PropertyKey[]) =>
+      image ? safeParseWithCause(schema, image, path) : undefined;
 
     const result = parsedEnvelope.data.Records.reduce<{
       success: boolean;
       records: DynamoDBStreamEnvelopeResponse<T>[];
-      errors: { [key: number]: { issues: z.core.$ZodIssue[] } };
+      errors: { [key: number]: unknown[] };
     }>(
       (acc, record, index) => {
-        const newImage = processImage(record.dynamodb.NewImage);
-        const oldImage = processImage(record.dynamodb.OldImage);
+        const newImage = processImage(record.dynamodb.NewImage, [
+          'Records',
+          index,
+          'dynamodb',
+          'NewImage',
+        ]);
+        const oldImage = processImage(record.dynamodb.OldImage, [
+          'Records',
+          index,
+          'dynamodb',
+          'OldImage',
+        ]);
 
         if (newImage?.success === false || oldImage?.success === false) {
-          const issues: z.core.$ZodIssue[] = [];
-          for (const key of ['NewImage', 'OldImage']) {
-            const image = key === 'NewImage' ? newImage : oldImage;
+          const errors: unknown[] = [];
+          for (const image of [newImage, oldImage]) {
             if (image?.success === false) {
-              issues.push(
-                ...(image.error as ZodError).issues.map((issue) => ({
-                  ...issue,
-                  path: ['Records', index, 'dynamodb', key, ...issue.path],
-                }))
-              );
+              errors.push(image.error);
             }
           }
           acc.success = false;
-          acc.errors[index] = { issues };
+          acc.errors[index] = errors;
           return acc;
         }
 
@@ -109,9 +118,7 @@ export const DynamoDBStreamEnvelope = {
       Object.keys(result.errors).length > 1
         ? `Failed to parse records at indexes ${Object.keys(result.errors).join(', ')}`
         : `Failed to parse record at index ${Object.keys(result.errors)[0]}`;
-    const errorCause = new ZodError(
-      Object.values(result.errors).flatMap((error) => error.issues)
-    );
+    const errorCause = mergeRecordErrors(Object.values(result.errors).flat());
 
     return {
       success: false,

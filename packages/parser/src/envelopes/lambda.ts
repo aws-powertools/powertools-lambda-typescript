@@ -2,7 +2,7 @@ import type { ZodType } from 'zod';
 import { ParseError } from '../errors.js';
 import { LambdaFunctionUrlSchema } from '../schemas/index.js';
 import type { ParsedResult } from '../types/index.js';
-import { envelopeDiscriminator } from './envelope.js';
+import { envelopeDiscriminator, safeParseWithCause } from './envelope.js';
 
 /**
  * Lambda function URL envelope to extract data within body key
@@ -26,9 +26,10 @@ export const LambdaFunctionUrlEnvelope = {
   },
 
   safeParse<T>(data: unknown, schema: ZodType<T>): ParsedResult<unknown, T> {
-    const results = LambdaFunctionUrlSchema.extend({
-      body: schema,
-    }).safeParse(data);
+    const results = safeParseWithCause(
+      LambdaFunctionUrlSchema.extend({ body: schema }),
+      data
+    );
 
     if (!results.success) {
       return {

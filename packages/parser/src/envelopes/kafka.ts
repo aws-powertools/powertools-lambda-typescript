@@ -1,4 +1,4 @@
-import { ZodError, type ZodType, z } from 'zod';
+import { type ZodType, z } from 'zod';
 import { ParseError } from '../errors.js';
 import {
   KafkaMskEventSchema,
@@ -9,7 +9,12 @@ import type {
   KafkaSelfManagedEvent,
   ParsedResult,
 } from '../types/index.js';
-import { envelopeDiscriminator, parseOrThrow } from './envelope.js';
+import {
+  envelopeDiscriminator,
+  mergeRecordErrors,
+  parseOrThrow,
+  safeParseWithCause,
+} from './envelope.js';
 
 /**
  * Get the event source from the data.
@@ -95,30 +100,28 @@ export const KafkaEnvelope = {
     }
 
     const values: z.infer<z.ZodType<T>>[] = [];
-    const issues: z.core.$ZodIssue[] = [];
+    const errors: unknown[] = [];
     for (const [topicKey, topicRecord] of Object.entries(
       parsedEnvelope.data.records
     )) {
       for (const record of topicRecord) {
-        const parsedRecord = schema.safeParse(record.value);
+        const parsedRecord = safeParseWithCause(schema, record.value, [
+          'records',
+          topicKey,
+        ]);
         if (!parsedRecord.success) {
-          issues.push(
-            ...parsedRecord.error.issues.map((issue) => ({
-              ...issue,
-              path: ['records', topicKey, ...issue.path],
-            }))
-          );
+          errors.push(parsedRecord.error);
           continue;
         }
         values.push(parsedRecord.data);
       }
     }
 
-    return issues.length > 0
+    return errors.length > 0
       ? {
           success: false,
           error: new ParseError('Failed to parse Kafka envelope', {
-            cause: new ZodError(issues),
+            cause: mergeRecordErrors(errors),
           }),
           originalEvent: data,
         }

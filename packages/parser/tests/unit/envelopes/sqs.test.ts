@@ -70,6 +70,70 @@ describe('Envelope: SqsEnvelope', () => {
   });
 
   describe('Method: safeParse', () => {
+    it('returns a ParseError with the original error as cause when a transform throws', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      const cause = new SyntaxError('boom');
+      const throwingSchema = z.unknown().transform(() => {
+        throw cause;
+      });
+
+      // Act
+      const result = SqsEnvelope.safeParse(event, throwingSchema);
+
+      // Assess
+      expect(result).toStrictEqual({
+        success: false,
+        error: expect.objectContaining({ name: 'ParseError', cause }),
+        originalEvent: event,
+      });
+    });
+
+    it('keeps a thrown value that is not an Error as the cause', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      const throwingSchema = z.unknown().transform(() => {
+        throw 'boom';
+      });
+
+      // Act
+      const result = SqsEnvelope.safeParse(event, throwingSchema);
+
+      // Assess
+      expect(result).toStrictEqual({
+        success: false,
+        error: expect.objectContaining({ name: 'ParseError', cause: 'boom' }),
+        originalEvent: event,
+      });
+    });
+
+    it('returns the transform error as cause when other records fail validation', () => {
+      // Prepare
+      const event = structuredClone(baseEvent);
+      event.Records[0].body = 'not a JSON object';
+      event.Records[1].body = '{ invalid JSON';
+      const jsonSchema = z
+        .string()
+        .startsWith('{')
+        .transform((body) => JSON.parse(body));
+
+      // Act
+      const result = SqsEnvelope.safeParse(event, jsonSchema);
+
+      // Assess
+      expect(result).toStrictEqual({
+        success: false,
+        error: expect.objectContaining({
+          name: 'ParseError',
+          message: expect.stringContaining(
+            'Failed to parse SQS Records at indexes 0, 1'
+          ),
+          cause: expect.any(SyntaxError),
+        }),
+        originalEvent: event,
+      });
+    });
+
     it('parses an SQS event', () => {
       // Prepare
       const event = structuredClone(baseEvent);

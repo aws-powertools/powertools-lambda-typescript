@@ -248,30 +248,26 @@ describe('Envelope: SnsSqsEnvelope', () => {
       });
     });
 
-    it('returns the transform error message when a transform throws', () => {
+    it('returns a ParseError with the original error as cause when a transform throws', () => {
       // Prepare
       const event = structuredClone(baseEvent);
+      const cause = new SyntaxError('boom');
       const throwingSchema = z.unknown().transform(() => {
-        throw new SyntaxError('boom');
+        throw cause;
       });
 
       // Act
       const result = SnsSqsEnvelope.safeParse(event, throwingSchema);
 
       // Assess
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         success: false,
         error: expect.objectContaining({
           name: 'ParseError',
-          cause: expect.objectContaining({
-            issues: [
-              expect.objectContaining({
-                code: 'custom',
-                message: 'boom',
-                path: ['Records', 0, 'body'],
-              }),
-            ],
-          }),
+          message: expect.stringContaining(
+            'Failed to parse SQS Record at index 0'
+          ),
+          cause,
         }),
         originalEvent: event,
       });

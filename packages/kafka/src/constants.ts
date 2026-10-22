@@ -7,4 +7,11 @@ const SchemaType = {
   PROTOBUF: 'protobuf',
 } as const;
 
-export { SchemaType };
+/**
+ * Wire formats supported for Kafka payloads.
+ */
+const WireFormat = {
+  CONFLUENT: 'confluent',
+} as const;
+
+export { SchemaType, WireFormat };

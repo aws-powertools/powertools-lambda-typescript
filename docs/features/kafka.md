@@ -261,12 +261,16 @@ For debugging purposes, you can also access the original key, value, and headers
 
 ### Avro messages with Confluent wire format
 
-When the producer used a Confluent Schema Registry serializer, the payload starts with a 5-byte header: a magic byte (`0x00`) followed by a 4-byte schema ID.
+By default, when the producer used a Confluent Schema Registry serializer, the payload starts with a 5-byte header: a magic byte (`0x00`) followed by a 4-byte schema ID.
 Lambda removes this header only from the attributes (`key` or `value`) that you select for schema validation in your Event Source Mapping (with the `SOURCE` record format), and delivers the other attributes as-is.
-Set `wireFormat: 'confluent'` on the Avro `key` or `value` configuration that still carries the header to strip it before decoding with the schema you provide.
+Set `wireFormat: WireFormat.CONFLUENT` on the Avro `key` or `value` configuration that still carries the header to strip it before decoding with the schema you provide.
+A top-level `"bytes"` schema is returned as a `Buffer` holding the bytes exactly as they appear after the header.
 
 ???+ warning "Opt-in only"
     Powertools for AWS does not detect the header automatically, because a valid raw Avro message can also start with `0x00`. Leave `wireFormat` unset on any attribute you select for schema validation, because Lambda has already removed the header from it.
+
+???+ note "Schema IDs in Kafka headers"
+    Confluent serializers can also be configured to put the schema ID in the Kafka record headers instead, so the payload has no 5-byte header. For these messages, leave `wireFormat` unset. Schemas decode as usual, except top-level `"bytes"` schemas (including bytes-based `decimal`), which can return incorrect data or fail to decode in this mode.
 
 === "Confluent wire format"
 

@@ -142,6 +142,18 @@ describe('Avro Deserializer: ', () => {
     expect(deserialize(message, '"bytes"')).toEqual(Buffer.from([0x41]));
   });
 
+  it('decodes a union containing bytes as Avro with Confluent wire format', () => {
+    // Prepare
+    const message = Buffer.from([
+      0, 0, 0, 0, 1, 0x02, 0x04, 0x02, 0x41,
+    ]).toString('base64');
+
+    // Act & Assess
+    expect(
+      deserialize(message, '["null", "bytes"]', { wireFormat: 'confluent' })
+    ).toEqual({ bytes: Buffer.from([0x02, 0x41]) });
+  });
+
   it('returns null for a header-only payload when the schema is null', () => {
     // Act & Assess
     expect(

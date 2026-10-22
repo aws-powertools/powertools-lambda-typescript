@@ -66,7 +66,7 @@ const createDeserializer = async (): Promise<AvroDeserializer> => {
     );
     try {
       const type = avro.parse(schema);
-      // Confluent writes top-level bytes schemas without the Avro length prefix
+      // Most Confluent serializers write top-level bytes without the Avro length prefix, so return them as-is
       if (
         options?.wireFormat === WireFormat.CONFLUENT &&
         type.getName(true) === 'bytes'

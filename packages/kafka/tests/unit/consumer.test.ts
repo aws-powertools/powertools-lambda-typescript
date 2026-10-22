@@ -15,6 +15,15 @@ describe('Kafka consumer', () => {
   const protobufComplexConfluent = loadEvent('protobuf-complex.confluent.json');
   const protobufComplexGlue = loadEvent('protobuf-complex.glue.json');
   const context = {} as Context;
+  const productSchema = `{
+    "type": "record",
+    "name": "Product",
+    "fields": [
+      { "name": "id", "type": "int" },
+      { "name": "name", "type": "string" },
+      { "name": "price", "type": "double" }
+    ]
+  }`;
 
   it('deserializes json message', async () => {
     // Prepare
@@ -98,15 +107,7 @@ describe('Kafka consumer', () => {
     const handler = kafkaConsumer(async (event) => event, {
       value: {
         type: 'avro',
-        schema: `{
-          "type": "record",
-          "name": "Product",
-          "fields": [
-            { "name": "id", "type": "int" },
-            { "name": "name", "type": "string" },
-            { "name": "price", "type": "double" }
-          ]
-        }`,
+        schema: productSchema,
         wireFormat: 'confluent',
       },
       key: { type: 'avro', schema: '"int"', wireFormat: 'confluent' },
@@ -133,15 +134,7 @@ describe('Kafka consumer', () => {
     const handler = kafkaConsumer(async (event) => event, {
       value: {
         type: 'avro',
-        schema: `{
-          "type": "record",
-          "name": "Product",
-          "fields": [
-            { "name": "id", "type": "int" },
-            { "name": "name", "type": "string" },
-            { "name": "price", "type": "double" }
-          ]
-        }`,
+        schema: productSchema,
       },
       key: { type: 'avro', schema: '"int"', wireFormat: 'confluent' },
     });

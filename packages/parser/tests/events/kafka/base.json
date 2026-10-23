@@ -17,6 +17,21 @@
             "headerKey": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]
           }
         ]
+      },
+      {
+        "topic": "mymessage-with-unsigned",
+        "partition": 0,
+        "offset": 15,
+        "timestamp": 1545084650987,
+        "timestampType": "CREATE_TIME",
+        "value": "eyJrZXkiOiJ2YWx1ZSJ9",
+        "headers": [
+          {
+            "headerKey": [
+              104, 101, 108, 108, 111, 45, 119, 111, 114, 108, 100, 45, -61, -85
+            ]
+          }
+        ]
       }
     ]
   }

@@ -96,7 +96,7 @@ describe('Envelope: Kafka', () => {
       const result = KafkaEnvelope.parse(event, z.string());
 
       // Assess
-      expect(result).toEqual(['{"key":"value"}']);
+      expect(result).toEqual(['{"key":"value"}', '{"key":"value"}']);
     });
 
     it('parses a Kafka event and applies the schema transformation', () => {
@@ -110,7 +110,7 @@ describe('Envelope: Kafka', () => {
       );
 
       // Assess
-      expect(result).toEqual([{ key: 'value' }]);
+      expect(result).toEqual([{ key: 'value' }, { key: 'value' }]);
     });
 
     it('parses a self managed Kafka event', () => {
@@ -122,7 +122,7 @@ describe('Envelope: Kafka', () => {
       const result = KafkaEnvelope.parse(event, z.string());
 
       // Assess
-      expect(result).toEqual(['{"key":"value"}']);
+      expect(result).toEqual(['{"key":"value"}', '{"key":"value"}']);
     });
   });
 
@@ -137,7 +137,7 @@ describe('Envelope: Kafka', () => {
       // Assess
       expect(result).toEqual({
         success: true,
-        data: ['{"key":"value"}'],
+        data: ['{"key":"value"}', '{"key":"value"}'],
       });
     });
 

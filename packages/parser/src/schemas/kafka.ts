@@ -22,8 +22,10 @@ const KafkaRecordSchema = z.object({
   headers: z.array(
     z.record(
       z.string(),
-      z.array(z.number()).transform((value) => {
-        return String.fromCodePoint(...value);
+      // Lambda sends header bytes as signed Java bytes, so bytes >= 128 arrive negative.
+      // Buffer.from masks each number to a byte, and decoding matches @aws-lambda-powertools/kafka.
+      z.array(z.number().int().min(-128).max(255)).transform((value) => {
+        return Buffer.from(value).toString('utf8');
       })
     )
   ),

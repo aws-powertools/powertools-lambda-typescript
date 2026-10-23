@@ -15,6 +15,15 @@ describe('Kafka consumer', () => {
   const protobufComplexConfluent = loadEvent('protobuf-complex.confluent.json');
   const protobufComplexGlue = loadEvent('protobuf-complex.glue.json');
   const context = {} as Context;
+  const productSchema = `{
+    "type": "record",
+    "name": "Product",
+    "fields": [
+      { "name": "id", "type": "int" },
+      { "name": "name", "type": "string" },
+      { "name": "price", "type": "double" }
+    ]
+  }`;
 
   it('deserializes json message', async () => {
     // Prepare
@@ -86,6 +95,58 @@ describe('Kafka consumer', () => {
         originalHeaders: [
           { headerKey: [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101] },
         ],
+      })
+    );
+  });
+
+  it('deserializes avro key and value in Confluent wire format', async () => {
+    // Prepare
+    const event = structuredClone(avroTestEvent);
+    event.records['mytopic-0'][0].key = 'AAAAAAFU';
+    event.records['mytopic-0'][0].value = 'AAAAAAHSDwxMYXB0b3BSuB6F6z+PQA==';
+    const handler = kafkaConsumer(async (event) => event, {
+      value: {
+        type: 'avro',
+        schema: productSchema,
+        wireFormat: 'confluent',
+      },
+      key: { type: 'avro', schema: '"int"', wireFormat: 'confluent' },
+    });
+
+    // Act
+    const result = (await handler(event, context)) as ConsumerRecords;
+
+    // Assess
+    expect(result.records[0]).toEqual(
+      expect.objectContaining({
+        key: 42,
+        value: { id: 1001, name: 'Laptop', price: 999.99 },
+        originalKey: 'AAAAAAFU',
+        originalValue: 'AAAAAAHSDwxMYXB0b3BSuB6F6z+PQA==',
+      })
+    );
+  });
+
+  it('applies wireFormat to the avro key without affecting an unframed value', async () => {
+    // Prepare
+    const event = structuredClone(avroTestEvent);
+    event.records['mytopic-0'][0].key = 'AAAAAAFU';
+    const handler = kafkaConsumer(async (event) => event, {
+      value: {
+        type: 'avro',
+        schema: productSchema,
+      },
+      key: { type: 'avro', schema: '"int"', wireFormat: 'confluent' },
+    });
+
+    // Act
+    const result = (await handler(event, context)) as ConsumerRecords;
+
+    // Assess
+    expect(result.records[0]).toEqual(
+      expect.objectContaining({
+        key: 42,
+        value: { id: 1001, name: 'Laptop', price: 999.99 },
       })
     );
   });

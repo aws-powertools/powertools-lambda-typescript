@@ -9,4 +9,5 @@ export type {
   SchemaConfigValue,
   SchemaMetadata,
   SchemaType,
+  WireFormat,
 } from './types.js';

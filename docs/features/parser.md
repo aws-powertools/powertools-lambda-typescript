@@ -249,6 +249,10 @@ The handler `event` object will be replaced with `ParsedResult<Input?, Oputput?>
 The `ParsedResult` object will have `success`, `data`,  or `error` and `originalEvent` fields, depending on the outcome.
 If the parsing is successful, the `data` field will contain the parsed event, otherwise you can access the `error` field and the `originalEvent` to handle the error and recover the original event.
 
+!!! note "Errors thrown by transforms"
+    `safeParse` returns validation failures as a result, but it doesn't catch errors thrown by your own code inside a schema's `transform`.
+    See [Reporting errors from transforms](#reporting-errors-from-transforms) to turn them into validation failures.
+
 === "Middy.js middleware"
     ```typescript hl_lines="23 28 32-33"
     --8<-- "examples/snippets/parser/safeParseMiddy.ts"
@@ -330,6 +334,22 @@ For example, you can use `refine` to validate a field or a combination of fields
     2. validate an object with multiple fields
 
 Zod provides a lot of other features and customization, see [Zod documentation](https://zod.dev) for more details.
+
+### Reporting errors from transforms
+
+Zod doesn't catch errors thrown inside a `transform`, so they are thrown even when you use the `safeParse` option.
+To report a failure as a validation error, push an issue onto `ctx.issues` and return `z.NEVER`:
+
+=== "Transform with validation"
+    ```typescript hl_lines="9-14"
+    --8<-- "examples/snippets/parser/transformIssues.ts"
+    ```
+
+    1. `decodeURIComponent` throws a `URIError` when the input is malformed
+    2. Push an issue onto `ctx.issues` to report the failure as a validation error
+    3. Return `z.NEVER` to exit the transform without changing the inferred type
+
+Built-in helpers such as `JSONStringified` already report invalid input this way.
 
 ## Types
 

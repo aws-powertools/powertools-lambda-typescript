@@ -353,7 +353,7 @@ class Functions {
   })
   public funcReverse(arg: string | Array<unknown>): string | Array<unknown> {
     return Array.isArray(arg)
-      ? arg.reverse()
+      ? [...arg].reverse()
       : arg.split('').reverse().join('');
   }
 
@@ -366,7 +366,7 @@ class Functions {
     argumentsSpecs: [['array-number', 'array-string']],
   })
   public funcSort(arg: Array<string> | Array<number>): Array<unknown> {
-    return arg.sort((a: string | number, b: string | number): number => {
+    return [...arg].sort((a: string | number, b: string | number): number => {
       if (typeof a === 'string') {
         // We can safely cast a and b to string here because the signature decorator
         // already enforces that all elements are of the same type

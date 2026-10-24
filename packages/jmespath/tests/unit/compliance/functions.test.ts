@@ -2424,4 +2424,38 @@ describe('Functions tests', () => {
     // Assess
     expect(result).toStrictEqual(expected);
   });
+
+  it.each([
+    {
+      expression: 'sort(numbers)',
+      expected: [1, 2, 3],
+    },
+    {
+      expression: 'sort(strings)',
+      expected: ['a', 'b', 'c'],
+    },
+    {
+      expression: 'reverse(numbers)',
+      expected: [2, 1, 3],
+    },
+  ])(
+    'does not mutate the input when evaluating $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        numbers: [3, 1, 2],
+        strings: ['b', 'c', 'a'],
+      };
+
+      // Act
+      const result = search(expression, data);
+
+      // Assess
+      expect(result).toStrictEqual(expected);
+      expect(data).toStrictEqual({
+        numbers: [3, 1, 2],
+        strings: ['b', 'c', 'a'],
+      });
+    }
+  );
 });

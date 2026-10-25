@@ -321,6 +321,64 @@ describe('Class: SSMProvider', () => {
     });
   });
 
+  describe('Method: getParametersByName (mixed decrypt batch)', () => {
+    const mockSdk = () => {
+      const client = mockClient(SSMClient);
+      client.on(GetParameterCommand).resolves({
+        Parameter: { Name: '/secret', Value: '{"a":1}' },
+      });
+      client.on(GetParametersCommand).resolves({
+        Parameters: [{ Name: '/plain', Value: '{"b":2}' }],
+        InvalidParameters: [],
+      });
+
+      return client;
+    };
+
+    it('applies the transform to the decrypted parameters', async () => {
+      // Prepare
+      mockSdk();
+      const provider = new SSMProvider();
+      const parameters = {
+        '/secret': { decrypt: true },
+        '/plain': {},
+      };
+
+      // Act
+      const result = await provider.getParametersByName(parameters, {
+        transform: 'json',
+      });
+
+      // Assess
+      expect(result).toEqual({
+        '/secret': { a: 1 },
+        '/plain': { b: 2 },
+      });
+    });
+
+    it('caches the decrypted parameters', async () => {
+      // Prepare
+      const client = mockSdk();
+      const provider = new SSMProvider();
+      const parameters = {
+        '/secret': { decrypt: true },
+        '/plain': {},
+      };
+
+      // Act
+      await provider.getParametersByName(parameters);
+      const result = await provider.getParametersByName(parameters);
+
+      // Assess
+      expect(result).toEqual({
+        '/secret': '{"a":1}',
+        '/plain': '{"b":2}',
+      });
+      expect(client.commandCalls(GetParameterCommand)).toHaveLength(1);
+      expect(client.commandCalls(GetParametersCommand)).toHaveLength(1);
+    });
+  });
+
   describe('Method: _get', () => {
     it('decrypts the parameter when configured via env variable', async () => {
       // Prepare

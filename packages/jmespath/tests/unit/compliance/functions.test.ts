@@ -4,6 +4,46 @@ import { search } from '../../../src/index.js';
 describe('Functions tests', () => {
   it.each([
     {
+      expression: 'sort(numbers)',
+      expected: [1, 2, 3],
+    },
+    {
+      expression: 'sort(strings)',
+      expected: ['a', 'b', 'c'],
+    },
+    {
+      expression: 'reverse(numbers)',
+      expected: [2, 1, 3],
+    },
+    {
+      expression: 'reverse(strings)',
+      expected: ['a', 'c', 'b'],
+    },
+  ])(
+    'does not mutate the input when evaluating $expression',
+    ({ expression, expected }) => {
+      // Prepare
+      const data = {
+        numbers: [3, 1, 2],
+        strings: ['b', 'c', 'a'],
+      };
+
+      // Act
+      const result = search(expression, data);
+
+      // Assess
+      expect(result).toStrictEqual(expected);
+      expect(data).toStrictEqual({
+        numbers: [3, 1, 2],
+        strings: ['b', 'c', 'a'],
+      });
+      expect(result).not.toBe(data.numbers);
+      expect(result).not.toBe(data.strings);
+    }
+  );
+
+  it.each([
+    {
       expression: 'abs(foo)',
       expected: 1,
     },

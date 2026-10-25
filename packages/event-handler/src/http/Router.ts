@@ -486,13 +486,14 @@ class Router<TEnv extends Env = Env> {
     resolvedResponse: ResolvedResponse,
     responseStream: ResponseStream
   ) {
-    const { headers } = webHeadersToApiGatewayHeaders(
+    // Lambda streaming metadata uses headers and cookies for every event version.
+    const metadata = webHeadersToApiGatewayHeaders(
       resolvedResponse.res.headers,
-      resolvedResponse.responseType
+      'ApiGatewayV2'
     );
     const resStream = HttpResponseStream.from(responseStream, {
       statusCode: resolvedResponse.res.status,
-      headers,
+      ...metadata,
     });
 
     if (resolvedResponse.res.body) {

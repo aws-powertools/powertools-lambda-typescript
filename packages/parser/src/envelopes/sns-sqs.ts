@@ -131,32 +131,20 @@ export const SnsSqsEnvelope = {
         };
       }
 
-      try {
-        const notification = parseStep<SnsSqsNotification>(
-          (data) => SnsSqsNotificationSchema.safeParse(data),
-          body,
-          index
-        );
-        if (!notification.success) return notification;
+      // An error thrown by the schema is a bug in the schema, not invalid input,
+      // so it propagates like in every other envelope's safeParse.
+      const notification = parseStep<SnsSqsNotification>(
+        (data) => SnsSqsNotificationSchema.safeParse(data),
+        body,
+        index
+      );
+      if (!notification.success) return notification;
 
-        return parseStep<T>(
-          (data) => schema.safeParse(data),
-          notification.data.Message,
-          index
-        );
-      } catch (error) {
-        return {
-          success: false,
-          error: createError(index, [
-            {
-              code: 'custom',
-              message: (error as Error).message,
-              input: record.body,
-              path: [],
-            },
-          ]),
-        };
-      }
+      return parseStep<T>(
+        (data) => schema.safeParse(data),
+        notification.data.Message,
+        index
+      );
     };
 
     const result = parsedEnvelope.data.Records.reduce<{

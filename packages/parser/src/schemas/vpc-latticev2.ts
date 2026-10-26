@@ -5,13 +5,13 @@ const VpcLatticeV2RequestContextIdentity = z.object({
   sourceVpcArn: z.string().optional(),
   type: z.string().optional(),
   principal: z.string().optional(),
-  principalOrgId: z.string().optional(),
+  principalOrgID: z.string().optional(),
   sessionName: z.string().optional(),
-  X509SubjectCn: z.string().optional(),
-  X509IssuerOu: z.string().optional(),
+  x509SubjectCn: z.string().optional(),
+  x509IssuerOu: z.string().optional(),
   x509SanDns: z.string().optional(),
   x509SanUri: z.string().optional(),
-  X509SanNameCn: z.string().optional(),
+  x509SanNameCn: z.string().optional(),
 });
 
 const VpcLatticeV2RequestContext = z.object({

@@ -37,12 +37,12 @@ Resources:
             Path: /{proxy+}
             Method: ANY
         GetAllTodos:
-           Type: HttpApi
-           Properties:
-             Path: /todos
-             Method: GET
+          Type: HttpApi
+          Properties:
+            Path: /todos
+            Method: GET
         GetTodoById:
-           Type: HttpApi
-           Properties:
-             Path: /todos/{todo_id}
-             Method: GET
+          Type: HttpApi
+          Properties:
+            Path: /todos/{todo_id}
+            Method: GET

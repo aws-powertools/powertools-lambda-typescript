@@ -66,6 +66,19 @@
       "trailingCommas": "es5"
     }
   },
+  "markdown": {
+    "formatter": {
+      "enabled": false
+    },
+    "linter": {
+      "enabled": false
+    }
+  },
+  "yaml": {
+    "formatter": {
+      "enabled": true
+    }
+  },
   "files": {
     "includes": [
       "**",

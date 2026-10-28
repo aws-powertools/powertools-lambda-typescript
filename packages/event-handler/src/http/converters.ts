@@ -301,19 +301,21 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
 };
 
 /**
- * Converts Web API Headers to API Gateway V2 headers format.
+ * Converts Web API Headers to API Gateway V2 and streaming metadata.
  *
  * @param webHeaders - The Web API Headers object
- * @returns Object containing headers
  */
 const webHeadersToApiGatewayV2Headers = (webHeaders: Headers) => {
   const headers: Record<string, string> = {};
+  const cookies = webHeaders.getSetCookie();
 
   for (const [key, value] of webHeaders.entries()) {
-    headers[key] = value;
+    if (key !== 'set-cookie') {
+      headers[key] = value;
+    }
   }
 
-  return { headers };
+  return { headers, ...(cookies.length > 0 ? { cookies } : {}) };
 };
 
 const webHeadersToApiGatewayHeaders = <T extends ResponseType>(
@@ -321,17 +323,17 @@ const webHeadersToApiGatewayHeaders = <T extends ResponseType>(
   responseType: T
 ): T extends 'ApiGatewayV1'
   ? V1Headers
-  : { headers: Record<string, string> } => {
+  : { headers: Record<string, string>; cookies?: string[] } => {
   if (responseType === 'ApiGatewayV1') {
     return webHeadersToApiGatewayV1Headers(
       webHeaders
     ) as T extends 'ApiGatewayV1'
       ? V1Headers
-      : { headers: Record<string, string> };
+      : { headers: Record<string, string>; cookies?: string[] };
   }
   return webHeadersToApiGatewayV2Headers(webHeaders) as T extends 'ApiGatewayV1'
     ? V1Headers
-    : { headers: Record<string, string> };
+    : { headers: Record<string, string>; cookies?: string[] };
 };
 
 const responseBodyToBase64 = async (response: Response) => {
@@ -521,7 +523,11 @@ const handlerResultToWebResponse = (
     if (resHeaders === undefined) return response;
     const headers = new Headers(resHeaders);
     for (const [key, value] of response.headers.entries()) {
-      headers.set(key, value);
+      if (key === 'set-cookie') {
+        headers.append(key, value);
+      } else {
+        headers.set(key, value);
+      }
     }
     return new Response(response.body, {
       status: response.status,

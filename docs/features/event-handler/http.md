@@ -602,6 +602,9 @@ Keep the following in mind when authoring middleware for Event Handler:
 You can use the Web API's `Response` object to have full control over the response. For
 example, you might want to add additional headers, cookies, or set a custom content type.
 
+Use `headers.append('Set-Cookie', cookie)` once for each cookie when constructing a `Response`.
+The router preserves these cookies alongside cookies added to the response headers by middleware.
+
 === "index.ts"
 
     ```ts hl_lines="11-18 25-31"
@@ -834,6 +837,9 @@ In order to gain the most benefit, you should return either a readable [Nodejs s
 a duplex [Nodejs stream](https://nodejs.org/api/stream.html#class-streamduplex){target="_blank"}, or
 a [Web stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API){target="_blank"} from your handlers. However, you can also return
 other types and these will also be delivered via HTTP streaming.
+
+Streaming responses send `Set-Cookie` headers in the response metadata's `cookies` array.
+Cookies from handlers and middleware remain separate, including values containing an `Expires` date.
 
 === "index.ts"
 

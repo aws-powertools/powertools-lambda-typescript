@@ -20,7 +20,61 @@ describe.each([
   { version: 'V1', createEvent: createTestEvent },
   { version: 'V2', createEvent: createTestEventV2 },
   { version: 'ALB', createEvent: createTestALBEvent },
-])('Class: Router - Basic Routing ($version)', ({ createEvent }) => {
+])('Class: Router - Basic Routing ($version)', ({ version, createEvent }) => {
+  it('preserves every cookie from a returned Response', async () => {
+    // Prepare
+    const app = new Router();
+    const cookies = ['a=1; Path=/', 'b=2; Path=/'];
+    app.get('/login', () => {
+      const headers = new Headers();
+      for (const cookie of cookies) headers.append('set-cookie', cookie);
+      return new Response('ok', { headers });
+    });
+
+    // Act
+    const result = await app.resolve(createEvent('/login', 'GET'), context);
+
+    // Assess
+    expect(result).toMatchObject(
+      version === 'V2'
+        ? { cookies }
+        : { multiValueHeaders: { 'set-cookie': cookies } }
+    );
+    expect(result.headers).not.toHaveProperty('set-cookie');
+  });
+
+  it('keeps middleware cookies alongside returned Response cookies', async () => {
+    // Prepare
+    const app = new Router();
+    app.use(async ({ reqCtx, next }) => {
+      reqCtx.res.headers.append('Set-Cookie', 'middleware=1; Path=/');
+      reqCtx.res.headers.set('x-source', 'middleware');
+      reqCtx.res.headers.set('x-context', 'preserved');
+      await next();
+    });
+    app.get('/login', () => {
+      const headers = new Headers({ 'x-source': 'handler' });
+      headers.append('Set-Cookie', 'a=1; Path=/');
+      headers.append('Set-Cookie', 'b=2; Path=/');
+      return new Response('ok', { headers });
+    });
+
+    // Act
+    const result = await app.resolve(createEvent('/login', 'GET'), context);
+
+    // Assess
+    const cookies = ['middleware=1; Path=/', 'a=1; Path=/', 'b=2; Path=/'];
+    expect(result).toMatchObject(
+      version === 'V2'
+        ? { cookies }
+        : { multiValueHeaders: { 'set-cookie': cookies } }
+    );
+    expect(result.headers).toMatchObject({
+      'x-source': 'handler',
+      'x-context': 'preserved',
+    });
+  });
+
   it.each([200, 204, 205, 304])(
     'preserves status %i for a proxy result with an empty string body',
     async (statusCode) => {

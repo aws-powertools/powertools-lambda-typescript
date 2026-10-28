@@ -17,6 +17,91 @@ describe.each([
   { version: 'V1', createEvent: createTestEvent },
   { version: 'V2', createEvent: createTestEventV2 },
 ])('Class: Router - Streaming ($version)', ({ createEvent }) => {
+  it.each([
+    { source: 'proxy result', useResponse: false },
+    { source: 'Response', useResponse: true },
+  ])('streams every cookie from a $source', async ({ useResponse }) => {
+    // Prepare
+    const app = new Router();
+    const cookies = [
+      'a=1; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Path=/',
+      'b=2; HttpOnly; Path=/',
+    ];
+    app.get('/login', () => {
+      if (!useResponse) return { statusCode: 200, body: 'ok', cookies };
+      const headers = new Headers();
+      for (const cookie of cookies) headers.append('set-cookie', cookie);
+      return new Response('ok', { headers });
+    });
+    const responseStream = new ResponseStream();
+
+    // Act
+    await app.resolveStream(createEvent('/login', 'GET'), context, {
+      responseStream,
+    });
+
+    // Assess
+    const output = responseStream.getBuffer();
+    const separatorIndex = output.indexOf(Buffer.alloc(8));
+    const prelude = JSON.parse(output.subarray(0, separatorIndex).toString());
+    expect(prelude.cookies).toEqual(cookies);
+    expect(prelude.headers).not.toHaveProperty('set-cookie');
+    expect(output.subarray(separatorIndex + 8).toString()).toBe('ok');
+  });
+
+  it('streams middleware cookies with the handler cookie', async () => {
+    // Prepare
+    const app = new Router();
+    app.use(async ({ reqCtx, next }) => {
+      await next();
+      reqCtx.res.headers.append('set-cookie', 'middleware=1; Path=/');
+    });
+    app.get('/login', () => ({
+      statusCode: 200,
+      body: 'ok',
+      cookies: ['handler=1; Path=/'],
+    }));
+    const responseStream = new ResponseStream();
+
+    // Act
+    await app.resolveStream(createEvent('/login', 'GET'), context, {
+      responseStream,
+    });
+
+    // Assess
+    const output = responseStream.getBuffer();
+    const separatorIndex = output.indexOf(Buffer.alloc(8));
+    const prelude = JSON.parse(output.subarray(0, separatorIndex).toString());
+    expect(prelude.cookies).toEqual([
+      'handler=1; Path=/',
+      'middleware=1; Path=/',
+    ]);
+    expect(prelude.headers).not.toHaveProperty('set-cookie');
+  });
+
+  it('streams non-cookie headers without changing comma-containing values', async () => {
+    // Prepare
+    const app = new Router();
+    const header = 'no-cache="set-cookie, vary"';
+    app.get(
+      '/test',
+      () => new Response('ok', { headers: { 'cache-control': header } })
+    );
+    const responseStream = new ResponseStream();
+
+    // Act
+    await app.resolveStream(createEvent('/test', 'GET'), context, {
+      responseStream,
+    });
+
+    // Assess
+    const output = responseStream.getBuffer();
+    const separatorIndex = output.indexOf(Buffer.alloc(8));
+    const prelude = JSON.parse(output.subarray(0, separatorIndex).toString());
+    expect(prelude.headers['cache-control']).toBe(header);
+    expect(prelude).not.toHaveProperty('cookies');
+  });
+
   it('streams the built-in HTTP response when an error handler rethrows', async () => {
     // Prepare
     const app = new Router();

@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: partial batch response sample
 
@@ -22,9 +22,9 @@ Resources:
       Policies:
         # Lambda Destinations require additional permissions
         # to send failure records to DLQ from Kinesis/DynamoDB
-        - Version: '2012-10-17'
+        - Version: "2012-10-17"
           Statement:
-            Effect: 'Allow'
+            Effect: "Allow"
             Action:
               - sqs:GetQueueAttributes
               - sqs:GetQueueUrl

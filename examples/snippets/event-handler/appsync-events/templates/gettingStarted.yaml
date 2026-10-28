@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
 Globals:
@@ -61,7 +61,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -70,7 +70,7 @@ Resources:
       Policies:
         - PolicyName: LambdaInvokePolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -81,7 +81,7 @@ Resources:
     Type: AWS::AppSync::DataSource
     Properties:
       ApiId: !GetAtt WebsocketAPI.ApiId
-      LambdaConfig: 
+      LambdaConfig:
         LambdaFunctionArn: !GetAtt HelloWorldFunction.Arn
       Name: powertools_lambda
       ServiceRoleArn: !GetAtt DataSourceIAMRole.Arn

@@ -2,6 +2,7 @@ import {
   afterAll,
   afterEach,
   beforeAll,
+  beforeEach,
   describe,
   expect,
   it,
@@ -21,6 +22,7 @@ const getFutureTimestamp = (seconds: number): number =>
 const getFutureTimestampInMillis = (seconds: number): number =>
   getFutureTimestamp(seconds) * 1000;
 
+const now = new Date('2026-01-01T00:00:00.000Z');
 const dummyKey = 'someKey';
 const client = {
   get: vi.fn(),
@@ -33,7 +35,11 @@ const persistenceLayer = new CachePersistenceLayerTestClass({
 
 describe('Class: CachePersistenceLayerTestClass', () => {
   beforeAll(() => {
-    vi.useFakeTimers().setSystemTime(new Date());
+    vi.useFakeTimers();
+  });
+
+  beforeEach(() => {
+    vi.setSystemTime(now);
   });
 
   afterEach(() => {
@@ -73,7 +79,7 @@ describe('Class: CachePersistenceLayerTestClass', () => {
       );
     });
 
-    it('puts the record in the cache when using an in progress expiry timestamp', async () => {
+    it('expires an in progress record at its execution deadline', async () => {
       // Prepare
       const status = IdempotencyRecordStatus.INPROGRESS;
       const expiryTimestamp = getFutureTimestamp(10);
@@ -97,11 +103,51 @@ describe('Class: CachePersistenceLayerTestClass', () => {
           in_progress_expiration: inProgressExpiryTimestamp,
         }),
         {
-          EX: 10,
+          EX: 5,
           NX: true,
-          expiry: { type: 'EX', count: 10 },
+          expiry: { type: 'EX', count: 5 },
           conditionalSet: 'onlyIfDoesNotExist',
         }
+      );
+    });
+
+    it('rounds the execution deadline up to whole seconds', async () => {
+      // Prepare
+      const record = new IdempotencyRecord({
+        idempotencyKey: dummyKey,
+        status: IdempotencyRecordStatus.INPROGRESS,
+        expiryTimestamp: getFutureTimestamp(10),
+        inProgressExpiryTimestamp: Date.now() + 4_200,
+      });
+
+      // Act
+      await persistenceLayer._putRecord(record);
+
+      // Assess
+      expect(client.set).toHaveBeenCalledWith(
+        dummyKey,
+        expect.any(String),
+        expect.objectContaining({ EX: 5, expiry: { type: 'EX', count: 5 } })
+      );
+    });
+
+    it('caps the in progress record expiry at the overall expiry', async () => {
+      // Prepare
+      const record = new IdempotencyRecord({
+        idempotencyKey: dummyKey,
+        status: IdempotencyRecordStatus.INPROGRESS,
+        expiryTimestamp: getFutureTimestamp(10),
+        inProgressExpiryTimestamp: getFutureTimestampInMillis(20),
+      });
+
+      // Act
+      await persistenceLayer._putRecord(record);
+
+      // Assess
+      expect(client.set).toHaveBeenCalledWith(
+        dummyKey,
+        expect.any(String),
+        expect.objectContaining({ EX: 10, expiry: { type: 'EX', count: 10 } })
       );
     });
 
@@ -165,64 +211,65 @@ describe('Class: CachePersistenceLayerTestClass', () => {
       );
     });
 
-    it('handles orphaned records by acquiring a lock and updating', async () => {
+    it('retries the write once when the record expires between the conflict and the read', async () => {
       // Prepare
       const record = new IdempotencyRecord({
         idempotencyKey: dummyKey,
         status: IdempotencyRecordStatus.INPROGRESS,
         expiryTimestamp: getFutureTimestamp(10),
       });
-
       client.set.mockResolvedValueOnce(null).mockResolvedValueOnce('OK');
-      client.get.mockResolvedValueOnce(
-        JSON.stringify({
-          status: IdempotencyRecordStatus.INPROGRESS,
-          expiration: getFutureTimestamp(-10),
-        })
-      );
+      client.get.mockResolvedValueOnce(null);
 
       // Act
       await persistenceLayer._putRecord(record);
 
       // Assess
-      expect(client.set).toHaveBeenCalledWith(`${dummyKey}:lock`, 'true', {
-        EX: 10,
-        NX: true,
-        expiry: { type: 'EX', count: 10 },
-        conditionalSet: 'onlyIfDoesNotExist',
-      });
-      expect(client.set).toHaveBeenCalledWith(
+      expect(client.set).toHaveBeenCalledTimes(2);
+      expect(client.set).toHaveBeenLastCalledWith(
         dummyKey,
-        JSON.stringify({
-          status: IdempotencyRecordStatus.INPROGRESS,
-          expiration: record.expiryTimestamp,
-        }),
-        { EX: 10, expiry: { type: 'EX', count: 10 } }
+        expect.any(String),
+        {
+          EX: 10,
+          NX: true,
+          expiry: { type: 'EX', count: 10 },
+          conditionalSet: 'onlyIfDoesNotExist',
+        }
       );
     });
 
-    it('handles orphaned records by acquiring a lock but it fails and throw error', async () => {
+    it('gives up after one retry when the record keeps vanishing', async () => {
       // Prepare
       const record = new IdempotencyRecord({
         idempotencyKey: dummyKey,
         status: IdempotencyRecordStatus.INPROGRESS,
         expiryTimestamp: getFutureTimestamp(10),
       });
-
-      client.set
-        .mockResolvedValueOnce(null) // First attempt to set fails
-        .mockResolvedValueOnce(null); // Lock acquisition fails
-      client.get.mockResolvedValueOnce(
-        JSON.stringify({
-          status: IdempotencyRecordStatus.INPROGRESS,
-          expiration: getFutureTimestamp(-10),
-        })
-      );
+      client.set.mockResolvedValue(null);
+      client.get.mockResolvedValue(null);
 
       // Act & Assess
       await expect(persistenceLayer._putRecord(record)).rejects.toThrow(
-        'Lock acquisition failed, raise to retry'
+        IdempotencyItemNotFoundError
       );
+      expect(client.set).toHaveBeenCalledTimes(2);
+    });
+
+    it('propagates read errors other than a missing record', async () => {
+      // Prepare
+      const record = new IdempotencyRecord({
+        idempotencyKey: dummyKey,
+        status: IdempotencyRecordStatus.INPROGRESS,
+        expiryTimestamp: getFutureTimestamp(10),
+      });
+      client.set.mockResolvedValueOnce(null);
+      client.get.mockResolvedValueOnce('not json');
+
+      // Act & Assess
+      await expect(persistenceLayer._putRecord(record)).rejects.toThrow(
+        IdempotencyPersistenceConsistencyError
+      );
+      expect(client.set).toHaveBeenCalledTimes(1);
     });
 
     it('throws error when item already exists and not expired', async () => {
@@ -264,7 +311,7 @@ describe('Class: CachePersistenceLayerTestClass', () => {
 
       // Act & Assess
       await expect(persistenceLayer._putRecord(record)).rejects.toThrow(
-        `Failed to put record for in-progress idempotency key: ${dummyKey}`
+        IdempotencyItemAlreadyExistsError
       );
     });
 
@@ -304,7 +351,7 @@ describe('Class: CachePersistenceLayerTestClass', () => {
       { label: 'an elapsed execution deadline', deadline: 'elapsed' },
       { label: 'an execution deadline of zero', deadline: 'zero' },
     ])(
-      'recovers a record with $label before overall expiry',
+      'returns a present record with $label to the caller instead of overwriting it',
       async ({ deadline }) => {
         // Prepare
         const expiryTimestamp = getFutureTimestamp(3600);
@@ -323,7 +370,7 @@ describe('Class: CachePersistenceLayerTestClass', () => {
                 deadline === 'zero' ? 0 : Date.now() - 1000,
             })
           ),
-          set: vi.fn().mockResolvedValue('OK').mockResolvedValueOnce(null),
+          set: vi.fn().mockResolvedValueOnce(null),
           del: vi.fn(),
         };
         const persistenceStore = new CachePersistenceLayerTestClass({
@@ -331,21 +378,66 @@ describe('Class: CachePersistenceLayerTestClass', () => {
         });
 
         // Act
-        await persistenceStore._putRecord(record);
+        const acquisition = persistenceStore._putRecord(record);
 
         // Assess
-        expect(cacheClient.set).toHaveBeenCalledTimes(3);
-        expect(cacheClient.set).toHaveBeenLastCalledWith(
-          dummyKey,
-          JSON.stringify({
-            status: IdempotencyRecordStatus.INPROGRESS,
-            expiration: expiryTimestamp,
-            in_progress_expiration: record.inProgressExpiryTimestamp,
-          }),
-          { EX: 3600, expiry: { type: 'EX', count: 3600 } }
+        await expect(acquisition).rejects.toThrow(
+          IdempotencyItemAlreadyExistsError
         );
+        expect(cacheClient.set).toHaveBeenCalledTimes(1);
       }
     );
+
+    it('does not overwrite a record completed after a stale read', async () => {
+      // Prepare
+      const store = new Map<string, string>();
+      let releaseRead: (value: string | null) => void = () => {};
+      const cacheClient = {
+        get: vi.fn(async (key: string) => store.get(key) ?? null),
+        set: vi.fn(
+          async (key: string, value: string, options?: { NX?: boolean }) => {
+            if (options?.NX && store.has(key)) return null;
+            store.set(key, value);
+            return 'OK';
+          }
+        ),
+        del: vi.fn(async (keys: string[]) => {
+          for (const key of keys) store.delete(key);
+          return keys.length;
+        }),
+      };
+      const callerA = new CachePersistenceLayerTestClass({
+        client: cacheClient,
+      });
+      const callerB = new CachePersistenceLayerTestClass({
+        client: cacheClient,
+      });
+      const event = { id: 'order-1' };
+      const remainingTimeInMillis = 2_000;
+
+      // Act
+      await callerA.saveInProgress(event, remainingTimeInMillis);
+      const [recordKey] = store.keys();
+      const staleRecord = store.get(recordKey) as string;
+      // B's read is answered only after A completes and A's deadline passes
+      cacheClient.get.mockImplementationOnce(
+        () => new Promise<string | null>((resolve) => (releaseRead = resolve))
+      );
+      const acquisition = callerB.saveInProgress(event, remainingTimeInMillis);
+      await vi.waitFor(() => expect(cacheClient.get).toHaveBeenCalledTimes(1));
+      await callerA.saveSuccess(event, { processed: true });
+      vi.setSystemTime(Date.now() + remainingTimeInMillis + 1_000);
+      releaseRead(staleRecord);
+
+      // Assess
+      await expect(acquisition).rejects.toThrow(
+        IdempotencyItemAlreadyExistsError
+      );
+      expect(JSON.parse(store.get(recordKey) as string)).toMatchObject({
+        status: IdempotencyRecordStatus.COMPLETED,
+        data: { processed: true },
+      });
+    });
 
     it('throws error when trying to put a non-INPROGRESS record', async () => {
       // Prepare
@@ -532,6 +624,26 @@ describe('Class: CachePersistenceLayerTestClass', () => {
         { EX: 15, expiry: { type: 'EX', count: 15 } }
       );
       persistenceLayerSpy.mockRestore();
+    });
+
+    it('rounds the expiry down so the record never outlives it', async () => {
+      // Prepare
+      const expiryTimestamp = getFutureTimestamp(15);
+      vi.setSystemTime(now.getTime() + 300);
+      const record = new IdempotencyRecord({
+        idempotencyKey: dummyKey,
+        status: IdempotencyRecordStatus.COMPLETED,
+        expiryTimestamp,
+      });
+
+      // Act
+      await persistenceLayer._updateRecord(record);
+
+      // Assess
+      expect(client.set).toHaveBeenCalledWith(dummyKey, expect.any(String), {
+        EX: 14,
+        expiry: { type: 'EX', count: 14 },
+      });
     });
   });
 });

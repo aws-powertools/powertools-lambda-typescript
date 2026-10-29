@@ -61,7 +61,30 @@ describe('LogAttributesStore concurrent invocation isolation', () => {
     const scopedContext = invokeStore.run({}, () => store.getLambdaContext());
 
     // Assess
-    expect(scopedContext).toBe(lambdaContext);
+    expect(scopedContext).toEqual(lambdaContext);
+  });
+
+  it('returns a copy of the lambda context so callers cannot mutate the stored one', () => {
+    // Prepare
+    const store = new LogAttributesStore();
+    store.setLambdaContext({
+      functionName: 'test-function',
+      memoryLimitInMB: '128',
+      functionVersion: '$LATEST',
+      invokedFunctionArn: 'arn:aws:lambda:us-east-1:123:function:test',
+      awsRequestId: 'request-id',
+      tenantId: 'tenant-id',
+      coldStart: true,
+    });
+
+    // Act
+    const returnedContext = store.getLambdaContext();
+    if (returnedContext) {
+      returnedContext.awsRequestId = 'mutated-request-id';
+    }
+
+    // Assess
+    expect(store.getLambdaContext()?.awsRequestId).toBe('request-id');
   });
 
   it('isolates fresh temporary attributes from the shared value', async () => {

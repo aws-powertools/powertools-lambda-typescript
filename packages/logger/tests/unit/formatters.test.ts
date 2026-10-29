@@ -1,4 +1,5 @@
 import { AssertionError } from 'node:assert';
+import context from '@aws-lambda-powertools/testing-utils/context';
 import {
   afterAll,
   afterEach,
@@ -92,6 +93,21 @@ class CustomFormatter extends LogFormatter {
     return new LogItem({ attributes: customAttributes }).addAttributes(
       additionalLogAttributes
     );
+  }
+}
+
+/**
+ * A custom log formatter that logs the request id it receives, then redacts it on the attributes object.
+ */
+class RedactingFormatter extends LogFormatter {
+  public formatAttributes(attributes: UnformattedAttributes): LogItem {
+    const requestId = attributes.lambdaContext?.awsRequestId;
+    if (attributes.lambdaContext) {
+      attributes.lambdaContext.awsRequestId = 'redacted';
+    }
+    return new LogItem({
+      attributes: { message: attributes.message, requestId },
+    });
   }
 }
 
@@ -979,6 +995,22 @@ describe('Formatters', () => {
       logLevel: 12,
       message: 'foo',
       timestamp: expect.any(String),
+    });
+  });
+
+  it('keeps the stored lambda context unchanged when a custom log formatter mutates it', () => {
+    // Prepare
+    const logger = new Logger({ logFormatter: new RedactingFormatter() });
+    logger.addContext(context);
+
+    // Act
+    logger.info('first');
+    logger.info('second');
+
+    // Assess
+    expect(console.info).toHaveLoggedNth(2, {
+      message: 'second',
+      requestId: context.awsRequestId,
     });
   });
 });

@@ -81,8 +81,15 @@ class LogAttributesStore {
     this.#lambdaContext.set(context);
   }
 
+  /**
+   * Gets a shallow copy of the stored Lambda context.
+   *
+   * The copy keeps callers from mutating the context stored for the current
+   * invocation through the returned object.
+   */
   public getLambdaContext(): LambdaFunctionContext | undefined {
-    return this.#lambdaContext.get();
+    const lambdaContext = this.#lambdaContext.get();
+    return lambdaContext === undefined ? undefined : { ...lambdaContext };
   }
 
   public setPersistentAttributes(attributes: LogAttributes): void {

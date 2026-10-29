@@ -78,6 +78,12 @@ const VALID_NUMBER = new Set(DIGITS);
 const WHITESPACE = new Set(' \t\n\r');
 
 /**
+ * Matches strings that follow the JSON number grammar, which is the only
+ * string format that the `to_number()` function can convert to a number.
+ */
+const JSON_NUMBER_REGEX = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/;
+
+/**
  * The set of simple tokens in the JMESPath grammar.
  */
 const SIMPLE_TOKENS: Map<string, keyof typeof BINDING_POWER> = new Map([
@@ -96,6 +102,7 @@ const SIMPLE_TOKENS: Map<string, keyof typeof BINDING_POWER> = new Map([
 
 export {
   BINDING_POWER,
+  JSON_NUMBER_REGEX,
   SIMPLE_TOKENS,
   START_IDENTIFIER,
   VALID_IDENTIFIER,

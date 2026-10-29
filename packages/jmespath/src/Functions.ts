@@ -7,7 +7,9 @@ import {
   getType,
   isNumber,
   isRecord,
+  isStrictEqual,
 } from '@aws-lambda-powertools/commons/typeutils';
+import { JSON_NUMBER_REGEX } from './constants.js';
 import type { Expression } from './Expression.js';
 import { JMESPathTypeError } from './errors.js';
 import type {
@@ -93,7 +95,11 @@ class Functions {
   @Functions.signature({
     argumentsSpecs: [['array-number']],
   })
-  public funcAvg(args: Array<number>): number {
+  public funcAvg(args: Array<number>): number | null {
+    if (args.length === 0) {
+      return null;
+    }
+
     return args.reduce((a, b) => a + b, 0) / args.length;
   }
 
@@ -116,8 +122,15 @@ class Functions {
   @Functions.signature({
     argumentsSpecs: [['array', 'string'], ['any']],
   })
-  public funcContains(haystack: string, needle: string): boolean {
-    return haystack.includes(needle);
+  public funcContains(
+    haystack: string | Array<JSONValue>,
+    needle: JSONValue
+  ): boolean {
+    if (Array.isArray(haystack)) {
+      return haystack.some((item) => isStrictEqual(item, needle));
+    }
+
+    return haystack.includes(needle as string);
   }
 
   /**
@@ -522,10 +535,8 @@ class Functions {
     if (typeof arg === 'number') {
       return arg;
     }
-    if (typeof arg === 'string') {
-      const num = Number(arg);
-
-      return Number.isNaN(num) ? null : num;
+    if (typeof arg === 'string' && JSON_NUMBER_REGEX.test(arg)) {
+      return Number(arg);
     }
     return null;
   }

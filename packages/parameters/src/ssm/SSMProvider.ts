@@ -877,6 +877,8 @@ class SSMProvider extends BaseProvider {
   /**
    * Split parameters that can be fetched by GetParameters vs GetParameter.
    *
+   * The options of each parameter are resolved on a copy, so the `parameters` object passed by the caller is left unchanged.
+   *
    * @param parameters - An object of parameter names and their options
    * @param configs - The configs passed down
    */
@@ -894,7 +896,7 @@ class SSMProvider extends BaseProvider {
     for (const [parameterName, parameterOptions] of Object.entries(
       parameters
     )) {
-      const overrides = parameterOptions;
+      const overrides = { ...parameterOptions };
       overrides.transform = overrides.transform || configs.transform;
 
       overrides.decrypt =

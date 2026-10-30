@@ -157,7 +157,18 @@ describe('Class: SSMProvider', () => {
         provider.getParametersByNameWithDecryptOption
       ).toHaveBeenCalledWith({}, true);
       expect(provider.getParametersBatchByName).toHaveBeenCalledWith(
-        parameters,
+        {
+          '/foo/bar': {
+            maxAge: 1000,
+            decrypt: false,
+            transform: undefined,
+          },
+          '/foo/baz': {
+            transform: 'json',
+            decrypt: false,
+            maxAge: 5,
+          },
+        },
         true,
         false
       );
@@ -188,7 +199,18 @@ describe('Class: SSMProvider', () => {
 
       // Assess
       expect(provider.getParametersBatchByName).toHaveBeenCalledWith(
-        parameters,
+        {
+          '/foo/bar': {
+            maxAge: 1000,
+            decrypt: true,
+            transform: undefined,
+          },
+          '/foo/baz': {
+            transform: 'json',
+            decrypt: true,
+            maxAge: 5,
+          },
+        },
         true,
         true
       );
@@ -1248,7 +1270,7 @@ describe('Class: SSMProvider', () => {
       });
     });
 
-    it('respects any local overrides by giving them precedence over global config', () => {
+    it('respects any local overrides by giving them precedence over global config without mutating them', () => {
       // Prepare
       const provider = new SSMProviderMock();
       const parameters = {
@@ -1281,6 +1303,10 @@ describe('Class: SSMProvider', () => {
           maxAge: 1000,
           transform: undefined,
         },
+      });
+      expect(parameters).toEqual({
+        '/foo/bar': { decrypt: true },
+        '/foo/baz': { maxAge: 1000 },
       });
     });
   });

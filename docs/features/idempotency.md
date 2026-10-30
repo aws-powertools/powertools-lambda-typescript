@@ -321,6 +321,9 @@ A durable execution can be suspended, for example by a wait, and resumed in a la
 
     Set [`expiresAfterSeconds`](#expiring-idempotency-records) to at least the execution timeout of your durable function.
 
+    If an execution ends without cleaning up its record, for example because it reaches its execution timeout or is stopped, the record stays `INPROGRESS` until it expires.
+    Until then, other executions with the same payload get an `IdempotencyAlreadyInProgressError`. To run the payload again sooner, delete its record from the persistence store.
+
 If you [bring your own persistence store](#bring-your-own-persistent-store), save and return the `owner` of the record too, so that a durable execution can recognize its own record.
 
 ### Handling exceptions

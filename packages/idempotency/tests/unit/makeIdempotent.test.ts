@@ -3,7 +3,15 @@ import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import middy from '@middy/core';
 import type { Context } from 'aws-lambda';
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from 'vitest';
 import { MAX_RETRIES } from '../../src/constants.js';
 import { IdempotencyHandler } from '../../src/IdempotencyHandler.js';
 import {
@@ -17,6 +25,7 @@ import {
   makeIdempotent,
 } from '../../src/index.js';
 import { makeHandlerIdempotent } from '../../src/middleware/makeHandlerIdempotent.js';
+import { CachePersistenceLayer } from '../../src/persistence/CachePersistenceLayer.js';
 import { IdempotencyRecord } from '../../src/persistence/index.js';
 import type { PersistenceOperationOptions } from '../../src/types/index.js';
 import { PersistenceLayerTestClass } from '../helpers/idempotencyUtils.js';
@@ -32,16 +41,30 @@ const withIdentity = {
   },
 };
 /**
- * The subset of a durable context that makeIdempotent inspects to detect it and its execution mode.
+ * The subset of a durable context that makeIdempotent inspects to detect it, its execution mode, and its execution ARN.
  */
-type DurableTestContext = Pick<DurableContext, 'step' | 'lambdaContext'> & {
-  durableExecutionMode?: 'ExecutionMode' | 'ReplayMode';
-};
+type DurableTestContext = Pick<DurableContext, 'step' | 'lambdaContext'> &
+  Partial<Pick<DurableContext, 'executionContext'>> & {
+    durableExecutionMode?: 'ExecutionMode' | 'ReplayMode';
+  };
 const durableReplayContext: DurableTestContext = {
   step: vi.fn(),
   lambdaContext: context,
   durableExecutionMode: 'ReplayMode',
 };
+const executionA =
+  'arn:aws:lambda:us-east-1:123456789012:function:my-function:1/durable-execution/order-1/a';
+const executionB =
+  'arn:aws:lambda:us-east-1:123456789012:function:my-function:1/durable-execution/order-1/b';
+const createDurableContext = (
+  durableExecutionArn: string,
+  durableExecutionMode: 'ExecutionMode' | 'ReplayMode'
+): DurableTestContext => ({
+  step: vi.fn(),
+  lambdaContext: context,
+  durableExecutionMode,
+  executionContext: { durableExecutionArn },
+});
 const fnSuccessfull = async () => true;
 const fnError = () => {
   throw new Error('Something went wrong');
@@ -932,6 +955,191 @@ describe('Function: makeIdempotent', () => {
     expect(handleSpy).toHaveBeenCalledWith({ isReplay: false });
   });
 
+  it('passes the durable execution ARN to the handler', async () => {
+    // Prepare
+    const handleSpy = vi.spyOn(IdempotencyHandler.prototype, 'handle');
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: DurableTestContext) => {},
+      mockIdempotencyOptions
+    );
+
+    // Act
+    await handler(event, createDurableContext(executionA, 'ExecutionMode'));
+
+    // Assess
+    expect(handleSpy).toHaveBeenCalledWith({
+      isReplay: false,
+      durableExecutionArn: executionA,
+    });
+  });
+
+  it('stores the durable execution as the owner of the record without an in progress expiry', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: DurableTestContext) => true,
+      { persistenceStore }
+    );
+
+    // Act
+    await handler(event, createDurableContext(executionA, 'ExecutionMode'));
+
+    // Assess
+    const [inProgressRecord] = persistenceStore._putRecord.mock.calls[0];
+    const [completedRecord] = persistenceStore._updateRecord.mock.calls[0];
+    expect(inProgressRecord).toEqual(
+      expect.objectContaining({
+        owner: executionA,
+        inProgressExpiryTimestamp: undefined,
+      })
+    );
+    expect(completedRecord.owner).toBe(executionA);
+  });
+
+  it('runs a durable execution once when another execution with the same payload starts while it is suspended', async () => {
+    // Prepare
+    vi.useFakeTimers({ toFake: ['Date'] });
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    const items = new Map<string, string>();
+    const client = {
+      get: async (key: string) => items.get(key) ?? null,
+      set: async (key: string, value: unknown, options?: { NX?: boolean }) => {
+        if (options?.NX && items.has(key)) return null;
+        items.set(key, String(value));
+        return 'OK';
+      },
+      del: async (keys: string[]) => {
+        for (const key of keys) items.delete(key);
+        return keys.length;
+      },
+    };
+    const shipOrder = vi.fn();
+    const firstInvocation = createDurableContext(executionA, 'ExecutionMode');
+    const handler = makeIdempotent(
+      async (order: { id: string }, context: DurableTestContext) => {
+        // A replay reads the result of the work from its checkpoint
+        if (context.durableExecutionMode === 'ExecutionMode') {
+          shipOrder(order.id);
+        }
+        // The first invocation is suspended by a wait and resumed by a replay
+        if (context === firstInvocation) {
+          await new Promise(() => {});
+        }
+        return { shipped: order.id };
+      },
+      { persistenceStore: new CachePersistenceLayer({ client }) }
+    );
+    const order = { id: 'order-1' };
+
+    // Act & Assess
+    void handler(order, firstInvocation);
+    await vi.waitFor(() => expect(shipOrder).toHaveBeenCalledOnce());
+    // Past the end of the first invocation of execution A
+    vi.setSystemTime(Date.now() + 23_000);
+    await expect(
+      handler(order, createDurableContext(executionB, 'ExecutionMode'))
+    ).rejects.toThrow(IdempotencyAlreadyInProgressError);
+    await expect(
+      handler(order, createDurableContext(executionA, 'ReplayMode'))
+    ).resolves.toEqual({ shipped: 'order-1' });
+    await expect(
+      handler(order, createDurableContext(executionB, 'ExecutionMode'))
+    ).resolves.toEqual({ shipped: 'order-1' });
+    expect(shipOrder).toHaveBeenCalledOnce();
+  });
+
+  it('rejects a durable replay when another execution owns the in progress record', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    persistenceStore._putRecord.mockRejectedValueOnce(
+      new IdempotencyItemAlreadyExistsError(
+        'Record is already in progress',
+        new IdempotencyRecord({
+          idempotencyKey: 'idempotencyKey',
+          status: IdempotencyRecordStatus.INPROGRESS,
+          owner: executionB,
+        })
+      )
+    );
+    const fn = vi.fn();
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: DurableTestContext) => fn(),
+      { persistenceStore }
+    );
+
+    // Act & Assess
+    await expect(
+      handler(event, createDurableContext(executionA, 'ReplayMode'))
+    ).rejects.toThrow(IdempotencyAlreadyInProgressError);
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it('resumes its own in progress record when a durable execution is retried before its first checkpoint', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    persistenceStore._putRecord.mockRejectedValueOnce(
+      new IdempotencyItemAlreadyExistsError(
+        'Record is already in progress',
+        new IdempotencyRecord({
+          idempotencyKey: 'idempotencyKey',
+          status: IdempotencyRecordStatus.INPROGRESS,
+          owner: executionA,
+        })
+      )
+    );
+    const fn = vi.fn();
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: DurableTestContext) => fn(),
+      { persistenceStore }
+    );
+
+    // Act
+    await handler(event, createDurableContext(executionA, 'ExecutionMode'));
+
+    // Assess
+    expect(fn).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    { case: 'its own execution', owner: executionA },
+    { case: 'another execution', owner: executionB },
+    { case: 'an unknown execution', owner: undefined },
+  ])(
+    'returns the stored result when a durable replay finds a completed record of $case',
+    async ({ owner }) => {
+      // Prepare
+      const persistenceStore = new PersistenceLayerTestClass();
+      persistenceStore._putRecord.mockRejectedValueOnce(
+        new IdempotencyItemAlreadyExistsError(
+          'Record already exists',
+          new IdempotencyRecord({
+            idempotencyKey: 'idempotencyKey',
+            status: IdempotencyRecordStatus.COMPLETED,
+            responseData: { shipped: 'order-1' },
+            owner,
+          })
+        )
+      );
+      const fn = vi.fn();
+      const handler = makeIdempotent(
+        async (_event: unknown, _context: DurableTestContext) => fn(),
+        { persistenceStore }
+      );
+
+      // Act
+      const result = await handler(
+        event,
+        createDurableContext(executionA, 'ReplayMode')
+      );
+
+      // Assess
+      expect(result).toEqual({ shipped: 'order-1' });
+      expect(fn).not.toHaveBeenCalled();
+    }
+  );
+
   it('completes the record it acquired when the wrapped function mutates its input', async () => {
     // Prepare
     const persistenceStore = new PersistenceLayerTestClass();
@@ -1006,7 +1214,13 @@ describe('Function: makeIdempotent', () => {
     // Prepare
     const persistenceStore = new PersistenceLayerTestClass();
     persistenceStore._putRecord.mockRejectedValueOnce(
-      new IdempotencyItemAlreadyExistsError('Record is already in progress')
+      new IdempotencyItemAlreadyExistsError(
+        'Record is already in progress',
+        new IdempotencyRecord({
+          idempotencyKey: 'idempotencyKey',
+          status: IdempotencyRecordStatus.INPROGRESS,
+        })
+      )
     );
     const processOrder = makeIdempotent(
       async (
@@ -1032,7 +1246,13 @@ describe('Function: makeIdempotent', () => {
     // Prepare
     const persistenceStore = new PersistenceLayerTestClass();
     persistenceStore._putRecord.mockRejectedValueOnce(
-      new IdempotencyItemAlreadyExistsError('Record is already in progress')
+      new IdempotencyItemAlreadyExistsError(
+        'Record is already in progress',
+        new IdempotencyRecord({
+          idempotencyKey: 'idempotencyKey',
+          status: IdempotencyRecordStatus.INPROGRESS,
+        })
+      )
     );
     const processOrder = makeIdempotent(
       async (

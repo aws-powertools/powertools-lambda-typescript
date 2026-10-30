@@ -22,9 +22,11 @@ type IdempotencyRecordIdentity = Pick<
  * Options accepted by the persistence operations that write or delete a record.
  *
  * @property identity - the record identity resolved before the operation started; when provided it is used instead of hashing the payload again
+ * @property owner - the ARN of the durable execution that owns the record; when provided it is stored with the record and no in-progress expiry is required
  */
 type PersistenceOperationOptions = {
   identity?: IdempotencyRecordIdentity;
+  owner?: string;
 };
 
 interface BasePersistenceLayerInterface {
@@ -56,6 +58,7 @@ interface BasePersistenceLayerInterface {
  * @property {string} [statusAttr] - The attribute name for status. Defaults to 'status'.
  * @property {string} [dataAttr] - The attribute name for response data. Defaults to 'data'.
  * @property {string} [validationKeyAttr] - The attribute name for hashed representation of the parts of the event used for validation. Defaults to 'validation'.
+ * @property {string} [ownerAttr] - The attribute name for the ARN of the durable execution that owns the record. Defaults to 'owner'.
  */
 interface BasePersistenceAttributes {
   expiryAttr?: string;
@@ -63,6 +66,7 @@ interface BasePersistenceAttributes {
   statusAttr?: string;
   dataAttr?: string;
   validationKeyAttr?: string;
+  ownerAttr?: string;
 }
 
 export type {

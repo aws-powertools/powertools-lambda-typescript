@@ -69,6 +69,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           inProgressExpiryAttr: 'in_progress_expiration',
           dataAttr: 'data',
           validationKeyAttr: 'validation',
+          ownerAttr: 'owner',
           staticPkValue: 'idempotency#my-lambda-function',
         })
       );
@@ -85,6 +86,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           inProgressExpiryAttr: 'someInProgressExpiryAttr',
           dataAttr: 'someDataAttr',
           validationKeyAttr: 'someValidationKeyAttr',
+          ownerAttr: 'someOwnerAttr',
           staticPkValue: 'someStaticPkValue',
           sortKeyAttr: 'someSortKeyAttr',
         };
@@ -106,6 +108,7 @@ describe('Class: DynamoDBPersistenceLayer', () => {
           dataAttr: DynamoDBPersistenceLayerTestClassOptions.dataAttr,
           validationKeyAttr:
             DynamoDBPersistenceLayerTestClassOptions.validationKeyAttr,
+          ownerAttr: DynamoDBPersistenceLayerTestClassOptions.ownerAttr,
           staticPkValue: DynamoDBPersistenceLayerTestClassOptions.staticPkValue,
           sortKeyAttr: DynamoDBPersistenceLayerTestClassOptions.sortKeyAttr,
         })
@@ -346,6 +349,65 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       persistenceLayerSpy.mockRestore();
     });
 
+    it('puts the record in DynamoDB with its owner', async () => {
+      // Prepare
+      const status = IdempotencyRecordStatus.INPROGRESS;
+      const expiryTimestamp = getFutureTimestamp(10);
+      const record = new IdempotencyRecord({
+        idempotencyKey: dummyKey,
+        status,
+        expiryTimestamp,
+        owner: 'durable-execution-arn',
+      });
+
+      // Act
+      await persistenceLayer._putRecord(record);
+
+      // Assess
+      expect(client).toReceiveCommandWith(PutItemCommand, {
+        TableName: dummyTableName,
+        Item: marshall({
+          id: dummyKey,
+          expiration: expiryTimestamp,
+          status,
+          owner: 'durable-execution-arn',
+        }),
+      });
+    });
+
+    it('returns the owner of the existing record when the conditional check fails', async () => {
+      // Prepare
+      const record = new IdempotencyRecord({
+        idempotencyKey: dummyKey,
+        status: IdempotencyRecordStatus.INPROGRESS,
+        expiryTimestamp: 0,
+      });
+      client.on(PutItemCommand).rejects(
+        new ConditionalCheckFailedException({
+          $metadata: {
+            httpStatusCode: 400,
+            requestId: 'someRequestId',
+          },
+          message: 'Conditional check failed',
+          Item: marshall({
+            id: dummyKey,
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiration: getFutureTimestamp(10),
+            owner: 'durable-execution-arn',
+          }),
+        })
+      );
+
+      // Act & Assess
+      await expect(persistenceLayer._putRecord(record)).rejects.toThrow(
+        expect.objectContaining({
+          existingRecord: expect.objectContaining({
+            owner: 'durable-execution-arn',
+          }),
+        })
+      );
+    });
+
     it.each([
       {
         keys: {
@@ -467,6 +529,24 @@ describe('Class: DynamoDBPersistenceLayer', () => {
       );
       expect(record.responseData).toEqual(responseData);
       expect(record.expiryTimestamp).toEqual(expiryTimestamp);
+    });
+
+    it('gets the owner of the record from DynamoDB', async () => {
+      // Prepare
+      client.on(GetItemCommand).resolves({
+        Item: marshall({
+          id: dummyKey,
+          status: IdempotencyRecordStatus.INPROGRESS,
+          expiration: getFutureTimestamp(15),
+          owner: 'durable-execution-arn',
+        }),
+      });
+
+      // Act
+      const record = await persistenceLayer._getRecord(dummyKey);
+
+      // Assess
+      expect(record.owner).toBe('durable-execution-arn');
     });
 
     it('throws when the record does not exist', async () => {

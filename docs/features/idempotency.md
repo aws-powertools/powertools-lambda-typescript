@@ -301,6 +301,28 @@ Here is an example on how you register the Lambda context in your handler:
     --8<-- "examples/snippets/idempotency/makeIdempotentLambdaContext.ts"
     ```
 
+### Durable functions
+
+To make a [durable function](https://docs.aws.amazon.com/lambda/latest/dg/durable-functions.html){target="_blank"} idempotent, wrap its handler with the [makeIdempotent](#makeidempotent-function-wrapper) function wrapper inside `withDurableExecution`.
+
+=== "Making a durable function idempotent"
+
+    ```typescript hl_lines="16-18 20-21"
+    --8<-- "examples/snippets/idempotency/workingWithDurableFunctions.ts"
+    ```
+
+A durable execution can be suspended, for example by a wait, and resumed in a later invocation. For this reason, its idempotency record works differently from the record of a regular invocation:
+
+* **No in-progress expiry.** The record doesn't store the [remaining time of the invocation](#lambda-timeouts), since the execution can outlive it. It stays `INPROGRESS` until the execution completes or the record expires.
+* **Owned by the execution.** The record stores the ARN of the durable execution as its owner. When the same execution is replayed or retried, it continues with its own record. Another execution with the same payload gets an `IdempotencyAlreadyInProgressError` until the first one completes, and the stored result after that.
+
+???+ important "Set `expiresAfterSeconds` to at least the execution timeout"
+    Without an in-progress expiry, the record of a durable execution expires only after `expiresAfterSeconds`, one hour by default. If the execution runs longer, its record can expire while it is suspended, and another execution with the same payload can run in the meantime.
+
+    Set [`expiresAfterSeconds`](#expiring-idempotency-records) to at least the execution timeout of your durable function.
+
+If you [bring your own persistence store](#bring-your-own-persistent-store), save and return the `owner` of the record too, so that a durable execution can recognize its own record.
+
 ### Handling exceptions
 
 If you are making on your entire Lambda handler idempotent, any unhandled exceptions that are raised during the code execution will cause **the record in the persistence layer to be deleted**.
@@ -622,6 +644,7 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 | **statusAttr**           |                    | `status`                             | Stores status of the lambda execution during and after invocation                                        |
 | **dataAttr**             |                    | `data`                               | Stores results of successfully executed Lambda handlers                                                  |
 | **validationKeyAttr**    |                    | `validation`                         | Hashed representation of the parts of the event used for validation                                      |
+| **ownerAttr**            |                    | `owner`                              | ARN of the durable execution that owns the record (only for durable functions)                           |
 | **sortKeyAttr**          |                    |                                      | Sort key of the table (if table is configured with a sort key).                                          |
 | **staticPkValue**        |                    | `idempotency#{LAMBDA_FUNCTION_NAME}` | Static value to use as the partition key. Only used when **sort_key_attr** is set.                       |
 
@@ -654,6 +677,7 @@ When using Cache as a persistence layer, you can alter the attribute names by pa
 | **statusAttr**           |                    | `status`                 | Stores status of the lambda execution during and after invocation                             |
 | **dataAttr**             |                    | `data`                   | Stores results of successfully executed Lambda handlers                                       |
 | **validationKeyAttr**    |                    | `validation`             | Hashed representation of the parts of the event used for validation                           |
+| **ownerAttr**            |                    | `owner`                  | ARN of the durable execution that owns the record (only for durable functions)                |
 
 === "Customizing CachePersistenceLayer"
 

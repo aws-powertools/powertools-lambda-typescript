@@ -460,7 +460,9 @@ You can customize how Metrics logs warnings and debug messages to standard outpu
 
 In AWS Lambda, Metrics writes [Embedded Metric Format (EMF)](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html) blobs to standard output. The Lambda runtime/CloudWatch agent picks those log lines up — you do not call CloudWatch `PutMetricData` yourself.
 
-When Lambda multi-concurrency is enabled (`AWS_LAMBDA_MAX_CONCURRENCY` is set) or your code runs on a [Lambda Web Function](https://docs.aws.amazon.com/lambda/latest/dg/web-functions.html){target="_blank"}, Metrics (and related buffered state such as dimensions/metadata) automatically uses [`@aws/lambda-invoke-store`](https://www.npmjs.com/package/@aws/lambda-invoke-store) for **per-invocation isolation**. On Web Functions, each HTTP request counts as an invocation. No application code changes are required; Powertools selects the store at runtime.
+When Lambda multi-concurrency is enabled (`AWS_LAMBDA_MAX_CONCURRENCY` is set) or your code runs on a [Lambda Web Function](https://docs.aws.amazon.com/lambda/latest/dg/web-functions.html){target="_blank"},
+Metrics (and related buffered state such as dimensions/metadata) automatically uses [`@aws/lambda-invoke-store`](https://www.npmjs.com/package/@aws/lambda-invoke-store) for **per-invocation isolation**.
+On Web Functions, each HTTP request counts as an invocation. No application code changes are required; Powertools selects the store at runtime.
 
 Outside that Lambda multi-concurrency context Metrics uses an in-memory store by default. This applies to Lambda on-demand functions, local runs, and unit tests. Buffered metrics are still flushed as EMF to stdout when you flush (middleware/decorator/`logMetrics`), so asserting emitted metrics locally works the same way.
 

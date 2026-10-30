@@ -74,6 +74,7 @@ import {
   composeMiddleware,
   getBase64EncodingFromHeaders,
   HttpResponseStream,
+  isALBEvent,
   isBinaryResult,
   isExtendedAPIGatewayProxyResult,
   resolvePrefixedPath,
@@ -450,7 +451,12 @@ class Router<TEnv extends Env = Env> {
     return webResponseToProxyResult(
       resolvedResponse.res,
       resolvedResponse.responseType,
-      { isBase64Encoded }
+      {
+        isBase64Encoded,
+        ...(isALBEvent(event) && {
+          multiValueHeaders: event.multiValueHeaders !== undefined,
+        }),
+      }
     );
   }
 

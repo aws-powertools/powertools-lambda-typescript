@@ -122,9 +122,11 @@ class SigV4Signer implements Signer {
     }
     headers.host = url.host;
 
-    const query: Record<string, string> = {};
+    // A repeated query parameter keeps all its values, as SigV4 signs each one
+    const query: Record<string, string[]> = {};
     for (const [key, value] of url.searchParams) {
-      query[key] = value;
+      query[key] ??= [];
+      query[key].push(value);
     }
 
     const body = await this.#readBody(request);

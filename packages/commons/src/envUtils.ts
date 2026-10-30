@@ -1,9 +1,11 @@
 import '@aws/lambda-invoke-store';
 import {
+  AWS_EXECUTION_ENV_VAR,
   AWS_LAMBDA_INITIALIZATION_TYPE_ENV_VAR,
   AWS_LAMBDA_MAX_CONCURRENCY,
   POWERTOOLS_DEV_ENV_VAR,
   POWERTOOLS_SERVICE_NAME_ENV_VAR,
+  WEB_FUNCTION_EXECUTION_ENV_SUFFIX,
   XRAY_TRACE_ID_ENV_VAR,
 } from './constants.js';
 import type {
@@ -329,16 +331,27 @@ const isRequestXRaySampled = (): boolean => {
  * environment, and state that must not leak between them should be held in the
  * Lambda `InvokeStore` rather than on an instance.
  *
- * Concurrency is opted into by setting the `AWS_LAMBDA_MAX_CONCURRENCY`
- * environment variable, which the runtime also uses to decide whether to back
- * the `InvokeStore` with an `AsyncLocalStorage`.
+ * Concurrency is detected when either:
+ * - the `AWS_LAMBDA_MAX_CONCURRENCY` environment variable is set (Lambda Managed
+ *   Instances), which the runtime also uses to decide whether to back the
+ *   `InvokeStore` with an `AsyncLocalStorage`
+ * - the code runs on a Lambda Web Function, detected by an `AWS_EXECUTION_ENV`
+ *   ending in `-lambda-web`. The Web Functions runtime always backs the
+ *   `InvokeStore` with an `AsyncLocalStorage` and runs every HTTP request in its
+ *   own context, but doesn't set `AWS_LAMBDA_MAX_CONCURRENCY`
  */
 const shouldUseInvokeStore = (): boolean => {
-  const res = getStringFromEnv({
+  const maxConcurrency = getStringFromEnv({
     key: AWS_LAMBDA_MAX_CONCURRENCY,
     defaultValue: '',
   });
-  return res !== '';
+  if (maxConcurrency !== '') {
+    return true;
+  }
+  return getStringFromEnv({
+    key: AWS_EXECUTION_ENV_VAR,
+    defaultValue: '',
+  }).endsWith(WEB_FUNCTION_EXECUTION_ENV_SUFFIX);
 };
 
 /**

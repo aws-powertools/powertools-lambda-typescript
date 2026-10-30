@@ -446,5 +446,23 @@ describe('Functions: envUtils', () => {
       // Assess
       expect(result).toBe(true);
     });
+
+    it.each([
+      { executionEnv: 'AWS_Lambda_nodejs24.x-lambda-web', expected: true },
+      { executionEnv: 'AWS_Lambda_nodejs24.x', expected: false },
+      { executionEnv: 'AWS_Lambda_lambda-web_nodejs24.x', expected: false },
+    ])(
+      'returns $expected when AWS_EXECUTION_ENV is $executionEnv',
+      ({ executionEnv, expected }) => {
+        // Prepare
+        vi.stubEnv('AWS_EXECUTION_ENV', executionEnv);
+
+        // Act
+        const result = shouldUseInvokeStore();
+
+        // Assess
+        expect(result).toBe(expected);
+      }
+    );
   });
 });

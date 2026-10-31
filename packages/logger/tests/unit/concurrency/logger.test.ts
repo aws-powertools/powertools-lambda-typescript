@@ -83,6 +83,44 @@ describe('Logger concurrent invocation isolation', () => {
     });
   });
 
+  it('keeps temporary attributes per request on a Lambda Web Function', async () => {
+    // Prepare
+    // The Web Functions runtime forces an isolating store and doesn't set
+    // AWS_LAMBDA_MAX_CONCURRENCY
+    vi.stubEnv('AWS_EXECUTION_ENV', 'AWS_Lambda_nodejs24.x-lambda-web');
+    await InvokeStore.getInstanceAsync(true);
+    const logger = new Logger({ serviceName: 'test' });
+
+    // Act
+    await sequence(
+      {
+        sideEffects: [
+          () => logger.appendKeys({ userId: 'user-1' }),
+          () => {},
+          () => logger.info('first request'),
+        ],
+        return: () => {},
+      },
+      {
+        sideEffects: [
+          () => {},
+          () => logger.appendKeys({ userId: 'user-2' }),
+          () => logger.info('second request'),
+        ],
+        return: () => {},
+      },
+      { useInvokeStore: true }
+    );
+
+    // Assess
+    expect(console.info).toHaveLogged(
+      expect.objectContaining({ message: 'first request', userId: 'user-1' })
+    );
+    expect(console.info).toHaveLogged(
+      expect.objectContaining({ message: 'second request', userId: 'user-2' })
+    );
+  });
+
   it.each([
     {
       description: 'without InvokeStore',

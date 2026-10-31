@@ -72,8 +72,8 @@ describe('Class IdempotencyHandler', () => {
         // Prepare
         const stubRecord = new IdempotencyRecord({
           ...keys,
-          expiryTimestamp: Date.now() + 1000, // should be in the future
-          inProgressExpiryTimestamp: 0, // less than current time in milliseconds
+          expiryTimestamp: Date.now() / 1000 + 1, // should be in the future (in seconds)
+          inProgressExpiryTimestamp: 0, // no in-progress deadline, so the expiry check is skipped
           responseData: { responseData: 'responseData' },
           payloadHash: 'payloadHash',
           status: IdempotencyRecordStatus.INPROGRESS,
@@ -93,8 +93,8 @@ describe('Class IdempotencyHandler', () => {
       // Prepare
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
-        expiryTimestamp: Date.now() + 1000, // should be in the future
-        inProgressExpiryTimestamp: Date.now() - 1000, // should be in the past
+        expiryTimestamp: Date.now() / 1000 + 1, // should be in the future (in seconds)
+        inProgressExpiryTimestamp: Date.now() - 1000, // should be in the past (in milliseconds)
         responseData: { responseData: 'responseData' },
         payloadHash: 'payloadHash',
         status: IdempotencyRecordStatus.INPROGRESS,
@@ -114,7 +114,7 @@ describe('Class IdempotencyHandler', () => {
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
         expiryTimestamp: Date.now() / 1000 - 1, // should be in the past (in seconds)
-        inProgressExpiryTimestamp: 0, // less than current time in milliseconds
+        inProgressExpiryTimestamp: 0, // no in-progress deadline, so the expiry check is skipped
         responseData: { responseData: 'responseData' },
         payloadHash: 'payloadHash',
         status: IdempotencyRecordStatus.EXPIRED,
@@ -231,8 +231,8 @@ describe('Class IdempotencyHandler', () => {
             new IdempotencyRecord({
               idempotencyKey: 'idempotencyKey',
               status: IdempotencyRecordStatus.INPROGRESS,
-              expiryTimestamp: Date.now() / 1000 + 3600,
-              inProgressExpiryTimestamp: Date.now() - 1000,
+              expiryTimestamp: Date.now() / 1000 + 3600, // should be in the future (in seconds)
+              inProgressExpiryTimestamp: Date.now() - 1000, // should be in the past (in milliseconds)
             })
           )
         )
@@ -277,7 +277,7 @@ describe('Class IdempotencyHandler', () => {
           new IdempotencyRecord({
             idempotencyKey: 'test-key',
             status: IdempotencyRecordStatus.INPROGRESS,
-            expiryTimestamp: Date.now() + 10000,
+            expiryTimestamp: Date.now() / 1000 + 10,
           })
         )
       );
@@ -298,7 +298,7 @@ describe('Class IdempotencyHandler', () => {
           new IdempotencyRecord({
             idempotencyKey: 'test-key',
             status: IdempotencyRecordStatus.INPROGRESS,
-            expiryTimestamp: Date.now() + 10000,
+            expiryTimestamp: Date.now() / 1000 + 10,
           })
         )
       );
@@ -317,7 +317,7 @@ describe('Class IdempotencyHandler', () => {
 
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
-        expiryTimestamp: Date.now() + 10000,
+        expiryTimestamp: Date.now() / 1000 + 10,
         inProgressExpiryTimestamp: 0,
         responseData: { response: false },
         payloadHash: 'payloadHash',

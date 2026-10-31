@@ -575,28 +575,21 @@ sequenceDiagram
 <i>Optional idempotency key</i>
 </center>
 
-#### Race condition with Cache
+#### Timed out invocations with Cache
+
+An in progress record is stored with a TTL that ends at the execution deadline of the invocation that created it, rounded up to whole seconds and capped at the overall expiry. If that invocation times out, the cache removes the record, and the next invocation with the same payload acquires the key with a single conditional write.
+
+No separate lock or recovery step is involved, so a record that another invocation has since completed is never overwritten.
 
 <center>
 ```mermaid
 graph TD;
-    A(Existing orphan record in cache)-->A1;
-    A1[Two Lambda invoke at same time]-->B1[Lambda handler1];
-    B1-->B2[Fetch from Cache];
-    B2-->B3[Handler1 got orphan record];
-    B3-->B4[Handler1 acquired lock];
-    B4-->B5[Handler1 overwrite orphan record]
-    B5-->B6[Handler1 continue to execution];
-    A1-->C1[Lambda handler2];
-    C1-->C2[Fetch from Cache];
-    C2-->C3[Handler2 got orphan record];
-    C3-->C4[Handler2 failed to acquire lock];
-    C4-->C5[Handler2 wait and fetch from Cache];
-    C5-->C6[Handler2 return without executing];
-    B6-->D(Lambda handler executed only once);
-    C6-->D;
+    A(Invocation 1 sets the record if absent, TTL = remaining time)-->B[Invocation 1 times out];
+    B-->C[Cache removes the record at the deadline];
+    C-->D[Invocation 2 sets the record if absent];
+    D-->E(Handler executed once);
 ```
-<i>Race condition with Cache</i>
+<i>Timed out invocations with Cache</i>
 </center>
 
 ### Persistence layers

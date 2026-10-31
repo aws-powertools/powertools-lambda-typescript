@@ -26,6 +26,7 @@ import {
   HttpStatusText,
   HttpVerbs,
   MULTI_VALUE_HEADERS_ALLOWLIST,
+  SET_COOKIE_SEPARATOR_REGEX,
 } from './constants.js';
 import { InvalidEventError, InvalidHttpMethodError } from './errors.js';
 import type { Router } from './Router.js';
@@ -248,6 +249,19 @@ const proxyEventToWebRequest = (
 };
 
 /**
+ * Gets the cookies from Web API Headers, one per `Set-Cookie` value.
+ *
+ * A value that joins several cookies with commas is split where a comma starts another cookie,
+ * while the comma in an `Expires` date stays part of its cookie.
+ *
+ * @param webHeaders - The Web API Headers object
+ */
+const getSetCookies = (webHeaders: Headers): string[] =>
+  webHeaders
+    .getSetCookie()
+    .flatMap((value) => value.split(SET_COOKIE_SEPARATOR_REGEX));
+
+/**
  * Converts Web API Headers to API Gateway V1 headers format.
  * Splits multi-value headers by comma or semicolon and organizes them into separate objects.
  *
@@ -258,11 +272,7 @@ const webHeadersToApiGatewayV1Headers = (webHeaders: Headers) => {
   const headers: Record<string, string> = {};
   const multiValueHeaders: Record<string, Array<string>> = {};
 
-  const cookies = webHeaders.getSetCookie();
-  const allCookies: string[] = [];
-  for (const cookie of cookies) {
-    allCookies.push(...cookie.split(',').map((v) => v.trimStart()));
-  }
+  const allCookies = getSetCookies(webHeaders);
 
   if (allCookies.length > 1) {
     multiValueHeaders['set-cookie'] = allCookies;
@@ -386,15 +396,13 @@ const webResponseToProxyResultV2 = async (
   isBase64Encoded?: boolean
 ): Promise<APIGatewayProxyStructuredResultV2> => {
   const headers: Record<string, string> = {};
-  const cookies: string[] = [];
 
   for (const [key, value] of response.headers.entries()) {
-    if (key.toLowerCase() === 'set-cookie') {
-      cookies.push(...value.split(',').map((v) => v.trimStart()));
-    } else {
+    if (key !== 'set-cookie') {
       headers[key] = value;
     }
   }
+  const cookies = getSetCookies(response.headers);
 
   const body = isBase64Encoded
     ? await responseBodyToBase64(response)
@@ -415,19 +423,84 @@ const webResponseToProxyResultV2 = async (
 };
 
 /**
+ * Converts Web API Headers to the ALB field that the target group reads.
+ *
+ * ALB reads only `multiValueHeaders` when the target group has multi-value headers enabled,
+ * and only `headers` otherwise, so every header goes in that one field with its value unchanged.
+ * Without multi-value headers ALB can return a single cookie only, so more than one cookie is
+ * kept in `multiValueHeaders` as before.
+ *
+ * @param webHeaders - The Web API Headers object
+ * @param multiValueHeaders - Whether the target group has multi-value headers enabled
+ */
+const webHeadersToALBHeaders = (
+  webHeaders: Headers,
+  multiValueHeaders: boolean
+): Pick<ALBResult, 'headers' | 'multiValueHeaders'> => {
+  const cookies = getSetCookies(webHeaders);
+
+  if (multiValueHeaders) {
+    const values: Record<string, Array<string>> = {};
+    for (const [key, value] of webHeaders.entries()) {
+      if (key !== 'set-cookie') {
+        values[key] = [value];
+      }
+    }
+    if (cookies.length > 0) {
+      values['set-cookie'] = cookies;
+    }
+    return { multiValueHeaders: values };
+  }
+
+  const headers: Record<string, string> = {};
+  for (const [key, value] of webHeaders.entries()) {
+    if (key !== 'set-cookie') {
+      headers[key] = value;
+    }
+  }
+  if (cookies.length === 1) {
+    headers['set-cookie'] = cookies[0];
+  } else if (cookies.length > 1) {
+    return { headers, multiValueHeaders: { 'set-cookie': cookies } };
+  }
+  return { headers };
+};
+
+/**
+ * Converts Web API Headers to ALB fields by splitting them as for API Gateway REST.
+ *
+ * Kept for callers of {@link webResponseToProxyResult | `webResponseToProxyResult`} that don't
+ * say whether the target group has multi-value headers enabled.
+ *
+ * @param webHeaders - The Web API Headers object
+ */
+const webHeadersToSplitALBHeaders = (
+  webHeaders: Headers
+): Pick<ALBResult, 'headers' | 'multiValueHeaders'> => {
+  const { headers, multiValueHeaders } =
+    webHeadersToApiGatewayV1Headers(webHeaders);
+  return Object.keys(multiValueHeaders).length > 0
+    ? { headers, multiValueHeaders }
+    : { headers };
+};
+
+/**
  * Converts a Web API Response object to an ALB result.
  *
  * @param response - The Web API Response object
  * @param isBase64Encoded - Whether the response body should be base64 encoded (e.g., for binary or compressed content)
+ * @param multiValueHeaders - Whether the target group has multi-value headers enabled; when omitted, headers are split as for API Gateway REST
  * @returns An ALB result
  */
 const webResponseToALBResult = async (
   response: Response,
-  isBase64Encoded?: boolean
+  isBase64Encoded?: boolean,
+  multiValueHeaders?: boolean
 ): Promise<ALBResult> => {
-  const { headers, multiValueHeaders } = webHeadersToApiGatewayV1Headers(
-    response.headers
-  );
+  const albHeaders =
+    multiValueHeaders === undefined
+      ? webHeadersToSplitALBHeaders(response.headers)
+      : webHeadersToALBHeaders(response.headers, multiValueHeaders);
 
   const body = isBase64Encoded
     ? await responseBodyToBase64(response)
@@ -435,19 +508,13 @@ const webResponseToALBResult = async (
 
   const statusText = response.statusText || HttpStatusText[response.status];
 
-  const result: ALBResult = {
+  return {
     statusCode: response.status,
     statusDescription: `${response.status} ${statusText}`,
-    headers,
+    ...albHeaders,
     body,
     isBase64Encoded,
   };
-
-  if (Object.keys(multiValueHeaders).length > 0) {
-    result.multiValueHeaders = multiValueHeaders;
-  }
-
-  return result;
 };
 
 const webResponseToProxyResult = <T extends ResponseType>(
@@ -462,9 +529,11 @@ const webResponseToProxyResult = <T extends ResponseType>(
     >;
   }
   if (responseType === 'ALB') {
-    return webResponseToALBResult(response, isBase64Encoded) as Promise<
-      ResponseTypeMap[T]
-    >;
+    return webResponseToALBResult(
+      response,
+      isBase64Encoded,
+      options?.multiValueHeaders
+    ) as Promise<ResponseTypeMap[T]>;
   }
   return webResponseToProxyResultV2(response, isBase64Encoded) as Promise<
     ResponseTypeMap[T]

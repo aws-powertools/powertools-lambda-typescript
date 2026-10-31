@@ -34,6 +34,7 @@ const PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS: Record<
   inProgressExpiryAttr: 'in_progress_expiration',
   dataAttr: 'data',
   validationKeyAttr: 'validation',
+  ownerAttr: 'owner',
 } as const;
 
 export {

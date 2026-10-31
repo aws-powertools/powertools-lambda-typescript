@@ -258,7 +258,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    * @param remainingTimeInMillis - the remaining time left in the lambda execution context
-   * @param options - operation options; when `options.identity` is provided it is used instead of hashing `data` again, see {@link BasePersistenceLayer.getRecordIdentity | `getRecordIdentity()`}
+   * @param options - operation options; when `options.identity` is provided it is used instead of hashing `data` again, see {@link BasePersistenceLayer.getRecordIdentity | `getRecordIdentity()`}; when `options.owner` is provided it is stored with the record
    */
   public async saveInProgress(
     data: JSONValue,
@@ -272,12 +272,15 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
       status: IdempotencyRecordStatus.INPROGRESS,
       expiryTimestamp: this.getExpiryTimestamp(),
       payloadHash,
+      owner: options?.owner,
     });
 
     if (remainingTimeInMillis) {
       idempotencyRecord.inProgressExpiryTimestamp =
         Date.now() + remainingTimeInMillis;
-    } else {
+    } else if (options?.owner === undefined) {
+      // Durable executions span several invocations, so their records have no
+      // in-progress expiry and are guarded by their owner instead.
       console.warn(
         'Could not determine remaining time left. Did you call registerLambdaContext on IdempotencyConfig?'
       );
@@ -300,7 +303,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
    *
    * @param data - the data payload that will be hashed to create the hash portion of the idempotency key
    * @param result - the result of the successfully completed function
-   * @param options - operation options; when `options.identity` is provided its key and payload hash are used instead of hashing `data` again, so the in-progress record is completed even if `data` was mutated after the identity was resolved by {@link BasePersistenceLayer.getRecordIdentity | `getRecordIdentity()`}
+   * @param options - operation options; when `options.identity` is provided its key and payload hash are used instead of hashing `data` again, so the in-progress record is completed even if `data` was mutated after the identity was resolved by {@link BasePersistenceLayer.getRecordIdentity | `getRecordIdentity()`}; when `options.owner` is provided it is kept on the completed record
    */
   public async saveSuccess(
     data: JSONValue,
@@ -315,6 +318,7 @@ abstract class BasePersistenceLayer implements BasePersistenceLayerInterface {
       expiryTimestamp: this.getExpiryTimestamp(),
       responseData: result,
       payloadHash,
+      owner: options?.owner,
     });
 
     await this._updateRecord(idempotencyRecord);

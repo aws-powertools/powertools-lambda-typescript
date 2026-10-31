@@ -139,6 +139,42 @@ describe('Class: CachePersistenceLayerTestClass', () => {
       persistenceLayerSpy.mockRestore();
     });
 
+    it.each([
+      { ownerAttr: undefined, storedAttr: 'owner' },
+      { ownerAttr: 'someOwnerAttr', storedAttr: 'someOwnerAttr' },
+    ])(
+      'puts the record in the cache with its owner under $storedAttr',
+      async ({ ownerAttr, storedAttr }) => {
+        // Prepare
+        const persistenceLayer = new CachePersistenceLayerTestClass({
+          client,
+          ownerAttr,
+        });
+        const expiryTimestamp = getFutureTimestamp(10);
+        const record = new IdempotencyRecord({
+          idempotencyKey: dummyKey,
+          status: IdempotencyRecordStatus.INPROGRESS,
+          expiryTimestamp,
+          owner: 'durable-execution-arn',
+        });
+        client.set.mockResolvedValue('OK');
+
+        // Act
+        await persistenceLayer._putRecord(record);
+
+        // Assess
+        expect(client.set).toHaveBeenCalledWith(
+          dummyKey,
+          JSON.stringify({
+            status: IdempotencyRecordStatus.INPROGRESS,
+            expiration: expiryTimestamp,
+            [storedAttr]: 'durable-execution-arn',
+          }),
+          expect.any(Object)
+        );
+      }
+    );
+
     it('puts record in the cache with default expiry timestamp', async () => {
       // Prepare
       const status = IdempotencyRecordStatus.INPROGRESS;
@@ -409,6 +445,23 @@ describe('Class: CachePersistenceLayerTestClass', () => {
       expect(record.getResponse()).toEqual({ some: 'data' });
     });
 
+    it('gets the owner of the record from the cache', async () => {
+      // Prepare
+      client.get.mockResolvedValue(
+        JSON.stringify({
+          status: IdempotencyRecordStatus.INPROGRESS,
+          expiration: getFutureTimestamp(15),
+          owner: 'durable-execution-arn',
+        })
+      );
+
+      // Act
+      const record = await persistenceLayer._getRecord(dummyKey);
+
+      // Assess
+      expect(record.owner).toBe('durable-execution-arn');
+    });
+
     it('throws IdempotencyItemNotFoundError when record does not exist', async () => {
       // Prepare
       client.get.mockResolvedValue(null);
@@ -532,6 +585,33 @@ describe('Class: CachePersistenceLayerTestClass', () => {
         { EX: 15, expiry: { type: 'EX', count: 15 } }
       );
       persistenceLayerSpy.mockRestore();
+    });
+
+    it('keeps the owner when updating a record', async () => {
+      // Prepare
+      const record = new IdempotencyRecord({
+        idempotencyKey: dummyKey,
+        status: IdempotencyRecordStatus.COMPLETED,
+        expiryTimestamp: getFutureTimestamp(15),
+        responseData: { key: 'value' },
+        owner: 'durable-execution-arn',
+      });
+      client.set.mockResolvedValue('OK');
+
+      // Act
+      await persistenceLayer._updateRecord(record);
+
+      // Assess
+      expect(client.set).toHaveBeenCalledWith(
+        dummyKey,
+        JSON.stringify({
+          status: 'COMPLETED',
+          expiration: record.expiryTimestamp,
+          data: record.responseData,
+          owner: 'durable-execution-arn',
+        }),
+        { EX: 15, expiry: { type: 'EX', count: 15 } }
+      );
     });
   });
 });

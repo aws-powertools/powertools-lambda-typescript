@@ -121,8 +121,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
     if (idempotencyRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS) {
       if (
         idempotencyRecord.inProgressExpiryTimestamp &&
-        idempotencyRecord.inProgressExpiryTimestamp <
-          new Date().getUTCMilliseconds()
+        idempotencyRecord.inProgressExpiryTimestamp < Date.now()
       ) {
         throw new IdempotencyInconsistentStateError(
           'Item is in progress but the in progress expiry timestamp has expired.'

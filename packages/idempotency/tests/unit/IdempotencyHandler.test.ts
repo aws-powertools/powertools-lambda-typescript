@@ -94,7 +94,7 @@ describe('Class IdempotencyHandler', () => {
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
         expiryTimestamp: Date.now() + 1000, // should be in the future
-        inProgressExpiryTimestamp: new Date().getUTCMilliseconds() - 1000, // should be in the past
+        inProgressExpiryTimestamp: Date.now() - 1000, // should be in the past
         responseData: { responseData: 'responseData' },
         payloadHash: 'payloadHash',
         status: IdempotencyRecordStatus.INPROGRESS,
@@ -113,7 +113,7 @@ describe('Class IdempotencyHandler', () => {
       // Prepare
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
-        expiryTimestamp: new Date().getUTCMilliseconds() - 1000, // should be in the past
+        expiryTimestamp: Date.now() / 1000 - 1, // should be in the past (in seconds)
         inProgressExpiryTimestamp: 0, // less than current time in milliseconds
         responseData: { responseData: 'responseData' },
         payloadHash: 'payloadHash',
@@ -219,6 +219,34 @@ describe('Class IdempotencyHandler', () => {
       await expect(idempotentHandler.handle()).resolves.toEqual('Hi');
       expect(saveInProgressSpy).toHaveBeenCalledTimes(1);
       expect(getRecordSpy).toHaveBeenCalledTimes(0);
+    });
+
+    it('retries and runs the function when the in-progress record has an expired deadline', async () => {
+      // Prepare
+      const saveInProgressSpy = vi
+        .spyOn(persistenceStore, 'saveInProgress')
+        .mockRejectedValueOnce(
+          new IdempotencyItemAlreadyExistsError(
+            'Failed to put record for already existing idempotency key: idempotencyKey',
+            new IdempotencyRecord({
+              idempotencyKey: 'idempotencyKey',
+              status: IdempotencyRecordStatus.INPROGRESS,
+              expiryTimestamp: Date.now() / 1000 + 3600,
+              inProgressExpiryTimestamp: Date.now() - 1000,
+            })
+          )
+        )
+        .mockResolvedValueOnce();
+      vi.spyOn(persistenceStore, 'saveSuccess').mockResolvedValueOnce();
+      mockFunctionToMakeIdempotent.mockResolvedValueOnce('result');
+
+      // Act
+      const result = await idempotentHandler.handle();
+
+      // Assess
+      expect(result).toBe('result');
+      expect(saveInProgressSpy).toHaveBeenCalledTimes(2);
+      expect(mockFunctionToMakeIdempotent).toHaveBeenCalledTimes(1);
     });
 
     it('retries until max retries are exhausted when IdempotencyInconsistentStateError is thrown', async () => {

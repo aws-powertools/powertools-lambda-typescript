@@ -281,7 +281,7 @@ describe('Function: makeIdempotent', () => {
         'Record exists',
         new IdempotencyRecord({
           idempotencyKey: 'idempotencyKey',
-          expiryTimestamp: Date.now() + 10000,
+          expiryTimestamp: Date.now() / 1000 + 10,
           inProgressExpiryTimestamp: 0,
           payloadHash: 'payloadHash',
           status: IdempotencyRecordStatus.COMPLETED,
@@ -320,7 +320,7 @@ describe('Function: makeIdempotent', () => {
         'Record exists',
         new IdempotencyRecord({
           idempotencyKey: 'idempotencyKey',
-          expiryTimestamp: Date.now() + 10000,
+          expiryTimestamp: Date.now() / 1000 + 10,
           inProgressExpiryTimestamp: Date.now() + 10000,
           payloadHash: 'payloadHash',
           status: IdempotencyRecordStatus.INPROGRESS,
@@ -348,7 +348,7 @@ describe('Function: makeIdempotent', () => {
         'Record exists',
         new IdempotencyRecord({
           idempotencyKey: 'idempotencyKey',
-          expiryTimestamp: Date.now() + 10000,
+          expiryTimestamp: Date.now() / 1000 + 10,
           inProgressExpiryTimestamp: Date.now() + 10000,
           payloadHash: 'payloadHash',
           status: IdempotencyRecordStatus.INPROGRESS,
@@ -381,7 +381,7 @@ describe('Function: makeIdempotent', () => {
         'Record exists',
         new IdempotencyRecord({
           idempotencyKey: 'idempotencyKey',
-          expiryTimestamp: Date.now() + 10000,
+          expiryTimestamp: Date.now() / 1000 + 10,
           inProgressExpiryTimestamp: 0,
           responseData: { response: false },
           payloadHash: 'differentPayloadHash',
@@ -463,7 +463,7 @@ describe('Function: makeIdempotent', () => {
       ).mockRejectedValue(new IdempotencyItemAlreadyExistsError());
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
-        expiryTimestamp: Date.now() + 10000,
+        expiryTimestamp: Date.now() / 1000 + 10,
         inProgressExpiryTimestamp: 0,
         responseData: { response: false },
         payloadHash: 'payloadHash',
@@ -504,7 +504,7 @@ describe('Function: makeIdempotent', () => {
       ).mockRejectedValue(new IdempotencyItemAlreadyExistsError());
       const stubRecordInconsistent = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
-        expiryTimestamp: Date.now() + 10000,
+        expiryTimestamp: Date.now() / 1000 + 10,
         inProgressExpiryTimestamp: 0,
         responseData: { response: false },
         payloadHash: 'payloadHash',
@@ -512,7 +512,7 @@ describe('Function: makeIdempotent', () => {
       });
       const stubRecord = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
-        expiryTimestamp: Date.now() + 10000,
+        expiryTimestamp: Date.now() / 1000 + 10,
         inProgressExpiryTimestamp: 0,
         responseData: { response: false },
         payloadHash: 'payloadHash',
@@ -553,7 +553,7 @@ describe('Function: makeIdempotent', () => {
       ).mockRejectedValue(new IdempotencyItemAlreadyExistsError());
       const stubRecordInconsistent = new IdempotencyRecord({
         idempotencyKey: 'idempotencyKey',
-        expiryTimestamp: Date.now() + 10000,
+        expiryTimestamp: Date.now() / 1000 + 10,
         inProgressExpiryTimestamp: 0,
         responseData: { response: false },
         payloadHash: 'payloadHash',
@@ -879,7 +879,7 @@ describe('Function: makeIdempotent', () => {
     });
     const stubRecordInconsistent = new IdempotencyRecord({
       idempotencyKey: 'idempotencyKey',
-      expiryTimestamp: Date.now() + 10000,
+      expiryTimestamp: Date.now() / 1000 + 10,
       inProgressExpiryTimestamp: 0,
       responseData: { response: false },
       payloadHash: 'payloadHash',

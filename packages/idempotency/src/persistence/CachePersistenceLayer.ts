@@ -80,6 +80,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   readonly #dataAttr: string;
   readonly #expiryAttr: string;
   readonly #inProgressExpiryAttr: string;
+  readonly #ownerAttr: string;
   readonly #statusAttr: string;
   readonly #validationKeyAttr: string;
   readonly #orphanLockTimeout: number;
@@ -99,6 +100,8 @@ class CachePersistenceLayer extends BasePersistenceLayer {
     this.#validationKeyAttr =
       options.validationKeyAttr ??
       PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.validationKeyAttr;
+    this.#ownerAttr =
+      options.ownerAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.ownerAttr;
     this.#orphanLockTimeout = Math.min(10, this.expiresAfterSeconds);
     this.#client = options.client;
   }
@@ -150,6 +153,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
           | undefined,
         responseData: item[this.#dataAttr],
         payloadHash: item[this.#validationKeyAttr] as string | undefined,
+        owner: item[this.#ownerAttr] as string | undefined,
       });
     } catch (error) {
       throw new IdempotencyPersistenceConsistencyError(
@@ -184,6 +188,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
       [this.#expiryAttr]: record.expiryTimestamp,
       [this.#inProgressExpiryAttr]: record.inProgressExpiryTimestamp,
       [this.#dataAttr]: record.responseData,
+      [this.#ownerAttr]: record.owner,
     };
 
     if (this.isPayloadValidationEnabled() && record.payloadHash !== undefined) {

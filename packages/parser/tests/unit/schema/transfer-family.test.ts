@@ -32,4 +32,29 @@ describe('Schema: TransferFamily', () => {
     // Act & Assess
     expect(() => TransferFamilySchema.parse(invalidEvent)).toThrow();
   });
+
+  it('parses an event without a password (SSH public key authentication)', () => {
+    // Prepare
+    const { password: _, ...event } = structuredClone(baseEvent);
+
+    // Act
+    const result = TransferFamilySchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
+
+  it('parses an event with an IPv6 source IP', () => {
+    // Prepare
+    const event = {
+      ...structuredClone(baseEvent),
+      sourceIp: '2001:db8::1',
+    };
+
+    // Act
+    const result = TransferFamilySchema.parse(event);
+
+    // Assess
+    expect(result).toStrictEqual(event);
+  });
 });

@@ -12,6 +12,7 @@ import {
 import type { HttpMethod, RouteHandler } from '../../../../src/types/http.js';
 import {
   createTestALBEvent,
+  createTestALBMultiValueEvent,
   createTestEvent,
   createTestEventV2,
 } from '../helpers.js';
@@ -73,6 +74,55 @@ describe.each([
       'x-source': 'handler',
       'x-context': 'preserved',
     });
+  });
+
+  it('keeps a cookie with an Expires date as one cookie', async () => {
+    // Prepare
+    const app = new Router();
+    const cookie = 'a=1; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Path=/';
+    app.get('/login', () => ({
+      statusCode: 200,
+      body: 'ok',
+      cookies: [cookie],
+    }));
+
+    // Act
+    const result = await app.resolve(createEvent('/login', 'GET'), context);
+
+    // Assess
+    expect(result).toMatchObject(
+      version === 'V2'
+        ? { cookies: [cookie] }
+        : { headers: { 'set-cookie': cookie } }
+    );
+    expect(result).not.toHaveProperty('multiValueHeaders');
+  });
+
+  it('splits cookies joined with a comma in one Set-Cookie header', async () => {
+    // Prepare
+    const app = new Router();
+    app.get('/login', () => ({
+      statusCode: 200,
+      body: 'ok',
+      headers: {
+        'set-cookie':
+          'a=1; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Path=/, b=2; Path=/',
+      },
+    }));
+
+    // Act
+    const result = await app.resolve(createEvent('/login', 'GET'), context);
+
+    // Assess
+    const cookies = [
+      'a=1; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Path=/',
+      'b=2; Path=/',
+    ];
+    expect(result).toMatchObject(
+      version === 'V2'
+        ? { cookies }
+        : { multiValueHeaders: { 'set-cookie': cookies } }
+    );
   });
 
   it.each([200, 204, 205, 304])(
@@ -519,7 +569,7 @@ describe('Class: Router - ALB Support', () => {
     });
   });
 
-  it('handles ALB event with multiValueHeaders', async () => {
+  it('keeps comma-joined headers in headers for an ALB event without multiValueHeaders', async () => {
     // Prepare
     const app = new Router();
     app.get('/test', () => ({
@@ -543,9 +593,90 @@ describe('Class: Router - ALB Support', () => {
       statusCode: 200,
       statusDescription: '200 OK',
       body: JSON.stringify({ message: 'success' }),
+      headers: {
+        'content-type': 'application/json',
+        'cache-control': 'no-cache, no-store',
+      },
+      multiValueHeaders: {
+        'set-cookie': ['session=abc123; Max-Age=3600', 'theme=dark'],
+      },
+      isBase64Encoded: false,
+    });
+  });
+
+  it('keeps comma-list headers in headers for an ALB event without multiValueHeaders', async () => {
+    // Prepare
+    const app = new Router();
+    app.get('/test', () => ({
+      statusCode: 200,
+      body: 'ok',
+      headers: { 'cache-control': 'no-store, private' },
+    }));
+
+    // Act
+    const result = await app.resolve(
+      createTestALBEvent('/test', 'GET'),
+      context
+    );
+
+    // Assess
+    expect(result.headers).toEqual({
+      'content-type': 'application/json',
+      'cache-control': 'no-store, private',
+    });
+    expect(result).not.toHaveProperty('multiValueHeaders');
+  });
+
+  it('returns comma-list headers in multiValueHeaders for an ALB event with multiValueHeaders', async () => {
+    // Prepare
+    const app = new Router();
+    app.get('/test', () => ({
+      statusCode: 200,
+      body: 'ok',
+      headers: { 'cache-control': 'no-store, private' },
+    }));
+
+    // Act
+    const result = await app.resolve(
+      createTestALBMultiValueEvent('/test', 'GET'),
+      context
+    );
+
+    // Assess
+    expect(result.multiValueHeaders).toEqual({
+      'content-type': ['application/json'],
+      'cache-control': ['no-store, private'],
+    });
+    expect(result).not.toHaveProperty('headers');
+  });
+
+  it('returns every header in multiValueHeaders for an ALB event with multiValueHeaders', async () => {
+    // Prepare
+    const app = new Router();
+    app.get('/test', () => ({
+      statusCode: 200,
+      body: JSON.stringify({ message: 'success' }),
       headers: { 'content-type': 'application/json' },
       multiValueHeaders: {
         'cache-control': ['no-cache', 'no-store'],
+        'set-cookie': ['session=abc123; Max-Age=3600', 'theme=dark'],
+      },
+    }));
+
+    // Act
+    const result = await app.resolve(
+      createTestALBMultiValueEvent('/test', 'GET'),
+      context
+    );
+
+    // Assess
+    expect(result).toEqual({
+      statusCode: 200,
+      statusDescription: '200 OK',
+      body: JSON.stringify({ message: 'success' }),
+      multiValueHeaders: {
+        'content-type': ['application/json'],
+        'cache-control': ['no-cache, no-store'],
         'set-cookie': ['session=abc123; Max-Age=3600', 'theme=dark'],
       },
       isBase64Encoded: false,

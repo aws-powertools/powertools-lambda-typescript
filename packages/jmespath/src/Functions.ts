@@ -18,6 +18,28 @@ import type {
 import { arityCheck, typeCheck } from './utils.js';
 
 /**
+ * Compares strings lexicographically by Unicode code point without normalization.
+ *
+ * @param left - The first string to compare
+ * @param right - The second string to compare
+ * @internal
+ */
+const compareStrings = (left: string, right: string): number => {
+  let index = 0;
+  while (index < left.length && index < right.length) {
+    // The bounds above ensure both code points exist at this index.
+    const leftCodePoint = left.codePointAt(index) as number;
+    const rightCodePoint = right.codePointAt(index) as number;
+    if (leftCodePoint !== rightCodePoint) {
+      return leftCodePoint - rightCodePoint;
+    }
+    index += leftCodePoint > 0xffff ? 2 : 1;
+  }
+
+  return left.length - right.length;
+};
+
+/**
  * A class that contains the built-in JMESPath functions.
  *
  * The built-in functions are implemented as methods on the Functions class.
@@ -160,7 +182,7 @@ class Functions {
     if (isRecord(arg)) {
       return Object.keys(arg).length;
     }
-    return arg.length;
+    return typeof arg === 'string' ? [...arg].length : arg.length;
   }
 
   /**
@@ -198,7 +220,9 @@ class Functions {
       return Math.max(...(arg as number[]));
     }
     // Math.max doesn't work with strings (returns NaN), so we use reduce for lexicographic comparison
-    return arg.reduce((a, b) => (a > b ? a : b));
+    return (arg as string[]).reduce((a, b) =>
+      compareStrings(a, b) > 0 ? a : b
+    );
   }
 
   /**
@@ -236,6 +260,12 @@ class Functions {
       if (max.visited === current.visited) {
         return max;
       }
+      if (
+        typeof max.visited === 'string' &&
+        typeof current.visited === 'string'
+      ) {
+        return compareStrings(max.visited, current.visited) > 0 ? max : current;
+      }
       // We can safely cast visited to number | string here because we've already
       // checked the type at runtime above and we know that it's either a number or a string
       return (max.visited as number | string) >
@@ -271,16 +301,18 @@ class Functions {
   @Functions.signature({
     argumentsSpecs: [['array-number', 'array-string']],
   })
-  public funcMin(arg: Array<number>): number | string | null {
+  public funcMin(arg: Array<number | string>): number | string | null {
     if (arg.length === 0) {
       return null;
       // The signature decorator already enforces that all elements are of the same type
     }
     if (isNumber(arg[0])) {
-      return Math.min(...arg);
+      return Math.min(...(arg as number[]));
     }
     // Math.min doesn't work with strings (returns NaN), so we use reduce for lexicographic comparison
-    return arg.reduce((a, b) => (a < b ? a : b));
+    return (arg as string[]).reduce((a, b) =>
+      compareStrings(a, b) < 0 ? a : b
+    );
   }
 
   /**
@@ -318,6 +350,12 @@ class Functions {
       if (min.visited === current.visited) {
         return min;
       }
+      if (
+        typeof min.visited === 'string' &&
+        typeof current.visited === 'string'
+      ) {
+        return compareStrings(min.visited, current.visited) < 0 ? min : current;
+      }
       // We can safely cast visited to number | string here because we've already
       // checked the type at runtime above and we know that it's either a number or a string
       return (min.visited as string | number) <
@@ -352,9 +390,7 @@ class Functions {
     argumentsSpecs: [['string', 'array']],
   })
   public funcReverse(arg: string | Array<unknown>): string | Array<unknown> {
-    return Array.isArray(arg)
-      ? arg.toReversed()
-      : arg.split('').reverse().join('');
+    return Array.isArray(arg) ? arg.toReversed() : [...arg].reverse().join('');
   }
 
   /**
@@ -370,7 +406,7 @@ class Functions {
       if (typeof a === 'string') {
         // We can safely cast a and b to string here because the signature decorator
         // already enforces that all elements are of the same type
-        return a.localeCompare(b as string);
+        return compareStrings(a, b as string);
       }
 
       // We can safely cast a and b to number here because the signature decorator
@@ -414,6 +450,9 @@ class Functions {
       .sort((a, b) => {
         if (a.visited === b.visited) {
           return a.index - b.index; // Make the sort stable
+        }
+        if (typeof a.visited === 'string' && typeof b.visited === 'string') {
+          return compareStrings(a.visited, b.visited);
         }
         // We can safely cast visited to number | string here because we've already
         // checked the type at runtime above and we know that it's either a number or a string

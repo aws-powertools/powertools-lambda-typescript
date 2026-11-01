@@ -2,6 +2,14 @@ import { z } from 'zod';
 import type { KafkaMskEvent, KafkaSelfManagedEvent } from '../types/schema.js';
 
 /**
+ * Zod schema for the schema registry metadata of a Kafka record key or value.
+ */
+const KafkaSchemaMetadataSchema = z.object({
+  dataFormat: z.string(),
+  schemaId: z.string().optional(),
+});
+
+/**
  * Zod schema for a Kafka record from an Kafka event.
  */
 const KafkaRecordSchema = z.object({
@@ -29,6 +37,8 @@ const KafkaRecordSchema = z.object({
       })
     )
   ),
+  keySchemaMetadata: KafkaSchemaMetadataSchema.optional(),
+  valueSchemaMetadata: KafkaSchemaMetadataSchema.optional(),
 });
 
 const KafkaBaseEventSchema = z.object({

@@ -164,4 +164,72 @@ describe('Schema: Kafka', () => {
       },
     });
   });
+
+  it.each([
+    { eventSource: 'aws:kafka', schema: KafkaMskEventSchema },
+    { eventSource: 'SelfManagedKafka', schema: KafkaSelfManagedEventSchema },
+  ])(
+    'preserves the key and value schema metadata ($eventSource)',
+    ({ eventSource, schema }) => {
+      // Prepare
+      const event = { ...structuredClone(rawEvent), eventSource };
+      event.records['mytopic-0'][0].keySchemaMetadata = {
+        dataFormat: 'AVRO',
+        schemaId: '5678',
+      };
+      event.records['mytopic-0'][0].valueSchemaMetadata = {
+        dataFormat: 'AVRO',
+        schemaId: 'a1b2c3d4-5678-90ab-cdef-EXAMPLE11111',
+      };
+
+      // Act
+      const result = schema.parse(event);
+
+      // Assess
+      expect(result.records['mytopic-0'][0]).toEqual(
+        expect.objectContaining({
+          keySchemaMetadata: { dataFormat: 'AVRO', schemaId: '5678' },
+          valueSchemaMetadata: {
+            dataFormat: 'AVRO',
+            schemaId: 'a1b2c3d4-5678-90ab-cdef-EXAMPLE11111',
+          },
+        })
+      );
+    }
+  );
+
+  it('parses schema metadata without a schemaId', () => {
+    // Prepare
+    const event = structuredClone(rawEvent);
+    event.records['mytopic-0'][0].valueSchemaMetadata = {
+      dataFormat: 'PROTOBUF',
+    };
+
+    // Act
+    const result = KafkaMskEventSchema.parse(event);
+
+    // Assess
+    expect(result.records['mytopic-0'][0].valueSchemaMetadata).toStrictEqual({
+      dataFormat: 'PROTOBUF',
+    });
+  });
+
+  it('returns an issue when the schema metadata has no dataFormat', () => {
+    // Prepare
+    const event = structuredClone(rawEvent);
+    (
+      event.records['mytopic-0'][0] as Record<string, unknown>
+    ).valueSchemaMetadata = { schemaId: '1234' };
+
+    // Act
+    const result = KafkaMskEventSchema.safeParse(event);
+
+    // Assess
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toEqual([
+      expect.objectContaining({
+        path: ['records', 'mytopic-0', 0, 'valueSchemaMetadata', 'dataFormat'],
+      }),
+    ]);
+  });
 });

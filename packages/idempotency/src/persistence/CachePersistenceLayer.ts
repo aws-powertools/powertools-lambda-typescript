@@ -82,7 +82,6 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   readonly #inProgressExpiryAttr: string;
   readonly #statusAttr: string;
   readonly #validationKeyAttr: string;
-  readonly #orphanLockTimeout: number;
 
   public constructor(options: CachePersistenceOptions) {
     super();
@@ -99,7 +98,6 @@ class CachePersistenceLayer extends BasePersistenceLayer {
     this.#validationKeyAttr =
       options.validationKeyAttr ??
       PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.validationKeyAttr;
-    this.#orphanLockTimeout = Math.min(10, this.expiresAfterSeconds);
     this.#client = options.client;
   }
 
@@ -160,13 +158,11 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   }
 
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {
-    const encodedItem = this.#encodeRecord(record);
-    const ttl = this.#getExpirySeconds(record.expiryTimestamp);
-    // Need to set ttl again, if we don't set the expiry here the record will not have a ttl
+    // The TTL must be set again: a plain SET would drop the existing one.
     await this.#client.set(
       record.idempotencyKey,
-      encodedItem,
-      this.#getSetOptions(ttl)
+      this.#encodeRecord(record),
+      this.#getSetOptions(this.#getExpiryMillis(record.expiryTimestamp))
     );
   }
 
@@ -196,129 +192,58 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   /**
    * Put a record in the persistence store with a status of "INPROGRESS".
    *
-   * The method guards against concurrent execution by using conditional write operations.
+   * The record is written only if the key is absent. Its TTL ends at the execution
+   * deadline when one is known, so the record of an invocation that timed out is
+   * removed by the cache and the key can be acquired again by a single conditional
+   * write. A record that is still present is handed to the caller, which decides
+   * from its status whether to return the stored result or reject the request.
+   *
+   * @param record - The in-progress record to write
+   * @param isRetry - Whether this is the retry after the existing record disappeared
    */
-  async #putInProgressRecord(record: IdempotencyRecord): Promise<void> {
-    const encodedItem = this.#encodeRecord(record);
-    const ttl = this.#getExpirySeconds(record.expiryTimestamp);
-
-    try {
-      /**
-       * |     LOCKED     |         RETRY if status = "INPROGRESS"                |     RETRY
-       * |----------------|-------------------------------------------------------|-------------> .... (time)
-       * |             Lambda                                              Idempotency Record
-       * |             Timeout                                                 Timeout
-       * |       (in_progress_expiry)                                          (expiry)
-       *
-       * Conditions to successfully save a record:
-       *
-       * The idempotency key does not exist:
-       *   - first time that this invocation key is used
-       *   - previous invocation with the same key was deleted due to TTL
-       *   - SET see {@link https://valkey.io/commands/set/ | Valkey SET command}
-       */
-      const response = await this.#client.set(
-        record.idempotencyKey,
-        encodedItem,
-        this.#getSetIfNotExistsOptions(ttl)
-      );
-
-      /**
-       * If response is not `null`, the SET operation was successful and the idempotency key was not
-       * previously set. This indicates that we can safely proceed to the handler execution phase.
-       * Most invocations should successfully proceed past this point.
-       */
-      if (response !== null) {
-        return;
-      }
-
-      /**
-       * If response is `null`, it indicates an existing record in the cache for the given idempotency key.
-       *
-       * This could be due to:
-       *   - An active idempotency record from a previous invocation that has not yet expired.
-       *   - An orphan record where a previous invocation has timed out.
-       *   - An expired idempotency record that has not been deleted yet.
-       *
-       * In any case, we proceed to retrieve the record for further inspection.
-       */
-      const existingRecord = await this._getRecord(record.idempotencyKey);
-
-      /**
-       * If the status of the idempotency record is `COMPLETED` and the record has not expired
-       * then a valid completed record exists. We raise an error to prevent duplicate processing
-       * of a request that has already been completed successfully.
-       */
-      if (
-        existingRecord.getStatus() === IdempotencyRecordStatus.COMPLETED &&
-        !existingRecord.isExpired()
-      ) {
-        throw new IdempotencyItemAlreadyExistsError(
-          `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
-          existingRecord
-        );
-      }
-
-      /**
-       * If the idempotency record has a status of 'INPROGRESS' and its execution deadline is absent or
-       * still in the future, another process may still be handling the request. Without an execution
-       * deadline, the record remains active until its overall expiry, which getStatus() checks.
-       * Raise an error to prevent concurrent processing of the same request.
-       */
-      if (
-        existingRecord.getStatus() === IdempotencyRecordStatus.INPROGRESS &&
-        (existingRecord.inProgressExpiryTimestamp === undefined ||
-          existingRecord.inProgressExpiryTimestamp > Date.now())
-      ) {
-        throw new IdempotencyItemAlreadyExistsError(
-          `Failed to put record for in-progress idempotency key: ${record.idempotencyKey}`,
-          existingRecord
-        );
-      }
-
-      /**
-       * Reaching this point indicates that the idempotency record found is an orphan record. An orphan record is
-       * one that is neither completed nor in-progress within its expected time frame. It may result from a
-       * previous invocation that has timed out or an expired record that has yet to be cleaned up from the cache.
-       * We raise an error to handle this exceptional scenario appropriately.
-       */
-      throw new IdempotencyPersistenceConsistencyError(
-        'Orphaned record detected'
-      );
-    } catch (error) {
-      if (error instanceof IdempotencyPersistenceConsistencyError) {
-        /**
-         * Handle an orphan record by attempting to acquire a lock, which by default lasts for 10 seconds.
-         * The purpose of acquiring the lock is to prevent race conditions with other processes that might
-         * also be trying to handle the same orphan record. Once the lock is acquired, we set a new value
-         * for the idempotency record in the cache with the appropriate time-to-live (TTL).
-         */
-        await this.#acquireLock(record.idempotencyKey);
-
-        await this.#client.set(
-          record.idempotencyKey,
-          encodedItem,
-          this.#getSetOptions(ttl)
-        );
-      } else {
-        throw error;
-      }
+  async #putInProgressRecord(
+    record: IdempotencyRecord,
+    isRetry = false
+  ): Promise<void> {
+    const response = await this.#client.set(
+      record.idempotencyKey,
+      this.#encodeRecord(record),
+      this.#getSetIfNotExistsOptions(this.#getInProgressExpiryMillis(record))
+    );
+    if (response !== null) {
+      return;
     }
+
+    let existingRecord: IdempotencyRecord;
+    try {
+      existingRecord = await this._getRecord(record.idempotencyKey);
+    } catch (error) {
+      // The existing record expired between the write and the read.
+      if (error instanceof IdempotencyItemNotFoundError && !isRetry) {
+        return this.#putInProgressRecord(record, true);
+      }
+      throw error;
+    }
+
+    throw new IdempotencyItemAlreadyExistsError(
+      `Failed to put record for already existing idempotency key: ${record.idempotencyKey}`,
+      existingRecord
+    );
   }
 
   /**
    * Builds the options for a `SET` command in the shapes of both supported clients.
    *
-   * `@redis/client` reads `EX` and `NX`, while `@valkey/valkey-glide` reads `expiry` and
+   * `@redis/client` reads `PX` and `NX`, while `@valkey/valkey-glide` reads `expiry` and
    * `conditionalSet`. Each client ignores the properties of the other, so passing only one shape
    * would silently write the key without a TTL on the other client.
    *
-   * @param ttl - The expiry time of the key in seconds
+   * @param ttl - The expiry time of the key in milliseconds
    */
   #getSetOptions(ttl: number): CacheClientSetOptions {
     return {
-      EX: ttl,
-      expiry: { type: 'EX', count: ttl },
+      PX: ttl,
+      expiry: { type: 'PX', count: ttl },
     };
   }
 
@@ -329,7 +254,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
    * On top of the expiry from {@link CachePersistenceLayer.#getSetOptions | `#getSetOptions()`},
    * `@redis/client` reads `NX` and `@valkey/valkey-glide` reads `conditionalSet`.
    *
-   * @param ttl - The expiry time of the key in seconds
+   * @param ttl - The expiry time of the key in milliseconds
    */
   #getSetIfNotExistsOptions(ttl: number): CacheClientSetOptions {
     return {
@@ -340,40 +265,33 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   }
 
   /**
-   * Calculates the number of seconds remaining until a specified expiry timestamp
+   * Calculates the milliseconds until a record's overall expiry, so that the key is
+   * removed when the record expires.
+   *
+   * @param expiryTimestamp - The overall expiry, in seconds since the epoch
    */
-  #getExpirySeconds(expiryTimestamp?: number): number {
+  #getExpiryMillis(expiryTimestamp?: number): number {
     if (expiryTimestamp) {
-      return expiryTimestamp - Math.floor(Date.now() / 1000);
+      return Math.max(1, expiryTimestamp * 1000 - Date.now());
     }
-    return this.expiresAfterSeconds;
+    return this.expiresAfterSeconds * 1000;
   }
 
   /**
-   * Attempt to acquire a lock for a specified resource name, with a default timeout.
-   * This method attempts to set a lock to prevent concurrent access to a resource
-   * identified by 'idempotencyKey'. It uses the 'NX' flag to ensure that the lock is only
-   * set if it does not already exist, thereby enforcing mutual exclusion.
+   * Calculates the milliseconds an in-progress record is kept: until its execution
+   * deadline, capped at the overall expiry. Without a deadline, the overall expiry applies.
    *
-   * @param idempotencyKey - The key to create a lock for
+   * @param record - The in-progress record
    */
-  async #acquireLock(idempotencyKey: string): Promise<void> {
-    const lockKey = `${idempotencyKey}:lock`;
-    const lockValue = 'true';
+  #getInProgressExpiryMillis(record: IdempotencyRecord): number {
+    const expiryMillis = this.#getExpiryMillis(record.expiryTimestamp);
+    if (record.inProgressExpiryTimestamp === undefined) {
+      return expiryMillis;
+    }
 
-    const acquired = await this.#client.set(
-      lockKey,
-      lockValue,
-      this.#getSetIfNotExistsOptions(this.#orphanLockTimeout)
-    );
-
-    if (acquired) return;
-    /** If the lock acquisition fails, it suggests a race condition has occurred. In this case, instead of
-     *  proceeding, we log the event and raise an error to indicate that the current operation should be
-     *  retried after the lock is released by the process that currently holds it.
-     */
-    throw new IdempotencyItemAlreadyExistsError(
-      'Lock acquisition failed, raise to retry'
+    return Math.max(
+      1,
+      Math.min(expiryMillis, record.inProgressExpiryTimestamp - Date.now())
     );
   }
 }

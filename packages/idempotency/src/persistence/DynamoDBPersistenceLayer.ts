@@ -55,6 +55,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
   private readonly expiryAttr: string;
   private readonly inProgressExpiryAttr: string;
   private readonly keyAttr: string;
+  private readonly ownerAttr: string;
   private readonly sortKeyAttr?: string;
   private readonly staticPkValue: string;
   private readonly statusAttr: string;
@@ -78,6 +79,8 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
     this.validationKeyAttr =
       config.validationKeyAttr ??
       PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.validationKeyAttr;
+    this.ownerAttr =
+      config.ownerAttr ?? PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS.ownerAttr;
     if (config.sortKeyAttr === this.keyAttr) {
       throw new Error(
         `keyAttr [${this.keyAttr}] and sortKeyAttr [${config.sortKeyAttr}] cannot be the same!`
@@ -135,6 +138,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
       inProgressExpiryTimestamp: item[this.inProgressExpiryAttr],
       responseData: item[this.dataAttr],
       payloadHash: item[this.validationKeyAttr],
+      owner: item[this.ownerAttr],
     });
   }
 
@@ -156,6 +160,12 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
     if (this.isPayloadValidationEnabled() && record.payloadHash !== undefined) {
       item[this.validationKeyAttr] = {
         S: record.payloadHash,
+      };
+    }
+
+    if (record.owner !== undefined) {
+      item[this.ownerAttr] = {
+        S: record.owner,
       };
     }
 
@@ -225,6 +235,7 @@ class DynamoDBPersistenceLayer extends BasePersistenceLayer {
             inProgressExpiryTimestamp: item[this.inProgressExpiryAttr],
             responseData: item[this.dataAttr],
             payloadHash: item[this.validationKeyAttr],
+            owner: item[this.ownerAttr],
           });
         throw new IdempotencyItemAlreadyExistsError(
           `Failed to put record for already existing idempotency key: ${record.idempotencyKey}${

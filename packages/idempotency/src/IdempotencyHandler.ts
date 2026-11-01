@@ -53,6 +53,13 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    */
   #recordIdentity?: IdempotencyRecordIdentity;
   /**
+   * The ARN of the durable execution being handled, if any.
+   *
+   * It is stored as the owner of the record, so that a later invocation of the same
+   * execution can tell its own record apart from the record of another execution.
+   */
+  #durableExecutionArn?: string;
+  /**
    * Reference to the function to be made idempotent.
    */
   readonly #functionToMakeIdempotent: AnyFunction;
@@ -187,9 +194,12 @@ export class IdempotencyHandler<Func extends AnyFunction> {
    */
   public async handle({
     isReplay,
+    durableExecutionArn,
   }: {
     isReplay?: boolean;
+    durableExecutionArn?: string;
   } = {}): Promise<ReturnType<Func>> {
+    this.#durableExecutionArn = durableExecutionArn;
     // early return if we should skip idempotency completely
     if (this.shouldSkipIdempotency()) {
       return await this.#functionToMakeIdempotent.apply(
@@ -403,8 +413,15 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       );
       await this.#persistenceStore.saveInProgress(
         this.#functionPayloadToBeHashed,
-        this.#idempotencyConfig.lambdaContext?.getRemainingTimeInMillis(),
-        { identity: this.#recordIdentity }
+        // A durable execution can be suspended past the end of this invocation,
+        // so the remaining time of the invocation is not its deadline.
+        this.#durableExecutionArn === undefined
+          ? this.#idempotencyConfig.lambdaContext?.getRemainingTimeInMillis()
+          : undefined,
+        {
+          identity: this.#recordIdentity,
+          owner: this.#durableExecutionArn,
+        }
       );
 
       return returnValue;
@@ -415,10 +432,6 @@ export class IdempotencyHandler<Func extends AnyFunction> {
           { cause: error }
         );
       if (error.name === 'IdempotencyItemAlreadyExistsError') {
-        if (isReplay) {
-          return returnValue;
-        }
-
         let idempotencyRecord = (error as IdempotencyItemAlreadyExistsError)
           .existingRecord;
         if (idempotencyRecord === undefined) {
@@ -438,6 +451,10 @@ export class IdempotencyHandler<Func extends AnyFunction> {
           );
         }
 
+        if (this.#isOwnInProgressRecord(idempotencyRecord, isReplay)) {
+          return returnValue;
+        }
+
         returnValue.isIdempotent = true;
         returnValue.result =
           this.determineResultFromIdempotencyRecord(idempotencyRecord);
@@ -449,6 +466,30 @@ export class IdempotencyHandler<Func extends AnyFunction> {
         { cause: error }
       );
     }
+  };
+
+  /**
+   * Whether an existing record is the in-progress record of the durable execution being
+   * handled, in which case the execution resumes the function instead of being rejected.
+   *
+   * A record without an owner was written by a version that did not store owners, so during
+   * a replay it is still treated as the record of the execution being replayed.
+   *
+   * @param idempotencyRecord The idempotency record stored in the persistence layer
+   * @param isReplay Whether the durable execution is replaying
+   */
+  readonly #isOwnInProgressRecord = (
+    idempotencyRecord: IdempotencyRecord,
+    isReplay?: boolean
+  ): boolean => {
+    if (idempotencyRecord.getStatus() !== IdempotencyRecordStatus.INPROGRESS) {
+      return false;
+    }
+    if (idempotencyRecord.owner === undefined) {
+      return isReplay === true;
+    }
+
+    return idempotencyRecord.owner === this.#durableExecutionArn;
   };
 
   /**
@@ -465,7 +506,7 @@ export class IdempotencyHandler<Func extends AnyFunction> {
       await this.#persistenceStore.saveSuccess(
         this.#functionPayloadToBeHashed,
         result,
-        { identity: this.#recordIdentity }
+        { identity: this.#recordIdentity, owner: this.#durableExecutionArn }
       );
     } catch (error) {
       throw new IdempotencyPersistenceLayerError(

@@ -37,6 +37,10 @@ class IdempotencyRecord {
    */
   public responseData?: JSONValue;
   /**
+   * The ARN of the durable execution that owns the record, only set for durable executions.
+   */
+  public owner?: string;
+  /**
    * The idempotency record status can be COMPLETED, IN_PROGRESS or EXPIRED.
    * We check the status during idempotency processing to make sure we don't process an expired record and handle concurrent requests.
    * {@link constants.IdempotencyRecordStatusValue | IdempotencyRecordStatusValue}
@@ -52,6 +56,7 @@ class IdempotencyRecord {
     this.payloadHash = config.payloadHash;
     this.status = config.status;
     this.sortKey = config.sortKey;
+    this.owner = config.owner;
   }
 
   /**

@@ -602,7 +602,9 @@ sequenceDiagram
 
 #### Timed out invocations with Cache
 
-An in progress record is stored with a TTL that ends at the execution deadline of the invocation that created it, rounded up to whole seconds and capped at the overall expiry. If that invocation times out, the cache removes the record, and the next invocation with the same payload acquires the key with a single conditional write.
+An in progress record is stored with a TTL that ends at the execution deadline of the invocation that created it, capped at the overall expiry. If that invocation times out, the cache removes the record, and the next invocation with the same payload acquires the key with a single conditional write.
+
+Records without an execution deadline, such as those of [durable functions](#durable-functions) or of functions that don't [register the Lambda context](#lambda-timeouts), keep the overall expiry.
 
 No separate lock or recovery step is involved, so a record that another invocation has since completed is never overwritten.
 

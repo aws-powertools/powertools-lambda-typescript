@@ -43,7 +43,7 @@
     "@aws-sdk/client-secrets-manager": "^3.1156.0",
     "@aws-sdk/client-ssm": "^3.1156.0",
     "@aws-sdk/util-dynamodb": "^3.996.9",
-    "@aws/durable-execution-sdk-js": "^2.7.1",
+    "@aws/durable-execution-sdk-js": "^3.0.0",
     "@middy/core": "^4.7.0",
     "@redis/client": "^6.3.0",
     "@valkey/valkey-glide": "^2.5.3",

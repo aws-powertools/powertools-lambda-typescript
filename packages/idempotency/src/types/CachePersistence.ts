@@ -14,6 +14,10 @@ type RedisSetOptions = {
    */
   EX?: number;
   /**
+   * The expiry time in milliseconds, `PX` in the `SET` command.
+   */
+  PX?: number;
+  /**
    * Whether to set the key only if it does not already exist, `NX` in the `SET` command.
    */
   NX?: boolean;
@@ -34,7 +38,8 @@ type GlideSetOptions = {
    */
   conditionalSet?: 'onlyIfExists' | 'onlyIfDoesNotExist' | 'onlyIfEqual';
   /**
-   * The expiry of the key, `{ type: 'EX', count: seconds }` is `EX` in the `SET` command.
+   * The expiry of the key, `{ type: 'EX', count: seconds }` is `EX` and
+   * `{ type: 'PX', count: milliseconds }` is `PX` in the `SET` command.
    */
   expiry?: 'keepExisting' | { type: string; count: number };
 };

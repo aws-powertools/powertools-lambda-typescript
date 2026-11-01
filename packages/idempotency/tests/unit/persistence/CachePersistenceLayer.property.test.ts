@@ -13,6 +13,10 @@ const EPOCH = 1_700_000_000_000;
 
 type SetOptions = { NX?: boolean; PX?: number; EX?: number };
 
+/** Milliseconds until a key written with these options is removed. */
+const ttlMillis = (options: SetOptions) =>
+  options.PX ?? (options.EX ?? 0) * 1000;
+
 /**
  * In-memory store with the cache semantics the adapter relies on: `SET NX`
  * is atomic and keys disappear once their TTL elapses.
@@ -226,64 +230,88 @@ describe('CachePersistenceLayer property tests', () => {
     );
   });
 
-  it('keeps an in progress record until its deadline and never past its expiry', async () => {
+  const inProgressArbitraries = [
+    fc.integer({ min: 0, max: 999 }),
+    fc.integer({ min: 1, max: 3_600 }),
+    fc.option(fc.integer({ min: -1_000, max: 900_000 }), { nil: undefined }),
+  ] as const;
+
+  /** Writes an in-progress record and returns when its key would be removed. */
+  const putInProgress = async (
+    clockMs: number,
+    expiresInSeconds: number,
+    remainingMs?: number
+  ) => {
+    vi.setSystemTime(EPOCH + clockMs);
+    const set = vi.fn().mockResolvedValue('OK');
+    const layer = new CachePersistenceLayerTestClass({
+      client: { get: vi.fn(), set, del: vi.fn() },
+    });
+    const now = Date.now();
+    const expiryTimestamp = Math.floor(now / 1000) + expiresInSeconds;
+    const deadline = remainingMs === undefined ? undefined : now + remainingMs;
+
+    await layer._putRecord(
+      new IdempotencyRecord({
+        idempotencyKey: 'key',
+        status: IdempotencyRecordStatus.INPROGRESS,
+        expiryTimestamp,
+        inProgressExpiryTimestamp: deadline,
+      })
+    );
+
+    const options = set.mock.calls[0][2] as SetOptions & {
+      expiry: { type: string; count: number };
+    };
+    return {
+      now,
+      expiry: expiryTimestamp * 1000,
+      deadline,
+      options,
+      removedAt: now + ttlMillis(options),
+    };
+  };
+
+  it('never removes an in progress record before its deadline or keeps it past its expiry', async () => {
+    await fc.assert(
+      fc.asyncProperty(...inProgressArbitraries, async (...args) => {
+        // Act
+        const { now, expiry, deadline, removedAt } = await putInProgress(
+          ...args
+        );
+
+        // Assess
+        expect(removedAt).toBeLessThanOrEqual(expiry);
+        if (deadline !== undefined && deadline > now && deadline <= expiry) {
+          expect(removedAt).toBeGreaterThanOrEqual(deadline);
+        }
+      }),
+      { numRuns: 5_000 }
+    );
+  });
+
+  it('removes an in progress record exactly at its deadline', async () => {
+    await fc.assert(
+      fc.asyncProperty(...inProgressArbitraries, async (...args) => {
+        // Act
+        const { now, expiry, deadline, options, removedAt } =
+          await putInProgress(...args);
+
+        // Assess
+        expect(options.expiry).toEqual({ type: 'PX', count: options.PX });
+        if (deadline !== undefined && deadline > now && deadline <= expiry) {
+          expect(removedAt).toBe(deadline);
+        }
+      }),
+      { numRuns: 5_000 }
+    );
+  });
+
+  it('removes a completed record exactly at its expiry', async () => {
     await fc.assert(
       fc.asyncProperty(
         fc.integer({ min: 0, max: 999 }),
         fc.integer({ min: 1, max: 3_600 }),
-        fc.option(fc.integer({ min: -1_000, max: 900_000 }), {
-          nil: undefined,
-        }),
-        async (clockMs, expiresInSeconds, remainingMs) => {
-          // Prepare
-          vi.setSystemTime(EPOCH + clockMs);
-          const set = vi.fn().mockResolvedValue('OK');
-          const layer = new CachePersistenceLayerTestClass({
-            client: { get: vi.fn(), set, del: vi.fn() },
-          });
-          const now = Date.now();
-          const expiryTimestamp = Math.floor(now / 1000) + expiresInSeconds;
-          const deadline =
-            remainingMs === undefined ? undefined : now + remainingMs;
-          const record = new IdempotencyRecord({
-            idempotencyKey: 'key',
-            status: IdempotencyRecordStatus.INPROGRESS,
-            expiryTimestamp,
-            inProgressExpiryTimestamp: deadline,
-          });
-
-          // Act
-          await layer._putRecord(record);
-
-          // Assess
-          const { EX, expiry } = set.mock.calls[0][2] as SetOptions & {
-            expiry: { count: number };
-          };
-          const removedAt = now + (EX as number) * 1000;
-          expect(EX).toBeGreaterThanOrEqual(1);
-          expect(expiry.count).toBe(EX);
-          if (EX !== 1) {
-            expect(removedAt).toBeLessThanOrEqual(expiryTimestamp * 1000);
-          }
-          if (
-            deadline !== undefined &&
-            deadline > now &&
-            deadline <= expiryTimestamp * 1000
-          ) {
-            expect(removedAt).toBeGreaterThanOrEqual(deadline);
-            expect(removedAt).toBeLessThan(deadline + 1000);
-          }
-        }
-      ),
-      { numRuns: 500 }
-    );
-  });
-
-  it('never keeps a completed record past its expiry', async () => {
-    await fc.assert(
-      fc.asyncProperty(
-        fc.integer({ min: 0, max: 999 }),
-        fc.integer({ min: 2, max: 3_600 }),
         async (clockMs, expiresInSeconds) => {
           // Prepare
           vi.setSystemTime(EPOCH + clockMs);
@@ -304,13 +332,11 @@ describe('CachePersistenceLayer property tests', () => {
           await layer._updateRecord(record);
 
           // Assess
-          const { EX } = set.mock.calls[0][2] as SetOptions;
-          const removedAt = now + (EX as number) * 1000;
-          expect(removedAt).toBeLessThanOrEqual(expiryTimestamp * 1000);
-          expect(removedAt).toBeGreaterThan(expiryTimestamp * 1000 - 1000);
+          const options = set.mock.calls[0][2] as SetOptions;
+          expect(now + ttlMillis(options)).toBe(expiryTimestamp * 1000);
         }
       ),
-      { numRuns: 500 }
+      { numRuns: 5_000 }
     );
   });
 });

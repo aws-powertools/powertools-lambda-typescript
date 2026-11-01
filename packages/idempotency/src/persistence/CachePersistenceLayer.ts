@@ -158,13 +158,11 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   }
 
   protected async _updateRecord(record: IdempotencyRecord): Promise<void> {
-    const encodedItem = this.#encodeRecord(record);
-    const ttl = this.#getExpirySeconds(record.expiryTimestamp);
-    // Need to set ttl again, if we don't set the expiry here the record will not have a ttl
+    // The TTL must be set again: a plain SET would drop the existing one.
     await this.#client.set(
       record.idempotencyKey,
-      encodedItem,
-      this.#getSetOptions(ttl)
+      this.#encodeRecord(record),
+      this.#getSetOptions(this.#getExpiryMillis(record.expiryTimestamp))
     );
   }
 
@@ -210,7 +208,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
     const response = await this.#client.set(
       record.idempotencyKey,
       this.#encodeRecord(record),
-      this.#getSetIfNotExistsOptions(this.#getInProgressExpirySeconds(record))
+      this.#getSetIfNotExistsOptions(this.#getInProgressExpiryMillis(record))
     );
     if (response !== null) {
       return;
@@ -236,16 +234,16 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   /**
    * Builds the options for a `SET` command in the shapes of both supported clients.
    *
-   * `@redis/client` reads `EX` and `NX`, while `@valkey/valkey-glide` reads `expiry` and
+   * `@redis/client` reads `PX` and `NX`, while `@valkey/valkey-glide` reads `expiry` and
    * `conditionalSet`. Each client ignores the properties of the other, so passing only one shape
    * would silently write the key without a TTL on the other client.
    *
-   * @param ttl - The expiry time of the key in seconds
+   * @param ttl - The expiry time of the key in milliseconds
    */
   #getSetOptions(ttl: number): CacheClientSetOptions {
     return {
-      EX: ttl,
-      expiry: { type: 'EX', count: ttl },
+      PX: ttl,
+      expiry: { type: 'PX', count: ttl },
     };
   }
 
@@ -256,7 +254,7 @@ class CachePersistenceLayer extends BasePersistenceLayer {
    * On top of the expiry from {@link CachePersistenceLayer.#getSetOptions | `#getSetOptions()`},
    * `@redis/client` reads `NX` and `@valkey/valkey-glide` reads `conditionalSet`.
    *
-   * @param ttl - The expiry time of the key in seconds
+   * @param ttl - The expiry time of the key in milliseconds
    */
   #getSetIfNotExistsOptions(ttl: number): CacheClientSetOptions {
     return {
@@ -267,35 +265,34 @@ class CachePersistenceLayer extends BasePersistenceLayer {
   }
 
   /**
-   * Calculates the whole seconds until a record's overall expiry, rounded down so the
-   * key never outlives the record it holds.
+   * Calculates the milliseconds until a record's overall expiry, so that the key is
+   * removed when the record expires.
    *
    * @param expiryTimestamp - The overall expiry, in seconds since the epoch
    */
-  #getExpirySeconds(expiryTimestamp?: number): number {
+  #getExpiryMillis(expiryTimestamp?: number): number {
     if (expiryTimestamp) {
-      return Math.max(1, Math.floor(expiryTimestamp - Date.now() / 1000));
+      return Math.max(1, expiryTimestamp * 1000 - Date.now());
     }
-    return this.expiresAfterSeconds;
+    return this.expiresAfterSeconds * 1000;
   }
 
   /**
-   * Calculates the whole seconds an in-progress record is kept: until its execution
-   * deadline, rounded up so the key is never removed while the invocation can still run,
-   * and capped at the overall expiry. Without a deadline, the overall expiry applies.
+   * Calculates the milliseconds an in-progress record is kept: until its execution
+   * deadline, capped at the overall expiry. Without a deadline, the overall expiry applies.
    *
    * @param record - The in-progress record
    */
-  #getInProgressExpirySeconds(record: IdempotencyRecord): number {
-    const expirySeconds = this.#getExpirySeconds(record.expiryTimestamp);
+  #getInProgressExpiryMillis(record: IdempotencyRecord): number {
+    const expiryMillis = this.#getExpiryMillis(record.expiryTimestamp);
     if (record.inProgressExpiryTimestamp === undefined) {
-      return expirySeconds;
+      return expiryMillis;
     }
-    const deadlineSeconds = Math.ceil(
-      (record.inProgressExpiryTimestamp - Date.now()) / 1000
-    );
 
-    return Math.max(1, Math.min(deadlineSeconds, expirySeconds));
+    return Math.max(
+      1,
+      Math.min(expiryMillis, record.inProgressExpiryTimestamp - Date.now())
+    );
   }
 }
 

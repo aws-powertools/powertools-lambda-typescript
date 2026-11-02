@@ -130,7 +130,7 @@ class Functions {
       return haystack.some((item) => isStrictEqual(item, needle));
     }
 
-    return haystack.includes(needle as string);
+    return typeof needle === 'string' && haystack.includes(needle);
   }
 
   /**
@@ -536,7 +536,8 @@ class Functions {
       return arg;
     }
     if (typeof arg === 'string' && JSON_NUMBER_REGEX.test(arg)) {
-      return Number(arg);
+      const num = Number(arg);
+      return Number.isFinite(num) ? num : null;
     }
     return null;
   }

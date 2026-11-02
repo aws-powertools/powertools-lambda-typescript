@@ -346,6 +346,10 @@ describe('Functions tests', () => {
       expected: false,
     },
     {
+      expression: "contains('a123', `123`)",
+      expected: false,
+    },
+    {
       expression: "contains(strings, 'a')",
       expected: true,
     },
@@ -1508,6 +1512,10 @@ describe('Functions tests', () => {
     },
     {
       expression: `to_number('0x10')`,
+      expected: null,
+    },
+    {
+      expression: `to_number('1e400')`,
       expected: null,
     },
     {

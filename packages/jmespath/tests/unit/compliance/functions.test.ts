@@ -177,6 +177,10 @@ describe('Functions tests', () => {
       expression: 'avg(numbers)',
       expected: 2.75,
     },
+    {
+      expression: 'avg(empty_list)',
+      expected: null,
+    },
   ])(
     'should support the avg() function: $expression',
     ({ expression, expected }) => {
@@ -342,6 +346,10 @@ describe('Functions tests', () => {
       expected: false,
     },
     {
+      expression: "contains('a123', `123`)",
+      expected: false,
+    },
+    {
       expression: "contains(strings, 'a')",
       expected: true,
     },
@@ -351,6 +359,18 @@ describe('Functions tests', () => {
     },
     {
       expression: 'contains(decimals, `false`)',
+      expected: false,
+    },
+    {
+      expression: 'contains(`[{"a": 1}]`, `{"a": 1}`)',
+      expected: true,
+    },
+    {
+      expression: 'contains(`[[1, 2]]`, `[1, 2]`)',
+      expected: true,
+    },
+    {
+      expression: 'contains(`[{"a": 1}]`, `{"a": 2}`)',
       expected: false,
     },
   ])(
@@ -992,6 +1012,14 @@ describe('Functions tests', () => {
       expected: ['a', 'b', 'c'],
     },
     {
+      expression: 'sort(`["b", "a", "B", "A"]`)',
+      expected: ['A', 'B', 'a', 'b'],
+    },
+    {
+      expression: 'sort(`["b", "a", "b"]`)',
+      expected: ['a', 'b', 'b'],
+    },
+    {
       expression: 'sort(decimals)',
       expected: [-1.5, 1.01, 1.2],
     },
@@ -1472,6 +1500,22 @@ describe('Functions tests', () => {
     },
     {
       expression: `to_number('notanumber')`,
+      expected: null,
+    },
+    {
+      expression: `to_number('-1.5e3')`,
+      expected: -1500,
+    },
+    {
+      expression: `to_number('')`,
+      expected: null,
+    },
+    {
+      expression: `to_number('0x10')`,
+      expected: null,
+    },
+    {
+      expression: `to_number('1e400')`,
       expected: null,
     },
     {

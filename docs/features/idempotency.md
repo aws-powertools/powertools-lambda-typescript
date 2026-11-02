@@ -694,17 +694,17 @@ When using Cache as a persistence layer, you can alter the attribute names by pa
 
 Idempotent decorator can be further configured with **`IdempotencyConfig`** as seen in the previous examples. These are the available options for further configuration
 
-| Parameter                     | Default     | Description                                                                                                                                                                                                                                |
-| ----------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **eventKeyJmespath**          | `''`        | JMESPath expression to extract the idempotency key from the event record using [built-in functions](./jmespath.md#built-in-jmespath-functions){target="_blank"}                                                                            |
-| **payloadValidationJmespath** | `''`        | JMESPath expression to validate that the specified fields haven't changed across requests for the same idempotency key _e.g., payload tampering._                                                                                          |
-| **jmesPathOptions**           | `undefined` | Custom JMESPath functions to use when parsing the JMESPath expressions. See [Custom JMESPath Functions](idempotency.md#custom-jmespath-functions)                                                                                          |
-| **throwOnNoIdempotencyKey**   | `false`     | Throw an error if no idempotency key was found in the request                                                                                                                                                                              |
-| **expiresAfterSeconds**       | 3600        | The number of seconds to wait before a record is expired, allowing a new transaction with the same idempotency key                                                                                                                         |
-| **useLocalCache**             | `false`     | Whether to cache idempotency results in-memory to save on persistence storage latency and costs                                                                                                                                            |
-| **localCacheMaxItems**        | 256         | Max number of items to store in local cache                                                                                                                                                                                                |
-| **hashFunction**              | `md5`       | Function to use for calculating hashes, as provided by the [crypto](https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options){target="_blank"} module in the standard library.                                                 |
-| **responseHook**              | `undefined` | Function to use for processing the stored Idempotent response. This function hook is called when an existing idempotent response is found. See [Manipulating The Idempotent Response](idempotency.md#manipulating-the-idempotent-response) |
+| Parameter                     | Default               | Description                                                                                                                                                                                                                                |
+| ----------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **eventKeyJmesPath**          | `''`                  | JMESPath expression to extract the idempotency key from the event record using [built-in functions](./jmespath.md#built-in-jmespath-functions){target="_blank"}                                                                            |
+| **payloadValidationJmesPath** | `undefined`           | JMESPath expression to validate that the specified fields haven't changed across requests for the same idempotency key _e.g., payload tampering._                                                                                          |
+| **jmesPathOptions**           | `PowertoolsFunctions` | Custom JMESPath functions to use when parsing the JMESPath expressions. See [Custom JMESPath Functions](idempotency.md#custom-jmespath-functions)                                                                                          |
+| **throwOnNoIdempotencyKey**   | `false`               | Throw an error if no idempotency key was found in the request                                                                                                                                                                              |
+| **expiresAfterSeconds**       | 3600                  | The number of seconds to wait before a record is expired, allowing a new transaction with the same idempotency key                                                                                                                         |
+| **useLocalCache**             | `false`               | Whether to cache idempotency results in-memory to save on persistence storage latency and costs                                                                                                                                            |
+| **maxLocalCacheSize**         | 1000                  | Max number of items to store in local cache                                                                                                                                                                                                |
+| **hashFunction**              | `md5`                 | Function to use for calculating hashes, as provided by the [crypto](https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options){target="_blank"} module in the standard library.                                                 |
+| **responseHook**              | `undefined`           | Function to use for processing the stored Idempotent response. This function hook is called when an existing idempotent response is found. See [Manipulating The Idempotent Response](idempotency.md#manipulating-the-idempotent-response) |
 
 ### Handling concurrent executions with the same payload
 
@@ -730,7 +730,7 @@ You can enable in-memory caching with the **`useLocalCache`** parameter:
     --8<-- "examples/snippets/idempotency/workingWithLocalCache.ts"
     ```
 
-When enabled, the default is to cache a maximum of 256 records in each Lambda execution environment - You can change it with the **`maxLocalCacheSize`** parameter.
+When enabled, the default is to cache a maximum of 1000 records in each Lambda execution environment - You can change it with the **`maxLocalCacheSize`** parameter.
 
 ### Expiring idempotency records
 
@@ -774,7 +774,7 @@ With **`payloadValidationJmesPath`**, you can provide an additional JMESPath exp
     --8<-- "examples/snippets/idempotency/workingWithPayloadValidation.ts"
     ```
 
-In this example, the **`userId`** and **`productId`** keys are used as the payload to generate the idempotency key, as per **`eventKeyJmespath`** parameter.
+In this example, the **`userId`** and **`productId`** keys are used as the payload to generate the idempotency key, as per **`eventKeyJmesPath`** parameter.
 
 ???+ note
     If we try to send the same request but with a different amount, we will raise **`IdempotencyValidationError`**.

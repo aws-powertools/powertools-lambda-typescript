@@ -3,7 +3,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { DEFAULT_CORS_OPTIONS } from '../../../../src/http/constants.js';
 import { cors } from '../../../../src/http/middleware/cors.js';
 import { Router } from '../../../../src/http/Router.js';
-import { createHeaderCheckMiddleware, createTestEvent } from '../helpers.js';
+import {
+  createHeaderCheckMiddleware,
+  createTestEvent,
+  createTestEventV2,
+} from '../helpers.js';
 
 describe('CORS Middleware', () => {
   const origin = 'https://example.com';
@@ -121,6 +125,33 @@ describe('CORS Middleware', () => {
     // Assess
     expect(result.headers?.['access-control-allow-origin']).toEqual(origin);
     expect(result.headers?.vary).toEqual('Origin');
+  });
+
+  it('keeps an existing vary header when adding origin', async () => {
+    // Prepare
+    const app = new Router();
+    app.get(
+      '/test',
+      [
+        async ({ reqCtx, next }) => {
+          reqCtx.res.headers.set('vary', 'Accept-Language');
+          await next();
+        },
+        cors({
+          origin: ['https://example.com', 'https://another-example.com'],
+        }),
+      ],
+      async () => ({ success: true })
+    );
+
+    // Act
+    const result = await app.resolve(
+      createTestEventV2('/test', 'GET', { origin }),
+      context
+    );
+
+    // Assess
+    expect(result.headers?.vary).toEqual('Accept-Language, Origin');
   });
 
   it('does not set CORS headers when preflight request method does not match allowed method', async () => {

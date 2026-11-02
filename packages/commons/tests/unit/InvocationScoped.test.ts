@@ -460,4 +460,35 @@ describe('Class: InvocationScoped', () => {
       expect(cell.getShared()).toBe(12);
     });
   });
+
+  describe('on a Lambda Web Function', () => {
+    it('isolates concurrent requests from each other', async () => {
+      // Prepare
+      // The Web Functions runtime forces an isolating store and doesn't set
+      // AWS_LAMBDA_MAX_CONCURRENCY
+      vi.stubEnv('AWS_EXECUTION_ENV', 'AWS_Lambda_nodejs24.x-lambda-web');
+      await InvokeStore.getInstanceAsync(true);
+      const cell = new InvocationScoped<number>('powertools.test.level', {
+        initial: 12,
+      });
+
+      // Act
+      const [firstValue, secondValue] = await sequence<number, number>(
+        {
+          sideEffects: [() => cell.set(8), () => {}],
+          return: () => cell.get(),
+        },
+        {
+          sideEffects: [() => {}, () => cell.set(20)],
+          return: () => cell.get(),
+        },
+        { useInvokeStore: true }
+      );
+
+      // Assess
+      expect(firstValue).toBe(8);
+      expect(secondValue).toBe(20);
+      expect(cell.getShared()).toBe(12);
+    });
+  });
 });

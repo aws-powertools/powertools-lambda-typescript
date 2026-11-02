@@ -111,6 +111,12 @@ const CACHE_CONTROL_NO_TRANSFORM_REGEX = /(?:^|,)\s*?no-transform\s*?(?:,|$)/i;
 
 const DECIMAL_QVALUE_REGEX = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
 
+/**
+ * Matches a comma that starts another cookie in a `Set-Cookie` value, so that cookies joined
+ * into one value can be separated without splitting the comma in an `Expires` date.
+ */
+const SET_COOKIE_SEPARATOR_REGEX = /,\s*(?=[^;,=\s]+=)/;
+
 const COMPRESSION_ENCODING_TYPES = {
   GZIP: 'gzip',
   DEFLATE: 'deflate',
@@ -218,5 +224,6 @@ export {
   MULTI_VALUE_HEADERS_ALLOWLIST,
   PARAM_PATTERN,
   SAFE_CHARS,
+  SET_COOKIE_SEPARATOR_REGEX,
   UNSAFE_CHARS,
 };

@@ -1126,6 +1126,73 @@ describe('Converters', () => {
       expect(result.isBase64Encoded).toBe(true);
       expect(result.body).toBe(Buffer.from('Hello World').toString('base64'));
     });
+
+    it('splits comma-list headers as for API Gateway REST when multiValueHeaders is omitted', async () => {
+      // Prepare
+      const response = new Response('Hello', {
+        status: 200,
+        headers: {
+          'cache-control': 'no-store, private',
+          'content-type': 'application/json',
+        },
+      });
+
+      // Act
+      const result = await webResponseToProxyResult(response, 'ALB');
+
+      // Assess
+      expect(result.headers).toEqual({ 'content-type': 'application/json' });
+      expect(result.multiValueHeaders).toEqual({
+        'cache-control': ['no-store', 'private'],
+      });
+    });
+
+    it.each([
+      {
+        multiValueHeaders: false,
+        expected: {
+          headers: {
+            'cache-control': 'no-store, private',
+            'content-type': 'application/json',
+          },
+        },
+      },
+      {
+        multiValueHeaders: true,
+        expected: {
+          multiValueHeaders: {
+            'cache-control': ['no-store, private'],
+            'content-type': ['application/json'],
+          },
+        },
+      },
+    ])(
+      'returns every header in the field ALB reads (multiValueHeaders: $multiValueHeaders)',
+      async ({ multiValueHeaders, expected }) => {
+        // Prepare
+        const response = new Response('Hello', {
+          status: 200,
+          headers: {
+            'cache-control': 'no-store, private',
+            'content-type': 'application/json',
+          },
+        });
+
+        // Act
+        const result = await webResponseToProxyResult(response, 'ALB', {
+          multiValueHeaders,
+        });
+
+        // Assess
+        expect(result).toEqual({
+          statusCode: 200,
+          statusDescription: '200 OK',
+          body: 'Hello',
+          isBase64Encoded: false,
+          ...expected,
+        });
+      }
+    );
   });
 
   describe('webResponseToProxyResult - V2', () => {

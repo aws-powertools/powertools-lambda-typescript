@@ -42,6 +42,10 @@ type IdempotencyRecordOptions = {
    * The hash of the payload of the request, used for comparing requests.
    */
   payloadHash?: string;
+  /**
+   * The ARN of the durable execution that owns the record, only set for durable executions.
+   */
+  owner?: string;
 };
 
 export type { IdempotencyRecordOptions, IdempotencyRecordStatusValue };

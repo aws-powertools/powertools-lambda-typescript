@@ -469,8 +469,22 @@ type SegmentHttpData = {
   };
 };
 
+/**
+ * Options for converting a Web API Response to a Lambda proxy result.
+ */
 type WebResponseToProxyResultOptions = {
+  /**
+   * Whether the response body is base64 encoded, for example for binary or compressed content.
+   */
   isBase64Encoded?: boolean;
+  /**
+   * Whether the ALB target group has multi-value headers enabled, which ALB signals by sending
+   * `multiValueHeaders` in the event. Applies to ALB results only.
+   *
+   * When set, every header goes in the one field that ALB reads: `multiValueHeaders` when `true`,
+   * `headers` when `false`. When omitted, headers are split between both fields as for API Gateway REST.
+   */
+  multiValueHeaders?: boolean;
 };
 
 type RouterResponse =

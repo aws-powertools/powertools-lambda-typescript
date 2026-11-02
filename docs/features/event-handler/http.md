@@ -605,6 +605,9 @@ example, you might want to add additional headers, cookies, or set a custom cont
 Use `headers.append('Set-Cookie', cookie)` once for each cookie when constructing a `Response`.
 The router preserves these cookies alongside cookies added to the response headers by middleware.
 
+On ALB, the router returns headers in the field your target group reads: `multiValueHeaders` when [multi-value headers](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers){target="_blank"} are enabled, `headers` otherwise.
+Without multi-value headers, ALB returns only one `Set-Cookie` header, so enable multi-value headers on the target group if a response sets more than one cookie.
+
 === "index.ts"
 
     ```ts hl_lines="11-18 25-31"

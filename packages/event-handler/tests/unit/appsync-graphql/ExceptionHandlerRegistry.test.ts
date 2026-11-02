@@ -4,7 +4,7 @@ import type { ExceptionHandlerOptions } from '../../../src/types/appsync-graphql
 
 describe('Class: ExceptionHandlerRegistry', () => {
   class MockExceptionHandlerRegistry extends ExceptionHandlerRegistry {
-    public declare handlers: Map<string, ExceptionHandlerOptions>;
+    declare public handlers: Map<string, ExceptionHandlerOptions>;
   }
   class CustomError extends Error {
     constructor(message: string) {

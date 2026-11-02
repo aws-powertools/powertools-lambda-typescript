@@ -4,7 +4,7 @@ import type { RouteHandlerOptions } from '../../../src/types/appsync-events.js';
 
 describe('Class: RouteHandlerRegistry', () => {
   class MockRouteHandlerRegistry extends RouteHandlerRegistry {
-    public declare resolvers: Map<string, RouteHandlerOptions<boolean>>;
+    declare public resolvers: Map<string, RouteHandlerOptions<boolean>>;
   }
 
   const getRegistry = () => new MockRouteHandlerRegistry({ logger: console });

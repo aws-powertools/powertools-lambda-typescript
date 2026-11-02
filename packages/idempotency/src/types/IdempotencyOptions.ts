@@ -189,7 +189,7 @@ type IdempotencyConfigOptions = {
    */
   useLocalCache?: boolean;
   /**
-   * Number of records to keep in the local cache, defaults to `256`
+   * Number of records to keep in the local cache, defaults to `1000`
    */
   maxLocalCacheSize?: number;
   /**

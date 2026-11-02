@@ -679,6 +679,8 @@ You can override the global CORS settings on a per-route basis by passing option
 
 You can enable response compression by using the `compress` middleware. This will automatically compress responses using gzip and base64 encode them when the client indicates support via the `Accept-Encoding` header.
 
+When a response qualifies for compression, the middleware also adds `Accept-Encoding` to its `Vary` header, even if the client doesn't accept compression. This lets shared caches such as Amazon CloudFront keep compressed and uncompressed responses apart. Any `Vary` value already on the response, such as `Origin` from the [`cors`](#cors) middleware, is kept.
+
 === "index.ts"
 
     ```ts hl_lines="2 7"
@@ -693,7 +695,7 @@ You can enable response compression by using the `compress` middleware. This wil
 
 === "Response"
 
-    ```json hl_lines="4-5 7-8"
+    ```json hl_lines="4-6 8-9"
     --8<-- "examples/snippets/event-handler/http/samples/advanced_compress_res.json"
     ```
 

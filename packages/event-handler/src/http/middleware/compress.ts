@@ -6,6 +6,7 @@ import {
   DECIMAL_QVALUE_REGEX,
   DEFAULT_COMPRESSION_RESPONSE_THRESHOLD,
 } from '../constants.js';
+import { appendVaryHeader } from './commons.js';
 
 /**
  * Compresses HTTP response bodies using standard compression algorithms.
@@ -21,6 +22,11 @@ import {
  * - Content type is compressible
  * - Cache-Control header doesn't contain no-transform
  * - Response has a body
+ *
+ * When a response meets the size, encoding, and cache-control conditions, the
+ * middleware adds `Accept-Encoding` to its `Vary` header, whether or not the
+ * client accepts the encoding, so shared caches keep compressed and
+ * uncompressed responses apart.
  *
  * **Basic compression with default settings**
  *
@@ -79,7 +85,17 @@ const compress = (options?: CompressionOptions): Middleware => {
       reqCtx.res.headers.set('content-length', body.byteLength.toString());
     }
 
-    if (!shouldCompress(reqCtx.req, reqCtx.res, preferredEncoding, threshold)) {
+    if (!isCompressible(reqCtx.res, threshold)) return;
+
+    appendVaryHeader(reqCtx.res.headers, 'Accept-Encoding');
+
+    if (
+      reqCtx.req.method === 'HEAD' ||
+      !acceptsEncoding(
+        reqCtx.req.headers.get('accept-encoding'),
+        preferredEncoding
+      )
+    ) {
       return;
     }
 
@@ -154,10 +170,14 @@ const acceptsEncoding = (
   return compressionQuality > 0 && compressionQuality >= uncompressedQuality;
 };
 
-const shouldCompress = (
-  request: Request,
+/**
+ * Checks whether the response can be compressed, regardless of what the client accepts.
+ *
+ * @param response - The response to inspect
+ * @param threshold - Minimum response size in bytes to compress
+ */
+const isCompressible = (
   response: Response,
-  preferredEncoding: NonNullable<CompressionOptions['encoding']>,
   threshold: NonNullable<CompressionOptions['threshold']>
 ): response is Response & { body: NonNullable<Response['body']> } => {
   const contentLength = response.headers.get('content-length');
@@ -167,15 +187,8 @@ const shouldCompress = (
     response.headers.has('content-encoding') ||
     response.headers.has('transfer-encoding');
 
-  const shouldEncode = acceptsEncoding(
-    request.headers.get('accept-encoding'),
-    preferredEncoding
-  );
-
   return (
-    shouldEncode &&
     !isEncodedOrChunked &&
-    request.method !== 'HEAD' &&
     (!contentLength || Number(contentLength) > threshold) &&
     (!cacheControl || !CACHE_CONTROL_NO_TRANSFORM_REGEX.test(cacheControl)) &&
     response.body !== null

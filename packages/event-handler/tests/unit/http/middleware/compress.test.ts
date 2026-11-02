@@ -2,11 +2,12 @@ import { deflateSync, gunzipSync, gzipSync } from 'node:zlib';
 import context from '@aws-lambda-powertools/testing-utils/context';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { streamify } from '../../../../src/http/index.js';
-import { compress } from '../../../../src/http/middleware/index.js';
+import { compress, cors } from '../../../../src/http/middleware/index.js';
 import { Router } from '../../../../src/http/Router.js';
 import {
   createSettingHeadersMiddleware,
   createTestEvent,
+  createTestEventV2,
   ResponseStream,
 } from '../helpers.js';
 
@@ -197,6 +198,7 @@ describe('Compress Middleware', () => {
     expect(result.headers).toEqual({
       'content-encoding': 'gzip',
       'content-type': 'application/json',
+      vary: 'Accept-Encoding',
     });
     expect(
       gunzipSync(Buffer.from(result.body, 'base64')).toString('utf8')
@@ -413,5 +415,159 @@ describe('Compress Middleware', () => {
     expect(result.body).not.toBe(
       gzipSync(JSON.stringify(body)).toString('base64')
     );
+  });
+  it.each([
+    {
+      case: 'the response is compressed',
+      method: 'GET',
+      acceptEncoding: 'gzip',
+    },
+    {
+      case: 'the client does not accept the encoding',
+      method: 'GET',
+      acceptEncoding: 'identity',
+    },
+    {
+      case: 'the request method is HEAD',
+      method: 'HEAD',
+      acceptEncoding: 'gzip',
+    },
+  ])(
+    'sets the vary header to Accept-Encoding when $case',
+    async ({ method, acceptEncoding }) => {
+      // Prepare
+      const varyEvent = createTestEvent('/test', method, {
+        'Accept-Encoding': acceptEncoding,
+      });
+      app.get('/test', () => body);
+      app.head('/test', () => body);
+
+      // Act
+      const result = await app.resolve(varyEvent, context);
+
+      // Assess
+      expect(result.headers?.vary).toBe('Accept-Encoding');
+    }
+  );
+
+  it.each<{ case: string; headers: Record<string, string> }>([
+    {
+      case: 'the content is below the threshold',
+      headers: { 'content-length': '1' },
+    },
+    {
+      case: 'the response is already encoded',
+      headers: { 'content-length': '2000', 'content-encoding': 'br' },
+    },
+    {
+      case: 'cache-control no-transform is set',
+      headers: { 'content-length': '2000', 'cache-control': 'no-transform' },
+    },
+  ])('does not set the vary header when $case', async ({ headers }) => {
+    // Prepare
+    const application = new Router();
+    application.get(
+      '/test',
+      [compress(), createSettingHeadersMiddleware(headers)],
+      () => body
+    );
+
+    // Act
+    const result = await application.resolve(event, context);
+
+    // Assess
+    expect(result.headers?.vary).toBeUndefined();
+  });
+
+  it('does not set the vary header when the response has no body', async () => {
+    // Prepare
+    const application = new Router();
+    application.use(compress());
+    application.get('/test', () => new Response(null, { status: 204 }));
+
+    // Act
+    const result = await application.resolve(event, context);
+
+    // Assess
+    expect(result.headers?.vary).toBeUndefined();
+  });
+
+  it('does not set the vary header in streaming mode', async () => {
+    // Prepare
+    const application = new Router();
+    application.use(compress());
+    application.get('/test', () => body);
+
+    const handler = streamify(application);
+    const responseStream = new ResponseStream();
+
+    // Act
+    const result = await handler(event, responseStream, context);
+
+    // Assess
+    expect(result.headers.vary).toBeUndefined();
+  });
+
+  it.each([
+    { existing: 'Origin', expected: 'Origin, Accept-Encoding' },
+    {
+      existing: 'Origin, Accept-Language',
+      expected: 'Origin, Accept-Language, Accept-Encoding',
+    },
+    { existing: 'accept-encoding', expected: 'accept-encoding' },
+    {
+      existing: 'Origin, Accept-Encoding',
+      expected: 'Origin, Accept-Encoding',
+    },
+    { existing: '*', expected: '*' },
+    { existing: 'Origin, *', expected: 'Origin, *' },
+    { existing: '', expected: 'Accept-Encoding' },
+  ])(
+    'combines an existing vary header "$existing" into "$expected"',
+    async ({ existing, expected }) => {
+      // Prepare
+      const application = new Router();
+      application.get(
+        '/test',
+        [
+          compress(),
+          createSettingHeadersMiddleware({
+            'content-length': '2000',
+            vary: existing,
+          }),
+        ],
+        () => body
+      );
+
+      // Act
+      const result = await application.resolve(
+        createTestEventV2('/test', 'GET', { 'accept-encoding': 'gzip' }),
+        context
+      );
+
+      // Assess
+      expect(result.headers?.vary).toBe(expected);
+    }
+  );
+
+  it('keeps the vary header set by the cors middleware', async () => {
+    // Prepare
+    const application = new Router();
+    application.use(cors({ origin: ['https://example.com'] }));
+    application.use(compress());
+    application.get('/test', () => body);
+
+    // Act
+    const result = await application.resolve(
+      createTestEventV2('/test', 'GET', {
+        origin: 'https://example.com',
+        'accept-encoding': 'gzip',
+      }),
+      context
+    );
+
+    // Assess
+    expect(result.headers?.['content-encoding']).toBe('gzip');
+    expect(result.headers?.vary).toBe('Origin, Accept-Encoding');
   });
 });

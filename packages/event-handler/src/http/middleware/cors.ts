@@ -4,6 +4,7 @@ import {
   HttpStatusCodes,
   HttpVerbs,
 } from '../constants.js';
+import { appendVaryHeader } from './commons.js';
 
 /**
  * Creates a CORS middleware that adds appropriate CORS headers to responses
@@ -91,7 +92,7 @@ export const cors = (options?: CorsOptions): Middleware => {
     const resolvedOrigin = allowsWildcard ? '*' : requestOrigin;
     responseHeaders.set('access-control-allow-origin', resolvedOrigin);
     if (!allowsWildcard && Array.isArray(config.origin)) {
-      responseHeaders.set('vary', 'Origin');
+      appendVaryHeader(responseHeaders, 'Origin');
     }
     if (config.credentials) {
       responseHeaders.set('access-control-allow-credentials', 'true');

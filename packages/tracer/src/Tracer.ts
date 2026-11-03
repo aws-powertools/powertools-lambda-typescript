@@ -598,7 +598,7 @@ class Tracer extends Utility implements TracerInterface {
    * Usually you won't need to call this method unless you are creating custom subsegments or using manual mode.
    *
    * @see https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-segments
-   * @see https://docs.aws.amazon.com/powertools/typescript/latest/core/tracer/#escape-hatch-mechanism
+   * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/tracer/#escape-hatch-mechanism
    *
    * @example
    * ```typescript

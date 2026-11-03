@@ -34,7 +34,7 @@ Powertools for AWS Lambda (TypeScript) is built as a modular toolkit, so you can
 
 You can find code snippets showing how to use Powertools for AWS Lambda (TypeScript) in the [examples](https://github.com/aws-powertools/powertools-lambda-typescript/tree/main/examples){target="_blank"} directory.
 
-If instead you want to see Powertools for AWS Lambda (TypeScript) in a more involved context, check the [Powertools for AWS workshop](https://github.com/aws-samples/powertools-for-aws-lambda-workshop/tree/main/functions/typescript) where we demonstrate how to use toolkit in a more complex application.
+If instead you want to see Powertools for AWS Lambda (TypeScript) in a more involved context, check the [Powertools for AWS workshop](https://github.com/aws-samples/powertools-for-aws-lambda-workshop/tree/main/main-workshop/services/typescript) where we demonstrate how to use toolkit in a more complex application.
 
 ## Support Powertools for AWS
 

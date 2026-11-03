@@ -106,7 +106,7 @@ import type {
  *
  * If instead you use Middy.js middlewares, you use the {@link "middleware/middy".injectLambdaContext | `injectLambdaContext()`} middleware.
  *
- * @see https://docs.aws.amazon.com/powertools/typescript/latest/core/logger/
+ * @see https://docs.aws.amazon.com/powertools/typescript/latest/features/logger/
  */
 class Logger extends Utility implements LoggerInterface {
   /**

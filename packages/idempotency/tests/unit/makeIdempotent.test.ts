@@ -56,11 +56,22 @@ const executionA =
   'arn:aws:lambda:us-east-1:123456789012:function:my-function:1/durable-execution/order-1/a';
 const executionB =
   'arn:aws:lambda:us-east-1:123456789012:function:my-function:1/durable-execution/order-1/b';
+/**
+ * Runs the function of a durable step, as the durable execution SDK does on a first execution.
+ */
+const runStep = vi.fn(
+  async (_name: string, stepFn: () => Promise<unknown>) => await stepFn()
+);
 const createDurableContext = (
   durableExecutionArn: string,
-  durableExecutionMode: 'ExecutionMode' | 'ReplayMode'
+  durableExecutionMode: 'ExecutionMode' | 'ReplayMode',
+  step: (
+    name: string,
+    stepFn: () => Promise<unknown>
+  ) => Promise<unknown> = runStep
 ): DurableTestContext => ({
-  step: vi.fn(),
+  // The mock implements only the overload of `step` that the utility calls
+  step: step as DurableContext['step'],
   lambdaContext: context,
   durableExecutionMode,
   executionContext: { durableExecutionArn },
@@ -955,21 +966,23 @@ describe('Function: makeIdempotent', () => {
     expect(handleSpy).toHaveBeenCalledWith({ isReplay: false });
   });
 
-  it('passes the durable execution ARN to the handler', async () => {
+  it('passes the durable execution ARN and context to the handler', async () => {
     // Prepare
     const handleSpy = vi.spyOn(IdempotencyHandler.prototype, 'handle');
     const handler = makeIdempotent(
       async (_event: unknown, _context: DurableTestContext) => {},
       mockIdempotencyOptions
     );
+    const durableContext = createDurableContext(executionA, 'ExecutionMode');
 
     // Act
-    await handler(event, createDurableContext(executionA, 'ExecutionMode'));
+    await handler(event, durableContext);
 
     // Assess
     expect(handleSpy).toHaveBeenCalledWith({
       isReplay: false,
       durableExecutionArn: executionA,
+      durableContext,
     });
   });
 
@@ -994,6 +1007,145 @@ describe('Function: makeIdempotent', () => {
       })
     );
     expect(completedRecord.owner).toBe(executionA);
+  });
+
+  it.each([
+    {
+      case: 'saves the result',
+      fn: async () => true,
+      stepName: 'powertools-idempotency-save',
+      persistenceCall: '_updateRecord',
+    },
+    {
+      case: 'deletes the record',
+      fn: async () => {
+        throw new Error('Something went wrong');
+      },
+      stepName: 'powertools-idempotency-delete',
+      persistenceCall: '_deleteRecord',
+    },
+  ] as const)(
+    '$case in a durable step without retries after the function settles in a durable execution',
+    async ({ fn, stepName, persistenceCall }) => {
+      // Prepare
+      const persistenceStore = new PersistenceLayerTestClass();
+      const step = vi.fn(
+        async (_name: string, stepFn: () => Promise<unknown>) => {
+          expect(persistenceStore[persistenceCall]).not.toHaveBeenCalled();
+          await stepFn();
+          expect(persistenceStore[persistenceCall]).toHaveBeenCalledOnce();
+        }
+      );
+      const handler = makeIdempotent(
+        async (_event: unknown, _context: DurableTestContext) => fn(),
+        { persistenceStore }
+      );
+
+      // Act
+      await handler(
+        event,
+        createDurableContext(executionA, 'ExecutionMode', step)
+      ).catch(() => {});
+
+      // Assess
+      expect(step).toHaveBeenCalledOnce();
+      expect(step).toHaveBeenCalledWith(stepName, expect.any(Function), {
+        retryStrategy: expect.any(Function),
+      });
+      const [, , { retryStrategy }] = step.mock.calls[0] as unknown as [
+        string,
+        unknown,
+        { retryStrategy: () => { shouldRetry: boolean } },
+      ];
+      expect(retryStrategy()).toEqual({ shouldRetry: false });
+    }
+  );
+
+  it.each([
+    {
+      case: 'saving the result',
+      fn: async () => true,
+      persistenceCall: '_updateRecord',
+      message: 'Failed to update success record to idempotency store',
+    },
+    {
+      case: 'deleting the record',
+      fn: async () => {
+        throw new Error('Something went wrong');
+      },
+      persistenceCall: '_deleteRecord',
+      message: 'Failed to delete record from idempotency store',
+    },
+  ] as const)(
+    'throws the persistence layer error when $case fails in a durable step',
+    async ({ fn, persistenceCall, message }) => {
+      // Prepare
+      const persistenceStore = new PersistenceLayerTestClass();
+      persistenceStore[persistenceCall].mockRejectedValueOnce(
+        new Error('Persistence failed')
+      );
+      // The durable execution SDK replaces the error of a failed step with its own
+      const step = async (_name: string, stepFn: () => Promise<unknown>) => {
+        try {
+          await stepFn();
+        } catch {
+          throw new Error('StepError');
+        }
+      };
+      const handler = makeIdempotent(
+        async (_event: unknown, _context: DurableTestContext) => fn(),
+        { persistenceStore }
+      );
+
+      // Act & Assess
+      await expect(
+        handler(event, createDurableContext(executionA, 'ExecutionMode', step))
+      ).rejects.toMatchObject({
+        name: 'IdempotencyPersistenceLayerError',
+        message,
+        cause: new Error('Persistence failed'),
+      });
+    }
+  );
+
+  it('throws the error of a durable step that fails without running the persistence call', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    // A step replayed from a failed checkpoint fails without running its function
+    const step = async () => {
+      throw new Error('StepError');
+    };
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: DurableTestContext) => true,
+      { persistenceStore }
+    );
+
+    // Act & Assess
+    await expect(
+      handler(event, createDurableContext(executionA, 'ExecutionMode', step))
+    ).rejects.toThrow('StepError');
+    expect(persistenceStore._updateRecord).not.toHaveBeenCalled();
+  });
+
+  it('runs the persistence calls outside a durable step when the context has no durable execution ARN', async () => {
+    // Prepare
+    const persistenceStore = new PersistenceLayerTestClass();
+    const step = vi.fn();
+    const handler = makeIdempotent(
+      async (_event: unknown, _context: DurableTestContext) => true,
+      { persistenceStore }
+    );
+
+    // Act
+    await handler(event, {
+      step,
+      lambdaContext: context,
+      durableExecutionMode: 'ExecutionMode',
+    });
+
+    // Assess
+    expect(step).not.toHaveBeenCalled();
+    expect(persistenceStore._updateRecord).toHaveBeenCalledOnce();
   });
 
   it('runs a durable execution once when another execution with the same payload starts while it is suspended', async () => {

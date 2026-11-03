@@ -5,6 +5,11 @@ export {
   TEST_ARCHITECTURES,
   TEST_RUNTIMES,
 } from './constants.js';
+export {
+  getDurableExecutionHistory,
+  startDurableExecution,
+  waitForDurableExecution,
+} from './durableExecution.js';
 export type { Invocation } from './helpers.js';
 export {
   concatenateResourceName,

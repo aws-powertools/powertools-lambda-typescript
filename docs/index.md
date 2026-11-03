@@ -29,6 +29,7 @@ Powertools for AWS Lambda (TypeScript) is built as a modular toolkit, so you can
 | [Validation](./features/validation.md)                      | JSON Schema validation for events and responses, including JMESPath support to unwrap events before validation.                                                   |
 | [Kafka](./features/kafka.md)                                | Utility to easily handle message deserialization and parsing of Kafka events in AWS Lambda functions.                                                             |
 | [Signer](./features/signer.md)                              | Sign HTTP requests to AWS services using the AWS Signature Version 4 (SigV4) signing process, with an optional drop-in signed `fetch`.                            |
+| [Feature Flags](./features/feature-flags.md)                | Evaluate feature flags from a local rule engine over a JSON document or from AWS AppConfig multi-variant flags, with explicit fallbacks.                          |
 
 ## Examples
 

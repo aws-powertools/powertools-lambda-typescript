@@ -72,7 +72,7 @@ type PowertoolsStandardKeys = {
   /**
    * The percentage rate at which the log level is `DEBUG`.
    *
-   * See {@link https://docs.aws.amazon.com/powertools/typescript/latest/core/logger/#sampling-debug-logs | Sampling debug logs} for more information.
+   * See {@link https://docs.aws.amazon.com/powertools/typescript/latest/features/logger/#sampling-debug-logs | Sampling debug logs} for more information.
    *
    * @example 0.1
    */
@@ -107,7 +107,7 @@ type PowertoolsStandardKeys = {
  * Additional keys that are added to the log item when using the default log formatter and
  * having added AWS Lambda context.
  *
- * See {@link https://docs.aws.amazon.com/powertools/typescript/latest/core/logger/#capturing-lambda-context-info | Capturing Lambda context info} for more information.
+ * See {@link https://docs.aws.amazon.com/powertools/typescript/latest/features/logger/#capturing-lambda-context-info | Capturing Lambda context info} for more information.
  */
 type PowertoolsLambdaContextKeys = {
   /**

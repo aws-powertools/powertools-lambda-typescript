@@ -28,7 +28,7 @@ To get started, install the library by running:
 npm i @aws-lambda-powertools/metrics
 ```
 
-After initializing the Metrics class, you can add metrics using the [https://docs.aws.amazon.com/powertools/typescript/latest/core/metrics/#creating-metrics](`addMetric()`) method. The metrics are stored in a buffer and are flushed when calling [https://docs.aws.amazon.com/powertools/typescript/latest/core/metrics/#flushing-metrics](`publishStoredMetrics()`).
+After initializing the Metrics class, you can add metrics using the [`addMetric()`](https://docs.aws.amazon.com/powertools/typescript/latest/features/metrics/#creating-metrics) method. The metrics are stored in a buffer and are flushed when calling [`publishStoredMetrics()`](https://docs.aws.amazon.com/powertools/typescript/latest/features/metrics/#flushing-metrics).
 
 Each metric can also have dimensions and metadata added to it.
 

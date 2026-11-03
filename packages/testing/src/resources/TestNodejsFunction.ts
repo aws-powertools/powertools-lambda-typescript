@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { CfnOutput, Duration } from 'aws-cdk-lib';
+import { Annotations, CfnOutput, Duration } from 'aws-cdk-lib';
 import { Alias, type CfnFunction, Tracing } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
@@ -60,6 +60,13 @@ class TestNodejsFunction extends NodejsFunction {
       architecture: TEST_ARCHITECTURES[getArchitectureKey()],
       logGroup,
     });
+
+    if (props.durableConfig) {
+      Annotations.of(this).acknowledgeInfo(
+        'aws-lambda:Function.DurableConfig',
+        'Test functions are created with their stack, so enabling durability never replaces an existing function'
+      );
+    }
 
     let outputValue = this.functionName;
     if (extraProps.lmi) {

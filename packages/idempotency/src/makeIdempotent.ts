@@ -4,6 +4,7 @@ import { IdempotencyConfig } from './IdempotencyConfig.js';
 import { IdempotencyHandler } from './IdempotencyHandler.js';
 import type {
   AnyFunction,
+  DurableStepContext,
   IdempotencyLambdaHandlerOptions,
   ItempotentFunctionOptions,
 } from './types/IdempotencyOptions.js';
@@ -17,12 +18,13 @@ const isContext = (arg: unknown): arg is Context => {
   );
 };
 
-const isDurableContext = (arg: unknown): boolean => {
+const isDurableContext = (arg: unknown): arg is DurableStepContext => {
   return (
     arg !== undefined &&
     arg !== null &&
     typeof arg === 'object' &&
-    'step' in arg
+    'step' in arg &&
+    typeof arg.step === 'function'
   );
 };
 
@@ -148,6 +150,10 @@ function makeIdempotent<Func extends AnyFunction>(
 
     const isReplay = args[1]?.durableExecutionMode === 'ReplayMode';
     const durableExecutionArn = args[1]?.executionContext?.durableExecutionArn;
+    const durableContext =
+      durableExecutionArn !== undefined && isDurableContext(args[1])
+        ? args[1]
+        : undefined;
 
     return new IdempotencyHandler({
       functionToMakeIdempotent: fn,
@@ -157,7 +163,11 @@ function makeIdempotent<Func extends AnyFunction>(
       functionArguments: args,
       functionPayloadToBeHashed,
       thisArg: this,
-    }).handle({ isReplay, durableExecutionArn }) as ReturnType<Func>;
+    }).handle({
+      isReplay,
+      durableExecutionArn,
+      durableContext,
+    }) as ReturnType<Func>;
   };
 }
 

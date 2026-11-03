@@ -315,6 +315,9 @@ A durable execution can be suspended, for example by a wait, and resumed in a la
 
 * **No in-progress expiry.** The record doesn't store the [remaining time of the invocation](#lambda-timeouts), since the execution can outlive it. It stays `INPROGRESS` until the execution completes or the record expires.
 * **Owned by the execution.** The record stores the ARN of the durable execution as its owner. When the same execution is replayed or retried, it continues with its own record. Another execution with the same payload gets an `IdempotencyAlreadyInProgressError` until the first one completes, and the stored result after that.
+* **Updated in a durable step.** After your handler returns or throws, the utility saves the result or deletes the record in a durable step, named `powertools-idempotency-save` or `powertools-idempotency-delete`, which appears in the execution history.
+  The step keeps the execution from being suspended while the record is updated. Without it, a handler that leaves a durable operation pending, for example the losing side of a `Promise.race` against a `context.wait`, would only complete once that operation does.
+  The step doesn't retry, so a failure to update the record still surfaces as an `IdempotencyPersistenceLayerError`.
 
 ???+ important "Set `expiresAfterSeconds` to at least the execution timeout"
     Without an in-progress expiry, the record of a durable execution expires only after `expiresAfterSeconds`, one hour by default. If the execution runs longer, its record can expire while it is suspended, and another execution with the same payload can run in the meantime.
@@ -325,6 +328,10 @@ A durable execution can be suspended, for example by a wait, and resumed in a la
     Until then, other executions with the same payload get an `IdempotencyAlreadyInProgressError`. To run the payload again sooner, delete its record from the persistence store.
 
 If you [bring your own persistence store](#bring-your-own-persistent-store), save and return the `owner` of the record too, so that a durable execution can recognize its own record.
+
+???+ tip "Call idempotent functions inside a step"
+    The durable execution SDK suspends an invocation shortly after its durable operations go idle, without waiting for other asynchronous work in your handler.
+    If you [make a function idempotent](#makeidempotent-function-wrapper) and call it between durable operations, its calls to the persistence store are such work. Call it inside a `context.step` instead, so that the execution is not suspended while it runs.
 
 ### Handling exceptions
 

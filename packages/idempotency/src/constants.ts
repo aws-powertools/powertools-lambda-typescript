@@ -37,7 +37,22 @@ const PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS: Record<
   ownerAttr: 'owner',
 } as const;
 
+/**
+ * Names of the durable steps that run the persistence calls made after the
+ * wrapped function settles, when it runs in a durable execution.
+ *
+ * Running these calls in a step keeps the durable execution SDK from
+ * suspending the invocation while they are in flight.
+ *
+ * @internal
+ */
+const IdempotencyDurableStepName = {
+  SAVE_SUCCESS: 'powertools-idempotency-save',
+  DELETE_IN_PROGRESS: 'powertools-idempotency-delete',
+} as const;
+
 export {
+  IdempotencyDurableStepName,
   IdempotencyRecordStatus,
   MAX_RETRIES,
   PERSISTENCE_ATTRIBUTE_KEY_MAPPINGS,

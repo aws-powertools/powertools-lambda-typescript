@@ -19,7 +19,8 @@
     "packages/validation",
     "packages/kafka",
     "packages/data-masking",
-    "packages/signer"
+    "packages/signer",
+    "packages/feature-flags"
   ],
   "type": "module",
   "scripts": {

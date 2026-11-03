@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import {
   type Event,
   GetDurableExecutionCommand,
@@ -86,7 +87,7 @@ const waitForDurableExecution = async ({
         throw error;
       }
     }
-    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    await setTimeout(intervalMs);
   }
   throw new Error(
     `Durable execution ${durableExecutionArn} was still running after ${timeoutMs} ms`

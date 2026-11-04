@@ -1,4 +1,35 @@
-import type { JSONValue } from '@aws-lambda-powertools/commons/types';
+import type {
+  GenericLogger,
+  JSONValue,
+} from '@aws-lambda-powertools/commons/types';
+
+/** Configures the Store and optional logger for flag evaluation. */
+type FeatureFlagsOptions<Value = JSONValue> = {
+  /** Provides flag lookups. */
+  store: Store<Value>;
+  /** Logs evaluation outcomes without values. */
+  logger?: GenericLogger;
+};
+
+/**
+ * Widens primitive fallbacks and uses JSONValue for structured fallbacks.
+ *
+ * A structured literal cannot soundly describe a Store result.
+ */
+type EvaluateResult<Fallback> = Fallback extends boolean
+  ? boolean
+  : Fallback extends number
+    ? number
+    : Fallback extends string
+      ? string
+      : JSONValue;
+
+/** Supplies the flag name, context, and required fallback for evaluation. */
+type EvaluateOptions<Fallback extends JSONValue> = {
+  name: string;
+  context?: EvaluationContext;
+  default: Fallback;
+};
 
 /** Represents a scalar fact in an evaluation context. */
 type ContextScalar = string | number | boolean;
@@ -36,7 +67,10 @@ type Variant = {
 export type {
   ContextScalar,
   ContextValue,
+  EvaluateOptions,
+  EvaluateResult,
   EvaluationContext,
+  FeatureFlagsOptions,
   Store,
   StoreResult,
   Variant,

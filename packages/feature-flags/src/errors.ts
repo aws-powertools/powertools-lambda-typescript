@@ -20,4 +20,35 @@ class StoreUnavailableError extends FeatureFlagsError {
   }
 }
 
-export { FeatureFlagsError, StoreUnavailableError };
+/** Reports an invalid evaluation context without exposing its values. */
+class InvalidContextError extends FeatureFlagsError {
+  /**
+   * Creates an invalid context error.
+   * @param message - Describe the invalid context key
+   * @param options - Supply optional error details
+   */
+  public constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'InvalidContextError';
+  }
+}
+
+/** Reports a flag value whose type differs from its primitive fallback. */
+class FlagValueTypeError extends FeatureFlagsError {
+  /**
+   * Creates a flag value type error.
+   * @param message - Describe the flag and mismatched types
+   * @param options - Supply optional error details
+   */
+  public constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'FlagValueTypeError';
+  }
+}
+
+export {
+  FeatureFlagsError,
+  FlagValueTypeError,
+  InvalidContextError,
+  StoreUnavailableError,
+};

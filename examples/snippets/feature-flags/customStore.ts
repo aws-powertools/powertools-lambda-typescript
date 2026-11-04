@@ -1,16 +1,21 @@
-import { FeatureFlags, type Store } from '@aws-lambda-powertools/feature-flags';
+import {
+  FeatureFlags,
+  type Store,
+  type StoreResult,
+} from '@aws-lambda-powertools/feature-flags';
 
 const store: Store = {
   name: 'in-memory',
-  getMany: async (names, _context) =>
-    Object.fromEntries(
-      names.map((name) => [
-        name,
+  getMany: async (names, _context) => {
+    const result: Record<string, StoreResult> = {};
+    for (const name of names) {
+      result[name] =
         name === 'checkout_v2'
           ? { found: true, value: true, enabled: true }
-          : { found: false },
-      ])
-    ),
+          : { found: false };
+    }
+    return result;
+  },
   getAll: async (_context) => ({
     checkout_v2: { found: true, value: true, enabled: true },
   }),

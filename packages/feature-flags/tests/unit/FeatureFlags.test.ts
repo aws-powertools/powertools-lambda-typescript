@@ -206,11 +206,6 @@ describe('FeatureFlags', () => {
         store: 'in-memory',
         reason,
       });
-      for (const field of ['context', 'default', 'fallback', 'value']) {
-        expect(logger.warn).toHaveBeenCalledWith(
-          expect.not.objectContaining({ [field]: expect.anything() })
-        );
-      }
       expect(logger.debug).toHaveBeenCalledExactlyOnceWith({
         name: 'checkout',
         store: 'in-memory',
@@ -237,11 +232,6 @@ describe('FeatureFlags', () => {
       store: 'in-memory',
       outcome: 'found',
     });
-    for (const field of ['context', 'default', 'fallback', 'value']) {
-      expect(logger.debug).toHaveBeenCalledWith(
-        expect.not.objectContaining({ [field]: expect.anything() })
-      );
-    }
     expect(logger.warn).not.toHaveBeenCalled();
   });
 

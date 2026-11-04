@@ -1,6 +1,7 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  type EvaluationContext,
   FeatureFlags,
   FlagValueTypeError,
   InvalidContextError,
@@ -27,6 +28,267 @@ const prepare = () => {
 };
 
 describe('FeatureFlags', () => {
+  it('preserves special names and numeric key order in batch results', async () => {
+    // Prepare
+    const { flags, store } = prepare();
+    const fallbacks = { z: false, ['__proto__']: 'fallback', 2: 10, 1: 20 };
+    store.getMany.mockResolvedValue({
+      ['__proto__']: { found: true, value: 'stored', enabled: true },
+    });
+    // Act
+    const result = await flags.evaluateMany({ flags: fallbacks });
+    // Assess
+    expect(result).toEqual({ ...fallbacks, ['__proto__']: 'stored' });
+    expect(Object.keys(result)).toEqual(Object.keys(fallbacks));
+    expect(store.getMany).toHaveBeenCalledExactlyOnceWith(
+      ['1', '2', 'z', '__proto__'],
+      {}
+    );
+  });
+
+  it.each(['found', 'partial', 'fallback'] as const)(
+    'evaluates a batch with outcome $0',
+    async (outcome) => {
+      // Prepare
+      const { flags, store, logger } = prepare();
+      const fallbacks = { a: false, b: 10, c: 'x', d: { k: 1 } };
+      const context = { secret: 'hidden', facts: [true, 1, 'x'] };
+      store.getMany.mockResolvedValue({
+        ...(outcome !== 'fallback'
+          ? { a: { found: true as const, value: true, enabled: false } }
+          : {}),
+        ...(outcome === 'found'
+          ? {
+              b: { found: true as const, value: 20, enabled: true },
+              c: { found: true as const, value: 'y', enabled: true },
+              d: { found: true as const, value: { other: 2 }, enabled: true },
+            }
+          : { b: { found: false as const } }),
+        extra: { found: true, value: 'ignored', enabled: true },
+      });
+      // Act
+      const result = await flags.evaluateMany({ flags: fallbacks, context });
+      // Assess
+      expect(result).toEqual(
+        outcome === 'found'
+          ? { a: true, b: 20, c: 'y', d: { other: 2 } }
+          : { ...fallbacks, a: outcome === 'partial' }
+      );
+      expect(Object.keys(result)).toEqual(Object.keys(fallbacks));
+      expect(store.getMany).toHaveBeenCalledExactlyOnceWith(
+        ['a', 'b', 'c', 'd'],
+        context
+      );
+      expect(store.getAll).not.toHaveBeenCalled();
+      expect(logger.debug).toHaveBeenCalledExactlyOnceWith({
+        store: 'in-memory',
+        outcome,
+        names: ['a', 'b', 'c', 'd'],
+      });
+      if (outcome === 'found') expect(logger.warn).not.toHaveBeenCalled();
+      else
+        expect(logger.warn).toHaveBeenCalledExactlyOnceWith({
+          store: 'in-memory',
+          reason: 'missing',
+          names: outcome === 'partial' ? ['b', 'c', 'd'] : ['a', 'b', 'c', 'd'],
+        });
+    }
+  );
+
+  it('returns every fallback for an unavailable batch', async () => {
+    // Prepare
+    const { flags, store, logger } = prepare();
+    store.getMany.mockRejectedValue(new StoreUnavailableError('secret'));
+    const fallbacks = { a: false, b: { secret: 'hidden' } };
+    // Act
+    const result = await flags.evaluateMany({ flags: fallbacks });
+    // Assess
+    expect(result).toEqual(fallbacks);
+    expect(store.getMany).toHaveBeenCalledExactlyOnceWith(['a', 'b'], {});
+    expect(logger.warn).toHaveBeenCalledExactlyOnceWith({
+      store: 'in-memory',
+      reason: 'unavailable',
+      names: ['a', 'b'],
+    });
+    expect(logger.debug).toHaveBeenCalledExactlyOnceWith({
+      store: 'in-memory',
+      outcome: 'fallback',
+      names: ['a', 'b'],
+    });
+  });
+
+  it('rejects the whole batch for a mismatched flag', async () => {
+    // Prepare
+    const { flags, store, logger } = prepare();
+    store.getMany.mockResolvedValue({
+      b: { found: true, value: 'secret', enabled: true },
+    });
+    // Act
+    const result = flags.evaluateMany({ flags: { a: false, b: 10 } });
+    // Assess
+    await expect(result).rejects.toBeInstanceOf(FlagValueTypeError);
+    await expect(result).rejects.toThrow(
+      "Flag 'b' expected type 'number' but received 'string'"
+    );
+    expect(store.getMany).toHaveBeenCalledExactlyOnceWith(['a', 'b'], {});
+    expect(logger.debug).not.toHaveBeenCalled();
+    expect(logger.warn).not.toHaveBeenCalled();
+  });
+
+  it.each([null, [], Number.NaN])(
+    'accepts unchecked or numeric batch fallback %j',
+    async (fallback) => {
+      // Prepare
+      const { flags, store } = prepare();
+      const value = typeof fallback === 'number' ? Number.NaN : { k: 1 };
+      store.getMany.mockResolvedValue({
+        a: { found: true, value, enabled: false },
+      });
+      // Act
+      const result = await flags.evaluateMany({ flags: { a: fallback } });
+      // Assess
+      expect(result).toEqual({ a: value });
+    }
+  );
+
+  it('evaluates an empty batch with one Store call', async () => {
+    // Prepare
+    const { flags, store, logger } = prepare();
+    store.getMany.mockResolvedValue({});
+    // Act
+    const result = await flags.evaluateMany({ flags: {} });
+    // Assess
+    expect(result).toEqual({});
+    expect(store.getMany).toHaveBeenCalledExactlyOnceWith([], {});
+    expect(logger.debug).toHaveBeenCalledExactlyOnceWith({
+      store: 'in-memory',
+      outcome: 'found',
+      names: [],
+    });
+    expect(logger.warn).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])(
+    'gets enabled names with empty response $0',
+    async (empty) => {
+      // Prepare
+      const { flags, store, logger } = prepare();
+      const context = { secret: 'hidden' };
+      store.getAll.mockResolvedValue(
+        empty
+          ? {}
+          : {
+              z: { found: true, enabled: true, value: { k: 1 } },
+              missing: { found: false },
+              disabled: { found: true, enabled: false, value: true },
+              a: { found: true, enabled: true, value: false },
+            }
+      );
+      // Act
+      const result = await flags.getEnabledFeatures({ context });
+      // Assess
+      expect(result).toEqual(empty ? [] : ['z', 'a']);
+      expect(store.getAll).toHaveBeenCalledExactlyOnceWith(context);
+      expect(store.getMany).not.toHaveBeenCalled();
+      expect(logger.debug).toHaveBeenCalledExactlyOnceWith({
+        store: 'in-memory',
+        outcome: 'found',
+        enabled: empty ? 0 : 2,
+      });
+      expect(logger.warn).not.toHaveBeenCalled();
+    }
+  );
+
+  it('returns no enabled names for an unavailable Store', async () => {
+    // Prepare
+    const { flags, store, logger } = prepare();
+    store.getAll.mockRejectedValue(new StoreUnavailableError('secret'));
+    // Act
+    const result = await flags.getEnabledFeatures();
+    // Assess
+    expect(result).toEqual([]);
+    expect(store.getAll).toHaveBeenCalledExactlyOnceWith({});
+    expect(logger.warn).toHaveBeenCalledExactlyOnceWith({
+      store: 'in-memory',
+      reason: 'unavailable',
+    });
+    expect(logger.debug).toHaveBeenCalledExactlyOnceWith({
+      store: 'in-memory',
+      outcome: 'fallback',
+      enabled: 0,
+    });
+  });
+
+  it.each(['evaluateMany', 'getEnabledFeatures'] as const)(
+    'propagates errors from $0 unchanged',
+    async (method) => {
+      // Prepare
+      const { flags, store, logger } = prepare();
+      const error = new Error('secret');
+      store.getMany.mockRejectedValue(error);
+      store.getAll.mockRejectedValue(error);
+      // Act
+      const result =
+        method === 'evaluateMany'
+          ? flags.evaluateMany({ flags: { a: false } })
+          : flags.getEnabledFeatures();
+      // Assess
+      await expect(result).rejects.toBe(error);
+      expect(logger.debug).not.toHaveBeenCalled();
+      expect(logger.warn).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(['evaluateMany', 'getEnabledFeatures'] as const)(
+    'validates context before $0 lookup',
+    async (method) => {
+      // Prepare
+      const { flags, store } = prepare();
+      const context: EvaluationContext = {
+        // @ts-expect-error Test JavaScript callers that bypass context types.
+        invalid: [null],
+      };
+      // Act
+      const result =
+        method === 'evaluateMany'
+          ? flags.evaluateMany({ flags: { a: false }, context })
+          : flags.getEnabledFeatures({ context });
+      // Assess
+      await expect(result).rejects.toBeInstanceOf(InvalidContextError);
+      await expect(result).rejects.toThrow(
+        "Invalid evaluation context key 'invalid': expected a string, number, boolean, or array of those, received an array containing null"
+      );
+      expect(store.getMany).not.toHaveBeenCalled();
+      expect(store.getAll).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(['found', 'missing', 'unavailable'] as const)(
+    'keeps batch and enabled lookups silent without a logger for $0',
+    async (outcome) => {
+      // Prepare
+      const { store } = prepare();
+      const flags = new FeatureFlags({ store });
+      if (outcome === 'unavailable') {
+        store.getMany.mockRejectedValue(new StoreUnavailableError('secret'));
+        store.getAll.mockRejectedValue(new StoreUnavailableError('secret'));
+      } else {
+        const response: Record<string, StoreResult> =
+          outcome === 'found'
+            ? { a: { found: true as const, value: true, enabled: true } }
+            : {};
+        store.getMany.mockResolvedValue(response);
+        store.getAll.mockResolvedValue(response);
+      }
+      // Act
+      await flags.evaluateMany({ flags: { a: false } });
+      await flags.getEnabledFeatures({});
+      // Assess
+      expect(console.debug).not.toHaveBeenCalled();
+      expect(console.warn).not.toHaveBeenCalled();
+    }
+  );
+
   it.each<{ fallback: JSONValue; value: JSONValue }>([
     { fallback: false, value: true },
     { fallback: 10, value: 20 },

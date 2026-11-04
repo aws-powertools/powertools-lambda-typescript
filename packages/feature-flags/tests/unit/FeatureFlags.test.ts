@@ -211,7 +211,11 @@ describe('FeatureFlags', () => {
           expect.not.objectContaining({ [field]: expect.anything() })
         );
       }
-      expect(logger.debug).not.toHaveBeenCalled();
+      expect(logger.debug).toHaveBeenCalledExactlyOnceWith({
+        name: 'checkout',
+        store: 'in-memory',
+        outcome: 'fallback',
+      });
     }
   );
 
@@ -231,6 +235,7 @@ describe('FeatureFlags', () => {
     expect(logger.debug).toHaveBeenCalledExactlyOnceWith({
       name: 'checkout',
       store: 'in-memory',
+      outcome: 'found',
     });
     for (const field of ['context', 'default', 'fallback', 'value']) {
       expect(logger.debug).toHaveBeenCalledWith(

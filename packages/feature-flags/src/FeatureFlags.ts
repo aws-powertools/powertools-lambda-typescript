@@ -85,12 +85,22 @@ class FeatureFlags {
         store: this.#store.name,
         reason: 'unavailable',
       });
+      this.#logger?.debug({
+        name,
+        store: this.#store.name,
+        outcome: 'fallback',
+      });
       return fallback;
     }
 
     const flag = result[name];
     if (!flag?.found) {
       this.#logger?.warn({ name, store: this.#store.name, reason: 'missing' });
+      this.#logger?.debug({
+        name,
+        store: this.#store.name,
+        outcome: 'fallback',
+      });
       return fallback;
     }
 
@@ -105,7 +115,7 @@ class FeatureFlags {
         `Flag '${name}' expected type '${expected}' but received '${typeof flag.value}'`
       );
     }
-    this.#logger?.debug({ name, store: this.#store.name });
+    this.#logger?.debug({ name, store: this.#store.name, outcome: 'found' });
     return flag.value;
   }
 }

@@ -103,4 +103,12 @@ description: Features of Powertools for AWS Lambda
 
     [:octicons-arrow-right-24: Read more](./signer.md)
 
+- __Feature Flags__
+
+    ---
+
+    Evaluate feature flags from a local rule engine over a JSON document or from AWS AppConfig multi-variant flags, with explicit fallbacks.
+
+    [:octicons-arrow-right-24: Read more](./feature-flags.md)
+
 </div>

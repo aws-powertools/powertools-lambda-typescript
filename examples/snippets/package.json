@@ -30,6 +30,7 @@
     "@aws-lambda-powertools/batch": "^2.36.0",
     "@aws-lambda-powertools/data-masking": "^2.36.0",
     "@aws-lambda-powertools/event-handler": "^2.36.0",
+    "@aws-lambda-powertools/feature-flags": "^2.36.0",
     "@aws-lambda-powertools/idempotency": "^2.36.0",
     "@aws-lambda-powertools/jmespath": "^2.36.0",
     "@aws-lambda-powertools/logger": "^2.36.0",

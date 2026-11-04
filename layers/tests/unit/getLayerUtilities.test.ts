@@ -73,6 +73,7 @@ describe('getLayerUtilities', () => {
       'commons',
       'data-masking',
       'event-handler',
+      'feature-flags',
       'idempotency',
       'jmespath',
       'kafka',

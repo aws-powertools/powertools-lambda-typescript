@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ConditionEvaluationError,
   FeatureFlagsError,
   FlagValueTypeError,
   InvalidContextError,
+  SchemaValidationError,
   StoreUnavailableError,
 } from '../../src/index.js';
 
 describe('Feature flags errors', () => {
   it.each([
+    ConditionEvaluationError,
+    SchemaValidationError,
     FeatureFlagsError,
     FlagValueTypeError,
     InvalidContextError,
@@ -25,6 +29,8 @@ describe('Feature flags errors', () => {
   });
 
   it.each([
+    ConditionEvaluationError,
+    SchemaValidationError,
     FeatureFlagsError,
     FlagValueTypeError,
     InvalidContextError,
@@ -41,6 +47,8 @@ describe('Feature flags errors', () => {
   });
 
   it.each([
+    ConditionEvaluationError,
+    SchemaValidationError,
     FeatureFlagsError,
     FlagValueTypeError,
     InvalidContextError,

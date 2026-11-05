@@ -4,7 +4,11 @@ import {
   isRunningInLambda,
 } from '@aws-lambda-powertools/commons/utils/env';
 import { transformValue } from '../base/transformValue.js';
-import { GetParameterError, ParameterNotFoundError } from '../errors.js';
+import {
+  AppConfigAgentError,
+  GetParameterError,
+  ParameterNotFoundError,
+} from '../errors.js';
 import type {
   AppConfigAgentGetConfigOutput,
   GetConfigOptions,
@@ -23,6 +27,8 @@ import type {
  *
  * When the requested configuration does not exist, the function returns `undefined`. You can use the `throwOnMissing`
  * option to throw a `ParameterNotFoundError` instead, or use the nullish coalescing operator (`??`) to provide a fallback value.
+ * For other non-success HTTP responses, the function throws an {@link AppConfigAgentError | `AppConfigAgentError`}
+ * with the HTTP status in `statusCode`. This error extends {@link GetParameterError | `GetParameterError`}.
  *
  * When the function detects that it's not running in AWS Lambda (the `AWS_LAMBDA_INITIALIZATION_TYPE` environment variable
  * is not set), or when running with `POWERTOOLS_DEV` enabled, it doesn't make any request. In this case, if the
@@ -142,8 +148,9 @@ const fetchConfigFromAgent = async (
       return undefined;
     }
     if (!res.ok) {
-      throw new GetParameterError(
-        `Failed to retrieve configuration from AppConfig Agent: ${res.status} ${value}`
+      throw new AppConfigAgentError(
+        `Failed to retrieve configuration from AppConfig Agent: ${res.status} ${value}`,
+        res.status
       );
     }
     return value;

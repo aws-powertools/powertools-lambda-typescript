@@ -4,6 +4,9 @@ site_author: Amazon Web Services
 repo_url: https://github.com/aws-powertools/powertools-lambda-typescript
 edit_uri: edit/main/docs
 site_url: https://docs.aws.amazon.com/powertools/typescript/latest/
+exclude_docs: |
+  /Dockerfile
+  /requirements.*
 watch: [
   docs,
   packages/batch/src,

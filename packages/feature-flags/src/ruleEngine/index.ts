@@ -13,6 +13,7 @@ import { validate } from './validate.js';
  * Time Actions and MODULO_RANGE are not supported yet.
  *
  * @param {Object} options - Configure retrieval and logging
+ * @param {string} options.name - Name the Store, defaulting to `rule-engine`
  * @param {Function} options.source - Retrieve a Flag Document for each Store call
  * @param {GenericLogger} options.logger - Log warnings and outcomes without values
  * @example
@@ -27,8 +28,9 @@ import { validate } from './validate.js';
 const ruleEngineStore = ({
   source,
   logger,
+  name = 'rule-engine',
 }: RuleEngineStoreOptions): Store => ({
-  name: 'rule-engine',
+  name,
   getMany: async (names, context) => {
     const document = validate(await source(), logger);
     const results: [string, StoreResult][] = [];

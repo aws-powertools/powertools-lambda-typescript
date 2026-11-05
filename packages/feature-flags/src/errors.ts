@@ -1,3 +1,5 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
+
 /** Provides the base error for the feature flags utility. */
 class FeatureFlagsError extends Error {
   public constructor(message: string, options?: ErrorOptions) {
@@ -72,9 +74,48 @@ class ConditionEvaluationError extends FeatureFlagsError {
   }
 }
 
+/** Reports schema validation failures using issue paths without exposing values. */
+class FlagResultValidationError extends FeatureFlagsError {
+  public readonly flag: string;
+  public readonly source: 'fallback' | 'result';
+
+  /**
+   * Creates a validation error and preserves the issues as its cause.
+   * @param flag - Identify the flag
+   * @param source - Identify the fallback or Store result
+   * @param issues - Supply the validator's issue paths and cause
+   */
+  public constructor(
+    flag: string,
+    source: 'fallback' | 'result',
+    issues: ReadonlyArray<StandardSchemaV1.Issue>
+  ) {
+    const paths: string[] = [];
+    for (const issue of issues) {
+      const segments: string[] = [];
+      for (const segment of issue.path ?? []) {
+        segments.push(
+          String(typeof segment === 'object' ? segment.key : segment)
+        );
+      }
+      paths.push(segments.length > 0 ? segments.join('.') : '(root)');
+    }
+    super(
+      `Flag '${flag}' ${source} failed schema validation at ${paths.join(', ')}`,
+      {
+        cause: issues,
+      }
+    );
+    this.name = 'FlagResultValidationError';
+    this.flag = flag;
+    this.source = source;
+  }
+}
+
 export {
   ConditionEvaluationError,
   FeatureFlagsError,
+  FlagResultValidationError,
   FlagValueTypeError,
   InvalidContextError,
   SchemaValidationError,

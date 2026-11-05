@@ -51,6 +51,16 @@
         "default": "./lib/esm/appconfig/index.js"
       }
     },
+    "./appconfig-agent": {
+      "require": {
+        "types": "./lib/cjs/appconfig-agent/index.d.ts",
+        "default": "./lib/cjs/appconfig-agent/index.js"
+      },
+      "import": {
+        "types": "./lib/esm/appconfig-agent/index.d.ts",
+        "default": "./lib/esm/appconfig-agent/index.js"
+      }
+    },
     "./errors": {
       "require": {
         "types": "./lib/cjs/errors.d.ts",
@@ -81,6 +91,10 @@
       "appconfig": [
         "lib/cjs/appconfig/index.d.ts",
         "lib/esm/appconfig/index.d.ts"
+      ],
+      "appconfig-agent": [
+        "lib/cjs/appconfig-agent/index.d.ts",
+        "lib/esm/appconfig-agent/index.d.ts"
       ],
       "errors": [
         "lib/cjs/errors.d.ts",

@@ -14,7 +14,7 @@ const S3Identity = z.object({
 });
 
 const S3RequestParameters = z.object({
-  sourceIPAddress: z.union([z.ipv4(), z.literal('s3.amazonaws.com')]),
+  sourceIPAddress: z.union([z.ipv4(), z.ipv6(), z.literal('s3.amazonaws.com')]),
 });
 
 const S3ResponseElements = z.object({
@@ -74,7 +74,7 @@ const S3EventNotificationEventBridgeDetailSchema = z.object({
   }),
   'request-id': z.string(),
   requester: z.string(),
-  'source-ip-address': z.ipv4().optional(),
+  'source-ip-address': z.union([z.ipv4(), z.ipv6()]).optional(),
   reason: z.string().optional(),
   'deletion-type': z.string().optional(),
   'restore-expiry-time': z.string().optional(),

@@ -108,8 +108,10 @@ const validateRules = (
       );
     }
     const validatedConditions: Condition[] = [];
-    for (const condition of conditions)
-      validatedConditions.push(validateCondition(condition, location));
+    for (const [index, condition] of conditions.entries())
+      validatedConditions.push(
+        validateCondition(condition, `${location}, condition ${index}`)
+      );
     entries.push([
       ruleName,
       { when_match: whenMatch, conditions: validatedConditions },
@@ -123,12 +125,12 @@ const validateRules = (
 /**
  * Validates a Condition and identifies failures without including operand values.
  * @param condition - Supply the Condition object
- * @param location - Identify its flag and Rule
+ * @param location - Identify its flag, Rule, and zero-based Condition index
  * @internal
  */
 const validateCondition = (condition: unknown, location: string): Condition => {
   if (!isRecord(condition))
-    throw new SchemaValidationError(`${location} condition must be an object`);
+    throw new SchemaValidationError(`${location} must be an object`);
   const action = condition[FlagDocumentFields.ACTION];
   const key = condition[FlagDocumentFields.KEY];
   const identifier = `${location}, key '${isString(key) ? key : '<invalid>'}', action '${isString(action) ? action : '<invalid>'}'`;

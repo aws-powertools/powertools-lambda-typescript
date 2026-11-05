@@ -246,11 +246,32 @@ describe('Rule Engine validation', () => {
       // Assess
       expect(act).toThrow(SchemaValidationError);
       expect(act).toThrow(
-        "Flag 'checkout', rule 'premium' condition must be an object"
+        "Flag 'checkout', rule 'premium', condition 0 must be an object"
       );
       expect(act).not.toThrow('secret-condition');
     }
   );
+
+  it('identifies the malformed second Condition in a three-Condition Rule', () => {
+    // Prepare
+    const validCondition = {
+      action: 'EQUALS',
+      key: 'tier',
+      value: 'secret-operand',
+    };
+    const document = documentWithRule({
+      when_match: true,
+      conditions: [validCondition, null, validCondition],
+    });
+    // Act
+    const act = () => validate(document);
+    // Assess
+    expect(act).toThrow(SchemaValidationError);
+    expect(act).toThrow(
+      "Flag 'checkout', rule 'premium', condition 1 must be an object"
+    );
+    expect(act).not.toThrow('secret-operand');
+  });
 
   it.each([{}, { action: null }, { action: 1 }, { action: [] }])(
     'rejects missing or non-string action %j',
@@ -266,7 +287,7 @@ describe('Rule Engine validation', () => {
       // Assess
       expect(act).toThrow(SchemaValidationError);
       expect(act).toThrow(
-        "Flag 'checkout', rule 'premium', key 'tier', action '<invalid>' action must be a string"
+        "Flag 'checkout', rule 'premium', condition 0, key 'tier', action '<invalid>' action must be a string"
       );
       expect(act).not.toThrow('secret-operand');
     }
@@ -286,7 +307,7 @@ describe('Rule Engine validation', () => {
       // Assess
       expect(act).toThrow(SchemaValidationError);
       expect(act).toThrow(
-        `Flag 'checkout', rule 'premium', key 'tier', action '${action}' action is unknown`
+        `Flag 'checkout', rule 'premium', condition 0, key 'tier', action '${action}' action is unknown`
       );
       expect(act).not.toThrow('secret-operand');
     }
@@ -309,7 +330,7 @@ describe('Rule Engine validation', () => {
     // Assess
     expect(act).toThrow(SchemaValidationError);
     expect(act).toThrow(
-      `Flag 'checkout', rule 'premium', key 'tier', action '${action}': ${action} is not supported yet`
+      `Flag 'checkout', rule 'premium', condition 0, key 'tier', action '${action}': ${action} is not supported yet`
     );
   });
 
@@ -327,7 +348,7 @@ describe('Rule Engine validation', () => {
       // Assess
       expect(act).toThrow(SchemaValidationError);
       expect(act).toThrow(
-        `Flag 'checkout', rule 'premium', key '${typeof key === 'string' ? key : '<invalid>'}', action 'EQUALS' key must be a non-empty string`
+        `Flag 'checkout', rule 'premium', condition 0, key '${typeof key === 'string' ? key : '<invalid>'}', action 'EQUALS' key must be a non-empty string`
       );
       expect(act).not.toThrow('secret-operand');
     }
@@ -341,7 +362,7 @@ describe('Rule Engine validation', () => {
     // Assess
     expect(act).toThrow(SchemaValidationError);
     expect(act).toThrow(
-      "Flag 'checkout', rule 'premium', key 'tier', action 'EQUALS' value must be present and contain JSON"
+      "Flag 'checkout', rule 'premium', condition 0, key 'tier', action 'EQUALS' value must be present and contain JSON"
     );
   });
 
@@ -359,7 +380,7 @@ describe('Rule Engine validation', () => {
       // Assess
       expect(act).toThrow(SchemaValidationError);
       expect(act).toThrow(
-        `Flag 'checkout', rule 'premium', key 'tier', action '${action}' value must be an array`
+        `Flag 'checkout', rule 'premium', condition 0, key 'tier', action '${action}' value must be an array`
       );
       expect(act).not.toThrow('secret-operand');
     }

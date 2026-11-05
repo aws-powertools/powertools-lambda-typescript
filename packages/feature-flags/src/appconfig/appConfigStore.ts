@@ -1,15 +1,10 @@
-import type {
-  GenericLogger,
-  JSONValue,
-} from '@aws-lambda-powertools/commons/types';
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { AppConfigProvider } from '@aws-lambda-powertools/parameters/appconfig';
 import type {
   AppConfigDataClient,
   AppConfigDataClientConfig,
 } from '@aws-sdk/client-appconfigdata';
-import { StoreUnavailableError } from '../errors.js';
-import { isAvailabilityFailure } from '../parameters-stores/classify.js';
-import { applyEnvelope } from '../parameters-stores/envelope.js';
+import { createDocumentSource } from '../parameters-stores/createDocumentSource.js';
 import { ruleEngineStore } from '../ruleEngine/index.js';
 import type { Store } from '../types/index.js';
 
@@ -69,24 +64,16 @@ const appConfigStore = (options: AppConfigStoreOptions): Store => {
   return ruleEngineStore({
     name: 'appconfig',
     logger: options.logger,
-    source: async () => {
-      let document: JSONValue;
-      try {
-        document = await provider.get(options.name, {
+    source: createDocumentSource({
+      storeName: 'appconfig',
+      envelope: options.envelope,
+      retrieve: () =>
+        provider.get(options.name, {
           transform: 'json',
           maxAge: options.maxAge,
           throwOnMissing: true,
-        });
-      } catch (error) {
-        if (isAvailabilityFailure(error)) {
-          throw new StoreUnavailableError('appconfig is unavailable', {
-            cause: error,
-          });
-        }
-        throw error;
-      }
-      return applyEnvelope(document, options.envelope);
-    },
+        }),
+    }),
   });
 };
 

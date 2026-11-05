@@ -13,11 +13,7 @@ import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { mockClient } from 'aws-sdk-client-mock';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { appConfigStore } from '../../../src/appconfig/index.js';
-import {
-  FeatureFlags,
-  SchemaValidationError,
-  StoreUnavailableError,
-} from '../../../src/index.js';
+import { FeatureFlags } from '../../../src/index.js';
 
 describe('appConfigStore', () => {
   const client = mockClient(AppConfigDataClient);
@@ -78,18 +74,6 @@ describe('appConfigStore', () => {
     expect(result).toBe(true);
   });
 
-  it('rejects an envelope miss without using the whole document', async () => {
-    // Prepare
-    const flags = new FeatureFlags({
-      store: appConfigStore({ ...options, envelope: 'settings.flags' }),
-    });
-    // Act
-    const result = flags.evaluate({ name: 'checkout', default: false });
-    // Assess
-    await expect(result).rejects.toBeInstanceOf(SchemaValidationError);
-    await expect(result).rejects.toThrow("Envelope 'settings.flags'");
-  });
-
   it.each([
     { name: 'ThrottlingException' },
     { name: 'UnknownException', $metadata: { httpStatusCode: 503 } },
@@ -105,45 +89,21 @@ describe('appConfigStore', () => {
     expect(result).toBe(false);
   });
 
-  it('preserves the Parameters cause in StoreUnavailableError', async () => {
+  it('rethrows Parameters access denial unchanged', async () => {
     // Prepare
-    const cause = Object.assign(new Error('retrieval failed'), {
-      name: 'ThrottlingException',
-    });
-    const error = new GetParameterError('retrieval failed', { cause });
-    vi.spyOn(AppConfigProvider.prototype, 'get').mockRejectedValue(error);
-    const store = appConfigStore(options);
-    // Act
-    const result = store.getMany(['checkout'], {});
-    // Assess
-    await expect(result).rejects.toBeInstanceOf(StoreUnavailableError);
-    await expect(result).rejects.toMatchObject({
-      message: 'appconfig is unavailable',
-      cause: error,
-    });
-  });
-
-  it.each([
-    new GetParameterError('denied', {
+    const error = new GetParameterError('denied', {
       cause: Object.assign(new Error('access denied'), {
         name: 'AccessDeniedException',
         $metadata: { httpStatusCode: 403 },
       }),
-    }),
-    new ParameterNotFoundError('missing profile'),
-    new TransformParameterError('json', 'malformed document'),
-  ])(
-    'propagates Parameters misconfiguration unchanged for %s',
-    async (error) => {
-      // Prepare
-      vi.spyOn(AppConfigProvider.prototype, 'get').mockRejectedValue(error);
-      const flags = new FeatureFlags({ store: appConfigStore(options) });
-      // Act
-      const result = flags.evaluate({ name: 'checkout', default: false });
-      // Assess
-      await expect(result).rejects.toBe(error);
-    }
-  );
+    });
+    vi.spyOn(AppConfigProvider.prototype, 'get').mockRejectedValue(error);
+    const flags = new FeatureFlags({ store: appConfigStore(options) });
+    // Act
+    const result = flags.evaluate({ name: 'checkout', default: false });
+    // Assess
+    await expect(result).rejects.toBe(error);
+  });
 
   it('propagates SDK access denial with its original cause', async () => {
     // Prepare

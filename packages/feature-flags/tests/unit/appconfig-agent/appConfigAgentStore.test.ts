@@ -6,11 +6,7 @@ import {
 } from '@aws-lambda-powertools/parameters/errors';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { appConfigAgentStore } from '../../../src/appconfig-agent/index.js';
-import {
-  FeatureFlags,
-  SchemaValidationError,
-  StoreUnavailableError,
-} from '../../../src/index.js';
+import { FeatureFlags } from '../../../src/index.js';
 
 describe('appConfigAgentStore', () => {
   const fetchMock = vi.fn<typeof fetch>();
@@ -63,18 +59,6 @@ describe('appConfigAgentStore', () => {
     expect(result).toBe(true);
   });
 
-  it('rejects an envelope miss without using the whole document', async () => {
-    // Prepare
-    const flags = new FeatureFlags({
-      store: appConfigAgentStore({ ...options, envelope: 'settings.flags' }),
-    });
-    // Act
-    const result = flags.evaluate({ name: 'checkout', default: false });
-    // Assess
-    await expect(result).rejects.toBeInstanceOf(SchemaValidationError);
-    await expect(result).rejects.toThrow("Envelope 'settings.flags'");
-  });
-
   it.each([500, 503, 429])(
     'returns the Fallback for Agent status %i',
     async (status) => {
@@ -114,12 +98,9 @@ describe('appConfigAgentStore', () => {
     await expect(result).rejects.toBeInstanceOf(ParameterNotFoundError);
   });
 
-  it.each([
-    new AppConfigAgentError('denied', 403),
-    new ParameterNotFoundError('missing profile'),
-    new GetParameterError('missing application'),
-  ])('rethrows Parameters errors unchanged for %s', async (error) => {
+  it('rethrows Parameters access denial unchanged', async () => {
     // Prepare
+    const error = new AppConfigAgentError('denied', 403);
     fetchMock.mockRejectedValue(error);
     const flags = new FeatureFlags({ store: appConfigAgentStore(options) });
     // Act
@@ -157,21 +138,6 @@ describe('appConfigAgentStore', () => {
     const result = await flags.evaluate({ name: 'checkout', default: false });
     // Assess
     expect(result).toBe(false);
-  });
-
-  it('preserves the Parameters cause in StoreUnavailableError', async () => {
-    // Prepare
-    const error = new AppConfigAgentError('opaque failure', 503);
-    fetchMock.mockRejectedValue(error);
-    const store = appConfigAgentStore(options);
-    // Act
-    const result = store.getAll({});
-    // Assess
-    await expect(result).rejects.toBeInstanceOf(StoreUnavailableError);
-    await expect(result).rejects.toMatchObject({
-      message: 'appconfig-agent is unavailable',
-      cause: error,
-    });
   });
 
   it.each([

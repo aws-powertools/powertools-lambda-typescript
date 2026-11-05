@@ -1,11 +1,6 @@
-import type {
-  GenericLogger,
-  JSONValue,
-} from '@aws-lambda-powertools/commons/types';
+import type { GenericLogger } from '@aws-lambda-powertools/commons/types';
 import { getConfig } from '@aws-lambda-powertools/parameters/appconfig-agent';
-import { StoreUnavailableError } from '../errors.js';
-import { isAvailabilityFailure } from '../parameters-stores/classify.js';
-import { applyEnvelope } from '../parameters-stores/envelope.js';
+import { createDocumentSource } from '../parameters-stores/createDocumentSource.js';
 import { ruleEngineStore } from '../ruleEngine/index.js';
 import type { Store } from '../types/index.js';
 
@@ -53,26 +48,18 @@ const appConfigAgentStore = (options: AppConfigAgentStoreOptions): Store =>
   ruleEngineStore({
     name: 'appconfig-agent',
     logger: options.logger,
-    source: async () => {
-      let document: JSONValue;
-      try {
-        document = await getConfig(options.name, {
+    source: createDocumentSource({
+      storeName: 'appconfig-agent',
+      envelope: options.envelope,
+      retrieve: () =>
+        getConfig(options.name, {
           application: options.application,
           environment: options.environment,
           timeout: options.timeout,
           transform: 'json',
           throwOnMissing: true,
-        });
-      } catch (error) {
-        if (isAvailabilityFailure(error)) {
-          throw new StoreUnavailableError('appconfig-agent is unavailable', {
-            cause: error,
-          });
-        }
-        throw error;
-      }
-      return applyEnvelope(document, options.envelope);
-    },
+        }),
+    }),
   });
 
 export type { AppConfigAgentStoreOptions };

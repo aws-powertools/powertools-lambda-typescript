@@ -127,7 +127,7 @@ class FeatureFlags {
   ): Promise<Record<string, JSONValue>> {
     const { flags, context = {} } = options;
     validateContext(context);
-    const names = [...new Set(Object.keys(flags))];
+    const names = Object.keys(flags);
     let result: Record<string, StoreResult>;
     try {
       result = await this.#store.getMany(names, context);

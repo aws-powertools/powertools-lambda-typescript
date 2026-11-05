@@ -263,9 +263,16 @@ describe('FeatureFlags', () => {
     }
   );
 
-  it.each(['found', 'missing', 'unavailable'] as const)(
-    'keeps batch and enabled lookups silent without a logger for $0',
-    async (outcome) => {
+  it.each([
+    { method: 'evaluateMany', outcome: 'found' },
+    { method: 'evaluateMany', outcome: 'missing' },
+    { method: 'evaluateMany', outcome: 'unavailable' },
+    { method: 'getEnabledFeatures', outcome: 'found' },
+    { method: 'getEnabledFeatures', outcome: 'missing' },
+    { method: 'getEnabledFeatures', outcome: 'unavailable' },
+  ] as const)(
+    'keeps $method silent without a logger for $outcome',
+    async ({ method, outcome }) => {
       // Prepare
       const { store } = prepare();
       const flags = new FeatureFlags({ store });
@@ -281,8 +288,9 @@ describe('FeatureFlags', () => {
         store.getAll.mockResolvedValue(response);
       }
       // Act
-      await flags.evaluateMany({ flags: { a: false } });
-      await flags.getEnabledFeatures({});
+      if (method === 'evaluateMany')
+        await flags.evaluateMany({ flags: { a: false } });
+      else await flags.getEnabledFeatures({});
       // Assess
       expect(console.debug).not.toHaveBeenCalled();
       expect(console.warn).not.toHaveBeenCalled();

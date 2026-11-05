@@ -123,16 +123,22 @@ describe('FeatureFlags', () => {
   );
 
   it.each([
-    { secret: 'hidden-value' },
-    null,
-    undefined,
-    [{ secret: 'hidden-value' }],
-    () => 'hidden-value',
-    Symbol('hidden-value'),
-    [undefined],
-    [null],
-    Array(1),
-  ])('rejects invalid context value %j before lookup', async (value) => {
+    { value: { secret: 'hidden-value' }, kind: 'object' },
+    { value: null, kind: 'null' },
+    { value: undefined, kind: 'undefined' },
+    { value: [{ secret: 'hidden-value' }], kind: 'an array containing object' },
+    { value: () => 'hidden-value', kind: 'function' },
+    { value: Symbol('hidden-value'), kind: 'symbol' },
+    { value: [undefined], kind: 'an array containing undefined' },
+    { value: [null], kind: 'an array containing null' },
+    { value: Array(1), kind: 'an array containing undefined' },
+    {
+      value: ['valid', { secret: 'hidden-value' }],
+      kind: 'an array containing object',
+    },
+    { value: [[null]], kind: 'an array containing an array containing null' },
+    { value: 123456789n, kind: 'bigint' },
+  ])('rejects $kind context before lookup', async ({ value, kind }) => {
     // Prepare
     const { flags, store } = prepare();
     // Act
@@ -144,8 +150,9 @@ describe('FeatureFlags', () => {
     });
     // Assess
     await expect(result).rejects.toBeInstanceOf(InvalidContextError);
-    await expect(result).rejects.toThrow(
-      "Invalid evaluation context key 'invalidKey'"
+    await expect(result).rejects.toHaveProperty(
+      'message',
+      `Invalid evaluation context key 'invalidKey': expected a string, number, boolean, or array of those, received ${kind}`
     );
     await expect(result).rejects.not.toThrow('hidden-value');
     expect(store.getMany).not.toHaveBeenCalled();

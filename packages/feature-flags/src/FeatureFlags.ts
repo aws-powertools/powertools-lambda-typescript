@@ -14,6 +14,7 @@ import type {
   EvaluateResult,
   FeatureFlagsOptions,
   Store,
+  StoreResult,
 } from './types/index.js';
 
 /**
@@ -66,16 +67,16 @@ class FeatureFlags {
     for (const [key, value] of Object.entries(context)) {
       if (
         !(Array.isArray(value)
-          ? Array.from(value).every(isContextScalar)
-          : isContextScalar(value))
+          ? Array.from(value).every(isScalar)
+          : isScalar(value))
       ) {
         throw new InvalidContextError(
-          `Invalid evaluation context key '${key}'`
+          `Invalid evaluation context key '${key}': expected a string, number, boolean, or array of those, received ${getInvalidContextKind(value)}`
         );
       }
     }
 
-    let result: Awaited<ReturnType<Store['getMany']>>;
+    let result: Record<string, StoreResult>;
     try {
       result = await this.#store.getMany([name], context);
     } catch (error) {
@@ -104,15 +105,9 @@ class FeatureFlags {
       return fallback;
     }
 
-    const expected = typeof fallback;
-    if (
-      (expected === 'boolean' ||
-        expected === 'number' ||
-        expected === 'string') &&
-      typeof flag.value !== expected
-    ) {
+    if (isScalar(fallback) && typeof flag.value !== typeof fallback) {
       throw new FlagValueTypeError(
-        `Flag '${name}' expected type '${expected}' but received '${typeof flag.value}'`
+        `Flag '${name}' expected type '${typeof fallback}' but received '${typeof flag.value}'`
       );
     }
     this.#logger?.debug({ name, store: this.#store.name, outcome: 'found' });
@@ -121,11 +116,27 @@ class FeatureFlags {
 }
 
 /**
- * Checks whether a context value is scalar without rejecting non-finite numbers.
- * @param value - Supply the context value to check
+ * Checks for a string, number, or boolean in context values and fallbacks.
+ * @param value - Supply the value to check
  * @internal
  */
-const isContextScalar = (value: unknown): value is ContextScalar =>
+const isScalar = (value: unknown): value is ContextScalar =>
   isString(value) || isNumber(value) || typeof value === 'boolean';
+
+/**
+ * Describes an invalid context value's kind without exposing its value.
+ * @param value - Supply the invalid context value to describe
+ * @internal
+ */
+const getInvalidContextKind = (value: unknown): string => {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) {
+    const offendingElement = Array.from(value).find(
+      (element) => !isScalar(element)
+    );
+    return `an array containing ${getInvalidContextKind(offendingElement)}`;
+  }
+  return typeof value;
+};
 
 export { FeatureFlags };

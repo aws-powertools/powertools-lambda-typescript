@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getConfig } from '../../src/appconfig-agent/index.js';
 import {
+  AppConfigAgentError,
   GetParameterError,
   ParameterNotFoundError,
   TransformParameterError,
@@ -312,18 +313,47 @@ describe('Function: getConfig', () => {
       text: vi.fn().mockResolvedValue('Internal Server Error'),
     });
 
-    // Act & Assess
-    await expect(
-      getConfig('my-config', {
-        application: 'my-app',
-        environment: 'my-env',
-      })
-    ).rejects.toThrow(
-      new GetParameterError(
-        'Failed to retrieve configuration from AppConfig Agent: 500 Internal Server Error'
-      )
+    // Act
+    const result = getConfig('my-config', {
+      application: 'my-app',
+      environment: 'my-env',
+    });
+
+    // Assess
+    await expect(result).rejects.toSatisfy(
+      (error: Error) =>
+        error instanceof GetParameterError &&
+        error.message ===
+          'Failed to retrieve configuration from AppConfig Agent: 500 Internal Server Error'
     );
   });
+
+  it.each([400, 401, 403, 500, 503])(
+    'exposes HTTP status %i in an AppConfigAgentError',
+    async (statusCode) => {
+      // Prepare
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: statusCode,
+        text: vi.fn().mockResolvedValue('Agent error'),
+      });
+
+      // Act
+      const result = getConfig('my-config', {
+        application: 'my-app',
+        environment: 'my-env',
+      });
+
+      // Assess
+      await expect(result).rejects.toBeInstanceOf(AppConfigAgentError);
+      await expect(result).rejects.toBeInstanceOf(GetParameterError);
+      await expect(result).rejects.toMatchObject({
+        statusCode,
+        message: `Failed to retrieve configuration from AppConfig Agent: ${statusCode} Agent error`,
+        name: 'AppConfigAgentError',
+      });
+    }
+  );
 
   it('wraps network errors in a GetParameterError', async () => {
     // Prepare
@@ -339,6 +369,8 @@ describe('Function: getConfig', () => {
     ).rejects.toSatisfy(
       (error: Error) =>
         error instanceof GetParameterError &&
+        !(error instanceof AppConfigAgentError) &&
+        error.name === 'GetParameterError' &&
         error.message === 'fetch failed' &&
         error.cause === networkError
     );

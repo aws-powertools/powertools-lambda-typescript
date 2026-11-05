@@ -2,6 +2,7 @@ import type {
   GenericLogger,
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { FeatureFlags } from '../FeatureFlags.js';
 
 /** Configures the Store and optional logger for flag evaluation. */
@@ -32,15 +33,58 @@ type EvaluateOptions<Fallback extends JSONValue> = {
   default: Fallback;
 };
 
-/** Supplies per-flag fallbacks and context to {@link FeatureFlags.evaluateMany | `evaluateMany`}. */
-type EvaluateManyOptions<Flags extends Record<string, JSONValue>> = {
-  flags: Flags;
+/** Supplies a schema and its input fallback to {@link FeatureFlags.evaluate | `evaluate`}. */
+type EvaluateWithSchemaOptions<Schema extends StandardSchemaV1> = {
+  name: string;
   context?: EvaluationContext;
+  default: StandardSchemaV1.InferInput<Schema>;
+  /** Validates the fallback and result without producing undefined. */
+  schema: undefined extends StandardSchemaV1.InferOutput<Schema>
+    ? never
+    : Schema;
 };
 
-/** Widens each fallback through {@link EvaluateResult | `EvaluateResult`}. */
-type EvaluateManyResult<Flags extends Record<string, JSONValue>> = {
-  [Name in keyof Flags]: EvaluateResult<Flags[Name]>;
+/** Supplies per-flag fallbacks, optional schemas, and context to {@link FeatureFlags.evaluateMany | `evaluateMany`}. */
+type EvaluateManyOptions<
+  Flags extends Record<string, JSONValue>,
+  Schemas extends Partial<Record<string, StandardSchemaV1>> = Partial<
+    Record<string, never>
+  >,
+> = {
+  flags: Flags;
+  context?: EvaluationContext;
+  /** Validates selected flags without producing undefined. */
+  schemas?: Schemas & {
+    [Name in keyof Schemas]: Name extends keyof Flags
+      ? NonNullable<Schemas[Name]> extends StandardSchemaV1
+        ? undefined extends StandardSchemaV1.InferOutput<
+            NonNullable<Schemas[Name]>
+          >
+          ? never
+          : Schemas[Name]
+        : Schemas[Name]
+      : never;
+  };
+};
+
+/**
+ * Infers a schema output or widens the fallback when no schema exists.
+ * @internal
+ */
+type EvaluateSchemaResult<Schema, Fallback> = Schema extends StandardSchemaV1
+  ? StandardSchemaV1.InferOutput<Schema>
+  : EvaluateResult<Fallback>;
+
+/** Infers schema outputs and widens other fallbacks through {@link EvaluateResult | `EvaluateResult`}. */
+type EvaluateManyResult<
+  Flags extends Record<string, JSONValue>,
+  Schemas extends Partial<Record<string, StandardSchemaV1>> = Partial<
+    Record<string, never>
+  >,
+> = {
+  [Name in keyof Flags]: Name extends keyof Schemas
+    ? EvaluateSchemaResult<Schemas[Name], Flags[Name]>
+    : EvaluateResult<Flags[Name]>;
 };
 
 /** Supplies context to {@link FeatureFlags.getEnabledFeatures | `getEnabledFeatures`}. */
@@ -88,6 +132,7 @@ export type {
   EvaluateManyResult,
   EvaluateOptions,
   EvaluateResult,
+  EvaluateWithSchemaOptions,
   EvaluationContext,
   FeatureFlagsOptions,
   GetEnabledFeaturesOptions,

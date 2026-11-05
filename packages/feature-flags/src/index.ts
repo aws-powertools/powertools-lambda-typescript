@@ -1,5 +1,6 @@
 export {
   FeatureFlagsError,
+  FlagResultValidationError,
   FlagValueTypeError,
   InvalidContextError,
   StoreUnavailableError,

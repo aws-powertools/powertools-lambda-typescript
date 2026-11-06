@@ -2,6 +2,7 @@ import type {
   GenericLogger,
   JSONValue,
 } from '@aws-lambda-powertools/commons/types';
+import type { FeatureFlags } from '../FeatureFlags.js';
 
 /** Configures the Store and optional logger for flag evaluation. */
 type FeatureFlagsOptions<Value = JSONValue> = {
@@ -29,6 +30,22 @@ type EvaluateOptions<Fallback extends JSONValue> = {
   name: string;
   context?: EvaluationContext;
   default: Fallback;
+};
+
+/** Supplies per-flag fallbacks and context to {@link FeatureFlags.evaluateMany | `evaluateMany`}. */
+type EvaluateManyOptions<Flags extends Record<string, JSONValue>> = {
+  flags: Flags;
+  context?: EvaluationContext;
+};
+
+/** Widens each fallback through {@link EvaluateResult | `EvaluateResult`}. */
+type EvaluateManyResult<Flags extends Record<string, JSONValue>> = {
+  [Name in keyof Flags]: EvaluateResult<Flags[Name]>;
+};
+
+/** Supplies context to {@link FeatureFlags.getEnabledFeatures | `getEnabledFeatures`}. */
+type GetEnabledFeaturesOptions = {
+  context?: EvaluationContext;
 };
 
 /** Represents a scalar fact in an evaluation context. */
@@ -67,10 +84,13 @@ type Variant = {
 export type {
   ContextScalar,
   ContextValue,
+  EvaluateManyOptions,
+  EvaluateManyResult,
   EvaluateOptions,
   EvaluateResult,
   EvaluationContext,
   FeatureFlagsOptions,
+  GetEnabledFeaturesOptions,
   Store,
   StoreResult,
   Variant,

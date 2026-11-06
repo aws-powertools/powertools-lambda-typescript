@@ -55,7 +55,7 @@
     "@biomejs/biome": "^2.6.4",
     "@types/aws-lambda": "^8.10.164",
     "@types/node": "^26.6.6",
-    "@vitest/coverage-v8": "5.0.5",
+    "@vitest/coverage-v8": "5.1.0",
     "esbuild": "^0.28.2",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
@@ -67,7 +67,7 @@
     "typedoc-plugin-missing-exports": "^4.1.4",
     "typescript": "^6.0.3",
     "undici-types": "^8.12.3",
-    "vitest": "5.0.5"
+    "vitest": "5.1.0"
   },
   "lint-staged": {
     "*.{js,ts,json}": "biome check --write --no-errors-on-unmatched",

@@ -47,6 +47,35 @@ const S3EventRecordGlacierEventData = z.object({
   }),
 });
 
+/**
+ * Zod schema for the data S3 adds to `s3:IntelligentTiering` events.
+ */
+const S3EventRecordIntelligentTieringEventData = z.object({
+  destinationAccessTier: z.string(),
+});
+
+/**
+ * Zod schema for the data S3 adds to `s3:LifecycleTransition` events.
+ */
+const S3EventRecordLifecycleEventData = z.object({
+  transitionEventData: z.object({
+    destinationStorageClass: z.string(),
+  }),
+});
+
+/**
+ * Zod schema for the data S3 adds to `s3:Replication:*` events.
+ *
+ * AWS only documents this payload for failed replications, so every field is optional.
+ */
+const S3EventRecordReplicationEventData = z.object({
+  replicationRuleId: z.string().optional(),
+  destinationBucket: z.string().optional(),
+  s3Operation: z.string().optional(),
+  requestTime: z.string().optional(),
+  failureReason: z.string().optional(),
+});
+
 const S3RecordSchema = z.object({
   eventVersion: z.string(),
   eventSource: z.literal('aws:s3'),
@@ -58,6 +87,11 @@ const S3RecordSchema = z.object({
   responseElements: S3ResponseElements,
   s3: S3Message,
   glacierEventData: z.optional(S3EventRecordGlacierEventData),
+  intelligentTieringEventData: z.optional(
+    S3EventRecordIntelligentTieringEventData
+  ),
+  lifecycleEventData: z.optional(S3EventRecordLifecycleEventData),
+  replicationEventData: z.optional(S3EventRecordReplicationEventData),
 });
 
 const S3EventNotificationEventBridgeDetailSchema = z.object({

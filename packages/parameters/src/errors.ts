@@ -31,6 +31,35 @@ class ParameterNotFoundError extends GetParameterError {
 }
 
 /**
+ * Represents the error that `getConfig` throws when the AppConfig Agent responds with a non-success HTTP status other than 404.
+ *
+ * The `statusCode` property holds the HTTP status returned by the agent.
+ * It extends {@link GetParameterError | `GetParameterError`}, so existing catch blocks keep working.
+ *
+ * @example
+ * ```typescript
+ * import { AppConfigAgentError } from '@aws-lambda-powertools/parameters/errors';
+ *
+ * if (error instanceof AppConfigAgentError && error.statusCode >= 500) {
+ *   console.error('AppConfig Agent is unavailable', error);
+ * }
+ * ```
+ */
+class AppConfigAgentError extends GetParameterError {
+  public readonly statusCode: number;
+
+  public constructor(
+    message: string,
+    statusCode: number,
+    options?: ErrorOptions
+  ) {
+    super(message, options);
+    this.name = 'AppConfigAgentError';
+    this.statusCode = statusCode;
+  }
+}
+
+/**
  * Error thrown when a parameter cannot be set.
  *
  * You can use this error to catch and handle errors when setting a parameter, the `cause` property will contain the original error.
@@ -54,6 +83,7 @@ class TransformParameterError extends Error {
 }
 
 export {
+  AppConfigAgentError,
   GetParameterError,
   ParameterNotFoundError,
   SetParameterError,

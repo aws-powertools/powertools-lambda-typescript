@@ -159,6 +159,19 @@ describe('Python 3.36.0 conformance', () => {
       }
     );
 
+    it('matches Python code-point ordering for BMP and astral strings', async () => {
+      // Prepare
+      const store = ruleEngineStore({
+        source: async () => actionDocument('KEY_LESS_THAN_VALUE', '😀'),
+      });
+      // Act
+      const result = await store.getAll({ fact: '\uFFFF' });
+      // Assess
+      expect(result).toEqual({
+        my_feature: { found: true, value: true, enabled: true },
+      });
+    });
+
     it.each([
       { action: 'EQUALS', value: 'premium' },
       { action: 'NOT_EQUALS', value: 'premium' },

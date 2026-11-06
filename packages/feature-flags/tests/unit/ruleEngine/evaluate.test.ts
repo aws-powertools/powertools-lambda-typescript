@@ -1,6 +1,9 @@
 import type { JSONValue } from '@aws-lambda-powertools/commons/types';
 import { describe, expect, it, vi } from 'vitest';
-import { ConditionEvaluationError } from '../../../src/index.js';
+import {
+  ConditionEvaluationError,
+  type ContextValue,
+} from '../../../src/index.js';
 import { evaluate } from '../../../src/ruleEngine/evaluate.js';
 import type { Flag, RuleAction } from '../../../src/ruleEngine/types.js';
 
@@ -12,14 +15,13 @@ const prepareFlag = (action: RuleAction, value: JSONValue): Flag => ({
   },
 });
 
-/** Exercises the internal engine independently of the public scalar context checks. */
+/** Exercises comparisons with supported context values and JSON document operands. */
 const evaluateCondition = (
   action: RuleAction,
-  context: unknown,
+  context: ContextValue,
   value: JSONValue
 ) => {
   const flag = prepareFlag(action, value);
-  // @ts-expect-error Exercise JSON comparisons and JavaScript callers beyond the public scalar context type.
   return evaluate('checkout', flag, { tier: context });
 };
 
@@ -172,7 +174,7 @@ describe('Rule Engine evaluation', () => {
 
   it.each<{
     action: RuleAction;
-    context: JSONValue;
+    context: ContextValue;
     value: JSONValue;
     expected: boolean;
   }>([
@@ -180,13 +182,18 @@ describe('Rule Engine evaluation', () => {
     { action: 'EQUALS', context: true, value: 1, expected: false },
     {
       action: 'EQUALS',
-      context: { a: 1, b: 2 },
-      value: { b: 2, a: 1 },
-      expected: true,
+      context: 'premium',
+      value: { tier: 'premium' },
+      expected: false,
     },
     { action: 'EQUALS', context: [1, 2], value: [2, 1], expected: false },
-    { action: 'EQUALS', context: null, value: null, expected: true },
     { action: 'NOT_EQUALS', context: true, value: 1, expected: true },
+    {
+      action: 'NOT_EQUALS',
+      context: 'premium',
+      value: { tier: 'premium' },
+      expected: true,
+    },
     {
       action: 'NOT_EQUALS',
       context: 'premium',
@@ -265,10 +272,11 @@ describe('Rule Engine evaluation', () => {
     { action: 'IN', context: true, value: [1], expected: false },
     {
       action: 'IN',
-      context: { a: 1, b: 2 },
-      value: [{ b: 2, a: 1 }],
+      context: 'a',
+      value: [{ a: 1 }, 'a'],
       expected: true,
     },
+    { action: 'IN', context: 'b', value: [{ b: 1 }], expected: false },
     {
       action: 'KEY_IN_VALUE',
       context: [1, 2],
@@ -302,9 +310,9 @@ describe('Rule Engine evaluation', () => {
     },
     {
       action: 'VALUE_IN_KEY',
-      context: [{ a: 1, b: 2 }],
-      value: { b: 2, a: 1 },
-      expected: true,
+      context: ['x', 'y'],
+      value: { x: 1 },
+      expected: false,
     },
     { action: 'VALUE_IN_KEY', context: [1], value: true, expected: false },
     { action: 'VALUE_NOT_IN_KEY', context: [1], value: true, expected: true },
@@ -328,8 +336,8 @@ describe('Rule Engine evaluation', () => {
     { action: 'ANY_IN_VALUE', context: [], value: [], expected: false },
     {
       action: 'ANY_IN_VALUE',
-      context: [{ a: 1, b: 2 }],
-      value: [{ b: 2, a: 1 }],
+      context: ['a'],
+      value: [{ a: 1 }, 'a'],
       expected: true,
     },
     { action: 'NONE_IN_VALUE', context: [4], value: [1, 2], expected: true },
@@ -351,7 +359,7 @@ describe('Rule Engine evaluation', () => {
     }
   );
 
-  it.each<{ action: RuleAction; context: JSONValue; value: JSONValue }>([
+  it.each<{ action: RuleAction; context: ContextValue; value: JSONValue }>([
     {
       action: 'KEY_GREATER_THAN_VALUE',
       context: 'secret-context',
@@ -395,7 +403,6 @@ describe('Rule Engine evaluation', () => {
       const flag = prepareFlag(action, value);
       // Act
       const act = () => {
-        // @ts-expect-error Exercise JavaScript callers beyond the public scalar context type.
         return evaluate('checkout', flag, { tier: context });
       };
       // Assess
@@ -406,6 +413,21 @@ describe('Rule Engine evaluation', () => {
       expect(act).not.toThrow(/secret-context|secret-operand|987654/);
     }
   );
+
+  it.each<{ action: RuleAction; expected: boolean }>([
+    { action: 'KEY_GREATER_THAN_VALUE', expected: false },
+    { action: 'KEY_GREATER_THAN_OR_EQUAL_VALUE', expected: false },
+    { action: 'KEY_LESS_THAN_VALUE', expected: true },
+    { action: 'KEY_LESS_THAN_OR_EQUAL_VALUE', expected: true },
+  ])('uses Unicode code-point ordering for $action', ({ action, expected }) => {
+    // Prepare
+    const flag = prepareFlag(action, '😀');
+    const context = { tier: '\uFFFF' };
+    // Act
+    const result = evaluate('checkout', flag, context);
+    // Assess
+    expect(result).toEqual({ found: true, value: expected, enabled: expected });
+  });
 
   it('logs the selected Rule without result or operand values', () => {
     // Prepare

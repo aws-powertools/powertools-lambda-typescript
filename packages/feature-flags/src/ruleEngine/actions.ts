@@ -1,4 +1,5 @@
 import {
+  compareStringsByCodePoint,
   isNumber,
   isStrictEqual,
   isString,
@@ -7,22 +8,22 @@ import { RuleActions } from '../constants.js';
 import type { Comparator, RuleAction } from './types.js';
 
 /**
- * Compares two numbers or two strings without coercion.
+ * Compares numbers directly and strings by Unicode code point without coercion.
  * @param context - Supply the context operand
  * @param value - Supply the document operand
- * @param comparator - Apply the ordering comparison
+ * @param comparator - Compare numeric operands or a string order against zero
  * @internal
  */
 const compareOrdered = (
   context: unknown,
   value: unknown,
-  comparator: (left: number | string, right: number | string) => boolean
+  comparator: (left: number, right: number) => boolean
 ): boolean => {
-  if (
-    (isNumber(context) && isNumber(value)) ||
-    (isString(context) && isString(value))
-  ) {
+  if (isNumber(context) && isNumber(value)) {
     return comparator(context, value);
+  }
+  if (isString(context) && isString(value)) {
+    return comparator(compareStringsByCodePoint(context, value), 0);
   }
   throw new TypeError('Incompatible operands');
 };

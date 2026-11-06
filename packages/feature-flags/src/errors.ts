@@ -46,9 +46,37 @@ class FlagValueTypeError extends FeatureFlagsError {
   }
 }
 
+/** Reports an invalid Flag Document without exposing its values. */
+class SchemaValidationError extends FeatureFlagsError {
+  /**
+   * Creates a schema validation error.
+   * @param message - Describe the invalid flag, Rule, or Condition
+   * @param options - Supply optional error details
+   */
+  public constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'SchemaValidationError';
+  }
+}
+
+/** Reports incompatible Condition operands without exposing their values. */
+class ConditionEvaluationError extends FeatureFlagsError {
+  /**
+   * Creates a condition evaluation error.
+   * @param message - Identify the flag, Rule, key, and Action
+   * @param options - Supply optional error details
+   */
+  public constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'ConditionEvaluationError';
+  }
+}
+
 export {
+  ConditionEvaluationError,
   FeatureFlagsError,
   FlagValueTypeError,
   InvalidContextError,
+  SchemaValidationError,
   StoreUnavailableError,
 };

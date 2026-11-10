@@ -8,14 +8,20 @@ import type {
   ExtraTestProps,
   TestNodejsFunctionProps,
 } from '@aws-lambda-powertools/testing-utils/types';
-import { CfnOutput } from 'aws-cdk-lib';
+import { CfnOutput, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import {
   AuthorizationType,
   MockIntegration,
   PassthroughBehavior,
   RestApi,
 } from 'aws-cdk-lib/aws-apigateway';
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { PolicyDocument, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import {
+  BlockPublicAccess,
+  Bucket,
+  CfnMultiRegionAccessPoint,
+  CfnMultiRegionAccessPointPolicy,
+} from 'aws-cdk-lib/aws-s3';
 
 /**
  * Creates a caller Lambda function plus an IAM-protected REST API for signer
@@ -100,4 +106,71 @@ class SignerTestFunction extends TestNodejsFunction {
   }
 }
 
-export { SignerTestFunction };
+/**
+ * Creates a caller Lambda and private S3 resources for SigV4a E2E tests.
+ *
+ * A Multi-Region Access Point with one regional bucket verifies SigV4a against
+ * S3's global endpoint while keeping the test deployable in one region.
+ */
+class SigV4aSignerTestFunction extends TestNodejsFunction {
+  /**
+   * Creates an access point and grants the caller access to its test objects.
+   *
+   * @param scope - The test stack that owns all resources.
+   * @param props - The caller Lambda configuration.
+   * @param extraProps - The test function naming and output options.
+   */
+  public constructor(
+    scope: TestStack,
+    props: TestNodejsFunctionProps,
+    extraProps: ExtraTestProps
+  ) {
+    super(scope, props, extraProps);
+
+    this.logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    const bucket = new Bucket(scope.stack, 'SigV4aBucket', {
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+    const accessPoint = new CfnMultiRegionAccessPoint(
+      scope.stack,
+      'AccessPoint',
+      {
+        name: scope.testName.toLowerCase(),
+        regions: [{ bucket: bucket.bucketName }],
+        publicAccessBlockConfiguration: {
+          blockPublicAcls: true,
+          ignorePublicAcls: true,
+          blockPublicPolicy: true,
+          restrictPublicBuckets: true,
+        },
+      }
+    );
+    const stack = Stack.of(scope.stack);
+    const objectArn = `arn:${stack.partition}:s3::${stack.account}:accesspoint/${accessPoint.attrAlias}/object/*`;
+    const actions = ['s3:GetObject', 's3:PutObject', 's3:DeleteObject'];
+    new CfnMultiRegionAccessPointPolicy(scope.stack, 'AccessPointPolicy', {
+      mrapName: accessPoint.ref,
+      policy: new PolicyDocument({
+        statements: [
+          new PolicyStatement({
+            actions,
+            resources: [objectArn],
+            principals: [this.grantPrincipal],
+          }),
+        ],
+      }).toJSON(),
+    });
+    bucket.grantReadWrite(this);
+    this.addToRolePolicy(
+      new PolicyStatement({ actions, resources: [objectArn] })
+    );
+    this.addEnvironment(
+      'TARGET_MRAP_URL',
+      `https://${accessPoint.attrAlias}.accesspoint.s3-global.${stack.urlSuffix}`
+    );
+  }
+}
+
+export { SignerTestFunction, SigV4aSignerTestFunction };

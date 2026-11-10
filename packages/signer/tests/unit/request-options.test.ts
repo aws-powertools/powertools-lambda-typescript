@@ -1,26 +1,36 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createSignedFetcher } from '../../src/fetch.js';
 import { SigV4Signer } from '../../src/sigv4.js';
+import { SigV4aSigner } from '../../src/sigv4a.js';
+import type { Signer } from '../../src/types/index.js';
 
 /**
  * Creates a signer with static credentials for request-options tests.
+ *
+ * @param variant - The signing variant to exercise.
  */
-const createSigner = (): SigV4Signer =>
-  new SigV4Signer({
+const createSigner = (variant: 'SigV4' | 'SigV4a'): Signer => {
+  const options = {
     service: 'execute-api',
-    region: 'us-east-1',
     credentials: {
       accessKeyId: 'EXAMPLE',
       secretAccessKey: 'example-secret',
     },
-  });
+  };
+  return variant === 'SigV4'
+    ? new SigV4Signer({ ...options, region: 'us-east-1' })
+    : new SigV4aSigner({ ...options, regionSet: ['*'] });
+};
 
-describe('SigV4Signer request options', () => {
+describe.each([
+  { variant: 'SigV4', algorithm: 'AWS4-HMAC-SHA256' },
+  { variant: 'SigV4a', algorithm: 'AWS4-ECDSA-P256-SHA256' },
+] as const)('$variant request options', ({ variant, algorithm }) => {
   it.each(['string', 'URL', 'Request'] as const)(
     'preserves fetch options supplied through %s input',
     async (kind) => {
       // Prepare
-      const signer = createSigner();
+      const signer = createSigner(variant);
       const url = new URL('https://example.com/items');
       const options: RequestInit = {
         cache: 'no-store',
@@ -49,13 +59,13 @@ describe('SigV4Signer request options', () => {
       expect(signed.redirect).toBe('manual');
       expect(signed.referrer).toBe('https://origin.example/');
       expect(signed.referrerPolicy).toBe('no-referrer');
-      expect(signed.headers.get('authorization')).toContain('AWS4-HMAC-SHA256');
+      expect(signed.headers.get('authorization')).toContain(algorithm);
     }
   );
 
   it('preserves init overrides on a Request input', async () => {
     // Prepare
-    const signer = createSigner();
+    const signer = createSigner(variant);
     const request = new Request('https://example.com/items', {
       redirect: 'manual',
       cache: 'no-store',
@@ -80,7 +90,7 @@ describe('SigV4Signer request options', () => {
 
   it('preserves a pre-aborted signal and its reason', async () => {
     // Prepare
-    const signer = createSigner();
+    const signer = createSigner(variant);
     const controller = new AbortController();
     const reason = new Error('cancelled');
     controller.abort(reason);
@@ -97,7 +107,7 @@ describe('SigV4Signer request options', () => {
 
   it('inherits referrer settings when init contains undefined values', async () => {
     // Prepare
-    const signer = createSigner();
+    const signer = createSigner(variant);
     const request = new Request('https://example.com/items', {
       referrer: 'https://origin.example/',
       referrerPolicy: 'no-referrer',
@@ -116,7 +126,7 @@ describe('SigV4Signer request options', () => {
 
   it('propagates aborts after signing a Request input', async () => {
     // Prepare
-    const signer = createSigner();
+    const signer = createSigner(variant);
     const controller = new AbortController();
     const request = new Request('https://example.com/items', {
       signal: controller.signal,
@@ -134,7 +144,7 @@ describe('SigV4Signer request options', () => {
 
   it('uses the override signal instead of the Request signal', async () => {
     // Prepare
-    const signer = createSigner();
+    const signer = createSigner(variant);
     const originalController = new AbortController();
     const overrideController = new AbortController();
     const request = new Request('https://example.com/items', {
@@ -156,7 +166,7 @@ describe('SigV4Signer request options', () => {
 
   it('passes redirect settings and cancellation to the signed fetcher transport', async () => {
     // Prepare
-    const signer = createSigner();
+    const signer = createSigner(variant);
     const controller = new AbortController();
     const transport = vi
       .fn<typeof fetch>()
@@ -182,7 +192,7 @@ describe('SigV4Signer request options', () => {
 
   it('keeps a replacement body usable on a consumed Request', async () => {
     // Prepare
-    const signer = createSigner();
+    const signer = createSigner(variant);
     const request = new Request('https://example.com/items', {
       method: 'POST',
       body: 'original',
